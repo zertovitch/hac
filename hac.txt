@@ -1,0 +1,22 @@
+HAC - the Hacker's Ada Compiler
+===============================
+
+Alternative name: Hello-world Ada Compiler
+
+Objectives:
+===========
+ - fun!
+ - produce the smallest Hello-world executable!
+
+What HAC will never be:
+=======================
+ - a real, serious Ada compiler - there are enough serious ones!
+ - a complete compiler - only a small subset will be covered
+
+History:
+========
+
+- 2009: a bit further...
+- 1999: translated Mac Pascal sources to Ada
+- 1989: SmallAda is derived from CoPascal; works only inside
+          very system-dependent environments (a Mac GUI, a DOS GUI)
