@@ -8,92 +8,108 @@ with Ada.Text_IO;
 
 package body HAC.Compiler is
 
- use Ada.Text_IO;
- package IIO is new Integer_IO(integer); use IIO;
+  use Ada.Text_IO;
+  package IIO is new Integer_IO(integer); use IIO;
 
-PROCEDURE PrintTables IS
- BEGIN
-  New_Line;
-  Put(" Identifiers          Link  Obj  TYP  Ref  NRM  LEV  Adr");
-  New_Line;
-  FOR  I  IN   BlockTab(1).last.. T  LOOP
-    DECLARE r: TabEntry RENAMES IdTab(I);
-    BEGIN
-      Put(I, 4); Put( ' '); Put( r.Name);
-      Put( r.Link, 10);
-      Put( aObject'Pos(r.Obj), 5);
-      Put( Types'Pos(r.TYP), 5);
-      Put( r.Ref, 5);
-      Put( Boolean'Pos(r.Normal), 5);
-      Put( r.LEV, 5);
-      Put( r.Adr, 5);
-      New_Line;
-    END;
-  END LOOP;
+  procedure Init_Tables is
+  begin
+    -- Arrays and blocks are clearly 1-based
+    A:= 0;
+    B:= 0;
+    -- Identifiers
+    T:= 0;
+    -- Strings
+    Sx:= 0;
+    -- Tasks, Entries
+    TCount:= 0;
+    ECount:= 0;
+    -- Location Counter (in output code)
+    LC:= 0;
+  end Init_Tables;
 
-  New_Line;
-  Put_Line(" Tasks       Block#");
-  FOR  I  IN   0.. TCount  LOOP
-    Put(I, 4);
-    Put( ' ');
-    Put( IdTab(TskDefTab(I)).Name);
-    Put( "  ");
-    Put(
-    IdTab(TskDefTab(I)).Ref);
+  PROCEDURE PrintTables IS
+  BEGIN
     New_Line;
-  END LOOP;
-
-  New_Line;
-
-  IF  ECount > 0 THEN
-    Put(" Entries ");
+    Put(" Identifiers          Link  Obj  TYP  Ref  NRM  LEV  Adr");
     New_Line;
-    FOR  I  IN   1.. ECount  LOOP
-	Put(I, 4);
-	Put( ' ');
-	Put( IdTab(EntryTAB(I)).Name);
-	Put( "in Task ");
-	Put(IdTab(TskDefTab(IdTab(EntryTAB(I)).Adr)).Name);
-	New_Line;
-    END LOOP;
-    New_Line;
-  END IF;
-
-  Put_Line(" Blocks               last LPar PSze Vsze");
-  FOR  I  IN   1.. B  LOOP
-    DECLARE r: BTabEntry RENAMES BlockTab(I) ;
-    BEGIN
-      Put(I, 4); Put( ' '); Put( r.Id);
-      Put( r.last, 10);
-      Put( r.LastPar, 5);
-      Put( r.PSize, 5);
-      Put( r.VSize, 5);
-      New_Line;
-    END;
-  END LOOP;
-
-  New_Line;
-
-  IF  a > 0 THEN
-    Put_Line(" Arrays    Xtyp Etyp Eref  Low High ELSZ Size");
-    FOR  I  IN   1.. a  LOOP
-      DECLARE r: ATabEntry RENAMES  ArraysTab(I);
+    FOR  I  IN   BlockTab(1).last.. T  LOOP
+      DECLARE r: TabEntry RENAMES IdTab(I);
       BEGIN
-      	Put(I, 4);
-	Put( Types'Pos(r.InXTYP), 10);
-	Put( Types'Pos(r.ELTYP), 5);
-	Put( r.ELREF, 5);
-        Put( r.Low, 5);
-        Put( r.High, 5);
-        Put( r.ELSize, 5);
-        Put( r.Size, 5);
+        Put(I, 4); Put( ' '); Put( r.Name);
+        Put( r.Link, 10);
+        Put( aObject'Pos(r.Obj), 5);
+        Put( Types'Pos(r.TYP), 5);
+        Put( r.Ref, 5);
+        Put( Boolean'Pos(r.Normal), 5);
+        Put( r.LEV, 5);
+        Put( r.Adr, 5);
         New_Line;
       END;
     END LOOP;
 
-  END IF;
+    New_Line;
+    Put_Line(" Tasks       Block#");
+    FOR I IN 0..TCount LOOP
+      Put(I, 4);
+      Put( ' ');
+      Put( IdTab(TskDefTab(I)).Name);
+      Put( "  ");
+      Put(
+          IdTab(TskDefTab(I)).Ref);
+      New_Line;
+    END LOOP;
 
-END PrintTables;
+    New_Line;
+
+    IF  ECount > 0 THEN
+      Put(" Entries ");
+      New_Line;
+      FOR  I  IN   1.. ECount  LOOP
+        Put(I, 4);
+        Put( ' ');
+        Put( IdTab(EntryTAB(I)).Name);
+        Put( "in Task ");
+        Put(IdTab(TskDefTab(IdTab(EntryTAB(I)).Adr)).Name);
+        New_Line;
+      END LOOP;
+      New_Line;
+    END IF;
+
+    Put_Line(" Blocks               last LPar PSze Vsze");
+    -- There is a hidden block #0, "the Universe", with Standard
+    FOR I IN 1..B LOOP
+      DECLARE r: BTabEntry RENAMES BlockTab(I) ;
+      BEGIN
+        Put(I, 4); Put( ' '); Put( r.Id);
+        Put( r.last, 10);
+        Put( r.LastPar, 5);
+        Put( r.PSize, 5);
+        Put( r.VSize, 5);
+        New_Line;
+      END;
+    END LOOP;
+
+    New_Line;
+
+    IF A > 0 THEN
+      Put_Line(" Arrays    Xtyp Etyp Eref  Low High ELSZ Size");
+      FOR I IN 1..A LOOP
+        DECLARE r: ATabEntry RENAMES  ArraysTab(I);
+        BEGIN
+          Put(I, 4);
+          Put( Types'Pos(r.InXTYP), 10);
+          Put( Types'Pos(r.ELTYP), 5);
+          Put( r.ELREF, 5);
+          Put( r.Low, 5);
+          Put( r.High, 5);
+          Put( r.ELSize, 5);
+          Put( r.Size, 5);
+          New_Line;
+        END;
+      END LOOP;
+    END IF;
+
+  END PrintTables;
 
 
   ---------------------------------------------------------------------------
@@ -166,6 +182,7 @@ END PrintTables;
 
   BEGIN -- Compile
 
+    Init_Tables;
     cICompiler;
 
     IF ListingWasRequested THEN
@@ -256,7 +273,7 @@ END PrintTables;
       END IF;
     END IF;
 
-    IF  (BlockTab(2).VSize > StMax - (STKINCR * TCount)) THEN
+    IF BlockTab(2).VSize > StMax - (STKINCR * TCount) THEN
       Error(49);
     END IF;
     BlockTab(1).SrcTo := LineCount;		--(* Manuel : terminate source *)

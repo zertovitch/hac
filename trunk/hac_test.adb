@@ -23,7 +23,9 @@ begin
   if Argument_Count = 0 then
     Compile_File("sma_exm/mini.adb");
   else
-    Compile_File(Argument(1));
+    for i in 1..Argument_Count loop
+      Compile_File(Argument(i));
+    end loop;
   end if;
 exception
   when E: others =>

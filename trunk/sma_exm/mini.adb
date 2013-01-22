@@ -48,10 +48,12 @@ begin
   case x is
     when 123 =>
       My_Put("123");
-	when 456 =>
+    when 456 =>
       My_Put("456");
-	when 777 =>
-	  Put("666+111...");
+    when 777 =>
+      Put("666+111...");
+    when others =>
+      null;
   end case;
   Put("Bla bla");
   Put_Line(" and more bla bla!");

@@ -2,13 +2,13 @@
 -- routines for SmallAda. All programs must have "with" and "use" of this
 -- package. DON'T TRY TO COMPILE THIS!
 
-package SMALL_SP is;
+package SMALL_SP is
 
-   type       SEMAPHORE is private;
+   type       SEMAPHORE is new Integer; -- private;
 
-   -- Absolute Value
-   function   ABS       ( I : INTEGER   ) return INTEGER;
-   function   ABS       ( F : FLOAT     ) return FLOAT;
+   -- Absolute Value - SMA used ABS instead of "ABS" (operator)... TBA !!
+   -- function   ABS       ( I : INTEGER   ) return INTEGER;
+   -- function   ABS       ( F : FLOAT     ) return FLOAT;
 
    -- Square
    function   SQR       ( I : INTEGER   ) return INTEGER;
@@ -55,6 +55,7 @@ package SMALL_SP is;
 
    -- Random Integer      from 0 to I
    function   RANDOM    ( I : INTEGER   ) return INTEGER;
+   function   RANDOM    ( I : INTEGER   ) return Float;
 
 
    -- Get
@@ -69,21 +70,26 @@ package SMALL_SP is;
    procedure  GET_LINE  ( F : OUT FLOAT    );
    procedure  GET_LINE  ( B : OUT BOOLEAN  );
 
+   subtype WIDTH is Positive;
+   subtype DECIMALS is Positive;
+
    -- Put
    procedure  PUT       ( C : IN  CHARACTER);
    procedure  PUT       ( I : IN  INTEGER  );
-   procedure  PUT       ( I : IN  INTEGER  ":" W:  WIDTH);
+   procedure  PUT       ( I : IN  INTEGER;  W:  WIDTH);
    procedure  PUT       ( F : IN  FLOAT    );
-   procedure  PUT       ( F : IN  FLOAT    ":" W:  WIDTH  ":" D : DECIMALS);
+   procedure  PUT       ( F : IN  FLOAT;    W:  WIDTH; D : DECIMALS);
    procedure  PUT       ( B : IN  BOOLEAN  );
+   procedure  PUT       ( S : IN  String   );
 
    -- Put and then NEW_LINE
    procedure  PUT_LINE  ( C : IN  CHARACTER);
    procedure  PUT_LINE  ( I : IN  INTEGER  );
-   procedure  PUT_LINE  ( I : IN  INTEGER  ":" W:  WIDTH);
+   procedure  PUT_LINE  ( I : IN  INTEGER; W:  WIDTH);
    procedure  PUT_LINE  ( F : IN  FLOAT    );
-   procedure  PUT_LINE  ( F : IN  FLOAT    ":" W:  WIDTH  ":" D : DECIMALS);
+   procedure  PUT_LINE  ( F : IN  FLOAT;   W:  WIDTH; D : DECIMALS);
    procedure  PUT_LINE  ( B : IN  BOOLEAN  );
+   procedure  PUT_LINE  ( S : IN  String   );
 
    -- Mark End of Line
    procedure  NEW_LINE                      ;
@@ -92,8 +98,8 @@ package SMALL_SP is;
    procedure  WAIT      ( S : SEMAPHORE    );
    procedure  SIGNAL    ( S : SEMAPHORE    );
 
-   private
+private
 
-   type       SEMAPHORE is new INTEGER;
+   -- type       SEMAPHORE is new INTEGER;
 
 end SMALL_SP;

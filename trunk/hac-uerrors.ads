@@ -57,6 +57,7 @@ package HAC.UErrors is
   procedure Fatal(N: Integer); -- internal table overflow
   --
   IDENTIFIERS_table_overflow    : constant:=  1;
+  PROCEDURES_table_overflow     : constant:=  2;
   FLOAT_constants_table_overflow: constant:=  3;
   LEVEL_overflow                : constant:=  5;
   OBJECT_overflow               : constant:=  6;

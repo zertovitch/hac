@@ -23,7 +23,7 @@ procedure dinersmo is
 
     task GEHANI is
       entry GIVE_BIRTH;
-    end GEHANI; 
+    end GEHANI;
 
     task CHOPSTICK1 is
       entry PICKUP;
@@ -44,13 +44,13 @@ procedure dinersmo is
       entry PICKUP;
       entry PUTDOWN;
     end CHOPSTICK4;
-    
-   
-  
-  NO_MEALS : integer := 5;                                        
-       
-  
-     
+
+
+
+  NO_MEALS : integer := 5;
+
+
+
   task body DIJKSTRA is
        LENGTH_OF_MEAL: FLOAT;
     begin
@@ -59,9 +59,9 @@ procedure dinersmo is
           WAIT(SCREEN);
           PUT("Eddy Dijkstra living and breathing");
           NEW_LINE;
-          SIGNAL(SCREEN); 
+          SIGNAL(SCREEN);
         end GIVE_BIRTH;
-      
+
       for x in 1..NO_MEALS loop
 
         CHOPSTICK1.PICKUP;
@@ -70,25 +70,25 @@ procedure dinersmo is
         LENGTH_OF_MEAL := RANDOM(10);
 
         WAIT(SCREEN);
-        PUT("Eddy Dijkstra eating meal"); PUT(x:2); 
+        PUT("Eddy Dijkstra eating meal"); PUT(x, 2);
         PUT(" with chopsticks 1 and 2");
-        PUT(" for"); PUT(LENGTH_OF_MEAL:2); PUT(" seconds");
+        PUT(" for"); PUT(LENGTH_OF_MEAL, 2); PUT(" seconds");
         NEW_LINE;
         SIGNAL(SCREEN);
- 
+
         delay LENGTH_OF_MEAL;
 
         WAIT(SCREEN);
         PUT("Eddy Dijkstra done");
         NEW_LINE;
         SIGNAL(SCREEN);
-        
+
         CHOPSTICK1.PUTDOWN;
         CHOPSTICK2.PUTDOWN;
         delay 5.0;
       end loop;
 
-      WAIT(SCREEN);       
+      WAIT(SCREEN);
       PUT("Eddy Dijkstra burp");
       NEW_LINE;
       SIGNAL(SCREEN);
@@ -102,9 +102,9 @@ procedure dinersmo is
           WAIT(SCREEN);
           PUT(" Gracie Hopper living and breathing");
           NEW_LINE;
-          SIGNAL(SCREEN); 
+          SIGNAL(SCREEN);
         end GIVE_BIRTH;
-      
+
       for x in 1..NO_MEALS loop
         CHOPSTICK2.PICKUP;
         CHOPSTICK3.PICKUP;
@@ -112,29 +112,29 @@ procedure dinersmo is
         LENGTH_OF_MEAL := RANDOM(10);
 
         WAIT(SCREEN);
-        PUT(" Gracie Hopper eating meal"); PUT(x:2); 
+        PUT(" Gracie Hopper eating meal"); PUT(x, 2);
         PUT(" with chopsticks 2 and 3");
-        PUT(" for"); PUT(LENGTH_OF_MEAL:2); PUT(" seconds");
+        PUT(" for"); PUT(LENGTH_OF_MEAL, 2); PUT(" seconds");
         NEW_LINE;
         SIGNAL(SCREEN);
- 
+
         delay LENGTH_OF_MEAL;
 
         WAIT(SCREEN);
         PUT(" Gracie Hopper done");
         NEW_LINE;
         SIGNAL(SCREEN);
-        
+
         CHOPSTICK2.PUTDOWN;
         CHOPSTICK3.PUTDOWN;
         delay 5.0;
       end loop;
-      WAIT(SCREEN);       
+      WAIT(SCREEN);
       PUT(" Gracie Hopper burp");
       NEW_LINE;
       SIGNAL(SCREEN);
     end HOPPER;
-  
+
     task body SAMMET is
         LENGTH_OF_MEAL: FLOAT;
     begin
@@ -142,9 +142,9 @@ procedure dinersmo is
           WAIT(SCREEN);
           PUT("  Jeannie Sammet living and breathing");
           NEW_LINE;
-          SIGNAL(SCREEN); 
+          SIGNAL(SCREEN);
         end GIVE_BIRTH;
-     
+
       for x in 1..NO_MEALS loop
         CHOPSTICK3.PICKUP;
         CHOPSTICK4.PICKUP;
@@ -152,24 +152,24 @@ procedure dinersmo is
         LENGTH_OF_MEAL := RANDOM(10);
 
         WAIT(SCREEN);
-        PUT("  Jeannie Sammet eating meal"); PUT(x:2); 
+        PUT("  Jeannie Sammet eating meal"); PUT(x, 2);
         PUT(" with chopsticks 3 and 4");
-        PUT(" for"); PUT(LENGTH_OF_MEAL:2); PUT(" seconds");
+        PUT(" for"); PUT(LENGTH_OF_MEAL, 2); PUT(" seconds");
         NEW_LINE;
         SIGNAL(SCREEN);
- 
+
         delay LENGTH_OF_MEAL;
 
         WAIT(SCREEN);
         PUT("  Jeannie Sammet done");
         NEW_LINE;
         SIGNAL(SCREEN);
-        
+
         CHOPSTICK3.PUTDOWN;
         CHOPSTICK4.PUTDOWN;
         delay 5.0;
       end loop;
-      WAIT(SCREEN);       
+      WAIT(SCREEN);
       PUT("  Jeannie Sammet burp");
       NEW_LINE;
       SIGNAL(SCREEN);
@@ -182,9 +182,9 @@ procedure dinersmo is
           WAIT(SCREEN);
           PUT("   Narain Gehani living and breathing");
           NEW_LINE;
-          SIGNAL(SCREEN); 
+          SIGNAL(SCREEN);
         end GIVE_BIRTH;
-     
+
       for x in 1..NO_MEALS loop
         CHOPSTICK1.PICKUP;
         CHOPSTICK4.PICKUP;
@@ -192,24 +192,24 @@ procedure dinersmo is
         LENGTH_OF_MEAL := RANDOM(10);
 
         WAIT(SCREEN);
-        PUT("   Narain Gehani eating meal"); PUT(x:2); 
+        PUT("   Narain Gehani eating meal"); PUT(x:2);
         PUT(" with chopsticks 1 and 4");
         PUT(" for"); PUT(LENGTH_OF_MEAL:2); PUT(" seconds");
         NEW_LINE;
         SIGNAL(SCREEN);
- 
+
         delay LENGTH_OF_MEAL;
 
         WAIT(SCREEN);
         PUT("   Narain Gehani done");
         NEW_LINE;
         SIGNAL(SCREEN);
-        
+
         CHOPSTICK1.PUTDOWN;
         CHOPSTICK4.PUTDOWN;
         delay 5.0;
       end loop;
-      WAIT(SCREEN);       
+      WAIT(SCREEN);
       PUT("   Narain Gehani burp");
       NEW_LINE;
       SIGNAL(SCREEN);
@@ -274,7 +274,7 @@ procedure dinersmo is
         accept PUTDOWN;
       end loop;
     end CHOPSTICK4;
- 
+
 begin
   DIJKSTRA.GIVE_BIRTH;
   HOPPER.GIVE_BIRTH;

@@ -176,7 +176,7 @@ BEGIN
   PUT_LINE;   PUT_LINE("CASE Check");
   i1 := -1;
   PUT_LINE("Selector value =", i1);
-  CASE i1 of
+  CASE i1 is
      WHEN    1 | 2    =>    PUT ("Case is 1 or 2 ...");
                             PUT_LINE("that's OK");
      WHEN    3        =>    PUT_LINE("Case = 3, ");

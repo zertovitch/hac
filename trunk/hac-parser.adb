@@ -64,8 +64,8 @@ package body HAC.Parser is
     -------------------------------------------------------EnterBlock-
     PROCEDURE EnterBlock(Tptr: Integer) IS
     BEGIN
-      IF  B = BMax THEN
-        Fatal(2);
+      IF B = BMax THEN
+        Fatal(PROCEDURES_table_overflow);
       ELSE
         B := B + 1;
         BlockTab(B).Id := IdTab(Tptr).Name;

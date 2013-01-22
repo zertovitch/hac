@@ -360,13 +360,13 @@ package HAC.Data is
 
         AdaKeyW     : ARRAY (1..NKW) OF String(1..10); --  Array of Ada keywords in Order
         AdaKeyWSy   : ARRAY (1..NKW) OF KeyWSymbol;  --  Corresponding keyword symbols
-        ArraysTab   : ARRAY (1..AMax) OF ATabEntry;  --  array table
+        ArraysTab   : ARRAY (1..AMax) OF ATabEntry;  --  Array table
         BlockTab    : ARRAY (0..BMax) OF BTabEntry;  --  Block-table [7-Dec-2009: was 1..]
         ObjCode     : ARRAY (0..CDMax) OF Order;     --  Object Code table
         EntryTAB    : ARRAY (0..EntryMax) OF Index;  --  Entry Table
         FileIOTab   : FilDescr;                      --  File I/O table
         FloatPtTab  : ARRAY (1..C2Max) OF float;     --  Float Constant table
-        StringTab   : ARRAY (0..SMax) OF Character;       --  String table
+        StringTab   : ARRAY (0..SMax) OF Character;  --  String table
         IdTab       : ARRAY (0..TMax) OF TabEntry;   --  Identifier table
         TskDefTab   : ARRAY (0..TaskMax) OF Index;   --  Task Table
 
