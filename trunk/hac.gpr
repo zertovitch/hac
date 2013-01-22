@@ -3,7 +3,7 @@ project Hac is
    type Build_Mode_Type is ("Debug", "Fast");
    Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
 
-   for Main use ("HAC.adb");
+   for Main use ("HAC_Test.adb");
    case Build_Mode is
       when "Debug" =>
          for Object_Dir use "obj_dbg";

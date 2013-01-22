@@ -1,7 +1,8 @@
-with SmAda_Data;                        use SmAda_Data;
-with Text_IO;
+with HAC.Data;                          use HAC.Data;
 
-Package body UErrors is
+with Ada.Text_IO;
+
+package body HAC.UErrors is
 
 ----------------------------------------------------------------------------
 
@@ -10,7 +11,7 @@ FUNCTION ErrorString(Id: Integer) return String is
    Case Id is
     WHEN   0  => Return  "UNDEFINED IDENTIFIER";
     WHEN   1  => Return  "MULTIPLE DEFINITION OF AN IDENTIFIER";
-    WHEN   2  => Return  "MISSING AN IDENTIFIER";
+    WHEN   identifier_missing => Return  "MISSING AN IDENTIFIER";
     WHEN   3  => Return  "MISSING A PROCEDURE DECLARATION";
     WHEN   4  => Return  "MISSING CLOSING PARENTHESIS ``)''";
     WHEN   5  => Return  "MISSING A COLON ``:''";
@@ -22,7 +23,7 @@ FUNCTION ErrorString(Id: Integer) return String is
     WHEN  11  => Return  "-- OPENING BRACKET ``[''";
     WHEN  12  => Return  "-- CLOSING BRACKET ``]''";
     WHEN  13  => Return  "EXPECTING ``..''";
-    WHEN  14  => Return  "MISSING A SEMICOLON ``;''";
+    WHEN  semicolon_missing => Return  "MISSING A SEMICOLON ``;''";
     WHEN  15  => Return  "BAD RESULT TYPE FOR A FUNCTION";
     WHEN  16  => Return  "ILLEGAL STATEMENT START SYMBOL";
     WHEN  17  => Return  "EXPECTING A BOOLEAN EXPRESSION ";
@@ -112,7 +113,7 @@ PROCEDURE EndSkip is -- Skip past part of input
 ----------------------------------------------------------------------------
 
 PROCEDURE Fatal(N: Integer) is			-- internal table overflow
-  use Text_IO;
+  use Ada.Text_IO;
   BEGIN
 	IF Errs /= Error_free THEN ErrorMsg; END IF;
 
@@ -124,7 +125,7 @@ PROCEDURE Fatal(N: Integer) is			-- internal table overflow
 		  WHEN 	3=> Put("FLOAT Constants");
 		  WHEN 	4=> Put("Arrays");
 		  WHEN 	5=> Put("LEVELS");
-		  WHEN 	6=> Put("OBJECT ObjCode");
+		  WHEN 	OBJECT_overflow => Put("OBJECT ObjCode");
 		  WHEN 	7=> Put("Strings");
 		  WHEN 	8=> Put("TASKS");
 		  WHEN 	9=> Put("ENTRIES");
@@ -142,7 +143,7 @@ END Fatal;
 ----------------------------------------------------------------------------
 
 PROCEDURE ErrorMsg is
-  use Text_IO;
+  use Ada.Text_IO;
   package IIO is new Integer_IO(integer); use IIO;
   K: Integer;
   BEGIN
@@ -171,4 +172,4 @@ PROCEDURE ErrorMsg is
 
   END ErrorMsg;
 
-END UErrors;
+end HAC.UErrors;

@@ -1,130 +1,130 @@
-with PCode;                             use PCode;
-with Scanner;                           use Scanner;
-with UErrors;                           use UErrors;
+with HAC.PCode;                         use HAC.PCode;
+with HAC.Scanner;                       use HAC.Scanner;
+with HAC.UErrors;                       use HAC.UErrors;
 with Unchecked_deallocation;
 
-package body Parser is
+package body HAC.Parser is
 
   Semicolon_set: constant Symset:= Symset'(Semicolon=> true, others=> false);
 
-------------------------------------------------------------------
-------------------------------------------------------------Block-
+  ------------------------------------------------------------------
+  ------------------------------------------------------------Block-
 
-PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
+  PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
 
-  Level: Integer:= Level_A;
+    Level: Integer:= Level_A;
 
- TYPE ConRec IS RECORD
-   TP: Types;
-   I:  Integer;
-   R:  Float;
---   CASE TP IS
---     WHEN Ints | xChars | Bools => I: Integer;
---     WHEN Floats => R: Float;
---     WHEN others => null;
---   END CASE;
- END RECORD;
+    TYPE ConRec IS RECORD
+      TP: Types;
+      I:  Integer;
+      R:  Float;
+      --   CASE TP IS
+      --     WHEN Ints | xChars | Bools => I: Integer;
+      --     WHEN Floats => R: Float;
+      --     WHEN others => null;
+      --   END CASE;
+    END RECORD;
 
- Dx:       Integer;  -- data allocation Index
- MaxDX:    Integer;
- PRB:      Integer;  -- B-Index of this procedure
- I:        Integer;  -- Index into the identifier table IdTab
- ICode:    Integer;  -- Size of initialization ObjCode generated
- BlockID:  Alfa;    -- Name of the current Block
+    Dx:       Integer;  -- data allocation Index
+    MaxDX:    Integer;
+    PRB:      Integer;  -- B-Index of this procedure
+    I:        Integer;  -- Index into the identifier table IdTab
+    ICode:    Integer;  -- Size of initialization ObjCode generated
+    BlockID:  Alfa;    -- Name of the current Block
 
- ------------------------------------------------------------------
- -------------------------------------------------------EnterArray-
+    ------------------------------------------------------------------
+    -------------------------------------------------------EnterArray-
 
-  PROCEDURE EnterArray(TP: Types; L, H: Integer)IS
-    Lz,Hz: Integer;
+    PROCEDURE EnterArray(TP: Types; L, H: Integer)IS
+      Lz,Hz: Integer;
     BEGIN
-    IF  L > H THEN Error(27); END IF;
-    Lz:= L;
-    Hz:= H;
-    IF  (abs(L) > XMax)  OR  (abs(H) > XMax) THEN
-      Error(27);
-      Lz := 0;
-      Hz := 0;
-    END IF;
-    IF  a = AMax THEN
-      Fatal(4);     -- array table has overflowed
-    ELSE
-      a := a + 1;
-      DECLARE
-        r : ATabEntry RENAMES ArraysTab(a);
-      BEGIN
-        r.InXTYP:= TP;
-        r.Low   := Lz;
-        r.High  := Hz;
-      END;
-    END IF;
-  END EnterArray;
+      IF  L > H THEN Error(27); END IF;
+      Lz:= L;
+      Hz:= H;
+      IF  (abs(L) > XMax)  OR  (abs(H) > XMax) THEN
+        Error(27);
+        Lz := 0;
+        Hz := 0;
+      END IF;
+      IF  a = AMax THEN
+        Fatal(4);     -- array table has overflowed
+      ELSE
+        a := a + 1;
+        DECLARE
+          r : ATabEntry RENAMES ArraysTab(a);
+        BEGIN
+          r.InXTYP:= TP;
+          r.Low   := Lz;
+          r.High  := Hz;
+        END;
+      END IF;
+    END EnterArray;
 
- ------------------------------------------------------------------
- -------------------------------------------------------EnterBlock-
-  PROCEDURE EnterBlock(Tptr: Integer) IS
-  BEGIN
-    IF  B = BMax THEN
-      Fatal(2);
-    ELSE
-      B := B + 1;
-      BlockTab(B).Id := IdTab(Tptr).Name;
-      BlockTab(B).last := 0;
-      BlockTab(B).LastPar := 0;
-      BlockTab(B).SrcFrom := LineCount;
-    END IF;
-  END EnterBlock;
+    ------------------------------------------------------------------
+    -------------------------------------------------------EnterBlock-
+    PROCEDURE EnterBlock(Tptr: Integer) IS
+    BEGIN
+      IF  B = BMax THEN
+        Fatal(2);
+      ELSE
+        B := B + 1;
+        BlockTab(B).Id := IdTab(Tptr).Name;
+        BlockTab(B).last := 0;
+        BlockTab(B).LastPar := 0;
+        BlockTab(B).SrcFrom := LineCount;
+      END IF;
+    END EnterBlock;
 
-  ------------------------------------------------------------------
-  -------------------------------------------------------EnterFloat-
-  PROCEDURE EnterFloat(X: Float) IS
-  BEGIN
-    IF  C2 = C2Max - 1 THEN
-      Fatal(3);
-    ELSE
-      FloatPtTab(C2 + 1) := X;
-      C1 := 1;
-      WHILE  FloatPtTab(C1) /= X  LOOP C1 := C1 + 1; END LOOP;
-      IF  C1 > C2 THEN C2 := C1; END IF;
-    END IF;
-  END EnterFloat;
+    ------------------------------------------------------------------
+    -------------------------------------------------------EnterFloat-
+    PROCEDURE EnterFloat(X: Float) IS
+    BEGIN
+      IF  C2 = C2Max - 1 THEN
+        Fatal(3);
+      ELSE
+        FloatPtTab(C2 + 1) := X;
+        C1 := 1;
+        WHILE  FloatPtTab(C1) /= X  LOOP C1 := C1 + 1; END LOOP;
+        IF  C1 > C2 THEN C2 := C1; END IF;
+      END IF;
+    END EnterFloat;
 
-  ------------------------------------------------------------------
-  -------------------------------------------------------------Skip-
-  PROCEDURE Skip(FSys: Symset; N: Integer) IS
+    ------------------------------------------------------------------
+    -------------------------------------------------------------Skip-
+    PROCEDURE Skip(FSys: Symset; N: Integer) IS
 
-   FUNCTION  StopMe  RETURN  Boolean IS BEGIN RETURN false;END;
+      FUNCTION  StopMe  RETURN  Boolean IS BEGIN RETURN False; END;
 
-   BEGIN
-    Error(N);
-    SkipFlag := True;
-    WHILE  NOT FSys(Sy)  LOOP
-      InSymbol;
+    BEGIN
+      Error(N);
+      SkipFlag := True;
+      WHILE  NOT FSys(Sy)  LOOP
+        InSymbol;
+        IF  StopMe THEN raise Failure_1_0; END IF;
+      END LOOP;
+
+      InSymbol;    -- Manuel:  If this InSymbol call is
+      -- omitted, the system will get in an
+      -- infinite loop on the statement:
+      --  put_lin("Typo is on purpose");
+
       IF  StopMe THEN raise Failure_1_0; END IF;
-    END LOOP;
+      IF  SkipFlag THEN  EndSkip; END IF;
+    END Skip;
 
-    InSymbol;    -- Manuel:  If this InSymbol call is
-          -- omitted, the system will get in an
-          -- infinite loop on the statement:
-          --  put_lin("Typo is on purpose");
-
-    IF  StopMe THEN raise Failure_1_0; END IF;
-    IF  SkipFlag THEN  EndSkip; END IF;
-  END Skip;
-
-  PROCEDURE Skip(S: KeyWSymbol; N: Integer) IS
+    PROCEDURE Skip(S: KeyWSymbol; N: Integer) IS
     to_skip: Symset:= SymSet'(others=> false);
     BEGIN
       to_skip(S):= true;
       Skip( to_skip , N);
     END;
 
-  ------------------------------------------------------------------
-  -------------------------------------------------------------Test-
-  PROCEDURE Test(S1, S2: Symset; N: Integer) IS
-       BEGIN
-    IF  NOT S1(Sy) THEN Skip(S1 + S2, N); END IF;
-   END;
+    ------------------------------------------------------------------
+    -------------------------------------------------------------Test-
+    PROCEDURE Test(S1, S2: Symset; N: Integer) IS
+    BEGIN
+      IF  NOT S1(Sy) THEN Skip(S1 + S2, N); END IF;
+    END;
 
   ------------------------------------------------------------------
   ----------------------------------------------------TestSemicolon-
@@ -135,8 +135,10 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
       IF  Sy = Semicolon THEN
         InSymbol;
       ELSE
-        Error(14);
-        IF comma_or_colon(SY) THEN InSymbol; END IF;
+        Error(semicolon_missing);
+        IF comma_or_colon(SY) THEN
+          InSymbol;
+        END IF;
       END IF;
       Test(Symset'((IDent | TypeSy | TaskSy => true, others=> false)) +
                     BlockBegSyS, FSys, 6);
@@ -222,7 +224,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
   ----------------------------------------------------EnterVariable-
   PROCEDURE EnterVariable IS
    BEGIN  IF Sy = IDent THEN Enter(Id, Variable); InSymbol;
-               ELSE Error(2);
+               ELSE Error(identifier_missing);
     END IF;
    END EnterVariable;
 
@@ -437,7 +439,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
               IF  Sy = Semicolon THEN
                 InSymbol;
               ELSE
-                Error(14);
+                Error(semicolon_missing);
                 IF  Sy = Comma THEN InSymbol; END IF;
               END IF;
 
@@ -515,7 +517,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
           ValParam := False;
         END IF;
         IF  Sy /= IDent THEN
-          Error(2);
+          Error(identifier_missing);
         ELSE
           X := LOC(Id);
           InSymbol;
@@ -556,7 +558,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
         IF  Sy = Semicolon THEN
           InSymbol;
         ELSE
-          Error(14);
+          Error(semicolon_missing);
           IF  Sy = Comma THEN InSymbol; END IF;
         END IF;
         Test( Symset'(IDent=> true, others=> false), FSys + RParent, 6);
@@ -726,7 +728,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
     IF  Sy = IDent THEN
       NewBlockID := Id;
     ELSE
-      Error(2);
+      Error(identifier_missing);
       Id := "          ";
     END IF;
     IF  IsFun THEN Enter(Id, Funktion); ELSE Enter(Id, Prozedure); END IF;
@@ -766,7 +768,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
       IF Sy = IDent THEN
         TaskID := Id;
       ELSE
-        Error(2);
+        Error(identifier_missing);
         Id := "          ";
       END IF;
       TCount := TCount + 1;
@@ -795,7 +797,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
           IF Sy = IDent THEN
             EntryID := Id;
           ELSE
-            Error(2);
+            Error(identifier_missing);
             Id := "          ";
           END IF;
           ECount := ECount + 1;
@@ -806,7 +808,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
           InSymbol;
           Block(FSys, False, Level + 1, T);
           IdTab(T0).Adr := TCount;
-          IF  Sy = Semicolon THEN InSymbol; ELSE Error(14); END IF;
+          IF  Sy = Semicolon THEN InSymbol; ELSE Error(semicolon_missing); END IF;
         END LOOP; -- Sy = EntrySy
 
         Level := Level - 1;
@@ -836,7 +838,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
       IF  Sy = Period THEN
         InSymbol;                -- field Selector
         IF  Sy /= IDent THEN
-          Error(2);
+          Error(identifier_missing);
         ELSE
           IF  V.TYP /= Records THEN
             Error(31);
@@ -891,7 +893,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
           IF  Sy = RBrack THEN InSymbol; END IF;
         END IF;
       END IF;
-     EXIT WHEN  NOT (Sy=LParent or else Sy=Period);
+      EXIT WHEN  NOT (Sy=LParent or else Sy=Period);
     END LOOP;
 
     IF  FSys = Semicolon_set THEN
@@ -948,7 +950,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
           END IF;END IF;END IF;END;
           ELSE BEGIN              -- Variable (Name) parameter
             IF  Sy /= IDent THEN
-              Error(2)
+              Error(identifier_missing)
             ;ELSE BEGIN
               K := LOC(Id);
               InSymbol;
@@ -1133,7 +1135,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
               ELSE BEGIN          -- N in [17,18]
                 -- EOF, Eoln
                 IF  Sy /= IDent THEN
-                  Error(2)
+                  Error(identifier_missing)
                 ;ELSIF  Id = "INPUT     " THEN
                   Emit2(8, 0, N)
                 ;ELSE
@@ -1900,7 +1902,10 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
     END ForStatement;
 
     PROCEDURE SelectStatement IS
-      PROCEDURE SelectError(N: Integer) IS BEGIN Skip(Semicolon, N); END;                    -- SelectError
+      PROCEDURE SelectError(N: Integer) IS
+      BEGIN
+        Skip(Semicolon, N);
+      END; -- SelectError
 
       -- Either a Timed or Conditional Entry Call.
 
@@ -2182,7 +2187,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
 
             WHEN TerminateSy=>
               InSymbol;
-              IF  Sy /= Semicolon THEN SelectError(14); END IF;
+              IF  Sy /= Semicolon THEN SelectError(semicolon_missing); END IF;
               do_terminate := True;        -- Oguz
               InSymbol;
             -- end TerminateSy
@@ -2246,7 +2251,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
                 IF  Sy = RParent THEN
                   InSymbol;
                 ELSE
-                  Error(2);
+                  Error(identifier_missing);
                 END IF;
               END IF;
             ELSE
@@ -2257,7 +2262,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
 
               InSymbol;
               IF  Sy /= IDent THEN
-                Error(2)
+                Error(identifier_missing)
               ;ELSE BEGIN
                 I := LOC(Id);
                 InSymbol;
@@ -2312,9 +2317,9 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
               IF  Sy /= Comma THEN
                 IF  Sy = RParent THEN
                   GOTO Label_21; -- skip the loop
-
                 ELSE
-                  Error(2);END IF;
+                  Error(identifier_missing);
+                END IF;
               END IF;
             ELSE
               Emit1(64, 0);
@@ -2419,7 +2424,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
             IF  I /= - 1 THEN
               Emit2(65, I, N)
             ;ELSE
-              Error(2);END IF;
+              Error(identifier_missing);END IF;
             InSymbol;
             IF  (Sy = RParent) THEN
               InSymbol
@@ -2564,7 +2569,7 @@ PROCEDURE Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer) IS
         IF  Sy = Semicolon THEN
           InSymbol;
         ELSE
-          Error(14);
+          Error(semicolon_missing);
         END IF;
       END IF;
     END IF;  -- Sy in StatBegSys
@@ -2678,10 +2683,10 @@ BEGIN  -- Block
     InSymbol;
   END IF;
 
-  IF  Sy /= Semicolon THEN Error(14);  return; END IF;
+  IF  Sy /= Semicolon THEN Error(semicolon_missing);  return; END IF;
 
   IF  BlockID /= ProgramID THEN InSymbol; Test(FSys, Empty_Symset, 6); END IF;
 
 END Block;
 
-END Parser;
+end HAC.Parser;
