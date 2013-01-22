@@ -1,25 +1,27 @@
-with SmAda_Data;                        use SmAda_Data;
-with UErrors;                           use UErrors;
-with Text_IO;                           use Text_IO;
+with HAC.Data;                          use HAC.Data;
+with HAC.UErrors;                       use HAC.UErrors;
 
-PACKAGE BODY Scanner IS
-  package IIO is new integer_IO(integer); use IIO;
+with Ada.Text_IO;                       use Ada.Text_IO;
 
-PROCEDURE InSymbol IS
- I, J, K, e: Integer;
- theLine : String(1..1000);
+PACKAGE BODY HAC.Scanner IS
 
-  function UpCase(c: character) return character is
+package IIO is new Integer_IO(integer); use IIO;
+
+  PROCEDURE InSymbol IS
+    I, J, K, e: Integer;
+    theLine : String(1..1000);
+
+    function UpCase(c: character) return character is
     begin
-     if ('a' <= c) and then (c <= 'z') then
-       return character'val(character'pos(c) - character'pos('a')
-			    + character'pos('A'));
-     else
-       return c;
-     end if;
-   end;
+      if ('a' <= c) and then (c <= 'z') then
+        return character'val(character'pos(c) - character'pos('a')
+          + character'pos('A'));
+      else
+        return c;
+      end if;
+    end UpCase;
 
- PROCEDURE NextCh IS -- Read Next Char; process line end
+    PROCEDURE NextCh IS -- Read Next Char; process line end
    BEGIN
      IF CC = LL THEN
 	IF cEndOfSource THEN
@@ -415,5 +417,5 @@ BEGIN	--{ InSymbol }
   END InSymbol;
 
 
-END Scanner;
+end HAC.Scanner;
 

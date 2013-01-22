@@ -1,14 +1,15 @@
-with SmAda_Data;                        use SmAda_Data;
-with UErrors;                           use UErrors;
-with Parser;                            use Parser;
-with PCode;                             use PCode;
-with Scanner;                           use Scanner;
-with Text_IO;
+with HAC.Data;                        use HAC.Data;
+with HAC.UErrors;                       use HAC.UErrors;
+with HAC.Parser;                        use HAC.Parser;
+with HAC.PCode;                         use HAC.PCode;
+with HAC.Scanner;                       use HAC.Scanner;
 
-PACKAGE BODY Compiler IS
+with Ada.Text_IO;
 
- use Text_IO;
- package IIO is new integer_IO(integer); use IIO;
+package body HAC.Compiler is
+
+ use Ada.Text_IO;
+ package IIO is new Integer_IO(integer); use IIO;
 
 PROCEDURE PrintTables IS
  BEGIN
@@ -296,4 +297,4 @@ BEGIN -- Compile
 	--{Close(ErrFile);}
   END Compile;
 
-END Compiler;
+END HAC.Compiler;

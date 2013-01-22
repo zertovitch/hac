@@ -1,6 +1,6 @@
-with UErrors;
+with HAC.UErrors;
 
-Package body SmAda_Data is
+package body HAC.Data is
 
   function "+"(a,b: Set) return Set is
     c: Set(a'range);
@@ -176,7 +176,7 @@ PROCEDURE cICompiler is
     if qDebug then
       Put_Line(
         " errCode=" & Integer'Image(errCode) &
-        " (" & UErrors.ErrorString(errCode) & ") " &
+        " (" & HAC.UErrors.ErrorString(errCode) & ") " &
         " srcNumber=" & Integer'Image(srcNumber) &
         " charStart=" & Integer'Image(charStart) &
         " charEnd=" & Integer'Image(charEnd) &
@@ -185,6 +185,6 @@ PROCEDURE cICompiler is
     end if;
   END;
 
-BEGIN
+begin
   KeyWInit;
-END SmAda_Data;
+end HAC.Data;

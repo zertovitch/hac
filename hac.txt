@@ -1,7 +1,7 @@
-HAC - the Hacker's Ada Compiler
-===============================
+HAC - HAC Ada Compiler
+======================
 
-Alternative name: Hello-world Ada Compiler
+Alternative names: Hacker's Ada Compiler, Hello-world Ada Compiler
 
 Objectives:
 ===========
@@ -11,12 +11,28 @@ Objectives:
 What HAC will never be:
 =======================
  - a real, serious Ada compiler - there are enough serious ones!
- - a complete compiler - only a small subset will be covered
+ - a complete compiler - only a subset is covered
+
+Warning & legal
+===============
+There is NO WARRANTY in this software. Read copyright notice in hac.ads
+
 
 History:
 ========
 
 - 2009: a bit further...
-- 1999: translated Mac Pascal sources to Ada
+- 1999: automatic translation of Mac Pascal sources to Ada
 - 1989: SmallAda is derived from CoPascal; works only inside
           very system-dependent environments (a Mac GUI, a DOS GUI)
+
+  Authors of SmallAda (in Pascal):
+    1990 Manuel A. Perez               Macintosh version
+    1990 Arthur V. Lopes               integrated environment for IBM-PC
+    1989 Arthur V. Lopes               window-oriented monitoring for IBM-PC
+    1988 Stuart Cramer and Jay Kurtz   refinement of tasking model
+    1987 Frederick C. Hathorn          conversion of CoPascal
+
+  Author of CoPascal (derived from Pascal-S by Niklaus Wirth)
+    1986 Charles Schoening
+  

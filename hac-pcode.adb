@@ -1,9 +1,9 @@
-with SMAda_Data;                   use SMAda_Data;
-with UErrors;                      use UErrors;
+with HAC.Data;                   use HAC.Data;
+with HAC.UErrors;                  use HAC.UErrors;
 -- with Sequential_IO;
 -- with Text_IO;
 
-PACKAGE BODY PCode IS
+package body HAC.PCode is
 
 TYPE
     ObjData IS ( TabT,   ATabt,   BTabt,
@@ -41,7 +41,8 @@ TYPE
 --    use OAIO;
 
 -- ** The next three functions are almost identical.
--- * Emit    store an object code for an instruction with no
+--
+-- * Emit   store an object code for an instruction with no
 -- *      arguments,
 -- * Emit1  store an object code for an instruction with one
 -- *      argument (Y), and
@@ -57,23 +58,25 @@ TYPE
 
 ----------------------------------------------------------------Emit----
 
-PROCEDURE Emit(FCT: Integer) IS
+  PROCEDURE Emit(FCT: Integer) IS
   BEGIN
     Emit2(FCT, 0, 0);    -- X, Y are not used
   END;
 
 ---------------------------------------------------------------Emit1----
 
-PROCEDURE Emit1(FCT, b: Integer) IS
+  PROCEDURE Emit1(FCT, b: Integer) IS
   BEGIN
     Emit2(FCT, 0, B);    -- X is not used
   END;
 
 ---------------------------------------------------------------Emit2----
 
-PROCEDURE Emit2(FCT, a, b: Integer) IS
+  PROCEDURE Emit2(FCT, a, b: Integer) IS
   BEGIN
-    IF  LC = CMax THEN Fatal(6); END IF;
+    IF LC = CMax THEN
+      Fatal(OBJECT_overflow);
+    END IF;
     ObjCode(LC).F := FCT;
     ObjCode(LC).X := a;
     ObjCode(LC).Y := b;
@@ -82,7 +85,7 @@ PROCEDURE Emit2(FCT, a, b: Integer) IS
 
 -------------------------------------------------------------SaveOBJ----
 
-PROCEDURE SaveOBJ(FileName: String) IS
+  PROCEDURE SaveOBJ(FileName: String) IS
 --   ObjFile:  OAIO.File_Type;
 --   Buffer: SMAObject;
   BEGIN
@@ -144,10 +147,10 @@ PROCEDURE SaveOBJ(FileName: String) IS
 
 ----------------------------------------------------------RestoreOBJ----}
 
-PROCEDURE RestoreOBJ(FileName: String) IS
+  PROCEDURE RestoreOBJ(FileName: String) IS
 --   ObjFile:  OAIO.File_Type;
 --   Buffer: SMAObject;
- BEGIN
+  BEGIN
 --   BEGIN
 --     Open(ObjFile, in_file, FileName & ".Obj");
 --   EXCEPTION
@@ -210,7 +213,6 @@ PROCEDURE RestoreOBJ(FileName: String) IS
 
    null; -- will be streamed...
 
- END;
+  END;
 
-END PCode;
-
+end HAC.PCode;
