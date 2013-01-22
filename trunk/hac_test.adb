@@ -21,7 +21,7 @@ procedure HAC_Test is
 
 begin
   if Argument_Count = 0 then
-    Compile_File("mini.sma");
+    Compile_File("sma_exm/mini.adb");
   else
     Compile_File(Argument(1));
   end if;

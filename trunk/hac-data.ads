@@ -453,7 +453,7 @@ package HAC.Data is
      others=> False );
 --  Start of Factor begin symbol
 
-  FacBegSys: constant Symset:=
+  Factor_Begin_Symbol: constant Symset:=
     (IntCon| FloatCon| CharCon| IDent| LParent| NOTSy => True,
      others=> False );
 
