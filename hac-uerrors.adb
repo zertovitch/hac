@@ -9,12 +9,12 @@ package body HAC.UErrors is
 FUNCTION ErrorString(Id: Integer) return String is
   BEGIN
    Case Id is
-    WHEN   0  => Return  "UNDEFINED IDENTIFIER";
-    WHEN   1  => Return  "MULTIPLE DEFINITION OF AN IDENTIFIER";
-    WHEN   identifier_missing => Return  "MISSING AN IDENTIFIER";
+    WHEN   undefined_identifier        => Return  "UNDEFINED IDENTIFIER";
+    WHEN   duplicate_identifier        => Return  "MULTIPLE DEFINITION OF AN IDENTIFIER";
+    WHEN   identifier_missing          => Return  "MISSING AN IDENTIFIER";
     WHEN   3  => Return  "MISSING A PROCEDURE DECLARATION";
-    WHEN   4  => Return  "MISSING CLOSING PARENTHESIS ``)''";
-    WHEN   5  => Return  "MISSING A COLON ``:''";
+    WHEN   closing_parenthesis_missing => Return  "MISSING CLOSING PARENTHESIS ``)''";
+    WHEN   colon_missing               => Return  "MISSING A COLON ``:''";
     WHEN   6  => Return  "INCORRECTLY USED SYMBOL";
     WHEN   7  => Return  "MISSING IDENTIFIER";
     WHEN   8  => Return  "MISSING ``OF''";
@@ -66,7 +66,7 @@ FUNCTION ErrorString(Id: Integer) return String is
     WHEN  54  => Return  "MISSING ``LOOP''";
     WHEN  55  => Return  "MISSING RANGE ``..''";
     WHEN  56  => Return  "MISSING ``BEGIN''";
-    WHEN  57  => Return  "MISSING ``END''";
+    WHEN  END_missing  => Return  "MISSING ``END''";
     WHEN  58  => Return  "EXPECTING AN ID; CONST; ``NOT'' OR ``(''";
     WHEN  59  => Return  "MISSING ``RETURN''";
     WHEN  60  => Return  "CONTROL CHARACTER PRESENT IN SOURCE ";
@@ -91,7 +91,7 @@ FUNCTION ErrorString(Id: Integer) return String is
     WHEN  79  => Return  "EXPECTING ``DELAY''";
     WHEN  80  => Return  "MISSING SELECT";
     WHEN  81  => Return  "PROGRAM INCOMPLETE";
-    WHEN others => Return "Unknown error Id=" & integer'image(Id);
+    WHEN others => Return "Unknown error Id=" & Integer'Image(Id);
    end case;
   END ErrorString;
 
@@ -124,7 +124,7 @@ PROCEDURE Fatal(N: Integer) is			-- internal table overflow
 		  WHEN 	2=> Put("PROCEDURES");
 		  WHEN 	3=> Put("FLOAT Constants");
 		  WHEN 	4=> Put("Arrays");
-		  WHEN 	5=> Put("LEVELS");
+		  WHEN 	LEVEL_overflow  => Put("LEVELS");
 		  WHEN 	OBJECT_overflow => Put("OBJECT ObjCode");
 		  WHEN 	7=> Put("Strings");
 		  WHEN 	8=> Put("TASKS");
@@ -132,10 +132,12 @@ PROCEDURE Fatal(N: Integer) is			-- internal table overflow
 		  WHEN 	10=> Put("ObjCode PATCHING");
 		  WHEN others => Put("N unknown: " & integer'image(N));
 		END CASE;
-		Put_Line(" is too SMALL"); New_Line;
-		Put_Line(" Please take this output To the maintainer of ");
-		Put_Line(" Small-Ada for your installation "); New_Line;
-		Put_Line(" Fatal termination of Small-Ada");
+		Put_Line(" is too SMALL");
+                New_Line;
+		Put_Line(" Please take this output to the maintainer of ");
+		Put_Line(" HAC for your installation ");
+                New_Line;
+		Put_Line(" Fatal termination of HAC");
 	END IF;
 	raise Failure_1_0;
 END Fatal;
