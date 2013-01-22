@@ -167,7 +167,7 @@ package body HAC.Parser is
        -- follow the chain of identifiers for
       -- current Level.
       IF  J /= 0 THEN    -- duplicate identifier
-        Error(1);
+        Error(duplicate_identifier);
       ELSE      -- Enter identifier if there is room in table IdTab
         T := T + 1;
         IdTab(T):=
@@ -194,7 +194,7 @@ package body HAC.Parser is
       EXIT WHEN L < 0 OR J /= 0;
     END LOOP;
     IF J = 0 THEN
-      Error(0);
+      Error(undefined_identifier);
     END IF;
     RETURN J;
   END LOC;
@@ -220,13 +220,17 @@ package body HAC.Parser is
 
     END GetFP;
 
-  ------------------------------------------------------------------
-  ----------------------------------------------------EnterVariable-
-  PROCEDURE EnterVariable IS
-   BEGIN  IF Sy = IDent THEN Enter(Id, Variable); InSymbol;
-               ELSE Error(identifier_missing);
-    END IF;
-   END EnterVariable;
+    ------------------------------------------------------------------
+    ----------------------------------------------------EnterVariable-
+    PROCEDURE EnterVariable IS
+    BEGIN
+      IF Sy = IDent THEN
+        Enter(Id, Variable);
+        InSymbol;
+      ELSE
+        Error(identifier_missing);
+      END IF;
+    END EnterVariable;
 
   ------------------------------------------------------------------
   ---------------------------------------------------------Constant-
@@ -330,10 +334,12 @@ package body HAC.Parser is
         IF  Sy = RParent THEN
           InSymbol;
         ELSE
-          Error(4);
-          IF  Sy = RBrack THEN InSymbol; END IF;
+          Error(closing_parenthesis_missing);
+          IF  Sy = RBrack THEN
+            InSymbol;
+          END IF;
         END IF;
-      ELSIF  Sy = Comma THEN
+      ELSIF Sy = Comma THEN
         InSymbol;
         ELTP := Arrays;
         ArrayTyp(ELRF, ELSZ, StrAr);
@@ -341,10 +347,16 @@ package body HAC.Parser is
         IF  Sy = RParent THEN
           InSymbol;
         ELSE
-          Error(4);
-          IF  Sy = RBrack THEN InSymbol; END IF;
+          Error(closing_parenthesis_missing);
+          IF  Sy = RBrack THEN
+            InSymbol;
+          END IF;
         END IF;
-        IF  Sy = OFSy THEN InSymbol; ELSE Error(8); END IF;
+        IF  Sy = OFSy THEN
+          InSymbol;
+        ELSE
+          Error(8);
+        END IF;
         TYP(FSys, ELTP, ELRF, ELSZ);
       END IF;
       DECLARE
@@ -383,56 +395,57 @@ package body HAC.Parser is
         END IF;
         InSymbol;
 
-       WHEN ArraySy | StringSy=> -- ArraySy or StringSy
-          StrArray := (Sy = StringSy);
+       WHEN ArraySy | StringSy => -- ArraySy or StringSy
+          StrArray := Sy = StringSy;
           InSymbol;
           IF  Sy = LParent THEN
-            InSymbol
-          ;ELSE
+            InSymbol;
+          ELSE
             Error(9);
-            IF  Sy = LBrack THEN InSymbol; END IF;
+            IF  Sy = LBrack THEN
+              InSymbol;
+            END IF;
           END IF;
           TP := Arrays;
           ArrayTyp(RF, Sz, StrArray);
 
-      WHEN RecordSy=>
+      WHEN RecordSy =>
 
         InSymbol;
         EnterBlock(T);
         TP := Records;
         RF := B;
-        IF  Level = LMax THEN Fatal(5); END IF;
+        IF  Level = LMax THEN
+          Fatal(LEVEL_overflow);
+        END IF;
         Level := Level + 1;
         Display(Level) := B;
         Offset := 0;
 
-        WHILE  NOT FSys_gnagna(Sy) LOOP
+        WHILE NOT FSys_gnagna(Sy) LOOP
 
           IF Sy = IDent THEN  -- field section
             T0 := T;
             EnterVariable;
-            WHILE  Sy = Comma  LOOP
+            WHILE Sy = Comma LOOP
               InSymbol;
               EnterVariable;
             END LOOP;
 
-            IF  Sy = Colon THEN
+            IF Sy = Colon THEN
               InSymbol;
             ELSE
-              Error(5);
+              Error(colon_missing);
             END IF;
               T1 := T;
               TYP(FSys + Symset'(Semicolon | EndSy | Comma | IDent=>true,
                                  others=> false), ELTP, ELRF, ELSZ);
               WHILE  T0 < T1  LOOP
                 T0 := T0 + 1;
-                DECLARE r: TabEntry RENAMES IdTab(T0);
-                BEGIN
-                  r.TYP := ELTP;
-                  r.Ref := ELRF;
-                  r.Adr := Offset;
-                  Offset := Offset + ELSZ;
-                END;
+                IdTab(T0).TYP := ELTP;
+                IdTab(T0).Ref := ELRF;
+                IdTab(T0).Adr := Offset;
+                Offset := Offset + ELSZ;
               END LOOP;
           END IF;
             IF  Sy /= EndSy THEN
@@ -470,9 +483,10 @@ package body HAC.Parser is
               IdTab(T).Ref := RF;
               IdTab(T).Adr := ECount;
             ELSE
-              Error(6);END IF;
+              Error(6);
+            END IF;
             InSymbol;
-           EXIT WHEN  Sy /= Comma;
+            EXIT WHEN Sy /= Comma;
           END LOOP;
 
           Sz := ECount;
@@ -529,8 +543,11 @@ package body HAC.Parser is
               ELSE
                 TP := r.TYP;
                 RF := r.Ref;
-                IF  ValParam THEN Sz:= r.Adr;
-                                                     ELSE Sz:= 1; END IF;
+                IF  ValParam THEN
+                  Sz:= r.Adr;
+                ELSE
+                  Sz:= 1;
+                END IF;
               END IF;
             END;
           END IF; -- X /= 0
@@ -552,24 +569,26 @@ package body HAC.Parser is
         END LOOP; -- while T0 < T
 
       ELSE  -- if Sy /= Colon
-        Error(5);
+        Error(colon_missing);
       END IF;
-      IF  Sy /= RParent THEN
-        IF  Sy = Semicolon THEN
+      IF Sy /= RParent THEN
+        IF Sy = Semicolon THEN
           InSymbol;
         ELSE
           Error(semicolon_missing);
-          IF  Sy = Comma THEN InSymbol; END IF;
+          IF Sy = Comma THEN
+            InSymbol;
+          END IF;
         END IF;
         Test( Symset'(IDent=> true, others=> false), FSys + RParent, 6);
       END IF;
     END LOOP;  -- while Sy = IDent
-    IF  Sy = RParent THEN
+    IF Sy = RParent THEN
       InSymbol;
       Test( Symset'(IsSy | ReturnSy | Semicolon=> true, others=> false),
             FSys, 6);
     ELSE
-      Error(4);
+      Error(closing_parenthesis_missing);
     END IF;
   END ParameterList;
 
@@ -585,20 +604,21 @@ package body HAC.Parser is
     Enter(Id, TypeMark);
     T1 := T;
     InSymbol;
-    IF  Sy = IsSy THEN InSymbol; ELSE Error(20); END IF;
+    IF Sy = IsSy THEN
+      InSymbol;
+    ELSE
+      Error(20);
+    END IF;
 
     TP := NOTYP;
     RF := 0;
     Sz := 0;
     TYP( Symset'(Semicolon | Comma | IDent=> true,
                  others=> false) + FSys, TP, RF, Sz);
-
-    DECLARE r: TabEntry RENAMES IdTab(T1);
-    BEGIN
-      r.TYP := TP;
-      r.Ref := RF;
-      r.Adr := Sz;
-    END;
+    IdTab(T1).TYP := TP;
+    IdTab(T1).Ref := RF;
+    IdTab(T1).Adr := Sz;
+    --
     TestSemicolon;
   END TypeDeclaration;
 
@@ -628,7 +648,7 @@ package body HAC.Parser is
       IF Sy = Colon THEN -- ':'
         InSymbol;
       ELSE
-        Error(5);
+        Error(colon_missing);
       END IF;
       T1 := T;
 
@@ -688,7 +708,7 @@ package body HAC.Parser is
           END;
         END LOOP; -- While T0 < T1
       END IF;
-      IF NOT (ConstDec) AND  (Sy = BecomeS) THEN
+      IF NOT ConstDec AND Sy = BecomeS THEN
         -- create Variable initialization ObjCode
         LC0 := LC;
         Assignment(T1);
@@ -705,7 +725,7 @@ package body HAC.Parser is
         LC := LC0;
         -- copy ObjCode to end of ObjCode table
         ICode := ICode + (LC1 - LC0);      -- Size of ObjCode
-        WHILE  (LC0 < LC1)  LOOP
+        WHILE LC0 < LC1 LOOP
           ObjCode(CMax) := ObjCode(LC0);
           CMax := CMax - 1;
           LC0 := LC0 + 1;
@@ -772,7 +792,9 @@ package body HAC.Parser is
         Id := "          ";
       END IF;
       TCount := TCount + 1;
-      IF TCount > TaskMax THEN Fatal(8); END IF;
+      IF TCount > TaskMax THEN
+        Fatal(8);
+      END IF;
 
       Enter(TaskID, aTask);
       TskDefTab(TCount) := T;           -- point To identifier Table location
@@ -788,7 +810,7 @@ package body HAC.Parser is
           Error(20);
         END IF;
         IF  Level = LMax THEN
-          Fatal(5);
+          Fatal(LEVEL_overflow);
         END IF;
         Level := Level + 1;
         Display(Level) := B;
@@ -801,14 +823,20 @@ package body HAC.Parser is
             Id := "          ";
           END IF;
           ECount := ECount + 1;
-          IF ECount > EntryMax THEN Fatal(9); END IF;
+          IF ECount > EntryMax THEN
+            Fatal(9);
+          END IF;
           Enter(Id, aEntry);
           EntryTAB(ECount) := T;        -- point to identifier table location
           T0 := T;              -- of TaskID
           InSymbol;
           Block(FSys, False, Level + 1, T);
           IdTab(T0).Adr := TCount;
-          IF  Sy = Semicolon THEN InSymbol; ELSE Error(semicolon_missing); END IF;
+          IF  Sy = Semicolon THEN
+            InSymbol;
+          ELSE
+            Error(semicolon_missing);
+          END IF;
         END LOOP; -- Sy = EntrySy
 
         Level := Level - 1;
@@ -842,9 +870,7 @@ package body HAC.Parser is
         ELSE
           IF  V.TYP /= Records THEN
             Error(31);
-
           ELSE  -- search field identifier
-
             J := BlockTab(V.Ref).last;
             IdTab(0).Name := Id;
             WHILE  IdTab(J).Name /= Id  LOOP
@@ -852,21 +878,24 @@ package body HAC.Parser is
             END LOOP;
 
             IF  J = 0 THEN
-              Error(0);END IF;
+              Error(undefined_identifier);
+            END IF;
             V.TYP := IdTab(J).TYP;
             V.Ref := IdTab(J).Ref;
             a := IdTab(J).Adr;
             IF  a /= 0 THEN
-              Emit1(9, a);END IF;
+              Emit1(9, a);
+            END IF;
           END IF;
           InSymbol;
         END IF;
 
       ELSE    -- array Selector
 
-        IF  Sy /= LParent THEN Error(9); END IF;
+        IF Sy /= LParent THEN
+          Error(9);
+        END IF;
         LOOP
-
           InSymbol;
           Expression(FSys + Symset'(Comma | RParent=> true, others=> false), X);
           IF  V.TYP /= Arrays THEN
@@ -883,17 +912,19 @@ package body HAC.Parser is
             V.TYP := ArraysTab(a).ELTYP;
             V.Ref := ArraysTab(a).ELREF;
           END IF;
-         EXIT WHEN  Sy /= Comma;
+          EXIT WHEN  Sy /= Comma;
         END LOOP;
 
-        IF  Sy = RParent THEN
+        IF Sy = RParent THEN
           InSymbol;
         ELSE
-          Error(4);
-          IF  Sy = RBrack THEN InSymbol; END IF;
+          Error(closing_parenthesis_missing);
+          IF Sy = RBrack THEN
+            InSymbol;
+          END IF;
         END IF;
       END IF;
-      EXIT WHEN  NOT (Sy=LParent or else Sy=Period);
+      EXIT WHEN NOT (Sy=LParent or else Sy=Period);
     END LOOP;
 
     IF  FSys = Semicolon_set THEN
@@ -922,36 +953,34 @@ package body HAC.Parser is
     Emit1(18, I);                  -- mark stack
     LastP := BlockTab(IdTab(I).Ref).LastPar;
     CP := I;
-    IF  Sy = LParent THEN BEGIN            -- actual parameter list
+    IF  Sy = LParent THEN          -- actual parameter list
       LOOP
 
         InSymbol;
         IF  CP >= LastP THEN
-          Error(39)
-        ;ELSE BEGIN
+          Error(39);
+        ELSE
           CP := CP + 1;
-          IF  IdTab(CP).Normal THEN BEGIN      -- value parameter
+          IF  IdTab(CP).Normal THEN       -- value parameter
             Expression(FSys + Symset'((Comma | Colon | RParent => true,
                                        others=> false)), X);
-            IF  (X.TYP = IdTab(CP).TYP) THEN BEGIN
-              IF  X.Ref /= IdTab(CP).Ref THEN BEGIN
+            IF X.TYP = IdTab(CP).TYP THEN
+              IF X.Ref /= IdTab(CP).Ref THEN
                 Error(36);
-              END;
-              ELSE IF  X.TYP = Arrays THEN
-                Emit1(22, ArraysTab(X.Ref).Size)
-              ;ELSE IF  X.TYP = Records THEN
-                Emit1(22, BlockTab(X.Ref).VSize)
-            ;END IF;END IF;END IF;END;
-            ELSE IF  (X.TYP = Ints)  AND  (IdTab(CP).TYP = Floats) THEN
-              Emit1(26, 0)
-            ;ELSE IF  X.TYP /= NOTYP THEN BEGIN
-                Error(36);
-            END;
-          END IF;END IF;END IF;END;
-          ELSE BEGIN              -- Variable (Name) parameter
+              ELSIF  X.TYP = Arrays THEN
+                Emit1(22, ArraysTab(X.Ref).Size);
+              ELSIF  X.TYP = Records THEN
+                Emit1(22, BlockTab(X.Ref).VSize);
+              END IF;
+            ELSIF X.TYP = Ints AND IdTab(CP).TYP = Floats THEN
+              Emit1(26, 0);
+            ELSIF  X.TYP /= NOTYP THEN
+              Error(36);
+            END IF;
+          ELSE              -- Variable (Name) parameter
             IF  Sy /= IDent THEN
-              Error(identifier_missing)
-            ;ELSE BEGIN
+              Error(identifier_missing);
+            ELSE
               K := LOC(Id);
               InSymbol;
               IF  K /= 0 THEN
@@ -972,27 +1001,35 @@ package body HAC.Parser is
                   Error(36);
                 END IF;
               END IF;
-            END;END IF;
-          END;END IF;
-        END;END IF;
+            END IF;
+          END IF;
+        END IF;
         Test( Symset'(Comma | RParent=> true,
                       others=> false), FSys, 6);
        EXIT WHEN  Sy /= Comma;
       END LOOP;
 
-      IF  Sy = RParent THEN InSymbol; ELSE Error(4); END IF;
+      IF Sy = RParent THEN
+        InSymbol;
+      ELSE
+        Error(closing_parenthesis_missing);
+      END IF;
 
-    END;END IF;
-    IF  CP < LastP THEN Error(39); END IF;  -- too few actual parameters
+    END IF;
+    IF CP < LastP THEN -- too few actual parameters
+      Error(39);
+    END IF;
 
     IF  CallType = CallSTDP THEN
-      Emit2(19, CallType, BlockTab(IdTab(I).Ref).PSize - 1) -- 19 = Call
-    ;ELSE
+      Emit2(19, CallType, BlockTab(IdTab(I).Ref).PSize - 1); -- 19 = Call
+    ELSE
       Emit2(19, CallType, BlockTab(IdTab(I).Ref).PSize - 1); -- 19 = Call
       Emit1(32, CallType);            -- RETURN FROM Entry Call
     END IF;
 
-    IF  IdTab(I).LEV < Level THEN Emit2(3, IdTab(I).LEV, Level); END IF;
+    IF IdTab(I).LEV < Level THEN
+      Emit2(3, IdTab(I).LEV, Level);
+    END IF;
   END Call;
 
   ------------------------------------------------------------------
@@ -1013,7 +1050,9 @@ package body HAC.Parser is
         IdTab(0).Name := Id;
         WHILE  IdTab(J).Name /= Id  LOOP J := IdTab(J).Link; END LOOP;
 
-        IF  J = 0 THEN Error(0); END IF;
+        IF  J = 0 THEN
+          Error(undefined_identifier);
+        END IF;
 
         Addr := J;
         InSymbol;
@@ -1082,14 +1121,15 @@ package body HAC.Parser is
               -- a NILADIC FUNCTION.
             IF  N < 100 THEN
               IF  Sy = LParent THEN
-                InSymbol
-              ;ELSE
-                Error(9);END IF;
-              IF  (N < 17)  OR  (N = 19) THEN BEGIN
+                InSymbol;
+              ELSE
+                Error(9);
+              END IF;
+              IF N < 17 OR N = 19 THEN
                 Expression(FSys + RParent, X);
                 CASE  N  IS
 
-                 WHEN 0 |  2=>  -- abs, Sqr
+                 WHEN 0 |  2 =>  -- abs, Sqr
 
                     TS := TypSet'((Ints | Floats=> true, others=> false));
                     IdTab(I).TYP := X.TYP;
@@ -1098,26 +1138,26 @@ package body HAC.Parser is
                     END IF;
 
                   -- Odd, Chr
-                  WHEN 4 |  5=> TS := TypSet'((Ints=> true, others=> false));
+                  WHEN 4 |  5 => TS := TypSet'((Ints=> true, others=> false));
 
                   -- Ord
-                  WHEN 6=> TS := TypSet'((Ints | Bools | xChars | Enums=> true,
+                  WHEN 6 => TS := TypSet'((Ints | Bools | xChars | Enums=> true,
                                           others=> false));
 
                   -- Succ,  Pred
-                  WHEN 7 |  8=>
+                  WHEN 7 |  8 =>
                     TS := TypSet'((Ints | Bools | xChars | Enums=> true,
                                    others=> false));
                     IdTab(I).TYP := X.TYP;
 
                   -- Round,Trunc
-                  WHEN 9 |  10 |  11 |  12 |  13 |  14 |  15 |  16=>
+                  WHEN 9 |  10 |  11 |  12 |  13 |  14 |  15 |  16 =>
                   -- Sin,Cos,...
                     TS := TypSet'((Ints | Floats=> true, others=> false));
                     IF  X.TYP = Ints THEN Emit1(26, 0);END IF;
 
                   -- Random
-                  WHEN 19=>
+                  WHEN 19 =>
                     TS := TypSet'((Ints=> true, others=> false));
                     IdTab(I).TYP := X.TYP;
 
@@ -1131,34 +1171,33 @@ package body HAC.Parser is
                   Error(48);
                 END IF;
 
-              END;
-              ELSE BEGIN          -- N in [17,18]
+              ELSE           -- N in [17,18]
                 -- EOF, Eoln
                 IF  Sy /= IDent THEN
-                  Error(identifier_missing)
-                ;ELSIF  Id = "INPUT     " THEN
-                  Emit2(8, 0, N)
-                ;ELSE
+                  Error(identifier_missing);
+                ELSIF  Id = "INPUT     " THEN
+                  Emit2(8, 0, N);
+                ELSE
                   I := GetFP(Id);
-                  IF  I = 0 THEN
-                    Error(0)
-                  ;ELSE
-                    Emit2(8, I, N);END IF;
+                  IF I = 0 THEN
+                    Error(undefined_identifier);
+                  ELSE
+                    Emit2(8, I, N);
+                  END IF;
                 END IF;
                 InSymbol;
-              END;END IF;            -- N in [17,18]
+              END IF;        -- N in [17,18]
               X.TYP := IdTab(I).TYP;
-              IF  Sy = RParent THEN
-                InSymbol
-              ;ELSE
-                Error(4)
-              ;END IF;
+              IF Sy = RParent THEN
+                InSymbol;
+              ELSE
+                Error(closing_parenthesis_missing);
+              END IF;
             ELSE            -- NILADIC FUNCTION
               CASE  N  IS
                 WHEN 100=> Emit1(8, N); -- CLOCK
                 WHEN others=> null;
               END CASE;
-
             END IF;    -- NILADIC FUNCTIONS, N => 100
           END StandFct;
 
@@ -1244,9 +1283,10 @@ package body HAC.Parser is
                 Emit1(25, C1);
               ELSE
                 IF  Sy = CharCon THEN
-                  X.TYP := xChars
-                ;ELSE
-                  X.TYP := Ints;END IF;
+                  X.TYP := xChars;
+                ELSE
+                  X.TYP := Ints;
+                END IF;
                 Emit1(24, INUM);
               END IF;
               X.Ref := 0;
@@ -1256,9 +1296,10 @@ package body HAC.Parser is
               InSymbol;
               Expression(FSys + RParent, X);
               IF  Sy = RParent THEN
-                InSymbol
-              ;ELSE
-                Error(4);END IF;
+                InSymbol;
+              ELSE
+                Error(closing_parenthesis_missing);
+              END IF;
             when NOTSy =>      --  NOT
               InSymbol;
               Factor(FSys, X);
@@ -1298,39 +1339,42 @@ package body HAC.Parser is
               WHEN others=> null;
             END CASE;
           ELSIF OP = Divide THEN    --  /
-            IF  (X.TYP = Ints)  AND  (Y.all.TYP = Ints) THEN
-              Emit(58)
-            ;ELSE
-              IF  X.TYP = Ints THEN
+            IF X.TYP = Ints AND Y.TYP = Ints THEN
+              Emit(58);
+            ELSE
+              IF X.TYP = Ints THEN
                 Emit1(26, 1);
                 X.TYP := Floats;
               END IF;
-              IF  Y.all.TYP = Ints THEN
+              IF Y.TYP = Ints THEN
                 Emit1(26, 0);
-                Y.all.TYP := Floats;
+                Y.TYP := Floats;
               END IF;
-              IF  (X.TYP = Floats)  AND  (Y.all.TYP = Floats) THEN
-                Emit(61)
-              ;ELSE
+              IF X.TYP = Floats AND Y.TYP = Floats THEN
+                Emit(61);
+              ELSE
                 IF  (X.TYP /= NOTYP)  AND  (Y.all.TYP /= NOTYP) THEN
-                  Error(33);END IF;
+                  Error(33);
+                END IF;
                 X.TYP := NOTYP;
               END IF;
             END IF;
           ELSIF  OP = AndSy THEN      -- AND
-            IF  (X.TYP = Bools)  AND  (Y.all.TYP = Bools) THEN
-              Emit(56)
-            ;ELSE BEGIN
-              IF  (X.TYP /= NOTYP)  AND  (Y.all.TYP /= NOTYP) THEN
-                Error(32);END IF;
-              X.TYP := NOTYP
-            ;END;END IF;
+            IF X.TYP = Bools AND Y.TYP = Bools THEN
+              Emit(56);
+            ELSE
+              IF X.TYP /= NOTYP AND Y.TYP /= NOTYP THEN
+                Error(32);
+              END IF;
+              X.TYP := NOTYP;
+            END IF;
           ELSE            -- MOD  -  OP = ModSy
-            IF  (X.TYP = Ints)  AND  (Y.all.TYP = Ints) THEN
-              Emit(59)
-            ;ELSE
-              IF  (X.TYP /= NOTYP)  AND  (Y.all.TYP /= NOTYP) THEN
-                Error(34);END IF;
+            IF X.TYP = Ints AND Y.TYP = Ints THEN
+              Emit(59);
+            ELSE
+              IF X.TYP /= NOTYP AND Y.TYP /= NOTYP THEN
+                Error(34);
+              END IF;
               X.TYP := NOTYP;
             END IF;
           END IF;
@@ -1362,30 +1406,33 @@ package body HAC.Parser is
         Term(FSys + TermZ, Y.all);
         -- OR
         IF  OP = OrSy THEN
-          IF  (X.TYP = Bools)  AND  (Y.all.TYP = Bools) THEN
+          IF X.TYP = Bools AND Y.TYP = Bools THEN
             Emit(51);
           ELSE
-            IF  (X.TYP /= NOTYP)  AND  (Y.all.TYP /= NOTYP) THEN
+            IF X.TYP /= NOTYP AND Y.TYP /= NOTYP THEN
               Error(32);
             END IF;
             X.TYP := NOTYP;
           END IF;
         ELSE
           X.TYP := ResultType(X.TYP, Y.all.TYP);
-          CASE  X.TYP  IS
-            WHEN NOTYP=> null;
-            WHEN Ints=>
-              IF  OP = Plus THEN
-                Emit(52)
-              ;ELSE
-                Emit(53);END IF;
-            WHEN Floats=>
-              IF  OP = Plus THEN
-                Emit(54)
-              ;ELSE
+          CASE X.TYP IS
+            WHEN NOTYP =>
+              null;
+            WHEN Ints =>
+              IF OP = Plus THEN
+                Emit(52);
+              ELSE
+                Emit(53);
+              END IF;
+            WHEN Floats =>
+              IF OP = Plus THEN
+                Emit(54);
+              ELSE
                 Emit(55);
               END IF;
-            WHEN others=> null;
+            WHEN others=>
+              null;
           END CASE;
 
         END IF;
@@ -1525,7 +1572,7 @@ package body HAC.Parser is
       Emit1(4, I);                -- Accept rendezvous opcode = 4
       IF Sy = doSy THEN
         IF Level = LMax THEN
-          Fatal(5);
+          Fatal(LEVEL_overflow);
         END IF;
         Level := Level + 1;
         Display(Level) := IdTab(I).Ref;
@@ -1625,13 +1672,21 @@ package body HAC.Parser is
       ELSE
         ObjCode(LC1).Y := LC;
       END IF;
-      IF  Sy = EndSy THEN InSymbol; ELSE Error(57); END IF;  -- Added Hathorn
-      IF  Sy = IfSy  THEN InSymbol; ELSE Error(62); END IF;
-
+      IF Sy = EndSy THEN -- Added Hathorn
+        InSymbol;
+      ELSE
+        Error(END_missing);
+      END IF;
+      IF Sy = IfSy THEN
+        InSymbol;
+      ELSE
+        Error(62);
+      END IF;
       -- Go back and patch the dummy addresses in unconditional jumps
       WHILE  LC0 < LC  LOOP
-        IF  (ObjCode(LC0).Y = - 1) THEN
-          ObjCode(LC0).Y := LC;END IF;
+        IF ObjCode(LC0).Y = - 1 THEN
+          ObjCode(LC0).Y := LC;
+        END IF;
         LC0 := LC0 + 1;
       END LOOP;
     END IfStatement;
@@ -1642,7 +1697,7 @@ package body HAC.Parser is
       IF  Sy = LoopSy THEN InSymbol; ELSE Skip(StatBegSys, 62); END IF;
       MultiStatement( Symset'((EndSy=> true, others=> false)) );
       Emit1(FCT, B);
-      IF  Sy = EndSy THEN InSymbol; ELSE Error(57); END IF;
+      IF  Sy = EndSy THEN InSymbol; ELSE Error(END_missing); END IF;
       IF  Sy = LoopSy THEN InSymbol; ELSE  Error(54); END IF;
 
       -- Go back and patch the dummy addresses generated by Exit stmts.
@@ -1733,10 +1788,12 @@ package body HAC.Parser is
           K := 0;
           LOOP
             K := K + 1;
-           EXIT WHEN CaseTab(K).Val = Lab.I;
+            EXIT WHEN CaseTab(K).Val = Lab.I;
           END LOOP;
 
-          IF  K < I THEN Error(1); END IF;
+          IF  K < I THEN
+            Error(duplicate_identifier);
+          END IF;
                                    -- MULTIPLE DEFINITION
         END IF;
       END CaseLabel;
@@ -1807,7 +1864,7 @@ package body HAC.Parser is
       Emit1(10, 0);
       FOR  K  IN   1.. J  LOOP ObjCode(ExitTab(K)).Y := LC; END LOOP;
 
-      IF  Sy = EndSy  THEN InSymbol; ELSE Error(57); END IF;
+      IF  Sy = EndSy  THEN InSymbol; ELSE Error(END_missing); END IF;
       IF  Sy = CaseSy THEN InSymbol; ELSE  Error(65); END IF;
     END CaseStatement;
 
@@ -1838,7 +1895,7 @@ package body HAC.Parser is
       IF  Sy = IDent THEN
         IF  T = TMax THEN
           Fatal(1);
-        ELSE BEGIN
+        ELSE
           -- declare local loop control Variable  --  added Hathorn
           last := BlockTab(Display(Level)).last;
           T := T + 1;
@@ -1860,7 +1917,7 @@ package body HAC.Parser is
             MaxDX := Dx;
           END IF;
           BlockTab(Display(Level)).VSize := MaxDX;
-        END;END IF;
+        END IF;
       ELSE
         Skip( Symset'((InSy | RangeSy | LoopSy | EndSy=> true,
                        others=> false)) + FSys, 2);
@@ -1869,29 +1926,31 @@ package body HAC.Parser is
       Emit2(0, IdTab(T).LEV, IdTab(T).Adr);
       InSymbol;
       F := 14;
-      IF  Sy = InSy THEN BEGIN
+      IF Sy = InSy THEN
         InSymbol;
-        IF  (Sy = ReverseSy) THEN
+        IF Sy = ReverseSy THEN
           F := 16;
           InSymbol;
         END IF;
         Expression( Symset'((RangeSy | LoopSy | EndSy=> true,
                     others=> false)) + FSys, X);
         IdTab(T).TYP := X.TYP;
-        IF  NOT (X.TYP = Ints or else X.TYP = Bools or else X.TYP = xChars) THEN
+        IF NOT (X.TYP = Ints or else X.TYP = Bools or else X.TYP = xChars) THEN
           Error(18);
         END IF;
-        IF  Sy = RangeSy THEN
+        IF Sy = RangeSy THEN
           InSymbol;
           Expression(FSys + LoopSy, X);
           IF  (IdTab(T).TYP /= X.TYP) THEN
-            Error(19);END IF;
+            Error(19);
+          END IF;
         ELSE
           Skip( Symset'((LoopSy | EndSy | Semicolon=> true,
-                         others=> false)) + FSys, 55);END IF;
-      END;
+                         others=> false)) + FSys, 55);
+        END IF;
       ELSE
-        Skip( FSys + LoopSy, 53);END IF;
+        Skip( FSys + LoopSy, 53);
+      END IF;
       LC1 := LC;
       Emit(F);
       LoopStatement(F + 1, LC);
@@ -1932,7 +1991,7 @@ package body HAC.Parser is
           IF  NOT (Sy = OrSy or else Sy = ElseSy) THEN
             MultiStatement( Symset'((OrSy | ElseSy=> true, others=> false)) );
           END IF;
-          IF  Sy = OrSy THEN BEGIN       -- =====================> Timed Entry Call
+          IF  Sy = OrSy THEN      -- =====================> Timed Entry Call
             ObjCode(patch(0)).X := CallTMDE; -- Timed Entry Call
             ObjCode(patch(0) + 1).Y := CallTMDE; -- Exit type matches Entry type
             InSymbol;
@@ -1966,9 +2025,9 @@ package body HAC.Parser is
             ELSE
               SelectError(79);
             END IF;      -- DELAY EXPECTED
-          END;                 -- Sy = OrSy
+          -- end Sy = OrSy
           ELSE             -- Sy = ElseSy, ===============> Conditional
---                             Entry Call
+                           --                             Entry Call
             ObjCode(patch(0)).X := CallCNDE; -- Conditional Entry Call
             ObjCode(patch(0) + 1).Y := CallCNDE;
             patch(2) := LC;
@@ -1980,7 +2039,7 @@ package body HAC.Parser is
             ObjCode(patch(2)).Y := LC;
           END IF;
           IF  Sy /= EndSy THEN
-            SelectError(57);END IF;
+            SelectError(END_missing);END IF;
           InSymbol;
           IF  Sy /= SelectSy THEN
             SelectError(80);
@@ -2039,7 +2098,8 @@ package body HAC.Parser is
           -- CONDITIONAL ACCEPT MUST BE ATOMIC
           IF  Sy = doSy THEN BEGIN
             IF  Level = LMax THEN
-              Fatal(5);END IF;
+              Fatal(LEVEL_overflow);
+            END IF;
             Level := Level + 1;
             Display(Level) := IdTab(I).Ref;
             InSymbol;
@@ -2194,7 +2254,7 @@ package body HAC.Parser is
 
             WHEN EndSy=>
               InSymbol;
-              IF  Sy /= SelectSy THEN SelectError(57); END IF;
+              IF  Sy /= SelectSy THEN SelectError(END_missing); END IF;
               SelectDone := True;
               FOR  I  IN   1.. IAlt  LOOP
                 ObjCode(Alt(I)).Y := LC;
@@ -2297,11 +2357,12 @@ package body HAC.Parser is
              EXIT WHEN  Sy /= Comma;
             END LOOP;
 
-            IF  Sy = RParent THEN
-              InSymbol
-            ;ELSE
-              Error(4)
-          ;END IF;END;END IF;
+            IF Sy = RParent THEN
+              InSymbol;
+            ELSE
+              Error(closing_parenthesis_missing);
+            END IF;
+          END;END IF;
           IF  N = 2 THEN
             Emit(62);
           END IF;
@@ -2325,16 +2386,13 @@ package body HAC.Parser is
               Emit1(64, 0);
               InSymbol;
             END IF;
-
             LOOP
-
               InSymbol;
-              IF  Sy = StrCon THEN BEGIN
+              IF  Sy = StrCon THEN
                 Emit1(24, SLeng);
                 Emit1(28, INUM);
                 InSymbol;
-              END;
-              ELSE BEGIN
+              ELSE
                 Expression(FSys + Symset'((Comma | Colon | RParent=> true,
                                            others=> false)), X);
                 IF  X.TYP = Enums THEN
@@ -2342,77 +2400,85 @@ package body HAC.Parser is
                 IF  (NOT StanTyps(X.TYP))  AND  (X.TYP /= Strings) THEN
                   Error(41);
                 END IF;
-                IF  Sy = Colon THEN BEGIN
+                IF  Sy = Colon THEN
                   InSymbol;
                   Expression(FSys + Symset'((Comma | Colon | RParent=> true,
                                              others=> false)), Y);
                   IF  Y.TYP /= Ints THEN
-                    Error(43);END IF;
-                  IF  Sy = Colon THEN BEGIN
+                    Error(43);
+                  END IF;
+                  IF  Sy = Colon THEN
                     IF  X.TYP /= Floats THEN
-                      Error(42);END IF;
+                      Error(42);
+                    END IF;
                     InSymbol;
                     Expression(FSys + Symset'((Comma | RParent=> true,
                                                others=> false)), Y);
                     IF  Y.TYP /= Ints THEN
-                      Error(43);END IF;
-                    Emit(37)
-                  ;END;
+                      Error(43);
+                    END IF;
+                    Emit(37);
                   ELSE
-                    Emit1(30, Types'Pos(X.TYP))
-                ;END IF;END;
-                ELSE IF  X.TYP = Strings THEN
-                  Emit1(28, X.ref)
-                ;ELSE
-                  Emit1(29, Types'Pos(X.TYP))
-              ;END IF;END IF;END;END IF;
-             EXIT WHEN  Sy /= Comma;
+                    Emit1(30, Types'Pos(X.TYP));
+                  END IF;
+                ELSIF X.TYP = Strings THEN
+                  Emit1(28, X.ref);
+                ELSE
+                  Emit1(29, Types'Pos(X.TYP));
+                END IF;
+              END IF;
+              EXIT WHEN  Sy /= Comma;
             END LOOP;
 
           <<Label_21>>
-            IF  Sy = RParent THEN
-              InSymbol
-            ;ELSE
-              Error(4);END IF;
+            IF Sy = RParent THEN
+              InSymbol;
+            ELSE
+              Error(closing_parenthesis_missing);
+            END IF;
           END;END IF;
           IF  N = 4 THEN
             Emit(63);
           END IF;
 
-        WHEN 5 |  6=>                  -- Wait,SIGNAL
+        WHEN 5 | 6 =>                  -- Wait,SIGNAL
           IF  Sy /= LParent THEN
-            Error(9)
-          ;ELSE BEGIN
+            Error(9);
+          ELSE
             InSymbol;
             IF  Sy /= IDent THEN
-              Error(0)
-            ;ELSE BEGIN
+              Error(undefined_identifier);
+            ELSE
               I := LOC(Id);
               InSymbol;
               IF  I /= 0 THEN
                 IF  IdTab(I).Obj /= Variable THEN
-                  Error(37)
-                ;ELSE BEGIN
+                  Error(37);
+                ELSE
                   X.TYP := IdTab(I).TYP;
                   X.Ref := IdTab(I).Ref;
                   IF  IdTab(I).Normal THEN
-                    F := 0
-                  ;ELSE
-                    F := 1;END IF;
+                    F := 0;
+                  ELSE
+                    F := 1;
+                  END IF;
                   Emit2(F, IdTab(I).LEV, IdTab(I).Adr);
                   IF  Sy = LParent or else Sy = Period THEN
                     Selector(FSys + RParent, X);END IF;
                   IF  X.TYP = Ints THEN
-                    Emit(N + 1)    -- N is 5, or 6. Opcode is 6 or 7
-                  ;ELSE
-                    Error(43)
-                ;END IF;END;END IF;
-            END IF;END;END IF;
+                    Emit(N + 1);    -- N is 5, or 6. Opcode is 6 or 7
+                  ELSE
+                    Error(43);
+                  END IF;
+                END IF;
+              END IF;
+            END IF;
             IF  Sy = RParent THEN
-              InSymbol
-            ;ELSE
-              Error(4)
-          ;END IF;END;END IF;
+              InSymbol;
+            ELSE
+              Error(closing_parenthesis_missing);
+            END IF;
+          END IF;
 
         WHEN 7 |  8 | 9 =>    -- reset, Rewrite, Close
         -- Schoening
@@ -2422,14 +2488,16 @@ package body HAC.Parser is
             InSymbol;
             I := GetFP(Id);
             IF  I /= - 1 THEN
-              Emit2(65, I, N)
-            ;ELSE
-              Error(identifier_missing);END IF;
+              Emit2(65, I, N);
+            ELSE
+              Error(identifier_missing);
+            END IF;
             InSymbol;
-            IF  (Sy = RParent) THEN
-              InSymbol
-            ;ELSE
-              Error(4);END IF;
+            IF Sy = RParent THEN
+              InSymbol;
+            ELSE
+              Error(closing_parenthesis_missing);
+            END IF;
           END IF;  -- reset
 
         WHEN 10=>        -- CursorAt
@@ -2451,68 +2519,71 @@ package body HAC.Parser is
                                    Colon | Semicolon=> true,
                                    others=> false)), X);
               IF  X.TYP /= Ints THEN
-                Skip(Semicolon, 43);END IF;
+                Skip(Semicolon, 43);
+              END IF;
               IF  Sy = Comma THEN
-                Skip(Semicolon, 39)
-              ;ELSE IF  Sy /= RParent THEN
-                Skip(Semicolon, 4)
-              ;ELSE
+                Skip(Semicolon, 39);
+              ELSIF  Sy /= RParent THEN
+                Skip(Semicolon, 4);
+              ELSE
                 Emit(69);        -- opcode for CursorAt
                 InSymbol;
-              END IF;END IF;
+              END IF;
             END IF;
           END;END IF;                -- CursorAt
 
         WHEN 11=>                   -- Quantum
         -- Cramer
           IF  Sy /= LParent THEN
-            Skip(Semicolon, 9)
-          ;ELSE BEGIN
+            Skip(Semicolon, 9);
+          ELSE
             InSymbol;
             Expression( Symset'((RParent=> true, others=> false)), X);
             IF  X.TYP /= Floats THEN
-              Skip(Semicolon, 42);END IF;
+              Skip(Semicolon, 42);
+            END IF;
             IF  Sy /= RParent THEN
-              Skip(Semicolon, 4)
-            ;ELSE
+              Skip(Semicolon, 4);
+            ELSE
               Emit(70);          -- opcode for Set Quantum
               InSymbol;
             END IF;
-          END;END IF;                -- Quantum
+          END IF;                -- Quantum
 
         WHEN 12=>                   -- Set Priority
         -- Cramer
           IF  Sy /= LParent THEN
-            Skip(Semicolon, 9)
-          ;ELSE BEGIN
+            Skip(Semicolon, 9);
+          ELSE
             InSymbol;
             Expression( Symset'((RParent=> true, others=> false)), X);
             IF  X.TYP /= Ints THEN
               Skip( Semicolon, 43);
             END IF;
-            IF  Sy /= RParent THEN
-              Skip( Semicolon, 4)
-            ;ELSE BEGIN
+            IF Sy /= RParent THEN
+              Skip( Semicolon, 4);
+            ELSE
               Emit(71);          -- opcode for Set Priority
               InSymbol;
-            END;END IF;
-          END;END IF;                -- Priority
+            END IF;
+          END IF;                -- Priority
 
-        WHEN 13=>                   -- Set Priority Inheritance,INHERITP
-        -- Cramer
+        WHEN 13 =>                   -- Set Priority Inheritance,INHERITP
+          -- Cramer
           IF  Sy /= LParent THEN
             Skip( Semicolon, 9);
           ELSE
             InSymbol;
             Expression( Symset'((RParent=> true, others=> false)), X);
             IF  X.TYP /= Bools THEN
-              Skip(Semicolon, 75);END IF;
-            IF  Sy /= RParent THEN
-              Skip(Semicolon, 4)
-            ;ELSE BEGIN
+              Skip(Semicolon, 75);
+            END IF;
+            IF Sy /= RParent THEN
+              Skip(Semicolon, 4);
+            ELSE
               Emit(72);          -- opcode for InheritP
               InSymbol;
-            END;END IF;
+            END IF;
           END IF;                -- Inheritp
 
           WHEN others=> null;
@@ -2521,7 +2592,9 @@ package body HAC.Parser is
     END StandProc;
 
   BEGIN  -- Statement
-    IF  Err_count>0 THEN return; END IF;  --{MRC: added from PC version}
+    IF Err_count > 0 THEN  --{MRC: added from PC version}
+      return;
+    END IF;
 
     --{ Mark the following opcodes as belonging to LineCount # }
     Emit1(74, LineCount);              --{MRC: this line is not in PC version}
@@ -2581,21 +2654,23 @@ package body HAC.Parser is
   END Statement;
 
 BEGIN  -- Block
-  IF Err_count > 0 THEN return; END IF;    --{MRC, from PC source}
+  IF Err_count > 0 THEN --{MRC, from PC source}
+    return;
+  END IF;
 
   BlockID := IdTab(Prt).Name;
   Dx := 5;
   ICode := 0;
   IF  Level > LMax THEN
-    Fatal(5);
+    Fatal(LEVEL_overflow);
     return;            --{MRC, from PC source}
   END IF;
 
   Test( Symset'(LParent | ReturnSy | IsSy | Semicolon => true,
                 others=> false), FSys, 6);
   IF  IdTab(Prt).Ref > 0 THEN
-    PRB := IdTab(Prt).Ref
-  ;ELSE
+    PRB := IdTab(Prt).Ref;
+  ELSE
     EnterBlock(Prt);
     PRB := B;
     IdTab(Prt).Ref := PRB;
@@ -2620,7 +2695,6 @@ BEGIN  -- Block
           IF  IdTab(I).Obj /= TypeMark THEN
             Error(29);
             return;  --{MRC, from PC source}
-
           ELSIF  StanTyps(IdTab(I).TYP) THEN
             IdTab(Prt).TYP := IdTab(I).TYP;
           ELSE
@@ -2637,13 +2711,18 @@ BEGIN  -- Block
     END IF;
   END IF;
 
-  IF  Sy = Semicolon THEN  -- end of specification part
+  IF Sy = Semicolon THEN  -- end of specification part
     BlockTab(PRB).VSize := Dx;
     IdTab(Prt).Adr := - 1;    -- address of body TBD
     return; -- Exit(Block);
   END IF;
 
-  IF  Sy = IsSy THEN InSymbol; ELSE Error(20); return; END IF;
+  IF Sy = IsSy THEN
+    InSymbol;
+  ELSE
+    Error(20);
+    return;
+  END IF;
 
   LOOP
     IF  Sy = IDent  THEN  VarDeclaration;  END IF;
@@ -2670,22 +2749,38 @@ BEGIN  -- Block
   InSymbol;
   LOOP
     Statement( FSys + EndSy );
-    IF  Err_count > 0 THEN Sy := EndSY; END IF;  --{MRC, from PC source}
-   EXIT WHEN  Sy = EndSy OR Err_count > 0;
+    IF Err_count > 0 THEN  --{MRC, from PC source}
+      Sy := EndSY;
+    END IF;
+    EXIT WHEN Sy = EndSy OR Err_count > 0;
   END LOOP;
-          --{MRC, added OR()... from PC source}
+  --{MRC, added OR()... from PC source}
   BlockTab(PRB).SrcTo := LineCount;
 
-  IF Sy = EndSy THEN InSymbol; ELSE Error(57); return; END IF; -- Missing END
+  IF Sy = EndSy THEN
+    InSymbol;
+  ELSE
+    Error(END_missing);
+    return;
+  END IF; -- Missing END
 
   IF  Sy = IDent THEN
-    IF  Id /= BlockID THEN Error(22); return; END IF;
+    IF  Id /= BlockID THEN
+      Error(22);
+      return;
+    END IF;
     InSymbol;
   END IF;
 
-  IF  Sy /= Semicolon THEN Error(semicolon_missing);  return; END IF;
+  IF  Sy /= Semicolon THEN
+    Error(semicolon_missing);
+    return;
+  END IF;
 
-  IF  BlockID /= ProgramID THEN InSymbol; Test(FSys, Empty_Symset, 6); END IF;
+  IF  BlockID /= ProgramID THEN
+    InSymbol;
+    Test(FSys, Empty_Symset, 6);
+  END IF;
 
 END Block;
 

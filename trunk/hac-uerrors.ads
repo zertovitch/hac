@@ -37,19 +37,25 @@
 
 package HAC.UErrors is
 
-  PROCEDURE Error(N: Integer);
-  identifier_missing: constant:= 2;
-  semicolon_missing : constant:= 14;
+  procedure Error(N: Integer);
+  undefined_identifier         : constant:=  0;
+  duplicate_identifier         : constant:=  1;
+  identifier_missing           : constant:=  2;
+  closing_parenthesis_missing  : constant:=  4;
+  colon_missing                : constant:=  5;
+  semicolon_missing            : constant:= 14;
+  END_missing                  : constant:= 57;
 
-  PROCEDURE EndSkip;
+  procedure EndSkip;
 
-  PROCEDURE ErrorMsg;
+  procedure ErrorMsg;
 
-  PROCEDURE Fatal(N: Integer); -- internal table overflow
+  procedure Fatal(N: Integer); -- internal table overflow
+  LEVEL_overflow : constant:= 5;
   OBJECT_overflow: constant:= 6;
 
   Failure_1_0: exception;
 
-  FUNCTION ErrorString(Id: Integer) return String; -- for debug
+  function ErrorString(Id: Integer) return String; -- for debug
 
 end HAC.UErrors;
