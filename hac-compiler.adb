@@ -96,23 +96,25 @@ PROCEDURE PrintTables IS
 END PrintTables;
 
 
----------------------------------------------------------------------------
+  ---------------------------------------------------------------------------
 
-PROCEDURE Compile IS
+  PROCEDURE Compile IS
 
-  PROCEDURE EnterStdFcns IS
+    PROCEDURE EnterStdFcns IS
 
-    PROCEDURE Enter(X0: Alfa; X1: aObject; X2: Types; X3: Integer) IS
+      PROCEDURE Enter(X0: String; X1: aObject; X2: Types; X3: Integer) IS
+        X0A: Alfa:= Empty_Alfa;
       BEGIN
+        X0A(1..X0'Length):= X0;
         T := T + 1; -- Enter standard identifier
         IdTab(T):=
-          (Name=> X0, Link=> T - 1,
+          (Name=> X0A, Link=> T - 1,
            Obj=> X1, TYP=> X2, Ref=> 0,
-	   Normal=> True,
-	   LEV=> 0, Adr=> X3);
+           Normal=> True,
+           LEV=> 0, Adr=> X3);
       END Enter;
 
-  BEGIN -- EnterStdFcns
+    BEGIN -- EnterStdFcns
 	Enter("          ", Variable, NOTYP, 0);
 	Enter("FALSE     ", Konstant, Bools, 0);
 	Enter("TRUE      ", Konstant, Bools, 1);
@@ -160,7 +162,7 @@ PROCEDURE Compile IS
 	Enter("PRIORITY  ", Prozedure, NOTYP, 12); --{ Cramer }
 	Enter("INHERITP  ", Prozedure, NOTYP, 13); --{ Cramer }
 	Enter(ProgramID, Prozedure, NOTYP, 0);
-  END EnterStdFcns;
+    END EnterStdFcns;
 
 BEGIN -- Compile
 
@@ -228,7 +230,7 @@ BEGIN -- Compile
    EnterStdFcns; -- Enter Standard function ids and ProgramID
 
    BlockTab(0):= -- Block Table Entry for Standard [was Main, 1]
-	(Id=> "Std Defns ",
+	(Id=> "Std Defns" & (10..Empty_Alfa'Length => ' '),
 	 last=> T,
 	 LastPar=> 1,
 	 PSize=> 0,
