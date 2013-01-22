@@ -29,9 +29,9 @@ FUNCTION ErrorString(Id: Integer) return String is
     WHEN  17  => Return  "EXPECTING A BOOLEAN EXPRESSION ";
     WHEN  18  => Return  "CONTROL VARIABLE OF THE WRONG TYPE";
     WHEN  19  => Return  "FIRST/LAST MUST BE MATCHING TYPES";
-    WHEN  IS_missing  => Return  "MISSING ``IS''";
+    WHEN  IS_missing  => return  "missing ""is""";
     WHEN  21  => Return  "THE NUMBER IS TOO LARGE";
-    WHEN  22  => Return  "INCORRECT BLOCK NAME";
+    WHEN  Incorrect_block_name => Return  "incorrect block name after ""end""";
     WHEN  23  => Return  "BAD TYPE FOR A CASE STATEMENT";
     WHEN  24  => Return  "ILLEGAL CHARACTER";
     WHEN  25  => Return  "ILLEGAL CONSTANT OR CONSTAT IDENTIFIER";
@@ -67,7 +67,7 @@ FUNCTION ErrorString(Id: Integer) return String is
     WHEN  55  => Return  "MISSING RANGE ``..''";
     WHEN  56  => Return  "MISSING ``BEGIN''";
     WHEN  END_missing  => Return  "MISSING ``END''";
-    WHEN  58  => Return  "EXPECTING AN ID; CONST; ``NOT'' OR ``(''";
+    WHEN  58  => Return  "Factor: EXPECTING AN ID; CONST; ``NOT'' OR ``(''";
     WHEN  59  => Return  "MISSING ``RETURN''";
     WHEN  60  => Return  "CONTROL CHARACTER PRESENT IN SOURCE ";
     WHEN  61  => Return  "MISSING ``RECORD''";
@@ -91,6 +91,7 @@ FUNCTION ErrorString(Id: Integer) return String is
     WHEN  79  => Return  "EXPECTING ``DELAY''";
     WHEN  80  => Return  "MISSING SELECT";
     WHEN  81  => Return  "PROGRAM INCOMPLETE";
+    when  OF_instead_of_IS => return "found ""of"" instead of ""is""";
     WHEN others => Return "Unknown error Id=" & Integer'Image(Id);
    end case;
   END ErrorString;
@@ -105,9 +106,9 @@ FUNCTION ErrorString(Id: Integer) return String is
 
 ----------------------------------------------------------------------------
 
-PROCEDURE EndSkip is -- Skip past part of input
+  PROCEDURE EndSkip is -- Skip past part of input
   BEGIN
-	SkipFlag := FALSE;
+    SkipFlag := FALSE;
   END;
 
 ----------------------------------------------------------------------------
@@ -144,33 +145,33 @@ END Fatal;
 
 ----------------------------------------------------------------------------
 
-PROCEDURE ErrorMsg is
-  use Ada.Text_IO;
-  package IIO is new Integer_IO(integer); use IIO;
-  K: Integer;
+  PROCEDURE ErrorMsg is
+    use Ada.Text_IO;
+    package IIO is new Integer_IO(integer); use IIO;
+    K: Integer;
   BEGIN
-	K := 0;
-	IF qDebug THEN
-		New_Line;
-		Put_Line(" Error MESSAGE(S)");
-	END IF;
-	IF ListingWasRequested THEN
-		New_Line(Listing);
-		Put_Line(Listing, " Error MESSAGE(S)");
-	END IF;
-	WHILE Errs /= Error_free LOOP
-		WHILE NOT Errs(K) LOOP
-			K := K + 1;
-		END LOOP;
-		IF qDebug THEN
-		  Put(K,2); Put("  "); Put_Line(ErrorString(K));
-	    	END IF;
-		IF ListingWasRequested THEN
-		  Put(Listing,K,2); Put(Listing,"  ");
-		  Put_Line(Listing,ErrorString(K));
-	    END IF;
-	  Errs(K):= False; -- we cancel the K-th sort of error
-	END LOOP;
+    K := 0;
+    IF qDebug THEN
+      New_Line;
+      Put_Line(" Error MESSAGE(S)");
+    END IF;
+    IF ListingWasRequested THEN
+      New_Line(Listing);
+      Put_Line(Listing, " Error MESSAGE(S)");
+    END IF;
+    WHILE Errs /= Error_free LOOP
+      WHILE NOT Errs(K) LOOP
+        K := K + 1;
+      END LOOP;
+      IF qDebug THEN
+        Put(K,2); Put_Line(":  " & ErrorString(K));
+      END IF;
+      IF ListingWasRequested THEN
+        Put(Listing,K,2);
+        Put_Line(Listing, "  " & ErrorString(K));
+      END IF;
+      Errs(K):= False; -- we cancel the K-th sort of error
+    END LOOP;
 
   END ErrorMsg;
 

@@ -164,72 +164,72 @@ END PrintTables;
 	Enter(ProgramID, Prozedure, NOTYP, 0);
     END EnterStdFcns;
 
-BEGIN -- Compile
+  BEGIN -- Compile
 
-  cICompiler;
+    cICompiler;
 
-  IF ListingWasRequested THEN
-    Create(Listing, name=> "compiler.lst");
-    Put_Line(Listing, Header);
-  END IF;
+    IF ListingWasRequested THEN
+      Create(Listing, name=> "compiler.lst");
+      Put_Line(Listing, Header);
+    END IF;
 
-  if qDebug then
-    Put_Line("Compiler: check for program heading");
-  end if;
+    if qDebug then
+      Put_Line("Compiler: check for program heading");
+    end if;
 
-  CH:= ' ';
-  InSymbol;
-  IF  Sy /= WithSy THEN   -- WITH SMALL_SP;
-    Error(69);
-  ELSE
+    CH:= ' ';
     InSymbol;
-    IF  Sy /= IDent OR  Id /= "SMALL_SP  " THEN
+    IF Sy /= WithSy THEN   -- WITH SMALL_SP;
       Error(69);
     ELSE
-     InSymbol;
-     IF  Sy /= Semicolon THEN Error(14); ELSE InSymbol; END IF;
+      InSymbol;
+      IF Sy /= IDent OR  Id /= "SMALL_SP  " THEN
+        Error(69);
+      ELSE
+        InSymbol;
+        IF  Sy /= Semicolon THEN Error(14); ELSE InSymbol; END IF;
+      END IF;
     END IF;
-  END IF;
 
-  IF  Sy /= UseSy THEN
-    Error(70); -- USE SMALL_SP;
-  ELSE
-    InSymbol;
-    IF  Sy /= IDent  OR  Id /= "SMALL_SP  " THEN
-	Error(70);
+    IF Sy /= UseSy THEN
+      Error(70); -- USE SMALL_SP;
     ELSE
-	InSymbol;
-	IF  Sy /= Semicolon THEN
-		Error(14);
-	ELSE
-		InSymbol;
-	END IF;
+      InSymbol;
+      IF  Sy /= IDent  OR  Id /= "SMALL_SP  " THEN
+        Error(70);
+      ELSE
+        InSymbol;
+        IF  Sy /= Semicolon THEN
+          Error(14);
+        ELSE
+          InSymbol;
+        END IF;
+      END IF;
     END IF;
-  END IF;
 
-  if qDebug then
-    Put_Line("Compiler: check for main procedure");
-  end if;
+    if qDebug then
+      Put_Line("Compiler: check for main procedure");
+    end if;
 
-  IF  Sy /= ProcSy THEN
-    Error(3); -- PROCEDURE Name IS
-  ELSE
-     InSymbol;
-     IF  Sy /= IDent THEN
-       Error(2);
-     ELSE
-       ProgramID := Id;
-       InSymbol;
-     END IF;
-  END IF;
+    IF  Sy /= ProcSy THEN
+      Error(3); -- PROCEDURE Name IS
+    ELSE
+      InSymbol;
+      IF  Sy /= IDent THEN
+        Error(2);
+      ELSE
+        ProgramID := Id;
+        InSymbol;
+      END IF;
+    END IF;
 
-  if qDebug then
-    Put_Line("Compiler: main procedure is " & ProgramID);
-  end if;
+    if qDebug then
+      Put_Line("Compiler: main procedure is " & ProgramID);
+    end if;
 
-   EnterStdFcns; -- Enter Standard function ids and ProgramID
+    EnterStdFcns; -- Enter Standard function ids and ProgramID
 
-   BlockTab(0):= -- Block Table Entry for Standard [was Main, 1]
+    BlockTab(0):= -- Block Table Entry for Standard [was Main, 1]
 	(Id=> "Std Defns" & (10..Empty_Alfa'Length => ' '),
 	 last=> T,
 	 LastPar=> 1,
@@ -237,35 +237,37 @@ BEGIN -- Compile
 	 VSize=> 0,
 	 SrcFrom=> LineCount,
 	 SrcTo=>   LineCount); -- ajout!
-   Display(0):= 0; -- Added 7-Dec-2009
+    Display(0):= 0; -- Added 7-Dec-2009
 
-   TskDefTab(0) := T; --{ Task Table Entry }
+    TskDefTab(0) := T; --{ Task Table Entry }
 
-   -- Start Compiling
-   Block(BlockBegSyS + StatBegSys, False, 1, T);
+    -- Start Compiling
+    Block(BlockBegSyS + StatBegSys, False, 1, T);
 
-   Emit(66); -- halt
+    Emit(66); -- halt
 
-   IF  Sy /= Semicolon THEN
-          IF  qDebug THEN
-            Put_Line("Compile terminated BEFORE FILE END");
-          END IF;
+    IF  Sy /= Semicolon THEN
+      IF  qDebug THEN
+        Put_Line("Compile terminated BEFORE FILE END");
+      END IF;
 
-          IF ListingWasRequested THEN
-	    Put_Line( "Compile terminated BEFORE FILE END");
-          END IF;
-	END IF;
+      IF ListingWasRequested THEN
+        Put_Line( "Compile terminated BEFORE FILE END");
+      END IF;
+    END IF;
 
-	IF  (BlockTab(2).VSize > StMax - (STKINCR * TCount)) THEN
-		Error(49);END IF;
-	BlockTab(1).SrcTo := LineCount;		--(* Manuel : terminate source *)
-	IF  qDebug and Debug THEN
-		PrintTables;END IF;
-	IF  Errs /= Error_free THEN
+    IF  (BlockTab(2).VSize > StMax - (STKINCR * TCount)) THEN
+      Error(49);
+    END IF;
+    BlockTab(1).SrcTo := LineCount;		--(* Manuel : terminate source *)
+    IF  qDebug and Debug THEN
+      PrintTables;
+    END IF;
+    IF  Errs /= Error_free THEN
           ErrorMsg;
 		--{Close(ErrFile);}
 		--{halt;}
-	ELSIF  Map THEN
+    ELSIF  Map THEN
 	  IF qDebug THEN
             New_Line;
 	    Put_Line("  -* Symbol Table *-");

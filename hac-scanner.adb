@@ -170,10 +170,11 @@ BEGIN	--{ InSymbol }
 			END LOOP;
 
 			IF  I - 1 > J THEN
-				Sy := AdaKeyWSy(K)
-			;ELSE
-				Sy := IDent;END IF;
-			IF  (Sy = USy) THEN
+				Sy := AdaKeyWSy(K);
+			ELSE
+				Sy := IDent;
+                        END IF;
+			IF Sy = USy THEN
 				Sy := IDent;
 				Error(67);
 			END IF;
@@ -190,7 +191,7 @@ BEGIN	--{ InSymbol }
 			 EXIT WHEN  CharacterTypes(CH) /= Number;
 			END LOOP;
 
-			IF  (K > KMax)  OR  (INUM > NMax) THEN
+			IF K > KMax OR INUM > NMax THEN
 				Error(21);
 				INUM := 0;
 				K := 0;
@@ -286,7 +287,8 @@ BEGIN	--{ InSymbol }
 				END IF;
 			END IF;
 			IF  Sx + K = SMax THEN
-				Fatal(7);END IF;
+				Fatal(7);
+                        END IF;
 			StringTab(Sx + K) := CH;
 			K := K + 1;
 			IF  CC = 1 THEN
@@ -402,6 +404,14 @@ BEGIN	--{ InSymbol }
           Put(": " & ID);
         when intcon =>
           Put(": " & Integer'Image(INUM));
+        when floatcon =>
+          Put(": " & Float'Image(RNUM));
+        when strcon =>
+          Put(": """);
+          for i in INum .. INum + SLeng - 1 loop
+            Put(StringTab(i));
+          end loop;
+          Put('"');
         when becomes =>
           Put(" := ");
         when colon =>

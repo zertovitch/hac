@@ -764,7 +764,7 @@ package body HAC.Parser is
 
       InSymbol;
       Block(FSys, IsFun, Level + 1, T);
-      IF  IsFun THEN
+      IF IsFun THEN
         Emit1(33, 1);           -- Exit
       ELSE
         Emit1(32, CallSTDP);
@@ -1127,8 +1127,8 @@ package body HAC.Parser is
             N: Integer:= NS;
           BEGIN  -- STANDARD FUNCTION NO. N , N => 100 INDICATES
               -- a NILADIC FUNCTION.
-            IF  N < 100 THEN
-              IF  Sy = LParent THEN
+            IF N < 100 THEN
+              IF Sy = LParent THEN
                 InSymbol;
               ELSE
                 Error(9);
@@ -1212,24 +1212,25 @@ package body HAC.Parser is
         BEGIN  -- Factor
           X.TYP := NOTYP;
           X.Ref := 0;
-          Test(FacBegSys + StrCon, FSys, 58);
+          Test(Factor_Begin_Symbol + StrCon, FSys, 58);
           IF Sy = StrCon THEN
             X.TYP := Strings;
-            Emit1(24, SLeng);        -- String Length
+            Emit1(24, SLeng);       -- String Length
             Emit1(24, INUM);        -- pointer To String IdTab
             InSymbol;
           END IF;
-          WHILE  FacBegSys(Sy)  LOOP
+          WHILE Factor_Begin_Symbol(Sy) LOOP
 
             CASE Sy is
               when IDent =>
 
               I := Loc(Id);
               InSymbol;
-              DECLARE  r : Tabentry RENAMES  IdTab(I) ;
+              DECLARE
+                r : Tabentry RENAMES IdTab(I);
               BEGIN
                 CASE  r.Obj  IS
-                   WHEN Konstant=>
+                   WHEN Konstant =>
                     X.TYP := r.TYP;
                     X.Ref := r.Ref;
                     IF  X.TYP = Floats THEN
@@ -1238,10 +1239,10 @@ package body HAC.Parser is
                       Emit1(24, r.Adr);
                     END IF;
 
-                  WHEN Variable=>
+                  WHEN Variable =>
                     X.TYP := r.TYP;
                     X.Ref := r.Ref;
-                    IF  Sy = LParent or else Sy = Period THEN
+                    IF  Sy = LParent or Sy = Period THEN
                       IF  r.Normal THEN
                         F := 0;
                       ELSE
@@ -1249,17 +1250,17 @@ package body HAC.Parser is
                       END IF;
                       Emit2(F, r.LEV, r.Adr);
                       Selector(FSys, X);
-                      IF  StanTyps(X.TYP) THEN
+                      IF StanTyps(X.TYP) THEN
                         Emit(34);
                       END IF;
                     ELSE
-                      IF  X.TYP = enums or else StanTyps(X.TYP) THEN
-                        IF  r.Normal THEN
+                      IF X.TYP = enums or StanTyps(X.TYP) THEN
+                        IF r.Normal THEN
                           F := 1;
                         ELSE
                           F := 2;
                         END IF;
-                      ELSIF  r.Normal THEN
+                      ELSIF r.Normal THEN
                         F := 0;
                       ELSE
                         F := 1;
@@ -1267,7 +1268,7 @@ package body HAC.Parser is
                       Emit2(F, r.LEV, r.Adr);
                     END IF;
 
-                  WHEN TypeMark |  Prozedure=>
+                  WHEN TypeMark | Prozedure=>
                     Error(44);
 
                   WHEN Funktion=>
@@ -1327,7 +1328,7 @@ package body HAC.Parser is
               F:= 6;
             END IF;
 
-            Test(FSys, FacBegSys, F);
+            Test(FSys, Factor_Begin_Symbol, F);
           END LOOP;
         END Factor;
 
@@ -1588,7 +1589,9 @@ package body HAC.Parser is
           MultiStatement(Symset'((EndSy=> true, others=> false)));
           TestEnd;
           IF Sy = IDent THEN
-            IF  Id /= IdTab(I).Name THEN Error(22); END IF;
+            IF Id /= IdTab(I).Name THEN
+              Error(incorrect_block_name);
+            END IF;
             InSymbol;
           END IF;
           Level := Level - 1;
@@ -1603,7 +1606,7 @@ package body HAC.Parser is
         TestEnd;
         IF Sy = IDent THEN
           IF Id /= IdTab(Prt).Name THEN
-            Error(22);
+            Error(incorrect_block_name);
           END IF;
           InSymbol;
         END IF;
@@ -1844,22 +1847,29 @@ package body HAC.Parser is
         END IF;
       END ONECASE;
 
-    BEGIN
+    BEGIN -- CaseStatement
       InSymbol;
       I := 0;
       J := 0;
-      Expression(FSys + Symset'((OFSy | Comma | Colon=> true,
-                                 others=> false)), X);
+      Expression(FSys + Symset'((OFSy | IsSy | Comma | Colon => True,
+                                 others=> False)), X);
 
-      IF  NOT (X.TYP = Ints   or else X.TYP = Bools or else
-               X.TYP = xChars or else X.TYP = NOTYP) THEN
+      IF NOT (X.TYP = Ints   or X.TYP = Bools or
+              X.TYP = xChars or X.TYP = NOTYP) THEN
         Error(23);
       END IF;
       LC1 := LC;
-      Emit(12);                  -- JMPX
-      IF  Sy = OFSy THEN InSymbol; ELSE Error(8); END IF;
+      Emit(kSwitch); -- JMPX
+      if Sy = IsSy then -- Was OfSy in SmallAda ! I.e. case x OF when 1 => ...
+        InSymbol;
+      elsif Sy = OfSy then
+        Error(OF_instead_of_IS); -- common mistake by Pascal programmers
+        InSymbol;
+      else
+        Error(IS_missing);
+      end if;
 
-      WHILE  Sy = WhenSy  LOOP
+      WHILE Sy = WhenSy LOOP
         ONECASE;
       END LOOP;
 
@@ -2002,9 +2012,10 @@ package body HAC.Parser is
           InSymbol;
           EntryCall(FSys, I, - 1);
           IF  ObjCode(LC - 2).F = 19 THEN     -- need To patch CallType later
-            patch(0) := LC - 2
-          ;ELSE
-            patch(0) := LC - 3;END IF;       -- LC-1 must be OP=3, update Display
+            patch(0) := LC - 2;
+          ELSE
+            patch(0) := LC - 3;
+          END IF;       -- LC-1 must be OP=3, update Display
           patch(1) := LC;           -- need To patch in JMPC address later
           Emit1(kCondJump, - 1);    -- JMPC, address patched in after ELSE or OR
           IF Sy = Semicolon THEN
@@ -2097,7 +2108,7 @@ package body HAC.Parser is
             END IF;
             IF  Sy = LParent THEN      -- should be modified
               -- To check no. and
-              WHILE  NOT (Sy = doSy or else Sy = RParent)  LOOP
+              WHILE  NOT (Sy = doSy or Sy = RParent)  LOOP
                 InSymbol;
               END LOOP;
             END IF;        -- of parameters.
@@ -2134,7 +2145,7 @@ package body HAC.Parser is
             TestEnd;
             IF Sy = IDent THEN
               IF Id /= IdTab(I).Name THEN
-                SelectError(22);
+                SelectError(incorrect_block_name);
               END IF;
             END IF;
             Level := Level - 1;
@@ -2332,31 +2343,37 @@ package body HAC.Parser is
     END;                      -- SelectStatement
 
     PROCEDURE StandProc(N: Integer) IS
+      -- NB: Most of this part will disappear when Ada.Text_IO etc.
+      -- are implemented, as well as overloading.
       I, F:  Integer;
       X, Y:  Item;
+      do_first_InSymbol: Boolean:= True;
     BEGIN
-      CASE  N  IS
-        WHEN  1 | 2 =>  -- GET
-
-          IF  Sy = LParent THEN BEGIN
+      CASE  N  IS -- Numbers: see EnterStdFcns in HAC.Compiler
+        WHEN  1 | 2 =>  -- GET, GET_LINE
+          IF Sy = LParent THEN
             InSymbol;
-            I := GetFP(Id);         -- Schoening
-            IF I /= - 1 THEN
+            I := GetFP(Id);  -- Schoening
+            IF I /= - 1 THEN -- First parameter is a file variable
               Emit1(64, I);
               InSymbol;
-              IF  Sy /= Comma THEN
-                IF  Sy = RParent THEN
-                  InSymbol;
+              IF Sy /= Comma THEN
+                IF Sy = RParent THEN
+                  goto SKIP1b;
                 ELSE
                   Error(identifier_missing);
                 END IF;
               END IF;
             ELSE
               Emit1(64, 0);
+              do_first_InSymbol:= False;
             END IF;
             LOOP
-              InSymbol;
-              IF  Sy /= IDent THEN
+              if do_first_InSymbol then
+                InSymbol;
+              end if;
+              do_first_InSymbol:= True;
+              IF Sy /= IDent THEN
                 Error(identifier_missing);
               ELSE
                 I := LOC(Id);
@@ -2385,30 +2402,28 @@ package body HAC.Parser is
                     END IF;
                   END IF;END IF;
               END IF;
+              Test( Symset'((Comma | RParent=> true,
+                             others=> false)), FSys, 6);
 
-              Test(
-                           Symset'((Comma | RParent=> true,
-                                      others=> false)), FSys, 6);
-
-             EXIT WHEN  Sy /= Comma;
+              EXIT WHEN  Sy /= Comma;
             END LOOP;
-
+            <<SKIP1b>>
             IF Sy = RParent THEN
               InSymbol;
             ELSE
               Error(closing_parenthesis_missing);
             END IF;
-          END;END IF;
+          END IF;
           IF  N = 2 THEN
             Emit(62);
           END IF;
 
-        WHEN 3 | 4 =>          -- PUT
+        WHEN 3 | 4 =>          -- PUT, PUT_LINE
 
-          IF  Sy = LParent THEN BEGIN
+          IF Sy = LParent THEN
             InSymbol;
-            I := GetFP(Id);         -- Schoening
-            IF  I /= - 1 THEN
+            I := GetFP(Id);   -- Schoening
+            IF  I /= - 1 THEN -- First parameter is a file variable
               Emit1(64, I);
               InSymbol;
               IF  Sy /= Comma THEN
@@ -2420,10 +2435,13 @@ package body HAC.Parser is
               END IF;
             ELSE
               Emit1(64, 0);
-              InSymbol;
+              do_first_InSymbol:= False;
             END IF;
             LOOP
-              InSymbol;
+              if do_first_InSymbol then
+                InSymbol;
+              end if;
+              do_first_InSymbol:= True;
               IF  Sy = StrCon THEN
                 Emit1(24, SLeng);
                 Emit1(28, INUM);
@@ -2472,7 +2490,7 @@ package body HAC.Parser is
             ELSE
               Error(closing_parenthesis_missing);
             END IF;
-          END;END IF;
+          END IF;
           IF  N = 4 THEN
             Emit(63);
           END IF;
@@ -2487,7 +2505,7 @@ package body HAC.Parser is
             ELSE
               I := LOC(Id);
               InSymbol;
-              IF  I /= 0 THEN
+              IF I /= 0 THEN
                 IF  IdTab(I).Obj /= Variable THEN
                   Error(37);
                 ELSE
@@ -2500,8 +2518,9 @@ package body HAC.Parser is
                   END IF;
                   Emit2(F, IdTab(I).LEV, IdTab(I).Adr);
                   IF  Sy = LParent or else Sy = Period THEN
-                    Selector(FSys + RParent, X);END IF;
-                  IF  X.TYP = Ints THEN
+                    Selector(FSys + RParent, X);
+                  END IF;
+                  IF X.TYP = Ints THEN
                     Emit(N + 1);    -- N is 5, or 6. Opcode is 6 or 7
                   ELSE
                     Error(43);
@@ -2509,7 +2528,7 @@ package body HAC.Parser is
                 END IF;
               END IF;
             END IF;
-            IF  Sy = RParent THEN
+            IF Sy = RParent THEN
               InSymbol;
             ELSE
               Error(closing_parenthesis_missing);
@@ -2800,15 +2819,15 @@ BEGIN  -- Block
     return;
   END IF; -- Missing END
 
-  IF  Sy = IDent THEN
-    IF  Id /= BlockID THEN
-      Error(22);
+  IF Sy = IDent THEN
+    IF Id /= BlockID THEN
+      Error(incorrect_block_name);
       return;
     END IF;
     InSymbol;
   END IF;
 
-  IF  Sy /= Semicolon THEN
+  IF Sy /= Semicolon THEN
     Error(semicolon_missing);
     return;
   END IF;

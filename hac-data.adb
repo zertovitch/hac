@@ -4,38 +4,38 @@ package body HAC.Data is
 
   function "+"(a,b: Set) return Set is
     c: Set(a'range);
-    begin
-     for i in a'range loop c(i):= a(i) or b(i); end loop;
-     return c;
-    end;
+  begin
+    for i in a'range loop c(i):= a(i) or b(i); end loop;
+    return c;
+  end;
 
   function "+"(a,b: Symset) return Symset is
     c: Symset;
-    begin
-     for i in a'range loop c(i):= a(i) or b(i); end loop;
-     return c;
-    end;
+  begin
+    for i in a'range loop c(i):= a(i) or b(i); end loop;
+    return c;
+  end;
 
   function "+"(a: Symset; b: KeyWSymbol) return Symset is
     c: Symset:= a;
-    begin
-      c(b):= True;
-      return c;
-    end;
+  begin
+    c(b):= True;
+    return c;
+  end;
 
   function "-"(a,b: Symset) return Symset is
     c: Symset;
-    begin
-     for i in a'range loop c(i):= a(i) and not b(i); end loop;
-     return c;
-    end;
+  begin
+    for i in a'range loop c(i):= a(i) and not b(i); end loop;
+    return c;
+  end;
 
   function "-"(a: Symset; b: KeyWSymbol) return Symset is
     c: Symset:= a;
-    begin
-      c(b):= False;
-      return c;
-    end;
+  begin
+    c(b):= False;
+    return c;
+  end;
 
  -----------------------------------------------------------ICompiler-----
 

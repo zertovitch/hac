@@ -177,7 +177,7 @@ BEGIN
   i1 := -1;
   PUT_LINE("Selector value =", i1);
   CASE i1 of
-     WHEN    1 | 2    =>    PUT ("Case is 1 or 2 ... ");
+     WHEN    1 | 2    =>    PUT ("Case is 1 or 2 ...");
                             PUT_LINE("that's OK");
      WHEN    3        =>    PUT_LINE("Case = 3, ");
      WHEN    4        =>    PUT_LINE("Case = 4, ");
