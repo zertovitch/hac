@@ -182,7 +182,9 @@ package HAC.Data is
 
       SUBTYPE Index is integer range - XMax..+XMax;
 
-      SUBTYPE Alfa is String(1..Alng);  --  program identifier
+      subtype Alfa is String(1..Alng);
+
+      Empty_Alfa: Alfa:= (others => ' ');
 
       TYPE aObject is (
             Konstant, Variable, TypeMark, Prozedure, Funktion,

@@ -29,7 +29,7 @@ FUNCTION ErrorString(Id: Integer) return String is
     WHEN  17  => Return  "EXPECTING A BOOLEAN EXPRESSION ";
     WHEN  18  => Return  "CONTROL VARIABLE OF THE WRONG TYPE";
     WHEN  19  => Return  "FIRST/LAST MUST BE MATCHING TYPES";
-    WHEN  20  => Return  "MISSING ``IS''";
+    WHEN  IS_missing  => Return  "MISSING ``IS''";
     WHEN  21  => Return  "THE NUMBER IS TOO LARGE";
     WHEN  22  => Return  "INCORRECT BLOCK NAME";
     WHEN  23  => Return  "BAD TYPE FOR A CASE STATEMENT";
@@ -120,21 +120,21 @@ PROCEDURE Fatal(N: Integer) is			-- internal table overflow
 	IF qDebug THEN
 		Put("The Compiler TABLE for ");
 		CASE N IS
-		  WHEN  1=> Put("IDENTIFIERS");
+		  WHEN  IDENTIFIERS_table_overflow => Put("IDENTIFIERS");
 		  WHEN 	2=> Put("PROCEDURES");
-		  WHEN 	3=> Put("FLOAT Constants");
+		  WHEN 	FLOAT_constants_table_overflow => Put("FLOAT Constants");
 		  WHEN 	4=> Put("Arrays");
 		  WHEN 	LEVEL_overflow  => Put("LEVELS");
 		  WHEN 	OBJECT_overflow => Put("OBJECT ObjCode");
 		  WHEN 	7=> Put("Strings");
 		  WHEN 	8=> Put("TASKS");
 		  WHEN 	9=> Put("ENTRIES");
-		  WHEN 	10=> Put("ObjCode PATCHING");
+		  WHEN 	PATCHING_overflow => Put("ObjCode PATCHING");
 		  WHEN others => Put("N unknown: " & integer'image(N));
 		END CASE;
 		Put_Line(" is too SMALL");
                 New_Line;
-		Put_Line(" Please take this output to the maintainer of ");
+		Put_Line(" Please take this output to the maintainers of ");
 		Put_Line(" HAC for your installation ");
                 New_Line;
 		Put_Line(" Fatal termination of HAC");
