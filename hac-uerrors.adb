@@ -121,8 +121,8 @@ PROCEDURE Fatal(N: Integer) is			-- internal table overflow
 	IF qDebug THEN
 		Put("The Compiler TABLE for ");
 		CASE N IS
-		  WHEN  IDENTIFIERS_table_overflow => Put("IDENTIFIERS");
-		  WHEN 	2=> Put("PROCEDURES");
+		  WHEN  IDENTIFIERS_table_overflow     => Put("IDENTIFIERS");
+		  WHEN 	PROCEDURES_table_overflow      => Put("PROCEDURES");
 		  WHEN 	FLOAT_constants_table_overflow => Put("FLOAT Constants");
 		  WHEN 	4=> Put("Arrays");
 		  WHEN 	LEVEL_overflow  => Put("LEVELS");

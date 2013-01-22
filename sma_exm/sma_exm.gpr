@@ -1,0 +1,64 @@
+project SMA_Exm is
+
+   type Build_Mode_Type is ("Debug", "Fast");
+   Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
+
+   for Main use ("dinersmo.adb",
+"din_sm.adb",
+"din_ws.adb",
+"hello.adb",
+"merge.adb",
+"mini.adb",
+"newrace.adb",
+"pgm0.adb",
+"pgm1.adb",
+"pgm2.adb",
+"race.adb",
+"racedead.adb",
+"shell.adb",
+"test1.adb",
+"test2.adb");
+   case Build_Mode is
+      when "Debug" =>
+         for Object_Dir use "../obj/debug";
+      when "Fast" =>
+         for Object_Dir use "../obj/fast";
+   end case;
+
+   for Exec_Dir use ".";
+
+   package Pretty_Printer is
+      for Default_Switches ("ada") use ("-i2");
+   end Pretty_Printer;
+
+   package Compiler is
+      case Build_Mode is
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-gnat05", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwa", "-gnatVa");
+         when "Fast" =>
+            for Default_Switches ("ada") use ("-gnat05", "-gnatwa", "-O2", "-gnatpn", "-funroll-loops", "-fpeel-loops", "-funswitch-loops", "-ftracer", "-fweb", "-frename-registers", "-ffunction-sections");
+      end case;
+   end Compiler;
+
+   package Binder is
+      case Build_Mode is
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-E");
+         when "Fast" =>
+      end case;
+   end Binder;
+
+   package Linker is
+      case Build_Mode is
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-g");
+         when "Fast" =>
+            for Default_Switches ("ada") use ("-s", "-Wl,--gc-sections");
+      end case;
+   end Linker;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-g");
+   end Builder;
+
+end SMA_Exm;

@@ -40,10 +40,10 @@ procedure Din_WS is
       for x in 1..NO_MEALS loop
         CHOPSTICK1.PICKUP;
         CHOPSTICK2.PICKUP;
-        LENGTH_OF_MEAL := RANDOM(9) + 1;
-        PUT("Eddy Dijkstra eating meal"); PUT(x:2);
+        LENGTH_OF_MEAL := Float(RANDOM(9)) + 1.0;
+        PUT("Eddy Dijkstra eating meal"); PUT(x, 2);
         PUT(" with chopsticks 1 and 2");
-        PUT(" for"); PUT(LENGTH_OF_MEAL:2); PUT(" seconds");
+        PUT(" for"); PUT(LENGTH_OF_MEAL, 2); PUT(" seconds");
         NEW_LINE;
         delay LENGTH_OF_MEAL;
         PUT("Eddy Dijkstra done");
