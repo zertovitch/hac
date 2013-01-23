@@ -1,321 +1,340 @@
-with HAC.Data;                        use HAC.Data;
-with HAC.UErrors;                       use HAC.UErrors;
-with HAC.Parser;                        use HAC.Parser;
-with HAC.PCode;                         use HAC.PCode;
-with HAC.Scanner;                       use HAC.Scanner;
+with HAC.Data;    use HAC.Data;
+with HAC.UErrors; use HAC.UErrors;
+with HAC.Parser;  use HAC.Parser;
+with HAC.PCode;   use HAC.PCode;
+with HAC.Scanner; use HAC.Scanner;
 
 with Ada.Text_IO;
 
 package body HAC.Compiler is
 
   use Ada.Text_IO;
-  package IIO is new Integer_IO(integer); use IIO;
+  package IIO is new Integer_IO (Integer);
+  use IIO;
 
   procedure Init_Tables is
   begin
     -- Arrays and blocks are clearly 1-based
-    A:= 0;
-    B:= 0;
+    A := 0;
+    B := 0;
     -- Identifiers
-    T:= 0;
+    T := 0;
     -- Strings
-    Sx:= 0;
+    Sx := 0;
     -- Tasks, Entries
-    TCount:= 0;
-    ECount:= 0;
+    TCount := 0;
+    ECount := 0;
     -- Location Counter (in output code)
-    LC:= 0;
+    LC := 0;
   end Init_Tables;
 
-  PROCEDURE PrintTables IS
-  BEGIN
+  procedure PrintTables is
+  begin
     New_Line;
-    Put(" Identifiers          Link  Obj  TYP  Ref  NRM  LEV  Adr");
+    Put (" Identifiers          Link  Obj  TYP  Ref  NRM  LEV  Adr");
     New_Line;
-    FOR  I  IN   BlockTab(1).last.. T  LOOP
-      DECLARE r: TabEntry RENAMES IdTab(I);
-      BEGIN
-        Put(I, 4); Put( ' '); Put( r.Name);
-        Put( r.Link, 10);
-        Put( aObject'Pos(r.Obj), 5);
-        Put( Types'Pos(r.TYP), 5);
-        Put( r.Ref, 5);
-        Put( Boolean'Pos(r.Normal), 5);
-        Put( r.LEV, 5);
-        Put( r.Adr, 5);
+    for I in BlockTab (1).Last .. T loop
+      declare
+        r : TabEntry renames IdTab (I);
+      begin
+        Put (I, 4);
+        Put (' ');
+        Put (r.Name);
+        Put (r.Link, 10);
+        Put (aObject'Pos (r.Obj), 5);
+        Put (Types'Pos (r.TYP), 5);
+        Put (r.Ref, 5);
+        Put (Boolean'Pos (r.Normal), 5);
+        Put (r.LEV, 5);
+        Put (r.Adr, 5);
         New_Line;
-      END;
-    END LOOP;
+      end;
+    end loop;
 
     New_Line;
-    Put_Line(" Tasks       Block#");
-    FOR I IN 0..TCount LOOP
-      Put(I, 4);
-      Put( ' ');
-      Put( IdTab(TskDefTab(I)).Name);
-      Put( "  ");
-      Put(
-          IdTab(TskDefTab(I)).Ref);
+    Put_Line (" Tasks       Block#");
+    for I in 0 .. TCount loop
+      Put (I, 4);
+      Put (' ');
+      Put (IdTab (TskDefTab (I)).Name);
+      Put ("  ");
+      Put (IdTab (TskDefTab (I)).Ref);
       New_Line;
-    END LOOP;
+    end loop;
 
     New_Line;
 
-    IF  ECount > 0 THEN
-      Put(" Entries ");
+    if ECount > 0 then
+      Put (" Entries ");
       New_Line;
-      FOR  I  IN   1.. ECount  LOOP
-        Put(I, 4);
-        Put( ' ');
-        Put( IdTab(EntryTAB(I)).Name);
-        Put( "in Task ");
-        Put(IdTab(TskDefTab(IdTab(EntryTAB(I)).Adr)).Name);
+      for I in 1 .. ECount loop
+        Put (I, 4);
+        Put (' ');
+        Put (IdTab (EntryTAB (I)).Name);
+        Put ("in Task ");
+        Put (IdTab (TskDefTab (IdTab (EntryTAB (I)).Adr)).Name);
         New_Line;
-      END LOOP;
+      end loop;
       New_Line;
-    END IF;
+    end if;
 
-    Put_Line(" Blocks               last LPar PSze Vsze");
+    Put_Line (" Blocks               last LPar PSze Vsze");
     -- There is a hidden block #0, "the Universe", with Standard
-    FOR I IN 1..B LOOP
-      DECLARE r: BTabEntry RENAMES BlockTab(I) ;
-      BEGIN
-        Put(I, 4); Put( ' '); Put( r.Id);
-        Put( r.last, 10);
-        Put( r.LastPar, 5);
-        Put( r.PSize, 5);
-        Put( r.VSize, 5);
+    for I in 1 .. B loop
+      declare
+        r : BTabEntry renames BlockTab (I);
+      begin
+        Put (I, 4);
+        Put (' ');
+        Put (r.Id);
+        Put (r.Last, 10);
+        Put (r.LastPar, 5);
+        Put (r.PSize, 5);
+        Put (r.VSize, 5);
         New_Line;
-      END;
-    END LOOP;
+      end;
+    end loop;
 
     New_Line;
 
-    IF A > 0 THEN
-      Put_Line(" Arrays    Xtyp Etyp Eref  Low High ELSZ Size");
-      FOR I IN 1..A LOOP
-        DECLARE r: ATabEntry RENAMES  ArraysTab(I);
-        BEGIN
-          Put(I, 4);
-          Put( Types'Pos(r.InXTYP), 10);
-          Put( Types'Pos(r.ELTYP), 5);
-          Put( r.ELREF, 5);
-          Put( r.Low, 5);
-          Put( r.High, 5);
-          Put( r.ELSize, 5);
-          Put( r.Size, 5);
+    if A > 0 then
+      Put_Line (" Arrays    Xtyp Etyp Eref  Low High ELSZ Size");
+      for I in 1 .. A loop
+        declare
+          r : ATabEntry renames ArraysTab (I);
+        begin
+          Put (I, 4);
+          Put (Types'Pos (r.InXTYP), 10);
+          Put (Types'Pos (r.ELTYP), 5);
+          Put (r.ELREF, 5);
+          Put (r.Low, 5);
+          Put (r.High, 5);
+          Put (r.ELSize, 5);
+          Put (r.Size, 5);
           New_Line;
-        END;
-      END LOOP;
-    END IF;
+        end;
+      end loop;
+    end if;
 
-  END PrintTables;
-
+  end PrintTables;
 
   ---------------------------------------------------------------------------
 
-  PROCEDURE Compile IS
+  procedure Compile is
 
-    PROCEDURE EnterStdFcns IS
+    procedure EnterStdFcns is
 
-      PROCEDURE Enter(X0: String; X1: aObject; X2: Types; X3: Integer) IS
-        X0A: Alfa:= Empty_Alfa;
-      BEGIN
-        X0A(1..X0'Length):= X0;
-        T := T + 1; -- Enter standard identifier
-        IdTab(T):=
-          (Name=> X0A, Link=> T - 1,
-           Obj=> X1, TYP=> X2, Ref=> 0,
-           Normal=> True,
-           LEV=> 0, Adr=> X3);
-      END Enter;
+      procedure Enter
+       (X0 : String;
+        X1 : aObject;
+        X2 : Types;
+        X3 : Integer)
+      is
+        X0A : Alfa := Empty_Alfa;
+      begin
+        X0A (1 .. X0'Length) := X0;
+        T                    := T + 1; -- Enter standard identifier
+        IdTab (T)            :=
+         (Name   => X0A,
+          Link   => T - 1,
+          Obj    => X1,
+          TYP    => X2,
+          Ref    => 0,
+          Normal => True,
+          LEV    => 0,
+          Adr    => X3);
+      end Enter;
 
-    BEGIN -- EnterStdFcns
-	Enter("          ", Variable, NOTYP, 0);
-	Enter("FALSE     ", Konstant, Bools, 0);
-	Enter("TRUE      ", Konstant, Bools, 1);
-	Enter("FLOAT     ", TypeMark, FloatS, 1);
-	Enter("CHARACTER ", TypeMark, xChars, 1);
-	Enter("BOOLEAN   ", TypeMark, Bools, 1);
-	Enter("INTEGER   ", TypeMark, Ints, 1);
-	Enter("STRING    ", TypeMark, Strings, 1);		--{ Hathorn }
-	Enter("SEMAPHORE ", TypeMark, Ints, 1);			--{ Hathorn }
-	Enter("TEXT      ", TypeMark, Ints, 1);			--{ Schoening }
-	Enter("ABS       ", Funktion, FloatS, 0);
-	Enter("SQR       ", Funktion, FloatS, 2);
-	Enter("ODD       ", Funktion, Bools, 4);
-	Enter("ASCII     ", Funktion, xChars, 5);
-	Enter("ORD       ", Funktion, Ints, 6);
-	Enter("SUCC      ", Funktion, xChars, 7);
-	Enter("PRED      ", Funktion, xChars, 8);
-	Enter("ROUND     ", Funktion, Ints, 9);
-	Enter("TRUNC     ", Funktion, Ints, 10);
-	Enter("SIN       ", Funktion, FloatS, 11);
-	Enter("COS       ", Funktion, FloatS, 12);
-	Enter("EXP       ", Funktion, FloatS, 13);
-	Enter("LN        ", Funktion, FloatS, 14);
-	Enter("SQRT      ", Funktion, FloatS, 15);
-	Enter("ARCTAN    ", Funktion, FloatS, 16);
-	Enter("EOF       ", Funktion, Bools, 17);
-	Enter("EOLN      ", Funktion, Bools, 18);
-	Enter("RANDOM    ", Funktion, Ints, 19); --{ Schoening }
-	Enter("CLOCK     ", Funktion, FloatS, 100); --{ Cramer }
-	--{ Niladic functions such as CLOCK will have   }
-	--{ IdTab[].Adr >= 100 To differentiate them from }
-	--{ functions with args.  See Parser.StandFct.  }
-	Enter("GET       ", Prozedure, NOTYP, 1);
-	Enter("GET_LINE  ", Prozedure, NOTYP, 2);
-	Enter("PUT       ", Prozedure, NOTYP, 3);
-	Enter("PUT_LINE  ", Prozedure, NOTYP, 4);
-	Enter("NEW_LINE  ", Prozedure, NOTYP, 4); --{ Hathorn }
-	Enter("WAIT      ", Prozedure, NOTYP, 5);
-	Enter("SIGNAL    ", Prozedure, NOTYP, 6);
-	Enter("RESET     ", Prozedure, NOTYP, 7); --{ Schoening }
-	Enter("REWRITE   ", Prozedure, NOTYP, 8); --{ Schoening }
-	Enter("CLOSE     ", Prozedure, NOTYP, 9); --{ Schoening }
-	Enter("CURSORAT  ", Prozedure, NOTYP, 10); --{ Cramer }
-	Enter("QUANTUM   ", Prozedure, NOTYP, 11); --{ Cramer }
-	Enter("PRIORITY  ", Prozedure, NOTYP, 12); --{ Cramer }
-	Enter("INHERITP  ", Prozedure, NOTYP, 13); --{ Cramer }
-	Enter(ProgramID, Prozedure, NOTYP, 0);
-    END EnterStdFcns;
+    begin -- EnterStdFcns
+      Enter ("          ", Variable, NOTYP, 0);
+      Enter ("FALSE     ", Konstant, Bools, 0);
+      Enter ("TRUE      ", Konstant, Bools, 1);
+      Enter ("FLOAT     ", TypeMark, Floats, 1);
+      Enter ("CHARACTER ", TypeMark, xChars, 1);
+      Enter ("BOOLEAN   ", TypeMark, Bools, 1);
+      Enter ("INTEGER   ", TypeMark, Ints, 1);
+      Enter ("STRING    ", TypeMark, Strings, 1);  --{ Hathorn }
+      Enter ("SEMAPHORE ", TypeMark, Ints, 1);   --{ Hathorn }
+      Enter ("TEXT      ", TypeMark, Ints, 1);   --{ Schoening }
+      Enter ("ABS       ", Funktion, Floats, 0);
+      Enter ("SQR       ", Funktion, Floats, 2);
+      Enter ("ODD       ", Funktion, Bools, 4);
+      Enter ("ASCII     ", Funktion, xChars, 5);
+      Enter ("ORD       ", Funktion, Ints, 6);
+      Enter ("SUCC      ", Funktion, xChars, 7);
+      Enter ("PRED      ", Funktion, xChars, 8);
+      Enter ("ROUND     ", Funktion, Ints, 9);
+      Enter ("TRUNC     ", Funktion, Ints, 10);
+      Enter ("SIN       ", Funktion, Floats, 11);
+      Enter ("COS       ", Funktion, Floats, 12);
+      Enter ("EXP       ", Funktion, Floats, 13);
+      Enter ("LN        ", Funktion, Floats, 14);
+      Enter ("SQRT      ", Funktion, Floats, 15);
+      Enter ("ARCTAN    ", Funktion, Floats, 16);
+      Enter ("EOF       ", Funktion, Bools, 17);
+      Enter ("EOLN      ", Funktion, Bools, 18);
+      Enter ("RANDOM    ", Funktion, Ints, 19); --{ Schoening }
+      Enter ("CLOCK     ", Funktion, Floats, 100); --{ Cramer }
+      --{ Niladic functions such as CLOCK will have   }
+      --{ IdTab[].Adr >= 100 To differentiate them from }
+      --{ functions with args.  See Parser.StandFct.  }
+      Enter ("GET       ", Prozedure, NOTYP, 1);
+      Enter ("GET_LINE  ", Prozedure, NOTYP, 2);
+      Enter ("PUT       ", Prozedure, NOTYP, 3);
+      Enter ("PUT_LINE  ", Prozedure, NOTYP, 4);
+      Enter ("NEW_LINE  ", Prozedure, NOTYP, 4); --{ Hathorn }
+      Enter ("WAIT      ", Prozedure, NOTYP, 5);
+      Enter ("SIGNAL    ", Prozedure, NOTYP, 6);
+      Enter ("RESET     ", Prozedure, NOTYP, 7); --{ Schoening }
+      Enter ("REWRITE   ", Prozedure, NOTYP, 8); --{ Schoening }
+      Enter ("CLOSE     ", Prozedure, NOTYP, 9); --{ Schoening }
+      Enter ("CURSORAT  ", Prozedure, NOTYP, 10); --{ Cramer }
+      Enter ("QUANTUM   ", Prozedure, NOTYP, 11); --{ Cramer }
+      Enter ("PRIORITY  ", Prozedure, NOTYP, 12); --{ Cramer }
+      Enter ("INHERITP  ", Prozedure, NOTYP, 13); --{ Cramer }
+      Enter (ProgramID, Prozedure, NOTYP, 0);
+    end EnterStdFcns;
 
-  BEGIN -- Compile
+  begin -- Compile
 
     Init_Tables;
     cICompiler;
 
-    IF ListingWasRequested THEN
-      Create(Listing, name=> "compiler.lst");
-      Put_Line(Listing, Header);
-    END IF;
-
-    if qDebug then
-      Put_Line("Compiler: check for program heading");
+    if ListingWasRequested then
+      Create (Listing, Name => "compiler.lst");
+      Put_Line (Listing, Header);
     end if;
 
-    CH:= ' ';
+    if qDebug then
+      Put_Line ("Compiler: check for program heading");
+    end if;
+
+    CH := ' ';
     InSymbol;
-    IF Sy /= WithSy THEN   -- WITH SMALL_SP;
-      Error(69);
-    ELSE
+    if Sy /= WithSy then   -- WITH SMALL_SP;
+      Error (69);
+    else
       InSymbol;
-      IF Sy /= IDent OR  Id /= "SMALL_SP  " THEN
-        Error(69);
-      ELSE
+      if Sy /= IDent or Id /= "SMALL_SP  " then
+        Error (69);
+      else
         InSymbol;
-        IF  Sy /= Semicolon THEN Error(14); ELSE InSymbol; END IF;
-      END IF;
-    END IF;
-
-    IF Sy /= UseSy THEN
-      Error(70); -- USE SMALL_SP;
-    ELSE
-      InSymbol;
-      IF  Sy /= IDent  OR  Id /= "SMALL_SP  " THEN
-        Error(70);
-      ELSE
-        InSymbol;
-        IF  Sy /= Semicolon THEN
-          Error(14);
-        ELSE
+        if Sy /= Semicolon then
+          Error (14);
+        else
           InSymbol;
-        END IF;
-      END IF;
-    END IF;
-
-    if qDebug then
-      Put_Line("Compiler: check for main procedure");
+        end if;
+      end if;
     end if;
 
-    IF  Sy /= ProcSy THEN
-      Error(3); -- PROCEDURE Name IS
-    ELSE
+    if Sy /= UseSy then
+      Error (70); -- USE SMALL_SP;
+    else
       InSymbol;
-      IF  Sy /= IDent THEN
-        Error(2);
-      ELSE
+      if Sy /= IDent or Id /= "SMALL_SP  " then
+        Error (70);
+      else
+        InSymbol;
+        if Sy /= Semicolon then
+          Error (14);
+        else
+          InSymbol;
+        end if;
+      end if;
+    end if;
+
+    if qDebug then
+      Put_Line ("Compiler: check for main procedure");
+    end if;
+
+    if Sy /= ProcSy then
+      Error (3); -- PROCEDURE Name IS
+    else
+      InSymbol;
+      if Sy /= IDent then
+        Error (2);
+      else
         ProgramID := Id;
         InSymbol;
-      END IF;
-    END IF;
+      end if;
+    end if;
 
     if qDebug then
-      Put_Line("Compiler: main procedure is " & ProgramID);
+      Put_Line ("Compiler: main procedure is " & ProgramID);
     end if;
 
     EnterStdFcns; -- Enter Standard function ids and ProgramID
 
-    BlockTab(0):= -- Block Table Entry for Standard [was Main, 1]
-	(Id=> "Std Defns" & (10..Empty_Alfa'Length => ' '),
-	 last=> T,
-	 LastPar=> 1,
-	 PSize=> 0,
-	 VSize=> 0,
-	 SrcFrom=> LineCount,
-	 SrcTo=>   LineCount); -- ajout!
-    Display(0):= 0; -- Added 7-Dec-2009
+    BlockTab (0) := -- Block Table Entry for Standard [was Main, 1]
+     (Id      => "Std Defns" & (10 .. Empty_Alfa'Length => ' '),
+      Last    => T,
+      LastPar => 1,
+      PSize   => 0,
+      VSize   => 0,
+      SrcFrom => LineCount,
+      SrcTo   => LineCount); -- ajout!
+    Display (0)  := 0; -- Added 7-Dec-2009
 
-    TskDefTab(0) := T; --{ Task Table Entry }
+    TskDefTab (0) := T; --{ Task Table Entry }
 
     -- Start Compiling
-    Block(BlockBegSyS + StatBegSys, False, 1, T);
+    Block (BlockBegSyS + StatBegSys, False, 1, T);
 
-    Emit(66); -- halt
+    Emit (66); -- halt
 
-    IF  Sy /= Semicolon THEN
-      IF  qDebug THEN
-        Put_Line("Compile terminated BEFORE FILE END");
-      END IF;
+    if Sy /= Semicolon then
+      if qDebug then
+        Put_Line ("Compile terminated BEFORE FILE END");
+      end if;
 
-      IF ListingWasRequested THEN
-        Put_Line( "Compile terminated BEFORE FILE END");
-      END IF;
-    END IF;
+      if ListingWasRequested then
+        Put_Line ("Compile terminated BEFORE FILE END");
+      end if;
+    end if;
 
-    IF BlockTab(2).VSize > StMax - (STKINCR * TCount) THEN
-      Error(49);
-    END IF;
-    BlockTab(1).SrcTo := LineCount;		--(* Manuel : terminate source *)
-    IF  qDebug and Debug THEN
+    if BlockTab (2).VSize > StMax - (STKINCR * TCount) then
+      Error (49);
+    end if;
+    BlockTab (1).SrcTo := LineCount;  --(* Manuel : terminate source *)
+    if qDebug and Debug then
       PrintTables;
-    END IF;
-    IF  Errs /= Error_free THEN
-          ErrorMsg;
-		--{Close(ErrFile);}
-		--{halt;}
-    ELSIF  Map THEN
-	  IF qDebug THEN
-            New_Line;
-	    Put_Line("  -* Symbol Table *-");
-            New_Line;
-	    Put_Line("  LOC  Name       scope");
-            Put_Line("------------------------");
-	    New_Line;
-	    FOR  aTx  IN  BlockTab(1).last+1.. T LOOP
-		Tx := aTx;
-		IF  IdTab(Tx).Obj = Variable THEN
-			IF  IdTab(Tx).TYP /= NOTYP THEN
-				Put(IdTab(Tx).Adr, 4);
-				Put(IdTab(Tx).Name, Alng + 3);
-			END IF;
-			IF  IdTab(Tx).LEV = 1 THEN
-				Put(" Global(");
-				Put( IdTab(Tx).LEV, 1);
-				Put( ')');
-				New_Line;
-			ELSE
-				Put(" Local (");
-				Put( IdTab(Tx).LEV, 1);
-				Put( ')');
-				New_Line;
-			END IF;
-		END IF;
-	    END LOOP;
-	    New_Line;
-	END IF;
-    END IF;
-	--{Close(ErrFile);}
-  END Compile;
+    end if;
+    if Errs /= error_free then
+      ErrorMsg;
+    --{Close(ErrFile);}
+    --{halt;}
+    elsif Map then
+      if qDebug then
+        New_Line;
+        Put_Line ("  -* Symbol Table *-");
+        New_Line;
+        Put_Line ("  LOC  Name       scope");
+        Put_Line ("------------------------");
+        New_Line;
+        for aTx in BlockTab (1).Last + 1 .. T loop
+          Tx := aTx;
+          if IdTab (Tx).Obj = Variable then
+            if IdTab (Tx).TYP /= NOTYP then
+              Put (IdTab (Tx).Adr, 4);
+              Put (IdTab (Tx).Name, Alng + 3);
+            end if;
+            if IdTab (Tx).LEV = 1 then
+              Put (" Global(");
+              Put (IdTab (Tx).LEV, 1);
+              Put (')');
+              New_Line;
+            else
+              Put (" Local (");
+              Put (IdTab (Tx).LEV, 1);
+              Put (')');
+              New_Line;
+            end if;
+          end if;
+        end loop;
+        New_Line;
+      end if;
+    end if;
+    --{Close(ErrFile);}
+  end Compile;
 
-END HAC.Compiler;
+end HAC.Compiler;

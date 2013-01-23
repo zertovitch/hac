@@ -1,431 +1,451 @@
-with HAC.Data;                          use HAC.Data;
-with HAC.UErrors;                       use HAC.UErrors;
+with HAC.Data;    use HAC.Data;
+with HAC.UErrors; use HAC.UErrors;
 
-with Ada.Text_IO;                       use Ada.Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
-PACKAGE BODY HAC.Scanner IS
+package body HAC.Scanner is
 
-package IIO is new Integer_IO(integer); use IIO;
+  package IIO is new Integer_IO (Integer);
+  use IIO;
 
-  PROCEDURE InSymbol IS
-    I, J, K, e: Integer;
-    theLine : String(1..1000);
+  procedure InSymbol is
+    I, J, K, e : Integer;
+    theLine    : String (1 .. 1000);
 
-    function UpCase(c: character) return character is
+    function UpCase (c : Character) return Character is
     begin
       if ('a' <= c) and then (c <= 'z') then
-        return character'val(character'pos(c) - character'pos('a')
-          + character'pos('A'));
+        return Character'Val
+                (Character'Pos (c) -
+                 Character'Pos ('a') +
+                 Character'Pos ('A'));
       else
         return c;
       end if;
     end UpCase;
 
-    PROCEDURE NextCh IS -- Read Next Char; process line end
-   BEGIN
-     IF CC = LL THEN
-	IF cEndOfSource THEN
-	  IF qDebug THEN		-- @@@ Make an error for this
-	    Put_Line(" PROGRAM INCOMPLETE");
-          END IF;
-	  IF ListingWasRequested THEN
-	    Put_Line(Listing," PROGRAM INCOMPLETE");
-          END IF;
-	  Error(81);
-	  ErrorMsg;
-	  raise Failure_1_0;
-	END IF;
-	IF SkipFlag THEN EndSkip; END IF;
-	IF ListingWasRequested THEN New_Line(Listing); END IF;
-	LineCount := LineCount + 1;
-	IF ListingWasRequested THEN
-          Put(Listing, LineCount, 4);
-          Put(Listing, "  ");
-          Put(Listing, LC, 5);
-          Put(Listing, "  ");
-	END IF;
-	LL := 0;
-	CC := 0;
-	cGetNextLine(theLine, LL); -- Ada style
-	InpLine(1..LL+1) := theLine(1..LL) & ' '; -- Should be truncated to LLNG
-	syLine := LineCount;
-	LL:= LL + 1;
+    procedure NextCh is -- Read Next Char; process line end
+    begin
+      if CC = LL then
+        if cEndOfSource then
+          if qDebug then  -- @@@ Make an error for this
+            Put_Line (" PROGRAM INCOMPLETE");
+          end if;
+          if ListingWasRequested then
+            Put_Line (Listing, " PROGRAM INCOMPLETE");
+          end if;
+          Error (81);
+          ErrorMsg;
+          raise Failure_1_0;
+        end if;
+        if SkipFlag then
+          EndSkip;
+        end if;
+        if ListingWasRequested then
+          New_Line (Listing);
+        end if;
+        LineCount := LineCount + 1;
+        if ListingWasRequested then
+          Put (Listing, LineCount, 4);
+          Put (Listing, "  ");
+          Put (Listing, LC, 5);
+          Put (Listing, "  ");
+        end if;
+        LL := 0;
+        CC := 0;
+        cGetNextLine (theLine, LL); -- Ada style
+        InpLine (1 .. LL + 1) := theLine (1 .. LL) & ' '; -- Should be
+                                                          --truncated to LLNG
+        syLine                := LineCount;
+        LL                    := LL + 1;
 
-	IF ListingWasRequested THEN
-	  New_Line(Listing);
-	  Put_Line(Listing, InpLine);
-	END IF;
-     END IF;
+        if ListingWasRequested then
+          New_Line (Listing);
+          Put_Line (Listing, InpLine);
+        end if;
+      end if;
 
-     CC := CC + 1;
-     CH := InpLine(CC);
-     -- Manuel : Change tabs for spaces
-     IF  Character'Pos(CH) = 9 THEN
-       CH := ' ';	-- IdTab for space
-     END IF;
-     IF  Character'Pos(CH) < Character'Pos(' ') THEN
-	Error(60);
-     END IF;
+      CC := CC + 1;
+      CH := InpLine (CC);
+      -- Manuel : Change tabs for spaces
+      if Character'Pos (CH) = 9 then
+        CH := ' '; -- IdTab for space
+      end if;
+      if Character'Pos (CH) < Character'Pos (' ') then
+        Error (60);
+      end if;
 
-    END NextCh;
+    end NextCh;
 
-    PROCEDURE ReadScale IS
-      S, Sign: Integer;
-      BEGIN
-	NextCh;
-	Sign := 1;
-	S := 0;
-	IF  CH = '+' THEN
-		NextCh;
-	ELSIF  CH = '-' THEN
-		NextCh;
-		Sign := - 1;
-	END IF;
-	IF CH NOT IN '0'..'9' THEN
-	  Error(40);
-	ELSE
-	  LOOP
-	    S := 10 * S + Character'Pos(CH) - Character'Pos('0');
-	    NextCh;
-	    EXIT WHEN CH NOT IN '0'..'9';
-	  END LOOP;
-	END IF;
-	e := S * Sign + e;
-      END ReadScale;
+    procedure ReadScale is
+      S, Sign : Integer;
+    begin
+      NextCh;
+      Sign := 1;
+      S    := 0;
+      if CH = '+' then
+        NextCh;
+      elsif CH = '-' then
+        NextCh;
+        Sign := -1;
+      end if;
+      if CH not in '0' .. '9' then
+        Error (40);
+      else
+        loop
+          S := 10 * S + Character'Pos (CH) - Character'Pos ('0');
+          NextCh;
+          exit when CH not in '0' .. '9';
+        end loop;
+      end if;
+      e := S * Sign + e;
+    end ReadScale;
 
-    PROCEDURE AdjustScale IS
-		S: Integer;
-		D, T: Float;
-	BEGIN
-		IF  K + e > EMax THEN
-			Error(21);
-		ELSIF  K + e < EMin THEN
-			RNum := 0.0;
-		ELSE
-			S := abs(e);
-			T := 1.0;
-			D := 10.0;
-			LOOP
-			  WHILE  S rem 2 = 0  LOOP -- NOT Odd(S)
-					S := S  /  2;
-					D := D ** 2;
-			  END LOOP;
+    procedure AdjustScale is
+      S    : Integer;
+      D, T : Float;
+    begin
+      if K + e > EMax then
+        Error (21);
+      elsif K + e < EMin then
+        RNum := 0.0;
+      else
+        S := abs (e);
+        T := 1.0;
+        D := 10.0;
+        loop
+          while S rem 2 = 0 loop -- NOT Odd(S)
+            S := S / 2;
+            D := D ** 2;
+          end loop;
 
-			  S := S - 1;
-			  T := D * T;
-			  EXIT WHEN  S = 0;
-			END LOOP;
+          S := S - 1;
+          T := D * T;
+          exit when S = 0;
+        end loop;
 
-			IF  e >= 0 THEN
-				RNum := RNum * T;
-			ELSE
-				RNum := RNum / T;
-			END IF;
-		END IF;
-	END AdjustScale;
+        if e >= 0 then
+          RNum := RNum * T;
+        else
+          RNum := RNum / T;
+        end if;
+      end if;
+    end AdjustScale;
 
-BEGIN	--{ InSymbol }
+  begin --{ InSymbol }
 
-<<Label_1>>
-	WHILE CH = ' ' LOOP NextCh; END LOOP;
+    <<Label_1>> while CH = ' ' loop
+      NextCh;
+    end loop;
 
-	syStart := CC - 1;
-	IF  CharacterTypes(CH) = Illegal THEN
-		Error(24);
-		IF  qDebug THEN
-			Put_Line(" Char is => " &
-			 integer'image(Character'Pos(CH)) );
-		END IF;
-		IF  ListingWasRequested THEN
-			Put_Line(Listing, " Char is => " &
-			 integer'image(Character'Pos(CH)) );
-		END IF;
-		NextCh;
-		GOTO Label_1;
+    syStart := CC - 1;
+    if CharacterTypes (CH) = Illegal then
+      Error (24);
+      if qDebug then
+        Put_Line (" Char is => " & Integer'Image (Character'Pos (CH)));
+      end if;
+      if ListingWasRequested then
+        Put_Line
+         (Listing,
+          " Char is => " & Integer'Image (Character'Pos (CH)));
+      end if;
+      NextCh;
+      goto Label_1;
 
-	END IF;
+    end if;
 
-	CASE  CH  IS
-          WHEN 'A'..'Z' |  -- identifier or wordsymbol
-               'a'..'z'=>
-	    		K := 0;
-			Id := (others => ' ');
-			LOOP
-			  IF  K < Alng THEN
-			    K := K + 1;
-			    Id(K) := UpCase(CH);
-			  END IF;
-			  NextCh;
-			  EXIT WHEN  CH /= '_'  AND THEN
-			    special_or_illegal(CharacterTypes(CH));
-			END LOOP;
+    case CH is
+    when 'A' .. 'Z' |  -- identifier or wordsymbol
+'a' .. 'z' =>
+      K  := 0;
+      Id := (others => ' ');
+      loop
+        if K < Alng then
+          K      := K + 1;
+          Id (K) := UpCase (CH);
+        end if;
+        NextCh;
+        exit when CH /= '_'
+                 and then special_or_illegal (CharacterTypes (CH));
+      end loop;
 
-			I := 1;
-			J := NKW;	-- Binary Search
-			LOOP
-			  K := (I + J)  /  2;
-			  IF  Id <= AdaKeyW(K) THEN J := K - 1; END IF;
-			  IF  Id >= AdaKeyW(K) THEN I := K + 1; END IF;
-			 EXIT WHEN  I > J;
-			END LOOP;
+      I := 1;
+      J := NKW; -- Binary Search
+      loop
+        K := (I + J) / 2;
+        if Id <= AdaKeyW (K) then
+          J := K - 1;
+        end if;
+        if Id >= AdaKeyW (K) then
+          I := K + 1;
+        end if;
+        exit when I > J;
+      end loop;
 
-			IF  I - 1 > J THEN
-				Sy := AdaKeyWSy(K);
-			ELSE
-				Sy := IDent;
-                        END IF;
-			IF Sy = USy THEN
-				Sy := IDent;
-				Error(67);
-			END IF;
+      if I - 1 > J then
+        Sy := AdaKeyWSy (K);
+      else
+        Sy := IDent;
+      end if;
+      if Sy = USy then
+        Sy := IDent;
+        Error (67);
+      end if;
 
-		WHEN '0'..'9'=>  -- Number
-			K := 0;
-			INUM := 0;
-			Sy := IntCon;
-			LOOP
+    when '0' .. '9' =>  -- Number
+      K    := 0;
+      INum := 0;
+      Sy   := IntCon;
+      loop
 
-				INUM := INUM * 10 + Character'Pos(CH) - Character'Pos('0');
-				K := K + 1;
-				NextCh;
-			 EXIT WHEN  CharacterTypes(CH) /= Number;
-			END LOOP;
+        INum := INum * 10 + Character'Pos (CH) - Character'Pos ('0');
+        K    := K + 1;
+        NextCh;
+        exit when CharacterTypes (CH) /= Number;
+      end loop;
 
-			IF K > KMax OR INUM > NMax THEN
-				Error(21);
-				INUM := 0;
-				K := 0;
-			END IF;
-			IF  CH = '.' THEN
-				NextCh;
-				IF  CH = '.' THEN
-					CH := Character'Val(128);
-				ELSE
-					Sy := FloatCon;
-					RNum := float(INUM);
-					e := 0;
-					WHILE  CharacterTypes(CH) = Number  LOOP
-						e := e - 1;
-						RNum := 10.0 * RNum +
-				float(Character'Pos(CH) - Character'Pos('0'));
-						NextCh;
-					END LOOP;
+      if K > KMax or INum > NMax then
+        Error (21);
+        INum := 0;
+        K    := 0;
+      end if;
+      if CH = '.' then
+        NextCh;
+        if CH = '.' then
+          CH := Character'Val (128);
+        else
+          Sy   := FloatCon;
+          RNum := Float (INum);
+          e    := 0;
+          while CharacterTypes (CH) = Number loop
+            e    := e - 1;
+            RNum := 10.0 * RNum +
+                    Float (Character'Pos (CH) - Character'Pos ('0'));
+            NextCh;
+          end loop;
 
-					IF  e = 0 THEN
-						Error(40);END IF;
-					IF  CH = 'E' THEN
-						ReadScale;END IF;
-					IF  e /= 0 THEN	AdjustScale; END IF;
-				END IF;
+          if e = 0 then
+            Error (40);
+          end if;
+          if CH = 'E' then
+            ReadScale;
+          end if;
+          if e /= 0 then
+            AdjustScale;
+          end if;
+        end if;
 
-			ELSIF  CH = 'E' THEN
+      elsif CH = 'E' then
 
-				Sy := FloatCon;
-				RNum := float(INUM);
-				e := 0;
-				ReadScale;
-				IF  e /= 0 THEN	AdjustScale; END IF;
+        Sy   := FloatCon;
+        RNum := Float (INum);
+        e    := 0;
+        ReadScale;
+        if e /= 0 then
+          AdjustScale;
+        end if;
 
-			END IF;
+      end if;
 
-		WHEN ':' =>
-			NextCh;
-			IF  CH = '=' THEN
-				Sy := BecomeS;
-				NextCh;
-			ELSE
-				Sy := Colon;
-			END IF;
+    when ':' =>
+      NextCh;
+      if CH = '=' then
+        Sy := Becomes;
+        NextCh;
+      else
+        Sy := Colon;
+      end if;
 
-		WHEN '<' =>
-			NextCh;
-			IF  CH = '=' THEN
-				Sy := LEQ;
-				NextCh;
-			ELSE
-				Sy := LSS;END IF;
+    when '<' =>
+      NextCh;
+      if CH = '=' then
+        Sy := LEQ;
+        NextCh;
+      else
+        Sy := LSS;
+      end if;
 
-		WHEN '>' =>
-			NextCh;
-			IF  CH = '=' THEN
-				Sy := GEQ;
-				NextCh;
-			ELSE
-				Sy := GTR;
-			END IF;
+    when '>' =>
+      NextCh;
+      if CH = '=' then
+        Sy := GEQ;
+        NextCh;
+      else
+        Sy := GTR;
+      end if;
 
-		WHEN '/' =>
-			NextCh;
-			IF  CH = '=' THEN
-				Sy := NEQ;
-				NextCh;
-			ELSE
-				Sy := Divide;
-			END IF;
+    when '/' =>
+      NextCh;
+      if CH = '=' then
+        Sy := NEQ;
+        NextCh;
+      else
+        Sy := Divide;
+      end if;
 
-		WHEN '.' =>
-			NextCh;
-			IF  CH = '.' THEN
-				Sy := RangeSy;
-				NextCh;
-			ELSE
-				Sy := Period;
-			END IF;
+    when '.' =>
+      NextCh;
+      if CH = '.' then
+        Sy := RangeSy;
+        NextCh;
+      else
+        Sy := Period;
+      end if;
 
-		WHEN c128=>  -- Hathorn
-			Sy := RangeSy;
-			NextCh;
+    when c128 =>  -- Hathorn
+      Sy := RangeSy;
+      NextCh;
 
-		WHEN '"'=>
-			K := 0;
-<<Label_2>>
-			NextCh;
-			IF  CH = '"' THEN
-				NextCh;
-				IF  CH /= '"' THEN
-					GOTO Label_3;
-				END IF;
-			END IF;
-			IF  Sx + K = SMax THEN
-				Fatal(7);
-                        END IF;
-			StringTab(Sx + K) := CH;
-			K := K + 1;
-			IF  CC = 1 THEN
-				K := 0; -- END OF InpLine
-			ELSE
-				GOTO Label_2;
-			END IF;
-		<<Label_3>>
-			IF  K = 0 THEN
-				Error(38);
-				Sy := StrCon;
-				INUM := 0;
-			ELSE
-				Sy := StrCon;
-				INUM := Sx;
-				SLeng := K;
-				Sx := Sx + K;
-			END IF;
+    when '"' =>
+      K := 0;
+      <<Label_2>> NextCh;
+      if CH = '"' then
+        NextCh;
+        if CH /= '"' then
+          goto Label_3;
+        end if;
+      end if;
+      if Sx + K = SMax then
+        Fatal (7);
+      end if;
+      StringTab (Sx + K) := CH;
+      K                  := K + 1;
+      if CC = 1 then
+        K := 0; -- END OF InpLine
+      else
+        goto Label_2;
+      end if;
+      <<Label_3>>
+      if K = 0 then
+        Error (38);
+        Sy   := StrCon;
+        INum := 0;
+      else
+        Sy    := StrCon;
+        INum  := Sx;
+        SLeng := K;
+        Sx    := Sx + K;
+      end if;
 
-		WHEN ''' =>
-			K := 0;
-<<Label_4>>
-			NextCh;
-			IF  CH = ''' THEN
-				NextCh;
-				IF  CH /= ''' THEN
-					GOTO Label_5;
-				END IF;
-			END IF;
-			IF  Sx + K = SMax THEN
-				Fatal(7);END IF;
-			StringTab(Sx + K) := CH;
-			K := K + 1;
-			IF  CC = 1 THEN
-				K := 0;   -- END OF InpLine
-			ELSE
-				GOTO Label_4;
-			END IF;
-<<Label_5>>
-			IF  K = 1 THEN
-				Sy := CharCon;
-				INUM := Character'Pos(StringTab(Sx));
-			ELSIF  K = 0 THEN
-				Error(38);
-				Sy := CharCon;
-				INUM := 0;
-			ELSE
-				Error(66);
-				Sy := StrCon;
-				INUM := Sx;
-				SLeng := K;
-				Sx := Sx + K;
-			END IF;
+    when ''' =>
+      K := 0;
+      <<Label_4>> NextCh;
+      if CH = ''' then
+        NextCh;
+        if CH /= ''' then
+          goto Label_5;
+        end if;
+      end if;
+      if Sx + K = SMax then
+        Fatal (7);
+      end if;
+      StringTab (Sx + K) := CH;
+      K                  := K + 1;
+      if CC = 1 then
+        K := 0;   -- END OF InpLine
+      else
+        goto Label_4;
+      end if;
+      <<Label_5>>
+      if K = 1 then
+        Sy   := CharCon;
+        INum := Character'Pos (StringTab (Sx));
+      elsif K = 0 then
+        Error (38);
+        Sy   := CharCon;
+        INum := 0;
+      else
+        Error (66);
+        Sy    := StrCon;
+        INum  := Sx;
+        SLeng := K;
+        Sx    := Sx + K;
+      end if;
 
+    when '-' =>
+      NextCh;
+      if CH /= '-' then
+        Sy := MinUS;
+      else --  comment
+        CC := LL; -- ignore rest of input line
+        NextCh;
+        goto Label_1;
+      end if;
 
-		WHEN '-' =>
-			NextCh;
-			IF  CH /= '-' THEN
-				Sy := MinUS;
-			ELSE --  comment
-				CC := LL; -- ignore rest of input line
-				NextCh;
-				GOTO Label_1;
-			END IF;
+    when '=' =>
+      NextCh;
+      if CH /= '>' then
+        Sy := EQL;
+      else
+        Sy := Finger;
+        NextCh;
+      end if;
 
-		WHEN '=' =>
-			NextCh;
-			IF  CH /= '>' THEN
-				Sy := EQL;
-			ELSE
-				Sy := Finger;
-				NextCh;
-			END IF;
+    when '{' =>  -- Special non documented comment
 
-		WHEN '{'=>  -- Special non documented comment
+      while CH /= '}' loop
+        NextCh;
+      end loop;
 
-			WHILE  CH /= '}'  LOOP NextCh; END LOOP;
+      NextCh;
+      goto Label_1;
 
-			NextCh;
-			GOTO Label_1;
+    when '|' =>
+      Sy := Alt;
+      NextCh;
 
-		WHEN '|' =>
-			Sy := Alt;
-			NextCh;
+    when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
+      Sy := SpecialSymbols (CH);
+      NextCh;
 
-		WHEN '+'|'*' |  '('|')' |  ',' |  '['|']' |  ';' |  '&' =>
-			Sy := SpecialSymbols(CH);
-			NextCh;
+    when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
+      --  duplicate case Constant '&',
+      Error (24);
+      if qDebug then
+        Put_Line (" [ $!@\^_?""&%  ]");
+      end if;
+      if ListingWasRequested then
+        Put_Line (Listing, " [ $!@\^_?""&%  ]");
+      end if;
+      NextCh;
+      goto Label_1;
 
-		WHEN '$' |  '!' |  '@' |  '\' |  '^' |  '_' |  '?' |  '%'=>
-			--  duplicate case Constant '&',
-			Error(24);
-			IF  qDebug THEN
-				Put_Line(" [ $!@\^_?""&%  ]");
-			END IF;
-			IF  ListingWasRequested THEN
-				Put_Line(Listing, " [ $!@\^_?""&%  ]");
-			END IF;
-			NextCh;
-			GOTO Label_1;
+    when Character'Val (0) .. ' ' =>
+      null;
+    when others =>
+      null;
 
-	  when  character'val(0) .. ' ' => null;
-	  when  others => null;
+    end case; -- CH
 
-	END CASE; -- CH
-
-	syEnd := CC - 1;
+    syEnd := CC - 1;
 
     if qDebug then
-      Put("[Sym:] " & KeyWSymbol'Image(Sy));
+      Put ("[Sym:] " & KeyWSymbol'Image (Sy));
       case Sy is
-        when ident =>
-          Put(": " & ID);
-        when intcon =>
-          Put(": " & Integer'Image(INUM));
-        when floatcon =>
-          Put(": " & Float'Image(RNUM));
-        when strcon =>
-          Put(": """);
+        when IDent =>
+          Put (": " & Id);
+        when IntCon =>
+          Put (": " & Integer'Image (INum));
+        when FloatCon =>
+          Put (": " & Float'Image (RNum));
+        when StrCon =>
+          Put (": """);
           for i in INum .. INum + SLeng - 1 loop
-            Put(StringTab(i));
+            Put (StringTab (i));
           end loop;
-          Put('"');
-        when becomes =>
-          Put(" := ");
-        when colon =>
-          Put(" : ");
-        when constsy =>
-          Put(" constant ");
+          Put ('"');
+        when Becomes =>
+          Put (" := ");
+        when Colon =>
+          Put (" : ");
+        when ConstSy =>
+          Put (" constant ");
         when others =>
           null;
       end case;
       New_Line;
     end if;
 
-  END InSymbol;
-
+  end InSymbol;
 
 end HAC.Scanner;
-
