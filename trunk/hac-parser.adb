@@ -811,9 +811,9 @@ package body HAC.Parser is
           T0 := T0i;
           while T0 < T1 - 1 loop
             T0 := T0 + 1;
-            Emit2 (0, IdTab (T0).LEV, IdTab (T0).Adr);
-            Emit2 (1, IdTab (T1).LEV, IdTab (T1).Adr);
-            Emit (38);
+            Emit2 (kLoadAddress, IdTab (T0).LEV, IdTab (T0).Adr);
+            Emit2 (kPushV, IdTab (T1).LEV, IdTab (T1).Adr);
+            Emit (kStore);
           end loop;
 
           LC1 := LC;
@@ -856,9 +856,9 @@ package body HAC.Parser is
       InSymbol;
       Block (FSys, IsFun, Level + 1, T);
       if IsFun then
-        Emit1 (33, 1);           -- Exit
+        Emit1 (kExitFunction, 1);
       else
-        Emit1 (32, CallSTDP);
+        Emit1 (kExitCall, CallSTDP);
       end if;
     end ProcDeclaration;
 
@@ -882,7 +882,7 @@ package body HAC.Parser is
 
         InSymbol;
         Block (FSys, False, Level + 1, I);
-        Emit1 (32, CallSTDP);             -- Exit
+        Emit1 (kExitCall, CallSTDP);
       else                    -- Task Specification
         if Sy = IDent then
           TaskID := Id;
@@ -983,7 +983,7 @@ package body HAC.Parser is
               V.Ref := IdTab (J).Ref;
               a     := IdTab (J).Adr;
               if a /= 0 then
-                Emit1 (9, a);
+                Emit1 (kOffset, a);
               end if;
             end if;
             InSymbol;
@@ -1005,9 +1005,9 @@ package body HAC.Parser is
               if ArraysTab (a).InXTYP /= X.TYP then
                 Error (26);
               elsif ArraysTab (a).ELSize = 1 then
-                Emit1 (20, a);
+                Emit1 (kIndex1, a);
               else
-                Emit1 (21, a);
+                Emit1 (kIndex, a);
               end if;
               V.TYP := ArraysTab (a).ELTYP;
               V.Ref := ArraysTab (a).ELREF;
@@ -1050,7 +1050,7 @@ package body HAC.Parser is
       X            : Item;
       LastP, CP, K : Integer;
     begin
-      Emit1 (18, I);                  -- mark stack
+      Emit1 (kMarkStack, I);
       LastP := BlockTab (IdTab (I).Ref).LastPar;
       CP    := I;
       if Sy = LParent then          -- actual parameter list
@@ -1070,12 +1070,12 @@ package body HAC.Parser is
                 if X.Ref /= IdTab (CP).Ref then
                   Error (36);
                 elsif X.TYP = Arrays then
-                  Emit1 (22, ArraysTab (X.Ref).Size);
+                  Emit1 (kLoadBlock, ArraysTab (X.Ref).Size);
                 elsif X.TYP = Records then
-                  Emit1 (22, BlockTab (X.Ref).VSize);
+                  Emit1 (kLoadBlock, BlockTab (X.Ref).VSize);
                 end if;
               elsif X.TYP = Ints and IdTab (CP).TYP = Floats then
-                Emit1 (26, 0);
+                Emit1 (kCase26, 0);
               elsif X.TYP /= NOTYP then
                 Error (36);
               end if;
@@ -1092,9 +1092,9 @@ package body HAC.Parser is
                   X.TYP := IdTab (K).TYP;
                   X.Ref := IdTab (K).Ref;
                   if IdTab (K).Normal then
-                    Emit2 (0, IdTab (K).LEV, IdTab (K).Adr);
+                    Emit2 (kLoadAddress, IdTab (K).LEV, IdTab (K).Adr);
                   else
-                    Emit2 (1, IdTab (K).LEV, IdTab (K).Adr);
+                    Emit2 (kPushV, IdTab (K).LEV, IdTab (K).Adr);
                   end if;
                   if Sy = LParent or else Sy = Period then
                     Selector
@@ -1130,14 +1130,14 @@ package body HAC.Parser is
       end if;
 
       if CallType = CallSTDP then
-        Emit2 (19, CallType, BlockTab (IdTab (I).Ref).PSize - 1); -- 19 = Call
+        Emit2 (kCall, CallType, BlockTab (IdTab (I).Ref).PSize - 1);
       else
-        Emit2 (19, CallType, BlockTab (IdTab (I).Ref).PSize - 1); -- 19 = Call
-        Emit1 (32, CallType);            -- RETURN FROM Entry Call
+        Emit2 (kCall, CallType, BlockTab (IdTab (I).Ref).PSize - 1);
+        Emit1 (kExitCall, CallType); -- Return from Entry Call
       end if;
 
       if IdTab (I).LEV < Level then
-        Emit2 (3, IdTab (I).LEV, Level);
+        Emit2 (kUpdateDisplayV, IdTab (I).LEV, Level);
       end if;
     end Call;
 
@@ -1179,18 +1179,18 @@ package body HAC.Parser is
       if a > Floats or B > Floats then
         Error (33);
         return NOTYP;
-      elsif (a = NOTYP) or (B = NOTYP) then
+      elsif a = NOTYP or B = NOTYP then
         return NOTYP;
       elsif a = Ints then
         if B = Ints then
           return Ints;
         else
-          Emit1 (26, 1);
+          Emit1 (kCase26, 1);
           return Floats;
         end if;
       else
         if B = Ints then
-          Emit1 (26, 0);
+          Emit1 (kCase26, 0);
         end if;
         return Floats;
       end if;
@@ -1281,7 +1281,7 @@ package body HAC.Parser is
                       TS :=
                        Typset'((Ints | Floats => True, others => False));
                       if X.TYP = Ints then
-                        Emit1 (26, 0);
+                        Emit1 (kCase26, 0);
                       end if;
 
                     -- Random
@@ -1296,7 +1296,7 @@ package body HAC.Parser is
                   end case; -- N
 
                   if TS (X.TYP) then
-                    Emit1 (8, N);
+                    Emit1 (kStndFunctions, N);
                   elsif X.TYP /= NOTYP then
                     Error (48);
                   end if;
@@ -1306,13 +1306,13 @@ package body HAC.Parser is
                   if Sy /= IDent then
                     Error (identifier_missing);
                   elsif Id = "INPUT     " then
-                    Emit2 (8, 0, N);
+                    Emit2 (kStndFunctions, 0, N);
                   else
                     I := GetFP (Id);
                     if I = 0 then
                       Error (undefined_identifier);
                     else
-                      Emit2 (8, I, N);
+                      Emit2 (kStndFunctions, I, N);
                     end if;
                   end if;
                   InSymbol;
@@ -1326,7 +1326,7 @@ package body HAC.Parser is
               else            -- NILADIC FUNCTION
                 case N is
                   when 100 =>
-                    Emit1 (8, N); -- CLOCK
+                    Emit1 (kStndFunctions, N); -- CLOCK
                   when others =>
                     null;
                 end case;
@@ -1339,8 +1339,8 @@ package body HAC.Parser is
             Test (Factor_Begin_Symbol + StrCon, FSys, 58);
             if Sy = StrCon then
               X.TYP := Strings;
-              Emit1 (24, SLeng);       -- String Length
-              Emit1 (24, INum);        -- pointer To String IdTab
+              Emit1 (kLiteral, SLeng);       -- String Length
+              Emit1 (kLiteral, INum);        -- pointer To String IdTab
               InSymbol;
             end if;
             while Factor_Begin_Symbol (Sy) loop
@@ -1358,9 +1358,9 @@ package body HAC.Parser is
                         X.TYP := r.TYP;
                         X.Ref := r.Ref;
                         if X.TYP = Floats then
-                          Emit1 (25, r.Adr);
+                          Emit1 (kLoadFloat, r.Adr);
                         else
-                          Emit1 (24, r.Adr);
+                          Emit1 (kLiteral, r.Adr);
                         end if;
 
                       when Variable =>
@@ -1368,26 +1368,26 @@ package body HAC.Parser is
                         X.Ref := r.Ref;
                         if Sy = LParent or Sy = Period then
                           if r.Normal then
-                            F := 0;
+                            F := kLoadAddress;
                           else
-                            F := 1;
+                            F := kPushV;
                           end if;
                           Emit2 (F, r.LEV, r.Adr);
                           Selector (FSys, X);
                           if StanTyps (X.TYP) then
-                            Emit (34);
+                            Emit (kCase34);
                           end if;
                         else
                           if X.TYP = Enums or StanTyps (X.TYP) then
                             if r.Normal then
-                              F := 1;
+                              F := kPushV;
                             else
-                              F := 2;
+                              F := kPushIndirect;
                             end if;
                           elsif r.Normal then
-                            F := 0;
+                            F := kLoadAddress;
                           else
-                            F := 1;
+                            F := kPushV;
                           end if;
                           Emit2 (F, r.LEV, r.Adr);
                         end if;
@@ -1414,14 +1414,14 @@ package body HAC.Parser is
                   if Sy = FloatCon then
                     X.TYP := Floats;
                     EnterFloat (RNum);
-                    Emit1 (25, C1);
+                    Emit1 (kLoadFloat, C1);
                   else
                     if Sy = CharCon then
                       X.TYP := xChars;
                     else
                       X.TYP := Ints;
                     end if;
-                    Emit1 (24, INum);
+                    Emit1 (kLiteral, INum);
                   end if;
                   X.Ref := 0;
                   InSymbol;
@@ -1438,7 +1438,7 @@ package body HAC.Parser is
                   InSymbol;
                   Factor (FSys, X);
                   if X.TYP = Bools then
-                    Emit (35);
+                    Emit (k_NOT_Boolean);
                   elsif X.TYP /= NOTYP then
                     Error (32);
                   end if;
@@ -1471,28 +1471,28 @@ package body HAC.Parser is
                 when NOTYP =>
                   null;
                 when Ints =>
-                  Emit (57);
+                  Emit (k_MULT_Integer);
                 when Floats =>
-                  Emit (60);
+                  Emit (k_MULT_Float);
                 when others =>
                   null;
               end case;
             elsif OP = Divide then    --  /
               if X.TYP = Ints and Y.TYP = Ints then
-                Emit (58);
+                Emit (k_DIV_Integer);
               else
                 if X.TYP = Ints then
-                  Emit1 (26, 1);
+                  Emit1 (kCase26, 1);
                   X.TYP := Floats;
                 end if;
                 if Y.TYP = Ints then
-                  Emit1 (26, 0);
+                  Emit1 (kCase26, 0);
                   Y.TYP := Floats;
                 end if;
                 if X.TYP = Floats and Y.TYP = Floats then
-                  Emit (61);
+                  Emit (k_DIV_Float);
                 else
-                  if (X.TYP /= NOTYP) and (Y.TYP /= NOTYP) then
+                  if X.TYP /= NOTYP and Y.TYP /= NOTYP then
                     Error (33);
                   end if;
                   X.TYP := NOTYP;
@@ -1500,7 +1500,7 @@ package body HAC.Parser is
               end if;
             elsif OP = AndSy then      -- AND
               if X.TYP = Bools and Y.TYP = Bools then
-                Emit (56);
+                Emit (k_AND_Boolean);
               else
                 if X.TYP /= NOTYP and Y.TYP /= NOTYP then
                   Error (32);
@@ -1509,7 +1509,7 @@ package body HAC.Parser is
               end if;
             else            -- MOD  -  OP = ModSy
               if X.TYP = Ints and Y.TYP = Ints then
-                Emit (59);
+                Emit (k_MOD_Integer);
               else
                 if X.TYP /= NOTYP and Y.TYP /= NOTYP then
                   Error (34);
@@ -1535,7 +1535,8 @@ package body HAC.Parser is
           if X.TYP > Floats then
             Error (33);
           elsif OP = MinUS then
-            Emit (36);
+            Emit (k_Unary_MINUS_Integer);
+            -- !! obviously wrong when X.TYP = Floats
           end if;
         else
           Term (FSys + TermZ, X);
@@ -1547,7 +1548,7 @@ package body HAC.Parser is
           -- OR
           if OP = OrSy then
             if X.TYP = Bools and Y.TYP = Bools then
-              Emit (51);
+              Emit (k_OR_Boolean);
             else
               if X.TYP /= NOTYP and Y.TYP /= NOTYP then
                 Error (32);
@@ -1561,15 +1562,15 @@ package body HAC.Parser is
                 null;
               when Ints =>
                 if OP = Plus then
-                  Emit (52); -- S [T].I := S [T].I + S [T + 1].I ;
+                  Emit (k_ADD_Integer);
                 else
-                  Emit (53); -- S [T].I := S [T].I - S [T + 1].I ;
+                  Emit (k_SUBTRACT_Integer);
                 end if;
               when Floats =>
                 if OP = Plus then
-                  Emit (54); -- S [T].R := S [T].R + S [T + 1].R ;
+                  Emit (k_ADD_Float);
                 else
-                  Emit (55); -- S [T].R := S [T].R - S [T + 1].R ;
+                  Emit (k_SUBTRACT_Float);
                 end if;
               when others =>
                 null;
@@ -1590,11 +1591,11 @@ package body HAC.Parser is
         SimpleExpression (FSys, Y.all);
         if X.TYP = Ints and then Y.TYP = Floats then
           X.TYP := Floats;
-          Emit1 (26, 1);
+          Emit1 (kCase26, 1);
         end if;
         if Y.TYP = Ints and then X.TYP = Floats then
           Y.TYP := Floats;
-          Emit1 (26, 0);
+          Emit1 (kCase26, 0);
         end if;
         if X.TYP = Enums and then Y.TYP = Enums and then X.Ref /= Y.Ref then
           Error (35);
@@ -1607,17 +1608,17 @@ package body HAC.Parser is
           end if;
           case OP is
             when EQL =>
-              Emit (39 + F);
+              Emit (k_EQL_Float + F);
             when NEQ =>
-              Emit (40 + F);
+              Emit (k_NEQ_Float + F);
             when LSS =>
-              Emit (41 + F);
+              Emit (k_LSS_Float + F);
             when LEQ =>
-              Emit (42 + F);
+              Emit (k_LEQ_Float + F);
             when GTR =>
-              Emit (43 + F);
+              Emit (k_GTR_Float + F);
             when GEQ =>
-              Emit (44 + F);
+              Emit (k_GEQ_Float + F);
             when others =>
               null;
           end case;
@@ -1662,29 +1663,29 @@ package body HAC.Parser is
       Expression (Semicolon_set, Y);
       if X.TYP = Y.TYP then
         if StanTyps (X.TYP) then
-          Emit (38);
+          Emit (kStore);
         elsif X.Ref /= Y.Ref then
           Error (46);
         else
           case X.TYP is
             when Arrays =>
-              Emit1 (23, ArraysTab (X.Ref).Size);
+              Emit1 (kCopyBlock, ArraysTab (X.Ref).Size);
             when Records =>
-              Emit1 (23, BlockTab (X.Ref).VSize);
+              Emit1 (kCopyBlock, BlockTab (X.Ref).VSize);
             when Enums =>
-              Emit (38);
+              Emit (kStore);
             when others =>
               null;
           end case;
         end if;
-      elsif (X.TYP = Floats) and (Y.TYP = Ints) then
-        Emit1 (26, 0);
-        Emit (38);
-      elsif (X.TYP = Arrays) and (Y.TYP = Strings) then
+      elsif X.TYP = Floats and Y.TYP = Ints then
+        Emit1 (kCase26, 0);
+        Emit (kStore);
+      elsif X.TYP = Arrays and Y.TYP = Strings then
         if ArraysTab (X.Ref).ELTYP /= xChars then
           Error (46);
         else
-          Emit1 (67, ArraysTab (X.Ref).Size);       -- array Size
+          Emit1 (kStringAssignment, ArraysTab (X.Ref).Size);    -- array Size
         end if;
       elsif (X.TYP /= NOTYP) and (Y.TYP /= NOTYP) then
         Error (46);
@@ -1732,7 +1733,7 @@ package body HAC.Parser is
         end if;
         InSymbol;
         AcceptCall (FSys, I);
-        Emit1 (4, I);                -- Accept rendezvous opcode = 4
+        Emit1 (kAcceptRendezvous, I);
         if Sy = doSy then
           if Level = LMax then
             Fatal (LEVEL_overflow);
@@ -1750,7 +1751,7 @@ package body HAC.Parser is
           end if;
           Level := Level - 1;
         end if;
-        Emit1 (5, I);                -- End rendezvous opcode = 5
+        Emit1 (kEndRendezvous, I);
       end AcceptStatement;
 
       procedure CompoundStmnt is           -- modified Hathorn
@@ -1889,7 +1890,7 @@ package body HAC.Parser is
 
         -- Go back and patch the dummy addresses generated by Exit stmts.
         while LC0 < LC loop
-          if (ObjCode (LC0).Y = -1) then
+          if ObjCode (LC0).Y = -1 then
             ObjCode (LC0).Y := LC;
           end if;
           LC0 := LC0 + 1;
@@ -1925,12 +1926,12 @@ package body HAC.Parser is
             Expression (Semicolon_set, Y);
             if X.TYP = Y.TYP then
               if StanTyps (X.TYP) then
-                Emit (38);
+                Emit (kStore);
               elsif X.Ref /= Y.Ref then
                 Error (46);
               elsif X.TYP = Floats and Y.TYP = Ints then
-                Emit1 (26, 0);
-                Emit (38);
+                Emit1 (kCase26, 0);
+                Emit (kStore);
               elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
                 Error (46);
               end if;
@@ -1939,8 +1940,11 @@ package body HAC.Parser is
             Error (45);
           end if;
         end if;
-        Emit1 (32 + Boolean'Pos (IsFun), CallSTDP);       -- unconditional
-                                                          --procedure Exit
+        if IsFun then
+          Emit1 (kExitFunction, CallSTDP);
+        else
+          Emit1 (kExitCall, CallSTDP);
+        end if;
       end ReturnStatement;
 
       procedure DelayStatement is            -- Cramer
@@ -1956,7 +1960,7 @@ package body HAC.Parser is
             Error (73);
           end if;
         end if;
-        Emit (68);                  -- Task delay instruction
+        Emit (kDelay);
       end DelayStatement;
 
       procedure CaseStatement is
@@ -2068,12 +2072,12 @@ package body HAC.Parser is
 
         ObjCode (LC1).Y := LC;
         for K in 1 .. I loop
-          if (CaseTab (K).LC > 0) then
-            Emit2 (13, 1, CaseTab (K).Val);
-            Emit1 (13, CaseTab (K).LC);
+          if CaseTab (K).LC > 0 then
+            Emit2 (k_Switch_2, 1, CaseTab (K).Val);
+            Emit1 (k_Switch_2, CaseTab (K).LC);
           else
-            Emit2 (13, -1, CaseTab (K).Val);
-            Emit1 (13, -CaseTab (K).LC);
+            Emit2 (k_Switch_2, -1, CaseTab (K).Val);
+            Emit1 (k_Switch_2, -CaseTab (K).LC);
           end if;
         end loop;
 
@@ -2156,13 +2160,13 @@ package body HAC.Parser is
             2);
         end if;
 
-        Emit2 (0, IdTab (T).LEV, IdTab (T).Adr);
+        Emit2 (kLoadAddress, IdTab (T).LEV, IdTab (T).Adr);
         InSymbol;
-        F := 14;
+        F := kFor1;
         if Sy = InSy then
           InSymbol;
           if Sy = ReverseSy then
-            F := 16;
+            F := kFor1Rev;
             InSymbol;
           end if;
           Expression
@@ -2337,14 +2341,14 @@ package body HAC.Parser is
             end if;
             InSymbol;
             AcceptCall2 (FSys, I);
-            Emit2 (73, 2, I);          -- Retain Entry Index
+            Emit2 (kSelectiveWait, 2, I);          -- Retain Entry Index
             if IAlt < 10 then
               IAlt := IAlt + 1;
             else
               Fatal (PATCHING_overflow);
             end if;
-            Alt (IAlt) := LC;          -- SAVE LOCATION FOR PATCHING
-            Emit2 (73, 3, LC);          -- ACCEPT IF Ready ELSE Skip To LC
+            Alt (IAlt) := LC;              -- SAVE LOCATION FOR PATCHING
+            Emit2 (kSelectiveWait, 3, LC); -- ACCEPT IF Ready ELSE Skip To LC
             -- CONDITIONAL ACCEPT MUST BE ATOMIC
             if Sy = doSy then
               if Level = LMax then
@@ -2363,8 +2367,8 @@ package body HAC.Parser is
               Level := Level - 1;
               InSymbol;
             end if;
-            Emit1 (5, I);            -- END RENDEZVOUS
-          end AcceptStatement2;                  -- AcceptStatement2
+            Emit1 (kEndRendezvous, I);
+          end AcceptStatement2;
 
         begin          -- SelectiveWait ===============================> Kurtz
           ISD          := 0;
@@ -2372,8 +2376,8 @@ package body HAC.Parser is
           SelectDone   := False;
           do_terminate := False;
           StartSel     := LC;
-          Emit2 (73, 1, 0);             -- START OF SELECT SELECTIVE Wait
-                                        --SEQUENCE
+          Emit2 (kSelectiveWait, 1, 0); -- START OF SELECT SELECTIVE Wait
+                                        -- SEQUENCE
           loop
             case Sy is
               when WhenSy =>
@@ -2406,7 +2410,7 @@ package body HAC.Parser is
                     Emit (kCondJump);
                     InSymbol;
                     Expression (FSys + Semicolon, Y);
-                    Emit2 (73, 4, LC + 2); -- Update delay time
+                    Emit2 (kSelectiveWait, 4, LC + 2); -- Update delay time
                     if Y.TYP /= Floats then
                       SelectError (73);
                     end if;
@@ -2482,7 +2486,7 @@ package body HAC.Parser is
                   Expression
                    (Symset'((Semicolon => True, others => False)),
                     Y);
-                  Emit2 (73, 4, LC + 2);  -- Update delay time
+                  Emit2 (kSelectiveWait, 4, LC + 2);  -- Update delay time
                   if Y.TYP /= Floats then
                     SelectError (73);
                   end if;
@@ -2524,9 +2528,9 @@ package body HAC.Parser is
                 -- patch
                 IAlt := 0;
                 if do_terminate then
-                  Emit2 (73, 5, StartSel);
+                  Emit2 (kSelectiveWait, 5, StartSel);
                 else
-                  Emit2 (73, 6, StartSel);
+                  Emit2 (kSelectiveWait, 6, StartSel);
                 end if;   -- Suspend
                 for I in 1 .. ISD loop
                   ObjCode (JSD (I)).Y  := LC;
@@ -2572,7 +2576,7 @@ package body HAC.Parser is
               InSymbol;
               I := GetFP (Id);  -- Schoening
               if I /= -1 then -- First parameter is a file variable
-                Emit1 (64, I);
+                Emit1 (k_Set_current_file_pointer, I);
                 InSymbol;
                 if Sy /= Comma then
                   if Sy = RParent then
@@ -2582,7 +2586,7 @@ package body HAC.Parser is
                   end if;
                 end if;
               else
-                Emit1 (64, 0);
+                Emit1 (k_Set_current_file_pointer, 0);
                 do_first_InSymbol := False;
               end if;
               loop
@@ -2618,7 +2622,7 @@ package body HAC.Parser is
                          X.TYP = xChars or
                          X.TYP = NOTYP
                       then
-                        Emit1 (27, Types'Pos (X.TYP));
+                        Emit1 (k_Read, Types'Pos (X.TYP));
                       else
                         Error (41);
                       end if;
@@ -2640,7 +2644,7 @@ package body HAC.Parser is
               end if;
             end if;
             if N = 2 then
-              Emit (62);
+              Emit (kGetNewline);
             end if;
 
           when 3 | 4 =>          -- PUT, PUT_LINE
@@ -2649,7 +2653,7 @@ package body HAC.Parser is
               InSymbol;
               I := GetFP (Id);   -- Schoening
               if I /= -1 then -- First parameter is a file variable
-                Emit1 (64, I);
+                Emit1 (k_Set_current_file_pointer, I);
                 InSymbol;
                 if Sy /= Comma then
                   if Sy = RParent then
@@ -2659,7 +2663,7 @@ package body HAC.Parser is
                   end if;
                 end if;
               else
-                Emit1 (64, 0);
+                Emit1 (k_Set_current_file_pointer, 0);
                 do_first_InSymbol := False;
               end if;
               loop
@@ -2668,8 +2672,8 @@ package body HAC.Parser is
                 end if;
                 do_first_InSymbol := True;
                 if Sy = StrCon then
-                  Emit1 (24, SLeng);
-                  Emit1 (28, INum);
+                  Emit1 (kLiteral, SLeng);
+                  Emit1 (kWriteString, INum);
                   InSymbol;
                 else
                   Expression
@@ -2709,14 +2713,14 @@ package body HAC.Parser is
                       if Y.TYP /= Ints then
                         Error (43);
                       end if;
-                      Emit (37);
+                      Emit (kCase37);
                     else
-                      Emit1 (30, Types'Pos (X.TYP));
+                      Emit1 (kWrite2, Types'Pos (X.TYP));
                     end if;
                   elsif X.TYP = Strings then
-                    Emit1 (28, X.Ref);
+                    Emit1 (kWriteString, X.Ref);
                   else
-                    Emit1 (29, Types'Pos (X.TYP));
+                    Emit1 (kWrite1, Types'Pos (X.TYP));
                   end if;
                 end if;
                 exit when Sy /= Comma;
@@ -2730,7 +2734,7 @@ package body HAC.Parser is
               end if;
             end if;
             if N = 4 then
-              Emit (63);
+              Emit (kPutNewline);
             end if;
 
           when 5 | 6 =>                  -- Wait,SIGNAL
@@ -2750,9 +2754,9 @@ package body HAC.Parser is
                     X.TYP := IdTab (I).TYP;
                     X.Ref := IdTab (I).Ref;
                     if IdTab (I).Normal then
-                      F := 0;
+                      F := kLoadAddress;
                     else
-                      F := 1;
+                      F := kPushV;
                     end if;
                     Emit2 (F, IdTab (I).LEV, IdTab (I).Adr);
                     if Sy = LParent or else Sy = Period then
@@ -2781,7 +2785,7 @@ package body HAC.Parser is
               InSymbol;
               I := GetFP (Id);
               if I /= -1 then
-                Emit2 (65, I, N);
+                Emit2 (kFile_I_O, I, N);
               else
                 Error (identifier_missing);
               end if;
@@ -2831,7 +2835,7 @@ package body HAC.Parser is
                   elsif Sy /= RParent then
                     Skip (Semicolon, 4);
                   else
-                    Emit (69);        -- opcode for CursorAt
+                    Emit (kCursorAt);
                     InSymbol;
                   end if;
                 end if;
@@ -2851,7 +2855,7 @@ package body HAC.Parser is
               if Sy /= RParent then
                 Skip (Semicolon, 4);
               else
-                Emit (70);          -- opcode for Set Quantum
+                Emit (kSetQuatumTask);
                 InSymbol;
               end if;
             end if;                -- Quantum
@@ -2869,7 +2873,7 @@ package body HAC.Parser is
               if Sy /= RParent then
                 Skip (Semicolon, 4);
               else
-                Emit (71);          -- opcode for Set Priority
+                Emit (kSetTaskPriority);
                 InSymbol;
               end if;
             end if;                -- Priority
@@ -2887,7 +2891,7 @@ package body HAC.Parser is
               if Sy /= RParent then
                 Skip (Semicolon, 4);
               else
-                Emit (72);          -- opcode for InheritP
+                Emit (kSetTaskPriorityInheritance);
                 InSymbol;
               end if;
             end if;                -- Inheritp
@@ -2904,8 +2908,7 @@ package body HAC.Parser is
       end if;
 
       --{ Mark the following opcodes as belonging to LineCount # }
-      Emit1 (74, LineCount);              --{MRC: this line is not in PC
-                                          --version}
+      Emit1 (kHighlightSource, LineCount);  --{MRC: this line is not in PC version}
       --{ This did not work because the LineCount was off by one. Why? }
       --{ MRC: This line is needed in order to highlight lines in task windows
       --}
