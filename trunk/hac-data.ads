@@ -382,7 +382,7 @@ package HAC.Data is
   --*  Fat         FileIOTab       File I/O Table
   --*  FcTab       FloatPtTab      Floating Point Constant Table
   --*  STab        StringTab       String Table
-  --*  TaskTab     TskDefTab       Task Definition Table
+  --*  TaskTab     TaskDefTab      Task Definition Table
   --*  Key         AdaKeyW         Array of Ada keywords in Order
   --*  Ksy         AdaKeyWSy       Corresponding keyword symbols
   --*  Code        ObjCode         Object Code table
@@ -395,12 +395,12 @@ package HAC.Data is
   BlockTab   : array (0 .. BMax) of BTabEntry;  --  Block-table [7-Dec-2009:
                                                 --was 1..]
   ObjCode    : array (0 .. CDMax) of Order;     --  Object Code table
-  EntryTAB   : array (0 .. EntryMax) of Index;  --  Entry Table
+  EntryTab   : array (0 .. EntryMax) of Index;  --  Entry Table
   FileIOTab  : FilDescr;                      --  File I/O table
   FloatPtTab : array (1 .. C2Max) of Float;     --  Float Constant table
   StringTab  : array (0 .. SMax) of Character;  --  String table
   IdTab      : array (0 .. TMax) of TabEntry;   --  Identifier table
-  TskDefTab  : array (0 .. TaskMax) of Index;   --  Task Table
+  TaskDefTab : array (0 .. TaskMax) of Index;   --  Task Table
 
   --  Display - keeps track of addressing by nesting level.
   --  See Ben-Ari Appendix A.
