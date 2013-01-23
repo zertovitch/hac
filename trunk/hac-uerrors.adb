@@ -63,7 +63,7 @@ package body HAC.UErrors is
       return "ILLEGAL CONSTANT OR CONSTAT IDENTIFIER";
     when 26 =>
       return "ILLEGAL ARRAY SUBSCRIPT (CHECK TYPE)";
-    when 27 =>
+    when illegal_array_bounds =>
       return "ILLEGAL BOUNDS FOR AN ARRAY INDEX";
     when 28 =>
       return "INDEXED VARIABLE MUST BE AN ARRAY";
@@ -83,7 +83,7 @@ package body HAC.UErrors is
       return "INCOMPATIBLE TYPES FOR COMPARISON";
     when 36 =>
       return "PARAMETER TYPES DO NOT MATCH";
-    when 37 =>
+    when variable_missing =>
       return "MISSING A VARIABLE";
     when 38 =>
       return "A STRING MUST HAVE ONE OR MORE CHAR";
@@ -95,13 +95,13 @@ package body HAC.UErrors is
       return "ILLEGAL PARAMETERS TO ``PUT''";
     when 42 =>
       return "PARAMETER MUST BE OF TYPE ``FLOAT''";
-    when 43 =>
+    when parameter_must_be_integer =>
       return "PARAMETER MUST BE OF TYPE ``INTEGER''";
     when 44 =>
       return "EXPECTED A VARIABLE; FUNCTION OR CONST";
     when 45 =>
       return "ILLEGAL RETURN STATEMENT FROM MAIN";
-    when 46 =>
+    when types_of_assignment_must_match =>
       return "TYPES MUST MATCH IN AN ASSIGNMENT";
     when 47 =>
       return "CASE LABEL NOT SAME TYPE AS CASE CLAUSE";
