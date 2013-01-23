@@ -60,7 +60,7 @@ FUNCTION ErrorString(Id: Integer) return String is
     WHEN  48  => Return  "ARGUMENT TO STD. FUNCTION OF WRONG TYPE";
     WHEN  49  => Return  "THE PROGRAM REQUIRES TOO MUCH STORAGE";
     WHEN  50  => Return  "ILLEGAL SYMBOL FOR A CONSTANT";
-    WHEN  51  => Return  "MISSING ``:=''";
+    WHEN  BECOMES_missing => Return  "missing "":=""";
     WHEN  52  => Return  "MISSING ``THEN''";
     WHEN  53  => Return  "MISSING ``IN''";
     WHEN  54  => Return  "MISSING ``LOOP''";
@@ -91,7 +91,8 @@ FUNCTION ErrorString(Id: Integer) return String is
     WHEN  79  => Return  "EXPECTING ``DELAY''";
     WHEN  80  => Return  "MISSING SELECT";
     WHEN  81  => Return  "PROGRAM INCOMPLETE";
-    when  OF_instead_of_IS => return "found ""of"" instead of ""is""";
+    when  OF_instead_of_IS => return "found ""of"", should be ""is""";
+    when  EQUALS_instead_of_BECOMES => return "found ""="", should be "":=""";
     WHEN others => Return "Unknown error Id=" & Integer'Image(Id);
    end case;
   END ErrorString;

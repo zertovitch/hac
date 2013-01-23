@@ -1,9 +1,9 @@
 WITH SMALL_SP; USE SMALL_SP;
 
-PROCEDURE   Test_Pgm2   IS
+PROCEDURE   Test2   IS
 
     Ten: CONSTANT INTEGER := 10;     -- Integer
-    CCh: CONSTANT   := 'A';          -- Character
+    CCh: CONSTANT Character := 'A';          -- Character
 
     mmm: integer := 99;
 
@@ -68,4 +68,4 @@ BEGIN
   for i in 1..5 loop
     put("<==>");
   end loop;
-END Test_Pgm2;
+END Test2;
