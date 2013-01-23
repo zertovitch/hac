@@ -108,7 +108,7 @@ package HAC.PCode is
   kPutNewline                 : constant := 63;
   k_Set_current_file_pointer  : constant := 64;
   kFile_I_O                   : constant := 65;
-  kHaltInterpreter            : constant := 66;
+  k_Halt_Interpreter          : constant := 66;
   kStringAssignment           : constant := 67;
   kDelay                      : constant := 68;
   kCursorAt                   : constant := 69;

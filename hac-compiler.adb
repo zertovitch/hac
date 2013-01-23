@@ -56,9 +56,9 @@ package body HAC.Compiler is
     for I in 0 .. TCount loop
       Put (I, 4);
       Put (' ');
-      Put (IdTab (TskDefTab (I)).Name);
+      Put (IdTab (TaskDefTab (I)).Name);
       Put ("  ");
-      Put (IdTab (TskDefTab (I)).Ref);
+      Put (IdTab (TaskDefTab (I)).Ref);
       New_Line;
     end loop;
 
@@ -72,7 +72,7 @@ package body HAC.Compiler is
         Put (' ');
         Put (IdTab (EntryTAB (I)).Name);
         Put ("in Task ");
-        Put (IdTab (TskDefTab (IdTab (EntryTAB (I)).Adr)).Name);
+        Put (IdTab (TaskDefTab (IdTab (EntryTAB (I)).Adr)).Name);
         New_Line;
       end loop;
       New_Line;
@@ -275,18 +275,16 @@ package body HAC.Compiler is
       SrcTo   => LineCount); -- ajout!
     Display (0)  := 0; -- Added 7-Dec-2009
 
-    TskDefTab (0) := T; --{ Task Table Entry }
+    TaskDefTab (0) := T; --{ Task Table Entry }
 
     -- Start Compiling
     Block (BlockBegSyS + StatBegSys, False, 1, T);
-
-    Emit (66); -- halt
+    Emit (k_Halt_Interpreter);
 
     if Sy /= Semicolon then
       if qDebug then
         Put_Line ("Compile terminated BEFORE FILE END");
       end if;
-
       if ListingWasRequested then
         Put_Line ("Compile terminated BEFORE FILE END");
       end if;

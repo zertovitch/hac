@@ -890,11 +890,9 @@ package body HAC.Parser is
         if TCount > TaskMax then
           Fatal (8);
         end if;
-
         Enter (TaskID, aTask);
-        TskDefTab (TCount) := T;            -- point To identifier Table
-                                            --location
-        EnterBlock (T);                -- of TaskID
+        TaskDefTab (TCount) := T;
+        EnterBlock (T);
         IdTab (T).Ref := B;
         InSymbol;
         if Sy = Semicolon then

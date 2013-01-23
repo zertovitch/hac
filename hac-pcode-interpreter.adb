@@ -69,20 +69,6 @@ package body HAC.PCode.Interpreter is
 
     --  Stack
     S : array (1 .. HAC.Data.StMax) of Data_Type;
-    --  array table
-    ATAB : array (1 .. HAC.Data.AMax) of HAC.Data.ATabEntry;
-    --  block table
-    BTAB : array (1 .. HAC.Data.BMax) of HAC.Data.BTabEntry;
-    --  object code table
-    CODE : array (0 .. HAC.Data.CDMax) of HAC.Data.Order;
-    --  string table
-    STAB : array (0 .. HAC.Data.SMax) of Character;
-    --  identifier table
-    TAB : array (0 .. HAC.Data.TMax) of HAC.Data.TabEntry;
-    --  Float constant table
-    FCTAB : array (1 .. HAC.Data.C2Max) of Float;
-    --  Task Table
-    TaskTAB : array (0 .. HAC.Data.TaskMax) of HAC.Data.Index;
 
     subtype file_rng is Integer range 0 .. HAC.Data.FMax;
 
@@ -147,12 +133,12 @@ package body HAC.PCode.Interpreter is
 
     IR : HAC.Data.Order; --  instruction register
 
-    PS       : ProcessorState; --  processor status register
+    PS       : ProcessorState:= RUN; --  processor status register
     TCB      : array (TRange) of TCBrec; --  Task control blocks
     EList    : array (1 .. HAC.Data.EntryMax) of EHeader; --  Entry queue array
-    SWITCH   : Boolean; --  invoke scheduler on next cycle flag
-    SYSCLOCK : Time;    --  ms after 00:00:00 Jan 1, current year
-    TIMER    : Time;    --  set to end of current task's time slice
+    SWITCH   : Boolean:= False; --  invoke scheduler on next cycle flag
+    SYSCLOCK : Time:= Clock;    --  (ms after 00:00:00 Jan 1, current year)
+    TIMER    : Time:= SysClock; --  set to end of current task's time slice
     TActive  : TRange;  --  no. of active tasks
 
     CurTask : Integer; --  index of currently executing task
@@ -170,17 +156,18 @@ package body HAC.PCode.Interpreter is
 
   end InterDef;
 
-  procedure Interpret  --  Global Data Used :
-    --       CODE     : Code table, psuedo instructions
+  procedure Interpret
+    --  Global Data Used (HAC.Data) :
+    --       HAC.Data.ObjCode     : Code table, pseudo instructions
     --       S        : Stack
-    --       TAB      : Table of all identifiers
-    --       ATAB     : Array table
-    --       BTAB     : Block table
+    --       HAC.Data.IdTab         : Table of all identifiers
+    --       HAC.Data.ArraysTab     : Array table
+    --       HAC.Data.BlockTab      : Block table
     --       FAT      : File I/O table
-    --       FCTAB    : Floating point constant table
-    --       STAB     : String table
-    --       TaskTAB  : table of Task definitions
-    --       EntryTab : task Entry table
+    --       HAC.Data.FloatPtTab    : Floating point constant table
+    --       HAC.Data.StringTab     : String table
+    --       HAC.Data.TaskDefTab    : table of Task definitions
+    --       HAC.Data.EntryTab      : task Entry table
   is
     Start_Time : constant Time := Clock;
     --  trap label
@@ -295,14 +282,14 @@ package body HAC.PCode.Interpreter is
       ix := EIndex (P2Ada_no_keyword_Entry);
       p  := InterDef.EList (ix).First;
       Put ("Dumping q for entry ");
-      Put (TAB (P2Ada_no_keyword_Entry).Name);
+      Put (HAC.Data.IdTab (P2Ada_no_keyword_Entry).Name);
       Put (" entry index=");
       Put (ix);
       New_Line;
       if p /= null then
         loop
           Put ("Task ");
-          Put (TAB (TaskTAB (p.P2Ada_no_keyword_Task)).Name);
+          Put (HAC.Data.IdTab (HAC.Data.TaskDefTab (p.P2Ada_no_keyword_Task)).Name);
           New_Line;
           p := p.Next;
           exit when p = null;
@@ -405,7 +392,8 @@ package body HAC.PCode.Interpreter is
             end if;
           end if;
           loop --  Call Main Scheduler
-          --  Schedule(Scheduler,CurTask, PS);
+            --  Schedule(Scheduler,CurTask, PS);
+            PS := RUN; -- !! Should call the task scheduler instead !!
             InterDef.SYSCLOCK := GetClock;
             if HAC.Data.SNAP then
               null; --ShowTime ;
@@ -432,10 +420,8 @@ package body HAC.PCode.Interpreter is
       declare
         P2Ada_Var_5 : InterDef.TCBrec renames InterDef.TCB (InterDef.CurTask);
       begin
-
-        InterDef.IR    := CODE (P2Ada_Var_5.PC);
+        InterDef.IR    := HAC.Data.ObjCode (P2Ada_Var_5.PC);
         P2Ada_Var_5.PC := P2Ada_Var_5.PC + 1;
-
       end; -- [P2Ada]: end of WITH
 
       --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED
@@ -484,7 +470,7 @@ package body HAC.PCode.Interpreter is
           when k_Accept_Rendezvous => -- Hathorn, Cramer
             H1 := IR.Y;                    --  entry pointer
             H2 := FirstCaller (H1);        --  first waiting task
-            H3 := TAB (H1).LEV;            --  level of accepting entry
+            H3 := HAC.Data.IdTab (H1).LEV;            --  level of accepting entry
             if H2 >= 0 then
               --  start rendzv if call is waiting
               P2Ada_Var_6.DISPLAY (H3 + 1) := TCB (H2).B; --  address callers
@@ -646,13 +632,13 @@ package body HAC.PCode.Interpreter is
           H2            := IR.Y;
           H3            := 0;
           loop
-            if CODE (H2).F /= 13 then
+            if HAC.Data.ObjCode (H2).F /= 13 then
               H3 := 1;
               PS := CASCHK;
             else
-              if CODE (H2).Y = H1 or CODE (H2).X < 0 then
+              if HAC.Data.ObjCode (H2).Y = H1 or HAC.Data.ObjCode (H2).X < 0 then
                 H3             := 1;
-                P2Ada_Var_6.PC := CODE (H2 + 1).Y;
+                P2Ada_Var_6.PC := HAC.Data.ObjCode (H2 + 1).Y;
               else
                 H2 := H2 + 2;
               end if;
@@ -699,13 +685,13 @@ package body HAC.PCode.Interpreter is
           end if;
 
         when 18 => --  mark stack
-          H1 := BTAB (TAB (IR.Y).Ref).VSize;
+          H1 := HAC.Data.BlockTab (HAC.Data.IdTab (IR.Y).Ref).VSize;
           if P2Ada_Var_6.T + H1 > P2Ada_Var_6.STACKSIZE then
             PS := STKCHK;
           else
             P2Ada_Var_6.T := P2Ada_Var_6.T + 5; --  make room for fixed area
             S (P2Ada_Var_6.T - 1).I := H1 - 1; --  vsize-1
-            S (P2Ada_Var_6.T).I := IR.Y;    --  TAB index of called
+            S (P2Ada_Var_6.T).I := IR.Y;    --  HAC.Data.IdTab index of called
                                             --procedure/entry
           end if;
 
@@ -718,8 +704,8 @@ package body HAC.PCode.Interpreter is
             P2Ada_Var_6.T := P2Ada_Var_6.T - 1;
           end if;
           H1 := P2Ada_Var_6.T - IR.Y;     --  base of activation record
-          H2 := S (H1 + 4).I; --  TAB index of called procedure/entry
-          H3                           := TAB (H2).LEV;
+          H2 := S (H1 + 4).I; --  HAC.Data.IdTab index of called procedure/entry
+          H3                           := HAC.Data.IdTab (H2).LEV;
           P2Ada_Var_6.DISPLAY (H3 + 1) := H1;
           S (H1 + 1).I                 := P2Ada_Var_6.PC; --  return address
 
@@ -737,13 +723,13 @@ package body HAC.PCode.Interpreter is
              HAC.Data.CallSTDP =>
               --  Standard procedure call
 
-              P2Ada_Var_6.PC := TAB (H2).Adr;
+              P2Ada_Var_6.PC := HAC.Data.IdTab (H2).Adr;
 
             when HAC.Data.CallSTDE =>
               --  Unconditional entry call
               Queue (H2, CurTask);          --  put self on entry queue
               P2Ada_Var_6.TS := WaitRendzv;
-              H5             := TAB (H2).Adr;               --  Task being
+              H5             := HAC.Data.IdTab (H2).Adr;               --  Task being
                                                             --entered
 
               if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
@@ -759,7 +745,7 @@ package body HAC.PCode.Interpreter is
             when HAC.Data.CallTMDE =>
               --  Timed entry call
               Queue (H2, CurTask);    --  put self on entry queue
-              H5 := TAB (H2).Adr;    --  Task being entered
+              H5 := HAC.Data.IdTab (H2).Adr;    --  Task being entered
 
               if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
                  (TCB (H5).TS = TimedWait)
@@ -782,7 +768,7 @@ package body HAC.PCode.Interpreter is
 
             when HAC.Data.CallCNDE =>
               --  Conditional Entry Call
-              H5 := TAB (H2).Adr;              --  Task being entered
+              H5 := HAC.Data.IdTab (H2).Adr;              --  Task being entered
               if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
                  (TCB (H5).TS = TimedWait)
               then
@@ -802,13 +788,13 @@ package body HAC.PCode.Interpreter is
           end case;
 
         when 20 => --  INDEX1
-          H1 := IR.Y;     --  H1 points to ATAB
-          H2 := ATAB (H1).Low;
+          H1 := IR.Y;     --  H1 points to HAC.Data.ArraysTab
+          H2 := HAC.Data.ArraysTab (H1).Low;
           H3 := S (P2Ada_Var_6.T).I;
           if H3 < H2 then
             PS := INXCHK;
           else
-            if H3 > ATAB (H1).High then
+            if H3 > HAC.Data.ArraysTab (H1).High then
               PS := INXCHK;
             else
               P2Ada_Var_6.T       := P2Ada_Var_6.T - 1;
@@ -817,18 +803,18 @@ package body HAC.PCode.Interpreter is
           end if;
 
         when 21 => --  INDEX
-          H1 := IR.Y;      --  H1 POINTS TO ATAB
-          H2 := ATAB (H1).Low;
+          H1 := IR.Y;      --  H1 POINTS TO HAC.Data.ArraysTab
+          H2 := HAC.Data.ArraysTab (H1).Low;
           H3 := S (P2Ada_Var_6.T).I;
           if H3 < H2 then
             PS := INXCHK;
           else
-            if H3 > ATAB (H1).High then
+            if H3 > HAC.Data.ArraysTab (H1).High then
               PS := INXCHK;
             else
               P2Ada_Var_6.T       := P2Ada_Var_6.T - 1;
               S (P2Ada_Var_6.T).I := S (P2Ada_Var_6.T).I +
-                                     (H3 - H2) * ATAB (H1).ELSize;
+                                     (H3 - H2) * HAC.Data.ArraysTab (H1).ELSize;
             end if;
           end if;
 
@@ -873,7 +859,7 @@ package body HAC.PCode.Interpreter is
           if P2Ada_Var_6.T > P2Ada_Var_6.STACKSIZE then
             PS := STKCHK;
           else
-            S (P2Ada_Var_6.T).R := FCTAB (IR.Y);
+            S (P2Ada_Var_6.T).R := HAC.Data.FloatPtTab (IR.Y);
           end if;
 
         when 26 =>
@@ -930,9 +916,9 @@ package body HAC.PCode.Interpreter is
           P2Ada_Var_6.T := P2Ada_Var_6.T - 1;
           loop
             if FAT.CURR = 0 then
-              Put (STAB (H2));
+              Put (HAC.Data.StringTab (H2));
             else
-              Put (FAT.FIL (FAT.CURR), STAB (H2));
+              Put (FAT.FIL (FAT.CURR), HAC.Data.StringTab (H2));
             end if;
             H1 := H1 - 1;        --  decrement length
             H2 := H2 + 1;
@@ -1251,7 +1237,7 @@ package body HAC.PCode.Interpreter is
           --  case IR.Y
           SWITCH := True;  --  give up control when doing I/O
 
-        when 66 => --  Halt Interpreter
+        when k_Halt_Interpreter =>
           if TActive = 0 then
             PS := FIN;
           else
@@ -1274,7 +1260,7 @@ package body HAC.PCode.Interpreter is
           end if;
           while H1 < H5 loop
             --  copy H5-H1 characters
-            S (H1).I := Character'Pos (STAB (H2));
+            S (H1).I := Character'Pos (HAC.Data.StringTab (H2));
             H1       := H1 + 1;
             H2       := H2 + 1;
           end loop;
@@ -1355,7 +1341,7 @@ package body HAC.PCode.Interpreter is
             when 3 => --  Accept if its still on queue
               H1 := TCB (CurTask).R3.I;
               H2 := FirstCaller (H1);    --  first waiting task
-              H3 := TAB (H1).LEV;        --  level of accepting entry
+              H3 := HAC.Data.IdTab (H1).LEV;        --  level of accepting entry
               if H2 >= 0 then
                 P2Ada_Var_6.DISPLAY (H3 + 1) := TCB (H2).B; --  address
                                                             --callers parms
@@ -1457,10 +1443,11 @@ package body HAC.PCode.Interpreter is
       end; -- [P2Ada]: end of WITH
       exit when InterDef.PS /= InterDef.RUN;
     end loop;
-    <<LABEL_123777>> if InterDef.PS /= InterDef.FIN then
+    <<LABEL_123777>>
+      if InterDef.PS /= InterDef.FIN then
       --  Post Mortem Dump of the task stack causing the exception
       New_Line;
-      Put_Line("Stack Variables of Task " & TAB (TaskTAB (InterDef.CurTask)).Name);
+      Put_Line("Stack Variables of Task " & HAC.Data.IdTab (HAC.Data.TaskDefTab (InterDef.CurTask)).Name);
       InterDef.H1 := InterDef.TCB (InterDef.CurTask).B;   --  current botton
                                                           --of stack
       InterDef.BLKCNT := 10;
@@ -1470,21 +1457,21 @@ package body HAC.PCode.Interpreter is
         if InterDef.BLKCNT = 0 then
           InterDef.H1 := 0;
         end if;
-        InterDef.H2 := S (InterDef.H1 + 4).I;     --  index into TAB for this
+        InterDef.H2 := S (InterDef.H1 + 4).I;     --  index into HAC.Data.IdTab for this
                                                   --process
         if InterDef.H1 /= 0 then
-          Put (TAB (InterDef.H2).Name);
+          Put (HAC.Data.IdTab (InterDef.H2).Name);
           Put (" CALLED AT");
           Put (S (InterDef.H1 + 1).I, 5);
           New_Line;
         else
           Put_Line ("Task Variables");
         end if;
-        InterDef.H2 := BTAB (TAB (InterDef.H2).Ref).Last;
+        InterDef.H2 := HAC.Data.BlockTab (HAC.Data.IdTab (InterDef.H2).Ref).Last;
         while InterDef.H2 /= 0 loop
           -- [P2Ada]: WITH instruction
           declare
-            P2Ada_Var_7 : HAC.Data.TabEntry renames TAB (InterDef.H2);
+            P2Ada_Var_7 : HAC.Data.TabEntry renames HAC.Data.IdTab (InterDef.H2);
             use HAC.Data;
           begin
             if P2Ada_Var_7.Obj = HAC.Data.Variable then
