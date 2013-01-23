@@ -1,179 +1,280 @@
-with HAC.Data;                          use HAC.Data;
+with HAC.Data; use HAC.Data;
 
 with Ada.Text_IO;
 
 package body HAC.UErrors is
 
-----------------------------------------------------------------------------
+  ----------------------------------------------------------------------------
 
-FUNCTION ErrorString(Id: Integer) return String is
-  BEGIN
-   Case Id is
-    WHEN   undefined_identifier        => Return  "UNDEFINED IDENTIFIER";
-    WHEN   duplicate_identifier        => Return  "MULTIPLE DEFINITION OF AN IDENTIFIER";
-    WHEN   identifier_missing          => Return  "MISSING AN IDENTIFIER";
-    WHEN   3  => Return  "MISSING A PROCEDURE DECLARATION";
-    WHEN   closing_parenthesis_missing => Return  "MISSING CLOSING PARENTHESIS ``)''";
-    WHEN   colon_missing               => Return  "MISSING A COLON ``:''";
-    WHEN   6  => Return  "INCORRECTLY USED SYMBOL";
-    WHEN   7  => Return  "MISSING IDENTIFIER";
-    WHEN   8  => Return  "MISSING ``OF''";
-    WHEN   9  => Return  "MISSING AN OPENING PARENTHESIS ``)''";
-    WHEN  10  => Return  "MISSING IDENTIFER; ``ARRAY'' OR ``RECORD''";
-    WHEN  11  => Return  "-- OPENING BRACKET ``[''";
-    WHEN  12  => Return  "-- CLOSING BRACKET ``]''";
-    WHEN  13  => Return  "EXPECTING ``..''";
-    WHEN  semicolon_missing => Return  "MISSING A SEMICOLON ``;''";
-    WHEN  15  => Return  "BAD RESULT TYPE FOR A FUNCTION";
-    WHEN  16  => Return  "ILLEGAL STATEMENT START SYMBOL";
-    WHEN  17  => Return  "EXPECTING A BOOLEAN EXPRESSION ";
-    WHEN  18  => Return  "CONTROL VARIABLE OF THE WRONG TYPE";
-    WHEN  19  => Return  "FIRST/LAST MUST BE MATCHING TYPES";
-    WHEN  IS_missing  => return  "missing ""is""";
-    WHEN  21  => Return  "THE NUMBER IS TOO LARGE";
-    WHEN  Incorrect_block_name => Return  "incorrect block name after ""end""";
-    WHEN  23  => Return  "BAD TYPE FOR A CASE STATEMENT";
-    WHEN  24  => Return  "ILLEGAL CHARACTER";
-    WHEN  25  => Return  "ILLEGAL CONSTANT OR CONSTAT IDENTIFIER";
-    WHEN  26  => Return  "ILLEGAL ARRAY SUBSCRIPT (CHECK TYPE)";
-    WHEN  27  => Return  "ILLEGAL BOUNDS FOR AN ARRAY INDEX";
-    WHEN  28  => Return  "INDEXED VARIABLE MUST BE AN ARRAY";
-    WHEN  29  => Return  "MISSING A TYPE IDENFIFIER";
-    WHEN  30  => Return  "UNDEFINED TYPE";
-    WHEN  31  => Return  "VAR WITH FIELD SELECTOR MUST BE RECORD";
-    WHEN  32  => Return  "RESULTING TYPE IS NOT ``BOOLEAN''";
-    WHEN  33  => Return  "ILLEGAL TYPE FOR ARITHMETIC EXPRESSION";
-    WHEN  34  => Return  "``MOD'' REQUIRES INTEGER ARGUMENTS";
-    WHEN  35  => Return  "INCOMPATIBLE TYPES FOR COMPARISON";
-    WHEN  36  => Return  "PARAMETER TYPES DO NOT MATCH";
-    WHEN  37  => Return  "MISSING A VARIABLE";
-    WHEN  38  => Return  "A STRING MUST HAVE ONE OR MORE CHAR";
-    WHEN  39  => Return  "NUMBER OF PARAMETERS DO NOT MATCH";
-    WHEN  40  => Return  "ILLEGAL PARAMETERS TO ``GET''";
-    WHEN  41  => Return  "ILLEGAL PARAMETERS TO ``PUT''";
-    WHEN  42  => Return  "PARAMETER MUST BE OF TYPE ``FLOAT''";
-    WHEN  43  => Return  "PARAMETER MUST BE OF TYPE ``INTEGER''";
-    WHEN  44  => Return  "EXPECTED A VARIABLE; FUNCTION OR CONST";
-    WHEN  45  => Return  "ILLEGAL RETURN STATEMENT FROM MAIN";
-    WHEN  46  => Return  "TYPES MUST MATCH IN AN ASSIGNMENT";
-    WHEN  47  => Return  "CASE LABEL NOT SAME TYPE AS CASE CLAUSE";
-    WHEN  48  => Return  "ARGUMENT TO STD. FUNCTION OF WRONG TYPE";
-    WHEN  49  => Return  "THE PROGRAM REQUIRES TOO MUCH STORAGE";
-    WHEN  50  => Return  "ILLEGAL SYMBOL FOR A CONSTANT";
-    WHEN  BECOMES_missing => Return  "missing "":=""";
-    WHEN  52  => Return  "MISSING ``THEN''";
-    WHEN  53  => Return  "MISSING ``IN''";
-    WHEN  54  => Return  "MISSING ``LOOP''";
-    WHEN  55  => Return  "MISSING RANGE ``..''";
-    WHEN  56  => Return  "MISSING ``BEGIN''";
-    WHEN  END_missing  => Return  "MISSING ``END''";
-    WHEN  58  => Return  "Factor: EXPECTING AN ID; CONST; ``NOT'' OR ``(''";
-    WHEN  59  => Return  "MISSING ``RETURN''";
-    WHEN  60  => Return  "CONTROL CHARACTER PRESENT IN SOURCE ";
-    WHEN  61  => Return  "MISSING ``RECORD''";
-    WHEN  62  => Return  "MISSING CLOSING ``IF''";
-    WHEN  63  => Return  "MISSING ``WHEN''";
-    WHEN  64  => Return  "MISSING the finger ``=''>";
-    WHEN  65  => Return  "MISSING CLOSING ``CASE''";
-    WHEN  66  => Return  "CHARACTER DELIMETER USED FOR STRING";
-    WHEN  67  => Return  "Ada RESERVED WORD; NOT SUPPORTED";
-    WHEN  68  => Return  "FUNCTIONS MUST RETURN A VALUE";
-    WHEN  69  => Return  "MUST SPECIFY ``WITH SMALL_SP;''";
-    WHEN  70  => Return  "MUST SPECIFY ``USE SMALL_SP;''";
-    WHEN  71  => Return  "EXPECTING AN ENTRY";
-    WHEN  72  => Return  "MISSING EXPRESSION FOR DELAY";
-    WHEN  73  => Return  "DELAY TIME MUST BE TYPE FLOAT";
-    WHEN  74  => Return  "COMMA EXPECTED";
-    WHEN  75  => Return  "PARAMETER MUST BE OF TYPE ``BOOLEAN''";
-    WHEN  76  => Return  "EXPECTING ``ACCEPT''; ``WHEN''; OR ENTRY ID";
-    WHEN  77  => Return  "EXPECTING Task.Entry";
-    WHEN  78  => Return  "EXPECTING ``OR'' OR ``ELSE'' IN SELECT";
-    WHEN  79  => Return  "EXPECTING ``DELAY''";
-    WHEN  80  => Return  "MISSING SELECT";
-    WHEN  81  => Return  "PROGRAM INCOMPLETE";
-    when  OF_instead_of_IS => return "found ""of"", should be ""is""";
-    when  EQUALS_instead_of_BECOMES => return "found ""="", should be "":=""";
-    WHEN others => Return "Unknown error Id=" & Integer'Image(Id);
-   end case;
-  END ErrorString;
+  function ErrorString (Id : Integer) return String is
+  begin
+    case Id is
+    when undefined_identifier =>
+      return "UNDEFINED IDENTIFIER";
+    when duplicate_identifier =>
+      return "MULTIPLE DEFINITION OF AN IDENTIFIER";
+    when identifier_missing =>
+      return "MISSING AN IDENTIFIER";
+    when 3 =>
+      return "MISSING A PROCEDURE DECLARATION";
+    when closing_parenthesis_missing =>
+      return "MISSING CLOSING PARENTHESIS ``)''";
+    when colon_missing =>
+      return "MISSING A COLON ``:''";
+    when 6 =>
+      return "INCORRECTLY USED SYMBOL";
+    when 7 =>
+      return "MISSING IDENTIFIER";
+    when 8 =>
+      return "MISSING ``OF''";
+    when 9 =>
+      return "MISSING AN OPENING PARENTHESIS ``)''";
+    when 10 =>
+      return "MISSING IDENTIFER; ``ARRAY'' OR ``RECORD''";
+    when 11 =>
+      return "-- OPENING BRACKET ``[''";
+    when 12 =>
+      return "-- CLOSING BRACKET ``]''";
+    when 13 =>
+      return "EXPECTING ``..''";
+    when semicolon_missing =>
+      return "MISSING A SEMICOLON ``;''";
+    when 15 =>
+      return "BAD RESULT TYPE FOR A FUNCTION";
+    when 16 =>
+      return "ILLEGAL STATEMENT START SYMBOL";
+    when 17 =>
+      return "EXPECTING A BOOLEAN EXPRESSION ";
+    when 18 =>
+      return "CONTROL VARIABLE OF THE WRONG TYPE";
+    when 19 =>
+      return "FIRST/LAST MUST BE MATCHING TYPES";
+    when IS_missing =>
+      return "missing ""is""";
+    when 21 =>
+      return "THE NUMBER IS TOO LARGE";
+    when incorrect_block_name =>
+      return "incorrect block name after ""end""";
+    when 23 =>
+      return "BAD TYPE FOR A CASE STATEMENT";
+    when 24 =>
+      return "ILLEGAL CHARACTER";
+    when 25 =>
+      return "ILLEGAL CONSTANT OR CONSTAT IDENTIFIER";
+    when 26 =>
+      return "ILLEGAL ARRAY SUBSCRIPT (CHECK TYPE)";
+    when 27 =>
+      return "ILLEGAL BOUNDS FOR AN ARRAY INDEX";
+    when 28 =>
+      return "INDEXED VARIABLE MUST BE AN ARRAY";
+    when 29 =>
+      return "MISSING A TYPE IDENFIFIER";
+    when 30 =>
+      return "UNDEFINED TYPE";
+    when 31 =>
+      return "VAR WITH FIELD SELECTOR MUST BE RECORD";
+    when 32 =>
+      return "RESULTING TYPE IS NOT ``BOOLEAN''";
+    when 33 =>
+      return "ILLEGAL TYPE FOR ARITHMETIC EXPRESSION";
+    when 34 =>
+      return "``MOD'' REQUIRES INTEGER ARGUMENTS";
+    when 35 =>
+      return "INCOMPATIBLE TYPES FOR COMPARISON";
+    when 36 =>
+      return "PARAMETER TYPES DO NOT MATCH";
+    when 37 =>
+      return "MISSING A VARIABLE";
+    when 38 =>
+      return "A STRING MUST HAVE ONE OR MORE CHAR";
+    when 39 =>
+      return "NUMBER OF PARAMETERS DO NOT MATCH";
+    when 40 =>
+      return "ILLEGAL PARAMETERS TO ``GET''";
+    when 41 =>
+      return "ILLEGAL PARAMETERS TO ``PUT''";
+    when 42 =>
+      return "PARAMETER MUST BE OF TYPE ``FLOAT''";
+    when 43 =>
+      return "PARAMETER MUST BE OF TYPE ``INTEGER''";
+    when 44 =>
+      return "EXPECTED A VARIABLE; FUNCTION OR CONST";
+    when 45 =>
+      return "ILLEGAL RETURN STATEMENT FROM MAIN";
+    when 46 =>
+      return "TYPES MUST MATCH IN AN ASSIGNMENT";
+    when 47 =>
+      return "CASE LABEL NOT SAME TYPE AS CASE CLAUSE";
+    when 48 =>
+      return "ARGUMENT TO STD. FUNCTION OF WRONG TYPE";
+    when 49 =>
+      return "THE PROGRAM REQUIRES TOO MUCH STORAGE";
+    when 50 =>
+      return "ILLEGAL SYMBOL FOR A CONSTANT";
+    when BECOMES_missing =>
+      return "missing "":=""";
+    when 52 =>
+      return "MISSING ``THEN''";
+    when 53 =>
+      return "MISSING ``IN''";
+    when 54 =>
+      return "MISSING ``LOOP''";
+    when 55 =>
+      return "MISSING RANGE ``..''";
+    when 56 =>
+      return "MISSING ``BEGIN''";
+    when END_missing =>
+      return "MISSING ``END''";
+    when 58 =>
+      return "Factor: EXPECTING AN ID; CONST; ``NOT'' OR ``(''";
+    when 59 =>
+      return "MISSING ``RETURN''";
+    when 60 =>
+      return "CONTROL CHARACTER PRESENT IN SOURCE ";
+    when 61 =>
+      return "MISSING ``RECORD''";
+    when 62 =>
+      return "MISSING CLOSING ``IF''";
+    when 63 =>
+      return "MISSING ``WHEN''";
+    when 64 =>
+      return "MISSING the finger ``=''>";
+    when 65 =>
+      return "MISSING CLOSING ``CASE''";
+    when 66 =>
+      return "CHARACTER DELIMETER USED FOR STRING";
+    when 67 =>
+      return "Ada RESERVED WORD; NOT SUPPORTED";
+    when 68 =>
+      return "FUNCTIONS MUST RETURN A VALUE";
+    when 69 =>
+      return "MUST SPECIFY ``WITH SMALL_SP;''";
+    when 70 =>
+      return "MUST SPECIFY ``USE SMALL_SP;''";
+    when 71 =>
+      return "EXPECTING AN ENTRY";
+    when 72 =>
+      return "MISSING EXPRESSION FOR DELAY";
+    when 73 =>
+      return "DELAY TIME MUST BE TYPE FLOAT";
+    when 74 =>
+      return "COMMA EXPECTED";
+    when 75 =>
+      return "PARAMETER MUST BE OF TYPE ``BOOLEAN''";
+    when 76 =>
+      return "EXPECTING ``ACCEPT''; ``WHEN''; OR ENTRY ID";
+    when 77 =>
+      return "EXPECTING Task.Entry";
+    when 78 =>
+      return "EXPECTING ``OR'' OR ``ELSE'' IN SELECT";
+    when 79 =>
+      return "EXPECTING ``DELAY''";
+    when 80 =>
+      return "MISSING SELECT";
+    when 81 =>
+      return "PROGRAM INCOMPLETE";
+    when OF_instead_of_IS =>
+      return "found ""of"", should be ""is""";
+    when EQUALS_instead_of_BECOMES =>
+      return "found ""="", should be "":=""";
+    when others =>
+      return "Unknown error Id=" & Integer'Image (Id);
+    end case;
+  end ErrorString;
 
-----------------------------------------------------------------------------
+  ----------------------------------------------------------------------------
 
-  PROCEDURE Error(N: Integer) is -- Write Error on current line & add To TOT ERR
-  BEGIN
-    cFoundError(N, LineCount, syStart, syEnd, -1);
-    Errs(N) := True;
-  END;
+  procedure Error (N : Integer) is  -- Write Error on current line & add To
+                                    --TOT ERR
+  begin
+    cFoundError (N, LineCount, syStart, syEnd, -1);
+    Errs (N) := True;
+  end Error;
 
-----------------------------------------------------------------------------
+  ----------------------------------------------------------------------------
 
-  PROCEDURE EndSkip is -- Skip past part of input
-  BEGIN
-    SkipFlag := FALSE;
-  END;
+  procedure EndSkip is -- Skip past part of input
+  begin
+    SkipFlag := False;
+  end EndSkip;
 
-----------------------------------------------------------------------------
+  ----------------------------------------------------------------------------
 
-PROCEDURE Fatal(N: Integer) is			-- internal table overflow
-  use Ada.Text_IO;
-  BEGIN
-	IF Errs /= Error_free THEN ErrorMsg; END IF;
-
-	IF qDebug THEN
-		Put("The Compiler TABLE for ");
-		CASE N IS
-		  WHEN  IDENTIFIERS_table_overflow     => Put("IDENTIFIERS");
-		  WHEN 	PROCEDURES_table_overflow      => Put("PROCEDURES");
-		  WHEN 	FLOAT_constants_table_overflow => Put("FLOAT Constants");
-		  WHEN 	4=> Put("Arrays");
-		  WHEN 	LEVEL_overflow  => Put("LEVELS");
-		  WHEN 	OBJECT_overflow => Put("OBJECT ObjCode");
-		  WHEN 	7=> Put("Strings");
-		  WHEN 	8=> Put("TASKS");
-		  WHEN 	9=> Put("ENTRIES");
-		  WHEN 	PATCHING_overflow => Put("ObjCode PATCHING");
-		  WHEN others => Put("N unknown: " & integer'image(N));
-		END CASE;
-		Put_Line(" is too SMALL");
-                New_Line;
-		Put_Line(" Please take this output to the maintainers of ");
-		Put_Line(" HAC for your installation ");
-                New_Line;
-		Put_Line(" Fatal termination of HAC");
-	END IF;
-	raise Failure_1_0;
-END Fatal;
-
-----------------------------------------------------------------------------
-
-  PROCEDURE ErrorMsg is
+  procedure Fatal (N : Integer) is   -- internal table overflow
     use Ada.Text_IO;
-    package IIO is new Integer_IO(integer); use IIO;
-    K: Integer;
-  BEGIN
-    K := 0;
-    IF qDebug THEN
-      New_Line;
-      Put_Line(" Error MESSAGE(S)");
-    END IF;
-    IF ListingWasRequested THEN
-      New_Line(Listing);
-      Put_Line(Listing, " Error MESSAGE(S)");
-    END IF;
-    WHILE Errs /= Error_free LOOP
-      WHILE NOT Errs(K) LOOP
-        K := K + 1;
-      END LOOP;
-      IF qDebug THEN
-        Put(K,2); Put_Line(":  " & ErrorString(K));
-      END IF;
-      IF ListingWasRequested THEN
-        Put(Listing,K,2);
-        Put_Line(Listing, "  " & ErrorString(K));
-      END IF;
-      Errs(K):= False; -- we cancel the K-th sort of error
-    END LOOP;
+  begin
+    if Errs /= error_free then
+      ErrorMsg;
+    end if;
 
-  END ErrorMsg;
+    if qDebug then
+      Put ("The Compiler TABLE for ");
+      case N is
+      when IDENTIFIERS_table_overflow =>
+        Put ("IDENTIFIERS");
+      when PROCEDURES_table_overflow =>
+        Put ("PROCEDURES");
+      when FLOAT_constants_table_overflow =>
+        Put ("FLOAT Constants");
+      when 4 =>
+        Put ("Arrays");
+      when LEVEL_overflow =>
+        Put ("LEVELS");
+      when OBJECT_overflow =>
+        Put ("OBJECT ObjCode");
+      when 7 =>
+        Put ("Strings");
+      when 8 =>
+        Put ("TASKS");
+      when 9 =>
+        Put ("ENTRIES");
+      when PATCHING_overflow =>
+        Put ("ObjCode PATCHING");
+      when others =>
+        Put ("N unknown: " & Integer'Image (N));
+      end case;
+      Put_Line (" is too SMALL");
+      New_Line;
+      Put_Line (" Please take this output to the maintainers of ");
+      Put_Line (" HAC for your installation ");
+      New_Line;
+      Put_Line (" Fatal termination of HAC");
+    end if;
+    raise Failure_1_0;
+  end Fatal;
+
+  ----------------------------------------------------------------------------
+
+  procedure ErrorMsg is
+    use Ada.Text_IO;
+    package IIO is new Integer_IO (Integer);
+    use IIO;
+    K : Integer;
+  begin
+    K := 0;
+    if qDebug then
+      New_Line;
+      Put_Line (" Error MESSAGE(S)");
+    end if;
+    if ListingWasRequested then
+      New_Line (Listing);
+      Put_Line (Listing, " Error MESSAGE(S)");
+    end if;
+    while Errs /= error_free loop
+      while not Errs (K) loop
+        K := K + 1;
+      end loop;
+      if qDebug then
+        Put (K, 2);
+        Put_Line (":  " & ErrorString (K));
+      end if;
+      if ListingWasRequested then
+        Put (Listing, K, 2);
+        Put_Line (Listing, "  " & ErrorString (K));
+      end if;
+      Errs (K) := False; -- we cancel the K-th sort of error
+    end loop;
+
+  end ErrorMsg;
 
 end HAC.UErrors;

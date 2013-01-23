@@ -1,218 +1,235 @@
-with HAC.Data;                   use HAC.Data;
-with HAC.UErrors;                  use HAC.UErrors;
+with HAC.Data;    use HAC.Data;
+with HAC.UErrors; use HAC.UErrors;
 -- with Sequential_IO;
 -- with Text_IO;
 
 package body HAC.PCode is
 
-TYPE
-    ObjData IS ( TabT,   ATabt,   BTabt,
-                 CodeT,  ECountT, EntryTABt, FatT,
-                 FcTabt, STabT,   TCountT,   TaskTabT );
+  type ObjData is (
+   TabT,
+   ATabt,
+   BTabt,
+   CodeT,
+   ECountT,
+   EntryTABt,
+   FatT,
+   FcTabt,
+   STabT,
+   TCountT,
+   TaskTabT);
 
-    type TArraysTab  is ARRAY ( 1..AMax )     OF ATabEntry;
-    type TBlockTab   is ARRAY ( 1..BMax )     OF BTabEntry;
-    type TObjCode    is ARRAY ( 0..CDMax )    OF Order;
-    type TEntryTAB   is ARRAY ( 0..EntryMax ) OF Index;
-    type TTskDefTab  is ARRAY ( 0..TaskMax )  OF Index;
-    type TIdTab      is ARRAY ( 0..TMax )     OF TabEntry;
-    type TStringTab  is ARRAY ( 0..SMax )     OF Character;
-    type TFloatPtTab is ARRAY ( 1..C2Max )    OF Float;
+  type TArraysTab is array (1 .. AMax) of ATabEntry;
+  type TBlockTab is array (1 .. BMax) of BTabEntry;
+  type TObjCode is array (0 .. CDMax) of Order;
+  type TEntryTAB is array (0 .. EntryMax) of Index;
+  type TTskDefTab is array (0 .. TaskMax) of Index;
+  type TIdTab is array (0 .. TMax) of TabEntry;
+  type TStringTab is array (0 .. SMax) of Character;
+  type TFloatPtTab is array (1 .. C2Max) of Float;
 
-    TYPE SMAObject(O:ObjData) IS RECORD
+  type SMAObject (O : ObjData) is record
+    case O is
+    when ATabt =>
+      ArraysTab : TArraysTab;
+    when BTabt =>
+      BlockTab : TBlockTab;
+    when CodeT =>
+      ObjCode : TObjCode;
+    when ECountT =>
+      ECount : Integer;
+    when EntryTABt =>
+      EntryTAB : TEntryTAB;
+    when FatT =>
+      FileIOTab : FilDescr;
+    when FcTabt =>
+      FloatPtTab : TFloatPtTab;
+    when STabT =>
+      StringTab : TStringTab;
+    when TabT =>
+      IdTab : TIdTab;
+    when TaskTabT =>
+      TskDefTab : TTskDefTab;
+    when TCountT =>
+      TCount : Integer;
+    end case;
 
-        CASE O IS
-            WHEN ATabt =>      ArraysTab:  TArraysTab;
-            WHEN BTabt =>      BlockTab:   TBlockTab;
-            WHEN CodeT =>      ObjCode:    TObjCode;
-            WHEN ECountT =>    ECount:     Integer;
-            WHEN EntryTABt =>  EntryTAB:   TEntryTAB;
-            WHEN FatT =>       FileIOTab:  FilDescr;
-            WHEN FcTabt =>     FloatPtTab: TFloatPtTab;
-            WHEN STabT =>      StringTab:  TStringTab;
-            WHEN TabT =>       IdTab:      TIdTab;
-            WHEN TaskTabT =>   TskDefTab:  TTskDefTab;
-            WHEN TCountT =>    TCount:     Integer;
-        END CASE;
+  end record;
 
-   END RECORD;
+  --    package OAIO is new Sequential_IO(SMAObject);
+  --    use OAIO;
 
---    package OAIO is new Sequential_IO(SMAObject);
---    use OAIO;
+  -- ** The next three functions are almost identical.
+  --
+  -- * Emit   store an object code for an instruction with no
+  -- *      arguments,
+  -- * Emit1  store an object code for an instruction with one
+  -- *      argument (Y), and
+  -- * Emit2  store an object code for an instruction with two
+  -- *      arguments.
+  -- *
+  -- * Originally it was implemented as three procedures.
+  -- *
+  -- * Emit and Emit1 call Emit2 with 0 for unused arguments
+  -- *
+  -- * Manuel *
 
--- ** The next three functions are almost identical.
---
--- * Emit   store an object code for an instruction with no
--- *      arguments,
--- * Emit1  store an object code for an instruction with one
--- *      argument (Y), and
--- * Emit2  store an object code for an instruction with two
--- *      arguments.
--- *
--- * Originally it was implemented as three procedures.
--- *
--- * Emit and Emit1 call Emit2 with 0 for unused arguments
--- *
--- * Manuel *
+  ----------------------------------------------------------------Emit----
 
+  procedure Emit (FCT : Integer) is
+  begin
+    Emit2 (FCT, 0, 0);    -- X, Y are not used
+  end Emit;
 
-----------------------------------------------------------------Emit----
+  ---------------------------------------------------------------Emit1----
 
-  PROCEDURE Emit(FCT: Integer) IS
-  BEGIN
-    Emit2(FCT, 0, 0);    -- X, Y are not used
-  END;
+  procedure Emit1 (FCT, B : Integer) is
+  begin
+    Emit2 (FCT, 0, B);    -- X is not used
+  end Emit1;
 
----------------------------------------------------------------Emit1----
+  ---------------------------------------------------------------Emit2----
 
-  PROCEDURE Emit1(FCT, b: Integer) IS
-  BEGIN
-    Emit2(FCT, 0, B);    -- X is not used
-  END;
+  procedure Emit2 (FCT, a, B : Integer) is
+  begin
+    if LC = CMax then
+      Fatal (OBJECT_overflow);
+    end if;
+    ObjCode (LC).F := FCT;
+    ObjCode (LC).X := a;
+    ObjCode (LC).Y := B;
+    LC             := LC + 1;
+  end Emit2;
 
----------------------------------------------------------------Emit2----
+  -------------------------------------------------------------SaveOBJ----
 
-  PROCEDURE Emit2(FCT, a, b: Integer) IS
-  BEGIN
-    IF LC = CMax THEN
-      Fatal(OBJECT_overflow);
-    END IF;
-    ObjCode(LC).F := FCT;
-    ObjCode(LC).X := a;
-    ObjCode(LC).Y := b;
-    LC := LC + 1;
-  END Emit2;
+  procedure SaveOBJ (FileName : String) is
+  --   ObjFile:  OAIO.File_Type;
+  --   Buffer: SMAObject;
+  begin
+    --   Create( ObjFile, name => FileName & ".Obj");
+    --
+    --   FOR  I  IN   1.. AMax  LOOP
+    --     Buffer.ArraysTab(I) := ArraysTab(I);
+    --   END LOOP;
+    --   Write(ObjFile, Buffer);
+    --
+    --   FOR  I  IN   1.. BMax  LOOP
+    --     Buffer.BlockTab(I) := BlockTab(I);
+    --   END LOOP;
+    --   Write(ObjFile, Buffer);
+    --
+    --   FOR  I  IN   0.. CDMax  LOOP
+    --     Buffer.ObjCode(I) := ObjCode(I);
+    --   END LOOP;
+    --   Write(ObjFile, Buffer);
+    --
+    --   Buffer.ECount := ECount;
+    --   Write(ObjFile, Buffer);
+    --
+    --   FOR  I  IN   0.. EntryMax  LOOP
+    --     Buffer.EntryTAB(I) := EntryTAB(I);
+    --   END LOOP;
+    --   Write(ObjFile, Buffer);
+    --
+    --   --{Buffer.FileIOTab := FileIOTab;} --{ Error assigning file }
+    --
+    --   FOR  I  IN   1.. C2Max  LOOP
+    --     Buffer.FloatPtTab(I) := FloatPtTab(I);
+    --   END LOOP;
+    --   Write(ObjFile, Buffer);
+    --
+    --   FOR  I  IN   0.. SMax  LOOP
+    --     Buffer.StringTab(I) := StringTab(I);
+    --   END LOOP;
+    --   Write(ObjFile, Buffer);
+    --
+    --   FOR  I  IN   0.. TMax  LOOP
+    --     Buffer.IdTab(I) := IdTab(I);
+    --   END LOOP;
+    --   Write(ObjFile, Buffer);
+    --
+    --   FOR  I  IN   0.. TaskMax  LOOP
+    --     Buffer.TskDefTab(I) := TskDefTab(I);
+    --   END LOOP;
+    --   Write(ObjFile, Buffer);
+    --
+    --   Buffer.TCount := TCount;
+    --   Write(ObjFile, Buffer);
+    --
+    --   Close(ObjFile);
 
--------------------------------------------------------------SaveOBJ----
+    null; -- will be streamed...
 
-  PROCEDURE SaveOBJ(FileName: String) IS
---   ObjFile:  OAIO.File_Type;
---   Buffer: SMAObject;
-  BEGIN
---   Create( ObjFile, name => FileName & ".Obj");
---
---   FOR  I  IN   1.. AMax  LOOP
---     Buffer.ArraysTab(I) := ArraysTab(I);
---   END LOOP;
---   Write(ObjFile, Buffer);
---
---   FOR  I  IN   1.. BMax  LOOP
---     Buffer.BlockTab(I) := BlockTab(I);
---   END LOOP;
---   Write(ObjFile, Buffer);
---
---   FOR  I  IN   0.. CDMax  LOOP
---     Buffer.ObjCode(I) := ObjCode(I);
---   END LOOP;
---   Write(ObjFile, Buffer);
---
---   Buffer.ECount := ECount;
---   Write(ObjFile, Buffer);
---
---   FOR  I  IN   0.. EntryMax  LOOP
---     Buffer.EntryTAB(I) := EntryTAB(I);
---   END LOOP;
---   Write(ObjFile, Buffer);
---
---   --{Buffer.FileIOTab := FileIOTab;} --{ Error assigning file }
---
---   FOR  I  IN   1.. C2Max  LOOP
---     Buffer.FloatPtTab(I) := FloatPtTab(I);
---   END LOOP;
---   Write(ObjFile, Buffer);
---
---   FOR  I  IN   0.. SMax  LOOP
---     Buffer.StringTab(I) := StringTab(I);
---   END LOOP;
---   Write(ObjFile, Buffer);
---
---   FOR  I  IN   0.. TMax  LOOP
---     Buffer.IdTab(I) := IdTab(I);
---   END LOOP;
---   Write(ObjFile, Buffer);
---
---   FOR  I  IN   0.. TaskMax  LOOP
---     Buffer.TskDefTab(I) := TskDefTab(I);
---   END LOOP;
---   Write(ObjFile, Buffer);
---
---   Buffer.TCount := TCount;
---   Write(ObjFile, Buffer);
---
---   Close(ObjFile);
+  end SaveOBJ;
 
-   null; -- will be streamed...
+  ----------------------------------------------------------RestoreOBJ----}
 
-  END;
+  procedure RestoreOBJ (FileName : String) is
+  --   ObjFile:  OAIO.File_Type;
+  --   Buffer: SMAObject;
+  begin
+    --   BEGIN
+    --     Open(ObjFile, in_file, FileName & ".Obj");
+    --   EXCEPTION
+    --     when others=>
+    --       IF qDebug THEN
+    --         Text_IO.Put_Line("Cannot find file : " & FileName & ".Obj");
+    --       END IF;
+    --       raise Failure_1_0;
+    --   END;
+    --
+    --   Read(ObjFile, Buffer);
+    --   FOR  I  IN   1.. AMax  LOOP
+    --     ArraysTab(I) := Buffer.ArraysTab(I);
+    --   END LOOP;
+    --
+    --   Read(ObjFile, Buffer);
+    --   FOR  I  IN   1.. BMax  LOOP
+    --     BlockTab(I) := Buffer.BlockTab(I);
+    --   END LOOP;
+    --
+    --   Read(ObjFile, Buffer);
+    --   FOR  I  IN   0.. CDMax  LOOP
+    --     ObjCode(I) := Buffer.ObjCode(I);
+    --   END LOOP;
+    --
+    --   Read(ObjFile, Buffer);
+    --   ECount := Buffer.ECount;
+    --
+    --   Read(ObjFile, Buffer);
+    --   FOR  I  IN   0.. EntryMax  LOOP
+    --     EntryTAB(I) := Buffer.EntryTAB(I);
+    --   END LOOP;
+    --
+    --   Read(ObjFile, Buffer);
+    --   --{FileIOTab := Buffer.FileIOTab;} --{ Error assigning file }
+    --   Read(ObjFile, Buffer);
+    --   FOR  I  IN   1.. C2Max  LOOP
+    --     FloatPtTab(I) := Buffer.FloatPtTab(I);
+    --   END LOOP;
+    --
+    --   Read(ObjFile, Buffer);
+    --   FOR  I  IN   0.. SMax  LOOP
+    --     StringTab(I) := Buffer.StringTab(I);
+    --   END LOOP;
+    --
+    --   Read(ObjFile, Buffer);
+    --   FOR  I  IN   0.. TMax  LOOP
+    --     IdTab(I) := Buffer.IdTab(I);
+    --   END LOOP;
+    --
+    --   Read(ObjFile, Buffer);
+    --   FOR  I  IN   0.. TaskMax  LOOP
+    --     TskDefTab(I) := Buffer.TskDefTab(I);
+    --   END LOOP;
+    --
+    --   Read(ObjFile, Buffer);
+    --   TCount := Buffer.TCount;
+    --
+    --   Close(ObjFile);
 
-----------------------------------------------------------RestoreOBJ----}
+    null; -- will be streamed...
 
-  PROCEDURE RestoreOBJ(FileName: String) IS
---   ObjFile:  OAIO.File_Type;
---   Buffer: SMAObject;
-  BEGIN
---   BEGIN
---     Open(ObjFile, in_file, FileName & ".Obj");
---   EXCEPTION
---     when others=>
---       IF qDebug THEN
---         Text_IO.Put_Line("Cannot find file : " & FileName & ".Obj");
---       END IF;
---       raise Failure_1_0;
---   END;
---
---   Read(ObjFile, Buffer);
---   FOR  I  IN   1.. AMax  LOOP
---     ArraysTab(I) := Buffer.ArraysTab(I);
---   END LOOP;
---
---   Read(ObjFile, Buffer);
---   FOR  I  IN   1.. BMax  LOOP
---     BlockTab(I) := Buffer.BlockTab(I);
---   END LOOP;
---
---   Read(ObjFile, Buffer);
---   FOR  I  IN   0.. CDMax  LOOP
---     ObjCode(I) := Buffer.ObjCode(I);
---   END LOOP;
---
---   Read(ObjFile, Buffer);
---   ECount := Buffer.ECount;
---
---   Read(ObjFile, Buffer);
---   FOR  I  IN   0.. EntryMax  LOOP
---     EntryTAB(I) := Buffer.EntryTAB(I);
---   END LOOP;
---
---   Read(ObjFile, Buffer);
---   --{FileIOTab := Buffer.FileIOTab;} --{ Error assigning file }
---   Read(ObjFile, Buffer);
---   FOR  I  IN   1.. C2Max  LOOP
---     FloatPtTab(I) := Buffer.FloatPtTab(I);
---   END LOOP;
---
---   Read(ObjFile, Buffer);
---   FOR  I  IN   0.. SMax  LOOP
---     StringTab(I) := Buffer.StringTab(I);
---   END LOOP;
---
---   Read(ObjFile, Buffer);
---   FOR  I  IN   0.. TMax  LOOP
---     IdTab(I) := Buffer.IdTab(I);
---   END LOOP;
---
---   Read(ObjFile, Buffer);
---   FOR  I  IN   0.. TaskMax  LOOP
---     TskDefTab(I) := Buffer.TskDefTab(I);
---   END LOOP;
---
---   Read(ObjFile, Buffer);
---   TCount := Buffer.TCount;
---
---   Close(ObjFile);
-
-   null; -- will be streamed...
-
-  END;
+  end RestoreOBJ;
 
 end HAC.PCode;

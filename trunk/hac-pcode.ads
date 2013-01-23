@@ -46,7 +46,7 @@ package HAC.PCode is
   procedure Emit1(FCT, B: Integer);
   procedure Emit2(FCT, a, B: Integer);
 
-  -- Save and restore an object file (currently not used in the Mac) }
+  -- Save and restore an object file
   procedure SaveOBJ(FileName: String);
   procedure RestoreOBJ(FileName: String);
 
