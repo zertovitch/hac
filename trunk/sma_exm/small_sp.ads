@@ -94,6 +94,8 @@ package SMALL_SP is
    -- Mark End of Line
    procedure  NEW_LINE                      ;
 
+   procedure  CURSORAT (X, Y: Integer);
+
    -- Semaphore Procedures
    procedure  WAIT      ( S : SEMAPHORE    );
    procedure  SIGNAL    ( S : SEMAPHORE    );

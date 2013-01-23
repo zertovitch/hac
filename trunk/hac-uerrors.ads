@@ -47,8 +47,10 @@ package HAC.UErrors is
   semicolon_missing            : constant:= 14;
   IS_missing                   : constant:= 20;
   incorrect_block_name         : constant:= 22;
+  BECOMES_missing              : constant:= 51;
   END_missing                  : constant:= 57;
   OF_instead_of_IS             : constant:= 82;
+  EQUALS_instead_of_BECOMES    : constant:= 83;
 
   procedure EndSkip;
 

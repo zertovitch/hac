@@ -676,16 +676,16 @@ package body HAC.Parser is
       Test( Symset'(BecomeS | EQL | Semicolon=> true,
                     others=> false), Empty_Symset , 6);
       IF Sy = EQL THEN
-        Error(51);
+        Error(EQUALS_instead_of_BECOMES);
         Sy := BecomeS;
       END IF;
-      IF  ConstDec THEN
+      IF ConstDec THEN
         IF Sy = BecomeS THEN
           InSymbol;
           KKonstant( Symset'(Semicolon | Comma | IDent=> true,
                              others=> false) + FSys, C);
         ELSE
-          Error(51);
+          Error(BECOMES_missing);
         END IF;
       END IF;
       T0i := T0;
@@ -1340,7 +1340,7 @@ package body HAC.Parser is
           InSymbol;
           Factor(FSys + FactorZ, Y.all);
           IF  OP = xTimes THEN     --  *
-            X.TYP := ResultType(X.TYP, Y.all.TYP);
+            X.TYP := ResultType(X.TYP, Y.TYP);
             CASE  X.TYP  IS
               WHEN NOTYP=>  null;
               WHEN Ints=>   Emit(57);
@@ -1362,7 +1362,7 @@ package body HAC.Parser is
               IF X.TYP = Floats AND Y.TYP = Floats THEN
                 Emit(61);
               ELSE
-                IF  (X.TYP /= NOTYP)  AND  (Y.all.TYP /= NOTYP) THEN
+                IF  (X.TYP /= NOTYP)  AND  (Y.TYP /= NOTYP) THEN
                   Error(33);
                 END IF;
                 X.TYP := NOTYP;
@@ -1399,7 +1399,7 @@ package body HAC.Parser is
       IF  Sy = Plus or else Sy = MinUS THEN
         OP := Sy;
         InSymbol;
-        Term(FSys + Symset'((Plus|MinUS=> true,
+        Term(FSys + Symset'((Plus | MinUS=> true,
                              others=> false)), X);
         IF  X.TYP > Floats THEN
           Error(33);
@@ -1424,21 +1424,21 @@ package body HAC.Parser is
             X.TYP := NOTYP;
           END IF;
         ELSE
-          X.TYP := ResultType(X.TYP, Y.all.TYP);
+          X.TYP := ResultType(X.TYP, Y.TYP);
           CASE X.TYP IS
             WHEN NOTYP =>
               null;
             WHEN Ints =>
               IF OP = Plus THEN
-                Emit(52);
+                Emit(52); -- S [T].I := S [T].I + S [T + 1].I ;
               ELSE
-                Emit(53);
+                Emit(53); -- S [T].I := S [T].I - S [T + 1].I ;
               END IF;
             WHEN Floats =>
               IF OP = Plus THEN
-                Emit(54);
+                Emit(54); -- S [T].R := S [T].R + S [T + 1].R ;
               ELSE
-                Emit(55);
+                Emit(55); -- S [T].R := S [T].R - S [T + 1].R ;
               END IF;
             WHEN others=>
               null;
@@ -1457,19 +1457,19 @@ package body HAC.Parser is
       OP := Sy;
       InSymbol;
       SimpleExpression(FSys, Y.all);
-      IF  (X.TYP = Ints)  AND THEN (Y.all.TYP = Floats) THEN
+      IF X.TYP = Ints AND THEN Y.TYP = Floats THEN
         X.TYP := Floats;
         Emit1(26, 1);
       END IF;
-      IF  (Y.all.TYP = Ints)  AND THEN (X.TYP = Floats) THEN
-        Y.all.TYP := Floats;
+      IF Y.TYP = Ints AND THEN X.TYP = Floats THEN
+        Y.TYP := Floats;
         Emit1(26, 0);
       END IF;
-      IF  X.TYP = Enums  AND THEN  Y.all.TYP = Enums AND THEN
-        X.Ref /= Y.all.Ref THEN
+      IF  X.TYP = Enums  AND THEN  Y.TYP = Enums AND THEN
+        X.Ref /= Y.Ref THEN
        Error(35);
       END IF;
-      IF X.TYP = Y.all.TYP THEN
+      IF X.TYP = Y.TYP THEN
         IF  X.TYP = Floats THEN  F:= 0; ELSE  F:= 6; END IF;
         CASE  OP  IS
           WHEN EQL=> Emit(39 + F);
@@ -1497,17 +1497,24 @@ package body HAC.Parser is
   BEGIN
     X.TYP := IdTab(I).TYP;
     X.Ref := IdTab(I).Ref;
-    IF  IdTab(I).Normal THEN F:= 0; ELSE F:= 1; END IF;
+    IF  IdTab(I).Normal THEN
+      F:= 0;
+    ELSE
+      F:= 1;
+    END IF;
 
     Emit2(F, IdTab(I).LEV, IdTab(I).Adr);
-    IF  Sy = LBrack or else Sy = LParent or else Sy = Period THEN
+    IF  Sy = LBrack or Sy = LParent or Sy = Period THEN
       Selector( Symset'((BecomeS|EQL => true, others=> false)) + FSys, X);
     END IF;
-    IF  Sy = BecomeS THEN
+    IF Sy = BecomeS THEN
+      InSymbol;
+    ELSIF Sy = EQL THEN
+      -- Common mistake by BASIC or C programmers.
+      Error(EQUALS_instead_of_BECOMES);
       InSymbol;
     ELSE
-      Error(51);
-      IF  Sy = EQL THEN  InSymbol; END IF;
+      Error(BECOMES_missing);
     END IF;
     Expression(Semicolon_set, Y);
     IF  X.TYP = Y.TYP THEN
@@ -1863,7 +1870,7 @@ package body HAC.Parser is
       if Sy = IsSy then -- Was OfSy in SmallAda ! I.e. case x OF when 1 => ...
         InSymbol;
       elsif Sy = OfSy then
-        Error(OF_instead_of_IS); -- common mistake by Pascal programmers
+        Error(OF_instead_of_IS); -- Common mistake by Pascal programmers
         InSymbol;
       else
         Error(IS_missing);

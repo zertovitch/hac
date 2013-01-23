@@ -278,15 +278,15 @@ package body SMALL_SP is
       return RANDOM (I);
    end RANDOM;
 
+   package IIO is new Ada.Text_IO.Integer_IO(Integer);
+
    ---------
    -- GET --
    ---------
 
    procedure GET (C : OUT CHARACTER) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "GET unimplemented");
-      raise Program_Error;
+      Ada.Text_IO.Get(C);
    end GET;
 
    ---------
@@ -372,9 +372,7 @@ package body SMALL_SP is
 
    procedure PUT (C : IN  CHARACTER) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "PUT unimplemented");
-      raise Program_Error;
+      Ada.Text_IO.Put(C);
    end PUT;
 
    ---------
@@ -383,9 +381,7 @@ package body SMALL_SP is
 
    procedure PUT (I : IN  INTEGER) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "PUT unimplemented");
-      raise Program_Error;
+      IIO.Put(I);
    end PUT;
 
    ---------
@@ -522,10 +518,13 @@ package body SMALL_SP is
 
    procedure NEW_LINE is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "NEW_LINE unimplemented");
-      raise Program_Error;
+      Ada.Text_IO.New_Line;
    end NEW_LINE;
+
+   procedure  CURSORAT (X, Y: Integer) is
+   begin
+     null; -- !!
+   end;
 
    ----------
    -- WAIT --
