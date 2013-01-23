@@ -1,5 +1,6 @@
 with HAC.Data;
-with HAC.Compiler; use HAC.Compiler;
+with HAC.Compiler;                      use HAC.Compiler;
+with HAC.PCode.Interpreter;
 
 with Ada.Command_Line;                  use Ada.Command_Line;
 with Ada.Streams.Stream_IO;             use Ada.Streams.Stream_IO;
@@ -17,6 +18,8 @@ procedure HAC_Test is
     HAC.Data.c_Set_Stream(HAC.Data.Stream_Access(Stream(f)));
     Compile;
     Close(f);
+    --
+    HAC.PCode.Interpreter.Interpret;
   end Compile_File;
 
 begin

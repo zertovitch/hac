@@ -36,7 +36,7 @@
 --
 
 with Ada.Streams; use Ada.Streams;
-with Text_IO;     use Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package HAC.Data is
 

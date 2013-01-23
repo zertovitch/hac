@@ -1,63 +1,42 @@
-  
+-------------------------------------------------------------------------------------
+--
+-- HAC - HAC Ada Compiler
+--
+-- A compiler in Ada for an Ada subset
 
+-- Legal licensing note:
 
---  *********************************************************************
+--  Copyright (c) 2013 Gautier de Montmollin
+--
+--  History and authors list of works HAC was originally derived from
+--  can be found in hac.txt.
 
-     --  Small Ada PCODE interpreter.                                        
+--  Permission is hereby granted, free of charge, to any person obtaining a copy
+--  of this software and associated documentation files (the "Software"), to deal
+--  in the Software without restriction, including without limitation the rights
+--  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+--  copies of the Software, and to permit persons to whom the Software is
+--  furnished to do so, subject to the following conditions:
 
-     --  *********************************************************************
+--  The above copyright notice and this permission notice shall be included in
+--  all copies or substantial portions of the Software.
 
+--  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+--  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+--  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+--  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+--  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+--  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+--  THE SOFTWARE.
 
+-- NB: this is the MIT License, as found 12-Sep-2013 on the site
+-- http://www.opensource.org/licenses/mit-license.php
 
-     -- Translated on 23-Jan-2013 by (New) P2Ada v. 28-Oct-2009
-     -- The following with/use clauses are put graciously by P2Ada.
-     -- Some of them may be useless, your Ada compiler will tell it you.
-     --   (GNAT: with '-gnatwa')
-     with Ada.Text_IO;                       use Ada.Text_IO;
-     with Ada.Integer_Text_IO;               use Ada.Integer_Text_IO;
-     with Ada.Float_Text_IO;                 use Ada.Float_Text_IO;
-     with Ada.Long_Float_Text_IO;            use Ada.Long_Float_Text_IO;
-     with Ada.Direct_IO;
-     with Ada.Command_Line;                  use Ada.Command_Line; -- ParamStr,...
-     with Ada.Characters.Handling;           use Ada.Characters.Handling; -- UpCase
-     with Interfaces;                        use Interfaces; -- For Shift_Left/Right
-     -- This is for Pi :
-     with Ada.Numerics;                      use Ada.Numerics;
-     -- This is for Sqrt, Sin, Cos, etc. :
-     with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
-     with Ada.Numerics.Long_Elementary_Functions;
-      use Ada.Numerics.Long_Elementary_Functions;
-     -- This is for Dispose. P2Ada writes automatically:
-     --   "Dispose is new Ada.Unchecked_Deallocation(<type>, <pointer type>)".
-     with Ada.Unchecked_Deallocation;
-     
-     
+-------------------------------------------------------------------------------------
+--
 
+package HAC.PCode.Interpreter is
 
-  with
-    SMDATA,       --  Small Ada global data unit 
-    
-     Crt,          --  for GotoXY, ClrEol, ClrScr 
-    
-     Dos,          --  for GetTime, GetDate 
-    
-     ERRORS,
-    SMERRORS,     --  Small Ada error handling procs 
-    
-     MSSCRN1,      --  ROUTINES FOR TASK MONITORING 
-    
-     MSuser,       --  ROUTINES FOR TASK MONITORING 
-    
-     AVL,          --  ROUTINES FOR TASK MONITORING 
-    
-     InterDef,
-    ErInter; -- [P2Ada]: place it before main procedure
-     
+  procedure Interpret;
 
-
-
-  package SMINTER is
-     procedure  INTERPRET;
-
-
-end SMINTER;
+end HAC.PCode.Interpreter;
