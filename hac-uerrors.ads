@@ -39,18 +39,22 @@ package HAC.UErrors is
 
   procedure Error(N: Integer);
   --
-  undefined_identifier         : constant:=  0;
-  duplicate_identifier         : constant:=  1;
-  identifier_missing           : constant:=  2;
-  closing_parenthesis_missing  : constant:=  4;
-  colon_missing                : constant:=  5;
-  semicolon_missing            : constant:= 14;
-  IS_missing                   : constant:= 20;
-  incorrect_block_name         : constant:= 22;
-  BECOMES_missing              : constant:= 51;
-  END_missing                  : constant:= 57;
-  OF_instead_of_IS             : constant:= 82;
-  EQUALS_instead_of_BECOMES    : constant:= 83;
+  undefined_identifier          : constant:=  0;
+  duplicate_identifier          : constant:=  1;
+  identifier_missing            : constant:=  2;
+  closing_parenthesis_missing   : constant:=  4;
+  colon_missing                 : constant:=  5;
+  semicolon_missing             : constant:= 14;
+  IS_missing                    : constant:= 20;
+  incorrect_block_name          : constant:= 22;
+  illegal_array_bounds          : constant:= 27;
+  variable_missing              : constant:= 37;
+  parameter_must_be_integer     : constant:= 43;
+  types_of_assignment_must_match: constant:= 46;
+  BECOMES_missing               : constant:= 51;
+  END_missing                   : constant:= 57;
+  OF_instead_of_IS              : constant:= 82;
+  EQUALS_instead_of_BECOMES     : constant:= 83;
 
   procedure EndSkip;
 

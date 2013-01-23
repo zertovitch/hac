@@ -48,18 +48,18 @@ package HAC.PCode is
 
   -----------------------------------------------------PCode Opcodes----
 
-  kLoadAddress                : constant := 0;
-  kPushV                      : constant := 1; -- Load Value
-  kPushIndirect               : constant := 2;
-  kUpdateDisplayV             : constant := 3;
-  kAcceptRendezvous           : constant := 4;
-  kEndRendezvous              : constant := 5;
-  kWaitSemaphore              : constant := 6;
-  kSignalSemaphore            : constant := 7;
-  kStndFunctions              : constant := 8;
-  kOffset                     : constant := 9;
-  kJump                       : constant := 10;
-  kCondJump                   : constant := 11;
+  k_Load_Address              : constant := 0;
+  k_Push_Value                : constant := 1;
+  k_Push_Indirect_Value       : constant := 2;
+  k_Update_Display_Vector     : constant := 3;
+  k_Accept_Rendezvous         : constant := 4;
+  k_End_Rendezvous            : constant := 5;
+  k_Wait_Semaphore            : constant := 6;
+  k_Signal_Semaphore          : constant := 7;
+  k_Standard_Functions        : constant := 8;
+  k_Offset                    : constant := 9;
+  k_Jump                      : constant := 10;
+  k_Conditional_Jump          : constant := 11;
   kSwitch                     : constant := 12;
   k_Switch_2                  : constant := 13;
   kFor1                       : constant := 14;
