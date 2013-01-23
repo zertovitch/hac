@@ -25,6 +25,7 @@ project SMA_Exm is
          for Object_Dir use "../obj/fast";
    end case;
 
+   for Source_Dirs use (".", "special");
    for Exec_Dir use ".";
 
    package Pretty_Printer is
