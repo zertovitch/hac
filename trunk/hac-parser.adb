@@ -1331,8 +1331,8 @@ package body HAC.Parser is
             Test (Factor_Begin_Symbol + StrCon, FSys, 58);
             if Sy = StrCon then
               X.TYP := Strings;
-              Emit1 (kLiteral, SLeng);       -- String Length
-              Emit1 (kLiteral, INum);        -- pointer To String IdTab
+              Emit1 (k_Literal, SLeng);       -- String Length
+              Emit1 (k_Literal, INum);        -- pointer To String IdTab
               InSymbol;
             end if;
             while Factor_Begin_Symbol (Sy) loop
@@ -1350,9 +1350,9 @@ package body HAC.Parser is
                         X.TYP := r.TYP;
                         X.Ref := r.Ref;
                         if X.TYP = Floats then
-                          Emit1 (kLoadFloat, r.Adr);
+                          Emit1 (k_Load_Float, r.Adr);
                         else
-                          Emit1 (kLiteral, r.Adr);
+                          Emit1 (k_Literal, r.Adr);
                         end if;
 
                       when Variable =>
@@ -1406,14 +1406,14 @@ package body HAC.Parser is
                   if Sy = FloatCon then
                     X.TYP := Floats;
                     EnterFloat (RNum);
-                    Emit1 (kLoadFloat, C1);
+                    Emit1 (k_Load_Float, C1);
                   else
                     if Sy = CharCon then
                       X.TYP := xChars;
                     else
                       X.TYP := Ints;
                     end if;
-                    Emit1 (kLiteral, INum);
+                    Emit1 (k_Literal, INum);
                   end if;
                   X.Ref := 0;
                   InSymbol;
@@ -2664,7 +2664,7 @@ package body HAC.Parser is
                 end if;
                 do_first_InSymbol := True;
                 if Sy = StrCon then
-                  Emit1 (kLiteral, SLeng);
+                  Emit1 (k_Literal, SLeng);
                   Emit1 (kWriteString, INum);
                   InSymbol;
                 else

@@ -5,55 +5,43 @@ with HAC.UErrors; use HAC.UErrors;
 
 package body HAC.PCode is
 
-  type ObjData is (
-   TabT,
-   ATabt,
-   BTabt,
-   CodeT,
-   ECountT,
-   EntryTABt,
-   FatT,
-   FcTabt,
-   STabT,
-   TCountT,
-   TaskTabT);
+  --    type ObjData is (
+  --     TabT,
+  --     ATabt,
+  --     BTabt,
+  --     CodeT,
+  --     ECountT,
+  --     EntryTABt,
+  --     FatT,
+  --     FcTabt,
+  --     STabT,
+  --     TCountT,
+  --     TaskTabT);
+  --
+  --    type TArraysTab is array (1 .. AMax) of ATabEntry;
+  --    type TBlockTab is array (1 .. BMax) of BTabEntry;
+  --    type TObjCode is array (0 .. CDMax) of Order;
+  --    type TEntryTAB is array (0 .. EntryMax) of Index;
+  --    type TTskDefTab is array (0 .. TaskMax) of Index;
+  --    type TIdTab is array (0 .. TMax) of TabEntry;
+  --    type TStringTab is array (0 .. SMax) of Character;
+  --    type TFloatPtTab is array (1 .. C2Max) of Float;
 
-  type TArraysTab is array (1 .. AMax) of ATabEntry;
-  type TBlockTab is array (1 .. BMax) of BTabEntry;
-  type TObjCode is array (0 .. CDMax) of Order;
-  type TEntryTAB is array (0 .. EntryMax) of Index;
-  type TTskDefTab is array (0 .. TaskMax) of Index;
-  type TIdTab is array (0 .. TMax) of TabEntry;
-  type TStringTab is array (0 .. SMax) of Character;
-  type TFloatPtTab is array (1 .. C2Max) of Float;
-
-  type SMAObject (O : ObjData) is record
-    case O is
-    when ATabt =>
-      ArraysTab : TArraysTab;
-    when BTabt =>
-      BlockTab : TBlockTab;
-    when CodeT =>
-      ObjCode : TObjCode;
-    when ECountT =>
-      ECount : Integer;
-    when EntryTABt =>
-      EntryTAB : TEntryTAB;
-    when FatT =>
-      FileIOTab : FilDescr;
-    when FcTabt =>
-      FloatPtTab : TFloatPtTab;
-    when STabT =>
-      StringTab : TStringTab;
-    when TabT =>
-      IdTab : TIdTab;
-    when TaskTabT =>
-      TskDefTab : TTskDefTab;
-    when TCountT =>
-      TCount : Integer;
-    end case;
-
-  end record;
+  --    type SMAObject (O : ObjData) is record
+  --      case O is
+  --        when ATabt =>      ArraysTab : TArraysTab;
+  --        when BTabt =>      BlockTab : TBlockTab;
+  --        when CodeT =>      ObjCode : TObjCode;
+  --        when ECountT =>    ECount : Integer;
+  --        when EntryTABt =>  EntryTAB : TEntryTAB;
+  --        when FatT =>       FileIOTab : FilDescr;
+  --        when FcTabt =>     FloatPtTab : TFloatPtTab;
+  --        when STabT =>      StringTab : TStringTab;
+  --        when TabT =>       IdTab : TIdTab;
+  --        when TaskTabT =>   TskDefTab : TTskDefTab;
+  --        when TCountT =>    TCount : Integer;
+  --      end case;
+  --    end record;
 
   --    package OAIO is new Sequential_IO(SMAObject);
   --    use OAIO;

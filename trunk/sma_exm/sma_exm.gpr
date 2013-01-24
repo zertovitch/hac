@@ -8,7 +8,6 @@ project SMA_Exm is
 "din_ws.adb",
 "hello.adb",
 "merge.adb",
-"mini.adb",
 "newrace.adb",
 "pgm0.adb",
 "pgm1.adb",
@@ -16,6 +15,7 @@ project SMA_Exm is
 "race.adb",
 "racedead.adb",
 "shell.adb",
+"test.adb",
 "test1.adb",
 "test2.adb");
    case Build_Mode is
