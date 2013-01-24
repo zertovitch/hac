@@ -24,7 +24,7 @@ procedure HAC_Test is
 
 begin
   if Argument_Count = 0 then
-    Compile_File("mini.adb");
+    Compile_File("test.adb");
   else
     for i in 1..Argument_Count loop
       Compile_File(Argument(i));

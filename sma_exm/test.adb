@@ -6,6 +6,7 @@ procedure Test is
   Twenty: constant:= 20;
   x: Integer;
   Ten_point_one: constant := 10.1;
+  c: Character;
   --
   type Type1 is record
     x: Integer;
@@ -41,6 +42,10 @@ procedure Test is
     null;
   end;
 begin
+  Put('A');
+  c:= 'B';
+  Put(c);
+  new_line;
   x:= 123;
   z1.x:= Add(1,x);
   z1.y:= 1.8;

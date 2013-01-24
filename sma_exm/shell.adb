@@ -1,7 +1,8 @@
 with SMALL_SP; use SMALL_SP;  -- CS159-10 - FAll/1990 - ARthur Vargas Lopes
 
 procedure SHELL is
-  ch : character;
+
+  -- ch : character;
   procedure SHELL_SORT is
     B : STRING(1..26);
     I,J,STEP : INTEGER;
@@ -10,11 +11,11 @@ procedure SHELL is
     TEMP : character;
    begin
      B := "ZYXWVUTSRQPONMLKJIHGFEDCBA";
-     New_Line;
      for k in 1..26 loop
-        CURSORAT(15,14+k);
         PUT(B(k));
      end loop;
+     new_line;
+     -- Put_Line(B);
      -- 'steps' contains decreasing increments for each
      -- pass. The last pass has increment 1.
      STEPSIZE(4) := 1;
@@ -22,22 +23,29 @@ procedure SHELL is
          STEPSIZE(PASS):= 2*STEPSIZE(PASS+1);
      end loop;
      for PASS in 1..4 loop
-       cursorat(14,45); put("Pass: "); put(pass);
+       -- cursorat(14,45);
+       put("Pass: "); put(pass);
+       new_line;
        STEP := STEPSIZE(PASS);
-       put(" Step: "); put(step);
+       put("Step: "); put(step);
+       new_line;
          -- Do a straight insertion sort with 'step' as
          -- an increment instead of 1.
        I:= STEP + 1;
        while I <= 26 loop
-         cursorat(15,45); put("I:    "); put(i);
+         --cursorat(15,45);
+         new_line;
+         put("I:    "); put(i); new_line;
          TEMP := B(I);
          J:= I;
          STOP:= FALSE;
          while (J > STEP) and not STOP loop
            J := J - STEP;
-           cursorat(16,45); put("J:    "); put(J);
+           -- cursorat(16,45); put("J:    "); put(J);
            if B(J) > TEMP then
-              B(J+STEP):= B(J); cursorat(15,14+j); put(temp);
+              B(J+STEP):= B(J);
+              -- cursorat(15,14+j);
+              put(temp);
            else
               B(J+STEP):= TEMP;
               STOP:= TRUE;
@@ -46,22 +54,27 @@ procedure SHELL is
          end loop;
          if not STOP then
             B(1):= TEMP;
-            cursorat(15,14+0); put(temp);
+            cursorat(15,14+0);
+            put(temp);
          end if;
          I := I + STEP;
        end loop;
+       new_line;
      end loop; -- for pass in 1..npass
      New_Line;
      for k in 1..26 loop
         PUT(B(k));
      end loop;
+     new_line;
    end SHELL_SORT;
 
 begin
-  CURSORAT(15,1); PUT("Shell:");
+  -- CURSORAT(15,1);
+  PUT_Line("Shell:");
   SHELL_SORT;
-  CURSORAT(17,1);
+  -- CURSORAT(17,1);
   New_Line;
-  PUT("Press enter to proceed..."); GET(ch);
+  -- PUT("Press enter to proceed...");
+  -- GET(ch);
 end SHELL;
 

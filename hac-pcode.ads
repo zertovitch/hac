@@ -72,8 +72,8 @@ package HAC.PCode is
   kIndex                      : constant := 21;
   kLoadBlock                  : constant := 22;
   kCopyBlock                  : constant := 23;
-  kLiteral                    : constant := 24;
-  kLoadFloat                  : constant := 25;
+  k_Literal                   : constant := 24;
+  k_Load_Float                : constant := 25;
   kCase26                     : constant := 26; -- Seems integer-to-float
   k_Read                      : constant := 27;
   kWriteString                : constant := 28;

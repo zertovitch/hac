@@ -382,7 +382,7 @@ package body HAC.PCode.Interpreter is
         P2Ada_Var_3 : TCBrec renames TCB(0);
       begin
         P2Ada_Var_3.PC := HAC.Data.IdTAB (HAC.Data.TaskdefTAB (0)).ADR ; --  first pcode instruction
-        P2Ada_Var_3.T := HAC.Data.BlockTab (2).VSIZE - 1 ;
+        P2Ada_Var_3.T := HAC.Data.BlockTab (1).VSIZE - 1 ; -- was BlockTab (2)
         P2Ada_Var_3.B := 0 ;
         P2Ada_Var_3.TS := Ready ;
         P2Ada_Var_3.InRendzv := NilTask ;
@@ -915,16 +915,16 @@ package body HAC.PCode.Interpreter is
           end loop;
           P2Ada_Var_6.T := P2Ada_Var_6.T - 2;
 
-        when 24 => --  literal
+        when k_Literal => --  Literal (Integer or Character)
           P2Ada_Var_6.T := P2Ada_Var_6.T + 1;
           if P2Ada_Var_6.T > P2Ada_Var_6.STACKSIZE then
             PS := STKCHK;
           else
             S (P2Ada_Var_6.T).I := IR.Y;
+            S (P2Ada_Var_6.T).C := Character'Val(IR.Y mod 256);
           end if;
 
-        when 25 =>
-          --  load FLOAT
+        when k_Load_Float =>
           P2Ada_Var_6.T := P2Ada_Var_6.T + 1;
           if P2Ada_Var_6.T > P2Ada_Var_6.STACKSIZE then
             PS := STKCHK;
