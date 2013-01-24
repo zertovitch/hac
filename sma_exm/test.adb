@@ -1,6 +1,8 @@
+-- This is a fuzzy test for HAC, the HAC Ada compiler.
+
 with SMALL_SP;  use SMALL_SP;
 
-procedure Mini is
+procedure Test is
   Twenty: constant:= 20;
   x: Integer;
   Ten_point_one: constant := 10.1;
@@ -57,5 +59,4 @@ begin
   end case;
   Put("Bla bla");
   Put_Line(" and more bla bla!");
-end Mini;
-
+end Test;
