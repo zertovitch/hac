@@ -2,4 +2,5 @@ cd..
 call build
 cd sma_exm
 
-..\hac_test *.adb
+if "%1"=="" ..\hac_test *.adb
+if not "%1"=="" ..\hac_test %1.adb

@@ -368,7 +368,77 @@ package body HAC.PCode.Interpreter is
 
     use InterDef;
 
+    procedure Init_main_task is
+    begin
+      Reset(gen); --  initialize TPC random number generator
+      --  After compiled, just begin exec
+      --  Initialize run-time stack
+      S (1).I := 0 ;
+      S (2).I := 0 ;
+      S (3).I := -1 ;
+      S (4).I := HAC.Data.TaskDefTab (0) ;
+      -- [P2Ada]: WITH instruction
+      declare
+        P2Ada_Var_3 : TCBrec renames TCB(0);
+      begin
+        P2Ada_Var_3.PC := HAC.Data.IdTAB (HAC.Data.TaskdefTAB (0)).ADR ; --  first pcode instruction
+        P2Ada_Var_3.T := HAC.Data.BlockTab (2).VSIZE - 1 ;
+        P2Ada_Var_3.B := 0 ;
+        P2Ada_Var_3.TS := Ready ;
+        P2Ada_Var_3.InRendzv := NilTask ;
+        P2Ada_Var_3.DISPLAY (1) := 0 ;
+        P2Ada_Var_3.STACKSIZE := HAC.Data.STMAX - (HAC.Data.TCount * HAC.Data.STKINCR) ;
+        P2Ada_Var_3.SUSPEND := 0 ;
+        P2Ada_Var_3.QUANTUM := Duration(HAC.Data.TSLICE);
+        P2Ada_Var_3.Pcontrol.UPRI := 0 ;
+        P2Ada_Var_3.Pcontrol.INHERIT := FALSE ;
+        P2Ada_Var_3.LASTRUN := START_TIME ;
+      end; -- [P2Ada]: end of WITH
+    end Init_main_task;
+
+    procedure Init_other_tasks is
+    begin
+      for CurTask  in  1 .. HAC.Data.TCount loop
+        -- [P2Ada]: WITH instruction
+        declare
+          P2Ada_Var_4 : TCBrec renames TCB(CurTask);
+        begin
+          H1 := HAC.Data.TaskDefTAB (CurTask) ;
+          P2Ada_Var_4.PC := HAC.Data.IdTAB (H1).ADR ;
+          P2Ada_Var_4.B := TCB (CurTask - 1).STACKSIZE + 1 ;
+          P2Ada_Var_4.T := P2Ada_Var_4.B + HAC.Data.BlockTab (HAC.Data.IdTAB (H1).REF).VSIZE - 1 ;
+          S (P2Ada_Var_4.B + 1).I := 0 ;
+          S (P2Ada_Var_4.B + 2).I := 0 ;
+          S (P2Ada_Var_4.B + 3).I := -1 ;
+          S (P2Ada_Var_4.B + 4).I := H1 ;
+          P2Ada_Var_4.DISPLAY (1) := 0 ;
+          P2Ada_Var_4.DISPLAY (2) := P2Ada_Var_4.B ;
+          P2Ada_Var_4.STACKSIZE := P2Ada_Var_4.B + HAC.Data.STKINCR - 1 ;
+          P2Ada_Var_4.SUSPEND := 0 ;
+          P2Ada_Var_4.TS := Ready ;
+          P2Ada_Var_4.InRendzv := NilTask ;
+          P2Ada_Var_4.QUANTUM := Duration(HAC.Data.TSLICE);
+          P2Ada_Var_4.Pcontrol.UPRI := 0 ;
+          P2Ada_Var_4.Pcontrol.INHERIT := FALSE ;
+          P2Ada_Var_4.LASTRUN := START_TIME ;
+        end; -- [P2Ada]: end of WITH
+      end loop;
+      --  Initially no queued entry calls
+      for H1  in  1 .. HAC.Data.ECount loop
+        Elist (H1).P2Ada_no_keyword_task := HAC.Data.IdTAB (HAC.Data.EntryTAB (H1)).ADR ; --  Task index
+        Elist (H1).first := null ;
+        Elist (H1).last  := null ;
+      end loop;
+      TActive := HAC.Data.TCount ; --  All tasks are active initially
+      CurTask := 0 ;  --  IT WAS -1 ?
+      SWITCH := TRUE ;
+      TIMER := Start_Time; -- was 0.0
+      PS := RUN ;
+    end Init_other_tasks;
+
   begin --  Interpret
+    Init_main_task;
+    Init_other_tasks;
     loop --  until Processor state /= RUN
       SYSCLOCK := GetClock;
       if HAC.Data.SNAP then
