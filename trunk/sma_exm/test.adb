@@ -41,13 +41,35 @@ procedure Test is
   begin
     null;
   end;
+  --
+  procedure Fibo_demo(X: Integer) is -- !! Integer to be defined in HAC
+
+    function Fib(P: Integer) return Integer is
+    begin
+      if P <= 2 then
+        return 1;
+      else
+        return Fib(P-1) + Fib(P-2);
+      end if;
+    end Fib;
+
+  begin
+    Put("Fibonacci(");
+    Put(X);
+    Put(" ) = ");
+    Put(Fib(X));
+    New_Line;
+  end Fibo_demo;
+
 begin
   Put('A');
   c:= 'B';
   Put(c);
   new_line;
   x:= 123;
-  z1.x:= Add(1,x);
+  z1.x:= Add(432,x); -- z1.x = 555
+  Put(z1.x);
+  New_Line;
   z1.y:= 1.8;
   Do_0;
   Do_1(123);
@@ -64,4 +86,7 @@ begin
   end case;
   Put("Bla bla");
   Put_Line(" and more bla bla!");
+  for n in 1..20 loop
+    Fibo_demo(n);
+  end loop;
 end Test;
