@@ -279,6 +279,8 @@ package body SMALL_SP is
    end RANDOM;
 
    package IIO is new Ada.Text_IO.Integer_IO(Integer);
+   package FIO is new Ada.Text_IO.Float_IO(Float);
+   package BIO is new Ada.Text_IO.Enumeration_IO(Boolean);
 
    ---------
    -- GET --
@@ -401,9 +403,7 @@ package body SMALL_SP is
 
    procedure PUT (F : IN  FLOAT) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "PUT unimplemented");
-      raise Program_Error;
+      FIO.Put(F);
    end PUT;
 
    ---------
@@ -412,9 +412,7 @@ package body SMALL_SP is
 
    procedure PUT (F : IN  FLOAT; W:  WIDTH; D : DECIMALS) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "PUT unimplemented");
-      raise Program_Error;
+      FIO.Put(F,W,D);
    end PUT;
 
    ---------
@@ -423,9 +421,7 @@ package body SMALL_SP is
 
    procedure PUT (B : IN  BOOLEAN) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "PUT unimplemented");
-      raise Program_Error;
+      BIO.Put(B);
    end PUT;
 
    ---------
@@ -454,9 +450,7 @@ package body SMALL_SP is
 
    procedure PUT_LINE (I : IN  INTEGER) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "PUT_LINE unimplemented");
-      raise Program_Error;
+      Put(I); New_Line;
    end PUT_LINE;
 
    --------------
@@ -487,9 +481,7 @@ package body SMALL_SP is
 
    procedure PUT_LINE (F : IN  FLOAT; W:  WIDTH; D : DECIMALS) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "PUT_LINE unimplemented");
-      raise Program_Error;
+      Put(F,W,D); New_Line;
    end PUT_LINE;
 
    --------------
@@ -498,9 +490,7 @@ package body SMALL_SP is
 
    procedure PUT_LINE (B : IN  BOOLEAN) is
    begin
-      --  Generated stub: replace with real body!
-      pragma Compile_Time_Warning (Standard.True, "PUT_LINE unimplemented");
-      raise Program_Error;
+      Put(B); New_Line;
    end PUT_LINE;
 
    --------------

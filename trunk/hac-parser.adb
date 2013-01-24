@@ -1632,11 +1632,10 @@ package body HAC.Parser is
       X.TYP := IdTab (I).TYP;
       X.Ref := IdTab (I).Ref;
       if IdTab (I).Normal then
-        F := 0;
+        F := k_Load_Address;
       else
-        F := 1;
+        F := k_Push_Value;
       end if;
-
       Emit2 (F, IdTab (I).LEV, IdTab (I).Adr);
       if Sy = LBrack or Sy = LParent or Sy = Period then
         Selector

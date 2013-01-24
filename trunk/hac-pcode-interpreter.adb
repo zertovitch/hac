@@ -58,10 +58,11 @@ package body HAC.PCode.Interpreter is
       INHERIT : Boolean;  --  Priority inheritance enabled
     end record;
 
-    type GRegister is record   --  General register
-      B : Boolean;
-      C : Character;
-      I : Integer;
+    type GRegister is record
+      --  General register - variant record in Pascal
+      -- B : Boolean;
+      -- C : Character;
+      I : Integer; -- Also for former B (Boolean) and C (Character)
       R : Float;
     end record;
 
@@ -349,7 +350,7 @@ package body HAC.PCode.Interpreter is
            SYSCLOCK >= TCB (t).WAKETIME
         then
           if TCB (t).TS = TimedRendz then
-            TCB (t).R1.B := False; --  timeout on rendezvous
+            TCB (t).R1.I := 0; --  timeout on rendezvous
             Purge (TCB (t).R2.I, t);  --  remove from callee's q
           end if;
           if TCB (t).TS = TimedWait then
@@ -615,21 +616,20 @@ package body HAC.PCode.Interpreter is
                 S (P2Ada_Var_6.T).I := ((S (P2Ada_Var_6.T).I) ** 2);
               when 3 =>
                 S (P2Ada_Var_6.T).R := ((S (P2Ada_Var_6.T).R) ** 2);
-              when 4 =>
-                S (P2Ada_Var_6.T).B := ((S (P2Ada_Var_6.T).I) mod 2 /= 0);
-              when 5 =>
-                --  S[T].C := CHR(S[T].I);
+              when 4 => -- Odd
+                null;
+              when 5 => -- Chr = Character'Val
                 if (S (P2Ada_Var_6.T).I < HAC.Data.OrdMinChar) or
                   (S (P2Ada_Var_6.T).I > HAC.Data.OrdMaxChar)
                 then
                   PS := INXCHK;
                 end if;
-              when 6 =>
-                S (P2Ada_Var_6.T).I := Character'Pos (S (P2Ada_Var_6.T).C);
+              when 6 => -- Ord = Character'Pos
+                null;
               when 7 =>
-                S (P2Ada_Var_6.T).C := Character'Succ (S (P2Ada_Var_6.T).C);
+                S (P2Ada_Var_6.T).I := S (P2Ada_Var_6.T).I + 1;
               when 8 =>
-                S (P2Ada_Var_6.T).C := Character'Pred (S (P2Ada_Var_6.T).C);
+                S (P2Ada_Var_6.T).I := S (P2Ada_Var_6.T).I - 1;
               when 9 =>
                 S (P2Ada_Var_6.T).I := Integer (S (P2Ada_Var_6.T).R);
               when 10 =>
@@ -652,9 +652,9 @@ package body HAC.PCode.Interpreter is
                   PS := STKCHK;
                 else
                   if IR.X = 0 then
-                    S (P2Ada_Var_6.T).B := End_Of_File;
+                    S (P2Ada_Var_6.T).I := Boolean'Pos(End_Of_File);
                   else
-                    S (P2Ada_Var_6.T).B := End_Of_File (FAT.FIL (IR.X));
+                    S (P2Ada_Var_6.T).I := Boolean'Pos(End_Of_File (FAT.FIL (IR.X)));
                   end if;
                 end if;
               when 18 =>
@@ -663,9 +663,9 @@ package body HAC.PCode.Interpreter is
                   PS := STKCHK;
                 else
                   if IR.X = 0 then
-                    S (P2Ada_Var_6.T).B := End_Of_Line;
+                    S (P2Ada_Var_6.T).I := Boolean'Pos(End_Of_Line);
                   else
-                    S (P2Ada_Var_6.T).B := End_Of_Line (FAT.FIL (IR.X));
+                    S (P2Ada_Var_6.T).I := Boolean'Pos(End_Of_Line (FAT.FIL (IR.X)));
                   end if;
                 end if;
               when 19 =>
@@ -691,7 +691,7 @@ package body HAC.PCode.Interpreter is
           P2Ada_Var_6.PC := IR.Y;
 
         when k_Conditional_Jump =>
-          if not S (P2Ada_Var_6.T).B then
+          if S (P2Ada_Var_6.T).I mod 2 = 0 then
             P2Ada_Var_6.PC := IR.Y;
           end if;
           P2Ada_Var_6.T := P2Ada_Var_6.T - 1;
@@ -826,7 +826,7 @@ package body HAC.PCode.Interpreter is
                 TCB (H5).SUSPEND := 0;
               else
                 P2Ada_Var_6.TS := TimedRendz;     --  Timed Wait For Rendezvous
-                P2Ada_Var_6.R1.B := True;         --  Init R1 to specify NO
+                P2Ada_Var_6.R1.I := 1;            --  Init R1 to specify NO
                                                   --timeout
                 P2Ada_Var_6.R2.I := H2;           --  Save address of queue
                                                   --for purge
@@ -843,14 +843,14 @@ package body HAC.PCode.Interpreter is
                  (TCB (H5).TS = TimedWait)
               then
                 Queue (H2, CurTask);    --  put self on entry queue
-                P2Ada_Var_6.R1.B := True;         --  Indicate entry successful
+                P2Ada_Var_6.R1.I := 1;       --  Indicate entry successful
                 P2Ada_Var_6.TS := WaitRendzv;
                 TCB (H5).TS    := Ready;  --  wake accepting task if required
                 TCB (H5).SUSPEND := 0;
                 SWITCH           := True;       --  give up control
               else
                 --  can't wait, forget about entry call
-                P2Ada_Var_6.R1.B := False; --  Indicate entry failed in R1 1
+                P2Ada_Var_6.R1.I := 0;   --  Indicate entry failed in R1 1
                 --  failure will be acknowledged by next instruction, 32
               end if;
             when others =>
@@ -921,7 +921,6 @@ package body HAC.PCode.Interpreter is
             PS := STKCHK;
           else
             S (P2Ada_Var_6.T).I := IR.Y;
-            S (P2Ada_Var_6.T).C := Character'Val(IR.Y mod 256);
           end if;
 
         when k_Load_Float =>
@@ -952,7 +951,12 @@ package body HAC.PCode.Interpreter is
                   Get (HAC.Data.CH);
                   S (S (P2Ada_Var_6.T).I).I := Character'Pos (HAC.Data.CH);
                 when 4 =>
-                  Get (S (S (P2Ada_Var_6.T).I).C);
+                  declare
+                    C: Character;
+                  begin
+                    Get(C);
+                    S (S (P2Ada_Var_6.T).I).I:= Character'Pos(C);
+                  end;
                 when others =>
                   null;  -- [P2Ada]: no otherwise / else in Pascal
               end case;
@@ -971,7 +975,12 @@ package body HAC.PCode.Interpreter is
                   Get (FAT.FIL (FAT.CURR), HAC.Data.CH);
                   S (S (P2Ada_Var_6.T).I).I := Character'Pos (HAC.Data.CH);
                 when 4 =>
-                  Get (FAT.FIL (FAT.CURR), S (S (P2Ada_Var_6.T).I).C);
+                  declare
+                    C: Character;
+                  begin
+                    Get(FAT.FIL (FAT.CURR), C);
+                    S (S (P2Ada_Var_6.T).I).I:= Character'Pos(C);
+                  end;
                 when others =>
                   null;  -- [P2Ada]: no otherwise / else in Pascal
               end case;
@@ -1006,9 +1015,9 @@ package body HAC.PCode.Interpreter is
               when 2 =>
                 Put (S (P2Ada_Var_6.T).R, 22);
               when 3 =>
-                Put (S (P2Ada_Var_6.T).B, 10);
+                Put (Boolean'Val(S (P2Ada_Var_6.T).I), 10);
               when 4 =>
-                Put (S (P2Ada_Var_6.T).C);
+                Put (Character'Val(S (P2Ada_Var_6.T).I));
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal
             end case;
@@ -1019,9 +1028,9 @@ package body HAC.PCode.Interpreter is
               when 2 =>
                 Put (FAT.FIL (FAT.CURR), S (P2Ada_Var_6.T).R, 22);
               when 3 =>
-                Put (FAT.FIL (FAT.CURR), S (P2Ada_Var_6.T).B, 10);
+                Put (FAT.FIL (FAT.CURR), Boolean'Val(S (P2Ada_Var_6.T).I), 10);
               when 4 =>
-                Put (FAT.FIL (FAT.CURR), S (P2Ada_Var_6.T).C);
+                Put (FAT.FIL (FAT.CURR), Character'Val(S (P2Ada_Var_6.T).I));
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal
             end case;
@@ -1038,9 +1047,9 @@ package body HAC.PCode.Interpreter is
               when 2 =>
                 Put (S (P2Ada_Var_6.T - 1).R, S (P2Ada_Var_6.T).I);
               when 3 =>
-                Put (S (P2Ada_Var_6.T - 1).B, S (P2Ada_Var_6.T).I);
+                Put (Boolean'Val(S (P2Ada_Var_6.T - 1).I), S (P2Ada_Var_6.T).I);
               when 4 =>
-                Put (S (P2Ada_Var_6.T - 1).C);
+                Put (Character'Val(S (P2Ada_Var_6.T - 1).I));
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal
             end case;
@@ -1051,22 +1060,18 @@ package body HAC.PCode.Interpreter is
                  (FAT.FIL (FAT.CURR),
                   S (P2Ada_Var_6.T - 1).I,
                   S (P2Ada_Var_6.T).I);
-
               when 2 =>
                 Put
                  (FAT.FIL (FAT.CURR),
                   S (P2Ada_Var_6.T - 1).R,
                   S (P2Ada_Var_6.T).I);
-
               when 3 =>
                 Put
                  (FAT.FIL (FAT.CURR),
-                  S (P2Ada_Var_6.T - 1).B,
+                  Boolean'Val(S (P2Ada_Var_6.T - 1).I),
                   S (P2Ada_Var_6.T).I);
-
               when 4 =>
-                Put (FAT.FIL (FAT.CURR), S (P2Ada_Var_6.T - 1).C);
-
+                Put (FAT.FIL (FAT.CURR), Character'Val(S (P2Ada_Var_6.T - 1).I));
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal
             end case;
@@ -1086,7 +1091,7 @@ package body HAC.PCode.Interpreter is
           if P2Ada_Var_6.PC /= 0 then
             P2Ada_Var_6.B := S (P2Ada_Var_6.B + 3).I;
             if IR.Y = HAC.Data.CallTMDE or IR.Y = HAC.Data.CallCNDE then
-              if IR.Y = HAC.Data.CallTMDE and not P2Ada_Var_6.R1.B then
+              if IR.Y = HAC.Data.CallTMDE and P2Ada_Var_6.R1.I mod 2 = 0 then
                 P2Ada_Var_6.T := P2Ada_Var_6.T + 1;         --  A JMPC
                                                             --instruction
                                                             --always follows
@@ -1096,7 +1101,7 @@ package body HAC.PCode.Interpreter is
                                                             --entry call
                 PS := STKCHK;      --  returns (32).  Push entry call
               else
-                S (P2Ada_Var_6.T).B := P2Ada_Var_6.R1.B;    --  success
+                S (P2Ada_Var_6.T).I := P2Ada_Var_6.R1.I;    --  success
                                                             --indicator for
                                                             --JMPC.
               end if;
@@ -1120,7 +1125,7 @@ package body HAC.PCode.Interpreter is
           S (P2Ada_Var_6.T) := S (S (P2Ada_Var_6.T).I);
 
         when 35 =>
-          S (P2Ada_Var_6.T).B := not S (P2Ada_Var_6.T).B;
+          S (P2Ada_Var_6.T).I := Boolean'Pos(S (P2Ada_Var_6.T).I mod 2 = 0);
 
         when 36 =>
           S (P2Ada_Var_6.T).I := -S (P2Ada_Var_6.T).I;
@@ -1151,57 +1156,58 @@ package body HAC.PCode.Interpreter is
           P2Ada_Var_6.T := P2Ada_Var_6.T - 1;
           case IR.F is
           when 39 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).R = S (P2Ada_Var_6.T + 1).R);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).R = S (P2Ada_Var_6.T + 1).R));
 
           when 40 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).R /= S (P2Ada_Var_6.T + 1).R);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).R /= S (P2Ada_Var_6.T + 1).R));
 
           when 41 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).R < S (P2Ada_Var_6.T + 1).R);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).R < S (P2Ada_Var_6.T + 1).R));
 
           when 42 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).R <= S (P2Ada_Var_6.T + 1).R);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).R <= S (P2Ada_Var_6.T + 1).R));
 
           when 43 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).R > S (P2Ada_Var_6.T + 1).R);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).R > S (P2Ada_Var_6.T + 1).R));
 
           when 44 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).R >= S (P2Ada_Var_6.T + 1).R);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).R >= S (P2Ada_Var_6.T + 1).R));
 
           when 45 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).I = S (P2Ada_Var_6.T + 1).I);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).I = S (P2Ada_Var_6.T + 1).I));
 
           when 46 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).I /= S (P2Ada_Var_6.T + 1).I);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).I /= S (P2Ada_Var_6.T + 1).I));
 
           when 47 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).I < S (P2Ada_Var_6.T + 1).I);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).I < S (P2Ada_Var_6.T + 1).I));
 
           when 48 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).I <= S (P2Ada_Var_6.T + 1).I);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).I <= S (P2Ada_Var_6.T + 1).I));
 
           when 49 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).I > S (P2Ada_Var_6.T + 1).I);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).I > S (P2Ada_Var_6.T + 1).I));
 
           when 50 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).I >= S (P2Ada_Var_6.T + 1).I);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).I >= S (P2Ada_Var_6.T + 1).I));
 
           when 51 =>
 
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).B or S (P2Ada_Var_6.T + 1).B);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).I mod 2 = 1 or
+              S (P2Ada_Var_6.T + 1).I mod 2 = 1));
 
           when 52 =>
             S (P2Ada_Var_6.T).I := S (P2Ada_Var_6.T).I +
@@ -1220,8 +1226,9 @@ package body HAC.PCode.Interpreter is
                                    S (P2Ada_Var_6.T + 1).R;
 
           when 56 =>
-            S (P2Ada_Var_6.T).B :=
-             (S (P2Ada_Var_6.T).B and S (P2Ada_Var_6.T + 1).B);
+            S (P2Ada_Var_6.T).I := Boolean'Pos(
+             (S (P2Ada_Var_6.T).I mod 2 =1 and
+              S (P2Ada_Var_6.T + 1).I mod 2 =1));
 
           when 57 =>
             S (P2Ada_Var_6.T).I := S (P2Ada_Var_6.T).I *
@@ -1391,10 +1398,8 @@ package body HAC.PCode.Interpreter is
 
         when 72 =>  --  INHP -  Set task priority inheritance
           --  Cramer
-          P2Ada_Var_6.Pcontrol.INHERIT := S (P2Ada_Var_6.T).B;  --  Set
-                                                                --priority
-                                                                --inherit
-                                                                --indicator
+          P2Ada_Var_6.Pcontrol.INHERIT := S (P2Ada_Var_6.T).I mod 2 = 1;
+          --  Set priority inherit indicator
           P2Ada_Var_6.T := P2Ada_Var_6.T - 1;
 
         when 73 =>
@@ -1562,7 +1567,7 @@ package body HAC.PCode.Interpreter is
                     New_Line;
 
                   when HAC.Data.Bools =>
-                    Put (S (H3).B);
+                    Put (S (H3).I mod 2 = 1);
                     New_Line;
 
                   when HAC.Data.Floats =>
@@ -1570,7 +1575,7 @@ package body HAC.PCode.Interpreter is
                     New_Line;
 
                   when HAC.Data.xChars =>
-                    Put (Character'Pos (S (H3).C));
+                    Put (S (H3).I);
                     Put_Line (" (ASCII)");
 
                   when others =>

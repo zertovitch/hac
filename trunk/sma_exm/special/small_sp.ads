@@ -82,7 +82,7 @@ package SMALL_SP is
    procedure  PUT       ( B : IN  BOOLEAN  );
    procedure  PUT       ( S : IN  String   );
 
-   -- Put and then NEW_LINE
+   -- Put and then NEW_LINE ( !! same as Ada.TExt_IO only for S )
    procedure  PUT_LINE  ( C : IN  CHARACTER);
    procedure  PUT_LINE  ( I : IN  INTEGER  );
    procedure  PUT_LINE  ( I : IN  INTEGER; W:  WIDTH);
