@@ -158,7 +158,7 @@ package body HAC.Parser is
       if Sy = Semicolon then
         InSymbol;
       else
-        Error (semicolon_missing);
+        Error (err_semicolon_missing);
         if comma_or_colon (Sy) then
           InSymbol;
         end if;
@@ -167,7 +167,7 @@ package body HAC.Parser is
        (Symset'((IDent | TypeSy | TaskSy => True, others => False)) +
         BlockBegSyS,
         FSys,
-        6);
+        err_incorrectly_used_symbol);
     end TestSemicolon;
 
     ------------------------------------------------------------------
@@ -320,7 +320,7 @@ package body HAC.Parser is
             Skip (FSys, 50);
           end if;
         end if;
-        Test (FSys, Empty_Symset, 6);
+        Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
       end if;
 
     end KKonstant;
@@ -509,7 +509,7 @@ package body HAC.Parser is
                 if Sy = Semicolon then
                   InSymbol;
                 else
-                  Error (semicolon_missing);
+                  Error (err_semicolon_missing);
                   if Sy = Comma then
                     InSymbol;
                   end if;
@@ -518,7 +518,7 @@ package body HAC.Parser is
                 Test
                  (Symset'(IDent | EndSy | Semicolon => True, others => False),
                   FSys,
-                  6);
+                  err_incorrectly_used_symbol);
               end if;
             end loop;
 
@@ -548,7 +548,7 @@ package body HAC.Parser is
                 IdTab (T).Ref := RF;
                 IdTab (T).Adr := ECount;
               else
-                Error (6);
+                Error (err_incorrectly_used_symbol);
               end if;
               InSymbol;
               exit when Sy /= Comma;
@@ -566,7 +566,7 @@ package body HAC.Parser is
             null;
 
         end case; -- Sy
-        Test (FSys, Empty_Symset, 6);
+        Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
       end if;
     end TYP;
 
@@ -655,12 +655,12 @@ package body HAC.Parser is
           if Sy = Semicolon then
             InSymbol;
           else
-            Error (semicolon_missing);
+            Error (err_semicolon_missing);
             if Sy = Comma then
               InSymbol;
             end if;
           end if;
-          Test (Symset'(IDent => True, others => False), FSys + RParent, 6);
+          Test (Symset'(IDent => True, others => False), FSys + RParent, err_incorrectly_used_symbol);
         end if;
       end loop;  -- while Sy = IDent
       if Sy = RParent then
@@ -668,7 +668,7 @@ package body HAC.Parser is
         Test
          (Symset'(IsSy | ReturnSy | Semicolon => True, others => False),
           FSys,
-          6);
+          err_incorrectly_used_symbol);
       else
         Error (closing_parenthesis_missing);
       end if;
@@ -716,9 +716,10 @@ package body HAC.Parser is
       -- This procedure processes both Variable and Constant declarations.
       T0, T1, RF, Sz, T0i, LC0, LC1 : Integer;
       TP                            : Types;
-      ConstDec, TypeID              : Boolean;
+      ConstDec, TypeID,
+      untyped_constant              : Boolean;
       C                             : ConRec;
-    -- Y:          Item;
+      -- Y:          Item;
     begin
       while Sy = IDent loop
         T0 := T;
@@ -739,8 +740,9 @@ package body HAC.Parser is
           I := LOC (Id);
         end if;
 
-        Test (TypeBegSys + ConstSy, Semicolon_set, 6);
+        Test (TypeBegSys + ConstSy, Semicolon_set, err_incorrectly_used_symbol);
         ConstDec := False;
+        untyped_constant:= False;
         if Sy = ConstSy then
           ConstDec := True;
           InSymbol;
@@ -758,11 +760,13 @@ package body HAC.Parser is
             TP,
             RF,
             Sz);
+        else
+          untyped_constant:= True;
         end if;
         Test
          (Symset'(Becomes | EQL | Semicolon => True, others => False),
           Empty_Symset,
-          6);
+          err_incorrectly_used_symbol);
         if Sy = EQL then
           Error (EQUALS_instead_of_BECOMES);
           Sy := Becomes;
@@ -785,22 +789,28 @@ package body HAC.Parser is
             declare
               r : TabEntry renames IdTab (T0);
             begin
-              case ConstDec is
-                when True =>
-                  r.Obj := Konstant;
-                  r.TYP := C.TP;
-                  if C.TP /= Floats then
-                    r.Adr := C.I;
-                  else
+              if ConstDec then
+                r.Obj := Konstant;
+                r.TYP := C.TP;
+                case C.TP is
+                  when Floats =>
                     EnterFloat (C.R);
                     r.Adr := C1;
-                  end if;
-                when False =>
-                  r.TYP := TP;
-                  r.Ref := RF;
-                  r.Adr := Dx;
-                  Dx    := Dx + Sz;
-              end case; -- ConstDec
+                  when Ints =>
+                    r.Adr := C.I;
+                  when others =>
+                    if untyped_constant then
+                      Error(numeric_constant_expected);
+                      -- "boo: constant:= True;" is wrong in Ada
+                    end if;
+                    r.Adr := C.I;
+                end case;
+              else
+                r.TYP := TP;
+                r.Ref := RF;
+                r.Adr := Dx;
+                Dx    := Dx + Sz;
+              end if; -- ConstDec
             end;
           end loop; -- While T0 < T1
         end if;
@@ -928,7 +938,7 @@ package body HAC.Parser is
             if Sy = Semicolon then
               InSymbol;
             else
-              Error (semicolon_missing);
+              Error (err_semicolon_missing);
             end if;
           end loop; -- Sy = EntrySy
 
@@ -1020,9 +1030,9 @@ package body HAC.Parser is
       end loop;
 
       if FSys = Semicolon_set then
-        J := 14;
+        J := err_semicolon_missing;
       else
-        J := 6;
+        J := err_incorrectly_used_symbol;
       end if;
 
       Test (FSys, Empty_Symset, J);
@@ -1106,7 +1116,7 @@ package body HAC.Parser is
               end if;
             end if;
           end if;
-          Test (Symset'(Comma | RParent => True, others => False), FSys, 6);
+          Test (Symset'(Comma | RParent => True, others => False), FSys, err_incorrectly_used_symbol);
           exit when Sy /= Comma;
         end loop;
 
@@ -1141,7 +1151,7 @@ package body HAC.Parser is
     -- HoldCode:      Order;
     begin
       if Sy /= Period then
-        Skip (Semicolon, 6);
+        Skip (Semicolon, err_incorrectly_used_symbol);
       else
         InSymbol;                  -- Task Entry Selector
         if Sy /= IDent then
@@ -1443,7 +1453,7 @@ package body HAC.Parser is
               if FSys = Semicolon_set then
                 F := 14;
               else
-                F := 6;
+                F := err_incorrectly_used_symbol;
               end if;
 
               Test (FSys, Factor_Begin_Symbol, F);
@@ -1766,7 +1776,7 @@ package body HAC.Parser is
         if Sy = ExitSy then
           InSymbol;
         else
-          Skip (Semicolon, 6);
+          Skip (Semicolon, err_incorrectly_used_symbol);
         end if;
 
         if Sy = WhenSy then      -- conditional Exit
@@ -2502,7 +2512,7 @@ package body HAC.Parser is
               when TerminateSy =>
                 InSymbol;
                 if Sy /= Semicolon then
-                  SelectError (semicolon_missing);
+                  SelectError (err_semicolon_missing);
                 end if;
                 do_terminate := True;        -- Oguz
                 InSymbol;
@@ -2623,7 +2633,7 @@ package body HAC.Parser is
                 Test
                  (Symset'((Comma | RParent => True, others => False)),
                   FSys,
-                  6);
+                  err_incorrectly_used_symbol);
 
                 exit when Sy /= Comma;
               end loop;
@@ -2963,13 +2973,13 @@ package body HAC.Parser is
           if Sy = Semicolon then
             InSymbol;
           else
-            Error (semicolon_missing);
+            Error (err_semicolon_missing);
           end if;
         end if;
       end if;  -- Sy in StatBegSys
 
       if not EofInput then
-        Test (FSys - Semicolon, Semicolon_set, 6);
+        Test (FSys - Semicolon, Semicolon_set, err_incorrectly_used_symbol);
       end if;
 
     end Statement;
@@ -2990,7 +3000,7 @@ package body HAC.Parser is
     Test
      (Symset'(LParent | ReturnSy | IsSy | Semicolon => True, others => False),
       FSys,
-      6);
+      err_incorrectly_used_symbol);
     if IdTab (Prt).Ref > 0 then
       PRB := IdTab (Prt).Ref;
     else
@@ -3106,13 +3116,13 @@ package body HAC.Parser is
     end if;
 
     if Sy /= Semicolon then
-      Error (semicolon_missing);
+      Error (err_semicolon_missing);
       return;
     end if;
 
     if BlockID /= ProgramID then
       InSymbol;
-      Test (FSys, Empty_Symset, 6);
+      Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
     end if;
 
   end Block;
