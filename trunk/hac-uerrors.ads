@@ -44,7 +44,8 @@ package HAC.UErrors is
   identifier_missing            : constant:=  2;
   closing_parenthesis_missing   : constant:=  4;
   colon_missing                 : constant:=  5;
-  semicolon_missing             : constant:= 14;
+  err_incorrectly_used_symbol   : constant:=  6;
+  err_semicolon_missing         : constant:= 14;
   IS_missing                    : constant:= 20;
   incorrect_block_name          : constant:= 22;
   illegal_array_bounds          : constant:= 27;
@@ -55,6 +56,7 @@ package HAC.UErrors is
   END_missing                   : constant:= 57;
   OF_instead_of_IS              : constant:= 82;
   EQUALS_instead_of_BECOMES     : constant:= 83;
+  numeric_constant_expected     : constant:= 84;
 
   procedure EndSkip;
 

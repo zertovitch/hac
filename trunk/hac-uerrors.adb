@@ -21,8 +21,8 @@ package body HAC.UErrors is
       return "MISSING CLOSING PARENTHESIS ``)''";
     when colon_missing =>
       return "MISSING A COLON ``:''";
-    when 6 =>
-      return "INCORRECTLY USED SYMBOL";
+    when err_incorrectly_used_symbol =>
+      return "incorrectly used symbol";
     when 7 =>
       return "MISSING IDENTIFIER";
     when 8 =>
@@ -37,8 +37,8 @@ package body HAC.UErrors is
       return "-- CLOSING BRACKET ``]''";
     when 13 =>
       return "EXPECTING ``..''";
-    when semicolon_missing =>
-      return "MISSING A SEMICOLON ``;''";
+    when err_semicolon_missing =>
+      return "missing a semicolon "";""";
     when 15 =>
       return "BAD RESULT TYPE FOR A FUNCTION";
     when 16 =>
@@ -177,6 +177,8 @@ package body HAC.UErrors is
       return "found ""of"", should be ""is""";
     when EQUALS_instead_of_BECOMES =>
       return "found ""="", should be "":=""";
+    when numeric_constant_expected =>
+      return "numeric constant expected";
     when others =>
       return "Unknown error Id=" & Integer'Image (Id);
     end case;
