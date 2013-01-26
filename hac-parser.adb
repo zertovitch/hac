@@ -267,7 +267,7 @@ package body HAC.Parser is
         Enter (Id, Variable);
         InSymbol;
       else
-        Error (identifier_missing);
+        Error (err_identifier_missing);
       end if;
     end EnterVariable;
 
@@ -297,7 +297,7 @@ package body HAC.Parser is
             X := LOC (Id);
             if X /= 0 then
               if IdTab (X).Obj /= Konstant then
-                Error (25);
+                Error (illegal_constant_or_constant_identifier);
               else
                 C.TP := IdTab (X).TYP;
                 if C.TP = Floats then
@@ -358,7 +358,7 @@ package body HAC.Parser is
         if Sy = RangeSy then
           InSymbol;
         else
-          Error (13);
+          Error (err_expecting_dot_dot);
         end if;
 
         KKonstant
@@ -399,7 +399,7 @@ package body HAC.Parser is
           if Sy = OFSy then
             InSymbol;
           else
-            Error (8);
+            Error (err_missing_OF);
           end if;
           TYP (FSys, ELTP, ELRF, ELSZ);
         end if;
@@ -427,20 +427,16 @@ package body HAC.Parser is
           when IDent =>
             I := LOC (Id);     -- IDent
             if I /= 0 then
-              declare
-                r : TabEntry renames IdTab (I);
-              begin
-                if r.Obj /= TypeMark then
-                  Error (29);
-                else
-                  TP := r.TYP;
-                  RF := r.Ref;
-                  Sz := r.Adr;
-                  if TP = NOTYP then
-                    Error (30);
-                  end if;
+              if IdTab (I).Obj = TypeMark then
+                TP := IdTab (I).TYP;
+                RF := IdTab (I).Ref;
+                Sz := IdTab (I).Adr;
+                if TP = NOTYP then
+                  Error (err_undefined_type);
                 end if;
-              end;
+              else
+                Error (err_missing_a_type_identifier);
+              end if;
             end if;
             InSymbol;
 
@@ -450,7 +446,7 @@ package body HAC.Parser is
             if Sy = LParent then
               InSymbol;
             else
-              Error (9);
+              Error (err_missing_an_opening_parenthesis);
               if Sy = LBrack then
                 InSymbol;
               end if;
@@ -484,7 +480,7 @@ package body HAC.Parser is
                 if Sy = Colon then
                   InSymbol;
                 else
-                  Error (colon_missing);
+                  Error (err_colon_missing);
                 end if;
                 T1 := T;
                 TYP
@@ -529,7 +525,7 @@ package body HAC.Parser is
             if Sy = RecordSy then
               InSymbol;
             else
-              Error (61);
+              Error (err_missing_record);
             end if;
             Level := Level - 1;
           -- end of RecordSy
@@ -603,26 +599,22 @@ package body HAC.Parser is
             ValParam := False;
           end if;
           if Sy /= IDent then
-            Error (identifier_missing);
+            Error (err_identifier_missing);
           else
             X := LOC (Id);
             InSymbol;
             if X /= 0 then
-              declare
-                r : TabEntry renames IdTab (X);
-              begin
-                if r.Obj /= TypeMark then
-                  Error (29);
+              if IdTab (X).Obj = TypeMark then
+                TP := IdTab (X).TYP;
+                RF := IdTab (X).Ref;
+                if ValParam then
+                  Sz := IdTab (X).Adr;
                 else
-                  TP := r.TYP;
-                  RF := r.Ref;
-                  if ValParam then
-                    Sz := r.Adr;
-                  else
-                    Sz := 1;
-                  end if;
+                  Sz := 1;
                 end if;
-              end;
+              else
+                Error (err_missing_a_type_identifier);
+              end if;
             end if; -- X /= 0
           end if;
           Test
@@ -648,8 +640,8 @@ package body HAC.Parser is
             end;
           end loop; -- while T0 < T
 
-        else  -- if Sy /= Colon
-          Error (colon_missing);
+        else
+          Error (err_colon_missing);
         end if;
         if Sy /= RParent then
           if Sy = Semicolon then
@@ -732,7 +724,7 @@ package body HAC.Parser is
         if Sy = Colon then -- ':'
           InSymbol;
         else
-          Error (colon_missing);
+          Error (err_colon_missing);
         end if;
         T1 := T;
 
@@ -800,7 +792,7 @@ package body HAC.Parser is
                     r.Adr := C.I;
                   when others =>
                     if untyped_constant then
-                      Error(numeric_constant_expected);
+                      Error (err_numeric_constant_expected);
                       -- "boo: constant:= True;" is wrong in Ada
                     end if;
                     r.Adr := C.I;
@@ -851,7 +843,7 @@ package body HAC.Parser is
       IsFun := Sy = FuncSy;
       InSymbol;
       if Sy /= IDent then
-        Error (identifier_missing);
+        Error (err_identifier_missing);
         Id := Empty_Alfa;
       end if;
       if IsFun then
@@ -893,7 +885,7 @@ package body HAC.Parser is
         if Sy = IDent then
           TaskID := Id;
         else
-          Error (identifier_missing);
+          Error (err_identifier_missing);
           Id := Empty_Alfa;
         end if;
         TCount := TCount + 1;
@@ -921,7 +913,7 @@ package body HAC.Parser is
           while Sy = EntrySy loop
             InSymbol;
             if Sy /= IDent then
-              Error (identifier_missing);
+              Error (err_identifier_missing);
               Id := Empty_Alfa;
             end if;
             ECount := ECount + 1;
@@ -968,10 +960,10 @@ package body HAC.Parser is
         if Sy = Period then
           InSymbol;                -- field Selector
           if Sy /= IDent then
-            Error (identifier_missing);
+            Error (err_identifier_missing);
           else
             if V.TYP /= Records then
-              Error (31);
+              Error (err_var_with_field_selector_must_be_record);
             else  -- search field identifier
               J              := BlockTab (V.Ref).Last;
               IdTab (0).Name := Id;
@@ -993,16 +985,14 @@ package body HAC.Parser is
 
         else    -- array Selector
           if Sy /= LParent then
-            Error (9);
+            Error (err_missing_an_opening_parenthesis);
           end if;
           loop
             InSymbol;
             Expression
              (FSys + Symset'(Comma | RParent => True, others => False),
               X);
-            if V.TYP /= Arrays then
-              Error (28);
-            else
+            if V.TYP = Arrays then
               a := V.Ref;
               if ArraysTab (a).InXTYP /= X.TYP then
                 Error (26);
@@ -1013,6 +1003,8 @@ package body HAC.Parser is
               end if;
               V.TYP := ArraysTab (a).ELTYP;
               V.Ref := ArraysTab (a).ELREF;
+            else
+              Error (err_indexed_variable_must_be_an_array);
             end if;
             exit when Sy /= Comma;
           end loop;
@@ -1083,7 +1075,7 @@ package body HAC.Parser is
               end if;
             else              -- Variable (Name) parameter
               if Sy /= IDent then
-                Error (identifier_missing);
+                Error (err_identifier_missing);
               else
                 K := LOC (Id);
                 InSymbol;
@@ -1237,7 +1229,7 @@ package body HAC.Parser is
                 if Sy = LParent then
                   InSymbol;
                 else
-                  Error (9);
+                  Error (err_missing_an_opening_parenthesis);
                 end if;
                 if N < 17 or N = 19 then
                   Expression (FSys + RParent, X);
@@ -1306,7 +1298,7 @@ package body HAC.Parser is
                 else           -- N in [17,18]
                   -- EOF, Eoln
                   if Sy /= IDent then
-                    Error (identifier_missing);
+                    Error (err_identifier_missing);
                   elsif Id = "INPUT     " then
                     Emit2 (k_Standard_Functions, 0, N);
                   else
@@ -2583,7 +2575,7 @@ package body HAC.Parser is
                   if Sy = RParent then
                     goto SKIP1b;
                   else
-                    Error (identifier_missing);
+                    Error (err_identifier_missing);
                   end if;
                 end if;
               else
@@ -2596,7 +2588,7 @@ package body HAC.Parser is
                 end if;
                 do_first_InSymbol := True;
                 if Sy /= IDent then
-                  Error (identifier_missing);
+                  Error (err_identifier_missing);
                 else
                   I := LOC (Id);
                   InSymbol;
@@ -2660,7 +2652,7 @@ package body HAC.Parser is
                   if Sy = RParent then
                     goto Label_21; -- skip the loop
                   else
-                    Error (identifier_missing);
+                    Error (err_identifier_missing);
                   end if;
                 end if;
               else
@@ -2740,7 +2732,7 @@ package body HAC.Parser is
 
           when 5 | 6 =>                  -- Wait,SIGNAL
             if Sy /= LParent then
-              Error (9);
+              Error (err_missing_an_opening_parenthesis);
             else
               InSymbol;
               if Sy /= IDent then
@@ -2781,14 +2773,14 @@ package body HAC.Parser is
           when 7 | 8 | 9 =>    -- reset, Rewrite, Close
             -- Schoening
             if Sy /= LParent then
-              Error (9);
+              Error (err_missing_an_opening_parenthesis);
             else
               InSymbol;
               I := GetFP (Id);
               if I /= -1 then
                 Emit2 (kFile_I_O, I, N);
               else
-                Error (identifier_missing);
+                Error (err_identifier_missing);
               end if;
               InSymbol;
               if Sy = RParent then
@@ -3028,7 +3020,7 @@ package body HAC.Parser is
           InSymbol;
           if I /= 0 then
             if IdTab (I).Obj /= TypeMark then
-              Error (29);
+              Error (err_missing_a_type_identifier);
               return;  --{MRC, from PC source}
             elsif StanTyps (IdTab (I).TYP) then
               IdTab (Prt).TYP := IdTab (I).TYP;

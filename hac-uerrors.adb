@@ -13,30 +13,30 @@ package body HAC.UErrors is
       return "UNDEFINED IDENTIFIER";
     when duplicate_identifier =>
       return "MULTIPLE DEFINITION OF AN IDENTIFIER";
-    when identifier_missing =>
+    when err_identifier_missing =>
       return "MISSING AN IDENTIFIER";
     when 3 =>
       return "MISSING A PROCEDURE DECLARATION";
     when closing_parenthesis_missing =>
       return "MISSING CLOSING PARENTHESIS ``)''";
-    when colon_missing =>
-      return "MISSING A COLON ``:''";
+    when err_colon_missing =>
+      return "missing a colon "":""";
     when err_incorrectly_used_symbol =>
       return "incorrectly used symbol";
     when 7 =>
       return "MISSING IDENTIFIER";
-    when 8 =>
-      return "MISSING ``OF''";
-    when 9 =>
-      return "MISSING AN OPENING PARENTHESIS ``)''";
+    when err_missing_OF =>
+      return "missing ""of""";
+    when err_missing_an_opening_parenthesis =>
+      return "missing an opening parenthesis ""(""";
     when 10 =>
       return "MISSING IDENTIFER; ``ARRAY'' OR ``RECORD''";
     when 11 =>
       return "-- OPENING BRACKET ``[''";
     when 12 =>
       return "-- CLOSING BRACKET ``]''";
-    when 13 =>
-      return "EXPECTING ``..''";
+    when err_expecting_dot_dot =>
+      return "expecting ""..""";
     when err_semicolon_missing =>
       return "missing a semicolon "";""";
     when 15 =>
@@ -59,20 +59,20 @@ package body HAC.UErrors is
       return "BAD TYPE FOR A CASE STATEMENT";
     when 24 =>
       return "ILLEGAL CHARACTER";
-    when 25 =>
-      return "ILLEGAL CONSTANT OR CONSTAT IDENTIFIER";
+    when illegal_constant_or_constant_identifier =>
+      return "illegal constant or constant identifier";
     when 26 =>
       return "ILLEGAL ARRAY SUBSCRIPT (CHECK TYPE)";
     when illegal_array_bounds =>
       return "ILLEGAL BOUNDS FOR AN ARRAY INDEX";
-    when 28 =>
-      return "INDEXED VARIABLE MUST BE AN ARRAY";
-    when 29 =>
-      return "MISSING A TYPE IDENFIFIER";
-    when 30 =>
-      return "UNDEFINED TYPE";
-    when 31 =>
-      return "VAR WITH FIELD SELECTOR MUST BE RECORD";
+    when err_indexed_variable_must_be_an_array =>
+      return "indexed variable must be an array";
+    when err_missing_a_type_identifier =>
+      return "missing_a_type_identifier";
+    when err_undefined_type =>
+      return "undefined type";
+    when err_var_with_field_selector_must_be_record =>
+      return "var with field selector must be record";
     when 32 =>
       return "RESULTING TYPE IS NOT ``BOOLEAN''";
     when 33 =>
@@ -131,8 +131,8 @@ package body HAC.UErrors is
       return "MISSING ``RETURN''";
     when 60 =>
       return "CONTROL CHARACTER PRESENT IN SOURCE ";
-    when 61 =>
-      return "MISSING ``RECORD''";
+    when err_missing_record =>
+      return "missing ""record""";
     when 62 =>
       return "MISSING CLOSING ``IF''";
     when 63 =>
@@ -177,7 +177,7 @@ package body HAC.UErrors is
       return "found ""of"", should be ""is""";
     when EQUALS_instead_of_BECOMES =>
       return "found ""="", should be "":=""";
-    when numeric_constant_expected =>
+    when err_numeric_constant_expected =>
       return "numeric constant expected";
     when others =>
       return "Unknown error Id=" & Integer'Image (Id);

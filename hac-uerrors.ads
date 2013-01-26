@@ -39,24 +39,34 @@ package HAC.UErrors is
 
   procedure Error(N: Integer);
   --
-  undefined_identifier          : constant:=  0;
-  duplicate_identifier          : constant:=  1;
-  identifier_missing            : constant:=  2;
-  closing_parenthesis_missing   : constant:=  4;
-  colon_missing                 : constant:=  5;
-  err_incorrectly_used_symbol   : constant:=  6;
-  err_semicolon_missing         : constant:= 14;
-  IS_missing                    : constant:= 20;
-  incorrect_block_name          : constant:= 22;
-  illegal_array_bounds          : constant:= 27;
-  variable_missing              : constant:= 37;
-  parameter_must_be_integer     : constant:= 43;
-  types_of_assignment_must_match: constant:= 46;
-  BECOMES_missing               : constant:= 51;
-  END_missing                   : constant:= 57;
-  OF_instead_of_IS              : constant:= 82;
-  EQUALS_instead_of_BECOMES     : constant:= 83;
-  numeric_constant_expected     : constant:= 84;
+  undefined_identifier                       : constant:=  0;
+  duplicate_identifier                       : constant:=  1;
+  err_identifier_missing                     : constant:=  2;
+  closing_parenthesis_missing                : constant:=  4;
+  err_colon_missing                          : constant:=  5;
+  err_incorrectly_used_symbol                : constant:=  6;
+  err_missing_OF                             : constant:=  8;
+  err_missing_an_opening_parenthesis         : constant:=  9;
+  err_expecting_dot_dot                      : constant:= 13;
+  err_semicolon_missing                      : constant:= 14;
+  IS_missing                                 : constant:= 20;
+  incorrect_block_name                       : constant:= 22;
+  illegal_constant_or_constant_identifier    : constant:= 25;
+  illegal_array_bounds                       : constant:= 27;
+  err_indexed_variable_must_be_an_array      : constant:= 28;
+  err_missing_a_type_identifier              : constant:= 29;
+  err_undefined_type                         : constant:= 30;
+  err_var_with_field_selector_must_be_record : constant:= 31;
+  variable_missing                           : constant:= 37;
+  parameter_must_be_integer                  : constant:= 43;
+  types_of_assignment_must_match             : constant:= 46;
+  BECOMES_missing                            : constant:= 51;
+  END_missing                                : constant:= 57;
+  err_missing_record                         : constant:= 61;
+  -- These errors messages are new in HAC and weren't in SmallAda
+  OF_instead_of_IS                           : constant:= 82;
+  EQUALS_instead_of_BECOMES                  : constant:= 83;
+  err_numeric_constant_expected              : constant:= 84;
 
   procedure EndSkip;
 
