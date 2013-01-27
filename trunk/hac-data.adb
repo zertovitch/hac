@@ -176,7 +176,7 @@ package body HAC.Data is
     AdaKeyW (37)   := "OF        ";
     AdaKeyWSy (37) := OFSy;
     AdaKeyW (38)   := "OR        ";
-    AdaKeyWSy (38) := OrSy;
+    AdaKeyWSy (38) := Or_Symbol;
     AdaKeyW (39)   := "OTHERS    ";
     AdaKeyWSy (39) := OthersSy;
     AdaKeyW (40)   := "OUT       ";
