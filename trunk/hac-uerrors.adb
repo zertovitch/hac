@@ -9,9 +9,9 @@ package body HAC.UErrors is
   function ErrorString (Id : Integer) return String is
   begin
     case Id is
-    when undefined_identifier =>
+    when err_undefined_identifier =>
       return "undefined identifier";
-    when duplicate_identifier =>
+    when err_duplicate_identifier =>
       return "multiple definition of an identifier";
     when err_identifier_missing =>
       return "missing an identifier";
@@ -43,17 +43,17 @@ package body HAC.UErrors is
       return "illegal statement start symbol";
     when err_expecting_a_boolean_expression =>
       return "expecting a Boolean expression";
-    when 18 =>
+    when err_control_variable_of_the_wrong_type =>
       return "control variable of the wrong type";
     when err_first_and_last_must_have_matching_types =>
       return "first and last must have matching types";
-    when IS_missing =>
+    when err_IS_missing =>
       return "missing ""is""";
     when 21 =>
       return "the number is too large";
-    when incorrect_block_name =>
+    when err_incorrect_block_name =>
       return "incorrect block name after ""end""";
-    when 23 =>
+    when err_bad_type_for_a_case_statement =>
       return "bad type for a case statement";
     when 24 =>
       return "illegal character";
@@ -81,7 +81,7 @@ package body HAC.UErrors is
       return "incompatible types for comparison";
     when err_parameter_types_do_not_match =>
       return "parameter types do not match";
-    when variable_missing =>
+    when err_variable_missing =>
       return "missing a variable";
     when 38 =>
       return "a string must have one or more char";
@@ -99,7 +99,7 @@ package body HAC.UErrors is
       return "expected a variable, function or constant";
     when 45 =>
       return "ILLEGAL RETURN STATEMENT FROM MAIN";
-    when types_of_assignment_must_match =>
+    when err_types_of_assignment_must_match =>
       return "types must match in an assignment";
     when err_case_label_not_same_type_as_case_clause =>
       return "case label not of same type as case clause";
@@ -127,15 +127,15 @@ package body HAC.UErrors is
       return "missing ""return""";
     when 60 =>
       return "control character present in source ";
-    when err_missing_record =>
+    when err_RECORD_missing =>
       return "missing ""record""";
     when err_missing_closing_IF =>
       return "missing closing ""if""";
-    when 63 =>
+    when err_WHEN_missing =>
       return "missing ""when""";
-    when 64 =>
-      return "missing the finger ""="">";
-    when 65 =>
+    when err_FINGER_missing =>
+      return "missing the finger ""=>""";
+    when err_missing_closing_CASE =>
       return "missing closing ""case""";
     when 66 =>
       return "character delimeter used for string";
@@ -149,24 +149,24 @@ package body HAC.UErrors is
       return "must specify ""use small_sp;""";
     when 71 =>
       return "expecting an entry";
-    when 72 =>
-      return "missing expression for delay";
-    when 73 =>
-      return "delay time must be type float";
+    when err_missing_expression_for_delay =>
+      return "missing expression for ""delay""";
+    when err_wrong_type_in_DELAY =>
+      return "delay time must be type Float";
     when 74 =>
       return "comma expected";
     when 75 =>
-      return "parameter must be of type ""boolean""";
+      return "parameter must be of type Boolean";
     when 76 =>
       return "expecting ""accept"", ""when"", or entry id";
-    when 77 =>
+    when err_expecting_task_entry =>
       return "expecting Task.Entry";
     when 78 =>
       return "expecting ""or"" or ""else"" in select";
     when err_expecting_DELAY =>
       return "expecting ""delay""";
-    when 80 =>
-      return "missing select";
+    when err_SELECT_missing =>
+      return "missing ""select""";
     when 81 =>
       return "program incomplete";
     when OF_instead_of_IS =>
