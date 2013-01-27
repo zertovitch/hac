@@ -198,7 +198,7 @@ package body HAC.Parser is
         -- follow the chain of identifiers for
         -- current Level.
         if J /= 0 then
-          Error (duplicate_identifier);
+          Error (err_duplicate_identifier);
         else      -- Enter identifier if there is room in table IdTab
           T                                := T + 1;
           IdTab (T)                        :=
@@ -232,7 +232,7 @@ package body HAC.Parser is
         exit when L < 0 or J /= 0;
       end loop;
       if J = 0 then
-        Error (undefined_identifier);
+        Error (err_undefined_identifier);
       end if;
       return J;
     end LOC;
@@ -525,7 +525,7 @@ package body HAC.Parser is
             if Sy = RecordSy then
               InSymbol;
             else
-              Error (err_missing_RECORD);
+              Error (err_RECORD_missing);
             end if;
             Level := Level - 1;
           -- end of RecordSy
@@ -577,7 +577,7 @@ package body HAC.Parser is
       RF := 0;
       Sz := 0;
       Test (
-        Symset'(IDent => True, others => False), 
+        Symset'(IDent => True, others => False),
         FSys + RParent, err_identifier_missing
       );
       while Sy = IDent loop
@@ -683,7 +683,7 @@ package body HAC.Parser is
       if Sy = IsSy then
         InSymbol;
       else
-        Error (IS_missing);
+        Error (err_IS_missing);
       end if;
 
       TP := NOTYP;
@@ -906,7 +906,7 @@ package body HAC.Parser is
           if Sy = IsSy then
             InSymbol;
           else
-            Error (IS_missing);
+            Error (err_IS_missing);
           end if;
           if Level = LMax then
             Fatal (LEVEL_overflow);
@@ -924,9 +924,8 @@ package body HAC.Parser is
               Fatal (9);
             end if;
             Enter (Id, aEntry);
-            EntryTAB (ECount) := T;         -- point to identifier table
-                                            --location
-            T0                := T;              -- of TaskID
+            EntryTAB (ECount) := T;  --  point to identifier table location
+            T0                := T;  --  of TaskID
             InSymbol;
             Block (FSys, False, Level + 1, T);
             IdTab (T0).Adr := TCount;
@@ -974,7 +973,7 @@ package body HAC.Parser is
                 J := IdTab (J).Link;
               end loop;
               if J = 0 then
-                Error (undefined_identifier);
+                Error (err_undefined_identifier);
               end if;
               V.TYP := IdTab (J).TYP;
               V.Ref := IdTab (J).Ref;
@@ -1084,7 +1083,7 @@ package body HAC.Parser is
                 InSymbol;
                 if K /= 0 then
                   if IdTab (K).Obj /= Variable then
-                    Error (variable_missing);
+                    Error (err_variable_missing);
                   end if;
                   X.TYP := IdTab (K).TYP;
                   X.Ref := IdTab (K).Ref;
@@ -1111,7 +1110,7 @@ package body HAC.Parser is
               end if;
             end if;
           end if;
-          Test (Symset'(Comma | RParent => True, others => False), FSys, 
+          Test (Symset'(Comma | RParent => True, others => False), FSys,
             err_incorrectly_used_symbol
           );
           exit when Sy /= Comma;
@@ -1161,7 +1160,7 @@ package body HAC.Parser is
           end loop;
 
           if J = 0 then
-            Error (undefined_identifier);
+            Error (err_undefined_identifier);
           end if;
 
           Addr := J;
@@ -1309,7 +1308,7 @@ package body HAC.Parser is
                   else
                     I := GetFP (Id);
                     if I = 0 then
-                      Error (undefined_identifier);
+                      Error (err_undefined_identifier);
                     else
                       Emit2 (k_Standard_Functions, I, N);
                     end if;
@@ -1664,7 +1663,7 @@ package body HAC.Parser is
         if StanTyps (X.TYP) then
           Emit (kStore);
         elsif X.Ref /= Y.Ref then
-          Error (types_of_assignment_must_match);
+          Error (err_types_of_assignment_must_match);
         else
           case X.TYP is
             when Arrays =>
@@ -1682,12 +1681,12 @@ package body HAC.Parser is
         Emit (kStore);
       elsif X.TYP = Arrays and Y.TYP = Strings then
         if ArraysTab (X.Ref).ELTYP /= xChars then
-          Error (types_of_assignment_must_match);
+          Error (err_types_of_assignment_must_match);
         else
           Emit1 (kStringAssignment, ArraysTab (X.Ref).Size);    -- array Size
         end if;
       elsif (X.TYP /= NOTYP) and (Y.TYP /= NOTYP) then
-        Error (types_of_assignment_must_match);
+        Error (err_types_of_assignment_must_match);
       end if;
     end Assignment;
 
@@ -1745,7 +1744,7 @@ package body HAC.Parser is
           TestEnd;
           if Sy = IDent then
             if Id /= IdTab (I).Name then
-              Error (incorrect_block_name);
+              Error (err_incorrect_block_name);
             end if;
             InSymbol;
           end if;
@@ -1761,7 +1760,7 @@ package body HAC.Parser is
         TestEnd;
         if Sy = IDent then
           if Id /= IdTab (Prt).Name then
-            Error (incorrect_block_name);
+            Error (err_incorrect_block_name);
           end if;
           InSymbol;
         end if;
@@ -1901,9 +1900,8 @@ package body HAC.Parser is
         X, Y : Item;
         F    : Integer;
       begin
-
         if BlockID = ProgramID then
-          Error (45); -- ILLEGAL RETURN STATEMENT FROM MAIN 
+          Error (45); -- ILLEGAL RETURN STATEMENT FROM MAIN
         end if;       -- !! but... this is legal in Ada !!
         I := LOC (BlockID);
         InSymbol;
@@ -1925,16 +1923,16 @@ package body HAC.Parser is
               if StanTyps (X.TYP) then
                 Emit (kStore);
               elsif X.Ref /= Y.Ref then
-                Error (types_of_assignment_must_match);
+                Error (err_types_of_assignment_must_match);
               elsif X.TYP = Floats and Y.TYP = Ints then
                 Emit1 (kCase26, 0);
                 Emit (kStore);
               elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
-                Error (types_of_assignment_must_match);
+                Error (err_types_of_assignment_must_match);
               end if;
             end if;
           else
-            Error (45); -- ILLEGAL RETURN STATEMENT FROM MAIN 
+            Error (45); -- ILLEGAL RETURN STATEMENT FROM MAIN
           end if;       -- !! but... this is legal in Ada !!
         end if;
         if IsFun then
@@ -1954,7 +1952,7 @@ package body HAC.Parser is
         else                  -- calculate delay value
           Expression (Semicolon_set, Y);
           if Y.TYP /= Floats then
-            Error (73);
+            Error (err_wrong_type_in_DELAY);
           end if;
         end if;
         Emit (kDelay);
@@ -1990,9 +1988,8 @@ package body HAC.Parser is
               K := K + 1;
               exit when CaseTab (K).Val = Lab.I;
             end loop;
-
             if K < I then
-              Error (duplicate_identifier);
+              Error (err_duplicate_identifier);
             end if;
             -- MULTIPLE DEFINITION
           end if;
@@ -2023,7 +2020,7 @@ package body HAC.Parser is
             if Sy = Finger then
               InSymbol;
             else
-              Error (64);
+              Error (err_FINGER_missing);
             end if;
             MultiStatement
              (Symset'((WhenSy | EndSy => True, others => False)));
@@ -2031,7 +2028,7 @@ package body HAC.Parser is
             ExitTab (J) := LC;
             Emit (k_Jump);
           else
-            Error (63);
+            Error (err_WHEN_missing);
           end if;
         end ONECASE;
 
@@ -2049,7 +2046,7 @@ package body HAC.Parser is
                 X.TYP = xChars or
                 X.TYP = NOTYP)
         then
-          Error (23);
+          Error (err_bad_type_for_a_case_statement); --- !! mmmh: enums ?...
         end if;
         LC1 := LC;
         Emit (kSwitch); -- JMPX
@@ -2060,7 +2057,7 @@ package body HAC.Parser is
           Error (OF_instead_of_IS); -- Common mistake by Pascal programmers
           InSymbol;
         else
-          Error (IS_missing);
+          Error (err_IS_missing);
         end if;
 
         while Sy = WhenSy loop
@@ -2091,7 +2088,7 @@ package body HAC.Parser is
         if Sy = CaseSy then
           InSymbol;
         else
-          Error (65);
+          Error (err_missing_closing_CASE);
         end if;
       end CASE_Statement;
 
@@ -2175,7 +2172,7 @@ package body HAC.Parser is
                  or X.TYP = Bools
                  or X.TYP = xChars)
           then
-            Error (18);
+            Error (err_control_variable_of_the_wrong_type);
           end if;
           if Sy = RangeSy then
             InSymbol;
@@ -2244,13 +2241,13 @@ package body HAC.Parser is
               if Sy = DelaySy then
                 InSymbol;
                 if Sy = Semicolon then
-                  SelectError (72);
+                  SelectError (err_missing_expression_for_delay);
                 else          -- calculate delay value
                   patch (2) := LC;
                   Expression (Semicolon_set, Y);
                   patch (3) := LC - 1;
                   if Y.TYP /= Floats then
-                    SelectError (73);
+                    SelectError (err_wrong_type_in_DELAY);
                   else        -- end of timed Entry select ObjCode, do patching
                     ObjCode (patch (1)).Y  := LC; -- if Entry not made, Skip rest
                     J                      := patch (3) - patch (2) + 1;
@@ -2269,7 +2266,7 @@ package body HAC.Parser is
                 end if;
               else
                 SelectError (err_expecting_DELAY);
-              end if;   
+              end if;
             -- end Sy = OrSy
             else              -- Sy = ElseSy, ===============> Conditional
                               --                             Entry Call
@@ -2289,10 +2286,10 @@ package body HAC.Parser is
             end if;
             InSymbol;
             if Sy /= SelectSy then
-              SelectError (80);
+              SelectError (err_SELECT_missing);
             end if;
           else
-            SelectError (77);
+            SelectError (err_expecting_task_entry);
           end if;          -- Task.Entry Call expected
         end QualifiedEntryCall;
 
@@ -2332,7 +2329,7 @@ package body HAC.Parser is
             InSymbol;
             I := LOC (Id);
             if IdTab (I).Obj /= aEntry then
-              SelectError (70);
+              SelectError (err_use_Small_Sp);
             end if;
             InSymbol;
             AcceptCall2 (FSys, I);
@@ -2356,7 +2353,7 @@ package body HAC.Parser is
               TestEnd;
               if Sy = IDent then
                 if Id /= IdTab (I).Name then
-                  SelectError (incorrect_block_name);
+                  SelectError (err_incorrect_block_name);
                 end if;
               end if;
               Level := Level - 1;
@@ -2407,7 +2404,7 @@ package body HAC.Parser is
                     Expression (FSys + Semicolon, Y);
                     Emit2 (kSelectiveWait, 4, LC + 2); -- Update delay time
                     if Y.TYP /= Floats then
-                      SelectError (73);
+                      SelectError (err_wrong_type_in_DELAY);
                     end if;
                     if IAlt > 10 then
                       Fatal (PATCHING_overflow);
@@ -2596,7 +2593,7 @@ package body HAC.Parser is
                   InSymbol;
                   if I /= 0 then
                     if IdTab (I).Obj /= Variable then
-                      Error (variable_missing);
+                      Error (err_variable_missing);
                     else
                       X.TYP := IdTab (I).TYP;
                       X.Ref := IdTab (I).Ref;
@@ -2738,13 +2735,13 @@ package body HAC.Parser is
             else
               InSymbol;
               if Sy /= IDent then
-                Error (undefined_identifier);
+                Error (err_undefined_identifier);
               else
                 I := LOC (Id);
                 InSymbol;
                 if I /= 0 then
                   if IdTab (I).Obj /= Variable then
-                    Error (variable_missing);
+                    Error (err_variable_missing);
                   else
                     X.TYP := IdTab (I).TYP;
                     X.Ref := IdTab (I).Ref;
@@ -3049,7 +3046,7 @@ package body HAC.Parser is
     if Sy = IsSy then
       InSymbol;
     else
-      Error (IS_missing);
+      Error (err_IS_missing);
       return;
     end if;
 
@@ -3099,11 +3096,11 @@ package body HAC.Parser is
     else
       Error (err_END_missing);
       return;
-    end if; 
+    end if;
 
     if Sy = IDent then
       if Id /= BlockID then
-        Error (incorrect_block_name);
+        Error (err_incorrect_block_name);
         return;
       end if;
       InSymbol;
