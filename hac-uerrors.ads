@@ -41,31 +41,47 @@ package HAC.UErrors is
   --
   undefined_identifier                       : constant:=  0;
   duplicate_identifier                       : constant:=  1;
-  err_identifier_missing                     : constant:=  2;
-  closing_parenthesis_missing                : constant:=  4;
+  err_identifier_missing                     : constant:=  2; -- also 7
+  err_closing_parenthesis_missing            : constant:=  4;
   err_colon_missing                          : constant:=  5;
   err_incorrectly_used_symbol                : constant:=  6;
   err_missing_OF                             : constant:=  8;
   err_missing_an_opening_parenthesis         : constant:=  9;
   err_expecting_dot_dot                      : constant:= 13;
   err_semicolon_missing                      : constant:= 14;
+  err_expecting_a_boolean_expression         : constant:= 17;
   IS_missing                                 : constant:= 20;
   incorrect_block_name                       : constant:= 22;
   illegal_constant_or_constant_identifier    : constant:= 25;
+  err_illegal_array_subscript                : constant:= 26;
   illegal_array_bounds                       : constant:= 27;
   err_indexed_variable_must_be_an_array      : constant:= 28;
   err_missing_a_type_identifier              : constant:= 29;
   err_undefined_type                         : constant:= 30;
   err_var_with_field_selector_must_be_record : constant:= 31;
+  err_resulting_type_should_be_Boolean       : constant:= 32;
+  err_illegal_type_for_arithmetic_expression : constant:= 33;
+  err_mod_requires_integer_arguments         : constant:= 34;
+  err_incompatible_types_for_comparison      : constant:= 35;
+  err_parameter_types_do_not_match           : constant:= 36;
   variable_missing                           : constant:= 37;
+  err_number_of_parameters_do_not_match      : constant:= 39;
   parameter_must_be_integer                  : constant:= 43;
+  err_expected_variable_function_or_constant : constant:= 44;
   types_of_assignment_must_match             : constant:= 46;
-  BECOMES_missing                            : constant:= 51;
-  END_missing                                : constant:= 57;
-  err_missing_record                         : constant:= 61;
+  err_case_label_not_same_type_as_case_clause: constant:= 47;
+  err_argument_to_std_function_of_wrong_type : constant:= 48;
+  err_BECOMES_missing                        : constant:= 51;
+  err_THEN_missing                           : constant:= 52;
+  err_closing_LOOP_missing                   : constant:= 54;
+  err_END_missing                            : constant:= 57;
+  err_missing_RECORD                         : constant:= 61;
+  err_missing_closing_IF                     : constant:= 62;
+  err_functions_must_return_a_value          : constant:= 68;
+  err_use_Small_Sp                           : constant:= 70;
   -- These errors messages are new in HAC and weren't in SmallAda
   OF_instead_of_IS                           : constant:= 82;
-  EQUALS_instead_of_BECOMES                  : constant:= 83;
+  err_EQUALS_instead_of_BECOMES              : constant:= 83;
   err_numeric_constant_expected              : constant:= 84;
 
   procedure EndSkip;
