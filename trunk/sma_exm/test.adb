@@ -86,6 +86,16 @@ begin
   end case;
   Put("Bla bla");
   Put_Line(" and more bla bla!");
+  for gagl in 1..5 loop
+    case gagl is
+      when 1 =>
+        Put_Line("choice: 1");
+      when 2 =>
+        Put_Line("choice: 2");
+      when others =>
+        Put_Line("choice: 3..5");
+    end case;
+  end loop;
   for n in 1..20 loop
     Fibo_demo(n);
   end loop;

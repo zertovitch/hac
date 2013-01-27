@@ -204,7 +204,7 @@ package body HAC.Scanner is
         exit when CharacterTypes (CH) /= Number;
       end loop;
 
-      if K > KMax or INum > NMax then
+      if K > KMax then
         Error (21);
         INum := 0;
         K    := 0;

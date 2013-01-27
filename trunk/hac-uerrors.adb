@@ -10,61 +10,59 @@ package body HAC.UErrors is
   begin
     case Id is
     when undefined_identifier =>
-      return "UNDEFINED IDENTIFIER";
+      return "undefined identifier";
     when duplicate_identifier =>
-      return "MULTIPLE DEFINITION OF AN IDENTIFIER";
+      return "multiple definition of an identifier";
     when err_identifier_missing =>
-      return "MISSING AN IDENTIFIER";
+      return "missing an identifier";
     when 3 =>
-      return "MISSING A PROCEDURE DECLARATION";
-    when closing_parenthesis_missing =>
-      return "MISSING CLOSING PARENTHESIS ``)''";
+      return "missing a procedure declaration";
+    when err_closing_parenthesis_missing =>
+      return "missing closing parenthesis **)""";
     when err_colon_missing =>
       return "missing a colon "":""";
     when err_incorrectly_used_symbol =>
       return "incorrectly used symbol";
-    when 7 =>
-      return "MISSING IDENTIFIER";
     when err_missing_OF =>
       return "missing ""of""";
     when err_missing_an_opening_parenthesis =>
       return "missing an opening parenthesis ""(""";
     when 10 =>
-      return "MISSING IDENTIFER; ``ARRAY'' OR ``RECORD''";
+      return "missing identifer; ""array"" or ""record""";
     when 11 =>
-      return "-- OPENING BRACKET ``[''";
+      return "-- OPENING BRACKET ""[""";
     when 12 =>
-      return "-- CLOSING BRACKET ``]''";
+      return "-- CLOSING BRACKET ""]""";
     when err_expecting_dot_dot =>
       return "expecting ""..""";
     when err_semicolon_missing =>
       return "missing a semicolon "";""";
     when 15 =>
-      return "BAD RESULT TYPE FOR A FUNCTION";
+      return "bad result type for a function";
     when 16 =>
-      return "ILLEGAL STATEMENT START SYMBOL";
-    when 17 =>
-      return "EXPECTING A BOOLEAN EXPRESSION ";
+      return "illegal statement start symbol";
+    when err_expecting_a_boolean_expression =>
+      return "expecting a boolean expression";
     when 18 =>
-      return "CONTROL VARIABLE OF THE WRONG TYPE";
+      return "control variable of the wrong type";
     when 19 =>
-      return "FIRST/LAST MUST BE MATCHING TYPES";
+      return "first/last must be matching types";
     when IS_missing =>
       return "missing ""is""";
     when 21 =>
-      return "THE NUMBER IS TOO LARGE";
+      return "the number is too large";
     when incorrect_block_name =>
       return "incorrect block name after ""end""";
     when 23 =>
-      return "BAD TYPE FOR A CASE STATEMENT";
+      return "bad type for a case statement";
     when 24 =>
-      return "ILLEGAL CHARACTER";
+      return "illegal character";
     when illegal_constant_or_constant_identifier =>
       return "illegal constant or constant identifier";
-    when 26 =>
-      return "ILLEGAL ARRAY SUBSCRIPT (CHECK TYPE)";
+    when err_illegal_array_subscript =>
+      return "illegal array subscript (check type)";
     when illegal_array_bounds =>
-      return "ILLEGAL BOUNDS FOR AN ARRAY INDEX";
+      return "illegal bounds for an array index";
     when err_indexed_variable_must_be_an_array =>
       return "indexed variable must be an array";
     when err_missing_a_type_identifier =>
@@ -73,109 +71,109 @@ package body HAC.UErrors is
       return "undefined type";
     when err_var_with_field_selector_must_be_record =>
       return "var with field selector must be record";
-    when 32 =>
-      return "RESULTING TYPE IS NOT ``BOOLEAN''";
-    when 33 =>
-      return "ILLEGAL TYPE FOR ARITHMETIC EXPRESSION";
-    when 34 =>
-      return "``MOD'' REQUIRES INTEGER ARGUMENTS";
-    when 35 =>
-      return "INCOMPATIBLE TYPES FOR COMPARISON";
-    when 36 =>
-      return "PARAMETER TYPES DO NOT MATCH";
+    when err_resulting_type_should_be_Boolean =>
+      return "resulting type should be Boolean";
+    when err_illegal_type_for_arithmetic_expression =>
+      return "illegal type for arithmetic expression";
+    when err_mod_requires_integer_arguments =>
+      return """mod"" requires integer arguments";
+    when err_incompatible_types_for_comparison =>
+      return "incompatible types for comparison";
+    when err_parameter_types_do_not_match =>
+      return "parameter types do not match";
     when variable_missing =>
-      return "MISSING A VARIABLE";
+      return "missing a variable";
     when 38 =>
-      return "A STRING MUST HAVE ONE OR MORE CHAR";
-    when 39 =>
-      return "NUMBER OF PARAMETERS DO NOT MATCH";
+      return "a string must have one or more char";
+    when err_number_of_parameters_do_not_match =>
+      return "number of parameters do not match";
     when 40 =>
-      return "ILLEGAL PARAMETERS TO ``GET''";
+      return "illegal parameters to ""get""";
     when 41 =>
-      return "ILLEGAL PARAMETERS TO ``PUT''";
+      return "illegal parameters to ""put""";
     when 42 =>
-      return "PARAMETER MUST BE OF TYPE ``FLOAT''";
+      return "parameter must be of type Float";
     when parameter_must_be_integer =>
-      return "PARAMETER MUST BE OF TYPE ``INTEGER''";
-    when 44 =>
-      return "EXPECTED A VARIABLE; FUNCTION OR CONST";
+      return "PARAMETER MUST BE OF TYPE ""INTEGER""";
+    when err_expected_variable_function_or_constant =>
+      return "expected a variable, function or constant";
     when 45 =>
       return "ILLEGAL RETURN STATEMENT FROM MAIN";
     when types_of_assignment_must_match =>
-      return "TYPES MUST MATCH IN AN ASSIGNMENT";
-    when 47 =>
-      return "CASE LABEL NOT SAME TYPE AS CASE CLAUSE";
-    when 48 =>
-      return "ARGUMENT TO STD. FUNCTION OF WRONG TYPE";
+      return "types must match in an assignment";
+    when err_case_label_not_same_type_as_case_clause =>
+      return "case label not of same type as case clause";
+    when err_argument_to_std_function_of_wrong_type =>
+      return "argument to std. function of wrong type";
     when 49 =>
-      return "THE PROGRAM REQUIRES TOO MUCH STORAGE";
+      return "the program requires too much storage";
     when 50 =>
-      return "ILLEGAL SYMBOL FOR A CONSTANT";
-    when BECOMES_missing =>
+      return "illegal symbol for a constant";
+    when err_BECOMES_missing =>
       return "missing "":=""";
-    when 52 =>
-      return "MISSING ``THEN''";
+    when err_THEN_missing =>
+      return "missing ""then""";
     when 53 =>
-      return "MISSING ``IN''";
-    when 54 =>
-      return "MISSING ``LOOP''";
+      return "missing ""in""";
+    when err_closing_LOOP_missing =>
+      return "missing closing ""loop""";
     when 55 =>
-      return "MISSING RANGE ``..''";
+      return "missing range ""..""";
     when 56 =>
-      return "MISSING ``BEGIN''";
-    when END_missing =>
-      return "MISSING ``END''";
+      return "missing ""begin""";
+    when err_END_missing =>
+      return "missing ""end""";
     when 58 =>
-      return "Factor: EXPECTING AN ID; CONST; ``NOT'' OR ``(''";
+      return "factor: expecting an id, a constant, ""not"" or ""(""";
     when 59 =>
-      return "MISSING ``RETURN''";
+      return "missing ""return""";
     when 60 =>
-      return "CONTROL CHARACTER PRESENT IN SOURCE ";
+      return "control character present in source ";
     when err_missing_record =>
       return "missing ""record""";
-    when 62 =>
-      return "MISSING CLOSING ``IF''";
+    when err_missing_closing_IF =>
+      return "missing closing ""if""";
     when 63 =>
-      return "MISSING ``WHEN''";
+      return "missing ""when""";
     when 64 =>
-      return "MISSING the finger ``=''>";
+      return "missing the finger ""="">";
     when 65 =>
-      return "MISSING CLOSING ``CASE''";
+      return "missing closing ""case""";
     when 66 =>
-      return "CHARACTER DELIMETER USED FOR STRING";
+      return "character delimeter used for string";
     when 67 =>
-      return "Ada RESERVED WORD; NOT SUPPORTED";
-    when 68 =>
-      return "FUNCTIONS MUST RETURN A VALUE";
+      return "Ada reserved word; not supported";
+    when err_functions_must_return_a_value =>
+      return "functions must return a value";
     when 69 =>
-      return "MUST SPECIFY ``WITH SMALL_SP;''";
-    when 70 =>
-      return "MUST SPECIFY ``USE SMALL_SP;''";
+      return "must specify ""with small_sp;""";
+    when err_use_Small_Sp =>
+      return "must specify ""use small_sp;""";
     when 71 =>
-      return "EXPECTING AN ENTRY";
+      return "expecting an entry";
     when 72 =>
-      return "MISSING EXPRESSION FOR DELAY";
+      return "missing expression for delay";
     when 73 =>
-      return "DELAY TIME MUST BE TYPE FLOAT";
+      return "delay time must be type float";
     when 74 =>
-      return "COMMA EXPECTED";
+      return "comma expected";
     when 75 =>
-      return "PARAMETER MUST BE OF TYPE ``BOOLEAN''";
+      return "parameter must be of type ""boolean""";
     when 76 =>
-      return "EXPECTING ``ACCEPT''; ``WHEN''; OR ENTRY ID";
+      return "expecting ""accept""; ""when""; or entry id";
     when 77 =>
-      return "EXPECTING Task.Entry";
+      return "expecting Task.Entry";
     when 78 =>
-      return "EXPECTING ``OR'' OR ``ELSE'' IN SELECT";
+      return "expecting ""or"" or ""else"" in select";
     when 79 =>
-      return "EXPECTING ``DELAY''";
+      return "expecting ""delay""";
     when 80 =>
-      return "MISSING SELECT";
+      return "missing select";
     when 81 =>
-      return "PROGRAM INCOMPLETE";
+      return "program incomplete";
     when OF_instead_of_IS =>
       return "found ""of"", should be ""is""";
-    when EQUALS_instead_of_BECOMES =>
+    when err_EQUALS_instead_of_BECOMES =>
       return "found ""="", should be "":=""";
     when err_numeric_constant_expected =>
       return "numeric constant expected";

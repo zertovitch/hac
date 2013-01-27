@@ -82,7 +82,7 @@ package HAC.Data is
   LLNG       : constant := 83;            --  input line Length
   LMax       : constant := 7;             --  maximum Level
   NKW        : constant := 64;            --  No. of AdaKeyW words
-  NMax       : constant Integer := MaxINT;--  2**16-1
+  NMax       : constant Integer := MaxINT;
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char
   OMax       : constant := 74;            --  highest Order ObjCode
@@ -92,7 +92,7 @@ package HAC.Data is
 
   Wind_Size : constant := TaskMax + 2;    --  SnapShot window size
   TMax      : constant := 200;            --  Size of identifier table
-  XMax      : constant Integer := MaxINT; --  2**16-1
+  XMax      : constant Integer := MaxINT;
 
   -- =======================================================================
   --  Global Types
