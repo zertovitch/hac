@@ -34,7 +34,7 @@ package body HAC.UErrors is
     when 12 =>
       return "-- CLOSING BRACKET ""]""";
     when err_expecting_dot_dot =>
-      return "expecting ""..""";
+      return "expecting range symbol: ""..""";
     when err_semicolon_missing =>
       return "missing a semicolon "";""";
     when 15 =>
@@ -42,11 +42,11 @@ package body HAC.UErrors is
     when 16 =>
       return "illegal statement start symbol";
     when err_expecting_a_boolean_expression =>
-      return "expecting a boolean expression";
+      return "expecting a Boolean expression";
     when 18 =>
       return "control variable of the wrong type";
-    when 19 =>
-      return "first/last must be matching types";
+    when err_first_and_last_must_have_matching_types =>
+      return "first and last must have matching types";
     when IS_missing =>
       return "missing ""is""";
     when 21 =>
@@ -94,7 +94,7 @@ package body HAC.UErrors is
     when 42 =>
       return "parameter must be of type Float";
     when parameter_must_be_integer =>
-      return "PARAMETER MUST BE OF TYPE ""INTEGER""";
+      return "parameter must be of type Integer";
     when err_expected_variable_function_or_constant =>
       return "expected a variable, function or constant";
     when 45 =>
@@ -113,12 +113,10 @@ package body HAC.UErrors is
       return "missing "":=""";
     when err_THEN_missing =>
       return "missing ""then""";
-    when 53 =>
+    when err_IN_missing  =>
       return "missing ""in""";
     when err_closing_LOOP_missing =>
       return "missing closing ""loop""";
-    when 55 =>
-      return "missing range ""..""";
     when 56 =>
       return "missing ""begin""";
     when err_END_missing =>
@@ -160,12 +158,12 @@ package body HAC.UErrors is
     when 75 =>
       return "parameter must be of type ""boolean""";
     when 76 =>
-      return "expecting ""accept""; ""when""; or entry id";
+      return "expecting ""accept"", ""when"", or entry id";
     when 77 =>
       return "expecting Task.Entry";
     when 78 =>
       return "expecting ""or"" or ""else"" in select";
-    when 79 =>
+    when err_expecting_DELAY =>
       return "expecting ""delay""";
     when 80 =>
       return "missing select";
