@@ -55,7 +55,7 @@ package body HAC.Parser is
         Hz := 0;
       end if;
       if A = AMax then
-        Fatal (4);     -- array table has overflowed
+        Fatal (ARRAYS_table_overflow);
       else
         A := A + 1;
         declare
@@ -278,7 +278,7 @@ package body HAC.Parser is
     begin
       C.TP := NOTYP;
       C.I  := 0;
-      Test (ConstBegSys, FSys, 50);
+      Test (ConstBegSys, FSys, err_illegal_symbol_for_a_constant);
       if ConstBegSys (Sy) then
         if Sy = CharCon then
           C.TP := xChars;
@@ -317,7 +317,7 @@ package body HAC.Parser is
             C.R  := Float (Sign) * RNum;
             InSymbol;
           else
-            Skip (FSys, 50);
+            Skip (FSys, err_illegal_symbol_for_a_constant);
           end if;
         end if;
         Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
@@ -418,9 +418,9 @@ package body HAC.Parser is
       TP := NOTYP;
       RF := 0;
       Sz := 0;
-      Test (TypeBegSys, FSys, 10);
+      Test (TypeBegSys, FSys, err_missing_ARRAY_RECORD_or_ident);
       if TypeBegSys (Sy) then
-        if (Id = "STRING    ") then
+        if Id = "STRING    " then
           Sy := StringSy;
         end if;
         case Sy is
@@ -627,7 +627,7 @@ package body HAC.Parser is
             IDent              => True,
                     others => False),
             FSys,
-            14);
+            err_SEMICOLON_missing);
 
           while T0 < T loop
             T0 := T0 + 1;
@@ -676,7 +676,9 @@ package body HAC.Parser is
       RF, Sz, T1 : Integer;
     begin
       InSymbol;
-      Test (Symset'(IDent => True, others => False), Semicolon_set, 2);
+      Test (Symset'(IDent => True, others => False),
+        Semicolon_set, err_identifier_missing
+      );
       Enter (Id, TypeMark);
       T1 := T;
       InSymbol;
@@ -893,7 +895,7 @@ package body HAC.Parser is
         end if;
         TCount := TCount + 1;
         if TCount > TaskMax then
-          Fatal (8);
+          Fatal (TASKS_table_overflow);
         end if;
         Enter (TaskID, aTask);
         TaskDefTab (TCount) := T;
@@ -921,7 +923,7 @@ package body HAC.Parser is
             end if;
             ECount := ECount + 1;
             if ECount > EntryMax then
-              Fatal (9);
+              Fatal (ENTRIES_table_overflow);
             end if;
             Enter (Id, aEntry);
             EntryTAB (ECount) := T;  --  point to identifier table location
@@ -941,7 +943,7 @@ package body HAC.Parser is
           if Sy = IDent and Id = TaskID then
             InSymbol;
           else
-            Skip (Semicolon, 22);
+            Skip (Semicolon, err_incorrect_block_name);
           end if;
           TestSemicolon;
         end if;
@@ -1151,7 +1153,7 @@ package body HAC.Parser is
       else
         InSymbol;                  -- Task Entry Selector
         if Sy /= IDent then
-          Skip (Semicolon, 2);
+          Skip (Semicolon, err_identifier_missing);
         else
           J              := BlockTab (IdTab (I).Ref).Last;
           IdTab (0).Name := Id;
@@ -1212,7 +1214,7 @@ package body HAC.Parser is
         Y     : ItemPtr;
         OP    : KeyWSymbol;
         TermZ : constant Symset :=
-         Symset'((Plus | MinUS | OrSy => True, others => False));
+         Symset'((Plus | MinUS | Or_Symbol => True, others => False));
 
         procedure Term (FSys : Symset; X : in out Item) is
           Y  : ItemPtr;
@@ -1334,7 +1336,9 @@ package body HAC.Parser is
           begin  -- Factor
             X.TYP := NOTYP;
             X.Ref := 0;
-            Test (Factor_Begin_Symbol + StrCon, FSys, 58);
+            Test (Factor_Begin_Symbol + StrCon, FSys,
+              err_factor_unexpected_symbol
+            );
             if Sy = StrCon then
               X.TYP := Strings;
               Emit1 (k_Literal, SLeng);       -- String Length
@@ -1545,7 +1549,7 @@ package body HAC.Parser is
           InSymbol;
           Term (FSys + TermZ, Y.all);
           -- OR
-          if OP = OrSy then
+          if OP = Or_Symbol then
             if X.TYP = Bools and Y.TYP = Bools then
               Emit (k_OR_Boolean);
             else
@@ -1948,7 +1952,7 @@ package body HAC.Parser is
       begin
         InSymbol;
         if Sy = Semicolon then
-          Skip (Semicolon, 72);
+          Skip (Semicolon, err_missing_expression_for_delay);
         else                  -- calculate delay value
           Expression (Semicolon_set, Y);
           if Y.TYP /= Floats then
@@ -1971,14 +1975,13 @@ package body HAC.Parser is
           Lab : ConRec;
           K   : Integer;
         begin
-
           KKonstant
            (FSys + Symset'((Alt | Finger => True, others => False)),
             Lab);
           if Lab.TP /= X.TYP then
             Error (err_case_label_not_same_type_as_case_clause);
           elsif I = CSMax then
-            Fatal (6);
+            Fatal (OBJECT_overflow);
           else
             I               := I + 1;
             CaseTab (I).Val := Lab.I;
@@ -2009,7 +2012,7 @@ package body HAC.Parser is
             end if;
             if Sy = OthersSy then        -- Hathorn
               if I = CSMax then
-                Fatal (6);
+                Fatal (OBJECT_overflow);
               else
                 I               := I + 1;
                 CaseTab (I).Val := 0;
@@ -2151,7 +2154,7 @@ package body HAC.Parser is
             EndSy             => True,
                      others => False)) +
             FSys,
-            2);
+            err_identifier_missing);
         end if;
 
         Emit2 (k_Load_Address, IdTab (T).LEV, IdTab (T).Adr);
@@ -2227,13 +2230,13 @@ package body HAC.Parser is
             if Sy = Semicolon then
               InSymbol;
             else
-              Skip (Semicolon, 14);
+              Skip (Semicolon, err_SEMICOLON_missing);
             end if;
-            if not (Sy = OrSy or else Sy = ElseSy) then
+            if not (Sy = Or_Symbol or else Sy = ElseSy) then
               MultiStatement
-               (Symset'((OrSy | ElseSy => True, others => False)));
+               (Symset'((Or_Symbol | ElseSy => True, others => False)));
             end if;
-            if Sy = OrSy then      -- =====================> Timed Entry Call
+            if Sy = Or_Symbol then -- =====================> Timed Entry Call
               ObjCode (patch (0)).X      := CallTMDE; -- Timed Entry Call
               ObjCode (patch (0) + 1).Y  := CallTMDE; -- Exit type matches
                                                       --Entry type
@@ -2380,7 +2383,7 @@ package body HAC.Parser is
                 IAlt := 0;
                 InSymbol;          -- WHENSTATEMENT
                 Expression (FSys + Finger, X);
-                if not (X.TYP = Bools or else X.TYP = NOTYP) then
+                if not (X.TYP = Bools or X.TYP = NOTYP) then
                   SelectError (err_expecting_a_boolean_expression);
                 end if;
                 InSymbol;
@@ -2414,11 +2417,11 @@ package body HAC.Parser is
                     Emit (k_Jump);
                   end if;
                 else
-                  SelectError (3);
+                  SelectError (err_missing_a_procedure_declaration);
                 end if;
                 InSymbol;
                 MultiStatement
-                 (Symset'((OrSy | ElseSy | EndSy => True, others => False)));
+                 (Symset'((Or_Symbol | ElseSy | EndSy => True, others => False)));
                 if ISD > 10 then
                   Fatal (PATCHING_overflow);
                 end if;
@@ -2436,16 +2439,15 @@ package body HAC.Parser is
                 AcceptStatement2;
                 InSymbol;
                 MultiStatement
-                 (Symset'((OrSy | ElseSy | EndSy => True, others => False)));
+                 (Symset'((Or_Symbol | ElseSy | EndSy => True, others => False)));
                 if ISD > 10 then
                   Fatal (PATCHING_overflow);
                 end if;
                 ISD       := ISD + 1;
                 JSD (ISD) := LC;
                 Emit (k_Jump);
-              -- end AcceptSy
 
-              when OrSy =>       -- OR STATEMENT
+              when Or_Symbol => -- OR STATEMENT
                 InSymbol;
 
               when ElseSy =>
@@ -2473,14 +2475,14 @@ package body HAC.Parser is
                 -- Generate a Task delay, calculate return value if req'D
                 InSymbol;
                 if Sy = Semicolon then
-                  Skip (Semicolon, 72);
+                  Skip (Semicolon, err_missing_expression_for_delay);
                 else          -- calculate return value
                   Expression
                    (Symset'((Semicolon => True, others => False)),
                     Y);
                   Emit2 (kSelectiveWait, 4, LC + 2);  -- Update delay time
                   if Y.TYP /= Floats then
-                    SelectError (73);
+                    SelectError (err_wrong_type_in_DELAY);
                   end if;
                   if IAlt > 10 then
                     Fatal (PATCHING_overflow);
@@ -2491,7 +2493,7 @@ package body HAC.Parser is
                 end if;
                 InSymbol;
                 MultiStatement
-                 (Symset'((OrSy | EndSy | ElseSy => True, others => False)));
+                 (Symset'((Or_Symbol | EndSy | ElseSy => True, others => False)));
                 if ISD > 10 then
                   Fatal (PATCHING_overflow);
                 end if;
@@ -2551,9 +2553,9 @@ package body HAC.Parser is
           end if;         -- Timed or Conditional Entry Call
           InSymbol;
         else
-          SelectError (76);
+          SelectError (err_expecting_accept_when_or_entry_id);
         end if;
-      end SelectStatement;                      -- SelectStatement
+      end SelectStatement;
 
       procedure StandProc (N : Integer) is
         -- NB: Most of this part will disappear when Ada.Text_IO etc.
@@ -2616,7 +2618,7 @@ package body HAC.Parser is
                       then
                         Emit1 (k_Read, Types'Pos (X.TYP));
                       else
-                        Error (41);
+                        Error (err_illegal_parameters_to_put);
                       end if;
                     end if;
                   end if;
@@ -2678,8 +2680,8 @@ package body HAC.Parser is
                   if X.TYP = Enums then
                     X.TYP := Ints;
                   end if;
-                  if (not StanTyps (X.TYP)) and (X.TYP /= Strings) then
-                    Error (41);
+                  if (not StanTyps (X.TYP)) and X.TYP /= Strings then
+                    Error (err_illegal_parameters_to_put);
                   end if;
                   if Sy = Colon then
                     InSymbol;
@@ -2695,7 +2697,7 @@ package body HAC.Parser is
                     end if;
                     if Sy = Colon then
                       if X.TYP /= Floats then
-                        Error (42);
+                        Error (err_parameter_must_be_of_type_Float);
                       end if;
                       InSymbol;
                       Expression
@@ -2792,7 +2794,7 @@ package body HAC.Parser is
           when 10 =>        -- CursorAt
             -- Cramer
             if Sy /= LParent then
-              Skip (Semicolon, 9);
+              Skip (Semicolon, err_missing_an_opening_parenthesis);
             else
               begin
                 InSymbol;
@@ -2808,7 +2810,7 @@ package body HAC.Parser is
                   Skip (Semicolon, parameter_must_be_integer);
                 end if;
                 if Sy /= Comma then
-                  Skip (Semicolon, 74);
+                  Skip (Semicolon, err_COMMA_missing);
                 else
                   InSymbol;
                   Expression
@@ -2837,12 +2839,12 @@ package body HAC.Parser is
           when 11 =>                   -- Quantum
             -- Cramer
             if Sy /= LParent then
-              Skip (Semicolon, 9);
+              Skip (Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
               Expression (Symset'((RParent => True, others => False)), X);
               if X.TYP /= Floats then
-                Skip (Semicolon, 42);
+                Skip (Semicolon, err_parameter_must_be_of_type_Float);
               end if;
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);
@@ -2855,7 +2857,7 @@ package body HAC.Parser is
           when 12 =>                   -- Set Priority
             -- Cramer
             if Sy /= LParent then
-              Skip (Semicolon, 9);
+              Skip (Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
               Expression (Symset'((RParent => True, others => False)), X);
@@ -2873,12 +2875,12 @@ package body HAC.Parser is
           when 13 =>                   -- Set Priority Inheritance,INHERITP
             -- Cramer
             if Sy /= LParent then
-              Skip (Semicolon, 9);
+              Skip (Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
               Expression (Symset'((RParent => True, others => False)), X);
               if X.TYP /= Bools then
-                Skip (Semicolon, 75);
+                Skip (Semicolon, err_parameter_must_be_of_type_Boolean);
               end if;
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);
@@ -2913,7 +2915,7 @@ package body HAC.Parser is
           if I /= 0 then
             case IdTab (I).Obj is
               when Konstant | TypeMark | Funktion =>
-                Error (16);
+                Error (err_illegal_statement_start_symbol);
                 Assignment (I);
               when Variable =>
                 Assignment (I);
@@ -3024,15 +3026,15 @@ package body HAC.Parser is
             elsif StanTyps (IdTab (I).TYP) then
               IdTab (Prt).TYP := IdTab (I).TYP;
             else
-              Error (15);
+              Error (err_bad_result_type_for_a_function);
               return;    --{MRC, from PC source}
             end if;
           end if;
         else
-          Skip (FSys + Semicolon, 2);
+          Skip (FSys + Semicolon, err_identifier_missing);
         end if;
       else
-        Error (59);
+        Error (err_RETURN_missing);
         return;  --{MRC, from PC source}
       end if;
     end if;

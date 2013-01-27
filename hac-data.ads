@@ -156,7 +156,7 @@ package HAC.Data is
    NOTSy,
    NullSy,
    OFSy,
-   OrSy,
+   Or_Symbol,
    OthersSy,
    OutSy,
    ProcSy,

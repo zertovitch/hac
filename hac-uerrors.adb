@@ -15,7 +15,7 @@ package body HAC.UErrors is
       return "multiple definition of an identifier";
     when err_identifier_missing =>
       return "missing an identifier";
-    when 3 =>
+    when err_missing_a_procedure_declaration =>
       return "missing a procedure declaration";
     when err_closing_parenthesis_missing =>
       return "missing closing parenthesis **)""";
@@ -27,7 +27,7 @@ package body HAC.UErrors is
       return "missing ""of""";
     when err_missing_an_opening_parenthesis =>
       return "missing an opening parenthesis ""(""";
-    when 10 =>
+    when err_missing_ARRAY_RECORD_or_ident =>
       return "missing identifer; ""array"" or ""record""";
     when 11 =>
       return "-- OPENING BRACKET ""[""";
@@ -37,9 +37,9 @@ package body HAC.UErrors is
       return "expecting range symbol: ""..""";
     when err_semicolon_missing =>
       return "missing a semicolon "";""";
-    when 15 =>
+    when err_bad_result_type_for_a_function =>
       return "bad result type for a function";
-    when 16 =>
+    when err_illegal_statement_start_symbol =>
       return "illegal statement start symbol";
     when err_expecting_a_boolean_expression =>
       return "expecting a Boolean expression";
@@ -49,13 +49,13 @@ package body HAC.UErrors is
       return "first and last must have matching types";
     when err_IS_missing =>
       return "missing ""is""";
-    when 21 =>
+    when err_number_too_large =>
       return "the number is too large";
     when err_incorrect_block_name =>
       return "incorrect block name after ""end""";
     when err_bad_type_for_a_case_statement =>
       return "bad type for a case statement";
-    when 24 =>
+    when err_illegal_character =>
       return "illegal character";
     when illegal_constant_or_constant_identifier =>
       return "illegal constant or constant identifier";
@@ -87,11 +87,11 @@ package body HAC.UErrors is
       return "a string must have one or more char";
     when err_number_of_parameters_do_not_match =>
       return "number of parameters do not match";
-    when 40 =>
-      return "illegal parameters to ""get""";
-    when 41 =>
-      return "illegal parameters to ""put""";
-    when 42 =>
+    when err_illegal_parameters_to_Get =>
+      return "illegal parameters to ""Get""";
+    when err_illegal_parameters_to_Put =>
+      return "illegal parameters to ""Put""";
+    when err_parameter_must_be_of_type_Float =>
       return "parameter must be of type Float";
     when parameter_must_be_integer =>
       return "parameter must be of type Integer";
@@ -107,7 +107,7 @@ package body HAC.UErrors is
       return "argument to std. function of wrong type";
     when 49 =>
       return "the program requires too much storage";
-    when 50 =>
+    when err_illegal_symbol_for_a_constant =>
       return "illegal symbol for a constant";
     when err_BECOMES_missing =>
       return "missing "":=""";
@@ -121,11 +121,11 @@ package body HAC.UErrors is
       return "missing ""begin""";
     when err_END_missing =>
       return "missing ""end""";
-    when 58 =>
+    when err_factor_unexpected_symbol =>
       return "factor: expecting an id, a constant, ""not"" or ""(""";
-    when 59 =>
+    when err_RETURN_missing =>
       return "missing ""return""";
-    when 60 =>
+    when err_control_character =>
       return "control character present in source ";
     when err_RECORD_missing =>
       return "missing ""record""";
@@ -137,9 +137,9 @@ package body HAC.UErrors is
       return "missing the finger ""=>""";
     when err_missing_closing_CASE =>
       return "missing closing ""case""";
-    when 66 =>
+    when err_character_delimeter_used_for_string =>
       return "character delimeter used for string";
-    when 67 =>
+    when err_Ada_reserved_word =>
       return "Ada reserved word; not supported";
     when err_functions_must_return_a_value =>
       return "functions must return a value";
@@ -153,11 +153,11 @@ package body HAC.UErrors is
       return "missing expression for ""delay""";
     when err_wrong_type_in_DELAY =>
       return "delay time must be type Float";
-    when 74 =>
+    when err_COMMA_missing =>
       return "comma expected";
-    when 75 =>
+    when err_parameter_must_be_of_type_Boolean =>
       return "parameter must be of type Boolean";
-    when 76 =>
+    when err_expecting_accept_when_or_entry_id =>
       return "expecting ""accept"", ""when"", or entry id";
     when err_expecting_task_entry =>
       return "expecting Task.Entry";
@@ -167,7 +167,7 @@ package body HAC.UErrors is
       return "expecting ""delay""";
     when err_SELECT_missing =>
       return "missing ""select""";
-    when 81 =>
+    when err_program_incomplete =>
       return "program incomplete";
     when OF_instead_of_IS =>
       return "found ""of"", should be ""is""";
@@ -214,17 +214,17 @@ package body HAC.UErrors is
         Put ("PROCEDURES");
       when FLOAT_constants_table_overflow =>
         Put ("FLOAT Constants");
-      when 4 =>
+      when ARRAYS_table_overflow =>
         Put ("Arrays");
       when LEVEL_overflow =>
         Put ("LEVELS");
       when OBJECT_overflow =>
         Put ("OBJECT ObjCode");
-      when 7 =>
+      when STRING_table_overflow =>
         Put ("Strings");
-      when 8 =>
+      when TASKS_table_overflow =>
         Put ("TASKS");
-      when 9 =>
+      when ENTRIES_table_overflow =>
         Put ("ENTRIES");
       when PATCHING_overflow =>
         Put ("ObjCode PATCHING");

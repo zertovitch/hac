@@ -34,7 +34,7 @@ package body HAC.Scanner is
           if ListingWasRequested then
             Put_Line (Listing, " PROGRAM INCOMPLETE");
           end if;
-          Error (81);
+          Error (err_program_incomplete);
           ErrorMsg;
           raise Failure_1_0;
         end if;
@@ -72,7 +72,7 @@ package body HAC.Scanner is
         CH := ' '; -- IdTab for space
       end if;
       if Character'Pos (CH) < Character'Pos (' ') then
-        Error (60);
+        Error (err_control_character);
       end if;
 
     end NextCh;
@@ -90,7 +90,7 @@ package body HAC.Scanner is
         Sign := -1;
       end if;
       if CH not in '0' .. '9' then
-        Error (40);
+        Error (err_illegal_parameters_to_Get);
       else
         loop
           S := 10 * S + Character'Pos (CH) - Character'Pos ('0');
@@ -106,7 +106,7 @@ package body HAC.Scanner is
       D, T : Float;
     begin
       if K + e > EMax then
-        Error (21);
+        Error (err_number_too_large);
       elsif K + e < EMin then
         RNum := 0.0;
       else
@@ -132,15 +132,16 @@ package body HAC.Scanner is
       end if;
     end AdjustScale;
 
-  begin --{ InSymbol }
+  begin -- InSymbol
 
-    <<Label_1>> while CH = ' ' loop
+    <<Label_1>>
+    while CH = ' ' loop
       NextCh;
     end loop;
 
     syStart := CC - 1;
     if CharacterTypes (CH) = Illegal then
-      Error (24);
+      Error (err_illegal_character);
       if qDebug then
         Put_Line (" Char is => " & Integer'Image (Character'Pos (CH)));
       end if;
@@ -156,7 +157,7 @@ package body HAC.Scanner is
 
     case CH is
     when 'A' .. 'Z' |  -- identifier or wordsymbol
-'a' .. 'z' =>
+         'a' .. 'z' =>
       K  := 0;
       Id := (others => ' ');
       loop
@@ -189,7 +190,7 @@ package body HAC.Scanner is
       end if;
       if Sy = USy then
         Sy := IDent;
-        Error (67);
+        Error (err_Ada_reserved_word);
       end if;
 
     when '0' .. '9' =>  -- Number
@@ -205,7 +206,7 @@ package body HAC.Scanner is
       end loop;
 
       if K > KMax then
-        Error (21);
+        Error (err_number_too_large);
         INum := 0;
         K    := 0;
       end if;
@@ -225,7 +226,7 @@ package body HAC.Scanner is
           end loop;
 
           if e = 0 then
-            Error (40);
+            Error (err_illegal_parameters_to_Get);
           end if;
           if CH = 'E' then
             ReadScale;
@@ -306,7 +307,7 @@ package body HAC.Scanner is
         end if;
       end if;
       if Sx + K = SMax then
-        Fatal (7);
+        Fatal (STRING_table_overflow);
       end if;
       StringTab (Sx + K) := CH;
       K                  := K + 1;
@@ -337,7 +338,7 @@ package body HAC.Scanner is
         end if;
       end if;
       if Sx + K = SMax then
-        Fatal (7);
+        Fatal (STRING_table_overflow);
       end if;
       StringTab (Sx + K) := CH;
       K                  := K + 1;
@@ -355,7 +356,7 @@ package body HAC.Scanner is
         Sy   := CharCon;
         INum := 0;
       else
-        Error (66);
+        Error (err_character_delimeter_used_for_string);
         Sy    := StrCon;
         INum  := Sx;
         SLeng := K;
@@ -400,7 +401,7 @@ package body HAC.Scanner is
 
     when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
       --  duplicate case Constant '&',
-      Error (24);
+      Error (err_illegal_character);
       if qDebug then
         Put_Line (" [ $!@\^_?""&%  ]");
       end if;
