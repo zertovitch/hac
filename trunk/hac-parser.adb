@@ -2180,17 +2180,17 @@ package body HAC.Parser is
           if Sy = RangeSy then
             InSymbol;
             Expression (FSys + LoopSy, X);
-            if (IdTab (T).TYP /= X.TYP) then
-              Error (19);
+            if IdTab (T).TYP /= X.TYP then
+              Error (err_first_and_last_must_have_matching_types);
             end if;
           else
             Skip
              (Symset'((LoopSy | EndSy | Semicolon => True, others => False)) +
               FSys,
-              55);
+              err_expecting_dot_dot);
           end if;
         else
-          Skip (FSys + LoopSy, 53);
+          Skip (FSys + LoopSy, err_IN_missing);
         end if;
         LC1 := LC;
         Emit (F);
@@ -2219,7 +2219,7 @@ package body HAC.Parser is
           if IdTab (I).Obj = aTask then
             InSymbol;
             EntryCall (FSys, I, -1);
-            if ObjCode (LC - 2).F = 19 then     -- need To patch CallType later
+            if ObjCode (LC - 2).F = kCall then     -- need To patch CallType later
               patch (0) := LC - 2;
             else
               patch (0) := LC - 3;
@@ -2252,13 +2252,12 @@ package body HAC.Parser is
                   if Y.TYP /= Floats then
                     SelectError (73);
                   else        -- end of timed Entry select ObjCode, do patching
-                    ObjCode (patch (1)).Y  := LC; -- if Entry not made, Skip
-                                                  --rest
+                    ObjCode (patch (1)).Y  := LC; -- if Entry not made, Skip rest
                     J                      := patch (3) - patch (2) + 1;
                     IStart                 := patch (0);
                     IEnd                   := LC - 1;
                     while J > 0 loop     -- move delay time ObjCode To before
-                      O := ObjCode (IEnd);  -- opcodes 19 Call, 32 return
+                      O := ObjCode (IEnd);  -- opcodes kCall, kExitCall
                       for I in reverse IEnd - 1 .. IStart loop
                         ObjCode (I + 1) := ObjCode (I);
                       end loop;
@@ -2269,8 +2268,8 @@ package body HAC.Parser is
                   end if;
                 end if;
               else
-                SelectError (79);
-              end if;      -- DELAY EXPECTED
+                SelectError (err_expecting_DELAY);
+              end if;   
             -- end Sy = OrSy
             else              -- Sy = ElseSy, ===============> Conditional
                               --                             Entry Call

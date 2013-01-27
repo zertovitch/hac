@@ -47,9 +47,10 @@ package HAC.UErrors is
   err_incorrectly_used_symbol                : constant:=  6;
   err_missing_OF                             : constant:=  8;
   err_missing_an_opening_parenthesis         : constant:=  9;
-  err_expecting_dot_dot                      : constant:= 13;
+  err_expecting_dot_dot                      : constant:= 13; -- also 55
   err_semicolon_missing                      : constant:= 14;
   err_expecting_a_boolean_expression         : constant:= 17;
+  err_first_and_last_must_have_matching_types: constant:= 19;
   IS_missing                                 : constant:= 20;
   incorrect_block_name                       : constant:= 22;
   illegal_constant_or_constant_identifier    : constant:= 25;
@@ -73,12 +74,14 @@ package HAC.UErrors is
   err_argument_to_std_function_of_wrong_type : constant:= 48;
   err_BECOMES_missing                        : constant:= 51;
   err_THEN_missing                           : constant:= 52;
+  err_IN_missing                             : constant:= 53;
   err_closing_LOOP_missing                   : constant:= 54;
   err_END_missing                            : constant:= 57;
   err_missing_RECORD                         : constant:= 61;
   err_missing_closing_IF                     : constant:= 62;
   err_functions_must_return_a_value          : constant:= 68;
   err_use_Small_Sp                           : constant:= 70;
+  err_expecting_DELAY                        : constant:= 79;
   -- These errors messages are new in HAC and weren't in SmallAda
   OF_instead_of_IS                           : constant:= 82;
   err_EQUALS_instead_of_BECOMES              : constant:= 83;
