@@ -92,6 +92,7 @@ begin
         Put_Line("choice: 1");
       when 2 =>
         Put_Line("choice: 2");
+      -- when 2 => null; -- duplicate, is rejected
       when others =>
         Put_Line("choice: 3..5");
     end case;

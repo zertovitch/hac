@@ -112,7 +112,7 @@ package body HAC.Data is
     AdaKeyW (5)    := "ALL       ";
     AdaKeyWSy (5)  := USy;
     AdaKeyW (6)    := "AND       ";
-    AdaKeyWSy (6)  := AndSy;
+    AdaKeyWSy (6)  := And_Symbol;
     AdaKeyW (7)    := "ARRAY     ";
     AdaKeyWSy (7)  := ArraySy;
     AdaKeyW (8)    := "AT        ";
@@ -170,7 +170,7 @@ package body HAC.Data is
     AdaKeyW (34)   := "NEW       ";
     AdaKeyWSy (34) := USy;
     AdaKeyW (35)   := "NOT       ";
-    AdaKeyWSy (35) := NOTSy;
+    AdaKeyWSy (35) := Not_Symbol;
     AdaKeyW (36)   := "NULL      ";
     AdaKeyWSy (36) := NullSy;
     AdaKeyW (37)   := "OF        ";
@@ -250,9 +250,11 @@ package body HAC.Data is
   begin
     loop
       Character'Read (current_compiler_stream, c);
-      exit when c = ASCII.CR or c = ASCII.LF;
-      idx           := idx + 1;
-      InpLine (idx) := c;
+      exit when c = ASCII.LF;
+      if c /= ASCII.CR then
+        idx           := idx + 1;
+        InpLine (idx) := c;
+      end if;
     end loop;
     Last := idx;
     -- if qDebug then

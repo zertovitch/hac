@@ -131,7 +131,7 @@ package HAC.Data is
    StringSy,
    AcceptSy,
    USy,
-   AndSy,
+   And_Symbol,
    ArraySy,
    ATSy,
    BeginSy,
@@ -153,7 +153,7 @@ package HAC.Data is
    IsSy,
    LoopSy,
    ModSy,
-   NOTSy,
+   Not_Symbol,
    NullSy,
    OFSy,
    Or_Symbol,
@@ -432,7 +432,7 @@ package HAC.Data is
     '"'    => NEQ,    -- ?!
     ','    => Comma,
     ';'    => Semicolon,
-    '&'    => AndSy,
+    '&'    => And_Symbol, -- Mmmh !!
     others => NullSy);
 
   -- --- Error Control Variables ---
@@ -508,12 +508,12 @@ package HAC.Data is
   --  Start of Factor begin symbol
 
   Factor_Begin_Symbol : constant Symset :=
-   (IntCon    |
-    FloatCon  |
-    CharCon   |
-    IDent     |
-    LParent   |
-    NOTSy     => True,
+   (IntCon     |
+    FloatCon   |
+    CharCon    |
+    IDent      |
+    LParent    |
+    Not_Symbol => True,
     others => False);
 
   --  Start of Statement begin symbol

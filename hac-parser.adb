@@ -1221,7 +1221,10 @@ package body HAC.Parser is
           OP : KeyWSymbol;
           -- TS: TypSet;
           FactorZ : constant Symset :=
-           Symset'(xTimes | Divide | ModSy | AndSy => True, others => False);
+           Symset'(
+             xTimes | Divide | ModSy | And_Symbol => True,
+             others => False
+           );
 
           procedure Factor (FSys : Symset; X : in out Item) is
             I, F : Integer;
@@ -1349,7 +1352,6 @@ package body HAC.Parser is
 
               case Sy is
                 when IDent =>
-
                   I := LOC (Id);
                   InSymbol;
                   declare
@@ -1437,7 +1439,7 @@ package body HAC.Parser is
                     Error (err_closing_parenthesis_missing);
                   end if;
 
-                when NOTSy =>      --  NOT
+                when Not_Symbol =>
                   InSymbol;
                   Factor (FSys, X);
                   if X.TYP = Bools then
@@ -1452,7 +1454,7 @@ package body HAC.Parser is
               end case;
 
               if FSys = Semicolon_set then
-                F := 14;
+                F := err_SEMICOLON_missing;
               else
                 F := err_incorrectly_used_symbol;
               end if;
@@ -1501,7 +1503,7 @@ package body HAC.Parser is
                   X.TYP := NOTYP;
                 end if;
               end if;
-            elsif OP = AndSy then      -- AND
+            elsif OP = And_Symbol then
               if X.TYP = Bools and Y.TYP = Bools then
                 Emit (k_AND_Boolean);
               else
@@ -1689,7 +1691,7 @@ package body HAC.Parser is
         else
           Emit1 (kStringAssignment, ArraysTab (X.Ref).Size);    -- array Size
         end if;
-      elsif (X.TYP /= NOTYP) and (Y.TYP /= NOTYP) then
+      elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
         Error (err_types_of_assignment_must_match);
       end if;
     end Assignment;
@@ -1868,7 +1870,7 @@ package body HAC.Parser is
         end loop;
       end IF_Statement;
 
-      procedure LoopStatement (FCT, B : Integer) is    -- Hathorn
+      procedure LOOP_Statement (FCT, B : Integer) is    -- Hathorn
         LC0 : Integer := LC;
       begin
         if Sy = LoopSy then
@@ -1896,7 +1898,7 @@ package body HAC.Parser is
           end if;
           LC0 := LC0 + 1;
         end loop;
-      end LoopStatement;
+      end LOOP_Statement;
 
       procedure RETURN_Statement is           -- Hathorn
         -- Generate a procedure return Statement, calculate return value if
@@ -1971,7 +1973,7 @@ package body HAC.Parser is
         CaseTab : array (1 .. CSMax) of GrounfZ;
         ExitTab : array (1 .. CSMax) of Integer;
 
-        procedure CaseLabel is
+        procedure CASE_Label is
           Lab : ConRec;
           K   : Integer;
         begin
@@ -1996,19 +1998,18 @@ package body HAC.Parser is
             end if;
             -- MULTIPLE DEFINITION
           end if;
-        end CaseLabel;
+        end CASE_Label;
 
-        procedure ONECASE is
+        procedure One_CASE is
         begin
           if Sy = WhenSy then
             InSymbol;
             if ConstBegSys (Sy) then
-              CaseLabel;
+              CASE_Label;
               while Sy = Alt loop
                 InSymbol;
-                CaseLabel;
+                CASE_Label;
               end loop;
-
             end if;
             if Sy = OthersSy then        -- Hathorn
               if I = CSMax then
@@ -2033,7 +2034,7 @@ package body HAC.Parser is
           else
             Error (err_WHEN_missing);
           end if;
-        end ONECASE;
+        end One_CASE;
 
       begin -- CASE_Statement
         InSymbol;
@@ -2064,7 +2065,7 @@ package body HAC.Parser is
         end if;
 
         while Sy = WhenSy loop
-          ONECASE;
+          One_CASE;
         end loop;
 
         ObjCode (LC1).Y := LC;
@@ -2095,7 +2096,7 @@ package body HAC.Parser is
         end if;
       end CASE_Statement;
 
-      procedure WhileStatement is
+      procedure WHILE_Statement is
         X        : Item;
         LC1, LC2 : Integer;
       begin
@@ -2109,12 +2110,12 @@ package body HAC.Parser is
         end if;
         LC2 := LC;
         Emit (k_Conditional_Jump);
-        LoopStatement (10, LC1);
+        LOOP_Statement (k_Jump, LC1);
         ObjCode (LC2).Y := LC;
-      end WhileStatement;
+      end WHILE_Statement;
 
       ------------------------------------------------------------ForStatement
-      procedure ForStatement is
+      procedure FOR_Statement is
         -- CVT:  Types;
         X            : Item;
         F, LC1, last : Integer;
@@ -2194,12 +2195,12 @@ package body HAC.Parser is
         end if;
         LC1 := LC;
         Emit (F);
-        LoopStatement (F + 1, LC);
+        LOOP_Statement (F + 1, LC);
         ObjCode (LC1).Y                  := LC;
         T                                := T - 1;
         BlockTab (Display (Level)).Last  := last;
         Dx                               := Dx - 1;
-      end ForStatement;
+      end FOR_Statement;
 
       procedure SelectStatement is
         procedure SelectError (N : Integer) is
@@ -2945,11 +2946,11 @@ package body HAC.Parser is
         when ExitSy =>
           ExitStatement;
         when ForSy =>
-          ForStatement;
+          FOR_Statement;
         when IfSy =>
           IF_Statement;
         when LoopSy =>
-          LoopStatement (10, LC);
+          LOOP_Statement (k_Jump, LC);
         when NullSy =>
           InSymbol;
         when ReturnSy =>
@@ -2957,7 +2958,7 @@ package body HAC.Parser is
         when SelectSy =>
           SelectStatement;
         when WhileSy =>
-          WhileStatement;
+          WHILE_Statement;
         when others =>
           null;
         end case;
