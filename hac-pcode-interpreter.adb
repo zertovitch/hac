@@ -155,6 +155,8 @@ package body HAC.PCode.Interpreter is
 
     function GetClock return Time renames Clock;
 
+    SNAP: Boolean; --  SNAP-shot flag To Display sched. status
+
   end InterDef;
 
   procedure Interpret
@@ -438,15 +440,16 @@ package body HAC.PCode.Interpreter is
     end Init_other_tasks;
 
   begin --  Interpret
+    InterDef.SNAP:= False;
     Init_main_task;
     Init_other_tasks;
     loop --  until Processor state /= RUN
       SYSCLOCK := GetClock;
-      if HAC.Data.SNAP then
+      if InterDef.SNAP then
         null; -- ShowTime ;
       end if;
       if InterDef.TCB (InterDef.CurTask).TS = InterDef.Critical then
-        if HAC.Data.SNAP then
+        if InterDef.SNAP then
           null; -- SnapShot ;
         end if;
       else
@@ -466,10 +469,10 @@ package body HAC.PCode.Interpreter is
             --  Schedule(Scheduler,CurTask, PS);
             PS := RUN; -- !! Should call the task scheduler instead !!
             InterDef.SYSCLOCK := GetClock;
-            if HAC.Data.SNAP then
+            if InterDef.SNAP then
               null; --ShowTime ;
             end if;
-            if HAC.Data.SNAP then
+            if InterDef.SNAP then
               null; -- SnapShot ;
             end if;
             exit when PS /= WAIT;
@@ -480,7 +483,7 @@ package body HAC.PCode.Interpreter is
           TIMER:= InterDef.SYSCLOCK + InterDef.TCB (InterDef.CurTask).QUANTUM;
           InterDef.TCB (InterDef.CurTask).TS := Running;
           SWITCH:= False;
-          if HAC.Data.SNAP then
+          if InterDef.SNAP then
             null; -- SnapShot ;
           end if;
         end if;
@@ -888,8 +891,7 @@ package body HAC.PCode.Interpreter is
             end if;
           end if;
 
-        when 22 =>
-          --  load block
+        when k_Load_Block =>
           H1            := S (P2Ada_Var_6.T).I;
           P2Ada_Var_6.T := P2Ada_Var_6.T - 1;
           H2            := IR.Y + P2Ada_Var_6.T;
@@ -903,8 +905,7 @@ package body HAC.PCode.Interpreter is
             end loop;
           end if;
 
-        when 23 => --  copy block
-
+        when k_Copy_Block =>
           H1 := S (P2Ada_Var_6.T - 1).I;
           H2 := S (P2Ada_Var_6.T).I;
           H3 := H1 + IR.Y;
@@ -931,12 +932,11 @@ package body HAC.PCode.Interpreter is
             S (P2Ada_Var_6.T).R := HAC.Data.FloatPtTab (IR.Y);
           end if;
 
-        when 26 =>
-          --  I := FLOAT(X)
+        when k_Integer_to_Float =>
           H1       := P2Ada_Var_6.T - IR.Y;
           S (H1).R := Float (S (H1).I);
 
-        when 27 =>
+        when k_Read =>
           --  READ
           if FAT.CURR = 0 then
             if End_Of_File then
@@ -988,12 +988,11 @@ package body HAC.PCode.Interpreter is
           end if;
           SWITCH := True;  --  give up control when doing I/O
 
-        when 28 =>
-          --  write STRING
+        when k_Write_String =>
           H1 := S (P2Ada_Var_6.T).I;   --  length of string
           H2 := IR.Y;     --  pointer to 1st char in string
           P2Ada_Var_6.T := P2Ada_Var_6.T - 1;
-          loop
+          while H1 > 0 loop
             if FAT.CURR = 0 then
               Put (HAC.Data.StringTab (H2));
             else
@@ -1002,7 +1001,6 @@ package body HAC.PCode.Interpreter is
             H1 := H1 - 1;        --  decrement length
             H2 := H2 + 1;
             --  increment char pointer
-            exit when H1 = 0;
           end loop;
           SWITCH := True;        --  give up control when doing I/O
 
@@ -1080,8 +1078,7 @@ package body HAC.PCode.Interpreter is
           P2Ada_Var_6.T := P2Ada_Var_6.T - 2;
           SWITCH        := True;  --  give up control when doing I/O
 
-        when 32 =>
-          --  EXIT entry call or procedure call
+        when k_Exit_Call =>  --  EXIT entry call or procedure call
           --  Cramer
           P2Ada_Var_6.T := P2Ada_Var_6.B - 1;
           if IR.Y = HAC.Data.CallSTDP then
@@ -1111,9 +1108,8 @@ package body HAC.PCode.Interpreter is
             P2Ada_Var_6.TS := Completed;
             SWITCH         := True;
           end if;
-        --  RETURN
 
-        when 33 => --  EXIT function
+        when k_Exit_Function =>
           P2Ada_Var_6.T  := P2Ada_Var_6.B;
           P2Ada_Var_6.PC := S (P2Ada_Var_6.B + 1).I;
           P2Ada_Var_6.B  := S (P2Ada_Var_6.B + 3).I;

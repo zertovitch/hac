@@ -18,7 +18,7 @@ package body HAC.UErrors is
     when err_missing_a_procedure_declaration =>
       return "missing a procedure declaration";
     when err_closing_parenthesis_missing =>
-      return "missing closing parenthesis **)""";
+      return "missing closing parenthesis "")""";
     when err_colon_missing =>
       return "missing a colon "":""";
     when err_incorrectly_used_symbol =>
@@ -57,11 +57,11 @@ package body HAC.UErrors is
       return "bad type for a case statement";
     when err_illegal_character =>
       return "illegal character";
-    when illegal_constant_or_constant_identifier =>
+    when err_illegal_constant_or_constant_identifier =>
       return "illegal constant or constant identifier";
     when err_illegal_array_subscript =>
       return "illegal array subscript (check type)";
-    when illegal_array_bounds =>
+    when err_illegal_array_bounds =>
       return "illegal bounds for an array index";
     when err_indexed_variable_must_be_an_array =>
       return "indexed variable must be an array";
@@ -93,7 +93,7 @@ package body HAC.UErrors is
       return "illegal parameters to ""Put""";
     when err_parameter_must_be_of_type_Float =>
       return "parameter must be of type Float";
-    when parameter_must_be_integer =>
+    when err_parameter_must_be_integer =>
       return "parameter must be of type Integer";
     when err_expected_variable_function_or_constant =>
       return "expected a variable, function or constant";
@@ -169,7 +169,7 @@ package body HAC.UErrors is
       return "missing ""select""";
     when err_program_incomplete =>
       return "program incomplete";
-    when OF_instead_of_IS =>
+    when err_OF_instead_of_IS =>
       return "found ""of"", should be ""is""";
     when err_EQUALS_instead_of_BECOMES =>
       return "found ""="", should be "":=""";
