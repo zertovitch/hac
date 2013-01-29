@@ -131,6 +131,7 @@ package HAC.Data is
    StringSy,
    AcceptSy,
    USy,
+   Ampersand_Symbol,
    And_Symbol,
    ArraySy,
    ATSy,
@@ -347,12 +348,10 @@ package HAC.Data is
   TSlice : Integer;         --  Default Task time-slice in milliseconds
                             --  Feldman: 60ths of a sec on Mac
 
-  ListingWasRequested : Boolean;   --  -l was specified in command line
+  ListingWasRequested : Boolean;
   Debug               : Boolean;          --  Run-time program info on/off flag
   Map                 : Boolean;            --  Compile-time output of Global
                                             --VAR Map
-  SNAP                : Boolean;            --  SNAP-shot flag To Display
-                                            --sched. status
   RunningTime         : Boolean;    --  Display running timer
 
   Listing : File_Type;            --  File pointers
@@ -401,6 +400,8 @@ package HAC.Data is
   IdTab      : array (0 .. TMax) of TabEntry;   --  Identifier table
   TaskDefTab : array (0 .. TaskMax) of Index;   --  Task Table
 
+  No_Id: constant:= 0;
+
   --  Display - keeps track of addressing by nesting level.
   --  See Ben-Ari Appendix A.
   Display : array (0 .. LMax) of Integer;
@@ -411,7 +412,7 @@ package HAC.Data is
   A      : Integer;       --  Index To ArraysTab
   B      : Integer;       --  Index To BlockTab
   C1     : Integer;       --  Index To FloatPtTab
-  C2     : Integer;       --  Index To FloatPtTab
+  C2     : Natural;       --  Index To FloatPtTab
   Sx     : Integer;       --  Index To StringTab
   T      : Integer;       --  Index To IdTab
   TCount : Integer;       --  Index To TskDefTab
@@ -432,14 +433,14 @@ package HAC.Data is
     '"'    => NEQ,    -- ?!
     ','    => Comma,
     ';'    => Semicolon,
-    '&'    => And_Symbol, -- Mmmh !!
+    '&'    => Ampersand_Symbol,
     others => NullSy);
 
   -- --- Error Control Variables ---
 
   subtype Error_set is Set (0 .. ERMax);
   Errs       : Error_set;       --  compilation Errors
-  error_free : Error_set := (others => False);
+  error_free : constant Error_set := (others => False);
 
   ErrPos   : Integer;
   SkipFlag : Boolean;                   --  used by procedure EndSkip

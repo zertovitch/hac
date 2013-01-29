@@ -17,6 +17,7 @@ package body HAC.Compiler is
     -- Arrays and blocks are clearly 1-based
     A := 0;
     B := 0;
+    C2 := 0;
     -- Identifiers
     T := 0;
     -- Strings
@@ -196,6 +197,15 @@ package body HAC.Compiler is
     end EnterStdFcns;
 
   begin -- Compile
+
+    -- !! As options
+    ListingWasRequested:= False;
+    Debug:= False;
+    Map:= False;
+
+    SkipFlag:= False;
+    EofInput:= False;
+    Errs:= error_free;
 
     Init_Tables;
     cICompiler;

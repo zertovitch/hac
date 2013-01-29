@@ -61,9 +61,9 @@ package HAC.UErrors is
   err_incorrect_block_name                   : constant:= 22;
   err_bad_type_for_a_case_statement          : constant:= 23;
   err_illegal_character                      : constant:= 24;
-  illegal_constant_or_constant_identifier    : constant:= 25;
+  err_illegal_constant_or_constant_identifier: constant:= 25;
   err_illegal_array_subscript                : constant:= 26;
-  illegal_array_bounds                       : constant:= 27;
+  err_illegal_array_bounds                   : constant:= 27;
   err_indexed_variable_must_be_an_array      : constant:= 28;
   err_missing_a_type_identifier              : constant:= 29;
   err_undefined_type                         : constant:= 30;
@@ -78,7 +78,7 @@ package HAC.UErrors is
   err_illegal_parameters_to_Get              : constant:= 40;
   err_illegal_parameters_to_Put              : constant:= 41;
   err_parameter_must_be_of_type_Float        : constant:= 42;
-  parameter_must_be_integer                  : constant:= 43;
+  err_parameter_must_be_Integer              : constant:= 43;
   err_expected_variable_function_or_constant : constant:= 44;
   err_types_of_assignment_must_match         : constant:= 46;
   err_case_label_not_same_type_as_case_clause: constant:= 47;
@@ -111,7 +111,7 @@ package HAC.UErrors is
   err_SELECT_missing                         : constant:= 80;
   err_program_incomplete                     : constant:= 81;
   -- These errors messages are new in HAC and weren't in SmallAda
-  OF_instead_of_IS                           : constant:= 82;
+  err_OF_instead_of_IS                       : constant:= 82;
   err_EQUALS_instead_of_BECOMES              : constant:= 83;
   err_numeric_constant_expected              : constant:= 84;
 

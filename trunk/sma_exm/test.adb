@@ -37,9 +37,16 @@ procedure Test is
     a:= 777;
   end Do_1_io;
   --
-  procedure My_Put(s: String) is
+  -- type My_String is array(1..5) of Character;
+  s: String(1..5);
+  -- ms: My_String;
+  --
+  procedure My_Put(s: String) is -- ; first, last: Integer
+    -- !! need array attributes !!
   begin
-    null;
+    --for i in first .. last loop
+	  null; -- Put(s(i));
+	--end loop;
   end;
   --
   procedure Fibo_demo(X: Integer) is -- !! Integer to be defined in HAC
@@ -65,6 +72,10 @@ begin
   Put('A');
   c:= 'B';
   Put(c);
+  c:= 'x'; --- !! ''' doesn't work !!
+  --
+  s:= "hello";
+  -- My_Put(s, 1 , 5);
   new_line;
   x:= 123;
   z1.x:= Add(432,x); -- z1.x = 555
@@ -85,6 +96,7 @@ begin
       null;
   end case;
   Put("Bla bla");
+  Put("");
   Put_Line(" and more bla bla!");
   for gagl in 1..5 loop
     case gagl is

@@ -317,16 +317,10 @@ package body HAC.Scanner is
         goto Label_2;
       end if;
       <<Label_3>>
-      if K = 0 then
-        Error (38);
-        Sy   := StrCon;
-        INum := 0;
-      else
-        Sy    := StrCon;
-        INum  := Sx;
-        SLeng := K;
-        Sx    := Sx + K;
-      end if;
+      Sy    := StrCon;
+      INum  := Sx;
+      SLeng := K;
+      Sx    := Sx + K;
 
     when ''' =>
       K := 0;
@@ -382,7 +376,7 @@ package body HAC.Scanner is
         NextCh;
       end if;
 
-    when '{' =>  -- Special non documented comment
+    when '{' =>  -- Special non documented comment !! O_o: remove that !!
 
       while CH /= '}' loop
         NextCh;

@@ -45,12 +45,12 @@ package body HAC.Parser is
       Lz, Hz : Integer;
     begin
       if L > H then
-        Error (illegal_array_bounds); -- !! legal in Ada (empty array) !!
+        Error (err_illegal_array_bounds); -- !! legal in Ada (empty array) !!
       end if;
       Lz := L;
       Hz := H;
       if abs (L) > XMax or abs (H) > XMax then
-        Error (illegal_array_bounds);
+        Error (err_illegal_array_bounds);
         Lz := 0;
         Hz := 0;
       end if;
@@ -218,7 +218,7 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     --------------------------------------------------------------LOC-
-    function LOC (Id : Alfa) return Integer is
+    function LOC (Id : Alfa) return Natural is
       L, J : Integer;        -- locate identifier, Id, in table
     begin
       L              := Level;
@@ -231,7 +231,7 @@ package body HAC.Parser is
         L := L - 1;
         exit when L < 0 or J /= 0;
       end loop;
-      if J = 0 then
+      if J = No_Id then
         Error (err_undefined_identifier);
       end if;
       return J;
@@ -297,7 +297,7 @@ package body HAC.Parser is
             X := LOC (Id);
             if X /= 0 then
               if IdTab (X).Obj /= Konstant then
-                Error (illegal_constant_or_constant_identifier);
+                Error (err_illegal_constant_or_constant_identifier);
               else
                 C.TP := IdTab (X).TYP;
                 if C.TP = Floats then
@@ -351,7 +351,7 @@ package body HAC.Parser is
           Low);
 
         if Low.TP = Floats then
-          Error (illegal_array_bounds);
+          Error (err_illegal_array_bounds);
           Low.TP := Ints;
           Low.I  := 0;
         end if;
@@ -366,7 +366,7 @@ package body HAC.Parser is
           High);
 
         if High.TP /= Low.TP then
-          Error (illegal_array_bounds);
+          Error (err_illegal_array_bounds);
           High.I := Low.I;
         end if;
         EnterArray (Low.TP, Low.I, High.I);
@@ -859,9 +859,9 @@ package body HAC.Parser is
       InSymbol;
       Block (FSys, IsFun, Level + 1, T);
       if IsFun then
-        Emit1 (kExitFunction, 1);
+        Emit1 (k_Exit_Function, 1);
       else
-        Emit1 (kExitCall, CallSTDP);
+        Emit1 (k_Exit_Call, CallSTDP);
       end if;
     end ProcDeclaration;
 
@@ -885,7 +885,7 @@ package body HAC.Parser is
 
         InSymbol;
         Block (FSys, False, Level + 1, I);
-        Emit1 (kExitCall, CallSTDP);
+        Emit1 (k_Exit_Call, CallSTDP);
       else                    -- Task Specification
         if Sy = IDent then
           TaskID := Id;
@@ -1068,12 +1068,12 @@ package body HAC.Parser is
                 if X.Ref /= IdTab (CP).Ref then
                   Error (err_parameter_types_do_not_match);
                 elsif X.TYP = Arrays then
-                  Emit1 (kLoadBlock, ArraysTab (X.Ref).Size);
+                  Emit1 (k_Load_Block, ArraysTab (X.Ref).Size);
                 elsif X.TYP = Records then
-                  Emit1 (kLoadBlock, BlockTab (X.Ref).VSize);
+                  Emit1 (k_Load_Block, BlockTab (X.Ref).VSize);
                 end if;
               elsif X.TYP = Ints and IdTab (CP).TYP = Floats then
-                Emit1 (kCase26, 0);
+                Emit1 (k_Integer_to_Float, 0);
               elsif X.TYP /= NOTYP then
                 Error (err_parameter_types_do_not_match);
               end if;
@@ -1133,7 +1133,7 @@ package body HAC.Parser is
         Emit2 (kCall, CallType, BlockTab (IdTab (I).Ref).PSize - 1);
       else
         Emit2 (kCall, CallType, BlockTab (IdTab (I).Ref).PSize - 1);
-        Emit1 (kExitCall, CallType); -- Return from Entry Call
+        Emit1 (k_Exit_Call, CallType); -- Return from Entry Call
       end if;
 
       if IdTab (I).LEV < Level then
@@ -1185,12 +1185,12 @@ package body HAC.Parser is
         if B = Ints then
           return Ints;
         else
-          Emit1 (kCase26, 1);
+          Emit1 (k_Integer_to_Float, 1);
           return Floats;
         end if;
       else
         if B = Ints then
-          Emit1 (kCase26, 0);
+          Emit1 (k_Integer_to_Float, 0);
         end if;
         return Floats;
       end if;
@@ -1284,7 +1284,7 @@ package body HAC.Parser is
                       TS :=
                        Typset'((Ints | Floats => True, others => False));
                       if X.TYP = Ints then
-                        Emit1 (kCase26, 0);
+                        Emit1 (k_Integer_to_Float, 0);
                       end if;
 
                     -- Random
@@ -1354,6 +1354,7 @@ package body HAC.Parser is
                 when IDent =>
                   I := LOC (Id);
                   InSymbol;
+                  exit when I = No_Id; -- Id. not found, error shown by LOC
                   declare
                     r : TabEntry renames IdTab (I);
                   begin
@@ -1487,11 +1488,11 @@ package body HAC.Parser is
                 Emit (k_DIV_Integer);
               else
                 if X.TYP = Ints then
-                  Emit1 (kCase26, 1);
+                  Emit1 (k_Integer_to_Float, 1);
                   X.TYP := Floats;
                 end if;
                 if Y.TYP = Ints then
-                  Emit1 (kCase26, 0);
+                  Emit1 (k_Integer_to_Float, 0);
                   Y.TYP := Floats;
                 end if;
                 if X.TYP = Floats and Y.TYP = Floats then
@@ -1596,11 +1597,11 @@ package body HAC.Parser is
         SimpleExpression (FSys, Y.all);
         if X.TYP = Ints and Y.TYP = Floats then
           X.TYP := Floats;
-          Emit1 (kCase26, 1);
+          Emit1 (k_Integer_to_Float, 1);
         end if;
         if Y.TYP = Ints and X.TYP = Floats then
           Y.TYP := Floats;
-          Emit1 (kCase26, 0);
+          Emit1 (k_Integer_to_Float, 0);
         end if;
         if X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
           Error (err_incompatible_types_for_comparison);
@@ -1673,9 +1674,9 @@ package body HAC.Parser is
         else
           case X.TYP is
             when Arrays =>
-              Emit1 (kCopyBlock, ArraysTab (X.Ref).Size);
+              Emit1 (k_Copy_Block, ArraysTab (X.Ref).Size);
             when Records =>
-              Emit1 (kCopyBlock, BlockTab (X.Ref).VSize);
+              Emit1 (k_Copy_Block, BlockTab (X.Ref).VSize);
             when Enums =>
               Emit (kStore);
             when others =>
@@ -1683,7 +1684,7 @@ package body HAC.Parser is
           end case;
         end if;
       elsif X.TYP = Floats and Y.TYP = Ints then
-        Emit1 (kCase26, 0);
+        Emit1 (k_Integer_to_Float, 0);
         Emit (kStore);
       elsif X.TYP = Arrays and Y.TYP = Strings then
         if ArraysTab (X.Ref).ELTYP /= xChars then
@@ -1931,7 +1932,7 @@ package body HAC.Parser is
               elsif X.Ref /= Y.Ref then
                 Error (err_types_of_assignment_must_match);
               elsif X.TYP = Floats and Y.TYP = Ints then
-                Emit1 (kCase26, 0);
+                Emit1 (k_Integer_to_Float, 0);
                 Emit (kStore);
               elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
                 Error (err_types_of_assignment_must_match);
@@ -1942,9 +1943,9 @@ package body HAC.Parser is
           end if;       -- !! but... this is legal in Ada !!
         end if;
         if IsFun then
-          Emit1 (kExitFunction, CallSTDP);
+          Emit1 (k_Exit_Function, CallSTDP);
         else
-          Emit1 (kExitCall, CallSTDP);
+          Emit1 (k_Exit_Call, CallSTDP);
         end if;
       end RETURN_Statement;
 
@@ -2058,7 +2059,7 @@ package body HAC.Parser is
                           --...
           InSymbol;
         elsif Sy = OFSy then
-          Error (OF_instead_of_IS); -- Common mistake by Pascal programmers
+          Error (err_OF_instead_of_IS); -- Common mistake by Pascal programmers
           InSymbol;
         else
           Error (err_IS_missing);
@@ -2258,7 +2259,7 @@ package body HAC.Parser is
                     IStart                 := patch (0);
                     IEnd                   := LC - 1;
                     while J > 0 loop     -- move delay time ObjCode To before
-                      O := ObjCode (IEnd);  -- opcodes kCall, kExitCall
+                      O := ObjCode (IEnd);  -- opcodes kCall, k_Exit_Call
                       for I in reverse IEnd - 1 .. IStart loop
                         ObjCode (I + 1) := ObjCode (I);
                       end loop;
@@ -2668,7 +2669,7 @@ package body HAC.Parser is
                 do_first_InSymbol := True;
                 if Sy = StrCon then
                   Emit1 (k_Literal, SLeng);
-                  Emit1 (kWriteString, INum);
+                  Emit1 (k_Write_String, INum);
                   InSymbol;
                 else
                   Expression
@@ -2694,9 +2695,9 @@ package body HAC.Parser is
                                others => False)),
                       Y);
                     if Y.TYP /= Ints then
-                      Error (parameter_must_be_integer);
+                      Error (err_parameter_must_be_integer);
                     end if;
-                    if Sy = Colon then
+                    if Sy = Colon then -- ':' Pascal-ism (Write/WriteLn) !!
                       if X.TYP /= Floats then
                         Error (err_parameter_must_be_of_type_Float);
                       end if;
@@ -2706,14 +2707,14 @@ package body HAC.Parser is
                         Symset'((Comma | RParent => True, others => False)),
                         Y);
                       if Y.TYP /= Ints then
-                        Error (parameter_must_be_integer);
+                        Error (err_parameter_must_be_integer);
                       end if;
-                      Emit (kCase37);
+                      Emit (k_Write_Float);
                     else
                       Emit1 (kWrite2, Types'Pos (X.TYP));
                     end if;
                   elsif X.TYP = Strings then
-                    Emit1 (kWriteString, X.Ref);
+                    Emit1 (k_Write_String, X.Ref);
                   else
                     Emit1 (kWrite1, Types'Pos (X.TYP));
                   end if;
@@ -2760,7 +2761,7 @@ package body HAC.Parser is
                     if X.TYP = Ints then
                       Emit (N + 1);    -- N is 5, or 6. Opcode is 6 or 7
                     else
-                      Error (parameter_must_be_integer);
+                      Error (err_parameter_must_be_integer);
                     end if;
                   end if;
                 end if;
@@ -2808,7 +2809,7 @@ package body HAC.Parser is
                            others => False)),
                   X);
                 if X.TYP /= Ints then
-                  Skip (Semicolon, parameter_must_be_integer);
+                  Skip (Semicolon, err_parameter_must_be_integer);
                 end if;
                 if Sy /= Comma then
                   Skip (Semicolon, err_COMMA_missing);
@@ -2823,7 +2824,7 @@ package body HAC.Parser is
                              others => False)),
                     X);
                   if X.TYP /= Ints then
-                    Skip (Semicolon, parameter_must_be_integer);
+                    Skip (Semicolon, err_parameter_must_be_integer);
                   end if;
                   if Sy = Comma then
                     Skip (Semicolon, err_number_of_parameters_do_not_match);
@@ -2863,7 +2864,7 @@ package body HAC.Parser is
               InSymbol;
               Expression (Symset'((RParent => True, others => False)), X);
               if X.TYP /= Ints then
-                Skip (Semicolon, parameter_must_be_integer);
+                Skip (Semicolon, err_parameter_must_be_integer);
               end if;
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);

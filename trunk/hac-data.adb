@@ -63,12 +63,8 @@ package body HAC.Data is
           CharacterTypes (C) := LowCase;
         when '0' .. '9' =>
           CharacterTypes (C) := Number;
-        when '+' |
-             '-' |
-             '*' |
-             '/' |
-             '(' |
-             ')' |
+        when '+' | '-' | '*' | '/' |
+             '(' | ')' |
              '$' |
              '=' |
              ' ' |
