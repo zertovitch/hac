@@ -13,7 +13,7 @@ procedure HAC_Test is
   procedure Compile_File(name: String) is
     f: Ada.Streams.Stream_IO.File_Type;
   begin
-    Put_Line("Compiling " & name);
+    Put_Line("Compiling: " & name);
     Open(f, In_file, name);
     HAC.Data.LineCount:= 0;
     HAC.Data.c_Set_Stream(HAC.Data.Stream_Access(Stream(f)));
@@ -21,6 +21,9 @@ procedure HAC_Test is
     Close(f);
     --
     HAC.PCode.Interpreter.Interpret;
+  exception
+    when Ada.Streams.Stream_IO.Name_Error =>
+      Put_Line("Error: file not found (perhaps in sma_exm subdirectory ?)");
   end Compile_File;
 
 begin

@@ -6,7 +6,7 @@
 
 -- Legal licensing note:
 
---  Copyright (c) 2013 Gautier de Montmollin
+--  Copyright (c) 2013..2014 Gautier de Montmollin
 --
 --  History and authors list of works HAC was originally derived from
 --  can be found in hac.txt.
@@ -37,7 +37,7 @@
 
 package HAC.UErrors is
 
-  procedure Error(N: Integer);
+  procedure Error(error_code: Integer; hint: String:= "");
   --
   err_undefined_identifier                   : constant:=  0;
   err_duplicate_identifier                   : constant:=  1;
@@ -83,6 +83,7 @@ package HAC.UErrors is
   err_types_of_assignment_must_match         : constant:= 46;
   err_case_label_not_same_type_as_case_clause: constant:= 47;
   err_argument_to_std_function_of_wrong_type : constant:= 48;
+  err_stack_size                             : constant:= 49;
   err_illegal_symbol_for_a_constant          : constant:= 50;
   err_BECOMES_missing                        : constant:= 51;
   err_THEN_missing                           : constant:= 52;
@@ -134,6 +135,6 @@ package HAC.UErrors is
 
   Failure_1_0: exception;
 
-  function ErrorString(Id: Integer) return String; -- for debug
+  function ErrorString(Id: Integer; hint: String:= "") return String;
 
 end HAC.UErrors;

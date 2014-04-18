@@ -6,7 +6,7 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  function ErrorString (Id : Integer) return String is
+  function ErrorString (Id: Integer; hint: String:= "") return String is
   begin
     case Id is
     when err_undefined_identifier =>
@@ -52,7 +52,7 @@ package body HAC.UErrors is
     when err_number_too_large =>
       return "the number is too large";
     when err_incorrect_block_name =>
-      return "incorrect block name after ""end""";
+      return "incorrect block name after ""end"", should be " & hint;
     when err_bad_type_for_a_case_statement =>
       return "bad type for a case statement";
     when err_illegal_character =>
@@ -105,7 +105,7 @@ package body HAC.UErrors is
       return "case label not of same type as case clause";
     when err_argument_to_std_function_of_wrong_type =>
       return "argument to std. function of wrong type";
-    when 49 =>
+    when err_stack_size =>
       return "the program requires too much storage";
     when err_illegal_symbol_for_a_constant =>
       return "illegal symbol for a constant";
@@ -182,11 +182,12 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  procedure Error (N : Integer) is  -- Write Error on current line & add To
-                                    --TOT ERR
+  procedure Error (error_code: Integer; hint: String:= "") is
+  pragma Unreferenced (hint); -- !! add a hint table or stack (if more than 1 error with this code)
+  -- Write Error on current line & add To TOT ERR (?)
   begin
-    cFoundError (N, LineCount, syStart, syEnd, -1);
-    Errs (N) := True;
+    cFoundError (error_code, LineCount, syStart, syEnd, -1);
+    Errs (error_code) := True;
   end Error;
 
   ----------------------------------------------------------------------------
@@ -258,17 +259,17 @@ package body HAC.UErrors is
       New_Line (Listing);
       Put_Line (Listing, " Error MESSAGE(S)");
     end if;
-    while Errs /= error_free loop
+    while Errs /= error_free loop -- NB: Ouch! A single loop would be sufficient !!
       while not Errs (K) loop
         K := K + 1;
       end loop;
       if qDebug then
         Put (K, 2);
-        Put_Line (":  " & ErrorString (K));
+        Put_Line (":  " & ErrorString (K, "")); -- Should be Error_hint(K,n) !!
       end if;
       if ListingWasRequested then
         Put (Listing, K, 2);
-        Put_Line (Listing, "  " & ErrorString (K));
+        Put_Line (Listing, "  " & ErrorString (K, "")); -- Should be Error_hint(K,n) !!
       end if;
       Errs (K) := False; -- we cancel the K-th sort of error
     end loop;

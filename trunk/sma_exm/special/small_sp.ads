@@ -1,10 +1,14 @@
--- this is the pseudo-package containing all specificayions of all support
--- routines for SmallAda. All programs must have "with" and "use" of this
--- package. DON'T TRY TO COMPILE THIS!
+-- This is the pseudo-package containing all specifications of all support
+-- routines for SmallAda. All SmallAda programs must have "with" and "use"
+-- of this package.
+--
+-- Note for HAC: this is kept for early stages. At some point SMALL_SP won't
+-- be used anymore. The package is compilable by a real Ada compiler like
+-- GNAT, so the test programs can be run on both HAC and GNAT.
 
 package SMALL_SP is
 
-   type       SEMAPHORE is new Integer; -- private;
+   type SEMAPHORE is new Integer; -- private;
 
    -- Absolute Value - SMA used ABS instead of "ABS" (operator)... TBA !!
    -- function   ABS       ( I : INTEGER   ) return INTEGER;
