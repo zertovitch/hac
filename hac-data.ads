@@ -540,9 +540,7 @@ package HAC.Data is
   --  Debugging Flags - these flags are used to print out information
   --  about the code status.  If a flag is true, then the section of
   --  code associated with it will print out extra information allowing
-  --  for easier debugging.  Using conditional compilation, they are
-  --  declared as Booleans or False constants depending on the qDebug
-  --  compiler switch.
+  --  for easier debugging.
 
   qDebug : constant Boolean := True;
 

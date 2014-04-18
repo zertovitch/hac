@@ -222,15 +222,15 @@ package body HAC.Compiler is
     CH := ' ';
     InSymbol;
     if Sy /= WithSy then   -- WITH SMALL_SP;
-      Error (69);
+      Error (69, "");
     else
       InSymbol;
       if Sy /= IDent or Id /= "SMALL_SP  " then
-        Error (69);
+        Error (69, "");
       else
         InSymbol;
         if Sy /= Semicolon then
-          Error (14);
+          Error (err_SEMICOLON_missing, "");
         else
           InSymbol;
         end if;
@@ -238,15 +238,15 @@ package body HAC.Compiler is
     end if;
 
     if Sy /= UseSy then
-      Error (70); -- USE SMALL_SP;
+      Error (70, ""); -- USE SMALL_SP;
     else
       InSymbol;
       if Sy /= IDent or Id /= "SMALL_SP  " then
-        Error (70);
+        Error (70, "");
       else
         InSymbol;
         if Sy /= Semicolon then
-          Error (14);
+          Error (err_SEMICOLON_missing, "");
         else
           InSymbol;
         end if;
@@ -258,11 +258,11 @@ package body HAC.Compiler is
     end if;
 
     if Sy /= ProcSy then
-      Error (3); -- PROCEDURE Name IS
+      Error (err_missing_a_procedure_declaration, ""); -- PROCEDURE Name IS
     else
       InSymbol;
       if Sy /= IDent then
-        Error (2);
+        Error (err_identifier_missing, "");
       else
         ProgramID := Id;
         InSymbol;
@@ -289,6 +289,7 @@ package body HAC.Compiler is
 
     -- Start Compiling
     Block (BlockBegSyS + StatBegSys, False, 1, T);
+    -- Main procedure is parsed.
     Emit (k_Halt_Interpreter);
 
     if Sy /= Semicolon then
@@ -300,8 +301,8 @@ package body HAC.Compiler is
       end if;
     end if;
 
-    if BlockTab (2).VSize > StMax - (STKINCR * TCount) then
-      Error (49);
+    if BlockTab (1).VSize > StMax - (STKINCR * TCount) then
+      Error (err_stack_size, "");
     end if;
     BlockTab (1).SrcTo := LineCount;  --(* Manuel : terminate source *)
     if qDebug and Debug then

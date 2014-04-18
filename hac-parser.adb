@@ -45,7 +45,7 @@ package body HAC.Parser is
       Lz, Hz : Integer;
     begin
       if L > H then
-        Error (err_illegal_array_bounds); -- !! legal in Ada (empty array) !!
+        Error (err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)"); -- !!
       end if;
       Lz := L;
       Hz := H;
@@ -198,7 +198,7 @@ package body HAC.Parser is
         -- follow the chain of identifiers for
         -- current Level.
         if J /= 0 then
-          Error (err_duplicate_identifier);
+          Error (err_duplicate_identifier, Id);
         else      -- Enter identifier if there is room in table IdTab
           T                                := T + 1;
           IdTab (T)                        :=
@@ -351,7 +351,7 @@ package body HAC.Parser is
           Low);
 
         if Low.TP = Floats then
-          Error (err_illegal_array_bounds);
+          Error (err_illegal_array_bounds, "Float type expected");
           Low.TP := Ints;
           Low.I  := 0;
         end if;
@@ -366,7 +366,7 @@ package body HAC.Parser is
           High);
 
         if High.TP /= Low.TP then
-          Error (err_illegal_array_bounds);
+          Error (err_illegal_array_bounds, "types do not match");
           High.I := Low.I;
         end if;
         EnterArray (Low.TP, Low.I, High.I);
@@ -3102,7 +3102,7 @@ package body HAC.Parser is
       return;
     end if;
 
-    if Sy = IDent then
+    if Sy = IDent then -- Verify that the name after "end" matches the unit name.
       if Id /= BlockID then
         Error (err_incorrect_block_name);
         return;
