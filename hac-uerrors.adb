@@ -29,10 +29,6 @@ package body HAC.UErrors is
       return "missing an opening parenthesis ""(""";
     when err_missing_ARRAY_RECORD_or_ident =>
       return "missing identifer; ""array"" or ""record""";
-    when 11 =>
-      return "-- OPENING BRACKET ""[""";
-    when 12 =>
-      return "-- CLOSING BRACKET ""]""";
     when err_expecting_dot_dot =>
       return "expecting range symbol: ""..""";
     when err_semicolon_missing =>
@@ -83,7 +79,7 @@ package body HAC.UErrors is
       return "parameter types do not match";
     when err_variable_missing =>
       return "missing a variable";
-    when 38 =>
+    when err_string_zero_chars =>
       return "a string must have one or more char";
     when err_number_of_parameters_do_not_match =>
       return "number of parameters do not match";
@@ -97,7 +93,7 @@ package body HAC.UErrors is
       return "parameter must be of type Integer";
     when err_expected_variable_function_or_constant =>
       return "expected a variable, function or constant";
-    when 45 =>
+    when err_illegal_return_statement_from_main =>
       return "ILLEGAL RETURN STATEMENT FROM MAIN";
     when err_types_of_assignment_must_match =>
       return "types must match in an assignment";
@@ -117,7 +113,7 @@ package body HAC.UErrors is
       return "missing ""in""";
     when err_closing_LOOP_missing =>
       return "missing closing ""loop""";
-    when 56 =>
+    when err_BEGIN_missing =>
       return "missing ""begin""";
     when err_END_missing =>
       return "missing ""end""";
@@ -143,11 +139,11 @@ package body HAC.UErrors is
       return "Ada reserved word; not supported";
     when err_functions_must_return_a_value =>
       return "functions must return a value";
-    when 69 =>
+    when err_WITH_Small_Sp =>
       return "must specify ""with small_sp;""";
     when err_use_Small_Sp =>
       return "must specify ""use small_sp;""";
-    when 71 =>
+    when err_missing_an_entry =>
       return "expecting an entry";
     when err_missing_expression_for_delay =>
       return "missing expression for ""delay""";
@@ -161,7 +157,7 @@ package body HAC.UErrors is
       return "expecting ""accept"", ""when"", or entry id";
     when err_expecting_task_entry =>
       return "expecting Task.Entry";
-    when 78 =>
+    when err_expecting_OR_or_ELSE_in_SELECT =>
       return "expecting ""or"" or ""else"" in select";
     when err_expecting_DELAY =>
       return "expecting ""delay""";

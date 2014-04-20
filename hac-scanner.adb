@@ -342,11 +342,11 @@ package body HAC.Scanner is
         goto Label_4;
       end if;
       <<Label_5>>
-      if K = 1 then
+      if K = 1 then -- !! Pascal thing (String with 1 char = Char)
         Sy   := CharCon;
         INum := Character'Pos (StringTab (Sx));
-      elsif K = 0 then
-        Error (38);
+      elsif K = 0 then -- Ugh ? empty string not allowed ? !!
+        Error (err_string_zero_chars);
         Sy   := CharCon;
         INum := 0;
       else

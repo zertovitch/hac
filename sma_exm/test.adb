@@ -49,6 +49,11 @@ procedure Test is
 	--end loop;
   end;
   --
+  
+  -----------------------------------------------
+  -- Recursive Fibonacci numbers demonstration --
+  -----------------------------------------------
+  
   procedure Fibo_demo(X: Integer) is -- !! Integer to be defined in HAC
 
     function Fib(P: Integer) return Integer is
@@ -109,7 +114,8 @@ begin
         Put_Line("choice: 3..5");
     end case;
   end loop;
-  for n in 1..20 loop
+  --
+  for n in 1..22 loop
     Fibo_demo(n);
   end loop;
 end Test;
