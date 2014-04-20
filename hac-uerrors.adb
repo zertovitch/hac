@@ -6,9 +6,9 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  function ErrorString (Id: Integer; hint: String:= "") return String is
+  function ErrorString (code: Error_code; hint: String:= "") return String is
   begin
-    case Id is
+    case code is
     when err_undefined_identifier =>
       return "undefined identifier";
     when err_duplicate_identifier =>
@@ -171,19 +171,19 @@ package body HAC.UErrors is
       return "found ""="", should be "":=""";
     when err_numeric_constant_expected =>
       return "numeric constant expected";
-    when others =>
-      return "Unknown error Id=" & Integer'Image (Id);
+    -- when others =>
+    --   return "Unknown error Id=" & Integer'Image (Id);
     end case;
   end ErrorString;
 
   ----------------------------------------------------------------------------
 
-  procedure Error (error_code: Integer; hint: String:= "") is
+  procedure Error (code: Error_code; hint: String:= "") is
   pragma Unreferenced (hint); -- !! add a hint table or stack (if more than 1 error with this code)
   -- Write Error on current line & add To TOT ERR (?)
   begin
-    cFoundError (error_code, LineCount, syStart, syEnd, -1);
-    Errs (error_code) := True;
+    cFoundError (code, LineCount, syStart, syEnd, -1);
+    Errs (code) := True;
   end Error;
 
   ----------------------------------------------------------------------------
@@ -244,9 +244,8 @@ package body HAC.UErrors is
     use Ada.Text_IO;
     package IIO is new Integer_IO (Integer);
     use IIO;
-    K : Integer;
+    K : Error_code:= Error_code'First;
   begin
-    K := 0;
     if qDebug then
       New_Line;
       Put_Line (" Error MESSAGE(S)");
@@ -257,15 +256,15 @@ package body HAC.UErrors is
     end if;
     while Errs /= error_free loop -- NB: Ouch! A single loop would be sufficient !!
       while not Errs (K) loop
-        K := K + 1;
+        K := Error_code'Succ(K);
       end loop;
       if qDebug then
-        Put (K, 2);
-        Put_Line (":  " & ErrorString (K, "")); -- Should be Error_hint(K,n) !!
+        Put_Line (Error_code'Image(K) & ":  " & ErrorString (K, ""));
+        -- Should be Error_hint(K,n) !!
       end if;
       if ListingWasRequested then
-        Put (Listing, K, 2);
-        Put_Line (Listing, "  " & ErrorString (K, "")); -- Should be Error_hint(K,n) !!
+        Put_Line (Listing, Error_code'Image(K) & "  " & ErrorString (K, ""));
+        -- Should be Error_hint(K,n) !!
       end if;
       Errs (K) := False; -- we cancel the K-th sort of error
     end loop;

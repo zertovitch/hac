@@ -38,6 +38,8 @@
 with Ada.Streams; use Ada.Streams;
 with Ada.Text_IO; use Ada.Text_IO;
 
+with HAC.UErrors;
+
 package HAC.Data is
 
   pragma Elaborate_Body;
@@ -438,7 +440,7 @@ package HAC.Data is
 
   -- --- Error Control Variables ---
 
-  subtype Error_set is Set (0 .. ERMax);
+  type Error_set is array (HAC.UErrors.Error_code) of Boolean;
   Errs       : Error_set;       --  compilation Errors
   error_free : constant Error_set := (others => False);
 
@@ -559,6 +561,7 @@ package HAC.Data is
   function cEndOfSource return Boolean;
 
   procedure cFoundError
-   (errCode, srcNumber, charStart, charEnd, objNumber : Integer);
+  (errCode: HAC.UErrors.Error_code;
+   srcNumber, charStart, charEnd, objNumber : Integer);
 
 end HAC.Data;

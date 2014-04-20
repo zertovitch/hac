@@ -37,90 +37,92 @@
 
 package HAC.UErrors is
 
-  procedure Error(error_code: Integer; hint: String:= "");
-  --
-  err_undefined_identifier                   : constant:=  0;
-  err_duplicate_identifier                   : constant:=  1;
-  err_identifier_missing                     : constant:=  2; -- also 7
-  err_missing_a_procedure_declaration        : constant:=  3;
-  err_closing_parenthesis_missing            : constant:=  4;
-  err_colon_missing                          : constant:=  5;
-  err_incorrectly_used_symbol                : constant:=  6;
-  err_missing_OF                             : constant:=  8;
-  err_missing_an_opening_parenthesis         : constant:=  9;
-  err_missing_ARRAY_RECORD_or_ident          : constant:= 10;
-  err_expecting_dot_dot                      : constant:= 13; -- also 55
-  err_SEMICOLON_missing                      : constant:= 14;
-  err_bad_result_type_for_a_function         : constant:= 15;
-  err_illegal_statement_start_symbol         : constant:= 16;
-  err_expecting_a_boolean_expression         : constant:= 17;
-  err_control_variable_of_the_wrong_type     : constant:= 18;
-  err_first_and_last_must_have_matching_types: constant:= 19;
-  err_IS_missing                             : constant:= 20;
-  err_number_too_large                       : constant:= 21;
-  err_incorrect_block_name                   : constant:= 22;
-  err_bad_type_for_a_case_statement          : constant:= 23;
-  err_illegal_character                      : constant:= 24;
-  err_illegal_constant_or_constant_identifier: constant:= 25;
-  err_illegal_array_subscript                : constant:= 26;
-  err_illegal_array_bounds                   : constant:= 27;
-  err_indexed_variable_must_be_an_array      : constant:= 28;
-  err_missing_a_type_identifier              : constant:= 29;
-  err_undefined_type                         : constant:= 30;
-  err_var_with_field_selector_must_be_record : constant:= 31;
-  err_resulting_type_should_be_Boolean       : constant:= 32;
-  err_illegal_type_for_arithmetic_expression : constant:= 33;
-  err_mod_requires_integer_arguments         : constant:= 34;
-  err_incompatible_types_for_comparison      : constant:= 35;
-  err_parameter_types_do_not_match           : constant:= 36;
-  err_variable_missing                       : constant:= 37;
-  err_string_zero_chars                      : constant:= 38;
-  err_number_of_parameters_do_not_match      : constant:= 39;
-  err_illegal_parameters_to_Get              : constant:= 40;
-  err_illegal_parameters_to_Put              : constant:= 41;
-  err_parameter_must_be_of_type_Float        : constant:= 42;
-  err_parameter_must_be_Integer              : constant:= 43;
-  err_expected_variable_function_or_constant : constant:= 44;
-  err_illegal_return_statement_from_main     : constant:= 45;
-  err_types_of_assignment_must_match         : constant:= 46;
-  err_case_label_not_same_type_as_case_clause: constant:= 47;
-  err_argument_to_std_function_of_wrong_type : constant:= 48;
-  err_stack_size                             : constant:= 49;
-  err_illegal_symbol_for_a_constant          : constant:= 50;
-  err_BECOMES_missing                        : constant:= 51;
-  err_THEN_missing                           : constant:= 52;
-  err_IN_missing                             : constant:= 53;
-  err_closing_LOOP_missing                   : constant:= 54;
-  err_BEGIN_missing                          : constant:= 56;
-  err_END_missing                            : constant:= 57;
-  err_factor_unexpected_symbol               : constant:= 58;
-  err_RETURN_missing                         : constant:= 59;
-  err_control_character                      : constant:= 60;
-  err_RECORD_missing                         : constant:= 61;
-  err_missing_closing_IF                     : constant:= 62;
-  err_WHEN_missing                           : constant:= 63;
-  err_FINGER_missing                         : constant:= 64;
-  err_missing_closing_CASE                   : constant:= 65;
-  err_character_delimeter_used_for_string    : constant:= 66;
-  err_Ada_reserved_word                      : constant:= 67;
-  err_functions_must_return_a_value          : constant:= 68;
-  err_WITH_Small_Sp                          : constant:= 69;
-  err_use_Small_Sp                           : constant:= 70;
-  err_missing_an_entry                       : constant:= 71;
-  err_missing_expression_for_delay           : constant:= 72;
-  err_wrong_type_in_DELAY                    : constant:= 73;
-  err_COMMA_missing                          : constant:= 74;
-  err_parameter_must_be_of_type_Boolean      : constant:= 75;
-  err_expecting_accept_when_or_entry_id      : constant:= 76;
-  err_expecting_task_entry                   : constant:= 77;
-  err_expecting_OR_or_ELSE_in_SELECT         : constant:= 78;
-  err_expecting_DELAY                        : constant:= 79;
-  err_SELECT_missing                         : constant:= 80;
-  err_program_incomplete                     : constant:= 81;
-  -- These errors messages are new in HAC and weren't in SmallAda
-  err_OF_instead_of_IS                       : constant:= 82;
-  err_EQUALS_instead_of_BECOMES              : constant:= 83;
-  err_numeric_constant_expected              : constant:= 84;
+  type Error_code is (
+    err_undefined_identifier,
+    err_duplicate_identifier,
+    err_identifier_missing,
+    err_missing_a_procedure_declaration,
+    err_closing_parenthesis_missing,
+    err_colon_missing,
+    err_incorrectly_used_symbol,
+    err_missing_OF,
+    err_missing_an_opening_parenthesis,
+    err_missing_ARRAY_RECORD_or_ident,
+    err_expecting_dot_dot,
+    err_SEMICOLON_missing,
+    err_bad_result_type_for_a_function,
+    err_illegal_statement_start_symbol,
+    err_expecting_a_boolean_expression,
+    err_control_variable_of_the_wrong_type,
+    err_first_and_last_must_have_matching_types,
+    err_IS_missing,
+    err_number_too_large,
+    err_incorrect_block_name,
+    err_bad_type_for_a_case_statement,
+    err_illegal_character,
+    err_illegal_constant_or_constant_identifier,
+    err_illegal_array_subscript,
+    err_illegal_array_bounds,
+    err_indexed_variable_must_be_an_array,
+    err_missing_a_type_identifier,
+    err_undefined_type,
+    err_var_with_field_selector_must_be_record,
+    err_resulting_type_should_be_Boolean,
+    err_illegal_type_for_arithmetic_expression,
+    err_mod_requires_integer_arguments,
+    err_incompatible_types_for_comparison,
+    err_parameter_types_do_not_match,
+    err_variable_missing,
+    err_string_zero_chars,
+    err_number_of_parameters_do_not_match,
+    err_illegal_parameters_to_Get,
+    err_illegal_parameters_to_Put,
+    err_parameter_must_be_of_type_Float,
+    err_parameter_must_be_Integer,
+    err_expected_variable_function_or_constant,
+    err_illegal_return_statement_from_main,
+    err_types_of_assignment_must_match,
+    err_case_label_not_same_type_as_case_clause,
+    err_argument_to_std_function_of_wrong_type,
+    err_stack_size,
+    err_illegal_symbol_for_a_constant,
+    err_BECOMES_missing,
+    err_THEN_missing,
+    err_IN_missing,
+    err_closing_LOOP_missing,
+    err_BEGIN_missing,
+    err_END_missing,
+    err_factor_unexpected_symbol,
+    err_RETURN_missing,
+    err_control_character,
+    err_RECORD_missing,
+    err_missing_closing_IF,
+    err_WHEN_missing,
+    err_FINGER_missing,
+    err_missing_closing_CASE,
+    err_character_delimeter_used_for_string,
+    err_Ada_reserved_word,
+    err_functions_must_return_a_value,
+    err_WITH_Small_Sp,
+    err_use_Small_Sp,
+    err_missing_an_entry,
+    err_missing_expression_for_delay,
+    err_wrong_type_in_DELAY,
+    err_COMMA_missing,
+    err_parameter_must_be_of_type_Boolean,
+    err_expecting_accept_when_or_entry_id,
+    err_expecting_task_entry,
+    err_expecting_OR_or_ELSE_in_SELECT,
+    err_expecting_DELAY,
+    err_SELECT_missing,
+    err_program_incomplete,
+    -- These errors messages are new in HAC and weren't in SmallAda
+    err_OF_instead_of_IS,
+    err_EQUALS_instead_of_BECOMES,
+    err_numeric_constant_expected
+  );
+
+  procedure Error(code: Error_code; hint: String:= "");
 
   procedure EndSkip;
 
@@ -141,6 +143,6 @@ package HAC.UErrors is
 
   Failure_1_0: exception;
 
-  function ErrorString(Id: Integer; hint: String:= "") return String;
+  function ErrorString(code: Error_code; hint: String:= "") return String;
 
 end HAC.UErrors;
