@@ -238,11 +238,11 @@ package body HAC.Compiler is
     end if;
 
     if Sy /= UseSy then
-      Error (70, ""); -- USE SMALL_SP;
+      Error (err_use_Small_Sp, ""); -- USE SMALL_SP;
     else
       InSymbol;
       if Sy /= IDent or Id /= "SMALL_SP  " then
-        Error (70, "");
+        Error (err_use_Small_Sp, "");
       else
         InSymbol;
         if Sy /= Semicolon then

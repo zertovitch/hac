@@ -1,5 +1,3 @@
-with HAC.UErrors;
-
 package body HAC.Data is
 
   function "+" (a, b : Set) return Set is
@@ -263,12 +261,15 @@ package body HAC.Data is
     return False; -- return uiEndOfSource;
   end cEndOfSource;
 
-  procedure cFoundError(errCode, srcNumber, charStart, charEnd, objNumber : Integer) is
+procedure cFoundError (
+  errCode: HAC.UErrors.Error_code;
+  srcNumber, charStart, charEnd, objNumber : Integer
+) is
   begin
     if qDebug then
       Put_Line
        (" errCode=" &
-        Integer'Image (errCode) &
+        HAC.UErrors.Error_code'Image (errCode) &
         " (" &
         HAC.UErrors.ErrorString (errCode, "") & -- !! hint
         ") " &

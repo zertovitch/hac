@@ -103,7 +103,7 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     -------------------------------------------------------------Skip-
-    procedure Skip (FSys : Symset; N : Integer) is
+    procedure Skip (FSys : Symset; N : Error_code) is
 
       function StopMe return Boolean is
       begin
@@ -133,7 +133,7 @@ package body HAC.Parser is
       end if;
     end Skip;
 
-    procedure Skip (S : KeyWSymbol; N : Integer) is
+    procedure Skip (S : KeyWSymbol; N : Error_code) is
       to_skip : Symset := Symset'(others => False);
     begin
       to_skip (S) := True;
@@ -142,7 +142,7 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     -------------------------------------------------------------Test-
-    procedure Test (S1, S2 : Symset; N : Integer) is
+    procedure Test (S1, S2 : Symset; N : Error_code) is
     begin
       if not S1 (Sy) then
         Skip (S1 + S2, N);
@@ -177,7 +177,7 @@ package body HAC.Parser is
       if Sy = EndSy then
         InSymbol;
       else
-        Skip (Semicolon, 57);
+        Skip (Semicolon, err_END_missing);
       end if;
     end TestEnd;
 
@@ -959,6 +959,7 @@ package body HAC.Parser is
     procedure Selector (FSys : Symset; V : in out Item) is
       X    : Item;
       a, J : Integer;
+      err  : Error_Code;
     begin      -- Sy IN [LParent, Period]
       loop
         if Sy = Period then
@@ -1026,12 +1027,11 @@ package body HAC.Parser is
       end loop;
 
       if FSys = Semicolon_set then
-        J := err_semicolon_missing;
+        err := err_semicolon_missing;
       else
-        J := err_incorrectly_used_symbol;
+        err := err_incorrectly_used_symbol;
       end if;
-
-      Test (FSys, Empty_Symset, J);
+      Test (FSys, Empty_Symset, err);
     end Selector;
 
     ------------------------------------------------------------------
@@ -1228,6 +1228,7 @@ package body HAC.Parser is
 
           procedure Factor (FSys : Symset; X : in out Item) is
             I, F : Integer;
+            err  : Error_code;
 
             procedure StandFct (NS : Integer) is
               TS : Typset;
@@ -1455,12 +1456,11 @@ package body HAC.Parser is
               end case;
 
               if FSys = Semicolon_set then
-                F := err_SEMICOLON_missing;
+                err := err_SEMICOLON_missing;
               else
-                F := err_incorrectly_used_symbol;
+                err := err_incorrectly_used_symbol;
               end if;
-
-              Test (FSys, Factor_Begin_Symbol, F);
+              Test (FSys, Factor_Begin_Symbol, err);
             end loop;
           end Factor;
 
@@ -2204,7 +2204,7 @@ package body HAC.Parser is
       end FOR_Statement;
 
       procedure SelectStatement is
-        procedure SelectError (N : Integer) is
+        procedure SelectError (N : Error_code) is
         begin
           Skip (Semicolon, N);
         end SelectError;
