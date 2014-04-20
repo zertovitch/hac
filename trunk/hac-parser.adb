@@ -1908,8 +1908,8 @@ package body HAC.Parser is
         F    : Integer;
       begin
         if BlockID = ProgramID then
-          Error (45); -- ILLEGAL RETURN STATEMENT FROM MAIN
-        end if;       -- !! but... this is legal in Ada !!
+          Error (err_illegal_return_statement_from_main); -- !! but... this is legal in Ada !!
+        end if;
         I := LOC (BlockID);
         InSymbol;
         if Sy = Semicolon and IsFun then
@@ -1939,7 +1939,7 @@ package body HAC.Parser is
               end if;
             end if;
           else
-            Error (45); -- ILLEGAL RETURN STATEMENT FROM MAIN
+            Error (err_illegal_return_statement_from_main);
           end if;       -- !! but... this is legal in Ada !!
         end if;
         if IsFun then

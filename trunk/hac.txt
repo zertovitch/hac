@@ -20,6 +20,19 @@ Warning & legal
 ===============
 There is NO WARRANTY in this software. Read copyright notice in hac.ads
 
+Getting started
+===============
+Assuming you have the GNAT compiler installed, do the following in the
+command line:
+
+gnatmake -P hac
+cd sma_exm
+..\hac_test hello.adb
+..\hac_test test.adb
+
+and any other example (*.adb files).
+NB: the Windows script t.cmd does the same.
+
 Some design points
 ==================
 - HAC reads Ada sources from any stream. In addition to files, it is able

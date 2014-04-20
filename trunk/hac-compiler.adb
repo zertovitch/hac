@@ -222,11 +222,11 @@ package body HAC.Compiler is
     CH := ' ';
     InSymbol;
     if Sy /= WithSy then   -- WITH SMALL_SP;
-      Error (69, "");
+      Error (err_WITH_Small_Sp, "");
     else
       InSymbol;
       if Sy /= IDent or Id /= "SMALL_SP  " then
-        Error (69, "");
+        Error (err_WITH_Small_Sp, "");
       else
         InSymbol;
         if Sy /= Semicolon then
