@@ -61,8 +61,7 @@ package HAC.Data is
   -- was "Small-Ada  Macintosh Ver 1.1  Nov 1989  George Washington University"
 
   MaxINT     : constant Integer := Integer'Last;
-  Alng       : constant := 10;            --  NO. OF SIGNIFICANT CHARS IN
-                                          --IDENTIFIERS
+  Alng       : constant := 40;            --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
   AMax       : constant := 30;            --  Size OF ARRAY-TABLE
   BMax       : constant := 25;            --  Size OF Block-TABLE
   CallSTDP   : constant := 0;             --  Call type for standard procedure
@@ -83,7 +82,6 @@ package HAC.Data is
   KMax       : constant := 7;             --  Max No. of significant digits
   LLNG       : constant := 83;            --  input line Length
   LMax       : constant := 7;             --  maximum Level
-  NKW        : constant := 64;            --  No. of AdaKeyW words
   NMax       : constant Integer := MaxINT;
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char
@@ -175,7 +173,7 @@ package HAC.Data is
    TYPE_Symbol,
    UseSy,
    WhenSy,
-   WhileSy,
+   WHILE_Symbol,
    WithSy);
 
   subtype Opcode is Integer range -OMax .. +OMax;         -- -OMax..+OMax;  --
@@ -389,14 +387,16 @@ package HAC.Data is
   --*  Ksy         AdaKeyWSy       Corresponding keyword symbols
   --*  Code        ObjCode         Object Code table
 
-  subtype AdaKeyW_String is String (1 .. 10);
+  subtype AdaKeyW_String is String (1 .. 12);
 
   type AdaKeyW_Pair is record
     st: AdaKeyW_String;
     sy: KeyWSymbol;
   end record;
 
-  AdaKeyW    : array (1 .. NKW) of AdaKeyW_Pair;
+  type AdaKeyW_List is array(Positive range <>) of AdaKeyW_Pair;
+
+  AdaKeyW    : constant AdaKeyW_List;
   ArraysTab  : array (1 .. AMax) of ATabEntry;  --  Array table
   BlockTab   : array (0 .. BMax) of BTabEntry;  --  Block-table [7-Dec-2009:
                                                 --was 1..]
@@ -525,7 +525,7 @@ package HAC.Data is
    (IDent         |
     BEGIN_Symbol  |
     IF_Symbol     |
-    WhileSy       |
+    WHILE_Symbol  |
     Loop_Symbol   |
     FOR_Symbol    |
     CASE_Symbol   |
@@ -560,7 +560,87 @@ package HAC.Data is
   function cEndOfSource return Boolean;
 
   procedure cFoundError
-  (errCode: HAC.UErrors.Error_code;
-   srcNumber, charStart, charEnd, objNumber : Integer);
+    (errCode: HAC.UErrors.Error_code;
+     srcNumber, charStart, charEnd, objNumber : Integer;
+     hint: String);
+
+private
+
+  AdaKeyW : constant AdaKeyW_List:=
+      ( ("ABORT       ",  USy),
+        ("ABSTRACT    ",  USy),            -- Ada 95
+        ("ABS         ",  USy),
+        ("ACCEPT      ", AcceptSy),
+        ("ACCESS      ",  USy),
+        ("ALIASED     ",  USy),            -- Ada 95
+        ("ALL         ",  USy),
+        ("AND         ", And_Symbol),
+        ("ARRAY       ", ArraySy),
+        ("AT          ", ATSy),
+        ("BEGIN       ", BEGIN_Symbol),
+        ("BODY        ", BodySy),
+        ("CASE        ", CASE_Symbol),
+        ("CONSTANT    ", CONSTANT_Symbol),
+        ("DECLARE     ", DeclareSy),
+        ("DELAY       ", DelaySy),
+        ("DELTA       ",  USy),
+        ("DIGITS      ",  USy),
+        ("DO          ", doSy),
+        ("ELSE        ", ElseSy),
+        ("ELSIF       ", ElsIfSy),
+        ("END         ", END_Symbol),
+        ("ENTRY       ", EntrySy),
+        ("EXCEPTION   ",  USy),
+        ("EXIT        ", EXIT_Symbol),
+        ("FOR         ", FOR_Symbol),
+        ("FUNCTION    ", Function_Symbol),
+        ("GENERIC     ",  USy),
+        ("GOTO        ",  USy),
+        ("IF          ", IF_Symbol),
+        ("IN          ", IN_Symbol),
+        ("INTERFACE   ",  USy),            -- Ada 2005
+        ("IS          ", IS_Symbol),
+        ("LIMITED     ",  USy),
+        ("LOOP        ", Loop_Symbol),
+        ("MOD         ", ModSy),
+        ("NEW         ",  USy),
+        ("NOT         ", Not_Symbol),
+        ("NULL        ", NullSy),
+        ("OF          ", OFSy),
+        ("OR          ", Or_Symbol),
+        ("OTHERS      ", OthersSy),
+        ("OUT         ", OutSy),
+        ("OVERRIDING  ",  USy),            -- Ada 2005
+        ("PACKAGE     ",  USy),
+        ("PRAGMA      ",  USy),
+        ("PRIVATE     ",  USy),
+        ("PROCEDURE   ", Procedure_Symbol),
+        ("PROTECTED   ",  USy),            -- Ada 95
+        ("RAISE       ",  USy),
+        ("RANGE       ", RangeSy),
+        ("RECORD      ", RecordSy),
+        ("REM         ",  USy),
+        ("RENAMES     ",  USy),
+        ("REQUEUE     ",  USy),            -- Ada 95
+        ("RETURN      ", RETURN_Symbol),
+        ("REVERSE     ", ReverseSy),
+        ("SELECT      ", SelectSy),
+        ("SEPARATE    ",  USy),
+        ("SOME        ",  USy),            -- Ada 2012
+        ("SUBTYPE     ", SUBTYPE_Symbol),
+        ("SYNCHRONIZED",  USy),            -- Ada 2005
+        ("TAGGED      ",  USy),            -- Ada 95
+        ("TASK        ", TaskSy),
+        ("TERMINATE   ", TerminateSy),
+        ("THEN        ", THEN_Symbol),
+        ("TYPE        ", TYPE_Symbol),
+        ("UNTIL       ",  USy),            -- Ada 95
+        ("USE         ", UseSy),
+        ("WHEN        ", WhenSy),
+        ("WHILE       ", WHILE_Symbol),
+        ("WITH        ", WithSy),
+        ("XOR         ",  USy),
+        ("ZEND        ", IDent)
+       );
 
 end HAC.Data;

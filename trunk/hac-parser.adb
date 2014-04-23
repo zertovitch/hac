@@ -420,7 +420,7 @@ package body HAC.Parser is
       Sz := 0;
       Test (Type_Begin_Symbol, FSys, err_missing_ARRAY_RECORD_or_ident);
       if Type_Begin_Symbol (Sy) then
-        if Id = "STRING    " then
+        if Id(1..10) = "STRING    " then
           Sy := StringSy;
         end if;
         case Sy is
@@ -1305,7 +1305,7 @@ package body HAC.Parser is
                   -- EOF, Eoln
                   if Sy /= IDent then
                     Error (err_identifier_missing);
-                  elsif Id = "INPUT     " then
+                  elsif Id(1..10) = "INPUT     " then
                     Emit2 (k_Standard_Functions, 0, N);
                   else
                     I := GetFP (Id);
@@ -2948,7 +2948,7 @@ package body HAC.Parser is
           RETURN_Statement;
         when SelectSy =>
           SelectStatement;
-        when WhileSy =>
+        when WHILE_Symbol =>
           WHILE_Statement;
         when others =>
           null;

@@ -74,7 +74,7 @@ procedure Test is
   Twenty: constant:= 20;
   Ten_point_one: constant := 10.1;
   c: Character;
-
+  ABCDEFGHIJKLMNOPQRSTUVWXYZ: Character; -- Testing a long identifier
 begin
   Put('A');
   c:= 'B';

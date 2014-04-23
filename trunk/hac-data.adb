@@ -100,77 +100,6 @@ package body HAC.Data is
 
   --  Initialize the keyword and keyword symbol Arrays
 
-  procedure KeyWInit is
-  begin
-    AdaKeyW:=
-      (  1 => ("ABORT     ",  USy),
-         2 => ("ABS       ",  USy),
-         3 => ("ACCEPT    ", AcceptSy),
-         4 => ("ACCESS    ",  USy),
-         5 => ("ALL       ",  USy),
-         6 => ("AND       ", And_Symbol),
-         7 => ("ARRAY     ", ArraySy),
-         8 => ("AT        ", ATSy),
-         9 => ("BEGIN     ", BEGIN_Symbol),
-        10 => ("BODY      ", BodySy),
-        11 => ("CASE      ", CASE_Symbol),
-        12 => ("CONSTANT  ", CONSTANT_Symbol),
-        13 => ("DECLARE   ", DeclareSy),
-        14 => ("DELAY     ", DelaySy),
-        15 => ("DELTA     ",  USy),
-        16 => ("DIGITS    ",  USy),
-        17 => ("DO        ", doSy),
-        18 => ("ELSE      ", ElseSy),
-        19 => ("ELSIF     ", ElsIfSy),
-        20 => ("END       ", END_Symbol),
-        21 => ("ENTRY     ", EntrySy),
-        22 => ("EXCEPTION ",  USy),
-        23 => ("EXIT      ", EXIT_Symbol),
-        24 => ("FOR       ", FOR_Symbol),
-        25 => ("FUNCTION  ", Function_Symbol),
-        26 => ("GENERIC   ",  USy),
-        27 => ("GOTO      ",  USy),
-        28 => ("IF        ", IF_Symbol),
-        29 => ("IN        ", IN_Symbol),
-        30 => ("IS        ", IS_Symbol),
-        31 => ("LIMITED   ",  USy),
-        32 => ("LOOP      ", Loop_Symbol),
-        33 => ("MOD       ", ModSy),
-        34 => ("NEW       ",  USy),
-        35 => ("NOT       ", Not_Symbol),
-        36 => ("NULL      ", NullSy),
-        37 => ("OF        ", OFSy),
-        38 => ("OR        ", Or_Symbol),
-        39 => ("OTHERS    ", OthersSy),
-        40 => ("OUT       ", OutSy),
-        41 => ("PACKAGE   ",  USy),
-        42 => ("PRAGMA    ",  USy),
-        43 => ("PRIVATE   ",  USy),
-        44 => ("PROCEDURE ", Procedure_Symbol),
-        45 => ("RAISE     ",  USy),
-        46 => ("RANGE     ", RangeSy),
-        47 => ("RECORD    ", RecordSy),
-        48 => ("REM       ",  USy),
-        49 => ("RENAMES   ",  USy),
-        50 => ("RETURN    ", RETURN_Symbol),
-        51 => ("REVERSE   ", ReverseSy),
-        52 => ("SELECT    ", SelectSy),
-        53 => ("SEPARATE  ",  USy),
-        54 => ("SUBTYPE   ", SUBTYPE_Symbol),
-        55 => ("TASK      ", TaskSy),
-        56 => ("TERMINATE ", TerminateSy),
-        57 => ("THEN      ", THEN_Symbol),
-        58 => ("TYPE      ", TYPE_Symbol),
-        59 => ("USE       ", UseSy),
-        60 => ("WHEN      ", WhenSy),
-        61 => ("WHILE     ", WhileSy),
-        62 => ("WITH      ", WithSy),
-        63 => ("XOR       ",  USy),
-        64 => ("ZEND      ", IDent)
-       );
-
-  end KeyWInit;
-
   procedure cFeedback is
   begin
     null; -- uiFeedback;
@@ -206,17 +135,19 @@ package body HAC.Data is
     return False; -- return uiEndOfSource;
   end cEndOfSource;
 
-procedure cFoundError (
-  errCode: HAC.UErrors.Error_code;
-  srcNumber, charStart, charEnd, objNumber : Integer
-) is
+  procedure cFoundError (
+     errCode: HAC.UErrors.Error_code;
+     srcNumber, charStart, charEnd, objNumber : Integer;
+     hint: String
+  )
+  is
   begin
     if qDebug then
       Put_Line
        (" errCode=" &
         HAC.UErrors.Error_code'Image (errCode) &
         " (" &
-        HAC.UErrors.ErrorString (errCode, "") & -- !! hint
+        HAC.UErrors.ErrorString (errCode, hint) &
         ") " &
         " srcNumber=" &
         Integer'Image (srcNumber) &
@@ -229,6 +160,4 @@ procedure cFoundError (
     end if;
   end cFoundError;
 
-begin
-  KeyWInit;
 end HAC.Data;

@@ -119,7 +119,8 @@ package HAC.UErrors is
     -- These errors messages are new in HAC and weren't in SmallAda
     err_OF_instead_of_IS,
     err_EQUALS_instead_of_BECOMES,
-    err_numeric_constant_expected
+    err_numeric_constant_expected,
+    err_identifier_too_long
   );
 
   procedure Error(code: Error_code; hint: String:= "");
