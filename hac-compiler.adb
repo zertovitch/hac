@@ -226,7 +226,7 @@ package body HAC.Compiler is
       Error (err_WITH_Small_Sp, "");
     else
       InSymbol;
-      if Sy /= IDent or Id /= "SMALL_SP  " then
+      if Sy /= IDent or Id(1..10) /= "SMALL_SP  " then
         Error (err_WITH_Small_Sp, "");
       else
         InSymbol;
@@ -242,7 +242,7 @@ package body HAC.Compiler is
       Error (err_use_Small_Sp, ""); -- USE SMALL_SP;
     else
       InSymbol;
-      if Sy /= IDent or Id /= "SMALL_SP  " then
+      if Sy /= IDent or Id(1..10) /= "SMALL_SP  " then
         Error (err_use_Small_Sp, "");
       else
         InSymbol;

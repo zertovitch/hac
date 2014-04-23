@@ -164,6 +164,8 @@ package body HAC.Scanner is
         if K < Alng then
           K      := K + 1;
           Id (K) := UpCase (CH);
+        else
+          Error(err_identifier_too_long, Id);
         end if;
         NextCh;
         exit when CH /= '_'
@@ -171,13 +173,13 @@ package body HAC.Scanner is
       end loop;
 
       I := 1;
-      J := NKW; -- Binary Search
+      J := AdaKeyW'Last; -- Binary Search
       loop
         K := (I + J) / 2;
-        if Id <= AdaKeyW (K).st then
+        if Id(AdaKeyW_String'Range) <= AdaKeyW (K).st then
           J := K - 1;
         end if;
-        if Id >= AdaKeyW (K).st then
+        if Id(AdaKeyW_String'Range) >= AdaKeyW (K).st then
           I := K + 1;
         end if;
         exit when I > J;

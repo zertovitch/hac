@@ -171,6 +171,8 @@ package body HAC.UErrors is
       return "found ""="", should be "":=""";
     when err_numeric_constant_expected =>
       return "numeric constant expected";
+    when err_identifier_too_long =>
+      return "identifier """ & hint & "..."" is too long";
     -- when others =>
     --   return "Unknown error Id=" & Integer'Image (Id);
     end case;
@@ -179,10 +181,10 @@ package body HAC.UErrors is
   ----------------------------------------------------------------------------
 
   procedure Error (code: Error_code; hint: String:= "") is
-  pragma Unreferenced (hint); -- !! add a hint table or stack (if more than 1 error with this code)
+  -- !! add a hint table or stack (if more than 1 error with this code)
   -- Write Error on current line & add To TOT ERR (?)
   begin
-    cFoundError (code, LineCount, syStart, syEnd, -1);
+    cFoundError (code, LineCount, syStart, syEnd, -1, hint);
     Errs (code) := True;
   end Error;
 
