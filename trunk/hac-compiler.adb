@@ -216,6 +216,7 @@ package body HAC.Compiler is
     end if;
 
     if qDebug then
+      Create (Sym_dump, Name => "symbols.lst");
       Put_Line ("Compiler: check for program heading");
     end if;
 
@@ -257,7 +258,7 @@ package body HAC.Compiler is
       Put_Line ("Compiler: check for main procedure");
     end if;
 
-    if Sy /= ProcSy then
+    if Sy /= Procedure_Symbol then
       Error (err_missing_a_procedure_declaration, ""); -- PROCEDURE Name IS
     else
       InSymbol;
@@ -288,7 +289,7 @@ package body HAC.Compiler is
     TaskDefTab (0) := T; --{ Task Table Entry }
 
     -- Start Compiling
-    Block (BlockBegSyS + StatBegSys, False, 1, T);
+    Block (Block_Begin_Symbol + Statement_Begin_Symbol, False, 1, T);
     -- Main procedure is parsed.
     Emit (k_Halt_Interpreter);
 
@@ -305,6 +306,14 @@ package body HAC.Compiler is
       Error (err_stack_size, "");
     end if;
     BlockTab (1).SrcTo := LineCount;  --(* Manuel : terminate source *)
+
+    if ListingWasRequested then
+      Close (Listing);
+    end if;
+    if qDebug then
+      Close (Sym_dump);
+    end if;
+
     if qDebug and Debug then
       PrintTables;
     end if;

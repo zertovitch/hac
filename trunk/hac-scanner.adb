@@ -415,30 +415,38 @@ package body HAC.Scanner is
     syEnd := CC - 1;
 
     if qDebug then
-      Put ("[Sym:] " & KeyWSymbol'Image (Sy));
+      Put_Line(Sym_dump,InpLine(1..LL));
+      for i in 1..CC-2 loop
+        Put(Sym_dump,'.');
+      end loop;
+      Put_Line(Sym_dump,"^");
+      Put (Sym_dump,
+        '[' & Integer'Image(LineCount) & ':' & Integer'Image(CC) & ":] " &
+        KeyWSymbol'Image (Sy)
+      );
       case Sy is
         when IDent =>
-          Put (": " & Id);
+          Put (Sym_dump, ": " & Id);
         when IntCon =>
-          Put (": " & Integer'Image (INum));
+          Put (Sym_dump, ": " & Integer'Image (INum));
         when FloatCon =>
-          Put (": " & Float'Image (RNum));
+          Put (Sym_dump, ": " & Float'Image (RNum));
         when StrCon =>
-          Put (": """);
+          Put (Sym_dump, ": """);
           for i in INum .. INum + SLeng - 1 loop
-            Put (StringTab (i));
+            Put (Sym_dump, StringTab (i));
           end loop;
-          Put ('"');
+          Put (Sym_dump, '"');
         when Becomes =>
-          Put (" := ");
+          Put (Sym_dump, " := ");
         when Colon =>
-          Put (" : ");
-        when ConstSy =>
-          Put (" constant ");
+          Put (Sym_dump, " : ");
+        when CONSTANT_Symbol =>
+          Put (Sym_dump, " constant ");
         when others =>
           null;
       end case;
-      New_Line;
+      New_Line(Sym_dump, 2);
     end if;
 
   end InSymbol;
