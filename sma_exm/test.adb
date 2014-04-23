@@ -122,7 +122,7 @@ begin
         Put(gagl); -- !! HAC: Put(gagl, 1) prints two integer...
         Put_Line(" (others)");
     end case;
-    -- exit when gagl = 8; -- !! HAC: EXIT seems to be unknown...
+    exit when gagl = 8;
   end loop;
   --
   Put_Line("Recursive Fibonacci:");

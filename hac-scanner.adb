@@ -174,17 +174,17 @@ package body HAC.Scanner is
       J := NKW; -- Binary Search
       loop
         K := (I + J) / 2;
-        if Id <= AdaKeyW (K) then
+        if Id <= AdaKeyW (K).st then
           J := K - 1;
         end if;
-        if Id >= AdaKeyW (K) then
+        if Id >= AdaKeyW (K).st then
           I := K + 1;
         end if;
         exit when I > J;
       end loop;
 
       if I - 1 > J then
-        Sy := AdaKeyWSy (K);
+        Sy := AdaKeyW (K).sy;
       else
         Sy := IDent;
       end if;

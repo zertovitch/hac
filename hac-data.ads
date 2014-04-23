@@ -139,7 +139,7 @@ package HAC.Data is
    ATSy,
    BEGIN_Symbol,
    BodySy,
-   CaseSy,
+   CASE_Symbol,
    CONSTANT_Symbol,
    DeclareSy,
    DelaySy,
@@ -152,8 +152,8 @@ package HAC.Data is
    FOR_Symbol,
    Function_Symbol,
    IF_Symbol,
-   InSy,
-   Is_Symbol,
+   IN_Symbol,
+   IS_Symbol,
    Loop_Symbol,
    ModSy,
    Not_Symbol,
@@ -165,14 +165,14 @@ package HAC.Data is
    Procedure_Symbol,
    RangeSy,
    RecordSy,
-   ReturnSy,
+   RETURN_Symbol,
    ReverseSy,
    SelectSy,
-   SubTypeSy,
+   SUBTYPE_Symbol,
    TaskSy,
    TerminateSy,
    THEN_Symbol,
-   TypeSy,
+   TYPE_Symbol,
    UseSy,
    WhenSy,
    WhileSy,
@@ -194,6 +194,8 @@ package HAC.Data is
   function "-" (a, b : Symset) return Symset;
   function "-" (a : Symset; b : KeyWSymbol) return Symset;
   Empty_Symset : constant Symset := (others => False);
+  function Singleton(s: KeyWSymbol) return Symset;
+  pragma Inline(Singleton);
 
   subtype Index is Integer range -XMax .. +XMax;
 
@@ -387,10 +389,14 @@ package HAC.Data is
   --*  Ksy         AdaKeyWSy       Corresponding keyword symbols
   --*  Code        ObjCode         Object Code table
 
-  AdaKeyW    : array (1 .. NKW) of String (1 .. 10);  --  Array of Ada
-                                                      --keywords in Order
-  AdaKeyWSy  : array (1 .. NKW) of KeyWSymbol;  --  Corresponding keyword
-                                                --symbols
+  subtype AdaKeyW_String is String (1 .. 10);
+
+  type AdaKeyW_Pair is record
+    st: AdaKeyW_String;
+    sy: KeyWSymbol;
+  end record;
+
+  AdaKeyW    : array (1 .. NKW) of AdaKeyW_Pair;
   ArraysTab  : array (1 .. AMax) of ATabEntry;  --  Array table
   BlockTab   : array (0 .. BMax) of BTabEntry;  --  Block-table [7-Dec-2009:
                                                 --was 1..]
@@ -516,18 +522,18 @@ package HAC.Data is
 
   Statement_Begin_Symbol : constant Symset :=
    Symset'
-   (IDent        |
-    BEGIN_Symbol |
-    IF_Symbol    |
-    WhileSy      |
-    Loop_Symbol  |
-    FOR_Symbol   |
-    CaseSy       |
+   (IDent         |
+    BEGIN_Symbol  |
+    IF_Symbol     |
+    WhileSy       |
+    Loop_Symbol   |
+    FOR_Symbol    |
+    CASE_Symbol   |
     EXIT_Symbol   |
-    NullSy       |
-    ReturnSy     |
-    SelectSy     |
-    AcceptSy     |
+    NullSy        |
+    RETURN_Symbol |
+    SelectSy      |
+    AcceptSy      |
     DelaySy      => True,
 
     others => False);
