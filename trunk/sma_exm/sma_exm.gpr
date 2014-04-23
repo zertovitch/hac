@@ -3,20 +3,22 @@ project SMA_Exm is
    type Build_Mode_Type is ("Debug", "Fast");
    Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
 
-   for Main use ("dinersmo.adb",
+   for Main use (
+     "shell_sort.adb",  -- GNAT OK (correct Ada); HAC OK
+     "merge_sort.adb",  -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
+     "hello.adb",       -- GNAT OK (correct Ada); HAC OK
+     "test.adb",        -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
+     "test1.adb",       -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
+-- ko...
+"dinersmo.adb",
 "din_sm.adb",
 "din_ws.adb",
-"hello.adb",
-"merge.adb",
 "newrace.adb",
 "pgm0.adb",
 "pgm1.adb",
 "pgm2.adb",
 "race.adb",
 "racedead.adb",
-"shell.adb",
-"test.adb",
-"test1.adb",
 "test2.adb");
    case Build_Mode is
       when "Debug" =>
@@ -35,7 +37,7 @@ project SMA_Exm is
    package Compiler is
       case Build_Mode is
          when "Debug" =>
-            for Default_Switches ("ada") use ("-gnat05", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwa", "-gnatVa");
+            for Default_Switches ("ada") use ("-gnat05", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwa", "-gnatVa", "-gnatecdebug.pra");
          when "Fast" =>
             for Default_Switches ("ada") use ("-gnat05", "-gnatwa", "-O2", "-gnatpn", "-funroll-loops", "-fpeel-loops", "-funswitch-loops", "-ftracer", "-fweb", "-frename-registers", "-ffunction-sections");
       end case;

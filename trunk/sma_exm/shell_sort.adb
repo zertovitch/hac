@@ -1,9 +1,9 @@
 with SMALL_SP; use SMALL_SP;  -- CS159-10 - FAll/1990 - ARthur Vargas Lopes
 
-procedure SHELL is
+procedure Shell_Sort is
 
   -- ch : character;
-  procedure SHELL_SORT is
+  procedure Shell is
     B : STRING(1..26);
     I,J,STEP : INTEGER;
     STEPSIZE : array(1..4) OF INTEGER;
@@ -62,19 +62,20 @@ procedure SHELL is
        new_line;
      end loop; -- for pass in 1..npass
      New_Line;
+     Put_Line("Result:");
      for k in 1..26 loop
-        PUT(B(k));
+        Put(B(k));
      end loop;
      new_line;
-   end SHELL_SORT;
+   end Shell;
 
 begin
   -- CURSORAT(15,1);
-  PUT_Line("Shell:");
-  SHELL_SORT;
+  PUT_Line("Shell sort:");
+  Shell;
   -- CURSORAT(17,1);
   New_Line;
   -- PUT("Press enter to proceed...");
   -- GET(ch);
-end SHELL;
+end Shell_Sort;
 

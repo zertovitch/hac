@@ -5,7 +5,7 @@ PROCEDURE   Test1 IS
   --This is the initial test program for the Small-Ada Compiler
   --   Small-Ada is a restircted subset of the full Ada Language
   --   The Small-Ada compiler was derived from the Co-Pascal
-  --       compiler which was in turn was derived from Pascas-S
+  --       compiler which was in turn was derived from Pascal-S
 
   --Declarations
 
@@ -34,7 +34,7 @@ TYPE       Day IS (Sun, Mon, Tue, Wed, Thu, Fri, Sat);
     r2: Float := TenpOne;
     c1, c2:  character := '+';
     c3: character := CA;
-    b3, b4, b5:  boolean := false;
+    b3, b4, b5: Boolean := false;
     A:  array(1..5) of integer;
     WeekDay: Day;
 
@@ -64,38 +64,48 @@ BEGIN
   PUT_LINE("Initialization Check");
   PUT("i1, i2, i3  "); Put(i1); Put(i2); Put(i3); New_Line;
   PUT("i4       ");    Put(i4); New_Line;
-  PUT_LINE("r1, r2  "); Put(r1); Put(r2); New_Line;
-  PUT_LINE("c1, c2, c3"); Put(c1); Put(c3); Put(c3); New_Line;
-  PUT_LINE("b1, .., b5"); Put(b1); Put(b2); Put(b3); Put(b4); Put(b5); New_Line;
+  PUT_LINE("r1, r2 (1.23, 10.1): ");
+  Put(r1); Put(r2); New_Line;
+  PUT_LINE("c1, c2, c3 (++A):");
+  Put(c1); Put(c2); Put(c3); New_Line;
+  PUT_LINE("b1, .., b5 (T,T,F,F,F):");
+  Put("   "); Put(b1); Put(' '); Put(b2); Put(' '); Put(b3); Put(' '); Put(b4); Put(' '); Put(b5); New_Line;
+  b3:= True;
+  b4:= True;
+  b5:= b3 = not b4;
+  PUT_LINE("b1, .., b5 (T,T,T,T,F):");
+  Put("   "); Put(b1); Put(' '); Put(b2); Put(' '); Put(b3); Put(' '); Put(b4); Put(' '); Put(b5); New_Line;
   New_LINE;
 
   PUT_LINE("ARITHMETIC Check");
-  i1 := 13;             Put(i1); PUT_LINE(" (i1)");
-  i2 := Ten;            Put(i2); PUT_LINE(" (i2)");
-  i3 := i1 + i2 + 5;    Put(i3); PUT_LINE(" (i3=i1+i2+5)");
-  i3 := i1 - Twenty;    Put(i3); PUT_LINE(" (i3=i1-20)");
-  i3 := i2 * i1;        Put(i3); PUT_LINE(" (i3=i1*i2)");
-  i3 := i1 / 5;         Put(i3); PUT_LINE(" (i3=i1 DIV 5)");
-  i3 := i1 MOD 5;       Put(i3); PUT_LINE(" (i3=i1 MOD 5)");
-  r1 := 20.4;           Put(r1); PUT_LINE(" (r1)");
-  r2 := r1/2.0;         Put(r2); PUT_LINE(" (r1/2)");
+  i1 := 13;             Put(i1); PUT_LINE(" (i1:= 13)");
+  i2 := Ten;            Put(i2); PUT_LINE(" (i2:= 10)");
+  i3 := i1 + i2 + 5;    Put(i3); PUT_LINE(" (i3:= i1+i2+5 = 28)");
+  i3 := i1 - Twenty;    Put(i3); PUT_LINE(" (i3:= i1-20 = -7)");
+  i3 := i2 * i1;        Put(i3); PUT_LINE(" (i3:= i1*i2 = 130)");
+  i3 := i1 / 5;         Put(i3); PUT_LINE(" (i3:= i1 DIV 5)");
+  i3 := i1 MOD 5;       Put(i3); PUT_LINE(" (i3:= i1 MOD 5)");
+  r1 := 20.4;           Put(r1); PUT_LINE(" (r1:= 20.4)");
+  r2 := r1/2.0;         Put(r2); PUT_LINE(" (r2:= r1/2.0 = 10.2)");
   PUT(10.0 * tenpone); Put_Line(" (10*10.1)");
   New_LINE;
 
   PUT_LINE("LOOP and ARRAY Check");
   i1 := 10;
-  PUT_LINE("Single FOR LOOP 1..5");
+  PUT_LINE("Single FOR LOOP 1..5: filling array");
   for i IN 1 .. 5 LOOP
      a ( i ) := i * 2;
   END LOOP;
+  PUT_LINE("Single FOR LOOP 1..5: reading array");
   for n IN 1 .. 5 LOOP
-     PUT(n);
-     Put(a(n)); Put_Line(" = n*2");
+     Put("   n = "); Put(n);
+     Put("; a(n) = n*2 = ");
+     Put(a(n)); New_Line;
   END LOOP;
   New_LINE;
-  PUT_LINE("Double FOR LOOP 1..2 A..E");
+  PUT_LINE("Double FOR LOOP: 1..2, then A..E");
   FOR i IN 1 .. 2 LOOP
-     PUT("Line: "); Put(i); Put(' ');
+     PUT("   Line: "); Put(i); Put(' ');
      for j IN CA .. CE  LOOP
         PUT(j);
      END LOOP;
@@ -128,16 +138,16 @@ BEGIN
 
   --Function and Procedure Check
   New_Line;   PUT_LINE("FUNCTION and PROCEDURE Check");
-  PUT("compare 10 to 20 ");  IComp(ten, twenty);
-  PUT("compare 20 to 10 ");  IComp(twenty, ten);
+  PUT("   compare 10 to 20 ");  IComp(ten, twenty);
+  PUT("   compare 20 to 10 ");  IComp(twenty, ten);
   PUT(ten);  PUT(5);  PUT("     ADD = "); Put(add(ten,5)); New_Line;
   New_Line;
 
   PUT_LINE("IF and BOOLEAN Check");
   IF ten > twenty THEN
-     PUT(ten); Put('>'); Put(twenty); Put("O_o"); New_Line;
+     PUT(ten); Put('>'); Put(twenty); Put_Line("O_o: bug with > operator");
   ELSE
-     PUT(ten); Put("<="); Put(twenty); New_Line;
+     PUT(ten); Put("<="); Put(twenty); Put_Line(" > operator works.");
   END IF;
 
   i1 := 99;
@@ -171,9 +181,10 @@ BEGIN
   ELSE
      PUT_LINE ("NOT is not OK");
   END IF;
+  New_Line;
 
   --CASE Check
-  New_Line;   PUT_LINE("CASE Check");
+  PUT_LINE("CASE Check");
   i1 := -1;
   PUT("Selector value ="); Put(i1); New_Line;
   CASE i1 is
@@ -182,7 +193,7 @@ BEGIN
      WHEN    3        =>    PUT_LINE("Case = 3, ");
      WHEN    4        =>    PUT_LINE("Case = 4, ");
      WHEN  OTHERS     =>    PUT ("Case is ");
-                            PUT_LINE("Others!");
+                            PUT_LINE("Others (not 1,2,3,4)");
   END CASE;
 
   New_Line;   PUT_LINE("END OF TEST");
