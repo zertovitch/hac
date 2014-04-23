@@ -6,7 +6,7 @@
 
 -- Legal licensing note:
 
---  Copyright (c) 2013 Gautier de Montmollin
+--  Copyright (c) 2013..2014 Gautier de Montmollin
 --
 --  History and authors list of works HAC was originally derived from
 --  can be found in hac.txt.
@@ -137,24 +137,24 @@ package HAC.Data is
    And_Symbol,
    ArraySy,
    ATSy,
-   BeginSy,
+   BEGIN_Symbol,
    BodySy,
    CaseSy,
-   ConstSy,
+   CONSTANT_Symbol,
    DeclareSy,
    DelaySy,
    doSy,
    ElseSy,
    ElsIfSy,
-   EndSy,
+   END_Symbol,
    EntrySy,
-   ExitSy,
-   ForSy,
-   FuncSy,
-   IfSy,
+   EXIT_Symbol,
+   FOR_Symbol,
+   Function_Symbol,
+   IF_Symbol,
    InSy,
-   IsSy,
-   LoopSy,
+   Is_Symbol,
+   Loop_Symbol,
    ModSy,
    Not_Symbol,
    NullSy,
@@ -162,7 +162,7 @@ package HAC.Data is
    Or_Symbol,
    OthersSy,
    OutSy,
-   ProcSy,
+   Procedure_Symbol,
    RangeSy,
    RecordSy,
    ReturnSy,
@@ -171,7 +171,7 @@ package HAC.Data is
    SubTypeSy,
    TaskSy,
    TerminateSy,
-   ThenSy,
+   THEN_Symbol,
    TypeSy,
    UseSy,
    WhenSy,
@@ -356,7 +356,7 @@ package HAC.Data is
                                             --VAR Map
   RunningTime         : Boolean;    --  Display running timer
 
-  Listing : File_Type;            --  File pointers
+  Listing, Sym_dump : File_Type;            --  File pointers
 
   CH : Character;  --  previous Character Read from Source program
 
@@ -464,7 +464,7 @@ package HAC.Data is
   CharacterTypes : array (Character) of CHTP;   --  character types
   InpLine        : String (1 .. 255);             --  input line. Manuel:
                                                   --Renamed To InpLine
-  CC             : Integer;                   --  character counter
+  CC             : Integer;                   --  character counter (=column in current line)
   LC             : Integer;                   --  location counter
   LL             : Integer;                   --  Length of current line
   LineCount      : Integer;                   --  Source line counter, used
@@ -487,9 +487,7 @@ package HAC.Data is
     IDent     => True,
     others => False);
 
-  --  Type definition begin symbol(S)
-
-  TypeBegSys : constant Symset :=
+  Type_Begin_Symbol : constant Symset :=
    Symset'
    (IDent     |
     ArraySy   |
@@ -498,17 +496,14 @@ package HAC.Data is
     LParent   => True,
     others => False);
 
-  --  Start of Block begin symbol(S)
-
-  BlockBegSyS : constant Symset :=
-   (ProcSy     |
-    FuncSy     |
-    TaskSy     |
-    EntrySy    |
-    BeginSy    |
+  Block_Begin_Symbol : constant Symset :=
+   (Procedure_Symbol |
+    Function_Symbol  |
+    TaskSy           |
+    EntrySy          |
+    BEGIN_Symbol     |
     DeclareSy  => True,
     others => False);
-  --  Start of Factor begin symbol
 
   Factor_Begin_Symbol : constant Symset :=
    (IntCon     |
@@ -519,23 +514,21 @@ package HAC.Data is
     Not_Symbol => True,
     others => False);
 
-  --  Start of Statement begin symbol
-
-  StatBegSys : constant Symset :=
+  Statement_Begin_Symbol : constant Symset :=
    Symset'
-   (IDent     |
-    BeginSy   |
-    IfSy      |
-    WhileSy   |
-    LoopSy    |
-    ForSy     |
-    CaseSy    |
-    ExitSy    |
-    NullSy    |
-    ReturnSy  |
-    SelectSy  |
-    AcceptSy  |
-    DelaySy   => True,
+   (IDent        |
+    BEGIN_Symbol |
+    IF_Symbol    |
+    WhileSy      |
+    Loop_Symbol  |
+    FOR_Symbol   |
+    CaseSy       |
+    EXIT_Symbol   |
+    NullSy       |
+    ReturnSy     |
+    SelectSy     |
+    AcceptSy     |
+    DelaySy      => True,
 
     others => False);
 

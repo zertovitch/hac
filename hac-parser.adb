@@ -165,16 +165,16 @@ package body HAC.Parser is
       end if;
       Test
        (Symset'((IDent | TypeSy | TaskSy => True, others => False)) +
-        BlockBegSyS,
+        Block_Begin_Symbol,
         FSys,
         err_incorrectly_used_symbol);
     end TestSemicolon;
 
     ------------------------------------------------------------------
     ----------------------------------------------------------TestEnd-
-    procedure TestEnd is            -- Hathorn
+    procedure TestEnd is
     begin
-      if Sy = EndSy then
+      if Sy = END_Symbol then
         InSymbol;
       else
         Skip (Semicolon, err_END_missing);
@@ -338,7 +338,7 @@ package body HAC.Parser is
       FSys_gnagna : constant Symset :=
        FSys -
        Symset'(Semicolon | Comma | IDent => True, others => False) +
-       Symset'(EndSy => True, others => False);
+       Symset'(END_Symbol => True, others => False);
 
       procedure ArrayTyp (ARef, Arsz : in out Integer; StrAr : Boolean) is
         ELTP       : Types;
@@ -418,8 +418,8 @@ package body HAC.Parser is
       TP := NOTYP;
       RF := 0;
       Sz := 0;
-      Test (TypeBegSys, FSys, err_missing_ARRAY_RECORD_or_ident);
-      if TypeBegSys (Sy) then
+      Test (Type_Begin_Symbol, FSys, err_missing_ARRAY_RECORD_or_ident);
+      if Type_Begin_Symbol (Sy) then
         if Id = "STRING    " then
           Sy := StringSy;
         end if;
@@ -486,7 +486,7 @@ package body HAC.Parser is
                 TYP
                  (FSys +
                   Symset'(Semicolon  |
-                  EndSy              |
+                  END_Symbol         |
                   Comma              |
                   IDent              => True,
                           others => False),
@@ -501,7 +501,7 @@ package body HAC.Parser is
                   Offset         := Offset + ELSZ;
                 end loop;
               end if;
-              if Sy /= EndSy then
+              if Sy /= END_Symbol then
                 if Sy = Semicolon then
                   InSymbol;
                 else
@@ -512,7 +512,7 @@ package body HAC.Parser is
                 end if;
 
                 Test
-                 (Symset'(IDent | EndSy | Semicolon => True, others => False),
+                 (Symset'(IDent | END_Symbol | Semicolon => True, others => False),
                   FSys,
                   err_incorrectly_used_symbol);
               end if;
@@ -661,7 +661,7 @@ package body HAC.Parser is
       if Sy = RParent then
         InSymbol;
         Test
-         (Symset'(IsSy | ReturnSy | Semicolon => True, others => False),
+         (Symset'(Is_Symbol | ReturnSy | Semicolon => True, others => False),
           FSys,
           err_incorrectly_used_symbol);
       else
@@ -682,7 +682,7 @@ package body HAC.Parser is
       Enter (Id, TypeMark);
       T1 := T;
       InSymbol;
-      if Sy = IsSy then
+      if Sy = Is_Symbol then
         InSymbol;
       else
         Error (err_IS_missing);
@@ -737,15 +737,15 @@ package body HAC.Parser is
           I := LOC (Id);
         end if;
 
-        Test (TypeBegSys + ConstSy, Semicolon_set, err_incorrectly_used_symbol);
+        Test (Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_set, err_incorrectly_used_symbol);
         ConstDec := False;
         untyped_constant:= False;
-        if Sy = ConstSy then
+        if Sy = CONSTANT_Symbol then
           ConstDec := True;
           InSymbol;
         end if;
         TypeID := False;
-        if TypeBegSys (Sy) then
+        if Type_Begin_Symbol (Sy) then
           TypeID := True;
           TYP
            (Symset'(Semicolon  |
@@ -841,11 +841,10 @@ package body HAC.Parser is
     end VarDeclaration;
 
     ------------------------------------------------------------------
-    --------------------------------------------------ProcDeclaration-
-    procedure ProcDeclaration is
-      IsFun      : Boolean;
+    --------------------------------------------Proc_Func_Declaration-
+    procedure Proc_Func_Declaration is
+      IsFun: constant Boolean := Sy = Function_Symbol;
     begin
-      IsFun := Sy = FuncSy;
       InSymbol;
       if Sy /= IDent then
         Error (err_identifier_missing);
@@ -863,7 +862,7 @@ package body HAC.Parser is
       else
         Emit1 (k_Exit_Call, CallSTDP);
       end if;
-    end ProcDeclaration;
+    end Proc_Func_Declaration;
 
     ------------------------------------------------------------------
     --------------------------------------------------TaskDeclaration-
@@ -905,7 +904,7 @@ package body HAC.Parser is
         if Sy = Semicolon then
           InSymbol;  -- Task with no entries
         else  -- Parsing the Entry specs
-          if Sy = IsSy then
+          if Sy = Is_Symbol then
             InSymbol;
           else
             Error (err_IS_missing);
@@ -1705,7 +1704,7 @@ package body HAC.Parser is
       procedure MultiStatement (Sentinal : Symset) is   -- Hathorn
         nxtSym : Symset;
       begin
-        nxtSym := Sentinal + StatBegSys;
+        nxtSym := Sentinal + Statement_Begin_Symbol;
         loop
           Statement (nxtSym); --MRC,was: UNTIL (Sy IN Sentinal);
           exit when Sentinal (Sy) or Err_Count > 0;
@@ -1747,7 +1746,7 @@ package body HAC.Parser is
           Level           := Level + 1;
           Display (Level) := IdTab (I).Ref;
           InSymbol;
-          MultiStatement (Symset'((EndSy => True, others => False)));
+          MultiStatement (Symset'((END_Symbol => True, others => False)));
           TestEnd;
           if Sy = IDent then
             if Id /= IdTab (I).Name then
@@ -1763,7 +1762,7 @@ package body HAC.Parser is
       procedure CompoundStmnt is           -- modified Hathorn
       begin
         InSymbol;
-        MultiStatement (Symset'((EndSy => True, others => False)));
+        MultiStatement (Symset'((END_Symbol => True, others => False)));
         TestEnd;
         if Sy = IDent then
           if Id /= IdTab (Prt).Name then
@@ -1777,7 +1776,7 @@ package body HAC.Parser is
         -- Generate an absolute branch Statement with a dummy end loop address
         X : Item;
       begin
-        if Sy = ExitSy then
+        if Sy = EXIT_Symbol then
           InSymbol;
         else
           Skip (Semicolon, err_incorrectly_used_symbol);
@@ -1801,14 +1800,14 @@ package body HAC.Parser is
       begin
         InSymbol;
         Expression
-         (FSys + Symset'((ThenSy | doSy => True, others => False)),
+         (FSys + Symset'((THEN_Symbol | doSy => True, others => False)),
           X);
         if not (X.TYP = Bools or else X.TYP = NOTYP) then
           Error (err_expecting_a_boolean_expression);
         end if;
         LC1 := LC;
         Emit (k_Conditional_Jump);                  -- JMPC
-        if Sy = ThenSy then
+        if Sy = THEN_Symbol then
           InSymbol;
         else
           Error (err_THEN_missing);
@@ -1817,7 +1816,7 @@ package body HAC.Parser is
           end if;
         end if;
         MultiStatement
-         (Symset'((ElsIfSy | ElseSy | EndSy => True, others => False)));
+         (Symset'((ElsIfSy | ElseSy | END_Symbol => True, others => False)));
         LC0 := LC;
         while Sy = ElsIfSy loop     -- Added Hathorn
           InSymbol;
@@ -1825,14 +1824,14 @@ package body HAC.Parser is
                                  --To be patched
           ObjCode (LC1).Y := LC; -- patch the previous conditional jump
           Expression
-           (FSys + Symset'((ThenSy | doSy => True, others => False)),
+           (FSys + Symset'((THEN_Symbol | doSy => True, others => False)),
             X);
           if not (X.TYP = Bools or else X.TYP = NOTYP) then
             Error (err_expecting_a_boolean_expression);
           end if;
           LC1 := LC;
           Emit (k_Conditional_Jump);                -- JMPC
-          if Sy = ThenSy then
+          if Sy = THEN_Symbol then
             InSymbol;
           else
             Error (err_THEN_missing);
@@ -1841,23 +1840,23 @@ package body HAC.Parser is
             end if;
           end if;
           MultiStatement
-           (Symset'((ElsIfSy | ElseSy | EndSy => True, others => False)));
+           (Symset'((ElsIfSy | ElseSy | END_Symbol => True, others => False)));
         end loop;
 
         if Sy = ElseSy then
           InSymbol;
           Emit1 (k_Jump, -1);
           ObjCode (LC1).Y := LC;
-          MultiStatement (Symset'((EndSy => True, others => False)));
+          MultiStatement (Symset'((END_Symbol => True, others => False)));
         else
           ObjCode (LC1).Y := LC;
         end if;
-        if Sy = EndSy then -- Added Hathorn
+        if Sy = END_Symbol then -- END (IF)
           InSymbol;
         else
           Error (err_END_missing);
         end if;
-        if Sy = IfSy then
+        if Sy = IF_Symbol then -- (END) IF
           InSymbol;
         else
           Error (err_missing_closing_IF);
@@ -1874,19 +1873,19 @@ package body HAC.Parser is
       procedure LOOP_Statement (FCT, B : Integer) is    -- Hathorn
         LC0 : Integer := LC;
       begin
-        if Sy = LoopSy then
+        if Sy = Loop_Symbol then
           InSymbol;
         else
-          Skip (StatBegSys, err_missing_closing_IF);
+          Skip (Statement_Begin_Symbol, err_missing_closing_IF);
         end if;
-        MultiStatement (Symset'((EndSy => True, others => False)));
+        MultiStatement (Symset'((END_Symbol => True, others => False)));
         Emit1 (FCT, B);
-        if Sy = EndSy then
+        if Sy = END_Symbol then -- END (LOOP)
           InSymbol;
         else
           Error (err_END_missing);
         end if;
-        if Sy = LoopSy then
+        if Sy = Loop_Symbol then -- (END) LOOP
           InSymbol;
         else
           Error (err_closing_LOOP_missing);
@@ -2028,7 +2027,7 @@ package body HAC.Parser is
               Error (err_FINGER_missing);
             end if;
             MultiStatement
-             (Symset'((WhenSy | EndSy => True, others => False)));
+             (Symset'((WhenSy | END_Symbol => True, others => False)));
             J           := J + 1;
             ExitTab (J) := LC;
             Emit (k_Jump);
@@ -2043,7 +2042,7 @@ package body HAC.Parser is
         J := 0;
         Expression
          (FSys +
-          Symset'((OFSy | IsSy | Comma | Colon => True, others => False)),
+          Symset'((OFSy | Is_Symbol | Comma | Colon => True, others => False)),
           X);
 
         if not (X.TYP = Ints or
@@ -2055,7 +2054,7 @@ package body HAC.Parser is
         end if;
         LC1 := LC;
         Emit (kSwitch); -- JMPX
-        if Sy = IsSy then -- Was OfSy in SmallAda ! I.e. case x OF when 1 =>
+        if Sy = Is_Symbol then -- Was OfSy in SmallAda ! I.e. case x OF when 1 =>
                           --...
           InSymbol;
         elsif Sy = OFSy then
@@ -2085,7 +2084,7 @@ package body HAC.Parser is
           ObjCode (ExitTab (K)).Y  := LC;
         end loop;
 
-        if Sy = EndSy then
+        if Sy = END_Symbol then
           InSymbol;
         else
           Error (err_END_missing);
@@ -2104,7 +2103,7 @@ package body HAC.Parser is
         InSymbol;
         LC1 := LC;
         Expression
-         (FSys + Symset'((LoopSy | doSy => True, others => False)),
+         (FSys + Symset'((Loop_Symbol | doSy => True, others => False)),
           X);
         if not (X.TYP = Bools or else X.TYP = NOTYP) then
           Error (err_expecting_a_boolean_expression);
@@ -2152,8 +2151,8 @@ package body HAC.Parser is
           Skip
            (Symset'((InSy     |
             RangeSy           |
-            LoopSy            |
-            EndSy             => True,
+            Loop_Symbol       |
+            END_Symbol        => True,
                      others => False)) +
             FSys,
             err_identifier_missing);
@@ -2169,7 +2168,7 @@ package body HAC.Parser is
             InSymbol;
           end if;
           Expression
-           (Symset'((RangeSy | LoopSy | EndSy => True, others => False)) +
+           (Symset'((RangeSy | Loop_Symbol | END_Symbol => True, others => False)) +
             FSys,
             X);
           IdTab (T).TYP := X.TYP;
@@ -2181,18 +2180,18 @@ package body HAC.Parser is
           end if;
           if Sy = RangeSy then
             InSymbol;
-            Expression (FSys + LoopSy, X);
+            Expression (FSys + Loop_Symbol, X);
             if IdTab (T).TYP /= X.TYP then
               Error (err_first_and_last_must_have_matching_types);
             end if;
           else
             Skip
-             (Symset'((LoopSy | EndSy | Semicolon => True, others => False)) +
+             (Symset'((Loop_Symbol | END_Symbol | Semicolon => True, others => False)) +
               FSys,
               err_expecting_dot_dot);
           end if;
         else
-          Skip (FSys + LoopSy, err_IN_missing);
+          Skip (FSys + Loop_Symbol, err_IN_missing);
         end if;
         LC1 := LC;
         Emit (F);
@@ -2282,11 +2281,11 @@ package body HAC.Parser is
                                           --SELECT
               patch (3) := LC;
               InSymbol;
-              MultiStatement (Symset'((EndSy => True, others => False)));
+              MultiStatement (Symset'((END_Symbol => True, others => False)));
               ObjCode (patch (1)).Y  := patch (3);
               ObjCode (patch (2)).Y  := LC;
             end if;
-            if Sy /= EndSy then
+            if Sy /= END_Symbol then
               SelectError (err_END_missing);
             end if;
             InSymbol;
@@ -2354,7 +2353,7 @@ package body HAC.Parser is
               Level           := Level + 1;
               Display (Level) := IdTab (I).Ref;
               InSymbol;
-              MultiStatement (Symset'((EndSy => True, others => False)));
+              MultiStatement (Symset'((END_Symbol => True, others => False)));
               TestEnd;
               if Sy = IDent then
                 if Id /= IdTab (I).Name then
@@ -2423,7 +2422,7 @@ package body HAC.Parser is
                 end if;
                 InSymbol;
                 MultiStatement
-                 (Symset'((Or_Symbol | ElseSy | EndSy => True, others => False)));
+                 (Symset'((Or_Symbol | ElseSy | END_Symbol => True, others => False)));
                 if ISD > 10 then
                   Fatal (PATCHING_overflow);
                 end if;
@@ -2441,7 +2440,7 @@ package body HAC.Parser is
                 AcceptStatement2;
                 InSymbol;
                 MultiStatement
-                 (Symset'((Or_Symbol | ElseSy | EndSy => True, others => False)));
+                 (Symset'((Or_Symbol | ElseSy | END_Symbol => True, others => False)));
                 if ISD > 10 then
                   Fatal (PATCHING_overflow);
                 end if;
@@ -2459,7 +2458,7 @@ package body HAC.Parser is
                 end loop;
                 IAlt := 0;
                 InSymbol;
-                MultiStatement (Symset'((EndSy => True, others => False)));
+                MultiStatement (Symset'((END_Symbol => True, others => False)));
                 if ISD > 10 then
                   Fatal (PATCHING_overflow);
                 end if;
@@ -2495,7 +2494,7 @@ package body HAC.Parser is
                 end if;
                 InSymbol;
                 MultiStatement
-                 (Symset'((Or_Symbol | EndSy | ElseSy => True, others => False)));
+                 (Symset'((Or_Symbol | END_Symbol | ElseSy => True, others => False)));
                 if ISD > 10 then
                   Fatal (PATCHING_overflow);
                 end if;
@@ -2512,7 +2511,7 @@ package body HAC.Parser is
                 do_terminate := True;        -- Oguz
                 InSymbol;
 
-              when EndSy =>
+              when END_Symbol =>
                 InSymbol;
                 if Sy /= SelectSy then
                   SelectError (err_END_missing);
@@ -2909,7 +2908,7 @@ package body HAC.Parser is
       --{ MRC: This line is needed in order to highlight lines in task windows
       --}
 
-      if StatBegSys (Sy) then
+      if Statement_Begin_Symbol (Sy) then
         case Sy is
         when IDent =>
           I := LOC (Id);
@@ -2933,24 +2932,23 @@ package body HAC.Parser is
                 null;
             end case;
 
-          end if;
-        -- end IdEnt
+          end if; -- end IDent
 
         when AcceptSy =>
           AcceptStatement;
-        when BeginSy =>
+        when BEGIN_Symbol =>
           CompoundStmnt;
         when CaseSy =>
           CASE_Statement;
         when DelaySy =>
           DelayStatement;
-        when ExitSy =>
+        when EXIT_Symbol =>
           ExitStatement;
-        when ForSy =>
+        when FOR_Symbol =>
           FOR_Statement;
-        when IfSy =>
+        when IF_Symbol =>
           IF_Statement;
-        when LoopSy =>
+        when Loop_Symbol =>
           LOOP_Statement (k_Jump, LC);
         when NullSy =>
           InSymbol;
@@ -2993,7 +2991,7 @@ package body HAC.Parser is
     end if;
 
     Test
-     (Symset'(LParent | ReturnSy | IsSy | Semicolon => True, others => False),
+     (Symset'(LParent | ReturnSy | Is_Symbol | Semicolon => True, others => False),
       FSys,
       err_incorrectly_used_symbol);
     if IdTab (Prt).Ref > 0 then
@@ -3047,7 +3045,7 @@ package body HAC.Parser is
       return; -- Exit(Block);
     end if;
 
-    if Sy = IsSy then
+    if Sy = Is_Symbol then
       InSymbol;
     else
       Error (err_IS_missing);
@@ -3066,12 +3064,16 @@ package body HAC.Parser is
       end if;
       BlockTab (PRB).VSize := Dx;
 
-      while Sy = ProcSy or else Sy = FuncSy loop
-        ProcDeclaration;
-      end loop;
+      while Sy = Procedure_Symbol or Sy = Function_Symbol loop
+        Proc_Func_Declaration;
+      end loop;  -- !! loop seems useless (a ghost of the Pascal compiler)...
 
-      exit when Sy = BeginSy;
+      exit when Sy = BEGIN_Symbol;
     end loop;
+
+    ---------------------
+    -- Statements part --
+    ---------------------
 
     MaxDX           := Dx;
     IdTab (Prt).Adr := LC;
@@ -3085,17 +3087,21 @@ package body HAC.Parser is
 
     CMax := CMax + ICode;
     InSymbol;
+
+    ------------------------
+    -- List of statements --
+    ------------------------
     loop
-      Statement (FSys + EndSy);
+      Statement (FSys + END_Symbol);
       if Err_Count > 0 then  --{MRC, from PC source}
-        Sy := EndSy;
+        Sy := END_Symbol;
       end if;
-      exit when Sy = EndSy or Err_Count > 0;
+      exit when Sy = END_Symbol or Err_Count > 0;
     end loop;
     --{MRC, added OR()... from PC source}
     BlockTab (PRB).SrcTo := LineCount;
 
-    if Sy = EndSy then
+    if Sy = END_Symbol then
       InSymbol;
     else
       Error (err_END_missing);
