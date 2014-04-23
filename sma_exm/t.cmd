@@ -13,5 +13,9 @@ pause
 pause
 ..\hac_test test1.adb
 pause
+..\hac_test shell_sort.adb
+pause
+..\hac_test merge_sort.adb
+pause
 
 :fin
