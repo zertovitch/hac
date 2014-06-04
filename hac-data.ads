@@ -325,9 +325,11 @@ package HAC.Data is
   type FilDescr_Lname is array (File_index) of Natural;
   type FilDescr_Names is array (File_index) of String (1 .. Alng);
 
+  No_File_Index: constant:= -1;
+
   type FilDescr is record
     Curr  : Integer;
-    Kount : File_count;       --  short
+    Kount : File_count:= 0;
     Fil   : FilDescr_Texts;
     Nam   : FilDescr_Names;
     LNam  : FilDescr_Lname;
@@ -402,7 +404,7 @@ package HAC.Data is
                                                 --was 1..]
   ObjCode    : array (0 .. CDMax) of Order;     --  Object Code table
   EntryTab   : array (0 .. EntryMax) of Index;  --  Entry Table
-  FileIOTab  : FilDescr;                      --  File I/O table
+  FileIOTab  : FilDescr;                        --  File I/O table
   FloatPtTab : array (1 .. C2Max) of Float;     --  Float Constant table
   StringTab  : array (0 .. SMax) of Character;  --  String table
   IdTab      : array (0 .. TMax) of TabEntry;   --  Identifier table

@@ -238,26 +238,22 @@ package body HAC.Parser is
     end LOC;
 
     ------------------------------------------------------------------
-    ------------------------------------------------------------GetFP-
-    function GetFP (Id : Alfa) return Integer is    -- Schoening
-      ResultGetFP : Integer;
+    -------------------------------------------------Get_File_Pointer-
+    function Get_File_Pointer (Id : Alfa) return Integer is    -- Schoening
     begin   -- locate Id in FileIOTab
-      ResultGetFP := -1;
       for I in 1 .. FileIOTab.Kount loop
         if FileIOTab.Nam (I) (2) = ':' then
           if FileIOTab.Nam (I) (3 .. FileIOTab.LNam (I) - 2) =
              Id (1 .. FileIOTab.LNam (I) - 2)
           then
-            ResultGetFP := I;
+            return I;
           end if;
         elsif FileIOTab.Nam (I) = Id (1 .. FileIOTab.LNam (I)) then
-          ResultGetFP := I;
+          return I;
         end if;
       end loop;
-
-      return ResultGetFP;
-
-    end GetFP;
+      return No_File_Index;
+    end Get_File_Pointer;
 
     ------------------------------------------------------------------
     ----------------------------------------------------EnterVariable-
@@ -1308,8 +1304,8 @@ package body HAC.Parser is
                   elsif Id(1..10) = "INPUT     " then
                     Emit2 (k_Standard_Functions, 0, N);
                   else
-                    I := GetFP (Id);
-                    if I = 0 then
+                    I := Get_File_Pointer (Id);
+                    if I = No_File_Index then -- NB: bug: was 0 instead of -1...
                       Error (err_undefined_identifier);
                     else
                       Emit2 (k_Standard_Functions, I, N);
@@ -2563,8 +2559,11 @@ package body HAC.Parser is
           when 1 | 2 =>  -- GET, GET_LINE
             if Sy = LParent then
               InSymbol;
-              I := GetFP (Id);  -- Schoening
-              if I /= -1 then -- First parameter is a file variable
+              I := Get_File_Pointer (Id);  -- Schoening
+              if I = No_File_Index then
+                Emit1 (k_Set_current_file_pointer, 0);
+                do_first_InSymbol := False;
+              else -- First parameter is a file variable
                 Emit1 (k_Set_current_file_pointer, I);
                 InSymbol;
                 if Sy /= Comma then
@@ -2574,9 +2573,6 @@ package body HAC.Parser is
                     Error (err_identifier_missing);
                   end if;
                 end if;
-              else
-                Emit1 (k_Set_current_file_pointer, 0);
-                do_first_InSymbol := False;
               end if;
               loop
                 if do_first_InSymbol then
@@ -2640,8 +2636,11 @@ package body HAC.Parser is
 
             if Sy = LParent then
               InSymbol;
-              I := GetFP (Id);   -- Schoening
-              if I /= -1 then -- First parameter is a file variable
+              I := Get_File_Pointer (Id);   -- Schoening
+              if I = No_File_Index then
+                Emit1 (k_Set_current_file_pointer, 0);
+                do_first_InSymbol := False;
+              else -- First parameter is a file variable
                 Emit1 (k_Set_current_file_pointer, I);
                 InSymbol;
                 if Sy /= Comma then
@@ -2651,9 +2650,6 @@ package body HAC.Parser is
                     Error (err_identifier_missing);
                   end if;
                 end if;
-              else
-                Emit1 (k_Set_current_file_pointer, 0);
-                do_first_InSymbol := False;
               end if;
               loop
                 if do_first_InSymbol then
@@ -2772,11 +2768,11 @@ package body HAC.Parser is
               Error (err_missing_an_opening_parenthesis);
             else
               InSymbol;
-              I := GetFP (Id);
-              if I /= -1 then
-                Emit2 (kFile_I_O, I, N);
-              else
+              I := Get_File_Pointer (Id);
+              if I = No_File_Index then
                 Error (err_identifier_missing);
+              else
+                Emit2 (kFile_I_O, I, N);
               end if;
               InSymbol;
               if Sy = RParent then
