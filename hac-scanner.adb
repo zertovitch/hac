@@ -324,7 +324,7 @@ package body HAC.Scanner is
       SLeng := K;
       Sx    := Sx + K;
 
-    when ''' =>
+    when ''' => -- Character literal (code reused from Pascal string literal, hence a loop)
       K := 0;
       <<Label_4>> NextCh;
       if CH = ''' then
@@ -338,17 +338,21 @@ package body HAC.Scanner is
       end if;
       StringTab (Sx + K) := CH;
       K                  := K + 1;
+      if CH = ''' and K = 1 then -- '''
+        NextCh;
+        goto Label_5;
+      end if;
       if CC = 1 then
         K := 0;   -- END OF InpLine
       else
         goto Label_4;
       end if;
       <<Label_5>>
-      if K = 1 then -- !! Pascal thing (String with 1 char = Char)
+      if K = 1 then
         Sy   := CharCon;
         INum := Character'Pos (StringTab (Sx));
-      elsif K = 0 then -- Ugh ? empty string not allowed ? !!
-        Error (err_string_zero_chars);
+      elsif K = 0 then
+        Error (err_character_zero_chars);
         Sy   := CharCon;
         INum := 0;
       else

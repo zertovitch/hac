@@ -36,7 +36,7 @@ procedure Test is
   end Do_1_in_out;
   --
   -- type My_String is array(1..5) of Character;
-  s: String(1..5);
+  -- s: String(1..5);
   -- ms: My_String;
   --
   procedure My_Put(s: String) is -- ; first, last: Integer
@@ -74,14 +74,38 @@ procedure Test is
   Twenty: constant:= 20;
   Ten_point_one: constant := 10.1;
   c: Character;
-  ABCDEFGHIJKLMNOPQRSTUVWXYZ: Character; -- Testing a long identifier
+  -- ABCDEFGHIJKLMNOPQRSTUVWXYZ: Character; -- Testing a long identifier
+  hs: String(1..7);
+  
+  procedure Show_hs is 
+  begin
+    -- Put(hs); -- !! issues ERR_ILLEGAL_PARAMETERS_TO_PUT:  illegal parameters to "Put"
+    for i in 1..7 loop
+      Put(hs(i));
+    end loop;  
+    New_Line;
+  end Show_hs; -- !! ERR_INCORRECT_BLOCK_NAME derails, should just show:" "end Show_hs;" expected"
+  
 begin
   Put('A');
   c:= 'B';
   Put(c);
-  c:= 'x'; --- !! ''' doesn't work !!
+  c:= ''';
+  Put(c);
+  Put("");
+  New_Line;
   --
-  s:= "hello";
+  hs:= """Hello""";
+  Show_hs;
+  hs:= """Hel""lo";
+  Show_hs;
+  hs:= "Hel""lo""";
+  Show_hs;
+  hs:= "Hel""l""o";
+  Show_hs;
+  hs:= "Hel'l'o";
+  Show_hs;
+  --
   -- My_Put(s, 1 , 5);
   new_line;
   Put(Twenty); Put_Line(" ... should be: 20");

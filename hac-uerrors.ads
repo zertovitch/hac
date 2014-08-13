@@ -73,7 +73,7 @@ package HAC.UErrors is
     err_incompatible_types_for_comparison,
     err_parameter_types_do_not_match,
     err_variable_missing,
-    err_string_zero_chars,
+    err_character_zero_chars,
     err_number_of_parameters_do_not_match,
     err_illegal_parameters_to_Get,
     err_illegal_parameters_to_Put,
