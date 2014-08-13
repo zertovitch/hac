@@ -79,8 +79,9 @@ package body HAC.UErrors is
       return "parameter types do not match";
     when err_variable_missing =>
       return "missing a variable";
-    when err_string_zero_chars =>
-      return "a string must have one or more char";
+    when err_character_zero_chars =>
+      return "a character literal is of the form 'x'; " &
+             "strings are delimited by double quote character";
     when err_number_of_parameters_do_not_match =>
       return "number of parameters do not match";
     when err_illegal_parameters_to_Get =>
@@ -134,7 +135,8 @@ package body HAC.UErrors is
     when err_missing_closing_CASE =>
       return "missing closing ""case""";
     when err_character_delimeter_used_for_string =>
-      return "character delimeter used for string";
+      return "character delimeter used for string; " &
+             "strings are delimited by double quote character";
     when err_Ada_reserved_word =>
       return "Ada reserved word; not supported";
     when err_functions_must_return_a_value =>
