@@ -1,7 +1,8 @@
 with HAC.PCode;              use HAC.PCode;
 with HAC.Scanner;            use HAC.Scanner;
 with HAC.UErrors;            use HAC.UErrors;
-with Unchecked_Deallocation;
+
+with Ada.Unchecked_Deallocation;
 
 package body HAC.Parser is
 
@@ -1194,7 +1195,7 @@ package body HAC.Parser is
       --  Note: dynamic variables for Y have been used due to the
       --     constraints imposed upon local variables in recursion.
       type ItemPtr is access Item;  -- static > dynamic : SCHOENING
-      procedure Dispose is new Unchecked_Deallocation (Item, ItemPtr);
+      procedure Dispose is new Ada.Unchecked_Deallocation (Item, ItemPtr);
 
       Y     : ItemPtr;
       OP    : KeyWSymbol;
@@ -1759,7 +1760,7 @@ package body HAC.Parser is
         TestEnd;
         if Sy = IDent then
           if Id /= IdTab (Prt).Name then
-            Error (err_incorrect_block_name);
+            Error (err_incorrect_block_name, hint => Alfa_to_String(IdTab (Prt).Name));
           end if;
           InSymbol;
         end if;
@@ -3098,8 +3099,7 @@ package body HAC.Parser is
 
     if Sy = IDent then -- Verify that the name after "end" matches the unit name.
       if Id /= BlockID then
-        Error (err_incorrect_block_name);
-        return;
+        Error (err_incorrect_block_name, hint => Alfa_to_String(BlockID));
       end if;
       InSymbol;
     end if;

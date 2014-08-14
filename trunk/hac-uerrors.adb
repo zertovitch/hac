@@ -1,5 +1,6 @@
 with HAC.Data; use HAC.Data;
 
+with Ada.Strings.Fixed;                 use Ada.Strings, Ada.Strings.Fixed;
 with Ada.Text_IO;
 
 package body HAC.UErrors is
@@ -48,7 +49,7 @@ package body HAC.UErrors is
     when err_number_too_large =>
       return "the number is too large";
     when err_incorrect_block_name =>
-      return "incorrect block name after ""end"", should be " & hint;
+      return """end " & hint & ";"" expected here";
     when err_bad_type_for_a_case_statement =>
       return "bad type for a case statement";
     when err_illegal_character =>
@@ -183,11 +184,19 @@ package body HAC.UErrors is
   ----------------------------------------------------------------------------
 
   procedure Error (code: Error_code; hint: String:= "") is
-  -- !! add a hint table or stack (if more than 1 error with this code)
   -- Write Error on current line & add To TOT ERR (?)
+    use Ada.Text_IO;
   begin
     cFoundError (code, LineCount, syStart, syEnd, -1, hint);
     Errs (code) := True;
+    Put_Line(
+      Standard_Error,
+      -- !! File name here
+      Trim(Integer'Image(LineCount),Left) & ':' &
+      Trim(Integer'Image(syStart),Left) & '-' &
+      Trim(Integer'Image(syEnd),Left) & ": " &
+      ErrorString (code, hint)
+    );
   end Error;
 
   ----------------------------------------------------------------------------
@@ -252,11 +261,11 @@ package body HAC.UErrors is
   begin
     if qDebug then
       New_Line;
-      Put_Line (" Error MESSAGE(S)");
+      Put_Line ("==== Error MESSAGE(S) ====");
     end if;
     if ListingWasRequested then
       New_Line (Listing);
-      Put_Line (Listing, " Error MESSAGE(S)");
+      Put_Line (Listing, "==== Error MESSAGE(S) ====");
     end if;
     while Errs /= error_free loop -- NB: Ouch! A single loop would be sufficient !!
       while not Errs (K) loop

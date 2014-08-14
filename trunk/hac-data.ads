@@ -139,7 +139,7 @@ package HAC.Data is
    BodySy,
    CASE_Symbol,
    CONSTANT_Symbol,
-   DeclareSy,
+   DECLARE_Symbol,
    DelaySy,
    doSy,
    ElseSy,
@@ -197,9 +197,10 @@ package HAC.Data is
 
   subtype Index is Integer range -XMax .. +XMax;
 
+  -- Alfa is a space-padded string
   subtype Alfa is String (1 .. Alng);
-
   Empty_Alfa : Alfa := (others => ' ');
+  function Alfa_to_String(a: Alfa) return String;
 
   type aObject is (
    Konstant,
@@ -510,7 +511,7 @@ package HAC.Data is
     TaskSy           |
     EntrySy          |
     BEGIN_Symbol     |
-    DeclareSy  => True,
+    DECLARE_Symbol   => True,
     others => False);
 
   Factor_Begin_Symbol : constant Symset :=
@@ -583,7 +584,7 @@ private
         ("BODY        ", BodySy),
         ("CASE        ", CASE_Symbol),
         ("CONSTANT    ", CONSTANT_Symbol),
-        ("DECLARE     ", DeclareSy),
+        ("DECLARE     ", DECLARE_Symbol),
         ("DELAY       ", DelaySy),
         ("DELTA       ",  USy),
         ("DIGITS      ",  USy),

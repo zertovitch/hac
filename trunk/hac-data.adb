@@ -1,3 +1,6 @@
+with Ada.Strings;
+with Ada.Strings.Fixed;
+
 package body HAC.Data is
 
   function "+" (a, b : Set) return Set is
@@ -46,6 +49,11 @@ package body HAC.Data is
   begin
     res(s):= True;
     return res;
+  end;
+
+  function Alfa_to_String(a: Alfa) return String is
+  begin
+    return Ada.Strings.Fixed.Trim(a, Ada.Strings.Right);
   end;
 
   -----------------------------------------------------------ICompiler-----
