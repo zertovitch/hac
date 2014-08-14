@@ -84,7 +84,7 @@ procedure Test is
       Put(hs(i));
     end loop;  
     New_Line;
-  end Show_hs; -- !! ERR_INCORRECT_BLOCK_NAME derails, should just show:" "end Show_hs;" expected"
+  end Show_hs;
   
 begin
   Put('A');
