@@ -128,12 +128,12 @@ package HAC.Data is
    Finger,
    Becomes,
    IDent,
-   StringSy,
+   String_Symbol, -- !! hack ! used for constraining the String unconstrained array
    AcceptSy,
    USy,
    Ampersand_Symbol,
    And_Symbol,
-   ArraySy,
+   Array_Symbol,
    ATSy,
    BEGIN_Symbol,
    BodySy,
@@ -172,7 +172,7 @@ package HAC.Data is
    THEN_Symbol,
    TYPE_Symbol,
    UseSy,
-   WhenSy,
+   WHEN_Symbol,
    WHILE_Symbol,
    WithSy);
 
@@ -269,14 +269,13 @@ package HAC.Data is
   --  contains the following fields (fields marked with a C are used only by
   --  the compiler and ignored by the interpreter):
   type ATabEntry is record
-    InXTYP : Types;         --  C Type of the index
-    ELTYP  : Types;         --  C Type of the elements of the array
-    ELREF  : Index;         --  C Pointer to an entry in ArraysTab if the
-                            --    elements of the array are themselves arrays
-    Size   : Index;         --  C Total size of the array
-    Low    : Index;         --  Limits on the array index
-    High   : Index;         --  Array [Low..High] OF ElTyp
-    ELSize : Index;         --  Size of an element
+    Index_TYP    : Types;         --  C Type of the index
+    Element_TYP  : Types;         --  C Type of the elements of the array
+    ELREF        : Index;         --  C Pointer to an entry in ArraysTab if the
+                                  --    elements of the array are themselves arrays
+    Size         : Index;         --  C Total size of the array
+    Low, High    : Index;         --  Limits on the array index: array (Low..High) of Element_TYP
+    ELSize       : Index;         --  Size of an element
   end record;
 
   -- ----------------------------------------------------------------------
@@ -498,12 +497,12 @@ package HAC.Data is
 
   Type_Begin_Symbol : constant Symset :=
    Symset'
-   (IDent     |
-    ArraySy   |
-    RecordSy  |
-    RangeSy   |
-    LParent   => True,
-    others => False);
+   (IDent          |
+    Array_Symbol   |
+    RecordSy       |
+    RangeSy        |
+    LParent        => True,
+    others         => False);
 
   Block_Begin_Symbol : constant Symset :=
    (Procedure_Symbol |
@@ -578,7 +577,7 @@ private
         ("ALIASED     ",  USy),            -- Ada 95
         ("ALL         ",  USy),
         ("AND         ", And_Symbol),
-        ("ARRAY       ", ArraySy),
+        ("ARRAY       ", Array_Symbol),
         ("AT          ", ATSy),
         ("BEGIN       ", BEGIN_Symbol),
         ("BODY        ", BodySy),
@@ -639,7 +638,7 @@ private
         ("TYPE        ", TYPE_Symbol),
         ("UNTIL       ",  USy),            -- Ada 95
         ("USE         ", UseSy),
-        ("WHEN        ", WhenSy),
+        ("WHEN        ", WHEN_Symbol),
         ("WHILE       ", WHILE_Symbol),
         ("WITH        ", WithSy),
         ("XOR         ",  USy),

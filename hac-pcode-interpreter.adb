@@ -1009,11 +1009,11 @@ package body HAC.PCode.Interpreter is
           if FAT.CURR = 0 then
             case IR.Y is
               when 1 =>   --  Burd
-                Put (S (P2Ada_Var_6.T).I, 10);
+                Put (S (P2Ada_Var_6.T).I);
               when 2 =>
-                Put (S (P2Ada_Var_6.T).R, 22);
+                Put (S (P2Ada_Var_6.T).R);
               when 3 =>
-                Put (Boolean'Val(S (P2Ada_Var_6.T).I), 10);
+                Put (Boolean'Val(S (P2Ada_Var_6.T).I));
               when 4 =>
                 Put (Character'Val(S (P2Ada_Var_6.T).I));
               when others =>

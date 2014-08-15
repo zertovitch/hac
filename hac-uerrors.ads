@@ -83,6 +83,7 @@ package HAC.UErrors is
     err_illegal_return_statement_from_main,
     err_types_of_assignment_must_match,
     err_case_label_not_same_type_as_case_clause,
+    err_duplicate_case_choice_value,
     err_argument_to_std_function_of_wrong_type,
     err_stack_size,
     err_illegal_symbol_for_a_constant,
@@ -120,7 +121,8 @@ package HAC.UErrors is
     err_OF_instead_of_IS,
     err_EQUALS_instead_of_BECOMES,
     err_numeric_constant_expected,
-    err_identifier_too_long
+    err_identifier_too_long,
+    err_statement_expected
   );
 
   procedure Error(code: Error_code; hint: String:= "");
