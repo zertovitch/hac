@@ -62,7 +62,7 @@ package body HAC.Parser is
         declare
           r : ATabEntry renames ArraysTab (A);
         begin
-          r.InXTYP := TP;
+          r.Index_TYP := TP;
           r.Low    := Lz;
           r.High   := Hz;
         end;
@@ -380,7 +380,7 @@ package body HAC.Parser is
               InSymbol;
             end if;
           end if;
-        elsif Sy = Comma then
+        elsif Sy = Comma then -- Multidimensional array is array(range_1) of array(range_2,...)
           InSymbol;
           ELTP := Arrays;
           ArrayTyp (ELRF, ELSZ, StrAr);
@@ -404,8 +404,8 @@ package body HAC.Parser is
         declare
           r : ATabEntry renames ArraysTab (ARef);
         begin
-          r.Size   := Arsz;
-          r.ELTYP  := ELTP;
+          r.Size   := Arsz; -- NB: Index_TYP, Low, High already set
+          r.Element_TYP  := ELTP;
           r.ELREF  := ELRF;
           r.ELSize := ELSZ;
         end;
@@ -417,8 +417,8 @@ package body HAC.Parser is
       Sz := 0;
       Test (Type_Begin_Symbol, FSys, err_missing_ARRAY_RECORD_or_ident);
       if Type_Begin_Symbol (Sy) then
-        if Id(1..10) = "STRING    " then
-          Sy := StringSy;
+        if Id(1..10) = "STRING    " then -- !! Need to implement constraints...
+          Sy := String_Symbol;
         end if;
         case Sy is
           when IDent =>
@@ -437,8 +437,8 @@ package body HAC.Parser is
             end if;
             InSymbol;
 
-          when ArraySy | StringSy => -- ArraySy or StringSy
-            StrArray := Sy = StringSy;
+          when Array_Symbol | String_Symbol =>
+            StrArray := Sy = String_Symbol;
             InSymbol;
             if Sy = LParent then
               InSymbol;
@@ -739,7 +739,7 @@ package body HAC.Parser is
           InSymbol;
         end if;
         TypeID := False;
-        if Type_Begin_Symbol (Sy) then
+        if Type_Begin_Symbol (Sy) then -- Here, a type name or an anonymous type definition
           TypeID := True;
           TYP
            (Symset'(Semicolon  |
@@ -992,14 +992,14 @@ package body HAC.Parser is
               X);
             if V.TYP = Arrays then
               a := V.Ref;
-              if ArraysTab (a).InXTYP /= X.TYP then
+              if ArraysTab (a).Index_TYP /= X.TYP then
                 Error (err_illegal_array_subscript);
               elsif ArraysTab (a).ELSize = 1 then
                 Emit1 (kIndex1, a);
               else
                 Emit1 (kIndex, a);
               end if;
-              V.TYP := ArraysTab (a).ELTYP;
+              V.TYP := ArraysTab (a).Element_TYP;
               V.Ref := ArraysTab (a).ELREF;
             else
               Error (err_indexed_variable_must_be_an_array);
@@ -1680,7 +1680,7 @@ package body HAC.Parser is
         Emit1 (k_Integer_to_Float, 0);
         Emit (kStore);
       elsif X.TYP = Arrays and Y.TYP = Strings then
-        if ArraysTab (X.Ref).ELTYP /= xChars then
+        if ArraysTab (X.Ref).Element_TYP /= xChars then
           Error (err_types_of_assignment_must_match);
         else
           Emit1 (kStringAssignment, ArraysTab (X.Ref).Size);    -- array Size
@@ -1698,6 +1698,9 @@ package body HAC.Parser is
       procedure MultiStatement (Sentinal : Symset) is   -- Hathorn
         nxtSym : Symset;
       begin
+        if Sentinal (Sy) then -- GdM 15-Aug-2014: there should be at least one statement.
+          Error (err_statement_expected);
+        end if;
         nxtSym := Sentinal + Statement_Begin_Symbol;
         loop
           Statement (nxtSym); --MRC,was: UNTIL (Sy IN Sentinal);
@@ -1775,7 +1778,7 @@ package body HAC.Parser is
         else
           Skip (Semicolon, err_incorrectly_used_symbol);
         end if;
-        if Sy = WhenSy then      -- conditional Exit
+        if Sy = WHEN_Symbol then      -- conditional Exit
           InSymbol;
           Expression (Semicolon_set, X);
           if not (X.TYP = Bools or X.TYP = NOTYP) then
@@ -1986,15 +1989,14 @@ package body HAC.Parser is
               exit when CaseTab (K).Val = Lab.I;
             end loop;
             if K < I then
-              Error (err_duplicate_identifier);
+              Error (err_duplicate_case_choice_value);
             end if;
-            -- MULTIPLE DEFINITION
           end if;
         end CASE_Label;
 
         procedure One_CASE is
         begin
-          if Sy = WhenSy then
+          if Sy = WHEN_Symbol then
             InSymbol;
             if ConstBegSys (Sy) then
               CASE_Label;
@@ -2018,8 +2020,7 @@ package body HAC.Parser is
             else
               Error (err_FINGER_missing);
             end if;
-            MultiStatement
-             (Symset'((WhenSy | END_Symbol => True, others => False)));
+            MultiStatement (Symset'((WHEN_Symbol | END_Symbol => True, others => False)));
             J           := J + 1;
             ExitTab (J) := LC;
             Emit (k_Jump);
@@ -2056,7 +2057,7 @@ package body HAC.Parser is
           Error (err_IS_missing);
         end if;
 
-        while Sy = WhenSy loop
+        while Sy = WHEN_Symbol loop
           One_CASE;
         end loop;
 
@@ -2369,7 +2370,7 @@ package body HAC.Parser is
                                         -- SEQUENCE
           loop
             case Sy is
-              when WhenSy =>
+              when WHEN_Symbol =>
                 for I in 1 .. IAlt loop
                   ObjCode (Alt (I)).Y  := LC;
                 end loop;
@@ -2422,7 +2423,7 @@ package body HAC.Parser is
                 ISD       := ISD + 1;
                 JSD (ISD) := LC;
                 Emit (k_Jump);          -- patch JMP ADDRESS AT EndSy
-              -- end WhenSy
+              -- end WHEN_Symbol
 
               when AcceptSy =>
                 for I in 1 .. IAlt loop
@@ -2534,11 +2535,11 @@ package body HAC.Parser is
         end SelectiveWait;                    -- SelectiveWait
 
       begin                    -- Sy = SelectSy
-        -- Next KeyWSymbol must be AcceptSy, WhenSy, or a Task Entry object
+        -- Next KeyWSymbol must be AcceptSy, WHEN_Symbol, or a Task Entry object
         --Name.
         InSymbol;
-        if Sy = AcceptSy or Sy = WhenSy or Sy = IDent then
-          if Sy = AcceptSy or Sy = WhenSy then
+        if Sy = AcceptSy or Sy = WHEN_Symbol or Sy = IDent then
+          if Sy = AcceptSy or Sy = WHEN_Symbol then
             SelectiveWait;
           else
             QualifiedEntryCall;
@@ -3060,9 +3061,9 @@ package body HAC.Parser is
       exit when Sy = BEGIN_Symbol;
     end loop;
 
-    ---------------------
-    -- Statements part --
-    ---------------------
+    -----------------------------
+    -- Statements part : setup --
+    -----------------------------
 
     MaxDX           := Dx;
     IdTab (Prt).Adr := LC;
@@ -3077,9 +3078,12 @@ package body HAC.Parser is
     CMax := CMax + ICode;
     InSymbol;
 
-    ------------------------
-    -- List of statements --
-    ------------------------
+    ------------------------------------------
+    -- Statements part : list of statements --
+    ------------------------------------------
+    if Sy = END_Symbol then -- GdM 15-Aug-2014: there should be at least one statement.
+      Error (err_statement_expected);
+    end if;
     loop
       Statement (FSys + END_Symbol);
       if Err_Count > 0 then  --{MRC, from PC source}

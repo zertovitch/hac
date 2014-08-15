@@ -105,8 +105,8 @@ package body HAC.Compiler is
           r : ATabEntry renames ArraysTab (I);
         begin
           Put (I, 4);
-          Put (Types'Pos (r.InXTYP), 10);
-          Put (Types'Pos (r.ELTYP), 5);
+          Put (Types'Pos (r.Index_TYP), 10);
+          Put (Types'Pos (r.Element_TYP), 5);
           Put (r.ELREF, 5);
           Put (r.Low, 5);
           Put (r.High, 5);

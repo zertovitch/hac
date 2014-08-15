@@ -101,6 +101,8 @@ package body HAC.UErrors is
       return "types must match in an assignment";
     when err_case_label_not_same_type_as_case_clause =>
       return "case label not of same type as case clause";
+    when err_duplicate_case_choice_value =>
+      return "duplicate choice value in ""case"" instruction";
     when err_argument_to_std_function_of_wrong_type =>
       return "argument to std. function of wrong type";
     when err_stack_size =>
@@ -176,6 +178,8 @@ package body HAC.UErrors is
       return "numeric constant expected";
     when err_identifier_too_long =>
       return "identifier """ & hint & "..."" is too long";
+    when err_statement_expected =>
+      return "statement expected, can be ""null""";
     -- when others =>
     --   return "Unknown error Id=" & Integer'Image (Id);
     end case;

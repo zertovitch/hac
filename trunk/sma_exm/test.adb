@@ -43,8 +43,8 @@ procedure Test is
     -- !! need array attributes !!
   begin
     --for i in first .. last loop
-	  null; -- Put(s(i));
-	--end loop;
+    null; -- Put(s(i));
+    --end loop;
   end;
   --
   
@@ -71,6 +71,45 @@ procedure Test is
     New_Line;
   end Fibo_demo;
 
+  -------------------------------------
+  -- Testing multidimensional arrays --
+  -------------------------------------
+
+  procedure Test_multi_arrays is
+    l1: constant:= -3;
+    h1: constant:=  9;
+    l2: constant:= 1;
+    h2: constant:= 8;
+    type T is array(l1..h1, l2..h2) of Integer;
+    a: T;
+    b: array(l1..h1, l2..h2) of Float;
+  begin
+    for pass in 1..4 loop -- !! HAC: compiles 1..5 OK without "when 4", interpreter crashes
+      for i in l1..h1 loop
+        for j in l2..h2 loop
+          case pass is
+            when 1 => -- fill array a
+              a(i,j):= i * j;
+            when 2 => -- display array a
+              Put(a(i,j));
+              if j = h2 then
+                New_Line;
+              end if;
+            when 3 => -- fill array b
+              b(i,j):= Float(i * j);
+              -- !! HAC accepts without Float(...);
+              -- !! HAC issues error compiles OK with Float(...) !!
+            when 4 => -- display array b
+              Put(b(i,j)); Put(' ');
+              if j = h2 then
+                New_Line;
+              end if;
+          end case;
+        end loop;
+      end loop;
+    end loop;
+  end Test_multi_arrays;
+  
   Twenty: constant:= 20;
   Ten_point_one: constant := 10.1;
   c: Character;
@@ -140,7 +179,6 @@ begin
         Put_Line("choice: four");
       when 2 =>
         Put_Line("choice: two");
-      -- when 2 => null; -- duplicate, is rejected
       when others =>
         Put("choice: "); 
         Put(gagl); -- !! HAC: Put(gagl, 1) prints two integer...
@@ -153,4 +191,6 @@ begin
   for n in 1..22 loop
     Fibo_demo(n);
   end loop;
+  --
+  Test_multi_arrays;
 end Test;
