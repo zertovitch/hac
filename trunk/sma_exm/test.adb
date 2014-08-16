@@ -80,11 +80,14 @@ procedure Test is
     h1: constant:=  9;
     l2: constant:= 1;
     h2: constant:= 8;
-    type T is array(l1..h1, l2..h2) of Integer;
-    a: T;
+    type T1 is array(l1..h1, l2..h2) of Integer;
+    a: T1;
     b: array(l1..h1, l2..h2) of Float;
+    type T2 is array(6..9) of Integer;
+    type T3 is record x: Integer; y: T2; end record;
+    c: array(l1..h1, l2..h2) of T3;
   begin
-    for pass in 1..4 loop -- !! HAC: compiles 1..5 OK without "when 4", interpreter crashes
+    for pass in 1..6 loop -- !! HAC: compiles 1..7 OK without "when 7", interpreter crashes
       for i in l1..h1 loop
         for j in l2..h2 loop
           case pass is
@@ -98,9 +101,17 @@ procedure Test is
             when 3 => -- fill array b
               b(i,j):= Float(i * j);
               -- !! HAC accepts without Float(...);
-              -- !! HAC issues error compiles OK with Float(...) !!
+              -- !! HAC issues error but compiles OK with Float(...) !!
             when 4 => -- display array b
-              Put(b(i,j)); Put(' ');
+              Put(b(i,j));
+              Put(' ');
+              if j = h2 then
+                New_Line;
+              end if;
+            when 5 => -- fill array c
+              c(i,j).y(7):= i * j;
+            when 6 => -- display array c
+              Put(c(i,j).y(7));
               if j = h2 then
                 New_Line;
               end if;

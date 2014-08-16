@@ -814,7 +814,7 @@ package body HAC.Parser is
             T0 := T0 + 1;
             Emit2 (k_Load_Address, IdTab (T0).LEV, IdTab (T0).Adr);
             Emit2 (k_Push_Value, IdTab (T1).LEV, IdTab (T1).Adr);
-            Emit (kStore);
+            Emit (k_Store);
           end loop;
 
           LC1 := LC;
@@ -1167,6 +1167,8 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     -------------------------------------------------------ResultType-
+    -- !! ResultType assumes there is an automatic conversion Ints -> Floats
+    -- Pascal, not Ada!
     function ResultType (a, B : Types) return Types is
     begin
       if a > Floats or B > Floats then
@@ -1223,9 +1225,9 @@ package body HAC.Parser is
             I, F : Integer;
             err  : Error_code;
 
-            procedure StandFct (NS : Integer) is
+            procedure Standard_Function (Pseudo_Address : Integer) is
               TS : Typset;
-              N  : Integer := NS;
+              N  : Integer := Pseudo_Address;
             begin  -- STANDARD FUNCTION NO. N , N => 100 INDICATES
               -- a NILADIC FUNCTION.
               if N < 100 then
@@ -1328,7 +1330,7 @@ package body HAC.Parser is
                     null;
                 end case;
               end if;    -- NILADIC FUNCTIONS, N => 100
-            end StandFct;
+            end Standard_Function;
 
           begin  -- Factor
             X.TYP := NOTYP;
@@ -1391,7 +1393,11 @@ package body HAC.Parser is
                           Emit2 (F, r.LEV, r.Adr);
                         end if;
 
-                      when TypeMark | Prozedure =>
+                      when TypeMark =>
+                        -- !! Float(integer_exp) Integer(float_exp) etc. here !!
+                        Error (err_expected_variable_function_or_constant);
+
+                      when Prozedure =>
                         Error (err_expected_variable_function_or_constant);
 
                       when Funktion =>
@@ -1399,7 +1405,7 @@ package body HAC.Parser is
                         if r.LEV /= 0 then
                           Call (FSys, I, CallSTDP);
                         else
-                          StandFct (r.Adr);
+                          Standard_Function (r.Adr);
                         end if;
 
                       when others =>
@@ -1661,7 +1667,7 @@ package body HAC.Parser is
       Expression (Semicolon_set, Y);
       if X.TYP = Y.TYP then
         if StanTyps (X.TYP) then
-          Emit (kStore);
+          Emit (k_Store);
         elsif X.Ref /= Y.Ref then
           Error (err_types_of_assignment_must_match);
         else
@@ -1671,14 +1677,14 @@ package body HAC.Parser is
             when Records =>
               Emit1 (k_Copy_Block, BlockTab (X.Ref).VSize);
             when Enums =>
-              Emit (kStore);
+              Emit (k_Store);
             when others =>
               null;
           end case;
         end if;
       elsif X.TYP = Floats and Y.TYP = Ints then
         Emit1 (k_Integer_to_Float, 0);
-        Emit (kStore);
+        Emit (k_Store);
       elsif X.TYP = Arrays and Y.TYP = Strings then
         if ArraysTab (X.Ref).Element_TYP /= xChars then
           Error (err_types_of_assignment_must_match);
@@ -1922,12 +1928,12 @@ package body HAC.Parser is
             Expression (Semicolon_set, Y);
             if X.TYP = Y.TYP then
               if StanTyps (X.TYP) then
-                Emit (kStore);
+                Emit (k_Store);
               elsif X.Ref /= Y.Ref then
                 Error (err_types_of_assignment_must_match);
               elsif X.TYP = Floats and Y.TYP = Ints then
                 Emit1 (k_Integer_to_Float, 0);
-                Emit (kStore);
+                Emit (k_Store);
               elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
                 Error (err_types_of_assignment_must_match);
               end if;

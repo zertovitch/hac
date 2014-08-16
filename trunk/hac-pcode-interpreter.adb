@@ -1117,16 +1117,16 @@ package body HAC.PCode.Interpreter is
             PS := ProgErr;
           end if;
 
-        when 34 =>
+        when kCase34 =>
           S (P2Ada_Var_6.T) := S (S (P2Ada_Var_6.T).I);
 
-        when 35 =>
+        when k_NOT_Boolean =>
           S (P2Ada_Var_6.T).I := Boolean'Pos(S (P2Ada_Var_6.T).I mod 2 = 0);
 
-        when 36 =>
+        when k_Unary_MINUS_Integer =>
           S (P2Ada_Var_6.T).I := -S (P2Ada_Var_6.T).I;
 
-        when 37 => --  write FLOAT
+        when k_Write_Float =>
           if FAT.CURR = 0 then
             Put
              (S (P2Ada_Var_6.T - 2).R,
@@ -1144,36 +1144,36 @@ package body HAC.PCode.Interpreter is
           P2Ada_Var_6.T := P2Ada_Var_6.T - 3;
           SWITCH        := True;  --  give up control when doing I/O
 
-        when 38 => --  STORE
+        when k_Store =>
           S (S (P2Ada_Var_6.T - 1).I) := S (P2Ada_Var_6.T);
           P2Ada_Var_6.T               := P2Ada_Var_6.T - 2;
 
-        when 39 .. 61 =>
+        when k_EQL_Float .. k_DIV_Float =>
           P2Ada_Var_6.T := P2Ada_Var_6.T - 1;
           case IR.F is
-          when 39 =>
-            S (P2Ada_Var_6.T).I := Boolean'Pos(
-             (S (P2Ada_Var_6.T).R = S (P2Ada_Var_6.T + 1).R));
+            when k_EQL_Float =>
+              S (P2Ada_Var_6.T).I := Boolean'Pos(
+               (S (P2Ada_Var_6.T).R = S (P2Ada_Var_6.T + 1).R));
 
-          when 40 =>
-            S (P2Ada_Var_6.T).I := Boolean'Pos(
-             (S (P2Ada_Var_6.T).R /= S (P2Ada_Var_6.T + 1).R));
+            when k_NEQ_Float =>
+              S (P2Ada_Var_6.T).I := Boolean'Pos(
+               (S (P2Ada_Var_6.T).R /= S (P2Ada_Var_6.T + 1).R));
 
-          when 41 =>
-            S (P2Ada_Var_6.T).I := Boolean'Pos(
-             (S (P2Ada_Var_6.T).R < S (P2Ada_Var_6.T + 1).R));
+            when k_LSS_Float =>
+              S (P2Ada_Var_6.T).I := Boolean'Pos(
+               (S (P2Ada_Var_6.T).R < S (P2Ada_Var_6.T + 1).R));
 
-          when 42 =>
-            S (P2Ada_Var_6.T).I := Boolean'Pos(
-             (S (P2Ada_Var_6.T).R <= S (P2Ada_Var_6.T + 1).R));
+            when k_LEQ_Float =>
+              S (P2Ada_Var_6.T).I := Boolean'Pos(
+               (S (P2Ada_Var_6.T).R <= S (P2Ada_Var_6.T + 1).R));
 
-          when 43 =>
-            S (P2Ada_Var_6.T).I := Boolean'Pos(
-             (S (P2Ada_Var_6.T).R > S (P2Ada_Var_6.T + 1).R));
+            when k_GTR_Float =>
+              S (P2Ada_Var_6.T).I := Boolean'Pos(
+               (S (P2Ada_Var_6.T).R > S (P2Ada_Var_6.T + 1).R));
 
-          when 44 =>
-            S (P2Ada_Var_6.T).I := Boolean'Pos(
-             (S (P2Ada_Var_6.T).R >= S (P2Ada_Var_6.T + 1).R));
+            when k_GEQ_Float =>
+              S (P2Ada_Var_6.T).I := Boolean'Pos(
+               (S (P2Ada_Var_6.T).R >= S (P2Ada_Var_6.T + 1).R));
 
           when 45 =>
             S (P2Ada_Var_6.T).I := Boolean'Pos(
@@ -1226,7 +1226,7 @@ package body HAC.PCode.Interpreter is
              (S (P2Ada_Var_6.T).I mod 2 =1 and
               S (P2Ada_Var_6.T + 1).I mod 2 =1));
 
-          when 57 =>
+          when k_MULT_Integer =>
             S (P2Ada_Var_6.T).I := S (P2Ada_Var_6.T).I *
                                    S (P2Ada_Var_6.T + 1).I;
 
@@ -1246,7 +1246,7 @@ package body HAC.PCode.Interpreter is
                                      S (P2Ada_Var_6.T + 1).I;
             end if;
 
-          when 60 =>
+          when k_MULT_Float =>
             S (P2Ada_Var_6.T).R := S (P2Ada_Var_6.T).R *
                                    S (P2Ada_Var_6.T + 1).R;
 

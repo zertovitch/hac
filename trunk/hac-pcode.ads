@@ -85,7 +85,7 @@ package HAC.PCode is
   k_NOT_Boolean               : constant := 35;
   k_Unary_MINUS_Integer       : constant := 36;
   k_Write_Float               : constant := 37;
-  kStore                      : constant := 38;
+  k_Store                     : constant := 38;
   k_EQL_Float                 : constant := 39;
   k_NEQ_Float                 : constant := 40;
   k_LSS_Float                 : constant := 41;
