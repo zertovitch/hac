@@ -146,36 +146,36 @@ package body HAC.Compiler is
           Adr    => X3);
       end Enter;
 
-    begin -- EnterStdFcns
-      Enter ("          ", Variable, NOTYP, 0);
-      Enter ("FALSE     ", Konstant, Bools, 0);
-      Enter ("TRUE      ", Konstant, Bools, 1);
-      Enter ("FLOAT     ", TypeMark, Floats, 1);
-      Enter ("CHARACTER ", TypeMark, xChars, 1);
-      Enter ("BOOLEAN   ", TypeMark, Bools, 1);
-      Enter ("INTEGER   ", TypeMark, Ints, 1);
-      Enter ("STRING    ", TypeMark, Strings, 1);  --{ Hathorn }
-      Enter ("SEMAPHORE ", TypeMark, Ints, 1);   --{ Hathorn }
-      Enter ("TEXT      ", TypeMark, Ints, 1);   --{ Schoening }
-      Enter ("ABS       ", Funktion, Floats, 0);
-      Enter ("SQR       ", Funktion, Floats, 2);
-      Enter ("ODD       ", Funktion, Bools, 4);
-      Enter ("ASCII     ", Funktion, xChars, 5);
-      Enter ("ORD       ", Funktion, Ints, 6);
-      Enter ("SUCC      ", Funktion, xChars, 7);
-      Enter ("PRED      ", Funktion, xChars, 8);
-      Enter ("ROUND     ", Funktion, Ints, 9);
-      Enter ("TRUNC     ", Funktion, Ints, 10);
-      Enter ("SIN       ", Funktion, Floats, 11);
-      Enter ("COS       ", Funktion, Floats, 12);
-      Enter ("EXP       ", Funktion, Floats, 13);
-      Enter ("LN        ", Funktion, Floats, 14);
-      Enter ("SQRT      ", Funktion, Floats, 15);
-      Enter ("ARCTAN    ", Funktion, Floats, 16);
-      Enter ("EOF       ", Funktion, Bools, 17);
-      Enter ("EOLN      ", Funktion, Bools, 18);
-      Enter ("RANDOM    ", Funktion, Ints, 19); --{ Schoening }
-      Enter ("CLOCK     ", Funktion, Floats, 100); --{ Cramer }
+    begin
+      Enter ("",           Variable, NOTYP, 0);
+      Enter ("FALSE",      Konstant, Bools, 0);
+      Enter ("TRUE",       Konstant, Bools, 1);
+      Enter ("FLOAT",      TypeMark, Floats, 1);
+      Enter ("CHARACTER",  TypeMark, xChars, 1);
+      Enter ("BOOLEAN",    TypeMark, Bools, 1);
+      Enter ("INTEGER",    TypeMark, Ints, 1);
+      Enter ("STRING",     TypeMark, Strings, 1);  --{ Hathorn }
+      Enter ("SEMAPHORE",  TypeMark, Ints, 1);   --{ Hathorn }
+      Enter ("TEXT",       TypeMark, Ints, 1);   --{ Schoening }
+      Enter ("ABS",        Funktion, Floats, 0);
+      Enter ("SQR",        Funktion, Floats, 2);
+      Enter ("ODD",        Funktion, Bools, 4);
+      Enter ("ASCII",      Funktion, xChars, 5);
+      Enter ("ORD",        Funktion, Ints, 6);
+      Enter ("SUCC",       Funktion, xChars, 7);
+      Enter ("PRED",       Funktion, xChars, 8);
+      Enter ("ROUND",      Funktion, Ints, 9);
+      Enter ("TRUNC",      Funktion, Ints, 10);
+      Enter ("SIN",        Funktion, Floats, 11);
+      Enter ("COS",        Funktion, Floats, 12);
+      Enter ("EXP",        Funktion, Floats, 13);
+      Enter ("LN",         Funktion, Floats, 14);
+      Enter ("SQRT",       Funktion, Floats, 15);
+      Enter ("ARCTAN",     Funktion, Floats, 16);
+      Enter ("EOF",        Funktion, Bools, 17);
+      Enter ("EOLN",       Funktion, Bools, 18);
+      Enter ("RANDOM",     Funktion, Ints, 19); --{ Schoening }
+      Enter ("CLOCK",      Funktion, Floats, 100); --{ Cramer }
       --{ Niladic functions such as CLOCK will have   }
       --{ IdTab[].Adr >= 100 To differentiate them from }
       --{ functions with args.  See Parser.StandFct.  }
