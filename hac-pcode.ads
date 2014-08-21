@@ -6,7 +6,7 @@
 
 -- Legal licensing note:
 
---  Copyright (c) 2013 Gautier de Montmollin
+--  Copyright (c) 2013..2014 Gautier de Montmollin
 --
 --  History and authors list of works HAC was originally derived from
 --  can be found in hac.txt.
@@ -40,6 +40,10 @@
 -- the compiler and the parser.
 
 package HAC.PCode is
+
+  dummy_address : constant := -1;
+  -- For jumps forward in the code towards an ELSE, ELSIF, END IF, END LOOP, ...
+  -- When the code is emited, the address is still unknown.
 
   -- Store PCode object in the object code table
   procedure Emit(FCT: Integer);

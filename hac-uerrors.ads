@@ -144,6 +144,7 @@ package HAC.UErrors is
   ENTRIES_table_overflow        : constant:=  9;
   PATCHING_overflow             : constant:= 10;
 
+  Internal_error: exception;
   Failure_1_0: exception;
 
   function ErrorString(code: Error_code; hint: String:= "") return String;

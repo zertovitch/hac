@@ -6,17 +6,24 @@ with Ada.Unchecked_Deallocation;
 
 package body HAC.Parser is
 
+  use HAC.Data;
+
   Semicolon_set : constant Symset := Singleton(Semicolon);
   END_set       : constant Symset := Singleton(END_Symbol);
+
+
 
   ------------------------------------------------------------------
   ------------------------------------------------------------Block-
 
-  procedure Block
-   (FSys    : Symset;
-    IsFun   : Boolean;
-    Level_A : Integer;
-    Prt     : Integer)
+  procedure Block(
+    FSys                 : HAC.Data.Symset;
+    Is_a_function        : Boolean;       --  RETURN [Value] statement expected
+    Is_a_block_statement : Boolean;       --  5.6 Block Statements
+    Level_A              : Integer;
+    Prt                  : Integer;
+    BlockID              : HAC.Data.Alfa  --  Name of this block (if any)
+  )
   is
 
     Level : Integer := Level_A;
@@ -37,7 +44,6 @@ package body HAC.Parser is
     PRB     : Integer;  -- B-Index of this procedure
     I       : Integer;  -- Index into the identifier table IdTab
     ICode   : Integer;  -- Size of initialization ObjCode generated
-    BlockID : Alfa;    -- Name of the current Block
 
     ------------------------------------------------------------------
     -------------------------------------------------------EnterArray-
@@ -196,8 +202,7 @@ package body HAC.Parser is
         while IdTab (J).Name /= Id loop
           J := IdTab (J).Link;
         end loop;
-        -- follow the chain of identifiers for
-        -- current Level.
+        -- Follow the chain of identifiers for current Level.
         if J /= 0 then
           Error (err_duplicate_identifier, Id);
         else      -- Enter identifier if there is room in table IdTab
@@ -211,16 +216,15 @@ package body HAC.Parser is
             Normal => True,
             LEV    => Level,
             Adr    => 0);
-          BlockTab (Display (Level)).Last  := T;  -- update start of identifer
-                                                  --chain
+          BlockTab (Display (Level)).Last  := T;  -- update start of identifer chain
         end if;
       end if;
     end Enter;
 
     ------------------------------------------------------------------
-    --------------------------------------------------------------LOC-
-    function LOC (Id : Alfa) return Natural is
-      L, J : Integer;        -- locate identifier, Id, in table
+    ------------------------------------------------Locate_identifier-
+    function Locate_identifier (Id : Alfa) return Natural is
+      L, J : Integer;
     begin
       L              := Level;
       IdTab (0).Name := Id;      -- sentinel
@@ -236,7 +240,7 @@ package body HAC.Parser is
         Error (err_undefined_identifier);
       end if;
       return J;
-    end LOC;
+    end Locate_identifier;
 
     ------------------------------------------------------------------
     -------------------------------------------------Get_File_Pointer-
@@ -291,7 +295,7 @@ package body HAC.Parser is
           end if;
 
           if Sy = IDent then
-            X := LOC (Id);
+            X := Locate_identifier (Id);
             if X /= 0 then
               if IdTab (X).Obj /= Konstant then
                 Error (err_illegal_constant_or_constant_identifier);
@@ -422,7 +426,7 @@ package body HAC.Parser is
         end if;
         case Sy is
           when IDent =>
-            I := LOC (Id);     -- IDent
+            I := Locate_identifier (Id);
             if I /= 0 then
               if IdTab (I).Obj = TypeMark then
                 TP := IdTab (I).TYP;
@@ -587,7 +591,7 @@ package body HAC.Parser is
           if Sy = IN_Symbol then
             InSymbol;
           end if;
-          if IsFun then -- if I am a function, no InOut parms allowed
+          if Is_a_function then -- if I am a function, no InOut parms allowed
             ValParam := True;
           elsif Sy /= OutSy then
             ValParam := True;
@@ -598,7 +602,7 @@ package body HAC.Parser is
           if Sy /= IDent then
             Error (err_identifier_missing);
           else
-            X := LOC (Id);
+            X := Locate_identifier (Id);
             InSymbol;
             if X /= 0 then
               if IdTab (X).Obj = TypeMark then
@@ -728,7 +732,7 @@ package body HAC.Parser is
         T1 := T;
 
         if Sy = IDent then  --MRC 6/91 from PC version
-          I := LOC (Id);
+          I := Locate_identifier (Id);
         end if;
 
         Test (Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_set, err_incorrectly_used_symbol);
@@ -850,7 +854,7 @@ package body HAC.Parser is
         Enter (Id, Prozedure);
       end if;
       InSymbol;
-      Block (FSys, IsFun, Level + 1, T);
+      Block (FSys, IsFun, False, Level + 1, T, IdTab(T).Name);
       if IsFun then
         Emit1 (k_Exit_Function, 1);
       else
@@ -871,15 +875,13 @@ package body HAC.Parser is
       InSymbol;
       if Sy = BodySy then          -- Task Body
         InSymbol;
-        I      := LOC (Id);
+        I      := Locate_identifier (Id);
         TaskID := IdTab (I).Name;
-
         BlockTab (IdTab (I).Ref).SrcFrom := saveLineCount;  --(* Manuel *)
-
         InSymbol;
-        Block (FSys, False, Level + 1, I);
+        Block (FSys, False, False, Level + 1, I, TaskID);
         Emit1 (k_Exit_Call, CallSTDP);
-      else                    -- Task Specification
+      else                         -- Task Specification
         if Sy = IDent then
           TaskID := Id;
         else
@@ -922,7 +924,7 @@ package body HAC.Parser is
             EntryTAB (ECount) := T;  --  point to identifier table location
             T0                := T;  --  of TaskID
             InSymbol;
-            Block (FSys, False, Level + 1, T);
+            Block (FSys, False, False, Level + 1, T, IdTab(T).Name);
             IdTab (T0).Adr := TCount;
             if Sy = Semicolon then
               InSymbol;
@@ -1074,7 +1076,7 @@ package body HAC.Parser is
               if Sy /= IDent then
                 Error (err_identifier_missing);
               else
-                K := LOC (Id);
+                K := Locate_identifier (Id);
                 InSymbol;
                 if K /= 0 then
                   if IdTab (K).Obj /= Variable then
@@ -1348,9 +1350,9 @@ package body HAC.Parser is
 
               case Sy is
                 when IDent =>
-                  I := LOC (Id);
+                  I := Locate_identifier (Id);
                   InSymbol;
-                  exit when I = No_Id; -- Id. not found, error shown by LOC
+                  exit when I = No_Id; -- Id. not found, error shown by Locate_identifier
                   declare
                     r : TabEntry renames IdTab (I);
                   begin
@@ -1735,7 +1737,7 @@ package body HAC.Parser is
 
       begin  -- AcceptStatement
         InSymbol;
-        I := LOC (Id);
+        I := Locate_identifier (Id);
         if IdTab (I).Obj /= aEntry then
           Error (err_use_Small_Sp);
         end if;
@@ -1762,19 +1764,6 @@ package body HAC.Parser is
         Emit1 (k_End_Rendezvous, I);
       end AcceptStatement;
 
-      procedure CompoundStmnt is           -- modified Hathorn
-      begin
-        InSymbol;
-        MultiStatement (END_set);
-        TestEnd;
-        if Sy = IDent then
-          if Id /= IdTab (Prt).Name then
-            Error (err_incorrect_block_name, hint => Alfa_to_String(IdTab (Prt).Name));
-          end if;
-          InSymbol;
-        end if;
-      end CompoundStmnt;
-
       procedure Exit_Statement is
         -- Generate an absolute branch Statement with a dummy end loop address
         X : Item;
@@ -1792,7 +1781,7 @@ package body HAC.Parser is
           end if;
           Emit1 (k_Conditional_Jump, LC + 2);            -- conditional jump around Exit
         end if;
-        Emit1 (k_Jump, -1);        -- unconditional jump with address to be patched
+        Emit1 (k_Jump, dummy_address);  -- unconditional jump with dummy address to be patched
       end Exit_Statement;
 
       procedure IF_Statement is
@@ -1821,8 +1810,7 @@ package body HAC.Parser is
         LC0 := LC;
         while Sy = ElsIfSy loop     -- Added Hathorn
           InSymbol;
-          Emit1 (k_Jump, -1);    -- unconditional jump with address
-                                 --To be patched
+          Emit1 (k_Jump, dummy_address);    -- unconditional jump with dummy address to be patched
           ObjCode (LC1).Y := LC; -- patch the previous conditional jump
           Expression
            (FSys + Symset'((THEN_Symbol | doSy => True, others => False)),
@@ -1846,7 +1834,7 @@ package body HAC.Parser is
 
         if Sy = ElseSy then
           InSymbol;
-          Emit1 (k_Jump, -1);
+          Emit1 (k_Jump, dummy_address);
           ObjCode (LC1).Y := LC;
           MultiStatement (END_set);
         else
@@ -1864,7 +1852,7 @@ package body HAC.Parser is
         end if;
         -- Go back and patch the dummy addresses in unconditional jumps
         while LC0 < LC loop
-          if ObjCode (LC0).Y = -1 then
+          if ObjCode (LC0).Y = dummy_address then
             ObjCode (LC0).Y := LC;
           end if;
           LC0 := LC0 + 1;
@@ -1892,9 +1880,9 @@ package body HAC.Parser is
           Error (err_closing_LOOP_missing);
         end if;
 
-        -- Go back and patch the dummy addresses generated by Exit stmts.
+        -- Go back and patch the dummy addresses generated by Exit statements.
         while LC0 < LC loop
-          if ObjCode (LC0).Y = -1 then
+          if ObjCode (LC0).Y = dummy_address then
             ObjCode (LC0).Y := LC;
           end if;
           LC0 := LC0 + 1;
@@ -1910,9 +1898,9 @@ package body HAC.Parser is
         if BlockID = ProgramID then
           Error (err_illegal_return_statement_from_main); -- !! but... this is legal in Ada !!
         end if;
-        I := LOC (BlockID);
+        I := Locate_identifier (BlockID);
         InSymbol;
-        if Sy = Semicolon and IsFun then
+        if Sy = Semicolon and Is_a_function then
           Error (err_functions_must_return_a_value);
         end if;
         if Sy /= Semicolon then          -- calculate return value
@@ -1942,7 +1930,7 @@ package body HAC.Parser is
             Error (err_illegal_return_statement_from_main);
           end if;       -- !! but... this is legal in Ada !!
         end if;
-        if IsFun then
+        if Is_a_function then
           Emit1 (k_Exit_Function, CallSTDP);
         else
           Emit1 (k_Exit_Call, CallSTDP);
@@ -2216,7 +2204,7 @@ package body HAC.Parser is
           O                  : Order;
           Y                  : Item;
         begin
-          I := LOC (Id);
+          I := Locate_identifier (Id);
           if IdTab (I).Obj = aTask then
             InSymbol;
             EntryCall (FSys, I, -1);
@@ -2226,7 +2214,7 @@ package body HAC.Parser is
               patch (0) := LC - 3;
             end if;       -- LC-1 must be OP=3, update Display
             patch (1) := LC;           -- need To patch in JMPC address later
-            Emit1 (k_Conditional_Jump, -1);    -- JMPC, address patched in after ELSE
+            Emit1 (k_Conditional_Jump, dummy_address);    -- JMPC, address patched in after ELSE
                                       --or OR
             if Sy = Semicolon then
               InSymbol;
@@ -2277,7 +2265,7 @@ package body HAC.Parser is
               ObjCode (patch (0)).X      := CallCNDE; -- Conditional Entry Call
               ObjCode (patch (0) + 1).Y  := CallCNDE;
               patch (2)                  := LC;
-              Emit1 (k_Jump, -1);          -- JMP, address patched in after END
+              Emit1 (k_Jump, dummy_address);          -- JMP, address patched in after END
                                           --SELECT
               patch (3) := LC;
               InSymbol;
@@ -2331,7 +2319,7 @@ package body HAC.Parser is
 
           begin                -- AcceptStatment2
             InSymbol;
-            I := LOC (Id);
+            I := Locate_identifier (Id);
             if IdTab (I).Obj /= aEntry then
               SelectError (err_use_Small_Sp);
             end if;
@@ -2590,7 +2578,7 @@ package body HAC.Parser is
                 if Sy /= IDent then
                   Error (err_identifier_missing);
                 else
-                  I := LOC (Id);
+                  I := Locate_identifier (Id);
                   InSymbol;
                   if I /= 0 then
                     if IdTab (I).Obj /= Variable then
@@ -2738,7 +2726,7 @@ package body HAC.Parser is
               if Sy /= IDent then
                 Error (err_undefined_identifier);
               else
-                I := LOC (Id);
+                I := Locate_identifier (Id);
                 InSymbol;
                 if I /= 0 then
                   if IdTab (I).Obj /= Variable then
@@ -2895,6 +2883,16 @@ package body HAC.Parser is
         end case;
       end StandProc;
 
+      procedure Block_statement(block_name: Alfa) is  -- RM: 5.6
+      begin
+        Block (FSys, Is_a_function, True, Level + 1, T, block_name);
+        -- !! to check: * stack management of variables when entering / quitting the block
+        -- !! * object code and nesting... works on some cases at least (test.adb) !...
+        -- !! Perhaps keep same level but have local declarations as for the
+        --    variable in a FOR_Statement.
+        -- !! Local bodies of subprograms surely mess the object code.
+      end Block_statement;
+
     begin  -- Statement
       if Err_Count > 0 then  --{MRC: added from PC version}
         return;
@@ -2909,7 +2907,7 @@ package body HAC.Parser is
       if Statement_Begin_Symbol (Sy) then
         case Sy is
         when IDent =>
-          I := LOC (Id);
+          I := Locate_identifier (Id);
           InSymbol;
           if I /= 0 then
             case IdTab (I).Obj is
@@ -2932,8 +2930,8 @@ package body HAC.Parser is
           end if; -- end IDent
         when AcceptSy =>
           AcceptStatement;
-        when BEGIN_Symbol =>
-          CompoundStmnt;
+        when BEGIN_Symbol | DECLARE_Symbol => -- Anonymous block_statement
+          Block_statement(Empty_Alfa);
         when CASE_Symbol =>
           CASE_Statement;
         when DelaySy =>
@@ -2978,7 +2976,6 @@ package body HAC.Parser is
       return;
     end if;
 
-    BlockID := IdTab (Prt).Name;
     Dx      := 5;
     ICode   := 0;
     if Level > LMax then
@@ -2986,10 +2983,14 @@ package body HAC.Parser is
       return;            --{MRC, from PC source}
     end if;
 
-    Test
-     (Symset'(LParent | RETURN_Symbol | IS_Symbol | Semicolon => True, others => False),
-      FSys,
-      err_incorrectly_used_symbol);
+    if Is_a_block_statement then
+      null; -- we should be here with Sy = BEGIN_Symbol or Sy = DECLARE_Symbol.
+    else
+      Test
+       (Symset'(LParent | RETURN_Symbol | IS_Symbol | Semicolon => True, others => False),
+        FSys,
+        err_incorrectly_used_symbol);
+    end if;
     if IdTab (Prt).Ref > 0 then
       PRB := IdTab (Prt).Ref;
     else
@@ -3009,11 +3010,11 @@ package body HAC.Parser is
 
     BlockTab (PRB).LastPar := T;
     BlockTab (PRB).PSize   := Dx;
-    if IsFun then
+    if Is_a_function and not Is_a_block_statement then
       if Sy = RETURN_Symbol then
         InSymbol;  -- FUNCTION TYPE
         if Sy = IDent then
-          I := LOC (Id);
+          I := Locate_identifier (Id);
           InSymbol;
           if I /= 0 then
             if IdTab (I).Obj /= TypeMark then
@@ -3041,12 +3042,24 @@ package body HAC.Parser is
       return; -- Exit(Block);
     end if;
 
-    if Sy = IS_Symbol then
-      InSymbol;
+    if Is_a_block_statement then
+      case Sy is
+        when DECLARE_Symbol => InSymbol;
+        when BEGIN_Symbol   => null;
+        when others         => raise Internal_error with "Unexpected " & KeyWSymbol'Image(Sy);
+      end case;
     else
-      Error (err_IS_missing);
-      return;
+      if Sy = IS_Symbol then
+        InSymbol;
+      else
+        Error (err_IS_missing);
+        return;
+      end if;
     end if;
+
+    ----------------------
+    -- Declarative_part --
+    ----------------------
 
     loop
       if Sy = IDent then
@@ -3073,15 +3086,14 @@ package body HAC.Parser is
 
     MaxDX           := Dx;
     IdTab (Prt).Adr := LC;
-    -- copy initialization ObjCode from end of ObjCode table
+    -- Copy initialization (elaboration) ObjCode from end of ObjCode table
     I := CMax + ICode;
     while I > CMax loop
       ObjCode (LC) := ObjCode (I);
       LC           := LC + 1;
       I            := I - 1;
     end loop;
-
-    CMax := CMax + ICode;
+    CMax := CMax + ICode; -- Restore CMax to the initial max (=CDMax)
     InSymbol;
 
     ------------------------------------------
@@ -3119,7 +3131,7 @@ package body HAC.Parser is
       return;
     end if;
 
-    if BlockID /= ProgramID then
+    if BlockID /= ProgramID and not Is_a_block_statement then
       InSymbol;
       Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
     end if;

@@ -30,10 +30,23 @@ procedure Test is
     x_glob:= a;
   end Do_1;
   --
-  procedure Do_1_in_out(a: in out Integer) is
+  procedure Do_1_param_in_out(a: in out Integer) is
+    sept: constant:= 7;
+    septante: constant Integer:= 70;
   begin
-    a:= 777;
-  end Do_1_in_out;
+    a:= septante + sept;
+    declare
+      sept_cents: constant Integer:= 700; -- sept * 100 too complicated !!
+    begin
+      a:= sept_cents + a;
+      Put_Line("Block statement");
+    end;
+    begin
+      begin
+        Put_Line("Another block statement");
+      end;
+    end;
+  end Do_1_param_in_out;
   --
   -- type My_String is array(1..5) of Character;
   -- s: String(1..5);
@@ -168,7 +181,7 @@ begin
   Put(z1.y); Put_Line(" ... should be: 1.80000E+00");
   Do_0;
   Do_1(123);
-  Do_1_in_out(x_glob);
+  Do_1_param_in_out(x_glob);
   case x_glob is
     when 123 =>
       My_Put("123 (wrong)");

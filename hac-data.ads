@@ -239,7 +239,7 @@ package HAC.Data is
     Ref : Index;
   end record;
 
-  subtype Neting_level is Integer range 0 .. LMax;
+  subtype Nesting_level is Integer range 0 .. LMax;
 
   subtype Longint is Integer;
 
@@ -256,7 +256,7 @@ package HAC.Data is
                           --   xChars, Arrays, Records, Enums, Strings
     Ref  : Index;         --  Index into the Block table
     Normal: Boolean;       --  value param?
-    LEV  : Neting_level;
+    LEV  : Nesting_level;
     Adr  : Integer;       --  index into the Code table for the
                           --  procedure code (if Name is a
                           --  procedure or function)
@@ -370,7 +370,7 @@ package HAC.Data is
   m, N : Integer;
   CMax : Integer := CDMax; -- := added 7-Dec-2009
   --  top of available ObjCode table;
-  --  CMax+1..CDMax: var initialization code
+  --  CMax+1..CDMax: variable initialization code (elaboration)
 
   --  Compiler tables
 
@@ -526,6 +526,7 @@ package HAC.Data is
    Symset'
    (IDent         |
     BEGIN_Symbol  |
+    DECLARE_Symbol|
     IF_Symbol     |
     WHILE_Symbol  |
     Loop_Symbol   |
