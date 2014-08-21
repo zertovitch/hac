@@ -289,7 +289,7 @@ package body HAC.Compiler is
     TaskDefTab (0) := T; --{ Task Table Entry }
 
     -- Start Compiling
-    Block (Block_Begin_Symbol + Statement_Begin_Symbol, False, 1, T);
+    Block (Block_Begin_Symbol + Statement_Begin_Symbol, False, False, 1, T, IdTab(T).Name);
     -- Main procedure is parsed.
     Emit (k_Halt_Interpreter);
 

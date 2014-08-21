@@ -6,7 +6,7 @@
 
 -- Legal licensing note:
 
---  Copyright (c) 2013 Gautier de Montmollin
+--  Copyright (c) 2013..2014 Gautier de Montmollin
 --
 --  History and authors list of works HAC was originally derived from
 --  can be found in hac.txt.
@@ -35,10 +35,22 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Data;                        use HAC.Data;
+with HAC.Data;
 
 package HAC.Parser is
 
-  procedure Block(FSys: Symset; IsFun: Boolean; Level_A: Integer; Prt: Integer);
+  procedure Block(
+    FSys                 : HAC.Data.Symset;
+    Is_a_function        : Boolean;       --  RETURN [Value] statement expected
+    Is_a_block_statement : Boolean;       --  RM: 5.6 Block Statements
+    Level_A              : Integer;
+    Prt                  : Integer;
+    BlockID              : HAC.Data.Alfa  --  Name of this block (if any)
+  );
+
+  -- E.g. : in the case of a block statement within a function, the value
+  -- True will be passed for both Is_a_function and Is_a_block_statement.
+  -- When Is_a_block_statement = True, the current symbol Sy must be either
+  -- DECLARE_symbol or BEGIN_symbol
 
 end HAC.Parser;
