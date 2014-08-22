@@ -35,17 +35,24 @@ procedure Test is
     septante: constant Integer:= 70;
   begin
     a:= septante + sept;
+    Put_Line("NOT in a block statement");
+    what_a_nice_block: 
     declare
       sept_cents: constant Integer:= 700; -- sept * 100 too complicated !!
     begin
       a:= sept_cents + a;
       Put_Line("Block statement");
-    end;
+    end what_a_nice_block;
+    Put_Line("NOT in a block statement");
+    what_a_nice_block_2: 
     begin
+      Put_Line("Another block statement");
+      what_a_NICE_block_3: 
       begin
-        Put_Line("Another block statement");
-      end;
-    end;
+        Put_Line("Yet another block statement");
+      end what_a_NICE_block_3;
+    end what_a_nice_block_2;
+    Put_Line("NOT in a block statement");
   end Do_1_param_in_out;
   --
   -- type My_String is array(1..5) of Character;

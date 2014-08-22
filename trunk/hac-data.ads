@@ -152,7 +152,7 @@ package HAC.Data is
    IF_Symbol,
    IN_Symbol,
    IS_Symbol,
-   Loop_Symbol,
+   LOOP_Symbol,
    ModSy,
    Not_Symbol,
    NullSy,
@@ -186,6 +186,10 @@ package HAC.Data is
   type Set is array (Integer range <>) of Boolean;
   function "+" (a, b : Set) return Set;
 
+  ---------------------
+  -- Sets of symbols --
+  ---------------------
+
   type Symset is array (KeyWSymbol) of Boolean;
   function "+" (a, b : Symset) return Symset;
   function "+" (a : Symset; b : KeyWSymbol) return Symset;
@@ -195,7 +199,16 @@ package HAC.Data is
   function Singleton(s: KeyWSymbol) return Symset;
   pragma Inline(Singleton);
 
-  subtype Index is Integer range -XMax .. +XMax;
+  IDent_set     : constant Symset := (IDent => True, others => False);
+  Semicolon_set : constant Symset := (Semicolon => True, others => False);
+  END_set       : constant Symset := (END_Symbol => True, others => False);
+
+  Semicolon_Comma_IDent : constant Symset :=
+    Symset'(Semicolon | Comma | IDent => True, others => False);
+
+  -----------------
+  -- Identifiers --
+  -----------------
 
   -- Alfa is a space-padded string
   subtype Alfa is String (1 .. Alng);
@@ -209,7 +222,8 @@ package HAC.Data is
    Prozedure,
    Funktion,
    aTask,
-   aEntry);
+   aEntry,
+   Label);
 
   --  The Order of these is significant
   type Types is (
@@ -233,6 +247,8 @@ package HAC.Data is
     Number   => False,
     Special  |
     Illegal  => True);
+
+  subtype Index is Integer range -XMax .. +XMax;
 
   type Item is record
     TYP : Types;

@@ -122,7 +122,8 @@ package HAC.UErrors is
     err_EQUALS_instead_of_BECOMES,
     err_numeric_constant_expected,
     err_identifier_too_long,
-    err_statement_expected
+    err_statement_expected,
+    err_duplicate_label
   );
 
   procedure Error(code: Error_code; hint: String:= "");

@@ -180,6 +180,8 @@ package body HAC.UErrors is
       return "identifier """ & hint & "..."" is too long";
     when err_statement_expected =>
       return "statement expected, can be ""null""";
+    when err_duplicate_label =>
+      return "label already defined: " & hint;
     -- when others =>
     --   return "Unknown error Id=" & Integer'Image (Id);
     end case;
