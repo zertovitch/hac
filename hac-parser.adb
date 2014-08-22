@@ -8,11 +8,6 @@ package body HAC.Parser is
 
   use HAC.Data;
 
-  Semicolon_set : constant Symset := Singleton(Semicolon);
-  END_set       : constant Symset := Singleton(END_Symbol);
-
-
-
   ------------------------------------------------------------------
   ------------------------------------------------------------Block-
 
@@ -157,8 +152,8 @@ package body HAC.Parser is
     end Test;
 
     ------------------------------------------------------------------
-    ----------------------------------------------------TestSemicolon-
-    procedure TestSemicolon is
+    ---------------------------------------------------Test_Semicolon-
+    procedure Test_Semicolon is
       comma_or_colon : constant Symset :=
        Symset'(Comma | Colon => True, others => False);
     begin
@@ -175,7 +170,7 @@ package body HAC.Parser is
         Block_Begin_Symbol,
         FSys,
         err_incorrectly_used_symbol);
-    end TestSemicolon;
+    end Test_Semicolon;
 
     ------------------------------------------------------------------
     ----------------------------------------------------------TestEnd-
@@ -223,7 +218,7 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     ------------------------------------------------Locate_identifier-
-    function Locate_identifier (Id : Alfa) return Natural is
+    function Locate_identifier (Id : Alfa; No_Id_Fail: Boolean:= True) return Natural is
       L, J : Integer;
     begin
       L              := Level;
@@ -236,7 +231,7 @@ package body HAC.Parser is
         L := L - 1;
         exit when L < 0 or J /= 0;
       end loop;
-      if J = No_Id then
+      if J = No_Id and No_Id_Fail then
         Error (err_undefined_identifier);
       end if;
       return J;
@@ -336,10 +331,7 @@ package body HAC.Parser is
       ELSZ, Offset, T0, T1 : Integer;
       StrArray             : Boolean;
 
-      FSys_gnagna : constant Symset :=
-       FSys -
-       Symset'(Semicolon | Comma | IDent => True, others => False) +
-       END_set;
+      FSys_gnagna : constant Symset := FSys - Semicolon_Comma_IDent + END_set;
 
       procedure ArrayTyp (ARef, Arsz : in out Integer; StrAr : Boolean) is
         ELTP       : Types;
@@ -538,7 +530,7 @@ package body HAC.Parser is
             ECount := 0;
             loop
               InSymbol;
-              if (Sy = IDent) then
+              if Sy = IDent then
                 ECount := ECount + 1;
                 Enter (Id, Konstant);
                 IdTab (T).TYP := Enums;
@@ -577,7 +569,7 @@ package body HAC.Parser is
       InSymbol;
       RF := 0;
       Sz := 0;
-      Test (Singleton(IDent), FSys + RParent, err_identifier_missing);
+      Test (IDent_set, FSys + RParent, err_identifier_missing);
       while Sy = IDent loop
         T0 := T;
         EnterVariable;
@@ -585,7 +577,6 @@ package body HAC.Parser is
           InSymbol;
           EnterVariable;
         end loop;
-
         if Sy = Colon then
           InSymbol;
           if Sy = IN_Symbol then
@@ -653,7 +644,7 @@ package body HAC.Parser is
               InSymbol;
             end if;
           end if;
-          Test (Singleton(IDent), FSys + RParent, err_incorrectly_used_symbol);
+          Test (IDent_set, FSys + RParent, err_incorrectly_used_symbol);
         end if;
       end loop;  -- while Sy = IDent
       if Sy = RParent then
@@ -674,9 +665,7 @@ package body HAC.Parser is
       RF, Sz, T1 : Integer;
     begin
       InSymbol;
-      Test (Symset'(IDent => True, others => False),
-        Semicolon_set, err_identifier_missing
-      );
+      Test (IDent_set, Semicolon_set, err_identifier_missing);
       Enter (Id, TypeMark);
       T1 := T;
       InSymbol;
@@ -685,20 +674,15 @@ package body HAC.Parser is
       else
         Error (err_IS_missing);
       end if;
-
       TP := NOTYP;
       RF := 0;
       Sz := 0;
-      TYP
-       (Symset'(Semicolon | Comma | IDent => True, others => False) + FSys,
-        TP,
-        RF,
-        Sz);
+      TYP (Semicolon_Comma_IDent + FSys, TP, RF, Sz);
       IdTab (T1).TYP := TP;
       IdTab (T1).Ref := RF;
       IdTab (T1).Adr := Sz;
       --
-      TestSemicolon;
+      Test_Semicolon;
     end Type_Declaration;
 
     ------------------------------------------------------------------
@@ -770,7 +754,7 @@ package body HAC.Parser is
           if Sy = Becomes then
             InSymbol;
             KKonstant
-             (Symset'(Semicolon | Comma | IDent => True, others => False) +
+             (Semicolon_Comma_IDent +
               FSys,
               C);
           else
@@ -833,7 +817,7 @@ package body HAC.Parser is
           end loop;
 
         end if;
-        TestSemicolon;
+        Test_Semicolon;
       end loop; -- While Sy = IDent
 
     end VarDeclaration;
@@ -940,7 +924,7 @@ package body HAC.Parser is
           else
             Skip (Semicolon, err_incorrect_block_name);
           end if;
-          TestSemicolon;
+          Test_Semicolon;
         end if;
       end if;
     end TaskDeclaration;
@@ -1862,7 +1846,7 @@ package body HAC.Parser is
       procedure LOOP_Statement (FCT, B : Integer) is    -- Hathorn
         LC0 : Integer := LC;
       begin
-        if Sy = Loop_Symbol then
+        if Sy = LOOP_Symbol then
           InSymbol;
         else
           Skip (Statement_Begin_Symbol, err_missing_closing_IF);
@@ -1874,7 +1858,7 @@ package body HAC.Parser is
         else
           Error (err_END_missing);
         end if;
-        if Sy = Loop_Symbol then -- (END) LOOP
+        if Sy = LOOP_Symbol then -- (END) LOOP
           InSymbol;
         else
           Error (err_closing_LOOP_missing);
@@ -2090,7 +2074,7 @@ package body HAC.Parser is
         InSymbol;
         LC1 := LC;
         Expression
-         (FSys + Symset'((Loop_Symbol | doSy => True, others => False)),
+         (FSys + Symset'((LOOP_Symbol | doSy => True, others => False)),
           X);
         if not (X.TYP = Bools or else X.TYP = NOTYP) then
           Error (err_expecting_a_boolean_expression);
@@ -2139,7 +2123,7 @@ package body HAC.Parser is
            (Symset'((
               IN_Symbol         |
               RangeSy           |
-              Loop_Symbol       |
+              LOOP_Symbol       |
               END_Symbol        => True,
               others => False)) +
             FSys,
@@ -2156,7 +2140,7 @@ package body HAC.Parser is
             InSymbol;
           end if;
           Expression
-           (Symset'((RangeSy | Loop_Symbol | END_Symbol => True, others => False)) +
+           (Symset'((RangeSy | LOOP_Symbol | END_Symbol => True, others => False)) +
             FSys,
             X);
           IdTab (T).TYP := X.TYP;
@@ -2168,18 +2152,18 @@ package body HAC.Parser is
           end if;
           if Sy = RangeSy then
             InSymbol;
-            Expression (FSys + Loop_Symbol, X);
+            Expression (FSys + LOOP_Symbol, X);
             if IdTab (T).TYP /= X.TYP then
               Error (err_first_and_last_must_have_matching_types);
             end if;
           else
             Skip
-             (Symset'((Loop_Symbol | END_Symbol | Semicolon => True, others => False)) +
+             (Symset'((LOOP_Symbol | END_Symbol | Semicolon => True, others => False)) +
               FSys,
               err_expecting_dot_dot);
           end if;
         else
-          Skip (FSys + Loop_Symbol, err_IN_missing);
+          Skip (FSys + LOOP_Symbol, err_IN_missing);
         end if;
         LC1 := LC;
         Emit (F);
@@ -2893,6 +2877,22 @@ package body HAC.Parser is
         -- !! Local bodies of subprograms surely mess the object code.
       end Block_statement;
 
+      procedure Named_statement is -- block_statement or loop
+        new_label: constant Alfa:= Id;
+      begin
+        Enter (new_label, Label);
+        Test (Singleton(Colon), FSys, err_colon_missing);
+        InSymbol;
+        case Sy is
+          when BEGIN_Symbol | DECLARE_Symbol => -- Named block_statement
+            Block_statement(new_label);
+          when LOOP_Symbol | FOR_Symbol | WHILE_Symbol =>
+            null; -- !! should check label after end loop
+          when others =>
+            null;
+        end case;
+      end Named_statement;
+
     begin  -- Statement
       if Err_Count > 0 then  --{MRC: added from PC version}
         return;
@@ -2907,9 +2907,11 @@ package body HAC.Parser is
       if Statement_Begin_Symbol (Sy) then
         case Sy is
         when IDent =>
-          I := Locate_identifier (Id);
+          I := Locate_identifier (Id, No_Id_Fail => False);
           InSymbol;
-          if I /= 0 then
+          if I = No_Id then -- New identifier: must be a label for named block_statement or loop
+            Named_statement;
+          else
             case IdTab (I).Obj is
               when Konstant | TypeMark | Funktion =>
                 Error (err_illegal_statement_start_symbol);
@@ -2924,6 +2926,10 @@ package body HAC.Parser is
                 else
                   StandProc (IdTab (I).Adr);
                 end if;
+              when Label =>
+                Error (err_duplicate_label, Alfa_to_String(Id));
+                Test (Singleton(Colon), FSys, err_colon_missing);
+                InSymbol;
               when others =>
                 null;
             end case;
@@ -2942,7 +2948,7 @@ package body HAC.Parser is
           FOR_Statement;
         when IF_Symbol =>
           IF_Statement;
-        when Loop_Symbol =>
+        when LOOP_Symbol =>
           LOOP_Statement (k_Jump, LC);
         when NullSy =>
           InSymbol;
@@ -3124,6 +3130,8 @@ package body HAC.Parser is
         Error (err_incorrect_block_name, hint => Alfa_to_String(BlockID));
       end if;
       InSymbol;
+    elsif Is_a_block_statement and BlockID /= Empty_Alfa then  -- end [label] required
+      Error (err_incorrect_block_name, hint => Alfa_to_String(BlockID));
     end if;
 
     if Sy /= Semicolon then
