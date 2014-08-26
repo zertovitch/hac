@@ -222,7 +222,7 @@ package body HAC.Compiler is
 
     CH := ' ';
     InSymbol;
-    if Sy /= WithSy then   -- WITH SMALL_SP;
+    if Sy /= WITH_Symbol then   -- WITH SMALL_SP;
       Error (err_WITH_Small_Sp, "");
     else
       InSymbol;
@@ -238,7 +238,7 @@ package body HAC.Compiler is
       end if;
     end if;
 
-    if Sy /= UseSy then
+    if Sy /= USE_Symbol then
       Error (err_use_Small_Sp, ""); -- USE SMALL_SP;
     else
       InSymbol;
@@ -258,7 +258,7 @@ package body HAC.Compiler is
       Put_Line ("Compiler: check for main procedure");
     end if;
 
-    if Sy /= Procedure_Symbol then
+    if Sy /= PROCEDURE_Symbol then
       Error (err_missing_a_procedure_declaration, ""); -- PROCEDURE Name IS
     else
       InSymbol;

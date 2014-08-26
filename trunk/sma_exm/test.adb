@@ -99,7 +99,7 @@ procedure Test is
     l1: constant:= -3;
     h1: constant:=  9;
     l2: constant:= 1;
-    h2: constant:= 8;
+    h2: constant:= 6;
     type T1 is array(l1..h1, l2..h2) of Integer;
     a: T1;
     b: array(l1..h1, l2..h2) of Float;
