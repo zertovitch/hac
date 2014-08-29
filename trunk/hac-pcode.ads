@@ -96,7 +96,12 @@ package HAC.PCode is
   k_LEQ_Float                 : constant := 42;
   k_GTR_Float                 : constant := 43;
   k_GEQ_Float                 : constant := 44;
-  -- 45..50: same, for integers
+  k_EQL_Integer               : constant := 45;
+  k_NEQ_Integer               : constant := 46;
+  k_LSS_Integer               : constant := 47;
+  k_LEQ_Integer               : constant := 48;
+  k_GTR_Integer               : constant := 49;
+  k_GEQ_Integer               : constant := 50;
   k_OR_Boolean                : constant := 51;
   k_ADD_Integer               : constant := 52;
   k_SUBTRACT_Integer          : constant := 53;
@@ -113,14 +118,15 @@ package HAC.PCode is
   k_Set_current_file_pointer  : constant := 64;
   kFile_I_O                   : constant := 65;
   k_Halt_Interpreter          : constant := 66;
-  kStringAssignment           : constant := 67;
-  kDelay                      : constant := 68;
+  k_String_assignment         : constant := 67;
+  k_Delay                     : constant := 68;
   kCursorAt                   : constant := 69;
   kSetQuatumTask              : constant := 70;
   kSetTaskPriority            : constant := 71;
   kSetTaskPriorityInheritance : constant := 72;
   kSelectiveWait              : constant := 73;
   kHighlightSource            : constant := 74;
+  k_XOR_Boolean               : constant := 75;
 
   -- Save and restore an object file
   procedure SaveOBJ(FileName: String);

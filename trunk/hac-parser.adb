@@ -1195,7 +1195,7 @@ package body HAC.Parser is
         Y     : ItemPtr;
         OP    : KeyWSymbol;
         TermZ : constant Symset :=
-         Symset'((Plus | MinUS | OR_Symbol => True, others => False));
+          Symset'((Plus | MinUS | OR_Symbol | XOR_Symbol => True, others => False));
 
         procedure Term (FSys : Symset; X : in out Item) is
           Y  : ItemPtr;
@@ -1203,7 +1203,7 @@ package body HAC.Parser is
           -- TS: TypSet;
           FactorZ : constant Symset :=
            Symset'(
-             xTimes | Divide | MOD_Symbol | AND_Symbol => True,
+             xTimes | Divide | MOD_Symbol | REM_Symbol | AND_Symbol => True,
              others => False
            );
 
@@ -1536,38 +1536,48 @@ package body HAC.Parser is
           OP := Sy;
           InSymbol;
           Term (FSys + TermZ, Y.all);
-          -- OR
-          if OP = OR_Symbol then
-            if X.TYP = Bools and Y.TYP = Bools then
-              Emit (k_OR_Boolean);
-            else
-              if X.TYP /= NOTYP and Y.TYP /= NOTYP then
-                Error (err_resulting_type_should_be_Boolean);
+          case OP is
+            when OR_Symbol =>
+              if X.TYP = Bools and Y.TYP = Bools then
+                Emit (k_OR_Boolean);
+              else
+                if X.TYP /= NOTYP and Y.TYP /= NOTYP then
+                  Error (err_resulting_type_should_be_Boolean);
+                end if;
+                X.TYP := NOTYP;
               end if;
-              X.TYP := NOTYP;
-            end if;
-          else
-            X.TYP := ResultType (X.TYP, Y.TYP);
-            case X.TYP is
-              when NOTYP =>
-                null;
-              when Ints =>
-                if OP = Plus then
-                  Emit (k_ADD_Integer);
-                else
-                  Emit (k_SUBTRACT_Integer);
+            when XOR_Symbol =>
+              if X.TYP = Bools and Y.TYP = Bools then
+                Emit (k_XOR_Boolean);
+              else
+                if X.TYP /= NOTYP and Y.TYP /= NOTYP then
+                  Error (err_resulting_type_should_be_Boolean);
                 end if;
-              when Floats =>
-                if OP = Plus then
-                  Emit (k_ADD_Float);
-                else
-                  Emit (k_SUBTRACT_Float);
+                X.TYP := NOTYP;
+              end if;
+            when Plus | Minus =>
+              X.TYP := ResultType (X.TYP, Y.TYP);
+              case X.TYP is
+                when NOTYP =>
+                  null;
+                when Ints =>
+                  if OP = Plus then
+                    Emit (k_ADD_Integer);
+                  else
+                    Emit (k_SUBTRACT_Integer);
+                  end if;
+                when Floats =>
+                  if OP = Plus then
+                    Emit (k_ADD_Float);
+                  else
+                    Emit (k_SUBTRACT_Float);
                 end if;
-              when others =>
-                null;
-            end case;
-
-          end if;
+                when others =>
+                  null; -- !!
+              end case;
+            when others => -- Doesn't happen: TermZ(OP) is True.
+              null;
+          end case;
         end loop;
 
         Dispose (Y);
@@ -1675,7 +1685,7 @@ package body HAC.Parser is
         if ArraysTab (X.Ref).Element_TYP /= xChars then
           Error (err_types_of_assignment_must_match);
         else
-          Emit1 (kStringAssignment, ArraysTab (X.Ref).Size);    -- array Size
+          Emit1 (k_String_assignment, ArraysTab (X.Ref).Size);    -- array Size
         end if;
       elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
         Error (err_types_of_assignment_must_match);
@@ -1934,7 +1944,7 @@ package body HAC.Parser is
             Error (err_wrong_type_in_DELAY);
           end if;
         end if;
-        Emit (kDelay);
+        Emit (k_Delay);
       end DelayStatement;
 
       procedure CASE_Statement is
@@ -2025,8 +2035,7 @@ package body HAC.Parser is
         end if;
         LC1 := LC;
         Emit (kSwitch); -- JMPX
-        if Sy = IS_Symbol then -- Was OF_Symbol in SmallAda ! I.e. case x OF when 1 =>
-                          --...
+        if Sy = IS_Symbol then -- Was OF_Symbol in SmallAda ! I.e. case x OF when 1 => ...
           InSymbol;
         elsif Sy = OF_Symbol then
           Error (err_OF_instead_of_IS); -- Common mistake by Pascal programmers
