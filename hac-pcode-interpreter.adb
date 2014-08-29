@@ -1139,118 +1139,97 @@ package body HAC.PCode.Interpreter is
           S (S (Curr_TCB.T - 1).I) := S (Curr_TCB.T);
           Curr_TCB.T               := Curr_TCB.T - 2;
 
-        when k_EQL_Float .. k_DIV_Float =>
+        when k_EQL_Float .. k_DIV_Float | k_XOR_Boolean =>
           Curr_TCB.T := Curr_TCB.T - 1;
           case IR.F is
             when k_EQL_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(
-               (S (Curr_TCB.T).R = S (Curr_TCB.T + 1).R));
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R = S (Curr_TCB.T + 1).R);
 
             when k_NEQ_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(
-               (S (Curr_TCB.T).R /= S (Curr_TCB.T + 1).R));
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R /= S (Curr_TCB.T + 1).R);
 
             when k_LSS_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(
-               (S (Curr_TCB.T).R < S (Curr_TCB.T + 1).R));
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R < S (Curr_TCB.T + 1).R);
 
             when k_LEQ_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(
-               (S (Curr_TCB.T).R <= S (Curr_TCB.T + 1).R));
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R <= S (Curr_TCB.T + 1).R);
 
             when k_GTR_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(
-               (S (Curr_TCB.T).R > S (Curr_TCB.T + 1).R));
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R > S (Curr_TCB.T + 1).R);
 
             when k_GEQ_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(
-               (S (Curr_TCB.T).R >= S (Curr_TCB.T + 1).R));
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R >= S (Curr_TCB.T + 1).R);
 
-          when 45 =>
-            S (Curr_TCB.T).I := Boolean'Pos(
-             (S (Curr_TCB.T).I = S (Curr_TCB.T + 1).I));
+            when k_EQL_Integer =>
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I = S (Curr_TCB.T + 1).I);
 
-          when 46 =>
-            S (Curr_TCB.T).I := Boolean'Pos(
-             (S (Curr_TCB.T).I /= S (Curr_TCB.T + 1).I));
+            when k_NEQ_Integer =>
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I /= S (Curr_TCB.T + 1).I);
 
-          when 47 =>
-            S (Curr_TCB.T).I := Boolean'Pos(
-             (S (Curr_TCB.T).I < S (Curr_TCB.T + 1).I));
+            when k_LSS_Integer =>
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I < S (Curr_TCB.T + 1).I);
 
-          when 48 =>
-            S (Curr_TCB.T).I := Boolean'Pos(
-             (S (Curr_TCB.T).I <= S (Curr_TCB.T + 1).I));
+            when k_LEQ_Integer =>
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I <= S (Curr_TCB.T + 1).I);
 
-          when 49 =>
-            S (Curr_TCB.T).I := Boolean'Pos(
-             (S (Curr_TCB.T).I > S (Curr_TCB.T + 1).I));
+            when k_GTR_Integer =>
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I > S (Curr_TCB.T + 1).I);
 
-          when 50 =>
-            S (Curr_TCB.T).I := Boolean'Pos(
-             (S (Curr_TCB.T).I >= S (Curr_TCB.T + 1).I));
+            when k_GEQ_Integer =>
+              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I >= S (Curr_TCB.T + 1).I);
 
-          when 51 =>
+            when k_OR_Boolean =>
+              S (Curr_TCB.T).I :=
+                Boolean'Pos(S (Curr_TCB.T).I mod 2 = 1 or S (Curr_TCB.T + 1).I mod 2 = 1);
 
-            S (Curr_TCB.T).I := Boolean'Pos(
-             (S (Curr_TCB.T).I mod 2 = 1 or
-              S (Curr_TCB.T + 1).I mod 2 = 1));
+            when k_XOR_Boolean =>
+              S (Curr_TCB.T).I :=
+                Boolean'Pos(S (Curr_TCB.T).I mod 2 = 1 xor S (Curr_TCB.T + 1).I mod 2 = 1);
 
-          when 52 =>
-            S (Curr_TCB.T).I := S (Curr_TCB.T).I +
-                                   S (Curr_TCB.T + 1).I;
+            when k_ADD_Integer =>
+              S (Curr_TCB.T).I := S (Curr_TCB.T).I + S (Curr_TCB.T + 1).I;
 
-          when 53 =>
-            S (Curr_TCB.T).I := S (Curr_TCB.T).I -
-                                   S (Curr_TCB.T + 1).I;
+            when k_SUBTRACT_Integer =>
+              S (Curr_TCB.T).I := S (Curr_TCB.T).I - S (Curr_TCB.T + 1).I;
 
-          when 54 =>
-            S (Curr_TCB.T).R := S (Curr_TCB.T).R +
-                                   S (Curr_TCB.T + 1).R;
+            when k_ADD_Float =>
+              S (Curr_TCB.T).R := S (Curr_TCB.T).R + S (Curr_TCB.T + 1).R;
 
-          when 55 =>
-            S (Curr_TCB.T).R := S (Curr_TCB.T).R -
-                                   S (Curr_TCB.T + 1).R;
+            when k_SUBTRACT_Float =>
+              S (Curr_TCB.T).R := S (Curr_TCB.T).R - S (Curr_TCB.T + 1).R;
 
-          when 56 =>
-            S (Curr_TCB.T).I := Boolean'Pos(
-             (S (Curr_TCB.T).I mod 2 =1 and
-              S (Curr_TCB.T + 1).I mod 2 =1));
+            when k_AND_Boolean =>
+              S (Curr_TCB.T).I :=
+                Boolean'Pos(S (Curr_TCB.T).I mod 2 =1 and S (Curr_TCB.T + 1).I mod 2 =1);
 
-          when k_MULT_Integer =>
-            S (Curr_TCB.T).I := S (Curr_TCB.T).I *
-                                   S (Curr_TCB.T + 1).I;
+            when k_MULT_Integer =>
+              S (Curr_TCB.T).I := S (Curr_TCB.T).I * S (Curr_TCB.T + 1).I;
 
-          when 58 =>
-            if S (Curr_TCB.T + 1).I = 0 then
-              PS := DIVCHK;
-            else
-              S (Curr_TCB.T).I := S (Curr_TCB.T).I /
-                                     S (Curr_TCB.T + 1).I;
-            end if;
+            when k_DIV_Integer =>
+              if S (Curr_TCB.T + 1).I = 0 then
+                PS := DIVCHK;
+              else
+                S (Curr_TCB.T).I := S (Curr_TCB.T).I / S (Curr_TCB.T + 1).I;
+              end if;
 
-          when 59 =>
-            if S (Curr_TCB.T + 1).I = 0 then
-              PS := DIVCHK;
-            else
-              S (Curr_TCB.T).I := S (Curr_TCB.T).I mod
-                                     S (Curr_TCB.T + 1).I;
-            end if;
+            when k_MOD_Integer =>
+              if S (Curr_TCB.T + 1).I = 0 then
+                PS := DIVCHK;
+              else
+                S (Curr_TCB.T).I := S (Curr_TCB.T).I mod S (Curr_TCB.T + 1).I;
+              end if;
 
-          when k_MULT_Float =>
-            S (Curr_TCB.T).R := S (Curr_TCB.T).R *
-                                   S (Curr_TCB.T + 1).R;
+            when k_MULT_Float =>
+              S (Curr_TCB.T).R := S (Curr_TCB.T).R * S (Curr_TCB.T + 1).R;
 
-          when 61 =>
-            S (Curr_TCB.T).R := S (Curr_TCB.T).R /
-                                   S (Curr_TCB.T + 1).R;
+            when k_DIV_Float =>
+              S (Curr_TCB.T).R := S (Curr_TCB.T).R / S (Curr_TCB.T + 1).R;
 
-          when others =>
-            null;  -- [P2Ada]: no otherwise / else in Pascal
+            when others =>
+              null;  -- [P2Ada]: no otherwise / else in Pascal
           end case;
 
-        when 62 =>
-          --  get newline
+        when kGetNewline =>
           if FAT.CURR = 0 then       --  Schoening
             if End_Of_File then
               PS := REDCHK;
@@ -1264,7 +1243,7 @@ package body HAC.PCode.Interpreter is
           end if;
           SWITCH := True;  --  give up control when doing I/O
 
-        when 63 =>  --  new line
+        when kPutNewline =>
           if FAT.CURR = 0 then      --  Schoening
             New_Line;
           else
@@ -1272,10 +1251,10 @@ package body HAC.PCode.Interpreter is
           end if;
           SWITCH := True;  --  give up control when doing I/O
 
-        when 64 =>
-          FAT.CURR := IR.Y;   --  set Current File pointer
+        when k_Set_current_file_pointer =>
+          FAT.CURR := IR.Y;
 
-        when 65 =>
+        when kFile_I_O =>
           --  File I/O procedures - Schoening
           case IR.Y is
             when 7 =>
@@ -1310,8 +1289,7 @@ package body HAC.PCode.Interpreter is
             Curr_TCB.PC := Curr_TCB.PC - 1;
           end if;
 
-        when 67 =>
-          --  string assignment
+        when k_String_assignment =>
           --  Hathorn
           H1 := S (Curr_TCB.T - 2).I;  --  address of array
           H2 := S (Curr_TCB.T).I;    --  pointer to string table
@@ -1336,7 +1314,7 @@ package body HAC.PCode.Interpreter is
           end loop;
           Curr_TCB.T := Curr_TCB.T - 3;
 
-        when 68 =>  --  DLY - delay for a specified number of seconds
+        when k_Delay =>  --  DLY - delay for a specified number of seconds
 
           if S (Curr_TCB.T).R > 0.0 then
             --  if positive delay time

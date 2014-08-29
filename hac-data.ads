@@ -85,9 +85,9 @@ package HAC.Data is
   NMax       : constant Integer := MaxINT;
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char
-  OMax       : constant := 74;            --  highest Order ObjCode
+  OMax       : constant := 75;            --  highest Order ObjCode
   PriMax     : constant := 100;           --  Maximum Task priority
-  SMax       : constant := 1000;          --  Size of String-table
+  SMax       : constant := 10_000;        --  Size of String-table
   TaskMax    : constant := 12;            --  Max # of concurrent tasks
 
   Wind_Size : constant := TaskMax + 2;    --  SnapShot window size
@@ -101,7 +101,7 @@ package HAC.Data is
   -----------------------------------------------------------------------
   ---------------------------------------------------------KeyWSymbol----
   -----------------------------------------------------------------------
-  type KeyWSymbol is (  --  All KeyWSymbols used by the Compiler
+  type KeyWSymbol is (   --  All keywords or symbols used by the compiler
    IntCon,
    FloatCon,
    CharCon,
@@ -129,9 +129,15 @@ package HAC.Data is
    Becomes,
    IDent,
    String_Symbol, -- !! hack ! used for constraining the String unconstrained array
-   USy,
-   AmpersAND_Symbol,
+   USy,                -- (Apparently) unused symbol
+   Ampersand_Symbol,
+   --                  Ada keywords
+   ABORT_Symbol,
+   ABSTRACT_Symbol,
    ACCEPT_Symbol,
+   ACCESS_Symbol,
+   ALIASED_Symbol,
+   ALL_Symbol,
    AND_Symbol,
    ARRAY_Symbol,
    AT_Symbol,
@@ -141,40 +147,63 @@ package HAC.Data is
    CONSTANT_Symbol,
    DECLARE_Symbol,
    DELAY_Symbol,
+   DELTA_Symbol,
+   DIGITS_Symbol,
    DO_Symbol,
    ELSE_Symbol,
    ELSIF_Symbol,
    END_Symbol,
    ENTRY_Symbol,
+   EXCEPTION_Symbol,
    EXIT_Symbol,
    FOR_Symbol,
    FUNCTION_Symbol,
+   GENERIC_Symbol,
+   GOTO_Symbol,
    IF_Symbol,
    IN_Symbol,
+   INTERFACE_Symbol,
    IS_Symbol,
+   LIMITED_Symbol,
    LOOP_Symbol,
    MOD_Symbol,
+   NEW_Symbol,
    NOT_Symbol,
    NULL_Symbol,
    OF_Symbol,
    OR_Symbol,
    OTHERS_Symbol,
    OUT_Symbol,
+   OVERRIDING_Symbol,
+   PACKAGE_Symbol,
+   PRAGMA_Symbol,
+   PRIVATE_Symbol,
    PROCEDURE_Symbol,
+   PROTECTED_Symbol,
+   RAISE_Symbol,
    RANGE_Symbol,  -- !! In scanner: misused for ".." and Chr(128) !...
    RECORD_Symbol,
+   REM_Symbol,
+   RENAMES_Symbol,
+   REQUEUE_Symbol,
    RETURN_Symbol,
    REVERSE_Symbol,
    SELECT_Symbol,
+   SEPARATE_Symbol,
+   SOME_Symbol,
    SUBTYPE_Symbol,
+   SYNCHRONIZED_Symbol,
+   TAGGED_Symbol,
    TASK_Symbol,
    TERMINATE_Symbol,
    THEN_Symbol,
    TYPE_Symbol,
+   UNTIL_Symbol,
    USE_Symbol,
    WHEN_Symbol,
    WHILE_Symbol,
-   WITH_Symbol);
+   WITH_Symbol,
+   XOR_Symbol);
 
   subtype Opcode is Integer range -OMax .. +OMax;         -- -OMax..+OMax;  --
                                                           --opcode
@@ -459,7 +488,7 @@ package HAC.Data is
     '"'    => NEQ,    -- ?!
     ','    => Comma,
     ';'    => Semicolon,
-    '&'    => AmpersAND_Symbol,
+    '&'    => Ampersand_Symbol,
     others => NULL_Symbol);
 
   -- --- Error Control Variables ---
@@ -586,13 +615,13 @@ package HAC.Data is
 private
 
   AdaKeyW : constant AdaKeyW_List:=
-      ( ("ABORT       ",  USy),
-        ("ABSTRACT    ",  USy),            -- Ada 95
-        ("ABS         ",  USy),
+      ( ("ABORT       ", ABORT_Symbol),
+        ("ABSTRACT    ", ABSTRACT_Symbol),     -- [added in] Ada 95
+        ("ABS         ",  USy),                -- !! SmallAda has a built-in function (wrong)
         ("ACCEPT      ", ACCEPT_Symbol),
-        ("ACCESS      ",  USy),
-        ("ALIASED     ",  USy),            -- Ada 95
-        ("ALL         ",  USy),
+        ("ACCESS      ", ACCESS_Symbol),
+        ("ALIASED     ", ALIASED_Symbol),      -- Ada 95
+        ("ALL         ", ALL_Symbol),          -- Ada 95
         ("AND         ", AND_Symbol),
         ("ARRAY       ", ARRAY_Symbol),
         ("AT          ", AT_Symbol),
@@ -602,64 +631,63 @@ private
         ("CONSTANT    ", CONSTANT_Symbol),
         ("DECLARE     ", DECLARE_Symbol),
         ("DELAY       ", DELAY_Symbol),
-        ("DELTA       ",  USy),
-        ("DIGITS      ",  USy),
+        ("DELTA       ", DELTA_Symbol),
+        ("DIGITS      ", DIGITS_Symbol),
         ("DO          ", DO_Symbol),
         ("ELSE        ", ELSE_Symbol),
         ("ELSIF       ", ELSIF_Symbol),
         ("END         ", END_Symbol),
         ("ENTRY       ", ENTRY_Symbol),
-        ("EXCEPTION   ",  USy),
+        ("EXCEPTION   ", EXCEPTION_Symbol),
         ("EXIT        ", EXIT_Symbol),
         ("FOR         ", FOR_Symbol),
         ("FUNCTION    ", FUNCTION_Symbol),
-        ("GENERIC     ",  USy),
-        ("GOTO        ",  USy),
+        ("GENERIC     ", GENERIC_Symbol),
+        ("GOTO        ", GOTO_Symbol),
         ("IF          ", IF_Symbol),
         ("IN          ", IN_Symbol),
-        ("INTERFACE   ",  USy),            -- Ada 2005
+        ("INTERFACE   ", INTERFACE_Symbol),    -- Ada 2005
         ("IS          ", IS_Symbol),
-        ("LIMITED     ",  USy),
+        ("LIMITED     ", LIMITED_Symbol),
         ("LOOP        ", Loop_Symbol),
         ("MOD         ", MOD_Symbol),
-        ("NEW         ",  USy),
+        ("NEW         ", NEW_Symbol),
         ("NOT         ", NOT_Symbol),
         ("NULL        ", NULL_Symbol),
         ("OF          ", OF_Symbol),
         ("OR          ", OR_Symbol),
         ("OTHERS      ", OTHERS_Symbol),
         ("OUT         ", OUT_Symbol),
-        ("OVERRIDING  ",  USy),            -- Ada 2005
-        ("PACKAGE     ",  USy),
-        ("PRAGMA      ",  USy),
-        ("PRIVATE     ",  USy),
+        ("OVERRIDING  ", OVERRIDING_Symbol),   -- Ada 2005
+        ("PACKAGE     ", PACKAGE_Symbol),
+        ("PRAGMA      ", PRAGMA_Symbol),
+        ("PRIVATE     ", PRIVATE_Symbol),
         ("PROCEDURE   ", PROCEDURE_Symbol),
-        ("PROTECTED   ",  USy),            -- Ada 95
-        ("RAISE       ",  USy),
+        ("PROTECTED   ", PROTECTED_Symbol),    -- Ada 95
+        ("RAISE       ", RAISE_Symbol),
         ("RANGE       ", RANGE_Symbol),
         ("RECORD      ", RECORD_Symbol),
-        ("REM         ",  USy),
-        ("RENAMES     ",  USy),
-        ("REQUEUE     ",  USy),            -- Ada 95
+        ("REM         ", REM_Symbol),
+        ("RENAMES     ", RENAMES_Symbol),
+        ("REQUEUE     ", REQUEUE_Symbol),      -- Ada 95
         ("RETURN      ", RETURN_Symbol),
         ("REVERSE     ", REVERSE_Symbol),
         ("SELECT      ", SELECT_Symbol),
-        ("SEPARATE    ",  USy),
-        ("SOME        ",  USy),            -- Ada 2012
+        ("SEPARATE    ", SEPARATE_Symbol),
+        ("SOME        ", SOME_Symbol),         -- Ada 2012
         ("SUBTYPE     ", SUBTYPE_Symbol),
-        ("SYNCHRONIZED",  USy),            -- Ada 2005
-        ("TAGGED      ",  USy),            -- Ada 95
+        ("SYNCHRONIZED", SYNCHRONIZED_Symbol), -- Ada 2005
+        ("TAGGED      ", TAGGED_Symbol),       -- Ada 95
         ("TASK        ", TASK_Symbol),
         ("TERMINATE   ", TERMINATE_Symbol),
         ("THEN        ", THEN_Symbol),
         ("TYPE        ", TYPE_Symbol),
-        ("UNTIL       ",  USy),            -- Ada 95
+        ("UNTIL       ", UNTIL_Symbol),        -- Ada 95
         ("USE         ", USE_Symbol),
         ("WHEN        ", WHEN_Symbol),
         ("WHILE       ", WHILE_Symbol),
         ("WITH        ", WITH_Symbol),
-        ("XOR         ",  USy),
-        ("ZEND        ", IDent)
+        ("XOR         ", XOR_Symbol)
        );
 
 end HAC.Data;

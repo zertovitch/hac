@@ -222,7 +222,7 @@ package body HAC.UErrors is
     end if;
 
     if qDebug then
-      Put ("The Compiler TABLE for ");
+      Put ("The Compiler TABLE for: *");
       case N is
       when IDENTIFIERS_table_overflow =>
         Put ("IDENTIFIERS");
@@ -247,14 +247,16 @@ package body HAC.UErrors is
       when others =>
         Put ("N unknown: " & Integer'Image (N));
       end case;
-      Put_Line (" is too SMALL");
+      Put_Line ("* is too SMALL");
       New_Line;
       Put_Line (" Please take this output to the maintainers of ");
       Put_Line (" HAC for your installation ");
       New_Line;
       Put_Line (" Fatal termination of HAC");
     end if;
-    raise Failure_1_0;
+    raise Failure_1_0 with
+      "HAC.UErrors.Fatal:" &
+      " Internal HAC compiler error; details with qDebug=True";
   end Fatal;
 
   ----------------------------------------------------------------------------

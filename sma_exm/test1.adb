@@ -164,23 +164,24 @@ BEGIN
      PUT(twenty); Put('>'); Put(ten); New_Line;
   END IF;
 
-  IF (twenty > ten) AND True THEN
-     PUT_LINE("AND is OK");
-  ELSE
-     PUT_LINE("AND is not OK");
-  END IF;
+  if not False then Put_Line ("(1/2) NOT is OK"); else Put_Line ("(1/2) NOT is not OK"); end if;
+  if not True  then Put_Line ("(2/2) NOT is not OK"); else Put_Line ("(2/2) NOT is OK"); end if;
 
-  IF (ten > twenty) OR (Twenty > ten) THEN
-     PUT_LINE ("OR is OK");
-  ELSE
-     PUT_LINE ("OR is not OK");
-  END IF;
+  if False and False then Put_Line ("(1/4) AND is not OK"); else Put_Line ("(1/4) AND is OK"); end if;
+  if True  and False then Put_Line ("(2/4) AND is not OK"); else Put_Line ("(2/4) AND is OK"); end if;
+  if False and True  then Put_Line ("(3/4) AND is not OK"); else Put_Line ("(3/4) AND is OK"); end if;
+  if True  and True  then Put_Line ("(4/4) AND is OK"); else Put_Line ("(4/4) AND is not OK"); end if;
 
-  IF NOT (ten > twenty) THEN
-     PUT_LINE ("NOT is OK");
-  ELSE
-     PUT_LINE ("NOT is not OK");
-  END IF;
+  if False or False then Put_Line ("(1/4)  OR is not OK"); else Put_Line ("(1/4)  OR is OK"); end if;
+  if True  or False then Put_Line ("(2/4)  OR is OK"); else Put_Line ("(2/4)  OR is not OK"); end if;
+  if False or True  then Put_Line ("(3/4)  OR is OK"); else Put_Line ("(3/4)  OR is not OK"); end if;
+  if True  or True  then Put_Line ("(4/4)  OR is OK"); else Put_Line ("(4/4)  OR is not OK"); end if;
+
+  if False xor False then Put_Line ("(1/4) XOR is not OK"); else Put_Line ("(1/4) XOR is OK"); end if;
+  if True  xor False then Put_Line ("(2/4) XOR is OK"); else Put_Line ("(2/4) XOR is not OK"); end if;
+  if False xor True  then Put_Line ("(3/4) XOR is OK"); else Put_Line ("(3/4) XOR is not OK"); end if;
+  if True  xor True  then Put_Line ("(4/4) XOR is not OK"); else Put_Line ("(4/4) XOR is OK"); end if;
+  
   New_Line;
 
   --CASE Check
