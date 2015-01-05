@@ -14,7 +14,7 @@ package body HAC.Scanner is
 
     function UpCase (c : Character) return Character is
     begin
-      if ('a' <= c) and then (c <= 'z') then
+      if 'a' <= c and then c <= 'z' then
         return Character'Val
                 (Character'Pos (c) -
                  Character'Pos ('a') +
@@ -110,7 +110,7 @@ package body HAC.Scanner is
       elsif K + e < EMin then
         RNum := 0.0;
       else
-        S := abs (e);
+        S := abs e;
         T := 1.0;
         D := 10.0;
         loop

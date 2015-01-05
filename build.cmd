@@ -1,1 +1,1 @@
-gnatmake -P hac 
+gprbuild -P hac 
