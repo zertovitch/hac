@@ -20,9 +20,17 @@ project Hac is
    package Compiler is
       case Build_Mode is
          when "Debug" =>
-            for Default_Switches ("ada") use ("-gnat05", "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatwa", "-gnatVa", "-gnatecdebug.pra");
+            for Default_Switches ("ada") use (
+						   "-gnat05", "-gnatwa", 
+							 "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatVa", 
+							 "-gnatec=" & project'Project_Dir & "debug.pra"
+						);
          when "Fast" =>
-            for Default_Switches ("ada") use ("-gnat05", "-gnatwa", "-O2", "-gnatpn", "-funroll-loops", "-fpeel-loops", "-funswitch-loops", "-ftracer", "-fweb", "-frename-registers", "-ffunction-sections");
+            for Default_Switches ("ada") use (
+						   "-gnat05", "-gnatwa",
+							 "-O2", "-gnatpn", 
+							 "-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
+							 "-ftracer", "-fweb", "-frename-registers", "-ffunction-sections");
       end case;
    end Compiler;
 

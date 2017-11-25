@@ -1,1 +1,1 @@
-gprbuild -P hac 
+gprbuild -p -P hac 
