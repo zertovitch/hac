@@ -2,18 +2,15 @@ with HAC.Data;
 
 with Ada.Unchecked_Deallocation;
 with Ada.Calendar;                      use Ada.Calendar;
-with Ada.Text_IO;                       use Ada.Text_IO;
+with Ada.Text_IO,
+     Ada.Integer_Text_IO,
+     Ada.Float_Text_IO;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 
 package body HAC.PCode.Interpreter is
 
-  package IIO is new Integer_IO (Integer);
-  use IIO;
-  package FIO is new Float_IO (Float);
-  use FIO;
-  package Boolean_Text_IO is new Enumeration_IO (Boolean);
-  use Boolean_Text_IO; -- [P2Ada]: This is for 'Write([Boolean])'
+  package Boolean_Text_IO is new Ada.Text_IO.Enumeration_IO (Boolean);
 
   package InterDef is -- sub-package, was a separate Turbo Pascal unit
 
@@ -275,7 +272,7 @@ package body HAC.PCode.Interpreter is
     is
       p  : InterDef.Eptr;
       ix : Integer;
-      use InterDef;
+      use InterDef, Ada.Text_IO, Ada.Integer_Text_IO;
     begin
       ix := EIndex (Entry_Index);
       p  := InterDef.EList (ix).First;
@@ -431,6 +428,8 @@ package body HAC.PCode.Interpreter is
       TIMER := Start_Time; -- was 0.0
       PS := RUN ;
     end Init_other_tasks;
+
+    use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Float_Text_IO, Boolean_Text_IO;
 
   begin --  Interpret
     InterDef.SNAP:= False;

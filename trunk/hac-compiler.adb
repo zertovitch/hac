@@ -4,13 +4,9 @@ with HAC.Parser;  use HAC.Parser;
 with HAC.PCode;   use HAC.PCode;
 with HAC.Scanner; use HAC.Scanner;
 
-with Ada.Text_IO;
+with Ada.Text_IO, Ada.Integer_Text_IO;
 
 package body HAC.Compiler is
-
-  use Ada.Text_IO;
-  package IIO is new Integer_IO (Integer);
-  use IIO;
 
   procedure Init_Tables is
   begin
@@ -29,7 +25,10 @@ package body HAC.Compiler is
     LC := 0;
   end Init_Tables;
 
-  procedure PrintTables is
+  --  Print_Tables is for debugging purposes.
+  --
+  procedure Print_Tables is
+    use Ada.Text_IO, Ada.Integer_Text_IO;
   begin
     New_Line;
     Put (" Identifiers          Link  Obj  TYP  Ref  NRM  LEV  Adr");
@@ -117,7 +116,7 @@ package body HAC.Compiler is
       end loop;
     end if;
 
-  end PrintTables;
+  end Print_Tables;
 
   ---------------------------------------------------------------------------
 
@@ -195,6 +194,8 @@ package body HAC.Compiler is
       Enter ("INHERITP  ", Prozedure, NOTYP, 13); --{ Cramer }
       Enter (ProgramID, Prozedure, NOTYP, 0);
     end EnterStdFcns;
+
+    use Ada.Text_IO, Ada.Integer_Text_IO;
 
   begin -- Compile
 
@@ -315,7 +316,7 @@ package body HAC.Compiler is
     end if;
 
     if qDebug and Debug then
-      PrintTables;
+      Print_Tables;
     end if;
     if Errs /= error_free then
       ErrorMsg;
