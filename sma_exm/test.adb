@@ -186,7 +186,10 @@ begin
   Put_Line(" ... should be: 555");
   z1.y:= 1.8;
   Put(z1.y); Put_Line(" ... should be: 1.80000E+00");
-  Do_0;
+  Put_Line("Do_0: output 54321");
+  Do_0; Put(x_glob); New_Line;
+  Put_Line("6-3+2 = 5");
+  Put(6-3+2); New_Line;
   Do_1(123);
   Do_1_param_in_out(x_glob);
   case x_glob is
