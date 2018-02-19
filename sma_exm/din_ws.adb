@@ -1,5 +1,5 @@
-with  SMALL_SP;
-use  SMALL_SP;
+with  HAC_Pack;
+use  HAC_Pack;
 procedure Din_WS is
     task DIJKSTRA is
       entry GIVE_BIRTH;

@@ -1,5 +1,5 @@
-with  SMALL_SP;
-use  SMALL_SP;
+with  HAC_Pack;
+use  HAC_Pack;
 procedure dinersmo is
 
     SCREEN: SEMAPHORE := 1;

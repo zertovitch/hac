@@ -1,4 +1,4 @@
-with SMALL_SP; use SMALL_SP;  -- CS159-10 Instructor: Arthur Vargas Lopes
+with HAC_Pack; use HAC_Pack;  -- CS159-10 Instructor: Arthur Vargas Lopes
                               -- Fall 1990
 procedure newrace is
 task SCREEN is
