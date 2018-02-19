@@ -2,7 +2,7 @@ with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Text_IO;
 
-package body SMALL_SP is
+package body HAC_Pack is
 
   package FEF is new Ada.Numerics.Generic_Elementary_Functions(Float);
 
@@ -383,4 +383,4 @@ package body SMALL_SP is
     raise Program_Error;
   end SIGNAL;
 
-end SMALL_SP;
+end HAC_Pack;

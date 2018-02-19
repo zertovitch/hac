@@ -1,12 +1,12 @@
--- This is the pseudo-package containing all specifications of all support
--- routines for SmallAda. All SmallAda programs must have "with" and "use"
--- of this package.
---
--- Note for HAC: this is kept for early stages. At some point SMALL_SP won't
--- be used anymore. The package is compilable by a real Ada compiler like
--- GNAT, so the test programs can be run on both HAC and GNAT.
+--  This is the pseudo-package containing all specifications of all support
+--  routines for HAC. All HAC programs must have "with" and "use"
+--  of this package.
+-- 
+--  Note: this is kept for early stages. At some point HAC_Pack won't
+--  be used anymore. The package is compilable by a real Ada compiler like
+--  GNAT, so the test programs can be run on both HAC and GNAT.
 
-package SMALL_SP is
+package HAC_Pack is
 
    type SEMAPHORE is new Integer; -- private;
 
@@ -108,4 +108,4 @@ private
 
    -- type       SEMAPHORE is new INTEGER;
 
-end SMALL_SP;
+end HAC_Pack;
