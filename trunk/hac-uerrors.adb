@@ -145,9 +145,9 @@ package body HAC.UErrors is
     when err_functions_must_return_a_value =>
       return "functions must return a value";
     when err_WITH_Small_Sp =>
-      return "must specify ""with small_sp;""";
+      return "must specify ""with hac_pack;"" here";
     when err_use_Small_Sp =>
-      return "must specify ""use small_sp;""";
+      return "must specify ""use hac_pack;"" here";
     when err_missing_an_entry =>
       return "expecting an entry";
     when err_missing_expression_for_delay =>
