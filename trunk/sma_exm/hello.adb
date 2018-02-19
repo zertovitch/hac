@@ -1,4 +1,4 @@
-with Small_SP; use Small_SP;
+with HAC_Pack; use HAC_Pack;
 procedure Hello is
 begin
   Put("Hello");

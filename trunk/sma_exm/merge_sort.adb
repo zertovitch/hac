@@ -1,4 +1,4 @@
-with SMALL_SP; use SMALL_SP;
+with HAC_Pack; use HAC_Pack;
 
 procedure Merge_Sort is
 

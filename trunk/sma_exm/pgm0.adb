@@ -1,4 +1,4 @@
-with SMALL_SP; use SMALL_SP;
+with HAC_Pack; use HAC_Pack;
 procedure PGM0 is
    TASK TELLER IS
       ENTRY MAKE_DEP(CUST_ID : INTEGER;

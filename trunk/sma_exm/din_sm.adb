@@ -1,5 +1,5 @@
-with  SMALL_SP;
-use  SMALL_SP;
+with  HAC_Pack;
+use  HAC_Pack;
 procedure Din_SM is
     task SCREEN is
       entry SEIZE;
