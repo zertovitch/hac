@@ -597,7 +597,7 @@ package HAC.Data is
 
   procedure cFeedback;
 
-  -- Set current source stream (file, editor data, zipped file,...)
+  --  Set current source stream (file, editor data, zipped file,...)
   type Stream_Access is access all Root_Stream_Type'Class;
   procedure c_Set_Stream (s : Stream_Access);
 

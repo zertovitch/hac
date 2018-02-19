@@ -10,28 +10,30 @@ use Ada.Exceptions;
 
 procedure HAC_Test is
 
-  procedure Compile_File(name: String) is
+  procedure Compile_and_interpret_file(name: String) is
     f: Ada.Streams.Stream_IO.File_Type;
   begin
-    Put_Line("Compiling: " & name);
-    Open(f, In_file, name);
+    New_Line;
+    Put_Line ("*******[HAC]*******   Compiling from file: " & name);
+    Open (f, In_file, name);
     HAC.Data.LineCount:= 0;
-    HAC.Data.c_Set_Stream(HAC.Data.Stream_Access(Stream(f)));
+    HAC.Data.c_Set_Stream (HAC.Data.Stream_Access(Stream(f)));
     Compile;
-    Close(f);
+    Close (f);
+    Put_Line ("*******[HAC]*******   Compilation finished.");
     --
     HAC.PCode.Interpreter.Interpret;
   exception
     when Ada.Streams.Stream_IO.Name_Error =>
       Put_Line("Error: file not found (perhaps in sma_exm subdirectory ?)");
-  end Compile_File;
+  end Compile_and_interpret_file;
 
 begin
   if Argument_Count = 0 then
-    Compile_File("test.adb");
+    Compile_and_interpret_file("test.adb");
   else
     for i in 1..Argument_Count loop
-      Compile_File(Argument(i));
+      Compile_and_interpret_file(Argument(i));
     end loop;
   end if;
 exception
