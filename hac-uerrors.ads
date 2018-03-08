@@ -1,10 +1,10 @@
 -------------------------------------------------------------------------------------
 --
--- HAC - HAC Ada Compiler
---
--- A compiler in Ada for an Ada subset
---
--- Copyright, license, etc. : see top package.
+--  HAC - HAC Ada Compiler
+-- 
+--  A compiler in Ada for an Ada subset
+-- 
+--  Copyright, license, etc. : see top package.
 --
 -------------------------------------------------------------------------------------
 
@@ -100,7 +100,7 @@ package HAC.UErrors is
   );
 
 
-  --  see current_error_pipe in HAC.Data for main pipe.
+  --  See current_error_pipe in HAC.Data for main pipe.
   type Message_kind is (error, warning, note, style);
 
   type Smart_error_pipe is access procedure (

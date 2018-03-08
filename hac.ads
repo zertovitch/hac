@@ -1,13 +1,13 @@
 -------------------------------------------------------------------------------------
 --
--- HAC - HAC Ada Compiler
---
--- A compiler in Ada for an Ada subset
---
--- Version / date / download info: see the version, reference, web strings
---   defined at the end of the public part of this package.
-
--- Legal licensing note:
+--  HAC - HAC Ada Compiler
+--  
+--  A compiler in Ada for an Ada subset
+--  
+--  Version / date / download info: see the version, reference, web strings
+--    defined at the end of the public part of this package.
+    
+--  Legal licensing note:
 
 --  Copyright (c) 2013 .. 2018 Gautier de Montmollin
 --
@@ -32,8 +32,8 @@
 --  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 --  THE SOFTWARE.
 
--- NB: this is the MIT License, as found 12-Sep-2013 on the site
--- http://www.opensource.org/licenses/mit-license.php
+--  NB: this is the MIT License, as found 12-Sep-2013 on the site
+--  http://www.opensource.org/licenses/mit-license.php
 
 -------------------------------------------------------------------------------------
 --
@@ -44,9 +44,10 @@ package HAC is
   -- Information about this package - e.g. for an "about" box --
   --------------------------------------------------------------
 
-  version   : constant String:= "0.0";
-  reference : constant String:= "22-Jan-2013";
+  version   : constant String:= "0.01";
+  reference : constant String:= "08-Mar-2018";
+  --  Hopefully the latest version is at that URL:
   web       : constant String:= "http://sf.net/projects/hacadacompiler/";
-  -- hopefully the latest version is at that URL...  ---^
+  web2      : constant String:= "https://github.com/svn2github/hac";
 
 end HAC;
