@@ -15,7 +15,7 @@ procedure HAC_Test is
     New_Line;
     Put_Line ("*******[HAC]*******   Compiling from file: " & name);
     Open (f, In_File, name);
-    HAC.Data.LineCount:= 0;
+    HAC.Data.Line_Count:= 0;
     HAC.Data.c_Set_Stream (HAC.Data.Stream_Access(Stream(f)));
     HAC.Compiler.Compile;
     Close (f);

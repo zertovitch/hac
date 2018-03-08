@@ -81,7 +81,7 @@ package body HAC.Parser is
         BlockTab (B).Id      := IdTab (Tptr).Name;
         BlockTab (B).Last    := 0;
         BlockTab (B).LastPar := 0;
-        BlockTab (B).SrcFrom := LineCount;
+        BlockTab (B).SrcFrom := Line_Count;
       end if;
     end EnterBlock;
 
@@ -854,7 +854,7 @@ package body HAC.Parser is
       saveLineCount : Integer;    -- Source line where Task appeared
     begin
 
-      saveLineCount := LineCount;
+      saveLineCount := Line_Count;
 
       InSymbol;
       if Sy = BODY_Symbol then     -- Task Body
@@ -2908,7 +2908,7 @@ package body HAC.Parser is
       end if;
 
       --{ Mark the following opcodes as belonging to LineCount # }
-      Emit1 (kHighlightSource, LineCount);  --{MRC: this line is not in PC version}
+      Emit1 (kHighlightSource, Line_Count);  --{MRC: this line is not in PC version}
       --{ This did not work because the LineCount was off by one. Why? }
       --{ MRC: This line is needed in order to highlight lines in task windows
       --}
@@ -3125,7 +3125,7 @@ package body HAC.Parser is
       exit when Sy = END_Symbol or Err_Count > 0;
     end loop;
     --{MRC, added OR()... from PC source}
-    BlockTab (PRB).SrcTo := LineCount;
+    BlockTab (PRB).SrcTo := Line_Count;
 
     if Sy = END_Symbol then
       InSymbol;

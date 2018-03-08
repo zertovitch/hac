@@ -200,7 +200,7 @@ package body HAC.Compiler is
   begin -- Compile
 
     -- !! As options
-    ListingWasRequested:= False;
+    Listing_Was_Requested:= False;
     Debug:= False;
     Map:= False;
 
@@ -211,7 +211,7 @@ package body HAC.Compiler is
     Init_Tables;
     cICompiler;
 
-    if ListingWasRequested then
+    if Listing_Was_Requested then
       Create (Listing, Name => "compiler.lst");
       Put_Line (Listing, Header);
     end if;
@@ -283,8 +283,8 @@ package body HAC.Compiler is
       LastPar => 1,
       PSize   => 0,
       VSize   => 0,
-      SrcFrom => LineCount,
-      SrcTo   => LineCount); -- ajout!
+      SrcFrom => Line_Count,
+      SrcTo   => Line_Count); -- ajout!
     Display (0)  := 0; -- Added 7-Dec-2009
 
     TaskDefTab (0) := T; --{ Task Table Entry }
@@ -298,17 +298,17 @@ package body HAC.Compiler is
       if qDebug then
         Put_Line ("Compile terminated BEFORE FILE END");
       end if;
-      if ListingWasRequested then
-        Put_Line ("Compile terminated BEFORE FILE END");
+      if Listing_Was_Requested then
+        Put_Line (Listing, "Compile terminated BEFORE FILE END");
       end if;
     end if;
 
     if BlockTab (1).VSize > StMax - (STKINCR * TCount) then
       Error (err_stack_size, "");
     end if;
-    BlockTab (1).SrcTo := LineCount;  --(* Manuel : terminate source *)
+    BlockTab (1).SrcTo := Line_Count;  --(* Manuel : terminate source *)
 
-    if ListingWasRequested then
+    if Listing_Was_Requested then
       Close (Listing);
     end if;
     if qDebug then

@@ -31,7 +31,7 @@ package body HAC.Scanner is
           if qDebug then  -- @@@ Make an error for this
             Put_Line (" PROGRAM INCOMPLETE");
           end if;
-          if ListingWasRequested then
+          if Listing_Was_Requested then
             Put_Line (Listing, " PROGRAM INCOMPLETE");
           end if;
           Error (err_program_incomplete);
@@ -41,12 +41,12 @@ package body HAC.Scanner is
         if SkipFlag then
           EndSkip;
         end if;
-        if ListingWasRequested then
+        if Listing_Was_Requested then
           New_Line (Listing);
         end if;
-        LineCount := LineCount + 1;
-        if ListingWasRequested then
-          Put (Listing, LineCount, 4);
+        Line_Count := Line_Count + 1;
+        if Listing_Was_Requested then
+          Put (Listing, Line_Count, 4);
           Put (Listing, "  ");
           Put (Listing, LC, 5);
           Put (Listing, "  ");
@@ -56,10 +56,10 @@ package body HAC.Scanner is
         cGetNextLine (theLine, LL); -- Ada style
         InpLine (1 .. LL + 1) := theLine (1 .. LL) & ' '; -- Should be
                                                           --truncated to LLNG
-        syLine                := LineCount;
+        syLine                := Line_Count;
         LL                    := LL + 1;
 
-        if ListingWasRequested then
+        if Listing_Was_Requested then
           New_Line (Listing);
           Put_Line (Listing, InpLine);
         end if;
@@ -145,7 +145,7 @@ package body HAC.Scanner is
       if qDebug then
         Put_Line (" Char is => " & Integer'Image (Character'Pos (CH)));
       end if;
-      if ListingWasRequested then
+      if Listing_Was_Requested then
         Put_Line
          (Listing,
           " Char is => " & Integer'Image (Character'Pos (CH)));
@@ -405,7 +405,7 @@ package body HAC.Scanner is
       if qDebug then
         Put_Line (" [ $!@\^_?""&%  ]");
       end if;
-      if ListingWasRequested then
+      if Listing_Was_Requested then
         Put_Line (Listing, " [ $!@\^_?""&%  ]");
       end if;
       NextCh;
@@ -427,7 +427,7 @@ package body HAC.Scanner is
       end loop;
       Put_Line(Sym_dump,"^");
       Put (Sym_dump,
-        '[' & Integer'Image(LineCount) & ':' & Integer'Image(CC) & ":] " &
+        '[' & Integer'Image(Line_Count) & ':' & Integer'Image(CC) & ":] " &
         KeyWSymbol'Image (Sy)
       );
       case Sy is

@@ -155,7 +155,7 @@ package body HAC.Data is
        (" errCode=" &
         HAC.UErrors.Error_code'Image (errCode) &
         " (" &
-        HAC.UErrors.ErrorString (errCode, hint) &
+        HAC.UErrors.Error_String (errCode, hint) &
         ") " &
         " srcNumber=" &
         Integer'Image (srcNumber) &
