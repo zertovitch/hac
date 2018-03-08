@@ -10,6 +10,8 @@ Objectives:
 ===========
  - fun!
  - produce the smallest Hello-world executable!
+ - have a quick compiler
+ - be useful for small Ada sandboxed prototypes
 
 What HAC will most probably never be:
 =====================================
@@ -18,7 +20,8 @@ What HAC will most probably never be:
 
 Warning & legal
 ===============
-There is NO WARRANTY in this software. Read copyright notice in hac.ads
+There is NO WARRANTY in this software.
+Read copyright notice and license in hac.ads
 
 Getting started
 ===============
@@ -38,7 +41,8 @@ Some design points
 - HAC reads Ada sources from any stream. In addition to files, it is able
     to read from Zip archive (plan is to have sets with many sources like
     libraries in Zip files, for instance), from an internet stream, from
-    an editor buffer, from a source stored in memory, etc.
+    an editor buffer (see the LEA project), from a source stored in memory,
+    etc.
 - one goal is to complement or challenge GNAT, for instance in terms of
     compilation speed, or run-time performance of certain portions of code,
     or object code compactness, or useability on certain targets.
@@ -51,6 +55,8 @@ History:
 - 1999: automatic translation of Mac Pascal sources to Ada
 - 1989: SmallAda is derived from CoPascal; works only inside
           very system-dependent environments (a Mac GUI, a DOS GUI)
+- 1986: CoPascal (Schoening)
+- 1970: Pascal-S (Wirth)
 
   Authors of SmallAda (in Pascal):
     1990 Manuel A. Perez               Macintosh version

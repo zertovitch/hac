@@ -9,10 +9,10 @@
 
 -- Legal licensing note:
 
---  Copyright (c) 2013 Gautier de Montmollin
+--  Copyright (c) 2013 .. 2018 Gautier de Montmollin
 --
---  History and authors list of works HAC was originally derived from
---  can be found in hac.txt.
+--      History and authors list of works HAC was originally
+--      derived from can be found in hac.txt.
 
 --  Permission is hereby granted, free of charge, to any person obtaining a copy
 --  of this software and associated documentation files (the "Software"), to deal
