@@ -1,10 +1,9 @@
-with HAC.Data;
-with HAC.Compiler;                      use HAC.Compiler;
-with HAC.PCode.Interpreter;
+with HAC.Data, HAC.Compiler, HAC.PCode.Interpreter;
 
 with Ada.Command_Line;                  use Ada.Command_Line;
 with Ada.Streams.Stream_IO;             use Ada.Streams.Stream_IO;
 with Ada.Text_IO;                       use Ada.Text_IO;
+
 with GNAT.Traceback.Symbolic, Ada.Exceptions;
 use Ada.Exceptions;
 
@@ -15,10 +14,10 @@ procedure HAC_Test is
   begin
     New_Line;
     Put_Line ("*******[HAC]*******   Compiling from file: " & name);
-    Open (f, In_file, name);
+    Open (f, In_File, name);
     HAC.Data.LineCount:= 0;
     HAC.Data.c_Set_Stream (HAC.Data.Stream_Access(Stream(f)));
-    Compile;
+    HAC.Compiler.Compile;
     Close (f);
     Put_Line ("*******[HAC]*******   Compilation finished.");
     --

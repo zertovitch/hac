@@ -32,7 +32,7 @@ package body HAC.UErrors is
       return "missing identifer; ""array"" or ""record""";
     when err_expecting_dot_dot =>
       return "expecting range symbol: ""..""";
-    when err_semicolon_missing =>
+    when err_SEMICOLON_missing =>
       return "missing a semicolon "";""";
     when err_bad_result_type_for_a_function =>
       return "bad result type for a function";
@@ -91,7 +91,7 @@ package body HAC.UErrors is
       return "illegal parameters to ""Put""";
     when err_parameter_must_be_of_type_Float =>
       return "parameter must be of type Float";
-    when err_parameter_must_be_integer =>
+    when err_parameter_must_be_Integer =>
       return "parameter must be of type Integer";
     when err_expected_variable_function_or_constant =>
       return "expected a variable, function or constant";

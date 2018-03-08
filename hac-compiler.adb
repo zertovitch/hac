@@ -70,9 +70,9 @@ package body HAC.Compiler is
       for I in 1 .. ECount loop
         Put (I, 4);
         Put (' ');
-        Put (IdTab (EntryTAB (I)).Name);
+        Put (IdTab (EntryTab (I)).Name);
         Put ("in Task ");
-        Put (IdTab (TaskDefTab (IdTab (EntryTAB (I)).Adr)).Name);
+        Put (IdTab (TaskDefTab (IdTab (EntryTab (I)).Adr)).Name);
         New_Line;
       end loop;
       New_Line;

@@ -160,7 +160,7 @@ package body HAC.Parser is
       if Sy = Semicolon then
         InSymbol;
       else
-        Error (err_semicolon_missing);
+        Error (err_SEMICOLON_missing);
         if comma_or_colon (Sy) then
           InSymbol;
         end if;
@@ -498,7 +498,7 @@ package body HAC.Parser is
                 if Sy = Semicolon then
                   InSymbol;
                 else
-                  Error (err_semicolon_missing);
+                  Error (err_SEMICOLON_missing);
                   if Sy = Comma then
                     InSymbol;
                   end if;
@@ -639,7 +639,7 @@ package body HAC.Parser is
           if Sy = Semicolon then
             InSymbol;
           else
-            Error (err_semicolon_missing);
+            Error (err_SEMICOLON_missing);
             if Sy = Comma then
               InSymbol;
             end if;
@@ -905,7 +905,7 @@ package body HAC.Parser is
               Fatal (ENTRIES_table_overflow);
             end if;
             Enter (Id, aEntry);
-            EntryTAB (ECount) := T;  --  point to identifier table location
+            EntryTab (ECount) := T;  --  point to identifier table location
             T0                := T;  --  of TaskID
             InSymbol;
             Block (FSys, False, False, Level + 1, T, IdTab(T).Name);
@@ -913,7 +913,7 @@ package body HAC.Parser is
             if Sy = Semicolon then
               InSymbol;
             else
-              Error (err_semicolon_missing);
+              Error (err_SEMICOLON_missing);
             end if;
           end loop; -- Sy = ENTRY_Symbol
 
@@ -938,7 +938,7 @@ package body HAC.Parser is
     procedure Selector (FSys : Symset; V : in out Item) is
       X    : Item;
       a, J : Integer;
-      err  : Error_Code;
+      err  : Error_code;
     begin      -- Sy IN [LParent, Period]
       loop
         if Sy = Period then
@@ -1006,7 +1006,7 @@ package body HAC.Parser is
       end loop;
 
       if FSys = Semicolon_set then
-        err := err_semicolon_missing;
+        err := err_SEMICOLON_missing;
       else
         err := err_incorrectly_used_symbol;
       end if;
@@ -1555,7 +1555,7 @@ package body HAC.Parser is
                 end if;
                 X.TYP := NOTYP;
               end if;
-            when Plus | Minus =>
+            when Plus | MinUS =>
               X.TYP := ResultType (X.TYP, Y.TYP);
               case X.TYP is
                 when NOTYP =>
@@ -2485,7 +2485,7 @@ package body HAC.Parser is
               when TERMINATE_Symbol =>
                 InSymbol;
                 if Sy /= Semicolon then
-                  SelectError (err_semicolon_missing);
+                  SelectError (err_SEMICOLON_missing);
                 end if;
                 do_terminate := True;        -- Oguz
                 InSymbol;
@@ -2598,7 +2598,7 @@ package body HAC.Parser is
                       then
                         Emit1 (k_Read, Types'Pos (X.TYP));
                       else
-                        Error (err_illegal_parameters_to_put);
+                        Error (err_illegal_parameters_to_Put);
                       end if;
                     end if;
                   end if;
@@ -2661,7 +2661,7 @@ package body HAC.Parser is
                     X.TYP := Ints;
                   end if;
                   if (not StanTyps (X.TYP)) and X.TYP /= Strings then
-                    Error (err_illegal_parameters_to_put);
+                    Error (err_illegal_parameters_to_Put);
                   end if;
                   if Sy = Colon then
                     InSymbol;
@@ -2673,7 +2673,7 @@ package body HAC.Parser is
                                others => False)),
                       Y);
                     if Y.TYP /= Ints then
-                      Error (err_parameter_must_be_integer);
+                      Error (err_parameter_must_be_Integer);
                     end if;
                     if Sy = Colon then -- ':' Pascal-ism (Write/WriteLn) !!
                       if X.TYP /= Floats then
@@ -2685,7 +2685,7 @@ package body HAC.Parser is
                         Symset'((Comma | RParent => True, others => False)),
                         Y);
                       if Y.TYP /= Ints then
-                        Error (err_parameter_must_be_integer);
+                        Error (err_parameter_must_be_Integer);
                       end if;
                       Emit (k_Write_Float);
                     else
@@ -2739,7 +2739,7 @@ package body HAC.Parser is
                     if X.TYP = Ints then
                       Emit (N + 1);    -- N is 5, or 6. Opcode is 6 or 7
                     else
-                      Error (err_parameter_must_be_integer);
+                      Error (err_parameter_must_be_Integer);
                     end if;
                   end if;
                 end if;
@@ -2787,7 +2787,7 @@ package body HAC.Parser is
                            others => False)),
                   X);
                 if X.TYP /= Ints then
-                  Skip (Semicolon, err_parameter_must_be_integer);
+                  Skip (Semicolon, err_parameter_must_be_Integer);
                 end if;
                 if Sy /= Comma then
                   Skip (Semicolon, err_COMMA_missing);
@@ -2802,7 +2802,7 @@ package body HAC.Parser is
                              others => False)),
                     X);
                   if X.TYP /= Ints then
-                    Skip (Semicolon, err_parameter_must_be_integer);
+                    Skip (Semicolon, err_parameter_must_be_Integer);
                   end if;
                   if Sy = Comma then
                     Skip (Semicolon, err_number_of_parameters_do_not_match);
@@ -2842,7 +2842,7 @@ package body HAC.Parser is
               InSymbol;
               Expression (Singleton(RParent), X);
               if X.TYP /= Ints then
-                Skip (Semicolon, err_parameter_must_be_integer);
+                Skip (Semicolon, err_parameter_must_be_Integer);
               end if;
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);
@@ -2975,7 +2975,7 @@ package body HAC.Parser is
           if Sy = Semicolon then
             InSymbol;
           else
-            Error (err_semicolon_missing);
+            Error (err_SEMICOLON_missing);
           end if;
         end if;
       end if;  -- Sy in Statement_Begin_Symbol
@@ -3144,7 +3144,7 @@ package body HAC.Parser is
     end if;
 
     if Sy /= Semicolon then
-      Error (err_semicolon_missing);
+      Error (err_SEMICOLON_missing);
       return;
     end if;
 
