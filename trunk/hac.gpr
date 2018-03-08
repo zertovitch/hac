@@ -23,7 +23,9 @@ project Hac is
             for Default_Switches ("ada") use (
 						   "-gnat05", "-gnatwa", 
 							 "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatVa", 
-							 "-gnatec=" & project'Project_Dir & "debug.pra"
+							 "-gnatec=" & project'Project_Dir & "debug.pra",
+               "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
+               "-gnatyx"        --  Style: check x:no extra parens
 						);
          when "Fast" =>
             for Default_Switches ("ada") use (

@@ -136,7 +136,7 @@ package body HAC.PCode.Interpreter is
     EList    : array (1 .. HAC.Data.EntryMax) of EHeader; --  Entry queue array
     SWITCH   : Boolean:= False; --  invoke scheduler on next cycle flag
     SYSCLOCK : Time:= Clock;    --  (ms after 00:00:00 Jan 1, current year)
-    TIMER    : Time:= SysClock; --  set to end of current task's time slice
+    TIMER    : Time:= SYSCLOCK; --  set to end of current task's time slice
     TActive  : TRange;  --  no. of active tasks
 
     CurTask : Integer; --  index of currently executing task
@@ -201,7 +201,7 @@ package body HAC.PCode.Interpreter is
       e := -1;
       i := 1;
       while i <= HAC.Data.ECount and e = -1 loop
-        if Entry_Index = HAC.Data.EntryTAB (i) then
+        if Entry_Index = HAC.Data.EntryTab (i) then
           e := i;
         end if;
         i := i + 1;
@@ -365,7 +365,7 @@ package body HAC.PCode.Interpreter is
 
     procedure Init_main_task is
     begin
-      Reset(gen); --  initialize TPC random number generator
+      Reset(Gen); --  initialize TPC random number generator
       --  After compiled, just begin exec
       --  Initialize run-time stack
       S (1).I := 0 ;
@@ -375,18 +375,18 @@ package body HAC.PCode.Interpreter is
       declare
         Main_TCB : TCBrec renames TCB(0);
       begin
-        Main_TCB.PC := HAC.Data.IdTAB (HAC.Data.TaskdefTAB (0)).ADR ; --  first pcode instruction
-        Main_TCB.T := HAC.Data.BlockTab (1).VSIZE - 1 ; -- was BlockTab (2)
+        Main_TCB.PC := HAC.Data.IdTab (HAC.Data.TaskDefTab (0)).Adr ; --  first pcode instruction
+        Main_TCB.T := HAC.Data.BlockTab (1).VSize - 1 ; -- was BlockTab (2)
         Main_TCB.B := 0 ;
         Main_TCB.TS := Ready ;
         Main_TCB.InRendzv := NilTask ;
         Main_TCB.DISPLAY (1) := 0 ;
-        Main_TCB.STACKSIZE := HAC.Data.STMAX - (HAC.Data.TCount * HAC.Data.STKINCR) ;
+        Main_TCB.STACKSIZE := HAC.Data.StMax - (HAC.Data.TCount * HAC.Data.STKINCR) ;
         Main_TCB.SUSPEND := 0 ;
-        Main_TCB.QUANTUM := Duration(HAC.Data.TSLICE);
+        Main_TCB.QUANTUM := Duration(HAC.Data.TSlice);
         Main_TCB.Pcontrol.UPRI := 0 ;
-        Main_TCB.Pcontrol.INHERIT := FALSE ;
-        Main_TCB.LASTRUN := START_TIME ;
+        Main_TCB.Pcontrol.INHERIT := False ;
+        Main_TCB.LASTRUN := Start_Time ;
       end;
     end Init_main_task;
 
@@ -396,10 +396,10 @@ package body HAC.PCode.Interpreter is
         declare
           Curr_TCB : TCBrec renames TCB(CurTask);
         begin
-          H1 := HAC.Data.TaskDefTAB (CurTask) ;
-          Curr_TCB.PC := HAC.Data.IdTAB (H1).ADR ;
+          H1 := HAC.Data.TaskDefTab (CurTask) ;
+          Curr_TCB.PC := HAC.Data.IdTab (H1).Adr ;
           Curr_TCB.B := TCB (CurTask - 1).STACKSIZE + 1 ;
-          Curr_TCB.T := Curr_TCB.B + HAC.Data.BlockTab (HAC.Data.IdTAB (H1).REF).VSIZE - 1 ;
+          Curr_TCB.T := Curr_TCB.B + HAC.Data.BlockTab (HAC.Data.IdTab (H1).Ref).VSize - 1 ;
           S (Curr_TCB.B + 1).I := 0 ;
           S (Curr_TCB.B + 2).I := 0 ;
           S (Curr_TCB.B + 3).I := -1 ;
@@ -410,21 +410,21 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.SUSPEND := 0 ;
           Curr_TCB.TS := Ready ;
           Curr_TCB.InRendzv := NilTask ;
-          Curr_TCB.QUANTUM := Duration(HAC.Data.TSLICE);
+          Curr_TCB.QUANTUM := Duration(HAC.Data.TSlice);
           Curr_TCB.Pcontrol.UPRI := 0 ;
-          Curr_TCB.Pcontrol.INHERIT := FALSE ;
-          Curr_TCB.LASTRUN := START_TIME ;
+          Curr_TCB.Pcontrol.INHERIT := False ;
+          Curr_TCB.LASTRUN := Start_Time ;
         end;
       end loop;
       --  Initially no queued entry calls
       for H1  in  1 .. HAC.Data.ECount loop
-        Elist (H1).Task_Index := HAC.Data.IdTAB (HAC.Data.EntryTAB (H1)).ADR ; --  Task index
-        Elist (H1).first := null ;
-        Elist (H1).last  := null ;
+        EList (H1).Task_Index := HAC.Data.IdTab (HAC.Data.EntryTab (H1)).Adr ; --  Task index
+        EList (H1).First := null ;
+        EList (H1).Last  := null ;
       end loop;
       TActive := HAC.Data.TCount ; --  All tasks are active initially
       CurTask := 0 ;  --  IT WAS -1 ?
-      SWITCH := TRUE ;
+      SWITCH := True ;
       TIMER := Start_Time; -- was 0.0
       PS := RUN ;
     end Init_other_tasks;
@@ -452,7 +452,7 @@ package body HAC.PCode.Interpreter is
         then --  ------> Awakened task causes switch
           if InterDef.CurTask >= 0 then
             TCB (CurTask).LASTRUN := SYSCLOCK;
-            if (TCB (CurTask).TS = Running) then
+            if TCB (CurTask).TS = Running then
               TCB (CurTask).TS := Ready;
               --  SWITCH PROCCESS
             end if;
@@ -528,7 +528,7 @@ package body HAC.PCode.Interpreter is
               Curr_TCB.DISPLAY (H1) := H3;
               H1                       := H1 - 1;
               H3                       := S (H3 + 2).I;
-              exit when (H1 = H2);
+              exit when H1 = H2;
             end loop;
 
           when k_Accept_Rendezvous => -- Hathorn, Cramer
@@ -706,7 +706,7 @@ package body HAC.PCode.Interpreter is
                 H2 := H2 + 2;
               end if;
             end if;
-            exit when (H3 /= 0);
+            exit when H3 /= 0;
           end loop;
 
         when 14 => --  FOR1
@@ -1554,7 +1554,7 @@ package body HAC.PCode.Interpreter is
 
         end loop;
         InterDef.H1 := InterDef.S (InterDef.H1 + 3).I;
-        exit when (InterDef.H1 < 0);
+        exit when InterDef.H1 < 0;
       end loop;
     end if;
     begin

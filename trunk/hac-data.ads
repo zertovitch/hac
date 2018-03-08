@@ -574,7 +574,7 @@ package HAC.Data is
     DECLARE_Symbol|
     IF_Symbol     |
     WHILE_Symbol  |
-    Loop_Symbol   |
+    LOOP_Symbol   |
     FOR_Symbol    |
     CASE_Symbol   |
     EXIT_Symbol   |
@@ -649,7 +649,7 @@ private
         ("INTERFACE   ", INTERFACE_Symbol),    -- Ada 2005
         ("IS          ", IS_Symbol),
         ("LIMITED     ", LIMITED_Symbol),
-        ("LOOP        ", Loop_Symbol),
+        ("LOOP        ", LOOP_Symbol),
         ("MOD         ", MOD_Symbol),
         ("NEW         ", NEW_Symbol),
         ("NOT         ", NOT_Symbol),
