@@ -1,9 +1,9 @@
 -------------------------------------------------------------------------------------
 --
 --  HAC - HAC Ada Compiler
--- 
+--
 --  A compiler in Ada for an Ada subset
--- 
+--
 --  Copyright, license, etc. : see top package.
 --
 -------------------------------------------------------------------------------------
@@ -98,7 +98,6 @@ package HAC.UErrors is
     err_statement_expected,
     err_duplicate_label
   );
-
 
   --  See current_error_pipe in HAC.Data for main pipe.
   type Message_kind is (error, warning, note, style);

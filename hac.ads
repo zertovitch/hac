@@ -1,12 +1,12 @@
 -------------------------------------------------------------------------------------
 --
 --  HAC - HAC Ada Compiler
---  
+--
 --  A compiler in Ada for an Ada subset
---  
+--
 --  Version / date / download info: see the version, reference, web strings
 --    defined at the end of the public part of this package.
-    
+
 --  Legal licensing note:
 
 --  Copyright (c) 2013 .. 2018 Gautier de Montmollin
