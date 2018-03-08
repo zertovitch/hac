@@ -1,16 +1,11 @@
 with HAC.Data;
 
-with Ada.Unchecked_Deallocation;
 with Ada.Calendar;                      use Ada.Calendar;
-with Ada.Text_IO,
-     Ada.Integer_Text_IO,
-     Ada.Float_Text_IO;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
+with Ada.Unchecked_Deallocation;
 
 package body HAC.PCode.Interpreter is
-
-  package Boolean_Text_IO is new Ada.Text_IO.Enumeration_IO (Boolean);
 
   package InterDef is -- sub-package, was a separate Turbo Pascal unit
 
@@ -155,6 +150,85 @@ package body HAC.PCode.Interpreter is
     SNAP: Boolean; --  SNAP-shot flag To Display sched. status
 
   end InterDef;
+
+  --  Post Mortem Dump of the task stack causing the exception
+  --
+  procedure Post_Mortem_Dump is
+    use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Float_Text_IO, Boolean_Text_IO;
+    use InterDef;
+  begin
+      New_Line;
+      Put_Line("Stack Variables of Task " & HAC.Data.IdTab (HAC.Data.TaskDefTab (InterDef.CurTask)).Name);
+      InterDef.H1 := InterDef.TCB (InterDef.CurTask).B;   --  current botton
+                                                          --of stack
+      InterDef.BLKCNT := 10;
+      loop
+        New_Line;
+        InterDef.BLKCNT := InterDef.BLKCNT - 1;
+        if InterDef.BLKCNT = 0 then
+          InterDef.H1 := 0;
+        end if;
+        InterDef.H2 := S (InterDef.H1 + 4).I;     --  index into HAC.Data.IdTab for this
+                                                  --process
+        if InterDef.H1 /= 0 then
+          Put (HAC.Data.IdTab (InterDef.H2).Name);
+          Put (" CALLED AT");
+          Put (S (InterDef.H1 + 1).I, 5);
+          New_Line;
+        else
+          Put_Line ("Task Variables");
+        end if;
+        InterDef.H2 := HAC.Data.BlockTab (HAC.Data.IdTab (InterDef.H2).Ref).Last;
+        while InterDef.H2 /= 0 loop
+          -- [P2Ada]: WITH instruction
+          declare
+            P2Ada_Var_7 : HAC.Data.TabEntry renames HAC.Data.IdTab (InterDef.H2);
+            use HAC.Data;
+          begin
+            if P2Ada_Var_7.Obj = HAC.Data.Variable then
+              if P2Ada_Var_7.TYP = Enums or
+                 HAC.Data.StanTyps (P2Ada_Var_7.TYP)
+              then
+                if P2Ada_Var_7.Normal then
+                  InterDef.H3 := InterDef.H1 + P2Ada_Var_7.Adr;
+                else
+                  InterDef.H3 := InterDef.S (InterDef.H1 + P2Ada_Var_7.Adr).I;
+                end if;
+                Put ("  ");
+                Put (P2Ada_Var_7.Name);
+                Put (" = ");
+                case P2Ada_Var_7.TYP is
+                  when HAC.Data.Enums | HAC.Data.Ints =>
+                    Put (S (H3).I);
+                    New_Line;
+
+                  when HAC.Data.Bools =>
+                    Put (S (H3).I mod 2 = 1);
+                    New_Line;
+
+                  when HAC.Data.Floats =>
+                    Put (S (H3).R);
+                    New_Line;
+
+                  when HAC.Data.xChars =>
+                    Put (S (H3).I);
+                    Put_Line (" (ASCII)");
+
+                  when others =>
+                    null;  -- [P2Ada]: no otherwise / else in Pascal
+                end case;
+
+              end if;
+            end if;
+            InterDef.H2 := P2Ada_Var_7.Link;
+
+          end; -- [P2Ada]: end of WITH
+
+        end loop;
+        InterDef.H1 := InterDef.S (InterDef.H1 + 3).I;
+        exit when InterDef.H1 < 0;
+      end loop;
+  end Post_Mortem_Dump;
 
   procedure Interpret
     --  Global Data Used (HAC.Data) :
@@ -429,8 +503,6 @@ package body HAC.PCode.Interpreter is
       PS := RUN ;
     end Init_other_tasks;
 
-    use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Float_Text_IO, Boolean_Text_IO;
-
   begin --  Interpret
     InterDef.SNAP:= False;
     Init_main_task;
@@ -645,9 +717,9 @@ package body HAC.PCode.Interpreter is
                   PS := STKCHK;
                 else
                   if IR.X = 0 then
-                    S (Curr_TCB.T).I := Boolean'Pos(End_Of_File);
+                    S (Curr_TCB.T).I := Boolean'Pos(End_Of_File_Console);
                   else
-                    S (Curr_TCB.T).I := Boolean'Pos(End_Of_File (FAT.FIL (IR.X)));
+                    S (Curr_TCB.T).I := Boolean'Pos(Ada.Text_IO.End_Of_File (FAT.FIL (IR.X)));
                   end if;
                 end if;
               when 18 =>
@@ -656,9 +728,9 @@ package body HAC.PCode.Interpreter is
                   PS := STKCHK;
                 else
                   if IR.X = 0 then
-                    S (Curr_TCB.T).I := Boolean'Pos(End_Of_Line);
+                    S (Curr_TCB.T).I := Boolean'Pos(End_Of_Line_Console);
                   else
-                    S (Curr_TCB.T).I := Boolean'Pos(End_Of_Line (FAT.FIL (IR.X)));
+                    S (Curr_TCB.T).I := Boolean'Pos(Ada.Text_IO.End_Of_Line (FAT.FIL (IR.X)));
                   end if;
                 end if;
               when 19 =>
@@ -929,22 +1001,22 @@ package body HAC.PCode.Interpreter is
         when k_Read =>
           --  READ
           if FAT.CURR = 0 then
-            if End_Of_File then
+            if End_Of_File_Console then
               PS := REDCHK;
             else
               case IR.Y is
                 when 1 =>
-                  Get (S (S (Curr_TCB.T).I).I);
+                  Get_Console (S (S (Curr_TCB.T).I).I);
                 when 2 =>
-                  Get (S (S (Curr_TCB.T).I).R);
+                  Get_Console (S (S (Curr_TCB.T).I).R);
                 when 3 =>
-                  Get (HAC.Data.CH);
+                  Get_Console (HAC.Data.CH);
                   S (S (Curr_TCB.T).I).I := Character'Pos (HAC.Data.CH);
                 when 4 =>
                   declare
                     C: Character;
                   begin
-                    Get(C);
+                    Get_Console (C);
                     S (S (Curr_TCB.T).I).I:= Character'Pos(C);
                   end;
                 when others =>
@@ -953,22 +1025,22 @@ package body HAC.PCode.Interpreter is
             end if;
             Curr_TCB.T := Curr_TCB.T - 1;
           else
-            if End_Of_File (FAT.FIL (FAT.CURR)) then
+            if Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
               PS := REDCHK;
             else
               case IR.Y is
                 when 1 =>
-                  Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).I);
+                  Ada.Integer_Text_IO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).I);
                 when 2 =>
-                  Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).R);
+                  Ada.Float_Text_IO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).R);
                 when 3 =>
-                  Get (FAT.FIL (FAT.CURR), HAC.Data.CH);
+                  Ada.Text_IO.Get (FAT.FIL (FAT.CURR), HAC.Data.CH);
                   S (S (Curr_TCB.T).I).I := Character'Pos (HAC.Data.CH);
                 when 4 =>
                   declare
                     C: Character;
                   begin
-                    Get(FAT.FIL (FAT.CURR), C);
+                    Ada.Text_IO.Get(FAT.FIL (FAT.CURR), C);
                     S (S (Curr_TCB.T).I).I:= Character'Pos(C);
                   end;
                 when others =>
@@ -984,9 +1056,9 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.T := Curr_TCB.T - 1;
           while H1 > 0 loop
             if FAT.CURR = 0 then
-              Put (HAC.Data.StringTab (H2));
+              Put_Console (HAC.Data.StringTab (H2));
             else
-              Put (FAT.FIL (FAT.CURR), HAC.Data.StringTab (H2));
+              Ada.Text_IO.Put (FAT.FIL (FAT.CURR), HAC.Data.StringTab (H2));
             end if;
             H1 := H1 - 1;        --  decrement length
             H2 := H2 + 1;
@@ -999,26 +1071,26 @@ package body HAC.PCode.Interpreter is
           if FAT.CURR = 0 then
             case IR.Y is
               when 1 =>   --  Burd
-                Put (S (Curr_TCB.T).I);
+                Put_Console (S (Curr_TCB.T).I);
               when 2 =>
-                Put (S (Curr_TCB.T).R);
+                Put_Console (S (Curr_TCB.T).R);
               when 3 =>
-                Put (Boolean'Val(S (Curr_TCB.T).I));
+                Put_Console (Boolean'Image(Boolean'Val(S (Curr_TCB.T).I)));
               when 4 =>
-                Put (Character'Val(S (Curr_TCB.T).I));
+                Put_Console (Character'Val(S (Curr_TCB.T).I));
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal
             end case;
           else
             case IR.Y is
               when 1 =>     --  Schoening
-                Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).I, 10);
+                Ada.Integer_Text_IO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).I, 10);
               when 2 =>
-                Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).R, 22);
+                Ada.Float_Text_IO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).R, 22);
               when 3 =>
-                Put (FAT.FIL (FAT.CURR), Boolean'Val(S (Curr_TCB.T).I), 10);
+                Boolean_Text_IO.Put (FAT.FIL (FAT.CURR), Boolean'Val(S (Curr_TCB.T).I), 10);
               when 4 =>
-                Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T).I));
+                Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T).I));
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal
             end case;
@@ -1031,35 +1103,35 @@ package body HAC.PCode.Interpreter is
           if FAT.CURR = 0 then
             case IR.Y is
               when 1 => --  Burd
-                Put (S (Curr_TCB.T - 1).I, S (Curr_TCB.T).I);
+                Put_Console (S (Curr_TCB.T - 1).I, S (Curr_TCB.T).I);
               when 2 =>
-                Put (S (Curr_TCB.T - 1).R, S (Curr_TCB.T).I);
+                Put_Console (S (Curr_TCB.T - 1).R, S (Curr_TCB.T).I);
               when 3 =>
-                Put (Boolean'Val(S (Curr_TCB.T - 1).I), S (Curr_TCB.T).I);
+                Put_Console (Boolean'Val(S (Curr_TCB.T - 1).I), S (Curr_TCB.T).I);
               when 4 =>
-                Put (Character'Val(S (Curr_TCB.T - 1).I));
+                Put_Console (Character'Val(S (Curr_TCB.T - 1).I));
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal
             end case;
           else
             case IR.Y is
               when 1 =>         --  Schoening
-                Put
+                Ada.Integer_Text_IO.Put
                  (FAT.FIL (FAT.CURR),
                   S (Curr_TCB.T - 1).I,
                   S (Curr_TCB.T).I);
               when 2 =>
-                Put
+                Ada.Float_Text_IO.Put
                  (FAT.FIL (FAT.CURR),
                   S (Curr_TCB.T - 1).R,
                   S (Curr_TCB.T).I);
               when 3 =>
-                Put
+                Boolean_Text_IO.Put
                  (FAT.FIL (FAT.CURR),
                   Boolean'Val(S (Curr_TCB.T - 1).I),
                   S (Curr_TCB.T).I);
               when 4 =>
-                Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T - 1).I));
+                Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T - 1).I));
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal
             end case;
@@ -1116,15 +1188,15 @@ package body HAC.PCode.Interpreter is
         when k_Unary_MINUS_Integer =>
           S (Curr_TCB.T).I := -S (Curr_TCB.T).I;
 
-        when k_Write_Float =>
+        when k_Write_Float =>  --  Put Float with 3 parameters
           if FAT.CURR = 0 then
-            Put
+            Put_Console
              (S (Curr_TCB.T - 2).R,
               S (Curr_TCB.T - 1).I,
               S (Curr_TCB.T).I,
               0);
           else
-            Put
+            Ada.Float_Text_IO.Put
              (FAT.FIL (FAT.CURR),
               S (Curr_TCB.T - 2).R,
               S (Curr_TCB.T - 1).I,
@@ -1230,23 +1302,23 @@ package body HAC.PCode.Interpreter is
 
         when kGetNewline =>
           if FAT.CURR = 0 then       --  Schoening
-            if End_Of_File then
+            if End_Of_File_Console then
               PS := REDCHK;
             else
-              Skip_Line;
+              Skip_Line_Console;
             end if;
-          elsif End_Of_File (FAT.FIL (FAT.CURR)) then
+          elsif Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
             PS := REDCHK;
           else
-            Skip_Line (FAT.FIL (FAT.CURR));
+            Ada.Text_IO.Skip_Line (FAT.FIL (FAT.CURR));
           end if;
           SWITCH := True;  --  give up control when doing I/O
 
         when kPutNewline =>
           if FAT.CURR = 0 then      --  Schoening
-            New_Line;
+            New_Line_Console;
           else
-            New_Line (FAT.FIL (FAT.CURR));
+            Ada.Text_IO.New_Line (FAT.FIL (FAT.CURR));
           end if;
           SWITCH := True;  --  give up control when doing I/O
 
@@ -1257,21 +1329,21 @@ package body HAC.PCode.Interpreter is
           --  File I/O procedures - Schoening
           case IR.Y is
             when 7 =>
-              if Is_Open (FAT.FIL (IR.X)) then
-                Close (FAT.FIL (IR.X));   --  just in case
+              if Ada.Text_IO.Is_Open (FAT.FIL (IR.X)) then
+                Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
               end if;
               H1 := 0; -- was IOresult ;   --  clears any I/O error
-              Open (FAT.FIL (IR.X), In_File, FAT.NAM (IR.X) & ".DAT");
+              Ada.Text_IO.Open (FAT.FIL (IR.X), Ada.Text_IO.In_File, FAT.NAM (IR.X) & ".DAT");
 
             when 8 =>
-              if Is_Open (FAT.FIL (IR.X)) then
-                Close (FAT.FIL (IR.X));   --  just in case
+              if Ada.Text_IO.Is_Open (FAT.FIL (IR.X)) then
+                Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
               end if;
               H1 := 0; -- was IOresult ;   --  clears any I/O error
-              Create (FAT.FIL (IR.X), Out_File, FAT.NAM (IR.X) & ".DAT");
+              Ada.Text_IO.Create (FAT.FIL (IR.X), Ada.Text_IO.Out_File, FAT.NAM (IR.X) & ".DAT");
 
             when 9 =>
-              Close (FAT.FIL (IR.X));    --  close file
+              Ada.Text_IO.Close (FAT.FIL (IR.X));    --  close file
 
             when others =>
               null;  -- [P2Ada]: no otherwise / else in Pascal
@@ -1483,89 +1555,34 @@ package body HAC.PCode.Interpreter is
       exit when InterDef.PS /= InterDef.RUN;
     end loop;
     <<LABEL_123777>>
-      if InterDef.PS /= InterDef.FIN then
-      --  Post Mortem Dump of the task stack causing the exception
-      New_Line;
-      Put_Line("Stack Variables of Task " & HAC.Data.IdTab (HAC.Data.TaskDefTab (InterDef.CurTask)).Name);
-      InterDef.H1 := InterDef.TCB (InterDef.CurTask).B;   --  current botton
-                                                          --of stack
-      InterDef.BLKCNT := 10;
-      loop
-        New_Line;
-        InterDef.BLKCNT := InterDef.BLKCNT - 1;
-        if InterDef.BLKCNT = 0 then
-          InterDef.H1 := 0;
-        end if;
-        InterDef.H2 := S (InterDef.H1 + 4).I;     --  index into HAC.Data.IdTab for this
-                                                  --process
-        if InterDef.H1 /= 0 then
-          Put (HAC.Data.IdTab (InterDef.H2).Name);
-          Put (" CALLED AT");
-          Put (S (InterDef.H1 + 1).I, 5);
-          New_Line;
-        else
-          Put_Line ("Task Variables");
-        end if;
-        InterDef.H2 := HAC.Data.BlockTab (HAC.Data.IdTab (InterDef.H2).Ref).Last;
-        while InterDef.H2 /= 0 loop
-          -- [P2Ada]: WITH instruction
-          declare
-            P2Ada_Var_7 : HAC.Data.TabEntry renames HAC.Data.IdTab (InterDef.H2);
-            use HAC.Data;
-          begin
-            if P2Ada_Var_7.Obj = HAC.Data.Variable then
-              if P2Ada_Var_7.TYP = Enums or
-                 HAC.Data.StanTyps (P2Ada_Var_7.TYP)
-              then
-                if P2Ada_Var_7.Normal then
-                  InterDef.H3 := InterDef.H1 + P2Ada_Var_7.Adr;
-                else
-                  InterDef.H3 := InterDef.S (InterDef.H1 + P2Ada_Var_7.Adr).I;
-                end if;
-                Put ("  ");
-                Put (P2Ada_Var_7.Name);
-                Put (" = ");
-                case P2Ada_Var_7.TYP is
-                  when HAC.Data.Enums | HAC.Data.Ints =>
-                    Put (S (H3).I);
-                    New_Line;
-
-                  when HAC.Data.Bools =>
-                    Put (S (H3).I mod 2 = 1);
-                    New_Line;
-
-                  when HAC.Data.Floats =>
-                    Put (S (H3).R);
-                    New_Line;
-
-                  when HAC.Data.xChars =>
-                    Put (S (H3).I);
-                    Put_Line (" (ASCII)");
-
-                  when others =>
-                    null;  -- [P2Ada]: no otherwise / else in Pascal
-                end case;
-
-              end if;
-            end if;
-            InterDef.H2 := P2Ada_Var_7.Link;
-
-          end; -- [P2Ada]: end of WITH
-
-        end loop;
-        InterDef.H1 := InterDef.S (InterDef.H1 + 3).I;
-        exit when InterDef.H1 < 0;
-      end loop;
+    if InterDef.PS /= InterDef.FIN then
+      Post_Mortem_Dump;
     end if;
-    begin
-    --  GotoXY (1, 20) ;
+    --  begin
+    --  --  GotoXY (1, 20) ;
+    --
+    --    New_Line;
+    --    Put ("Program terminated normally ...");
+    --    New_Line;
+    --  end;
 
-      New_Line;
-      Put ("Program terminated normally ...");
-      New_Line;
-    end;
+  end Interpret;
 
-  end Interpret;  --  INTERPRET
+  procedure Interpret_on_Current_IO_Instance is new Interpret
+    ( Ada.Text_IO.End_Of_File,
+      Ada.Text_IO.End_Of_Line,
+      Ada.Integer_Text_IO.Get,
+      Ada.Float_Text_IO.Get,
+      Ada.Text_IO.Get,
+      Ada.Text_IO.Skip_Line,
+      Ada.Integer_Text_IO.Put,
+      Ada.Float_Text_IO.Put,
+      Boolean_Text_IO.Put,
+      Ada.Text_IO.Put,
+      Ada.Text_IO.Put,
+      Ada.Text_IO.New_Line);
+
+  procedure Interpret_on_Current_IO renames Interpret_on_Current_IO_Instance;
 
 end HAC.PCode.Interpreter;
 -- Translated on 23-Jan-2013 by (New) P2Ada v. 28-Oct-2009

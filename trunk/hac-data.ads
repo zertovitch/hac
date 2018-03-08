@@ -1,12 +1,15 @@
 -------------------------------------------------------------------------------------
 --
--- HAC - HAC Ada Compiler
---
--- A compiler in Ada for an Ada subset
---
--- Copyright, license, etc. : see top package.
+--  HAC - HAC Ada Compiler
+-- 
+--  A compiler in Ada for an Ada subset
+-- 
+--  Copyright, license, etc. : see top package.
 --
 -------------------------------------------------------------------------------------
+
+--  This packages contains constants and global data (ouch!) for the compiler
+--  and the p-code interpreter.
 
 with Ada.Streams; use Ada.Streams;
 with Ada.Text_IO; use Ada.Text_IO;

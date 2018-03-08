@@ -1,25 +1,25 @@
 -------------------------------------------------------------------------------------
 --
--- HAC - HAC Ada Compiler
---
--- A compiler in Ada for an Ada subset
---
--- Copyright, license, etc. : see top package.
+--  HAC - HAC Ada Compiler
+--  
+--  A compiler in Ada for an Ada subset
+--  
+--  Copyright, license, etc. : see top package.
 --
 -------------------------------------------------------------------------------------
 --
 
--- This unit is used to store object codes in the ObjCode table.
--- The three procedures Emit, Emit1, and Emit2 are called from
--- the compiler and the parser.
+--  This unit is used to store object codes in the ObjCode table.
+--  The three procedures Emit, Emit1, and Emit2 are called from
+--  the compiler and the parser.
 
 package HAC.PCode is
 
   dummy_address : constant := -1;
-  -- For jumps forward in the code towards an ELSE, ELSIF, END IF, END LOOP, ...
-  -- When the code is emited, the address is still unknown.
+  --  For jumps forward in the code towards an ELSE, ELSIF, END IF, END LOOP, ...
+  --  When the code is emited, the address is still unknown.
 
-  -- Store PCode object in the object code table
+  --  Store PCode object in the object code table
   procedure Emit(FCT: Integer);
   procedure Emit1(FCT, B: Integer);
   procedure Emit2(FCT, a, B: Integer);
@@ -102,7 +102,7 @@ package HAC.PCode is
   kHighlightSource            : constant := 74;
   k_XOR_Boolean               : constant := 75;
 
-  -- Save and restore an object file
+  --  Save and restore an object file
   procedure SaveOBJ(FileName: String);
   procedure RestoreOBJ(FileName: String);
 

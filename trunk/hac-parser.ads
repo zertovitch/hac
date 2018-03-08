@@ -1,10 +1,10 @@
 -------------------------------------------------------------------------------------
 --
--- HAC - HAC Ada Compiler
---
--- A compiler in Ada for an Ada subset
---
--- Copyright, license, etc. : see top package.
+--  HAC - HAC Ada Compiler
+-- 
+--  A compiler in Ada for an Ada subset
+-- 
+--  Copyright, license, etc. : see top package.
 --
 -------------------------------------------------------------------------------------
 --
@@ -22,9 +22,9 @@ package HAC.Parser is
     BlockID              : HAC.Data.Alfa  --  Name of this block (if any)
   );
 
-  -- E.g. : in the case of a block statement within a function, the value
-  -- True will be passed for both Is_a_function and Is_a_block_statement.
-  -- When Is_a_block_statement = True, the current symbol Sy must be either
-  -- DECLARE_symbol or BEGIN_symbol
+  --  E.g. : in the case of a block statement within a function, the value
+  --  True will be passed for both Is_a_function and Is_a_block_statement.
+  --  When Is_a_block_statement = True, the current symbol Sy must be either
+  --  DECLARE_symbol or BEGIN_symbol
 
 end HAC.Parser;

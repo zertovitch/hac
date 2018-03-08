@@ -1,16 +1,18 @@
 -------------------------------------------------------------------------------------
 --
--- HAC - HAC Ada Compiler
---
--- A compiler in Ada for an Ada subset
---
--- Copyright, license, etc. : see top package.
+--  HAC - HAC Ada Compiler
+-- 
+--  A compiler in Ada for an Ada subset
+-- 
+--  Copyright, license, etc. : see top package.
 --
 -------------------------------------------------------------------------------------
 --
 
 package HAC.Scanner is
 
-  procedure InSymbol; -- communicates via global variables (arrgh!)
+  --  Source code scanning for the compiler
+
+  procedure InSymbol;  --  Communicates via global variables in HAC.Data (arrgh!)
 
 end HAC.Scanner;

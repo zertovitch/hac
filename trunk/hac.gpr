@@ -1,3 +1,7 @@
+--  This is a GNAT, GCC or GNAT Programming Studio (GPS) project file
+--  for the HAC project ( https://sf.net/projects/hacadacompiler/ , mirror: https://github.com/svn2github/hac )
+--  Build me with "gprbuild -p -P hac", or open me with GPS
+--  
 project Hac is
 
    type Build_Mode_Type is ("Debug", "Fast");
@@ -54,7 +58,7 @@ project Hac is
    end Linker;
 
    package Builder is
-      for Default_Switches ("ada") use ("-g");
+      for Default_Switches ("ada") use ("-g", "-j0");  --   "If -j0 is used, then the maximum number of simultaneous compilation jobs is the number of core processors on the platform."
    end Builder;
 
 end Hac;
