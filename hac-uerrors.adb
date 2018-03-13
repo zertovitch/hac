@@ -1,6 +1,7 @@
 with HAC.Data; use HAC.Data;
 
 with Ada.Strings.Fixed;                 use Ada.Strings, Ada.Strings.Fixed;
+with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 package body HAC.UErrors is
@@ -206,11 +207,12 @@ package body HAC.UErrors is
       );
     else
       HAC.Data.current_error_pipe (
-        message  => Error_String (code, hint),
-        line     => Line_Count,
-        column_a => syStart,
-        column_z => syEnd,
-        kind     => error
+        message   => Error_String (code, hint),
+        file_name => To_String (current_compiler_file_name),
+        line      => Line_Count,
+        column_a  => syStart,
+        column_z  => syEnd,
+        kind      => error
       );
     end if;
   end Error;

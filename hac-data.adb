@@ -3,6 +3,8 @@ with Ada.Strings.Fixed;
 
 package body HAC.Data is
 
+  current_compiler_stream    : Stream_Access;
+
   function "+" (a, b : Set) return Set is
     c : Set (a'Range);
   begin
@@ -113,11 +115,13 @@ package body HAC.Data is
     null; -- uiFeedback;
   end cFeedback;
 
-  current_compiler_stream : Stream_Access;
-
-  procedure c_Set_Stream (s : Stream_Access) is
+  procedure c_Set_Stream (
+    s         : Stream_Access;
+    file_name : String         --  Can be virtual (editor, zip entry)
+  ) is
   begin
     current_compiler_stream := s;
+    current_compiler_file_name := To_Unbounded_String (file_name);
   end c_Set_Stream;
 
   procedure cGetNextLine (InpLine : out String; Last : out Natural) is
