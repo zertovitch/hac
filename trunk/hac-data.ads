@@ -13,6 +13,7 @@
 
 with Ada.Streams; use Ada.Streams;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
 
 with HAC.UErrors;
 
@@ -569,18 +570,24 @@ package HAC.Data is
 
   qDebug : Boolean := True;
 
-  --  Error messages can be routed to a specialized pipe instead of
-  --  text-based Standard_Error.
-
-  current_error_pipe: HAC.UErrors.Smart_error_pipe := null;
-
   procedure cICompiler;
 
   procedure cFeedback;
 
-  --  Set current source stream (file, editor data, zipped file,...)
+  --  Error messages can be routed to a specialized pipe instead of
+  --  text-based Standard_Error.
+
+  --  !! This would be ideally private. Please use c_Set_Stream below.
+  current_error_pipe: HAC.UErrors.Smart_error_pipe := null;
+  current_compiler_file_name : Unbounded_String;
+
   type Stream_Access is access all Root_Stream_Type'Class;
-  procedure c_Set_Stream (s : Stream_Access);
+
+--  Set current source stream (file, editor data, zipped file,...)
+  procedure c_Set_Stream (
+    s         : Stream_Access;
+    file_name : String         --  Can be virtual (editor, zip entry)
+  );
 
   --  Get the next line from source
   procedure cGetNextLine (InpLine : out String; Last : out Natural);

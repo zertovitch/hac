@@ -103,12 +103,12 @@ package HAC.UErrors is
   type Message_kind is (error, warning, note, style);
 
   type Smart_error_pipe is access procedure (
-    message  : String;
-    --  file     : String;
-    line     : Positive;
-    column_a : Positive;
-    column_z : Positive;
-    kind     : Message_kind
+    message   : String;
+    file_name : String;
+    line      : Positive;
+    column_a  : Positive;
+    column_z  : Positive;
+    kind      : Message_kind
   );
 
   procedure Error (code: Error_code; hint: String:= "");
