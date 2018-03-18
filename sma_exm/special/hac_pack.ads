@@ -1,108 +1,107 @@
 --  This is the pseudo-package containing all specifications of all support
---  routines for HAC. All HAC programs must have "with" and "use"
+--  routines for HAC. So far all HAC programs must have "with" and "use"
 --  of this package.
--- 
+--
 --  Note: this is kept for early stages. At some point HAC_Pack won't
 --  be used anymore. The package is compilable by a real Ada compiler like
 --  GNAT, so the test programs can be run on both HAC and GNAT.
 
 package HAC_Pack is
 
-   type SEMAPHORE is new Integer; -- private;
+   type Semaphore is new Integer; -- private;
 
    -- Absolute Value - SMA used ABS instead of "ABS" (operator)... TBA !!
    -- function   ABS       ( I : INTEGER   ) return INTEGER;
    -- function   ABS       ( F : FLOAT     ) return FLOAT;
 
    -- Square
-   function   SQR       ( I : INTEGER   ) return INTEGER;
-   function   SQR       ( F : FLOAT     ) return FLOAT;
+   function   Sqr       ( I : Integer   ) return Integer;
+   function   Sqr       ( F : Float     ) return Float;
 
    -- Square Root
-   function   SQRT      ( I : INTEGER   ) return FLOAT;
-   function   SQRT      ( F : FLOAT     ) return FLOAT;
+   function   Sqrt      ( I : Integer   ) return Float;
+   function   Sqrt      ( F : Float     ) return Float;
 
    -- Odd Valued
-   function   ODD       ( I : INTEGER   ) return BOOLEAN;
+   function   Odd       ( I : Integer   ) return Boolean;
 
    -- Integer to Character
-   function   ASCII     ( I : INTEGER   ) return CHARACTER;
+   function   ASCII     ( I : Integer   ) return Character;
 
    -- Character to Integer
-   function   ORD       ( C : CHARACTER ) return INTEGER;
+   function   Ord       ( C : Character ) return Integer;
 
    -- Next Character
-   function   SUCC      ( C : CHARACTER ) return CHARACTER;
+   function   Succ      ( C : Character ) return Character;
 
    -- Previous Character
-   function   PRED      ( C : CHARACTER ) return CHARACTER;
+   function   Pred      ( C : Character ) return Character;
 
    -- Round to an Integer
-   function   ROUND     ( F : FLOAT     ) return INTEGER;
+   function   Round     ( F : Float     ) return Integer;
 
    -- Truncate
-   function   TRUNC     ( F : FLOAT     ) return INTEGER;
+   function   Trunc     ( F : Float     ) return Integer;
 
    -- Trigonometric Functions     w/ arguments in radians
-   function   SIN       ( I : INTEGER   ) return FLOAT;
-   function   SIN       ( F : FLOAT     ) return FLOAT;
-   function   COS       ( I : INTEGER   ) return FLOAT;
-   function   COS       ( F : FLOAT     ) return FLOAT;
-   function   ARCTAN    ( I : INTEGER   ) return FLOAT;
-   function   ARCTAN    ( F : FLOAT     ) return FLOAT;
+   function   Sin       ( I : Integer   ) return Float;
+   function   Sin       ( F : Float     ) return Float;
+   function   Cos       ( I : Integer   ) return Float;
+   function   Cos       ( F : Float     ) return Float;
+   function   ArcTan    ( I : Integer   ) return Float;
+   function   ArcTan    ( F : Float     ) return Float;
 
    -- Exponential Functions
-   function   LN        ( I : INTEGER   ) return FLOAT;
-   function   LN        ( F : FLOAT     ) return FLOAT;
-   function   EXP       ( I : INTEGER   ) return FLOAT;
-   function   EXP       ( F : FLOAT     ) return FLOAT;
+   function   Log       ( I : Integer   ) return Float;
+   function   Log       ( F : Float     ) return Float;
+   function   Exp       ( I : Integer   ) return Float;
+   function   Exp       ( F : Float     ) return Float;
 
    -- Random Integer      from 0 to I
-   function   RANDOM    ( I : INTEGER   ) return INTEGER;
-   function   RANDOM    ( I : INTEGER   ) return Float;
-
+   function   Random    ( I : Integer   ) return Integer;
+   function   Random    ( I : Integer   ) return Float;
 
    -- Get
-   procedure  GET       ( C : OUT CHARACTER);
-   procedure  GET       ( I : OUT INTEGER  );
-   procedure  GET       ( F : OUT FLOAT    );
-   procedure  GET       ( B : OUT BOOLEAN  );
+   procedure  Get       ( C : out Character);
+   procedure  Get       ( I : out Integer  );
+   procedure  Get       ( F : out Float    );
+   procedure  Get       ( B : out Boolean  );
 
    -- Get and then move file pointer to next line
-   procedure  GET_LINE  ( C : OUT CHARACTER);
-   procedure  GET_LINE  ( I : OUT INTEGER  );
-   procedure  GET_LINE  ( F : OUT FLOAT    );
-   procedure  GET_LINE  ( B : OUT BOOLEAN  );
+   procedure  Get_Line  ( C : out Character);
+   procedure  Get_Line  ( I : out Integer  );
+   procedure  Get_Line  ( F : out Float    );
+   procedure  Get_Line  ( B : out Boolean  );
 
-   subtype WIDTH is Positive;
-   subtype DECIMALS is Positive;
+   subtype Width is Positive;
+   subtype Decimals is Positive;
 
    -- Put
-   procedure  PUT       ( C : IN  CHARACTER);
-   procedure  PUT       ( I : IN  INTEGER  );
-   procedure  PUT       ( I : IN  INTEGER;  W:  WIDTH);
-   procedure  PUT       ( F : IN  FLOAT    );
-   procedure  PUT       ( F : IN  FLOAT;    W:  WIDTH; D : DECIMALS);
-   procedure  PUT       ( B : IN  BOOLEAN  );
-   procedure  PUT       ( S : IN  String   );
+   procedure  Put       ( C : in  Character);
+   procedure  Put       ( I : in  Integer  );
+   procedure  Put       ( I : in  Integer;  W:  Width);
+   procedure  Put       ( F : in  Float    );
+   procedure  Put       ( F : in  Float;    W:  Width; D : Decimals);
+   procedure  Put       ( B : in  Boolean  );
+   procedure  Put       ( S : in  String   );
 
-   -- Put and then NEW_LINE ( !! same as Ada.TExt_IO only for S )
-   procedure  PUT_LINE  ( C : IN  CHARACTER);
-   procedure  PUT_LINE  ( I : IN  INTEGER  );
-   procedure  PUT_LINE  ( I : IN  INTEGER; W:  WIDTH);
-   procedure  PUT_LINE  ( F : IN  FLOAT    );
-   procedure  PUT_LINE  ( F : IN  FLOAT;   W:  WIDTH; D : DECIMALS);
-   procedure  PUT_LINE  ( B : IN  BOOLEAN  );
-   procedure  PUT_LINE  ( S : IN  String   );
+   -- Put and then NEW_LINE ( !! it is the same as Ada.Text_IO only for S )
+   procedure  Put_Line  ( C : in  Character);
+   procedure  Put_Line  ( I : in  Integer  );
+   procedure  Put_Line  ( I : in  Integer; W:  Width);
+   procedure  Put_Line  ( F : in  Float    );
+   procedure  Put_Line  ( F : in  Float;   W:  Width; D : Decimals);
+   procedure  Put_Line  ( B : in  Boolean  );
+   procedure  Put_Line  ( S : in  String   );
 
    -- Mark End of Line
-   procedure  NEW_LINE                      ;
+   procedure  New_Line                      ;
 
-   procedure  CURSORAT (X, Y: Integer);
+   procedure  CursorAt (X, Y: Integer);
 
    -- Semaphore Procedures
-   procedure  WAIT      ( S : SEMAPHORE    );
-   procedure  SIGNAL    ( S : SEMAPHORE    );
+   procedure  Wait      ( S : Semaphore    );
+   procedure  Signal    ( S : Semaphore    );
 
 private
 

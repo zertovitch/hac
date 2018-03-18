@@ -6,122 +6,122 @@ package body HAC_Pack is
 
   package FEF is new Ada.Numerics.Generic_Elementary_Functions(Float);
 
-  function SQR (I : INTEGER) return INTEGER is
+  function Sqr (I : Integer) return Integer is
   begin
     return I*I;
-  end SQR;
+  end Sqr;
 
-  function SQR (F : FLOAT) return FLOAT is
+  function Sqr (F : Float) return Float is
   begin
     return F*F;
-  end SQR;
+  end Sqr;
 
-  function SQRT (I : INTEGER) return FLOAT is
+  function Sqrt (I : Integer) return Float is
   begin
     return FEF.Sqrt(Float(I));
-  end SQRT;
+  end Sqrt;
 
-  function SQRT (F : FLOAT) return FLOAT is
+  function Sqrt (F : Float) return Float is
   begin
     return FEF.Sqrt(F);
-  end SQRT;
+  end Sqrt;
 
-  function ODD (I : INTEGER) return BOOLEAN is
+  function Odd (I : Integer) return Boolean is
   begin
     return I mod 2 = 1;
-  end ODD;
+  end Odd;
 
-  function ASCII (I : INTEGER) return CHARACTER is
+  function ASCII (I : Integer) return Character is
   begin
     return Character'Val(I);
   end ASCII;
 
-  function ORD (C : CHARACTER) return INTEGER is
+  function Ord (C : Character) return Integer is
   begin
     return Character'Pos(C);
-  end ORD;
+  end Ord;
 
-  function SUCC (C : CHARACTER) return CHARACTER is
+  function Succ (C : Character) return Character is
   begin
     return Character'Succ (C);
-  end SUCC;
+  end Succ;
 
-  function PRED (C : CHARACTER) return CHARACTER is
+  function Pred (C : Character) return Character is
   begin
     return Character'Pred (C);
-  end PRED;
+  end Pred;
 
-  function ROUND (F : FLOAT) return INTEGER is
+  function Round (F : Float) return Integer is
   begin
     return Integer(F);
-  end ROUND;
+  end Round;
 
-  function TRUNC (F : FLOAT) return INTEGER is
+  function Trunc (F : Float) return Integer is
   begin
     return Integer(Float'Floor(F));
-  end TRUNC;
+  end Trunc;
 
-  function SIN (I : INTEGER) return FLOAT is
+  function Sin (I : Integer) return Float is
   begin
     return FEF.Sin(Float(I));
-  end SIN;
+  end Sin;
 
-  function SIN (F : FLOAT) return FLOAT is
+  function Sin (F : Float) return Float is
   begin
     return FEF.Sin(F);
-  end SIN;
+  end Sin;
 
-  function COS (I : INTEGER) return FLOAT is
+  function Cos (I : Integer) return Float is
   begin
     return FEF.Cos(Float(I));
-  end COS;
+  end Cos;
 
-  function COS (F : FLOAT) return FLOAT is
+  function Cos (F : Float) return Float is
   begin
     return FEF.Cos(F);
-  end COS;
+  end Cos;
 
-  function ARCTAN (I : INTEGER) return FLOAT is
+  function ArcTan (I : Integer) return Float is
   begin
     return FEF.Arctan(Float(I));
-  end ARCTAN;
+  end ArcTan;
 
-  function ARCTAN (F : FLOAT) return FLOAT is
+  function ArcTan (F : Float) return Float is
   begin
     return FEF.Arctan(F);
-  end ARCTAN;
+  end ArcTan;
 
-  function LN (I : INTEGER) return FLOAT is
+  function Log (I : Integer) return Float is
   begin
     return FEF.Log(Float(I));
-  end LN;
+  end Log;
 
-  function LN (F : FLOAT) return FLOAT is
+  function Log (F : Float) return Float is
   begin
     return FEF.Log(F);
-  end LN;
+  end Log;
 
-  function EXP (I : INTEGER) return FLOAT is
+  function Exp (I : Integer) return Float is
   begin
     return FEF.Exp(Float(I));
-  end EXP;
+  end Exp;
 
-  function EXP (F : FLOAT) return FLOAT is
+  function Exp (F : Float) return Float is
   begin
     return FEF.Exp(F);
-  end EXP;
+  end Exp;
 
   gen: Generator;
 
-  function RANDOM (I : INTEGER) return INTEGER is
+  function Random (I : Integer) return Integer is
   begin
     return Trunc(Random(I));
-  end RANDOM;
+  end Random;
 
-  function RANDOM (I : INTEGER) return Float is
+  function Random (I : Integer) return Float is
   begin
     return Random(gen) * Float(I);
-  end RANDOM;
+  end Random;
 
   package IIO is new Ada.Text_IO.Integer_IO(Integer);
   package FIO is new Ada.Text_IO.Float_IO(Float);
@@ -131,232 +131,231 @@ package body HAC_Pack is
    -- GET --
    ---------
 
-  procedure GET (C : OUT CHARACTER) is
+  procedure Get (C : out Character) is
   begin
     Ada.Text_IO.Get(C);
-  end GET;
+  end Get;
 
    ---------
    -- GET --
    ---------
 
-  procedure GET (I : OUT INTEGER) is
+  procedure Get (I : out Integer) is
+  pragma Unreferenced (I);
   begin
       --  Generated stub: replace with real body!
     pragma Compile_Time_Warning (Standard.True, "GET unimplemented");
     raise Program_Error;
-  end GET;
+  end Get;
 
    ---------
    -- GET --
    ---------
 
-  procedure GET (F : OUT FLOAT) is
+  procedure Get (F : out Float) is
+  pragma Unreferenced (F);
   begin
       --  Generated stub: replace with real body!
     pragma Compile_Time_Warning (Standard.True, "GET unimplemented");
     raise Program_Error;
-  end GET;
+  end Get;
 
    ---------
    -- GET --
    ---------
 
-  procedure GET (B : OUT BOOLEAN) is
+  procedure Get (B : out Boolean) is
+  pragma Unreferenced (B);
   begin
       --  Generated stub: replace with real body!
     pragma Compile_Time_Warning (Standard.True, "GET unimplemented");
     raise Program_Error;
-  end GET;
+  end Get;
 
    --------------
    -- GET_LINE --
    --------------
 
-  procedure GET_LINE (C : OUT CHARACTER) is
+  procedure Get_Line (C : out Character) is
+  pragma Unreferenced (C);
   begin
       --  Generated stub: replace with real body!
     pragma Compile_Time_Warning (Standard.True, "GET_LINE unimplemented");
     raise Program_Error;
-  end GET_LINE;
+  end Get_Line;
 
    --------------
    -- GET_LINE --
    --------------
 
-  procedure GET_LINE (I : OUT INTEGER) is
+  procedure Get_Line (I : out Integer) is
+  pragma Unreferenced (I);
   begin
       --  Generated stub: replace with real body!
     pragma Compile_Time_Warning (Standard.True, "GET_LINE unimplemented");
     raise Program_Error;
-  end GET_LINE;
+  end Get_Line;
 
    --------------
    -- GET_LINE --
    --------------
 
-  procedure GET_LINE (F : OUT FLOAT) is
+  procedure Get_Line (F : out Float) is
+  pragma Unreferenced (F);
   begin
       --  Generated stub: replace with real body!
     pragma Compile_Time_Warning (Standard.True, "GET_LINE unimplemented");
     raise Program_Error;
-  end GET_LINE;
+  end Get_Line;
 
    --------------
    -- GET_LINE --
    --------------
 
-  procedure GET_LINE (B : OUT BOOLEAN) is
+  procedure Get_Line (B : out Boolean) is
+  pragma Unreferenced (B);
   begin
       --  Generated stub: replace with real body!
     pragma Compile_Time_Warning (Standard.True, "GET_LINE unimplemented");
     raise Program_Error;
-  end GET_LINE;
+  end Get_Line;
 
    ---------
    -- PUT --
    ---------
 
-  procedure PUT (C : IN  CHARACTER) is
+  procedure Put (C : in  Character) is
   begin
     Ada.Text_IO.Put(C);
-  end PUT;
+  end Put;
 
    ---------
    -- PUT --
    ---------
 
-  procedure PUT (I : IN  INTEGER) is
+  procedure Put (I : in  Integer) is
   begin
     IIO.Put(I);
-  end PUT;
+  end Put;
 
    ---------
    -- PUT --
    ---------
 
-  procedure PUT (I : IN  INTEGER; W:  WIDTH) is
+  procedure Put (I : in  Integer; W:  Width) is
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "PUT unimplemented");
-    raise Program_Error;
-  end PUT;
+    IIO.Put(I, W);
+  end Put;
 
    ---------
    -- PUT --
    ---------
 
-  procedure PUT (F : IN  FLOAT) is
+  procedure Put (F : in  Float) is
   begin
     FIO.Put(F);
-  end PUT;
+  end Put;
 
    ---------
    -- PUT --
    ---------
 
-  procedure PUT (F : IN  FLOAT; W:  WIDTH; D : DECIMALS) is
+  procedure Put (F : in  Float; W:  Width; D : Decimals) is
   begin
     FIO.Put(F,W,D);
-  end PUT;
+  end Put;
 
    ---------
    -- PUT --
    ---------
 
-  procedure PUT (B : IN  BOOLEAN) is
+  procedure Put (B : in  Boolean) is
   begin
     BIO.Put(B);
-  end PUT;
+  end Put;
 
    ---------
    -- PUT --
    ---------
 
-  procedure PUT (S : IN  String) is
+  procedure Put (S : in  String) is
   begin
-    Ada.Text_IO.Put(s);
-  end PUT;
+    Ada.Text_IO.Put(S);
+  end Put;
 
    --------------
    -- PUT_LINE --
    --------------
 
-  procedure PUT_LINE (C : IN  CHARACTER) is
+  procedure Put_Line (C : in  Character) is
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "PUT_LINE unimplemented");
-    raise Program_Error;
-  end PUT_LINE;
+    Put(C); New_Line;
+  end Put_Line;
 
    --------------
    -- PUT_LINE --
    --------------
 
-  procedure PUT_LINE (I : IN  INTEGER) is
+  procedure Put_Line (I : in  Integer) is
   begin
     Put(I); New_Line;
-  end PUT_LINE;
+  end Put_Line;
 
    --------------
    -- PUT_LINE --
    --------------
 
-  procedure PUT_LINE (I : IN  INTEGER; W:  WIDTH) is
+  procedure Put_Line (I : in  Integer; W:  Width) is
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "PUT_LINE unimplemented");
-    raise Program_Error;
-  end PUT_LINE;
+    Put(I,W); New_Line;
+  end Put_Line;
 
    --------------
    -- PUT_LINE --
    --------------
 
-  procedure PUT_LINE (F : IN  FLOAT) is
+  procedure Put_Line (F : in  Float) is
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "PUT_LINE unimplemented");
-    raise Program_Error;
-  end PUT_LINE;
+    Put(F); New_Line;
+  end Put_Line;
 
    --------------
    -- PUT_LINE --
    --------------
 
-  procedure PUT_LINE (F : IN  FLOAT; W:  WIDTH; D : DECIMALS) is
+  procedure Put_Line (F : in  Float; W:  Width; D : Decimals) is
   begin
     Put(F,W,D); New_Line;
-  end PUT_LINE;
+  end Put_Line;
 
    --------------
    -- PUT_LINE --
    --------------
 
-  procedure PUT_LINE (B : IN  BOOLEAN) is
+  procedure Put_Line (B : in  Boolean) is
   begin
     Put(B); New_Line;
-  end PUT_LINE;
+  end Put_Line;
 
    --------------
    -- PUT_LINE --
    --------------
 
-  procedure PUT_LINE (S : IN  String) is
+  procedure Put_Line (S : in  String) is
   begin
-    Ada.Text_IO.Put_Line(s);
-  end PUT_LINE;
+    Ada.Text_IO.Put_Line(S);
+  end Put_Line;
 
    --------------
    -- NEW_LINE --
    --------------
 
-  procedure NEW_LINE is
+  procedure New_Line is
   begin
     Ada.Text_IO.New_Line;
-  end NEW_LINE;
+  end New_Line;
 
-  procedure  CURSORAT (X, Y: Integer) is
+  procedure  CursorAt (X, Y: Integer) is
   begin
     null; -- !!
   end;
@@ -365,22 +364,24 @@ package body HAC_Pack is
    -- WAIT --
    ----------
 
-  procedure WAIT (S : SEMAPHORE) is
+  procedure Wait (S : Semaphore) is
+  pragma Unreferenced (S);
   begin
       --  Generated stub: replace with real body!
     pragma Compile_Time_Warning (Standard.True, "WAIT unimplemented");
     raise Program_Error;
-  end WAIT;
+  end Wait;
 
    ------------
    -- SIGNAL --
    ------------
 
-  procedure SIGNAL (S : SEMAPHORE) is
+  procedure Signal (S : Semaphore) is
+  pragma Unreferenced (S);
   begin
       --  Generated stub: replace with real body!
     pragma Compile_Time_Warning (Standard.True, "SIGNAL unimplemented");
     raise Program_Error;
-  end SIGNAL;
+  end Signal;
 
 end HAC_Pack;

@@ -19,7 +19,7 @@ procedure Test is
   end Add;
   --
   x_glob: Integer;
-  
+
   procedure Do_0 is
   begin
     x_glob:= 54321;
@@ -36,18 +36,18 @@ procedure Test is
   begin
     a:= septante + sept;
     Put_Line("NOT in a block statement");
-    what_a_nice_block: 
+    What_a_nice_block:
     declare
       sept_cents: constant Integer:= 700; -- sept * 100 too complicated !!
     begin
       a:= sept_cents + a;
       Put_Line("Block statement");
-    end what_a_nice_block;
+    end What_a_nice_block;
     Put_Line("NOT in a block statement");
-    what_a_nice_block_2: 
+    what_a_nice_block_2:
     begin
       Put_Line("Another block statement");
-      what_a_NICE_block_3: 
+      what_a_NICE_block_3:
       begin
         Put_Line("Yet another block statement");
       end what_a_NICE_block_3;
@@ -67,11 +67,11 @@ procedure Test is
     --end loop;
   end;
   --
-  
+
   -----------------------------------------------
   -- Recursive Fibonacci numbers demonstration --
   -----------------------------------------------
-  
+
   procedure Fibo_demo(X: Integer) is -- !! Integer to be defined in HAC
 
     function Fib(P: Integer) return Integer is
@@ -140,22 +140,22 @@ procedure Test is
       end loop;
     end loop;
   end Test_multi_arrays;
-  
+
   Twenty: constant:= 20;
   Ten_point_one: constant := 10.1;
   c: Character;
   -- ABCDEFGHIJKLMNOPQRSTUVWXYZ: Character; -- Testing a long identifier
   hs: String(1..7);
-  
-  procedure Show_hs is 
+
+  procedure Show_hs is
   begin
     -- Put(hs); -- !! issues ERR_ILLEGAL_PARAMETERS_TO_PUT:  illegal parameters to "Put"
     for i in 1..7 loop
       Put(hs(i));
-    end loop;  
+    end loop;
     New_Line;
   end Show_hs;
-  
+
 begin
   Put('A');
   c:= 'B';
@@ -177,7 +177,7 @@ begin
   Show_hs;
   --
   -- My_Put(s, 1 , 5);
-  new_line;
+  New_Line;
   Put(Twenty); Put_Line(" ... should be: 20");
   Put(Ten_point_one); Put_Line(" ... should be: 1.01000E+01");
   x_glob:= 123;
@@ -214,7 +214,7 @@ begin
       when 2 =>
         Put_Line("choice: two");
       when others =>
-        Put("choice: "); 
+        Put("choice: ");
         Put(gagl); -- !! HAC: Put(gagl, 1) prints two integer...
         Put_Line(" (others)");
     end case;

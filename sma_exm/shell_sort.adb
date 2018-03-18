@@ -4,17 +4,21 @@ procedure Shell_Sort is
 
   -- ch : character;
   procedure Shell is
-    B : STRING(1..26);
-    I,J,STEP : INTEGER;
-    STEPSIZE : array(1..4) OF INTEGER;
-    STOP : BOOLEAN;
-    TEMP : character;
+    B : String(1..26);
+    I,J,STEP : Integer;
+    STEPSIZE : array(1..4) of Integer;
+    STOP : Boolean;
+    TEMP : Character;
    begin
      B := "ZYXWVUTSRQPONMLKJIHGFEDCBA";
+     Put_Line ("Shell_Sort.");
+     Put_Line ("Unsorted string:");
+     Put_Line ("----------------");
      for k in 1..26 loop
-        PUT(B(k));
+        Put(B(k));
      end loop;
-     new_line;
+     New_Line;
+     New_Line;
      -- Put_Line(B);
      -- 'steps' contains decreasing increments for each
      -- pass. The last pass has increment 1.
@@ -24,58 +28,55 @@ procedure Shell_Sort is
      end loop;
      for PASS in 1..4 loop
        -- cursorat(14,45);
-       put("Pass: "); put(pass);
-       new_line;
+       Put("Pass: "); Put(PASS);
+       New_Line;
        STEP := STEPSIZE(PASS);
-       put("Step: "); put(step);
-       new_line;
+       Put("Step: "); Put(STEP);
+       New_Line;
          -- Do a straight insertion sort with 'step' as
          -- an increment instead of 1.
        I:= STEP + 1;
        while I <= 26 loop
          --cursorat(15,45);
-         new_line;
-         put("I:    "); put(i); new_line;
+         New_Line;
+         Put("I:    "); Put(I); New_Line;
          TEMP := B(I);
          J:= I;
-         STOP:= FALSE;
+         STOP:= False;
          while (J > STEP) and not STOP loop
            J := J - STEP;
            -- cursorat(16,45); put("J:    "); put(J);
            if B(J) > TEMP then
               B(J+STEP):= B(J);
               -- cursorat(15,14+j);
-              put(temp);
+              Put(TEMP);
            else
               B(J+STEP):= TEMP;
-              STOP:= TRUE;
+              STOP:= True;
            end if;
-           cursorat(15,14+(J+STEP)); put(B(J+STEP));
+           CursorAt(15,14+(J+STEP)); Put(B(J+STEP));
          end loop;
          if not STOP then
             B(1):= TEMP;
-            cursorat(15,14+0);
-            put(temp);
+            CursorAt(15,14+0);
+            Put(TEMP);
          end if;
          I := I + STEP;
        end loop;
-       new_line;
+       New_Line;
      end loop; -- for pass in 1..npass
      New_Line;
      Put_Line("Result:");
+     Put_Line("-------");
      for k in 1..26 loop
         Put(B(k));
      end loop;
-     new_line;
+     New_Line;
    end Shell;
 
 begin
-  -- CURSORAT(15,1);
-  PUT_Line("Shell sort:");
   Shell;
-  -- CURSORAT(17,1);
-  New_Line;
+  -- New_Line;
   -- PUT("Press enter to proceed...");
   -- GET(ch);
 end Shell_Sort;
-
