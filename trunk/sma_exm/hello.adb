@@ -7,7 +7,8 @@ begin
   for i in 1 .. 10 loop
     Put("Spaceman is speaking...");
     Put(i);  --  !! width parameter ??
-    Put(Sqr(i));  --  !! ** operator ??
+    Put(i ** 2);
+    Put(2 ** i);
     New_Line;
   end loop;
 end;

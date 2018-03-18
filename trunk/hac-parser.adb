@@ -1204,6 +1204,7 @@ package body HAC.Parser is
           FactorZ : constant Symset :=
            Symset'(
              xTimes | Divide | MOD_Symbol | REM_Symbol | AND_Symbol => True,
+             xx_Power => True,  --  !! The ** operator is probably at another precedence level
              others => False
            );
 
@@ -1498,7 +1499,7 @@ package body HAC.Parser is
                 end if;
                 X.TYP := NOTYP;
               end if;
-            else            -- MOD  -  OP = MOD_Symbol
+            elsif OP = MOD_Symbol then
               if X.TYP = Ints and Y.TYP = Ints then
                 Emit (k_MOD_Integer);
               else
@@ -1507,6 +1508,14 @@ package body HAC.Parser is
                 end if;
                 X.TYP := NOTYP;
               end if;
+            elsif OP = xx_Power then
+              if X.TYP = Ints and Y.TYP = Ints then
+                Emit (k_Power_Integer);
+              else
+                Error (err_invalid_power_operands);
+              end if;
+            else
+              raise Internal_error with "Unknown operator in Term";
             end if;
           end loop;
 

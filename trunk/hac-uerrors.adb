@@ -183,6 +183,8 @@ package body HAC.UErrors is
         return "statement expected, can be ""null""";
       when err_duplicate_label =>
         return "label already defined: " & hint;
+      when err_invalid_power_operands =>
+        return "invalid operand types for the ""**"" operator";
       -- when others =>
       --   return "Unknown error Id=" & Integer'Image (Id);
     end case;

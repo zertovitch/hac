@@ -62,7 +62,7 @@ package HAC.Data is
   NMax       : constant Integer := MaxINT;
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char
-  OMax       : constant := 75;            --  highest Order ObjCode
+  OMax       : constant := 76;            --  highest Order ObjCode
   PriMax     : constant := 100;           --  Maximum Task priority
   SMax       : constant := 10_000;        --  Size of String-table
   TaskMax    : constant := 12;            --  Max # of concurrent tasks
@@ -86,6 +86,7 @@ package HAC.Data is
    Plus,
    MinUS,
    xTimes,
+   xx_Power,
    Divide,
    EQL,
    NEQ,
@@ -451,7 +452,7 @@ package HAC.Data is
   ECount : Integer;       --  Index To EntryTAB
 
   type SSTBzz is array (Character'(' ') .. ']') of KeyWSymbol;
-  SpecialSymbols : constant SSTBzz :=
+  Special_Symbols : constant SSTBzz :=
    SSTBzz'
    ('+'    => Plus,
     '-'    => MinUS,
