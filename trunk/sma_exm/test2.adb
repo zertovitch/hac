@@ -1,71 +1,75 @@
-WITH HAC_Pack; USE HAC_Pack;
+with HAC_Pack; use HAC_Pack;
 
-PROCEDURE   Test2   IS
+procedure   Test2   is
 
-    Ten: CONSTANT INTEGER := 10;     -- Integer
-    CCh: CONSTANT Character := 'A';          -- Character
+  Ten: constant INTEGER := 10;     -- Integer
+  CCh: constant Character := 'A';          -- Character
 
-    mmm: integer := 99;
+  Mmm: Integer := 99;
 
-Task T1;
-Task T2 is
-  entry Hereza_num(v1: integer);
-  entry Gimmea_num(v2: out integer);
-end T2;
+  task T1;
+  task T2 is
+    entry Hereza_Num(V1: Integer);
+    entry Gimmea_Num(V2: out Integer);
+  end T2;
 
-FUNCTION  Add(x, y: integer) RETURN integer IS
-  value: integer;
-  BEGIN
-    value :=  ( x + y );
-    RETURN value;
-  END Add;
-
-Task body T1 is
-  iii: integer;
+  function  Add(X, Y: Integer) return Integer is
+    Value: Integer;
   begin
-    for i in 1..10 loop
+    Value :=  ( X + Y );
+    return Value;
+  end Add;
+
+  task body T1 is
+    Iii: Integer;
+  begin
+    for I in 1..10 loop
       PUT("T1  ");
     end loop;
-    new_line;
-    iii := 42;
+    New_Line;
+    Iii := 42;
     Put("iii = ");
-    Put_Line(iii);
-    new_line;
-    T2.Hereza_num(iii);
+    Put_Line(Iii);
+    New_Line;
+    T2.Hereza_Num(Iii);
   end;
 
-Task body T2 is
-  jjj: integer;
+  task body T2 is
+    Jjj: Integer;
   begin
-    for i in 1..10 loop
-      put("T2  ");
+    for I in 1..10 loop
+      Put("T2  ");
     end loop;
-    new_line;
-    jjj := 0;
+    New_Line;
+    Jjj := 0;
     Put("jjj = ");
-    Put_Line(jjj);
-    Accept Hereza_num(v1: integer) do
-      jjj := v1;
-    end Hereza_num;
+    Put_Line(Jjj);
+    accept Hereza_Num(V1: Integer) do
+      Jjj := V1;
+    end Hereza_Num;
     Put("jjj = ");
-    Put_Line(jjj);
-    Accept Gimmea_num(v2: out integer) do
-      V2 := jjj;
-    end Gimmea_num;
+    Put_Line(Jjj);
+    accept Gimmea_Num(V2: out Integer) do
+      V2 := Jjj;
+    end Gimmea_Num;
   end;
 
-BEGIN
-  Put("mmm = ");
-  Put(mmm);
+begin
+  Put("Test with a Task.");
   New_Line;
-  for i in 1..5 Loop
-    put("Main");
-  end loop;
-  T2.Gimmea_num(mmm);
   Put("mmm = ");
-  Put(mmm);
+  Put(Mmm);
   New_Line;
-  for i in 1..5 loop
-    put("<==>");
+  for I in 1..5 loop
+    Put("Main");
   end loop;
-END Test2;
+  T2.Gimmea_Num(Mmm);
+  Put("mmm = ");
+  Put(Mmm);
+  New_Line;
+  for I in 1..5 loop
+    Put("<==>");
+  end loop;
+  New_Line;
+  Put("Done.");
+end Test2;
