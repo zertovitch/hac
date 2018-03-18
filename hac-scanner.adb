@@ -396,8 +396,12 @@ package body HAC.Scanner is
       NextCh;
 
     when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
-      Sy := SpecialSymbols (CH);
+      Sy := Special_Symbols (CH);
       NextCh;
+      if Sy = xTimes and then CH = '*' then
+        Sy := xx_Power;
+        NextCh;
+      end if;
 
     when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
       --  duplicate case Constant '&',

@@ -1210,7 +1210,7 @@ package body HAC.PCode.Interpreter is
           S (S (Curr_TCB.T - 1).I) := S (Curr_TCB.T);
           Curr_TCB.T               := Curr_TCB.T - 2;
 
-        when k_EQL_Float .. k_DIV_Float | k_XOR_Boolean =>
+        when k_EQL_Float .. k_DIV_Float | k_XOR_Boolean | k_Power_Integer =>
           Curr_TCB.T := Curr_TCB.T - 1;
           case IR.F is
             when k_EQL_Float =>
@@ -1282,6 +1282,9 @@ package body HAC.PCode.Interpreter is
               else
                 S (Curr_TCB.T).I := S (Curr_TCB.T).I / S (Curr_TCB.T + 1).I;
               end if;
+
+            when k_Power_Integer =>
+              S (Curr_TCB.T).I := S (Curr_TCB.T).I ** S (Curr_TCB.T + 1).I;
 
             when k_MOD_Integer =>
               if S (Curr_TCB.T + 1).I = 0 then

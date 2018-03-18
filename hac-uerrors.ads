@@ -96,7 +96,8 @@ package HAC.UErrors is
     err_numeric_constant_expected,
     err_identifier_too_long,
     err_statement_expected,
-    err_duplicate_label
+    err_duplicate_label,
+    err_invalid_power_operands  --  2018-03-18
   );
 
   --  See current_error_pipe in HAC.Data for main pipe.
