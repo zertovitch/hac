@@ -398,7 +398,7 @@ package body HAC.Scanner is
     when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
       Sy := Special_Symbols (CH);
       NextCh;
-      if Sy = xTimes and then CH = '*' then
+      if Sy = xTimes and then CH = '*' then  --  Get the "**" operator symbol
         Sy := xx_Power;
         NextCh;
       end if;

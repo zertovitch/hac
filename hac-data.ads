@@ -62,7 +62,8 @@ package HAC.Data is
   NMax       : constant Integer := MaxINT;
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char
-  OMax       : constant := 76;            --  highest Order ObjCode
+  --  OMax: highest Order ObjCode - see constants in HAC.PCode.
+  OMax       : constant := 78;
   PriMax     : constant := 100;           --  Maximum Task priority
   SMax       : constant := 10_000;        --  Size of String-table
   TaskMax    : constant := 12;            --  Max # of concurrent tasks

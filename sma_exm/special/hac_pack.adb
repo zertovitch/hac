@@ -16,6 +16,11 @@ package body HAC_Pack is
     return F*F;
   end Sqr;
 
+  function   "**"      (f1, f2 : Float)  return Float is
+  begin
+    return FEF."**" (f1, f2);
+  end;
+
   function Sqrt (I : Integer) return Float is
   begin
     return FEF.Sqrt(Float(I));
