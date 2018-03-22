@@ -101,7 +101,9 @@ package HAC.PCode is
   kSelectiveWait              : constant := 73;
   kHighlightSource            : constant := 74;
   k_XOR_Boolean               : constant := 75;
-  k_Power_Integer             : constant := 76;  --  2018-03-18
+  k_Power_Integer             : constant := 76;  --  2018-03-18 : 3 ** 6
+  k_Power_Float_Integer       : constant := 77;  --  2018-03-22 : 3.14 ** 6
+  k_Power_Float               : constant := 78;  --  2018-03-22 : 3.14 ** 6.28
 
   --  Save and restore an object file
   procedure SaveOBJ(FileName: String);

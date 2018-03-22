@@ -1511,6 +1511,10 @@ package body HAC.Parser is
             elsif OP = xx_Power then
               if X.TYP = Ints and Y.TYP = Ints then
                 Emit (k_Power_Integer);
+              elsif X.TYP = Floats and Y.TYP = Ints then
+                Emit (k_Power_Float_Integer);
+              elsif X.TYP = Floats and Y.TYP = Floats then
+                Emit (k_Power_Float);
               else
                 Error (err_invalid_power_operands);
               end if;

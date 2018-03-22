@@ -14,9 +14,11 @@ package HAC_Pack is
    -- function   ABS       ( I : INTEGER   ) return INTEGER;
    -- function   ABS       ( F : FLOAT     ) return FLOAT;
 
-   -- Square
+   -- Square (!! to be removed: **2 in Ada)
    function   Sqr       ( I : Integer   ) return Integer;
    function   Sqr       ( F : Float     ) return Float;
+
+   function   "**"      (f1, f2 : Float)  return Float;
 
    -- Square Root
    function   Sqrt      ( I : Integer   ) return Float;
