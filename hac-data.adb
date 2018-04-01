@@ -66,9 +66,6 @@ package body HAC.Data is
   --  required at the beginning of execution, and not at the beginning of
   --  compilation
   begin
-    -- (MRC) Total error count, from PC version
-    Err_Count := 0;
-
     --  Initialize character class lookup table
     for C in Character'Val (OrdMinChar) .. Character'Val (OrdMaxChar) loop
       case C is
