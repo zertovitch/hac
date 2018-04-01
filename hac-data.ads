@@ -321,7 +321,7 @@ package HAC.Data is
     LastPar: Index;     -- C pointer to the last parameter in
                         --   this procedure
     PSize: Index;     --  sum of the lengths of areas (1) & (2) above
-    VSize: Index;     --  sum of PSize and length of area (3)
+    VSize: Index := 0;     --  sum of PSize and length of area (3)
                       --  (i.e. size of the activation record for
                       --  this procedure)
     SrcFrom: Longint;   --  Source code line count.  Source starts here
