@@ -185,6 +185,8 @@ package body HAC.UErrors is
         return "label already defined: " & hint;
       when err_invalid_power_operands =>
         return "invalid operand types for the ""**"" operator";
+      when err_unexpected_end_of_text =>
+        return "unexpected end of text";
       -- when others =>
       --   return "Unknown error Id=" & Integer'Image (Id);
     end case;
@@ -198,6 +200,7 @@ package body HAC.UErrors is
   begin
     cFoundError (code, Line_Count, syStart, syEnd, -1, hint);
     Errs (code) := True;
+    Err_Count := Err_Count + 1;
     if HAC.Data.current_error_pipe = null then
       Put_Line(
         Current_Error,

@@ -207,8 +207,13 @@ package body HAC.Compiler is
     SkipFlag:= False;
     EofInput:= False;
     Errs:= error_free;
+    -- (MRC) Total error count, from PC version
+    Err_Count := 0;
+    syStart := 1;
+    syEnd := 1;
 
     Init_Tables;
+
     cICompiler;
 
     if Listing_Was_Requested then
@@ -354,6 +359,9 @@ package body HAC.Compiler is
       end if;
     end if;
     --{Close(ErrFile);}
+  exception
+    when End_Error =>
+      Error (err_unexpected_end_of_text);
   end Compile;
 
 end HAC.Compiler;
