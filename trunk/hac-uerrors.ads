@@ -108,7 +108,7 @@ package HAC.UErrors is
     message   : String;
     file_name : String;
     line      : Positive;
-    column_a  : Positive;
+    column_a  : Natural;  --  Before first selected character, can be 0.
     column_z  : Positive;
     kind      : Message_kind
   );
