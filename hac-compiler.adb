@@ -362,6 +362,8 @@ package body HAC.Compiler is
   exception
     when End_Error =>
       Error (err_unexpected_end_of_text);
+    when Compilation_abandoned =>
+      null;  --  Just too many errors...
   end Compile;
 
 end HAC.Compiler;

@@ -218,7 +218,11 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     ------------------------------------------------Locate_identifier-
-    function Locate_identifier (Id : Alfa; No_Id_Fail: Boolean:= True) return Natural is
+    function Locate_identifier (
+      Id            : Alfa;
+      No_Id_Fail    : Boolean:= True;
+      stop_on_error : Boolean:= False) return Natural
+    is
       L, J : Integer;
     begin
       L              := Level;
@@ -233,6 +237,10 @@ package body HAC.Parser is
       end loop;
       if J = No_Id and No_Id_Fail then
         Error (err_undefined_identifier);
+        if stop_on_error then
+          raise Compilation_abandoned;
+        end if;
+
       end if;
       return J;
     end Locate_identifier;
@@ -708,7 +716,7 @@ package body HAC.Parser is
           EnterVariable;
         end loop;
 
-        if Sy = Colon then -- ':'
+        if Sy = Colon then  --  ':' of "x : Integer;"
           InSymbol;
         else
           Error (err_colon_missing);
@@ -716,13 +724,15 @@ package body HAC.Parser is
         T1 := T;
 
         if Sy = IDent then  --MRC 6/91 from PC version
-          I := Locate_identifier (Id);
+          --  NB (2018-04-02): this duplicates the same operation
+          --  from the TYP call, but sets another I...
+          I := Locate_identifier (Id, stop_on_error => True);
         end if;
 
         Test (Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_set, err_incorrectly_used_symbol);
         ConstDec := False;
         untyped_constant:= False;
-        if Sy = CONSTANT_Symbol then
+        if Sy = CONSTANT_Symbol then  --  Consume "constant" in "x : constant [Integer];"
           ConstDec := True;
           InSymbol;
         end if;
@@ -730,7 +740,8 @@ package body HAC.Parser is
         if Type_Begin_Symbol (Sy) then -- Here, a type name or an anonymous type definition
           TypeID := True;
           TYP
-           (Symset'(Semicolon  |
+           (Symset'(
+            Semicolon          |
             Comma              |
             IDent              |
             Becomes            => True,

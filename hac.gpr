@@ -25,6 +25,7 @@ project Hac is
       case Build_Mode is
          when "Debug" =>
             for Default_Switches ("ada") use (
+               "-g",
 						   "-gnat05", "-gnatwa", 
 							 "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatVa", 
 							 "-gnatec=" & project'Project_Dir & "debug.pra",
@@ -34,6 +35,7 @@ project Hac is
 						);
          when "Fast" =>
             for Default_Switches ("ada") use (
+               "-g",
 						   "-gnat05", "-gnatwa",
 							 "-O2", "-gnatpn", 
 							 "-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
@@ -54,7 +56,7 @@ project Hac is
          when "Debug" =>
             for Default_Switches ("ada") use ("-g");
          when "Fast" =>
-            for Default_Switches ("ada") use ("-s", "-Wl,--gc-sections");
+            for Default_Switches ("ada") use ("-g", "-Wl,--gc-sections");
       end case;
    end Linker;
 
