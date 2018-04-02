@@ -23,6 +23,10 @@ package body HAC.UErrors is
         return "missing closing parenthesis "")""";
       when err_colon_missing =>
         return "missing a colon "":""";
+      when err_colon_missing_for_named_statement =>
+        return
+          "undefined identifier;" &
+          " if a named statement is meant, a colon "":"" would be expected here";
       when err_incorrectly_used_symbol =>
         return "incorrectly used symbol";
       when err_missing_OF =>
@@ -220,6 +224,7 @@ package body HAC.UErrors is
         kind      => error
       );
     end if;
+    --  raise Constraint_Error;  --  Uncomment this for getting a nice trace-back of 1st error.
   end Error;
 
   ----------------------------------------------------------------------------
