@@ -17,6 +17,7 @@ package HAC.UErrors is
     err_missing_a_procedure_declaration,
     err_closing_parenthesis_missing,
     err_colon_missing,
+    err_colon_missing_for_named_statement,
     err_incorrectly_used_symbol,
     err_missing_OF,
     err_missing_an_opening_parenthesis,

@@ -144,9 +144,16 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     -------------------------------------------------------------Test-
-    procedure Test (S1, S2 : Symset; N : Error_code) is
+    procedure Test (
+      S1, S2        : Symset;
+      N             : Error_code;
+      stop_on_error : Boolean:= False) is
     begin
       if not S1 (Sy) then
+        if stop_on_error then
+          Error (N);
+          raise Compilation_abandoned;
+        end if;
         Skip (S1 + S2, N);
       end if;
     end Test;
@@ -240,7 +247,6 @@ package body HAC.Parser is
         if stop_on_error then
           raise Compilation_abandoned;
         end if;
-
       end if;
       return J;
     end Locate_identifier;
@@ -2910,11 +2916,14 @@ package body HAC.Parser is
         -- !! Local bodies of subprograms surely mess the object code.
       end Block_statement;
 
-      procedure Named_statement is -- block_statement or loop
+      procedure Named_statement is  --  block_statement or loop, named by "name: loop"
         new_label: constant Alfa:= Id;
       begin
         Enter (new_label, Label);
-        Test (Singleton(Colon), FSys, err_colon_missing);
+        Test (Singleton(Colon), FSys,
+          err_colon_missing_for_named_statement,
+          stop_on_error => True
+        );
         InSymbol;
         case Sy is
           when BEGIN_Symbol | DECLARE_Symbol => -- Named block_statement
@@ -2942,7 +2951,8 @@ package body HAC.Parser is
         when IDent =>
           I := Locate_identifier (Id, No_Id_Fail => False);
           InSymbol;
-          if I = No_Id then -- New identifier: must be a label for named block_statement or loop
+          if I = No_Id then
+            --  New identifier: must be a label for named block_statement or loop.
             Named_statement;
           else
             case IdTab (I).Obj is
