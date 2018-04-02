@@ -134,6 +134,7 @@ package HAC.UErrors is
 
   Internal_error: exception;
   Failure_1_0: exception;
+  Compilation_abandoned: exception;
 
   function Error_String (code: Error_code; hint: String:= "") return String;
 

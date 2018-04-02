@@ -21,7 +21,9 @@ procedure HAC_Test is
     Close (f);
     Put_Line ("*******[HAC]*******   Compilation finished.");
     --
-    HAC.PCode.Interpreter.Interpret_on_Current_IO;
+    if HAC.Data.Err_Count = 0 then
+      HAC.PCode.Interpreter.Interpret_on_Current_IO;
+    end if;
   exception
     when Ada.Streams.Stream_IO.Name_Error =>
       Put_Line("Error: file not found (perhaps in sma_exm subdirectory ?)");
