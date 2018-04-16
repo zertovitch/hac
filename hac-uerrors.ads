@@ -108,9 +108,9 @@ package HAC.UErrors is
   type Smart_error_pipe is access procedure (
     message   : String;
     file_name : String;
-    line      : Positive;
+    line      : Natural;
     column_a  : Natural;  --  Before first selected character, can be 0.
-    column_z  : Positive;
+    column_z  : Natural;
     kind      : Message_kind
   );
 

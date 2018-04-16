@@ -1352,7 +1352,7 @@ package body HAC.Parser is
 
               case Sy is
                 when IDent =>
-                  I := Locate_identifier (Id);
+                  I := Locate_identifier (Id, stop_on_error => True);
                   InSymbol;
                   exit when I = No_Id; -- Id. not found, error shown by Locate_identifier
                   declare
