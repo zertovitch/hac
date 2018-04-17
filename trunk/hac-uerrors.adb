@@ -68,7 +68,7 @@ package body HAC.UErrors is
       when err_indexed_variable_must_be_an_array =>
         return "indexed variable must be an array";
       when err_missing_a_type_identifier =>
-        return "missing_a_type_identifier";
+        return "identifier is not a type";
       when err_undefined_type =>
         return "undefined type";
       when err_var_with_field_selector_must_be_record =>
@@ -229,7 +229,8 @@ package body HAC.UErrors is
         kind      => error
       );
     end if;
-    --  raise Constraint_Error;  --  Uncomment this for getting a nice trace-back of 1st error.
+    --  Uncomment the next line for getting a nice trace-back of 1st error.
+    --  raise Constraint_Error;
     if stop_on_error then
       raise Compilation_abandoned;
     end if;
