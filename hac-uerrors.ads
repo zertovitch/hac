@@ -114,7 +114,11 @@ package HAC.UErrors is
     kind      : Message_kind
   );
 
-  procedure Error (code: Error_code; hint: String:= "");
+  procedure Error (
+    code          : Error_code;
+    hint          : String      := "";
+    stop_on_error : Boolean     := False
+  );
 
   procedure EndSkip;
 

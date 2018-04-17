@@ -151,8 +151,7 @@ package body HAC.Parser is
     begin
       if not S1 (Sy) then
         if stop_on_error then
-          Error (N);
-          raise Compilation_abandoned;
+          Error (N, stop_on_error => True);
         end if;
         Skip (S1 + S2, N);
       end if;
@@ -243,10 +242,7 @@ package body HAC.Parser is
         exit when L < 0 or J /= 0;
       end loop;
       if J = No_Id and No_Id_Fail then
-        Error (err_undefined_identifier);
-        if stop_on_error then
-          raise Compilation_abandoned;
-        end if;
+        Error (err_undefined_identifier, stop_on_error => stop_on_error);
       end if;
       return J;
     end Locate_identifier;
@@ -3077,11 +3073,10 @@ package body HAC.Parser is
             end if;
           end if;
         else
-          Skip (FSys + Semicolon, err_identifier_missing);
+          Error (err_identifier_missing, stop_on_error => True);
         end if;
       else
-        Error (err_RETURN_missing);
-        return;  --{MRC, from PC source}
+        Error (err_RETURN_missing, stop_on_error => True);
       end if;
     end if;
 
