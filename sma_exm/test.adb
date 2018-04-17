@@ -119,9 +119,9 @@ procedure Test is
                 New_Line;
               end if;
             when 3 => -- fill array b
-              b(i,j):= Float(i * j);
               -- !! HAC accepts without Float(...);
               -- !! HAC issues error but compiles OK with Float(...) !!
+              b(i,j):= (i * j);
             when 4 => -- display array b
               Put(b(i,j));
               Put(' ');

@@ -24,7 +24,7 @@ procedure   Test2   is
     Iii: Integer;
   begin
     for I in 1..10 loop
-      PUT("T1  ");
+      PUT("Task T1  ");
     end loop;
     New_Line;
     Iii := 42;
@@ -32,13 +32,13 @@ procedure   Test2   is
     Put_Line(Iii);
     New_Line;
     T2.Hereza_Num(Iii);
-  end;
+  end T1;
 
   task body T2 is
     Jjj: Integer;
   begin
     for I in 1..10 loop
-      Put("T2  ");
+      Put("Task T2  ");
     end loop;
     New_Line;
     Jjj := 0;
@@ -52,19 +52,20 @@ procedure   Test2   is
     accept Gimmea_Num(V2: out Integer) do
       V2 := Jjj;
     end Gimmea_Num;
-  end;
+  end T2;
 
 begin
-  Put("Test with a Task.");
+  Put("Test with Tasks.");
   New_Line;
-  Put("mmm = ");
+  Put("[point 1] mmm = ");
   Put(Mmm);
   New_Line;
   for I in 1..5 loop
     Put("Main");
   end loop;
+  New_Line;
   T2.Gimmea_Num(Mmm);
-  Put("mmm = ");
+  Put("[point 2] mmm = ");
   Put(Mmm);
   New_Line;
   for I in 1..5 loop

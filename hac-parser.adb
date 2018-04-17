@@ -3108,6 +3108,16 @@ package body HAC.Parser is
     ----------------------
 
     loop
+      Test (  --  Added 17-Apr-2018 to avoid infinite loop on erroneous code
+        Symset'(
+          IDent | TYPE_Symbol | TASK_Symbol |
+          PROCEDURE_Symbol | FUNCTION_Symbol |
+          BEGIN_Symbol => True,
+          others       => False),
+        Empty_Symset,
+        err_incorrectly_used_symbol,
+        stop_on_error => True
+      );
       if Sy = IDent then
         VarDeclaration;
       end if;
