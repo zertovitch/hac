@@ -579,7 +579,7 @@ package body HAC.Parser is
       InSymbol;
       RF := 0;
       Sz := 0;
-      Test (IDent_set, FSys + RParent, err_identifier_missing);
+      Test (IDent_set, FSys + RParent, err_identifier_missing, stop_on_error => True);
       while Sy = IDent loop
         T0 := T;
         EnterVariable;
@@ -615,19 +615,21 @@ package body HAC.Parser is
                   Sz := 1;
                 end if;
               else
-                Error (err_missing_a_type_identifier);
+                Error (err_missing_a_type_identifier, stop_on_error => True);
               end if;
             end if; -- X /= 0
           end if;
           Test
-           (Symset'(Semicolon  |
-            RParent            |
-            Comma              |
-            IDent              => True,
-                    others => False),
+           (Symset'(
+              Semicolon  |
+              RParent    |
+              Comma      |
+              IDent      => True,
+                  others => False),
             FSys,
-            err_SEMICOLON_missing);
-
+            err_SEMICOLON_missing,
+            stop_on_error => True
+           );
           while T0 < T loop
             T0 := T0 + 1;
             declare
@@ -643,7 +645,7 @@ package body HAC.Parser is
           end loop; -- while T0 < T
 
         else
-          Error (err_colon_missing);
+          Error (err_colon_missing, stop_on_error => True);
         end if;
         if Sy /= RParent then
           if Sy = Semicolon then
