@@ -198,7 +198,12 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  procedure Error (code: Error_code; hint: String:= "") is
+  procedure Error (
+    code          : Error_code;
+    hint          : String      := "";
+    stop_on_error : Boolean     := False
+  )
+  is
   -- Write Error on current line & add To TOT ERR (?)
     use Ada.Text_IO;
   begin
@@ -225,6 +230,9 @@ package body HAC.UErrors is
       );
     end if;
     --  raise Constraint_Error;  --  Uncomment this for getting a nice trace-back of 1st error.
+    if stop_on_error then
+      raise Compilation_abandoned;
+    end if;
   end Error;
 
   ----------------------------------------------------------------------------
