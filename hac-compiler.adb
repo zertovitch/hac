@@ -211,6 +211,9 @@ package body HAC.Compiler is
     Err_Count := 0;
     syStart := 1;
     syEnd := 1;
+    CC := 0;
+    LC := 0;
+    LL := 0;
 
     Init_Tables;
 
