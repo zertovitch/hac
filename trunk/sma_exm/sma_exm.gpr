@@ -8,7 +8,8 @@ project SMA_Exm is
      "merge_sort.adb",  -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
      "hello.adb",       -- GNAT OK (correct Ada); HAC OK
      "test.adb",        -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
-     "test1.adb"        -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
+     "test1.adb",       -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
+     "days_1901.adb"
      --
      --  -- KO...
      --  "dinersmo.adb",
