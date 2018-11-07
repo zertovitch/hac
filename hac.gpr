@@ -26,20 +26,21 @@ project Hac is
          when "Debug" =>
             for Default_Switches ("ada") use (
                "-g",
-						   "-gnat05", "-gnatwa", 
-							 "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatVa", 
-							 "-gnatec=" & project'Project_Dir & "debug.pra",
+               "-gnatwa", 
+               "-gnatf", "-gnato", "-fstack-check", "-g", "-gnatVa", 
+               "-gnatec=" & project'Project_Dir & "debug.pra",
                "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
                "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
                "-gnatyx"        --  Style: check x:no extra parens
-						);
+            );
          when "Fast" =>
             for Default_Switches ("ada") use (
                "-g",
-						   "-gnat05", "-gnatwa",
-							 "-O2", "-gnatpn", 
-							 "-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
-							 "-ftracer", "-fweb", "-frename-registers", "-ffunction-sections");
+               "-gnatwa",
+               "-O2", "-gnatpn", 
+               "-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
+               "-ftracer", "-fweb", "-frename-registers", "-ffunction-sections"
+            );
       end case;
    end Compiler;
 
