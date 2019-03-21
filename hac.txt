@@ -6,15 +6,15 @@ Alternative names: Hacker's Ada Compiler, Hello-world Ada Compiler
 HAC is perhaps the first open-source (albeit partial) Ada compiler
 fully programmed in Ada itself.
 
-Objectives:
-===========
+Objectives
+==========
  - fun!
  - produce the smallest Hello-world executable!
  - have a quick compiler
  - be useful for small Ada sandboxed prototypes
 
-What HAC will most probably never be:
-=====================================
+What HAC will most probably never be
+====================================
  - a real, serious Ada compiler - there are enough serious ones!
  - a complete compiler - only a subset is covered
 
@@ -25,11 +25,11 @@ Read copyright notice and license in hac.ads
 
 Getting started
 ===============
-Assuming you have the GNAT compiler installed, do the following in the
-command line:
+Assuming you have the GNAT compiler installed, do the
+following from a command line interpreter:
 
 gnatmake -P hac
-cd sma_exm
+cd hac_exm
 ..\hac_test hello.adb
 ..\hac_test test.adb
 
@@ -47,12 +47,22 @@ Some design points
     compilation speed, or run-time performance of certain portions of code,
     or object code compactness, or useability on certain targets.
 
-History:
-========
+Bugs
+====
+You need to assume that almost nothing works with HAC.
+There is a very short list of small programs that are working (in
+the meaning: the compilation succeeds and the execution gives
+a correct output). They are listed in the project file hac_exm.gpr
+in the directory hac_exm.
 
-- 2013: January 24th: Hello World, Fibonacci and other tests work!
-- 2009: a bit further trying to make it work...
-- 1999: automatic translation of Mac Pascal sources to Ada
+History
+=======
+
+- 2013: January 24th: Day One of HAC: Hello World, Fibonacci
+          and other tests work!
+- 2009: a bit further trying to make it work (P2Ada was improved on the way,
+          for WITH statements and modularity)...
+- 1999: automatic translation of Mac Pascal sources to Ada, using P2Ada
 - 1989: SmallAda is derived from CoPascal; works only inside
           very system-dependent environments (a Mac GUI, a DOS GUI)
 - 1986: CoPascal (Schoening)
@@ -67,4 +77,4 @@ History:
 
   Author of CoPascal (derived from Pascal-S by Niklaus Wirth)
     1986 Charles Schoening
-  
+ 
