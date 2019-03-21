@@ -1,17 +1,31 @@
-project SMA_Exm is
+--  This is a GNAT, GCC or GNAT Programming Studio (GPS) project file
+--  for the examples of the HAC project ( https://sf.net/projects/hacadacompiler/ )
+--  Build me with "gprbuild -p -P hac_exm", or open me with GPS.
+--  
+
+project HAC_Exm is
 
    type Build_Mode_Type is ("Debug", "Fast");
    Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
 
    for Main use (
-     "shell_sort.adb",  -- GNAT OK (correct Ada); HAC OK
-     "merge_sort.adb",  -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
-     "hello.adb",       -- GNAT OK (correct Ada); HAC OK
-     "test.adb",        -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
-     "test1.adb",       -- GNAT OK (correct Ada); HAC OK (except things commented out with !!)
-     "days_1901.adb"
      --
-     --  -- KO...
+     --  1) HAC and GNAT OK (correct Ada, same output)
+     --
+     "hello.adb",
+     "shell_sort.adb",
+     "merge_sort.adb",
+     "days_1901.adb",
+     "test1.adb"
+     --
+     --  2) * GNAT KO (detects correctly incorrect Ada code);
+     --     * HAC OK (but is wrong; e.g. accepts type Pascal's promotion)
+     --     See places with "!!" in the code.
+     --  
+     --  "test.adb"
+     --
+     --  3) Full KO...
+     --
      --  "dinersmo.adb",
      --  "din_sm.adb",
      --  "din_ws.adb",
@@ -77,4 +91,4 @@ project SMA_Exm is
       for Default_Switches ("ada") use ("-g");
    end Builder;
 
-end SMA_Exm;
+end HAC_Exm;

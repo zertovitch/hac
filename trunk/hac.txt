@@ -3,8 +3,8 @@ HAC - HAC Ada Compiler
 
 Alternative names: Hacker's Ada Compiler, Hello-world Ada Compiler
 
-HAC is perhaps the first open-source (albeit partial) Ada compiler
-fully programmed in Ada itself.
+HAC is perhaps the first open-source (albeit very partial) Ada
+compiler and virtual machine interpreter fully programmed in Ada itself.
 
 Objectives
 ==========
@@ -33,8 +33,13 @@ cd hac_exm
 ..\hac_test hello.adb
 ..\hac_test test.adb
 
-and any other example (*.adb files).
 NB: the Windows script t.cmd does the same.
+You can test HAC on any other example (*.adb files in the hac_exm directory).
+As a bonus, you can build some examples with GNAT to compare the output.
+You can do it easily with the hac_exm.gpr project file.
+Since hac_exm.gpr is a text file, you can see there the progress
+(or the lack thereof) in the pieces of Ada code that are really
+working with HAC. See the "Bugs" section below as well.
 
 Some design points
 ==================
@@ -43,9 +48,11 @@ Some design points
     libraries in Zip files, for instance), from an internet stream, from
     an editor buffer (see the LEA project), from a source stored in memory,
     etc.
-- one goal is to complement or challenge GNAT, for instance in terms of
+- One goal is to complement or challenge GNAT, for instance in terms of
     compilation speed, or run-time performance of certain portions of code,
-    or object code compactness, or useability on certain targets.
+    or object code compactness, or useability on certain targets. This will
+    require compiling on other targets than p-code, that is real machine code
+    for various platforms.
 
 Bugs
 ====
@@ -53,7 +60,10 @@ You need to assume that almost nothing works with HAC.
 There is a very short list of small programs that are working (in
 the meaning: the compilation succeeds and the execution gives
 a correct output). They are listed in the project file hac_exm.gpr
-in the directory hac_exm.
+in the directory hac_exm. You will see that the "Pascal subset" is
+more or less supported, so you have things like subprograms, including
+nested subprograms, recursive subprograms, simple expressions working,
+for instance.
 
 History
 =======
