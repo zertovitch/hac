@@ -2,7 +2,7 @@
 
 cd..
 call build
-cd sma_exm
+cd hac_exm
 
 if not "%1"=="" ..\hac_test %1.adb
 if not "%1"=="" goto fin
