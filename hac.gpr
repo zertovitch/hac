@@ -1,6 +1,6 @@
 --  This is a GNAT, GCC or GNAT Programming Studio (GPS) project file
---  for the HAC project ( https://sf.net/projects/hacadacompiler/ , mirror: https://github.com/svn2github/hac )
---  Build me with "gprbuild -p -P hac", or open me with GPS
+--  for the HAC project ( https://sf.net/projects/hacadacompiler/ )
+--  Build me with "gprbuild -p -P hac", or open me with GPS.
 --  
 project Hac is
 
