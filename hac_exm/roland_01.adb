@@ -2,6 +2,7 @@
 --
 --  ** HAC Bug as of 21-Mar-2019: the BEGIN .. END block
 --     below (even without DECLARE) seems to corrupt the stack.
+--  See comments @ procedure Block_statement in HAC.Parser.
 
 with HAC_Pack; use HAC_Pack;
 
