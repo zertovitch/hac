@@ -1,0 +1,267 @@
+S M A L L A d a   1 9 9 1
+IBM PC-family version
+
+Department of Electrical Engineering and Computer Science
+The George Washington University
+Washington, DC 20052 USA
+
+This is a compiler/interpreter for a part of the Ada language, namely
+the "Pascal subset" plus the Ada tasking support. It is not intended
+ever to be a full Ada compiler, rather a vehicle for teaching, learning,
+and experimenting with concurrent programming. The compiler is quite
+fast, producing P-code which is then interpreted by the interpreter.
+
+The system will run on an IBM PC (or compatible) with the following
+minimum configuration: 640K of memory; one disk drive. A hard disk will
+greatly improve the speed. The entire system runs in RAM with no disk
+accesses, so expect capacity to be limited. 250 statements or so can
+be safely accommodated.
+
+SmallAda executables and demo programs are distributed as a self-
+extracting archive created by LHA. To install SmallAda, just create a 
+directory on your hard disk called, say, smallada, move to that
+directory, and execute the self-extracting archive sm-archv directly
+from your diskette. If your diskette is in drive A:, just type
+A:\SM-ARCHV.
+
+The current version is not particularly robust, rather it is a preliminary
+step toward effective window-oriented monitoring of task execution.
+
+This package may be copied and used for educational purposes but not for
+profit; please let us know by e-mail or regular mail how you like the idea 
+of this package and what you are doing with it. The more users we know
+we have, the better our case for getting funding to continue the work.
+
+project supervised by
+Prof. Michael B. Feldman
+Department of Electrical Engineering and Computer Science
+The George Washington University
+Washington, DC 20052
+202-994-5253 (voice)
+202-994-5294 (fax)
+mfeldman@seas.gwu.edu
+
+authors:
+1986 Charles Schoening             DOS version of CoPascal
+1987 Frederick C. Hathorn          conversion of CoPascal to Ada
+1988 Stuart Cramer and Jay Kurtz   refinement of tasking model
+1989 Arthur V. Lopes               window-oriented monitoring for IBM-PC
+1990 Manuel A. Perez               Macintosh version
+1990 Arthur V. Lopes               integrated environment for IBM-PC
+1991 Amr El-Kadi                   user-selectable task scheduling
+
+HOW TO RUN THE PC PROGRAM
+=========================
+
+To run SMALLAda PC you will need the following files:
+
+SMALLADA.EXE    -- Small Ada integrated environment
+SMADA-IN.AVL    -- Small Ada interpreter pseudo code; it can be tunned
+                -- to suit any level of interpreter monitoring
+
+Type SMALLADA RACE <enter>. You will be placed in the editor mode. To compile
+and run the race program follow these steps: press F10. A menu will appear
+on the top of your screen. Press C, for compiler. Then a sub menu will be
+displayed. Press E (or <enter>. This will start the compilation process.
+If the program is correctly compiled then it will run thereafter. If an
+error is found an error message will be issued and after pressing any key
+the editor will be activated. The cursor will be at the line where the
+error was found.
+
+The program will run much faster if you disable the window-oriented
+execution monitoring by pressing <INS>, which toggles monitoring on and
+off. If monitoring is enabled, pressing <DEL> toggles step-by-step
+execution on and off. With stepped execution on, pressing the space
+bar moves through each source line.
+
+You can create and compile your own Ada programs, but we make no promises
+about which parts of the language will be handled correctly. We assure you
+that there is no support for packages, generics, exceptions, access types
+and dynamic data structures. Some of this may change in future versions,
+but we make no commitment to support full Ada. And don't be surprised if
+the compiler hangs here and there: error repair is in a rather primitive state.
+If the compiler actually finds your errors, it will display the messsages in
+a window.
+
+
+THE SmallAda IBM-PC RUNTIME ENVIRONMENT
+=======================================
+
+The runtime monitoring of tasking is really the whole point of this
+project.
+
+Each task is given a window. If there are more than five tasks some tasks
+will share a physical window.
+
+To obtain help on the runtime environment press F1 while a program is running.
+In summary, you can control the overall execution speed of the interpreter
+(to "slow down the action"), and exert some influence on the open windows.
+There is no magic in all this runtime monitoring: it all takes machine cycles.
+If you wish your program to run faster, remove all the monitoring windows
+(by pressing INS while they are open). You can also step through execution,
+source line by source line, by pressing INS while windows are open. Then
+pressing the space bar steps through one source line.
+
+
+THE SmallAda EDITOR
+===================
+
+The editor was adapted from the Turbo Pascal Editor Toobox Version 4.0.
+The editor works much like the Wordstar editor. Next some of its basic
+options are shown.
+
+
+Function                        Keystrokes
+
+BASIC MOVEVMENT COMMANDS:
+
+Character left:                 left arrow or ^S (^ ==> Control)
+Character right                 right arrow or ^D
+Word left                       ^left arrow or ^A
+Word right                      ^right arrow or ^F
+Line up                         up arrow or ^E
+Line down                       down arrow or ^X
+Scroll up                       ^W
+Scroll down                     ^Z
+Page up                         PgUp or ^R
+Page down                       PGDn or ^C
+Beginning of Line               Home or ^Q S
+End of Line                     End or ^Q D
+Tab                             Tab or ^I
+Backward tab                    Shift tab
+
+BASIC EDITING COMMANDS:
+
+New line                        Enter or ^M
+Insert line                     ^N
+Delete current character        Del or ^G
+Delete character left           Backspace or ^H
+Delete word                     ^T
+Delete to end of line           ^Q Y
+Activate menus                  F10
+Abort command                   ^U
+
+
+
+THE SmallAda TASKING MODEL
+===========================
+
+We have tried to be reasonably faithful to Ada tasking. The scheduler is
+designed to show some of the important issues of concurrent programming,
+therefore time-slicing is implemented, and the length of the slice is
+randomly determined. Also, at each rescheduling point the next task to
+be scheduled is selected randomly. This is to give a reasonable model of
+nondeterministic (unpredictable) behavior, and serves to highlight the
+need for mutual exclusion. The dining philosophers examples on the
+disk, taken together, show this point rather well.
+
+Current incompletenesses in the tasking model: only named tasks (i.e. no
+task types), no dynamically created tasks. We also don't support nested
+task declarations; all tasks must be declared in MAIN's declarative section.
+
+The "select" statement is functional including the "terminate" alternative;
+checking for termination is tricky in Ada and you might find that some
+select structures with terminate alternatives deadlock or don't work at all.
+In general, be gentle with the select statement; try to avoid tricky or
+pathological code, which will surely choke the compiler or interpreter!
+
+You will also discover quickly that though the "delay" statement is functional,
+the elapsed time to expiration of the delay is considerably more than was
+requested in the delay statement. As it happens, this is correct Ada, as the
+standard says only that a task will be suspended for _at least_ the amount
+of time requested. This is to take account of the likelihood that contention
+will make it impossible for a task to take immediate control when it wakes
+up from a nap. Indeed, we think that the sometimes too-long delays
+may be due to the interference in the interpreter caused by all the references
+to the user interface for monitoring purposes. The relationship of the delay to 
+reality depends upon your PC's speed as well. We are working on this problem
+but do not yet see an obvious solution. So take the time given in a delay
+statement with a grain of salt, please.
+
+If you have tasks in finite (counting) loops, if they complete but there are 
+other tasks with infinite loops that can never terminate, the system may 
+detect no activity and report a deadlock state. 
+
+The current version now supports user-selected task scheduling. Pressing
+<alt-F10> during execution opens a window giving scheduler options.
+
+
+THE SmallAda SUPPORT PACKAGE (SMALL_SP.PKG)
+===========================================
+
+A large number of "intrinsic" library subroutines are included in a
+pseudo-package called SMALL_SP.PKG. It is not necessary (or proper) to
+compile this package; it is included in the environment. It is necessary
+to begin each program with a context clause
+
+WITH SMALL_SP; USE SMALL_SP;
+
+to give the effect of writing genuine Ada. A specification for this
+package is included in the distribution; it includes I/O routines,
+math functions, and the like. This is not really good Ada-like decomposition,
+and we will change it in subsequent versions of the system. Meanwhile, use
+the package spec as a guide to all the intrinsic routines. Note especially
+that the formatting parameters supplied to the I/O procedures are more
+Pascal-like than Ada-like. This will change later to look more like
+standard TEXT_IO.
+
+
+THE DEMONSTRATION PROGRAMS
+==========================
+
+We have supplied a set of what we hope will be interesting and instructive
+programs illustrating both the sequential aspects of the Ada subset and
+the tasking model.
+
+TEST1 through TEST6 can be thought of as "validation" programs testing 
+specific features of the language; reading them can serve a useful purpose 
+in understanding our subset.
+
+ATEST1 through ATEST4 demonstrate the differences in program behavior
+under different scheduling policies. Each program contains a block
+comment explaining its purpose in this demonstration.
+
+SHELLSORT is what its name implies: a standard implementation of Shell sort
+in which the state of the array is displayed on the screen as it is sorted;
+RACE is a tasking program which we have used with success in concurrent
+programming courses: three sort algorithms are activated as Ada tasks
+and run in parallel.
+
+4TASKSEM shows the use of the semaphore primitives "exported" by the SMALL_SP
+pseudo-package. A semaphore SCREEN is declared and used to give mutual
+exclusion on the terminal screen.
+ 
+Attention: semaphores are NOT Ada primitives! SmallAda was originally 
+constructed as a modification to the CoPascal system of Ben-Ari
+(as described in "Principles of Concurrent Programming", Prentice Hall 1982),
+and the semaphore primitives are still there from the system's last
+incarnation. To show how to do it in "real" Ada, we include the program
+4TASKMON, in which a screen monitor task is declared.
+
+Finally, there are three versions of Dijkstra's legendary dining philosophers
+problem. SmallAda has a capacity limitation of around ten tasks. We are
+limited to four instead of the usual five philosophers, because four diners,
+four chopsticks, and MAIN add up to 9 tasks. EATCHAOS is very instructive:
+it demonstrates why it's nice to have monitors for mutual exclusion: without
+a monitor guarding the screen, the display becomes rather chaotic. EAT-SEM
+uses the SmallAda semaphore primitives; EAT-MON does the same thing but
+with a "genuine" Ada monitor.
+
+FINALLY
+=======
+ 
+In case you are curious, the system is coded in Turbo Pascal with the
+Turbo Toolbox libraries used for the editor and environment. 
+
+Please let us know about bugs; tell us what you're doing with
+the sytem. Good luck; have fun!
+
+
+Good luck; have fun!
+
+
+
+
+
+
+
