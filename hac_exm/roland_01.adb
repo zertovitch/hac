@@ -13,17 +13,17 @@ begin
   put(a);
   new_line;
   put("[p1]");
-  --  declare
-  --    aa: integer; -- := 1;
-  --  begin
-  --    put("[p2]");
-  --    new_line;
-  --    put_line("BEGIN BLOC 1");
-  --    put("aa = ");
-  --    --  put(aa);  --  BUG
-  --    new_line;
-  --    put_line("END BLOC 1");
-  --  end;
+  declare
+    aa: integer; -- := 1;
+  begin
+    put("[p2]");
+    new_line;
+    put_line("BEGIN BLOC 1");
+    put("aa = ");
+    --  put(aa);  --  BUG
+    new_line;
+    put_line("END BLOC 1");
+  end;
   new_line;
   put_line("OUT 1");
   put("a = ");

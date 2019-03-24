@@ -191,6 +191,8 @@ package body HAC.UErrors is
         return "invalid operand types for the ""**"" operator";
       when err_unexpected_end_of_text =>
         return "unexpected end of text";
+      when err_not_yet_implemented =>
+        return "construct not yet correctly implemented or supported by HAC";
       -- when others =>
       --   return "Unknown error Id=" & Integer'Image (Id);
     end case;

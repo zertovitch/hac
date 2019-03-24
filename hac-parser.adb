@@ -2906,8 +2906,16 @@ package body HAC.Parser is
 
       procedure Block_statement(block_name: Alfa) is  -- RM: 5.6
       begin
+        Error (
+          err_not_yet_implemented,
+          hint => "Block statements don't work yet",
+          stop_on_error => True
+        );
+        --
         Block (FSys, Is_a_function, True, Level + 1, T, block_name);
-        -- !! to check: * stack management of variables when entering / quitting the block
+        --
+        -- !! to check:
+        -- !! * stack management of variables when entering / quitting the block
         -- !! * object code and nesting... works on some cases at least (test.adb) !...
         -- !! Perhaps keep same level but have local declarations as for the
         --    variable in a FOR_Statement.
