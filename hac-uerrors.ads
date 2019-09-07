@@ -8,6 +8,8 @@
 --
 -------------------------------------------------------------------------------------
 
+with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
+
 package HAC.UErrors is
 
   type Error_code is (
@@ -103,16 +105,27 @@ package HAC.UErrors is
     err_not_yet_implemented      --  2019-03-24
   );
 
-  --  See current_error_pipe in HAC.Data for main pipe.
   type Message_kind is (error, warning, note, style);
+
+  type Repair_kind is (none, insert, insert_line, replace_token);
+
+  type Repair_kit is record
+    kind : Repair_kind;
+    text : Unbounded_String;
+  end record;
+
+  nothing_to_repair : constant Repair_kit := (none, Null_Unbounded_String);
+
+  --  See current_error_pipe in HAC.Data for main pipe.
 
   type Smart_error_pipe is access procedure (
     message   : String;
     file_name : String;
     line      : Natural;
-    column_a  : Natural;  --  Before first selected character, can be 0.
+    column_a  : Natural;       --  Before first selected character, can be 0.
     column_z  : Natural;
-    kind      : Message_kind
+    kind      : Message_kind;  --  Error, or warning, or ? ...
+    repair    : Repair_kit     --  Can error be automatically repaired; if so, how ?
   );
 
   procedure Error (

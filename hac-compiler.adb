@@ -232,11 +232,11 @@ package body HAC.Compiler is
     CH := ' ';
     InSymbol;
     if Sy /= WITH_Symbol then   -- WITH SMALL_SP;
-      Error (err_WITH_Small_Sp, "");
+      Error (err_WITH_Small_Sp, "", stop_on_error => True);
     else
       InSymbol;
       if Sy /= IDent or Id(1..10) /= "HAC_PACK  " then
-        Error (err_WITH_Small_Sp, "");
+        Error (err_WITH_Small_Sp, "", stop_on_error => True);
       else
         InSymbol;
         if Sy /= Semicolon then

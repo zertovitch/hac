@@ -1,7 +1,6 @@
 with HAC.Data; use HAC.Data;
 
 with Ada.Strings.Fixed;                 use Ada.Strings, Ada.Strings.Fixed;
-with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 package body HAC.UErrors is
@@ -200,6 +199,13 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
+  repair_table : constant array (Error_code) of Repair_kit :=
+    (
+      err_WITH_Small_Sp => (insert_line, To_Unbounded_String ("with HAC_Pack; use HAC_Pack;")),
+      err_use_Small_Sp  => (insert,      To_Unbounded_String ("use HAC_Pack;")),
+      others            => nothing_to_repair
+    );
+
   procedure Error (
     code          : Error_code;
     hint          : String      := "";
@@ -228,7 +234,8 @@ package body HAC.UErrors is
         line      => Line_Count,
         column_a  => syStart,
         column_z  => syEnd,
-        kind      => error
+        kind      => error,
+        repair    => repair_table (code)
       );
     end if;
     --  Uncomment the next line for getting a nice trace-back of 1st error.
@@ -296,8 +303,7 @@ package body HAC.UErrors is
 
   procedure ErrorMsg is
     use Ada.Text_IO;
-    package IIO is new Integer_IO (Integer);
-    use IIO;
+    --  package IIO is new Integer_IO (Integer); use IIO;
     K : Error_code:= Error_code'First;
   begin
     if qDebug then

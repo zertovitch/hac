@@ -5,7 +5,6 @@ with Ada.Streams.Stream_IO;             use Ada.Streams.Stream_IO;
 with Ada.Text_IO;                       use Ada.Text_IO;
 
 with GNAT.Traceback.Symbolic, Ada.Exceptions;
-use Ada.Exceptions;
 
 procedure HAC_Test is
 

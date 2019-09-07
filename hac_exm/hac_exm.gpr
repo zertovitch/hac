@@ -1,5 +1,9 @@
 --  This is a GNAT, GCC or GNAT Programming Studio (GPS) project file
---  for the examples of the HAC project ( https://sf.net/projects/hacadacompiler/ )
+--  for the examples of the HAC project ( https://sf.net/projects/hacadacompiler/ ).
+--
+--  These examples give (or should give...) the same output on a real
+--  Ada compiler as when compiled and run by HAC.
+--
 --  Build me with "gprbuild -p -P hac_exm", or open me with GPS.
 --  
 
@@ -55,7 +59,7 @@ project HAC_Exm is
       case Build_Mode is
          when "Debug" =>
             for Default_Switches ("ada") use (
-						  "-gnat05", "-gnatf", "-gnato", "-fstack-check", "-g", 
+						  "-gnatf", "-gnato", "-fstack-check", "-g", 
 							"-gnatwa", "-gnatVa", 
 							"-gnatec" & project'Project_Dir & "../debug.pra",               
               "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
@@ -64,7 +68,7 @@ project HAC_Exm is
             );
          when "Fast" =>
             for Default_Switches ("ada") use (
-						  "-gnat05", "-gnatwa", "-O2", "-gnatpn", 
+						  "-gnatwa", "-O2", "-gnatpn", 
 							"-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
 							"-ftracer", "-fweb", "-frename-registers", "-ffunction-sections");
       end case;
