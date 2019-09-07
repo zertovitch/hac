@@ -63,7 +63,7 @@ procedure Days_1901 is
   --
 begin
   for y in 1901 .. 2200 loop
-    Put ("Days from 1/1/1901 to 12/31/");
+    Put ("Days from 1/1/1901 to : ... 12/31/");
     Put (y);
     Put_Line (Days_since_1901 (y, 12, 31));
   end loop;

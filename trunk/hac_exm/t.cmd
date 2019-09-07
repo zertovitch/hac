@@ -17,5 +17,7 @@ pause
 pause
 ..\hac_test merge_sort.adb
 pause
+..\hac_test days_1901.adb
+pause
 
 :fin
