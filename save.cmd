@@ -15,10 +15,10 @@ if "%hour:~0,1%" equ " " set hour=0%hour:~1,1%
 
 set min=%time:~3,2%
 
-set nice_date=%year%-%month%-%day%_%hour%.%min%
 set nice_date=%year%-%month%-%day%
+set nice_date=%year%-%month%-%day%_%hour%.%min%
 
 
 rem --------------------------
 
-zipada -ep2 hac-%nice_date% *.ad* *.gpr save.cmd build.cmd *.txt sma_exm/*.ad* sma_exm/special/*.ad* sma_exm/*.gpr sma_exm/t.cmd debug.pra obj/debug/create_dir.txt obj/fast/create_dir.txt
+zipada -ep2 hac-%nice_date% *.ad* *.gpr save.cmd build.cmd *.txt hac_exm/*.ad* hac_exm/special/*.ad* hac_exm/*.gpr hac_exm/t.cmd debug.pra obj/debug/create_dir.txt obj/fast/create_dir.txt
