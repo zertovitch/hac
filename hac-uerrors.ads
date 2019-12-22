@@ -109,9 +109,11 @@ package HAC.UErrors is
 
   type Repair_kind is (none, insert, insert_line, replace_token);
 
-  type Repair_kit is record
-    kind : Repair_kind;
-    text : Unbounded_String;
+  has_new_line : array (Repair_kind) of Boolean := (insert_line => True, others => False);
+
+  type Repair_kit is tagged record
+    kind : Repair_kind      := none;
+    text : Unbounded_String := Null_Unbounded_String;
   end record;
 
   nothing_to_repair : constant Repair_kit := (none, Null_Unbounded_String);
