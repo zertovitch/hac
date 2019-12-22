@@ -33,7 +33,7 @@ package body HAC.UErrors is
       when err_missing_an_opening_parenthesis =>
         return "missing an opening parenthesis ""(""";
       when err_missing_ARRAY_RECORD_or_ident =>
-        return "missing identifer; ""array"" or ""record""";
+        return "missing identifer, ""array"" or ""record""";
       when err_expecting_dot_dot =>
         return "expecting range symbol: ""..""";
       when err_SEMICOLON_missing =>
@@ -199,11 +199,26 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
+  function "+" (S : String) return Unbounded_String renames To_Unbounded_String;
+
   repair_table : constant array (Error_code) of Repair_kit :=
     (
-      err_WITH_Small_Sp => (insert_line, To_Unbounded_String ("with HAC_Pack; use HAC_Pack;")),
-      err_use_Small_Sp  => (insert,      To_Unbounded_String ("use HAC_Pack;")),
-      others            => nothing_to_repair
+      err_WITH_Small_Sp        => (insert_line,   +"with HAC_Pack; use HAC_Pack;"),
+      err_use_Small_Sp         => (insert,        +"use HAC_Pack; "),
+      err_missing_a_procedure_declaration
+                               => (insert,        +"procedure "),
+      err_colon_missing        => (insert,        +": "),
+      err_SEMICOLON_missing    => (insert,        +"; "),
+      err_RETURN_missing       => (insert,        +"return "),
+      err_statement_expected   => (insert,        +"null;"),
+      err_IN_missing           => (insert,        +"in "),
+      err_IS_missing           => (insert,        +"is "),
+      err_OF_instead_of_IS     => (replace_token, +"is"),
+      err_FINGER_missing       => (insert,        +" => "),
+      err_closing_LOOP_missing => (insert,        +" loop"),
+      err_missing_closing_CASE => (insert,        +" case"),
+      err_missing_closing_IF   => (insert,        +" if"),
+      others                   => nothing_to_repair
     );
 
   procedure Error (
