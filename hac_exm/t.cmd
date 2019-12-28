@@ -19,5 +19,7 @@ pause
 pause
 ..\hac_test days_1901.adb
 pause
+..\hac_test ackermann.adb
+pause
 
 :fin
