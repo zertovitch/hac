@@ -4,8 +4,16 @@ cd..
 call build
 cd hac_exm
 
-if not "%1"=="" ..\hac_test %1.adb
-if not "%1"=="" goto fin
+if "%1"=="" goto gallery
+
+rem Try without extension
+if exist %1.adb ..\hac_test %1.adb
+if exist %1.adb goto fin
+
+..\hac_test %1
+goto fin
+
+:gallery
 
 ..\hac_test hello.adb
 pause

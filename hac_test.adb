@@ -12,9 +12,11 @@ procedure HAC_Test is
   procedure Compile_and_interpret_file(name: String) is
     f : Ada.Streams.Stream_IO.File_Type;
     t1, t2 : Time;
+    HAC_margin : constant String := "*******[ HAC ]*******   ";
   begin
     New_Line;
-    Put_Line ("*******[HAC]*******   Compiling from file: " & name);
+    Put_Line (HAC_margin & "Caution: HAC is not a real Ada compiler.");
+    Put_Line (HAC_margin & "Compiling from file: " & name);
     Open (f, In_File, name);
     HAC.Data.Line_Count:= 0;
     HAC.Data.c_Set_Stream (HAC.Data.Stream_Access(Stream(f)), name);
@@ -23,24 +25,32 @@ procedure HAC_Test is
     t2 := Clock;
     Close (f);
     Put_Line (
-      "*******[HAC]*******   Compilation finished in " &
+      HAC_margin & "Compilation finished in " &
       (Duration'Image(t2-t1)) &
       " seconds."
     );
     --
     if HAC.Data.Err_Count = 0 then
+      Put_Line (HAC_margin & "Starting p-code VM interpreter");
+      t1 := Clock;
       HAC.PCode.Interpreter.Interpret_on_Current_IO;
+      t2 := Clock;
+      Put_Line (
+        HAC_margin & "VM interpreter done after " &
+        (Duration'Image(t2-t1)) &
+        " seconds."
+      );
     end if;
   exception
     when Ada.Streams.Stream_IO.Name_Error =>
-      Put_Line("Error: file not found (perhaps in hac_exm subdirectory ?)");
+      Put_Line(HAC_margin & "Error: file not found (perhaps in hac_exm subdirectory ?)");
   end Compile_and_interpret_file;
 
 begin
   if Argument_Count = 0 then
     Compile_and_interpret_file("test.adb");
   else
-    for i in 1..Argument_Count loop
+    for i in 1 .. Argument_Count loop
       Compile_and_interpret_file(Argument(i));
     end loop;
   end if;
