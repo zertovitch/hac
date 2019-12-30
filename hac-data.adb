@@ -3,7 +3,7 @@ with Ada.Strings.Fixed;
 
 package body HAC.Data is
 
-  current_compiler_stream    : Stream_Access;
+  current_compiler_stream : Stream_Access;  --  !!  Global variable alarm!
 
   function "+" (a, b : Set) return Set is
     c : Set (a'Range);
@@ -127,6 +127,9 @@ package body HAC.Data is
   begin
     loop
       Character'Read (current_compiler_stream, c);
+      --  !! NB: if HAC ever happens to consume large input files,
+      --         the one-character-at-a-time stream input could become
+      --         a performance bottleneck.
       exit when c = ASCII.LF;
       if c /= ASCII.CR then
         idx           := idx + 1;
@@ -137,6 +140,13 @@ package body HAC.Data is
     -- if qDebug then
     --   Put_Line("[::]" & InpLine(InpLine'First..Last));
     -- end if;
+  exception
+    when End_Error =>
+      if idx >= InpLine'First then
+        Last := idx;  --  Avoid trashing a non-empty line ending the stream.
+      else
+        raise;
+      end if;
   end cGetNextLine;
 
   function cEndOfSource return Boolean is

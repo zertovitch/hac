@@ -24,7 +24,7 @@ begin
    --  - see table of values in the Wikipedia page !
    for M in 0 .. 3 loop
       --  !! HAC borks with N > 4, probably a stack
-      --     overflow due to of recursion.
+      --     overflow due to recursion.
       for N in 0 .. 4 loop
          Put (A (M, N));
       end loop;
