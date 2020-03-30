@@ -35,7 +35,7 @@ project HAC_Exm is
      --  
      --  "test.adb"
      --
-     --  4) Full KO...
+     --  4) Code wrong, incomplete, HAC showing wrong output, or whatever - to be sorted...
      --
      --  "dinersmo.adb",
      --  "din_sm.adb",

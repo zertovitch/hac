@@ -16,5 +16,5 @@ procedure Overloading is
 
 begin
   Put (A (0));    --  Should be 1
-  Put (A (0.0));  --  Should be 2.0
+  Put (A (0.0));  --  Should be 2
 end;
