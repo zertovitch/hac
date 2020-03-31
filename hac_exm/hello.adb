@@ -4,9 +4,10 @@ procedure Hello is
   f : Float := 0.0;
 begin
   Put("Hello");
-  Put_Line(" world!");
+  Put_Line(" world!  ...  Spaceman is speaking ...");
+  Put_Line(
+        "          i     i ** 2     2 ** i      2.0 ** i      2.0 ** f");
   for i in 1 .. 10 loop
-    Put("Spaceman is speaking...");
     Put(i);  --  !! width parameter ??
     Put(i ** 2);
     Put(2 ** i);

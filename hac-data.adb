@@ -51,7 +51,7 @@ package body HAC.Data is
   begin
     res(s):= True;
     return res;
-  end;
+  end Singleton;
 
   function Alfa_to_String(a: Alfa) return String is
   begin

@@ -21,19 +21,20 @@ project HAC_Exm is
      "hello.adb",
      "merge_sort.adb",
      "shell_sort.adb",
+     "if_then_elsif_else.adb",
+     "type_conversion.adb",
      "test1.adb",
      --
      --  2) * GNAT OK;
      --     * HAC KO (feature not yet supported)
      --  
      "overloading.adb",
-     "type_conversion.adb"
      --
      --  3) * GNAT OK (detects correctly incorrect Ada code);
      --     * HAC KO (compiles instead of outputting a compilation error. E.g. accepts type Pascal's promotion)
      --     See places with "!!" in the code.
      --  
-     --  "test.adb"
+     "test.adb"
      --
      --  4) Code wrong, incomplete, HAC showing wrong output, or whatever - to be sorted...
      --

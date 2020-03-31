@@ -1,8 +1,9 @@
-with HAC.Data;    use HAC.Data;
-with HAC.UErrors; use HAC.UErrors;
-with HAC.Parser;  use HAC.Parser;
-with HAC.PCode;   use HAC.PCode;
-with HAC.Scanner; use HAC.Scanner;
+with HAC.Data;                          use HAC.Data;
+with HAC.UErrors;                       use HAC.UErrors;
+with HAC.Parser;                        use HAC.Parser;
+with HAC.Parser.Helpers;
+with HAC.PCode;                         use HAC.PCode;
+with HAC.Scanner;                       use HAC.Scanner;
 
 with Ada.Text_IO, Ada.Integer_Text_IO;
 
@@ -195,7 +196,7 @@ package body HAC.Compiler is
       Enter (ProgramID, Prozedure, NOTYP, 0);
     end EnterStdFcns;
 
-    use Ada.Text_IO, Ada.Integer_Text_IO;
+    use Ada.Text_IO, Ada.Integer_Text_IO, HAC.Parser.Helpers;
 
   begin -- Compile
 

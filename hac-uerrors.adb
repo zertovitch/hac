@@ -63,7 +63,7 @@ package body HAC.UErrors is
       when err_illegal_array_subscript =>
         return "illegal array subscript (check type)";
       when err_illegal_array_bounds =>
-        return "illegal bounds for an array index";
+        return "illegal bounds for an array index: " & hint;
       when err_indexed_variable_must_be_an_array =>
         return "indexed variable must be an array";
       when err_missing_a_type_identifier =>

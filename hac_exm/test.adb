@@ -1,4 +1,4 @@
--- This is a fuzzy test for HAC, the HAC Ada compiler.
+--  This is a fuzzy test for HAC, the HAC Ada compiler.
 
 with HAC_Pack;  use HAC_Pack;
 
@@ -36,23 +36,27 @@ procedure Test is
   begin
     a:= septante + sept;
     Put_Line("NOT in a block statement");
-    What_a_nice_block:
-    declare
-      sept_cents: constant Integer:= 700; -- sept * 100 too complicated !!
-    begin
-      a:= sept_cents + a;
-      Put_Line("Block statement");
-    end What_a_nice_block;
-    Put_Line("NOT in a block statement");
-    what_a_nice_block_2:
-    begin
-      Put_Line("Another block statement");
-      what_a_NICE_block_3:
-      begin
-        Put_Line("Yet another block statement");
-      end what_a_NICE_block_3;
-    end what_a_nice_block_2;
-    Put_Line("NOT in a block statement");
+    a:= 700 + a;
+    --
+    --  *** Block statements temporarily disabled (details in roland_01.adb) ***
+    --
+    --  What_a_nice_block:
+    --  declare
+    --    sept_cents: constant Integer:= 700;  --  sept * 100 too complicated !!
+    --  begin
+    --    a:= sept_cents + a;
+    --    Put_Line("Block statement");
+    --  end What_a_nice_block;
+    --  Put_Line("NOT in a block statement");
+    --  what_a_nice_block_2:
+    --  begin
+    --    Put_Line("Another block statement");
+    --    what_a_NICE_block_3:
+    --    begin
+    --      Put_Line("Yet another block statement");
+    --    end what_a_NICE_block_3;
+    --  end what_a_nice_block_2;
+    --  Put_Line("NOT in a block statement");
   end Do_1_param_in_out;
   --
   -- type My_String is array(1..5) of Character;
@@ -72,7 +76,7 @@ procedure Test is
   -- Recursive Fibonacci numbers demonstration --
   -----------------------------------------------
 
-  procedure Fibo_demo(X: Integer) is -- !! Integer to be defined in HAC
+  procedure Fibo_demo(X: Integer) is -- !! Natural to be defined in HAC
 
     function Fib(P: Integer) return Integer is
     begin
@@ -107,30 +111,32 @@ procedure Test is
     type T3 is record x: Integer; y: T2; end record;
     c: array(l1..h1, l2..h2) of T3;
   begin
-    for pass in 1..6 loop -- !! HAC: compiles 1..7 OK without "when 7", interpreter crashes
+    for step in 1..6 loop  --  !! HAC: compiles 1..7 OK without "when 7", interpreter crashes
+      Put("Multidimensional array: Step");
+      Put(step);
+      New_Line;
       for i in l1..h1 loop
         for j in l2..h2 loop
-          case pass is
-            when 1 => -- fill array a
-              a(i,j):= i * j;
-            when 2 => -- display array a
+          case step is
+            when 1 =>  --  fill array a
+              a(i,j):= (i * j);  --  !!  Accepts Float(i * j);
+            when 2 =>  --  display array a
               Put(a(i,j));
               if j = h2 then
                 New_Line;
               end if;
-            when 3 => -- fill array b
-              -- !! HAC accepts without Float(...);
-              -- !! HAC issues error but compiles OK with Float(...) !!
-              b(i,j):= (i * j);
-            when 4 => -- display array b
+            when 3 =>  --  fill array b
+              -- !! HAC 0.01 accepts without Float(...);
+              b(i,j):= Float(i * j);
+            when 4 =>  --  display array b
               Put(b(i,j));
               Put(' ');
               if j = h2 then
                 New_Line;
               end if;
-            when 5 => -- fill array c
+            when 5 =>  --  fill array c
               c(i,j).y(7):= i * j;
-            when 6 => -- display array c
+            when 6 =>  --  display array c
               Put(c(i,j).y(7));
               if j = h2 then
                 New_Line;
@@ -162,6 +168,7 @@ begin
   Put(c);
   c:= ''';
   Put(c);
+  Put('"');
   Put("");
   New_Line;
   --
@@ -190,6 +197,7 @@ begin
   Do_0; Put(x_glob); New_Line;
   Put_Line("6-3+2 = 5");
   Put(6-3+2); New_Line;
+  --
   Do_1(123);
   Do_1_param_in_out(x_glob);
   case x_glob is
@@ -208,6 +216,8 @@ begin
   Put("");
   Put_Line(" and more bla bla!");
   for gagl in 1..20 loop
+    Put(gagl);
+    Put(' ');
     case gagl is
       when 4 =>
         Put_Line("choice: four");

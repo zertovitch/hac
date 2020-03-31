@@ -35,9 +35,10 @@ package HAC.Data is
   c128 : constant Character := Character'Val (128);
 
   Header : constant String := "HAC - Hacker's Ada Compiler";
-  -- was "Small-Ada  Macintosh Ver 1.1  Nov 1989  George Washington University"
+  --  Was: "Small-Ada  Macintosh Ver 1.1  Nov 1989  George Washington University"
 
-  MaxINT     : constant Integer := Integer'Last;
+  MaxINT     : constant Integer := Integer'Last - 1;
+
   Alng       : constant := 40;            --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
   AMax       : constant := 30;            --  Size OF ARRAY-TABLE
   BMax       : constant := 25;            --  Size OF Block-TABLE
@@ -109,6 +110,7 @@ package HAC.Data is
    IDent,
    String_Symbol, -- !! hack ! used for constraining the String unconstrained array
    USy,                -- (Apparently) unused symbol
+   Dummy_Symbol,       -- Symbol that is never parsed.
    Ampersand_Symbol,
    --                  Ada keywords
    ABORT_Symbol,
@@ -204,15 +206,9 @@ package HAC.Data is
   function "-" (a, b : Symset) return Symset;
   function "-" (a : Symset; b : KeyWSymbol) return Symset;
   Empty_Symset : constant Symset := (others => False);
+
   function Singleton(s: KeyWSymbol) return Symset;
   pragma Inline(Singleton);
-
-  IDent_set     : constant Symset := (IDent => True, others => False);
-  Semicolon_set : constant Symset := (Semicolon => True, others => False);
-  END_set       : constant Symset := (END_Symbol => True, others => False);
-
-  Semicolon_Comma_IDent : constant Symset :=
-    Symset'(Semicolon | Comma | IDent => True, others => False);
 
   -----------------
   -- Identifiers --
@@ -504,66 +500,6 @@ package HAC.Data is
   Tx             : Integer;                   --  scratch Variable
   TCH            : Character;                      --  scratch Variable
   TStr           : String (1 .. 14);             --  scratch Variable
-
-  -- --- Compiler symbol sets ---
-
-  --  Constant definition begin symbol(S)
-
-  ConstBegSys : constant Symset :=
-   Symset'
-   (Plus      |
-    MinUS     |
-    IntCon    |
-    FloatCon  |
-    CharCon   |
-    IDent     => True,
-    others => False);
-
-  Type_Begin_Symbol : constant Symset :=
-   Symset'
-   (IDent          |
-    ARRAY_Symbol   |
-    RECORD_Symbol       |
-    RANGE_Symbol        |
-    LParent        => True,
-    others         => False);
-
-  Block_Begin_Symbol : constant Symset :=
-   (PROCEDURE_Symbol |
-    FUNCTION_Symbol  |
-    TASK_Symbol           |
-    ENTRY_Symbol          |
-    BEGIN_Symbol     |
-    DECLARE_Symbol   => True,
-    others => False);
-
-  Factor_Begin_Symbol : constant Symset :=
-   (IntCon     |
-    FloatCon   |
-    CharCon    |
-    IDent      |
-    LParent    |
-    NOT_Symbol => True,
-    others => False);
-
-  Statement_Begin_Symbol : constant Symset :=
-   Symset'
-   (IDent         |
-    BEGIN_Symbol  |
-    DECLARE_Symbol|
-    IF_Symbol     |
-    WHILE_Symbol  |
-    LOOP_Symbol   |
-    FOR_Symbol    |
-    CASE_Symbol   |
-    EXIT_Symbol   |
-    NULL_Symbol        |
-    RETURN_Symbol |
-    SELECT_Symbol      |
-    ACCEPT_Symbol      |
-    DELAY_Symbol      => True,
-
-    others => False);
 
   --  Debugging Flags - these flags are used to print out information
   --  about the code status.  If a flag is true, then the section of
