@@ -1276,9 +1276,8 @@ package body HAC.Parser is
                         others => False));
                       IdTab (I).TYP := X.TYP;
 
-                    -- Round,Trunc
+                    --  Round, Trunc, Sin, Cos, Exp, Log, Sqrt, Arctan
                     when 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 =>
-                      -- Sin,Cos,...
                       TS :=
                        Typset'((Ints | Floats => True, others => False));
                       if X.TYP = Ints then
@@ -1333,6 +1332,40 @@ package body HAC.Parser is
                 end case;
               end if;    -- NILADIC FUNCTIONS, N => 100
             end Standard_Function;
+
+            procedure Type_Conversion is  --  Ada RM 4.6
+              type Type_Conversion_Kind is (To_Float, Unknown);
+              kind : Type_Conversion_Kind := Unknown;
+              Type_Id : constant String := Alfa_to_String (Id);
+            begin
+              if Sy = LParent then
+                InSymbol;
+              else
+                Error (err_missing_an_opening_parenthesis);
+              end if;
+              if Type_Id = "FLOAT" then
+                kind := To_Float;
+              end if;
+              Expression (FSys + RParent, X);
+              case kind is
+                when To_Float =>
+                  case X.TYP is
+                    when Floats =>
+                      null;  --  !!  Emit warning "already float"
+                    when Ints =>
+                      Emit1 (k_Integer_to_Float, 0);
+                    when others =>
+                      Error (err_type_conversion_not_supported, "argument type not supported");
+                  end case;
+                when Unknown =>
+                  Error (err_type_conversion_not_supported, "no support for target type " & Type_Id);
+              end case;
+              if Sy = RParent then
+                InSymbol;
+              else
+                Error (err_closing_parenthesis_missing);
+              end if;
+            end Type_Conversion;
 
           begin  -- Factor
             X.TYP := NOTYP;
@@ -1396,18 +1429,17 @@ package body HAC.Parser is
                         end if;
 
                       when TypeMark =>
-                        -- !! Float(integer_exp) Integer(float_exp) etc. here !!
-                        Error (err_expected_variable_function_or_constant);
+                        Type_Conversion;
 
                       when Prozedure =>
-                        Error (err_expected_variable_function_or_constant);
+                        Error (err_expected_constant_function_variable_or_subtype);
 
                       when Funktion =>
                         X.TYP := r.TYP;
-                        if r.LEV /= 0 then
-                          Call (FSys, I, CallSTDP);
-                        else
+                        if r.LEV = 0 then
                           Standard_Function (r.Adr);
+                        else
+                          Call (FSys, I, CallSTDP);
                         end if;
 
                       when others =>

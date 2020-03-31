@@ -218,7 +218,7 @@ package HAC.Data is
   -- Identifiers --
   -----------------
 
-  -- Alfa is a space-padded string
+  --  Alfa is a space-padded string
   subtype Alfa is String (1 .. Alng);
   Empty_Alfa : Alfa := (others => ' ');
   function Alfa_to_String(a: Alfa) return String;

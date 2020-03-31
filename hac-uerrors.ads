@@ -55,7 +55,7 @@ package HAC.UErrors is
     err_illegal_parameters_to_Put,
     err_parameter_must_be_of_type_Float,
     err_parameter_must_be_Integer,
-    err_expected_variable_function_or_constant,
+    err_expected_constant_function_variable_or_subtype,
     err_illegal_return_statement_from_main,
     err_types_of_assignment_must_match,
     err_case_label_not_same_type_as_case_clause,
@@ -100,9 +100,10 @@ package HAC.UErrors is
     err_identifier_too_long,
     err_statement_expected,
     err_duplicate_label,
-    err_invalid_power_operands,  --  2018-03-18
-    err_unexpected_end_of_text,  --  2018-04-01
-    err_not_yet_implemented      --  2019-03-24
+    err_invalid_power_operands,         --  2018-03-18
+    err_unexpected_end_of_text,         --  2018-04-01
+    err_not_yet_implemented,            --  2019-03-24
+    err_type_conversion_not_supported   --  2020-03-31
   );
 
   type Message_kind is (error, warning, note, style);

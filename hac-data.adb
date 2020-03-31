@@ -56,7 +56,7 @@ package body HAC.Data is
   function Alfa_to_String(a: Alfa) return String is
   begin
     return Ada.Strings.Fixed.Trim(a, Ada.Strings.Right);
-  end;
+  end Alfa_to_String;
 
   -----------------------------------------------------------ICompiler-----
 

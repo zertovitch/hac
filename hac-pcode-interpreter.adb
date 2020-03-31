@@ -695,10 +695,10 @@ package body HAC.PCode.Interpreter is
                 S (Curr_TCB.T).I := S (Curr_TCB.T).I + 1;
               when 8 =>
                 S (Curr_TCB.T).I := S (Curr_TCB.T).I - 1;
-              when 9 =>
+              when 9 =>   --  Round
                 S (Curr_TCB.T).I := Integer (S (Curr_TCB.T).R);
-              when 10 =>
-                S (Curr_TCB.T).I := Integer (S (Curr_TCB.T).R);
+              when 10 =>  --  Trunc
+                S (Curr_TCB.T).I := Integer (Float'Floor (S (Curr_TCB.T).R));
               when 11 =>
                 S (Curr_TCB.T).R := Sin (S (Curr_TCB.T).R);
               when 12 =>

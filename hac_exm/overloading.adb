@@ -1,4 +1,4 @@
---  This example contains a feature that is missing in HAC 0.01
+--  This example contains a feature that is missing in HAC (at least v.0.01)
 
 with HAC_Pack; use HAC_Pack;
 

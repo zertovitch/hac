@@ -1,4 +1,4 @@
---  This example contains a feature that is missing in HAC 0.01
+--  This example contains a feature that was missing in HAC 0.01 but present in HAC 0.02.
 --
 --  4.6 Type Conversions
 
