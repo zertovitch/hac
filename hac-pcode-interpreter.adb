@@ -503,18 +503,18 @@ package body HAC.PCode.Interpreter is
       PS := RUN ;
     end Init_other_tasks;
 
-  begin --  Interpret
+  begin  --  Interpret
     InterDef.SNAP:= False;
     Init_main_task;
     Init_other_tasks;
-    loop --  until Processor state /= RUN
+    loop  --  until Processor state /= RUN
       SYSCLOCK := GetClock;
       if InterDef.SNAP then
-        null; -- ShowTime ;
+        null;  --  ShowTime ;
       end if;
       if InterDef.TCB (InterDef.CurTask).TS = InterDef.Critical then
         if InterDef.SNAP then
-          null; -- SnapShot ;
+          null;  --  SnapShot ;
         end if;
       else
         if InterDef.SWITCH or  --  ------------> Voluntary release of control

@@ -430,8 +430,6 @@ package HAC.Data is
   IdTab      : array (0 .. TMax) of TabEntry;   --  Identifier table
   TaskDefTab : array (0 .. TaskMax) of Index;   --  Task Table
 
-  No_Id: constant:= 0;
-
   --  Display - keeps track of addressing by nesting level.
   --  See Ben-Ari Appendix A.
   Display : array (0 .. LMax) of Integer;

@@ -17,6 +17,10 @@ package HAC.Parser.Helpers is
   --  If needed symbol S is correct, consume it;
   --  otherwise output error code E.
   --
+  --  Optionally, we consume a symbol Forgive that
+  --  the programmer may have written instead of S.
+  --  For instance '[' instead of '('.
+  --
   procedure Need (
     S       : KeyWSymbol;
     E       : Error_code;
@@ -35,52 +39,112 @@ package HAC.Parser.Helpers is
 
   --  Test if current symbol is in the S1 set, otherwise
   --  issue error N. If stop_on_error = False, we skip
-  --  subsequent symbols that are not in the union S1 + S2.
+  --  subsequent symbols that are not in the union (S1 + S2).
   --
-    procedure Test (
-      S1, S2        : Symset;
-      N             : Error_code;
-      stop_on_error : Boolean:= False);
+  procedure Test (
+    S1, S2        : Symset;
+    N             : Error_code;
+    stop_on_error : Boolean:= False);
 
-    procedure Test_Semicolon (FSys : Symset);
+  procedure Test_Semicolon (FSys : Symset);
 
-    procedure Test_END_Symbol;
+  procedure Test_END_Symbol;
+
+  No_Id : constant := 0;
 
   ------------------------------------
   --  Symbol sets used for parsing  --
   ------------------------------------
 
+  --  Singletons:
+
   IDent_set     : constant Symset := (IDent => True, others => False);
   Semicolon_set : constant Symset := (Semicolon => True, others => False);
   END_set       : constant Symset := (END_Symbol => True, others => False);
 
-  Semicolon_Comma_IDent : constant Symset :=
-    (Semicolon | Comma | IDent => True, others => False);
+  --  Specific sets:
 
-  Comma_Colon_RParent : constant Symset :=
-    (Comma | Colon | RParent => True, others => False);
-
-  Comma_RParent : constant Symset :=
-    (Comma | RParent => True, others => False);
-
-  OF_RANGE_RParent : constant Symset :=
-    (OF_Symbol | RANGE_Symbol | RParent => True, others => False);
-
-  Comma_OF_RParent : constant Symset :=
-    (Comma | RParent | OF_Symbol => True, others => False);
-
-  After_Subprogram_Parameters : constant Symset :=
-    (IS_Symbol | RETURN_Symbol | Semicolon => True, others => False);
-
-  Becomes_EQL_Semicolon : constant Symset :=
-    (Becomes | EQL | Semicolon => True, others => False);
+  Alt_Finger : constant Symset :=
+    (Alt | Finger => True, others => False);
 
   Becomes_Comma_IDent_Semicolon : constant Symset :=
     (Semicolon | Comma | IDent | Becomes => True, others => False);
 
-  --  Constant definition begin symbol(S)
+  Becomes_EQL_Semicolon : constant Symset :=
+    (Becomes | EQL | Semicolon => True, others => False);
 
-  ConstBegSys : constant Symset :=
+  Becomes_EQL : constant Symset :=
+    (Becomes | EQL => True, others => False);
+
+  Colon_Comma_LParent_RParent_Semicolon : constant Symset :=
+    (Colon | Comma | LParent | RParent | Semicolon => True, others => False);
+
+  Colon_Comma_RParent : constant Symset :=
+    (Colon | Comma | RParent => True, others => False);
+
+  Colon_Comma_IS_OF : constant Symset :=
+    (Colon | Comma | IS_Symbol | OF_Symbol => True, others => False);
+
+  Comma_END_IDent_Semicolon : constant Symset :=
+    (Comma | END_Symbol | IDent | Semicolon => True, others => False);
+
+  Comma_IDent_Semicolon : constant Symset :=
+    (Comma | IDent | Semicolon => True, others => False);
+
+  Comma_IDent_RParent_Semicolon : constant Symset :=
+    (Comma | IDent | RParent | Semicolon => True, others => False);
+
+  Comma_OF_RParent : constant Symset :=
+    (Comma | RParent | OF_Symbol => True, others => False);
+
+  Comma_RParent : constant Symset :=
+    (Comma | RParent => True, others => False);
+
+  DO_LOOP : constant Symset :=
+    (DO_Symbol | LOOP_Symbol => True, others => False);
+
+  DO_THEN_Symbol : constant Symset :=
+    (DO_Symbol | THEN_Symbol => True, others => False);
+
+  ELSE_ELSIF_END_Symbol : constant Symset :=
+    (ELSE_Symbol | ELSIF_Symbol | END_Symbol => True, others => False);
+
+  ELSE_END_OR : constant Symset :=
+    (ELSE_Symbol | END_Symbol | OR_Symbol => True, others => False);
+
+  ELSE_OR : constant Symset :=
+    (ELSE_Symbol | OR_Symbol => True, others => False);
+
+  END_IDent_Semicolon : constant Symset :=
+    (END_Symbol | IDent | Semicolon => True, others => False);
+
+  END_LOOP_RANGE : constant Symset :=
+    (END_Symbol | LOOP_Symbol | RANGE_Symbol => True, others => False);
+
+  END_LOOP_Semicolon : constant Symset :=
+    (END_Symbol | LOOP_Symbol | Semicolon => True, others => False);
+
+  END_WHEN : constant Symset :=
+    (END_Symbol | WHEN_Symbol => True, others => False);
+
+  OF_RANGE_RParent : constant Symset :=
+    (OF_Symbol | RANGE_Symbol | RParent => True, others => False);
+
+  --  Other sets, named by their context:
+
+  After_Subprogram_Parameters : constant Symset :=
+    (IS_Symbol | RETURN_Symbol | Semicolon => True, others => False);
+
+  Block_Begin_Symbol : constant Symset :=
+   (PROCEDURE_Symbol |
+    FUNCTION_Symbol  |
+    TASK_Symbol      |
+    ENTRY_Symbol     |
+    BEGIN_Symbol     |
+    DECLARE_Symbol   => True,
+    others => False);
+
+  Constant_Definition_Begin_Symbol : constant Symset :=
    (Plus      |
     MinUS     |
     IntCon    |
@@ -89,22 +153,11 @@ package HAC.Parser.Helpers is
     IDent     => True,
     others => False);
 
-  Type_Begin_Symbol : constant Symset :=
-   (IDent          |
-    ARRAY_Symbol   |
-    RECORD_Symbol       |
-    RANGE_Symbol        |
-    LParent        => True,
-    others         => False);
-
-  Block_Begin_Symbol : constant Symset :=
-   (PROCEDURE_Symbol |
-    FUNCTION_Symbol  |
-    TASK_Symbol           |
-    ENTRY_Symbol          |
-    BEGIN_Symbol     |
-    DECLARE_Symbol   => True,
-    others => False);
+  Declaration_Symbol : constant Symset :=
+    (IDent | TYPE_Symbol | TASK_Symbol |
+     PROCEDURE_Symbol | FUNCTION_Symbol |
+     BEGIN_Symbol => True,
+     others       => False);
 
   Factor_Begin_Symbol : constant Symset :=
    (IntCon     |
@@ -114,6 +167,24 @@ package HAC.Parser.Helpers is
     LParent    |
     NOT_Symbol => True,
     others => False);
+
+  FactorZ : constant Symset :=
+    (xTimes | Divide | MOD_Symbol | REM_Symbol | AND_Symbol => True,
+     xx_Power => True,  --  !! The ** operator is probably at another precedence level
+     others => False);
+
+  Fail_after_FOR : constant Symset :=
+    (IN_Symbol    |
+     RANGE_Symbol |
+     LOOP_Symbol  |
+     END_Symbol   => True,
+     others => False);
+
+  OperZ : constant Symset :=
+    (EQL | NEQ | LSS | LEQ | GTR | GEQ => True, others => False);
+
+  Plus_Minus : constant Symset :=
+    (Plus | MinUS => True, others => False);
 
   Statement_Begin_Symbol : constant Symset :=
    (IDent         |
@@ -125,38 +196,26 @@ package HAC.Parser.Helpers is
     FOR_Symbol    |
     CASE_Symbol   |
     EXIT_Symbol   |
-    NULL_Symbol        |
+    NULL_Symbol   |
     RETURN_Symbol |
-    SELECT_Symbol      |
-    ACCEPT_Symbol      |
-    DELAY_Symbol      => True,
-
+    SELECT_Symbol |
+    ACCEPT_Symbol |
+    DELAY_Symbol  => True,
     others => False);
-
-  Declaration_Symbol : constant Symset :=
-    (IDent | TYPE_Symbol | TASK_Symbol |
-     PROCEDURE_Symbol | FUNCTION_Symbol |
-     BEGIN_Symbol => True,
-     others       => False);
 
   Symbols_after_Subprogram_Identifier : constant Symset :=
     (LParent | RETURN_Symbol | IS_Symbol | Semicolon => True,
      others => False);
 
-  OR_ELSE_END : constant Symset :=
-    (OR_Symbol | ELSE_Symbol | END_Symbol => True, others => False);
+  TermZ : constant Symset :=
+    (Plus | MinUS | OR_Symbol | XOR_Symbol => True, others => False);
 
-  ELSE_ELSIF_END_Symbol : constant Symset :=
-    (ELSE_Symbol | ELSIF_Symbol | END_Symbol => True, others => False);
-
-  DO_THEN_Symbol : constant Symset :=
-    (DO_Symbol | THEN_Symbol => True, others => False);
-
-  Fail_after_FOR : constant Symset :=
-    (IN_Symbol    |
-     RANGE_Symbol |
-     LOOP_Symbol  |
-     END_Symbol   => True,
-     others => False);
+  Type_Begin_Symbol : constant Symset :=
+   (IDent          |
+    ARRAY_Symbol   |
+    RECORD_Symbol  |
+    RANGE_Symbol   |
+    LParent        => True,
+    others         => False);
 
 end HAC.Parser.Helpers;
