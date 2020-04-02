@@ -2484,10 +2484,7 @@ package body HAC.Parser is
               Skip (Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
-              Expression (Singleton(RParent), X);
-              if X.TYP /= Bools then
-                Skip (Semicolon, err_expecting_a_boolean_expression);
-              end if;
+              Boolean_Expression (Singleton(RParent), X);
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);
               else
