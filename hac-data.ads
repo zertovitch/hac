@@ -365,9 +365,9 @@ package HAC.Data is
   --  Global Variables
   -- =======================================================================
 
-  Err_Count : Integer;      --  (Marcelo) copied from PC source
+  Err_Count : Natural;      --  (Marcelo) copied from PC source
   Scheduler : Integer;      --  (Marcelo) scheduler routine to use, choose
-                            --from several
+                            --  from several
 
   TSlice : Integer;         --  Default Task time-slice in milliseconds
                             --  Feldman: 60ths of a sec on Mac

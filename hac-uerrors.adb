@@ -27,7 +27,7 @@ package body HAC.UErrors is
           "undefined identifier;" &
           " if a named statement is meant, a colon "":"" would be expected here";
       when err_incorrectly_used_symbol =>
-        return "incorrectly used symbol";
+        return "incorrectly used symbol [" & hint & ']';
       when err_missing_OF =>
         return "missing ""of""";
       when err_missing_an_opening_parenthesis =>

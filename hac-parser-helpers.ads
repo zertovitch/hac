@@ -30,12 +30,20 @@ package HAC.Parser.Helpers is
   --  Issue error N, then skip all subsequent symbols
   --  that are not in the FSys set.
   --
-  procedure Skip (FSys : Symset; N : Error_code);
+  procedure Skip (
+    FSys : Symset;
+    N    : Error_code;
+    hint : String := ""
+  );
 
   --  Issue error N, then skip all subsequent symbols
   --  that are not equal to S.
   --
-  procedure Skip (S : KeyWSymbol; N : Error_code);
+  procedure Skip (
+    S    : KeyWSymbol;
+    N    : Error_code;
+    hint : String := ""
+  );
 
   --  Test if current symbol is in the S1 set, otherwise
   --  issue error N. If stop_on_error = False, we skip
@@ -156,10 +164,12 @@ package HAC.Parser.Helpers is
     others => False);
 
   Declaration_Symbol : constant Symset :=
-    (IDent | TYPE_Symbol | TASK_Symbol |
-     PROCEDURE_Symbol | FUNCTION_Symbol |
-     BEGIN_Symbol => True,
-     others       => False);
+    (IDent            |
+     TYPE_Symbol      |
+     TASK_Symbol      |
+     PROCEDURE_Symbol |
+     FUNCTION_Symbol  => True,
+     others => False);
 
   Factor_Begin_Symbol : constant Symset :=
    (IntCon     |

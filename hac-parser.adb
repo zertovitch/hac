@@ -241,7 +241,6 @@ package body HAC.Parser is
     --------------------------------------------------------------TYP-
 
     procedure TYP (FSys : Symset; TP : out Types; RF, Sz : out Integer) is
-      I, ECount            : Integer;
       ELTP                 : Types;
       ELRF                 : Integer;
       ELSZ, Offset, T0, T1 : Integer;
@@ -295,6 +294,31 @@ package body HAC.Parser is
           r.ELSize      := ELSZ;
         end;
       end Array_Typ;
+
+      procedure Enumeration_Type is
+        ECount : Natural := 0;
+      begin
+        TP := Enums;
+        RF := T;
+        loop
+          InSymbol;  --  Consume '(' symbol.
+          if Sy = IDent then
+            ECount := ECount + 1;
+            Enter (Id, Konstant);
+            IdTab (T).TYP := Enums;
+            IdTab (T).Ref := RF;
+            IdTab (T).Adr := ECount;
+          else
+            Error (err_identifier_missing);
+          end if;
+          InSymbol;
+          exit when Sy /= Comma;
+        end loop;
+        Sz := ECount;
+        Need (RParent, err_closing_parenthesis_missing);
+      end Enumeration_Type;
+
+      I : Integer;
 
     begin  --  Type
       TP := NOTYP;
@@ -370,41 +394,14 @@ package body HAC.Parser is
             Sz                  := Offset;
             BlockTab (RF).PSize := 0;
             InSymbol;
-            Need (RECORD_Symbol, err_RECORD_missing);
+            Need (RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
             Level := Level - 1;
           -- end of RECORD_Symbol
 
-          when LParent =>    -- Enumeration Type
-            -- Hathorn
-            TP     := Enums;
-            RF     := T;
-            ECount := 0;
-            loop
-              InSymbol;
-              if Sy = IDent then
-                ECount := ECount + 1;
-                Enter (Id, Konstant);
-                IdTab (T).TYP := Enums;
-                IdTab (T).Ref := RF;
-                IdTab (T).Adr := ECount;
-              else
-                Error (err_incorrectly_used_symbol);
-              end if;
-              InSymbol;
-              exit when Sy /= Comma;
-            end loop;
-
-            Sz := ECount;
-            if Sy = RParent then
-              InSymbol;
-            else
-              Skip (Semicolon, err_closing_parenthesis_missing);
-            end if;
-          -- end of Enumeration Type
-
+          when LParent =>
+            Enumeration_Type;
           when others =>
             null;
-
         end case; -- Sy
         Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
       end if;
@@ -892,7 +889,7 @@ package body HAC.Parser is
     end Call;
 
     ------------------------------------------------------------------
-    --------------------------------------------------------EntryCall-
+    -------------------------------------------------------Entry_Call-
     procedure Entry_Call (FSys : Symset; I, CallType : Integer) is -- Hathorn
       Addr, J : Integer;
     begin
@@ -1486,11 +1483,11 @@ package body HAC.Parser is
       procedure Accept_Statement is            -- Hathorn
         I : Integer;
 
-        procedure AcceptCall (FSys : Symset; I : Integer) is
+        procedure Accept_Call (FSys : Symset; I : Integer) is
           pragma Unreferenced (I, FSys);
-        begin -- check To make sure parameters match with Entry Statement
+        begin   --  !!  Check to make sure parameters match with Entry Statement
           if Sy = Semicolon then
-            return; -- Exit(AcceptCall);
+            return;
           end if;
           if Sy = LParent then          -- <--- temporary
             while not (Sy = DO_Symbol or Sy = RParent) loop
@@ -1500,16 +1497,16 @@ package body HAC.Parser is
           if Sy = RParent then
             InSymbol;
           end if;
-        end AcceptCall;
+        end Accept_Call;
 
-      begin  -- AcceptStatement
+      begin  --  Accept_Statement
         InSymbol;
         I := Locate_Identifier (Id);
         if IdTab (I).Obj /= aEntry then
           Error (err_use_Small_Sp);
         end if;
         InSymbol;
-        AcceptCall (FSys, I);
+        Accept_Call (FSys, I);
         Emit1 (k_Accept_Rendezvous, I);
         if Sy = DO_Symbol then
           if Level = LMax then
@@ -1532,14 +1529,11 @@ package body HAC.Parser is
       end Accept_Statement;
 
       procedure Exit_Statement is
-        -- Generate an absolute branch Statement with a dummy end loop address
+        --  Generate an absolute branch statement with a dummy end loop address
         X : Item;
       begin
-        if Sy = EXIT_Symbol then
-          InSymbol;
-        else
-          Skip (Semicolon, err_incorrectly_used_symbol);
-        end if;
+        pragma Assert (Sy = EXIT_Symbol);
+        InSymbol;  --  Consume EXIT symbol.
         if Sy = WHEN_Symbol then  --  Conditional Exit
           InSymbol;
           Boolean_Expression (Semicolon_set, X);
@@ -1612,8 +1606,8 @@ package body HAC.Parser is
       end LOOP_Statement;
 
       procedure RETURN_Statement is           -- Hathorn
-        -- Generate a procedure return Statement, calculate return value if
-        --req'D
+        -- Generate a procedure return Statement, calculate
+        -- return value if req'D
         X, Y : Item;
         F    : Integer;
       begin
@@ -1887,12 +1881,12 @@ package body HAC.Parser is
           if IdTab (I).Obj = aTask then
             InSymbol;
             Entry_Call (FSys, I, -1);
-            if ObjCode (LC - 2).F = kCall then     -- need To patch CallType later
+            if ObjCode (LC - 2).F = kCall then  --  Need to patch CallType later
               patch (0) := LC - 2;
             else
               patch (0) := LC - 3;
             end if;       -- LC-1 must be OP=3, update Display
-            patch (1) := LC;           -- need To patch in JMPC address later
+            patch (1) := LC;  --  Need to patch in JMPC address later
             Emit1 (k_Conditional_Jump, dummy_address);    -- JMPC, address patched in after ELSE
                                       --or OR
             if Sy = Semicolon then
@@ -1980,9 +1974,9 @@ package body HAC.Parser is
             procedure Accept_Call_2 (FSys : Symset; I : Integer) is
             pragma Unreferenced (FSys, I);
             begin
-              -- check To make sure parameters match with Entry Statement
+              --  Check to make sure parameters match with Entry Statement
               if Sy = Semicolon then
-                return; -- Exit(AcceptCall2);
+                return;
               end if;
               if Sy = LParent then      -- should be modified
                 -- To check no. and
@@ -2032,7 +2026,7 @@ package body HAC.Parser is
             Emit1 (k_End_Rendezvous, I);
           end Accept_Statement_2;
 
-        begin          -- SelectiveWait ===============================> Kurtz
+        begin  --  Selective_Wait ===============================> Kurtz
           ISD          := 0;
           IAlt         := 0;
           SelectDone   := False;
@@ -2197,20 +2191,17 @@ package body HAC.Parser is
             end case;
             exit when SelectDone;
           end loop;
-
         end Selective_Wait;
 
-      begin                    -- Sy = SELECT_Symbol
-        -- Next KeyWSymbol must be ACCEPT_Symbol, WHEN_Symbol, or a Task Entry object
-        --Name.
-        InSymbol;
-        if Sy = ACCEPT_Symbol or Sy = WHEN_Symbol or Sy = IDent then
-          if Sy = ACCEPT_Symbol or Sy = WHEN_Symbol then
-            Selective_Wait;
-          else
-            Qualified_Entry_Call;
-          end if;         -- Timed or Conditional Entry Call
+      begin
+        InSymbol;  --  Consume SELECT_Symbol.
+        if Sy = ACCEPT_Symbol or Sy = WHEN_Symbol then
+          Selective_Wait;
           InSymbol;
+        elsif Sy = IDent then  --  Task Entry objectName.
+          Qualified_Entry_Call;
+          InSymbol;
+          -- Timed or Conditional Entry Call (?)
         else
           Select_Error (err_expecting_accept_when_or_entry_id);
         end if;
@@ -2549,61 +2540,62 @@ package body HAC.Parser is
 
       if Statement_Begin_Symbol (Sy) then
         case Sy is
-        when IDent =>
-          I := Locate_Identifier (Id, No_Id_Fail => False);
-          InSymbol;
-          if I = No_Id then
-            --  New identifier: must be a label for named Block_Statement or loop.
-            Named_Statement;
-          else
-            case IdTab (I).Obj is
-              when Konstant | TypeMark | Funktion =>
-                Error (err_illegal_statement_start_symbol);
-                Assignment (I);
-              when Variable =>
-                Assignment (I);
-              when aTask =>
-                Entry_Call (FSys, I, CallSTDE);
-              when Prozedure =>
-                if IdTab (I).LEV = 0 then
-                  Standard_Procedure (IdTab (I).Adr);
-                else
-                  Call (FSys, I, CallSTDP);
-                end if;
-              when Label =>
-                Error (err_duplicate_label, Alfa_to_String(Id));
-                Test (Singleton(Colon), FSys, err_colon_missing);
-                InSymbol;
-              when others =>
-                null;
-            end case;
-          end if;  --  end IDent
-        when ACCEPT_Symbol =>
-          Accept_Statement;
-        when BEGIN_Symbol | DECLARE_Symbol =>  --  Anonymous Block_Statement
-          Block_Statement (Empty_Alfa);
-        when CASE_Symbol =>
-          CASE_Statement;
-        when DELAY_Symbol =>
-          DelayStatement;
-        when EXIT_Symbol =>
-          Exit_Statement;
-        when FOR_Symbol =>
-          FOR_Statement;
-        when IF_Symbol =>
-          IF_Statement;
-        when LOOP_Symbol =>
-          LOOP_Statement (k_Jump, LC);
-        when NULL_Symbol =>
-          InSymbol;
-        when RETURN_Symbol =>
-          RETURN_Statement;
-        when SELECT_Symbol =>
-          Select_Statement;
-        when WHILE_Symbol =>
-          WHILE_Statement;
-        when others =>
-          null;
+          when IDent =>
+            I := Locate_Identifier (Id, No_Id_Fail => False);
+            InSymbol;
+            if I = No_Id then
+              --  New identifier: must be a label for named Block_Statement or loop.
+              Named_Statement;
+            else
+              case IdTab (I).Obj is
+                when Konstant | TypeMark | Funktion =>
+                  Error (err_illegal_statement_start_symbol);
+                  Assignment (I);
+                when Variable =>
+                  Assignment (I);
+                when aTask =>
+                  Entry_Call (FSys, I, CallSTDE);
+                when Prozedure =>
+                  if IdTab (I).LEV = 0 then
+                    Standard_Procedure (IdTab (I).Adr);
+                  else
+                    Call (FSys, I, CallSTDP);
+                  end if;
+                when Label =>
+                  Error (err_duplicate_label, Alfa_to_String(Id));
+                  Test (Singleton(Colon), FSys, err_colon_missing);
+                  InSymbol;
+                when others =>
+                  null;
+              end case;
+            end if;  --  end IDent
+          when ACCEPT_Symbol =>
+            Accept_Statement;
+          when BEGIN_Symbol | DECLARE_Symbol =>
+            --  Anonymous Block Statement
+            Block_Statement (Empty_Alfa);
+          when CASE_Symbol =>
+            CASE_Statement;
+          when DELAY_Symbol =>
+            DelayStatement;
+          when EXIT_Symbol =>
+            Exit_Statement;
+          when FOR_Symbol =>
+            FOR_Statement;
+          when IF_Symbol =>
+            IF_Statement;
+          when LOOP_Symbol =>
+            LOOP_Statement (k_Jump, LC);
+          when NULL_Symbol =>
+            InSymbol;
+          when RETURN_Symbol =>
+            RETURN_Statement;
+          when SELECT_Symbol =>
+            Select_Statement;
+          when WHILE_Symbol =>
+            WHILE_Statement;
+          when others =>
+            null;
         end case;
 
         if not EofInput then      --{MRC: added IF NOT... from PC version}
@@ -2614,7 +2606,6 @@ package body HAC.Parser is
       if not EofInput then
         Test (FSys - Semicolon, Semicolon_set, err_incorrectly_used_symbol);
       end if;
-
     end Statement;
 
   begin  --  Block
@@ -2698,9 +2689,10 @@ package body HAC.Parser is
     -- Declarative_part --
     ----------------------
     --
+    Declarations:
     loop
       Test (  --  Added 17-Apr-2018 to avoid infinite loop on erroneous code
-        Declaration_Symbol,
+        Declaration_Symbol + BEGIN_Symbol,
         Empty_Symset,
         err_incorrectly_used_symbol,
         stop_on_error => True
@@ -2715,13 +2707,15 @@ package body HAC.Parser is
         Task_Declaration;
       end if;
       BlockTab (PRB).VSize := Dx;
+      --  ^ TBD: check if this is still correct for declarations that appear
+      --    after subprograms !!
 
       while Sy = PROCEDURE_Symbol or Sy = FUNCTION_Symbol loop
         Proc_Func_Declaration;
-      end loop;  -- !! loop seems useless (a ghost of the Pascal compiler)...
+      end loop;
 
       exit when Sy = BEGIN_Symbol;
-    end loop;
+    end loop Declarations;
     --
     -----------------------------
     -- Statements part : setup --
@@ -2745,24 +2739,24 @@ package body HAC.Parser is
     if Sy = END_Symbol then  --  GdM 15-Aug-2014: there should be at least one statement.
       Error (err_statement_expected);
     end if;
+    Statements:
     loop
       Statement (FSys + END_Symbol);
-      if Err_Count > 0 then  --{MRC, from PC source}
-        Sy := END_Symbol;
-      end if;
       exit when Sy = END_Symbol or Err_Count > 0;
-    end loop;
-    --{MRC, added OR()... from PC source}
+    end loop Statements;
+    --
     BlockTab (PRB).SrcTo := Line_Count;
     --
     if Sy = END_Symbol then
       InSymbol;
+    elsif Err_Count > 0 then
+      return;  --  At this point the program is already FUBAR.
     else
       Error (err_END_missing);
       return;
     end if;
     --
-    if Sy = IDent then -- Verify that the name after "end" matches the unit name.
+    if Sy = IDent then  --  Verify that the name after "end" matches the unit name.
       if Id /= BlockID then
         Error (err_incorrect_block_name, hint => Alfa_to_String(BlockID));
       end if;
@@ -2777,8 +2771,15 @@ package body HAC.Parser is
     end if;
     --
     if BlockID /= ProgramID and not Is_a_block_statement then
-      InSymbol;
-      Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
+      InSymbol;  --  Consume ';' symbol after END [Subprogram_Id].
+      --
+      --  Now we have either another declaration,
+      --  or BEGIN or, if it's a package, END.
+      Test (
+        FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
+        Empty_Symset,
+        err_incorrectly_used_symbol
+      );
     end if;
   end Block;
 

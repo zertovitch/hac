@@ -11,9 +11,11 @@
 
 with HAC.Scanner;
 
+with Ada.Strings.Unbounded;
+
 package body HAC.Parser.Helpers is
 
-  use HAC.Scanner;
+  use HAC.Scanner, Ada.Strings.Unbounded;
 
   procedure Need (
     S       : KeyWSymbol;
@@ -32,7 +34,12 @@ package body HAC.Parser.Helpers is
     end if;
   end Need;
 
-  procedure Skip (FSys : Symset; N : Error_code) is
+  procedure Skip (
+    FSys : Symset;
+    N    : Error_code;
+    hint : String := ""
+  )
+  is
 
     function StopMe return Boolean is
     begin
@@ -40,7 +47,7 @@ package body HAC.Parser.Helpers is
     end StopMe;
 
   begin
-    Error (N);
+    Error (N, hint);
     --
     SkipFlag := True;
     while not FSys (Sy) loop
@@ -63,9 +70,14 @@ package body HAC.Parser.Helpers is
     end if;
   end Skip;
 
-  procedure Skip (S : KeyWSymbol; N : Error_code) is
+  procedure Skip (
+    S    : KeyWSymbol;
+    N    : Error_code;
+    hint : String := ""
+  )
+  is
   begin
-    Skip (Singleton (S), N);
+    Skip (Singleton (S), N, hint);
   end Skip;
 
   procedure Test (
@@ -75,10 +87,25 @@ package body HAC.Parser.Helpers is
   is
   begin
     if not S1 (Sy) then
-      if stop_on_error then
-        Error (N, stop_on_error => True);
-      end if;
-      Skip (S1 + S2, N);
+      declare
+        hint  : Unbounded_String;
+        first : Boolean := True;
+      begin
+        for s in S1'Range loop
+          if S1 (s) then
+            if not first then
+              hint := hint & ", ";
+            end if;
+            first := False;
+            hint := hint & KeyWSymbol'Image (s);
+          end if;
+        end loop;
+        hint := "Found: " & KeyWSymbol'Image (Sy) & "; expected: " & hint;
+        if stop_on_error then
+          Error (N, stop_on_error => True, hint => To_String (hint));
+        end if;
+        Skip (S1 + S2, N, To_String (hint));
+      end;
     end if;
   end Test;
 
