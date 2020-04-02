@@ -1400,6 +1400,12 @@ package body HAC.Parser is
       Dispose (Y);
     end Expression;
 
+    procedure Boolean_Expression (FSys : Symset; X : in out Item) is
+    begin
+      Expression (FSys, X);
+      Check_Boolean (X.TYP);
+    end Boolean_Expression;
+
     ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
     procedure Assignment (I : Integer) is
@@ -1534,15 +1540,12 @@ package body HAC.Parser is
         else
           Skip (Semicolon, err_incorrectly_used_symbol);
         end if;
-        if Sy = WHEN_Symbol then      -- conditional Exit
+        if Sy = WHEN_Symbol then  --  Conditional Exit
           InSymbol;
-          Expression (Semicolon_set, X);
-          if not (X.TYP = Bools or X.TYP = NOTYP) then
-            Error (err_expecting_a_boolean_expression);
-          end if;
-          Emit1 (k_Conditional_Jump, LC + 2);            -- conditional jump around Exit
+          Boolean_Expression (Semicolon_set, X);
+          Emit1 (k_Conditional_Jump, LC + 2);  --  Conditional jump around Exit
         end if;
-        Emit1 (k_Jump, dummy_address);  -- unconditional jump with dummy address to be patched
+        Emit1 (k_Jump, dummy_address);  --  Unconditional jump with dummy address to be patched
       end Exit_Statement;
 
       procedure IF_Statement is
@@ -1550,10 +1553,7 @@ package body HAC.Parser is
         LC0, LC1 : Integer;
       begin
         InSymbol;
-        Expression (FSys + DO_THEN_Symbol, X);
-        if not (X.TYP = Bools or else X.TYP = NOTYP) then
-          Error (err_expecting_a_boolean_expression);
-        end if;
+        Boolean_Expression (FSys + DO_THEN_Symbol, X);
         LC1 := LC;
         Emit (k_Conditional_Jump);                  -- JMPC
         Need (THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
@@ -1564,10 +1564,7 @@ package body HAC.Parser is
           InSymbol;
           Emit1 (k_Jump, dummy_address);    --  Unconditional jump with dummy address to be patched
           ObjCode (LC1).Y := LC; -- patch the previous conditional jump
-          Expression (FSys + DO_THEN_Symbol, X);
-          if not (X.TYP = Bools or else X.TYP = NOTYP) then
-            Error (err_expecting_a_boolean_expression);
-          end if;
+          Boolean_Expression (FSys + DO_THEN_Symbol, X);
           LC1 := LC;
           Emit (k_Conditional_Jump);                -- JMPC
           Need (THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
@@ -1791,19 +1788,15 @@ package body HAC.Parser is
         X        : Item;
         LC1, LC2 : Integer;
       begin
-        InSymbol;
+        InSymbol;  --  Consume WHILE symbol.
         LC1 := LC;
-        Expression (FSys + DO_LOOP, X);
-        if not (X.TYP = Bools or else X.TYP = NOTYP) then
-          Error (err_expecting_a_boolean_expression);
-        end if;
+        Boolean_Expression (FSys + DO_LOOP, X);
         LC2 := LC;
         Emit (k_Conditional_Jump);
         LOOP_Statement (k_Jump, LC1);
         ObjCode (LC2).Y := LC;
       end WHILE_Statement;
 
-      -----------------------------------------------------------For_Statement
       procedure FOR_Statement is
         X            : Item;
         F, LC1, last : Integer;
@@ -2056,10 +2049,7 @@ package body HAC.Parser is
                 -- patch
                 IAlt := 0;
                 InSymbol;          -- WHENSTATEMENT
-                Expression (FSys + Finger, X);
-                if not (X.TYP = Bools or X.TYP = NOTYP) then
-                  Select_Error (err_expecting_a_boolean_expression);
-                end if;
+                Boolean_Expression (FSys + Finger, X);
                 InSymbol;
                 if Sy = ACCEPT_Symbol then
                   if IAlt > 10 then
@@ -2496,7 +2486,7 @@ package body HAC.Parser is
               InSymbol;
               Expression (Singleton(RParent), X);
               if X.TYP /= Bools then
-                Skip (Semicolon, err_parameter_must_be_of_type_Boolean);
+                Skip (Semicolon, err_expecting_a_boolean_expression);
               end if;
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);

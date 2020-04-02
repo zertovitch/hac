@@ -50,6 +50,8 @@ package HAC.Parser.Helpers is
 
   procedure Test_END_Symbol;
 
+  procedure Check_Boolean (T: Types);
+
   No_Id : constant := 0;
 
   ------------------------------------

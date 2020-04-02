@@ -160,8 +160,6 @@ package body HAC.UErrors is
         return "delay time must be type Float";
       when err_COMMA_missing =>
         return "comma expected";
-      when err_parameter_must_be_of_type_Boolean =>
-        return "parameter must be of type Boolean";
       when err_expecting_accept_when_or_entry_id =>
         return "expecting ""accept"", ""when"", or entry id";
       when err_expecting_task_entry =>

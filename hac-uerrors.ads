@@ -86,7 +86,6 @@ package HAC.UErrors is
     err_missing_expression_for_delay,
     err_wrong_type_in_DELAY,
     err_COMMA_missing,
-    err_parameter_must_be_of_type_Boolean,
     err_expecting_accept_when_or_entry_id,
     err_expecting_task_entry,
     err_expecting_OR_or_ELSE_in_SELECT,
