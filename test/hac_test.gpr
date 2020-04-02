@@ -1,0 +1,75 @@
+--  This is a GNAT, GCC or GNAT Programming Studio (GPS) project file
+--  for the examples of the HAC project ( https://sf.net/projects/hacadacompiler/ ).
+--
+--  These examples give (or should give...) the same output on a real
+--  Ada compiler as when compiled and run by HAC.
+--
+--  Build me with "gprbuild -p -P hac_test", or open me with GPS.
+--  
+
+project HAC_Test is
+
+   type Build_Mode_Type is ("Debug", "Fast");
+   Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
+
+   for Main use (
+     "declarations.adb",
+     "enumerations.adb",
+     "if_then_elsif_else.adb"
+   );
+
+   case Build_Mode is
+      when "Debug" =>
+         for Object_Dir use "../obj/debug";
+      when "Fast" =>
+         for Object_Dir use "../obj/fast";
+   end case;
+
+   for Source_Dirs use (".", "../hac_exm/special");
+   for Exec_Dir use ".";
+
+   package Pretty_Printer is
+      for Default_Switches ("ada") use ("-i2");
+   end Pretty_Printer;
+
+   package Compiler is
+      case Build_Mode is
+         when "Debug" =>
+            for Default_Switches ("ada") use (
+						  "-gnatf", "-gnato", "-fstack-check", "-g", 
+							"-gnatwa", "-gnatVa", 
+							"-gnatec" & project'Project_Dir & "../debug.pra",               
+              "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
+              "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
+              "-gnatyx"        --  Style: check x:no extra parens
+            );
+         when "Fast" =>
+            for Default_Switches ("ada") use (
+						  "-gnatwa", "-O2", "-gnatpn", 
+							"-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
+							"-ftracer", "-fweb", "-frename-registers", "-ffunction-sections");
+      end case;
+   end Compiler;
+
+   package Binder is
+      case Build_Mode is
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-E");
+         when "Fast" =>
+      end case;
+   end Binder;
+
+   package Linker is
+      case Build_Mode is
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-g");
+         when "Fast" =>
+            for Default_Switches ("ada") use ("-s", "-Wl,--gc-sections");
+      end case;
+   end Linker;
+
+   package Builder is
+      for Default_Switches ("ada") use ("-g");
+   end Builder;
+
+end HAC_Test;

@@ -246,7 +246,7 @@ package body HAC.Parser is
       ELSZ, Offset, T0, T1 : Integer;
       StrArray             : Boolean;
 
-      FSys_gnagna : constant Symset := FSys - Comma_IDent_Semicolon + END_set;
+      FSys_gnagna : constant Symset := FSys - Comma_IDent_Semicolon + END_Set;
 
       procedure Array_Typ (ARef, Arsz : in out Integer; StrAr : Boolean) is
         ELTP       : Types;
@@ -417,7 +417,7 @@ package body HAC.Parser is
       InSymbol;
       RF := 0;
       Sz := 0;
-      Test (IDent_set, FSys + RParent, err_identifier_missing, stop_on_error => True);
+      Test (IDent_Set, FSys + RParent, err_identifier_missing, stop_on_error => True);
       while Sy = IDent loop
         T0 := T;
         Enter_Variable;
@@ -476,7 +476,7 @@ package body HAC.Parser is
         end if;
         if Sy /= RParent then
           Need (Semicolon, err_SEMICOLON_missing, Forgive => Comma);
-          Test (IDent_set, FSys + RParent, err_incorrectly_used_symbol);
+          Test (IDent_Set, FSys + RParent, err_incorrectly_used_symbol);
         end if;
       end loop;  --  while Sy = IDent
       if Sy = RParent then
@@ -494,7 +494,7 @@ package body HAC.Parser is
       RF, Sz, T1 : Integer;
     begin
       InSymbol;
-      Test (IDent_set, Semicolon_set, err_identifier_missing);
+      Test (IDent_Set, Semicolon_Set, err_identifier_missing);
       Enter (Id, TypeMark);
       T1 := T;
       InSymbol;
@@ -539,7 +539,7 @@ package body HAC.Parser is
           --  from the TYP call, but sets another I...
           I := Locate_Identifier (Id, stop_on_error => True);
         end if;
-        Test (Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_set, err_incorrectly_used_symbol);
+        Test (Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_Set, err_incorrectly_used_symbol);
         ConstDec := False;
         untyped_constant:= False;
         if Sy = CONSTANT_Symbol then  --  Consume "constant" in "x : constant [Integer];"
@@ -791,7 +791,7 @@ package body HAC.Parser is
         exit when not (Sy = LParent or else Sy = Period);
       end loop;
 
-      if FSys = Semicolon_set then
+      if FSys = Semicolon_Set then
         err := err_SEMICOLON_missing;
       else
         err := err_incorrectly_used_symbol;
@@ -1195,7 +1195,7 @@ package body HAC.Parser is
                   null;
               end case;
               --
-              if FSys = Semicolon_set then
+              if FSys = Semicolon_Set then
                 err := err_SEMICOLON_missing;
               else
                 err := err_incorrectly_used_symbol;
@@ -1430,7 +1430,7 @@ package body HAC.Parser is
       else
         Error (err_BECOMES_missing);
       end if;
-      Expression (Semicolon_set, Y);
+      Expression (Semicolon_Set, Y);
       if X.TYP = Y.TYP then
         if StanTyps (X.TYP) then
           Emit (k_Store);
@@ -1455,7 +1455,7 @@ package body HAC.Parser is
         if ArraysTab (X.Ref).Element_TYP /= xChars then
           Error (err_types_of_assignment_must_match);
         else
-          Emit1 (k_String_assignment, ArraysTab (X.Ref).Size);    -- array Size
+          Emit1 (k_String_assignment, ArraysTab (X.Ref).Size);  --  array size
         end if;
       elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
         Error (err_types_of_assignment_must_match);
@@ -1515,7 +1515,7 @@ package body HAC.Parser is
           Level           := Level + 1;
           Display (Level) := IdTab (I).Ref;
           InSymbol;
-          Multi_Statement (END_set);
+          Multi_Statement (END_Set);
           Test_END_Symbol;
           if Sy = IDent then
             if Id /= IdTab (I).Name then
@@ -1536,7 +1536,7 @@ package body HAC.Parser is
         InSymbol;  --  Consume EXIT symbol.
         if Sy = WHEN_Symbol then  --  Conditional Exit
           InSymbol;
-          Boolean_Expression (Semicolon_set, X);
+          Boolean_Expression (Semicolon_Set, X);
           Emit1 (k_Conditional_Jump, LC + 2);  --  Conditional jump around Exit
         end if;
         Emit1 (k_Jump, dummy_address);  --  Unconditional jump with dummy address to be patched
@@ -1547,29 +1547,29 @@ package body HAC.Parser is
         LC0, LC1 : Integer;
       begin
         InSymbol;
-        Boolean_Expression (FSys + DO_THEN_Symbol, X);
+        Boolean_Expression (FSys + DO_THEN, X);
         LC1 := LC;
         Emit (k_Conditional_Jump);                  -- JMPC
         Need (THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
-        Multi_Statement (ELSE_ELSIF_END_Symbol);
+        Multi_Statement (ELSE_ELSIF_END);
         LC0 := LC;
         --
-        while Sy = ELSIF_Symbol loop     -- Added Hathorn
+        while Sy = ELSIF_Symbol loop  --  Added Hathorn
           InSymbol;
-          Emit1 (k_Jump, dummy_address);    --  Unconditional jump with dummy address to be patched
-          ObjCode (LC1).Y := LC; -- patch the previous conditional jump
-          Boolean_Expression (FSys + DO_THEN_Symbol, X);
+          Emit1 (k_Jump, dummy_address);  --  Unconditional jump with dummy address to be patched
+          ObjCode (LC1).Y := LC;          --  Patch the previous conditional jump
+          Boolean_Expression (FSys + DO_THEN, X);
           LC1 := LC;
-          Emit (k_Conditional_Jump);                -- JMPC
+          Emit (k_Conditional_Jump);      -- JMPC
           Need (THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
-          Multi_Statement (ELSE_ELSIF_END_Symbol);
+          Multi_Statement (ELSE_ELSIF_END);
         end loop;
         --
         if Sy = ELSE_Symbol then
           InSymbol;
           Emit1 (k_Jump, dummy_address);
           ObjCode (LC1).Y := LC;
-          Multi_Statement (END_set);
+          Multi_Statement (END_Set);
         else
           ObjCode (LC1).Y := LC;
         end if;
@@ -1592,7 +1592,7 @@ package body HAC.Parser is
         else
           Skip (Statement_Begin_Symbol, err_missing_closing_IF);
         end if;
-        Multi_Statement (END_set);
+        Multi_Statement (END_Set);
         Emit1 (FCT, B);
         Need (END_Symbol,  err_END_missing);           --  END (LOOP)
         Need (LOOP_Symbol, err_closing_LOOP_missing);  --  (END) LOOP
@@ -1629,7 +1629,7 @@ package body HAC.Parser is
               F := k_Push_Value;
             end if;
             Emit2 (F, IdTab (I).LEV + 1, 0);
-            Expression (Semicolon_set, Y);
+            Expression (Semicolon_Set, Y);
             if X.TYP = Y.TYP then
               if StanTyps (X.TYP) then
                 Emit (k_Store);
@@ -1661,7 +1661,7 @@ package body HAC.Parser is
         if Sy = Semicolon then
           Skip (Semicolon, err_missing_expression_for_delay);
         else                  -- calculate delay value
-          Expression (Semicolon_set, Y);
+          Expression (Semicolon_Set, Y);
           if Y.TYP /= Floats then
             Error (err_wrong_type_in_DELAY);
           end if;
@@ -1908,7 +1908,7 @@ package body HAC.Parser is
                   Select_Error (err_missing_expression_for_delay);
                 else          -- calculate delay value
                   patch (2) := LC;
-                  Expression (Semicolon_set, Y);
+                  Expression (Semicolon_Set, Y);
                   patch (3) := LC - 1;
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
@@ -1941,7 +1941,7 @@ package body HAC.Parser is
                                           --SELECT
               patch (3) := LC;
               InSymbol;
-              Multi_Statement (END_set);
+              Multi_Statement (END_Set);
               ObjCode (patch (1)).Y  := patch (3);
               ObjCode (patch (2)).Y  := LC;
             end if;
@@ -2013,7 +2013,7 @@ package body HAC.Parser is
               Level           := Level + 1;
               Display (Level) := IdTab (I).Ref;
               InSymbol;
-              Multi_Statement (END_set);
+              Multi_Statement (END_Set);
               Test_END_Symbol;
               if Sy = IDent then
                 if Id /= IdTab (I).Name then
@@ -2113,7 +2113,7 @@ package body HAC.Parser is
                 end loop;
                 IAlt := 0;
                 InSymbol;
-                Multi_Statement (END_set);
+                Multi_Statement (END_Set);
                 if ISD > 10 then
                   Fatal (PATCHING_overflow);
                 end if;
@@ -2133,7 +2133,7 @@ package body HAC.Parser is
                 if Sy = Semicolon then
                   Skip (Semicolon, err_missing_expression_for_delay);
                 else          -- calculate return value
-                  Expression (Semicolon_set, Y);
+                  Expression (Semicolon_Set, Y);
                   Emit2 (kSelectiveWait, 4, LC + 2);  -- Update delay time
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
@@ -2439,7 +2439,7 @@ package body HAC.Parser is
               Skip (Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
-              Expression (Singleton(RParent), X);
+              Expression (RParent_Set, X);
               if X.TYP /= Floats then
                 Skip (Semicolon, err_parameter_must_be_of_type_Float);
               end if;
@@ -2457,7 +2457,7 @@ package body HAC.Parser is
               Skip (Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
-              Expression (Singleton(RParent), X);
+              Expression (RParent_Set, X);
               if X.TYP /= Ints then
                 Skip (Semicolon, err_parameter_must_be_Integer);
               end if;
@@ -2475,7 +2475,7 @@ package body HAC.Parser is
               Skip (Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
-              Boolean_Expression (Singleton(RParent), X);
+              Boolean_Expression (RParent_Set, X);
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);
               else
@@ -2512,7 +2512,7 @@ package body HAC.Parser is
         new_label: constant Alfa := Id;
       begin
         Enter (new_label, Label);
-        Test (Singleton(Colon), FSys,
+        Test (Colon_Set, FSys,
           err_colon_missing_for_named_statement,
           stop_on_error => True
         );
@@ -2563,7 +2563,7 @@ package body HAC.Parser is
                   end if;
                 when Label =>
                   Error (err_duplicate_label, Alfa_to_String(Id));
-                  Test (Singleton(Colon), FSys, err_colon_missing);
+                  Test (Colon_Set, FSys, err_colon_missing);
                   InSymbol;
                 when others =>
                   null;
@@ -2601,10 +2601,10 @@ package body HAC.Parser is
         if not EofInput then      --{MRC: added IF NOT... from PC version}
           Need (Semicolon, err_SEMICOLON_missing);
         end if;
-      end if;  -- Sy in Statement_Begin_Symbol
+      end if;  --  Sy in Statement_Begin_Symbol
 
       if not EofInput then
-        Test (FSys - Semicolon, Semicolon_set, err_incorrectly_used_symbol);
+        Test (FSys - Semicolon, Semicolon_Set, err_incorrectly_used_symbol);
       end if;
     end Statement;
 

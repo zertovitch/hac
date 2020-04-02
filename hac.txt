@@ -28,7 +28,7 @@ Getting started
 Assuming you have the GNAT compiler installed, do the
 following from a command line interpreter:
 
-gnatmake -P hac
+gnatmake -p -P hac
 cd hac_exm
 ..\hac_test hello.adb
 ..\hac_test test.adb
@@ -60,14 +60,18 @@ You need to assume that almost nothing works with HAC.
 There is a very short list of small programs that are working (in
 the meaning: the compilation succeeds and the execution gives
 a correct output). They are listed in the project file hac_exm.gpr
-in the directory hac_exm. You will see that the "Pascal subset" is
-more or less supported, so you have things like subprograms, including
-nested subprograms, recursive subprograms, simple expressions working,
-for instance.
+in the "hac_exm" directory.
+You will see that the "Pascal subset" is more or less supported, so you
+have things like subprograms, including nested subprograms, recursive
+subprograms, simple expressions working, for instance.
+A more systematic testing is done in the "test" directory.
 
 History
 =======
 
+- 2020: Presentation at FOSDEM's Ada Developer Room:
+          https://fosdem.org/2020/schedule/event/ada_hac/
+          Starting a bit more serious testing and code cleanup.
 - 2013: January 24th: Day One of HAC: Hello World, Fibonacci
           and other tests work!
 - 2009: a bit further trying to make it work (P2Ada was improved on the way,

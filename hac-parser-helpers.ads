@@ -68,9 +68,16 @@ package HAC.Parser.Helpers is
 
   --  Singletons:
 
-  IDent_set     : constant Symset := (IDent => True, others => False);
-  Semicolon_set : constant Symset := (Semicolon => True, others => False);
-  END_set       : constant Symset := (END_Symbol => True, others => False);
+  function Singleton (s : KeyWSymbol) return Symset;
+  pragma Inline (Singleton);
+
+  --  Specific singletons:
+
+  Colon_Set     : constant Symset := (Colon      => True, others => False);
+  END_Set       : constant Symset := (END_Symbol => True, others => False);
+  IDent_Set     : constant Symset := (IDent      => True, others => False);
+  RParent_Set   : constant Symset := (RParent    => True, others => False);
+  Semicolon_Set : constant Symset := (Semicolon  => True, others => False);
 
   --  Specific sets:
 
@@ -113,10 +120,10 @@ package HAC.Parser.Helpers is
   DO_LOOP : constant Symset :=
     (DO_Symbol | LOOP_Symbol => True, others => False);
 
-  DO_THEN_Symbol : constant Symset :=
+  DO_THEN : constant Symset :=
     (DO_Symbol | THEN_Symbol => True, others => False);
 
-  ELSE_ELSIF_END_Symbol : constant Symset :=
+  ELSE_ELSIF_END : constant Symset :=
     (ELSE_Symbol | ELSIF_Symbol | END_Symbol => True, others => False);
 
   ELSE_END_OR : constant Symset :=

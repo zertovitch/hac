@@ -146,4 +146,11 @@ package body HAC.Parser.Helpers is
     end if;
   end Check_Boolean;
 
+  function Singleton (s: KeyWSymbol) return Symset is
+    res : Symset := Empty_Symset;
+  begin
+    res (s) := True;
+    return res;
+  end Singleton;
+
 end HAC.Parser.Helpers;

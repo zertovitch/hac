@@ -23,6 +23,7 @@ echo *******[ HAC Testing ]******* "Silent tests": when there is zero output and
 echo.
 
 ..\hac_test declarations.adb
+..\hac_test enumerations.adb
 pause
 
 :fin

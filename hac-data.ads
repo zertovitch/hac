@@ -207,9 +207,6 @@ package HAC.Data is
   function "-" (a : Symset; b : KeyWSymbol) return Symset;
   Empty_Symset : constant Symset := (others => False);
 
-  function Singleton(s: KeyWSymbol) return Symset;
-  pragma Inline(Singleton);
-
   -----------------
   -- Identifiers --
   -----------------

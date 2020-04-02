@@ -46,13 +46,6 @@ package body HAC.Data is
     return c;
   end "-";
 
-  function Singleton(s: KeyWSymbol) return Symset is
-    res: Symset:= Empty_Symset;
-  begin
-    res(s):= True;
-    return res;
-  end Singleton;
-
   function Alfa_to_String(a: Alfa) return String is
   begin
     return Ada.Strings.Fixed.Trim(a, Ada.Strings.Right);
