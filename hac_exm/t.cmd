@@ -29,7 +29,5 @@ pause
 pause
 ..\hac_test ackermann.adb
 pause
-..\hac_test if_then_elsif_else.adb
-pause
 
 :fin

@@ -1,0 +1,28 @@
+--  Declarations in Ada can be in any order.
+--  In Pascal it is: constants, types, variables, subprograms.
+--  SmallAda (and early versions of HAC) have some remnants of Pascal...
+
+with HAC_Pack; use HAC_Pack;
+
+procedure Declarations is
+
+  type ee is (r, r2);
+
+  procedure Test (I: Integer) is
+  begin
+    null;
+  end Test;
+
+  --  HAC 0.01: a type right after a subprogram borks the parser!
+  type rec is record x, y: Integer; end record;
+  a, b: rec;
+
+begin
+  a.x := 5;
+  a.y := 7;
+  b.x := 3;
+  b.y := 4;
+  if a.x + a.y - b.x * b.y /= 000 then
+    Put_Line ("HAC Bug");
+  end if;
+end Declarations;
