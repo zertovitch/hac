@@ -2,38 +2,34 @@
 
 with HAC_Pack; use HAC_Pack;
 
-procedure Enumerations is
+procedure Integers is
 
-  type E1 is (a);
-  type E2 is (b, c);
-  type E3 is (d, e, f);
-
-  x1 : E1;
-  x2 : E2;
-  x3 : E3;
+  x1 : Integer;
+  x2 : Integer;
+  x3 : Integer;
 
   type R is record
-    x1 : E1;
-    x2 : E2;
-    x3 : E3;
+    x1 : Integer;
+    x2 : Integer;
+    x3 : Integer;
   end record;
 
   v : R;
 
 begin
-  v.x1 := a;
-  v.x2 := c;
-  x3 := e;
-  v.x3 := f;
-  if x3 /= e then
+  v.x1 := 1;
+  v.x2 := 3;
+  x3 := 5;
+  v.x3 := 6;
+  if x3 /= 5 then
     Put_Line ("HAC Bug [A]");
   end if;
   x1 := v.x1;
-  if x1 /= a then
+  if x1 /= 1 then
     Put_Line ("HAC Bug [B]");
   end if;
   x3 := v.x3;
-  if x3 /= f then
+  if x3 /= 6 then
     Put_Line ("HAC Bug [C]");
   end if;
-end Enumerations;
+end Integers;
