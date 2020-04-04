@@ -26,6 +26,7 @@ echo.
 ..\hac_test enumerations.adb
 ..\hac_test floats.adb
 ..\hac_test integers.adb
+..\hac_test type_conversion.adb
 pause
 
 :fin
