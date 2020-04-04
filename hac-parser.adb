@@ -735,16 +735,17 @@ package body HAC.Parser is
       X    : Item;
       a, J : Integer;
       err  : Error_code;
-    begin      -- Sy IN [LParent, Period]
+    begin
+      pragma Assert (Selector_Symbol (Sy));  --  '.' or '('
       loop
         if Sy = Period then
-          InSymbol;                -- field Selector
+          InSymbol;                --  Field selector
           if Sy /= IDent then
             Error (err_identifier_missing);
           else
             if V.TYP /= Records then
               Error (err_var_with_field_selector_must_be_record);
-            else  -- search field identifier
+            else  --  Search field identifier
               J              := BlockTab (V.Ref).Last;
               IdTab (0).Name := Id;
               while IdTab (J).Name /= Id loop
@@ -762,8 +763,7 @@ package body HAC.Parser is
             end if;
             InSymbol;
           end if;
-
-        else    --  array selector
+        else    --  Array selector
           if Sy /= LParent then
             Error (err_missing_an_opening_parenthesis);
           end if;
@@ -788,9 +788,9 @@ package body HAC.Parser is
           end loop;
           Need (RParent, err_closing_parenthesis_missing, Forgive => RBrack);
         end if;
-        exit when not (Sy = LParent or else Sy = Period);
+        exit when not Selector_Symbol (Sy);
       end loop;
-
+      --
       if FSys = Semicolon_Set then
         err := err_SEMICOLON_missing;
       else
@@ -816,7 +816,7 @@ package body HAC.Parser is
       Emit1 (kMarkStack, I);
       LastP := BlockTab (IdTab (I).Ref).LastPar;
       CP    := I;
-      if Sy = LParent then          -- actual parameter list
+      if Sy = LParent then          --  Actual parameter list
         loop
           InSymbol;
           if CP >= LastP then
@@ -855,7 +855,7 @@ package body HAC.Parser is
                   else
                     Emit2 (k_Push_Value, IdTab (K).LEV, IdTab (K).Adr);
                   end if;
-                  if Sy = LParent or else Sy = Period then
+                  if Selector_Symbol (Sy) then  --  '.' or '('
                     Selector (FSys + Colon_Comma_RParent, X);
                   end if;
                   if (X.TYP /= IdTab (CP).TYP) or
@@ -1116,7 +1116,7 @@ package body HAC.Parser is
                       when Variable =>
                         X.TYP := r.TYP;
                         X.Ref := r.Ref;
-                        if Sy = LParent or Sy = Period then
+                        if Selector_Symbol (Sy) then  --  '.' or '('
                           if r.Normal then
                             F := k_Load_Address;
                           else
@@ -1124,11 +1124,11 @@ package body HAC.Parser is
                           end if;
                           Emit2 (F, r.LEV, r.Adr);
                           Selector (FSys, X);
-                          if StanTyps (X.TYP) then
+                          if Standard_or_Enum_Typ (X.TYP) then
                             Emit (kCase34);
                           end if;
                         else
-                          if X.TYP = Enums or StanTyps (X.TYP) then
+                          if Standard_or_Enum_Typ (X.TYP) then
                             if r.Normal then
                               F := k_Push_Value;
                             else
@@ -1418,7 +1418,7 @@ package body HAC.Parser is
         F := k_Push_Value;
       end if;
       Emit2 (F, IdTab (I).LEV, IdTab (I).Adr);
-      if Sy = LBrack or Sy = LParent or Sy = Period then
+      if Selector_Symbol (Sy) then  --  '.' or '('
         Selector (Becomes_EQL + FSys, X);
       end if;
       if Sy = Becomes then
@@ -1432,7 +1432,7 @@ package body HAC.Parser is
       end if;
       Expression (Semicolon_Set, Y);
       if X.TYP = Y.TYP then
-        if StanTyps (X.TYP) then
+        if Standard_Typ (X.TYP) then
           Emit (k_Store);
         elsif X.Ref /= Y.Ref then
           Error (err_types_of_assignment_must_match);
@@ -1442,7 +1442,7 @@ package body HAC.Parser is
               Emit1 (k_Copy_Block, ArraysTab (X.Ref).Size);
             when Records =>
               Emit1 (k_Copy_Block, BlockTab (X.Ref).VSize);
-            when Enums =>
+            when Enums =>  --  Behaves like a standard type
               Emit (k_Store);
             when others =>
               null;
@@ -1631,7 +1631,7 @@ package body HAC.Parser is
             Emit2 (F, IdTab (I).LEV + 1, 0);
             Expression (Semicolon_Set, Y);
             if X.TYP = Y.TYP then
-              if StanTyps (X.TYP) then
+              if Standard_Typ (X.TYP) then
                 Emit (k_Store);
               elsif X.Ref /= Y.Ref then
                 Error (err_types_of_assignment_must_match);
@@ -2255,7 +2255,7 @@ package body HAC.Parser is
                         F := 1;
                       end if;
                       Emit2 (F, IdTab (I).LEV, IdTab (I).Adr);
-                      if Sy = LParent or Sy = Period then
+                      if Selector_Symbol (Sy) then  --  '.' or '('
                         Selector (FSys + Comma_RParent, X);
                       end if;
                       if X.TYP = Ints or
@@ -2312,7 +2312,7 @@ package body HAC.Parser is
                   if X.TYP = Enums then
                     X.TYP := Ints;
                   end if;
-                  if (not StanTyps (X.TYP)) and X.TYP /= Strings then
+                  if (not Standard_Typ (X.TYP)) and X.TYP /= Strings then
                     Error (err_illegal_parameters_to_Put);
                   end if;
                   if Sy = Colon then
@@ -2651,7 +2651,7 @@ package body HAC.Parser is
             if IdTab (I).Obj /= TypeMark then
               Error (err_missing_a_type_identifier);
               return;  --{MRC, from PC source}
-            elsif StanTyps (IdTab (I).TYP) then
+            elsif Standard_Typ (IdTab (I).TYP) then
               IdTab (Prt).TYP := IdTab (I).TYP;
             else
               Error (err_bad_result_type_for_a_function);

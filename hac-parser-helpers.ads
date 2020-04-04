@@ -205,6 +205,9 @@ package HAC.Parser.Helpers is
   Plus_Minus : constant Symset :=
     (Plus | MinUS => True, others => False);
 
+  Selector_Symbol : constant Symset :=
+    (LParent | Period => True, others => False);
+
   Statement_Begin_Symbol : constant Symset :=
    (IDent         |
     BEGIN_Symbol  |

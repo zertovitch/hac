@@ -217,7 +217,7 @@ package HAC.Data is
   function Alfa_to_String(a: Alfa) return String;
 
   type aObject is (
-   Konstant,
+   Konstant,  --  Numerical constant
    Variable,
    TypeMark,
    Prozedure,
@@ -379,8 +379,11 @@ package HAC.Data is
 
   CH : Character;  --  previous Character Read from Source program
 
-  StanTyps : constant Typset :=
-   Typset'(NOTYP | Ints | Floats | Bools | xChars => True, others => False);
+  Standard_Typ : constant Typset :=
+    (NOTYP | Ints | Floats | Bools | xChars => True, others => False);
+
+  Standard_or_Enum_Typ : constant Typset :=
+    Standard_Typ or Typset'(Enums => True, others => False);
 
   ProgramID : Alfa := (others => ' '); --  Main program name
 

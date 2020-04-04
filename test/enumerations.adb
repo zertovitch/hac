@@ -18,6 +18,8 @@ procedure Enumerations is
     x3 : E3;
   end record;
 
+  ww : array (1 .. 7) of R;
+
   v : R;
 
 begin
@@ -35,5 +37,13 @@ begin
   x3 := v.x3;
   if x3 /= f then
     Put_Line ("HAC Bug [C]");
+  end if;
+  ww (1).x3:= e;
+  ww (5).x3:= ww (1).x3;
+  ww (1).x3 := f;
+  v.x3 := d;
+  v.x2 := b;
+  if ww (5).x3 /= e then
+    Put_Line ("HAC Bug [D]");
   end if;
 end Enumerations;

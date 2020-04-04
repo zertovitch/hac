@@ -187,7 +187,7 @@ package body HAC.PCode.Interpreter is
           begin
             if P2Ada_Var_7.Obj = HAC.Data.Variable then
               if P2Ada_Var_7.TYP = Enums or
-                 HAC.Data.StanTyps (P2Ada_Var_7.TYP)
+                 HAC.Data.Standard_Typ (P2Ada_Var_7.TYP)
               then
                 if P2Ada_Var_7.Normal then
                   InterDef.H3 := InterDef.H1 + P2Ada_Var_7.Adr;

@@ -14,6 +14,8 @@ procedure Floats is
     x3 : Float;
   end record;
 
+  ww : array (1 .. 7) of R;
+
   v : R;
 
 begin
@@ -31,5 +33,13 @@ begin
   x3 := v.x3;
   if x3 /= 6.0 then
     Put_Line ("HAC Bug [C]");
+  end if;
+  ww (1).x3:= 3.456789;
+  ww (5).x3:= ww (1).x3;
+  ww (1).x3 := 7.89;
+  v.x3 := 1.0;
+  v.x2 := 2.0;
+  if ww (5).x3 /= 2.345678 + 1.111111 then
+    Put_Line ("HAC Bug [D]");
   end if;
 end Floats;
