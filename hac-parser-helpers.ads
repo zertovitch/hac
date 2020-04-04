@@ -135,8 +135,8 @@ package HAC.Parser.Helpers is
   END_IDent_Semicolon : constant Symset :=
     (END_Symbol | IDent | Semicolon => True, others => False);
 
-  END_LOOP_RANGE : constant Symset :=
-    (END_Symbol | LOOP_Symbol | RANGE_Symbol => True, others => False);
+  END_LOOP_RANGE_Double_Dot : constant Symset :=
+    (END_Symbol | LOOP_Symbol | Range_Double_Dot_Symbol => True, others => False);
 
   END_LOOP_Semicolon : constant Symset :=
     (END_Symbol | LOOP_Symbol | Semicolon => True, others => False);
@@ -144,8 +144,8 @@ package HAC.Parser.Helpers is
   END_WHEN : constant Symset :=
     (END_Symbol | WHEN_Symbol => True, others => False);
 
-  OF_RANGE_RParent : constant Symset :=
-    (OF_Symbol | RANGE_Symbol | RParent => True, others => False);
+  OF_RANGE_Double_Dot_RParent : constant Symset :=
+    (OF_Symbol | Range_Double_Dot_Symbol | RParent => True, others => False);
 
   --  Other sets, named by their context:
 
@@ -193,10 +193,10 @@ package HAC.Parser.Helpers is
      others => False);
 
   Fail_after_FOR : constant Symset :=
-    (IN_Symbol    |
-     RANGE_Symbol |
-     LOOP_Symbol  |
-     END_Symbol   => True,
+    (IN_Symbol               |
+     Range_Double_Dot_Symbol |
+     LOOP_Symbol             |
+     END_Symbol              => True,
      others => False);
 
   OperZ : constant Symset :=
@@ -207,6 +207,9 @@ package HAC.Parser.Helpers is
 
   Selector_Symbol : constant Symset :=
     (LParent | Period => True, others => False);
+
+  Selector_Symbol_Loose : constant Symset :=
+    (LBrack | LParent | Period => True, others => False);
 
   Statement_Begin_Symbol : constant Symset :=
    (IDent         |
@@ -233,11 +236,11 @@ package HAC.Parser.Helpers is
     (Plus | MinUS | OR_Symbol | XOR_Symbol => True, others => False);
 
   Type_Begin_Symbol : constant Symset :=
-   (IDent          |
-    ARRAY_Symbol   |
-    RECORD_Symbol  |
-    RANGE_Symbol   |
-    LParent        => True,
+   (IDent                |
+    ARRAY_Symbol         |
+    RECORD_Symbol        |
+    RANGE_Keyword_Symbol |
+    LParent              => True,
     others         => False);
 
 end HAC.Parser.Helpers;

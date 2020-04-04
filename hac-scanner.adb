@@ -289,14 +289,14 @@ package body HAC.Scanner is
     when '.' =>
       NextCh;
       if CH = '.' then
-        Sy := RANGE_Symbol; -- !! Huh ?!
+        Sy := Range_Double_Dot_Symbol;
         NextCh;
       else
         Sy := Period;
       end if;
 
     when c128 =>  -- Hathorn
-      Sy := RANGE_Symbol;  -- !! Huh ?!
+      Sy := Range_Double_Dot_Symbol;
       NextCh;
 
     when '"' =>

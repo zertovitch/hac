@@ -29,4 +29,14 @@ echo.
 ..\hac_test -q type_conversion.adb
 pause
 
+echo ******* Building all tests with GNAT.
+
+gprbuild hac_test.gpr
+
+echo ******* Running all tests with GNAT.
+
+for %%e in (*.exe) do %%e
+
+pause
+
 :fin

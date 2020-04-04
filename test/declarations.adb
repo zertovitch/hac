@@ -13,7 +13,7 @@ procedure Declarations is
     null;
   end Test;
 
-  --  HAC 0.01: a type right after a subprogram borks the parser!
+  --  HAC 0.01: a type right after a subprogram borked the parser!
   type rec is record x, y: Integer; end record;
   a, b: rec;
 
@@ -23,6 +23,6 @@ begin
   b.x := 3;
   b.y := 4;
   if a.x + a.y - b.x * b.y /= 000 then
-    Put_Line ("HAC Bug");
+    Put_Line ("Compiler bug [A]");
   end if;
 end Declarations;

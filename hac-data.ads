@@ -103,6 +103,7 @@ package HAC.Data is
    Comma,
    Semicolon,
    Period,
+   Range_Double_Dot_Symbol,  --  ".." compound delimiter (RM 2.2)
    Colon,
    Alt,
    Finger,
@@ -162,7 +163,7 @@ package HAC.Data is
    PROCEDURE_Symbol,
    PROTECTED_Symbol,
    RAISE_Symbol,
-   RANGE_Symbol,  -- !! In scanner: misused for ".." and Chr(128) !...
+   RANGE_Keyword_Symbol,  --  "range" reserved word (RM 2.9)
    RECORD_Symbol,
    REM_Symbol,
    RENAMES_Symbol,
@@ -589,7 +590,7 @@ private
         ("PROCEDURE   ", PROCEDURE_Symbol),
         ("PROTECTED   ", PROTECTED_Symbol),    -- Ada 95
         ("RAISE       ", RAISE_Symbol),
-        ("RANGE       ", RANGE_Symbol),
+        ("RANGE       ", RANGE_Keyword_Symbol),
         ("RECORD      ", RECORD_Symbol),
         ("REM         ", REM_Symbol),
         ("RENAMES     ", RENAMES_Symbol),

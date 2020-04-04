@@ -28,15 +28,15 @@ begin
   x3 := e;
   v.x3 := f;
   if x3 /= e then
-    Put_Line ("HAC Bug [A]");
+    Put_Line ("Compiler bug [A]");
   end if;
   x1 := v.x1;
   if x1 /= a then
-    Put_Line ("HAC Bug [B]");
+    Put_Line ("Compiler bug [B]");  --  Former HAC bug with selectors for enums
   end if;
   x3 := v.x3;
   if x3 /= f then
-    Put_Line ("HAC Bug [C]");
+    Put_Line ("Compiler bug [C]");  --  Former HAC bug with selectors for enums
   end if;
   ww (1).x3:= e;
   ww (5).x3:= ww (1).x3;
@@ -44,6 +44,6 @@ begin
   v.x3 := d;
   v.x2 := b;
   if ww (5).x3 /= e then
-    Put_Line ("HAC Bug [D]");
+    Put_Line ("Compiler bug [D]");
   end if;
 end Enumerations;

@@ -26,15 +26,15 @@ begin
   x3 := 5.0;
   v.x3 := 6.0;
   if x3 /= 5.0 then
-    Put_Line ("HAC Bug [A]");
+    Put_Line ("Compiler bug [A]");
   end if;
   x1 := v.x1;
   if x1 /= 1.0 then
-    Put_Line ("HAC Bug [B]");
+    Put_Line ("Compiler bug [B]");
   end if;
   x3 := v.x3;
   if x3 /= 6.0 then
-    Put_Line ("HAC Bug [C]");
+    Put_Line ("Compiler bug [C]");
   end if;
   ww (1).x3:= 3.456789;
   ww (5).x3:= ww (1).x3;
@@ -42,10 +42,10 @@ begin
   v.x3 := 1.0;
   v.x2 := 2.0;
   if ww (5).x3 /= 2.345678 + 1.111111 then
-    Put_Line ("HAC Bug [D]");
+    Put_Line ("Compiler bug [D]");
   end if;
   x2 := neg_float_value;
   if -x2 /= 5.07 then
-    Put_Line ("HAC Bug [E]");
+    Put_Line ("Compiler bug [E]");  --  Former HAC bug: unary minus was ineffeective for floats
   end if;
 end Floats;

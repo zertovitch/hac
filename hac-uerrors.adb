@@ -32,10 +32,14 @@ package body HAC.UErrors is
         return "missing ""of""";
       when err_missing_an_opening_parenthesis =>
         return "missing an opening parenthesis ""(""";
+      when err_left_bracket_instead_of_parenthesis =>
+        return "found '[' instead of '('";
+      when err_right_bracket_instead_of_parenthesis =>
+        return "found ']' instead of ')'";
       when err_missing_ARRAY_RECORD_or_ident =>
         return "missing identifer, ""array"" or ""record""";
-      when err_expecting_dot_dot =>
-        return "expecting range symbol: ""..""";
+      when err_expecting_double_dot =>
+        return "expecting double dot symbol: ""..""";
       when err_SEMICOLON_missing =>
         return "missing a semicolon "";""";
       when err_bad_result_type_for_a_function =>

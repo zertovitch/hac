@@ -253,14 +253,14 @@ package body HAC.Parser is
         Low, High  : ConRec;
         ELRF, ELSZ : Integer;
       begin
-        KKonstant (OF_RANGE_RParent + FSys, Low);
+        KKonstant (OF_RANGE_Double_Dot_RParent + FSys, Low);
         --
         if Low.TP = Floats then
           Error (err_illegal_array_bounds, "a float type is not expected");
           Low.TP := Ints;
           Low.I  := 0;
         end if;
-        Need (RANGE_Symbol, err_expecting_dot_dot);
+        Need (Range_Double_Dot_Symbol, err_expecting_double_dot);
         --
         KKonstant (Comma_OF_RParent + FSys, High);
         --
@@ -736,7 +736,7 @@ package body HAC.Parser is
       a, J : Integer;
       err  : Error_code;
     begin
-      pragma Assert (Selector_Symbol (Sy));  --  '.' or '('
+      pragma Assert (Selector_Symbol_Loose (Sy));  --  '.' or '(' or (wrongly) '['
       loop
         if Sy = Period then
           InSymbol;                --  Field selector
@@ -764,12 +764,13 @@ package body HAC.Parser is
             InSymbol;
           end if;
         else    --  Array selector
-          if Sy /= LParent then
-            Error (err_missing_an_opening_parenthesis);
+          if Sy = LBrack then  --  '['
+            --  Common mistake by Pascal, Python or R programmers.
+            Error (err_left_bracket_instead_of_parenthesis);
           end if;
           loop
             InSymbol;
-            Expression (FSys + Comma_RParent, X);
+            Expression (FSys + Comma_RParent + RBrack, X);
             if V.TYP = Arrays then
               a := V.Ref;
               if ArraysTab (a).Index_TYP /= X.TYP then
@@ -786,9 +787,14 @@ package body HAC.Parser is
             end if;
             exit when Sy /= Comma;
           end loop;
-          Need (RParent, err_closing_parenthesis_missing, Forgive => RBrack);
+          if Sy = RBrack then  --  ']' : same kind of mistake as for '[' ...
+            Error (err_right_bracket_instead_of_parenthesis);
+            InSymbol;
+          else
+            Need (RParent, err_closing_parenthesis_missing);
+          end if;
         end if;
-        exit when not Selector_Symbol (Sy);
+        exit when not Selector_Symbol_Loose (Sy);
       end loop;
       --
       if FSys = Semicolon_Set then
@@ -855,7 +861,7 @@ package body HAC.Parser is
                   else
                     Emit2 (k_Push_Value, IdTab (K).LEV, IdTab (K).Adr);
                   end if;
-                  if Selector_Symbol (Sy) then  --  '.' or '('
+                   if Selector_Symbol_Loose (Sy) then  --  '.' or '(' or (wrongly) '['
                     Selector (FSys + Colon_Comma_RParent, X);
                   end if;
                   if (X.TYP /= IdTab (CP).TYP) or
@@ -1116,7 +1122,7 @@ package body HAC.Parser is
                       when Variable =>
                         X.TYP := r.TYP;
                         X.Ref := r.Ref;
-                        if Selector_Symbol (Sy) then  --  '.' or '('
+                         if Selector_Symbol_Loose (Sy) then  --  '.' or '(' or (wrongly) '['
                           if r.Normal then
                             F := k_Load_Address;
                           else
@@ -1421,7 +1427,7 @@ package body HAC.Parser is
         F := k_Push_Value;
       end if;
       Emit2 (F, IdTab (I).LEV, IdTab (I).Adr);
-      if Selector_Symbol (Sy) then  --  '.' or '('
+      if Selector_Symbol_Loose (Sy) then  --  '.' or '(' or (wrongly) '['
         Selector (Becomes_EQL + FSys, X);
       end if;
       if Sy = Becomes then
@@ -1837,7 +1843,7 @@ package body HAC.Parser is
             F := kFor1Rev;
             InSymbol;
           end if;
-          Expression (END_LOOP_RANGE + FSys, X);
+          Expression (END_LOOP_RANGE_Double_Dot + FSys, X);
           IdTab (T).TYP := X.TYP;
           if not (X.TYP = Ints
                  or X.TYP = Bools
@@ -1845,14 +1851,14 @@ package body HAC.Parser is
           then
             Error (err_control_variable_of_the_wrong_type);
           end if;
-          if Sy = RANGE_Symbol then
+          if Sy = Range_Double_Dot_Symbol then
             InSymbol;
             Expression (FSys + LOOP_Symbol, X);
             if IdTab (T).TYP /= X.TYP then
               Error (err_first_and_last_must_have_matching_types);
             end if;
           else
-            Skip (END_LOOP_Semicolon + FSys, err_expecting_dot_dot);
+            Skip (END_LOOP_Semicolon + FSys, err_expecting_double_dot);
           end if;
         else
           Skip (FSys + LOOP_Symbol, err_IN_missing);
@@ -2258,7 +2264,7 @@ package body HAC.Parser is
                         F := 1;
                       end if;
                       Emit2 (F, IdTab (I).LEV, IdTab (I).Adr);
-                      if Selector_Symbol (Sy) then  --  '.' or '('
+                      if Selector_Symbol_Loose (Sy) then  --  '.' or '(' or (wrongly) '['
                         Selector (FSys + Comma_RParent, X);
                       end if;
                       if X.TYP = Ints or
@@ -2375,7 +2381,7 @@ package body HAC.Parser is
                       F := k_Push_Value;
                     end if;
                     Emit2 (F, IdTab (I).LEV, IdTab (I).Adr);
-                    if Sy = LParent or else Sy = Period then
+                    if Selector_Symbol_Loose (Sy) then  --  '.' or '(' or (wrongly) '['
                       Selector (FSys + RParent, X);
                     end if;
                     if X.TYP = Ints then
