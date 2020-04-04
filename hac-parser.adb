@@ -201,7 +201,7 @@ package body HAC.Parser is
         InSymbol;
       else
         Sign := 1;
-        if Sy = Plus or Sy = MinUS then
+        if Plus_Minus (Sy) then
           if Sy = MinUS then
             Sign := -1;
           end if;
@@ -1285,15 +1285,18 @@ package body HAC.Parser is
         Y := new Item;
         --
         --  + , -
-        if Sy = Plus or else Sy = MinUS then
+        if Plus_Minus (Sy) then
           OP := Sy;
           InSymbol;
           Term (FSys + Plus_Minus, X);
           if X.TYP > Floats then
             Error (err_illegal_type_for_arithmetic_expression);
           elsif OP = MinUS then
-            Emit (k_Unary_MINUS_Integer);
-            -- !! obviously wrong when X.TYP = Floats
+            if X.TYP = Floats then
+              Emit (k_Unary_MINUS_Float);
+            else
+              Emit (k_Unary_MINUS_Integer);
+            end if;
           end if;
         else
           Term (FSys + TermZ, X);
@@ -1997,14 +2000,14 @@ package body HAC.Parser is
             end if;
             InSymbol;
             Accept_Call_2 (FSys, I);
-            Emit2 (kSelectiveWait, 2, I);          -- Retain Entry Index
+            Emit2 (k_Selective_Wait, 2, I);          -- Retain Entry Index
             if IAlt < 10 then
               IAlt := IAlt + 1;
             else
               Fatal (PATCHING_overflow);
             end if;
             Alt (IAlt) := LC;              -- SAVE LOCATION FOR PATCHING
-            Emit2 (kSelectiveWait, 3, LC); -- ACCEPT IF Ready ELSE Skip To LC
+            Emit2 (k_Selective_Wait, 3, LC); -- ACCEPT IF Ready ELSE Skip To LC
             -- CONDITIONAL ACCEPT MUST BE ATOMIC
             if Sy = DO_Symbol then
               if Level = LMax then
@@ -2032,7 +2035,7 @@ package body HAC.Parser is
           SelectDone   := False;
           do_terminate := False;
           StartSel     := LC;
-          Emit2 (kSelectiveWait, 1, 0); -- START OF SELECT SELECTIVE Wait
+          Emit2 (k_Selective_Wait, 1, 0); -- START OF SELECT SELECTIVE Wait
                                         -- SEQUENCE
           loop
             case Sy is
@@ -2063,7 +2066,7 @@ package body HAC.Parser is
                     Emit (k_Conditional_Jump);
                     InSymbol;
                     Expression (FSys + Semicolon, Y);
-                    Emit2 (kSelectiveWait, 4, LC + 2); -- Update delay time
+                    Emit2 (k_Selective_Wait, 4, LC + 2); -- Update delay time
                     if Y.TYP /= Floats then
                       Select_Error (err_wrong_type_in_DELAY);
                     end if;
@@ -2134,7 +2137,7 @@ package body HAC.Parser is
                   Skip (Semicolon, err_missing_expression_for_delay);
                 else          -- calculate return value
                   Expression (Semicolon_Set, Y);
-                  Emit2 (kSelectiveWait, 4, LC + 2);  -- Update delay time
+                  Emit2 (k_Selective_Wait, 4, LC + 2);  -- Update delay time
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
                   end if;
@@ -2175,9 +2178,9 @@ package body HAC.Parser is
                 -- patch
                 IAlt := 0;
                 if do_terminate then
-                  Emit2 (kSelectiveWait, 5, StartSel);
+                  Emit2 (k_Selective_Wait, 5, StartSel);
                 else
-                  Emit2 (kSelectiveWait, 6, StartSel);
+                  Emit2 (k_Selective_Wait, 6, StartSel);
                 end if;   -- Suspend
                 for I in 1 .. ISD loop
                   ObjCode (JSD (I)).Y  := LC;
@@ -2426,7 +2429,7 @@ package body HAC.Parser is
                   elsif Sy /= RParent then
                     Skip (Semicolon, err_closing_parenthesis_missing);
                   else
-                    Emit (kCursorAt);
+                    Emit (k_Cursor_At);
                     InSymbol;
                   end if;
                 end if;
@@ -2446,7 +2449,7 @@ package body HAC.Parser is
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);
               else
-                Emit (kSetQuatumTask);
+                Emit (k_Set_Quantum_Task);
                 InSymbol;
               end if;
             end if;                -- Quantum
@@ -2464,7 +2467,7 @@ package body HAC.Parser is
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);
               else
-                Emit (kSetTaskPriority);
+                Emit (k_Set_Task_Priority);
                 InSymbol;
               end if;
             end if;                -- Priority
@@ -2479,7 +2482,7 @@ package body HAC.Parser is
               if Sy /= RParent then
                 Skip (Semicolon, err_closing_parenthesis_missing);
               else
-                Emit (kSetTaskPriorityInheritance);
+                Emit (k_Set_Task_Priority_Inheritance);
                 InSymbol;
               end if;
             end if;                -- Inheritp

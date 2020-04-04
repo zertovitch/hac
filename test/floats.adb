@@ -18,6 +18,8 @@ procedure Floats is
 
   v : R;
 
+  neg_float_value : constant := -5.07;
+
 begin
   v.x1 := 1.0;
   v.x2 := 3.0;
@@ -41,5 +43,9 @@ begin
   v.x2 := 2.0;
   if ww (5).x3 /= 2.345678 + 1.111111 then
     Put_Line ("HAC Bug [D]");
+  end if;
+  x2 := neg_float_value;
+  if -x2 /= 5.07 then
+    Put_Line ("HAC Bug [E]");
   end if;
 end Floats;

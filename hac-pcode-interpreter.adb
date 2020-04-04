@@ -568,6 +568,7 @@ package body HAC.PCode.Interpreter is
         Curr_TCB : InterDef.TCBrec renames InterDef.TCB (InterDef.CurTask);
       begin
         case InterDef.IR.F is
+
           when k_Load_Address =>
             Curr_TCB.T := Curr_TCB.T + 1;
             if Curr_TCB.T > Curr_TCB.STACKSIZE then
@@ -1188,6 +1189,9 @@ package body HAC.PCode.Interpreter is
         when k_Unary_MINUS_Integer =>
           S (Curr_TCB.T).I := -S (Curr_TCB.T).I;
 
+        when k_Unary_MINUS_Float =>
+          S (Curr_TCB.T).R := -S (Curr_TCB.T).R;
+
         when k_Write_Float =>  --  Put Float with 3 parameters
           if FAT.CURR = 0 then
             Put_Console
@@ -1416,14 +1420,14 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.T := Curr_TCB.T - 1;
         --  Delay
 
-        when 69 =>  --  CURS -  CursorAt
+        when k_Cursor_At =>
           --  Cramer
-          H2            := S (Curr_TCB.T - 1).I;  --  row
-          H1            := S (Curr_TCB.T).I;      --  column
+          H2         := S (Curr_TCB.T - 1).I;  --  row
+          H1         := S (Curr_TCB.T).I;      --  column
           Curr_TCB.T := Curr_TCB.T - 2; --  issue TPC call
         -- GotoXY (H1, H2);
 
-        when 70 =>  --  QUA - Set task quantum
+        when k_Set_Quantum_Task =>
           --  Cramer
           if S (Curr_TCB.T).R <= 0.0 then
             S (Curr_TCB.T).R := Float (HAC.Data.TSlice) * 0.001;
@@ -1431,7 +1435,7 @@ package body HAC.PCode.Interpreter is
           TCB (CurTask).QUANTUM := Duration (S (Curr_TCB.T).R);
           Curr_TCB.T         := Curr_TCB.T - 1;
 
-        when 71 =>  --  PRI - Set task priority
+        when k_Set_Task_Priority =>
           --  Cramer
           if S (Curr_TCB.T).I > HAC.Data.PriMax then
             S (Curr_TCB.T).I := HAC.Data.PriMax;
@@ -1440,15 +1444,15 @@ package body HAC.PCode.Interpreter is
             S (Curr_TCB.T).I := 0;
           end if;
           TCB (CurTask).Pcontrol.UPRI := S (Curr_TCB.T).I;
-          Curr_TCB.T               := Curr_TCB.T - 1;
+          Curr_TCB.T                  := Curr_TCB.T - 1;
 
-        when 72 =>  --  INHP -  Set task priority inheritance
+        when k_Set_Task_Priority_Inheritance =>
           --  Cramer
           Curr_TCB.Pcontrol.INHERIT := S (Curr_TCB.T).I mod 2 = 1;
           --  Set priority inherit indicator
           Curr_TCB.T := Curr_TCB.T - 1;
 
-        when 73 =>
+        when k_Selective_Wait =>
           --  Selective Wait Macro Instruction
 
           case IR.X is
@@ -1553,12 +1557,15 @@ package body HAC.PCode.Interpreter is
             when others =>
               null;  -- [P2Ada]: no otherwise / else in Pascal
           end case;
-        --  case
 
         --  Selective Wait
 
-        when others =>
-          null;  -- [P2Ada]: no otherwise / else in Pascal
+        when k_Switch_2 =>
+          null;
+        when k_NOP =>
+          null;
+        when kHighlightSource =>
+          null;
         end case;
         --  main case IR.F
       end;
