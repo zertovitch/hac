@@ -22,11 +22,11 @@ echo.
 echo *******[ HAC Testing ]******* "Silent tests": when there is zero output and no compilation error, it's all fine.
 echo.
 
-..\hac_test declarations.adb
-..\hac_test enumerations.adb
-..\hac_test floats.adb
-..\hac_test integers.adb
-..\hac_test type_conversion.adb
+..\hac_test -q declarations.adb
+..\hac_test -q enumerations.adb
+..\hac_test -q floats.adb
+..\hac_test -q integers.adb
+..\hac_test -q type_conversion.adb
 pause
 
 :fin
