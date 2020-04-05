@@ -3,8 +3,6 @@ with HAC.PCode;              use HAC.PCode;
 with HAC.Scanner;            use HAC.Scanner;
 with HAC.UErrors;            use HAC.UErrors;
 
-with Ada.Unchecked_Deallocation;
-
 package body HAC.Parser is
 
   use HAC.Data;
@@ -133,8 +131,8 @@ package body HAC.Parser is
     ------------------------------------------------Locate_Identifier-
     function Locate_Identifier (
       Id            : Alfa;
-      No_Id_Fail    : Boolean:= True;
-      stop_on_error : Boolean:= False) return Natural
+      No_Id_Fail    : Boolean := True;
+      stop_on_error : Boolean := False) return Natural
     is
       L, J : Integer;
     begin
@@ -443,7 +441,7 @@ package body HAC.Parser is
           else
             X := Locate_Identifier (Id);
             InSymbol;
-            if X /= 0 then
+            if X /= No_Id then
               if IdTab (X).Obj = TypeMark then
                 TP := IdTab (X).TYP;
                 RF := IdTab (X).Ref;
@@ -455,7 +453,7 @@ package body HAC.Parser is
               else
                 Error (err_missing_a_type_identifier, stop_on_error => True);
               end if;
-            end if; -- X /= 0
+            end if;  --  X /= No_Id
           end if;
           Test (Comma_IDent_RParent_Semicolon, FSys, err_SEMICOLON_missing, stop_on_error => True);
           while T0 < T loop
@@ -953,21 +951,16 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------------Expression-
     procedure Expression (FSys : Symset; X : in out Item) is
-      --  Note: dynamic variables for Y have been used due to the
-      --     constraints imposed upon local variables in recursion.
-      type ItemPtr is access Item;  -- static > dynamic : SCHOENING
-      procedure Dispose is new Ada.Unchecked_Deallocation (Item, ItemPtr);
-
-      Y  : ItemPtr;
+      Y  : Item;
       OP : KeyWSymbol;
       F  : Integer;
 
       procedure Simple_Expression (FSys : Symset; X : in out Item) is
-        Y  : ItemPtr;
+        Y  : Item;
         OP : KeyWSymbol;
 
         procedure Term (FSys : Symset; X : in out Item) is
-          Y  : ItemPtr;
+          Y  : Item;
           OP : KeyWSymbol;
 
           procedure Factor (FSys : Symset; X : in out Item) is
@@ -1211,13 +1204,11 @@ package body HAC.Parser is
           end Factor;
 
         begin  --  Term
-          Y := new Item;
-          --
           Factor (FSys + FactorZ, X);
           while FactorZ (Sy) loop
             OP := Sy;
             InSymbol;
-            Factor (FSys + FactorZ, Y.all);
+            Factor (FSys + FactorZ, Y);
             if OP = xTimes then     --  *
               X.TYP := Result_Type (X.TYP, Y.TYP);
               case X.TYP is
@@ -1283,13 +1274,9 @@ package body HAC.Parser is
               raise Internal_error with "Unknown operator in Term";
             end if;
           end loop;
-          --
-          Dispose (Y);
         end Term;
 
       begin  --  Simple_Expression
-        Y := new Item;
-        --
         --  + , -
         if Plus_Minus (Sy) then
           OP := Sy;
@@ -1310,7 +1297,7 @@ package body HAC.Parser is
         while TermZ (Sy) loop
           OP := Sy;
           InSymbol;
-          Term (FSys + TermZ, Y.all);
+          Term (FSys + TermZ, Y);
           case OP is
             when OR_Symbol =>
               if X.TYP = Bools and Y.TYP = Bools then
@@ -1354,17 +1341,14 @@ package body HAC.Parser is
               null;
           end case;
         end loop;
-        --
-        Dispose (Y);
       end Simple_Expression;
 
     begin  --  Expression
-      Y := new Item;
       Simple_Expression (FSys + OperZ, X);
       if OperZ (Sy) then
         OP := Sy;
         InSymbol;
-        Simple_Expression (FSys, Y.all);
+        Simple_Expression (FSys, Y);
         if X.TYP = Ints and Y.TYP = Floats then
           X.TYP := Floats;
           Emit1 (k_Integer_to_Float, 1);
@@ -1403,7 +1387,6 @@ package body HAC.Parser is
         end if;
         X.TYP := Bools;
       end if;
-      Dispose (Y);
     end Expression;
 
     procedure Boolean_Expression (FSys : Symset; X : in out Item) is

@@ -29,6 +29,8 @@ echo.
 ..\hac_test -q type_conversion.adb
 pause
 
+goto fin
+
 echo ******* Building all tests with GNAT.
 
 gprbuild hac_test.gpr
