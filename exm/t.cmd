@@ -2,7 +2,7 @@
 
 cd..
 call build
-cd hac_exm
+cd exm
 
 if "%1"=="" goto gallery
 
