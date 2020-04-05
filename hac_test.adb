@@ -62,7 +62,7 @@ procedure HAC_Test is
     end if;
   exception
     when Ada.Streams.Stream_IO.Name_Error =>
-      Put_Line(HAC_margin_3 & "Error: file not found (perhaps in hac_exm or test subdirectory ?)");
+      Put_Line(HAC_margin_3 & "Error: file not found (perhaps in exm or test subdirectory ?)");
   end Compile_and_interpret_file;
 
 begin

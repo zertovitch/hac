@@ -60,6 +60,8 @@ package HAC.Parser.Helpers is
 
   procedure Check_Boolean (T: Types);
 
+  procedure Ignore_Extra_Semicolons;
+
   No_Id : constant := 0;
 
   ------------------------------------

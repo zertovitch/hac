@@ -244,8 +244,6 @@ package body HAC.Parser is
       ELSZ, Offset, T0, T1 : Integer;
       StrArray             : Boolean;
 
-      FSys_gnagna : constant Symset := FSys - Comma_IDent_Semicolon + END_Set;
-
       procedure Array_Typ (ARef, Arsz : in out Integer; StrAr : Boolean) is
         ELTP       : Types;
         Low, High  : ConRec;
@@ -329,15 +327,17 @@ package body HAC.Parser is
         Display (Level) := B;
         Offset          := 0;
         --
-        while not FSys_gnagna (Sy) loop
-          if Sy = IDent then  --  Field section
+        loop
+          if Sy /= IDent then
+            Error (err_identifier_missing, stop_on_error => True);
+          else  --  RM 3.8 Component declaration
             T0 := T;
             Enter_Variable;
-            while Sy = Comma loop
+            while Sy = Comma loop  --  ','  in  "a, b, c : Integer;"
               InSymbol;
               Enter_Variable;
             end loop;
-            Need (Colon, err_colon_missing);
+            Need (Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
             T1 := T;
             TYP (FSys + Comma_END_IDent_Semicolon, ELTP, ELRF, ELSZ);
             while T0 < T1 loop
@@ -348,10 +348,9 @@ package body HAC.Parser is
               Offset         := Offset + ELSZ;
             end loop;
           end if;
-          if Sy /= END_Symbol then
-            Need (Semicolon, err_SEMICOLON_missing, Forgive => Comma);
-            Test (END_IDent_Semicolon, FSys, err_incorrectly_used_symbol);
-          end if;
+          Need (Semicolon, err_semicolon_missing, Forgive => Comma);
+          Ignore_Extra_Semicolons;
+          exit when Sy = END_Symbol;
         end loop;
         --
         BlockTab (RF).VSize := Offset;
@@ -458,7 +457,7 @@ package body HAC.Parser is
               end if;
             end if;  --  X /= No_Id
           end if;
-          Test (Comma_IDent_RParent_Semicolon, FSys, err_SEMICOLON_missing, stop_on_error => True);
+          Test (Comma_IDent_RParent_Semicolon, FSys, err_semicolon_missing, stop_on_error => True);
           while T0 < T loop
             T0 := T0 + 1;
             declare
@@ -476,7 +475,8 @@ package body HAC.Parser is
           Error (err_colon_missing, stop_on_error => True);
         end if;
         if Sy /= RParent then
-          Need (Semicolon, err_SEMICOLON_missing, Forgive => Comma);
+          Need (Semicolon, err_semicolon_missing, Forgive => Comma);
+          Ignore_Extra_Semicolons;
           Test (IDent_Set, FSys + RParent, err_incorrectly_used_symbol);
         end if;
       end loop;  --  while Sy = IDent
@@ -710,7 +710,7 @@ package body HAC.Parser is
             if Sy = Semicolon then
               InSymbol;
             else
-              Error (err_SEMICOLON_missing);
+              Error (err_semicolon_missing);
             end if;
           end loop; -- Sy = ENTRY_Symbol
 
@@ -799,7 +799,7 @@ package body HAC.Parser is
       end loop;
       --
       if FSys = Semicolon_Set then
-        err := err_SEMICOLON_missing;
+        err := err_semicolon_missing;
       else
         err := err_incorrectly_used_symbol;
       end if;
@@ -1215,7 +1215,7 @@ package body HAC.Parser is
               end case;
               --
               if FSys = Semicolon_Set then
-                err := err_SEMICOLON_missing;
+                err := err_semicolon_missing;
               else
                 err := err_incorrectly_used_symbol;
               end if;
@@ -1904,7 +1904,7 @@ package body HAC.Parser is
             if Sy = Semicolon then
               InSymbol;
             else
-              Skip (Semicolon, err_SEMICOLON_missing);
+              Skip (Semicolon, err_semicolon_missing);
             end if;
             if not (Sy = OR_Symbol or else Sy = ELSE_Symbol) then
               Multi_Statement (ELSE_OR);
@@ -2170,7 +2170,7 @@ package body HAC.Parser is
               when TERMINATE_Symbol =>
                 InSymbol;
                 if Sy /= Semicolon then
-                  Select_Error (err_SEMICOLON_missing);
+                  Select_Error (err_semicolon_missing);
                 end if;
                 do_terminate := True;        -- Oguz
                 InSymbol;
@@ -2611,7 +2611,7 @@ package body HAC.Parser is
         end case;
 
         if not EofInput then      --{MRC: added IF NOT... from PC version}
-          Need (Semicolon, err_SEMICOLON_missing);
+          Need (Semicolon, err_semicolon_missing);
         end if;
       end if;  --  Sy in Statement_Begin_Symbol
 
@@ -2778,7 +2778,7 @@ package body HAC.Parser is
     end if;
     --
     if Sy /= Semicolon then
-      Error (err_SEMICOLON_missing);
+      Error (err_semicolon_missing);
       return;
     end if;
     --

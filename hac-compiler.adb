@@ -241,7 +241,7 @@ package body HAC.Compiler is
       else
         InSymbol;
         if Sy /= Semicolon then
-          Error (err_SEMICOLON_missing, "");
+          Error (err_semicolon_missing, "");
         else
           InSymbol;
         end if;
@@ -257,7 +257,7 @@ package body HAC.Compiler is
       else
         InSymbol;
         if Sy /= Semicolon then
-          Error (err_SEMICOLON_missing, "");
+          Error (err_semicolon_missing, "");
         else
           InSymbol;
         end if;
@@ -273,7 +273,7 @@ package body HAC.Compiler is
     else
       InSymbol;
       if Sy /= IDent then
-        Error (err_identifier_missing, "");
+        Error (err_identifier_missing);
       else
         ProgramID := Id;
         InSymbol;

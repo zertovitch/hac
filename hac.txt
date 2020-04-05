@@ -29,12 +29,12 @@ Assuming you have the GNAT compiler installed, do the
 following from a command line interpreter:
 
 gnatmake -p -P hac
-cd hac_exm
+cd exm
 ..\hac_test hello.adb
 ..\hac_test test.adb
 
 NB: the Windows script t.cmd does the same.
-You can test HAC on any other example (*.adb files in the hac_exm directory).
+You can test HAC on any other example (*.adb files in the "exm" directory).
 As a bonus, you can build some examples with GNAT to compare the output.
 You can do it easily with the hac_exm.gpr project file.
 Since hac_exm.gpr is a text file, you can see there the progress
@@ -60,10 +60,11 @@ You need to assume that almost nothing works with HAC.
 There is a very short list of small programs that are working (in
 the meaning: the compilation succeeds and the execution gives
 a correct output). They are listed in the project file hac_exm.gpr
-in the "hac_exm" directory.
+in the "exm" directory.
 You will see that the "Pascal subset" is more or less supported, so you
 have things like subprograms, including nested subprograms, recursive
 subprograms, simple expressions working, for instance.
+
 A more systematic testing is done in the "test" directory.
 
 History

@@ -120,8 +120,9 @@ package body HAC.Parser.Helpers is
   begin
     if Sy = Semicolon then
       InSymbol;
+      Ignore_Extra_Semicolons;
     else
-      Error (err_SEMICOLON_missing);
+      Error (err_semicolon_missing);
       if Comma_or_colon (Sy) then
         InSymbol;
       end if;
@@ -145,6 +146,16 @@ package body HAC.Parser.Helpers is
       Error (err_expecting_a_boolean_expression);
     end if;
   end Check_Boolean;
+
+  procedure Ignore_Extra_Semicolons is
+  begin
+    if Sy = Semicolon then
+      Error (err_extra_semicolon_ignored);
+      while Sy = Semicolon loop
+        InSymbol;
+      end loop;
+    end if;
+  end Ignore_Extra_Semicolons;
 
   function Singleton (s: KeyWSymbol) return Symset is
     res : Symset := Empty_Symset;

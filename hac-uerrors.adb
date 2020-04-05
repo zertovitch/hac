@@ -40,8 +40,10 @@ package body HAC.UErrors is
         return "missing identifer, ""array"" or ""record""";
       when err_expecting_double_dot =>
         return "expecting double dot symbol: ""..""";
-      when err_SEMICOLON_missing =>
+      when err_semicolon_missing =>
         return "missing a semicolon "";""";
+      when err_extra_semicolon_ignored =>
+        return "extra "";"" ignored";
       when err_bad_result_type_for_a_function =>
         return "bad result type for a function";
       when err_illegal_statement_start_symbol =>
@@ -212,7 +214,7 @@ package body HAC.UErrors is
       err_missing_a_procedure_declaration
                                => (insert,        +"procedure "),
       err_colon_missing        => (insert,        +": "),
-      err_SEMICOLON_missing    => (insert,        +"; "),
+      err_semicolon_missing    => (insert,        +"; "),
       err_RETURN_missing       => (insert,        +"return "),
       err_statement_expected   => (insert,        +"null;"),
       err_IN_missing           => (insert,        +"in "),
