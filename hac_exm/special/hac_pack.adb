@@ -4,31 +4,31 @@ with Ada.Text_IO;
 
 package body HAC_Pack is
 
-  package FEF is new Ada.Numerics.Generic_Elementary_Functions(Float);
+  package REF is new Ada.Numerics.Generic_Elementary_Functions(Real);
 
   function Sqr (I : Integer) return Integer is
   begin
     return I*I;
   end Sqr;
 
-  function Sqr (F : Float) return Float is
+  function Sqr (F : Real) return Real is
   begin
     return F*F;
   end Sqr;
 
-  function   "**"      (f1, f2 : Float)  return Float is
+  function   "**"      (f1, f2 : Real)  return Real is
   begin
-    return FEF."**" (f1, f2);
+    return REF."**" (f1, f2);
   end;
 
-  function Sqrt (I : Integer) return Float is
+  function Sqrt (I : Integer) return Real is
   begin
-    return FEF.Sqrt(Float(I));
+    return REF.Sqrt(Real(I));
   end Sqrt;
 
-  function Sqrt (F : Float) return Float is
+  function Sqrt (F : Real) return Real is
   begin
-    return FEF.Sqrt(F);
+    return REF.Sqrt(F);
   end Sqrt;
 
   function Odd (I : Integer) return Boolean is
@@ -56,64 +56,64 @@ package body HAC_Pack is
     return Character'Pred (C);
   end Pred;
 
-  function Round (F : Float) return Integer is
+  function Round (F : Real) return Integer is
   begin
     return Integer(F);
   end Round;
 
-  function Trunc (F : Float) return Integer is
+  function Trunc (F : Real) return Integer is
   begin
-    return Integer(Float'Floor(F));
+    return Integer(Real'Floor(F));
   end Trunc;
 
-  function Sin (I : Integer) return Float is
+  function Sin (I : Integer) return Real is
   begin
-    return FEF.Sin(Float(I));
+    return REF.Sin(Real(I));
   end Sin;
 
-  function Sin (F : Float) return Float is
+  function Sin (F : Real) return Real is
   begin
-    return FEF.Sin(F);
+    return REF.Sin(F);
   end Sin;
 
-  function Cos (I : Integer) return Float is
+  function Cos (I : Integer) return Real is
   begin
-    return FEF.Cos(Float(I));
+    return REF.Cos(Real(I));
   end Cos;
 
-  function Cos (F : Float) return Float is
+  function Cos (F : Real) return Real is
   begin
-    return FEF.Cos(F);
+    return REF.Cos(F);
   end Cos;
 
-  function ArcTan (I : Integer) return Float is
+  function ArcTan (I : Integer) return Real is
   begin
-    return FEF.Arctan(Float(I));
+    return REF.Arctan(Real(I));
   end ArcTan;
 
-  function ArcTan (F : Float) return Float is
+  function ArcTan (F : Real) return Real is
   begin
-    return FEF.Arctan(F);
+    return REF.Arctan(F);
   end ArcTan;
 
-  function Log (I : Integer) return Float is
+  function Log (I : Integer) return Real is
   begin
-    return FEF.Log(Float(I));
+    return REF.Log(Real(I));
   end Log;
 
-  function Log (F : Float) return Float is
+  function Log (F : Real) return Real is
   begin
-    return FEF.Log(F);
+    return REF.Log(F);
   end Log;
 
-  function Exp (I : Integer) return Float is
+  function Exp (I : Integer) return Real is
   begin
-    return FEF.Exp(Float(I));
+    return REF.Exp(Real(I));
   end Exp;
 
-  function Exp (F : Float) return Float is
+  function Exp (F : Real) return Real is
   begin
-    return FEF.Exp(F);
+    return REF.Exp(F);
   end Exp;
 
   gen: Generator;
@@ -123,13 +123,13 @@ package body HAC_Pack is
     return Trunc(Random(I));
   end Random;
 
-  function Random (I : Integer) return Float is
+  function Random (I : Integer) return Real is
   begin
-    return Random(gen) * Float(I);
+    return Real (Random(gen)) * Real(I);
   end Random;
 
   package IIO is new Ada.Text_IO.Integer_IO(Integer);
-  package FIO is new Ada.Text_IO.Float_IO(Float);
+  package RIO is new Ada.Text_IO.Float_IO(Real);
   package BIO is new Ada.Text_IO.Enumeration_IO(Boolean);
 
    ---------
@@ -157,7 +157,7 @@ package body HAC_Pack is
    -- GET --
    ---------
 
-  procedure Get (F : out Float) is
+  procedure Get (F : out Real) is
   pragma Unreferenced (F);
   begin
       --  Generated stub: replace with real body!
@@ -205,7 +205,7 @@ package body HAC_Pack is
    -- GET_LINE --
    --------------
 
-  procedure Get_Line (F : out Float) is
+  procedure Get_Line (F : out Real) is
   pragma Unreferenced (F);
   begin
       --  Generated stub: replace with real body!
@@ -256,18 +256,18 @@ package body HAC_Pack is
    -- PUT --
    ---------
 
-  procedure Put (F : in  Float) is
+  procedure Put (F : in  Real) is
   begin
-    FIO.Put(F);
+    RIO.Put(F);
   end Put;
 
    ---------
    -- PUT --
    ---------
 
-  procedure Put (F : in  Float; W:  Width; D : Decimals) is
+  procedure Put (F : in  Real; W:  Width; D : Decimals) is
   begin
-    FIO.Put(F,W,D);
+    RIO.Put(F,W,D);
   end Put;
 
    ---------
@@ -319,7 +319,7 @@ package body HAC_Pack is
    -- PUT_LINE --
    --------------
 
-  procedure Put_Line (F : in  Float) is
+  procedure Put_Line (F : in  Real) is
   begin
     Put(F); New_Line;
   end Put_Line;
@@ -328,7 +328,7 @@ package body HAC_Pack is
    -- PUT_LINE --
    --------------
 
-  procedure Put_Line (F : in  Float; W:  Width; D : Decimals) is
+  procedure Put_Line (F : in  Real; W:  Width; D : Decimals) is
   begin
     Put(F,W,D); New_Line;
   end Put_Line;

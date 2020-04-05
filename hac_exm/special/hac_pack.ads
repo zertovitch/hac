@@ -1,4 +1,4 @@
---  This is the pseudo-package containing all specifications of all support
+--  This is the package containing all specifications of types and support
 --  routines for HAC. So far all HAC programs must have "with" and "use"
 --  of this package.
 --
@@ -8,6 +8,8 @@
 
 package HAC_Pack is
 
+   type Real is digits 15;
+
    type Semaphore is new Integer; -- private;
 
    -- Absolute Value - SMA used ABS instead of "ABS" (operator)... TBA !!
@@ -16,13 +18,13 @@ package HAC_Pack is
 
    -- Square (!! to be removed: **2 in Ada)
    function   Sqr       ( I : Integer   ) return Integer;
-   function   Sqr       ( F : Float     ) return Float;
+   function   Sqr       ( F : Real     ) return Real;
 
-   function   "**"      (f1, f2 : Float)  return Float;
+   function   "**"      (f1, f2 : Real)  return Real;
 
    -- Square Root
-   function   Sqrt      ( I : Integer   ) return Float;
-   function   Sqrt      ( F : Float     ) return Float;
+   function   Sqrt      ( I : Integer   ) return Real;
+   function   Sqrt      ( F : Real     ) return Real;
 
    -- Odd Valued
    function   Odd       ( I : Integer   ) return Boolean;
@@ -40,39 +42,39 @@ package HAC_Pack is
    function   Pred      ( C : Character ) return Character;
 
    -- Round to an Integer
-   function   Round     ( F : Float     ) return Integer;
+   function   Round     ( F : Real     ) return Integer;
 
    -- Truncate
-   function   Trunc     ( F : Float     ) return Integer;
+   function   Trunc     ( F : Real     ) return Integer;
 
    -- Trigonometric Functions     w/ arguments in radians
-   function   Sin       ( I : Integer   ) return Float;
-   function   Sin       ( F : Float     ) return Float;
-   function   Cos       ( I : Integer   ) return Float;
-   function   Cos       ( F : Float     ) return Float;
-   function   ArcTan    ( I : Integer   ) return Float;
-   function   ArcTan    ( F : Float     ) return Float;
+   function   Sin       ( I : Integer   ) return Real;
+   function   Sin       ( F : Real     ) return Real;
+   function   Cos       ( I : Integer   ) return Real;
+   function   Cos       ( F : Real     ) return Real;
+   function   ArcTan    ( I : Integer   ) return Real;
+   function   ArcTan    ( F : Real     ) return Real;
 
    -- Exponential Functions
-   function   Log       ( I : Integer   ) return Float;
-   function   Log       ( F : Float     ) return Float;
-   function   Exp       ( I : Integer   ) return Float;
-   function   Exp       ( F : Float     ) return Float;
+   function   Log       ( I : Integer   ) return Real;
+   function   Log       ( F : Real     ) return Real;
+   function   Exp       ( I : Integer   ) return Real;
+   function   Exp       ( F : Real     ) return Real;
 
    -- Random Integer      from 0 to I
    function   Random    ( I : Integer   ) return Integer;
-   function   Random    ( I : Integer   ) return Float;
+   function   Random    ( I : Integer   ) return Real;
 
    -- Get
    procedure  Get       ( C : out Character);
    procedure  Get       ( I : out Integer  );
-   procedure  Get       ( F : out Float    );
+   procedure  Get       ( F : out Real    );
    procedure  Get       ( B : out Boolean  );
 
    -- Get and then move file pointer to next line
    procedure  Get_Line  ( C : out Character);
    procedure  Get_Line  ( I : out Integer  );
-   procedure  Get_Line  ( F : out Float    );
+   procedure  Get_Line  ( F : out Real    );
    procedure  Get_Line  ( B : out Boolean  );
 
    subtype Width is Positive;
@@ -82,8 +84,8 @@ package HAC_Pack is
    procedure  Put       ( C : in  Character);
    procedure  Put       ( I : in  Integer  );
    procedure  Put       ( I : in  Integer;  W:  Width);
-   procedure  Put       ( F : in  Float    );
-   procedure  Put       ( F : in  Float;    W:  Width; D : Decimals);
+   procedure  Put       ( F : in  Real    );
+   procedure  Put       ( F : in  Real;    W:  Width; D : Decimals);
    procedure  Put       ( B : in  Boolean  );
    procedure  Put       ( S : in  String   );
 
@@ -91,8 +93,8 @@ package HAC_Pack is
    procedure  Put_Line  ( C : in  Character);
    procedure  Put_Line  ( I : in  Integer  );
    procedure  Put_Line  ( I : in  Integer; W:  Width);
-   procedure  Put_Line  ( F : in  Float    );
-   procedure  Put_Line  ( F : in  Float;   W:  Width; D : Decimals);
+   procedure  Put_Line  ( F : in  Real    );
+   procedure  Put_Line  ( F : in  Real;   W:  Width; D : Decimals);
    procedure  Put_Line  ( B : in  Boolean  );
    procedure  Put_Line  ( S : in  String   );
 
