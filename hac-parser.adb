@@ -316,6 +316,52 @@ package body HAC.Parser is
         Need (RParent, err_closing_parenthesis_missing);
       end Enumeration_Type;
 
+      procedure Record_Type is
+      begin
+        InSymbol;  --  Consume RECORD symbol.
+        Enter_Block (T);
+        TP := Records;
+        RF := B;
+        if Level = LMax then
+          Fatal (LEVEL_overflow);  --  Exception is raised there.
+        end if;
+        Level           := Level + 1;
+        Display (Level) := B;
+        Offset          := 0;
+        --
+        while not FSys_gnagna (Sy) loop
+          if Sy = IDent then  --  Field section
+            T0 := T;
+            Enter_Variable;
+            while Sy = Comma loop
+              InSymbol;
+              Enter_Variable;
+            end loop;
+            Need (Colon, err_colon_missing);
+            T1 := T;
+            TYP (FSys + Comma_END_IDent_Semicolon, ELTP, ELRF, ELSZ);
+            while T0 < T1 loop
+              T0             := T0 + 1;
+              IdTab (T0).TYP := ELTP;
+              IdTab (T0).Ref := ELRF;
+              IdTab (T0).Adr := Offset;
+              Offset         := Offset + ELSZ;
+            end loop;
+          end if;
+          if Sy /= END_Symbol then
+            Need (Semicolon, err_SEMICOLON_missing, Forgive => Comma);
+            Test (END_IDent_Semicolon, FSys, err_incorrectly_used_symbol);
+          end if;
+        end loop;
+        --
+        BlockTab (RF).VSize := Offset;
+        Sz                  := Offset;
+        BlockTab (RF).PSize := 0;
+        InSymbol;
+        Need (RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
+        Level := Level - 1;
+      end Record_Type;
+
       I : Integer;
 
     begin  --  Type
@@ -352,50 +398,7 @@ package body HAC.Parser is
             Array_Typ (RF, Sz, StrArray);
 
           when RECORD_Symbol =>
-            InSymbol;
-            Enter_Block (T);
-            TP := Records;
-            RF := B;
-            if Level = LMax then
-              Fatal (LEVEL_overflow);  --  Exception is raised there.
-            end if;
-            Level           := Level + 1;
-            Display (Level) := B;
-            Offset          := 0;
-            --
-            while not FSys_gnagna (Sy) loop
-              if Sy = IDent then  --  Field section
-                T0 := T;
-                Enter_Variable;
-                while Sy = Comma loop
-                  InSymbol;
-                  Enter_Variable;
-                end loop;
-                Need (Colon, err_colon_missing);
-                T1 := T;
-                TYP (FSys + Comma_END_IDent_Semicolon, ELTP, ELRF, ELSZ);
-                while T0 < T1 loop
-                  T0             := T0 + 1;
-                  IdTab (T0).TYP := ELTP;
-                  IdTab (T0).Ref := ELRF;
-                  IdTab (T0).Adr := Offset;
-                  Offset         := Offset + ELSZ;
-                end loop;
-              end if;
-              if Sy /= END_Symbol then
-                Need (Semicolon, err_SEMICOLON_missing, Forgive => Comma);
-                Test (END_IDent_Semicolon, FSys, err_incorrectly_used_symbol);
-              end if;
-            end loop;
-            --
-            BlockTab (RF).VSize := Offset;
-            Sz                  := Offset;
-            BlockTab (RF).PSize := 0;
-            InSymbol;
-            Need (RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
-            Level := Level - 1;
-          -- end of RECORD_Symbol
-
+            Record_Type;
           when LParent =>
             Enumeration_Type;
           when others =>
