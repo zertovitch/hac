@@ -420,13 +420,21 @@ package HAC.Data is
   type AdaKeyW_List is array(Positive range <>) of AdaKeyW_Pair;
 
   AdaKeyW    : constant AdaKeyW_List;
+
+  --  HAC's default floating-point type is double-precision
+  --  and is called "Real" in HAC's HAC_Pack package.
+  --
+  type HAC_Float is digits 15;
+  HAC_Float_Name   : constant String := "REAL";
+  HAC_Integer_Name : constant String := "INTEGER";
+
   ArraysTab  : array (1 .. AMax) of ATabEntry;  --  Array table
   BlockTab   : array (0 .. BMax) of BTabEntry;  --  Block-table [7-Dec-2009:
                                                 --was 1..]
   ObjCode    : array (0 .. CDMax) of Order;     --  Object Code table
   EntryTab   : array (0 .. EntryMax) of Index;  --  Entry Table
   FileIOTab  : FilDescr;                        --  File I/O table
-  FloatPtTab : array (1 .. C2Max) of Float;     --  Float Constant table
+  FloatPtTab : array (1 .. C2Max) of HAC_Float; --  Float Constant table
   StringTab  : array (0 .. SMax) of Character;  --  String table
   IdTab      : array (0 .. TMax) of TabEntry;   --  Identifier table
   TaskDefTab : array (0 .. TaskMax) of Index;   --  Task Table
@@ -486,7 +494,7 @@ package HAC.Data is
   syLine         : Integer;                   --  Source line of Sy
   Id             : Alfa;                      --  identifier from InSymbol
   INum           : Integer;                   --  Integer from InSymbol
-  RNum           : Float;                     --  FLOAT Number from InSymbol
+  RNum           : HAC_Float;                 --  FLOAT Number from InSymbol
   SLeng          : Integer;                   --  String Length
   CharacterTypes : array (Character) of CHTP;   --  character types
   InpLine        : String (1 .. 255);             --  input line. Manuel:

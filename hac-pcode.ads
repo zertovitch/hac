@@ -111,4 +111,8 @@ package HAC.PCode is
   procedure SaveOBJ(FileName: String);
   procedure RestoreOBJ(FileName: String);
 
+  --  Standard function operations
+
+  SF_Round_Float_to_Int : constant := 9;
+
 end HAC.PCode;

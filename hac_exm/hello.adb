@@ -1,7 +1,7 @@
 with HAC_Pack; use HAC_Pack;
 
 procedure Hello is
-  f : Float := 0.0;
+  f : Real := 0.0;
 begin
   Put("Hello");
   Put_Line(" world!  ...  Spaceman is speaking ...");

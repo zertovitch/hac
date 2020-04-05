@@ -6,7 +6,7 @@ procedure Test is
   --
   type Type1 is record
     x: Integer;
-    y: Float;
+    y: Real;
   end record;
   --
   z1: Type1;
@@ -106,7 +106,7 @@ procedure Test is
     h2: constant:= 6;
     type T1 is array(l1..h1, l2..h2) of Integer;
     a: T1;
-    b: array(l1..h1, l2..h2) of Float;
+    b: array(l1..h1, l2..h2) of Real;
     type T2 is array(6..9) of Integer;
     type T3 is record x: Integer; y: T2; end record;
     c: array(l1..h1, l2..h2) of T3;
@@ -119,15 +119,15 @@ procedure Test is
         for j in l2..h2 loop
           case step is
             when 1 =>  --  fill array a
-              a(i,j):= (i * j);  --  !!  Accepts Float(i * j);
+              a(i,j):= (i * j);  --  !!  Accepts Real(i * j);
             when 2 =>  --  display array a
               Put(a(i,j));
               if j = h2 then
                 New_Line;
               end if;
             when 3 =>  --  fill array b
-              -- !! HAC 0.01 accepts without Float(...);
-              b(i,j):= Float(i * j);
+              --  HAC 0.01 accepted "b(i,j):= i * j" without Real(...);
+              b(i,j):= Real(i * j);
             when 4 =>  --  display array b
               Put(b(i,j));
               Put(' ');

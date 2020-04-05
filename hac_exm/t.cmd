@@ -17,6 +17,12 @@ goto fin
 
 ..\hac_test hello.adb
 pause
+..\hac_test ackermann.adb
+pause
+..\hac_test anti_primes.adb
+pause
+..\hac_test doors.adb
+pause
 ..\hac_test test.adb
 pause
 ..\hac_test test1.adb
@@ -26,8 +32,6 @@ pause
 ..\hac_test merge_sort.adb
 pause
 ..\hac_test days_1901.adb
-pause
-..\hac_test ackermann.adb
 pause
 
 :fin

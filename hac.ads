@@ -9,7 +9,7 @@
 
 --  Legal licensing note:
 
---  Copyright (c) 2013 .. 2018 Gautier de Montmollin
+--  Copyright (c) 2013 .. 2020 Gautier de Montmollin
 --
 --      History and authors list of works HAC was originally
 --      derived from can be found in hac.txt.

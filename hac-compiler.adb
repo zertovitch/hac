@@ -134,7 +134,7 @@ package body HAC.Compiler is
         X0A : Alfa := Empty_Alfa;
       begin
         X0A (1 .. X0'Length) := X0;
-        T                    := T + 1; -- Enter standard identifier
+        T                    := T + 1;  --  Enter standard identifier
         IdTab (T)            :=
          (Name   => X0A,
           Link   => T - 1,
@@ -147,53 +147,53 @@ package body HAC.Compiler is
       end Enter;
 
     begin
-      Enter ("",           Variable, NOTYP, 0);
-      Enter ("FALSE",      Konstant, Bools, 0);
-      Enter ("TRUE",       Konstant, Bools, 1);
-      Enter ("FLOAT",      TypeMark, Floats, 1);
-      Enter ("CHARACTER",  TypeMark, xChars, 1);
-      Enter ("BOOLEAN",    TypeMark, Bools, 1);
-      Enter ("INTEGER",    TypeMark, Ints, 1);
-      Enter ("STRING",     TypeMark, Strings, 1);  --{ Hathorn }
-      Enter ("SEMAPHORE",  TypeMark, Ints, 1);   --{ Hathorn }
-      Enter ("TEXT",       TypeMark, Ints, 1);   --{ Schoening }
-      Enter ("ABS",        Funktion, Floats, 0);
-      Enter ("SQR",        Funktion, Floats, 2);
-      Enter ("ODD",        Funktion, Bools, 4);
-      Enter ("ASCII",      Funktion, xChars, 5);
-      Enter ("ORD",        Funktion, Ints, 6);
-      Enter ("SUCC",       Funktion, xChars, 7);
-      Enter ("PRED",       Funktion, xChars, 8);
-      Enter ("ROUND",      Funktion, Ints, 9);
-      Enter ("TRUNC",      Funktion, Ints, 10);
-      Enter ("SIN",        Funktion, Floats, 11);
-      Enter ("COS",        Funktion, Floats, 12);
-      Enter ("EXP",        Funktion, Floats, 13);
-      Enter ("LN",         Funktion, Floats, 14);
-      Enter ("SQRT",       Funktion, Floats, 15);
-      Enter ("ARCTAN",     Funktion, Floats, 16);
-      Enter ("EOF",        Funktion, Bools, 17);
-      Enter ("EOLN",       Funktion, Bools, 18);
-      Enter ("RANDOM",     Funktion, Ints, 19); --{ Schoening }
-      Enter ("CLOCK",      Funktion, Floats, 100); --{ Cramer }
+      Enter ("",               Variable, NOTYP, 0);
+      Enter ("FALSE",          Konstant, Bools, 0);
+      Enter ("TRUE",           Konstant, Bools, 1);
+      Enter (HAC_Float_Name,   TypeMark, Floats, 1);
+      Enter ("CHARACTER",      TypeMark, xChars, 1);
+      Enter ("BOOLEAN",        TypeMark, Bools, 1);
+      Enter (HAC_Integer_Name, TypeMark, Ints, 1);
+      Enter ("STRING",         TypeMark, Strings, 1);  --{ Hathorn }
+      Enter ("SEMAPHORE",      TypeMark, Ints, 1);   --{ Hathorn }
+      Enter ("TEXT",           TypeMark, Ints, 1);   --{ Schoening }
+      Enter ("ABS",            Funktion, Floats, 0);
+      Enter ("SQR",            Funktion, Floats, 2);
+      Enter ("ODD",            Funktion, Bools, 4);
+      Enter ("ASCII",          Funktion, xChars, 5);
+      Enter ("ORD",            Funktion, Ints, 6);
+      Enter ("SUCC",           Funktion, xChars, 7);
+      Enter ("PRED",           Funktion, xChars, 8);
+      Enter ("ROUND",          Funktion, Ints, SF_Round_Float_to_Int);
+      Enter ("TRUNC",          Funktion, Ints, 10);
+      Enter ("SIN",            Funktion, Floats, 11);
+      Enter ("COS",            Funktion, Floats, 12);
+      Enter ("EXP",            Funktion, Floats, 13);
+      Enter ("LN",             Funktion, Floats, 14);
+      Enter ("SQRT",           Funktion, Floats, 15);
+      Enter ("ARCTAN",         Funktion, Floats, 16);
+      Enter ("EOF",            Funktion, Bools, 17);
+      Enter ("EOLN",           Funktion, Bools, 18);
+      Enter ("RANDOM",         Funktion, Ints, 19); --{ Schoening }
+      Enter ("CLOCK",          Funktion, Floats, 100); --{ Cramer }
       --{ Niladic functions such as CLOCK will have   }
       --{ IdTab[].Adr >= 100 To differentiate them from }
       --{ functions with args.  See Parser.StandFct.  }
-      Enter ("GET       ", Prozedure, NOTYP, 1);
-      Enter ("GET_LINE  ", Prozedure, NOTYP, 2);
-      Enter ("PUT       ", Prozedure, NOTYP, 3);
-      Enter ("PUT_LINE  ", Prozedure, NOTYP, 4);
-      Enter ("NEW_LINE  ", Prozedure, NOTYP, 4); --{ Hathorn }
-      Enter ("WAIT      ", Prozedure, NOTYP, 5);
-      Enter ("SIGNAL    ", Prozedure, NOTYP, 6);
-      Enter ("RESET     ", Prozedure, NOTYP, 7); --{ Schoening }
-      Enter ("REWRITE   ", Prozedure, NOTYP, 8); --{ Schoening }
-      Enter ("CLOSE     ", Prozedure, NOTYP, 9); --{ Schoening }
-      Enter ("CURSORAT  ", Prozedure, NOTYP, 10); --{ Cramer }
-      Enter ("QUANTUM   ", Prozedure, NOTYP, 11); --{ Cramer }
-      Enter ("PRIORITY  ", Prozedure, NOTYP, 12); --{ Cramer }
-      Enter ("INHERITP  ", Prozedure, NOTYP, 13); --{ Cramer }
-      Enter (ProgramID, Prozedure, NOTYP, 0);
+      Enter ("GET       ",     Prozedure, NOTYP, 1);
+      Enter ("GET_LINE  ",     Prozedure, NOTYP, 2);
+      Enter ("PUT       ",     Prozedure, NOTYP, 3);
+      Enter ("PUT_LINE  ",     Prozedure, NOTYP, 4);
+      Enter ("NEW_LINE  ",     Prozedure, NOTYP, 4); --{ Hathorn }
+      Enter ("WAIT      ",     Prozedure, NOTYP, 5);
+      Enter ("SIGNAL    ",     Prozedure, NOTYP, 6);
+      Enter ("RESET     ",     Prozedure, NOTYP, 7); --{ Schoening }
+      Enter ("REWRITE   ",     Prozedure, NOTYP, 8); --{ Schoening }
+      Enter ("CLOSE     ",     Prozedure, NOTYP, 9); --{ Schoening }
+      Enter ("CURSORAT  ",     Prozedure, NOTYP, 10); --{ Cramer }
+      Enter ("QUANTUM   ",     Prozedure, NOTYP, 11); --{ Cramer }
+      Enter ("PRIORITY  ",     Prozedure, NOTYP, 12); --{ Cramer }
+      Enter ("INHERITP  ",     Prozedure, NOTYP, 13); --{ Cramer }
+      Enter (ProgramID,        Prozedure, NOTYP, 0);
     end EnterStdFcns;
 
     use Ada.Text_IO, Ada.Integer_Text_IO, HAC.Parser.Helpers;

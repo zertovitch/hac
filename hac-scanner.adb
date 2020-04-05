@@ -103,7 +103,7 @@ package body HAC.Scanner is
 
     procedure AdjustScale is
       S    : Integer;
-      D, T : Float;
+      D, T : HAC_Float;
     begin
       if K + e > EMax then
         Error (err_number_too_large);
@@ -132,7 +132,7 @@ package body HAC.Scanner is
       end if;
     end AdjustScale;
 
-  begin -- InSymbol
+  begin  --  InSymbol
 
     <<Label_1>>
     while CH = ' ' loop
@@ -218,12 +218,12 @@ package body HAC.Scanner is
           CH := Character'Val (128);
         else
           Sy   := FloatCon;
-          RNum := Float (INum);
+          RNum := HAC_Float (INum);
           e    := 0;
           while CharacterTypes (CH) = Number loop
             e    := e - 1;
             RNum := 10.0 * RNum +
-                    Float (Character'Pos (CH) - Character'Pos ('0'));
+                    HAC_Float (Character'Pos (CH) - Character'Pos ('0'));
             NextCh;
           end loop;
 
@@ -241,7 +241,7 @@ package body HAC.Scanner is
       elsif CH = 'E' then
 
         Sy   := FloatCon;
-        RNum := Float (INum);
+        RNum := HAC_Float (INum);
         e    := 0;
         ReadScale;
         if e /= 0 then
@@ -440,7 +440,7 @@ package body HAC.Scanner is
         when IntCon =>
           Put (Sym_dump, ": " & Integer'Image (INum));
         when FloatCon =>
-          Put (Sym_dump, ": " & Float'Image (RNum));
+          Put (Sym_dump, ": " & HAC_Float'Image (RNum));
         when StrCon =>
           Put (Sym_dump, ": """);
           for i in INum .. INum + SLeng - 1 loop

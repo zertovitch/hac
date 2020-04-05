@@ -24,7 +24,7 @@ package body HAC.Parser is
     type ConRec is record
       TP : Types;
       I  : Integer;
-      R  : Float;
+      R  : HAC_Float;
       --   CASE TP IS
       --     WHEN Ints | xChars | Bools => I: Integer;
       --     WHEN Floats => R: Float;
@@ -79,7 +79,7 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     ------------------------------------------------------Enter_Float-
-    procedure Enter_Float (X : Float) is
+    procedure Enter_Float (X : HAC_Float) is
     begin
       if C2 = C2Max - 1 then
         Fatal (FLOAT_constants_table_overflow);  --  Exception is raised there.
@@ -213,7 +213,7 @@ package body HAC.Parser is
             else
               C.TP := IdTab (X).TYP;
               if C.TP = Floats then
-                C.R := Float (Sign) * FloatPtTab (IdTab (X).Adr);
+                C.R := HAC_Float (Sign) * FloatPtTab (IdTab (X).Adr);
               else
                 C.I := Sign * IdTab (X).Adr;
               end if;
@@ -226,7 +226,7 @@ package body HAC.Parser is
           InSymbol;
         elsif Sy = FloatCon then
           C.TP := Floats;
-          C.R  := Float (Sign) * RNum;
+          C.R  := HAC_Float (Sign) * RNum;
           InSymbol;
         else
           Skip (FSys, err_illegal_symbol_for_a_constant);
@@ -1010,7 +1010,7 @@ package body HAC.Parser is
                         others => False));
                       IdTab (I).TYP := X.TYP;
                     --  Round, Trunc, Sin, Cos, Exp, Log, Sqrt, Arctan
-                    when 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 =>
+                    when SF_Round_Float_to_Int | 10 | 11 | 12 | 13 | 14 | 15 | 16 =>
                       TS :=
                        Typset'((Ints | Floats => True, others => False));
                       if X.TYP = Ints then
@@ -1059,13 +1059,19 @@ package body HAC.Parser is
             end Standard_Function;
 
             procedure Type_Conversion is  --  Ada RM 4.6
-              type Type_Conversion_Kind is (To_Float, Unknown);
+              type Type_Conversion_Kind is (To_Float, To_Integer, Unknown);
               kind : Type_Conversion_Kind := Unknown;
               Type_Id : constant String := Alfa_to_String (Id);
+              procedure Bad_Arg_Type is
+              begin
+                Error (err_type_conversion_not_supported, "argument type not supported");
+              end Bad_Arg_Type;
             begin
               Need (LParent, err_missing_an_opening_parenthesis);
-              if Type_Id = "FLOAT" then
+              if Type_Id = HAC_Float_Name then
                 kind := To_Float;
+              elsif Type_Id = HAC_Integer_Name then
+                kind := To_Integer;
               end if;
               Expression (FSys + RParent, X);
               case kind is
@@ -1076,8 +1082,19 @@ package body HAC.Parser is
                     when Ints =>
                       Emit1 (k_Integer_to_Float, 0);
                     when others =>
-                      Error (err_type_conversion_not_supported, "argument type not supported");
+                      Bad_Arg_Type;
                   end case;
+                  X.TYP := Floats;
+                when To_Integer =>
+                  case X.TYP is
+                    when Floats =>  --  Rounding to closest integer (Ada RM 4.6 (33)).
+                      Emit1 (k_Standard_Functions, SF_Round_Float_to_Int);
+                    when Ints =>
+                      null;  --  !!  Emit warning "already integer"
+                    when others =>
+                      Bad_Arg_Type;
+                  end case;
+                  X.TYP := Ints;
                 when Unknown =>
                   Error (err_type_conversion_not_supported, "no support for target type " & Type_Id);
               end case;

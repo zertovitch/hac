@@ -11,7 +11,7 @@ procedure Test1 is
 
   Ten: constant Integer := 10;     -- Integer    (*  test  *)
   Twenty: constant  := 20;
-  TenpOne: constant := 10.1;        -- Float
+  TenpOne: constant := 10.1;        -- Real
   CA: constant  Character := 'A';          -- Character
   CE: constant  Character := 'E';          -- Character
   B1, B2: constant Boolean:= True;        -- Boolean
@@ -19,7 +19,7 @@ procedure Test1 is
   type Type1 is
      record
         X : Integer;
-        Y : Float;
+        Y : Real;
      end record;
   --TYPE       Type2 IS String(1..10);
   type Type3 is array (1 .. 4) of Type1;
@@ -39,8 +39,8 @@ procedure Test1 is
   I1, I2, I3:  Integer := 99;
   I4: constant Integer := -89; --  -I1 + 10;  !! HAC doesn't like
   I5, I6, I7:  Integer;
-  R1: Float := 1.23;
-  R2: Float := TenpOne;
+  R1: Real := 1.23;
+  R2: Real := TenpOne;
   C2: constant Character := '+';
   C1 : constant Character := '+';
   C3: constant Character := CA;

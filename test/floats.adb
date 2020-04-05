@@ -4,14 +4,14 @@ with HAC_Pack; use HAC_Pack;
 
 procedure Floats is
 
-  x1 : Float;
-  x2 : Float;
-  x3 : Float;
+  x1 : Real;
+  x2 : Real;
+  x3 : Real;
 
   type R is record
-    x1 : Float;
-    x2 : Float;
-    x3 : Float;
+    x1 : Real;
+    x2 : Real;
+    x3 : Real;
   end record;
 
   ww : array (1 .. 7) of R;
@@ -41,7 +41,7 @@ begin
   ww (1).x3 := 7.89;
   v.x3 := 1.0;
   v.x2 := 2.0;
-  if ww (5).x3 /= 2.345678 + 1.111111 then
+  if abs (ww (5).x3 - (2.345678 + 1.111111)) > 0.0000001 then
     Put_Line ("Compiler bug [D]");
   end if;
   x2 := neg_float_value;

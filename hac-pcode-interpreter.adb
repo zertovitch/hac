@@ -1,11 +1,15 @@
-with HAC.Data;
-
 with Ada.Calendar;                      use Ada.Calendar;
-with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+
+with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
+
 with Ada.Unchecked_Deallocation;
 
 package body HAC.PCode.Interpreter is
+
+  package REF is new Ada.Numerics.Generic_Elementary_Functions (HAC.Data.HAC_Float);
+  use REF, RIO;
+  use type HAC.Data.HAC_Float;
 
   package InterDef is -- sub-package, was a separate Turbo Pascal unit
 
@@ -55,7 +59,7 @@ package body HAC.PCode.Interpreter is
       -- B : Boolean;
       -- C : Character;
       I : Integer; -- Also for former B (Boolean) and C (Character)
-      R : Float;
+      R : HAC.Data.HAC_Float;
     end record;
 
     subtype Data_Type is GRegister;
@@ -139,7 +143,7 @@ package body HAC.PCode.Interpreter is
     H1, H2 : Integer;
     H3, H4 : Integer;
     H5     : Integer;
-    F1     : Float;
+    F1     : HAC.Data.HAC_Float;
     BLKCNT : Integer;
 
     NCALLS : Integer;   --  AVL  TERMINATE
@@ -154,7 +158,7 @@ package body HAC.PCode.Interpreter is
   --  Post Mortem Dump of the task stack causing the exception
   --
   procedure Post_Mortem_Dump is
-    use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Float_Text_IO, Boolean_Text_IO;
+    use Ada.Text_IO, Ada.Integer_Text_IO, Boolean_Text_IO;
     use InterDef;
   begin
       New_Line;
@@ -696,10 +700,10 @@ package body HAC.PCode.Interpreter is
                 S (Curr_TCB.T).I := S (Curr_TCB.T).I + 1;
               when 8 =>
                 S (Curr_TCB.T).I := S (Curr_TCB.T).I - 1;
-              when 9 =>   --  Round
+              when SF_Round_Float_to_Int =>
                 S (Curr_TCB.T).I := Integer (S (Curr_TCB.T).R);
               when 10 =>  --  Trunc
-                S (Curr_TCB.T).I := Integer (Float'Floor (S (Curr_TCB.T).R));
+                S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (S (Curr_TCB.T).R));
               when 11 =>
                 S (Curr_TCB.T).R := Sin (S (Curr_TCB.T).R);
               when 12 =>
@@ -736,7 +740,8 @@ package body HAC.PCode.Interpreter is
                 end if;
               when 19 =>
                 S (Curr_TCB.T).I :=
-                  Integer (Random (Gen) * Float ((S (Curr_TCB.T).I + 1)));
+                  Integer (HAC.Data.HAC_Float (Random (Gen)) *
+                           HAC.Data.HAC_Float ((S (Curr_TCB.T).I + 1)));
               when 100 =>
                 --  CLOCK function, NILADIC functions have IR.Y => 100
                 --  Return time of units of seconds.
@@ -744,7 +749,7 @@ package body HAC.PCode.Interpreter is
                 if Curr_TCB.T > Curr_TCB.STACKSIZE then
                   PS := STKCHK;
                 else
-                  S (Curr_TCB.T).R := Float (GetClock - Start_Time);
+                  S (Curr_TCB.T).R := HAC.Data.HAC_Float (GetClock - Start_Time);
                 end if;
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal
@@ -997,7 +1002,7 @@ package body HAC.PCode.Interpreter is
 
         when k_Integer_to_Float =>
           H1       := Curr_TCB.T - IR.Y;
-          S (H1).R := Float (S (H1).I);
+          S (H1).R := HAC.Data.HAC_Float (S (H1).I);
 
         when k_Read =>
           --  READ
@@ -1033,7 +1038,7 @@ package body HAC.PCode.Interpreter is
                 when 1 =>
                   Ada.Integer_Text_IO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).I);
                 when 2 =>
-                  Ada.Float_Text_IO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).R);
+                  RIO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).R);
                 when 3 =>
                   Ada.Text_IO.Get (FAT.FIL (FAT.CURR), HAC.Data.CH);
                   S (S (Curr_TCB.T).I).I := Character'Pos (HAC.Data.CH);
@@ -1087,7 +1092,7 @@ package body HAC.PCode.Interpreter is
               when 1 =>     --  Schoening
                 Ada.Integer_Text_IO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).I, 10);
               when 2 =>
-                Ada.Float_Text_IO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).R, 22);
+                RIO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).R, 22);
               when 3 =>
                 Boolean_Text_IO.Put (FAT.FIL (FAT.CURR), Boolean'Val(S (Curr_TCB.T).I), 10);
               when 4 =>
@@ -1122,7 +1127,7 @@ package body HAC.PCode.Interpreter is
                   S (Curr_TCB.T - 1).I,
                   S (Curr_TCB.T).I);
               when 2 =>
-                Ada.Float_Text_IO.Put
+                RIO.Put
                  (FAT.FIL (FAT.CURR),
                   S (Curr_TCB.T - 1).R,
                   S (Curr_TCB.T).I);
@@ -1200,7 +1205,7 @@ package body HAC.PCode.Interpreter is
               S (Curr_TCB.T).I,
               0);
           else
-            Ada.Float_Text_IO.Put
+            RIO.Put
              (FAT.FIL (FAT.CURR),
               S (Curr_TCB.T - 2).R,
               S (Curr_TCB.T - 1).I,
@@ -1430,7 +1435,7 @@ package body HAC.PCode.Interpreter is
         when k_Set_Quantum_Task =>
           --  Cramer
           if S (Curr_TCB.T).R <= 0.0 then
-            S (Curr_TCB.T).R := Float (HAC.Data.TSlice) * 0.001;
+            S (Curr_TCB.T).R := HAC.Data.HAC_Float (HAC.Data.TSlice) * 0.001;
           end if;
           TCB (CurTask).QUANTUM := Duration (S (Curr_TCB.T).R);
           Curr_TCB.T         := Curr_TCB.T - 1;
@@ -1589,11 +1594,11 @@ package body HAC.PCode.Interpreter is
     ( Ada.Text_IO.End_Of_File,
       Ada.Text_IO.End_Of_Line,
       Ada.Integer_Text_IO.Get,
-      Ada.Float_Text_IO.Get,
+      RIO.Get,
       Ada.Text_IO.Get,
       Ada.Text_IO.Skip_Line,
       Ada.Integer_Text_IO.Put,
-      Ada.Float_Text_IO.Put,
+      RIO.Put,
       Boolean_Text_IO.Put,
       Ada.Text_IO.Put,
       Ada.Text_IO.Put,
