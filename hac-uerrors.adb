@@ -154,6 +154,8 @@ package body HAC.UErrors is
         return "Ada reserved word; not supported";
       when err_functions_must_return_a_value =>
         return "functions must return a value";
+      when err_procedures_cannot_return_a_value =>
+        return "procedures cannot return a value (use functions instead)";
       when err_WITH_Small_Sp =>
         return "must specify ""with hac_pack;"" here";
       when err_use_Small_Sp =>
@@ -198,6 +200,10 @@ package body HAC.UErrors is
         return "construct not yet correctly implemented or supported by HAC";
       when err_type_conversion_not_supported =>
         return "this type conversion is not supported: " & hint;
+      when err_int_to_float_coercion =>
+        return "numeric types don't match: " & hint;
+      when err_operator_not_defined_for_types =>
+        return "operator is not defined for those operand types";
       -- when others =>
       --   return "Unknown error Id=" & Integer'Image (Id);
     end case;

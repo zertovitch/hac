@@ -23,7 +23,7 @@ package body HAC.PCode.Interpreter is
 
     subtype TRange is Integer range 0 .. HAC.Data.TaskMax; --  task index
 
-    type ProcessorState is (
+    type Processor_State is (
      CASCHK,
     -- ConstErr,
      DEADLOCK,
@@ -37,7 +37,8 @@ package body HAC.PCode.Interpreter is
      STKCHK,
     -- StoErr  , TaskErr ,
      WAIT);
-    type TaskState is (
+
+    type Task_State is (
      Completed,
      Delayed,
      Ready,
@@ -83,7 +84,7 @@ package body HAC.PCode.Interpreter is
 
     type Display_type is array (1 .. HAC.Data.LMax) of Integer;
 
-    type TCBrec is record   --  Task Control Block
+    type Task_Control_Block is record   --  Task Control Block
       --  index of current top of stack
       T : Integer;
       --  index of current base of stack
@@ -91,7 +92,7 @@ package body HAC.PCode.Interpreter is
       --  program counter, next pcode
       PC : Integer;
       --  current task state
-      TS : TaskState;
+      TS : Task_State;
       --  task in rendz with or -1
       InRendzv : Integer;
       --  end of delay period
@@ -128,10 +129,10 @@ package body HAC.PCode.Interpreter is
       Last : Eptr; --  ptr to last  node in rendzv queue
     end record;
 
-    IR : HAC.Data.Order; --  instruction register
+    IR : HAC.Data.Order;  --  Instruction register
 
-    PS       : ProcessorState:= RUN; --  processor status register
-    TCB      : array (TRange) of TCBrec; --  Task control blocks
+    PS       : Processor_State := RUN;    --  Processor status register
+    TCB      : array (TRange) of Task_Control_Block;  --  Task control blocks
     EList    : array (1 .. HAC.Data.EntryMax) of EHeader; --  Entry queue array
     SWITCH   : Boolean:= False; --  invoke scheduler on next cycle flag
     SYSCLOCK : Time:= Clock;    --  (ms after 00:00:00 Jan 1, current year)
@@ -451,7 +452,7 @@ package body HAC.PCode.Interpreter is
       S (3).I := -1 ;
       S (4).I := HAC.Data.TaskDefTab (0) ;
       declare
-        Main_TCB : TCBrec renames TCB(0);
+        Main_TCB : Task_Control_Block renames TCB(0);
       begin
         Main_TCB.PC := HAC.Data.IdTab (HAC.Data.TaskDefTab (0)).Adr ; --  first pcode instruction
         Main_TCB.T := HAC.Data.BlockTab (1).VSize - 1 ; -- was BlockTab (2)
@@ -472,7 +473,7 @@ package body HAC.PCode.Interpreter is
     begin
       for CurTask  in  1 .. HAC.Data.TCount loop
         declare
-          Curr_TCB : TCBrec renames TCB(CurTask);
+          Curr_TCB : Task_Control_Block renames TCB(CurTask);
         begin
           H1 := HAC.Data.TaskDefTab (CurTask) ;
           Curr_TCB.PC := HAC.Data.IdTab (H1).Adr ;
@@ -507,6 +508,9 @@ package body HAC.PCode.Interpreter is
       PS := RUN ;
     end Init_other_tasks;
 
+    procedure ShowTime is null;
+    procedure SnapShot is null;
+
   begin  --  Interpret
     InterDef.SNAP:= False;
     Init_main_task;
@@ -514,11 +518,11 @@ package body HAC.PCode.Interpreter is
     loop  --  until Processor state /= RUN
       SYSCLOCK := GetClock;
       if InterDef.SNAP then
-        null;  --  ShowTime ;
+        ShowTime ;
       end if;
       if InterDef.TCB (InterDef.CurTask).TS = InterDef.Critical then
         if InterDef.SNAP then
-          null;  --  SnapShot ;
+          SnapShot ;
         end if;
       else
         if InterDef.SWITCH or  --  ------------> Voluntary release of control
@@ -538,10 +542,10 @@ package body HAC.PCode.Interpreter is
             PS := RUN; -- !! Should call the task scheduler instead !!
             InterDef.SYSCLOCK := GetClock;
             if InterDef.SNAP then
-              null; --ShowTime ;
+              ShowTime ;
             end if;
             if InterDef.SNAP then
-              null; -- SnapShot ;
+              SnapShot ;
             end if;
             exit when PS /= WAIT;
           end loop;
@@ -552,14 +556,14 @@ package body HAC.PCode.Interpreter is
           InterDef.TCB (InterDef.CurTask).TS := Running;
           SWITCH:= False;
           if InterDef.SNAP then
-            null; -- SnapShot ;
+            SnapShot ;
           end if;
         end if;
       end if;
       --  FETCH INSTRUCTION
 
       declare
-        Curr_TCB : InterDef.TCBrec renames InterDef.TCB (InterDef.CurTask);
+        Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       begin
         InterDef.IR := HAC.Data.ObjCode (Curr_TCB.PC);
         Curr_TCB.PC := Curr_TCB.PC + 1;
@@ -569,7 +573,7 @@ package body HAC.PCode.Interpreter is
       -- (removed)
 
       declare
-        Curr_TCB : InterDef.TCBrec renames InterDef.TCB (InterDef.CurTask);
+        Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       begin
         case InterDef.IR.F is
 

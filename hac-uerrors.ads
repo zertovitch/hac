@@ -83,6 +83,7 @@ package HAC.UErrors is
     err_character_delimeter_used_for_string,
     err_Ada_reserved_word,
     err_functions_must_return_a_value,
+    err_procedures_cannot_return_a_value,
     err_WITH_Small_Sp,
     err_use_Small_Sp,
     err_missing_an_entry,
@@ -105,7 +106,9 @@ package HAC.UErrors is
     err_invalid_power_operands,         --  2018-03-18
     err_unexpected_end_of_text,         --  2018-04-01
     err_not_yet_implemented,            --  2019-03-24
-    err_type_conversion_not_supported   --  2020-03-31
+    err_type_conversion_not_supported,  --  2020-03-31
+    err_int_to_float_coercion,          --  2020-04-06
+    err_operator_not_defined_for_types  --  2020-04-06
   );
 
   type Message_kind is (error, warning, note, style);

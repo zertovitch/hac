@@ -327,7 +327,7 @@ package HAC.Data is
   -- ----------------------------------------------------------------------
   --  PCode instruction record (stores a compiled PCode instruction)
   type Order is record
-    F : Opcode;      --  Opcode (or instruction field)
+    F : Opcode;       --  Opcode (or instruction field)
     X : Operand1;     --  Operand 1 is used to point to the static level
     Y : Operand2;     --  Operand 2 is used to pass operands to the
                       --  instructions

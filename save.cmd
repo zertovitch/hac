@@ -21,7 +21,7 @@ set nice_date=%year%-%month%-%day%_%hour%.%min%
 
 rem --------------------------
 
-set examples=hac_exm/*.ad* hac_exm/special/*.ad* hac_exm/*.gpr hac_exm/t.cmd
+set examples=exm/*.ad* exm/special/*.ad* exm/*.gpr exm/t.cmd
 set tests=test/*.ad* test/*.gpr test/tt.cmd
 
 zipada -ep2 hac-%nice_date% *.ad* *.gpr save.cmd build.cmd *.txt %examples% %tests% debug.pra obj/debug/create_dir.txt obj/fast/create_dir.txt

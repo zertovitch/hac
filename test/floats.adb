@@ -32,8 +32,8 @@ begin
   if x1 /= 1.0 then
     Put_Line ("Compiler bug [B]");
   end if;
-  x3 := v.x3;
-  if x3 /= 6.0 then
+  x3 := v.x2;
+  if x3 /= 3.0 then
     Put_Line ("Compiler bug [C]");
   end if;
   ww (1).x3:= 3.456789;

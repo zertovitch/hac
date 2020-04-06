@@ -157,6 +157,16 @@ package body HAC.Parser.Helpers is
     end if;
   end Ignore_Extra_Semicolons;
 
+  procedure Argument_Type_Not_Supported is
+  begin
+    Error (err_type_conversion_not_supported, "argument type not supported");
+  end Argument_Type_Not_Supported;
+
+  procedure Forbid_Type_Coercion (details: String) is
+  begin
+    Error (err_int_to_float_coercion, details, stop_on_error => True);
+  end Forbid_Type_Coercion;
+
   function Singleton (s: KeyWSymbol) return Symset is
     res : Symset := Empty_Symset;
   begin

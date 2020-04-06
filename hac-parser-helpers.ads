@@ -62,6 +62,15 @@ package HAC.Parser.Helpers is
 
   procedure Ignore_Extra_Semicolons;
 
+  type Type_Conversion_Kind is (To_Float, To_Integer, Unknown);
+
+  procedure Argument_Type_Not_Supported;
+
+  --  https://en.wikipedia.org/wiki/Type_conversion#Implicit_type_conversion
+  --  One of the most useful feature of Ada is the absence of type coercion.
+  --
+  procedure Forbid_Type_Coercion (details: String);
+
   No_Id : constant := 0;
 
   ------------------------------------
@@ -201,7 +210,7 @@ package HAC.Parser.Helpers is
      END_Symbol              => True,
      others => False);
 
-  OperZ : constant Symset :=
+  Comparison_Operator : constant Symset :=
     (EQL | NEQ | LSS | LEQ | GTR | GEQ => True, others => False);
 
   Plus_Minus : constant Symset :=

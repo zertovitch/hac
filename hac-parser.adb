@@ -841,6 +841,7 @@ package body HAC.Parser is
                   Emit1 (k_Load_Block, BlockTab (X.Ref).VSize);
                 end if;
               elsif X.TYP = Ints and IdTab (CP).TYP = Floats then
+                Forbid_Type_Coercion ("value is integer, parameter is floating-point");
                 Emit1 (k_Integer_to_Float, 0);
               elsif X.TYP /= NOTYP then
                 Error (err_parameter_types_do_not_match);
@@ -925,33 +926,6 @@ package body HAC.Parser is
     end Entry_Call;
 
     ------------------------------------------------------------------
-    ------------------------------------------------------Result_Type-
-    --
-    -- !! ResultType assumes there is an automatic conversion Ints -> Floats
-    -- Pascal, not Ada!
-    function Result_Type (a, B : Types) return Types is
-    begin
-      if a > Floats or B > Floats then
-        Error (err_illegal_type_for_arithmetic_expression);
-        return NOTYP;
-      elsif a = NOTYP or B = NOTYP then
-        return NOTYP;
-      elsif a = Ints then
-        if B = Ints then
-          return Ints;
-        else
-          Emit1 (k_Integer_to_Float, 1);
-          return Floats;
-        end if;
-      else
-        if B = Ints then
-          Emit1 (k_Integer_to_Float, 0);
-        end if;
-        return Floats;
-      end if;
-    end Result_Type;
-
-    ------------------------------------------------------------------
     -------------------------------------------------------Expression-
     procedure Expression (FSys : Symset; X : in out Item) is
       Y  : Item;
@@ -1014,6 +988,7 @@ package body HAC.Parser is
                       TS :=
                        Typset'((Ints | Floats => True, others => False));
                       if X.TYP = Ints then
+                        Forbid_Type_Coercion ("value is integer, floating-point is expected here");
                         Emit1 (k_Integer_to_Float, 0);
                       end if;
                     -- Random
@@ -1059,13 +1034,8 @@ package body HAC.Parser is
             end Standard_Function;
 
             procedure Type_Conversion is  --  Ada RM 4.6
-              type Type_Conversion_Kind is (To_Float, To_Integer, Unknown);
               kind : Type_Conversion_Kind := Unknown;
               Type_Id : constant String := Alfa_to_String (Id);
-              procedure Bad_Arg_Type is
-              begin
-                Error (err_type_conversion_not_supported, "argument type not supported");
-              end Bad_Arg_Type;
             begin
               Need (LParent, err_missing_an_opening_parenthesis);
               if Type_Id = HAC_Float_Name then
@@ -1082,7 +1052,7 @@ package body HAC.Parser is
                     when Ints =>
                       Emit1 (k_Integer_to_Float, 0);
                     when others =>
-                      Bad_Arg_Type;
+                      Argument_Type_Not_Supported;
                   end case;
                   X.TYP := Floats;
                 when To_Integer =>
@@ -1092,7 +1062,7 @@ package body HAC.Parser is
                     when Ints =>
                       null;  --  !!  Emit warning "already integer"
                     when others =>
-                      Bad_Arg_Type;
+                      Argument_Type_Not_Supported;
                   end case;
                   X.TYP := Ints;
                 when Unknown =>
@@ -1230,7 +1200,9 @@ package body HAC.Parser is
             InSymbol;
             Factor (FSys + FactorZ, Y);
             if OP = xTimes then     --  *
-              X.TYP := Result_Type (X.TYP, Y.TYP);
+              if X.TYP /= Y.TYP then
+                Forbid_Type_Coercion ("for this standard operator, types must be the same");
+              end if;
               case X.TYP is
                 when NOTYP =>
                   null;
@@ -1239,18 +1211,20 @@ package body HAC.Parser is
                 when Floats =>
                   Emit (k_MULT_Float);
                 when others =>
-                  null;
+                  Error (err_operator_not_defined_for_types);
               end case;
             elsif OP = Divide then    --  /
               if X.TYP = Ints and Y.TYP = Ints then
                 Emit (k_DIV_Integer);
               else
                 if X.TYP = Ints then
-                  Emit1 (k_Integer_to_Float, 1);
+                  Forbid_Type_Coercion ("left operand's type is integer, right operand's isn't");
+                  Emit1 (k_Integer_to_Float, 1);  --  NB: this assumed Y.TYP was Floats!
                   X.TYP := Floats;
                 end if;
                 if Y.TYP = Ints then
-                  Emit1 (k_Integer_to_Float, 0);
+                  Forbid_Type_Coercion ("right operand's type is integer, left operand's isn't");
+                  Emit1 (k_Integer_to_Float, 0);  --  NB: this assumed Y.TYP was Floats!
                   Y.TYP := Floats;
                 end if;
                 if X.TYP = Floats and Y.TYP = Floats then
@@ -1338,10 +1312,12 @@ package body HAC.Parser is
                 X.TYP := NOTYP;
               end if;
             when Plus | MinUS =>
-              X.TYP := Result_Type (X.TYP, Y.TYP);
+              if X.TYP /= Y.TYP then
+                Forbid_Type_Coercion ("for this standard operator, types must be the same");
+              end if;
               case X.TYP is
                 when NOTYP =>
-                  null;
+                  null;  --  Already in error.
                 when Ints =>
                   if OP = Plus then
                     Emit (k_ADD_Integer);
@@ -1353,9 +1329,9 @@ package body HAC.Parser is
                     Emit (k_ADD_Float);
                   else
                     Emit (k_SUBTRACT_Float);
-                end if;
+                  end if;
                 when others =>
-                  null; -- !!
+                  Error (err_operator_not_defined_for_types);
               end case;
             when others =>  --  Doesn't happen: TermZ(OP) is True.
               null;
@@ -1364,16 +1340,18 @@ package body HAC.Parser is
       end Simple_Expression;
 
     begin  --  Expression
-      Simple_Expression (FSys + OperZ, X);
-      if OperZ (Sy) then
+      Simple_Expression (FSys + Comparison_Operator, X);
+      if Comparison_Operator (Sy) then
         OP := Sy;
         InSymbol;
         Simple_Expression (FSys, Y);
         if X.TYP = Ints and Y.TYP = Floats then
+          Forbid_Type_Coercion ("left operand's type is integer, right operand's is floating-point");
           X.TYP := Floats;
           Emit1 (k_Integer_to_Float, 1);
         end if;
         if Y.TYP = Ints and X.TYP = Floats then
+          Forbid_Type_Coercion ("left operand's type is floating-point, right operand's is integer");
           Y.TYP := Floats;
           Emit1 (k_Integer_to_Float, 0);
         end if;
@@ -1461,6 +1439,7 @@ package body HAC.Parser is
           end case;
         end if;
       elsif X.TYP = Floats and Y.TYP = Ints then
+        Forbid_Type_Coercion ("integer type value assigned to floating-point variable");
         Emit1 (k_Integer_to_Float, 0);
         Emit (k_Store);
       elsif X.TYP = Arrays and Y.TYP = Strings then
@@ -1628,10 +1607,15 @@ package body HAC.Parser is
         end if;
         I := Locate_Identifier (BlockID);
         InSymbol;
-        if Sy = Semicolon and Is_a_function then
-          Error (err_functions_must_return_a_value);
-        end if;
-        if Sy /= Semicolon then          -- calculate return value
+        if Sy = Semicolon then
+          if Is_a_function then
+            Error (err_functions_must_return_a_value);
+          end if;
+        else
+          if not Is_a_function then
+            Error (err_procedures_cannot_return_a_value, stop_on_error => True);
+          end if;
+          --  Calculate return value (destination: X; expression: Y).
           if IdTab (I).Ref = Display (Level) then
             X.TYP := IdTab (I).TYP;
             X.Ref := IdTab (I).Ref;
@@ -1641,18 +1625,20 @@ package body HAC.Parser is
               F := k_Push_Value;
             end if;
             Emit2 (F, IdTab (I).LEV + 1, 0);
+            --
             Expression (Semicolon_Set, Y);
             if X.TYP = Y.TYP then
               if Standard_Typ (X.TYP) then
                 Emit (k_Store);
               elsif X.Ref /= Y.Ref then
                 Error (err_types_of_assignment_must_match);
-              elsif X.TYP = Floats and Y.TYP = Ints then
-                Emit1 (k_Integer_to_Float, 0);
-                Emit (k_Store);
-              elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
-                Error (err_types_of_assignment_must_match);
               end if;
+            elsif X.TYP = Floats and Y.TYP = Ints then
+              Forbid_Type_Coercion ("integer type value returned as floating-point");
+              Emit1 (k_Integer_to_Float, 0);
+              Emit (k_Store);
+            elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
+              Error (err_types_of_assignment_must_match);
             end if;
           else
             Error (err_illegal_return_statement_from_main);
