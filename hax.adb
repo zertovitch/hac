@@ -1,4 +1,6 @@
-with HAC.Data, HAC.Compiler, HAC.PCode.Interpreter;
+with HAC.Compiler,
+     HAC.Data,
+     HAC.PCode.Interpreter;
 
 with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Command_Line;                  use Ada.Command_Line;
@@ -7,16 +9,16 @@ with Ada.Text_IO;                       use Ada.Text_IO;
 
 with GNAT.Traceback.Symbolic, Ada.Exceptions;
 
-procedure HAC_Test is
+procedure HAX is
 
-  verbosity : Natural := 2;
+  verbosity : Natural := 0;
 
   procedure Compile_and_interpret_file (name: String) is
     f : Ada.Streams.Stream_IO.File_Type;
     t1, t2 : Time;
-    HAC_margin_1 : constant String := "*******[ HAC ]*******   ";
-    HAC_margin_2 : constant String := ". . . .[ HAC ]. . . .   ";
-    HAC_margin_3 : constant String := "-------[ HAC ]-------   ";
+    HAC_margin_1 : constant String := "*******[ HAX ]*******   ";
+    HAC_margin_2 : constant String := ". . . .[ HAX ]. . . .   ";
+    HAC_margin_3 : constant String := "-------[ HAX ]-------   ";
   begin
     HAC.Data.qDebug := False;
     case verbosity is
@@ -65,29 +67,41 @@ procedure HAC_Test is
       Put_Line(HAC_margin_3 & "Error: file not found (perhaps in exm or test subdirectory ?)");
   end Compile_and_interpret_file;
 
+  procedure Help is
+  begin
+    Put_Line (Standard_Error, "HAX: command-line compilation and execution for HAC (HAC Ada Compiler)");
+    New_Line (Standard_Error);
+    Put_Line (Standard_Error, "Usage: hax [options] main.adb [command-line parameters for main]");
+    New_Line (Standard_Error);
+    Put_Line (Standard_Error, "Options: -h    : this help");
+    Put_Line (Standard_Error, "         -v, v1: verbose");
+    Put_Line (Standard_Error, "         -v2   : very verbose");
+  end Help;
+
 begin
   if Argument_Count = 0 then
-    Compile_and_interpret_file ("test.adb");
-  else
-    for i in 1 .. Argument_Count loop
-      if Argument (i) = "-q" then
-        verbosity := 1;
-      elsif Argument (i) = "-q2" then
-        verbosity := 0;
-      else
-        Compile_and_interpret_file (Argument (i));
-      end if;
-    end loop;
+    Help;
   end if;
+  for i in 1 .. Argument_Count loop
+    if Argument (i) = "-h" then
+      Help;
+    elsif Argument (i) = "-v" or else Argument (i) = "-v1" then
+      verbosity := 1;
+    elsif Argument (i) = "-v2" then
+      verbosity := 2;
+    else
+      Compile_and_interpret_file (Argument (i));
+    end if;
+  end loop;
 exception
   when E: others =>
-    New_Line(Standard_Error);
-    Put_Line(Standard_Error,
-             "--------------------[ Unhandled exception ]-----------------");
-    Put_Line(Standard_Error, " > Name of exception . . . . .: " &
-             Ada.Exceptions.Exception_Name(E) );
-    Put_Line(Standard_Error, " > Message for exception . . .: " &
-             Ada.Exceptions.Exception_Message(E) );
-    Put_Line(Standard_Error, " > Trace-back of call stack: " );
-    Put_Line(Standard_Error, GNAT.Traceback.Symbolic.Symbolic_Traceback(E) );
-end HAC_Test;
+    New_Line (Standard_Error);
+    Put_Line (Standard_Error,
+              "--------------------[ Unhandled exception ]-----------------");
+    Put_Line (Standard_Error, " > Name of exception . . . . .: " &
+              Ada.Exceptions.Exception_Name (E) );
+    Put_Line (Standard_Error, " > Message for exception . . .: " &
+              Ada.Exceptions.Exception_Message (E) );
+    Put_Line (Standard_Error, " > Trace-back of call stack: " );
+    Put_Line (Standard_Error, GNAT.Traceback.Symbolic.Symbolic_Traceback (E) );
+end HAX;

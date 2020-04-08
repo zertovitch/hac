@@ -9,8 +9,8 @@ compiler and virtual machine interpreter fully programmed in Ada itself.
 Objectives
 ==========
  - fun!
- - produce the smallest Hello-world executable!
- - have a quick compiler
+ - produce the smallest Hello-world executable (done)!
+ - have a simple, quick compiler and execution tool
  - be useful for small Ada sandboxed prototypes
 
 What HAC will most probably never be
@@ -30,11 +30,12 @@ following from a command line interpreter:
 
 gnatmake -p -P hac
 cd exm
-..\hac_test hello.adb
-..\hac_test test.adb
+..\hax hello.adb
+..\hax test.adb
 
-NB: the Windows script t.cmd does the same.
-You can test HAC on any other example (*.adb files in the "exm" directory).
+NB: the Windows script e.cmd does the same, but runs plenty of other demos.
+You can test HAC on any other example (*.adb files in the
+"exm" and "test" directories).
 As a bonus, you can build some examples with GNAT to compare the output.
 You can do it easily with the hac_exm.gpr project file.
 Since hac_exm.gpr is a text file, you can see there the progress
@@ -57,8 +58,8 @@ Some design points
 Bugs
 ====
 You need to assume that almost nothing works with HAC.
-There is a very short list of small programs that are working (in
-the meaning: the compilation succeeds and the execution gives
+There is a very short (but growing!) list of small programs that are
+working (in the meaning: the compilation succeeds and the execution gives
 a correct output). They are listed in the project file hac_exm.gpr
 in the "exm" directory.
 You will see that the "Pascal subset" is more or less supported, so you
@@ -92,4 +93,3 @@ History
 
   Author of CoPascal (derived from Pascal-S by Niklaus Wirth)
     1986 Charles Schoening
- 
