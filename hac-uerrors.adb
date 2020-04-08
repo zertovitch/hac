@@ -7,7 +7,7 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  function Error_String (code: Error_code; hint: String:= "") return String is
+  function Error_String (code: Compile_Error; hint: String:= "") return String is
   begin
     case code is
       when err_undefined_identifier =>
@@ -213,7 +213,7 @@ package body HAC.UErrors is
 
   function "+" (S : String) return Unbounded_String renames To_Unbounded_String;
 
-  repair_table : constant array (Error_code) of Repair_kit :=
+  repair_table : constant array (Compile_Error) of Repair_kit :=
     (
       err_WITH_Small_Sp        => (insert_line,   +"with HAC_Pack; use HAC_Pack;"),
       err_use_Small_Sp         => (insert,        +"use HAC_Pack; "),
@@ -234,7 +234,7 @@ package body HAC.UErrors is
     );
 
   procedure Error (
-    code          : Error_code;
+    code          : Compile_Error;
     hint          : String      := "";
     stop_on_error : Boolean     := False
   )
@@ -281,38 +281,26 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  procedure Fatal (N : Integer) is   -- internal table overflow
+  procedure Fatal (N : Table_OverFlow_Error) is
     use Ada.Text_IO;
   begin
     if Errs /= error_free then
       ErrorMsg;
     end if;
-
+    --
     if qDebug then
-      Put ("The Compiler TABLE for: *");
+      Put (Current_Error, "The Compiler TABLE for: *");
       case N is
-        when IDENTIFIERS_table_overflow =>
-          Put ("IDENTIFIERS");
-        when PROCEDURES_table_overflow =>
-          Put ("PROCEDURES");
-        when FLOAT_constants_table_overflow =>
-          Put ("FLOAT Constants");
-        when ARRAYS_table_overflow =>
-          Put ("Arrays");
-        when LEVEL_overflow =>
-          Put ("LEVELS");
-        when OBJECT_overflow =>
-          Put ("OBJECT ObjCode");
-        when STRING_table_overflow =>
-          Put ("Strings");
-        when TASKS_table_overflow =>
-          Put ("TASKS");
-        when ENTRIES_table_overflow =>
-          Put ("ENTRIES");
-        when PATCHING_overflow =>
+        when FLOAT_CONSTANTS =>
+          Put (Current_Error, "FLOAT Constants");
+        when OBJECTS =>
+          Put (Current_Error, "OBJECT ObjCode");
+        when STRING_CONSTANTS =>
+          Put (Current_Error, "Strings Constants");
+        when PATCHING =>
           Put ("ObjCode PATCHING");
         when others =>
-          Put ("N unknown: " & Integer'Image (N));
+          Put (Current_Error, Table_OverFlow_Error'Image (N));
       end case;
       Put_Line ("* is too SMALL");
       New_Line;
@@ -321,9 +309,13 @@ package body HAC.UErrors is
       New_Line;
       Put_Line (" Fatal termination of HAC");
     end if;
+    --
     raise Failure_1_0 with
       "HAC.UErrors.Fatal:" &
-      " Internal HAC compiler error (a table is too small). Details with qDebug=True";
+      " internal HAC compiler error." &
+      " The table for " &
+      Table_OverFlow_Error'Image (N) &
+      " is too small. More details with qDebug=True";
   end Fatal;
 
   ----------------------------------------------------------------------------
@@ -331,7 +323,7 @@ package body HAC.UErrors is
   procedure ErrorMsg is
     use Ada.Text_IO;
     --  package IIO is new Integer_IO (Integer); use IIO;
-    K : Error_code:= Error_code'First;
+    K : Compile_Error:= Compile_Error'First;
   begin
     if qDebug then
       New_Line;
@@ -343,14 +335,14 @@ package body HAC.UErrors is
     end if;
     while Errs /= error_free loop -- NB: Ouch! A single loop would be sufficient !!
       while not Errs (K) loop
-        K := Error_code'Succ(K);
+        K := Compile_Error'Succ(K);
       end loop;
       if qDebug then
-        Put_Line (Error_code'Image(K) & ":  " & Error_String (K, ""));
+        Put_Line (Compile_Error'Image(K) & ":  " & Error_String (K, ""));
         -- Should be Error_hint(K,n) !!
       end if;
       if Listing_Was_Requested then
-        Put_Line (Listing, Error_code'Image(K) & "  " & Error_String (K, ""));
+        Put_Line (Listing, Compile_Error'Image(K) & "  " & Error_String (K, ""));
         -- Should be Error_hint(K,n) !!
       end if;
       Errs (K) := False; -- we cancel the K-th sort of error

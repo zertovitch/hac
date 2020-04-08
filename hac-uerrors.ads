@@ -12,7 +12,7 @@ with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
 
 package HAC.UErrors is
 
-  type Error_code is (
+  type Compile_Error is (
     err_undefined_identifier,
     err_duplicate_identifier,
     err_identifier_missing,
@@ -137,7 +137,7 @@ package HAC.UErrors is
   );
 
   procedure Error (
-    code          : Error_code;
+    code          : Compile_Error;
     hint          : String      := "";
     stop_on_error : Boolean     := False
   );
@@ -146,23 +146,24 @@ package HAC.UErrors is
 
   procedure ErrorMsg;
 
-  procedure Fatal (N: Integer); -- internal table overflow
-  --
-  IDENTIFIERS_table_overflow    : constant:=  1;
-  PROCEDURES_table_overflow     : constant:=  2;
-  FLOAT_constants_table_overflow: constant:=  3;
-  ARRAYS_table_overflow         : constant:=  4;
-  LEVEL_overflow                : constant:=  5;
-  OBJECT_overflow               : constant:=  6;
-  STRING_table_overflow         : constant:=  7;
-  TASKS_table_overflow          : constant:=  8;
-  ENTRIES_table_overflow        : constant:=  9;
-  PATCHING_overflow             : constant:= 10;
+  type Table_OverFlow_Error is
+    (IDENTIFIERS,
+     PROCEDURES,
+     FLOAT_CONSTANTS,
+     ARRAYS,
+     LEVELS,
+     OBJECTS,
+     STRING_CONSTANTS,
+     TASKS,
+     ENTRIES,
+     PATCHING);
+
+  procedure Fatal (N: Table_OverFlow_Error);
 
   Internal_error: exception;
   Failure_1_0: exception;
   Compilation_abandoned: exception;
 
-  function Error_String (code: Error_code; hint: String:= "") return String;
+  function Error_String (code: Compile_Error; hint: String:= "") return String;
 
 end HAC.UErrors;

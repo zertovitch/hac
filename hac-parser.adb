@@ -55,7 +55,7 @@ package body HAC.Parser is
         Hz := 0;
       end if;
       if A = AMax then
-        Fatal (ARRAYS_table_overflow);  --  Exception is raised there.
+        Fatal (ARRAYS);  --  Exception is raised there.
       end if;
       A := A + 1;
       ArraysTab (A).Index_TYP := TP;
@@ -68,7 +68,7 @@ package body HAC.Parser is
     procedure Enter_Block (Tptr : Integer) is
     begin
       if B = BMax then
-        Fatal (PROCEDURES_table_overflow);  --  Exception is raised there.
+        Fatal (PROCEDURES);  --  Exception is raised there.
       end if;
       B                    := B + 1;
       BlockTab (B).Id      := IdTab (Tptr).Name;
@@ -82,7 +82,7 @@ package body HAC.Parser is
     procedure Enter_Float (X : HAC_Float) is
     begin
       if C2 = C2Max - 1 then
-        Fatal (FLOAT_constants_table_overflow);  --  Exception is raised there.
+        Fatal (FLOAT_CONSTANTS);  --  Exception is raised there.
       end if;
       FloatPtTab (C2 + 1) := X;  --  We add X's value as an extra item.
       C1                  := 1;
@@ -100,7 +100,7 @@ package body HAC.Parser is
       J, L : Integer;
     begin
       if T = TMax then
-        Fatal (IDENTIFIERS_table_overflow);  --  Exception is raised there.
+        Fatal (IDENTIFIERS);  --  Exception is raised there.
       end if;
       IdTab (No_Id).Name := Id;        --  Sentinel
       J                  := BlockTab (Display (Level)).Last;
@@ -321,7 +321,7 @@ package body HAC.Parser is
         TP := Records;
         RF := B;
         if Level = LMax then
-          Fatal (LEVEL_overflow);  --  Exception is raised there.
+          Fatal (LEVELS);  --  Exception is raised there.
         end if;
         Level           := Level + 1;
         Display (Level) := B;
@@ -675,7 +675,7 @@ package body HAC.Parser is
         end if;
         TCount := TCount + 1;
         if TCount > TaskMax then
-          Fatal (TASKS_table_overflow);  --  Exception is raised there.
+          Fatal (TASKS);  --  Exception is raised there.
         end if;
         Enter (TaskID, aTask);
         TaskDefTab (TCount) := T;
@@ -687,7 +687,7 @@ package body HAC.Parser is
         else  --  Parsing the Entry specs
           Need (IS_Symbol, err_IS_missing);
           if Level = LMax then
-            Fatal (LEVEL_overflow);  --  Exception is raised there.
+            Fatal (LEVELS);  --  Exception is raised there.
           end if;
           Level           := Level + 1;
           Display (Level) := B;
@@ -699,7 +699,7 @@ package body HAC.Parser is
             end if;
             ECount := ECount + 1;
             if ECount > EntryMax then
-              Fatal (ENTRIES_table_overflow);  --  Exception is raised there.
+              Fatal (ENTRIES);  --  Exception is raised there.
             end if;
             Enter (Id, aEntry);
             EntryTab (ECount) := T;  --  point to identifier table location
@@ -735,7 +735,7 @@ package body HAC.Parser is
     procedure Selector (FSys : Symset; V : in out Item) is
       X    : Item;
       a, J : Integer;
-      err  : Error_code;
+      err  : Compile_Error;
     begin
       pragma Assert (Selector_Symbol_Loose (Sy));  --  '.' or '(' or (wrongly) '['
       loop
@@ -942,7 +942,7 @@ package body HAC.Parser is
 
           procedure Factor (FSys : Symset; X : in out Item) is
             I, F : Integer;
-            err  : Error_code;
+            err  : Compile_Error;
 
             procedure Standard_Function (Pseudo_Address : Integer) is
               TS : Typset;
@@ -1501,7 +1501,7 @@ package body HAC.Parser is
         Emit1 (k_Accept_Rendezvous, I);
         if Sy = DO_Symbol then
           if Level = LMax then
-            Fatal (LEVEL_overflow);  --  Exception is raised there.
+            Fatal (LEVELS);  --  Exception is raised there.
           end if;
           Level           := Level + 1;
           Display (Level) := IdTab (I).Ref;
@@ -1684,7 +1684,7 @@ package body HAC.Parser is
           if Lab.TP /= X.TYP then
             Error (err_case_label_not_same_type_as_case_clause);
           elsif I = CSMax then
-            Fatal (OBJECT_overflow);  --  Exception is raised there.
+            Fatal (OBJECTS);  --  Exception is raised there.
           else
             I               := I + 1;
             CaseTab (I).Val := Lab.I;
@@ -1713,7 +1713,7 @@ package body HAC.Parser is
             end if;
             if Sy = OTHERS_Symbol then        -- Hathorn
               if I = CSMax then
-                Fatal (OBJECT_overflow);  --  Exception is raised there.
+                Fatal (OBJECTS);  --  Exception is raised there.
               end if;
               I               := I + 1;
               CaseTab (I).Val := 0;
@@ -1796,7 +1796,7 @@ package body HAC.Parser is
         InSymbol;  --  Consume FOR symbol.
         if Sy = IDent then
           if T = TMax then
-            Fatal (IDENTIFIERS_table_overflow);  --  Exception is raised there.
+            Fatal (IDENTIFIERS);  --  Exception is raised there.
           end if;
           --  Declare local loop control Variable  --  added Hathorn
           last := BlockTab (Display (Level)).Last;
@@ -1862,7 +1862,7 @@ package body HAC.Parser is
       end FOR_Statement;
 
       procedure Select_Statement is
-        procedure Select_Error (N : Error_code) is
+        procedure Select_Error (N : Compile_Error) is
         begin
           Skip (Semicolon, N);
         end Select_Error;
@@ -1999,14 +1999,14 @@ package body HAC.Parser is
             if IAlt < 10 then
               IAlt := IAlt + 1;
             else
-              Fatal (PATCHING_overflow);
+              Fatal (PATCHING);
             end if;
             Alt (IAlt) := LC;              -- SAVE LOCATION FOR PATCHING
             Emit2 (k_Selective_Wait, 3, LC); -- ACCEPT IF Ready ELSE Skip To LC
             -- CONDITIONAL ACCEPT MUST BE ATOMIC
             if Sy = DO_Symbol then
               if Level = LMax then
-                Fatal (LEVEL_overflow);  --  Exception is raised there.
+                Fatal (LEVELS);  --  Exception is raised there.
               end if;
               Level           := Level + 1;
               Display (Level) := IdTab (I).Ref;
@@ -2045,7 +2045,7 @@ package body HAC.Parser is
                 InSymbol;
                 if Sy = ACCEPT_Symbol then
                   if IAlt > 10 then
-                    Fatal (PATCHING_overflow);
+                    Fatal (PATCHING);
                   else
                     IAlt       := IAlt + 1;
                     Alt (IAlt) := LC;
@@ -2054,19 +2054,19 @@ package body HAC.Parser is
                   end if;
                 elsif Sy = DELAY_Symbol then
                   if IAlt > 10 then
-                    Fatal (PATCHING_overflow);
+                    Fatal (PATCHING);
                   else
                     IAlt       := IAlt + 1;
                     Alt (IAlt) := LC;
                     Emit (k_Conditional_Jump);
                     InSymbol;
                     Expression (FSys + Semicolon, Y);
-                    Emit2 (k_Selective_Wait, 4, LC + 2); -- Update delay time
+                    Emit2 (k_Selective_Wait, 4, LC + 2);  --  Update delay time
                     if Y.TYP /= Floats then
                       Select_Error (err_wrong_type_in_DELAY);
                     end if;
                     if IAlt > 10 then
-                      Fatal (PATCHING_overflow);
+                      Fatal (PATCHING);
                     end if;
                     IAlt       := IAlt + 1;
                     Alt (IAlt) := LC;
@@ -2078,42 +2078,42 @@ package body HAC.Parser is
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
                 if ISD > 10 then
-                  Fatal (PATCHING_overflow);
+                  Fatal (PATCHING);
                 end if;
                 ISD       := ISD + 1;
                 JSD (ISD) := LC;
-                Emit (k_Jump);          -- patch JMP ADDRESS AT EndSy
+                Emit (k_Jump);          --  patch JMP ADDRESS AT EndSy
               -- end WHEN_Symbol
 
               when ACCEPT_Symbol =>
                 for I in 1 .. IAlt loop
                   ObjCode (Alt (I)).Y  := LC;
                 end loop;
-                -- patch
+                --  patch
                 IAlt := 0;
                 Accept_Statement_2;
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
                 if ISD > 10 then
-                  Fatal (PATCHING_overflow);
+                  Fatal (PATCHING);
                 end if;
                 ISD       := ISD + 1;
                 JSD (ISD) := LC;
                 Emit (k_Jump);
 
-              when OR_Symbol => -- OR STATEMENT
+              when OR_Symbol =>  --  OR STATEMENT
                 InSymbol;
 
               when ELSE_Symbol =>
                 for I in 1 .. IAlt loop
-                  -- patch ObjCode
+                  --  patch ObjCode
                   ObjCode (Alt (I)).Y  := LC;
                 end loop;
                 IAlt := 0;
                 InSymbol;
                 Multi_Statement (END_Set);
                 if ISD > 10 then
-                  Fatal (PATCHING_overflow);
+                  Fatal (PATCHING);
                 end if;
                 ISD       := ISD + 1;
                 JSD (ISD) := LC;
@@ -2124,20 +2124,20 @@ package body HAC.Parser is
                 for I in 1 .. IAlt loop
                   ObjCode (Alt (I)).Y  := LC;
                 end loop;
-                -- patch
+                --  patch
                 IAlt := 0;
-                -- Generate a Task delay, calculate return value if req'D
+                --  Generate a Task delay, calculate return value if req'D
                 InSymbol;
                 if Sy = Semicolon then
                   Skip (Semicolon, err_missing_expression_for_delay);
                 else          -- calculate return value
                   Expression (Semicolon_Set, Y);
-                  Emit2 (k_Selective_Wait, 4, LC + 2);  -- Update delay time
+                  Emit2 (k_Selective_Wait, 4, LC + 2);  --  Update delay time
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
                   end if;
                   if IAlt > 10 then
-                    Fatal (PATCHING_overflow);
+                    Fatal (PATCHING);
                   end if;
                   IAlt       := IAlt + 1;
                   Alt (IAlt) := LC;
@@ -2146,7 +2146,7 @@ package body HAC.Parser is
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
                 if ISD > 10 then
-                  Fatal (PATCHING_overflow);
+                  Fatal (PATCHING);
                 end if;
                 ISD       := ISD + 1;
                 JSD (ISD) := LC;
@@ -2613,7 +2613,7 @@ package body HAC.Parser is
     Dx    := 5;
     ICode := 0;
     if Level > LMax then
-      Fatal (LEVEL_overflow);  --  Exception is raised there.
+      Fatal (LEVELS);  --  Exception is raised there.
     end if;
     if Is_a_block_statement then
       null;  --  We should be here with Sy = BEGIN_Symbol or Sy = DECLARE_Symbol.

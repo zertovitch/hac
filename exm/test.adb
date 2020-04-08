@@ -119,7 +119,7 @@ procedure Test is
         for j in l2..h2 loop
           case step is
             when 1 =>  --  fill array a
-              a(i,j):= (i * j);  --  !!  Accepts Real(i * j);
+              a(i,j):= i * j;
             when 2 =>  --  display array a
               Put(a(i,j));
               if j = h2 then

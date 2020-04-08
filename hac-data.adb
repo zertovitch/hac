@@ -148,7 +148,7 @@ package body HAC.Data is
   end cEndOfSource;
 
   procedure cFoundError (
-     errCode: HAC.UErrors.Error_code;
+     errCode: HAC.UErrors.Compile_Error;
      srcNumber, charStart, charEnd, objNumber : Integer;
      hint: String
   )
@@ -157,7 +157,7 @@ package body HAC.Data is
     if qDebug then
       Put_Line
        (" errCode=" &
-        HAC.UErrors.Error_code'Image (errCode) &
+        HAC.UErrors.Compile_Error'Image (errCode) &
         " (" &
         HAC.UErrors.Error_String (errCode, hint) &
         ") " &

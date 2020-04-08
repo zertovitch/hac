@@ -23,7 +23,7 @@ package HAC.Parser.Helpers is
   --
   procedure Need (
     S       : KeyWSymbol;
-    E       : Error_code;
+    E       : Compile_Error;
     Forgive : KeyWSymbol := Dummy_Symbol
   );
 
@@ -32,7 +32,7 @@ package HAC.Parser.Helpers is
   --
   procedure Skip (
     FSys : Symset;
-    N    : Error_code;
+    N    : Compile_Error;
     hint : String := ""
   );
 
@@ -41,7 +41,7 @@ package HAC.Parser.Helpers is
   --
   procedure Skip (
     S    : KeyWSymbol;
-    N    : Error_code;
+    N    : Compile_Error;
     hint : String := ""
   );
 
@@ -51,7 +51,7 @@ package HAC.Parser.Helpers is
   --
   procedure Test (
     S1, S2        : Symset;
-    N             : Error_code;
+    N             : Compile_Error;
     stop_on_error : Boolean:= False);
 
   procedure Test_Semicolon (FSys : Symset);

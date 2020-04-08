@@ -475,7 +475,7 @@ package HAC.Data is
 
   -- --- Error Control Variables ---
 
-  type Error_set is array (HAC.UErrors.Error_code) of Boolean;
+  type Error_set is array (HAC.UErrors.Compile_Error) of Boolean;
   Errs       : Error_set;       --  compilation Errors
   error_free : constant Error_set := (others => False);
 
@@ -541,7 +541,7 @@ package HAC.Data is
   function cEndOfSource return Boolean;
 
   procedure cFoundError
-    (errCode: HAC.UErrors.Error_code;
+    (errCode: HAC.UErrors.Compile_Error;
      srcNumber, charStart, charEnd, objNumber : Integer;
      hint: String);
 

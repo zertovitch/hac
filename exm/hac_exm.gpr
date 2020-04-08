@@ -29,8 +29,8 @@ project HAC_Exm is
      "overloading.adb",
      --
      --  3) * GNAT OK (detects correctly incorrect Ada code);
-     --     * HAC KO (compiles instead of outputting a compilation error. E.g. accepts type Pascal's promotion)
-     --     See places with "!!" in the code.
+     --     * HAC KO (compiles instead of outputting a compilation error; likely a Pascal-ism)
+     --     See places with "!!" in the parser code.
      --  
      "test.adb"
      --

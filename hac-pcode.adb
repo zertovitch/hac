@@ -80,7 +80,7 @@ package body HAC.PCode is
   procedure Emit2 (FCT, a, B : Integer) is
   begin
     if LC = CMax then
-      Fatal (OBJECT_overflow);
+      Fatal (OBJECTS);
     end if;
     ObjCode (LC).F := FCT;
     ObjCode (LC).X := a;

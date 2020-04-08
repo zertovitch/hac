@@ -9,9 +9,9 @@ compiler and virtual machine interpreter fully programmed in Ada itself.
 Objectives
 ==========
  - fun!
- - produce the smallest Hello-world executable (done)!
  - have a simple, quick compiler and execution tool
  - be useful for small Ada sandboxed prototypes
+ - produce the smallest Hello-world executable!
 
 What HAC will most probably never be
 ====================================

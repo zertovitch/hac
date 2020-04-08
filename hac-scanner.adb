@@ -309,12 +309,12 @@ package body HAC.Scanner is
         end if;
       end if;
       if Sx + K = SMax then
-        Fatal (STRING_table_overflow);
+        Fatal (STRING_CONSTANTS);
       end if;
       StringTab (Sx + K) := CH;
       K                  := K + 1;
       if CC = 1 then
-        K := 0; -- END OF InpLine
+        K := 0;  --  END OF InpLine
       else
         goto Label_2;
       end if;
@@ -334,7 +334,7 @@ package body HAC.Scanner is
         end if;
       end if;
       if Sx + K = SMax then
-        Fatal (STRING_table_overflow);
+        Fatal (STRING_CONSTANTS);
       end if;
       StringTab (Sx + K) := CH;
       K                  := K + 1;
