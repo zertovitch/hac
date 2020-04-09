@@ -5,7 +5,7 @@ with HAC.Parser.Helpers;
 with HAC.PCode;                         use HAC.PCode;
 with HAC.Scanner;                       use HAC.Scanner;
 
-with Ada.Text_IO, Ada.Integer_Text_IO;
+with Ada.Text_IO, Ada.Integer_Text_IO, Ada.Characters.Handling;
 
 package body HAC.Compiler is
 
@@ -136,8 +136,8 @@ package body HAC.Compiler is
         X0A (1 .. X0'Length) := X0;
         T                    := T + 1;  --  Enter standard identifier
         IdTab (T)            :=
-         (Name           => X0A,  --  !! casing
-          Name_with_case => X0A,  --  !! casing
+         (Name           => Ada.Characters.Handling.To_Upper (X0A),
+          Name_with_case => X0A,
           Link           => T - 1,
           Obj            => X1,
           TYP            => X2,
@@ -149,31 +149,31 @@ package body HAC.Compiler is
 
     begin
       Enter ("",               Variable, NOTYP, 0);
-      Enter ("FALSE",          Konstant, Bools, 0);
-      Enter ("TRUE",           Konstant, Bools, 1);
+      Enter ("False",          Konstant, Bools, 0);
+      Enter ("True",           Konstant, Bools, 1);
       Enter (HAC_Float_Name,   TypeMark, Floats, 1);
-      Enter ("CHARACTER",      TypeMark, xChars, 1);
-      Enter ("BOOLEAN",        TypeMark, Bools, 1);
+      Enter ("Character",      TypeMark, xChars, 1);
+      Enter ("Boolean",        TypeMark, Bools, 1);
       Enter (HAC_Integer_Name, TypeMark, Ints, 1);
-      Enter ("STRING",         TypeMark, Strings, 1);  --{ Hathorn }
+      Enter ("String",         TypeMark, Strings, 1);  --{ Hathorn }
       Enter ("SEMAPHORE",      TypeMark, Ints, 1);   --{ Hathorn }
       Enter ("TEXT",           TypeMark, Ints, 1);   --{ Schoening }
       --
       --  Standard functions
       --
-      Enter ("ABS",            Funktion, Floats, SF_Abs);
+      Enter ("abs",            Funktion, Floats, SF_Abs);     --  abs is an Ada keyword...
       Enter ("CHR",            Funktion, xChars, SF_T_Val);   --  S'Val : RM 3.5.5 (5)
       Enter ("ORD",            Funktion, Ints,   SF_T_Pos);   --  S'Pos : RM 3.5.5 (2)
       Enter ("SUCC",           Funktion, xChars, SF_T_Succ);  --  S'Succ : RM 3.5 (22)
       Enter ("PRED",           Funktion, xChars, SF_T_Pred);  --  S'Pred : RM 3.5 (25)
       Enter ("ROUND",          Funktion, Ints,   SF_Round_Float_to_Int);
       Enter ("TRUNC",          Funktion, Ints,   SF_Trunc_Float_to_Int);
-      Enter ("SIN",            Funktion, Floats, SF_Sin);
-      Enter ("COS",            Funktion, Floats, SF_Cos);
-      Enter ("EXP",            Funktion, Floats, SF_Exp);
-      Enter ("LOG",            Funktion, Floats, SF_Log);
-      Enter ("SQRT",           Funktion, Floats, SF_Sqrt);
-      Enter ("ARCTAN",         Funktion, Floats, SF_Arctan);
+      Enter ("Sin",            Funktion, Floats, SF_Sin);
+      Enter ("Cos",            Funktion, Floats, SF_Cos);
+      Enter ("Exp",            Funktion, Floats, SF_Exp);
+      Enter ("Log",            Funktion, Floats, SF_Log);
+      Enter ("Sqrt",           Funktion, Floats, SF_Sqrt);
+      Enter ("Arctan",         Funktion, Floats, SF_Arctan);
       Enter ("EOF",            Funktion, Bools,  SF_EOF);
       Enter ("EOLN",           Funktion, Bools,  SF_EOLN);
       Enter ("RANDOM",         Funktion, Ints,   SF_Random); --{ Schoening }
@@ -181,11 +181,11 @@ package body HAC.Compiler is
       --{ Niladic functions such as CLOCK will have   }
       --{ IdTab[].Adr >= 100 To differentiate them from }
       --{ functions with args.  See Parser.StandFct.  }
-      Enter ("GET       ",     Prozedure, NOTYP, 1);
-      Enter ("GET_LINE  ",     Prozedure, NOTYP, 2);
-      Enter ("PUT       ",     Prozedure, NOTYP, 3);
-      Enter ("PUT_LINE  ",     Prozedure, NOTYP, 4);
-      Enter ("NEW_LINE  ",     Prozedure, NOTYP, 4); --{ Hathorn }
+      Enter ("Get       ",     Prozedure, NOTYP, 1);
+      Enter ("Get_Line  ",     Prozedure, NOTYP, 2);
+      Enter ("Put       ",     Prozedure, NOTYP, 3);
+      Enter ("Put_Line  ",     Prozedure, NOTYP, 4);
+      Enter ("New_Line  ",     Prozedure, NOTYP, 4); --{ Hathorn }
       Enter ("WAIT      ",     Prozedure, NOTYP, 5);
       Enter ("SIGNAL    ",     Prozedure, NOTYP, 6);
       Enter ("RESET     ",     Prozedure, NOTYP, 7); --{ Schoening }

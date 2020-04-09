@@ -711,7 +711,7 @@ package body HAC.Parser is
             EntryTab (ECount) := T;  --  point to identifier table location
             T0                := T;  --  of TaskID
             InSymbol;
-            Block (FSys, False, False, Level + 1, T, IdTab(T).Name, IdTab(T).Name);  --  !! up/low case
+            Block (FSys, False, False, Level + 1, T, IdTab(T).Name, IdTab(T).Name_with_case);
             IdTab (T0).Adr := TCount;
             if Sy = Semicolon then
               InSymbol;
