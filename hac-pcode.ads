@@ -113,6 +113,22 @@ package HAC.PCode is
 
   --  Standard function operations
 
-  SF_Round_Float_to_Int : constant := 9;
+  SF_Abs                : constant :=  0;
+  SF_T_Val              : constant :=  5;  --  S'Val : RM 3.5.5 (5)
+  SF_T_Pos              : constant :=  6;  --  S'Pos : RM 3.5.5 (2)
+  SF_T_Succ             : constant :=  7;  --  S'Succ : RM 3.5 (22)
+  SF_T_Pred             : constant :=  8;  --  S'Pred : RM 3.5 (25)
+  SF_Round_Float_to_Int : constant :=  9;
+  SF_Trunc_Float_to_Int : constant := 10;
+  SF_Sin                : constant := 11;
+  SF_Cos                : constant := 12;
+  SF_Exp                : constant := 13;
+  SF_Log                : constant := 14;
+  SF_Sqrt               : constant := 15;
+  SF_Arctan             : constant := 16;
+  SF_EOF                : constant := 17;
+  SF_EOLN               : constant := 18;
+  SF_Random             : constant := 19;
+  SF_Clock              : constant := 100;
 
 end HAC.PCode;

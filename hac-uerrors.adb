@@ -188,6 +188,10 @@ package body HAC.UErrors is
         return "numeric constant expected";
       when err_identifier_too_long =>
         return "identifier """ & hint & "..."" is too long";
+      when err_identifier_cannot_end_with_underline =>
+        return "identifier cannot end with underline";
+      when err_identifier_with_double_underline =>
+        return "identifier with double underline";
       when err_statement_expected =>
         return "statement expected, can be ""null""";
       when err_duplicate_label =>
@@ -230,6 +234,8 @@ package body HAC.UErrors is
       err_closing_LOOP_missing => (insert,        +" loop"),
       err_missing_closing_CASE => (insert,        +" case"),
       err_missing_closing_IF   => (insert,        +" if"),
+      err_incorrect_block_name => (replace_token, +""),
+      --  ^ Text is updated with correct identifier.
       others                   => nothing_to_repair
     );
 
@@ -241,6 +247,7 @@ package body HAC.UErrors is
   is
   -- Write Error on current line & add To TOT ERR (?)
     use Ada.Text_IO;
+    updated_repair_kit : Repair_kit := repair_table (code);
   begin
     cFoundError (code, Line_Count, syStart, syEnd, -1, hint);
     Errs (code) := True;
@@ -248,13 +255,23 @@ package body HAC.UErrors is
     if HAC.Data.current_error_pipe = null then
       Put_Line(
         Current_Error,
-        -- !! File name here
+        --  !! Ada "file" name here
         Trim(Integer'Image(Line_Count),Left) & ':' &
         Trim(Integer'Image(syStart),Left) & '-' &
         Trim(Integer'Image(syEnd),Left) & ": " &
         Error_String (code, hint)
       );
     else
+      case code is
+        when err_incorrect_block_name =>
+          if hint = "" then
+            updated_repair_kit.kind := none;
+          else
+            updated_repair_kit.text := To_Unbounded_String (hint);
+          end if;
+        when others =>
+          null;
+      end case;
       HAC.Data.current_error_pipe (
         message   => Error_String (code, hint),
         file_name => To_String (current_compiler_file_name),
@@ -262,7 +279,7 @@ package body HAC.UErrors is
         column_a  => syStart,
         column_z  => syEnd,
         kind      => error,
-        repair    => repair_table (code)
+        repair    => updated_repair_kit
       );
     end if;
     --  Uncomment the next line for getting a nice trace-back of 1st error.

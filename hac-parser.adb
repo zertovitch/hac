@@ -16,7 +16,8 @@ package body HAC.Parser is
     Is_a_block_statement : Boolean;       --  5.6 Block Statements
     Level_A              : Integer;
     Prt                  : Integer;
-    BlockID              : HAC.Data.Alfa  --  Name of this block (if any)
+    Block_ID             : HAC.Data.Alfa;  --  Name of this block (if any)
+    Block_ID_with_case   : HAC.Data.Alfa
   )
   is
     Level : Integer := Level_A;
@@ -96,7 +97,7 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     ------------------------------------------------------------Enter-
-    procedure Enter (Id : Alfa; K : aObject) is
+    procedure Enter (Id, Id_with_case : Alfa; K : aObject) is
       J, L : Integer;
     begin
       if T = TMax then
@@ -112,16 +113,17 @@ package body HAC.Parser is
       if J /= No_Id then
         Error (err_duplicate_identifier, Id);
       else      --  Enter identifier in table IdTab
-        T                 := T + 1;
-        IdTab (T)         :=
-         (Name   => Id,
-          Link   => L,
-          Obj    => K,
-          TYP    => NOTYP,
-          Ref    => 0,
-          Normal => True,
-          LEV    => Level,
-          Adr    => 0
+        T         := T + 1;
+        IdTab (T) :=
+         (Name           => Id,
+          Name_with_case => Id_with_case,
+          Link           => L,
+          Obj            => K,
+          TYP            => NOTYP,
+          Ref            => 0,
+          Normal         => True,
+          LEV            => Level,
+          Adr            => 0
         );
         BlockTab (Display (Level)).Last := T;  --  Update start of identifier chain
       end if;
@@ -175,7 +177,7 @@ package body HAC.Parser is
     procedure Enter_Variable is
     begin
       if Sy = IDent then
-        Enter (Id, Variable);
+        Enter (Id, Id_with_case, Variable);
         InSymbol;
       else
         Error (err_identifier_missing);
@@ -300,7 +302,7 @@ package body HAC.Parser is
           InSymbol;  --  Consume '(' symbol.
           if Sy = IDent then
             ECount := ECount + 1;
-            Enter (Id, Konstant);
+            Enter (Id, Id_with_case, Konstant);
             IdTab (T).TYP := Enums;
             IdTab (T).Ref := RF;
             IdTab (T).Adr := ECount;
@@ -496,7 +498,7 @@ package body HAC.Parser is
     begin
       InSymbol;
       Test (IDent_Set, Semicolon_Set, err_identifier_missing);
-      Enter (Id, TypeMark);
+      Enter (Id, Id_with_case, TypeMark);
       T1 := T;
       InSymbol;
       Need (IS_Symbol, err_IS_missing);
@@ -636,13 +638,17 @@ package body HAC.Parser is
         Error (err_identifier_missing);
         Id := Empty_Alfa;
       end if;
-      if IsFun then
-        Enter (Id, Funktion);
-      else
-        Enter (Id, Prozedure);
-      end if;
-      InSymbol;
-      Block (FSys, IsFun, False, Level + 1, T, IdTab(T).Name);
+      declare
+        Id_subprog_with_case : constant Alfa := Id_with_case;
+      begin
+        if IsFun then
+          Enter (Id, Id_with_case, Funktion);
+        else
+          Enter (Id, Id_with_case, Prozedure);
+        end if;
+        InSymbol;
+        Block (FSys, IsFun, False, Level + 1, T, IdTab(T).Name, Id_subprog_with_case);
+      end;
       if IsFun then
         Emit1 (k_Exit_Function, 1);
       else
@@ -653,9 +659,9 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------Task_Declaration-
     procedure Task_Declaration is          -- Hathorn
-      I, T0         : Integer;
-      TaskID        : Alfa;
-      saveLineCount : constant Integer := Line_Count;  --  Source line where Task appeared
+      I, T0             : Integer;
+      TaskID            : Alfa;
+      saveLineCount     : constant Integer := Line_Count;  --  Source line where Task appeared
     begin
       InSymbol;
       if Sy = BODY_Symbol then     -- Task Body
@@ -664,7 +670,7 @@ package body HAC.Parser is
         TaskID := IdTab (I).Name;
         BlockTab (IdTab (I).Ref).SrcFrom := saveLineCount;  --(* Manuel *)
         InSymbol;
-        Block (FSys, False, False, Level + 1, I, TaskID);
+        Block (FSys, False, False, Level + 1, I, TaskID, TaskID);  --  !! up/low case
         Emit1 (k_Exit_Call, CallSTDP);
       else                         -- Task Specification
         if Sy = IDent then
@@ -677,7 +683,7 @@ package body HAC.Parser is
         if TCount > TaskMax then
           Fatal (TASKS);  --  Exception is raised there.
         end if;
-        Enter (TaskID, aTask);
+        Enter (TaskID, TaskID, aTask);  --  !! casing
         TaskDefTab (TCount) := T;
         Enter_Block (T);
         IdTab (T).Ref := B;
@@ -701,11 +707,11 @@ package body HAC.Parser is
             if ECount > EntryMax then
               Fatal (ENTRIES);  --  Exception is raised there.
             end if;
-            Enter (Id, aEntry);
+            Enter (Id, Id_with_case, aEntry);
             EntryTab (ECount) := T;  --  point to identifier table location
             T0                := T;  --  of TaskID
             InSymbol;
-            Block (FSys, False, False, Level + 1, T, IdTab(T).Name);
+            Block (FSys, False, False, Level + 1, T, IdTab(T).Name, IdTab(T).Name);  --  !! up/low case
             IdTab (T0).Adr := TCount;
             if Sy = Semicolon then
               InSymbol;
@@ -944,72 +950,54 @@ package body HAC.Parser is
             I, F : Integer;
             err  : Compile_Error;
 
-            procedure Standard_Function (Pseudo_Address : Integer) is
-              TS : Typset;
-              N  : Integer := Pseudo_Address;
-            begin  -- STANDARD FUNCTION NO. N , N => 100 INDICATES
-              -- a NILADIC FUNCTION.
-              if N < 100 then
+            procedure Standard_Function (SF_Code : Integer) is
+              T_Argument : Typ_Set;  --  Expected type of the function's argument
+              N  : Integer := SF_Code;
+            begin  --  STANDARD FUNCTION NO. N , N >= SF_Clock INDICATES
+                   --  a NILADIC FUNCTION.
+              if N < SF_Clock then
                 Need (LParent, err_missing_an_opening_parenthesis);
-                if N < 17 or N = 19 then
+                if N < SF_EOF or N > SF_EOLN then
                   Expression (FSys + RParent, X);
                   case N is
-                    when 0 | 2 =>  -- abs, Sqr
-                      TS            :=
-                       Typset'((Ints | Floats => True, others => False));
+                    when SF_Abs =>  --  Abs (NB: in Ada it's an operator, not a function)
+                      T_Argument    := Numeric_Typ;
                       IdTab (I).TYP := X.TYP;
                       if X.TYP = Floats then
                         N := N + 1;
                       end if;
-                    -- Odd, Chr
-                    when 4 | 5 =>
-                      TS := Typset'((Ints => True, others => False));
-                    -- Ord
-                    when 6 =>
-                      TS :=
-                       Typset'(
-                       (Ints    |
-                        Bools   |
-                        xChars  |
-                        Enums   => True,
-                        others => False));
-                    -- Succ,  Pred
-                    when 7 | 8 =>
-                      TS            :=
-                       Typset'(
-                       (Ints    |
-                        Bools   |
-                        xChars  |
-                        Enums   => True,
-                        others => False));
+                    when SF_T_Val =>  --  S'Val : RM 3.5.5 (5)
+                      T_Argument := Ints_Typ;
+                    when SF_T_Pos =>  --  S'Pos : RM 3.5.5 (2)
+                      T_Argument := Discrete_Typ;
+                    when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
+                      T_Argument := Discrete_Typ;
                       IdTab (I).TYP := X.TYP;
-                    --  Round, Trunc, Sin, Cos, Exp, Log, Sqrt, Arctan
-                    when SF_Round_Float_to_Int | 10 | 11 | 12 | 13 | 14 | 15 | 16 =>
-                      TS :=
-                       Typset'((Ints | Floats => True, others => False));
-                      if X.TYP = Ints then
-                        Forbid_Type_Coercion ("value is integer, floating-point is expected here");
+                    when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
+                         SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
+                      =>
+                      T_Argument := Numeric_Typ;
+                      if Ints_Typ (X.TYP) then
+                        Forbid_Type_Coercion ("value is of integer type; floating-point is expected here");
                         Emit1 (k_Integer_to_Float, 0);
                       end if;
-                    -- Random
-                    when 19 =>
-                      TS            :=
-                       Typset'((Ints => True, others => False));
+                    --  Random
+                    when SF_Random =>
+                      T_Argument := Ints_Typ;
                       IdTab (I).TYP := X.TYP;
                     when others =>
                       null;
-                  end case; -- N
+                  end case;  --  N
                   --
-                  if TS (X.TYP) then
+                  if T_Argument (X.TYP) then
                     Emit1 (k_Standard_Functions, N);
                   elsif X.TYP /= NOTYP then
                     Error (err_argument_to_std_function_of_wrong_type);
                   end if;
-                else           -- N in [17,18]
-                  -- EOF, Eoln
+                else           --  N in [EOF, EOLN]
                   if Sy /= IDent then
                     Error (err_identifier_missing);
-                  elsif Id(1..10) = "INPUT     " then
+                  elsif Id(1..10) = "INPUT     " then  --  Standard_Input
                     Emit2 (k_Standard_Functions, 0, N);
                   else
                     I := Get_File_Pointer (Id);
@@ -1020,17 +1008,17 @@ package body HAC.Parser is
                     end if;
                   end if;
                   InSymbol;
-                end if;        -- N in [17,18]
+                end if;        --  N in [EOF, EOLN]
                 X.TYP := IdTab (I).TYP;
                 Need (RParent, err_closing_parenthesis_missing);
-              else            -- NILADIC FUNCTION
+              else             --  NILADIC FUNCTION
                 case N is
-                  when 100 =>
-                    Emit1 (k_Standard_Functions, N); -- CLOCK
+                  when SF_Clock =>
+                    Emit1 (k_Standard_Functions, N);
                   when others =>
                     null;
                 end case;
-              end if;    -- NILADIC FUNCTIONS, N => 100
+              end if;    -- NILADIC FUNCTIONS, N >= SF_Clock
             end Standard_Function;
 
             procedure Type_Conversion is  --  Ada RM 4.6
@@ -1602,10 +1590,10 @@ package body HAC.Parser is
         X, Y : Item;
         F    : Integer;
       begin
-        if BlockID = ProgramID then
+        if Block_ID = Main_Program_ID then
           Error (err_illegal_return_statement_from_main); -- !! but... this is legal in Ada !!
         end if;
-        I := Locate_Identifier (BlockID);
+        I := Locate_Identifier (Block_ID);
         InSymbol;
         if Sy = Semicolon then
           if Is_a_function then
@@ -2495,7 +2483,7 @@ package body HAC.Parser is
           stop_on_error => True
         );
         --
-        Block (FSys, Is_a_function, True, Level + 1, T, block_name);
+        Block (FSys, Is_a_function, True, Level + 1, T, block_name, block_name);  --  !! up/low case
         --
         -- !! to check:
         -- !! * stack management of variables when entering / quitting the block
@@ -2509,7 +2497,7 @@ package body HAC.Parser is
         --  Block_Statement or loop, named by "name: loop"
         new_label: constant Alfa := Id;
       begin
-        Enter (new_label, Label);
+        Enter (new_label, Id_with_case, Label);
         Test (Colon_Set, FSys,
           err_colon_missing_for_named_statement,
           stop_on_error => True
@@ -2755,12 +2743,12 @@ package body HAC.Parser is
     end if;
     --
     if Sy = IDent then  --  Verify that the name after "end" matches the unit name.
-      if Id /= BlockID then
-        Error (err_incorrect_block_name, hint => Alfa_to_String(BlockID));
+      if Id /= Block_ID then
+        Error (err_incorrect_block_name, hint => Alfa_to_String(Block_ID_with_case));
       end if;
       InSymbol;
-    elsif Is_a_block_statement and BlockID /= Empty_Alfa then  -- end [label] required
-      Error (err_incorrect_block_name, hint => Alfa_to_String(BlockID));
+    elsif Is_a_block_statement and Block_ID /= Empty_Alfa then  --  "end [label]" is required
+      Error (err_incorrect_block_name, hint => Alfa_to_String(Block_ID_with_case));
     end if;
     --
     if Sy /= Semicolon then
@@ -2768,7 +2756,7 @@ package body HAC.Parser is
       return;
     end if;
     --
-    if BlockID /= ProgramID and not Is_a_block_statement then
+    if Block_ID /= Main_Program_ID and not Is_a_block_statement then
       InSymbol;  --  Consume ';' symbol after END [Subprogram_Id].
       --
       --  Now we have either another declaration,

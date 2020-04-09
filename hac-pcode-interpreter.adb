@@ -24,31 +24,31 @@ package body HAC.PCode.Interpreter is
     subtype TRange is Integer range 0 .. HAC.Data.TaskMax; --  task index
 
     type Processor_State is (
-     CASCHK,
-    -- ConstErr,
-     DEADLOCK,
-     DIVCHK,
-     FIN,
-     INXCHK,
-    -- NumErr  ,
-     ProgErr,
-     REDCHK,
-     RUN,
-     STKCHK,
-    -- StoErr  , TaskErr ,
-     WAIT);
+      CASCHK,
+      -- ConstErr,
+      DEADLOCK,
+      DIVCHK,
+      FIN,
+      INXCHK,
+      -- NumErr  ,
+      ProgErr,
+      REDCHK,
+      RUN,
+      STKCHK,
+      -- StoErr  , TaskErr ,
+      WAIT);
 
     type Task_State is (
-     Completed,
-     Delayed,
-     Ready,
-     Running,
-     Critical,
-     WaitRendzv,
-     WaitSem,
-     TimedRendz,
-     TimedWait,
-     Terminated);
+      Completed,
+      Delayed,
+      Ready,
+      Running,
+      Critical,
+      WaitRendzv,
+      WaitSem,
+      TimedRendz,
+      TimedWait,
+      Terminated);
 
     type PriCB is record  --  Priority Control Block
       UPRI    : Integer;  --  User specified priority
@@ -80,7 +80,7 @@ package body HAC.PCode.Interpreter is
       NAM   : FNames;
     end record;
 
-    FAT : FilDescr;                     --  file i/o table
+    FAT : FilDescr;                     --  File i/o table
 
     type Display_type is array (1 .. HAC.Data.LMax) of Integer;
 
@@ -117,16 +117,16 @@ package body HAC.PCode.Interpreter is
     type Eptr is access Enode; --  task entry rendzv pointer
 
     type Enode is record        --  task entry structure
-      Task_Index : TRange; --  index of task enqueued for rendzv
-      Next : Eptr; --  next entry in list
+      Task_Index : TRange;  --  index of task enqueued for rendzv
+      Next : Eptr;  --  next entry in list
     end record;
 
     procedure Dispose is new Ada.Unchecked_Deallocation (Enode, Eptr);
 
     type EHeader is record
-      Task_Index : TRange; --  index of task that contains entry
-      First : Eptr; --  ptr to first node in rendzv queue
-      Last : Eptr; --  ptr to last  node in rendzv queue
+      Task_Index : TRange;  --  index of task that contains entry
+      First : Eptr;  --  ptr to first node in rendzv queue
+      Last : Eptr;  --  ptr to last  node in rendzv queue
     end record;
 
     IR : HAC.Data.Order;  --  Instruction register
@@ -139,7 +139,7 @@ package body HAC.PCode.Interpreter is
     TIMER    : Time:= SYSCLOCK; --  set to end of current task's time slice
     TActive  : TRange;  --  no. of active tasks
 
-    CurTask : Integer; --  index of currently executing task
+    CurTask : Integer;  --  index of currently executing task
 
     H1, H2 : Integer;
     H3, H4 : Integer;
@@ -152,7 +152,7 @@ package body HAC.PCode.Interpreter is
 
     function GetClock return Time renames Clock;
 
-    SNAP: Boolean; --  SNAP-shot flag To Display sched. status
+    SNAP: Boolean;  --  SNAP-shot flag To Display sched. status
 
   end InterDef;
 
@@ -165,7 +165,7 @@ package body HAC.PCode.Interpreter is
       New_Line;
       Put_Line("Stack Variables of Task " & HAC.Data.IdTab (HAC.Data.TaskDefTab (InterDef.CurTask)).Name);
       InterDef.H1 := InterDef.TCB (InterDef.CurTask).B;   --  current botton
-                                                          --of stack
+                                                          --  of stack
       InterDef.BLKCNT := 10;
       loop
         New_Line;
@@ -174,7 +174,7 @@ package body HAC.PCode.Interpreter is
           InterDef.H1 := 0;
         end if;
         InterDef.H2 := S (InterDef.H1 + 4).I;     --  index into HAC.Data.IdTab for this
-                                                  --process
+                                                  --  process
         if InterDef.H1 /= 0 then
           Put (HAC.Data.IdTab (InterDef.H2).Name);
           Put (" CALLED AT");
@@ -191,42 +191,32 @@ package body HAC.PCode.Interpreter is
             use HAC.Data;
           begin
             if P2Ada_Var_7.Obj = HAC.Data.Variable then
-              if P2Ada_Var_7.TYP = Enums or
-                 HAC.Data.Standard_Typ (P2Ada_Var_7.TYP)
-              then
+              if HAC.Data.Standard_or_Enum_Typ (P2Ada_Var_7.TYP) then
                 if P2Ada_Var_7.Normal then
                   InterDef.H3 := InterDef.H1 + P2Ada_Var_7.Adr;
                 else
                   InterDef.H3 := InterDef.S (InterDef.H1 + P2Ada_Var_7.Adr).I;
                 end if;
-                Put ("  ");
-                Put (P2Ada_Var_7.Name);
-                Put (" = ");
+                Put ("  " & P2Ada_Var_7.Name & " = ");
                 case P2Ada_Var_7.TYP is
                   when HAC.Data.Enums | HAC.Data.Ints =>
                     Put (S (H3).I);
                     New_Line;
-
                   when HAC.Data.Bools =>
                     Put (S (H3).I mod 2 = 1);
                     New_Line;
-
                   when HAC.Data.Floats =>
                     Put (S (H3).R);
                     New_Line;
-
                   when HAC.Data.xChars =>
                     Put (S (H3).I);
                     Put_Line (" (ASCII)");
-
                   when others =>
                     null;  -- [P2Ada]: no otherwise / else in Pascal
                 end case;
-
               end if;
             end if;
             InterDef.H2 := P2Ada_Var_7.Link;
-
           end; -- [P2Ada]: end of WITH
 
         end loop;
@@ -682,45 +672,39 @@ package body HAC.PCode.Interpreter is
           when k_Standard_Functions =>
 
             case IR.Y is
-              when 0 =>
+              when SF_Abs =>
                 S (Curr_TCB.T).I := abs (S (Curr_TCB.T).I);
-              when 1 =>
+              when SF_Abs + 1 =>
                 S (Curr_TCB.T).R := abs (S (Curr_TCB.T).R);
-              when 2 =>
-                S (Curr_TCB.T).I := ((S (Curr_TCB.T).I) ** 2);
-              when 3 =>
-                S (Curr_TCB.T).R := ((S (Curr_TCB.T).R) ** 2);
-              when 4 => -- Odd
-                null;
-              when 5 => -- Chr = Character'Val
+              when SF_T_Val =>   --  S'Val : RM 3.5.5 (5)
                 if (S (Curr_TCB.T).I < HAC.Data.OrdMinChar) or
-                  (S (Curr_TCB.T).I > HAC.Data.OrdMaxChar)
+                  (S (Curr_TCB.T).I > HAC.Data.OrdMaxChar)  --  !! Character range
                 then
-                  PS := INXCHK;
+                  PS := INXCHK;  --  Seems an out-of-range
                 end if;
-              when 6 => -- Ord = Character'Pos
+              when SF_T_Pos =>   --  S'Pos : RM 3.5.5 (2)
                 null;
-              when 7 =>
+              when SF_T_Succ =>  --  S'Succ : RM 3.5 (22)
                 S (Curr_TCB.T).I := S (Curr_TCB.T).I + 1;
-              when 8 =>
+              when SF_T_Pred =>  --  S'Pred : RM 3.5 (25)
                 S (Curr_TCB.T).I := S (Curr_TCB.T).I - 1;
               when SF_Round_Float_to_Int =>
                 S (Curr_TCB.T).I := Integer (S (Curr_TCB.T).R);
-              when 10 =>  --  Trunc
+              when SF_Trunc_Float_to_Int =>
                 S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (S (Curr_TCB.T).R));
-              when 11 =>
+              when SF_Sin =>
                 S (Curr_TCB.T).R := Sin (S (Curr_TCB.T).R);
-              when 12 =>
+              when SF_Cos =>
                 S (Curr_TCB.T).R := Cos (S (Curr_TCB.T).R);
-              when 13 =>
+              when SF_Exp =>
                 S (Curr_TCB.T).R := Exp (S (Curr_TCB.T).R);
-              when 14 =>
+              when SF_Log =>
                 S (Curr_TCB.T).R := Log (S (Curr_TCB.T).R);
-              when 15 =>
+              when SF_Sqrt =>
                 S (Curr_TCB.T).R := Sqrt (S (Curr_TCB.T).R);
-              when 16 =>
+              when SF_Arctan =>
                 S (Curr_TCB.T).R := Arctan (S (Curr_TCB.T).R);
-              when 17 =>
+              when SF_EOF =>
                 Curr_TCB.T := Curr_TCB.T + 1;
                 if Curr_TCB.T > Curr_TCB.STACKSIZE then
                   PS := STKCHK;
@@ -731,7 +715,7 @@ package body HAC.PCode.Interpreter is
                     S (Curr_TCB.T).I := Boolean'Pos(Ada.Text_IO.End_Of_File (FAT.FIL (IR.X)));
                   end if;
                 end if;
-              when 18 =>
+              when SF_EOLN =>
                 Curr_TCB.T := Curr_TCB.T + 1;
                 if Curr_TCB.T > Curr_TCB.STACKSIZE then
                   PS := STKCHK;
@@ -742,12 +726,12 @@ package body HAC.PCode.Interpreter is
                     S (Curr_TCB.T).I := Boolean'Pos(Ada.Text_IO.End_Of_Line (FAT.FIL (IR.X)));
                   end if;
                 end if;
-              when 19 =>
+              when SF_Random =>
                 S (Curr_TCB.T).I :=
                   Integer (HAC.Data.HAC_Float (Random (Gen)) *
                            HAC.Data.HAC_Float ((S (Curr_TCB.T).I + 1)));
-              when 100 =>
-                --  CLOCK function, NILADIC functions have IR.Y => 100
+              when SF_Clock =>
+                --  CLOCK function, NILADIC functions have IR.Y => SF_Clock.
                 --  Return time of units of seconds.
                 Curr_TCB.T := Curr_TCB.T + 1;
                 if Curr_TCB.T > Curr_TCB.STACKSIZE then

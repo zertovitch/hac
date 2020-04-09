@@ -4,6 +4,20 @@ with HAC_Pack; use HAC_Pack;
 
 procedure Floats is
 
+  procedure Test_Exp_Log is
+    scale : constant := 500.0;
+    steps : constant := 100;
+    x1, x2 : Real;
+  begin
+    for i in 0 .. steps loop
+      x1 := Real (i) * scale * (1.0 / Real (steps));
+      x2 := Log (Exp (x1));
+      if abs (x2 - x1) > 0.0 then
+        Put_Line ("Compiler bug [Exp_Log]");
+      end if;
+    end loop;
+  end Test_Exp_Log;
+
   x1 : Real;
   x2 : Real;
   x3 : Real;
@@ -48,4 +62,5 @@ begin
   if -x2 /= 5.07 then
     Put_Line ("Compiler bug [E]");  --  Former HAC bug: unary minus was ineffeective for floats
   end if;
+  Test_Exp_Log;
 end Floats;

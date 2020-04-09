@@ -12,6 +12,9 @@ with GNAT.Traceback.Symbolic, Ada.Exceptions;
 procedure HAX is
 
   verbosity : Natural := 0;
+  caveat       : constant String := "Caution: HAC is not a real Ada compiler.";
+  version_info : constant String :=
+    "Version: " & HAC.version & " Reference: " & HAC.reference & '.';
 
   procedure Compile_and_interpret_file (name: String) is
     f : Ada.Streams.Stream_IO.File_Type;
@@ -20,16 +23,15 @@ procedure HAX is
     HAC_margin_2 : constant String := ". . . .[ HAX ]. . . .   ";
     HAC_margin_3 : constant String := "-------[ HAX ]-------   ";
   begin
-    HAC.Data.qDebug := False;
     case verbosity is
       when 0 =>
         null;
       when 1 =>
         Put_Line (HAC_margin_2 & "Compiling and running from file: " & name);
       when others =>
-        HAC.Data.qDebug := True;
         New_Line;
-        Put_Line (HAC_margin_1 & "Caution: HAC is not a real Ada compiler.");
+        Put_Line (HAC_margin_1 & version_info);
+        Put_Line (HAC_margin_1 & caveat);
         Put_Line (HAC_margin_2 & "Compiling from file: " & name);
     end case;
     Open (f, In_File, name);
@@ -70,18 +72,23 @@ procedure HAX is
   procedure Help is
   begin
     Put_Line (Standard_Error, "HAX: command-line compilation and execution for HAC (HAC Ada Compiler)");
+    Put_Line (Standard_Error, version_info);
     New_Line (Standard_Error);
     Put_Line (Standard_Error, "Usage: hax [options] main.adb [command-line parameters for main]");
     New_Line (Standard_Error);
-    Put_Line (Standard_Error, "Options: -h    : this help");
-    Put_Line (Standard_Error, "         -v, v1: verbose");
-    Put_Line (Standard_Error, "         -v2   : very verbose");
+    Put_Line (Standard_Error, "Options: -h     : this help");
+    Put_Line (Standard_Error, "         -v, v1 : verbose");
+    Put_Line (Standard_Error, "         -v2    : very verbose");
+    Put_Line (Standard_Error, "         -d     : debug information");
+    New_Line (Standard_Error);
+    Put_Line (Standard_Error, caveat);
   end Help;
 
 begin
   if Argument_Count = 0 then
     Help;
   end if;
+  HAC.Data.qDebug := False;
   for i in 1 .. Argument_Count loop
     if Argument (i) = "-h" then
       Help;
@@ -89,6 +96,8 @@ begin
       verbosity := 1;
     elsif Argument (i) = "-v2" then
       verbosity := 2;
+    elsif Argument (i) = "-d" then
+      HAC.Data.qDebug := True;
     else
       Compile_and_interpret_file (Argument (i));
     end if;

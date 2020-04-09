@@ -15,11 +15,12 @@ package HAC.Parser is
 
   procedure Block(
     FSys                 : HAC.Data.Symset;
-    Is_a_function        : Boolean;       --  RETURN [Value] statement expected
-    Is_a_block_statement : Boolean;       --  RM: 5.6 Block Statements
+    Is_a_function        : Boolean;        --  RETURN [Value] statement expected
+    Is_a_block_statement : Boolean;        --  RM: 5.6 Block Statements
     Level_A              : Integer;
     Prt                  : Integer;
-    BlockID              : HAC.Data.Alfa  --  Name of this block (if any)
+    Block_ID              : HAC.Data.Alfa;  --  Name of this block (if any)
+    Block_ID_with_case   : HAC.Data.Alfa
   );
 
   --  E.g. : in the case of a block statement within a function, the value

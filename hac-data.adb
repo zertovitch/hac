@@ -1,4 +1,3 @@
-with Ada.Strings;
 with Ada.Strings.Fixed;
 
 package body HAC.Data is

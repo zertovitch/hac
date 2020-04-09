@@ -14,7 +14,7 @@ package body HAC.Scanner is
 
     function UpCase (c : Character) return Character is
     begin
-      if 'a' <= c and then c <= 'z' then
+      if c in 'a' .. 'z' then
         return Character'Val
                 (Character'Pos (c) -
                  Character'Pos ('a') +
@@ -156,271 +156,279 @@ package body HAC.Scanner is
     end if;
 
     case CH is
-    when 'A' .. 'Z' |  -- identifier or wordsymbol
-         'a' .. 'z' =>
-      K  := 0;
-      Id := (others => ' ');
-      loop
-        if K < Alng then
-          K      := K + 1;
-          Id (K) := UpCase (CH);
+      when 'A' .. 'Z' |  --  identifier or wordsymbol
+           'a' .. 'z' =>
+        K  := 0;
+        Id := (others => ' ');
+        Id_with_case := Id;
+        loop
+          if K < Alng then
+            K := K + 1;
+            Id (K)           := UpCase (CH);
+            Id_with_case (K) := CH;
+            if K > 1 and then Id (K - 1 .. K) = "__" then
+              Error (err_identifier_with_double_underline, Id, stop_on_error => True);
+            end if;
+          else
+            Error (err_identifier_too_long, Id);
+          end if;
+          NextCh;
+          exit when CH /= '_'
+                   and then special_or_illegal (CharacterTypes (CH));
+        end loop;
+        if K > 0 and then Id (K) ='_' then
+          Error (err_identifier_cannot_end_with_underline, Id, stop_on_error => True);
+        end if;
+
+        I := 1;
+        J := AdaKeyW'Last;  --  Binary Search
+        loop
+          K := (I + J) / 2;
+          if Id(AdaKeyW_String'Range) <= AdaKeyW (K).st then
+            J := K - 1;
+          end if;
+          if Id(AdaKeyW_String'Range) >= AdaKeyW (K).st then
+            I := K + 1;
+          end if;
+          exit when I > J;
+        end loop;
+
+        if I - 1 > J then
+          Sy := AdaKeyW (K).sy;
         else
-          Error(err_identifier_too_long, Id);
+          Sy := IDent;
         end if;
-        NextCh;
-        exit when CH /= '_'
-                 and then special_or_illegal (CharacterTypes (CH));
-      end loop;
-
-      I := 1;
-      J := AdaKeyW'Last; -- Binary Search
-      loop
-        K := (I + J) / 2;
-        if Id(AdaKeyW_String'Range) <= AdaKeyW (K).st then
-          J := K - 1;
+        if Sy = USy then
+          Sy := IDent;
+          Error (err_Ada_reserved_word);
         end if;
-        if Id(AdaKeyW_String'Range) >= AdaKeyW (K).st then
-          I := K + 1;
-        end if;
-        exit when I > J;
-      end loop;
 
-      if I - 1 > J then
-        Sy := AdaKeyW (K).sy;
-      else
-        Sy := IDent;
-      end if;
-      if Sy = USy then
-        Sy := IDent;
-        Error (err_Ada_reserved_word);
-      end if;
-
-    when '0' .. '9' =>  -- Number
-      K    := 0;
-      INum := 0;
-      Sy   := IntCon;
-      loop
-
-        INum := INum * 10 + Character'Pos (CH) - Character'Pos ('0');
-        K    := K + 1;
-        NextCh;
-        exit when CharacterTypes (CH) /= Number;
-      end loop;
-
-      if K > KMax then
-        Error (err_number_too_large);
-        INum := 0;
+      when '0' .. '9' =>  --  Number
         K    := 0;
-      end if;
-      if CH = '.' then
-        NextCh;
+        INum := 0;
+        Sy   := IntCon;
+        loop
+
+          INum := INum * 10 + Character'Pos (CH) - Character'Pos ('0');
+          K    := K + 1;
+          NextCh;
+          exit when CharacterTypes (CH) /= Number;
+        end loop;
+
+        if K > KMax then
+          Error (err_number_too_large);
+          INum := 0;
+          K    := 0;
+        end if;
         if CH = '.' then
-          CH := Character'Val (128);
-        else
+          NextCh;
+          if CH = '.' then
+            CH := Character'Val (128);
+          else
+            Sy   := FloatCon;
+            RNum := HAC_Float (INum);
+            e    := 0;
+            while CharacterTypes (CH) = Number loop
+              e    := e - 1;
+              RNum := 10.0 * RNum +
+                      HAC_Float (Character'Pos (CH) - Character'Pos ('0'));
+              NextCh;
+            end loop;
+
+            if e = 0 then
+              Error (err_illegal_parameters_to_Get);
+            end if;
+            if CH = 'E' then
+              ReadScale;
+            end if;
+            if e /= 0 then
+              AdjustScale;
+            end if;
+          end if;
+
+        elsif CH = 'E' then
+
           Sy   := FloatCon;
           RNum := HAC_Float (INum);
           e    := 0;
-          while CharacterTypes (CH) = Number loop
-            e    := e - 1;
-            RNum := 10.0 * RNum +
-                    HAC_Float (Character'Pos (CH) - Character'Pos ('0'));
-            NextCh;
-          end loop;
-
-          if e = 0 then
-            Error (err_illegal_parameters_to_Get);
-          end if;
-          if CH = 'E' then
-            ReadScale;
-          end if;
+          ReadScale;
           if e /= 0 then
             AdjustScale;
           end if;
+
         end if;
 
-      elsif CH = 'E' then
-
-        Sy   := FloatCon;
-        RNum := HAC_Float (INum);
-        e    := 0;
-        ReadScale;
-        if e /= 0 then
-          AdjustScale;
+      when ':' =>
+        NextCh;
+        if CH = '=' then
+          Sy := Becomes;
+          NextCh;
+        else
+          Sy := Colon;
         end if;
 
-      end if;
-
-    when ':' =>
-      NextCh;
-      if CH = '=' then
-        Sy := Becomes;
+      when '<' =>
         NextCh;
-      else
-        Sy := Colon;
-      end if;
+        if CH = '=' then
+          Sy := LEQ;
+          NextCh;
+        else
+          Sy := LSS;
+        end if;
 
-    when '<' =>
-      NextCh;
-      if CH = '=' then
-        Sy := LEQ;
+      when '>' =>
         NextCh;
-      else
-        Sy := LSS;
-      end if;
+        if CH = '=' then
+          Sy := GEQ;
+          NextCh;
+        else
+          Sy := GTR;
+        end if;
 
-    when '>' =>
-      NextCh;
-      if CH = '=' then
-        Sy := GEQ;
+      when '/' =>
         NextCh;
-      else
-        Sy := GTR;
-      end if;
+        if CH = '=' then
+          Sy := NEQ;
+          NextCh;
+        else
+          Sy := Divide;
+        end if;
 
-    when '/' =>
-      NextCh;
-      if CH = '=' then
-        Sy := NEQ;
+      when '.' =>
         NextCh;
-      else
-        Sy := Divide;
-      end if;
+        if CH = '.' then
+          Sy := Range_Double_Dot_Symbol;
+          NextCh;
+        else
+          Sy := Period;
+        end if;
 
-    when '.' =>
-      NextCh;
-      if CH = '.' then
+      when c128 =>  --  Hathorn
         Sy := Range_Double_Dot_Symbol;
         NextCh;
-      else
-        Sy := Period;
-      end if;
 
-    when c128 =>  -- Hathorn
-      Sy := Range_Double_Dot_Symbol;
-      NextCh;
-
-    when '"' =>
-      K := 0;
-      <<Label_2>> NextCh;
-      if CH = '"' then
-        NextCh;
-        if CH /= '"' then
-          goto Label_3;
+      when '"' =>
+        K := 0;
+        <<Label_2>> NextCh;
+        if CH = '"' then
+          NextCh;
+          if CH /= '"' then
+            goto Label_3;
+          end if;
         end if;
-      end if;
-      if Sx + K = SMax then
-        Fatal (STRING_CONSTANTS);
-      end if;
-      StringTab (Sx + K) := CH;
-      K                  := K + 1;
-      if CC = 1 then
-        K := 0;  --  END OF InpLine
-      else
-        goto Label_2;
-      end if;
-      <<Label_3>>
-      Sy    := StrCon;
-      INum  := Sx;
-      SLeng := K;
-      Sx    := Sx + K;
-
-    when ''' => -- Character literal (code reused from Pascal string literal, hence a loop)
-      K := 0;
-      <<Label_4>> NextCh;
-      if CH = ''' then
-        NextCh;
-        if CH /= ''' then
-          goto Label_5;
+        if Sx + K = SMax then
+          Fatal (STRING_CONSTANTS);
         end if;
-      end if;
-      if Sx + K = SMax then
-        Fatal (STRING_CONSTANTS);
-      end if;
-      StringTab (Sx + K) := CH;
-      K                  := K + 1;
-      if CH = ''' and K = 1 then -- '''
-        NextCh;
-        goto Label_5;
-      end if;
-      if CC = 1 then
-        K := 0;   -- END OF InpLine
-      else
-        goto Label_4;
-      end if;
-      <<Label_5>>
-      if K = 1 then
-        Sy   := CharCon;
-        INum := Character'Pos (StringTab (Sx));
-      elsif K = 0 then
-        Error (err_character_zero_chars);
-        Sy   := CharCon;
-        INum := 0;
-      else
-        Error (err_character_delimeter_used_for_string);
+        StringTab (Sx + K) := CH;
+        K                  := K + 1;
+        if CC = 1 then
+          K := 0;  --  END OF InpLine
+        else
+          goto Label_2;
+        end if;
+        <<Label_3>>
         Sy    := StrCon;
         INum  := Sx;
         SLeng := K;
         Sx    := Sx + K;
-      end if;
 
-    when '-' =>
-      NextCh;
-      if CH /= '-' then
-        Sy := MinUS;
-      else --  comment
-        CC := LL; -- ignore rest of input line
+      when ''' =>  --  Character literal (code reused from Pascal string literal, hence a loop)
+        K := 0;
+        <<Label_4>> NextCh;
+        if CH = ''' then
+          NextCh;
+          if CH /= ''' then
+            goto Label_5;
+          end if;
+        end if;
+        if Sx + K = SMax then
+          Fatal (STRING_CONSTANTS);
+        end if;
+        StringTab (Sx + K) := CH;
+        K                  := K + 1;
+        if CH = ''' and K = 1 then -- '''
+          NextCh;
+          goto Label_5;
+        end if;
+        if CC = 1 then
+          K := 0;   --  END OF InpLine
+        else
+          goto Label_4;
+        end if;
+        <<Label_5>>
+        if K = 1 then
+          Sy   := CharCon;
+          INum := Character'Pos (StringTab (Sx));
+        elsif K = 0 then
+          Error (err_character_zero_chars);
+          Sy   := CharCon;
+          INum := 0;
+        else
+          Error (err_character_delimeter_used_for_string);
+          Sy    := StrCon;
+          INum  := Sx;
+          SLeng := K;
+          Sx    := Sx + K;
+        end if;
+
+      when '-' =>
+        NextCh;
+        if CH /= '-' then
+          Sy := MinUS;
+        else --  comment
+          CC := LL;  --  ignore rest of input line
+          NextCh;
+          goto Label_1;
+        end if;
+
+      when '=' =>
+        NextCh;
+        if CH /= '>' then
+          Sy := EQL;
+        else
+          Sy := Finger;
+          NextCh;
+        end if;
+
+      when '{' =>  --  Special non documented comment !! O_o: remove that !!
+
+        while CH /= '}' loop
+          NextCh;
+        end loop;
+
         NextCh;
         goto Label_1;
-      end if;
 
-    when '=' =>
-      NextCh;
-      if CH /= '>' then
-        Sy := EQL;
-      else
-        Sy := Finger;
+      when '|' =>
+        Sy := Alt;
         NextCh;
-      end if;
 
-    when '{' =>  -- Special non documented comment !! O_o: remove that !!
-
-      while CH /= '}' loop
+      when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
+        Sy := Special_Symbols (CH);
         NextCh;
-      end loop;
+        if Sy = xTimes and then CH = '*' then  --  Get the "**" operator symbol
+          Sy := xx_Power;
+          NextCh;
+        end if;
 
-      NextCh;
-      goto Label_1;
-
-    when '|' =>
-      Sy := Alt;
-      NextCh;
-
-    when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
-      Sy := Special_Symbols (CH);
-      NextCh;
-      if Sy = xTimes and then CH = '*' then  --  Get the "**" operator symbol
-        Sy := xx_Power;
+      when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
+        --  duplicate case Constant '&',
+        Error (err_illegal_character);
+        if qDebug then
+          Put_Line (" [ $!@\^_?""&%  ]");
+        end if;
+        if Listing_Was_Requested then
+          Put_Line (Listing, " [ $!@\^_?""&%  ]");
+        end if;
         NextCh;
-      end if;
+        goto Label_1;
 
-    when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
-      --  duplicate case Constant '&',
-      Error (err_illegal_character);
-      if qDebug then
-        Put_Line (" [ $!@\^_?""&%  ]");
-      end if;
-      if Listing_Was_Requested then
-        Put_Line (Listing, " [ $!@\^_?""&%  ]");
-      end if;
-      NextCh;
-      goto Label_1;
+      when Character'Val (0) .. ' ' =>
+        null;
+      when others =>
+        null;
 
-    when Character'Val (0) .. ' ' =>
-      null;
-    when others =>
-      null;
-
-    end case; -- CH
+    end case;  --  CH
 
     syEnd := CC - 1;
 

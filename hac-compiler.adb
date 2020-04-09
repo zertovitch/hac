@@ -123,7 +123,7 @@ package body HAC.Compiler is
 
   procedure Compile is
 
-    procedure EnterStdFcns is
+    procedure Enter_Standard_Functions_and_Main is
 
       procedure Enter
        (X0 : String;
@@ -136,14 +136,15 @@ package body HAC.Compiler is
         X0A (1 .. X0'Length) := X0;
         T                    := T + 1;  --  Enter standard identifier
         IdTab (T)            :=
-         (Name   => X0A,
-          Link   => T - 1,
-          Obj    => X1,
-          TYP    => X2,
-          Ref    => 0,
-          Normal => True,
-          LEV    => 0,
-          Adr    => X3);
+         (Name           => X0A,  --  !! casing
+          Name_with_case => X0A,  --  !! casing
+          Link           => T - 1,
+          Obj            => X1,
+          TYP            => X2,
+          Ref            => 0,
+          Normal         => True,
+          LEV            => 0,
+          Adr            => X3);
       end Enter;
 
     begin
@@ -157,25 +158,26 @@ package body HAC.Compiler is
       Enter ("STRING",         TypeMark, Strings, 1);  --{ Hathorn }
       Enter ("SEMAPHORE",      TypeMark, Ints, 1);   --{ Hathorn }
       Enter ("TEXT",           TypeMark, Ints, 1);   --{ Schoening }
-      Enter ("ABS",            Funktion, Floats, 0);
-      Enter ("SQR",            Funktion, Floats, 2);
-      Enter ("ODD",            Funktion, Bools, 4);
-      Enter ("ASCII",          Funktion, xChars, 5);
-      Enter ("ORD",            Funktion, Ints, 6);
-      Enter ("SUCC",           Funktion, xChars, 7);
-      Enter ("PRED",           Funktion, xChars, 8);
-      Enter ("ROUND",          Funktion, Ints, SF_Round_Float_to_Int);
-      Enter ("TRUNC",          Funktion, Ints, 10);
-      Enter ("SIN",            Funktion, Floats, 11);
-      Enter ("COS",            Funktion, Floats, 12);
-      Enter ("EXP",            Funktion, Floats, 13);
-      Enter ("LN",             Funktion, Floats, 14);
-      Enter ("SQRT",           Funktion, Floats, 15);
-      Enter ("ARCTAN",         Funktion, Floats, 16);
-      Enter ("EOF",            Funktion, Bools, 17);
-      Enter ("EOLN",           Funktion, Bools, 18);
-      Enter ("RANDOM",         Funktion, Ints, 19); --{ Schoening }
-      Enter ("CLOCK",          Funktion, Floats, 100); --{ Cramer }
+      --
+      --  Standard functions
+      --
+      Enter ("ABS",            Funktion, Floats, SF_Abs);
+      Enter ("CHR",            Funktion, xChars, SF_T_Val);   --  S'Val : RM 3.5.5 (5)
+      Enter ("ORD",            Funktion, Ints,   SF_T_Pos);   --  S'Pos : RM 3.5.5 (2)
+      Enter ("SUCC",           Funktion, xChars, SF_T_Succ);  --  S'Succ : RM 3.5 (22)
+      Enter ("PRED",           Funktion, xChars, SF_T_Pred);  --  S'Pred : RM 3.5 (25)
+      Enter ("ROUND",          Funktion, Ints,   SF_Round_Float_to_Int);
+      Enter ("TRUNC",          Funktion, Ints,   SF_Trunc_Float_to_Int);
+      Enter ("SIN",            Funktion, Floats, SF_Sin);
+      Enter ("COS",            Funktion, Floats, SF_Cos);
+      Enter ("EXP",            Funktion, Floats, SF_Exp);
+      Enter ("LOG",            Funktion, Floats, SF_Log);
+      Enter ("SQRT",           Funktion, Floats, SF_Sqrt);
+      Enter ("ARCTAN",         Funktion, Floats, SF_Arctan);
+      Enter ("EOF",            Funktion, Bools,  SF_EOF);
+      Enter ("EOLN",           Funktion, Bools,  SF_EOLN);
+      Enter ("RANDOM",         Funktion, Ints,   SF_Random); --{ Schoening }
+      Enter ("CLOCK",          Funktion, Floats, SF_Clock);  --{ Cramer }
       --{ Niladic functions such as CLOCK will have   }
       --{ IdTab[].Adr >= 100 To differentiate them from }
       --{ functions with args.  See Parser.StandFct.  }
@@ -193,8 +195,8 @@ package body HAC.Compiler is
       Enter ("QUANTUM   ",     Prozedure, NOTYP, 11); --{ Cramer }
       Enter ("PRIORITY  ",     Prozedure, NOTYP, 12); --{ Cramer }
       Enter ("INHERITP  ",     Prozedure, NOTYP, 13); --{ Cramer }
-      Enter (ProgramID,        Prozedure, NOTYP, 0);
-    end EnterStdFcns;
+      Enter (Main_Program_ID,        Prozedure, NOTYP, 0);
+    end Enter_Standard_Functions_and_Main;
 
     use Ada.Text_IO, Ada.Integer_Text_IO, HAC.Parser.Helpers;
 
@@ -275,16 +277,17 @@ package body HAC.Compiler is
       if Sy /= IDent then
         Error (err_identifier_missing);
       else
-        ProgramID := Id;
+        Main_Program_ID           := Id;
+        Main_Program_ID_with_case := Id_with_case;
         InSymbol;
       end if;
     end if;
 
     if qDebug then
-      Put_Line ("Compiler: main procedure is " & ProgramID);
+      Put_Line ("Compiler: main procedure is " & Main_Program_ID);
     end if;
 
-    EnterStdFcns; -- Enter Standard function ids and ProgramID
+    Enter_Standard_Functions_and_Main;  --  Enter Standard function ids and ProgramID
 
     BlockTab (0) := -- Block Table Entry for Standard [was Main, 1]
      (Id      => "Std Defns" & (10 .. Empty_Alfa'Length => ' '),
@@ -299,7 +302,8 @@ package body HAC.Compiler is
     TaskDefTab (0) := T; --{ Task Table Entry }
 
     --  Start Compiling
-    Block (Block_Begin_Symbol + Statement_Begin_Symbol, False, False, 1, T, IdTab(T).Name);
+    Block (Block_Begin_Symbol + Statement_Begin_Symbol,
+           False, False, 1, T, IdTab(T).Name, Main_Program_ID_with_case);
     --  Main procedure is parsed.
     Emit (k_Halt_Interpreter);
 

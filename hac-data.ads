@@ -61,8 +61,10 @@ package HAC.Data is
   LLNG       : constant := 83;            --  input line Length
   LMax       : constant := 7;             --  maximum Level
   NMax       : constant Integer := MaxINT;
+
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char
+
   --  OMax: highest Order ObjCode - see constants in HAC.PCode.
   OMax       : constant := 79;
   PriMax     : constant := 100;           --  Maximum Task priority
@@ -239,7 +241,27 @@ package HAC.Data is
    Enums,
    Strings);
 
-  type Typset is array (Types) of Boolean;
+  type Typ_Set is array (Types) of Boolean;
+
+  Standard_Typ : constant Typ_Set :=
+    (NOTYP | Ints | Floats | Bools | xChars => True, others => False);
+
+  Standard_or_Enum_Typ : constant Typ_Set :=
+    Standard_Typ or Typ_Set'(Enums => True, others => False);
+
+  Discrete_Typ : constant Typ_Set :=  --  RM 3.2 (12)
+    (Ints    |
+     Bools   |
+     xChars  |
+     Enums   => True,
+     others  => False);
+
+  Numeric_Typ : constant Typ_Set :=  --  RM 3.2 (1)
+    (Ints   |
+     Floats => True,
+     others => False);
+
+  Ints_Typ : constant Typ_Set := (Ints => True, others => False);
 
   type CHTP is (Letter, LowCase, Number, Special, Illegal);
   type Set_of_CHTP is array (CHTP) of Boolean;
@@ -266,18 +288,19 @@ package HAC.Data is
   -- ----------------------------------------------------------------------
   --  Identifier-Table Entry
   type TabEntry is record
-    Name : Alfa;          --  identifier name
-    Link : Index;
-    Obj  : aObject;       --  One of Konstant, Variable, TypeMark,
-                          --   Prozedure, Funktion, Task, Entry
-    TYP  : Types;         --  One of NoTyp, Ints, Floats, Bools,
-                          --   xChars, Arrays, Records, Enums, Strings
-    Ref  : Index;         --  Index into the Block table
-    Normal: Boolean;       --  value param?
-    LEV  : Nesting_level;
-    Adr  : Integer;       --  index into the Code table for the
-                          --  procedure code (if Name is a
-                          --  procedure or function)
+    Name           : Alfa;          --  identifier name
+    Name_with_case : Alfa;
+    Link           : Index;
+    Obj            : aObject;       --  One of Konstant, Variable, TypeMark,
+                                    --   Prozedure, Funktion, Task, Entry
+    TYP            : Types;         --  One of NoTyp, Ints, Floats, Bools,
+                                    --   xChars, Arrays, Records, Enums, Strings
+    Ref            : Index;         --  Index into the Block table
+    Normal         : Boolean;       --  value param?
+    LEV            : Nesting_level;
+    Adr            : Integer;       --  index into the Code table for the
+                                    --  procedure code (if Name is a
+                                    --  procedure or function)
   end record;
 
   -- ----------------------------------------------------------------------
@@ -372,7 +395,7 @@ package HAC.Data is
 
   Listing_Was_Requested : Boolean;
   Debug                 : Boolean;          --  Run-time program info on/off flag
-  Map                   : Boolean;            --  Compile-time output of Global
+  Map                   : Boolean;          --  Compile-time output of Global
                                             --VAR Map
   RunningTime         : Boolean;    --  Display running timer
 
@@ -380,13 +403,8 @@ package HAC.Data is
 
   CH : Character;  --  previous Character Read from Source program
 
-  Standard_Typ : constant Typset :=
-    (NOTYP | Ints | Floats | Bools | xChars => True, others => False);
-
-  Standard_or_Enum_Typ : constant Typset :=
-    Standard_Typ or Typset'(Enums => True, others => False);
-
-  ProgramID : Alfa := (others => ' '); --  Main program name
+  Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
+  Main_Program_ID_with_case : Alfa := Empty_Alfa;
 
   m, N : Integer;
   CMax : Integer := CDMax; -- := added 7-Dec-2009
@@ -493,6 +511,7 @@ package HAC.Data is
                                               --the symbol in Sy
   syLine         : Integer;                   --  Source line of Sy
   Id             : Alfa;                      --  identifier from InSymbol
+  Id_with_case   : Alfa;                      --  Same as Id, but with casing.
   INum           : Integer;                   --  Integer from InSymbol
   RNum           : HAC_Float;                 --  FLOAT Number from InSymbol
   SLeng          : Integer;                   --  String Length
