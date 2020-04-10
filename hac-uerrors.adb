@@ -210,6 +210,8 @@ package body HAC.UErrors is
         return "numeric types don't match: " & hint;
       when err_operator_not_defined_for_types =>
         return "operator is not defined for those operand types";
+      when err_no_null_functions =>
+        return "a function cannot be null; only a procedure can";
       -- when others =>
       --   return "Unknown error Id=" & Integer'Image (Id);
     end case;

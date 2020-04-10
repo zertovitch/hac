@@ -2731,14 +2731,14 @@ package body HAC.Parser is
     end if;
     --
     if Sy = NULL_Symbol and not Is_a_block_statement then
+      --  RM 6.7 Null Procedures
       --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;" (Ada 2005)
       InSymbol;  --  Consume NULL symbol.
       Statements_Part_Setup;
       if Is_a_function then
-        Error (err_not_yet_implemented);  --  What the *** should the function return ?...
+        Error (err_no_null_functions);  --  There are no null functions: what would be the result?
       else
-        null;
-        --  No statement -> no instruction, like for the NULL statement.
+        null;  --  No statement -> no instruction, like for the NULL statement.
       end if;
       Statements_Part_Closing;
     else

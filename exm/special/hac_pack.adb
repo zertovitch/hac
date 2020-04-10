@@ -6,17 +6,7 @@ package body HAC_Pack is
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions(Real);
 
-  function Sqr (I : Integer) return Integer is
-  begin
-    return I*I;
-  end Sqr;
-
-  function Sqr (F : Real) return Real is
-  begin
-    return F*F;
-  end Sqr;
-
-  function   "**"      (f1, f2 : Real)  return Real is
+  function "**" (f1, f2 : Real) return Real is
   begin
     return REF."**" (f1, f2);
   end;
@@ -66,50 +56,25 @@ package body HAC_Pack is
     return Integer(Real'Floor(F));
   end Trunc;
 
-  function Sin (I : Integer) return Real is
-  begin
-    return REF.Sin(Real(I));
-  end Sin;
-
   function Sin (F : Real) return Real is
   begin
     return REF.Sin(F);
   end Sin;
-
-  function Cos (I : Integer) return Real is
-  begin
-    return REF.Cos(Real(I));
-  end Cos;
 
   function Cos (F : Real) return Real is
   begin
     return REF.Cos(F);
   end Cos;
 
-  function ArcTan (I : Integer) return Real is
-  begin
-    return REF.Arctan(Real(I));
-  end ArcTan;
-
-  function ArcTan (F : Real) return Real is
+  function Arctan (F : Real) return Real is
   begin
     return REF.Arctan(F);
-  end ArcTan;
-
-  function Log (I : Integer) return Real is
-  begin
-    return REF.Log(Real(I));
-  end Log;
+  end Arctan;
 
   function Log (F : Real) return Real is
   begin
     return REF.Log(F);
   end Log;
-
-  function Exp (I : Integer) return Real is
-  begin
-    return REF.Exp(Real(I));
-  end Exp;
 
   function Exp (F : Real) return Real is
   begin

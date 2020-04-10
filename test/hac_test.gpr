@@ -18,6 +18,7 @@ project HAC_Test is
      "floats.adb",
      "if_then_elsif_else.adb",
      "integers.adb",
+     "recursion.adb",
      "type_conversion.adb"
    );
 

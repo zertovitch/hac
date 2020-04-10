@@ -111,7 +111,8 @@ package HAC.UErrors is
     err_not_yet_implemented,                   --  2019-03-24
     err_type_conversion_not_supported,         --  2020-03-31
     err_int_to_float_coercion,                 --  2020-04-06
-    err_operator_not_defined_for_types         --  2020-04-06
+    err_operator_not_defined_for_types,        --  2020-04-06
+    err_no_null_functions                      --  2020-04-10
   );
 
   type Message_kind is (error, warning, note, style);

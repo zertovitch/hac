@@ -13,8 +13,7 @@ procedure Declarations is
     null;
   end Test;
 
-  procedure Not_Yet_Done (a : Integer) is null;  --  Ada 2005 null subprogram.
-  --  function Not_Yet_Done_F (c : Character) return Character is null;
+  procedure Not_Yet_Done (a : Integer) is null;  --  Ada 2005 null procedure.
 
   --  HAC 0.01: a type right after a subprogram borked the parser!
   type rec is record x, y: Integer; end record;
@@ -29,5 +28,4 @@ begin
     Put_Line ("Compiler bug [A]");
   end if;
   Not_Yet_Done (123);
-  --  Put(Not_Yet_Done_F('a'));
 end Declarations;

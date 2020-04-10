@@ -30,6 +30,7 @@ echo.
 ..\hax -v1 enumerations.adb
 ..\hax -v1 floats.adb
 ..\hax -v1 integers.adb
+..\hax -v1 recursion.adb
 ..\hax -v1 type_conversion.adb
 pause
 

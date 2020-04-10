@@ -12,14 +12,6 @@ package HAC_Pack is
 
    type Semaphore is new Integer; -- private;
 
-   -- Absolute Value - SMA used ABS instead of "ABS" (operator)... TBA !!
-   -- function   ABS       ( I : INTEGER   ) return INTEGER;
-   -- function   ABS       ( F : FLOAT     ) return FLOAT;
-
-   -- Square (!! to be removed: **2 in Ada)
-   function   Sqr       ( I : Integer   ) return Integer;
-   function   Sqr       ( F : Real     ) return Real;
-
    function   "**"      (f1, f2 : Real)  return Real;
 
    -- Square Root
@@ -48,17 +40,12 @@ package HAC_Pack is
    function   Trunc     ( F : Real     ) return Integer;
 
    -- Trigonometric Functions     w/ arguments in radians
-   function   Sin       ( I : Integer   ) return Real;
    function   Sin       ( F : Real     ) return Real;
-   function   Cos       ( I : Integer   ) return Real;
    function   Cos       ( F : Real     ) return Real;
-   function   ArcTan    ( I : Integer   ) return Real;
-   function   ArcTan    ( F : Real     ) return Real;
+   function   Arctan    ( F : Real     ) return Real;
 
    -- Exponential Functions
-   function   Log       ( I : Integer   ) return Real;
    function   Log       ( F : Real     ) return Real;
-   function   Exp       ( I : Integer   ) return Real;
    function   Exp       ( F : Real     ) return Real;
 
    -- Random Integer      from 0 to I
