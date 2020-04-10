@@ -57,7 +57,9 @@ package body HAC.UErrors is
       when err_IS_missing =>
         return "missing ""is""";
       when err_number_too_large =>
-        return "the number is too large";
+        return "number is too large: total actual exponent is " & hint;
+      when err_negative_exponent_for_integer_literal =>
+        return "integer literal with negative exponent; suggestion: a float with "".0"" such as" & hint;
       when err_incorrect_block_name =>
         return """end " & hint & ";"" expected here";
       when err_bad_type_for_a_case_statement =>
@@ -219,7 +221,7 @@ package body HAC.UErrors is
 
   repair_table : constant array (Compile_Error) of Repair_kit :=
     (
-      err_WITH_Small_Sp        => (insert_line,   +"with HAC_Pack; use HAC_Pack;"),
+      err_WITH_Small_Sp        => (insert_line,   +"with HAC_Pack;  use HAC_Pack;"),
       err_use_Small_Sp         => (insert,        +"use HAC_Pack; "),
       err_missing_a_procedure_declaration
                                => (insert,        +"procedure "),
@@ -234,8 +236,7 @@ package body HAC.UErrors is
       err_closing_LOOP_missing => (insert,        +" loop"),
       err_missing_closing_CASE => (insert,        +" case"),
       err_missing_closing_IF   => (insert,        +" if"),
-      err_incorrect_block_name => (replace_token, +""),
-      --  ^ Text is updated with correct identifier.
+      err_incorrect_block_name => (replace_token, +"[Text is updated with correct identifier]"),
       others                   => nothing_to_repair
     );
 

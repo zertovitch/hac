@@ -36,6 +36,7 @@ package HAC.UErrors is
     err_first_and_last_must_have_matching_types,
     err_IS_missing,
     err_number_too_large,
+    err_negative_exponent_for_integer_literal,
     err_incorrect_block_name,
     err_bad_type_for_a_case_statement,
     err_illegal_character,

@@ -50,4 +50,9 @@ begin
       Put_Line ("Compiler bug [D]");
     end if;
   end loop;
+  --
+  if 12000 /= 12e3 then
+    Put_Line ("Compiler bug [E]");
+  end if;
+  --
 end Integers;

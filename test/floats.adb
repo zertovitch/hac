@@ -18,6 +18,25 @@ procedure Floats is
     end loop;
   end Test_Exp_Log;
 
+  procedure Test_Trigo is
+    pi : constant := 3.141592653;
+    scale : Real := pi * 0.25;
+    steps : constant := 100;
+    x, s, c, t : Real;
+  begin
+    for i in 0 .. steps loop
+      x := Real (i) * scale * (1.0 / Real (steps));
+      s := Sin (x);
+      c := Cos (x);
+      if abs (c) > 0.0 then
+        t := s / c;
+        if abs (Arctan (t) - x) > 1.0e-15 then
+          Put_Line ("Compiler bug [Trigo]");
+        end if;
+      end if;
+    end loop;
+  end Test_Trigo;
+
   x1 : Real;
   x2 : Real;
   x3 : Real;
@@ -60,7 +79,10 @@ begin
   end if;
   x2 := neg_float_value;
   if -x2 /= 5.07 then
-    Put_Line ("Compiler bug [E]");  --  Former HAC bug: unary minus was ineffeective for floats
+    Put_Line ("Compiler bug [E]");  --  Former HAC bug: unary minus was ineffective for floats
   end if;
+  --
   Test_Exp_Log;
+  Test_Trigo;
+  --
 end Floats;

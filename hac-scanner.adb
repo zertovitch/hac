@@ -77,7 +77,7 @@ package body HAC.Scanner is
 
     end NextCh;
 
-    procedure ReadScale is
+    procedure Read_Scale (allow_minus : Boolean) is
       S, Sign : Integer;
     begin
       NextCh;
@@ -86,8 +86,15 @@ package body HAC.Scanner is
       if CH = '+' then
         NextCh;
       elsif CH = '-' then
-        NextCh;
-        Sign := -1;
+        if allow_minus then
+          NextCh;
+          Sign := -1;
+        else
+          Error (
+            err_negative_exponent_for_integer_literal,
+            Integer'Image(INum) & ".0e- ..."
+          );
+        end if;
       end if;
       if CH not in '0' .. '9' then
         Error (err_illegal_parameters_to_Get);
@@ -99,14 +106,20 @@ package body HAC.Scanner is
         end loop;
       end if;
       e := S * Sign + e;
-    end ReadScale;
+    end Read_Scale;
 
-    procedure AdjustScale is
+    procedure Adjust_Scale is
       S    : Integer;
       D, T : HAC_Float;
     begin
       if K + e > EMax then
-        Error (err_number_too_large);
+        Error (
+          err_number_too_large,
+          Integer'Image (K) & " +" &
+          Integer'Image (e) & " =" &
+          Integer'Image (K + e) & " > Max =" &
+          Integer'Image (EMax)
+        );
       elsif K + e < EMin then
         RNum := 0.0;
       else
@@ -114,23 +127,78 @@ package body HAC.Scanner is
         T := 1.0;
         D := 10.0;
         loop
-          while S rem 2 = 0 loop -- NOT Odd(S)
+          while S rem 2 = 0 loop
             S := S / 2;
             D := D ** 2;
           end loop;
-
           S := S - 1;
           T := D * T;
           exit when S = 0;
         end loop;
-
         if e >= 0 then
           RNum := RNum * T;
         else
           RNum := RNum / T;
         end if;
       end if;
-    end AdjustScale;
+    end Adjust_Scale;
+
+    procedure Scan_Number is
+    begin
+      K    := 0;
+      INum := 0;
+      Sy   := IntCon;
+      --  Scan the integer part of the number.
+      loop
+        INum := INum * 10 + Character'Pos (CH) - Character'Pos ('0');
+        K    := K + 1;
+        NextCh;
+        exit when CharacterTypes (CH) /= Number;
+      end loop;
+      --
+      if K > KMax then
+        Error (
+          err_number_too_large,
+          Integer'Image (K) & " > Max =" &
+          Integer'Image (KMax)
+        );
+        INum := 0;
+        K    := 0;
+      end if;
+      if CH = '.' then
+        NextCh;
+        if CH = '.' then  --  Double dot.
+          CH := Character'Val (128);
+        else
+          --  Read decimal part.
+          Sy   := FloatCon;
+          RNum := HAC_Float (INum);
+          e    := 0;
+          while CharacterTypes (CH) = Number loop
+            e    := e - 1;
+            RNum := 10.0 * RNum +
+                    HAC_Float (Character'Pos (CH) - Character'Pos ('0'));
+            NextCh;
+          end loop;
+          if e = 0 then
+            Error (err_illegal_parameters_to_Get);
+          end if;
+          if CH = 'E' or CH = 'e' then
+            Read_Scale (True);
+          end if;
+          if e /= 0 then
+            Adjust_Scale;
+          end if;
+        end if;
+      elsif CH = 'E' or CH = 'e' then
+        --  Integer with exponent: 123e4.
+        e := 0;
+        Read_Scale (False);
+        if e /= 0 then
+          INum := INum * 10 ** e;
+        end if;
+      end if;
+    end Scan_Number;
 
   begin  --  InSymbol
 
@@ -203,60 +271,8 @@ package body HAC.Scanner is
           Error (err_Ada_reserved_word);
         end if;
 
-      when '0' .. '9' =>  --  Number
-        K    := 0;
-        INum := 0;
-        Sy   := IntCon;
-        loop
-
-          INum := INum * 10 + Character'Pos (CH) - Character'Pos ('0');
-          K    := K + 1;
-          NextCh;
-          exit when CharacterTypes (CH) /= Number;
-        end loop;
-
-        if K > KMax then
-          Error (err_number_too_large);
-          INum := 0;
-          K    := 0;
-        end if;
-        if CH = '.' then
-          NextCh;
-          if CH = '.' then
-            CH := Character'Val (128);
-          else
-            Sy   := FloatCon;
-            RNum := HAC_Float (INum);
-            e    := 0;
-            while CharacterTypes (CH) = Number loop
-              e    := e - 1;
-              RNum := 10.0 * RNum +
-                      HAC_Float (Character'Pos (CH) - Character'Pos ('0'));
-              NextCh;
-            end loop;
-
-            if e = 0 then
-              Error (err_illegal_parameters_to_Get);
-            end if;
-            if CH = 'E' then
-              ReadScale;
-            end if;
-            if e /= 0 then
-              AdjustScale;
-            end if;
-          end if;
-
-        elsif CH = 'E' then
-
-          Sy   := FloatCon;
-          RNum := HAC_Float (INum);
-          e    := 0;
-          ReadScale;
-          if e /= 0 then
-            AdjustScale;
-          end if;
-
-        end if;
+      when '0' .. '9' =>
+        Scan_Number;
 
       when ':' =>
         NextCh;
