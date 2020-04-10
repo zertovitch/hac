@@ -1639,7 +1639,7 @@ package body HAC.Parser is
         end if;
       end RETURN_Statement;
 
-      procedure DelayStatement is            -- Cramer
+      procedure Delay_Statement is            -- Cramer
         -- Generate a Task delay
         Y : Item;
       begin
@@ -1653,7 +1653,7 @@ package body HAC.Parser is
           end if;
         end if;
         Emit (k_Delay);
-      end DelayStatement;
+      end Delay_Statement;
 
       procedure CASE_Statement is
         X         : Item;
@@ -2563,7 +2563,7 @@ package body HAC.Parser is
           when CASE_Symbol =>
             CASE_Statement;
           when DELAY_Symbol =>
-            DelayStatement;
+            Delay_Statement;
           when EXIT_Symbol =>
             Exit_Statement;
           when FOR_Symbol =>
@@ -2573,7 +2573,7 @@ package body HAC.Parser is
           when LOOP_Symbol =>
             LOOP_Statement (k_Jump, LC);
           when NULL_Symbol =>
-            InSymbol;
+            InSymbol;  --  Just consume the NULL symbol.
           when RETURN_Symbol =>
             RETURN_Statement;
           when SELECT_Symbol =>
@@ -2583,16 +2583,75 @@ package body HAC.Parser is
           when others =>
             null;
         end case;
-
+        --
         if not EofInput then      --{MRC: added IF NOT... from PC version}
           Need (Semicolon, err_semicolon_missing);
         end if;
       end if;  --  Sy in Statement_Begin_Symbol
-
+      --
       if not EofInput then
         Test (FSys - Semicolon, Semicolon_Set, err_incorrectly_used_symbol);
       end if;
     end Statement;
+
+    procedure Declarative_Part is
+    begin
+      loop
+        Test (  --  Added 17-Apr-2018 to avoid infinite loop on erroneous code
+          Declaration_Symbol + BEGIN_Symbol,
+          Empty_Symset,
+          err_incorrectly_used_symbol,
+          stop_on_error => True  --  Exception is raised there if there is an error.
+        );
+        if Sy = IDent then
+          Var_Declaration;
+        end if;
+        if Sy = TYPE_Symbol then
+          Type_Declaration;
+        end if;
+        if Sy = TASK_Symbol then
+          Task_Declaration;
+        end if;
+        BlockTab (PRB).VSize := Dx;
+        --  ^ TBD: check if this is still correct for declarations that appear
+        --    after subprograms !!
+        while Sy = PROCEDURE_Symbol or Sy = FUNCTION_Symbol loop
+          Proc_Func_Declaration;
+        end loop;
+        --
+        exit when Sy = BEGIN_Symbol;
+      end loop;
+    end Declarative_Part;
+
+    procedure Statements_Part_Setup is
+    begin
+      MaxDX           := Dx;
+      IdTab (Prt).Adr := LC;
+      --  Copy initialization (elaboration) ObjCode from end of ObjCode table
+      I := CMax + ICode;
+      while I > CMax loop
+        ObjCode (LC) := ObjCode (I);
+        LC           := LC + 1;
+        I            := I - 1;
+      end loop;
+      CMax := CMax + ICode;  -- Restore CMax to the initial max (=CDMax)
+    end Statements_Part_Setup;
+
+    procedure Statements_List is
+    begin
+      if Sy = END_Symbol then  --  GdM 15-Aug-2014: there should be at least one statement.
+        Error (err_statement_expected);
+      end if;
+      loop
+        Statement (FSys + END_Symbol);
+        exit when Sy = END_Symbol or Err_Count > 0;
+      end loop;
+    end Statements_List;
+
+    procedure Statements_Part_Closing is
+    begin
+      BlockTab (PRB).SrcTo := Line_Count;
+    end Statements_Part_Closing;
 
   begin  --  Block
     if Err_Count > 0 then --{MRC, from PC source}
@@ -2664,91 +2723,48 @@ package body HAC.Parser is
         when BEGIN_Symbol   => null;
         when others         => raise Internal_error with "Unexpected " & KeyWSymbol'Image(Sy);
       end case;
-    elsif Sy = IS_Symbol then
+    elsif Sy = IS_Symbol then  --  The "IS" in "procedure ABC (param : T_Type) IS"
       InSymbol;
     else
       Error (err_IS_missing);
       return;
     end if;
     --
-    ----------------------
-    -- Declarative_part --
-    ----------------------
-    --
-    Declarations:
-    loop
-      Test (  --  Added 17-Apr-2018 to avoid infinite loop on erroneous code
-        Declaration_Symbol + BEGIN_Symbol,
-        Empty_Symset,
-        err_incorrectly_used_symbol,
-        stop_on_error => True
-      );
-      if Sy = IDent then
-        Var_Declaration;
+    if Sy = NULL_Symbol and not Is_a_block_statement then
+      --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;" (Ada 2005)
+      InSymbol;  --  Consume NULL symbol.
+      Statements_Part_Setup;
+      if Is_a_function then
+        Error (err_not_yet_implemented);  --  What the *** should the function return ?...
+      else
+        null;
+        --  No statement -> no instruction, like for the NULL statement.
       end if;
-      if Sy = TYPE_Symbol then
-        Type_Declaration;
-      end if;
-      if Sy = TASK_Symbol then
-        Task_Declaration;
-      end if;
-      BlockTab (PRB).VSize := Dx;
-      --  ^ TBD: check if this is still correct for declarations that appear
-      --    after subprograms !!
-
-      while Sy = PROCEDURE_Symbol or Sy = FUNCTION_Symbol loop
-        Proc_Func_Declaration;
-      end loop;
-
-      exit when Sy = BEGIN_Symbol;
-    end loop Declarations;
-    --
-    -----------------------------
-    -- Statements part : setup --
-    -----------------------------
-    --
-    MaxDX           := Dx;
-    IdTab (Prt).Adr := LC;
-    --  Copy initialization (elaboration) ObjCode from end of ObjCode table
-    I := CMax + ICode;
-    while I > CMax loop
-      ObjCode (LC) := ObjCode (I);
-      LC           := LC + 1;
-      I            := I - 1;
-    end loop;
-    CMax := CMax + ICode; -- Restore CMax to the initial max (=CDMax)
-    InSymbol;
-
-    ------------------------------------------
-    -- Statements part : list of statements --
-    ------------------------------------------
-    if Sy = END_Symbol then  --  GdM 15-Aug-2014: there should be at least one statement.
-      Error (err_statement_expected);
-    end if;
-    Statements:
-    loop
-      Statement (FSys + END_Symbol);
-      exit when Sy = END_Symbol or Err_Count > 0;
-    end loop Statements;
-    --
-    BlockTab (PRB).SrcTo := Line_Count;
-    --
-    if Sy = END_Symbol then
-      InSymbol;
-    elsif Err_Count > 0 then
-      return;  --  At this point the program is already FUBAR.
+      Statements_Part_Closing;
     else
-      Error (err_END_missing);
-      return;
-    end if;
-    --
-    if Sy = IDent then  --  Verify that the name after "end" matches the unit name.
-      if Id /= Block_ID then
+      Declarative_Part;
+      InSymbol;  --  Consume BEGIN symbol.
+      Statements_Part_Setup;
+      Statements_List;
+      Statements_Part_Closing;
+      --
+      if Sy = END_Symbol then
+        InSymbol;
+      elsif Err_Count > 0 then
+        return;  --  At this point the program is already FUBAR.
+      else
+        Error (err_END_missing);
+        return;
+      end if;
+      --
+      if Sy = IDent then  --  Verify that the name after "end" matches the unit name.
+        if Id /= Block_ID then
+          Error (err_incorrect_block_name, hint => Alfa_to_String(Block_ID_with_case));
+        end if;
+        InSymbol;
+      elsif Is_a_block_statement and Block_ID /= Empty_Alfa then  --  "end [label]" is required
         Error (err_incorrect_block_name, hint => Alfa_to_String(Block_ID_with_case));
       end if;
-      InSymbol;
-    elsif Is_a_block_statement and Block_ID /= Empty_Alfa then  --  "end [label]" is required
-      Error (err_incorrect_block_name, hint => Alfa_to_String(Block_ID_with_case));
     end if;
     --
     if Sy /= Semicolon then
