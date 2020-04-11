@@ -58,6 +58,8 @@ package body HAC.UErrors is
         return "missing ""is""";
       when err_number_too_large =>
         return "number is too large: total actual exponent is " & hint;
+      when err_illegal_character_in_number =>
+        return "illegal character in number" & hint;
       when err_negative_exponent_for_integer_literal =>
         return "integer literal with negative exponent; suggestion: a float with "".0"" such as" & hint;
       when err_incorrect_block_name =>
@@ -192,8 +194,8 @@ package body HAC.UErrors is
         return "identifier """ & hint & "..."" is too long";
       when err_identifier_cannot_end_with_underline =>
         return "identifier cannot end with underline";
-      when err_identifier_with_double_underline =>
-        return "identifier with double underline";
+      when err_double_underline_not_permitted =>
+        return "double underline not permitted";
       when err_statement_expected =>
         return "statement expected, can be ""null""";
       when err_duplicate_label =>
@@ -212,6 +214,8 @@ package body HAC.UErrors is
         return "operator is not defined for those operand types";
       when err_no_null_functions =>
         return "a function cannot be null; only a procedure can";
+      when err_digit_expected =>
+        return "digit expected";
       -- when others =>
       --   return "Unknown error Id=" & Integer'Image (Id);
     end case;
@@ -223,23 +227,24 @@ package body HAC.UErrors is
 
   repair_table : constant array (Compile_Error) of Repair_kit :=
     (
-      err_WITH_Small_Sp        => (insert_line,   +"with HAC_Pack;  use HAC_Pack;"),
-      err_use_Small_Sp         => (insert,        +"use HAC_Pack; "),
+      err_WITH_Small_Sp               => (insert_line,   +"with HAC_Pack;  use HAC_Pack;"),
+      err_use_Small_Sp                => (insert,        +"use HAC_Pack; "),
       err_missing_a_procedure_declaration
-                               => (insert,        +"procedure "),
-      err_colon_missing        => (insert,        +": "),
-      err_semicolon_missing    => (insert,        +"; "),
-      err_RETURN_missing       => (insert,        +"return "),
-      err_statement_expected   => (insert,        +"null;"),
-      err_IN_missing           => (insert,        +"in "),
-      err_IS_missing           => (insert,        +"is "),
-      err_OF_instead_of_IS     => (replace_token, +"is"),
-      err_FINGER_missing       => (insert,        +" => "),
-      err_closing_LOOP_missing => (insert,        +" loop"),
-      err_missing_closing_CASE => (insert,        +" case"),
-      err_missing_closing_IF   => (insert,        +" if"),
-      err_incorrect_block_name => (replace_token, +"[Text is updated with correct identifier]"),
-      others                   => nothing_to_repair
+                                      => (insert,        +"procedure "),
+      err_colon_missing               => (insert,        +": "),
+      err_semicolon_missing           => (insert,        +"; "),
+      err_RETURN_missing              => (insert,        +"return "),
+      err_statement_expected          => (insert,        +"null;"),
+      err_IN_missing                  => (insert,        +"in "),
+      err_IS_missing                  => (insert,        +"is "),
+      err_OF_instead_of_IS            => (replace_token, +"is"),
+      err_FINGER_missing              => (insert,        +" => "),
+      err_closing_LOOP_missing        => (insert,        +" loop"),
+      err_missing_closing_CASE        => (insert,        +" case"),
+      err_missing_closing_IF          => (insert,        +" if"),
+      err_closing_parenthesis_missing => (insert,        +")"),
+      err_incorrect_block_name        => (replace_token, +"[here: correct identifier]"),
+      others                          => nothing_to_repair
     );
 
   procedure Error (

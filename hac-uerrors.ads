@@ -36,6 +36,7 @@ package HAC.UErrors is
     err_first_and_last_must_have_matching_types,
     err_IS_missing,
     err_number_too_large,
+    err_illegal_character_in_number,
     err_negative_exponent_for_integer_literal,
     err_incorrect_block_name,
     err_bad_type_for_a_case_statement,
@@ -103,7 +104,7 @@ package HAC.UErrors is
     err_numeric_constant_expected,
     err_identifier_too_long,
     err_identifier_cannot_end_with_underline,  --  2020-04-09
-    err_identifier_with_double_underline,      --  2020-04-09
+    err_double_underline_not_permitted,        --  2020-04-09
     err_statement_expected,
     err_duplicate_label,
     err_invalid_power_operands,                --  2018-03-18
@@ -112,7 +113,8 @@ package HAC.UErrors is
     err_type_conversion_not_supported,         --  2020-03-31
     err_int_to_float_coercion,                 --  2020-04-06
     err_operator_not_defined_for_types,        --  2020-04-06
-    err_no_null_functions                      --  2020-04-10
+    err_no_null_functions,                     --  2020-04-10
+    err_digit_expected
   );
 
   type Message_kind is (error, warning, note, style);

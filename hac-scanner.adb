@@ -97,7 +97,7 @@ package body HAC.Scanner is
         end if;
       end if;
       if CH not in '0' .. '9' then
-        Error (err_illegal_parameters_to_Get);
+        Error (err_illegal_character_in_number, "; expected digit after 'E'");
       else
         loop
           S := 10 * S + Character'Pos (CH) - Character'Pos ('0');
@@ -144,6 +144,17 @@ package body HAC.Scanner is
     end Adjust_Scale;
 
     procedure Scan_Number is
+      procedure Skip_eventual_underscore is
+      begin
+        if CH = '_' then
+          NextCh;
+          if CH = '_' then
+            Error (err_double_underline_not_permitted, stop_on_error => True);
+          elsif CharacterTypes (CH) /= Number then
+            Error (err_digit_expected, stop_on_error => True);
+          end if;
+        end if;
+      end Skip_eventual_underscore;
     begin
       K    := 0;
       INum := 0;
@@ -153,6 +164,7 @@ package body HAC.Scanner is
         INum := INum * 10 + Character'Pos (CH) - Character'Pos ('0');
         K    := K + 1;
         NextCh;
+        Skip_eventual_underscore;
         exit when CharacterTypes (CH) /= Number;
       end loop;
       --
@@ -179,9 +191,10 @@ package body HAC.Scanner is
             RNum := 10.0 * RNum +
                     HAC_Float (Character'Pos (CH) - Character'Pos ('0'));
             NextCh;
+            Skip_eventual_underscore;
           end loop;
           if e = 0 then
-            Error (err_illegal_parameters_to_Get);
+            Error (err_illegal_character_in_number, "; expected digit after '.'");
           end if;
           if CH = 'E' or CH = 'e' then
             Read_Scale (True);
@@ -235,7 +248,7 @@ package body HAC.Scanner is
             Id (K)           := UpCase (CH);
             Id_with_case (K) := CH;
             if K > 1 and then Id (K - 1 .. K) = "__" then
-              Error (err_identifier_with_double_underline, Id, stop_on_error => True);
+              Error (err_double_underline_not_permitted, Id, stop_on_error => True);
             end if;
           else
             Error (err_identifier_too_long, Id);

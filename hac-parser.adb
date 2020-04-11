@@ -12,8 +12,8 @@ package body HAC.Parser is
 
   procedure Block (
     FSys                 : HAC.Data.Symset;
-    Is_a_function        : Boolean;       --  RETURN [Value] statement expected
-    Is_a_block_statement : Boolean;       --  5.6 Block Statements
+    Is_a_function        : Boolean;        --  RETURN [Value] statement expected
+    Is_a_block_statement : Boolean;        --  5.6 Block Statements
     Level_A              : Integer;
     Prt                  : Integer;
     Block_ID             : HAC.Data.Alfa;  --  Name of this block (if any)
@@ -2731,8 +2731,8 @@ package body HAC.Parser is
     end if;
     --
     if Sy = NULL_Symbol and not Is_a_block_statement then
-      --  RM 6.7 Null Procedures
-      --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;" (Ada 2005)
+      --  RM 6.7 Null Procedures (Ada 2005)
+      --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;"
       InSymbol;  --  Consume NULL symbol.
       Statements_Part_Setup;
       if Is_a_function then

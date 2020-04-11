@@ -23,7 +23,7 @@ procedure Recursion is
    end Ackermann;
 
 begin
-  if Fibonacci (22) /= 17711 then
+  if Fibonacci (22) /= 17_711 then
     Put_Line ("Compiler bug [Fibonacci]");
   end if;
   if Ackermann (3, 4) /= 125 then

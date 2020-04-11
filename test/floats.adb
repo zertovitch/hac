@@ -69,12 +69,12 @@ begin
   if x3 /= 3.0 then
     Put_Line ("Compiler bug [C]");
   end if;
-  ww (1).x3:= 3.456789;
+  ww (1).x3:= 3.4_5_6_7_8_9;
   ww (5).x3:= ww (1).x3;
   ww (1).x3 := 7.89;
   v.x3 := 1.0;
   v.x2 := 2.0;
-  if abs (ww (5).x3 - (2.345678 + 1.111111)) > 0.0000001 then
+  if abs (ww (5).x3 - (2.345_678 + 1.111111)) > 0.000_000_1 then
     Put_Line ("Compiler bug [D]");
   end if;
   x2 := neg_float_value;

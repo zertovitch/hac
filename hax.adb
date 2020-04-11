@@ -2,6 +2,8 @@ with HAC.Compiler,
      HAC.Data,
      HAC.PCode.Interpreter;
 
+with Show_License;
+
 with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Command_Line;                  use Ada.Command_Line;
 with Ada.Streams.Stream_IO;             use Ada.Streams.Stream_IO;
@@ -14,7 +16,7 @@ procedure HAX is
   verbosity : Natural := 0;
   caveat       : constant String := "Caution: HAC is not a real Ada compiler.";
   version_info : constant String :=
-    "Version: " & HAC.version & " Reference: " & HAC.reference & '.';
+    "Compiler version: " & HAC.version & " dated " & HAC.reference & '.';
 
   procedure Compile_and_interpret_file (name: String) is
     f : Ada.Streams.Stream_IO.File_Type;
@@ -31,7 +33,7 @@ procedure HAX is
       when others =>
         New_Line;
         Put_Line (HAC_margin_1 & version_info);
-        Put_Line (HAC_margin_1 & caveat);
+        Put_Line (HAC_margin_1 & caveat & " Type ""hax"" for license.");
         Put_Line (HAC_margin_2 & "Compiling from file: " & name);
     end case;
     Open (f, In_File, name);
@@ -71,17 +73,19 @@ procedure HAX is
 
   procedure Help is
   begin
-    Put_Line (Standard_Error, "HAX: command-line compilation and execution for HAC (HAC Ada Compiler)");
-    Put_Line (Standard_Error, version_info);
-    New_Line (Standard_Error);
-    Put_Line (Standard_Error, "Usage: hax [options] main.adb [command-line parameters for main]");
-    New_Line (Standard_Error);
-    Put_Line (Standard_Error, "Options: -h     : this help");
-    Put_Line (Standard_Error, "         -v, v1 : verbose");
-    Put_Line (Standard_Error, "         -v2    : very verbose");
-    Put_Line (Standard_Error, "         -d     : debug information");
-    New_Line (Standard_Error);
-    Put_Line (Standard_Error, caveat);
+    Put_Line (Current_Error, "HAX: command-line compilation and execution for HAC (HAC Ada Compiler)");
+    Put_Line (Current_Error, version_info);
+    Put_Line (Current_Error, "URL: " & HAC.web);
+    New_Line (Current_Error);
+    Put_Line (Current_Error, "Usage: hax [options] main.adb [command-line parameters for main]");
+    New_Line (Current_Error);
+    Put_Line (Current_Error, "Options: -h     : this help");
+    Put_Line (Current_Error, "         -v, v1 : verbose");
+    Put_Line (Current_Error, "         -v2    : very verbose");
+    Put_Line (Current_Error, "         -d     : debug information");
+    New_Line (Current_Error);
+    Put_Line (Current_Error, caveat);
+    Show_License (Current_Error, "hac.ads");
   end Help;
 
 begin
@@ -104,13 +108,13 @@ begin
   end loop;
 exception
   when E: others =>
-    New_Line (Standard_Error);
-    Put_Line (Standard_Error,
+    New_Line (Current_Error);
+    Put_Line (Current_Error,
               "--------------------[ Unhandled exception ]-----------------");
-    Put_Line (Standard_Error, " > Name of exception . . . . .: " &
+    Put_Line (Current_Error, " > Name of exception . . . . .: " &
               Ada.Exceptions.Exception_Name (E) );
-    Put_Line (Standard_Error, " > Message for exception . . .: " &
+    Put_Line (Current_Error, " > Message for exception . . .: " &
               Ada.Exceptions.Exception_Message (E) );
-    Put_Line (Standard_Error, " > Trace-back of call stack: " );
-    Put_Line (Standard_Error, GNAT.Traceback.Symbolic.Symbolic_Traceback (E) );
+    Put_Line (Current_Error, " > Trace-back of call stack: " );
+    Put_Line (Current_Error, GNAT.Traceback.Symbolic.Symbolic_Traceback (E) );
 end HAX;

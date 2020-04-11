@@ -8,6 +8,7 @@ project Hac is
    Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
 
    for Main use ("hax.adb");
+
    case Build_Mode is
       when "Debug" =>
          for Object_Dir use "obj/debug";

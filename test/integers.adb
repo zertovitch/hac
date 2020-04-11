@@ -51,7 +51,7 @@ begin
     end if;
   end loop;
   --
-  if 12000 /= 12e3 then
+  if 12_000 /= 12e003 then
     Put_Line ("Compiler bug [E]");
   end if;
   --
