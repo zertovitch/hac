@@ -67,7 +67,7 @@ package HAC.UErrors is
     err_duplicate_case_choice_value,
     err_argument_to_std_function_of_wrong_type,
     err_stack_size,
-    err_illegal_symbol_for_a_constant,
+    err_illegal_symbol_for_a_number_declaration,
     err_BECOMES_missing,
     err_THEN_missing,
     err_IN_missing,

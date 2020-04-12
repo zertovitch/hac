@@ -47,7 +47,7 @@ package body HAC.UErrors is
       when err_bad_result_type_for_a_function =>
         return "bad result type for a function";
       when err_illegal_statement_start_symbol =>
-        return "illegal statement start symbol";
+        return "illegal statement start" & hint;
       when err_expecting_a_boolean_expression =>
         return "expecting a Boolean expression";
       when err_control_variable_of_the_wrong_type =>
@@ -121,8 +121,8 @@ package body HAC.UErrors is
         return "argument to std. function of wrong type";
       when err_stack_size =>
         return "the program requires too much storage";
-      when err_illegal_symbol_for_a_constant =>
-        return "illegal symbol for a constant";
+      when err_illegal_symbol_for_a_number_declaration =>
+        return "illegal symbol for a number declaration or a literal";
       when err_BECOMES_missing =>
         return "missing "":=""";
       when err_THEN_missing =>

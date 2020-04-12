@@ -185,17 +185,20 @@ package body HAC.Parser is
     end Enter_Variable;
 
     ------------------------------------------------------------------
-    ---------------------------------------------------------Constant-
-    procedure KKonstant (FSys : Symset; C : in out ConRec) is
+    -----------------------------------------------Number_Declaration-
+    procedure Number_Declaration (FSys : Symset; C : in out ConRec) is
+      --  RM 3.3.2. Was: Constant in the Pascal compiler. It covers untyped constants.
+      --  Additionally this compiler does on-the-fly declarations for bounds
+      --  in ranges (FOR, ARRAY) and values in CASE statements.
       X, Sign : Integer;
     begin
       C.TP := NOTYP;
       C.I  := 0;
-      Test (Constant_Definition_Begin_Symbol, FSys, err_illegal_symbol_for_a_constant);
+      Test (Constant_Definition_Begin_Symbol, FSys, err_illegal_symbol_for_a_number_declaration);
       if not Constant_Definition_Begin_Symbol (Sy) then
         return;
       end if;
-      if Sy = CharCon then
+      if Sy = CharCon then  --  Untyped character constant, occurs only in ranges.
         C.TP := xChars;
         C.I  := INum;
         InSymbol;
@@ -210,7 +213,7 @@ package body HAC.Parser is
         if Sy = IDent then
           X := Locate_Identifier (Id);
           if X /= 0 then
-            if IdTab (X).Obj /= Konstant then
+            if IdTab (X).Obj /= Declared_Number then
               Error (err_illegal_constant_or_constant_identifier);
             else
               C.TP := IdTab (X).TYP;
@@ -231,11 +234,11 @@ package body HAC.Parser is
           C.R  := HAC_Float (Sign) * RNum;
           InSymbol;
         else
-          Skip (FSys, err_illegal_symbol_for_a_constant);
+          Skip (FSys, err_illegal_symbol_for_a_number_declaration);
         end if;
       end if;
       Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
-    end KKonstant;
+    end Number_Declaration;
 
     ------------------------------------------------------------------
     --------------------------------------------------------------TYP-
@@ -251,7 +254,7 @@ package body HAC.Parser is
         Low, High  : ConRec;
         ELRF, ELSZ : Integer;
       begin
-        KKonstant (OF_RANGE_Double_Dot_RParent + FSys, Low);
+        Number_Declaration (OF_RANGE_Double_Dot_RParent + FSys, Low);
         --
         if Low.TP = Floats then
           Error (err_illegal_array_bounds, "a float type is not expected for a bound");
@@ -260,7 +263,7 @@ package body HAC.Parser is
         end if;
         Need (Range_Double_Dot_Symbol, err_expecting_double_dot);
         --
-        KKonstant (Comma_OF_RParent + FSys, High);
+        Number_Declaration (Comma_OF_RParent + FSys, High);
         --
         if High.TP /= Low.TP then
           Error (err_illegal_array_bounds, "bound types do not match");
@@ -302,7 +305,7 @@ package body HAC.Parser is
           InSymbol;  --  Consume '(' symbol.
           if Sy = IDent then
             ECount := ECount + 1;
-            Enter (Id, Id_with_case, Konstant);
+            Enter (Id, Id_with_case, Declared_Number);
             IdTab (T).TYP := Enums;
             IdTab (T).Ref := RF;
             IdTab (T).Adr := ECount;
@@ -524,7 +527,7 @@ package body HAC.Parser is
       T0, T1, RF, Sz, T0i, LC0, LC1 : Integer;
       TP                            : Types;
       is_constant, is_typed,
-      untyped_constant              : Boolean;
+      is_untyped_constant              : Boolean;
       C                             : ConRec;
     begin
       while Sy = IDent loop
@@ -562,13 +565,13 @@ package body HAC.Parser is
           Sy := Becomes;
         end if;
         --
-        untyped_constant := is_constant and not is_typed;
+        is_untyped_constant := is_constant and not is_typed;
         --
-        if untyped_constant then
+        if is_untyped_constant then
           --  Numeric constant: we parse the number here ("k : constant := 123.0").
           if Sy = Becomes then
             InSymbol;
-            KKonstant (Comma_IDent_Semicolon + FSys, C);
+            Number_Declaration (Comma_IDent_Semicolon + FSys, C);
           else
             Error (err_BECOMES_missing);
           end if;
@@ -582,8 +585,8 @@ package body HAC.Parser is
             declare
               r : TabEntry renames IdTab (T0);
             begin
-              if untyped_constant then
-                r.Obj := Konstant;
+              if is_untyped_constant then
+                r.Obj := Declared_Number;
                 r.TYP := C.TP;
                 case C.TP is
                   when Floats =>
@@ -593,7 +596,8 @@ package body HAC.Parser is
                     r.Adr := C.I;
                   when others =>
                     Error (err_numeric_constant_expected);
-                    --  "boo : constant := True;" is wrong in Ada
+                    --  "boo : constant := True;" or "x: constant := 'a';"
+                    --  are wrong in Ada.
                     r.Adr := C.I;
                 end case;
               else  --  a variable or a typed constant
@@ -615,7 +619,7 @@ package body HAC.Parser is
           end if;
         end if;
         --
-        if (Sy = Becomes) and not untyped_constant then
+        if Sy = Becomes and not is_untyped_constant then
           --  Create constant or variable initialization ObjCode
           LC0 := LC;
           Assignment (T1);
@@ -1095,7 +1099,7 @@ package body HAC.Parser is
                     r : TabEntry renames IdTab (I);
                   begin
                     case r.Obj is
-                      when Konstant =>
+                      when Declared_Number =>
                         X.TYP := r.TYP;
                         X.Ref := r.Ref;
                         if X.TYP = Floats then
@@ -1682,7 +1686,7 @@ package body HAC.Parser is
           Lab : ConRec;
           K   : Integer;
         begin
-          KKonstant (FSys + Alt_Finger, Lab);
+          Number_Declaration (FSys + Alt_Finger, Lab);
           if Lab.TP /= X.TYP then
             Error (err_case_label_not_same_type_as_case_clause);
           elsif I = CSMax then
@@ -2548,8 +2552,15 @@ package body HAC.Parser is
               Named_Statement;
             else
               case IdTab (I).Obj is
-                when Konstant | TypeMark | Funktion =>
-                  Error (err_illegal_statement_start_symbol);
+                when Declared_Number =>
+                  if Sy = Becomes then
+                    Error (err_illegal_statement_start_symbol, ": cannot modify a constant");
+                  else
+                    Error (err_illegal_statement_start_symbol);
+                  end if;
+                  Assignment (I);
+                when TypeMark | Funktion =>
+                  Error (err_illegal_statement_start_symbol, ": statement cannot start with function or type name");
                   Assignment (I);
                 when Variable =>
                   Assignment (I);

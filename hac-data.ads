@@ -217,10 +217,10 @@ package HAC.Data is
   --  Alfa is a space-padded string
   subtype Alfa is String (1 .. Alng);
   Empty_Alfa : Alfa := (others => ' ');
-  function Alfa_to_String(a: Alfa) return String;
+  function Alfa_to_String (a: Alfa) return String;
 
   type aObject is (
-   Konstant,  --  Numerical constant
+   Declared_Number,  --  Untyped constant like "pi : constant := 3.1415927"; (RM 3.3.2)
    Variable,
    TypeMark,
    Prozedure,
