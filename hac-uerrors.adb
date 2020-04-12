@@ -216,6 +216,8 @@ package body HAC.UErrors is
         return "a function cannot be null; only a procedure can";
       when err_digit_expected =>
         return "digit expected";
+      when err_cannot_modify_constant_or_in_parameter =>
+        return "cannot modify a constant or a ""in"" parameter" & hint;
       -- when others =>
       --   return "Unknown error Id=" & Integer'Image (Id);
     end case;
@@ -244,6 +246,7 @@ package body HAC.UErrors is
       err_missing_closing_IF          => (insert,        +" if"),
       err_closing_parenthesis_missing => (insert,        +")"),
       err_incorrect_block_name        => (replace_token, +"[here: correct identifier]"),
+      err_EQUALS_instead_of_BECOMES   => (replace_token, +":="),
       others                          => nothing_to_repair
     );
 

@@ -288,13 +288,16 @@ package HAC.Data is
   -- ----------------------------------------------------------------------
   --  Identifier-Table Entry
   type TabEntry is record
-    Name           : Alfa;          --  identifier name
-    Name_with_case : Alfa;
+    Name           : Alfa;          --  identifier name in ALL CAPS
+    Name_with_case : Alfa;          --  identifier name with original casing
     Link           : Index;
-    Obj            : aObject;       --  One of Konstant, Variable, TypeMark,
-                                    --   Prozedure, Funktion, Task, Entry
-    TYP            : Types;         --  One of NoTyp, Ints, Floats, Bools,
-                                    --   xChars, Arrays, Records, Enums, Strings
+    Obj            : aObject;       --  One of:
+                                    --    Declared_Number, Variable, TypeMark,
+                                    --    Prozedure, Funktion, aTask, aEntry
+    Read_only      : Boolean;       --  If Obj = Variable and Read_only = True,
+                                    --    it's a typed constant.
+    TYP            : Types;         --  One of: NoTyp, Ints, Floats, Bools,
+                                    --    xChars, Arrays, Records, Enums, Strings
     Ref            : Index;         --  Index into the Block table
     Normal         : Boolean;       --  value param?
     LEV            : Nesting_level;

@@ -114,7 +114,8 @@ package HAC.UErrors is
     err_int_to_float_coercion,                 --  2020-04-06
     err_operator_not_defined_for_types,        --  2020-04-06
     err_no_null_functions,                     --  2020-04-10
-    err_digit_expected
+    err_digit_expected,
+    err_cannot_modify_constant_or_in_parameter
   );
 
   type Message_kind is (error, warning, note, style);

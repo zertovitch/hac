@@ -140,6 +140,7 @@ package body HAC.Compiler is
           Name_with_case => X0A,
           Link           => T - 1,
           Obj            => X1,
+          Read_only      => True,
           TYP            => X2,
           Ref            => 0,
           Normal         => True,
@@ -195,7 +196,7 @@ package body HAC.Compiler is
       Enter ("QUANTUM   ",     Prozedure, NOTYP, 11); --{ Cramer }
       Enter ("PRIORITY  ",     Prozedure, NOTYP, 12); --{ Cramer }
       Enter ("INHERITP  ",     Prozedure, NOTYP, 13); --{ Cramer }
-      Enter (Main_Program_ID,        Prozedure, NOTYP, 0);
+      Enter (Main_Program_ID,  Prozedure, NOTYP, 0);
     end Enter_Standard_Functions_and_Main;
 
     use Ada.Text_IO, Ada.Integer_Text_IO, HAC.Parser.Helpers;

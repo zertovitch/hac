@@ -1,4 +1,4 @@
---  Output should be empty if the compiler is correct.
+--  Output must be empty if the compiler is correct.
 
 with HAC_Pack; use HAC_Pack;
 
@@ -23,12 +23,21 @@ procedure Constants is
   --  wrong2 : constant;
   --  wrong3 : constant Integer;
 
+  procedure Test_In (x : in R) is null;
+  procedure Test_Out (x : out R) is null;
+  procedure Test_In_Out (x : in out R) is null;
+
   procedure Test_12_34 (x : R) is
     y : constant R := x;
   begin
     if (y.a /= 12) or (y.b /= 34) then
       Put_Line ("Compiler bug [B]");
     end if;
+    --  x.a := 666;  --  must be rejected (cannot modify "in" parameter)
+    --  y.a := 666;  --  must be rejected (cannot modify constant)
+    Test_In (x);
+    --  Test_Out (y);     --  must be rejected (cannot modify constant)
+    --  Test_In_Out (x);  --  must be rejected (cannot modify constant)
   end;
 
 begin
@@ -36,10 +45,14 @@ begin
     Put_Line ("Compiler bug [A]");
   end if;
   r2 := 7.0;
-  s3.a := 4;  --  should be rejected
-  i1 := 6;    --  should be rejected
-  r3 := 6.0;  --  should be rejected
+  --  s3.a := 4;  --  must be rejected (cannot modify constant)
+  --  i1 := 6;    --  must be rejected (cannot modify constant)
+  --  r3 := 6.0;  --  must be rejected (cannot modify constant)
   s1.a := 12;
   s1.b := 34;
   Test_12_34 (s1);
+  for i in 1 .. 5 loop
+    null;
+    --  i := 1;  --  must be rejected (cannot modify constant)
+  end loop;
 end Constants;

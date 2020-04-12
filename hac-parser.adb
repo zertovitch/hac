@@ -119,6 +119,7 @@ package body HAC.Parser is
           Name_with_case => Id_with_case,
           Link           => L,
           Obj            => K,
+          Read_only      => False,
           TYP            => NOTYP,
           Ref            => 0,
           Normal         => True,
@@ -430,7 +431,7 @@ package body HAC.Parser is
           InSymbol;
           Enter_Variable;
         end loop;
-        if Sy = Colon then
+        if Sy = Colon then  --  ':'  in  "function F (x,y : in Real) return Real;"
           InSymbol;
           if Sy = IN_Symbol then
             InSymbol;
@@ -468,12 +469,13 @@ package body HAC.Parser is
             declare
               r : TabEntry renames IdTab (T0);
             begin
-              r.TYP    := TP;
-              r.Ref    := RF;
-              r.Normal := ValParam;
-              r.Adr    := Dx;
-              r.LEV    := Level;
-              Dx       := Dx + Sz;
+              r.TYP       := TP;
+              r.Ref       := RF;
+              r.Normal    := ValParam;
+              r.Read_only := ValParam;
+              r.Adr       := Dx;
+              r.LEV       := Level;
+              Dx          := Dx + Sz;
             end;
           end loop;  --  while T0 < T
         else
@@ -518,19 +520,19 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
-    procedure Assignment (I : Integer);
+    procedure Assignment (I : Integer; Check_read_only : Boolean);
 
     ------------------------------------------------------------------
     --------------------------------------------------Var_Declaration-
-    procedure Var_Declaration is               -- modified Hathorn
+    procedure Var_Declaration is
       --  This procedure processes both Variable and Constant declarations.
-      T0, T1, RF, Sz, T0i, LC0, LC1 : Integer;
-      TP                            : Types;
-      is_constant, is_typed,
-      is_untyped_constant              : Boolean;
-      C                             : ConRec;
-    begin
-      while Sy = IDent loop
+      procedure Single_Var_Declaration is
+        T0, T1, RF, Sz, T0i, LC0, LC1 : Integer;
+        TP                            : Types;
+        is_constant, is_typed,
+        is_untyped_constant           : Boolean;
+        C                             : ConRec;
+      begin
         T0 := T;
         Enter_Variable;
         while Sy = Comma loop
@@ -585,8 +587,9 @@ package body HAC.Parser is
             declare
               r : TabEntry renames IdTab (T0);
             begin
+              r.Read_only := is_constant;
               if is_untyped_constant then
-                r.Obj := Declared_Number;
+                r.Obj := Declared_Number;  --  r was initially a Variable.
                 r.TYP := C.TP;
                 case C.TP is
                   when Floats =>
@@ -600,7 +603,7 @@ package body HAC.Parser is
                     --  are wrong in Ada.
                     r.Adr := C.I;
                 end case;
-              else  --  a variable or a typed constant
+              else  --  A variable or a typed constant
                 r.TYP := TP;
                 r.Ref := RF;
                 r.Adr := Dx;
@@ -622,7 +625,7 @@ package body HAC.Parser is
         if Sy = Becomes and not is_untyped_constant then
           --  Create constant or variable initialization ObjCode
           LC0 := LC;
-          Assignment (T1);
+          Assignment (T1, Check_read_only => False);
           T0 := T0i;
           while T0 < T1 - 1 loop
             T0 := T0 + 1;
@@ -643,7 +646,11 @@ package body HAC.Parser is
           end loop;
         end if;
         Test_Semicolon (FSys);
-      end loop;  --  While Sy = IDent
+      end Single_Var_Declaration;
+    begin
+      while Sy = IDent loop
+        Single_Var_Declaration;
+      end loop;
     end Var_Declaration;
 
     ------------------------------------------------------------------
@@ -847,14 +854,14 @@ package body HAC.Parser is
       Emit1 (kMarkStack, I);
       LastP := BlockTab (IdTab (I).Ref).LastPar;
       CP    := I;
-      if Sy = LParent then          --  Actual parameter list
+      if Sy = LParent then  --  Actual parameter list
         loop
           InSymbol;
           if CP >= LastP then
             Error (err_number_of_parameters_do_not_match);
           else
             CP := CP + 1;
-            if IdTab (CP).Normal then       -- value parameter
+            if IdTab (CP).Normal then           --  Value parameter (IN)
               Expression (FSys + Colon_Comma_RParent, X);
               if X.TYP = IdTab (CP).TYP then
                 if X.Ref /= IdTab (CP).Ref then
@@ -870,16 +877,22 @@ package body HAC.Parser is
               elsif X.TYP /= NOTYP then
                 Error (err_parameter_types_do_not_match);
               end if;
-            else              -- Variable (Name) parameter
+            else              -- Variable (Name) parameter (IN OUT, OUT)
               if Sy /= IDent then
                 Error (err_identifier_missing);
               else
                 K := Locate_Identifier (Id);
                 InSymbol;
-                if K /= 0 then
-                  if IdTab (K).Obj /= Variable then
-                    Error (err_variable_missing);
-                  end if;
+                if K = 0 then
+                  null;  --  Error already issued due to missing identifier
+                elsif IdTab (K).Obj /= Variable then
+                  Error (err_variable_missing);
+                elsif IdTab (K).Read_only then
+                  Error (
+                    err_cannot_modify_constant_or_in_parameter,
+                    ": passed to OUT or IN OUT parameter"
+                  );
+                else
                   X.TYP := IdTab (K).TYP;
                   X.Ref := IdTab (K).Ref;
                   if IdTab (K).Normal then
@@ -1401,11 +1414,11 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
-    procedure Assignment (I : Integer) is
+    procedure Assignment (I : Integer; Check_read_only : Boolean) is
       X, Y : Item;
       F    : Integer;
-    -- IdTab[I].Obj = Variable
     begin
+      pragma Assert (IdTab (I).Obj = Variable);
       X.TYP := IdTab (I).TYP;
       X.Ref := IdTab (I).Ref;
       if IdTab (I).Normal then
@@ -1425,6 +1438,9 @@ package body HAC.Parser is
         InSymbol;
       else
         Error (err_BECOMES_missing);
+      end if;
+      if Check_read_only and then IdTab (I).Read_only then
+        Error (err_cannot_modify_constant_or_in_parameter);
       end if;
       Expression (Semicolon_Set, Y);
       if X.TYP = Y.TYP then
@@ -1810,14 +1826,15 @@ package body HAC.Parser is
           declare
             r : TabEntry renames IdTab (T);
           begin
-            r.Name   := Id;
-            r.Link   := last;
-            r.Obj    := Variable;
-            r.TYP    := NOTYP;
-            r.Ref    := 0;
-            r.Normal := True;
-            r.LEV    := Level;
-            r.Adr    := Dx;
+            r.Name      := Id;
+            r.Link      := last;
+            r.Obj       := Variable;
+            r.Read_only := True;
+            r.TYP       := NOTYP;
+            r.Ref       := 0;
+            r.Normal    := True;
+            r.LEV       := Level;
+            r.Adr       := Dx;
           end;
           BlockTab (Display (Level)).Last  := T;
           Dx                               := Dx + 1;
@@ -2552,18 +2569,11 @@ package body HAC.Parser is
               Named_Statement;
             else
               case IdTab (I).Obj is
-                when Declared_Number =>
-                  if Sy = Becomes then
-                    Error (err_illegal_statement_start_symbol, ": cannot modify a constant");
-                  else
-                    Error (err_illegal_statement_start_symbol);
-                  end if;
-                  Assignment (I);
+                when Declared_Number | Variable =>
+                  Assignment (I, Check_read_only => True);
                 when TypeMark | Funktion =>
                   Error (err_illegal_statement_start_symbol, ": statement cannot start with function or type name");
-                  Assignment (I);
-                when Variable =>
-                  Assignment (I);
+                  Assignment (I, Check_read_only => True);
                 when aTask =>
                   Entry_Call (FSys, I, CallSTDE);
                 when Prozedure =>
