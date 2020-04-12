@@ -21,7 +21,16 @@ set nice_date=%year%-%month%-%day%_%hour%.%min%
 
 rem --------------------------
 
-set examples=exm/*.ad* exm/special/*.ad* exm/*.gpr exm/t.cmd
-set tests=test/*.ad* test/*.gpr test/tt.cmd
+set root=hac
 
-zipada -ep2 hac-%nice_date% *.ad* *.gpr *.xls save.cmd build.cmd *.txt %examples% %tests% debug.pra obj/debug/create_dir.txt obj/fast/create_dir.txt
+cd..
+
+set examples=%root%/exm/*.ad* %root%/exm/special/*.ad* %root%/exm/*.gpr %root%/exm/e.cmd
+set tests=%root%/test/*.ad* %root%/test/*.gpr %root%/test/t.cmd
+
+set files=%root%/*.ad* %root%/*.gpr %root%/*.xls %root%/save.cmd %root%/build.cmd %root%/*.txt
+set files=%files% %root%/debug.pra %root%/obj/debug/create_dir.txt %root%/obj/fast/create_dir.txt
+set files=%files% %examples% %tests%
+
+zipada -ep2 %root%/hac-%nice_date%-compact- %files%
+zipada -ed3 %root%/hac-%nice_date% %files%

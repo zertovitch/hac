@@ -254,7 +254,7 @@ package body HAC.Parser is
         KKonstant (OF_RANGE_Double_Dot_RParent + FSys, Low);
         --
         if Low.TP = Floats then
-          Error (err_illegal_array_bounds, "a float type is not expected");
+          Error (err_illegal_array_bounds, "a float type is not expected for a bound");
           Low.TP := Ints;
           Low.I  := 0;
         end if;
@@ -263,7 +263,7 @@ package body HAC.Parser is
         KKonstant (Comma_OF_RParent + FSys, High);
         --
         if High.TP /= Low.TP then
-          Error (err_illegal_array_bounds, "types do not match");
+          Error (err_illegal_array_bounds, "bound types do not match");
           High.I := Low.I;
         end if;
         Enter_Array (Low.TP, Low.I, High.I);
@@ -523,7 +523,7 @@ package body HAC.Parser is
       --  This procedure processes both Variable and Constant declarations.
       T0, T1, RF, Sz, T0i, LC0, LC1 : Integer;
       TP                            : Types;
-      ConstDec, TypeID,
+      is_constant, is_typed,
       untyped_constant              : Boolean;
       C                             : ConRec;
     begin
@@ -543,25 +543,29 @@ package body HAC.Parser is
           I := Locate_Identifier (Id, stop_on_error => True);
         end if;
         Test (Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_Set, err_incorrectly_used_symbol);
-        ConstDec := False;
-        untyped_constant:= False;
-        if Sy = CONSTANT_Symbol then  --  Consume "constant" in "x : constant [Integer];"
-          ConstDec := True;
+        --
+        is_constant := False;
+        if Sy = CONSTANT_Symbol then  --  Consume "constant" in "x : constant ...;"
+          is_constant := True;
           InSymbol;
         end if;
-        TypeID := False;
-        if Type_Begin_Symbol (Sy) then -- Here, a type name or an anonymous type definition
-          TypeID := True;
+        --
+        is_typed := False;
+        if Type_Begin_Symbol (Sy) then  --  Here, a type name or an anonymous type definition
+          is_typed := True;
           TYP (Becomes_Comma_IDent_Semicolon + FSys, TP, RF, Sz);
-        else
-          untyped_constant:= True;
         end if;
         Test (Becomes_EQL_Semicolon, Empty_Symset, err_incorrectly_used_symbol);
+        --
         if Sy = EQL then
           Error (err_EQUALS_instead_of_BECOMES);
           Sy := Becomes;
         end if;
-        if ConstDec then
+        --
+        untyped_constant := is_constant and not is_typed;
+        --
+        if untyped_constant then
+          --  Numeric constant: we parse the number here ("k : constant := 123.0").
           if Sy = Becomes then
             InSymbol;
             KKonstant (Comma_IDent_Semicolon + FSys, C);
@@ -569,14 +573,16 @@ package body HAC.Parser is
             Error (err_BECOMES_missing);
           end if;
         end if;
+        --
         T0i := T0;
-        if ConstDec or TypeID then        -- update identifier table
+        if is_constant or is_typed then  --  All correct cases: untyped variables were caught.
+          --  Update identifier table
           while T0 < T1 loop
             T0 := T0 + 1;
             declare
               r : TabEntry renames IdTab (T0);
             begin
-              if ConstDec then
+              if untyped_constant then
                 r.Obj := Konstant;
                 r.TYP := C.TP;
                 case C.TP is
@@ -586,23 +592,31 @@ package body HAC.Parser is
                   when Ints =>
                     r.Adr := C.I;
                   when others =>
-                    if untyped_constant then
-                      Error (err_numeric_constant_expected);
-                      -- "boo: constant:= True;" is wrong in Ada
-                    end if;
+                    Error (err_numeric_constant_expected);
+                    --  "boo : constant := True;" is wrong in Ada
                     r.Adr := C.I;
                 end case;
-              else
+              else  --  a variable or a typed constant
                 r.TYP := TP;
                 r.Ref := RF;
                 r.Adr := Dx;
                 Dx    := Dx + Sz;
-              end if;  --  ConstDec
+              end if;
             end;
           end loop;  --  While T0 < T1
         end if;
-        if not ConstDec and Sy = Becomes then
-          -- create Variable initialization ObjCode
+        --
+        if is_constant and is_typed then
+          --  For typed constants, the ":=" is required and consumed with the Assignment below.
+          Test (Becomes_EQL, Empty_Symset, err_BECOMES_missing);
+          if Sy = EQL then
+            Error (err_EQUALS_instead_of_BECOMES);
+            Sy := Becomes;
+          end if;
+        end if;
+        --
+        if (Sy = Becomes) and not untyped_constant then
+          --  Create constant or variable initialization ObjCode
           LC0 := LC;
           Assignment (T1);
           T0 := T0i;
@@ -614,9 +628,9 @@ package body HAC.Parser is
           end loop;
           --
           LC1 := LC;
-          -- reset ObjCode pointer as if ObjCode had not been generated
+          --  reset ObjCode pointer as if ObjCode had not been generated
           LC := LC0;
-          -- copy ObjCode to end of ObjCode table
+          --  copy ObjCode to end of ObjCode table
           ICode := ICode + (LC1 - LC0);      -- Size of ObjCode
           while LC0 < LC1 loop
             ObjCode (CMax) := ObjCode (LC0);

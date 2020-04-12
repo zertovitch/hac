@@ -23,6 +23,8 @@ pause
 pause
 ..\hax -v2 doors.adb
 pause
+..\hax -v2 mandelbrot.adb
+pause
 ..\hax -v2 test.adb
 pause
 ..\hax -v2 test1.adb

@@ -26,6 +26,7 @@ echo.
 echo *******[ HAC Testing ]******* "Silent tests": when there is zero output and no compilation error, it's all fine.
 echo.
 
+..\hax -v1 constants.adb
 ..\hax -v1 declarations.adb
 ..\hax -v1 enumerations.adb
 ..\hax -v1 floats.adb

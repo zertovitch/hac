@@ -13,6 +13,7 @@ project HAC_Test is
    Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
 
    for Main use (
+     "constants.adb",
      "declarations.adb",
      "enumerations.adb",
      "floats.adb",

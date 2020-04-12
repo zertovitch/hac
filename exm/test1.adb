@@ -37,7 +37,7 @@ procedure Test1 is
          Sat);
 
   I1, I2, I3:  Integer := 99;
-  I4: constant Integer := -89; --  -I1 + 10;  !! HAC doesn't like
+  I4: constant Integer := -I1 + 10;
   I5, I6, I7:  Integer;
   R1: Real := 1.23;
   R2: Real := TenpOne;

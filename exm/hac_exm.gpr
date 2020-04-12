@@ -19,22 +19,26 @@ project HAC_Exm is
      "ackermann.adb",
      "days_1901.adb",
      "hello.adb",
+     "mandelbrot.adb",
      "merge_sort.adb",
      "shell_sort.adb",
      "test1.adb",
      --
-     --  2) * GNAT OK;
+     --  2) * GNAT OK
      --     * HAC KO (feature not yet supported)
      --  
      "overloading.adb",
      --
-     --  3) * GNAT OK (detects correctly incorrect Ada code);
+     --  3) * GNAT OK
+     --     * HAC KO (crash)
+     --
+     --  4) * GNAT OK (detects correctly incorrect Ada code)
      --     * HAC KO (compiles instead of outputting a compilation error; likely a Pascal-ism)
      --     See places with "!!" in the parser code.
      --  
      "test.adb"
      --
-     --  4) Code wrong, incomplete, HAC showing wrong output, or whatever - to be sorted...
+     --  5) Code wrong, incomplete, HAC showing wrong output, or whatever - to be sorted...
      --
      --  "dinersmo.adb",
      --  "din_sm.adb",
