@@ -306,7 +306,7 @@ package body HAC.Compiler is
     Block (Block_Begin_Symbol + Statement_Begin_Symbol,
            False, False, 1, T, IdTab(T).Name, Main_Program_ID_with_case);
     --  Main procedure is parsed.
-    Emit (k_Halt_Interpreter);
+    Emit (ObjCode, LC, k_Halt_Interpreter);
 
     if Sy /= Semicolon then
       if qDebug then

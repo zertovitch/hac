@@ -1,4 +1,3 @@
-with HAC.Data;    use HAC.Data;
 with HAC.UErrors; use HAC.UErrors;
 -- with Sequential_IO;
 -- with Text_IO;
@@ -63,30 +62,55 @@ package body HAC.PCode is
 
   ----------------------------------------------------------------Emit----
 
-  procedure Emit (FCT : Opcode) is
+  procedure Emit (
+    OC   : in out Object_Code_Table;
+    LC   : in out Integer;
+    FCT  :        Opcode)
+  is
   begin
-    Emit2 (FCT, 0, 0);    --  Order's X, Y are not used
+    Emit2 (OC, LC, FCT, 0, 0);    --  Order's X, Y are not used
   end Emit;
 
   ---------------------------------------------------------------Emit1----
 
-  procedure Emit1 (FCT : Opcode; B : Integer) is
+  procedure Emit1 (
+    OC   : in out Object_Code_Table;
+    LC   : in out Integer;
+    FCT  :        Opcode;
+    B    :        Integer)
+  is
   begin
-    Emit2 (FCT, 0, B);    --  Order's X is not used
+    Emit2 (OC, LC, FCT, 0, B);    --  Order's X is not used
   end Emit1;
 
   ---------------------------------------------------------------Emit2----
 
-  procedure Emit2 (FCT : Opcode; a, B : Integer) is
+  procedure Emit2 (
+    OC   : in out Object_Code_Table;
+    LC   : in out Integer;
+    FCT  :        Opcode;
+    a, B :        Integer)
+  is
   begin
-    if LC = CMax then
+    if LC = OC'Last then
       Fatal (OBJECTS);
     end if;
-    ObjCode (LC).F := FCT;
-    ObjCode (LC).X := a;
-    ObjCode (LC).Y := B;
-    LC             := LC + 1;
+    OC (LC).F := FCT;
+    OC (LC).X := a;
+    OC (LC).Y := B;
+    LC        := LC + 1;
   end Emit2;
+
+  procedure Patch_Addresses (OC : in out Object_Code_Table; LC_From, LC_Current : Integer) is
+    LC0 : Integer := LC_From;
+  begin
+    while LC0 < LC_Current loop
+      if OC (LC0).Y = dummy_address then
+        OC (LC0).Y := LC_Current;
+      end if;
+      LC0 := LC0 + 1;
+    end loop;
+  end Patch_Addresses;
 
   -------------------------------------------------------------SaveOBJ----
 

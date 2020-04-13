@@ -9,22 +9,46 @@
 -------------------------------------------------------------------------------------
 --
 
---  This unit is used to store object codes in the ObjCode table.
---  The three procedures Emit, Emit1, and Emit2 are called from
---  the compiler and the parser.
+--  This package defines the PCode Virtual Machine.
 
 package HAC.PCode is
 
   type Opcode is range 0 .. 79;
+  subtype Operand1 is Integer;       -- was -LMax..+LMax (levels)
+  subtype Operand2 is Integer;
 
-  --  Store PCode object in the object code table
-  procedure Emit (FCT : Opcode);
-  procedure Emit1 (FCT : Opcode; B : Integer);
-  procedure Emit2 (FCT : Opcode; a, B : Integer);
+  --  PCode instruction record (stores a compiled PCode instruction)
+  type Order is record
+    F : HAC.PCode.Opcode;  --  Opcode (or instruction field)
+    X : Operand1;          --  Operand 1 is used to point to the static level
+    Y : Operand2;          --  Operand 2 is used to pass operands to the instructions
+  end record;
+
+  type Object_Code_Table is array (Natural range <>) of Order;
 
   dummy_address : constant := -1;
   --  For jumps forward in the code towards an ELSE, ELSIF, END IF, END LOOP, ...
   --  When the code is emited, the address is still unknown.
+  --  When the address is known, jump addresses are patched.
+
+  --  Patch all addresses which are = dummy_address to LC_Current.
+  procedure Patch_Addresses (OC : in out Object_Code_Table; LC_From, LC_Current : Integer);
+
+  --  Store PCode instruction in the object code table OC at position LC and increments LC.
+  procedure Emit (
+    OC   : in out Object_Code_Table;
+    LC   : in out Integer;
+    FCT  :        Opcode);
+  procedure Emit1 (
+    OC   : in out Object_Code_Table;
+    LC   : in out Integer;
+    FCT  :        Opcode;
+    B    :        Integer);
+  procedure Emit2 (
+    OC   : in out Object_Code_Table;
+    LC   : in out Integer;
+    FCT  :        Opcode;
+    a, B :        Integer);
 
   -----------------------------------------------------PCode Opcodes----
 

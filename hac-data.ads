@@ -60,7 +60,6 @@ package HAC.Data is
   KMax       : constant := 7;             --  Max No. of significant digits
   LLNG       : constant := 83;            --  input line Length
   LMax       : constant := 7;             --  maximum Level
-  NMax       : constant Integer := MaxINT;
 
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char
@@ -90,12 +89,12 @@ package HAC.Data is
    xTimes,
    xx_Power,
    Divide,
-   EQL,
-   NEQ,
-   GTR,
-   GEQ,
-   LSS,
-   LEQ,
+   EQL,      --  =
+   NEQ,      --  /=
+   GTR,      --  >
+   GEQ,      --  >=
+   LSS,      --  <
+   LEQ,      --  <=
    LParent,
    RParent,
    LBrack,
@@ -186,11 +185,6 @@ package HAC.Data is
    WHILE_Symbol,
    WITH_Symbol,
    XOR_Symbol);
-
-  subtype Operand1 is Integer range -LMax .. +LMax;       -- -LMax..+LMax;  --
-                                                          --operand
-  subtype Operand2 is Integer range -NMax .. +NMax;       -- -NMax..+NMax;  --
-                                                          --operand
 
   type Set is array (Integer range <>) of Boolean;
   function "+" (a, b : Set) return Set;
@@ -344,17 +338,6 @@ package HAC.Data is
     SrcTo: Longint;   --  and goes until here    (* Manuel *)
   end record;
 
-  -- ----------------------------------------------------------------------
-  -- -------------------------------------------------------------Order----
-  -- ----------------------------------------------------------------------
-  --  PCode instruction record (stores a compiled PCode instruction)
-  type Order is record
-    F : HAC.PCode.Opcode;  --  Opcode (or instruction field)
-    X : Operand1;          --  Operand 1 is used to point to the static level
-    Y : Operand2;          --  Operand 2 is used to pass operands to the
-                           --  instructions
-  end record;
-
   ------------------------------------------------------------------------
   ------------------------------------------------------------FilDescr----
   ------------------------------------------------------------------------
@@ -446,9 +429,8 @@ package HAC.Data is
   HAC_Integer_Name : constant String := "INTEGER";
 
   ArraysTab  : array (1 .. AMax) of ATabEntry;  --  Array table
-  BlockTab   : array (0 .. BMax) of BTabEntry;  --  Block-table [7-Dec-2009:
-                                                --was 1..]
-  ObjCode    : array (0 .. CDMax) of Order;     --  Object Code table
+  BlockTab   : array (0 .. BMax) of BTabEntry;  --  Block-table [7-Dec-2009: was 1..]
+  ObjCode    : HAC.PCode.Object_Code_Table (0 .. CDMax);
   EntryTab   : array (0 .. EntryMax) of Index;  --  Entry Table
   FileIOTab  : FilDescr;                        --  File I/O table
   FloatPtTab : array (1 .. C2Max) of HAC_Float; --  Float Constant table

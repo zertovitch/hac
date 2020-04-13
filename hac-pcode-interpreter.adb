@@ -129,7 +129,7 @@ package body HAC.PCode.Interpreter is
       Last : Eptr;  --  ptr to last  node in rendzv queue
     end record;
 
-    IR : HAC.Data.Order;  --  Instruction register
+    IR : Order;  --  Instruction register
 
     PS       : Processor_State := RUN;    --  Processor status register
     TCB      : array (TRange) of Task_Control_Block;  --  Task control blocks
