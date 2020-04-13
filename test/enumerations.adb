@@ -7,6 +7,7 @@ procedure Enumerations is
   type E1 is (a);
   type E2 is (b, c);
   type E3 is (d, e, f);
+  type E4 is (g, h, i, j);
 
   x1 : E1;
   x2 : E2;
@@ -16,11 +17,14 @@ procedure Enumerations is
     x1 : E1;
     x2 : E2;
     x3 : E3;
+    x4 : E4;
   end record;
 
   ww : array (1 .. 7) of R;
 
   v : R;
+
+  zz : array (d .. f) of R;
 
 begin
   v.x1 := a;
@@ -46,4 +50,19 @@ begin
   if ww (5).x3 /= e then
     Put_Line ("Compiler bug [D]");
   end if;
+  --
+  zz (d).x4 := j;
+  zz (e).x4 := i;
+  zz (f).x4 := h;
+  put (zz (d).x4);  --  = j (pos = 3)  --  !! should be available through 'Image & 'Pos
+  put (zz (e).x4);  --  = i (pos = 2)  --  !! should be available through 'Image & 'Pos
+  put (zz (f).x4);  --  = h (pos = 1)  --  !! should be available through 'Image & 'Pos
+  new_line;
+
+  put (d);  --  !! should be available through 'Image
+  put (e);  --  !! should be available through 'Image
+  put (f);  --  !! should be available through 'Image
+  --  for var in d .. f loop
+  --    put(var);
+  --  end loop;
 end Enumerations;

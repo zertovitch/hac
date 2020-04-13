@@ -297,26 +297,26 @@ package body HAC.Parser is
         end;
       end Array_Typ;
 
-      procedure Enumeration_Type is
-        ECount : Natural := 0;
+      procedure Enumeration_Type is  --  RM 3.5.1 Enumeration Types
+        enum_count : Natural := 0;
       begin
         TP := Enums;
         RF := T;
         loop
           InSymbol;  --  Consume '(' symbol.
           if Sy = IDent then
-            ECount := ECount + 1;
+            enum_count := enum_count + 1;
             Enter (Id, Id_with_case, Declared_Number);
             IdTab (T).TYP := Enums;
             IdTab (T).Ref := RF;
-            IdTab (T).Adr := ECount;
+            IdTab (T).Adr := enum_count - 1;  --  RM 3.5.1 (7): position numbers begin with 0.
           else
             Error (err_identifier_missing);
           end if;
           InSymbol;
           exit when Sy /= Comma;
         end loop;
-        Sz := ECount;
+        Sz := enum_count;  --  ?? size should be 1 (to be checked !!)
         Need (RParent, err_closing_parenthesis_missing);
       end Enumeration_Type;
 
@@ -704,12 +704,12 @@ package body HAC.Parser is
           Error (err_identifier_missing);
           Id := Empty_Alfa;
         end if;
-        TCount := TCount + 1;
-        if TCount > TaskMax then
+        Tasks_Count := Tasks_Count + 1;
+        if Tasks_Count > TaskMax then
           Fatal (TASKS);  --  Exception is raised there.
         end if;
         Enter (TaskID, TaskID, aTask);  --  !! casing
-        TaskDefTab (TCount) := T;
+        TaskDefTab (Tasks_Count) := T;
         Enter_Block (T);
         IdTab (T).Ref := B;
         InSymbol;
@@ -728,16 +728,16 @@ package body HAC.Parser is
               Error (err_identifier_missing);
               Id := Empty_Alfa;
             end if;
-            ECount := ECount + 1;
-            if ECount > EntryMax then
+            Entries_Count := Entries_Count + 1;
+            if Entries_Count > EntryMax then
               Fatal (ENTRIES);  --  Exception is raised there.
             end if;
             Enter (Id, Id_with_case, aEntry);
-            EntryTab (ECount) := T;  --  point to identifier table location
-            T0                := T;  --  of TaskID
+            EntryTab (Entries_Count) := T;  --  point to identifier table location
+            T0                       := T;  --  of TaskID
             InSymbol;
             Block (FSys, False, False, Level + 1, T, IdTab(T).Name, IdTab(T).Name_with_case);
-            IdTab (T0).Adr := TCount;
+            IdTab (T0).Adr := Tasks_Count;
             if Sy = Semicolon then
               InSymbol;
             else

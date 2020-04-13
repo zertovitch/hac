@@ -20,8 +20,8 @@ package body HAC.Compiler is
     -- Strings
     Sx := 0;
     -- Tasks, Entries
-    TCount := 0;
-    ECount := 0;
+    Tasks_Count := 0;
+    Entries_Count := 0;
     -- Location Counter (in output code)
     LC := 0;
   end Init_Tables;
@@ -54,7 +54,7 @@ package body HAC.Compiler is
 
     New_Line;
     Put_Line (" Tasks       Block#");
-    for I in 0 .. TCount loop
+    for I in 0 .. Tasks_Count loop
       Put (I, 4);
       Put (' ');
       Put (IdTab (TaskDefTab (I)).Name);
@@ -65,10 +65,10 @@ package body HAC.Compiler is
 
     New_Line;
 
-    if ECount > 0 then
+    if Entries_Count > 0 then
       Put (" Entries ");
       New_Line;
-      for I in 1 .. ECount loop
+      for I in 1 .. Entries_Count loop
         Put (I, 4);
         Put (' ');
         Put (IdTab (EntryTab (I)).Name);
@@ -317,7 +317,7 @@ package body HAC.Compiler is
       end if;
     end if;
 
-    if BlockTab (1).VSize > StMax - (STKINCR * TCount) then
+    if BlockTab (1).VSize > StMax - (STKINCR * Tasks_Count) then
       Error (err_stack_size, "");
     end if;
     BlockTab (1).SrcTo := Line_Count;  --(* Manuel : terminate source *)

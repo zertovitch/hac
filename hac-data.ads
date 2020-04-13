@@ -467,14 +467,14 @@ package HAC.Data is
   -- --- Indices To Compiler tables  ---
   -- Manuel : These could use some renaming tool
 
-  A      : Integer;       --  Index To ArraysTab
-  B      : Integer;       --  Index To BlockTab
-  C1     : Integer;       --  Index To FloatPtTab
-  C2     : Natural;       --  Index To FloatPtTab
-  Sx     : Integer;       --  Index To StringTab
-  T      : Integer;       --  Index To IdTab
-  TCount : Integer;       --  Index To TskDefTab
-  ECount : Integer;       --  Index To EntryTAB
+  A             : Integer;       --  Index To ArraysTab
+  B             : Integer;       --  Index To BlockTab
+  C1            : Integer;       --  Index To FloatPtTab
+  C2            : Natural;       --  Index To FloatPtTab
+  Sx            : Integer;       --  Index To StringTab
+  T             : Integer;       --  Index To IdTab
+  Tasks_Count   : Integer;       --  Index To TskDefTab
+  Entries_Count : Integer;       --  Index To EntryTAB
 
   type SSTBzz is array (Character'(' ') .. ']') of KeyWSymbol;
   Special_Symbols : constant SSTBzz :=

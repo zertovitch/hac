@@ -253,7 +253,7 @@ package body HAC.PCode.Interpreter is
     begin
       taskdelayed := False;
       t           := 0;
-      while t <= HAC.Data.TCount and not taskdelayed loop
+      while t <= HAC.Data.Tasks_Count and not taskdelayed loop
         taskdelayed := TCB (t).TS = Delayed or
                        TCB (t).TS = TimedRendz or
                        TCB (t).TS = TimedWait;
@@ -269,7 +269,7 @@ package body HAC.PCode.Interpreter is
     begin
       e := -1;
       i := 1;
-      while i <= HAC.Data.ECount and e = -1 loop
+      while i <= HAC.Data.Entries_Count and e = -1 loop
         if Entry_Index = HAC.Data.EntryTab (i) then
           e := i;
         end if;
@@ -406,7 +406,7 @@ package body HAC.PCode.Interpreter is
       use InterDef;
     begin
       count := 0;
-      for t in 0 .. HAC.Data.TCount loop
+      for t in 0 .. HAC.Data.Tasks_Count loop
         if (TCB (t).TS = Delayed or
             TCB (t).TS = TimedRendz or
             TCB (t).TS = TimedWait) and
@@ -450,7 +450,7 @@ package body HAC.PCode.Interpreter is
         Main_TCB.TS := Ready ;
         Main_TCB.InRendzv := NilTask ;
         Main_TCB.DISPLAY (1) := 0 ;
-        Main_TCB.STACKSIZE := HAC.Data.StMax - (HAC.Data.TCount * HAC.Data.STKINCR) ;
+        Main_TCB.STACKSIZE := HAC.Data.StMax - (HAC.Data.Tasks_Count * HAC.Data.STKINCR) ;
         Main_TCB.SUSPEND := 0 ;
         Main_TCB.QUANTUM := Duration(HAC.Data.TSlice);
         Main_TCB.Pcontrol.UPRI := 0 ;
@@ -461,7 +461,7 @@ package body HAC.PCode.Interpreter is
 
     procedure Init_other_tasks is
     begin
-      for CurTask  in  1 .. HAC.Data.TCount loop
+      for CurTask  in  1 .. HAC.Data.Tasks_Count loop
         declare
           Curr_TCB : Task_Control_Block renames TCB(CurTask);
         begin
@@ -486,12 +486,12 @@ package body HAC.PCode.Interpreter is
         end;
       end loop;
       --  Initially no queued entry calls
-      for H1  in  1 .. HAC.Data.ECount loop
+      for H1  in  1 .. HAC.Data.Entries_Count loop
         EList (H1).Task_Index := HAC.Data.IdTab (HAC.Data.EntryTab (H1)).Adr ; --  Task index
         EList (H1).First := null ;
         EList (H1).Last  := null ;
       end loop;
-      TActive := HAC.Data.TCount ; --  All tasks are active initially
+      TActive := HAC.Data.Tasks_Count ; --  All tasks are active initially
       CurTask := 0 ;  --  IT WAS -1 ?
       SWITCH := True ;
       TIMER := Start_Time; -- was 0.0
@@ -653,7 +653,7 @@ package body HAC.PCode.Interpreter is
           when k_Signal_Semaphore =>
             H1            := S (Curr_TCB.T).I;
             Curr_TCB.T := Curr_TCB.T - 1;
-            H2            := HAC.Data.TCount + 1;
+            H2            := HAC.Data.Tasks_Count + 1;
             H3            := Integer (Random (Gen) * Float (H2));
             while H2 >= 0 and TCB (H3).TS /= WaitSem and TCB (H3).SUSPEND /= H1
             loop
@@ -1506,7 +1506,7 @@ package body HAC.PCode.Interpreter is
               --  IS THE PARENT TASK COMPLETED?
               if TCB (0).TS = Completed and CurTask /= 0 and IR.X /= 6 then
                 NCALLS := 0; --  LET'S SEE IF THERE ARE CALLERS
-                for ITERM in 1 .. HAC.Data.ECount loop
+                for ITERM in 1 .. HAC.Data.Entries_Count loop
                   if EList (ITERM).First /= null then
                     NCALLS := NCALLS + 1;
                   end if;
@@ -1516,7 +1516,7 @@ package body HAC.PCode.Interpreter is
                   --  ARE THE SIBLING TASKS EITHER COMPLETED OR
                   --  IN THE SAME STATE AS CURTASK?
                   NCOMPL := 0;
-                  for ITERM in 1 .. HAC.Data.TCount loop
+                  for ITERM in 1 .. HAC.Data.Tasks_Count loop
                     if TCB (ITERM).TS = Completed then
                       NCOMPL := NCOMPL + 1;
                     else
@@ -1531,9 +1531,9 @@ package body HAC.PCode.Interpreter is
                       end if;
                     end if;
                   end loop;
-                  if HAC.Data.TCount = NCOMPL then
+                  if HAC.Data.Tasks_Count = NCOMPL then
                     --  YES, THEN ALL TASKS ARE NOW TERMINATING
-                    for ITERM in 1 .. HAC.Data.TCount loop
+                    for ITERM in 1 .. HAC.Data.Tasks_Count loop
                       TCB (ITERM).TS := Terminated;
                     end loop;
                     PS := FIN;
