@@ -15,7 +15,7 @@ with Ada.Streams; use Ada.Streams;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
 
-with HAC.UErrors;
+with HAC.PCode, HAC.UErrors;
 
 package HAC.Data is
 
@@ -65,8 +65,6 @@ package HAC.Data is
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char
 
-  --  OMax: highest Order ObjCode - see constants in HAC.PCode.
-  OMax       : constant := 79;
   PriMax     : constant := 100;           --  Maximum Task priority
   SMax       : constant := 10_000;        --  Size of String-table
   TaskMax    : constant := 12;            --  Max # of concurrent tasks
@@ -188,8 +186,6 @@ package HAC.Data is
    WHILE_Symbol,
    WITH_Symbol,
    XOR_Symbol);
-
-  subtype Opcode is Integer range 0 .. OMax;
 
   subtype Operand1 is Integer range -LMax .. +LMax;       -- -LMax..+LMax;  --
                                                           --operand
@@ -353,10 +349,10 @@ package HAC.Data is
   -- ----------------------------------------------------------------------
   --  PCode instruction record (stores a compiled PCode instruction)
   type Order is record
-    F : Opcode;       --  Opcode (or instruction field)
-    X : Operand1;     --  Operand 1 is used to point to the static level
-    Y : Operand2;     --  Operand 2 is used to pass operands to the
-                      --  instructions
+    F : HAC.PCode.Opcode;  --  Opcode (or instruction field)
+    X : Operand1;          --  Operand 1 is used to point to the static level
+    Y : Operand2;          --  Operand 2 is used to pass operands to the
+                           --  instructions
   end record;
 
   ------------------------------------------------------------------------

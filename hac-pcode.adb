@@ -63,21 +63,21 @@ package body HAC.PCode is
 
   ----------------------------------------------------------------Emit----
 
-  procedure Emit (FCT : Integer) is
+  procedure Emit (FCT : Opcode) is
   begin
-    Emit2 (FCT, 0, 0);    -- X, Y are not used
+    Emit2 (FCT, 0, 0);    --  Order's X, Y are not used
   end Emit;
 
   ---------------------------------------------------------------Emit1----
 
-  procedure Emit1 (FCT, B : Integer) is
+  procedure Emit1 (FCT : Opcode; B : Integer) is
   begin
-    Emit2 (FCT, 0, B);    -- X is not used
+    Emit2 (FCT, 0, B);    --  Order's X is not used
   end Emit1;
 
   ---------------------------------------------------------------Emit2----
 
-  procedure Emit2 (FCT, a, B : Integer) is
+  procedure Emit2 (FCT : Opcode; a, B : Integer) is
   begin
     if LC = CMax then
       Fatal (OBJECTS);

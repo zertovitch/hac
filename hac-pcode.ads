@@ -15,14 +15,16 @@
 
 package HAC.PCode is
 
+  type Opcode is range 0 .. 79;
+
+  --  Store PCode object in the object code table
+  procedure Emit (FCT : Opcode);
+  procedure Emit1 (FCT : Opcode; B : Integer);
+  procedure Emit2 (FCT : Opcode; a, B : Integer);
+
   dummy_address : constant := -1;
   --  For jumps forward in the code towards an ELSE, ELSIF, END IF, END LOOP, ...
   --  When the code is emited, the address is still unknown.
-
-  --  Store PCode object in the object code table
-  procedure Emit(FCT: Integer);
-  procedure Emit1(FCT, B: Integer);
-  procedure Emit2(FCT, a, B: Integer);
 
   -----------------------------------------------------PCode Opcodes----
 
@@ -108,8 +110,8 @@ package HAC.PCode is
   k_Unary_MINUS_Float             : constant := 79;  --  2020-04-04
 
   --  Save and restore an object file
-  procedure SaveOBJ(FileName: String);
-  procedure RestoreOBJ(FileName: String);
+  procedure SaveOBJ (FileName: String);
+  procedure RestoreOBJ (FileName: String);
 
   --  Standard function operations
 

@@ -51,7 +51,7 @@ package body HAC.UErrors is
       when err_expecting_a_boolean_expression =>
         return "expecting a Boolean expression";
       when err_control_variable_of_the_wrong_type =>
-        return "control variable of the wrong type";
+        return "control variable of the wrong type: must be discrete";
       when err_first_and_last_must_have_matching_types =>
         return "first and last must have matching types";
       when err_IS_missing =>

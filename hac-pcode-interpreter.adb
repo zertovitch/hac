@@ -755,7 +755,7 @@ package body HAC.PCode.Interpreter is
           end if;
           Curr_TCB.T := Curr_TCB.T - 1;
 
-        when 12 => --  SWTC - switch
+        when kSwitch =>  --  SWTC - switch
           H1            := S (Curr_TCB.T).I;
           Curr_TCB.T := Curr_TCB.T - 1;
           H2            := IR.Y;
@@ -775,7 +775,7 @@ package body HAC.PCode.Interpreter is
             exit when H3 /= 0;
           end loop;
 
-        when 14 => --  FOR1
+        when kFor1 =>  --  Start of a FOR loop, forward direction
           H1 := S (Curr_TCB.T - 1).I;
           if H1 <= S (Curr_TCB.T).I then
             S (S (Curr_TCB.T - 2).I).I := H1;
@@ -784,7 +784,7 @@ package body HAC.PCode.Interpreter is
             Curr_TCB.PC := IR.Y;
           end if;
 
-        when 15 => --  FOR2
+        when kFor2 =>  --  End of a FOR loop, forward direction
           H2 := S (Curr_TCB.T - 2).I;
           H1 := S (H2).I + 1;
           if H1 <= S (Curr_TCB.T).I then
@@ -794,7 +794,7 @@ package body HAC.PCode.Interpreter is
             Curr_TCB.T := Curr_TCB.T - 3;
           end if;
 
-        when 16 => --  for1rev
+        when kFor1Rev =>  --  Start of a FOR loop, reverse direction
           H1 := S (Curr_TCB.T).I;
           if H1 >= S (Curr_TCB.T - 1).I then
             S (S (Curr_TCB.T - 2).I).I := H1;
@@ -803,7 +803,7 @@ package body HAC.PCode.Interpreter is
             Curr_TCB.T  := Curr_TCB.T - 3;
           end if;
 
-        when 17 => --  for2rev
+        when kFor2Rev =>  --  End of a FOR loop, reverse direction
           H2 := S (Curr_TCB.T - 2).I;
           H1 := S (H2).I - 1;
           if H1 >= S (Curr_TCB.T - 1).I then
@@ -813,7 +813,7 @@ package body HAC.PCode.Interpreter is
             Curr_TCB.T := Curr_TCB.T - 3;
           end if;
 
-        when 18 => --  mark stack
+        when kMarkStack =>
           H1 := HAC.Data.BlockTab (HAC.Data.IdTab (IR.Y).Ref).VSize;
           if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
             PS := STKCHK;
@@ -824,7 +824,7 @@ package body HAC.PCode.Interpreter is
                                             --procedure/entry
           end if;
 
-        when 19 =>
+        when kCall =>
           --  procedure and task entry CALL
           --  Cramer
           if IR.X = HAC.Data.CallTMDE then
@@ -916,35 +916,27 @@ package body HAC.PCode.Interpreter is
               null;  -- [P2Ada]: no otherwise / else in Pascal
           end case;
 
-        when 20 => --  INDEX1
+        when kIndex1 =>
           H1 := IR.Y;     --  H1 points to HAC.Data.ArraysTab
           H2 := HAC.Data.ArraysTab (H1).Low;
           H3 := S (Curr_TCB.T).I;
-          if H3 < H2 then
-            PS := INXCHK;
+          if H3 not in H2 .. HAC.Data.ArraysTab (H1).High then
+            PS := INXCHK;  --  Out-of-range state
           else
-            if H3 > HAC.Data.ArraysTab (H1).High then
-              PS := INXCHK;
-            else
-              Curr_TCB.T       := Curr_TCB.T - 1;
-              S (Curr_TCB.T).I := S (Curr_TCB.T).I + (H3 - H2);
-            end if;
+            Curr_TCB.T       := Curr_TCB.T - 1;
+            S (Curr_TCB.T).I := S (Curr_TCB.T).I + (H3 - H2);
           end if;
 
-        when 21 => --  INDEX
+        when kIndex =>
           H1 := IR.Y;      --  H1 POINTS TO HAC.Data.ArraysTab
           H2 := HAC.Data.ArraysTab (H1).Low;
           H3 := S (Curr_TCB.T).I;
-          if H3 < H2 then
-            PS := INXCHK;
+          if H3 not in H2 .. HAC.Data.ArraysTab (H1).High then
+            PS := INXCHK;  --  Out-of-range state
           else
-            if H3 > HAC.Data.ArraysTab (H1).High then
-              PS := INXCHK;
-            else
-              Curr_TCB.T       := Curr_TCB.T - 1;
-              S (Curr_TCB.T).I := S (Curr_TCB.T).I +
-                                     (H3 - H2) * HAC.Data.ArraysTab (H1).ELSize;
-            end if;
+            Curr_TCB.T       := Curr_TCB.T - 1;
+            S (Curr_TCB.T).I := S (Curr_TCB.T).I +
+                                   (H3 - H2) * HAC.Data.ArraysTab (H1).ELSize;
           end if;
 
         when k_Load_Block =>

@@ -45,24 +45,27 @@ begin
   ww (1).x3:= e;
   ww (5).x3:= ww (1).x3;
   ww (1).x3 := f;
+  --
+  zz (d).x4 := j;
+  zz (e).x4 := i;
+  zz (f).x4 := h;
+  --
   v.x3 := d;
   v.x2 := b;
   if ww (5).x3 /= e then
     Put_Line ("Compiler bug [D]");
   end if;
   --
-  zz (d).x4 := j;
-  zz (e).x4 := i;
-  zz (f).x4 := h;
-  put (zz (d).x4);  --  = j (pos = 3)  --  !! should be available through 'Image & 'Pos
-  put (zz (e).x4);  --  = i (pos = 2)  --  !! should be available through 'Image & 'Pos
-  put (zz (f).x4);  --  = h (pos = 1)  --  !! should be available through 'Image & 'Pos
-  new_line;
-
-  put (d);  --  !! should be available through 'Image
-  put (e);  --  !! should be available through 'Image
-  put (f);  --  !! should be available through 'Image
-  --  for var in d .. f loop
+  if zz (d).x4 /= j then Put_Line ("Compiler bug [E1]"); end if;
+  if zz (e).x4 /= i then Put_Line ("Compiler bug [E2]"); end if;
+  if zz (f).x4 /= h then Put_Line ("Compiler bug [E3]"); end if;
+  --
+  --  put (zz (d).x4);  --  = j (pos = 3)  --  !! should be available through 'Image & 'Pos
+  --  put (zz (e).x4);  --  = i (pos = 2)  --  !! should be available through 'Image & 'Pos
+  --  put (zz (f).x4);  --  = h (pos = 1)  --  !! should be available through 'Image & 'Pos
+  --  new_line;
+  --
+  --  for var in e .. f loop
   --    put(var);
   --  end loop;
 end Enumerations;
