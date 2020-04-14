@@ -160,6 +160,7 @@ package HAC.UErrors is
      ARRAYS,
      LEVELS,
      OBJECTS,
+     Case_Labels,
      STRING_CONSTANTS,
      TASKS,
      ENTRIES,

@@ -24,18 +24,20 @@ package body HAC.PCode.Interpreter is
     subtype TRange is Integer range 0 .. HAC.Data.TaskMax; --  task index
 
     type Processor_State is (
-      CASCHK,
+      RUN,     --  RUN is the normal processor state
+      --
+      Case_Check_Error,
       -- ConstErr,
       DEADLOCK,
       DIVCHK,
       FIN,
-      INXCHK,
+      INXCHK,  --  Out-of-range error
       -- NumErr  ,
       ProgErr,
       REDCHK,
-      RUN,
-      STKCHK,
-      -- StoErr  , TaskErr ,
+      STKCHK,  --  Stack overflow state
+      -- StoErr  ,
+      -- TaskErr ,
       WAIT);
 
     type Task_State is (
@@ -129,9 +131,10 @@ package body HAC.PCode.Interpreter is
       Last : Eptr;  --  ptr to last  node in rendzv queue
     end record;
 
-    IR : Order;  --  Instruction register
+    IR       : Order;  --  Instruction register
 
     PS       : Processor_State := RUN;    --  Processor status register
+
     TCB      : array (TRange) of Task_Control_Block;  --  Task control blocks
     EList    : array (1 .. HAC.Data.EntryMax) of EHeader; --  Entry queue array
     SWITCH   : Boolean:= False; --  invoke scheduler on next cycle flag
@@ -141,10 +144,8 @@ package body HAC.PCode.Interpreter is
 
     CurTask : Integer;  --  index of currently executing task
 
-    H1, H2 : Integer;
-    H3, H4 : Integer;
-    H5     : Integer;
-    F1     : HAC.Data.HAC_Float;
+    H1, H2, H3, H4, H5 : Integer;  --  Internal integer registers
+    F1     : HAC.Data.HAC_Float;   --  Internal float registers
     BLKCNT : Integer;
 
     NCALLS : Integer;   --  AVL  TERMINATE
@@ -163,9 +164,12 @@ package body HAC.PCode.Interpreter is
     use InterDef;
   begin
       New_Line;
-      Put_Line("Stack Variables of Task " & HAC.Data.IdTab (HAC.Data.TaskDefTab (InterDef.CurTask)).Name);
-      InterDef.H1 := InterDef.TCB (InterDef.CurTask).B;   --  current botton
-                                                          --  of stack
+      Put_Line ("HAC - PCode - Post Mortem Dump");
+      New_Line;
+      Put_Line ("Processor state: " & Processor_State'Image (InterDef.PS));
+      New_Line;
+      Put_Line ("Stack Variables of Task " & HAC.Data.IdTab (HAC.Data.TaskDefTab (InterDef.CurTask)).Name);
+      InterDef.H1 := InterDef.TCB (InterDef.CurTask).B;   --  current bottom of stack
       InterDef.BLKCNT := 10;
       loop
         New_Line;
@@ -203,7 +207,7 @@ package body HAC.PCode.Interpreter is
                     Put (S (H3).I);
                     New_Line;
                   when HAC.Data.Bools =>
-                    Put (S (H3).I mod 2 = 1);
+                    Put (Boolean'Val (S (H3).I));
                     New_Line;
                   when HAC.Data.Floats =>
                     Put (S (H3).R);
@@ -750,30 +754,35 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.PC := IR.Y;
 
         when k_Conditional_Jump =>
-          if S (Curr_TCB.T).I mod 2 = 0 then
-            Curr_TCB.PC := IR.Y;
+          if S (Curr_TCB.T).I = 0 then  --  False
+            Curr_TCB.PC := IR.Y;        --  Jump
           end if;
           Curr_TCB.T := Curr_TCB.T - 1;
 
-        when kSwitch =>  --  SWTC - switch
-          H1            := S (Curr_TCB.T).I;
+        when k_CASE_Switch_1 =>  --  SWTC - switch (in a CASE instruction)
+          H1         := S (Curr_TCB.T).I;
           Curr_TCB.T := Curr_TCB.T - 1;
-          H2            := IR.Y;
-          H3            := 0;
+          H2         := IR.Y;
+          --
+          --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
+          --
           loop
-            if HAC.Data.ObjCode (H2).F /= 13 then
-              H3 := 1;
-              PS := CASCHK;
+            if HAC.Data.ObjCode (H2).F /= k_CASE_Switch_2 then
+              PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not
+              exit;                    --  happen: the compiler should check that before run-time.
+            elsif HAC.Data.ObjCode (H2).Y = H1    --  - value is matching
+                  or HAC.Data.ObjCode (H2).X < 0  --  - "WHEN OTHERS =>" case
+            then
+              Curr_TCB.PC := HAC.Data.ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
+              exit;
             else
-              if HAC.Data.ObjCode (H2).Y = H1 or HAC.Data.ObjCode (H2).X < 0 then
-                H3             := 1;
-                Curr_TCB.PC := HAC.Data.ObjCode (H2 + 1).Y;
-              else
-                H2 := H2 + 2;
-              end if;
+              H2 := H2 + 2;  --  Check the next k_CASE_Switch_2 instruction pair.
             end if;
-            exit when H3 /= 0;
           end loop;
+
+        when k_CASE_Switch_2 =>
+          --  This instruction appears only in a special object code block, see k_CASE_Switch_1.
+          null;
 
         when kFor1 =>  --  Start of a FOR loop, forward direction
           H1 := S (Curr_TCB.T - 1).I;
@@ -985,7 +994,6 @@ package body HAC.PCode.Interpreter is
           S (H1).R := HAC.Data.HAC_Float (S (H1).I);
 
         when k_Read =>
-          --  READ
           if FAT.CURR = 0 then
             if End_Of_File_Console then
               PS := REDCHK;
@@ -1136,10 +1144,10 @@ package body HAC.PCode.Interpreter is
           if Curr_TCB.PC /= 0 then
             Curr_TCB.B := S (Curr_TCB.B + 3).I;
             if IR.Y = HAC.Data.CallTMDE or IR.Y = HAC.Data.CallCNDE then
-              if IR.Y = HAC.Data.CallTMDE and Curr_TCB.R1.I mod 2 = 0 then
+              if IR.Y = HAC.Data.CallTMDE and Curr_TCB.R1.I = 0 then
                 Curr_TCB.T := Curr_TCB.T + 1;         --  A JMPC
-                                                            --instruction
-                                                            --always follows
+                                                      --  instruction
+                                                      --  always follows
               end if;
               if Curr_TCB.T > Curr_TCB.STACKSIZE then --  timed and
                                                             --conditional
@@ -1169,7 +1177,7 @@ package body HAC.PCode.Interpreter is
           S (Curr_TCB.T) := S (S (Curr_TCB.T).I);
 
         when k_NOT_Boolean =>
-          S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I mod 2 = 0);
+          S (Curr_TCB.T).I := Boolean'Pos (not Boolean'Val (S (Curr_TCB.T).I));
 
         when k_Unary_MINUS_Integer =>
           S (Curr_TCB.T).I := -S (Curr_TCB.T).I;
@@ -1241,11 +1249,11 @@ package body HAC.PCode.Interpreter is
 
             when k_OR_Boolean =>
               S (Curr_TCB.T).I :=
-                Boolean'Pos(S (Curr_TCB.T).I mod 2 = 1 or S (Curr_TCB.T + 1).I mod 2 = 1);
+                Boolean'Pos (Boolean'Val (S (Curr_TCB.T).I) or Boolean'Val (S (Curr_TCB.T + 1).I));
 
             when k_XOR_Boolean =>
               S (Curr_TCB.T).I :=
-                Boolean'Pos(S (Curr_TCB.T).I mod 2 = 1 xor S (Curr_TCB.T + 1).I mod 2 = 1);
+                Boolean'Pos (Boolean'Val (S (Curr_TCB.T).I) xor Boolean'Val (S (Curr_TCB.T + 1).I));
 
             when k_ADD_Integer =>
               S (Curr_TCB.T).I := S (Curr_TCB.T).I + S (Curr_TCB.T + 1).I;
@@ -1261,7 +1269,7 @@ package body HAC.PCode.Interpreter is
 
             when k_AND_Boolean =>
               S (Curr_TCB.T).I :=
-                Boolean'Pos(S (Curr_TCB.T).I mod 2 =1 and S (Curr_TCB.T + 1).I mod 2 =1);
+                Boolean'Pos (Boolean'Val (S (Curr_TCB.T).I) and Boolean'Val (S (Curr_TCB.T + 1).I));
 
             when k_MULT_Integer =>
               S (Curr_TCB.T).I := S (Curr_TCB.T).I * S (Curr_TCB.T + 1).I;
@@ -1433,7 +1441,7 @@ package body HAC.PCode.Interpreter is
 
         when k_Set_Task_Priority_Inheritance =>
           --  Cramer
-          Curr_TCB.Pcontrol.INHERIT := S (Curr_TCB.T).I mod 2 = 1;
+          Curr_TCB.Pcontrol.INHERIT := S (Curr_TCB.T).I /= 0;
           --  Set priority inherit indicator
           Curr_TCB.T := Curr_TCB.T - 1;
 
@@ -1545,8 +1553,6 @@ package body HAC.PCode.Interpreter is
 
         --  Selective Wait
 
-        when k_Switch_2 =>
-          null;
         when k_NOP =>
           null;
         when kHighlightSource =>

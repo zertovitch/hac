@@ -15,17 +15,18 @@ goto fin
 
 :gallery
 
-echo.
-echo *******[ HAC Testing ]******* "Verbose tests".
-echo.
+REM echo.
+REM echo *******[ HAC Testing ]******* "Verbose tests".
+REM echo.
 
-..\hax -v2 if_then_elsif_else.adb
-pause
+REM ..\hax -v2 if_then_elsif_else.adb
+REM pause
 
 echo.
 echo *******[ HAC Testing ]******* "Silent tests": when there is zero output and no compilation error, it's all fine.
 echo.
 
+..\hax -v1 case_statement.adb
 ..\hax -v1 constants.adb
 ..\hax -v1 declarations.adb
 ..\hax -v1 enumerations.adb

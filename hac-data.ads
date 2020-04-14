@@ -49,7 +49,7 @@ package HAC.Data is
   CallCNDE   : constant := 3;             --  Call type for conditional Entry
                                           --Call
   C2Max      : constant := 20;            --  Size OF FLOAT Constant TABLE
-  CSMax      : constant := 30;            --  MAX NO. OF CASES
+  Cases_Max  : constant := 30;            --  Max number of cases in a CASE statement
   CDMax      : constant := 2500;          --  Size OF ObjCode
   ERMax      : constant := 90;            --  MAX Error NO.
   EMax       : constant := 77;            --  MAX EXPONENT of FLOAT NUMBERS

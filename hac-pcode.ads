@@ -64,8 +64,8 @@ package HAC.PCode is
   k_Offset                        : constant := 9;
   k_Jump                          : constant := 10;
   k_Conditional_Jump              : constant := 11;
-  kSwitch                         : constant := 12;
-  k_Switch_2                      : constant := 13;
+  k_CASE_Switch_1                      : constant := 12;  --  For CASE statement
+  k_CASE_Switch_2                      : constant := 13;  --  For CASE statement
   kFor1                           : constant := 14;
   kFor2                           : constant := 15;
   kFor1Rev                        : constant := 16;
@@ -118,7 +118,7 @@ package HAC.PCode is
   kPutNewline                     : constant := 63;
   k_Set_current_file_pointer      : constant := 64;
   kFile_I_O                       : constant := 65;
-  k_Halt_Interpreter              : constant := 66;
+  k_Halt_Interpreter              : constant := 66;  --  Switch off the processor's running loop
   k_String_assignment             : constant := 67;
   k_Delay                         : constant := 68;
   k_Cursor_At                     : constant := 69;

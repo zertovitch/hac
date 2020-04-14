@@ -1679,11 +1679,12 @@ package body HAC.Parser is
       procedure CASE_Statement is
         X         : Item;
         I, J, LC1 : Integer;
-        type GrounfZ is record
-          Val, LC : Index;
+        type CASE_Label_Value is record
+          Val : Integer;  --  value of a choice in a CASE statement
+          LC  : Integer;  --  instruction address
         end record;
-        CaseTab : array (1 .. CSMax) of GrounfZ;
-        ExitTab : array (1 .. CSMax) of Integer;
+        CaseTab : array (1 .. Cases_Max) of CASE_Label_Value;
+        ExitTab : array (1 .. Cases_Max) of Integer;
 
         procedure CASE_Label is
           Lab : ConRec;
@@ -1692,8 +1693,8 @@ package body HAC.Parser is
           Number_Declaration (FSys + Alt_Finger, Lab);
           if Lab.TP /= X.TYP then
             Error (err_case_label_not_same_type_as_case_clause);
-          elsif I = CSMax then
-            Fatal (OBJECTS);  --  Exception is raised there.
+          elsif I = Cases_Max then
+            Fatal (Case_Labels);  --  Exception is raised there.
           else
             I               := I + 1;
             CaseTab (I).Val := Lab.I;
@@ -1719,10 +1720,10 @@ package body HAC.Parser is
                 InSymbol;
                 CASE_Label;
               end loop;
-            end if;
+            end if;  --  !! probably an elsif here
             if Sy = OTHERS_Symbol then        -- Hathorn
-              if I = CSMax then
-                Fatal (OBJECTS);  --  Exception is raised there.
+              if I = Cases_Max then
+                Fatal (Case_Labels);  --  Exception is raised there.
               end if;
               I               := I + 1;
               CaseTab (I).Val := 0;
@@ -1752,7 +1753,7 @@ package body HAC.Parser is
           Error (err_bad_type_for_a_case_statement); --- !! mmmh: enums ?...
         end if;
         LC1 := LC;
-        Emit (ObjCode, LC, kSwitch); -- JMPX
+        Emit (ObjCode, LC, k_CASE_Switch_1);
         if Sy = IS_Symbol then -- Was OF_Symbol in SmallAda ! I.e. case x OF when 1 => ...
           InSymbol;
         elsif Sy = OF_Symbol then
@@ -1762,22 +1763,24 @@ package body HAC.Parser is
           Error (err_IS_missing);
         end if;
 
-        while Sy = WHEN_Symbol loop  --  Each case is parsed here.
+        while Sy = WHEN_Symbol loop  --  All cases are parsed here.
           One_CASE;
         end loop;
 
-        ObjCode (LC1).Y := LC;
+        ObjCode (LC1).Y := LC;  --  Set correct instruction address for k_CASE_Switch_1 above.
         for K in 1 .. I loop
           if CaseTab (K).LC > 0 then
-            Emit2 (ObjCode, LC, k_Switch_2, 1, CaseTab (K).Val);
-            Emit1 (ObjCode, LC, k_Switch_2, CaseTab (K).LC);
+            Emit2 (ObjCode, LC, k_CASE_Switch_2, 1, CaseTab (K).Val);
+            Emit1 (ObjCode, LC, k_CASE_Switch_2,    CaseTab (K).LC);
           else
-            Emit2 (ObjCode, LC, k_Switch_2, -1, CaseTab (K).Val);
-            Emit1 (ObjCode, LC, k_Switch_2, -CaseTab (K).LC);
+            --  "WHEN OTHERS =>" case
+            Emit2 (ObjCode, LC, k_CASE_Switch_2, -1, CaseTab (K).Val);  --!! val = 0
+            Emit1 (ObjCode, LC, k_CASE_Switch_2,    -CaseTab (K).LC);
           end if;
         end loop;
-
+        --  Bogus instruction for having the interpreter exiting the k_CASE_Switch_2 loop.
         Emit1 (ObjCode, LC, k_Jump, 0);
+        --
         for K in 1 .. J loop
           ObjCode (ExitTab (K)).Y  := LC;
         end loop;
