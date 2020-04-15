@@ -403,7 +403,7 @@ package body HAC.Scanner is
       when '-' =>
         NextCh;
         if CH /= '-' then
-          Sy := MinUS;
+          Sy := Minus;
         else --  comment
           CC := LL;  --  ignore rest of input line
           NextCh;
@@ -435,8 +435,8 @@ package body HAC.Scanner is
       when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
         Sy := Special_Symbols (CH);
         NextCh;
-        if Sy = xTimes and then CH = '*' then  --  Get the "**" operator symbol
-          Sy := xx_Power;
+        if Sy = Times and then CH = '*' then  --  Get the "**" operator symbol
+          Sy := Power;
           NextCh;
         end if;
 

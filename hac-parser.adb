@@ -205,7 +205,7 @@ package body HAC.Parser is
       else
         Sign := 1;
         if Plus_Minus (Sy) then
-          if Sy = MinUS then
+          if Sy = Minus then
             Sign := -1;
           end if;
           InSymbol;
@@ -965,7 +965,6 @@ package body HAC.Parser is
     procedure Expression (FSys : Symset; X : in out Item) is
       Y  : Item;
       OP : KeyWSymbol;
-      F  : Opcode;
 
       procedure Simple_Expression (FSys : Symset; X : in out Item) is
         Y  : Item;
@@ -991,7 +990,7 @@ package body HAC.Parser is
                   Expression (FSys + RParent, X);
                   case N is
                     when SF_Abs =>  --  Abs (NB: in Ada it's an operator, not a function)
-                      T_Argument    := Numeric_Typ;
+                      T_Argument    := Numeric_Typ_Set;
                       IdTab (I).TYP := X.TYP;
                       if X.TYP = Floats then
                         N := N + 1;
@@ -1006,7 +1005,7 @@ package body HAC.Parser is
                     when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
                          SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
                       =>
-                      T_Argument := Numeric_Typ;
+                      T_Argument := Numeric_Typ_Set;
                       if Ints_Typ (X.TYP) then
                         Forbid_Type_Coercion ("value is of integer type; floating-point is expected here");
                         Emit1 (ObjCode, LC, k_Integer_to_Float, 0);
@@ -1217,73 +1216,62 @@ package body HAC.Parser is
             OP := Sy;
             InSymbol;
             Factor (FSys + FactorZ, Y);
-            if OP = xTimes then     --  *
-              if X.TYP /= Y.TYP then
-                Forbid_Type_Coercion ("for this standard operator, types must be the same");
-              end if;
-              case X.TYP is
-                when NOTYP =>
-                  null;
-                when Ints =>
-                  Emit (ObjCode, LC, k_MULT_Integer);
-                when Floats =>
-                  Emit (ObjCode, LC, k_MULT_Float);
-                when others =>
-                  Error (err_operator_not_defined_for_types);
-              end case;
-            elsif OP = Divide then    --  /
-              if X.TYP = Ints and Y.TYP = Ints then
-                Emit (ObjCode, LC, k_DIV_Integer);
-              else
-                if X.TYP = Ints then
-                  Forbid_Type_Coercion ("left operand's type is integer, right operand's isn't");
-                  Emit1 (ObjCode, LC, k_Integer_to_Float, 1);  --  NB: this assumed Y.TYP was Floats!
-                  X.TYP := Floats;
-                end if;
-                if Y.TYP = Ints then
-                  Forbid_Type_Coercion ("right operand's type is integer, left operand's isn't");
-                  Emit1 (ObjCode, LC, k_Integer_to_Float, 0);  --  NB: this assumed Y.TYP was Floats!
-                  Y.TYP := Floats;
-                end if;
-                if X.TYP = Floats and Y.TYP = Floats then
-                  Emit (ObjCode, LC, k_DIV_Float);
-                else
-                  if X.TYP /= NOTYP and Y.TYP /= NOTYP then
-                    Error (err_illegal_type_for_arithmetic_expression);
-                  end if;
-                  X.TYP := NOTYP;
-                end if;
-              end if;
-            elsif OP = AND_Symbol then
-              if X.TYP = Bools and Y.TYP = Bools then
-                Emit (ObjCode, LC, k_AND_Boolean);
-              else
-                if X.TYP /= NOTYP and Y.TYP /= NOTYP then
-                  Error (err_resulting_type_should_be_Boolean);
-                end if;
-                X.TYP := NOTYP;
-              end if;
-            elsif OP = MOD_Symbol then
-              if X.TYP = Ints and Y.TYP = Ints then
-                Emit (ObjCode, LC, k_MOD_Integer);
-              else
-                if X.TYP /= NOTYP and Y.TYP /= NOTYP then
-                  Error (err_mod_requires_integer_arguments);
-                end if;
-                X.TYP := NOTYP;
-              end if;
-            elsif OP = xx_Power then
-              if X.TYP = Ints and Y.TYP = Ints then
-                Emit (ObjCode, LC, k_Power_Integer);
-              elsif X.TYP = Floats and Y.TYP = Ints then
-                Emit (ObjCode, LC, k_Power_Float_Integer);
-              elsif X.TYP = Floats and Y.TYP = Floats then
-                Emit (ObjCode, LC, k_Power_Float);
-              else
-                Error (err_invalid_power_operands);
-              end if;
+            if X.TYP = NOTYP or X.TYP = NOTYP then
+              null;  --  Something is already wrong at this point; nothing to check or emit.
             else
-              raise Internal_error with "Unknown operator in Term";
+              case OP is
+                when Times =>     --  *
+                  if X.TYP in Numeric_Typ then
+                    if X.TYP = Y.TYP then
+                      Emit_Arithmetic_Binary_Instruction (ObjCode, LC, OP, X.TYP);
+                    else
+                      Forbid_Type_Coercion ("for this standard operator, types must be the same");
+                    end if;
+                  else
+                    Error (err_operator_not_defined_for_types);
+                  end if;
+                when Divide =>    --  /
+                  if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
+                    Emit_Arithmetic_Binary_Instruction (ObjCode, LC, OP, X.TYP);
+                  else
+                    if X.TYP = Ints then
+                      Forbid_Type_Coercion ("left operand's type is integer, right operand's isn't");
+                      Emit1 (ObjCode, LC, k_Integer_to_Float, 1);  --  NB: this assumed Y.TYP was Floats!
+                      X.TYP := Floats;
+                    end if;
+                    if Y.TYP = Ints then
+                      Forbid_Type_Coercion ("right operand's type is integer, left operand's isn't");
+                      Emit1 (ObjCode, LC, k_Integer_to_Float, 0);  --  NB: this assumed Y.TYP was Floats!
+                      Y.TYP := Floats;
+                    end if;
+                    Error (err_illegal_type_for_arithmetic_expression);
+                    X.TYP := NOTYP;
+                  end if;
+                when AND_Symbol =>
+                  if X.TYP = Bools and Y.TYP = Bools then
+                    Emit (ObjCode, LC, k_AND_Boolean);
+                  else
+                    Error (err_resulting_type_should_be_Boolean);
+                    X.TYP := NOTYP;
+                  end if;
+                when MOD_Symbol =>
+                  if X.TYP = Ints and Y.TYP = Ints then
+                    Emit (ObjCode, LC, k_MOD_Integer);
+                  else
+                    Error (err_mod_requires_integer_arguments);
+                    X.TYP := NOTYP;
+                  end if;
+                when Power =>
+                  if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
+                    Emit_Arithmetic_Binary_Instruction (ObjCode, LC, OP, X.TYP);
+                  elsif X.TYP = Floats and Y.TYP = Ints then
+                    Emit (ObjCode, LC, k_Power_Float_Integer);
+                  else
+                    Error (err_invalid_power_operands);
+                  end if;
+                when others =>
+                  raise Internal_error with "Unknown operator in Term";
+              end case;
             end if;
           end loop;
         end Term;
@@ -1294,14 +1282,10 @@ package body HAC.Parser is
           OP := Sy;
           InSymbol;
           Term (FSys + Plus_Minus, X);
-          if X.TYP > Floats then
+          if X.TYP not in Numeric_Typ then
             Error (err_illegal_type_for_arithmetic_expression);
-          elsif OP = MinUS then
-            if X.TYP = Floats then
-              Emit (ObjCode, LC, k_Unary_MINUS_Float);
-            else
-              Emit (ObjCode, LC, k_Unary_MINUS_Integer);
-            end if;
+          elsif OP = Minus then
+            Emit_Unary_Minus (ObjCode, LC, X.TYP);
           end if;
         else
           Term (FSys + TermZ, X);
@@ -1310,56 +1294,44 @@ package body HAC.Parser is
           OP := Sy;
           InSymbol;
           Term (FSys + TermZ, Y);
-          case OP is
-            when OR_Symbol =>
-              if X.TYP = Bools and Y.TYP = Bools then
-                Emit (ObjCode, LC, k_OR_Boolean);
-              else
-                if X.TYP /= NOTYP and Y.TYP /= NOTYP then
+          if X.TYP = NOTYP or X.TYP = NOTYP then
+            null;  --  Something is already wrong at this point; nothing to check or emit.
+          else
+            case OP is
+              when OR_Symbol =>
+                if X.TYP = Bools and Y.TYP = Bools then
+                  Emit (ObjCode, LC, k_OR_Boolean);
+                else
                   Error (err_resulting_type_should_be_Boolean);
+                  X.TYP := NOTYP;
                 end if;
-                X.TYP := NOTYP;
-              end if;
-            when XOR_Symbol =>
-              if X.TYP = Bools and Y.TYP = Bools then
-                Emit (ObjCode, LC, k_XOR_Boolean);
-              else
-                if X.TYP /= NOTYP and Y.TYP /= NOTYP then
+              when XOR_Symbol =>
+                if X.TYP = Bools and Y.TYP = Bools then
+                  Emit (ObjCode, LC, k_XOR_Boolean);
+                else
                   Error (err_resulting_type_should_be_Boolean);
+                  X.TYP := NOTYP;
                 end if;
-                X.TYP := NOTYP;
-              end if;
-            when Plus | MinUS =>
-              if X.TYP /= Y.TYP then
-                Forbid_Type_Coercion ("for this standard operator, types must be the same");
-              end if;
-              case X.TYP is
-                when NOTYP =>
-                  null;  --  Already in error.
-                when Ints =>
-                  if OP = Plus then
-                    Emit (ObjCode, LC, k_ADD_Integer);
+              when Plus | Minus =>
+                if X.TYP in Numeric_Typ then
+                  if X.TYP = Y.TYP then
+                    Emit_Arithmetic_Binary_Instruction (ObjCode, LC, OP, X.TYP);
                   else
-                    Emit (ObjCode, LC, k_SUBTRACT_Integer);
+                    Forbid_Type_Coercion ("for this standard operator, types must be the same");
                   end if;
-                when Floats =>
-                  if OP = Plus then
-                    Emit (ObjCode, LC, k_ADD_Float);
-                  else
-                    Emit (ObjCode, LC, k_SUBTRACT_Float);
-                  end if;
-                when others =>
+                else
                   Error (err_operator_not_defined_for_types);
-              end case;
-            when others =>  --  Doesn't happen: TermZ(OP) is True.
-              null;
-          end case;
+                end if;
+              when others =>  --  Doesn't happen: TermZ(OP) is True.
+                null;
+            end case;
+          end if;
         end loop;
       end Simple_Expression;
 
     begin  --  Expression
-      Simple_Expression (FSys + Comparison_Operator, X);
-      if Comparison_Operator (Sy) then
+      Simple_Expression (FSys + Comparison_Operator_Set, X);
+      if Sy in Comparison_Operator then
         OP := Sy;
         InSymbol;
         Simple_Expression (FSys, Y);
@@ -1377,27 +1349,11 @@ package body HAC.Parser is
           Error (err_incompatible_types_for_comparison);
         end if;
         if X.TYP = Y.TYP then
-          if X.TYP = Floats then
-            F := 0;
+          if Atomic_Typ (X.TYP) then
+            Emit_Comparison_Instruction (ObjCode, LC, OP, X.TYP);
           else
-            F := 6;
+            Error (err_operator_not_defined_for_types);
           end if;
-          case OP is
-            when EQL =>
-              Emit (ObjCode, LC, k_EQL_Float + F);
-            when NEQ =>
-              Emit (ObjCode, LC, k_NEQ_Float + F);
-            when LSS =>
-              Emit (ObjCode, LC, k_LSS_Float + F);
-            when LEQ =>
-              Emit (ObjCode, LC, k_LEQ_Float + F);
-            when GTR =>
-              Emit (ObjCode, LC, k_GTR_Float + F);
-            when GEQ =>
-              Emit (ObjCode, LC, k_GEQ_Float + F);
-            when others =>
-              null;
-          end case;
         else
           Error (err_incompatible_types_for_comparison);
         end if;

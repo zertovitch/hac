@@ -9,8 +9,9 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Data;               use HAC.Data;
-with HAC.UErrors;            use HAC.UErrors;
+with HAC.Data;                          use HAC.Data;
+with HAC.UErrors;                       use HAC.UErrors;
+with HAC.PCode;                         use HAC.PCode;
 
 package HAC.Parser.Helpers is
 
@@ -174,7 +175,7 @@ package HAC.Parser.Helpers is
 
   Constant_Definition_Begin_Symbol : constant Symset :=
    (Plus      |
-    MinUS     |
+    Minus     |
     IntCon    |
     FloatCon  |
     CharCon   |
@@ -199,8 +200,8 @@ package HAC.Parser.Helpers is
     others => False);
 
   FactorZ : constant Symset :=
-    (xTimes | Divide | MOD_Symbol | REM_Symbol | AND_Symbol => True,
-     xx_Power => True,  --  !! The ** operator is probably at another precedence level
+    (Times | Divide | MOD_Symbol | REM_Symbol | AND_Symbol => True,
+     Power => True,  --  !! The ** operator is probably at another precedence level
      others => False);
 
   Fail_after_FOR : constant Symset :=
@@ -210,11 +211,14 @@ package HAC.Parser.Helpers is
      END_Symbol              => True,
      others => False);
 
-  Comparison_Operator : constant Symset :=
-    (EQL | NEQ | LSS | LEQ | GTR | GEQ => True, others => False);
+  subtype Comparison_Operator is KeyWSymbol range EQL .. LEQ;
+  Comparison_Operator_Set : constant Symset :=
+    (Comparison_Operator => True, others => False);
+
+  subtype Arithmetic_Binary_Operator is KeyWSymbol range Plus .. Power;
 
   Plus_Minus : constant Symset :=
-    (Plus | MinUS => True, others => False);
+    (Plus | Minus => True, others => False);
 
   Selector_Symbol : constant Symset :=
     (LParent | Period => True, others => False);
@@ -244,7 +248,7 @@ package HAC.Parser.Helpers is
      others => False);
 
   TermZ : constant Symset :=
-    (Plus | MinUS | OR_Symbol | XOR_Symbol => True, others => False);
+    (Plus | Minus | OR_Symbol | XOR_Symbol => True, others => False);
 
   Type_Begin_Symbol : constant Symset :=
    (IDent                |
@@ -253,5 +257,29 @@ package HAC.Parser.Helpers is
     RANGE_Keyword_Symbol |
     LParent              => True,
     others         => False);
+
+  ---------------------
+  --  Miscellaneous  --
+  ---------------------
+
+  procedure Emit_Comparison_Instruction (
+    OC        : in out Object_Code_Table;
+    LC        : in out Integer;
+    Operator  :        Comparison_Operator;
+    Base_Type :        Types
+  );
+
+  procedure Emit_Unary_Minus (
+    OC        : in out Object_Code_Table;
+    LC        : in out Integer;
+    Base_Type :        Numeric_Typ
+  );
+
+  procedure Emit_Arithmetic_Binary_Instruction (
+    OC        : in out Object_Code_Table;
+    LC        : in out Integer;
+    Operator  :        Arithmetic_Binary_Operator;
+    Base_Type :        Numeric_Typ
+  );
 
 end HAC.Parser.Helpers;

@@ -64,8 +64,8 @@ package HAC.PCode is
   k_Offset                        : constant := 9;
   k_Jump                          : constant := 10;
   k_Conditional_Jump              : constant := 11;
-  k_CASE_Switch_1                      : constant := 12;  --  For CASE statement
-  k_CASE_Switch_2                      : constant := 13;  --  For CASE statement
+  k_CASE_Switch_1                 : constant := 12;  --  For CASE statement
+  k_CASE_Switch_2                 : constant := 13;  --  For CASE statement
   kFor1                           : constant := 14;
   kFor2                           : constant := 15;
   kFor1Rev                        : constant := 16;

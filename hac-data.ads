@@ -84,17 +84,20 @@ package HAC.Data is
    FloatCon,
    CharCon,
    StrCon,
-   Plus,
-   MinUS,
-   xTimes,
-   xx_Power,
-   Divide,
+   --
+   Plus,     --  +
+   Minus,    --  -
+   Times,    --  *
+   Divide,   --  /
+   Power,    --  **
+   --
    EQL,      --  =
    NEQ,      --  /=
    GTR,      --  >
    GEQ,      --  >=
    LSS,      --  <
    LEQ,      --  <=
+   --
    LParent,
    RParent,
    LBrack,
@@ -240,16 +243,14 @@ package HAC.Data is
     Standard_Typ or Typ_Set'(Enums => True, others => False);
 
   Discrete_Typ : constant Typ_Set :=  --  RM 3.2 (12)
-    (Ints    |
-     Bools   |
-     xChars  |
-     Enums   => True,
-     others  => False);
+    (Ints | Bools | xChars | Enums => True, others  => False);
 
-  Numeric_Typ : constant Typ_Set :=  --  RM 3.2 (1)
-    (Ints   |
-     Floats => True,
-     others => False);
+  subtype Numeric_Typ is Types range Ints .. Floats;  --  RM 3.2 (1)
+
+  Numeric_Typ_Set : constant Typ_Set :=
+    (Numeric_Typ => True, others => False);
+
+  Atomic_Typ : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set;
 
   Ints_Typ : constant Typ_Set := (Ints => True, others => False);
 
@@ -458,8 +459,8 @@ package HAC.Data is
   Special_Symbols : constant SSTBzz :=
    SSTBzz'
    ('+'    => Plus,
-    '-'    => MinUS,
-    '*'    => xTimes,
+    '-'    => Minus,
+    '*'    => Times,
     '/'    => Divide,
     '('    => LParent,
     ')'    => RParent,
