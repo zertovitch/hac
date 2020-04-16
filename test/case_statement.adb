@@ -17,21 +17,32 @@ procedure Case_Statement is
         end if;
       when others => null;
       --  !! When "OTHERS" omitted: HAC compiles but the VM enters a Case_Check_Error state.
-      when 2 => null;
+      --
+      --  when 9 | others => null;  --  the choice "others" must appear alone and last
+      --  when 2 => null;  --  the choice "others" must appear alone and last
     end case;
     after_int_case := True;
   end Test_Int;
+
+  vowel_occurences : Integer := 0;
 
   procedure Test_Char (c: Character) is
   begin
     case c is
       when 'a' | 'A' =>
-        if (c /= 'a') or (c /= 'A') then
+        if (c /= 'a') and (c /= 'A') then
           Put(c); Put_Line ("  Compiler bug [Char, A]");
         end if;
+        vowel_occurences := vowel_occurences + 1;
+      when 'b' | 'B' =>
+        null;
+      when 'e' =>
+        vowel_occurences := vowel_occurences + 1;
       when others => null;
     end case;
   end Test_Char;
+
+  big_A : constant Character := 'A';  --  8-bit character
 
 begin
   for i in -10 .. 10 loop
@@ -41,7 +52,10 @@ begin
     Put_Line ("Compiler bug [Int, Z]");
   end if;
   --
-  for c in 'A' .. 'z' loop
+  for c in big_A .. 'z' loop
     Test_Char (c);
   end loop;
+  if vowel_occurences /= 3 then
+    Put_Line ("Compiler bug [Char, Z]");
+  end if;
 end Case_Statement;

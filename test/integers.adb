@@ -25,6 +25,19 @@ procedure Integers is
 
   v : R;
 
+  procedure Test_Patching is
+    --  -1 is the value of dummy_address for patching EXIT jumps...
+    patch_trap : constant := -1;
+    pt : Integer;
+  begin
+    for i in 1 .. 1 loop
+      pt := patch_trap;
+      if -pt /= 1 then
+        Put (pt); Put_Line ("  Compiler bug [Patch]");
+      end if;
+    end loop;
+  end Test_Patching;
+
 begin
   v.x1 := 1;
   v.x2 := 3;
@@ -55,4 +68,5 @@ begin
     Put_Line ("Compiler bug [E]");
   end if;
   --
+  Test_Patching;
 end Integers;

@@ -1339,16 +1339,13 @@ package body HAC.Parser is
           Forbid_Type_Coercion ("left operand's type is integer, right operand's is floating-point");
           X.TYP := Floats;
           Emit1 (ObjCode, LC, k_Integer_to_Float, 1);
-        end if;
-        if Y.TYP = Ints and X.TYP = Floats then
+        elsif Y.TYP = Ints and X.TYP = Floats then
           Forbid_Type_Coercion ("left operand's type is floating-point, right operand's is integer");
           Y.TYP := Floats;
           Emit1 (ObjCode, LC, k_Integer_to_Float, 0);
-        end if;
-        if X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
+        elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
           Error (err_incompatible_types_for_comparison);
-        end if;
-        if X.TYP = Y.TYP then
+        elsif X.TYP = Y.TYP then
           if Atomic_Typ (X.TYP) then
             Emit_Comparison_Instruction (ObjCode, LC, OP, X.TYP);
           else
@@ -1641,6 +1638,7 @@ package body HAC.Parser is
         end record;
         CaseTab : array (1 .. Cases_Max) of CASE_Label_Value;
         ExitTab : array (1 .. Cases_Max) of Integer;
+        others_flag : Boolean := False;
 
         procedure CASE_Label is
           Lab : ConRec;
@@ -1671,13 +1669,23 @@ package body HAC.Parser is
           if Sy = WHEN_Symbol then
             InSymbol;
             if Constant_Definition_Begin_Symbol (Sy) then
+              if others_flag then  --  Normal choice list *atfer* the "others" choice.
+                Error (err_case_others_alone_last);
+              end if;
               CASE_Label;
               while Sy = Alt loop
-                InSymbol;
-                CASE_Label;
+                InSymbol;  --  Consume '|' symbol.
+                if Sy = OTHERS_Symbol then  --  "others" mixed with normal choices.
+                  Error (err_case_others_alone_last);
+                else
+                  CASE_Label;
+                end if;
               end loop;
-            end if;  --  !! probably an elsif here
-            if Sy = OTHERS_Symbol then        -- Hathorn
+            elsif Sy = OTHERS_Symbol then        -- Hathorn
+              if others_flag then  --  Duplicate "others".
+                Error (err_case_others_alone_last);
+              end if;
+              others_flag := True;
               if I = Cases_Max then
                 Fatal (Case_Labels);  --  Exception is raised there.
               end if;
@@ -1823,7 +1831,7 @@ package body HAC.Parser is
         end if;
         LC1 := LC;
         Emit (ObjCode, LC, F);
-        LOOP_Statement (F + 1, LC);
+        LOOP_Statement (For_END (F), LC);
         ObjCode (LC1).Y                 := LC;
         T                               := T - 1;
         BlockTab (Display (Level)).Last := last;
@@ -2218,9 +2226,9 @@ package body HAC.Parser is
                       X.TYP := IdTab (I).TYP;
                       X.Ref := IdTab (I).Ref;
                       if IdTab (I).Normal then
-                        F := 0;
+                        F := k_Load_Address;
                       else
-                        F := 1;
+                        F := k_Push_Value;
                       end if;
                       Emit2 (ObjCode, LC, F, IdTab (I).LEV, IdTab (I).Adr);
                       if Selector_Symbol_Loose (Sy) then  --  '.' or '(' or (wrongly) '['
@@ -2318,7 +2326,7 @@ package body HAC.Parser is
               Emit (ObjCode, LC, kPutNewline);
             end if;
 
-          when 5 | 6 =>                  -- Wait,SIGNAL
+          when 5 | 6 =>                  -- Wait, SIGNAL
             if Sy /= LParent then
               Error (err_missing_an_opening_parenthesis);
             else
@@ -2344,7 +2352,11 @@ package body HAC.Parser is
                       Selector (FSys + RParent, X);
                     end if;
                     if X.TYP = Ints then
-                      Emit (ObjCode, LC, Opcode (N + 1));    -- N is 5, or 6. Opcode is 6 or 7
+                      if N = 5 then
+                        Emit (ObjCode, LC, k_Wait_Semaphore);
+                      else
+                        Emit (ObjCode, LC, k_Signal_Semaphore);
+                      end if;
                     else
                       Error (err_parameter_must_be_Integer);
                     end if;

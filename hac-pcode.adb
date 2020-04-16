@@ -60,6 +60,15 @@ package body HAC.PCode is
   -- *
   -- * Manuel *
 
+  function For_END (for_BEGIN: Opcode) return Opcode is
+  begin
+    case for_BEGIN is
+      when kFor1    => return kFor2;
+      when kFor1Rev => return kFor2Rev;
+      when others   => return for_BEGIN;
+    end case;
+  end For_END;
+
   ----------------------------------------------------------------Emit----
 
   procedure Emit (
@@ -105,7 +114,7 @@ package body HAC.PCode is
     LC0 : Integer := LC_From;
   begin
     while LC0 < LC_Current loop
-      if OC (LC0).Y = dummy_address then
+      if OC (LC0).F in Jump_Opcode and then OC (LC0).Y = dummy_address then
         OC (LC0).Y := LC_Current;
       end if;
       LC0 := LC0 + 1;

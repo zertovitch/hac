@@ -13,15 +13,115 @@
 
 package HAC.PCode is
 
-  type Opcode is range 0 .. 79;
+  -----------------------------------------------------PCode Opcodes----
+
+  type Opcode is
+  (
+    k_Load_Address,
+    k_Push_Value,
+    k_Push_Indirect_Value,
+    k_Update_Display_Vector,
+    k_Accept_Rendezvous,
+    k_End_Rendezvous,
+    k_Wait_Semaphore,
+    k_Signal_Semaphore,
+    k_Standard_Functions,
+    k_Offset,
+    --
+    k_Jump,
+    k_Conditional_Jump,
+    --
+    k_CASE_Switch_1,
+    k_CASE_Switch_2,
+    kFor1,
+    kFor2,
+    kFor1Rev,
+    kFor2Rev,
+    kMarkStack,
+    kCall,                              --  Procedure and task entry CALL
+    kIndex1,
+    kIndex,
+    k_Load_Block,
+    k_Copy_Block,
+    k_Store,
+    k_Literal,                          --  "Load immediate" in some assemblers.
+    k_Load_Float,
+    k_Integer_to_Float,
+    k_Read,
+    k_Write_String,
+    kWrite1,
+    kWrite2,
+    k_Write_Float,
+    k_Exit_Call,
+    k_Exit_Function,
+    kCase34,
+    --
+    k_Unary_MINUS_Float,                --  2020-04-04
+    k_Unary_MINUS_Integer,
+    k_NOT_Boolean,
+    --
+    k_EQL_Integer,
+    k_NEQ_Integer,
+    k_LSS_Integer,
+    k_LEQ_Integer,
+    k_GTR_Integer,
+    k_GEQ_Integer,
+    --
+    k_EQL_Float,
+    k_NEQ_Float,
+    k_LSS_Float,
+    k_LEQ_Float,
+    k_GTR_Float,
+    k_GEQ_Float,
+    --
+    k_ADD_Integer,
+    k_SUBTRACT_Integer,
+    k_MULT_Integer,
+    k_DIV_Integer,
+    k_MOD_Integer,
+    k_Power_Integer,                    --  2018-03-18 : 3 ** 6
+    --
+    k_ADD_Float,
+    k_SUBTRACT_Float,
+    k_MULT_Float,
+    k_DIV_Float,
+    k_Power_Float,                      --  2018-03-22 : 3.14 ** 6.28
+    k_Power_Float_Integer,              --  2018-03-22 : 3.14 ** 6
+    --
+    k_OR_Boolean,
+    k_AND_Boolean,
+    k_XOR_Boolean,
+    --
+    kGetNewline,
+    kPutNewline,
+    k_Set_current_file_pointer,
+    kFile_I_O,
+    k_Halt_Interpreter,                 --  Switch off the processor's running loop
+    k_String_assignment,
+    k_Delay,
+    k_Cursor_At,
+    k_Set_Quantum_Task,
+    k_Set_Task_Priority,
+    k_Set_Task_Priority_Inheritance,
+    k_Selective_Wait,
+    kHighlightSource
+  );
+
+  subtype Jump_Opcode is Opcode range k_Jump .. k_Conditional_Jump;
+  subtype Binary_Operator_Opcode is Opcode range k_EQL_Integer .. k_XOR_Boolean;
+  subtype Unary_Operator_Opcode  is Opcode range k_Unary_MINUS_Float .. k_NOT_Boolean;
+
+  function For_END (for_BEGIN: Opcode) return Opcode;
+
   subtype Operand1 is Integer;       -- was -LMax..+LMax (levels)
-  subtype Operand2 is Integer;
+  subtype Operand2 is Integer;  --  !! TBD: set it to a 64-bit signed.
 
   --  PCode instruction record (stores a compiled PCode instruction)
   type Order is record
-    F : HAC.PCode.Opcode;  --  Opcode (or instruction field)
-    X : Operand1;          --  Operand 1 is used to point to the static level
-    Y : Operand2;          --  Operand 2 is used to pass operands to the instructions
+    F : Opcode;    --  Opcode (or instruction field)
+    X : Operand1;  --  Operand 1 is used to point to the static level
+    Y : Operand2;  --  Operand 2 is used to pass operands to the instructions
+                   --    or immediate discrete values (k_Literal).
   end record;
 
   type Object_Code_Table is array (Natural range <>) of Order;
@@ -49,89 +149,6 @@ package HAC.PCode is
     LC   : in out Integer;
     FCT  :        Opcode;
     a, B :        Integer);
-
-  -----------------------------------------------------PCode Opcodes----
-
-  k_Load_Address                  : constant := 0;
-  k_Push_Value                    : constant := 1;
-  k_Push_Indirect_Value           : constant := 2;
-  k_Update_Display_Vector         : constant := 3;
-  k_Accept_Rendezvous             : constant := 4;
-  k_End_Rendezvous                : constant := 5;
-  k_Wait_Semaphore                : constant := 6;
-  k_Signal_Semaphore              : constant := 7;
-  k_Standard_Functions            : constant := 8;
-  k_Offset                        : constant := 9;
-  k_Jump                          : constant := 10;
-  k_Conditional_Jump              : constant := 11;
-  k_CASE_Switch_1                 : constant := 12;  --  For CASE statement
-  k_CASE_Switch_2                 : constant := 13;  --  For CASE statement
-  kFor1                           : constant := 14;
-  kFor2                           : constant := 15;
-  kFor1Rev                        : constant := 16;
-  kFor2Rev                        : constant := 17;
-  kMarkStack                      : constant := 18;
-  kCall                           : constant := 19;  --  procedure and task entry CALL
-  kIndex1                         : constant := 20;
-  kIndex                          : constant := 21;
-  k_Load_Block                    : constant := 22;
-  k_Copy_Block                    : constant := 23;
-  k_Literal                       : constant := 24;
-  k_Load_Float                    : constant := 25;
-  k_Integer_to_Float              : constant := 26;
-  k_Read                          : constant := 27;
-  k_Write_String                  : constant := 28;
-  kWrite1                         : constant := 29;
-  kWrite2                         : constant := 30;
-  k_NOP                           : constant := 31;  --  Added 2020-04-04 for filling the gap...
-  k_Exit_Call                     : constant := 32;
-  k_Exit_Function                 : constant := 33;
-  kCase34                         : constant := 34;
-  k_NOT_Boolean                   : constant := 35;
-  k_Unary_MINUS_Integer           : constant := 36;
-  k_Write_Float                   : constant := 37;
-  k_Store                         : constant := 38;
-  k_EQL_Float                     : constant := 39;
-  k_NEQ_Float                     : constant := 40;
-  k_LSS_Float                     : constant := 41;
-  k_LEQ_Float                     : constant := 42;
-  k_GTR_Float                     : constant := 43;
-  k_GEQ_Float                     : constant := 44;
-  k_EQL_Integer                   : constant := 45;
-  k_NEQ_Integer                   : constant := 46;
-  k_LSS_Integer                   : constant := 47;
-  k_LEQ_Integer                   : constant := 48;
-  k_GTR_Integer                   : constant := 49;
-  k_GEQ_Integer                   : constant := 50;
-  k_OR_Boolean                    : constant := 51;
-  k_ADD_Integer                   : constant := 52;
-  k_SUBTRACT_Integer              : constant := 53;
-  k_ADD_Float                     : constant := 54;
-  k_SUBTRACT_Float                : constant := 55;
-  k_AND_Boolean                   : constant := 56;
-  k_MULT_Integer                  : constant := 57;
-  k_DIV_Integer                   : constant := 58;
-  k_MOD_Integer                   : constant := 59;
-  k_MULT_Float                    : constant := 60;
-  k_DIV_Float                     : constant := 61;
-  kGetNewline                     : constant := 62;
-  kPutNewline                     : constant := 63;
-  k_Set_current_file_pointer      : constant := 64;
-  kFile_I_O                       : constant := 65;
-  k_Halt_Interpreter              : constant := 66;  --  Switch off the processor's running loop
-  k_String_assignment             : constant := 67;
-  k_Delay                         : constant := 68;
-  k_Cursor_At                     : constant := 69;
-  k_Set_Quantum_Task              : constant := 70;
-  k_Set_Task_Priority             : constant := 71;
-  k_Set_Task_Priority_Inheritance : constant := 72;
-  k_Selective_Wait                : constant := 73;
-  kHighlightSource                : constant := 74;
-  k_XOR_Boolean                   : constant := 75;
-  k_Power_Integer                 : constant := 76;  --  2018-03-18 : 3 ** 6
-  k_Power_Float_Integer           : constant := 77;  --  2018-03-22 : 3.14 ** 6
-  k_Power_Float                   : constant := 78;  --  2018-03-22 : 3.14 ** 6.28
-  k_Unary_MINUS_Float             : constant := 79;  --  2020-04-04
 
   --  Save and restore an object file
   procedure SaveOBJ (FileName: String);

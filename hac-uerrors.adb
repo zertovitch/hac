@@ -218,6 +218,8 @@ package body HAC.UErrors is
         return "digit expected";
       when err_cannot_modify_constant_or_in_parameter =>
         return "cannot modify a constant or a ""in"" parameter" & hint;
+      when err_case_others_alone_last =>
+        return "the ""others"" choice must appear alone and in the last choice list (RM 5.4 (5))";
       -- when others =>
       --   return "Unknown error Id=" & Integer'Image (Id);
     end case;

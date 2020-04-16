@@ -554,8 +554,8 @@ package body HAC.PCode.Interpreter is
           end if;
         end if;
       end if;
-      --  FETCH INSTRUCTION
 
+      --  FETCH INSTRUCTION
       declare
         Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       begin
@@ -564,7 +564,7 @@ package body HAC.PCode.Interpreter is
       end;
 
       --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED
-      -- (removed)
+      --  (removed)
 
       declare
         Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
@@ -973,7 +973,7 @@ package body HAC.PCode.Interpreter is
           end loop;
           Curr_TCB.T := Curr_TCB.T - 2;
 
-        when k_Literal => --  Literal (Integer or Character)
+        when k_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;
@@ -1060,8 +1060,7 @@ package body HAC.PCode.Interpreter is
           end loop;
           SWITCH := True;        --  give up control when doing I/O
 
-        when 29 =>
-          --  write1
+        when kWrite1 =>
           if FAT.CURR = 0 then
             case IR.Y is
               when 1 =>   --  Burd
@@ -1092,8 +1091,7 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.T := Curr_TCB.T - 1;
           SWITCH        := True;  --  give up control when doing I/O
 
-        when 30 =>
-          --  write2
+        when kWrite2 =>
           if FAT.CURR = 0 then
             case IR.Y is
               when 1 => --  Burd
@@ -1207,8 +1205,7 @@ package body HAC.PCode.Interpreter is
           S (S (Curr_TCB.T - 1).I) := S (Curr_TCB.T);
           Curr_TCB.T               := Curr_TCB.T - 2;
 
-        when k_EQL_Float .. k_DIV_Float | k_XOR_Boolean |
-             k_Power_Integer .. k_Power_Float =>
+        when Binary_Operator_Opcode =>
           Curr_TCB.T := Curr_TCB.T - 1;
           case IR.F is
             when k_EQL_Float =>
@@ -1553,8 +1550,6 @@ package body HAC.PCode.Interpreter is
 
         --  Selective Wait
 
-        when k_NOP =>
-          null;
         when kHighlightSource =>
           null;
         end case;
