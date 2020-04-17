@@ -121,7 +121,7 @@ package body HAC.Compiler is
 
   ---------------------------------------------------------------------------
 
-  procedure Compile is
+  procedure Compile (asm_dump_file_name : String := "") is
 
     procedure Enter_Standard_Functions_and_Main is
 
@@ -200,6 +200,8 @@ package body HAC.Compiler is
     end Enter_Standard_Functions_and_Main;
 
     use Ada.Text_IO, Ada.Integer_Text_IO, HAC.Parser.Helpers;
+
+    asm_dump : File_Type;
 
   begin -- Compile
 
@@ -368,6 +370,13 @@ package body HAC.Compiler is
       end if;
     end if;
     --{Close(ErrFile);}
+
+    if asm_dump_file_name /= "" then
+      Create (asm_dump, Out_File, asm_dump_file_name);
+      Dump (ObjCode (ObjCode'First .. LC - 1), asm_dump);
+      Close (asm_dump);
+    end if;
+
   exception
     when End_Error =>
       Error (err_unexpected_end_of_text);

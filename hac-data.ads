@@ -42,12 +42,10 @@ package HAC.Data is
   Alng       : constant := 40;            --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
   AMax       : constant := 30;            --  Size OF ARRAY-TABLE
   BMax       : constant := 25;            --  Size OF Block-TABLE
-  CallSTDP   : constant := 0;             --  Call type for standard procedure
-                                          --Call
+  CallSTDP   : constant := 0;             --  Call type for standard procedure call
   CallSTDE   : constant := 1;             --  Call type for standard Entry Call
   CallTMDE   : constant := 2;             --  Call type for timed Entry Call
-  CallCNDE   : constant := 3;             --  Call type for conditional Entry
-                                          --Call
+  CallCNDE   : constant := 3;             --  Call type for conditional Entry call
   C2Max      : constant := 20;            --  Size OF FLOAT Constant TABLE
   Cases_Max  : constant := 30;            --  Max number of cases in a CASE statement
   CDMax      : constant := 2500;          --  Size OF ObjCode

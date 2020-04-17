@@ -784,7 +784,7 @@ package body HAC.PCode.Interpreter is
           --  This instruction appears only in a special object code block, see k_CASE_Switch_1.
           null;
 
-        when kFor1 =>  --  Start of a FOR loop, forward direction
+        when k_FOR_Forward_Begin =>  --  Start of a FOR loop, forward direction
           H1 := S (Curr_TCB.T - 1).I;
           if H1 <= S (Curr_TCB.T).I then
             S (S (Curr_TCB.T - 2).I).I := H1;
@@ -793,7 +793,7 @@ package body HAC.PCode.Interpreter is
             Curr_TCB.PC := IR.Y;
           end if;
 
-        when kFor2 =>  --  End of a FOR loop, forward direction
+        when k_FOR_Forward_End =>  --  End of a FOR loop, forward direction
           H2 := S (Curr_TCB.T - 2).I;
           H1 := S (H2).I + 1;
           if H1 <= S (Curr_TCB.T).I then
@@ -803,7 +803,7 @@ package body HAC.PCode.Interpreter is
             Curr_TCB.T := Curr_TCB.T - 3;
           end if;
 
-        when kFor1Rev =>  --  Start of a FOR loop, reverse direction
+        when k_FOR_Reverse_Begin =>  --  Start of a FOR loop, reverse direction
           H1 := S (Curr_TCB.T).I;
           if H1 >= S (Curr_TCB.T - 1).I then
             S (S (Curr_TCB.T - 2).I).I := H1;
@@ -812,7 +812,7 @@ package body HAC.PCode.Interpreter is
             Curr_TCB.T  := Curr_TCB.T - 3;
           end if;
 
-        when kFor2Rev =>  --  End of a FOR loop, reverse direction
+        when k_FOR_Reverse_End =>  --  End of a FOR loop, reverse direction
           H2 := S (Curr_TCB.T - 2).I;
           H1 := S (H2).I - 1;
           if H1 >= S (Curr_TCB.T - 1).I then
@@ -822,7 +822,7 @@ package body HAC.PCode.Interpreter is
             Curr_TCB.T := Curr_TCB.T - 3;
           end if;
 
-        when kMarkStack =>
+        when k_Mark_Stack =>
           H1 := HAC.Data.BlockTab (HAC.Data.IdTab (IR.Y).Ref).VSize;
           if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
             PS := STKCHK;
@@ -833,26 +833,26 @@ package body HAC.PCode.Interpreter is
                                             --procedure/entry
           end if;
 
-        when kCall =>
+        when k_Call =>
           --  procedure and task entry CALL
           --  Cramer
           if IR.X = HAC.Data.CallTMDE then
             --  Timed entry call
-            F1 := S (Curr_TCB.T).R; --  Pop delay time
+            F1 := S (Curr_TCB.T).R;  --  Pop delay time
             Curr_TCB.T := Curr_TCB.T - 1;
           end if;
           H1 := Curr_TCB.T - IR.Y;     --  base of activation record
-          H2 := S (H1 + 4).I; --  HAC.Data.IdTab index of called procedure/entry
-          H3                           := HAC.Data.IdTab (H2).LEV;
+          H2 := S (H1 + 4).I;  --  HAC.Data.IdTab index of called procedure/entry
+          H3                        := HAC.Data.IdTab (H2).LEV;
           Curr_TCB.DISPLAY (H3 + 1) := H1;
-          S (H1 + 1).I                 := Curr_TCB.PC; --  return address
+          S (H1 + 1).I              := Curr_TCB.PC;  --  return address
 
           H4 := S (H1 + 3).I + H1; --  new top of stack
           S (H1 + 2).I := Curr_TCB.DISPLAY (H3); --  static link
           S (H1 + 3).I := Curr_TCB.B; --  dynamic link
 
           for H3 in Curr_TCB.T + 1 .. H4 loop
-            S (H3).I := 0; --  initialize local vars
+            S (H3).I := 0;  --  initialize local vars
           end loop;
           Curr_TCB.B := H1;
           Curr_TCB.T := H4;
@@ -925,7 +925,7 @@ package body HAC.PCode.Interpreter is
               null;  -- [P2Ada]: no otherwise / else in Pascal
           end case;
 
-        when kIndex1 =>
+        when k_Array_Index_Element_Size_1 =>
           H1 := IR.Y;     --  H1 points to HAC.Data.ArraysTab
           H2 := HAC.Data.ArraysTab (H1).Low;
           H3 := S (Curr_TCB.T).I;
@@ -936,7 +936,7 @@ package body HAC.PCode.Interpreter is
             S (Curr_TCB.T).I := S (Curr_TCB.T).I + (H3 - H2);
           end if;
 
-        when kIndex =>
+        when k_Array_Index =>
           H1 := IR.Y;      --  H1 POINTS TO HAC.Data.ArraysTab
           H2 := HAC.Data.ArraysTab (H1).Low;
           H3 := S (Curr_TCB.T).I;
@@ -1060,7 +1060,7 @@ package body HAC.PCode.Interpreter is
           end loop;
           SWITCH := True;        --  give up control when doing I/O
 
-        when kWrite1 =>
+        when k_Write_1 =>
           if FAT.CURR = 0 then
             case IR.Y is
               when 1 =>   --  Burd
@@ -1091,7 +1091,7 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.T := Curr_TCB.T - 1;
           SWITCH        := True;  --  give up control when doing I/O
 
-        when kWrite2 =>
+        when k_Write_2 =>
           if FAT.CURR = 0 then
             case IR.Y is
               when 1 => --  Burd
@@ -1171,8 +1171,8 @@ package body HAC.PCode.Interpreter is
             PS := ProgErr;
           end if;
 
-        when kCase34 =>
-          S (Curr_TCB.T) := S (S (Curr_TCB.T).I);
+        when k_Case_34 =>
+          S (Curr_TCB.T) := S (S (Curr_TCB.T).I);  --  "stack_top := (stack_top.I).all"
 
         when k_NOT_Boolean =>
           S (Curr_TCB.T).I := Boolean'Pos (not Boolean'Val (S (Curr_TCB.T).I));
@@ -1206,105 +1206,47 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.T               := Curr_TCB.T - 2;
 
         when Binary_Operator_Opcode =>
-          Curr_TCB.T := Curr_TCB.T - 1;
-          case IR.F is
-            when k_EQL_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R = S (Curr_TCB.T + 1).R);
+          Curr_TCB.T := Curr_TCB.T - 1;  --  [T] <- [T] operator [T + 1]
+          declare
+            X : GRegister renames S (Curr_TCB.T);
+            Y : GRegister renames S (Curr_TCB.T + 1);
+          begin
+            case Binary_Operator_Opcode (IR.F) is
+              when k_EQL_Float => X.I := Boolean'Pos (X.R = Y.R);
+              when k_NEQ_Float => X.I := Boolean'Pos (X.R /= Y.R);
+              when k_LSS_Float => X.I := Boolean'Pos (X.R < Y.R);
+              when k_LEQ_Float => X.I := Boolean'Pos (X.R <= Y.R);
+              when k_GTR_Float => X.I := Boolean'Pos (X.R > Y.R);
+              when k_GEQ_Float => X.I := Boolean'Pos (X.R >= Y.R);
+              --
+              when k_EQL_Integer => X.I := Boolean'Pos (X.I = Y.I);
+              when k_NEQ_Integer => X.I := Boolean'Pos (X.I /= Y.I);
+              when k_LSS_Integer => X.I := Boolean'Pos (X.I < Y.I);
+              when k_LEQ_Integer => X.I := Boolean'Pos (X.I <= Y.I);
+              when k_GTR_Integer => X.I := Boolean'Pos (X.I > Y.I);
+              when k_GEQ_Integer => X.I := Boolean'Pos (X.I >= Y.I);
+              --
+              when k_AND_Boolean => X.I := Boolean'Pos (Boolean'Val (X.I) and Boolean'Val (Y.I));
+              when k_OR_Boolean  => X.I := Boolean'Pos (Boolean'Val (X.I) or  Boolean'Val (Y.I));
+              when k_XOR_Boolean => X.I := Boolean'Pos (Boolean'Val (X.I) xor Boolean'Val (Y.I));
+              --
+              when k_ADD_Integer      => X.I := X.I + Y.I;
+              when k_SUBTRACT_Integer => X.I := X.I - Y.I;
+              when k_MULT_Integer     => X.I := X.I * Y.I;
+              when k_DIV_Integer      => if Y.I = 0 then PS := DIVCHK; else X.I := X.I / Y.I; end if;
+              when k_MOD_Integer      => if Y.I = 0 then PS := DIVCHK; else X.I := X.I mod Y.I; end if;
+              when k_Power_Integer    => X.I := X.I ** Y.I;
+              --
+              when k_ADD_Float           => X.R := X.R + Y.R;
+              when k_SUBTRACT_Float      => X.R := X.R - Y.R;
+              when k_MULT_Float          => X.R := X.R * Y.R;
+              when k_DIV_Float           => X.R := X.R / Y.R;
+              when k_Power_Float         => X.R := X.R ** Y.R;
+              when k_Power_Float_Integer => X.R := X.R ** Y.I;
+            end case;
+          end;
 
-            when k_NEQ_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R /= S (Curr_TCB.T + 1).R);
-
-            when k_LSS_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R < S (Curr_TCB.T + 1).R);
-
-            when k_LEQ_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R <= S (Curr_TCB.T + 1).R);
-
-            when k_GTR_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R > S (Curr_TCB.T + 1).R);
-
-            when k_GEQ_Float =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).R >= S (Curr_TCB.T + 1).R);
-
-            when k_EQL_Integer =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I = S (Curr_TCB.T + 1).I);
-
-            when k_NEQ_Integer =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I /= S (Curr_TCB.T + 1).I);
-
-            when k_LSS_Integer =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I < S (Curr_TCB.T + 1).I);
-
-            when k_LEQ_Integer =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I <= S (Curr_TCB.T + 1).I);
-
-            when k_GTR_Integer =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I > S (Curr_TCB.T + 1).I);
-
-            when k_GEQ_Integer =>
-              S (Curr_TCB.T).I := Boolean'Pos(S (Curr_TCB.T).I >= S (Curr_TCB.T + 1).I);
-
-            when k_OR_Boolean =>
-              S (Curr_TCB.T).I :=
-                Boolean'Pos (Boolean'Val (S (Curr_TCB.T).I) or Boolean'Val (S (Curr_TCB.T + 1).I));
-
-            when k_XOR_Boolean =>
-              S (Curr_TCB.T).I :=
-                Boolean'Pos (Boolean'Val (S (Curr_TCB.T).I) xor Boolean'Val (S (Curr_TCB.T + 1).I));
-
-            when k_ADD_Integer =>
-              S (Curr_TCB.T).I := S (Curr_TCB.T).I + S (Curr_TCB.T + 1).I;
-
-            when k_SUBTRACT_Integer =>
-              S (Curr_TCB.T).I := S (Curr_TCB.T).I - S (Curr_TCB.T + 1).I;
-
-            when k_ADD_Float =>
-              S (Curr_TCB.T).R := S (Curr_TCB.T).R + S (Curr_TCB.T + 1).R;
-
-            when k_SUBTRACT_Float =>
-              S (Curr_TCB.T).R := S (Curr_TCB.T).R - S (Curr_TCB.T + 1).R;
-
-            when k_AND_Boolean =>
-              S (Curr_TCB.T).I :=
-                Boolean'Pos (Boolean'Val (S (Curr_TCB.T).I) and Boolean'Val (S (Curr_TCB.T + 1).I));
-
-            when k_MULT_Integer =>
-              S (Curr_TCB.T).I := S (Curr_TCB.T).I * S (Curr_TCB.T + 1).I;
-
-            when k_DIV_Integer =>
-              if S (Curr_TCB.T + 1).I = 0 then
-                PS := DIVCHK;
-              else
-                S (Curr_TCB.T).I := S (Curr_TCB.T).I / S (Curr_TCB.T + 1).I;
-              end if;
-
-            when k_Power_Integer =>
-              S (Curr_TCB.T).I := S (Curr_TCB.T).I ** S (Curr_TCB.T + 1).I;
-
-            when k_Power_Float_Integer =>
-              S (Curr_TCB.T).R := S (Curr_TCB.T).R ** S (Curr_TCB.T + 1).I;
-
-            when k_Power_Float =>
-              S (Curr_TCB.T).R := S (Curr_TCB.T).R ** S (Curr_TCB.T + 1).R;
-
-            when k_MOD_Integer =>
-              if S (Curr_TCB.T + 1).I = 0 then
-                PS := DIVCHK;
-              else
-                S (Curr_TCB.T).I := S (Curr_TCB.T).I mod S (Curr_TCB.T + 1).I;
-              end if;
-
-            when k_MULT_Float =>
-              S (Curr_TCB.T).R := S (Curr_TCB.T).R * S (Curr_TCB.T + 1).R;
-
-            when k_DIV_Float =>
-              S (Curr_TCB.T).R := S (Curr_TCB.T).R / S (Curr_TCB.T + 1).R;
-
-            when others =>
-              null;  -- [P2Ada]: no otherwise / else in Pascal
-          end case;
-
-        when kGetNewline =>
+        when k_Get_Newline =>
           if FAT.CURR = 0 then       --  Schoening
             if End_Of_File_Console then
               PS := REDCHK;
@@ -1318,7 +1260,7 @@ package body HAC.PCode.Interpreter is
           end if;
           SWITCH := True;  --  give up control when doing I/O
 
-        when kPutNewline =>
+        when k_Put_Newline =>
           if FAT.CURR = 0 then      --  Schoening
             New_Line_Console;
           else
@@ -1329,7 +1271,7 @@ package body HAC.PCode.Interpreter is
         when k_Set_current_file_pointer =>
           FAT.CURR := IR.Y;
 
-        when kFile_I_O =>
+        when k_File_I_O =>
           --  File I/O procedures - Schoening
           case IR.Y is
             when 7 =>
@@ -1550,7 +1492,7 @@ package body HAC.PCode.Interpreter is
 
         --  Selective Wait
 
-        when kHighlightSource =>
+        when k_Highlight_Source =>
           null;
         end case;
         --  main case IR.F

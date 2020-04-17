@@ -2,6 +2,8 @@ with HAC.UErrors; use HAC.UErrors;
 -- with Sequential_IO;
 -- with Text_IO;
 
+with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+
 package body HAC.PCode is
 
   --    type ObjData is (
@@ -63,8 +65,8 @@ package body HAC.PCode is
   function For_END (for_BEGIN: Opcode) return Opcode is
   begin
     case for_BEGIN is
-      when kFor1    => return kFor2;
-      when kFor1Rev => return kFor2Rev;
+      when k_FOR_Forward_Begin    => return k_FOR_Forward_End;
+      when k_FOR_Reverse_Begin => return k_FOR_Reverse_End;
       when others   => return for_BEGIN;
     end case;
   end For_END;
@@ -110,16 +112,49 @@ package body HAC.PCode is
     LC        := LC + 1;
   end Emit2;
 
-  procedure Patch_Addresses (OC : in out Object_Code_Table; LC_From, LC_Current : Integer) is
-    LC0 : Integer := LC_From;
+  procedure Patch_Addresses (OC : in out Object_Code_Table) is
+    LC0 : Integer := OC'First;
   begin
-    while LC0 < LC_Current loop
+    while LC0 < OC'Last loop
       if OC (LC0).F in Jump_Opcode and then OC (LC0).Y = dummy_address then
-        OC (LC0).Y := LC_Current;
+        OC (LC0).Y := OC'Last;
       end if;
       LC0 := LC0 + 1;
     end loop;
   end Patch_Addresses;
+
+  procedure Dump (OC : Object_Code_Table; Text : Ada.Text_IO.File_Type) is
+    use Ada.Text_IO;
+    package Opcode_IO   is new Enumeration_IO (Opcode);
+    package Code_Pos_IO is new Integer_IO (Natural);
+    package Operand1_IO is new Integer_IO (Operand1);
+    package Operand2_IO is new Integer_IO (Operand2);
+    --
+    function Padded_Opcode (o: Opcode) return String is
+      s : String (1 .. Opcode'Width);
+    begin
+      Opcode_IO.Put(s, o);
+      return s;
+    end Padded_Opcode;
+  begin
+    Put_Line
+      (Text, "Position   : Opcode " & (Opcode'Width - 5) * ' ' &
+             "X (Level)  " &
+             "Y (Address / Value)");
+    for i in OC'Range loop
+      Code_Pos_IO.Put (Text, i);
+      Put (Text, ": " & Padded_Opcode (OC (i).F));
+      Operand1_IO.Put (Text, OC (i).X, 3);
+      Operand2_IO.Put (Text, OC (i).Y);
+      case OC (i).F is
+        when k_Highlight_Source =>
+          Put (Text, " ... Source line" & Operand2'Image (OC (i).Y));
+        when others =>
+          null;
+      end case;
+      New_Line (Text);
+    end loop;
+  end Dump;
 
   -------------------------------------------------------------SaveOBJ----
 

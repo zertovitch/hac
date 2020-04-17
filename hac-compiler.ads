@@ -11,6 +11,6 @@
 
 package HAC.Compiler is
 
-  procedure Compile;
+  procedure Compile (asm_dump_file_name : String := "");
 
 end HAC.Compiler;

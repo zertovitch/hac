@@ -11,6 +11,8 @@
 
 --  This package defines the PCode Virtual Machine.
 
+with Ada.Text_IO;
+
 package HAC.PCode is
 
   -----------------------------------------------------PCode Opcodes----
@@ -33,28 +35,30 @@ package HAC.PCode is
     --
     k_CASE_Switch_1,
     k_CASE_Switch_2,
-    kFor1,
-    kFor2,
-    kFor1Rev,
-    kFor2Rev,
-    kMarkStack,
-    kCall,                              --  Procedure and task entry CALL
-    kIndex1,
-    kIndex,
+    k_FOR_Forward_Begin,
+    k_FOR_Forward_End,
+    k_FOR_Reverse_Begin,
+    k_FOR_Reverse_End,
+    k_Mark_Stack,                       --  First instruction for a Call
+    k_Call,                             --  Procedure and task entry CALL
+    k_Array_Index_Element_Size_1,
+    k_Array_Index,
     k_Load_Block,
     k_Copy_Block,
     k_Store,
     k_Literal,                          --  "Load immediate" in some assemblers.
     k_Load_Float,
     k_Integer_to_Float,
+    --
     k_Read,
     k_Write_String,
-    kWrite1,
-    kWrite2,
+    k_Write_1,
+    k_Write_2,
     k_Write_Float,
+    --
     k_Exit_Call,
     k_Exit_Function,
-    kCase34,
+    k_Case_34,                          --  The instruction #34: "stack_top := (stack_top.I).all"
     --
     k_Unary_MINUS_Float,                --  2020-04-04
     k_Unary_MINUS_Integer,
@@ -92,10 +96,10 @@ package HAC.PCode is
     k_AND_Boolean,
     k_XOR_Boolean,
     --
-    kGetNewline,
-    kPutNewline,
+    k_Get_Newline,
+    k_Put_Newline,
     k_Set_current_file_pointer,
-    kFile_I_O,
+    k_File_I_O,
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
     k_String_assignment,
     k_Delay,
@@ -104,7 +108,7 @@ package HAC.PCode is
     k_Set_Task_Priority,
     k_Set_Task_Priority_Inheritance,
     k_Selective_Wait,
-    kHighlightSource
+    k_Highlight_Source
   );
 
   subtype Jump_Opcode is Opcode range k_Jump .. k_Conditional_Jump;
@@ -131,8 +135,10 @@ package HAC.PCode is
   --  When the code is emited, the address is still unknown.
   --  When the address is known, jump addresses are patched.
 
-  --  Patch all addresses which are = dummy_address to LC_Current.
-  procedure Patch_Addresses (OC : in out Object_Code_Table; LC_From, LC_Current : Integer);
+  --  Patch all addresses which are = dummy_address to OC'Last.
+  procedure Patch_Addresses (OC : in out Object_Code_Table);
+
+  procedure Dump (OC : Object_Code_Table; Text : Ada.Text_IO.File_Type);
 
   --  Store PCode instruction in the object code table OC at position LC and increments LC.
   procedure Emit (

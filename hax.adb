@@ -7,6 +7,7 @@ with Show_License;
 with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Command_Line;                  use Ada.Command_Line;
 with Ada.Streams.Stream_IO;             use Ada.Streams.Stream_IO;
+with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
 with Ada.Text_IO;                       use Ada.Text_IO;
 
 with GNAT.Traceback.Symbolic, Ada.Exceptions;
@@ -17,6 +18,8 @@ procedure HAX is
   caveat       : constant String := "Caution: HAC is not a real Ada compiler.";
   version_info : constant String :=
     "Compiler version: " & HAC.version & " dated " & HAC.reference & '.';
+
+  asm_dump_file_name : Unbounded_String;
 
   procedure Compile_and_interpret_file (name: String) is
     f : Ada.Streams.Stream_IO.File_Type;
@@ -40,7 +43,7 @@ procedure HAX is
     HAC.Data.Line_Count:= 0;
     HAC.Data.c_Set_Stream (HAC.Data.Stream_Access(Stream(f)), name);
     t1 := Clock;
-    HAC.Compiler.Compile;
+    HAC.Compiler.Compile (To_String (asm_dump_file_name));
     t2 := Clock;
     Close (f);
     if verbosity >= 2 then
@@ -82,6 +85,7 @@ procedure HAX is
     Put_Line (Current_Error, "Options: -h     : this help");
     Put_Line (Current_Error, "         -v, v1 : verbose");
     Put_Line (Current_Error, "         -v2    : very verbose");
+    Put_Line (Current_Error, "         -a     : assembler output");
     Put_Line (Current_Error, "         -d     : debug information");
     New_Line (Current_Error);
     Put_Line (Current_Error, caveat);
@@ -100,6 +104,8 @@ begin
       verbosity := 1;
     elsif Argument (i) = "-v2" then
       verbosity := 2;
+    elsif Argument (i) = "-a" then
+      asm_dump_file_name := To_Unbounded_String ("dump.pca");  --  PCA = PCode Assembler
     elsif Argument (i) = "-d" then
       HAC.Data.qDebug := True;
     else
