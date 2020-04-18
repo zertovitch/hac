@@ -58,9 +58,9 @@ package body HAC.Parser is
         Fatal (ARRAYS);  --  Exception is raised there.
       end if;
       A := A + 1;
-      ArraysTab (A).Index_TYP := TP;
-      ArraysTab (A).Low       := Lz;
-      ArraysTab (A).High      := Hz;
+      Arrays_Table (A).Index_TYP := TP;
+      Arrays_Table (A).Low       := Lz;
+      Arrays_Table (A).High      := Hz;
     end Enter_Array;
 
     ------------------------------------------------------------------
@@ -287,7 +287,7 @@ package body HAC.Parser is
         end if;
         Arsz := (High.I - Low.I + 1) * ELSZ;
         declare
-          r : ATabEntry renames ArraysTab (ARef);
+          r : ATabEntry renames Arrays_Table (ARef);
         begin
           r.Size        := Arsz;  --  NB: Index_TYP, Low, High already set
           r.Element_TYP := ELTP;
@@ -764,61 +764,73 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     ---------------------------------------------------------Selector-
     procedure Selector (FSys : Symset; V : in out Item) is
-      X    : Item;
-      a, J : Integer;
-      err  : Compile_Error;
+      --
+      procedure Record_Field_Selector is
+        Field_Offset, Field_Id : Integer;
+      begin
+        if V.TYP = Records then
+          Field_Id       := BlockTab (V.Ref).Last;
+          IdTab (0).Name := Id;
+          while IdTab (Field_Id).Name /= Id loop  --  Search field identifier
+            Field_Id := IdTab (Field_Id).Link;
+          end loop;
+          if Field_Id = No_Id then
+            Error (err_undefined_identifier, stop_on_error => True);
+          end if;
+          V.TYP        := IdTab (Field_Id).TYP;
+          V.Ref        := IdTab (Field_Id).Ref;
+          Field_Offset := IdTab (Field_Id).Adr;
+          if Field_Offset /= 0 then
+            Emit1 (ObjCode, LC, k_Record_Field_Offset, Field_Offset);
+          end if;
+        else
+          Error (err_var_with_field_selector_must_be_record);
+        end if;
+        InSymbol;
+      end Record_Field_Selector;
+      --
+      procedure Array_Coordinates_Selector is
+        Array_Index_Expr : Item;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
+        AT_Index : Integer;       --  Index in the table of all arrays definitions.
+      begin
+        loop
+          InSymbol;  --  Consume '(' or ',' symbol.
+          Expression (FSys + Comma_RParent + RBrack, Array_Index_Expr);
+          if V.TYP = Arrays then
+            AT_Index := V.Ref;
+            if Arrays_Table (AT_Index).Index_TYP /= Array_Index_Expr.TYP then
+              Error (err_illegal_array_subscript);
+            elsif Arrays_Table (AT_Index).ELSize = 1 then
+              Emit1 (ObjCode, LC, k_Array_Index_Element_Size_1, AT_Index);
+            else
+              Emit1 (ObjCode, LC, k_Array_Index, AT_Index);
+            end if;
+            V.TYP := Arrays_Table (AT_Index).Element_TYP;
+            V.Ref := Arrays_Table (AT_Index).ELREF;
+          else
+            Error (err_indexed_variable_must_be_an_array);
+          end if;
+          exit when Sy /= Comma;
+        end loop;
+      end Array_Coordinates_Selector;
+      --
+      err : Compile_Error;
     begin
       pragma Assert (Selector_Symbol_Loose (Sy));  --  '.' or '(' or (wrongly) '['
       loop
         if Sy = Period then
-          InSymbol;                --  Field selector
-          if Sy /= IDent then
-            Error (err_identifier_missing);
+          InSymbol;  --  Consume '.' symbol.
+          if Sy = IDent then
+            Record_Field_Selector;
           else
-            if V.TYP /= Records then
-              Error (err_var_with_field_selector_must_be_record);
-            else  --  Search field identifier
-              J              := BlockTab (V.Ref).Last;
-              IdTab (0).Name := Id;
-              while IdTab (J).Name /= Id loop
-                J := IdTab (J).Link;
-              end loop;
-              if J = 0 then
-                Error (err_undefined_identifier);
-              end if;
-              V.TYP := IdTab (J).TYP;
-              V.Ref := IdTab (J).Ref;
-              a     := IdTab (J).Adr;
-              if a /= 0 then
-                Emit1 (ObjCode, LC, k_Offset, a);
-              end if;
-            end if;
-            InSymbol;
+            Error (err_identifier_missing);
           end if;
-        else    --  Array selector
+        else
           if Sy = LBrack then  --  '['
             --  Common mistake by Pascal, Python or R programmers.
             Error (err_left_bracket_instead_of_parenthesis);
           end if;
-          loop
-            InSymbol;
-            Expression (FSys + Comma_RParent + RBrack, X);
-            if V.TYP = Arrays then
-              a := V.Ref;
-              if ArraysTab (a).Index_TYP /= X.TYP then
-                Error (err_illegal_array_subscript);
-              elsif ArraysTab (a).ELSize = 1 then
-                Emit1 (ObjCode, LC, k_Array_Index_Element_Size_1, a);
-              else
-                Emit1 (ObjCode, LC, k_Array_Index, a);
-              end if;
-              V.TYP := ArraysTab (a).Element_TYP;
-              V.Ref := ArraysTab (a).ELREF;
-            else
-              Error (err_indexed_variable_must_be_an_array);
-            end if;
-            exit when Sy /= Comma;
-          end loop;
+          Array_Coordinates_Selector;
           if Sy = RBrack then  --  ']' : same kind of mistake as for '[' ...
             Error (err_right_bracket_instead_of_parenthesis);
             InSymbol;
@@ -867,7 +879,7 @@ package body HAC.Parser is
                 if X.Ref /= IdTab (CP).Ref then
                   Error (err_parameter_types_do_not_match);
                 elsif X.TYP = Arrays then
-                  Emit1 (ObjCode, LC, k_Load_Block, ArraysTab (X.Ref).Size);
+                  Emit1 (ObjCode, LC, k_Load_Block, Arrays_Table (X.Ref).Size);
                 elsif X.TYP = Records then
                   Emit1 (ObjCode, LC, k_Load_Block, BlockTab (X.Ref).VSize);
                 end if;
@@ -1407,7 +1419,7 @@ package body HAC.Parser is
         else
           case X.TYP is
             when Arrays =>
-              Emit1 (ObjCode, LC, k_Copy_Block, ArraysTab (X.Ref).Size);
+              Emit1 (ObjCode, LC, k_Copy_Block, Arrays_Table (X.Ref).Size);
             when Records =>
               Emit1 (ObjCode, LC, k_Copy_Block, BlockTab (X.Ref).VSize);
             when Enums =>  --  Behaves like a standard type
@@ -1421,10 +1433,10 @@ package body HAC.Parser is
         Emit1 (ObjCode, LC, k_Integer_to_Float, 0);
         Emit (ObjCode, LC, k_Store);
       elsif X.TYP = Arrays and Y.TYP = Strings then
-        if ArraysTab (X.Ref).Element_TYP /= xChars then
+        if Arrays_Table (X.Ref).Element_TYP /= xChars then
           Error (err_types_of_assignment_must_match);
         else
-          Emit1 (ObjCode, LC, k_String_assignment, ArraysTab (X.Ref).Size);  --  array size
+          Emit1 (ObjCode, LC, k_String_assignment, Arrays_Table (X.Ref).Size);  --  array size
         end if;
       elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
         Error (err_types_of_assignment_must_match);
@@ -2500,16 +2512,18 @@ package body HAC.Parser is
         --
         procedure Check_ID_after_END_LOOP is  --  RM 5.5 (5)
         begin
-          if Sy /= IDent then
+          if Sy = IDent then
+            if Id /= new_ident_for_statement then
+              Error (err_END_LOOP_ident_wrong,
+                     hint => Alfa_to_String(new_ident_for_statement_with_case));
+            end if;
+            InSymbol;  --  Consume identifier.
+          else
             Error (err_END_LOOP_ident_missing,
                    hint => Alfa_to_String(new_ident_for_statement_with_case));
-          elsif Id /= new_ident_for_statement then
-            Error (err_END_LOOP_ident_wrong,
-                   hint => Alfa_to_String(new_ident_for_statement_with_case));
-          else
-            InSymbol;
           end if;
         end Check_ID_after_END_LOOP;
+        --
       begin
         Enter (new_ident_for_statement, Id_with_case, Label);
         Test (Colon_Set, FSys,

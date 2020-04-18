@@ -220,8 +220,10 @@ package body HAC.UErrors is
         return "cannot modify a constant or a ""in"" parameter" & hint;
       when err_case_others_alone_last =>
         return "the ""others"" choice must appear alone and in the last choice list (RM 5.4 (5))";
-      when err_END_LOOP_ident_missing | err_END_LOOP_ident_wrong =>
+      when err_END_LOOP_ident_missing =>
         return """end loop " & hint & ";"" expected (RM 5.5 (5))";
+      when err_END_LOOP_ident_wrong =>
+        return "wrong loop identifier: ""end loop " & hint & ";"" expected";
       when err_syntax_error =>
         return "Syntax error";
       -- when others =>
@@ -267,7 +269,7 @@ package body HAC.UErrors is
   -- Write Error on current line & add To TOT ERR (?)
     use Ada.Text_IO;
     updated_repair_kit : Repair_kit := repair_table (code);
-    ub_hint : Unbounded_String := To_Unbounded_String (hint);
+    ub_hint : constant Unbounded_String := To_Unbounded_String (hint);
   begin
     cFoundError (code, Line_Count, syStart, syEnd, -1, hint);
     Errs (code) := True;

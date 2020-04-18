@@ -102,7 +102,7 @@ package body HAC.Compiler is
       Put_Line (" Arrays    Xtyp Etyp Eref  Low High ELSZ Size");
       for I in 1 .. A loop
         declare
-          r : ATabEntry renames ArraysTab (I);
+          r : ATabEntry renames Arrays_Table (I);
         begin
           Put (I, 4);
           Put (Types'Pos (r.Index_TYP), 10);

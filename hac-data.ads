@@ -427,7 +427,7 @@ package HAC.Data is
   HAC_Float_Name   : constant String := "REAL";
   HAC_Integer_Name : constant String := "INTEGER";
 
-  ArraysTab  : array (1 .. AMax) of ATabEntry;  --  Array table
+  Arrays_Table  : array (1 .. AMax) of ATabEntry;  --  Array table
   BlockTab   : array (0 .. BMax) of BTabEntry;  --  Block-table [7-Dec-2009: was 1..]
   ObjCode    : HAC.PCode.Object_Code_Table (0 .. CDMax);
   EntryTab   : array (0 .. EntryMax) of Index;  --  Entry Table

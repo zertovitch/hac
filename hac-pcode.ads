@@ -28,7 +28,7 @@ package HAC.PCode is
     k_Wait_Semaphore,
     k_Signal_Semaphore,
     k_Standard_Functions,
-    k_Offset,
+    k_Record_Field_Offset,
     --
     k_Jump,
     k_Conditional_Jump,

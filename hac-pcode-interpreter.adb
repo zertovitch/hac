@@ -747,7 +747,7 @@ package body HAC.PCode.Interpreter is
                 null;  -- [P2Ada]: no otherwise / else in Pascal
             end case;
 
-        when k_Offset =>
+        when k_Record_Field_Offset =>
           S (Curr_TCB.T).I := S (Curr_TCB.T).I + IR.Y;
 
         when k_Jump =>
@@ -926,10 +926,10 @@ package body HAC.PCode.Interpreter is
           end case;
 
         when k_Array_Index_Element_Size_1 =>
-          H1 := IR.Y;     --  H1 points to HAC.Data.ArraysTab
-          H2 := HAC.Data.ArraysTab (H1).Low;
+          H1 := IR.Y;     --  H1 points to HAC.Data.Arrays_Table
+          H2 := HAC.Data.Arrays_Table (H1).Low;
           H3 := S (Curr_TCB.T).I;
-          if H3 not in H2 .. HAC.Data.ArraysTab (H1).High then
+          if H3 not in H2 .. HAC.Data.Arrays_Table (H1).High then
             PS := INXCHK;  --  Out-of-range state
           else
             Curr_TCB.T       := Curr_TCB.T - 1;
@@ -937,15 +937,15 @@ package body HAC.PCode.Interpreter is
           end if;
 
         when k_Array_Index =>
-          H1 := IR.Y;      --  H1 POINTS TO HAC.Data.ArraysTab
-          H2 := HAC.Data.ArraysTab (H1).Low;
+          H1 := IR.Y;      --  H1 POINTS TO HAC.Data.Arrays_Table
+          H2 := HAC.Data.Arrays_Table (H1).Low;
           H3 := S (Curr_TCB.T).I;
-          if H3 not in H2 .. HAC.Data.ArraysTab (H1).High then
+          if H3 not in H2 .. HAC.Data.Arrays_Table (H1).High then
             PS := INXCHK;  --  Out-of-range state
           else
             Curr_TCB.T       := Curr_TCB.T - 1;
             S (Curr_TCB.T).I := S (Curr_TCB.T).I +
-                                   (H3 - H2) * HAC.Data.ArraysTab (H1).ELSize;
+                                   (H3 - H2) * HAC.Data.Arrays_Table (H1).ELSize;
           end if;
 
         when k_Load_Block =>
