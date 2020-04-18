@@ -32,5 +32,5 @@ set files=%root%/*.ad* %root%/*.gpr %root%/*.xls %root%/save.cmd %root%/build.cm
 set files=%files% %root%/debug.pra %root%/obj/debug/create_dir.txt %root%/obj/fast/create_dir.txt
 set files=%files% %examples% %tests%
 
-zipada -ep2 %root%/hac-%nice_date%-compact- %files%
-zipada -ed3 %root%/hac-%nice_date% %files%
+zipada -ep2 %root%/hac-%nice_date%-        %files%
+zipada -ed3 %root%/hac-%nice_date%-DEFLATE %files%

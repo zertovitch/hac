@@ -18,8 +18,9 @@ project HAC_Test is
      "declarations.adb",
      "enumerations.adb",
      "floats.adb",
-     "if_then_elsif_else.adb",
+     --  "if_then_elsif_else.adb",
      "integers.adb",
+     "loops.adb",
      "recursion.adb",
      "sorting_tests.adb",
      "type_conversion.adb"

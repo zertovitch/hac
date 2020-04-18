@@ -768,10 +768,10 @@ package body HAC.PCode.Interpreter is
           --
           loop
             if HAC.Data.ObjCode (H2).F /= k_CASE_Switch_2 then
-              PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not
-              exit;                    --  happen: the compiler should check that before run-time.
-            elsif HAC.Data.ObjCode (H2).Y = H1    --  - value is matching
-                  or HAC.Data.ObjCode (H2).X < 0  --  - "WHEN OTHERS =>" case
+              PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
+              exit;                    --  ...happen: compiler should check it before run-time.
+            elsif HAC.Data.ObjCode (H2).Y = H1    --  either: - value is matching
+                  or HAC.Data.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
             then
               Curr_TCB.PC := HAC.Data.ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
               exit;

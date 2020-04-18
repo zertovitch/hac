@@ -150,15 +150,17 @@ package body HAC.Compiler is
 
     begin
       Enter ("",               Variable,        NOTYP, 0);
-      Enter ("False",          Declared_Number, Bools, 0);  --  Not really a number, but pshhht!
-      Enter ("True",           Declared_Number, Bools, 1);
-      Enter (HAC_Float_Name,   TypeMark,        Floats, 1);
-      Enter ("Character",      TypeMark,        xChars, 1);
-      Enter ("Boolean",        TypeMark,        Bools, 1);
-      Enter (HAC_Integer_Name, TypeMark,        Ints, 1);
-      Enter ("String",         TypeMark,        Strings, 1);  --{ Hathorn }
-      Enter ("SEMAPHORE",      TypeMark,        Ints, 1);     --{ Hathorn }
-      Enter ("TEXT",           TypeMark,        Ints, 1);     --{ Schoening }
+      --
+      Enter ("False",          Declared_Number_or_Enum_Item, Bools, 0);
+      Enter ("True",           Declared_Number_or_Enum_Item, Bools, 1);
+      --
+      Enter (HAC_Float_Name,   TypeMark, Floats, 1);
+      Enter ("Character",      TypeMark, xChars, 1);
+      Enter ("Boolean",        TypeMark, Bools, 1);
+      Enter (HAC_Integer_Name, TypeMark, Ints, 1);
+      Enter ("String",         TypeMark, Strings, 1);  --{ Hathorn }
+      Enter ("SEMAPHORE",      TypeMark, Ints, 1);     --{ Hathorn }
+      Enter ("TEXT",           TypeMark, Ints, 1);     --{ Schoening }
       --
       --  Standard functions
       --

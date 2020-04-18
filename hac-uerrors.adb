@@ -47,7 +47,7 @@ package body HAC.UErrors is
       when err_bad_result_type_for_a_function =>
         return "bad result type for a function";
       when err_illegal_statement_start_symbol =>
-        return "illegal statement start" & hint;
+        return "statement cannot start with a " & hint;
       when err_expecting_a_boolean_expression =>
         return "expecting a Boolean expression";
       when err_control_variable_of_the_wrong_type =>
@@ -220,6 +220,10 @@ package body HAC.UErrors is
         return "cannot modify a constant or a ""in"" parameter" & hint;
       when err_case_others_alone_last =>
         return "the ""others"" choice must appear alone and in the last choice list (RM 5.4 (5))";
+      when err_END_LOOP_ident_missing | err_END_LOOP_ident_wrong =>
+        return """end loop " & hint & ";"" expected (RM 5.5 (5))";
+      when err_syntax_error =>
+        return "Syntax error";
       -- when others =>
       --   return "Unknown error Id=" & Integer'Image (Id);
     end case;
@@ -247,7 +251,9 @@ package body HAC.UErrors is
       err_missing_closing_CASE        => (insert,        +" case"),
       err_missing_closing_IF          => (insert,        +" if"),
       err_closing_parenthesis_missing => (insert,        +")"),
-      err_incorrect_block_name        => (replace_token, +"[here: correct identifier]"),
+      err_incorrect_block_name        => (replace_token, +"[Error() puts identifier]"),
+      err_END_LOOP_ident_missing      => (insert,        +"[Error() puts identifier]"),
+      err_END_LOOP_ident_wrong        => (replace_token, +"[Error() puts identifier]"),
       err_EQUALS_instead_of_BECOMES   => (replace_token, +":="),
       others                          => nothing_to_repair
     );
@@ -261,6 +267,7 @@ package body HAC.UErrors is
   -- Write Error on current line & add To TOT ERR (?)
     use Ada.Text_IO;
     updated_repair_kit : Repair_kit := repair_table (code);
+    ub_hint : Unbounded_String := To_Unbounded_String (hint);
   begin
     cFoundError (code, Line_Count, syStart, syEnd, -1, hint);
     Errs (code) := True;
@@ -280,8 +287,12 @@ package body HAC.UErrors is
           if hint = "" then
             updated_repair_kit.kind := none;
           else
-            updated_repair_kit.text := To_Unbounded_String (hint);
+            updated_repair_kit.text := ub_hint;
           end if;
+        when err_END_LOOP_ident_missing =>
+          updated_repair_kit.text := ' ' & ub_hint;
+        when err_END_LOOP_ident_wrong =>
+          updated_repair_kit.text := ub_hint;
         when others =>
           null;
       end case;

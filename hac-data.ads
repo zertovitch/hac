@@ -211,7 +211,7 @@ package HAC.Data is
   function Alfa_to_String (a: Alfa) return String;
 
   type aObject is (
-   Declared_Number,  --  Untyped constant like "pi : constant := 3.1415927"; (RM 3.3.2)
+   Declared_Number_or_Enum_Item,  --  Untyped constant like "pi : constant := 3.1415927"; (RM 3.3.2)
    Variable,
    TypeMark,
    Prozedure,

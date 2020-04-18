@@ -213,7 +213,7 @@ package body HAC.Parser is
         if Sy = IDent then
           X := Locate_Identifier (Id);
           if X /= 0 then
-            if IdTab (X).Obj /= Declared_Number then
+            if IdTab (X).Obj /= Declared_Number_or_Enum_Item then
               Error (err_illegal_constant_or_constant_identifier);
             else
               C.TP := IdTab (X).TYP;
@@ -305,17 +305,19 @@ package body HAC.Parser is
           InSymbol;  --  Consume '(' symbol.
           if Sy = IDent then
             enum_count := enum_count + 1;
-            Enter (Id, Id_with_case, Declared_Number);
-            IdTab (T).TYP := Enums;
-            IdTab (T).Ref := RF;
-            IdTab (T).Adr := enum_count - 1;  --  RM 3.5.1 (7): position numbers begin with 0.
+            Enter (Id, Id_with_case, Declared_Number_or_Enum_Item);
+            IdTab (T).Read_only := True;
+            IdTab (T).TYP       := Enums;
+            IdTab (T).Ref       := RF;
+            IdTab (T).Adr       := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
           else
             Error (err_identifier_missing);
           end if;
           InSymbol;
           exit when Sy /= Comma;
         end loop;
-        Sz := enum_count;  --  ?? size should be 1 (to be checked !!)
+        Sz := enum_count;
+        --  Huh ?? size should be 1 (to be checked !!) but Sz is perhaps misused as a count
         Need (RParent, err_closing_parenthesis_missing);
       end Enumeration_Type;
 
@@ -587,7 +589,7 @@ package body HAC.Parser is
             begin
               r.Read_only := is_constant;
               if is_untyped_constant then
-                r.Obj := Declared_Number;  --  r was initially a Variable.
+                r.Obj := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
                 r.TYP := C.TP;
                 case C.TP is
                   when Floats =>
@@ -1110,12 +1112,14 @@ package body HAC.Parser is
                     r : TabEntry renames IdTab (I);
                   begin
                     case r.Obj is
-                      when Declared_Number =>
+                      when Declared_Number_or_Enum_Item =>
                         X.TYP := r.TYP;
                         X.Ref := r.Ref;
                         if X.TYP = Floats then
+                          --  Address is an index in the float constants table.
                           Emit1 (ObjCode, LC, k_Load_Float, r.Adr);
                         else
+                          --  Here the address is actually the immediate (discrete) value.
                           Emit1 (ObjCode, LC, k_Literal, r.Adr);
                         end if;
                         --
@@ -1811,7 +1815,9 @@ package body HAC.Parser is
             InSymbol;
           end if;
           --  !!  Here we should have a more general syntax:
-          --      discrete_subtype_definition RM 3.6 (6).
+          --      discrete_subtype_definition RM 3.6 (6) which is either
+          --      a subtype_indication 3.2.2 (3) : name [constraint] like "Color [range red .. blue]"
+          --      or a range 3.5 (3): "low .. high" or range_attribute_reference: A'Range
           Expression (END_LOOP_RANGE_Double_Dot + FSys, X);  --  Lower bound
           IdTab (T).TYP := X.TYP;
           if not Discrete_Typ (X.TYP) then
@@ -2489,21 +2495,42 @@ package body HAC.Parser is
 
       procedure Named_Statement is
         --  Block_Statement or loop, named by "name: loop"
-        new_label: constant Alfa := Id;
+        new_ident_for_statement           : constant Alfa := Id;
+        new_ident_for_statement_with_case : constant Alfa := Id_with_case;
+        --
+        procedure Check_ID_after_END_LOOP is  --  RM 5.5 (5)
+        begin
+          if Sy /= IDent then
+            Error (err_END_LOOP_ident_missing,
+                   hint => Alfa_to_String(new_ident_for_statement_with_case));
+          elsif Id /= new_ident_for_statement then
+            Error (err_END_LOOP_ident_wrong,
+                   hint => Alfa_to_String(new_ident_for_statement_with_case));
+          else
+            InSymbol;
+          end if;
+        end Check_ID_after_END_LOOP;
       begin
-        Enter (new_label, Id_with_case, Label);
+        Enter (new_ident_for_statement, Id_with_case, Label);
         Test (Colon_Set, FSys,
           err_colon_missing_for_named_statement,
           stop_on_error => True
         );
-        InSymbol;
+        InSymbol;  --  Consume ':' symbol.
         case Sy is
           when BEGIN_Symbol | DECLARE_Symbol => -- Named Block_Statement
-            Block_Statement (new_label);
-          when LOOP_Symbol | FOR_Symbol | WHILE_Symbol =>
-            null; -- !! should check label after end loop
+            Block_Statement (new_ident_for_statement);
+          when FOR_Symbol =>
+            FOR_Statement;
+            Check_ID_after_END_LOOP;
+          when LOOP_Symbol =>
+            LOOP_Statement (k_Jump, LC);
+            Check_ID_after_END_LOOP;
+          when WHILE_Symbol =>
+            WHILE_Statement;
+            Check_ID_after_END_LOOP;
           when others =>
-            null;
+            Error (err_syntax_error);
         end case;
       end Named_Statement;
 
@@ -2526,15 +2553,20 @@ package body HAC.Parser is
             I_Statement := Locate_Identifier (Id, No_Id_Fail => False);
             InSymbol;
             if I_Statement = No_Id then
-              --  New identifier: must be a label for named Block_Statement or loop.
+              --  New identifier: must be an identifier for a named Block_Statement or loop.
               Named_Statement;
             else
               case IdTab (I_Statement).Obj is
-                when Declared_Number | Variable =>
+                when Variable =>
                   Assignment (I_Statement, Check_read_only => True);
-                when TypeMark | Funktion =>
-                  Error (err_illegal_statement_start_symbol, ": statement cannot start with function or type name");
-                  Assignment (I_Statement, Check_read_only => True);
+                when Declared_Number_or_Enum_Item =>
+                  Error (err_illegal_statement_start_symbol, "constant or an enumeration item",
+                         stop_on_error => True);
+                when TypeMark =>
+                  Error (err_illegal_statement_start_symbol, "type name", stop_on_error => True);
+                when Funktion =>
+                  Error (err_illegal_statement_start_symbol, "function name",
+                         stop_on_error => True);
                 when aTask =>
                   Entry_Call (FSys, I_Statement, CallSTDE);
                 when Prozedure =>

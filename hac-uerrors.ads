@@ -103,20 +103,23 @@ package HAC.UErrors is
     err_EQUALS_instead_of_BECOMES,
     err_numeric_constant_expected,
     err_identifier_too_long,
-    err_identifier_cannot_end_with_underline,  --  2020-04-09
-    err_double_underline_not_permitted,        --  2020-04-09
+    err_identifier_cannot_end_with_underline,    --  2020-04-09
+    err_double_underline_not_permitted,          --  2020-04-09
     err_statement_expected,
     err_duplicate_label,
-    err_invalid_power_operands,                --  2018-03-18
-    err_unexpected_end_of_text,                --  2018-04-01
-    err_not_yet_implemented,                   --  2019-03-24
-    err_type_conversion_not_supported,         --  2020-03-31
-    err_int_to_float_coercion,                 --  2020-04-06
-    err_operator_not_defined_for_types,        --  2020-04-06
-    err_no_null_functions,                     --  2020-04-10
+    err_invalid_power_operands,                  --  2018-03-18
+    err_unexpected_end_of_text,                  --  2018-04-01
+    err_not_yet_implemented,                     --  2019-03-24
+    err_type_conversion_not_supported,           --  2020-03-31
+    err_int_to_float_coercion,                   --  2020-04-06
+    err_operator_not_defined_for_types,          --  2020-04-06
+    err_no_null_functions,                       --  2020-04-10
     err_digit_expected,
     err_cannot_modify_constant_or_in_parameter,
-    err_case_others_alone_last
+    err_case_others_alone_last,
+    err_END_LOOP_ident_missing,
+    err_END_LOOP_ident_wrong,
+    err_syntax_error                             --  A classic one. "Too long to explain more..."
   );
 
   type Message_kind is (error, warning, note, style);
