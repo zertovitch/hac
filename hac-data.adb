@@ -1,8 +1,16 @@
 with Ada.Strings.Fixed;
+with Ada.Strings.Unbounded;
+use Ada.Strings.Unbounded;
 
 package body HAC.Data is
 
-  current_compiler_stream : Stream_Access;  --  !!  Global variable alarm!
+  current_compiler_stream : Stream_Access;        --  !!  Global variable alarm!
+  current_compiler_file_name : Unbounded_String;  --  !!  Global variable alarm!
+
+  function Get_Current_Source_Name return String is
+  begin
+    return To_String (current_compiler_file_name);
+  end Get_Current_Source_Name;
 
   function "+" (a, b : Set) return Set is
     c : Set (a'Range);
@@ -133,7 +141,7 @@ package body HAC.Data is
     --   Put_Line("[::]" & InpLine(InpLine'First..Last));
     -- end if;
   exception
-    when End_Error =>
+    when Ada.Text_IO.End_Error =>
       if idx >= InpLine'First then
         Last := idx;  --  Avoid trashing a non-empty line ending the stream.
       else
@@ -145,30 +153,5 @@ package body HAC.Data is
   begin
     return False; -- return uiEndOfSource;
   end cEndOfSource;
-
-  procedure cFoundError (
-     errCode: HAC.UErrors.Compile_Error;
-     srcNumber, charStart, charEnd, objNumber : Integer;
-     hint: String
-  )
-  is
-  begin
-    if qDebug then
-      Put_Line
-       (" errCode=" &
-        HAC.UErrors.Compile_Error'Image (errCode) &
-        " (" &
-        HAC.UErrors.Error_String (errCode, hint) &
-        ") " &
-        " srcNumber=" &
-        Integer'Image (srcNumber) &
-        " charStart=" &
-        Integer'Image (charStart) &
-        " charEnd=" &
-        Integer'Image (charEnd) &
-        " objNumber=" &
-        Integer'Image (objNumber));
-    end if;
-  end cFoundError;
 
 end HAC.Data;

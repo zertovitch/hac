@@ -260,6 +260,33 @@ package body HAC.UErrors is
       others                          => nothing_to_repair
     );
 
+  procedure cFoundError (
+     errCode: Compile_Error;
+     srcNumber, charStart, charEnd, objNumber : Integer;
+     hint: String
+  )
+  is
+    use Ada.Text_IO;
+  begin
+    if qDebug then
+      Put_Line
+       (Current_Error,
+        " errCode=" &
+        HAC.UErrors.Compile_Error'Image (errCode) &
+        " (" &
+        HAC.UErrors.Error_String (errCode, hint) &
+        ") " &
+        " srcNumber=" &
+        Integer'Image (srcNumber) &
+        " charStart=" &
+        Integer'Image (charStart) &
+        " charEnd=" &
+        Integer'Image (charEnd) &
+        " objNumber=" &
+        Integer'Image (objNumber));
+    end if;
+  end cFoundError;
+
   procedure Error (
     code          : Compile_Error;
     hint          : String      := "";
@@ -274,7 +301,7 @@ package body HAC.UErrors is
     cFoundError (code, Line_Count, syStart, syEnd, -1, hint);
     Errs (code) := True;
     Err_Count := Err_Count + 1;
-    if HAC.Data.current_error_pipe = null then
+    if current_error_pipe = null then
       Put_Line(
         Current_Error,
         --  !! Ada "file" name here
@@ -298,9 +325,9 @@ package body HAC.UErrors is
         when others =>
           null;
       end case;
-      HAC.Data.current_error_pipe (
+      current_error_pipe (
         message   => Error_String (code, hint),
-        file_name => To_String (current_compiler_file_name),
+        file_name => Get_Current_Source_Name,
         line      => Line_Count,
         column_a  => syStart,
         column_z  => syEnd,

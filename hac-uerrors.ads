@@ -147,6 +147,15 @@ package HAC.UErrors is
     repair    : Repair_kit     --  Can error be automatically repaired; if so, how ?
   );
 
+  --  Error messages can be routed to a specialized pipe instead of
+  --  text-based Standard_Error.  !!  Global variable alarm!
+
+  current_error_pipe: HAC.UErrors.Smart_error_pipe := null;
+
+  type Error_set is array (HAC.UErrors.Compile_Error) of Boolean;
+  Errs       : Error_set;       --  compilation Errors  !!  Global variable alarm!
+  error_free : constant Error_set := (others => False);
+
   procedure Error (
     code          : Compile_Error;
     hint          : String      := "";

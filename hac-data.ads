@@ -11,11 +11,7 @@
 --  This packages contains constants and global data (ouch!) for the compiler
 --  and the p-code interpreter.
 
-with Ada.Streams; use Ada.Streams;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
-
-with HAC.UErrors;
+with Ada.Streams, Ada.Text_IO;
 
 package HAC.Data is
 
@@ -346,7 +342,7 @@ package HAC.Data is
 
   subtype File_count is Integer range 0 .. FMax;
   subtype File_index is Integer range 1 .. FMax;
-  type FilDescr_Texts is array (File_index) of File_Type;
+  type FilDescr_Texts is array (File_index) of Ada.Text_IO.File_Type;
   type FilDescr_Lname is array (File_index) of Natural;
   type FilDescr_Names is array (File_index) of String (1 .. Alng);
 
@@ -383,7 +379,7 @@ package HAC.Data is
                                             --VAR Map
   RunningTime         : Boolean;    --  Display running timer
 
-  Listing, Sym_dump : File_Type;            --  File pointers
+  Listing, Sym_dump : Ada.Text_IO.File_Type;   --  File pointers
 
   CH : Character;  --  previous Character Read from Source program
 
@@ -475,10 +471,6 @@ package HAC.Data is
 
   -- --- Error Control Variables ---
 
-  type Error_set is array (HAC.UErrors.Compile_Error) of Boolean;
-  Errs       : Error_set;       --  compilation Errors
-  error_free : constant Error_set := (others => False);
-
   ErrPos   : Integer;
   SkipFlag : Boolean;                   --  used by procedure EndSkip
   EofInput : Boolean;                   --  signals end of input (this is set
@@ -515,31 +507,21 @@ package HAC.Data is
 
   procedure cFeedback;
 
-  --  Error messages can be routed to a specialized pipe instead of
-  --  text-based Standard_Error.
+  type Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
 
-  --  !! This would be ideally private. Please use c_Set_Stream below.
-  current_error_pipe: HAC.UErrors.Smart_error_pipe := null;
-  current_compiler_file_name : Unbounded_String;
-
-  type Stream_Access is access all Root_Stream_Type'Class;
-
---  Set current source stream (file, editor data, zipped file,...)
+  --  Set current source stream (file, editor data, zipped file,...)
   procedure c_Set_Stream (
     s         : Stream_Access;
     file_name : String         --  Can be virtual (editor, zip entry)
   );
+
+  function Get_Current_Source_Name return String;
 
   --  Get the next line from source
   procedure cGetNextLine (InpLine : out String; Last : out Natural);
 
   --  No more input left
   function cEndOfSource return Boolean;
-
-  procedure cFoundError
-    (errCode: HAC.UErrors.Compile_Error;
-     srcNumber, charStart, charEnd, objNumber : Integer;
-     hint: String);
 
 private
 
