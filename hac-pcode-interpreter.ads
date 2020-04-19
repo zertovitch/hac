@@ -51,8 +51,9 @@ package HAC.PCode.Interpreter is
     with procedure Put_Console (c: in Character);
     with procedure Put_Console (s: in String);
     with procedure New_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
-  procedure Interpret;
 
-  procedure Interpret_on_Current_IO;
+  procedure Interpret (ObjCode : Object_Code_Table);
+
+  procedure Interpret_on_Current_IO (ObjCode : Object_Code_Table);
 
 end HAC.PCode.Interpreter;

@@ -9,7 +9,7 @@ with Ada.Text_IO, Ada.Integer_Text_IO, Ada.Characters.Handling;
 
 package body HAC.Compiler is
 
-  procedure Init_Tables is
+  procedure Init_Tables (CT : out Compiler_Tables) is
   begin
     -- Arrays and blocks are clearly 1-based
     A := 0;
@@ -23,7 +23,7 @@ package body HAC.Compiler is
     Tasks_Count := 0;
     Entries_Count := 0;
     -- Location Counter (in output code)
-    LC := 0;
+    CT.LC := 0;
   end Init_Tables;
 
   --  Print_Tables is for debugging purposes.
@@ -121,7 +121,106 @@ package body HAC.Compiler is
 
   ---------------------------------------------------------------------------
 
-  procedure Compile (asm_dump_file_name : String := "") is
+  procedure Emit (
+    CT   : in out Compiler_Tables;
+    FCT  :        HAC.PCode.Opcode)
+  is
+  begin
+    PCode.Emit (CT.ObjCode, CT.LC, FCT);
+  end Emit;
+
+  procedure Emit1 (
+    CT   : in out Compiler_Tables;
+    FCT  :        HAC.PCode.Opcode;
+    B    :        Integer)
+  is
+  begin
+    PCode.Emit1 (CT.ObjCode, CT.LC, FCT, B);
+  end Emit1;
+
+  procedure Emit2 (
+    CT   : in out Compiler_Tables;
+    FCT  :        HAC.PCode.Opcode;
+    a, B :        Integer)
+  is
+  begin
+    PCode.Emit2 (CT.ObjCode, CT.LC, FCT, a, B);
+  end Emit2;
+
+  procedure Emit_Comparison_Instruction (
+    CT        : in out HAC.Compiler.Compiler_Tables;
+    Operator  :        HAC.Data.Comparison_Operator;
+    Base_Type :        HAC.Data.Types
+  )
+  is
+  begin
+    if Base_Type = Floats then
+      case Operator is
+        when EQL => Emit (CT, k_EQL_Float);
+        when NEQ => Emit (CT, k_NEQ_Float);
+        when LSS => Emit (CT, k_LSS_Float);
+        when LEQ => Emit (CT, k_LEQ_Float);
+        when GTR => Emit (CT, k_GTR_Float);
+        when GEQ => Emit (CT, k_GEQ_Float);
+      end case;
+    elsif Discrete_Typ (Base_Type) then
+      case Operator is
+        when EQL => Emit (CT, k_EQL_Integer);
+        when NEQ => Emit (CT, k_NEQ_Integer);
+        when LSS => Emit (CT, k_LSS_Integer);
+        when LEQ => Emit (CT, k_LEQ_Integer);
+        when GTR => Emit (CT, k_GTR_Integer);
+        when GEQ => Emit (CT, k_GEQ_Integer);
+      end case;
+    else
+      raise Internal_error with "Comparison instructions only for atomic types";
+    end if;
+  end Emit_Comparison_Instruction;
+
+  procedure Emit_Unary_Minus (
+    CT        : in out HAC.Compiler.Compiler_Tables;
+    Base_Type :        HAC.Data.Numeric_Typ
+  )
+  is
+  begin
+    case Base_Type is
+      when Floats => Emit (CT, k_Unary_MINUS_Float);
+      when Ints   => Emit (CT, k_Unary_MINUS_Integer);
+    end case;
+  end Emit_Unary_Minus;
+
+  procedure Emit_Arithmetic_Binary_Instruction (
+    CT        : in out HAC.Compiler.Compiler_Tables;
+    Operator  :        HAC.Data.Arithmetic_Binary_Operator;
+    Base_Type :        HAC.Data.Numeric_Typ
+  )
+  is
+  begin
+    case Base_Type is
+      when Floats =>
+        case Operator is
+          when Plus    => Emit (CT, k_ADD_Float);
+          when Minus   => Emit (CT, k_SUBTRACT_Float);
+          when Times   => Emit (CT, k_MULT_Float);
+          when Divide  => Emit (CT, k_DIV_Float);
+          when Power   => Emit (CT, k_Power_Float);
+        end case;
+      when Ints   =>
+        case Operator is
+          when Plus    => Emit (CT, k_ADD_Integer);
+          when Minus   => Emit (CT, k_SUBTRACT_Integer);
+          when Times   => Emit (CT, k_MULT_Integer);
+          when Divide  => Emit (CT, k_DIV_Integer);
+          when Power   => Emit (CT, k_Power_Integer);
+        end case;
+    end case;
+  end Emit_Arithmetic_Binary_Instruction;
+
+  procedure Compile (
+    CT                 : in out Compiler_Tables;
+    asm_dump_file_name : String := ""
+  )
+  is
 
     procedure Enter_Standard_Functions_and_Main is
 
@@ -220,10 +319,9 @@ package body HAC.Compiler is
     syStart := 1;
     syEnd := 1;
     CC := 0;
-    LC := 0;
     LL := 0;
 
-    Init_Tables;
+    Init_Tables (CT);
 
     cICompiler;
 
@@ -307,10 +405,10 @@ package body HAC.Compiler is
     TaskDefTab (0) := T; --{ Task Table Entry }
 
     --  Start Compiling
-    Block (Block_Begin_Symbol + Statement_Begin_Symbol,
+    Block (CT, Block_Begin_Symbol + Statement_Begin_Symbol,
            False, False, 1, T, IdTab(T).Name, Main_Program_ID_with_case);
     --  Main procedure is parsed.
-    Emit (ObjCode, LC, k_Halt_Interpreter);
+    Emit (CT, k_Halt_Interpreter);
 
     if Sy /= Semicolon then
       if qDebug then
@@ -375,7 +473,7 @@ package body HAC.Compiler is
 
     if asm_dump_file_name /= "" then
       Create (asm_dump, Out_File, asm_dump_file_name);
-      Dump (ObjCode (ObjCode'First .. LC - 1), asm_dump);
+      Dump (CT.ObjCode (CT.ObjCode'First .. CT.LC - 1), asm_dump);
       Close (asm_dump);
     end if;
 

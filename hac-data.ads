@@ -15,18 +15,18 @@ with Ada.Streams; use Ada.Streams;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
 
-with HAC.PCode, HAC.UErrors;
+with HAC.UErrors;
 
 package HAC.Data is
 
   pragma Elaborate_Body;
 
   -----------------------------------------------------------------------------
-  -- SmallAda global constants, Types, and data objects.
+  -- SmallAda global constants, types, and (ouch!) data objects. (<- removing in progress)
   -----------------------------------------------------------------------------
 
   -------------------------------------------------------------------------
-  -- Global constants [ 8-( ]
+  -- Global constants
   -------------------------------------------------------------------------
 
   StMax   : constant := 2000;          --  Maximum Stack Size
@@ -186,6 +186,9 @@ package HAC.Data is
    WHILE_Symbol,
    WITH_Symbol,
    XOR_Symbol);
+
+  subtype Comparison_Operator is KeyWSymbol range EQL .. LEQ;
+  subtype Arithmetic_Binary_Operator is KeyWSymbol range Plus .. Power;
 
   type Set is array (Integer range <>) of Boolean;
   function "+" (a, b : Set) return Set;
@@ -429,7 +432,6 @@ package HAC.Data is
 
   Arrays_Table  : array (1 .. AMax) of ATabEntry;  --  Array table
   BlockTab   : array (0 .. BMax) of BTabEntry;  --  Block-table [7-Dec-2009: was 1..]
-  ObjCode    : HAC.PCode.Object_Code_Table (0 .. CDMax);
   EntryTab   : array (0 .. EntryMax) of Index;  --  Entry Table
   FileIOTab  : FilDescr;                        --  File I/O table
   FloatPtTab : array (1 .. C2Max) of HAC_Float; --  Float Constant table
@@ -480,15 +482,12 @@ package HAC.Data is
   ErrPos   : Integer;
   SkipFlag : Boolean;                   --  used by procedure EndSkip
   EofInput : Boolean;                   --  signals end of input (this is set
-                                        --to false and
-                                        --  never used again!)
+                                        --  to false and never used again!)
 
   -- --- InSymbol (Scanner) Variables ---
 
-  Sy             : KeyWSymbol;                --  last KeyWSymbol Read by
-                                              --InSymbol
-  syStart, syEnd : Integer;                   --  Start and end on line for
-                                              --the symbol in Sy
+  Sy             : KeyWSymbol;                --  last KeyWSymbol Read by InSymbol
+  syStart, syEnd : Integer;                   --  Start and end on line for the symbol in Sy
   syLine         : Integer;                   --  Source line of Sy
   Id             : Alfa;                      --  identifier from InSymbol
   Id_with_case   : Alfa;                      --  Same as Id, but with casing.
@@ -499,10 +498,8 @@ package HAC.Data is
   InpLine        : String (1 .. 255);             --  input line. Manuel:
                                                   --Renamed To InpLine
   CC             : Integer;                   --  character counter (=column in current line)
-  LC             : Integer;                   --  location counter
   LL             : Integer;                   --  Length of current line
-  Line_Count     : Integer;                   --  Source line counter, used
-                                              --for listing
+  Line_Count     : Integer;                   --  Source line counter, used for listing
   Tx             : Integer;                   --  scratch Variable
   TCH            : Character;                      --  scratch Variable
   TStr           : String (1 .. 14);             --  scratch Variable

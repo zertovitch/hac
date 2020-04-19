@@ -229,9 +229,8 @@ package body HAC.PCode.Interpreter is
       end loop;
   end Post_Mortem_Dump;
 
-  procedure Interpret
+  procedure Interpret  (ObjCode : Object_Code_Table)
     --  Global Data Used (HAC.Data) :
-    --       HAC.Data.ObjCode     : Code table, pseudo instructions
     --       S        : Stack
     --       HAC.Data.IdTab         : Table of all identifiers
     --       HAC.Data.ArraysTab     : Array table
@@ -559,7 +558,7 @@ package body HAC.PCode.Interpreter is
       declare
         Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       begin
-        InterDef.IR := HAC.Data.ObjCode (Curr_TCB.PC);
+        InterDef.IR := ObjCode (Curr_TCB.PC);
         Curr_TCB.PC := Curr_TCB.PC + 1;
       end;
 
@@ -767,13 +766,13 @@ package body HAC.PCode.Interpreter is
           --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
           --
           loop
-            if HAC.Data.ObjCode (H2).F /= k_CASE_Switch_2 then
+            if ObjCode (H2).F /= k_CASE_Switch_2 then
               PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
               exit;                    --  ...happen: compiler should check it before run-time.
-            elsif HAC.Data.ObjCode (H2).Y = H1    --  either: - value is matching
-                  or HAC.Data.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
+            elsif ObjCode (H2).Y = H1    --  either: - value is matching
+                  or ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
             then
-              Curr_TCB.PC := HAC.Data.ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
+              Curr_TCB.PC := ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
               exit;
             else
               H2 := H2 + 2;  --  Check the next k_CASE_Switch_2 instruction pair.
@@ -1481,8 +1480,7 @@ package body HAC.PCode.Interpreter is
               end if;
             --               if ir.x = 6 then
             --               begin
-            --                 term := false ;    {Task doesn't have a
-            --terminate}
+            --                 term := false ;    {Task doesn't have a terminate}
             --               end ;                {alternative}
             --
 
@@ -1527,7 +1525,8 @@ package body HAC.PCode.Interpreter is
       Ada.Text_IO.Put,
       Ada.Text_IO.New_Line);
 
-  procedure Interpret_on_Current_IO renames Interpret_on_Current_IO_Instance;
+  procedure Interpret_on_Current_IO (ObjCode : Object_Code_Table)
+    renames Interpret_on_Current_IO_Instance;
 
 end HAC.PCode.Interpreter;
 -- Translated on 23-Jan-2013 by (New) P2Ada v. 28-Oct-2009

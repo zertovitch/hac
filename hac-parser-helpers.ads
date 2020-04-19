@@ -11,7 +11,6 @@
 
 with HAC.Data;                          use HAC.Data;
 with HAC.UErrors;                       use HAC.UErrors;
-with HAC.PCode;                         use HAC.PCode;
 
 package HAC.Parser.Helpers is
 
@@ -211,11 +210,8 @@ package HAC.Parser.Helpers is
      END_Symbol              => True,
      others => False);
 
-  subtype Comparison_Operator is KeyWSymbol range EQL .. LEQ;
   Comparison_Operator_Set : constant Symset :=
     (Comparison_Operator => True, others => False);
-
-  subtype Arithmetic_Binary_Operator is KeyWSymbol range Plus .. Power;
 
   Plus_Minus : constant Symset :=
     (Plus | Minus => True, others => False);
@@ -261,25 +257,5 @@ package HAC.Parser.Helpers is
   ---------------------
   --  Miscellaneous  --
   ---------------------
-
-  procedure Emit_Comparison_Instruction (
-    OC        : in out Object_Code_Table;
-    LC        : in out Integer;
-    Operator  :        Comparison_Operator;
-    Base_Type :        Types
-  );
-
-  procedure Emit_Unary_Minus (
-    OC        : in out Object_Code_Table;
-    LC        : in out Integer;
-    Base_Type :        Numeric_Typ
-  );
-
-  procedure Emit_Arithmetic_Binary_Instruction (
-    OC        : in out Object_Code_Table;
-    LC        : in out Integer;
-    Operator  :        Arithmetic_Binary_Operator;
-    Base_Type :        Numeric_Typ
-  );
 
 end HAC.Parser.Helpers;

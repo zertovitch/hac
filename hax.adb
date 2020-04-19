@@ -27,6 +27,7 @@ procedure HAX is
     HAC_margin_1 : constant String := "*******[ HAX ]*******   ";
     HAC_margin_2 : constant String := ". . . .[ HAX ]. . . .   ";
     HAC_margin_3 : constant String := "-------[ HAX ]-------   ";
+    CT : HAC.Compiler.Compiler_Tables;
   begin
     case verbosity is
       when 0 =>
@@ -43,7 +44,7 @@ procedure HAX is
     HAC.Data.Line_Count:= 0;
     HAC.Data.c_Set_Stream (HAC.Data.Stream_Access(Stream(f)), name);
     t1 := Clock;
-    HAC.Compiler.Compile (To_String (asm_dump_file_name));
+    HAC.Compiler.Compile (CT, To_String (asm_dump_file_name));
     t2 := Clock;
     Close (f);
     if verbosity >= 2 then
@@ -59,7 +60,7 @@ procedure HAX is
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       end if;
       t1 := Clock;
-      HAC.PCode.Interpreter.Interpret_on_Current_IO;
+      HAC.PCode.Interpreter.Interpret_on_Current_IO (CT.ObjCode);
       t2 := Clock;
       if verbosity >= 2 then
         Put_Line (

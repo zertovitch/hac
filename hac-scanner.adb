@@ -48,8 +48,8 @@ package body HAC.Scanner is
         if Listing_Was_Requested then
           Put (Listing, Line_Count, 4);
           Put (Listing, "  ");
-          Put (Listing, LC, 5);
-          Put (Listing, "  ");
+          --  Put (Listing, LC, 5);
+          --  Put (Listing, "  ");
         end if;
         LL := 0;
         CC := 0;
