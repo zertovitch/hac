@@ -251,15 +251,6 @@ package HAC.Data is
 
   Ints_Typ : constant Typ_Set := (Ints => True, others => False);
 
-  type CHTP is (Letter, LowCase, Number, Special, Illegal);
-  type Set_of_CHTP is array (CHTP) of Boolean;
-  special_or_illegal : Set_of_CHTP :=
-   (Letter   |
-    LowCase  |
-    Number   => False,
-    Special  |
-    Illegal  => True);
-
   subtype Index is Integer range -XMax .. +XMax;
 
   type Item is record
@@ -381,8 +372,6 @@ package HAC.Data is
 
   Listing, Sym_dump : Ada.Text_IO.File_Type;   --  File pointers
 
-  CH : Character;  --  previous Character Read from Source program
-
   Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
   Main_Program_ID_with_case : Alfa := Empty_Alfa;
 
@@ -451,24 +440,6 @@ package HAC.Data is
   Tasks_Count   : Integer;       --  Index To TskDefTab
   Entries_Count : Integer;       --  Index To EntryTAB
 
-  type SSTBzz is array (Character'(' ') .. ']') of KeyWSymbol;
-  Special_Symbols : constant SSTBzz :=
-   SSTBzz'
-   ('+'    => Plus,
-    '-'    => Minus,
-    '*'    => Times,
-    '/'    => Divide,
-    '('    => LParent,
-    ')'    => RParent,
-    '['    => LBrack,
-    ']'    => RBrack,
-    '='    => EQL,
-    '"'    => NEQ,    -- ?!
-    ','    => Comma,
-    ';'    => Semicolon,
-    '&'    => Ampersand_Symbol,
-    others => NULL_Symbol);
-
   -- --- Error Control Variables ---
 
   ErrPos   : Integer;
@@ -476,7 +447,7 @@ package HAC.Data is
   EofInput : Boolean;                   --  signals end of input (this is set
                                         --  to false and never used again!)
 
-  -- --- InSymbol (Scanner) Variables ---
+  -- --- InSymbol (Scanner) Variables (WIP: being moved to HAC.Compiler's Compiler_Data) ---
 
   Sy             : KeyWSymbol;                --  last KeyWSymbol Read by InSymbol
   syStart, syEnd : Integer;                   --  Start and end on line for the symbol in Sy
@@ -486,15 +457,10 @@ package HAC.Data is
   INum           : Integer;                   --  Integer from InSymbol
   RNum           : HAC_Float;                 --  FLOAT Number from InSymbol
   SLeng          : Integer;                   --  String Length
-  CharacterTypes : array (Character) of CHTP;   --  character types
-  InpLine        : String (1 .. 255);             --  input line. Manuel:
-                                                  --Renamed To InpLine
+  InpLine        : String (1 .. 255);           --  input line. Manuel: Renamed To InpLine
+  CH             : Character;                 --  previous Character read from source program
   CC             : Integer;                   --  character counter (=column in current line)
   LL             : Integer;                   --  Length of current line
-  Line_Count     : Integer;                   --  Source line counter, used for listing
-  Tx             : Integer;                   --  scratch Variable
-  TCH            : Character;                      --  scratch Variable
-  TStr           : String (1 .. 14);             --  scratch Variable
 
   --  Debugging Flags - these flags are used to print out information
   --  about the code status.  If a flag is true, then the section of
@@ -502,8 +468,6 @@ package HAC.Data is
   --  for easier debugging.
 
   qDebug : Boolean := True;
-
-  procedure cICompiler;
 
   procedure cFeedback;
 
@@ -519,9 +483,6 @@ package HAC.Data is
 
   --  Get the next line from source
   procedure cGetNextLine (InpLine : out String; Last : out Natural);
-
-  --  No more input left
-  function cEndOfSource return Boolean;
 
 private
 

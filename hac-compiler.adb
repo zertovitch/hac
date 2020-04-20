@@ -303,8 +303,11 @@ package body HAC.Compiler is
     use Ada.Text_IO, Ada.Integer_Text_IO, HAC.Parser.Helpers;
 
     asm_dump : File_Type;
+    Tx : Integer;
 
-  begin -- Compile
+    procedure InSymbol is begin InSymbol (CD); end;
+
+  begin  --  Compile
 
     -- !! As options
     Listing_Was_Requested:= False;
@@ -323,8 +326,6 @@ package body HAC.Compiler is
 
     Init_Tables (CD);
 
-    cICompiler;
-
     if Listing_Was_Requested then
       Create (Listing, Name => "compiler.lst");
       Put_Line (Listing, Header);
@@ -338,15 +339,15 @@ package body HAC.Compiler is
     CH := ' ';
     InSymbol;
     if Sy /= WITH_Symbol then   -- WITH SMALL_SP;
-      Error (err_WITH_Small_Sp, "", stop_on_error => True);
+      Error (CD, err_WITH_Small_Sp, "", stop_on_error => True);
     else
       InSymbol;
       if Sy /= IDent or Id(1..10) /= "HAC_PACK  " then
-        Error (err_WITH_Small_Sp, "", stop_on_error => True);
+        Error (CD, err_WITH_Small_Sp, "", stop_on_error => True);
       else
         InSymbol;
         if Sy /= Semicolon then
-          Error (err_semicolon_missing, "");
+          Error (CD, err_semicolon_missing, "");
         else
           InSymbol;
         end if;
@@ -354,15 +355,15 @@ package body HAC.Compiler is
     end if;
 
     if Sy /= USE_Symbol then
-      Error (err_use_Small_Sp, ""); -- USE SMALL_SP;
+      Error (CD, err_use_Small_Sp, ""); -- USE SMALL_SP;
     else
       InSymbol;
       if Sy /= IDent or Id(1..10) /= "HAC_PACK  " then
-        Error (err_use_Small_Sp, "");
+        Error (CD, err_use_Small_Sp, "");
       else
         InSymbol;
         if Sy /= Semicolon then
-          Error (err_semicolon_missing, "");
+          Error (CD, err_semicolon_missing, "");
         else
           InSymbol;
         end if;
@@ -374,11 +375,11 @@ package body HAC.Compiler is
     end if;
 
     if Sy /= PROCEDURE_Symbol then
-      Error (err_missing_a_procedure_declaration, ""); -- PROCEDURE Name IS
+      Error (CD, err_missing_a_procedure_declaration, ""); -- PROCEDURE Name IS
     else
       InSymbol;
       if Sy /= IDent then
-        Error (err_identifier_missing);
+        Error (CD, err_identifier_missing);
       else
         Main_Program_ID           := Id;
         Main_Program_ID_with_case := Id_with_case;
@@ -398,8 +399,8 @@ package body HAC.Compiler is
       LastPar => 1,
       PSize   => 0,
       VSize   => 0,
-      SrcFrom => Line_Count,
-      SrcTo   => Line_Count); -- ajout!
+      SrcFrom => CD.Line_Count,
+      SrcTo   => CD.Line_Count);
     Display (0)  := 0; -- Added 7-Dec-2009
 
     TaskDefTab (0) := T; --{ Task Table Entry }
@@ -420,9 +421,9 @@ package body HAC.Compiler is
     end if;
 
     if BlockTab (1).VSize > StMax - (STKINCR * Tasks_Count) then
-      Error (err_stack_size, "");
+      Error (CD, err_stack_size, "");
     end if;
-    BlockTab (1).SrcTo := Line_Count;  --(* Manuel : terminate source *)
+    BlockTab (1).SrcTo := CD.Line_Count;  --(* Manuel : terminate source *)
 
     if Listing_Was_Requested then
       Close (Listing);
@@ -479,7 +480,7 @@ package body HAC.Compiler is
 
   exception
     when End_Error =>
-      Error (err_unexpected_end_of_text);
+      Error (CD, err_unexpected_end_of_text);
     when Compilation_abandoned =>
       null;  --  Just too many errors...
   end Compile;

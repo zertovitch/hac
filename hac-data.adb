@@ -58,53 +58,6 @@ package body HAC.Data is
     return Ada.Strings.Fixed.Trim (a, Ada.Strings.Right);
   end Alfa_to_String;
 
-  -----------------------------------------------------------ICompiler-----
-
-  procedure cICompiler is
-  --  This procedure is executed once.
-  --  So store here only the initialization steps
-  --  required at the beginning of execution, and not at the beginning of
-  --  compilation
-  begin
-    --  Initialize character class lookup table
-    for C in Character'Val (OrdMinChar) .. Character'Val (OrdMaxChar) loop
-      case C is
-        when 'A' .. 'Z' =>
-          CharacterTypes (C) := Letter;
-        when 'a' .. 'z' =>
-          CharacterTypes (C) := LowCase;
-        when '0' .. '9' =>
-          CharacterTypes (C) := Number;
-        when '+' | '-' | '*' | '/' |
-             '(' | ')' |
-             '$' |
-             '=' |
-             ' ' |
-             ',' |
-             '.' |
-             ''' |
-             '[' |
-             ']' |
-             ':' |
-             '^' |
-             '_' |
-             ';' |
-             '{' |
-             '|' |
-             '}' |
-             '<' |
-             '>' |
-             '"' =>
-          CharacterTypes (C) := Special;
-        when c128 =>
-          CharacterTypes (C) := Special;
-        when others =>
-          CharacterTypes (C) := Illegal;
-      end case;
-    end loop;  --  for C
-
-  end cICompiler;
-
   --  Initialize the keyword and keyword symbol Arrays
 
   procedure cFeedback is
@@ -129,7 +82,7 @@ package body HAC.Data is
       Character'Read (current_compiler_stream, c);
       --  !! NB: if HAC ever happens to consume large input files,
       --         the one-character-at-a-time stream input could become
-      --         a performance bottleneck.
+      --         a performance bottleneck.  --> buffered input (cf Zip-Ada)
       exit when c = ASCII.LF;
       if c /= ASCII.CR then
         idx           := idx + 1;
@@ -148,10 +101,5 @@ package body HAC.Data is
         raise;
       end if;
   end cGetNextLine;
-
-  function cEndOfSource return Boolean is
-  begin
-    return False; -- return uiEndOfSource;
-  end cEndOfSource;
 
 end HAC.Data;

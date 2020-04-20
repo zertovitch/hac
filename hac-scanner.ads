@@ -9,10 +9,16 @@
 -------------------------------------------------------------------------------------
 --
 
+with HAC.Compiler;
+
 package HAC.Scanner is
+
+  use HAC.Compiler;
 
   --  Source code scanning for the compiler
 
-  procedure InSymbol;  --  Communicates via global variables in HAC.Data (arrgh!)
+  procedure InSymbol (CD : in out Compiler_Data);
+  --  Communicates via global variables in HAC.Data (arrgh!)
+  --  WIP: moving globals to CD.
 
 end HAC.Scanner;

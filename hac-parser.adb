@@ -22,6 +22,7 @@ package body HAC.Parser is
   )
   is
     Level : Integer := Level_A;
+    procedure InSymbol is begin InSymbol (CD); end;
 
     type ConRec is record
       TP : Types;
@@ -46,12 +47,12 @@ package body HAC.Parser is
       Lz, Hz : Integer;
     begin
       if L > H then
-        Error (err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)"); -- !!
+        Error (CD, err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)"); -- !!
       end if;
       Lz := L;
       Hz := H;
       if abs (L) > XMax or abs (H) > XMax then
-        Error (err_illegal_array_bounds, "absolute value of a bound exceeds maximum value");
+        Error (CD, err_illegal_array_bounds, "absolute value of a bound exceeds maximum value");
         Lz := 0;
         Hz := 0;
       end if;
@@ -75,7 +76,7 @@ package body HAC.Parser is
       BlockTab (B).Id      := IdTab (Tptr).Name;
       BlockTab (B).Last    := 0;
       BlockTab (B).LastPar := 0;
-      BlockTab (B).SrcFrom := Line_Count;
+      BlockTab (B).SrcFrom := CD.Line_Count;
     end Enter_Block;
 
     ------------------------------------------------------------------
@@ -111,7 +112,7 @@ package body HAC.Parser is
       end loop;
       --  Follow the chain of identifiers for current Level.
       if J /= No_Id then
-        Error (err_duplicate_identifier, Id);
+        Error (CD, err_duplicate_identifier, Id);
       else      --  Enter identifier in table IdTab
         T         := T + 1;
         IdTab (T) :=
@@ -150,7 +151,7 @@ package body HAC.Parser is
         exit when L < 0 or J /= No_Id;
       end loop;
       if J = No_Id and No_Id_Fail then
-        Error (err_undefined_identifier, stop_on_error => stop_on_error);
+        Error (CD, err_undefined_identifier, stop_on_error => stop_on_error);
       end if;
       return J;
     end Locate_Identifier;
@@ -181,7 +182,7 @@ package body HAC.Parser is
         Enter (Id, Id_with_case, Variable);
         InSymbol;
       else
-        Error (err_identifier_missing);
+        Error (CD, err_identifier_missing);
       end if;
     end Enter_Variable;
 
@@ -195,7 +196,7 @@ package body HAC.Parser is
     begin
       C.TP := NOTYP;
       C.I  := 0;
-      Test (Constant_Definition_Begin_Symbol, FSys, err_illegal_symbol_for_a_number_declaration);
+      Test (CD, Constant_Definition_Begin_Symbol, FSys, err_illegal_symbol_for_a_number_declaration);
       if not Constant_Definition_Begin_Symbol (Sy) then
         return;
       end if;
@@ -215,7 +216,7 @@ package body HAC.Parser is
           X := Locate_Identifier (Id);
           if X /= 0 then
             if IdTab (X).Obj /= Declared_Number_or_Enum_Item then
-              Error (err_illegal_constant_or_constant_identifier);
+              Error (CD, err_illegal_constant_or_constant_identifier);
             else
               C.TP := IdTab (X).TYP;
               if C.TP = Floats then
@@ -235,10 +236,10 @@ package body HAC.Parser is
           C.R  := HAC_Float (Sign) * RNum;
           InSymbol;
         else
-          Skip (FSys, err_illegal_symbol_for_a_number_declaration);
+          Skip (CD, FSys, err_illegal_symbol_for_a_number_declaration);
         end if;
       end if;
-      Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
+      Test (CD, FSys, Empty_Symset, err_incorrectly_used_symbol);
     end Number_Declaration;
 
     ------------------------------------------------------------------
@@ -258,16 +259,16 @@ package body HAC.Parser is
         Number_Declaration (OF_RANGE_Double_Dot_RParent + FSys, Low);
         --
         if Low.TP = Floats then
-          Error (err_illegal_array_bounds, "a float type is not expected for a bound");
+          Error (CD, err_illegal_array_bounds, "a float type is not expected for a bound");
           Low.TP := Ints;
           Low.I  := 0;
         end if;
-        Need (Range_Double_Dot_Symbol, err_expecting_double_dot);
+        Need (CD, Range_Double_Dot_Symbol, err_expecting_double_dot);
         --
         Number_Declaration (Comma_OF_RParent + FSys, High);
         --
         if High.TP /= Low.TP then
-          Error (err_illegal_array_bounds, "bound types do not match");
+          Error (CD, err_illegal_array_bounds, "bound types do not match");
           High.I := Low.I;
         end if;
         Enter_Array (Low.TP, Low.I, High.I);
@@ -276,14 +277,14 @@ package body HAC.Parser is
           ELTP := xChars;
           ELRF := 0;
           ELSZ := 1;
-          Need (RParent, err_closing_parenthesis_missing, Forgive => RBrack);
+          Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
         elsif Sy = Comma then  --  Multidimensional array is array(range_1) of array(range_2,...)
           InSymbol;
           ELTP := Arrays;
           Array_Typ (ELRF, ELSZ, StrAr);  --  Recursion for next array dimension.
         else
-          Need (RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-          Need (OF_Symbol, err_missing_OF);
+          Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
+          Need (CD, OF_Symbol, err_missing_OF);
           TYP (FSys, ELTP, ELRF, ELSZ);
         end if;
         Arsz := (High.I - Low.I + 1) * ELSZ;
@@ -312,14 +313,14 @@ package body HAC.Parser is
             IdTab (T).Ref       := RF;
             IdTab (T).Adr       := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
           else
-            Error (err_identifier_missing);
+            Error (CD, err_identifier_missing);
           end if;
           InSymbol;
           exit when Sy /= Comma;
         end loop;
         Sz := enum_count;
         --  Huh ?? size should be 1 (to be checked !!) but Sz is perhaps misused as a count
-        Need (RParent, err_closing_parenthesis_missing);
+        Need (CD, RParent, err_closing_parenthesis_missing);
       end Enumeration_Type;
 
       procedure Record_Type is
@@ -337,7 +338,7 @@ package body HAC.Parser is
         --
         loop
           if Sy /= IDent then
-            Error (err_identifier_missing, stop_on_error => True);
+            Error (CD, err_identifier_missing, stop_on_error => True);
           else  --  RM 3.8 Component declaration
             T0 := T;
             Enter_Variable;
@@ -345,7 +346,7 @@ package body HAC.Parser is
               InSymbol;
               Enter_Variable;
             end loop;
-            Need (Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
+            Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
             T1 := T;
             TYP (FSys + Comma_END_IDent_Semicolon, ELTP, ELRF, ELSZ);
             while T0 < T1 loop
@@ -356,8 +357,8 @@ package body HAC.Parser is
               Offset         := Offset + ELSZ;
             end loop;
           end if;
-          Need (Semicolon, err_semicolon_missing, Forgive => Comma);
-          Ignore_Extra_Semicolons;
+          Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
+          Ignore_Extra_Semicolons (CD);
           exit when Sy = END_Symbol;
         end loop;
         --
@@ -365,7 +366,7 @@ package body HAC.Parser is
         Sz                  := Offset;
         BlockTab (RF).PSize := 0;
         InSymbol;
-        Need (RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
+        Need (CD, RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
         Level := Level - 1;
       end Record_Type;
 
@@ -375,7 +376,7 @@ package body HAC.Parser is
       TP := NOTYP;
       RF := 0;
       Sz := 0;
-      Test (Type_Begin_Symbol, FSys, err_missing_ARRAY_RECORD_or_ident);
+      Test (CD, Type_Begin_Symbol, FSys, err_missing_ARRAY_RECORD_or_ident);
       if Type_Begin_Symbol (Sy) then
         if Id(1..10) = "STRING    " then -- !! Need to implement constraints...
           Sy := String_Symbol;
@@ -389,10 +390,10 @@ package body HAC.Parser is
                 RF := IdTab (I).Ref;
                 Sz := IdTab (I).Adr;
                 if TP = NOTYP then
-                  Error (err_undefined_type);
+                  Error (CD, err_undefined_type);
                 end if;
               else
-                Error (err_missing_a_type_identifier);
+                Error (CD, err_missing_a_type_identifier);
               end if;
             end if;
             InSymbol;
@@ -400,7 +401,7 @@ package body HAC.Parser is
           when ARRAY_Symbol | String_Symbol =>
             StrArray := Sy = String_Symbol;
             InSymbol;
-            Need (LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
+            Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
             TP := Arrays;
             Array_Typ (RF, Sz, StrArray);
 
@@ -411,7 +412,7 @@ package body HAC.Parser is
           when others =>
             null;
         end case; -- Sy
-        Test (FSys, Empty_Symset, err_incorrectly_used_symbol);
+        Test (CD, FSys, Empty_Symset, err_incorrectly_used_symbol);
       end if;
     end TYP;
 
@@ -425,7 +426,7 @@ package body HAC.Parser is
       InSymbol;
       RF := 0;
       Sz := 0;
-      Test (IDent_Set, FSys + RParent, err_identifier_missing, stop_on_error => True);
+      Test (CD, IDent_Set, FSys + RParent, err_identifier_missing, stop_on_error => True);
       while Sy = IDent loop
         T0 := T;
         Enter_Variable;
@@ -447,7 +448,7 @@ package body HAC.Parser is
             ValParam := False;
           end if;
           if Sy /= IDent then
-            Error (err_identifier_missing);
+            Error (CD, err_identifier_missing);
           else
             X := Locate_Identifier (Id);
             InSymbol;
@@ -461,11 +462,11 @@ package body HAC.Parser is
                   Sz := 1;
                 end if;
               else
-                Error (err_missing_a_type_identifier, stop_on_error => True);
+                Error (CD, err_missing_a_type_identifier, stop_on_error => True);
               end if;
             end if;  --  X /= No_Id
           end if;
-          Test (Comma_IDent_RParent_Semicolon, FSys, err_semicolon_missing, stop_on_error => True);
+          Test (CD, Comma_IDent_RParent_Semicolon, FSys, err_semicolon_missing, stop_on_error => True);
           while T0 < T loop
             T0 := T0 + 1;
             declare
@@ -481,19 +482,19 @@ package body HAC.Parser is
             end;
           end loop;  --  while T0 < T
         else
-          Error (err_colon_missing, stop_on_error => True);
+          Error (CD, err_colon_missing, stop_on_error => True);
         end if;
         if Sy /= RParent then
-          Need (Semicolon, err_semicolon_missing, Forgive => Comma);
-          Ignore_Extra_Semicolons;
-          Test (IDent_Set, FSys + RParent, err_incorrectly_used_symbol);
+          Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
+          Ignore_Extra_Semicolons (CD);
+          Test (CD, IDent_Set, FSys + RParent, err_incorrectly_used_symbol);
         end if;
       end loop;  --  while Sy = IDent
       if Sy = RParent then
         InSymbol;
-        Test (After_Subprogram_Parameters, FSys, err_incorrectly_used_symbol);
+        Test (CD, After_Subprogram_Parameters, FSys, err_incorrectly_used_symbol);
       else
-        Error (err_closing_parenthesis_missing);
+        Error (CD, err_closing_parenthesis_missing);
       end if;
     end Formal_Parameter_List;
 
@@ -504,11 +505,11 @@ package body HAC.Parser is
       RF, Sz, T1 : Integer;
     begin
       InSymbol;
-      Test (IDent_Set, Semicolon_Set, err_identifier_missing);
+      Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
       Enter (Id, Id_with_case, TypeMark);
       T1 := T;
       InSymbol;
-      Need (IS_Symbol, err_IS_missing);
+      Need (CD, IS_Symbol, err_IS_missing);
       TP := NOTYP;
       RF := 0;
       Sz := 0;
@@ -517,7 +518,7 @@ package body HAC.Parser is
       IdTab (T1).Ref := RF;
       IdTab (T1).Adr := Sz;
       --
-      Test_Semicolon (FSys);
+      Test_Semicolon (CD, FSys);
     end Type_Declaration;
 
     ------------------------------------------------------------------
@@ -542,13 +543,13 @@ package body HAC.Parser is
           InSymbol;
           Enter_Variable;
         end loop;
-        Need (Colon, err_colon_missing);  --  ':'   in   "x, y : Integer;"
+        Need (CD, Colon, err_colon_missing);  --  ':'   in   "x, y : Integer;"
         T1 := T;
         --
         if Sy = IDent then
           I_dummy := Locate_Identifier (Id, stop_on_error => True);
         end if;
-        Test (Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_Set, err_incorrectly_used_symbol);
+        Test (CD, Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_Set, err_incorrectly_used_symbol);
         --
         is_constant := False;
         if Sy = CONSTANT_Symbol then  --  Consume "constant" in "x : constant ...;"
@@ -561,10 +562,10 @@ package body HAC.Parser is
           is_typed := True;
           TYP (Becomes_Comma_IDent_Semicolon + FSys, TP, RF, Sz);
         end if;
-        Test (Becomes_EQL_Semicolon, Empty_Symset, err_incorrectly_used_symbol);
+        Test (CD, Becomes_EQL_Semicolon, Empty_Symset, err_incorrectly_used_symbol);
         --
         if Sy = EQL then
-          Error (err_EQUALS_instead_of_BECOMES);
+          Error (CD, err_EQUALS_instead_of_BECOMES);
           Sy := Becomes;
         end if;
         --
@@ -576,7 +577,7 @@ package body HAC.Parser is
             InSymbol;
             Number_Declaration (Comma_IDent_Semicolon + FSys, C);
           else
-            Error (err_BECOMES_missing);
+            Error (CD, err_BECOMES_missing);
           end if;
         end if;
         --
@@ -599,7 +600,7 @@ package body HAC.Parser is
                   when Ints =>
                     r.Adr := C.I;
                   when others =>
-                    Error (err_numeric_constant_expected);
+                    Error (CD, err_numeric_constant_expected);
                     --  "boo : constant := True;" or "x: constant := 'a';"
                     --  are wrong in Ada.
                     r.Adr := C.I;
@@ -616,9 +617,9 @@ package body HAC.Parser is
         --
         if is_constant and is_typed then
           --  For typed constants, the ":=" is required and consumed with the Assignment below.
-          Test (Becomes_EQL, Empty_Symset, err_BECOMES_missing);
+          Test (CD, Becomes_EQL, Empty_Symset, err_BECOMES_missing);
           if Sy = EQL then
-            Error (err_EQUALS_instead_of_BECOMES);
+            Error (CD, err_EQUALS_instead_of_BECOMES);
             Sy := Becomes;
           end if;
         end if;
@@ -646,7 +647,7 @@ package body HAC.Parser is
             LC0               := LC0 + 1;
           end loop;
         end if;
-        Test_Semicolon (FSys);
+        Test_Semicolon (CD, FSys);
       end Single_Var_Declaration;
     begin
       while Sy = IDent loop
@@ -661,7 +662,7 @@ package body HAC.Parser is
     begin
       InSymbol;
       if Sy /= IDent then
-        Error (err_identifier_missing);
+        Error (CD, err_identifier_missing);
         Id := Empty_Alfa;
       end if;
       declare
@@ -685,9 +686,9 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------Task_Declaration-
     procedure Task_Declaration is          -- Hathorn
-      I, T0             : Integer;
-      TaskID            : Alfa;
-      saveLineCount     : constant Integer := Line_Count;  --  Source line where Task appeared
+      I, T0         : Integer;
+      TaskID        : Alfa;
+      saveLineCount : constant Integer := CD.Line_Count;  --  Source line where Task appeared
     begin
       InSymbol;
       if Sy = BODY_Symbol then     -- Task Body
@@ -702,7 +703,7 @@ package body HAC.Parser is
         if Sy = IDent then
           TaskID := Id;
         else
-          Error (err_identifier_missing);
+          Error (CD, err_identifier_missing);
           Id := Empty_Alfa;
         end if;
         Tasks_Count := Tasks_Count + 1;
@@ -717,7 +718,7 @@ package body HAC.Parser is
         if Sy = Semicolon then
           InSymbol;  --  Task with no entries
         else  --  Parsing the Entry specs
-          Need (IS_Symbol, err_IS_missing);
+          Need (CD, IS_Symbol, err_IS_missing);
           if Level = LMax then
             Fatal (LEVELS);  --  Exception is raised there.
           end if;
@@ -726,7 +727,7 @@ package body HAC.Parser is
           while Sy = ENTRY_Symbol loop
             InSymbol;
             if Sy /= IDent then
-              Error (err_identifier_missing);
+              Error (CD, err_identifier_missing);
               Id := Empty_Alfa;
             end if;
             Entries_Count := Entries_Count + 1;
@@ -742,18 +743,18 @@ package body HAC.Parser is
             if Sy = Semicolon then
               InSymbol;
             else
-              Error (err_semicolon_missing);
+              Error (CD, err_semicolon_missing);
             end if;
           end loop; -- Sy = ENTRY_Symbol
 
           Level := Level - 1;
-          Test_END_Symbol;
+          Test_END_Symbol (CD);
           if Sy = IDent and Id = TaskID then
             InSymbol;
           else
-            Skip (Semicolon, err_incorrect_block_name);
+            Skip (CD, Semicolon, err_incorrect_block_name);
           end if;
-          Test_Semicolon (FSys);
+          Test_Semicolon (CD, FSys);
         end if;
       end if;
     end Task_Declaration;
@@ -776,7 +777,7 @@ package body HAC.Parser is
             Field_Id := IdTab (Field_Id).Link;
           end loop;
           if Field_Id = No_Id then
-            Error (err_undefined_identifier, stop_on_error => True);
+            Error (CD, err_undefined_identifier, stop_on_error => True);
           end if;
           V.TYP        := IdTab (Field_Id).TYP;
           V.Ref        := IdTab (Field_Id).Ref;
@@ -785,7 +786,7 @@ package body HAC.Parser is
             Emit1 (CD, k_Record_Field_Offset, Field_Offset);
           end if;
         else
-          Error (err_var_with_field_selector_must_be_record);
+          Error (CD, err_var_with_field_selector_must_be_record);
         end if;
         InSymbol;
       end Record_Field_Selector;
@@ -800,7 +801,7 @@ package body HAC.Parser is
           if V.TYP = Arrays then
             AT_Index := V.Ref;
             if Arrays_Table (AT_Index).Index_TYP /= Array_Index_Expr.TYP then
-              Error (err_illegal_array_subscript);
+              Error (CD, err_illegal_array_subscript);
             elsif Arrays_Table (AT_Index).ELSize = 1 then
               Emit1 (CD, k_Array_Index_Element_Size_1, AT_Index);
             else
@@ -809,7 +810,7 @@ package body HAC.Parser is
             V.TYP := Arrays_Table (AT_Index).Element_TYP;
             V.Ref := Arrays_Table (AT_Index).ELREF;
           else
-            Error (err_indexed_variable_must_be_an_array);
+            Error (CD, err_indexed_variable_must_be_an_array);
           end if;
           exit when Sy /= Comma;
         end loop;
@@ -824,19 +825,19 @@ package body HAC.Parser is
           if Sy = IDent then
             Record_Field_Selector;
           else
-            Error (err_identifier_missing);
+            Error (CD, err_identifier_missing);
           end if;
         else
           if Sy = LBrack then  --  '['
             --  Common mistake by Pascal, Python or R programmers.
-            Error (err_left_bracket_instead_of_parenthesis);
+            Error (CD, err_left_bracket_instead_of_parenthesis);
           end if;
           Array_Coordinates_Selector;
           if Sy = RBrack then  --  ']' : same kind of mistake as for '[' ...
-            Error (err_right_bracket_instead_of_parenthesis);
+            Error (CD, err_right_bracket_instead_of_parenthesis);
             InSymbol;
           else
-            Need (RParent, err_closing_parenthesis_missing);
+            Need (CD, RParent, err_closing_parenthesis_missing);
           end if;
         end if;
         exit when not Selector_Symbol_Loose (Sy);
@@ -847,7 +848,7 @@ package body HAC.Parser is
       else
         err := err_incorrectly_used_symbol;
       end if;
-      Test (FSys, Empty_Symset, err);
+      Test (CD, FSys, Empty_Symset, err);
     end Selector;
 
     ------------------------------------------------------------------
@@ -871,38 +872,38 @@ package body HAC.Parser is
         loop
           InSymbol;
           if CP >= LastP then
-            Error (err_number_of_parameters_do_not_match);
+            Error (CD, err_number_of_parameters_do_not_match);
           else
             CP := CP + 1;
             if IdTab (CP).Normal then           --  Value parameter (IN)
               Expression (FSys + Colon_Comma_RParent, X);
               if X.TYP = IdTab (CP).TYP then
                 if X.Ref /= IdTab (CP).Ref then
-                  Error (err_parameter_types_do_not_match);
+                  Error (CD, err_parameter_types_do_not_match);
                 elsif X.TYP = Arrays then
                   Emit1 (CD, k_Load_Block, Arrays_Table (X.Ref).Size);
                 elsif X.TYP = Records then
                   Emit1 (CD, k_Load_Block, BlockTab (X.Ref).VSize);
                 end if;
               elsif X.TYP = Ints and IdTab (CP).TYP = Floats then
-                Forbid_Type_Coercion ("value is integer, parameter is floating-point");
+                Forbid_Type_Coercion (CD, "value is integer, parameter is floating-point");
                 Emit1 (CD, k_Integer_to_Float, 0);
               elsif X.TYP /= NOTYP then
-                Error (err_parameter_types_do_not_match);
+                Error (CD, err_parameter_types_do_not_match);
               end if;
             else              -- Variable (Name) parameter (IN OUT, OUT)
               if Sy /= IDent then
-                Error (err_identifier_missing);
+                Error (CD, err_identifier_missing);
               else
                 K := Locate_Identifier (Id);
                 InSymbol;
                 if K = 0 then
                   null;  --  Error already issued due to missing identifier
                 elsif IdTab (K).Obj /= Variable then
-                  Error (err_variable_missing);
+                  Error (CD, err_variable_missing);
                 elsif IdTab (K).Read_only then
                   Error (
-                    err_cannot_modify_constant_or_in_parameter,
+                    CD, err_cannot_modify_constant_or_in_parameter,
                     ": passed to OUT or IN OUT parameter"
                   );
                 else
@@ -919,19 +920,19 @@ package body HAC.Parser is
                   if (X.TYP /= IdTab (CP).TYP) or
                      (X.Ref /= IdTab (CP).Ref)
                   then
-                    Error (err_parameter_types_do_not_match);
+                    Error (CD, err_parameter_types_do_not_match);
                   end if;
                 end if;
               end if;
             end if;
           end if;
-          Test (Comma_RParent, FSys, err_incorrectly_used_symbol);
+          Test (CD, Comma_RParent, FSys, err_incorrectly_used_symbol);
           exit when Sy /= Comma;
         end loop;
-        Need (RParent, err_closing_parenthesis_missing);
+        Need (CD, RParent, err_closing_parenthesis_missing);
       end if;
       if CP < LastP then  --  Too few actual parameters
-        Error (err_number_of_parameters_do_not_match);
+        Error (CD, err_number_of_parameters_do_not_match);
       end if;
 
       if CallType = CallSTDP then
@@ -952,11 +953,11 @@ package body HAC.Parser is
       Addr, J : Integer;
     begin
       if Sy /= Period then
-        Skip (Semicolon, err_incorrectly_used_symbol);
+        Skip (CD, Semicolon, err_incorrectly_used_symbol);
       else
         InSymbol;                  --  Task Entry Selector
         if Sy /= IDent then
-          Skip (Semicolon, err_identifier_missing);
+          Skip (CD, Semicolon, err_identifier_missing);
         else
           J              := BlockTab (IdTab (I).Ref).Last;
           IdTab (0).Name := Id;
@@ -965,7 +966,7 @@ package body HAC.Parser is
           end loop;
 
           if J = 0 then
-            Error (err_undefined_identifier);
+            Error (CD, err_undefined_identifier);
           end if;
 
           Addr := J;
@@ -1000,7 +1001,7 @@ package body HAC.Parser is
             begin  --  STANDARD FUNCTION NO. N , N >= SF_Clock INDICATES
                    --  a NILADIC FUNCTION.
               if N < SF_Clock then
-                Need (LParent, err_missing_an_opening_parenthesis);
+                Need (CD, LParent, err_missing_an_opening_parenthesis);
                 if N < SF_EOF or N > SF_EOLN then
                   Expression (FSys + RParent, X);
                   case N is
@@ -1022,7 +1023,7 @@ package body HAC.Parser is
                       =>
                       T_Argument := Numeric_Typ_Set;
                       if Ints_Typ (X.TYP) then
-                        Forbid_Type_Coercion ("value is of integer type; floating-point is expected here");
+                        Forbid_Type_Coercion (CD, "value is of integer type; floating-point is expected here");
                         Emit1 (CD, k_Integer_to_Float, 0);
                       end if;
                     --  Random
@@ -1036,17 +1037,17 @@ package body HAC.Parser is
                   if T_Argument (X.TYP) then
                     Emit1 (CD, k_Standard_Functions, N);
                   elsif X.TYP /= NOTYP then
-                    Error (err_argument_to_std_function_of_wrong_type);
+                    Error (CD, err_argument_to_std_function_of_wrong_type);
                   end if;
                 else           --  N in [EOF, EOLN]
                   if Sy /= IDent then
-                    Error (err_identifier_missing);
+                    Error (CD, err_identifier_missing);
                   elsif Id(1..10) = "INPUT     " then  --  Standard_Input
                     Emit2 (CD, k_Standard_Functions, 0, N);
                   else
                     I := Get_File_Pointer (Id);
                     if I = No_File_Index then -- NB: bug: was 0 instead of -1...
-                      Error (err_undefined_identifier);
+                      Error (CD, err_undefined_identifier);
                     else
                       Emit2 (CD, k_Standard_Functions, I, N);
                     end if;
@@ -1054,7 +1055,7 @@ package body HAC.Parser is
                   InSymbol;
                 end if;        --  N in [EOF, EOLN]
                 X.TYP := IdTab (I).TYP;
-                Need (RParent, err_closing_parenthesis_missing);
+                Need (CD, RParent, err_closing_parenthesis_missing);
               else             --  NILADIC FUNCTION
                 case N is
                   when SF_Clock =>
@@ -1069,7 +1070,7 @@ package body HAC.Parser is
               kind : Type_Conversion_Kind := Unknown;
               Type_Id : constant String := Alfa_to_String (Id);
             begin
-              Need (LParent, err_missing_an_opening_parenthesis);
+              Need (CD, LParent, err_missing_an_opening_parenthesis);
               if Type_Id = HAC_Float_Name then
                 kind := To_Float;
               elsif Type_Id = HAC_Integer_Name then
@@ -1084,7 +1085,7 @@ package body HAC.Parser is
                     when Ints =>
                       Emit1 (CD, k_Integer_to_Float, 0);
                     when others =>
-                      Argument_Type_Not_Supported;
+                      Argument_Type_Not_Supported (CD);
                   end case;
                   X.TYP := Floats;
                 when To_Integer =>
@@ -1094,19 +1095,19 @@ package body HAC.Parser is
                     when Ints =>
                       null;  --  !!  Emit warning "already integer"
                     when others =>
-                      Argument_Type_Not_Supported;
+                      Argument_Type_Not_Supported (CD);
                   end case;
                   X.TYP := Ints;
                 when Unknown =>
-                  Error (err_type_conversion_not_supported, "no support for target type " & Type_Id);
+                  Error (CD, err_type_conversion_not_supported, "no support for target type " & Type_Id);
               end case;
-              Need (RParent, err_closing_parenthesis_missing);
+              Need (CD, RParent, err_closing_parenthesis_missing);
             end Type_Conversion;
 
           begin  --  Factor
             X.TYP := NOTYP;
             X.Ref := 0;
-            Test (Factor_Begin_Symbol + StrCon, FSys,
+            Test (CD, Factor_Begin_Symbol + StrCon, FSys,
               err_factor_unexpected_symbol
             );
             if Sy = StrCon then
@@ -1169,7 +1170,7 @@ package body HAC.Parser is
                         Type_Conversion;
                         --
                       when Prozedure =>
-                        Error (err_expected_constant_function_variable_or_subtype);
+                        Error (CD, err_expected_constant_function_variable_or_subtype);
                         --
                       when Funktion =>
                         X.TYP := r.TYP;
@@ -1203,7 +1204,7 @@ package body HAC.Parser is
                 when LParent =>    --  (
                   InSymbol;
                   Expression (FSys + RParent, X);
-                  Need (RParent, err_closing_parenthesis_missing);
+                  Need (CD, RParent, err_closing_parenthesis_missing);
                   --
                 when NOT_Symbol =>
                   InSymbol;
@@ -1211,7 +1212,7 @@ package body HAC.Parser is
                   if X.TYP = Bools then
                     Emit (CD, k_NOT_Boolean);
                   elsif X.TYP /= NOTYP then
-                    Error (err_resulting_type_should_be_Boolean);
+                    Error (CD, err_resulting_type_should_be_Boolean);
                   end if;
                   --
                 when others =>
@@ -1223,7 +1224,7 @@ package body HAC.Parser is
               else
                 err := err_incorrectly_used_symbol;
               end if;
-              Test (FSys, Factor_Begin_Symbol, err);
+              Test (CD, FSys, Factor_Begin_Symbol, err);
             end loop;
           end Factor;
 
@@ -1242,40 +1243,40 @@ package body HAC.Parser is
                     if X.TYP = Y.TYP then
                       Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
                     else
-                      Forbid_Type_Coercion ("for this standard operator, types must be the same");
+                      Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
                     end if;
                   else
-                    Error (err_operator_not_defined_for_types);
+                    Error (CD, err_operator_not_defined_for_types);
                   end if;
                 when Divide =>    --  /
                   if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
                     Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
                   else
                     if X.TYP = Ints then
-                      Forbid_Type_Coercion ("left operand's type is integer, right operand's isn't");
+                      Forbid_Type_Coercion (CD, "left operand's type is integer, right operand's isn't");
                       Emit1 (CD, k_Integer_to_Float, 1);  --  NB: this assumed Y.TYP was Floats!
                       X.TYP := Floats;
                     end if;
                     if Y.TYP = Ints then
-                      Forbid_Type_Coercion ("right operand's type is integer, left operand's isn't");
+                      Forbid_Type_Coercion (CD, "right operand's type is integer, left operand's isn't");
                       Emit1 (CD, k_Integer_to_Float, 0);  --  NB: this assumed Y.TYP was Floats!
                       Y.TYP := Floats;
                     end if;
-                    Error (err_illegal_type_for_arithmetic_expression);
+                    Error (CD, err_illegal_type_for_arithmetic_expression);
                     X.TYP := NOTYP;
                   end if;
                 when AND_Symbol =>
                   if X.TYP = Bools and Y.TYP = Bools then
                     Emit (CD, k_AND_Boolean);
                   else
-                    Error (err_resulting_type_should_be_Boolean);
+                    Error (CD, err_resulting_type_should_be_Boolean);
                     X.TYP := NOTYP;
                   end if;
                 when MOD_Symbol =>
                   if X.TYP = Ints and Y.TYP = Ints then
                     Emit (CD, k_MOD_Integer);
                   else
-                    Error (err_mod_requires_integer_arguments);
+                    Error (CD, err_mod_requires_integer_arguments);
                     X.TYP := NOTYP;
                   end if;
                 when Power =>
@@ -1284,7 +1285,7 @@ package body HAC.Parser is
                   elsif X.TYP = Floats and Y.TYP = Ints then
                     Emit (CD, k_Power_Float_Integer);
                   else
-                    Error (err_invalid_power_operands);
+                    Error (CD, err_invalid_power_operands);
                   end if;
                 when others =>
                   raise Internal_error with "Unknown operator in Term";
@@ -1300,7 +1301,7 @@ package body HAC.Parser is
           InSymbol;
           Term (FSys + Plus_Minus, X);
           if X.TYP not in Numeric_Typ then
-            Error (err_illegal_type_for_arithmetic_expression);
+            Error (CD, err_illegal_type_for_arithmetic_expression);
           elsif OP = Minus then
             Emit_Unary_Minus (CD, X.TYP);
           end if;
@@ -1319,14 +1320,14 @@ package body HAC.Parser is
                 if X.TYP = Bools and Y.TYP = Bools then
                   Emit (CD, k_OR_Boolean);
                 else
-                  Error (err_resulting_type_should_be_Boolean);
+                  Error (CD, err_resulting_type_should_be_Boolean);
                   X.TYP := NOTYP;
                 end if;
               when XOR_Symbol =>
                 if X.TYP = Bools and Y.TYP = Bools then
                   Emit (CD, k_XOR_Boolean);
                 else
-                  Error (err_resulting_type_should_be_Boolean);
+                  Error (CD, err_resulting_type_should_be_Boolean);
                   X.TYP := NOTYP;
                 end if;
               when Plus | Minus =>
@@ -1334,10 +1335,10 @@ package body HAC.Parser is
                   if X.TYP = Y.TYP then
                     Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
                   else
-                    Forbid_Type_Coercion ("for this standard operator, types must be the same");
+                    Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
                   end if;
                 else
-                  Error (err_operator_not_defined_for_types);
+                  Error (CD, err_operator_not_defined_for_types);
                 end if;
               when others =>  --  Doesn't happen: TermZ(OP) is True.
                 null;
@@ -1353,23 +1354,23 @@ package body HAC.Parser is
         InSymbol;
         Simple_Expression (FSys, Y);
         if X.TYP = Ints and Y.TYP = Floats then
-          Forbid_Type_Coercion ("left operand's type is integer, right operand's is floating-point");
+          Forbid_Type_Coercion (CD, "left operand's type is integer, right operand's is floating-point");
           X.TYP := Floats;
           Emit1 (CD, k_Integer_to_Float, 1);
         elsif Y.TYP = Ints and X.TYP = Floats then
-          Forbid_Type_Coercion ("left operand's type is floating-point, right operand's is integer");
+          Forbid_Type_Coercion (CD, "left operand's type is floating-point, right operand's is integer");
           Y.TYP := Floats;
           Emit1 (CD, k_Integer_to_Float, 0);
         elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
-          Error (err_incompatible_types_for_comparison);
+          Error (CD, err_incompatible_types_for_comparison);
         elsif X.TYP = Y.TYP then
           if Atomic_Typ (X.TYP) then
             Emit_Comparison_Instruction (CD, OP, X.TYP);
           else
-            Error (err_operator_not_defined_for_types);
+            Error (CD, err_operator_not_defined_for_types);
           end if;
         else
-          Error (err_incompatible_types_for_comparison);
+          Error (CD, err_incompatible_types_for_comparison);
         end if;
         X.TYP := Bools;
       end if;
@@ -1378,7 +1379,7 @@ package body HAC.Parser is
     procedure Boolean_Expression (FSys : Symset; X : in out Item) is
     begin
       Expression (FSys, X);
-      Check_Boolean (X.TYP);
+      Check_Boolean (CD, X.TYP);
     end Boolean_Expression;
 
     ------------------------------------------------------------------
@@ -1403,20 +1404,20 @@ package body HAC.Parser is
         InSymbol;
       elsif Sy = EQL then
         --  Common mistake by BASIC or C programmers.
-        Error (err_EQUALS_instead_of_BECOMES);
+        Error (CD, err_EQUALS_instead_of_BECOMES);
         InSymbol;
       else
-        Error (err_BECOMES_missing);
+        Error (CD, err_BECOMES_missing);
       end if;
       if Check_read_only and then IdTab (I).Read_only then
-        Error (err_cannot_modify_constant_or_in_parameter);
+        Error (CD, err_cannot_modify_constant_or_in_parameter);
       end if;
       Expression (Semicolon_Set, Y);
       if X.TYP = Y.TYP then
         if Standard_Typ (X.TYP) then
           Emit (CD, k_Store);
         elsif X.Ref /= Y.Ref then
-          Error (err_types_of_assignment_must_match);
+          Error (CD, err_types_of_assignment_must_match);
         else
           case X.TYP is
             when Arrays =>
@@ -1430,17 +1431,17 @@ package body HAC.Parser is
           end case;
         end if;
       elsif X.TYP = Floats and Y.TYP = Ints then
-        Forbid_Type_Coercion ("integer type value assigned to floating-point variable");
+        Forbid_Type_Coercion (CD, "integer type value assigned to floating-point variable");
         Emit1 (CD, k_Integer_to_Float, 0);
         Emit (CD, k_Store);
       elsif X.TYP = Arrays and Y.TYP = Strings then
         if Arrays_Table (X.Ref).Element_TYP /= xChars then
-          Error (err_types_of_assignment_must_match);
+          Error (CD, err_types_of_assignment_must_match);
         else
           Emit1 (CD, k_String_assignment, Arrays_Table (X.Ref).Size);  --  array size
         end if;
       elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
-        Error (err_types_of_assignment_must_match);
+        Error (CD, err_types_of_assignment_must_match);
       end if;
     end Assignment;
 
@@ -1452,7 +1453,7 @@ package body HAC.Parser is
         nxtSym : Symset;
       begin
         if Sentinal (Sy) then -- GdM 15-Aug-2014: there should be at least one statement.
-          Error (err_statement_expected);
+          Error (CD, err_statement_expected);
         end if;
         nxtSym := Sentinal + Statement_Begin_Symbol;
         loop
@@ -1484,7 +1485,7 @@ package body HAC.Parser is
         InSymbol;
         I_Entry := Locate_Identifier (Id);
         if IdTab (I_Entry).Obj /= aEntry then
-          Error (err_use_Small_Sp);
+          Error (CD, err_use_Small_Sp);
         end if;
         InSymbol;
         Accept_Call (FSys, I_Entry);
@@ -1497,10 +1498,10 @@ package body HAC.Parser is
           Display (Level) := IdTab (I_Entry).Ref;
           InSymbol;
           Multi_Statement (END_Set);
-          Test_END_Symbol;
+          Test_END_Symbol (CD);
           if Sy = IDent then
             if Id /= IdTab (I_Entry).Name then
-              Error (err_incorrect_block_name);
+              Error (CD, err_incorrect_block_name);
             end if;
             InSymbol;
           end if;
@@ -1531,7 +1532,7 @@ package body HAC.Parser is
         Boolean_Expression (FSys + DO_THEN, X);
         LC1 := CD.LC;
         Emit (CD, k_Conditional_Jump);
-        Need (THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
+        Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
         Multi_Statement (ELSE_ELSIF_END);
         LC0 := CD.LC;
         --
@@ -1542,7 +1543,7 @@ package body HAC.Parser is
           Boolean_Expression (FSys + DO_THEN, X);
           LC1 := CD.LC;
           Emit (CD, k_Conditional_Jump);
-          Need (THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
+          Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
           Multi_Statement (ELSE_ELSIF_END);  --  Statements after "ELSIF .. THEN".
         end loop;
         --
@@ -1554,8 +1555,8 @@ package body HAC.Parser is
         else
           CD.ObjCode (LC1).Y := CD.LC;
         end if;
-        Need (END_Symbol, err_END_missing);         --  END (IF)
-        Need (IF_Symbol,  err_missing_closing_IF);  --  (END) IF
+        Need (CD, END_Symbol, err_END_missing);         --  END (IF)
+        Need (CD, IF_Symbol,  err_missing_closing_IF);  --  (END) IF
         --  Go back and patch the dummy addresses in unconditional jumps
         Patch_Addresses (CD.ObjCode (LC0 .. CD.LC));
       end IF_Statement;
@@ -1566,12 +1567,12 @@ package body HAC.Parser is
         if Sy = LOOP_Symbol then
           InSymbol;
         else
-          Skip (Statement_Begin_Symbol, err_missing_closing_IF);
+          Skip (CD, Statement_Begin_Symbol, err_missing_closing_IF);
         end if;
         Multi_Statement (END_Set);
         Emit1 (CD, FCT_Loop_End, B);
-        Need (END_Symbol,  err_END_missing);           --  END (LOOP)
-        Need (LOOP_Symbol, err_closing_LOOP_missing);  --  (END) LOOP
+        Need (CD, END_Symbol,  err_END_missing);           --  END (LOOP)
+        Need (CD, LOOP_Symbol, err_closing_LOOP_missing);  --  (END) LOOP
         --  Go back and patch the dummy addresses generated by Exit statements.
         Patch_Addresses (CD.ObjCode (LC0 .. CD.LC));
       end LOOP_Statement;
@@ -1583,17 +1584,17 @@ package body HAC.Parser is
         Block_Idx : Integer;
       begin
         if Block_ID = Main_Program_ID then
-          Error (err_illegal_return_statement_from_main); -- !! but... this is legal in Ada !!
+          Error (CD, err_illegal_return_statement_from_main); -- !! but... this is legal in Ada !!
         end if;
         Block_Idx := Locate_Identifier (Block_ID);
         InSymbol;
         if Sy = Semicolon then
           if Is_a_function then
-            Error (err_functions_must_return_a_value);
+            Error (CD, err_functions_must_return_a_value);
           end if;
         else
           if not Is_a_function then
-            Error (err_procedures_cannot_return_a_value, stop_on_error => True);
+            Error (CD, err_procedures_cannot_return_a_value, stop_on_error => True);
           end if;
           --  Calculate return value (destination: X; expression: Y).
           if IdTab (Block_Idx).Ref = Display (Level) then
@@ -1611,17 +1612,17 @@ package body HAC.Parser is
               if Standard_Typ (X.TYP) then
                 Emit (CD, k_Store);
               elsif X.Ref /= Y.Ref then
-                Error (err_types_of_assignment_must_match);
+                Error (CD, err_types_of_assignment_must_match);
               end if;
             elsif X.TYP = Floats and Y.TYP = Ints then
-              Forbid_Type_Coercion ("integer type value returned as floating-point");
+              Forbid_Type_Coercion (CD, "integer type value returned as floating-point");
               Emit1 (CD, k_Integer_to_Float, 0);
               Emit (CD, k_Store);
             elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
-              Error (err_types_of_assignment_must_match);
+              Error (CD, err_types_of_assignment_must_match);
             end if;
           else
-            Error (err_illegal_return_statement_from_main);
+            Error (CD, err_illegal_return_statement_from_main);
           end if;       -- !! but... this is legal in Ada !!
         end if;
         if Is_a_function then
@@ -1636,11 +1637,11 @@ package body HAC.Parser is
       begin
         InSymbol;
         if Sy = Semicolon then
-          Skip (Semicolon, err_missing_expression_for_delay);
+          Skip (CD, Semicolon, err_missing_expression_for_delay);
         else                  -- calculate delay value
           Expression (Semicolon_Set, Y);
           if Y.TYP /= Floats then
-            Error (err_wrong_type_in_DELAY);
+            Error (CD, err_wrong_type_in_DELAY);
           end if;
         end if;
         Emit (CD, k_Delay);
@@ -1663,7 +1664,7 @@ package body HAC.Parser is
         begin
           Number_Declaration (FSys + Alt_Finger, Lab);
           if Lab.TP /= X.TYP then
-            Error (err_case_label_not_same_type_as_case_clause);
+            Error (CD, err_case_label_not_same_type_as_case_clause);
           elsif I = Cases_Max then
             Fatal (Case_Labels);  --  Exception is raised there.
           else
@@ -1676,7 +1677,7 @@ package body HAC.Parser is
               exit when CaseTab (K).Val = Lab.I;
             end loop;
             if K < I then
-              Error (err_duplicate_case_choice_value);
+              Error (CD, err_duplicate_case_choice_value);
             end if;
           end if;
         end CASE_Label;
@@ -1687,20 +1688,20 @@ package body HAC.Parser is
             InSymbol;
             if Constant_Definition_Begin_Symbol (Sy) then
               if others_flag then  --  Normal choice list *atfer* the "others" choice.
-                Error (err_case_others_alone_last);
+                Error (CD, err_case_others_alone_last);
               end if;
               CASE_Label;
               while Sy = Alt loop
                 InSymbol;  --  Consume '|' symbol.
                 if Sy = OTHERS_Symbol then  --  "others" mixed with normal choices.
-                  Error (err_case_others_alone_last);
+                  Error (CD, err_case_others_alone_last);
                 else
                   CASE_Label;
                 end if;
               end loop;
             elsif Sy = OTHERS_Symbol then        -- Hathorn
               if others_flag then  --  Duplicate "others".
-                Error (err_case_others_alone_last);
+                Error (CD, err_case_others_alone_last);
               end if;
               others_flag := True;
               if I = Cases_Max then
@@ -1711,13 +1712,13 @@ package body HAC.Parser is
               CaseTab (I).LC  := -CD.LC;
               InSymbol;
             end if;
-            Need (Finger, err_FINGER_missing);
+            Need (CD, Finger, err_FINGER_missing);
             Multi_Statement (END_WHEN);
             J           := J + 1;
             ExitTab (J) := CD.LC;
             Emit (CD, k_Jump);
           else
-            Error (err_WHEN_missing);
+            Error (CD, err_WHEN_missing);
           end if;
         end One_CASE;
 
@@ -1731,17 +1732,17 @@ package body HAC.Parser is
                 X.TYP = xChars or
                 X.TYP = NOTYP)
         then
-          Error (err_bad_type_for_a_case_statement); --- !! mmmh: enums ?...
+          Error (CD, err_bad_type_for_a_case_statement); --- !! mmmh: enums ?...
         end if;
         LC1 := CD.LC;
         Emit (CD, k_CASE_Switch_1);
         if Sy = IS_Symbol then -- Was OF_Symbol in SmallAda ! I.e. case x OF when 1 => ...
           InSymbol;
         elsif Sy = OF_Symbol then
-          Error (err_OF_instead_of_IS);  --  Common mistake by Pascal programmers
+          Error (CD, err_OF_instead_of_IS);  --  Common mistake by Pascal programmers
           InSymbol;
         else
-          Error (err_IS_missing);
+          Error (CD, err_IS_missing);
         end if;
 
         while Sy = WHEN_Symbol loop  --  All cases are parsed here.
@@ -1765,8 +1766,8 @@ package body HAC.Parser is
         for K in 1 .. J loop
           CD.ObjCode (ExitTab (K)).Y  := CD.LC;
         end loop;
-        Need (END_Symbol,  err_END_missing);           --  END (CASE)
-        Need (CASE_Symbol, err_missing_closing_CASE);  --  (END) CASE
+        Need (CD, END_Symbol,  err_END_missing);           --  END (CASE)
+        Need (CD, CASE_Symbol, err_missing_closing_CASE);  --  (END) CASE
       end CASE_Statement;
 
       procedure WHILE_Statement is  --  RM 5.5 (8)
@@ -1815,7 +1816,7 @@ package body HAC.Parser is
           end if;
           BlockTab (Display (Level)).VSize  := MaxDX;
         else
-          Skip (Fail_after_FOR + FSys, err_identifier_missing);
+          Skip (CD, Fail_after_FOR + FSys, err_identifier_missing);
         end if;
         --
         Emit2 (CD, k_Load_Address, IdTab (T).LEV, IdTab (T).Adr);
@@ -1834,19 +1835,19 @@ package body HAC.Parser is
           Expression (END_LOOP_RANGE_Double_Dot + FSys, X);  --  Lower bound
           IdTab (T).TYP := X.TYP;
           if not Discrete_Typ (X.TYP) then
-            Error (err_control_variable_of_the_wrong_type);
+            Error (CD, err_control_variable_of_the_wrong_type);
           end if;
           if Sy = Range_Double_Dot_Symbol then               --  ..
             InSymbol;
             Expression (FSys + LOOP_Symbol, X);              --  Upper bound
             if IdTab (T).TYP /= X.TYP then
-              Error (err_first_and_last_must_have_matching_types);
+              Error (CD, err_first_and_last_must_have_matching_types);
             end if;
           else
-            Skip (END_LOOP_Semicolon + FSys, err_expecting_double_dot);
+            Skip (CD, END_LOOP_Semicolon + FSys, err_expecting_double_dot);
           end if;
         else
-          Skip (FSys + LOOP_Symbol, err_IN_missing);
+          Skip (CD, FSys + LOOP_Symbol, err_IN_missing);
         end if;
         LC1 := CD.LC;
         Emit (CD, F);
@@ -1860,7 +1861,7 @@ package body HAC.Parser is
       procedure Select_Statement is
         procedure Select_Error (N : Compile_Error) is
         begin
-          Skip (Semicolon, N);
+          Skip (CD, Semicolon, N);
         end Select_Error;
 
         --  Either a Timed or Conditional Entry Call.
@@ -1886,7 +1887,7 @@ package body HAC.Parser is
             if Sy = Semicolon then
               InSymbol;
             else
-              Skip (Semicolon, err_semicolon_missing);
+              Skip (CD, Semicolon, err_semicolon_missing);
             end if;
             if not (Sy = OR_Symbol or else Sy = ELSE_Symbol) then
               Multi_Statement (ELSE_OR);
@@ -2008,7 +2009,7 @@ package body HAC.Parser is
               Display (Level) := IdTab (I).Ref;
               InSymbol;
               Multi_Statement (END_Set);
-              Test_END_Symbol;
+              Test_END_Symbol (CD);
               if Sy = IDent then
                 if Id /= IdTab (I).Name then
                   Select_Error (err_incorrect_block_name);
@@ -2124,7 +2125,7 @@ package body HAC.Parser is
                 --  Generate a Task delay, calculate return value if req'D
                 InSymbol;
                 if Sy = Semicolon then
-                  Skip (Semicolon, err_missing_expression_for_delay);
+                  Skip (CD, Semicolon, err_missing_expression_for_delay);
                 else          -- calculate return value
                   Expression (Semicolon_Set, Y);
                   Emit2 (CD, k_Selective_Wait, 4, CD.LC + 2);  --  Update delay time
@@ -2223,7 +2224,7 @@ package body HAC.Parser is
                   if Sy = RParent then
                     goto SKIP1b;
                   else
-                    Error (err_identifier_missing);
+                    Error (CD, err_identifier_missing);
                   end if;
                 end if;
               end if;
@@ -2233,13 +2234,13 @@ package body HAC.Parser is
                 end if;
                 do_first_InSymbol := True;
                 if Sy /= IDent then
-                  Error (err_identifier_missing);
+                  Error (CD, err_identifier_missing);
                 else
                   I := Locate_Identifier (Id);
                   InSymbol;
                   if I /= 0 then
                     if IdTab (I).Obj /= Variable then
-                      Error (err_variable_missing);
+                      Error (CD, err_variable_missing);
                     else
                       X.TYP := IdTab (I).TYP;
                       X.Ref := IdTab (I).Ref;
@@ -2259,16 +2260,16 @@ package body HAC.Parser is
                       then
                         Emit1 (CD, k_Read, Types'Pos (X.TYP));
                       else
-                        Error (err_illegal_parameters_to_Put);
+                        Error (CD, err_illegal_parameters_to_Put);
                       end if;
                     end if;
                   end if;
                 end if;
-                Test (Comma_RParent, FSys, err_incorrectly_used_symbol);
+                Test (CD, Comma_RParent, FSys, err_incorrectly_used_symbol);
                 exit when Sy /= Comma;
               end loop;
               <<SKIP1b>>
-              Need (RParent, err_closing_parenthesis_missing);
+              Need (CD, RParent, err_closing_parenthesis_missing);
             end if;
             if N = 2 then
               Emit (CD, k_Get_Newline);
@@ -2288,7 +2289,7 @@ package body HAC.Parser is
                   if Sy = RParent then
                     goto Label_21; -- skip the loop
                   else
-                    Error (err_identifier_missing);
+                    Error (CD, err_identifier_missing);
                   end if;
                 end if;
               end if;
@@ -2307,22 +2308,22 @@ package body HAC.Parser is
                     X.TYP := Ints;
                   end if;
                   if (not Standard_Typ (X.TYP)) and X.TYP /= Strings then
-                    Error (err_illegal_parameters_to_Put);
+                    Error (CD, err_illegal_parameters_to_Put);
                   end if;
                   if Sy = Colon then
                     InSymbol;
                     Expression (FSys + Colon_Comma_RParent, Y);
                     if Y.TYP /= Ints then
-                      Error (err_parameter_must_be_Integer);
+                      Error (CD, err_parameter_must_be_Integer);
                     end if;
                     if Sy = Colon then  --  ':' Pascal-ism (Write/WriteLn) !!
                       if X.TYP /= Floats then
-                        Error (err_parameter_must_be_of_type_Float);
+                        Error (CD, err_parameter_must_be_of_type_Float);
                       end if;
                       InSymbol;
                       Expression (FSys + Comma_RParent, Y);
                       if Y.TYP /= Ints then
-                        Error (err_parameter_must_be_Integer);
+                        Error (CD, err_parameter_must_be_Integer);
                       end if;
                       Emit (CD, k_Write_Float);
                     else
@@ -2338,7 +2339,7 @@ package body HAC.Parser is
               end loop;
 
               <<Label_21>>
-              Need (RParent, err_closing_parenthesis_missing);
+              Need (CD, RParent, err_closing_parenthesis_missing);
             end if;
             if N = 4 then
               Emit (CD, k_Put_Newline);
@@ -2346,17 +2347,17 @@ package body HAC.Parser is
 
           when 5 | 6 =>                  -- Wait, SIGNAL
             if Sy /= LParent then
-              Error (err_missing_an_opening_parenthesis);
+              Error (CD, err_missing_an_opening_parenthesis);
             else
               InSymbol;
               if Sy /= IDent then
-                Error (err_undefined_identifier);
+                Error (CD, err_undefined_identifier);
               else
                 I := Locate_Identifier (Id);
                 InSymbol;
                 if I /= 0 then
                   if IdTab (I).Obj /= Variable then
-                    Error (err_variable_missing);
+                    Error (CD, err_variable_missing);
                   else
                     X.TYP := IdTab (I).TYP;
                     X.Ref := IdTab (I).Ref;
@@ -2376,53 +2377,53 @@ package body HAC.Parser is
                         Emit (CD, k_Signal_Semaphore);
                       end if;
                     else
-                      Error (err_parameter_must_be_Integer);
+                      Error (CD, err_parameter_must_be_Integer);
                     end if;
                   end if;
                 end if;
               end if;
-              Need (RParent, err_closing_parenthesis_missing);
+              Need (CD, RParent, err_closing_parenthesis_missing);
             end if;
 
           when 7 | 8 | 9 =>    -- reset, Rewrite, Close
             -- Schoening
             if Sy /= LParent then
-              Error (err_missing_an_opening_parenthesis);
+              Error (CD, err_missing_an_opening_parenthesis);
             else
               InSymbol;
               I := Get_File_Pointer (Id);
               if I = No_File_Index then
-                Error (err_identifier_missing);
+                Error (CD, err_identifier_missing);
               else
                 Emit2 (CD, k_File_I_O, I, N);
               end if;
               InSymbol;
-              Need (RParent, err_closing_parenthesis_missing);
+              Need (CD, RParent, err_closing_parenthesis_missing);
             end if;  -- reset
 
           when 10 =>        -- CursorAt
             -- Cramer
             if Sy /= LParent then
-              Skip (Semicolon, err_missing_an_opening_parenthesis);
+              Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
             else
               begin
                 InSymbol;
                 Expression (Colon_Comma_LParent_RParent_Semicolon, X);
                 if X.TYP /= Ints then
-                  Skip (Semicolon, err_parameter_must_be_Integer);
+                  Skip (CD, Semicolon, err_parameter_must_be_Integer);
                 end if;
                 if Sy /= Comma then
-                  Skip (Semicolon, err_COMMA_missing);
+                  Skip (CD, Semicolon, err_COMMA_missing);
                 else
                   InSymbol;
                   Expression (Colon_Comma_LParent_RParent_Semicolon, X);
                   if X.TYP /= Ints then
-                    Skip (Semicolon, err_parameter_must_be_Integer);
+                    Skip (CD, Semicolon, err_parameter_must_be_Integer);
                   end if;
                   if Sy = Comma then
-                    Skip (Semicolon, err_number_of_parameters_do_not_match);
+                    Skip (CD, Semicolon, err_number_of_parameters_do_not_match);
                   elsif Sy /= RParent then
-                    Skip (Semicolon, err_closing_parenthesis_missing);
+                    Skip (CD, Semicolon, err_closing_parenthesis_missing);
                   else
                     Emit (CD, k_Cursor_At);
                     InSymbol;
@@ -2434,15 +2435,15 @@ package body HAC.Parser is
           when 11 =>                   -- Quantum
             -- Cramer
             if Sy /= LParent then
-              Skip (Semicolon, err_missing_an_opening_parenthesis);
+              Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
               Expression (RParent_Set, X);
               if X.TYP /= Floats then
-                Skip (Semicolon, err_parameter_must_be_of_type_Float);
+                Skip (CD, Semicolon, err_parameter_must_be_of_type_Float);
               end if;
               if Sy /= RParent then
-                Skip (Semicolon, err_closing_parenthesis_missing);
+                Skip (CD, Semicolon, err_closing_parenthesis_missing);
               else
                 Emit (CD, k_Set_Quantum_Task);
                 InSymbol;
@@ -2452,15 +2453,15 @@ package body HAC.Parser is
           when 12 =>                   -- Set Priority
             -- Cramer
             if Sy /= LParent then
-              Skip (Semicolon, err_missing_an_opening_parenthesis);
+              Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
               Expression (RParent_Set, X);
               if X.TYP /= Ints then
-                Skip (Semicolon, err_parameter_must_be_Integer);
+                Skip (CD, Semicolon, err_parameter_must_be_Integer);
               end if;
               if Sy /= RParent then
-                Skip (Semicolon, err_closing_parenthesis_missing);
+                Skip (CD, Semicolon, err_closing_parenthesis_missing);
               else
                 Emit (CD, k_Set_Task_Priority);
                 InSymbol;
@@ -2470,12 +2471,12 @@ package body HAC.Parser is
           when 13 =>                   -- Set Priority Inheritance,INHERITP
             -- Cramer
             if Sy /= LParent then
-              Skip (Semicolon, err_missing_an_opening_parenthesis);
+              Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
               Boolean_Expression (RParent_Set, X);
               if Sy /= RParent then
-                Skip (Semicolon, err_closing_parenthesis_missing);
+                Skip (CD, Semicolon, err_closing_parenthesis_missing);
               else
                 Emit (CD, k_Set_Task_Priority_Inheritance);
                 InSymbol;
@@ -2490,7 +2491,7 @@ package body HAC.Parser is
       procedure Block_Statement (block_name: Alfa) is  -- RM: 5.6
       begin
         Error (
-          err_not_yet_implemented,
+          CD, err_not_yet_implemented,
           hint => "Block statements don't work yet",
           stop_on_error => True
         );
@@ -2514,19 +2515,19 @@ package body HAC.Parser is
         begin
           if Sy = IDent then
             if Id /= new_ident_for_statement then
-              Error (err_END_LOOP_ident_wrong,
+              Error (CD, err_END_LOOP_ident_wrong,
                      hint => Alfa_to_String(new_ident_for_statement_with_case));
             end if;
             InSymbol;  --  Consume identifier.
           else
-            Error (err_END_LOOP_ident_missing,
+            Error (CD, err_END_LOOP_ident_missing,
                    hint => Alfa_to_String(new_ident_for_statement_with_case));
           end if;
         end Check_ID_after_END_LOOP;
         --
       begin
         Enter (new_ident_for_statement, Id_with_case, Label);
-        Test (Colon_Set, FSys,
+        Test (CD, Colon_Set, FSys,
           err_colon_missing_for_named_statement,
           stop_on_error => True
         );
@@ -2544,7 +2545,7 @@ package body HAC.Parser is
             WHILE_Statement;
             Check_ID_after_END_LOOP;
           when others =>
-            Error (err_syntax_error);
+            Error (CD, err_syntax_error);
         end case;
       end Named_Statement;
 
@@ -2556,7 +2557,7 @@ package body HAC.Parser is
       end if;
 
       --{ Mark the following opcodes as belonging to LineCount # }
-      Emit1 (CD, k_Highlight_Source, Line_Count);  --{MRC: this line is not in PC version}
+      Emit1 (CD, k_Highlight_Source, CD.Line_Count);  --{MRC: this line is not in PC version}
       --{ This did not work because the LineCount was off by one. Why? }
       --{ MRC: This line is needed in order to highlight lines in task windows
       --}
@@ -2574,12 +2575,12 @@ package body HAC.Parser is
                 when Variable =>
                   Assignment (I_Statement, Check_read_only => True);
                 when Declared_Number_or_Enum_Item =>
-                  Error (err_illegal_statement_start_symbol, "constant or an enumeration item",
+                  Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
                          stop_on_error => True);
                 when TypeMark =>
-                  Error (err_illegal_statement_start_symbol, "type name", stop_on_error => True);
+                  Error (CD, err_illegal_statement_start_symbol, "type name", stop_on_error => True);
                 when Funktion =>
-                  Error (err_illegal_statement_start_symbol, "function name",
+                  Error (CD, err_illegal_statement_start_symbol, "function name",
                          stop_on_error => True);
                 when aTask =>
                   Entry_Call (FSys, I_Statement, CallSTDE);
@@ -2590,8 +2591,8 @@ package body HAC.Parser is
                     Call (FSys, I_Statement, CallSTDP);
                   end if;
                 when Label =>
-                  Error (err_duplicate_label, Alfa_to_String(Id));
-                  Test (Colon_Set, FSys, err_colon_missing);
+                  Error (CD, err_duplicate_label, Alfa_to_String(Id));
+                  Test (CD, Colon_Set, FSys, err_colon_missing);
                   InSymbol;
                 when others =>
                   null;
@@ -2627,12 +2628,12 @@ package body HAC.Parser is
         end case;
         --
         if not EofInput then      --{MRC: added IF NOT... from PC version}
-          Need (Semicolon, err_semicolon_missing);
+          Need (CD, Semicolon, err_semicolon_missing);
         end if;
       end if;  --  Sy in Statement_Begin_Symbol
       --
       if not EofInput then
-        Test (FSys - Semicolon, Semicolon_Set, err_incorrectly_used_symbol);
+        Test (CD, FSys - Semicolon, Semicolon_Set, err_incorrectly_used_symbol);
       end if;
     end Statement;
 
@@ -2640,7 +2641,7 @@ package body HAC.Parser is
     begin
       loop
         Test (  --  Added 17-Apr-2018 to avoid infinite loop on erroneous code
-          Declaration_Symbol + BEGIN_Symbol,
+          CD, Declaration_Symbol + BEGIN_Symbol,
           Empty_Symset,
           err_incorrectly_used_symbol,
           stop_on_error => True  --  Exception is raised there if there is an error.
@@ -2683,7 +2684,7 @@ package body HAC.Parser is
     procedure Statements_List is
     begin
       if Sy = END_Symbol then  --  GdM 15-Aug-2014: there should be at least one statement.
-        Error (err_statement_expected);
+        Error (CD, err_statement_expected);
       end if;
       loop
         Statement (FSys + END_Symbol);
@@ -2693,7 +2694,7 @@ package body HAC.Parser is
 
     procedure Statements_Part_Closing is
     begin
-      BlockTab (PRB).SrcTo := Line_Count;
+      BlockTab (PRB).SrcTo := CD.Line_Count;
     end Statements_Part_Closing;
 
     procedure Function_Result_Profile is
@@ -2706,18 +2707,18 @@ package body HAC.Parser is
           InSymbol;
           if I_Res_Type /= 0 then
             if IdTab (I_Res_Type).Obj /= TypeMark then
-              Error (err_missing_a_type_identifier, stop_on_error => True);
+              Error (CD, err_missing_a_type_identifier, stop_on_error => True);
             elsif Standard_Typ (IdTab (I_Res_Type).TYP) then
               IdTab (Prt).TYP := IdTab (I_Res_Type).TYP;
             else
-              Error (err_bad_result_type_for_a_function, stop_on_error => True);
+              Error (CD, err_bad_result_type_for_a_function, stop_on_error => True);
             end if;
           end if;
         else
-          Error (err_identifier_missing, stop_on_error => True);
+          Error (CD, err_identifier_missing, stop_on_error => True);
         end if;
       else
-        Error (err_RETURN_missing, stop_on_error => True);
+        Error (CD, err_RETURN_missing, stop_on_error => True);
       end if;
     end Function_Result_Profile;
 
@@ -2733,7 +2734,7 @@ package body HAC.Parser is
     if Is_a_block_statement then
       null;  --  We should be here with Sy = BEGIN_Symbol or Sy = DECLARE_Symbol.
     else
-      Test (Symbols_after_Subprogram_Identifier, FSys, err_incorrectly_used_symbol);
+      Test (CD, Symbols_after_Subprogram_Identifier, FSys, err_incorrectly_used_symbol);
     end if;
     if IdTab (Prt).Ref > 0 then
       PRB := IdTab (Prt).Ref;
@@ -2774,7 +2775,7 @@ package body HAC.Parser is
     elsif Sy = IS_Symbol then  --  The "IS" in "procedure ABC (param : T_Type) IS"
       InSymbol;
     else
-      Error (err_IS_missing);
+      Error (CD, err_IS_missing);
       return;
     end if;
     --
@@ -2784,7 +2785,7 @@ package body HAC.Parser is
       InSymbol;  --  Consume NULL symbol.
       Statements_Part_Setup;
       if Is_a_function then
-        Error (err_no_null_functions);  --  There are no null functions: what would be the result?
+        Error (CD, err_no_null_functions);  --  There are no null functions: what would be the result?
       else
         null;  --  No statement -> no instruction, like for the NULL statement.
       end if;
@@ -2801,22 +2802,22 @@ package body HAC.Parser is
       elsif Err_Count > 0 then
         return;  --  At this point the program is already FUBAR.
       else
-        Error (err_END_missing);
+        Error (CD, err_END_missing);
         return;
       end if;
       --
       if Sy = IDent then  --  Verify that the name after "end" matches the unit name.
         if Id /= Block_ID then
-          Error (err_incorrect_block_name, hint => Alfa_to_String(Block_ID_with_case));
+          Error (CD, err_incorrect_block_name, hint => Alfa_to_String(Block_ID_with_case));
         end if;
         InSymbol;
       elsif Is_a_block_statement and Block_ID /= Empty_Alfa then  --  "end [label]" is required
-        Error (err_incorrect_block_name, hint => Alfa_to_String(Block_ID_with_case));
+        Error (CD, err_incorrect_block_name, hint => Alfa_to_String(Block_ID_with_case));
       end if;
     end if;
     --
     if Sy /= Semicolon then
-      Error (err_semicolon_missing);
+      Error (CD, err_semicolon_missing);
       return;
     end if;
     --
@@ -2826,7 +2827,7 @@ package body HAC.Parser is
       --  Now we have either another declaration,
       --  or BEGIN or, if it's a package, END.
       Test (
-        FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
+        CD, FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
         Empty_Symset,
         err_incorrectly_used_symbol
       );

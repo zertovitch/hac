@@ -14,6 +14,8 @@ with HAC.UErrors;                       use HAC.UErrors;
 
 package HAC.Parser.Helpers is
 
+  use HAC.Compiler;
+
   --  If needed symbol S is correct, consume it;
   --  otherwise output error code E.
   --
@@ -22,6 +24,7 @@ package HAC.Parser.Helpers is
   --  For instance '[' instead of '('.
   --
   procedure Need (
+    CD      : in out Compiler_Data;
     S       : KeyWSymbol;
     E       : Compile_Error;
     Forgive : KeyWSymbol := Dummy_Symbol
@@ -31,6 +34,7 @@ package HAC.Parser.Helpers is
   --  that are not in the FSys set.
   --
   procedure Skip (
+    CD   : in out Compiler_Data;
     FSys : Symset;
     N    : Compile_Error;
     hint : String := ""
@@ -40,6 +44,7 @@ package HAC.Parser.Helpers is
   --  that are not equal to S.
   --
   procedure Skip (
+    CD   : in out Compiler_Data;
     S    : KeyWSymbol;
     N    : Compile_Error;
     hint : String := ""
@@ -50,26 +55,27 @@ package HAC.Parser.Helpers is
   --  subsequent symbols that are not in the union (S1 + S2).
   --
   procedure Test (
+    CD            : in out Compiler_Data;
     S1, S2        : Symset;
     N             : Compile_Error;
     stop_on_error : Boolean:= False);
 
-  procedure Test_Semicolon (FSys : Symset);
+  procedure Test_Semicolon (CD : in out Compiler_Data; FSys : Symset);
 
-  procedure Test_END_Symbol;
+  procedure Test_END_Symbol (CD : in out Compiler_Data);
 
-  procedure Check_Boolean (T: Types);
+  procedure Check_Boolean (CD : Compiler_Data; T: Types);
 
-  procedure Ignore_Extra_Semicolons;
+  procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data);
 
   type Type_Conversion_Kind is (To_Float, To_Integer, Unknown);
 
-  procedure Argument_Type_Not_Supported;
+  procedure Argument_Type_Not_Supported (CD : Compiler_Data);
 
   --  https://en.wikipedia.org/wiki/Type_conversion#Implicit_type_conversion
   --  One of the most useful feature of Ada is the absence of type coercion.
   --
-  procedure Forbid_Type_Coercion (details: String);
+  procedure Forbid_Type_Coercion (CD : Compiler_Data; details: String);
 
   No_Id : constant := 0;
 

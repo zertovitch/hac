@@ -41,7 +41,7 @@ procedure HAX is
         Put_Line (HAC_margin_2 & "Compiling from file: " & name);
     end case;
     Open (f, In_File, name);
-    HAC.Data.Line_Count:= 0;
+    CD.Line_Count:= 0;
     HAC.Data.c_Set_Stream (HAC.Data.Stream_Access(Stream(f)), name);
     t1 := Clock;
     HAC.Compiler.Compile (CD, To_String (asm_dump_file_name));

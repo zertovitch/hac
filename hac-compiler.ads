@@ -23,8 +23,11 @@ package HAC.Compiler is
   subtype Fixed_Size_Object_Code_Table is HAC.PCode.Object_Code_Table (0 .. HAC.Data.CDMax);
 
   type Compiler_Data is record
+    --  Source code scanner data
+    Line_Count : Integer;  --  Source line counter, used for listing
+    --  Object code
     ObjCode : Fixed_Size_Object_Code_Table;
-    LC      : Integer;                   --  location counter in the Object_Code_Table
+    LC      : Integer;  --  location counter in the Object_Code_Table
   end record;
 
   --  Main compilation procedure.

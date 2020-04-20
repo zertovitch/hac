@@ -288,6 +288,7 @@ package body HAC.UErrors is
   end cFoundError;
 
   procedure Error (
+    CD            : HAC.Compiler.Compiler_Data;
     code          : Compile_Error;
     hint          : String      := "";
     stop_on_error : Boolean     := False
@@ -298,14 +299,14 @@ package body HAC.UErrors is
     updated_repair_kit : Repair_kit := repair_table (code);
     ub_hint : constant Unbounded_String := To_Unbounded_String (hint);
   begin
-    cFoundError (code, Line_Count, syStart, syEnd, -1, hint);
+    cFoundError (code, CD.Line_Count, syStart, syEnd, -1, hint);
     Errs (code) := True;
     Err_Count := Err_Count + 1;
     if current_error_pipe = null then
       Put_Line(
         Current_Error,
         --  !! Ada "file" name here
-        Trim(Integer'Image(Line_Count),Left) & ':' &
+        Trim(Integer'Image(CD.Line_Count),Left) & ':' &
         Trim(Integer'Image(syStart),Left) & '-' &
         Trim(Integer'Image(syEnd),Left) & ": " &
         Error_String (code, hint)
@@ -328,7 +329,7 @@ package body HAC.UErrors is
       current_error_pipe (
         message   => Error_String (code, hint),
         file_name => Get_Current_Source_Name,
-        line      => Line_Count,
+        line      => CD.Line_Count,
         column_a  => syStart,
         column_z  => syEnd,
         kind      => error,

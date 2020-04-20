@@ -8,6 +8,8 @@
 --
 -------------------------------------------------------------------------------------
 
+with HAC.Compiler;
+
 with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
 
 package HAC.UErrors is
@@ -157,6 +159,7 @@ package HAC.UErrors is
   error_free : constant Error_set := (others => False);
 
   procedure Error (
+    CD            : HAC.Compiler.Compiler_Data;
     code          : Compile_Error;
     hint          : String      := "";
     stop_on_error : Boolean     := False

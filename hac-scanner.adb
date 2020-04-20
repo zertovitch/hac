@@ -8,7 +8,63 @@ package body HAC.Scanner is
   package IIO is new Integer_IO (Integer);
   use IIO;
 
-  procedure InSymbol is
+  type SSTBzz is array (Character'(' ') .. ']') of KeyWSymbol;
+
+  Special_Symbols : constant SSTBzz :=
+   ('+'    => Plus,
+    '-'    => Minus,
+    '*'    => Times,
+    '/'    => Divide,
+    '('    => LParent,
+    ')'    => RParent,
+    '['    => LBrack,
+    ']'    => RBrack,
+    '='    => EQL,
+    '"'    => NEQ,    -- ?!
+    ','    => Comma,
+    ';'    => Semicolon,
+    '&'    => Ampersand_Symbol,
+    others => NULL_Symbol);
+
+  type CHTP is (Letter, LowCase, Number, Special, Illegal);
+
+  type Set_of_CHTP is array (CHTP) of Boolean;
+
+  special_or_illegal : constant Set_of_CHTP :=
+   (Letter   |
+    LowCase  |
+    Number   => False,
+    Special  |
+    Illegal  => True);
+
+  CharacterTypes : constant array (Character) of CHTP :=
+    (   'A' .. 'Z' => Letter,
+        'a' .. 'z' => LowCase,
+        '0' .. '9' =>  Number,
+        '+' | '-' | '*' | '/' |
+        '(' | ')' |
+        '$' |
+        '=' |
+        ' ' |
+        ',' |
+        '.' |
+        ''' |
+        '[' |
+        ']' |
+        ':' |
+        '^' |
+        '_' |
+        ';' |
+        '{' |
+        '|' |
+        '}' |
+        '<' |
+        '>' |
+        '"' => Special,
+        c128 => Special,
+        others => Illegal);
+
+  procedure InSymbol (CD : in out Compiler_Data) is
     I, J, K, e : Integer;
     theLine    : String (1 .. 1000);
 
@@ -27,26 +83,15 @@ package body HAC.Scanner is
     procedure NextCh is -- Read Next Char; process line end
     begin
       if CC = LL then
-        if cEndOfSource then
-          if qDebug then  -- @@@ Make an error for this
-            Put_Line (" PROGRAM INCOMPLETE");
-          end if;
-          if Listing_Was_Requested then
-            Put_Line (Listing, " PROGRAM INCOMPLETE");
-          end if;
-          Error (err_program_incomplete);
-          ErrorMsg;
-          raise Failure_1_0;
-        end if;
         if SkipFlag then
           EndSkip;
         end if;
         if Listing_Was_Requested then
           New_Line (Listing);
         end if;
-        Line_Count := Line_Count + 1;
+        CD.Line_Count := CD.Line_Count + 1;
         if Listing_Was_Requested then
-          Put (Listing, Line_Count, 4);
+          Put (Listing, CD.Line_Count, 4);
           Put (Listing, "  ");
           --  Put (Listing, LC, 5);
           --  Put (Listing, "  ");
@@ -56,8 +101,8 @@ package body HAC.Scanner is
         cGetNextLine (theLine, LL); -- Ada style
         InpLine (1 .. LL + 1) := theLine (1 .. LL) & ' '; -- Should be
                                                           --truncated to LLNG
-        syLine                := Line_Count;
-        LL                    := LL + 1;
+        syLine  := CD.Line_Count;
+        LL      := LL + 1;
 
         if Listing_Was_Requested then
           New_Line (Listing);
@@ -72,7 +117,7 @@ package body HAC.Scanner is
         CH := ' '; -- IdTab for space
       end if;
       if Character'Pos (CH) < Character'Pos (' ') then
-        Error (err_control_character);
+        Error (CD, err_control_character);
       end if;
 
     end NextCh;
@@ -91,13 +136,13 @@ package body HAC.Scanner is
           Sign := -1;
         else
           Error (
-            err_negative_exponent_for_integer_literal,
+            CD, err_negative_exponent_for_integer_literal,
             Integer'Image(INum) & ".0e- ..."
           );
         end if;
       end if;
       if CH not in '0' .. '9' then
-        Error (err_illegal_character_in_number, "; expected digit after 'E'");
+        Error (CD, err_illegal_character_in_number, "; expected digit after 'E'");
       else
         loop
           S := 10 * S + Character'Pos (CH) - Character'Pos ('0');
@@ -114,7 +159,7 @@ package body HAC.Scanner is
     begin
       if K + e > EMax then
         Error (
-          err_number_too_large,
+          CD, err_number_too_large,
           Integer'Image (K) & " +" &
           Integer'Image (e) & " =" &
           Integer'Image (K + e) & " > Max =" &
@@ -149,9 +194,9 @@ package body HAC.Scanner is
         if CH = '_' then
           NextCh;
           if CH = '_' then
-            Error (err_double_underline_not_permitted, stop_on_error => True);
+            Error (CD, err_double_underline_not_permitted, stop_on_error => True);
           elsif CharacterTypes (CH) /= Number then
-            Error (err_digit_expected, stop_on_error => True);
+            Error (CD, err_digit_expected, stop_on_error => True);
           end if;
         end if;
       end Skip_eventual_underscore;
@@ -170,7 +215,7 @@ package body HAC.Scanner is
       --
       if K > KMax then
         Error (
-          err_number_too_large,
+          CD, err_number_too_large,
           Integer'Image (K) & " > Max =" &
           Integer'Image (KMax)
         );
@@ -194,7 +239,7 @@ package body HAC.Scanner is
             Skip_eventual_underscore;
           end loop;
           if e = 0 then
-            Error (err_illegal_character_in_number, "; expected digit after '.'");
+            Error (CD, err_illegal_character_in_number, "; expected digit after '.'");
           end if;
           if CH = 'E' or CH = 'e' then
             Read_Scale (True);
@@ -222,7 +267,7 @@ package body HAC.Scanner is
 
     syStart := CC - 1;
     if CharacterTypes (CH) = Illegal then
-      Error (err_illegal_character);
+      Error (CD, err_illegal_character);
       if qDebug then
         Put_Line (" Char is => " & Integer'Image (Character'Pos (CH)));
       end if;
@@ -248,17 +293,17 @@ package body HAC.Scanner is
             Id (K)           := UpCase (CH);
             Id_with_case (K) := CH;
             if K > 1 and then Id (K - 1 .. K) = "__" then
-              Error (err_double_underline_not_permitted, Id, stop_on_error => True);
+              Error (CD, err_double_underline_not_permitted, Id, stop_on_error => True);
             end if;
           else
-            Error (err_identifier_too_long, Id);
+            Error (CD, err_identifier_too_long, Id);
           end if;
           NextCh;
           exit when CH /= '_'
                    and then special_or_illegal (CharacterTypes (CH));
         end loop;
         if K > 0 and then Id (K) ='_' then
-          Error (err_identifier_cannot_end_with_underline, Id, stop_on_error => True);
+          Error (CD, err_identifier_cannot_end_with_underline, Id, stop_on_error => True);
         end if;
 
         I := 1;
@@ -281,7 +326,7 @@ package body HAC.Scanner is
         end if;
         if Sy = USy then
           Sy := IDent;
-          Error (err_Ada_reserved_word);
+          Error (CD, err_Ada_reserved_word);
         end if;
 
       when '0' .. '9' =>
@@ -389,11 +434,11 @@ package body HAC.Scanner is
           Sy   := CharCon;
           INum := Character'Pos (StringTab (Sx));
         elsif K = 0 then
-          Error (err_character_zero_chars);
+          Error (CD, err_character_zero_chars);
           Sy   := CharCon;
           INum := 0;
         else
-          Error (err_character_delimeter_used_for_string);
+          Error (CD, err_character_delimeter_used_for_string);
           Sy    := StrCon;
           INum  := Sx;
           SLeng := K;
@@ -442,7 +487,7 @@ package body HAC.Scanner is
 
       when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
         --  duplicate case Constant '&',
-        Error (err_illegal_character);
+        Error (CD, err_illegal_character);
         if qDebug then
           Put_Line (" [ $!@\^_?""&%  ]");
         end if;
@@ -468,7 +513,7 @@ package body HAC.Scanner is
       end loop;
       Put_Line(Sym_dump,"^");
       Put (Sym_dump,
-        '[' & Integer'Image(Line_Count) & ':' & Integer'Image(CC) & ":] " &
+        '[' & Integer'Image(CD.Line_Count) & ':' & Integer'Image(CC) & ":] " &
         KeyWSymbol'Image (Sy)
       );
       case Sy is
