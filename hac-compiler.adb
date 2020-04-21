@@ -126,7 +126,7 @@ package body HAC.Compiler is
     FCT  :        HAC.PCode.Opcode)
   is
   begin
-    PCode.Emit (CD.ObjCode, CD.LC, FCT);
+    PCode.Emit (CD.ObjCode, CD.LC, (Line => CD.Line_Count), FCT);
   end Emit;
 
   procedure Emit1 (
@@ -135,7 +135,7 @@ package body HAC.Compiler is
     B    :        Integer)
   is
   begin
-    PCode.Emit1 (CD.ObjCode, CD.LC, FCT, B);
+    PCode.Emit1 (CD.ObjCode, CD.LC, (Line => CD.Line_Count), FCT, B);
   end Emit1;
 
   procedure Emit2 (
@@ -144,7 +144,7 @@ package body HAC.Compiler is
     a, B :        Integer)
   is
   begin
-    PCode.Emit2 (CD.ObjCode, CD.LC, FCT, a, B);
+    PCode.Emit2 (CD.ObjCode, CD.LC, (Line => CD.Line_Count), FCT, a, B);
   end Emit2;
 
   procedure Emit_Comparison_Instruction (

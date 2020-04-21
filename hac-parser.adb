@@ -2555,13 +2555,6 @@ package body HAC.Parser is
       if Err_Count > 0 then
         return;
       end if;
-
-      --{ Mark the following opcodes as belonging to LineCount # }
-      Emit1 (CD, k_Highlight_Source, CD.Line_Count);  --{MRC: this line is not in PC version}
-      --{ This did not work because the LineCount was off by one. Why? }
-      --{ MRC: This line is needed in order to highlight lines in task windows
-      --}
-
       if Statement_Begin_Symbol (Sy) then
         case Sy is
           when IDent =>

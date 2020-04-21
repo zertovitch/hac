@@ -76,10 +76,11 @@ package body HAC.PCode is
   procedure Emit (
     OC   : in out Object_Code_Table;
     LC   : in out Integer;
+    D    :        Debug_Info;
     FCT  :        Opcode)
   is
   begin
-    Emit2 (OC, LC, FCT, 0, 0);    --  Order's X, Y are not used
+    Emit2 (OC, LC, D, FCT, 0, 0);    --  Order's X, Y are not used
   end Emit;
 
   ---------------------------------------------------------------Emit1----
@@ -87,11 +88,12 @@ package body HAC.PCode is
   procedure Emit1 (
     OC   : in out Object_Code_Table;
     LC   : in out Integer;
+    D    :        Debug_Info;
     FCT  :        Opcode;
     B    :        Integer)
   is
   begin
-    Emit2 (OC, LC, FCT, 0, B);    --  Order's X is not used
+    Emit2 (OC, LC, D, FCT, 0, B);    --  Order's X is not used
   end Emit1;
 
   ---------------------------------------------------------------Emit2----
@@ -99,6 +101,7 @@ package body HAC.PCode is
   procedure Emit2 (
     OC   : in out Object_Code_Table;
     LC   : in out Integer;
+    D    :        Debug_Info;
     FCT  :        Opcode;
     a, B :        Integer)
   is
@@ -109,6 +112,7 @@ package body HAC.PCode is
     OC (LC).F := FCT;
     OC (LC).X := a;
     OC (LC).Y := B;
+    OC (LC).D := D;
     LC        := LC + 1;
   end Emit2;
 
@@ -140,18 +144,17 @@ package body HAC.PCode is
     Put_Line
       (Text, "Position   : Opcode " & (Opcode'Width - 5) * ' ' &
              "X (Level)  " &
-             "Y (Address / Value)");
+             "Y (Address / Value)" &
+             ";   Approx. source location");
     for i in OC'Range loop
       Code_Pos_IO.Put (Text, i);
       Put (Text, ": " & Padded_Opcode (OC (i).F));
       Operand1_IO.Put (Text, OC (i).X, 3);
       Operand2_IO.Put (Text, OC (i).Y);
-      case OC (i).F is
-        when k_Highlight_Source =>
-          Put (Text, " ... Source line" & Operand2'Image (OC (i).Y));
-        when others =>
-          null;
-      end case;
+      Put (
+        Text, "                  ;   l =" &
+        Positive'Image (OC (i).D.Line)
+      );
       New_Line (Text);
     end loop;
   end Dump;

@@ -107,8 +107,7 @@ package HAC.PCode is
     k_Set_Quantum_Task,
     k_Set_Task_Priority,
     k_Set_Task_Priority_Inheritance,
-    k_Selective_Wait,
-    k_Highlight_Source
+    k_Selective_Wait
   );
 
   subtype Jump_Opcode is Opcode range k_Jump .. k_Conditional_Jump;
@@ -120,12 +119,18 @@ package HAC.PCode is
   subtype Operand1 is Integer;       -- was -LMax..+LMax (levels)
   subtype Operand2 is Integer;  --  !! TBD: set it to a 64-bit signed.
 
+  type Debug_Info is record
+    Line : Positive;  --  Line number in the source code
+    --  ...           --  Something identifying the unit (a hash code?)
+  end record;
+
   --  PCode instruction record (stores a compiled PCode instruction)
   type Order is record
     F : Opcode;    --  Opcode (or instruction field)
     X : Operand1;  --  Operand 1 is used to point to the static level
     Y : Operand2;  --  Operand 2 is used to pass operands to the instructions
                    --    or immediate discrete values (k_Literal).
+    D : Debug_Info;
   end record;
 
   type Object_Code_Table is array (Natural range <>) of Order;
@@ -144,15 +149,18 @@ package HAC.PCode is
   procedure Emit (
     OC   : in out Object_Code_Table;
     LC   : in out Integer;
+    D    :        Debug_Info;
     FCT  :        Opcode);
   procedure Emit1 (
     OC   : in out Object_Code_Table;
     LC   : in out Integer;
+    D    :        Debug_Info;
     FCT  :        Opcode;
     B    :        Integer);
   procedure Emit2 (
     OC   : in out Object_Code_Table;
     LC   : in out Integer;
+    D    :        Debug_Info;
     FCT  :        Opcode;
     a, B :        Integer);
 

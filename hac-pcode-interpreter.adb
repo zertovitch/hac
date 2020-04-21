@@ -1487,11 +1487,8 @@ package body HAC.PCode.Interpreter is
             when others =>
               null;  -- [P2Ada]: no otherwise / else in Pascal
           end case;
+          --  Selective Wait
 
-        --  Selective Wait
-
-        when k_Highlight_Source =>
-          null;
         end case;
         --  main case IR.F
       end;
