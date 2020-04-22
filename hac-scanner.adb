@@ -37,6 +37,8 @@ package body HAC.Scanner is
     Special  |
     Illegal  => True);
 
+  c128 : constant Character := Character'Val (128);
+
   CharacterTypes : constant array (Character) of CHTP :=
     (   'A' .. 'Z' => Letter,
         'a' .. 'z' => LowCase,
@@ -64,9 +66,94 @@ package body HAC.Scanner is
         c128 => Special,
         others => Illegal);
 
+  subtype AdaKeyW_String is String (1 .. 12);
+
+  type AdaKeyW_Pair is record
+    st : AdaKeyW_String;
+    sy : KeyWSymbol;
+  end record;
+
+  type AdaKeyW_List is array(Positive range <>) of AdaKeyW_Pair;
+
+  AdaKeyW : constant AdaKeyW_List:=
+      ( ("ABORT       ", ABORT_Symbol),
+        ("ABSTRACT    ", ABSTRACT_Symbol),     -- [added in] Ada 95
+        ("ABS         ",  USy),                -- !! SmallAda has a built-in function (wrong)
+        ("ACCEPT      ", ACCEPT_Symbol),
+        ("ACCESS      ", ACCESS_Symbol),
+        ("ALIASED     ", ALIASED_Symbol),      -- Ada 95
+        ("ALL         ", ALL_Symbol),          -- Ada 95
+        ("AND         ", AND_Symbol),
+        ("ARRAY       ", ARRAY_Symbol),
+        ("AT          ", AT_Symbol),
+        ("BEGIN       ", BEGIN_Symbol),
+        ("BODY        ", BODY_Symbol),
+        ("CASE        ", CASE_Symbol),
+        ("CONSTANT    ", CONSTANT_Symbol),
+        ("DECLARE     ", DECLARE_Symbol),
+        ("DELAY       ", DELAY_Symbol),
+        ("DELTA       ", DELTA_Symbol),
+        ("DIGITS      ", DIGITS_Symbol),
+        ("DO          ", DO_Symbol),
+        ("ELSE        ", ELSE_Symbol),
+        ("ELSIF       ", ELSIF_Symbol),
+        ("END         ", END_Symbol),
+        ("ENTRY       ", ENTRY_Symbol),
+        ("EXCEPTION   ", EXCEPTION_Symbol),
+        ("EXIT        ", EXIT_Symbol),
+        ("FOR         ", FOR_Symbol),
+        ("FUNCTION    ", FUNCTION_Symbol),
+        ("GENERIC     ", GENERIC_Symbol),
+        ("GOTO        ", GOTO_Symbol),
+        ("IF          ", IF_Symbol),
+        ("IN          ", IN_Symbol),
+        ("INTERFACE   ", INTERFACE_Symbol),    -- Ada 2005
+        ("IS          ", IS_Symbol),
+        ("LIMITED     ", LIMITED_Symbol),
+        ("LOOP        ", LOOP_Symbol),
+        ("MOD         ", MOD_Symbol),
+        ("NEW         ", NEW_Symbol),
+        ("NOT         ", NOT_Symbol),
+        ("NULL        ", NULL_Symbol),
+        ("OF          ", OF_Symbol),
+        ("OR          ", OR_Symbol),
+        ("OTHERS      ", OTHERS_Symbol),
+        ("OUT         ", OUT_Symbol),
+        ("OVERRIDING  ", OVERRIDING_Symbol),   -- Ada 2005
+        ("PACKAGE     ", PACKAGE_Symbol),
+        ("PRAGMA      ", PRAGMA_Symbol),
+        ("PRIVATE     ", PRIVATE_Symbol),
+        ("PROCEDURE   ", PROCEDURE_Symbol),
+        ("PROTECTED   ", PROTECTED_Symbol),    -- Ada 95
+        ("RAISE       ", RAISE_Symbol),
+        ("RANGE       ", RANGE_Keyword_Symbol),
+        ("RECORD      ", RECORD_Symbol),
+        ("REM         ", REM_Symbol),
+        ("RENAMES     ", RENAMES_Symbol),
+        ("REQUEUE     ", REQUEUE_Symbol),      -- Ada 95
+        ("RETURN      ", RETURN_Symbol),
+        ("REVERSE     ", REVERSE_Symbol),
+        ("SELECT      ", SELECT_Symbol),
+        ("SEPARATE    ", SEPARATE_Symbol),
+        ("SOME        ", SOME_Symbol),         -- Ada 2012
+        ("SUBTYPE     ", SUBTYPE_Symbol),
+        ("SYNCHRONIZED", SYNCHRONIZED_Symbol), -- Ada 2005
+        ("TAGGED      ", TAGGED_Symbol),       -- Ada 95
+        ("TASK        ", TASK_Symbol),
+        ("TERMINATE   ", TERMINATE_Symbol),
+        ("THEN        ", THEN_Symbol),
+        ("TYPE        ", TYPE_Symbol),
+        ("UNTIL       ", UNTIL_Symbol),        -- Ada 95
+        ("USE         ", USE_Symbol),
+        ("WHEN        ", WHEN_Symbol),
+        ("WHILE       ", WHILE_Symbol),
+        ("WITH        ", WITH_Symbol),
+        ("XOR         ", XOR_Symbol)
+       );
+
   procedure InSymbol (CD : in out Compiler_Data) is
     I, J, K, e : Integer;
-    theLine    : String (1 .. 1000);
+    theLine    : Source_Line_String;
 
     function UpCase (c : Character) return Character is
     begin
@@ -80,12 +167,9 @@ package body HAC.Scanner is
       end if;
     end UpCase;
 
-    procedure NextCh is -- Read Next Char; process line end
+    procedure NextCh is  --  Read Next Char; process line end
     begin
-      if CC = LL then
-        if SkipFlag then
-          EndSkip;
-        end if;
+      if CD.CC = CD.LL then
         if Listing_Was_Requested then
           New_Line (Listing);
         end if;
@@ -96,27 +180,25 @@ package body HAC.Scanner is
           --  Put (Listing, LC, 5);
           --  Put (Listing, "  ");
         end if;
-        LL := 0;
-        CC := 0;
-        cGetNextLine (theLine, LL); -- Ada style
-        InpLine (1 .. LL + 1) := theLine (1 .. LL) & ' '; -- Should be
-                                                          --truncated to LLNG
-        syLine  := CD.Line_Count;
-        LL      := LL + 1;
+        CD.LL := 0;
+        CD.CC := 0;
+        c_Get_Next_Line (theLine, CD.LL);
+        CD.InpLine (1 .. CD.LL + 1) := theLine (1 .. CD.LL) & ' ';
+        CD.LL := CD.LL + 1;
 
         if Listing_Was_Requested then
           New_Line (Listing);
-          Put_Line (Listing, InpLine);
+          Put_Line (Listing, CD.InpLine);
         end if;
       end if;
 
-      CC := CC + 1;
-      CH := InpLine (CC);
+      CD.CC := CD.CC + 1;
+      CD.CH := CD.InpLine (CD.CC);
       -- Manuel : Change tabs for spaces
-      if Character'Pos (CH) = 9 then
-        CH := ' '; -- IdTab for space
+      if Character'Pos (CD.CH) = 9 then
+        CD.CH := ' '; -- IdTab for space
       end if;
-      if Character'Pos (CH) < Character'Pos (' ') then
+      if Character'Pos (CD.CH) < Character'Pos (' ') then
         Error (CD, err_control_character);
       end if;
 
@@ -128,26 +210,26 @@ package body HAC.Scanner is
       NextCh;
       Sign := 1;
       S    := 0;
-      if CH = '+' then
+      if CD.CH = '+' then
         NextCh;
-      elsif CH = '-' then
+      elsif CD.CH = '-' then
         if allow_minus then
           NextCh;
           Sign := -1;
         else
           Error (
             CD, err_negative_exponent_for_integer_literal,
-            Integer'Image(INum) & ".0e- ..."
+            Integer'Image(CD.INum) & ".0e- ..."
           );
         end if;
       end if;
-      if CH not in '0' .. '9' then
+      if CD.CH not in '0' .. '9' then
         Error (CD, err_illegal_character_in_number, "; expected digit after 'E'");
       else
         loop
-          S := 10 * S + Character'Pos (CH) - Character'Pos ('0');
+          S := 10 * S + Character'Pos (CD.CH) - Character'Pos ('0');
           NextCh;
-          exit when CH not in '0' .. '9';
+          exit when CD.CH not in '0' .. '9';
         end loop;
       end if;
       e := S * Sign + e;
@@ -166,7 +248,7 @@ package body HAC.Scanner is
           Integer'Image (EMax)
         );
       elsif K + e < EMin then
-        RNum := 0.0;
+        CD.RNum := 0.0;
       else
         S := abs e;
         T := 1.0;
@@ -181,9 +263,9 @@ package body HAC.Scanner is
           exit when S = 0;
         end loop;
         if e >= 0 then
-          RNum := RNum * T;
+          CD.RNum := CD.RNum * T;
         else
-          RNum := RNum / T;
+          CD.RNum := CD.RNum / T;
         end if;
       end if;
     end Adjust_Scale;
@@ -191,26 +273,26 @@ package body HAC.Scanner is
     procedure Scan_Number is
       procedure Skip_eventual_underscore is
       begin
-        if CH = '_' then
+        if CD.CH = '_' then
           NextCh;
-          if CH = '_' then
+          if CD.CH = '_' then
             Error (CD, err_double_underline_not_permitted, stop_on_error => True);
-          elsif CharacterTypes (CH) /= Number then
+          elsif CharacterTypes (CD.CH) /= Number then
             Error (CD, err_digit_expected, stop_on_error => True);
           end if;
         end if;
       end Skip_eventual_underscore;
     begin
-      K    := 0;
-      INum := 0;
-      Sy   := IntCon;
+      K       := 0;
+      CD.INum := 0;
+      CD.Sy   := IntCon;
       --  Scan the integer part of the number.
       loop
-        INum := INum * 10 + Character'Pos (CH) - Character'Pos ('0');
+        CD.INum := CD.INum * 10 + Character'Pos (CD.CH) - Character'Pos ('0');
         K    := K + 1;
         NextCh;
         Skip_eventual_underscore;
-        exit when CharacterTypes (CH) /= Number;
+        exit when CharacterTypes (CD.CH) /= Number;
       end loop;
       --
       if K > KMax then
@@ -219,41 +301,41 @@ package body HAC.Scanner is
           Integer'Image (K) & " > Max =" &
           Integer'Image (KMax)
         );
-        INum := 0;
-        K    := 0;
+        CD.INum := 0;
+        K       := 0;
       end if;
-      if CH = '.' then
+      if CD.CH = '.' then
         NextCh;
-        if CH = '.' then  --  Double dot.
-          CH := Character'Val (128);
+        if CD.CH = '.' then  --  Double dot.
+          CD.CH := c128;
         else
           --  Read decimal part.
-          Sy   := FloatCon;
-          RNum := HAC_Float (INum);
-          e    := 0;
-          while CharacterTypes (CH) = Number loop
+          CD.Sy := FloatCon;
+          CD.RNum  := HAC_Float (CD.INum);
+          e     := 0;
+          while CharacterTypes (CD.CH) = Number loop
             e    := e - 1;
-            RNum := 10.0 * RNum +
-                    HAC_Float (Character'Pos (CH) - Character'Pos ('0'));
+            CD.RNum := 10.0 * CD.RNum +
+                    HAC_Float (Character'Pos (CD.CH) - Character'Pos ('0'));
             NextCh;
             Skip_eventual_underscore;
           end loop;
           if e = 0 then
             Error (CD, err_illegal_character_in_number, "; expected digit after '.'");
           end if;
-          if CH = 'E' or CH = 'e' then
+          if CD.CH = 'E' or CD.CH = 'e' then
             Read_Scale (True);
           end if;
           if e /= 0 then
             Adjust_Scale;
           end if;
         end if;
-      elsif CH = 'E' or CH = 'e' then
+      elsif CD.CH = 'E' or CD.CH = 'e' then
         --  Integer with exponent: 123e4.
         e := 0;
         Read_Scale (False);
         if e /= 0 then
-          INum := INum * 10 ** e;
+          CD.INum := CD.INum * 10 ** e;
         end if;
       end if;
     end Scan_Number;
@@ -261,71 +343,71 @@ package body HAC.Scanner is
   begin  --  InSymbol
 
     <<Label_1>>
-    while CH = ' ' loop
+    while CD.CH = ' ' loop
       NextCh;
     end loop;
 
-    syStart := CC - 1;
-    if CharacterTypes (CH) = Illegal then
+    CD.syStart := CD.CC - 1;
+    if CharacterTypes (CD.CH) = Illegal then
       Error (CD, err_illegal_character);
       if qDebug then
-        Put_Line (" Char is => " & Integer'Image (Character'Pos (CH)));
+        Put_Line (" Char is => " & Integer'Image (Character'Pos (CD.CH)));
       end if;
       if Listing_Was_Requested then
         Put_Line
          (Listing,
-          " Char is => " & Integer'Image (Character'Pos (CH)));
+          " Char is => " & Integer'Image (Character'Pos (CD.CH)));
       end if;
       NextCh;
       goto Label_1;
 
     end if;
 
-    case CH is
+    case CD.CH is
       when 'A' .. 'Z' |  --  identifier or wordsymbol
            'a' .. 'z' =>
         K  := 0;
-        Id := (others => ' ');
-        Id_with_case := Id;
+        CD.Id := Empty_Alfa;
+        CD.Id_with_case := CD.Id;
         loop
           if K < Alng then
             K := K + 1;
-            Id (K)           := UpCase (CH);
-            Id_with_case (K) := CH;
-            if K > 1 and then Id (K - 1 .. K) = "__" then
-              Error (CD, err_double_underline_not_permitted, Id, stop_on_error => True);
+            CD.Id (K)           := UpCase (CD.CH);
+            CD.Id_with_case (K) := CD.CH;
+            if K > 1 and then CD.Id (K - 1 .. K) = "__" then
+              Error (CD, err_double_underline_not_permitted, CD.Id, stop_on_error => True);
             end if;
           else
-            Error (CD, err_identifier_too_long, Id);
+            Error (CD, err_identifier_too_long, CD.Id);
           end if;
           NextCh;
-          exit when CH /= '_'
-                   and then special_or_illegal (CharacterTypes (CH));
+          exit when CD.CH /= '_'
+                   and then special_or_illegal (CharacterTypes (CD.CH));
         end loop;
-        if K > 0 and then Id (K) ='_' then
-          Error (CD, err_identifier_cannot_end_with_underline, Id, stop_on_error => True);
+        if K > 0 and then CD.Id (K) ='_' then
+          Error (CD, err_identifier_cannot_end_with_underline, CD.Id, stop_on_error => True);
         end if;
-
+        --
         I := 1;
         J := AdaKeyW'Last;  --  Binary Search
         loop
           K := (I + J) / 2;
-          if Id(AdaKeyW_String'Range) <= AdaKeyW (K).st then
+          if CD.Id (AdaKeyW_String'Range) <= AdaKeyW (K).st then
             J := K - 1;
           end if;
-          if Id(AdaKeyW_String'Range) >= AdaKeyW (K).st then
+          if CD.Id (AdaKeyW_String'Range) >= AdaKeyW (K).st then
             I := K + 1;
           end if;
           exit when I > J;
         end loop;
-
+        --
         if I - 1 > J then
-          Sy := AdaKeyW (K).sy;
+          CD.Sy := AdaKeyW (K).sy;
         else
-          Sy := IDent;
+          CD.Sy := IDent;
         end if;
-        if Sy = USy then
-          Sy := IDent;
+        if CD.Sy = USy then
+          CD.Sy := IDent;
           Error (CD, err_Ada_reserved_word);
         end if;
 
@@ -334,139 +416,143 @@ package body HAC.Scanner is
 
       when ':' =>
         NextCh;
-        if CH = '=' then
-          Sy := Becomes;
+        if CD.CH = '=' then
+          CD.Sy := Becomes;
           NextCh;
         else
-          Sy := Colon;
+          CD.Sy := Colon;
         end if;
 
       when '<' =>
         NextCh;
-        if CH = '=' then
-          Sy := LEQ;
+        if CD.CH = '=' then
+          CD.Sy := LEQ;
           NextCh;
         else
-          Sy := LSS;
+          CD.Sy := LSS;
         end if;
 
       when '>' =>
         NextCh;
-        if CH = '=' then
-          Sy := GEQ;
+        if CD.CH = '=' then
+          CD.Sy := GEQ;
           NextCh;
         else
-          Sy := GTR;
+          CD.Sy := GTR;
         end if;
 
       when '/' =>
         NextCh;
-        if CH = '=' then
-          Sy := NEQ;
+        if CD.CH = '=' then
+          CD.Sy := NEQ;
           NextCh;
         else
-          Sy := Divide;
+          CD.Sy := Divide;
         end if;
 
       when '.' =>
         NextCh;
-        if CH = '.' then
-          Sy := Range_Double_Dot_Symbol;
+        if CD.CH = '.' then
+          CD.Sy := Range_Double_Dot_Symbol;
           NextCh;
         else
-          Sy := Period;
+          CD.Sy := Period;
         end if;
 
       when c128 =>  --  Hathorn
-        Sy := Range_Double_Dot_Symbol;
+        CD.Sy := Range_Double_Dot_Symbol;
         NextCh;
 
       when '"' =>
         K := 0;
         <<Label_2>> NextCh;
-        if CH = '"' then
+        if CD.CH = '"' then
           NextCh;
-          if CH /= '"' then
+          if CD.CH /= '"' then
             goto Label_3;
           end if;
         end if;
-        if Sx + K = SMax then
+        if CD.Strings_Table_Top + K = SMax then
           Fatal (STRING_CONSTANTS);
         end if;
-        StringTab (Sx + K) := CH;
+        CD.Strings_Table (CD.Strings_Table_Top + K) := CD.CH;
         K                  := K + 1;
-        if CC = 1 then
+        if CD.CC = 1 then
           K := 0;  --  END OF InpLine
         else
           goto Label_2;
         end if;
         <<Label_3>>
-        Sy    := StrCon;
-        INum  := Sx;
-        SLeng := K;
-        Sx    := Sx + K;
+        CD.Sy    := StrCon;
+        CD.INum  := CD.Strings_Table_Top;
+        CD.SLeng := K;
+        CD.Strings_Table_Top := CD.Strings_Table_Top + K;
+        --  TBD: we could compress this information by searching already existing strings
+        --       in the table! (Quick search as for Lempel-Ziv string matchers - cf LZ77
+        --       package in the Zip-Ada project.
 
       when ''' =>  --  Character literal (code reused from Pascal string literal, hence a loop)
         K := 0;
         <<Label_4>> NextCh;
-        if CH = ''' then
+        if CD.CH = ''' then
           NextCh;
-          if CH /= ''' then
+          if CD.CH /= ''' then
             goto Label_5;
           end if;
         end if;
-        if Sx + K = SMax then
+        if CD.Strings_Table_Top + K = SMax then
           Fatal (STRING_CONSTANTS);
         end if;
-        StringTab (Sx + K) := CH;
-        K                  := K + 1;
-        if CH = ''' and K = 1 then -- '''
+        CD.Strings_Table (CD.Strings_Table_Top + K) := CD.CH;
+        K := K + 1;
+        if CD.CH = ''' and K = 1 then -- '''
           NextCh;
           goto Label_5;
         end if;
-        if CC = 1 then
-          K := 0;   --  END OF InpLine
+        if CD.CC = 1 then
+          K := 0;  --  END OF InpLine
         else
           goto Label_4;
         end if;
         <<Label_5>>
-        if K = 1 then
-          Sy   := CharCon;
-          INum := Character'Pos (StringTab (Sx));
+        if K = 1 then  --  Correct, we have a "string" of length 1.
+          CD.Sy := CharCon;
+          CD.INum  := Character'Pos (CD.Strings_Table (CD.Strings_Table_Top));
+          --  CD.Strings_Table_Top is NOT incremented.
         elsif K = 0 then
           Error (CD, err_character_zero_chars);
-          Sy   := CharCon;
-          INum := 0;
+          CD.Sy := CharCon;
+          CD.INum  := 0;
         else
           Error (CD, err_character_delimeter_used_for_string);
-          Sy    := StrCon;
-          INum  := Sx;
-          SLeng := K;
-          Sx    := Sx + K;
+          CD.Sy    := StrCon;
+          CD.INum  := CD.Strings_Table_Top;
+          CD.SLeng := K;
+          CD.Strings_Table_Top := CD.Strings_Table_Top + K;
         end if;
 
       when '-' =>
         NextCh;
-        if CH /= '-' then
-          Sy := Minus;
-        else --  comment
-          CC := LL;  --  ignore rest of input line
+        if CD.CH /= '-' then
+          CD.Sy := Minus;
+        else  --  comment
+          CD.CC := CD.LL;  --  ignore rest of input line
           NextCh;
           goto Label_1;
         end if;
 
       when '=' =>
         NextCh;
-        if CH /= '>' then
-          Sy := EQL;
+        if CD.CH /= '>' then
+          CD.Sy := EQL;
         else
-          Sy := Finger;
+          CD.Sy := Finger;
           NextCh;
         end if;
 
       when '{' =>  --  Special non documented comment !! O_o: remove that !!
 
-        while CH /= '}' loop
+        while CD.CH /= '}' loop
           NextCh;
         end loop;
 
@@ -474,14 +560,14 @@ package body HAC.Scanner is
         goto Label_1;
 
       when '|' =>
-        Sy := Alt;
+        CD.Sy := Alt;
         NextCh;
 
       when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
-        Sy := Special_Symbols (CH);
+        CD.Sy := Special_Symbols (CD.CH);
         NextCh;
-        if Sy = Times and then CH = '*' then  --  Get the "**" operator symbol
-          Sy := Power;
+        if CD.Sy = Times and then CD.CH = '*' then  --  Get the "**" operator symbol
+          CD.Sy := Power;
           NextCh;
         end if;
 
@@ -502,31 +588,32 @@ package body HAC.Scanner is
       when others =>
         null;
 
-    end case;  --  CH
+    end case;  --  CD.CH
 
-    syEnd := CC - 1;
+    CD.syEnd := CD.CC - 1;
 
     if qDebug then
-      Put_Line(Sym_dump,InpLine(1..LL));
-      for i in 1..CC-2 loop
+      Put_Line(Sym_dump, CD.InpLine (1 .. CD.LL));
+      for i in 1 .. CD.CC-2 loop
         Put(Sym_dump,'.');
       end loop;
       Put_Line(Sym_dump,"^");
       Put (Sym_dump,
-        '[' & Integer'Image(CD.Line_Count) & ':' & Integer'Image(CC) & ":] " &
-        KeyWSymbol'Image (Sy)
+        '[' & Integer'Image(CD.Line_Count) & ':' &
+              Integer'Image(CD.CC) & ":] " &
+        KeyWSymbol'Image (CD.Sy)
       );
-      case Sy is
+      case CD.Sy is
         when IDent =>
-          Put (Sym_dump, ": " & Id);
+          Put (Sym_dump, ": " & CD.Id);
         when IntCon =>
-          Put (Sym_dump, ": " & Integer'Image (INum));
+          Put (Sym_dump, ": " & Integer'Image (CD.INum));
         when FloatCon =>
-          Put (Sym_dump, ": " & HAC_Float'Image (RNum));
+          Put (Sym_dump, ": " & HAC_Float'Image (CD.RNum));
         when StrCon =>
           Put (Sym_dump, ": """);
-          for i in INum .. INum + SLeng - 1 loop
-            Put (Sym_dump, StringTab (i));
+          for i in CD.INum .. CD.INum + CD.SLeng - 1 loop
+            Put (Sym_dump, CD.Strings_Table (i));
           end loop;
           Put (Sym_dump, '"');
         when Becomes =>

@@ -260,8 +260,23 @@ package HAC.Parser.Helpers is
     LParent              => True,
     others         => False);
 
-  ---------------------
-  --  Miscellaneous  --
-  ---------------------
+  ------------------
+  --  Types sets  --
+  ------------------
+
+  Numeric_Typ_Set : constant Typ_Set := (Numeric_Typ => True, others => False);
+  Atomic_Typ      : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set;
+  Ints_Typ        : constant Typ_Set := (Ints => True, others => False);
+
+  -------------
+  --  Misc.  --
+  -------------
+
+  No_File_Index: constant:= -1;
+
+  type Item is record
+    TYP : Types;
+    Ref : Index;
+  end record;
 
 end HAC.Parser.Helpers;

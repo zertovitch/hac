@@ -25,11 +25,11 @@ package body HAC.Parser.Helpers is
   )
   is
   begin
-    if Sy = S then
+    if CD.Sy = S then
       InSymbol (CD);
     else
       Error (CD, E);
-      if Sy = Forgive then
+      if CD.Sy = Forgive then
         InSymbol (CD);
       end if;
     end if;
@@ -51,8 +51,7 @@ package body HAC.Parser.Helpers is
   begin
     Error (CD, N, hint);
     --
-    SkipFlag := True;
-    while not FSys (Sy) loop
+    while not FSys (CD.Sy) loop
       InSymbol (CD);
       if StopMe then
         raise Failure_1_0;
@@ -66,9 +65,6 @@ package body HAC.Parser.Helpers is
 
     if StopMe then
       raise Failure_1_0;
-    end if;
-    if SkipFlag then
-      EndSkip;
     end if;
   end Skip;
 
@@ -90,7 +86,7 @@ package body HAC.Parser.Helpers is
     stop_on_error : Boolean:= False)
   is
   begin
-    if not S1 (Sy) then
+    if not S1 (CD.Sy) then
       declare
         hint  : Unbounded_String;
         first : Boolean := True;
@@ -104,7 +100,7 @@ package body HAC.Parser.Helpers is
             hint := hint & KeyWSymbol'Image (s);
           end if;
         end loop;
-        hint := "Found: " & KeyWSymbol'Image (Sy) & "; expected: " & hint;
+        hint := "Found: " & KeyWSymbol'Image (CD.Sy) & "; expected: " & hint;
         if stop_on_error then
           Error (CD, N, stop_on_error => True, hint => To_String (hint));
         end if;
@@ -122,12 +118,12 @@ package body HAC.Parser.Helpers is
 
   procedure Test_Semicolon (CD : in out Compiler_Data; FSys : Symset) is
   begin
-    if Sy = Semicolon then
+    if CD.Sy = Semicolon then
       InSymbol (CD);
       Ignore_Extra_Semicolons (CD);
     else
       Error (CD, err_semicolon_missing);
-      if Comma_or_colon (Sy) then
+      if Comma_or_colon (CD.Sy) then
         InSymbol (CD);
       end if;
     end if;
@@ -136,7 +132,7 @@ package body HAC.Parser.Helpers is
 
   procedure Test_END_Symbol (CD : in out Compiler_Data) is
   begin
-    if Sy = END_Symbol then
+    if CD.Sy = END_Symbol then
       InSymbol (CD);
     else
       Skip (CD, Semicolon, err_END_missing);
@@ -153,9 +149,9 @@ package body HAC.Parser.Helpers is
 
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data) is
   begin
-    if Sy = Semicolon then
+    if CD.Sy = Semicolon then
       Error (CD, err_extra_semicolon_ignored);
-      while Sy = Semicolon loop
+      while CD.Sy = Semicolon loop
         InSymbol (CD);
       end loop;
     end if;

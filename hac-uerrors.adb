@@ -299,7 +299,7 @@ package body HAC.UErrors is
     updated_repair_kit : Repair_kit := repair_table (code);
     ub_hint : constant Unbounded_String := To_Unbounded_String (hint);
   begin
-    cFoundError (code, CD.Line_Count, syStart, syEnd, -1, hint);
+    cFoundError (code, CD.Line_Count, CD.syStart, CD.syEnd, -1, hint);
     Errs (code) := True;
     Err_Count := Err_Count + 1;
     if current_error_pipe = null then
@@ -307,8 +307,8 @@ package body HAC.UErrors is
         Current_Error,
         --  !! Ada "file" name here
         Trim(Integer'Image(CD.Line_Count),Left) & ':' &
-        Trim(Integer'Image(syStart),Left) & '-' &
-        Trim(Integer'Image(syEnd),Left) & ": " &
+        Trim(Integer'Image(CD.syStart),Left) & '-' &
+        Trim(Integer'Image(CD.syEnd),Left) & ": " &
         Error_String (code, hint)
       );
     else
@@ -330,8 +330,8 @@ package body HAC.UErrors is
         message   => Error_String (code, hint),
         file_name => Get_Current_Source_Name,
         line      => CD.Line_Count,
-        column_a  => syStart,
-        column_z  => syEnd,
+        column_a  => CD.syStart,
+        column_z  => CD.syEnd,
         kind      => error,
         repair    => updated_repair_kit
       );
@@ -342,13 +342,6 @@ package body HAC.UErrors is
       raise Compilation_abandoned;
     end if;
   end Error;
-
-  ----------------------------------------------------------------------------
-
-  procedure EndSkip is -- Skip past part of input
-  begin
-    SkipFlag := False;
-  end EndSkip;
 
   ----------------------------------------------------------------------------
 

@@ -11,6 +11,8 @@
 
 --  This package defines the PCode Virtual Machine.
 
+with HAC.Data;
+
 with Ada.Text_IO;
 
 package HAC.PCode is
@@ -120,8 +122,9 @@ package HAC.PCode is
   subtype Operand2 is Integer;  --  !! TBD: set it to a 64-bit signed.
 
   type Debug_Info is record
-    Line : Positive;  --  Line number in the source code
-    --  ...           --  Something identifying the unit (a hash code?)
+    Line  : Positive;       --  Line number in the source code.
+    Block : HAC.Data.Alfa;  --  Current block's identifier (if any).
+    --  Unit  : HAC.Data.Alfa;  --  Compilation unit identifier.
   end record;
 
   --  PCode instruction record (stores a compiled PCode instruction)

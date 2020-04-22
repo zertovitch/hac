@@ -12,15 +12,6 @@ package body HAC.Data is
     return To_String (current_compiler_file_name);
   end Get_Current_Source_Name;
 
-  function "+" (a, b : Set) return Set is
-    c : Set (a'Range);
-  begin
-    for i in a'Range loop
-      c (i) := a (i) or b (i);
-    end loop;
-    return c;
-  end "+";
-
   function "+" (a, b : Symset) return Symset is
     c : Symset;
   begin
@@ -53,17 +44,21 @@ package body HAC.Data is
     return c;
   end "-";
 
-  function Alfa_to_String (a: Alfa) return String is
-  begin
-    return Ada.Strings.Fixed.Trim (a, Ada.Strings.Right);
-  end Alfa_to_String;
+  use Ada.Strings, Ada.Strings.Fixed;
 
-  --  Initialize the keyword and keyword symbol Arrays
-
-  procedure cFeedback is
+  function To_String (a: Alfa) return String is
   begin
-    null; -- uiFeedback;
-  end cFeedback;
+    return Trim (a, Right);
+  end To_String;
+
+  function To_Alfa (s: String) return Alfa is
+  begin
+    if s'Length > Alfa'Length then
+      raise Constraint_Error;
+    else
+      return s & (Alfa'Length - s'Length) * ' ';
+    end if;
+  end To_Alfa;
 
   procedure c_Set_Stream (
     s         : Stream_Access;
@@ -74,7 +69,7 @@ package body HAC.Data is
     current_compiler_file_name := To_Unbounded_String (file_name);
   end c_Set_Stream;
 
-  procedure cGetNextLine (InpLine : out String; Last : out Natural) is
+  procedure c_Get_Next_Line (InpLine : out String; Last : out Natural) is
     idx : Integer := InpLine'First - 1;
     c   : Character;
   begin
@@ -100,6 +95,6 @@ package body HAC.Data is
       else
         raise;
       end if;
-  end cGetNextLine;
+  end c_Get_Next_Line;
 
 end HAC.Data;

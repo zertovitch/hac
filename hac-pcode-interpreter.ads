@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Data;
+with HAC.Compiler, HAC.Data;
 
 with Ada.Text_IO,
      Ada.Integer_Text_IO;
@@ -52,8 +52,8 @@ package HAC.PCode.Interpreter is
     with procedure Put_Console (s: in String);
     with procedure New_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
 
-  procedure Interpret (ObjCode : Object_Code_Table);
+  procedure Interpret (CD: HAC.Compiler.Compiler_Data);
 
-  procedure Interpret_on_Current_IO (ObjCode : Object_Code_Table);
+  procedure Interpret_on_Current_IO (CD: HAC.Compiler.Compiler_Data);
 
 end HAC.PCode.Interpreter;

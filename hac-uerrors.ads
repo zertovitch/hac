@@ -165,8 +165,6 @@ package HAC.UErrors is
     stop_on_error : Boolean     := False
   );
 
-  procedure EndSkip;
-
   procedure ErrorMsg;
 
   type Table_OverFlow_Error is

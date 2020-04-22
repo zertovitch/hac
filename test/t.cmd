@@ -23,7 +23,7 @@ REM ..\hax -v2 if_then_elsif_else.adb
 REM pause
 
 echo.
-echo *******[ HAC Testing ]******* "Silent tests": when there is zero output and no compilation error, it's all fine.
+echo *******[ HAC Testing ]******* "Silent tests": when there is zero output and no compilation error, then it's all fine.
 echo.
 
 ..\hax -v1 case_statement.adb

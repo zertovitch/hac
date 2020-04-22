@@ -142,19 +142,19 @@ package body HAC.PCode is
     end Padded_Opcode;
   begin
     Put_Line
-      (Text, "Position   : Opcode " & (Opcode'Width - 5) * ' ' &
-             "X (Level)  " &
-             "Y (Address / Value)" &
-             ";   Approx. source location");
+      (Text, "Position   : Opcode " & (Opcode'Width - 7) * ' ' &
+             "Lvl X " &
+             "Addr/Val Y" &
+             ";      Approx. source location");
+    Put_Line (Text, 90 * '-');
     for i in OC'Range loop
       Code_Pos_IO.Put (Text, i);
       Put (Text, ": " & Padded_Opcode (OC (i).F));
-      Operand1_IO.Put (Text, OC (i).X, 3);
+      Operand1_IO.Put (Text, OC (i).X, 5);
       Operand2_IO.Put (Text, OC (i).Y);
-      Put (
-        Text, "                  ;   l =" &
-        Positive'Image (OC (i).D.Line)
-      );
+      Put (Text, "; ");
+      Code_Pos_IO.Put (Text, OC (i).D.Line);
+      Put (Text, "  " & OC (i).D.Block);
       New_Line (Text);
     end loop;
   end Dump;

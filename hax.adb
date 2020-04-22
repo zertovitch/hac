@@ -60,7 +60,7 @@ procedure HAX is
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       end if;
       t1 := Clock;
-      HAC.PCode.Interpreter.Interpret_on_Current_IO (CD.ObjCode);
+      HAC.PCode.Interpreter.Interpret_on_Current_IO (CD);
       t2 := Clock;
       if verbosity >= 2 then
         Put_Line (

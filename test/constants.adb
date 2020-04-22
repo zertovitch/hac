@@ -7,6 +7,9 @@ procedure Constants is
   n1, n2 : constant := 9.0;  --  Numeric constant (universal float)
   n3 : constant := 1.0;
 
+  pi : constant := 3.14159265358979323846264338327950288419716939937510;
+  minus_pi : constant := -pi;
+
   r1 : Real;
   r2 : Real := 123.0;
   r3 : constant Real := 456.0;
