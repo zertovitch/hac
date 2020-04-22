@@ -2230,7 +2230,7 @@ package body HAC.Parser is
                 InSymbol;
                 if CD.Sy /= Comma then
                   if CD.Sy = RParent then
-                    goto SKIP1b;
+                    goto SKIP1b; -- skip the loop
                   else
                     Error (CD, err_identifier_missing);
                   end if;

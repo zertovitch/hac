@@ -509,6 +509,8 @@ package body HAC.PCode.Interpreter is
     InterDef.SNAP:= False;
     Init_main_task;
     Init_other_tasks;
+
+    Running_State:
     loop  --  until Processor state /= RUN
       SYSCLOCK := GetClock;
       if InterDef.SNAP then
@@ -543,9 +545,9 @@ package body HAC.PCode.Interpreter is
             end if;
             exit when PS /= WAIT;
           end loop;
-          if PS = DEADLOCK or PS = FIN then
-            goto LABEL_123777;
-          end if;
+          --
+          exit Running_State when PS = DEADLOCK or PS = FIN;
+          --
           TIMER:= InterDef.SYSCLOCK + InterDef.TCB (InterDef.CurTask).QUANTUM;
           InterDef.TCB (InterDef.CurTask).TS := Running;
           SWITCH:= False;
@@ -1482,8 +1484,8 @@ package body HAC.PCode.Interpreter is
         --  main case IR.F
       end;
       exit when InterDef.PS /= InterDef.RUN;
-    end loop;
-    <<LABEL_123777>>
+    end loop Running_State;
+    --
     if InterDef.PS /= InterDef.FIN then
       Post_Mortem_Dump (CD);
     end if;

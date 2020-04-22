@@ -340,255 +340,269 @@ package body HAC.Scanner is
       end if;
     end Scan_Number;
 
+    exit_big_loop : Boolean;
+
   begin  --  InSymbol
 
-    <<Label_1>>
-    while CD.CH = ' ' loop
-      NextCh;
-    end loop;
+    Big_loop:
+    loop
+      Small_loop:
+      loop
+        while CD.CH = ' ' loop
+          NextCh;
+        end loop;
 
-    CD.syStart := CD.CC - 1;
-    if CharacterTypes (CD.CH) = Illegal then
-      Error (CD, err_illegal_character);
-      if qDebug then
-        Put_Line (" Char is => " & Integer'Image (Character'Pos (CD.CH)));
-      end if;
-      if Listing_Was_Requested then
-        Put_Line
-         (Listing,
-          " Char is => " & Integer'Image (Character'Pos (CD.CH)));
-      end if;
-      NextCh;
-      goto Label_1;
+        CD.syStart := CD.CC - 1;
+        if CharacterTypes (CD.CH) = Illegal then
+          Error (CD, err_illegal_character);
+          if qDebug then
+            Put_Line (" Char is => " & Integer'Image (Character'Pos (CD.CH)));
+          end if;
+          if Listing_Was_Requested then
+            Put_Line
+             (Listing,
+              " Char is => " & Integer'Image (Character'Pos (CD.CH)));
+          end if;
+          NextCh;
+        else
+          exit Small_loop;
+        end if;
+      end loop Small_loop;
 
-    end if;
-
-    case CD.CH is
-      when 'A' .. 'Z' |  --  identifier or wordsymbol
-           'a' .. 'z' =>
-        K  := 0;
-        CD.Id := Empty_Alfa;
-        CD.Id_with_case := CD.Id;
-        loop
-          if K < Alng then
-            K := K + 1;
-            CD.Id (K)           := UpCase (CD.CH);
-            CD.Id_with_case (K) := CD.CH;
-            if K > 1 and then CD.Id (K - 1 .. K) = "__" then
-              Error (CD, err_double_underline_not_permitted, CD.Id, stop_on_error => True);
+      exit_big_loop := True;
+      case CD.CH is
+        when 'A' .. 'Z' |  --  identifier or wordsymbol
+             'a' .. 'z' =>
+          K  := 0;
+          CD.Id := Empty_Alfa;
+          CD.Id_with_case := CD.Id;
+          loop
+            if K < Alng then
+              K := K + 1;
+              CD.Id (K)           := UpCase (CD.CH);
+              CD.Id_with_case (K) := CD.CH;
+              if K > 1 and then CD.Id (K - 1 .. K) = "__" then
+                Error (CD, err_double_underline_not_permitted, CD.Id, stop_on_error => True);
+              end if;
+            else
+              Error (CD, err_identifier_too_long, CD.Id);
             end if;
+            NextCh;
+            exit when CD.CH /= '_'
+                     and then special_or_illegal (CharacterTypes (CD.CH));
+          end loop;
+          if K > 0 and then CD.Id (K) ='_' then
+            Error (CD, err_identifier_cannot_end_with_underline, CD.Id, stop_on_error => True);
+          end if;
+          --
+          I := 1;
+          J := AdaKeyW'Last;  --  Binary Search
+          loop
+            K := (I + J) / 2;
+            if CD.Id (AdaKeyW_String'Range) <= AdaKeyW (K).st then
+              J := K - 1;
+            end if;
+            if CD.Id (AdaKeyW_String'Range) >= AdaKeyW (K).st then
+              I := K + 1;
+            end if;
+            exit when I > J;
+          end loop;
+          --
+          if I - 1 > J then
+            CD.Sy := AdaKeyW (K).sy;
           else
-            Error (CD, err_identifier_too_long, CD.Id);
+            CD.Sy := IDent;
           end if;
-          NextCh;
-          exit when CD.CH /= '_'
-                   and then special_or_illegal (CharacterTypes (CD.CH));
-        end loop;
-        if K > 0 and then CD.Id (K) ='_' then
-          Error (CD, err_identifier_cannot_end_with_underline, CD.Id, stop_on_error => True);
-        end if;
-        --
-        I := 1;
-        J := AdaKeyW'Last;  --  Binary Search
-        loop
-          K := (I + J) / 2;
-          if CD.Id (AdaKeyW_String'Range) <= AdaKeyW (K).st then
-            J := K - 1;
+          if CD.Sy = USy then
+            CD.Sy := IDent;
+            Error (CD, err_Ada_reserved_word);
           end if;
-          if CD.Id (AdaKeyW_String'Range) >= AdaKeyW (K).st then
-            I := K + 1;
+
+        when '0' .. '9' =>
+          Scan_Number;
+
+        when ':' =>
+          NextCh;
+          if CD.CH = '=' then
+            CD.Sy := Becomes;
+            NextCh;
+          else
+            CD.Sy := Colon;
           end if;
-          exit when I > J;
-        end loop;
-        --
-        if I - 1 > J then
-          CD.Sy := AdaKeyW (K).sy;
-        else
-          CD.Sy := IDent;
-        end if;
-        if CD.Sy = USy then
-          CD.Sy := IDent;
-          Error (CD, err_Ada_reserved_word);
-        end if;
 
-      when '0' .. '9' =>
-        Scan_Number;
-
-      when ':' =>
-        NextCh;
-        if CD.CH = '=' then
-          CD.Sy := Becomes;
+        when '<' =>
           NextCh;
-        else
-          CD.Sy := Colon;
-        end if;
+          if CD.CH = '=' then
+            CD.Sy := LEQ;
+            NextCh;
+          else
+            CD.Sy := LSS;
+          end if;
 
-      when '<' =>
-        NextCh;
-        if CD.CH = '=' then
-          CD.Sy := LEQ;
+        when '>' =>
           NextCh;
-        else
-          CD.Sy := LSS;
-        end if;
+          if CD.CH = '=' then
+            CD.Sy := GEQ;
+            NextCh;
+          else
+            CD.Sy := GTR;
+          end if;
 
-      when '>' =>
-        NextCh;
-        if CD.CH = '=' then
-          CD.Sy := GEQ;
+        when '/' =>
           NextCh;
-        else
-          CD.Sy := GTR;
-        end if;
+          if CD.CH = '=' then
+            CD.Sy := NEQ;
+            NextCh;
+          else
+            CD.Sy := Divide;
+          end if;
 
-      when '/' =>
-        NextCh;
-        if CD.CH = '=' then
-          CD.Sy := NEQ;
+        when '.' =>
           NextCh;
-        else
-          CD.Sy := Divide;
-        end if;
+          if CD.CH = '.' then
+            CD.Sy := Range_Double_Dot_Symbol;
+            NextCh;
+          else
+            CD.Sy := Period;
+          end if;
 
-      when '.' =>
-        NextCh;
-        if CD.CH = '.' then
+        when c128 =>  --  Hathorn
           CD.Sy := Range_Double_Dot_Symbol;
           NextCh;
-        else
-          CD.Sy := Period;
-        end if;
 
-      when c128 =>  --  Hathorn
-        CD.Sy := Range_Double_Dot_Symbol;
-        NextCh;
-
-      when '"' =>
-        K := 0;
-        <<Label_2>> NextCh;
-        if CD.CH = '"' then
-          NextCh;
-          if CD.CH /= '"' then
-            goto Label_3;
-          end if;
-        end if;
-        if CD.Strings_Table_Top + K = SMax then
-          Fatal (STRING_CONSTANTS);
-        end if;
-        CD.Strings_Table (CD.Strings_Table_Top + K) := CD.CH;
-        K                  := K + 1;
-        if CD.CC = 1 then
-          K := 0;  --  END OF InpLine
-        else
-          goto Label_2;
-        end if;
-        <<Label_3>>
-        CD.Sy    := StrCon;
-        CD.INum  := CD.Strings_Table_Top;
-        CD.SLeng := K;
-        CD.Strings_Table_Top := CD.Strings_Table_Top + K;
-        --  TBD: we could compress this information by searching already existing strings
-        --       in the table! (Quick search as for Lempel-Ziv string matchers - cf LZ77
-        --       package in the Zip-Ada project.
-
-      when ''' =>  --  Character literal (code reused from Pascal string literal, hence a loop)
-        K := 0;
-        <<Label_4>> NextCh;
-        if CD.CH = ''' then
-          NextCh;
-          if CD.CH /= ''' then
-            goto Label_5;
-          end if;
-        end if;
-        if CD.Strings_Table_Top + K = SMax then
-          Fatal (STRING_CONSTANTS);
-        end if;
-        CD.Strings_Table (CD.Strings_Table_Top + K) := CD.CH;
-        K := K + 1;
-        if CD.CH = ''' and K = 1 then -- '''
-          NextCh;
-          goto Label_5;
-        end if;
-        if CD.CC = 1 then
-          K := 0;  --  END OF InpLine
-        else
-          goto Label_4;
-        end if;
-        <<Label_5>>
-        if K = 1 then  --  Correct, we have a "string" of length 1.
-          CD.Sy := CharCon;
-          CD.INum  := Character'Pos (CD.Strings_Table (CD.Strings_Table_Top));
-          --  CD.Strings_Table_Top is NOT incremented.
-        elsif K = 0 then
-          Error (CD, err_character_zero_chars);
-          CD.Sy := CharCon;
-          CD.INum  := 0;
-        else
-          Error (CD, err_character_delimeter_used_for_string);
+        when '"' =>
+          K := 0;
+          loop
+            NextCh;
+            if CD.CH = '"' then
+              NextCh;
+              if CD.CH /= '"' then  --  The ""x case
+                exit;
+              end if;
+            end if;
+            if CD.Strings_Table_Top + K = SMax then
+              Fatal (STRING_CONSTANTS);
+            end if;
+            CD.Strings_Table (CD.Strings_Table_Top + K) := CD.CH;
+            K := K + 1;
+            if CD.CC = 1 then
+              K := 0;  --  END OF InpLine
+              exit;
+            else
+              null;  --  Continue
+            end if;
+          end loop;
           CD.Sy    := StrCon;
           CD.INum  := CD.Strings_Table_Top;
           CD.SLeng := K;
           CD.Strings_Table_Top := CD.Strings_Table_Top + K;
-        end if;
+          --  TBD: we could compress this information by searching already existing strings
+          --       in the table! (Quick search as for Lempel-Ziv string matchers - cf LZ77
+          --       package in the Zip-Ada project.
 
-      when '-' =>
-        NextCh;
-        if CD.CH /= '-' then
-          CD.Sy := Minus;
-        else  --  comment
-          CD.CC := CD.LL;  --  ignore rest of input line
+        when ''' =>
+          --  Character literal (code reused from Pascal string literal, hence a loop)
+          --  !! We will need to reprogram that for attributes or qualified expressions.
+          K := 0;
+          loop
+            NextCh;
+            if CD.CH = ''' then
+              NextCh;
+              if CD.CH /= ''' then  --  The ''x case
+                exit;
+              end if;
+            end if;
+            if CD.Strings_Table_Top + K = SMax then
+              Fatal (STRING_CONSTANTS);
+            end if;
+            CD.Strings_Table (CD.Strings_Table_Top + K) := CD.CH;
+            K := K + 1;
+            if CD.CH = ''' and K = 1 then  --  The ''' case
+              NextCh;
+              exit;
+            end if;
+            if CD.CC = 1 then
+              K := 0;  --  END OF InpLine
+              exit;
+            else
+              null;  --  Continue
+            end if;
+          end loop;
+          --
+          if K = 1 then  --  Correct, we have a "string" of length 1.
+            CD.Sy := CharCon;
+            CD.INum  := Character'Pos (CD.Strings_Table (CD.Strings_Table_Top));
+            --  CD.Strings_Table_Top is NOT incremented.
+          elsif K = 0 then
+            Error (CD, err_character_zero_chars);
+            CD.Sy := CharCon;
+            CD.INum  := 0;
+          else
+            Error (CD, err_character_delimeter_used_for_string);
+            CD.Sy    := StrCon;
+            CD.INum  := CD.Strings_Table_Top;
+            CD.SLeng := K;
+            CD.Strings_Table_Top := CD.Strings_Table_Top + K;
+          end if;
+
+        when '-' =>
           NextCh;
-          goto Label_1;
-        end if;
+          if CD.CH /= '-' then
+            CD.Sy := Minus;
+          else  --  comment
+            CD.CC := CD.LL;  --  ignore rest of input line
+            NextCh;
+            exit_big_loop := False;
+          end if;
 
-      when '=' =>
-        NextCh;
-        if CD.CH /= '>' then
-          CD.Sy := EQL;
-        else
-          CD.Sy := Finger;
+        when '=' =>
           NextCh;
-        end if;
+          if CD.CH /= '>' then
+            CD.Sy := EQL;
+          else
+            CD.Sy := Finger;
+            NextCh;
+          end if;
 
-      when '{' =>  --  Special non documented comment !! O_o: remove that !!
-
-        while CD.CH /= '}' loop
+        when '{' =>  --  Special non documented comment !! O_o: remove that !!
+          while CD.CH /= '}' loop
+            NextCh;
+          end loop;
           NextCh;
-        end loop;
+          exit_big_loop := False;
 
-        NextCh;
-        goto Label_1;
-
-      when '|' =>
-        CD.Sy := Alt;
-        NextCh;
-
-      when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
-        CD.Sy := Special_Symbols (CD.CH);
-        NextCh;
-        if CD.Sy = Times and then CD.CH = '*' then  --  Get the "**" operator symbol
-          CD.Sy := Power;
+        when '|' =>
+          CD.Sy := Alt;
           NextCh;
-        end if;
 
-      when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
-        --  duplicate case Constant '&',
-        Error (CD, err_illegal_character);
-        if qDebug then
-          Put_Line (" [ $!@\^_?""&%  ]");
-        end if;
-        if Listing_Was_Requested then
-          Put_Line (Listing, " [ $!@\^_?""&%  ]");
-        end if;
-        NextCh;
-        goto Label_1;
+        when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
+          CD.Sy := Special_Symbols (CD.CH);
+          NextCh;
+          if CD.Sy = Times and then CD.CH = '*' then  --  Get the "**" operator symbol
+            CD.Sy := Power;
+            NextCh;
+          end if;
 
-      when Character'Val (0) .. ' ' =>
-        null;
-      when others =>
-        null;
+        when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
+          --  duplicate case Constant '&',
+          Error (CD, err_illegal_character);
+          if qDebug then
+            Put_Line (" [ $!@\^_?""&%  ]");
+          end if;
+          if Listing_Was_Requested then
+            Put_Line (Listing, " [ $!@\^_?""&%  ]");
+          end if;
+          NextCh;
+          exit_big_loop := False;
 
-    end case;  --  CD.CH
+        when Character'Val (0) .. ' ' =>
+          null;
+        when others =>
+          null;
+
+      end case;  --  CD.CH
+      exit Big_loop when exit_big_loop;
+    end loop Big_loop;
 
     CD.syEnd := CD.CC - 1;
 
