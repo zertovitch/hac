@@ -274,9 +274,10 @@ package HAC.Parser.Helpers is
 
   No_File_Index: constant:= -1;
 
-  type Item is record
-    TYP : Types;
-    Ref : Index;
+  type Constant_Rec is record
+    TP : Exact_Type;
+    I  : Integer;
+    R  : HAC_Float;
   end record;
 
 end HAC.Parser.Helpers;

@@ -17,6 +17,13 @@ package HAC.Compiler is
 
   use HAC.Data;
 
+  type Exact_Type is record  --  NB: was called "Item" in SmallAda.
+    TYP : Types;
+    Ref : Index;
+    --  If TYP is not a standard type, then (TYP, Ref) does identify the
+    --  type. E.g. it can be (Enums, [index of the enumerated type definition]).
+  end record;
+
   -------------------------------------------------------------------------
   ------------------------------------------------------------ATabEntry----
   -------------------------------------------------------------------------
@@ -25,7 +32,7 @@ package HAC.Compiler is
   --  the compiler and ignored by the interpreter):
   --
   type ATabEntry is record
-    Index_TYP    : Types;     --  C  Type of the index
+    Index_TYP    : Exact_Type;      --  C  Type of the index
     Element_TYP  : Types;     --  C  Type of the elements of the array
     ELREF        : Index;     --  C  Pointer to an entry in Arrays_Table if the
                               --     elements of the array are themselves arrays

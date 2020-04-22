@@ -217,11 +217,10 @@ package HAC.Data is
 
   type Typ_Set is array (Types) of Boolean;
 
-  Standard_Typ : constant Typ_Set :=
-    (NOTYP | Ints | Floats | Bools | xChars => True, others => False);
+  subtype Standard_Typ is Types range NOTYP .. xChars;
 
   Standard_or_Enum_Typ : constant Typ_Set :=
-    Standard_Typ or Typ_Set'(Enums => True, others => False);
+    (Standard_Typ | Enums => True, others => False);
 
   Discrete_Typ : constant Typ_Set :=  --  RM 3.2 (12)
     (Ints | Bools | xChars | Enums => True, others  => False);

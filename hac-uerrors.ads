@@ -32,6 +32,7 @@ package HAC.UErrors is
     err_semicolon_missing,
     err_extra_semicolon_ignored,
     err_bad_result_type_for_a_function,
+    err_type_of_return_statement_doesnt_match,
     err_illegal_statement_start_symbol,
     err_expecting_a_boolean_expression,
     err_control_variable_of_the_wrong_type,

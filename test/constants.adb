@@ -43,6 +43,10 @@ procedure Constants is
     --  Test_In_Out (x);  --  must be rejected (cannot modify constant)
   end;
 
+  type Animal is (ant, bat, cat, dog);
+  
+  pet : constant Animal := dog;
+
 begin
   if n1 + n2 - 17.0 /= n3 then
     Put_Line ("Compiler bug [A]");

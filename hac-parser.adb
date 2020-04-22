@@ -24,17 +24,6 @@ package body HAC.Parser is
     Level : Integer := Level_A;
     procedure InSymbol is begin InSymbol (CD); end;
 
-    type ConRec is record
-      TP : Types;
-      I  : Integer;
-      R  : HAC_Float;
-      --   CASE TP IS
-      --     WHEN Ints | xChars | Bools => I: Integer;
-      --     WHEN Floats => R: Float;
-      --     WHEN others => null;
-      --   END CASE;
-    end record;
-
     Dx      : Integer;  -- data allocation Index
     MaxDX   : Integer;
     PRB     : Integer;  -- B-Index of this procedure
@@ -43,18 +32,19 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------------EnterArray-
 
-    procedure Enter_Array (TP : Types; L, H : Integer) is
-      Lz, Hz : Integer;
+    procedure Enter_Array (Index_TP : Exact_Type; L, H : Integer) is
     begin
       if L > H then
-        Error (CD, err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)"); -- !!
+        Error (CD,
+          err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)", -- !!
+          stop_on_error => True
+        );
       end if;
-      Lz := L;
-      Hz := H;
       if abs (L) > XMax or abs (H) > XMax then
-        Error (CD, err_illegal_array_bounds, "absolute value of a bound exceeds maximum value");
-        Lz := 0;
-        Hz := 0;
+        Error (CD,
+          err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",
+          stop_on_error => True
+        );
       end if;
       if CD.Arrays_Count = AMax then
         Fatal (ARRAYS);  --  Exception is raised there.
@@ -63,9 +53,9 @@ package body HAC.Parser is
       declare
         New_A : ATabEntry renames CD.Arrays_Table (CD.Arrays_Count);
       begin
-        New_A.Index_TYP := TP;
-        New_A.Low       := Lz;
-        New_A.High      := Hz;
+        New_A.Index_TYP := Index_TP;
+        New_A.Low       := L;
+        New_A.High      := H;
       end;
     end Enter_Array;
 
@@ -195,52 +185,60 @@ package body HAC.Parser is
     end Enter_Variable;
 
     ------------------------------------------------------------------
-    -----------------------------------------------Number_Declaration-
-    procedure Number_Declaration (FSys : Symset; C : in out ConRec) is
-      --  RM 3.3.2. Was: Constant in the Pascal compiler. It covers untyped constants.
-      --  Additionally this compiler does on-the-fly declarations for bounds
-      --  in ranges (FOR, ARRAY) and values in CASE statements.
+    ----------------------------------Number_Declaration_or_Enum_Item-
+    procedure Number_Declaration_or_Enum_Item (FSys : Symset; C : out Constant_Rec) is
+      --  This covers number declarations (RM 3.3.2) and enumeration items (RM 3.5.1).
+      --  Additionally this compiler does on-the-fly declarations for static values:
+      --  bounds in ranges (FOR, ARRAY), and values in CASE statements.
+      --  Was: Constant in the Pascal compiler.
       X, Sign : Integer;
+      signed : Boolean := False;
     begin
-      C.TP := NOTYP;
+      C.TP := (NOTYP, 0);
       C.I  := 0;
       Test (CD, Constant_Definition_Begin_Symbol, FSys, err_illegal_symbol_for_a_number_declaration);
       if not Constant_Definition_Begin_Symbol (CD.Sy) then
         return;
       end if;
       if CD.Sy = CharCon then  --  Untyped character constant, occurs only in ranges.
-        C.TP := xChars;
+        C.TP := (xChars, 0);
         C.I  := CD.INum;
         InSymbol;
       else
         Sign := 1;
         if Plus_Minus (CD.Sy) then
+          signed := True;
           if CD.Sy = Minus then
             Sign := -1;
           end if;
           InSymbol;
         end if;
-        if CD.Sy = IDent then  --  Number defined using another one: "minus_pi : constant := -pi;"
+        if CD.Sy = IDent then
+          --  Number defined using another one: "minus_pi : constant := -pi;"
+          --  ... or, we have an enumeration item.
           X := Locate_Identifier (CD.Id);
           if X /= 0 then
             if CD.IdTab (X).Obj /= Declared_Number_or_Enum_Item then
               Error (CD, err_illegal_constant_or_constant_identifier);
             else
-              C.TP := CD.IdTab (X).TYP;
-              if C.TP = Floats then
+              C.TP := (CD.IdTab (X).TYP, CD.IdTab (X).Ref);
+              if C.TP.TYP = Floats then
                 C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr);
               else
                 C.I := Sign * CD.IdTab (X).Adr;
+                if signed and then C.TP.TYP not in Numeric_Typ then
+                  Error (CD, err_numeric_constant_expected);
+                end if;
               end if;
             end if;
           end if;  --  X /= 0
           InSymbol;
         elsif CD.Sy = IntCon then
-          C.TP := Ints;
+          C.TP := (Ints, 0);
           C.I  := Sign * CD.INum;
           InSymbol;
         elsif CD.Sy = FloatCon then
-          C.TP := Floats;
+          C.TP := (Floats, 0);
           C.R  := HAC_Float (Sign) * CD.RNum;
           InSymbol;
         else
@@ -248,7 +246,7 @@ package body HAC.Parser is
         end if;
       end if;
       Test (CD, FSys, Empty_Symset, err_incorrectly_used_symbol);
-    end Number_Declaration;
+    end Number_Declaration_or_Enum_Item;
 
     ------------------------------------------------------------------
     --------------------------------------------------------------TYP-
@@ -260,26 +258,26 @@ package body HAC.Parser is
       StrArray             : Boolean;
 
       procedure Array_Typ (ARef, Arsz : in out Integer; StrAr : Boolean) is
-        ELTP       : Types;
-        Low, High  : ConRec;
-        ELRF, ELSZ : Integer;
+        ELTP                      : Types;
+        Lower_Bound, Higher_Bound : Constant_Rec;
+        ELRF, ELSZ                : Integer;
       begin
-        Number_Declaration (OF_RANGE_Double_Dot_RParent + FSys, Low);
+        Number_Declaration_or_Enum_Item (OF_RANGE_Double_Dot_RParent + FSys, Lower_Bound);
         --
-        if Low.TP = Floats then
+        if Lower_Bound.TP.TYP = Floats then
           Error (CD, err_illegal_array_bounds, "a float type is not expected for a bound");
-          Low.TP := Ints;
-          Low.I  := 0;
+          Lower_Bound.TP := (Ints, 0);
+          Lower_Bound.I  := 0;
         end if;
         Need (CD, Range_Double_Dot_Symbol, err_expecting_double_dot);
         --
-        Number_Declaration (Comma_OF_RParent + FSys, High);
+        Number_Declaration_or_Enum_Item (Comma_OF_RParent + FSys, Higher_Bound);
         --
-        if High.TP /= Low.TP then
+        if Higher_Bound.TP /= Lower_Bound.TP then
           Error (CD, err_illegal_array_bounds, "bound types do not match");
-          High.I := Low.I;
+          Higher_Bound.I := Lower_Bound.I;
         end if;
-        Enter_Array (Low.TP, Low.I, High.I);
+        Enter_Array (Lower_Bound.TP, Lower_Bound.I, Higher_Bound.I);
         ARef := CD.Arrays_Count;
         if StrAr then
           ELTP := xChars;
@@ -295,7 +293,7 @@ package body HAC.Parser is
           Need (CD, OF_Symbol, err_missing_OF);
           TYP (FSys, ELTP, ELRF, ELSZ);
         end if;
-        Arsz := (High.I - Low.I + 1) * ELSZ;
+        Arsz := (Higher_Bound.I - Lower_Bound.I + 1) * ELSZ;
         declare
           r : ATabEntry renames CD.Arrays_Table (ARef);
         begin
@@ -317,12 +315,12 @@ package body HAC.Parser is
             enum_count := enum_count + 1;
             Enter (CD.Id, CD.Id_with_case, Declared_Number_or_Enum_Item);
             declare
-              New_Enum : IdTabEntry renames CD.IdTab (CD.Id_Count);
+              New_Enum_Item : IdTabEntry renames CD.IdTab (CD.Id_Count);
             begin
-              New_Enum.Read_only := True;
-              New_Enum.TYP       := Enums;
-              New_Enum.Ref       := RF;
-              New_Enum.Adr       := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
+              New_Enum_Item.Read_only := True;
+              New_Enum_Item.TYP       := Enums;
+              New_Enum_Item.Ref       := RF;
+              New_Enum_Item.Adr       := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
             end;
           else
             Error (CD, err_identifier_missing);
@@ -546,7 +544,7 @@ package body HAC.Parser is
         TP                            : Types;
         is_constant, is_typed,
         is_untyped_constant           : Boolean;
-        C                             : ConRec;
+        C                             : Constant_Rec;
         I_dummy                       : Integer;
       begin
         T0 := CD.Id_Count;
@@ -587,7 +585,7 @@ package body HAC.Parser is
           --  Numeric constant: we parse the number here ("k : constant := 123.0").
           if CD.Sy = Becomes then
             InSymbol;
-            Number_Declaration (Comma_IDent_Semicolon + FSys, C);
+            Number_Declaration_or_Enum_Item (Comma_IDent_Semicolon + FSys, C);
           else
             Error (CD, err_BECOMES_missing);
           end if;
@@ -604,8 +602,8 @@ package body HAC.Parser is
               r.Read_only := is_constant;
               if is_untyped_constant then
                 r.Obj := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
-                r.TYP := C.TP;
-                case C.TP is
+                r.TYP := C.TP.TYP;
+                case C.TP.TYP is
                   when Floats =>
                     Enter_or_find_Float (C.R);
                     r.Adr := CD.RNum_Index;
@@ -613,8 +611,7 @@ package body HAC.Parser is
                     r.Adr := C.I;
                   when others =>
                     Error (CD, err_numeric_constant_expected);
-                    --  "boo : constant := True;" or "x: constant := 'a';"
-                    --  are wrong in Ada.
+                    --  "boo : constant := True;" or "x: constant := 'a';" are wrong in Ada.
                     r.Adr := C.I;
                 end case;
               else  --  A variable or a typed constant
@@ -775,11 +772,11 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     -------------------------------------------------------Expression-
-    procedure Expression (FSys : Symset; X : in out Item);
+    procedure Expression (FSys : Symset; X : in out Exact_Type);
 
     ------------------------------------------------------------------
     ---------------------------------------------------------Selector-
-    procedure Selector (FSys : Symset; V : in out Item) is
+    procedure Selector (FSys : Symset; V : in out Exact_Type) is
       --
       procedure Record_Field_Selector is
         Field_Offset, Field_Id : Integer;
@@ -806,15 +803,15 @@ package body HAC.Parser is
       end Record_Field_Selector;
       --
       procedure Array_Coordinates_Selector is
-        Array_Index_Expr : Item;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
-        AT_Index : Integer;       --  Index in the table of all arrays definitions.
+        Array_Index_Expr : Exact_Type;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
+        AT_Index : Integer;             --  Index in the table of all arrays definitions.
       begin
         loop
           InSymbol;  --  Consume '(' or ',' symbol.
           Expression (FSys + Comma_RParent + RBrack, Array_Index_Expr);
           if V.TYP = Arrays then
             AT_Index := V.Ref;
-            if CD.Arrays_Table (AT_Index).Index_TYP /= Array_Index_Expr.TYP then
+            if CD.Arrays_Table (AT_Index).Index_TYP /= Array_Index_Expr then
               Error (CD, err_illegal_array_subscript);
             elsif CD.Arrays_Table (AT_Index).ELSize = 1 then
               Emit1 (CD, k_Array_Index_Element_Size_1, AT_Index);
@@ -876,7 +873,7 @@ package body HAC.Parser is
       --  = 2 then timed Task Entry Call,      CallTMDE
       --  = 3 then conditional Task Entry Call,   CallCNDE
       --****************************************************************
-      X            : Item;
+      X            : Exact_Type;
       LastP, CP, K : Integer;
     begin
       Emit1 (CD, k_Mark_Stack, I);
@@ -992,19 +989,19 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     -------------------------------------------------------Expression-
-    procedure Expression (FSys : Symset; X : in out Item) is
-      Y  : Item;
+    procedure Expression (FSys : Symset; X : in out Exact_Type) is
+      Y  : Exact_Type;
       OP : KeyWSymbol;
 
-      procedure Simple_Expression (FSys : Symset; X : in out Item) is
-        Y  : Item;
+      procedure Simple_Expression (FSys : Symset; X : in out Exact_Type) is
+        Y  : Exact_Type;
         OP : KeyWSymbol;
 
-        procedure Term (FSys : Symset; X : in out Item) is
-          Y  : Item;
+        procedure Term (FSys : Symset; X : in out Exact_Type) is
+          Y  : Exact_Type;
           OP : KeyWSymbol;
 
-          procedure Factor (FSys : Symset; X : in out Item) is
+          procedure Factor (FSys : Symset; X : in out Exact_Type) is
             I : Integer;
             F : Opcode;
             err  : Compile_Error;
@@ -1390,7 +1387,7 @@ package body HAC.Parser is
       end if;
     end Expression;
 
-    procedure Boolean_Expression (FSys : Symset; X : in out Item) is
+    procedure Boolean_Expression (FSys : Symset; X : in out Exact_Type) is
     begin
       Expression (FSys, X);
       Check_Boolean (CD, X.TYP);
@@ -1399,7 +1396,7 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
     procedure Assignment (I : Integer; Check_read_only : Boolean) is
-      X, Y : Item;
+      X, Y : Exact_Type;
       F    : Opcode;
     begin
       pragma Assert (CD.IdTab (I).Obj = Variable);
@@ -1428,7 +1425,7 @@ package body HAC.Parser is
       end if;
       Expression (Semicolon_Set, Y);
       if X.TYP = Y.TYP then
-        if Standard_Typ (X.TYP) then
+        if X.TYP in Standard_Typ then
           Emit (CD, k_Store);
         elsif X.Ref /= Y.Ref then
           Error (CD, err_types_of_assignment_must_match);
@@ -1526,7 +1523,7 @@ package body HAC.Parser is
 
       procedure Exit_Statement is
         --  Generate an absolute branch statement with a dummy end loop address
-        X : Item;
+        X : Exact_Type;
       begin
         pragma Assert (CD.Sy = EXIT_Symbol);
         InSymbol;  --  Consume EXIT symbol.
@@ -1539,7 +1536,7 @@ package body HAC.Parser is
       end Exit_Statement;
 
       procedure IF_Statement is
-        X        : Item;
+        X        : Exact_Type;
         LC0, LC1 : Integer;
       begin
         InSymbol;
@@ -1593,7 +1590,7 @@ package body HAC.Parser is
 
       procedure RETURN_Statement is           -- Hathorn
         --  Generate a procedure or function return Statement, calculate return value if req'D.
-        X, Y : Item;
+        X, Y : Exact_Type;
         F : Opcode;
         Block_Idx : Integer;
       begin
@@ -1623,17 +1620,17 @@ package body HAC.Parser is
             --
             Expression (Semicolon_Set, Y);
             if X.TYP = Y.TYP then
-              if Standard_Typ (X.TYP) then
+              if X.TYP in Standard_Typ then
                 Emit (CD, k_Store);
               elsif X.Ref /= Y.Ref then
-                Error (CD, err_types_of_assignment_must_match);
+                Error (CD, err_type_of_return_statement_doesnt_match);
               end if;
             elsif X.TYP = Floats and Y.TYP = Ints then
               Forbid_Type_Coercion (CD, "integer type value returned as floating-point");
               Emit1 (CD, k_Integer_to_Float, 0);
               Emit (CD, k_Store);
             elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
-              Error (CD, err_types_of_assignment_must_match);
+              Error (CD, err_type_of_return_statement_doesnt_match);
             end if;
           else
             Error (CD, err_illegal_return_statement_from_main);
@@ -1647,7 +1644,7 @@ package body HAC.Parser is
       end RETURN_Statement;
 
       procedure Delay_Statement is            -- Cramer. Generate a Task delay.
-        Y : Item;
+        Y : Exact_Type;
       begin
         InSymbol;
         if CD.Sy = Semicolon then
@@ -1662,7 +1659,7 @@ package body HAC.Parser is
       end Delay_Statement;
 
       procedure CASE_Statement is
-        X         : Item;
+        X         : Exact_Type;
         I, J, LC1 : Integer;
         type CASE_Label_Value is record
           Val : Integer;  --  value of a choice in a CASE statement
@@ -1673,11 +1670,11 @@ package body HAC.Parser is
         others_flag : Boolean := False;
 
         procedure CASE_Label is
-          Lab : ConRec;
+          Lab : Constant_Rec;
           K   : Integer;
         begin
-          Number_Declaration (FSys + Alt_Finger, Lab);
-          if Lab.TP /= X.TYP then
+          Number_Declaration_or_Enum_Item (FSys + Alt_Finger, Lab);
+          if Lab.TP /= X then
             Error (CD, err_case_label_not_same_type_as_case_clause);
           elsif I = Cases_Max then
             Fatal (Case_Labels);  --  Exception is raised there.
@@ -1741,12 +1738,8 @@ package body HAC.Parser is
         I := 0;
         J := 0;
         Expression (FSys + Colon_Comma_IS_OF, X);
-        if not (X.TYP = Ints or
-                X.TYP = Bools or
-                X.TYP = xChars or
-                X.TYP = NOTYP)
-        then
-          Error (CD, err_bad_type_for_a_case_statement); --- !! mmmh: enums ?...
+        if not Discrete_Typ (X.TYP) then
+          Error (CD, err_bad_type_for_a_case_statement);
         end if;
         LC1 := CD.LC;
         Emit (CD, k_CASE_Switch_1);
@@ -1785,7 +1778,7 @@ package body HAC.Parser is
       end CASE_Statement;
 
       procedure WHILE_Statement is  --  RM 5.5 (8)
-        X : Item;
+        X : Exact_Type;
         LC_Cond_Eval, LC_Cond_Jump : Integer;
       begin
         InSymbol;  --  Consume WHILE symbol.
@@ -1798,9 +1791,10 @@ package body HAC.Parser is
       end WHILE_Statement;
 
       procedure FOR_Statement is  --  RM 5.5 (9)
-        X         : Item;
-        F         : Opcode;
-        LC1, last : Integer;
+        FOR_Lower_Bound,
+        FOR_Upper_Bound : Exact_Type;
+        F               : Opcode;
+        LC1, last       : Integer;
       begin
         InSymbol;  --  Consume FOR symbol.
         if CD.Sy = IDent then
@@ -1811,20 +1805,20 @@ package body HAC.Parser is
           last := CD.Blocks_Table (CD.Display (Level)).Last;
           CD.Id_Count := CD.Id_Count + 1;
           declare
-            r : IdTabEntry renames CD.IdTab (CD.Id_Count);
+            Loop_Parameter : IdTabEntry renames CD.IdTab (CD.Id_Count);
           begin
-            r.Name      := CD.Id;
-            r.Link      := last;
-            r.Obj       := Variable;
-            r.Read_only := True;
-            r.TYP       := NOTYP;
-            r.Ref       := 0;
-            r.Normal    := True;
-            r.LEV       := Level;
-            r.Adr       := Dx;
+            Loop_Parameter.Name      := CD.Id;
+            Loop_Parameter.Link      := last;
+            Loop_Parameter.Obj       := Variable;
+            Loop_Parameter.Read_only := True;
+            Loop_Parameter.TYP       := NOTYP;
+            Loop_Parameter.Ref       := 0;
+            Loop_Parameter.Normal    := True;
+            Loop_Parameter.LEV       := Level;
+            Loop_Parameter.Adr       := Dx;
           end;
           CD.Blocks_Table (CD.Display (Level)).Last  := CD.Id_Count;
-          Dx                                      := Dx + 1;
+          Dx := Dx + 1;
           if Dx > MaxDX then
             MaxDX := Dx;
           end if;
@@ -1846,15 +1840,17 @@ package body HAC.Parser is
           --      discrete_subtype_definition RM 3.6 (6) which is either
           --      a subtype_indication 3.2.2 (3) : name [constraint] like "Color [range red .. blue]"
           --      or a range 3.5 (3): "low .. high" or range_attribute_reference: A'Range
-          Expression (END_LOOP_RANGE_Double_Dot + FSys, X);  --  Lower bound
-          CD.IdTab (CD.Id_Count).TYP := X.TYP;
-          if not Discrete_Typ (X.TYP) then
+          --
+          Expression (END_LOOP_RANGE_Double_Dot + FSys, FOR_Lower_Bound);
+          CD.IdTab (CD.Id_Count).TYP := FOR_Lower_Bound.TYP;
+          CD.IdTab (CD.Id_Count).Ref := FOR_Lower_Bound.Ref;  --  Need correct type if TYP = enums.
+          if not Discrete_Typ (FOR_Lower_Bound.TYP) then
             Error (CD, err_control_variable_of_the_wrong_type);
           end if;
-          if CD.Sy = Range_Double_Dot_Symbol then               --  ..
+          if CD.Sy = Range_Double_Dot_Symbol then                          --  ..
             InSymbol;
-            Expression (FSys + LOOP_Symbol, X);              --  Upper bound
-            if CD.IdTab (CD.Id_Count).TYP /= X.TYP then
+            Expression (FSys + LOOP_Symbol, FOR_Upper_Bound);
+            if FOR_Upper_Bound /= FOR_Lower_Bound then
               Error (CD, err_first_and_last_must_have_matching_types);
             end if;
           else
@@ -1885,7 +1881,7 @@ package body HAC.Parser is
           I, J, IStart, IEnd : Integer;
           patch              : array (0 .. 4) of Integer;
           O                  : Order;
-          Y                  : Item;
+          Y                  : Exact_Type;
         begin
           I := Locate_Identifier (CD.Id);
           if CD.IdTab (I).Obj = aTask then
@@ -1972,7 +1968,7 @@ package body HAC.Parser is
           JSD, Alt            : patch_ptr;
           ISD, IAlt, StartSel : Integer;
           SelectDone          : Boolean;
-          Y, X                : Item;
+          Y, X                : Exact_Type;
           do_terminate        : Boolean;
 
           procedure Accept_Statement_2 is      -- Kurtz
@@ -2218,7 +2214,7 @@ package body HAC.Parser is
         -- are implemented, as well as overloading.
         I                 : Integer;
         F                 : Opcode;
-        X, Y              : Item;
+        X, Y              : Exact_Type;
         do_first_InSymbol : Boolean := True;
       begin
         case N is -- Numbers: see EnterStdFcns in HAC.Compiler
@@ -2319,7 +2315,7 @@ package body HAC.Parser is
                   if X.TYP = Enums then
                     X.TYP := Ints;
                   end if;
-                  if (not Standard_Typ (X.TYP)) and X.TYP /= Strings then
+                  if (X.TYP not in Standard_Typ) and X.TYP /= Strings then
                     Error (CD, err_illegal_parameters_to_Put);
                   end if;
                   if CD.Sy = Colon then
@@ -2709,7 +2705,7 @@ package body HAC.Parser is
           if I_Res_Type /= 0 then
             if CD.IdTab (I_Res_Type).Obj /= TypeMark then
               Error (CD, err_missing_a_type_identifier, stop_on_error => True);
-            elsif Standard_Typ (CD.IdTab (I_Res_Type).TYP) then
+            elsif CD.IdTab (I_Res_Type).TYP in Standard_Typ then
               CD.IdTab (Prt).TYP := CD.IdTab (I_Res_Type).TYP;
             else
               Error (CD, err_bad_result_type_for_a_function, stop_on_error => True);

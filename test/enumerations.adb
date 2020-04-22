@@ -26,6 +26,24 @@ procedure Enumerations is
 
   zz : array (d .. f) of R;
 
+  type Animal is (ant, bat, cat, dog);
+
+  pet2: Animal;
+
+  procedure Test_CASE is
+    a : Animal;
+  begin
+    case a is
+      --  when d => null;  --  <-- wrong enum type
+      when dog =>
+        if a /= dog then
+          Put_Line ("Compiler bug [CASE]");
+        end if;
+      when others =>
+        null;
+    end case;
+  end Test_CASE;
+
 begin
   v.x1 := a;
   v.x2 := c;
@@ -59,6 +77,13 @@ begin
   if zz (d).x4 /= j then Put_Line ("Compiler bug [E1]"); end if;
   if zz (e).x4 /= i then Put_Line ("Compiler bug [E2]"); end if;
   if zz (f).x4 /= h then Put_Line ("Compiler bug [E3]"); end if;
+  --
+  for pet in ant .. dog loop
+    pet2 := pet;
+    null;  --  put(pet2);
+  end loop;
+  --
+  Test_CASE;
   --
   --  put (zz (d).x4);  --  = j (pos = 3)  --  !! should be available through 'Image & 'Pos
   --  put (zz (e).x4);  --  = i (pos = 2)  --  !! should be available through 'Image & 'Pos
