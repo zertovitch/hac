@@ -33,4 +33,4 @@ set files=%files% %root%/debug.pra %root%/obj/debug/create_dir.txt %root%/obj/fa
 set files=%files% %examples% %tests%
 
 zipada -ep2 %root%/hac-%nice_date%-        %files%
-zipada -ed3 %root%/hac-%nice_date%-DEFLATE %files%
+REM zipada -ed3 %root%/hac-%nice_date%-DEFLATE %files%

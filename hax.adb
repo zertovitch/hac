@@ -1,5 +1,4 @@
 with HAC.Compiler,
-     HAC.Data,
      HAC.PCode.Interpreter;
 
 with Show_License;
@@ -43,7 +42,7 @@ procedure HAX is
     end case;
     Open (f, In_File, name);
     CD.Line_Count:= 0;
-    HAC.Data.c_Set_Stream (HAC.Data.Stream_Access(Stream(f)), name);
+    HAC.Compiler.c_Set_Stream (CD, HAC.Compiler.Stream_Access(Stream(f)), name);
     t1 := Clock;
     HAC.Compiler.Compile (
       CD,

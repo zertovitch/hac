@@ -167,6 +167,34 @@ package body HAC.Scanner is
       end if;
     end UpCase;
 
+    procedure c_Get_Next_Line (InpLine : out String; Last : out Natural) is
+      idx : Integer := InpLine'First - 1;
+      c   : Character;
+    begin
+      loop
+        Character'Read (CD.current_compiler_stream, c);
+        --  !! NB: if HAC ever happens to consume large input files,
+        --         the one-character-at-a-time stream input could become
+        --         a performance bottleneck.  --> buffered input (cf Zip-Ada)
+        exit when c = ASCII.LF;
+        if c /= ASCII.CR then
+          idx           := idx + 1;
+          InpLine (idx) := c;
+        end if;
+      end loop;
+      Last := idx;
+      -- if qDebug then
+      --   Put_Line("[::]" & InpLine(InpLine'First..Last));
+      -- end if;
+    exception
+      when Ada.Text_IO.End_Error =>
+        if idx >= InpLine'First then
+          Last := idx;  --  Avoid trashing a non-empty line ending the stream.
+        else
+          raise;
+        end if;
+    end c_Get_Next_Line;
+
     procedure NextCh is  --  Read Next Char; process line end
     begin
       if CD.CC = CD.LL then

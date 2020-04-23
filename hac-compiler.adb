@@ -1,4 +1,3 @@
-with HAC.Data;                          use HAC.Data;
 with HAC.UErrors;                       use HAC.UErrors;
 with HAC.Parser;                        use HAC.Parser;
 with HAC.Parser.Helpers;
@@ -8,6 +7,24 @@ with HAC.Scanner;                       use HAC.Scanner;
 with Ada.Integer_Text_IO, Ada.Characters.Handling;
 
 package body HAC.Compiler is
+
+  use Ada.Strings.Unbounded;
+
+  procedure c_Set_Stream (
+    CD        : in out Compiler_Data;
+    s         :        Stream_Access;
+    file_name :        String         --  Can be a virtual name (editor title, zip entry)
+  )
+  is
+  begin
+    CD.current_compiler_stream := s;
+    CD.current_compiler_file_name := To_Unbounded_String (file_name);
+  end c_Set_Stream;
+
+  function Get_Current_Source_Name (CD: Compiler_Data) return String is
+  begin
+    return To_String (CD.current_compiler_file_name);
+  end Get_Current_Source_Name;
 
   procedure Init_Tables (CD : out Compiler_Data) is
   begin

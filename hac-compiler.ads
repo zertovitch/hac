@@ -11,6 +11,8 @@
 
 with HAC.Data, HAC.PCode;
 
+with Ada.Streams;
+with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 package HAC.Compiler is
@@ -20,8 +22,8 @@ package HAC.Compiler is
   type Exact_Type is record  --  NB: was called "Item" in SmallAda.
     TYP : Types;
     Ref : Index;
-    --  If TYP is not a standard type, then (TYP, Ref) does identify the
-    --  type. E.g. it can be (Enums, [index of the enumerated type definition]).
+    --  If TYP is not a standard type, then (TYP, Ref) does identify the type.
+    --  E.g. it can be (Enums, [index of the enumerated type definition]).
   end record;
 
   -------------------------------------------------------------------------
@@ -143,6 +145,8 @@ package HAC.Compiler is
 
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 
+  type Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
+
   ---------------------
   --  Compiler_Data  --
   ---------------------
@@ -151,6 +155,9 @@ package HAC.Compiler is
 
   type Compiler_Data is record
     --  Source code information and scanner data
+    current_compiler_stream    : Stream_Access;
+    current_compiler_file_name : Ada.Strings.Unbounded.Unbounded_String;
+    --
     Line_Count              : Natural;            --  Source line counter, used for listing
     InpLine                 : Source_Line_String;
     CH                      : Character;          --  Previous Character read from source program
@@ -197,8 +204,9 @@ package HAC.Compiler is
     listing   : Ada.Text_IO.File_Type;
     comp_dump : Ada.Text_IO.File_Type;
     --
-    Err_Count : Natural;
-    Errs      : Error_set;
+    Err_Count          : Natural;
+    Errs               : Error_set;
+    current_error_pipe : Smart_error_pipe := null;
   end record;
 
   --  Main compilation procedure.
@@ -210,6 +218,15 @@ package HAC.Compiler is
     listing_file_name  :        String  := "";  --  Listing of source code with details
     var_map_file_name  :        String  := ""   --  Output of variables (map)
   );
+
+  --  Set current source stream (file, editor data, zipped file,...)
+  procedure c_Set_Stream (
+    CD        : in out Compiler_Data;
+    s         :        Stream_Access;
+    file_name :        String         --  Can be a virtual name (editor title, zip entry)
+  );
+
+  function Get_Current_Source_Name (CD: Compiler_Data) return String;
 
   procedure Emit (
     CD   : in out Compiler_Data;

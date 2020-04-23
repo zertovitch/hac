@@ -11,15 +11,15 @@
 --  This packages contains constants and types for the
 --  compiler and the p-code interpreter.
 
-with Ada.Streams;
+with Ada.Strings.Unbounded;
 
 package HAC.Data is
 
   pragma Elaborate_Body;
 
-  -------------------------------------------------------------------------
-  -- Global constants
-  -------------------------------------------------------------------------
+  ------------------------
+  --  Global constants  --
+  ------------------------
 
   StMax   : constant := 2000;          --  Maximum Stack Size
   STKINCR : constant := 200;           --  Stack Increment allocated per Task
@@ -61,9 +61,9 @@ package HAC.Data is
   HAC_Float_Name   : constant String := "REAL";
   HAC_Integer_Name : constant String := "INTEGER";
 
-  -- =======================================================================
-  --  Global Types
-  -- =======================================================================
+  --------------------
+  --  Global types  --
+  --------------------
 
   -----------------------------------------------------------------------
   ---------------------------------------------------------KeyWSymbol----
@@ -235,23 +235,6 @@ package HAC.Data is
   --
   type HAC_Float is digits 15;
 
-  -- =======================================================================
-  --  Global Variables (only hidden; search for "global variable")
-  -- =======================================================================
-
-  type Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
-
-  --  Set current source stream (file, editor data, zipped file,...)
-  procedure c_Set_Stream (
-    s         : Stream_Access;
-    file_name : String         --  Can be virtual (editor, zip entry)
-  );
-
-  function Get_Current_Source_Name return String;
-
-  --  Get the next line from source
-  procedure c_Get_Next_Line (InpLine : out String; Last : out Natural);
-
   ------------------------------
   --  Compilation error type  --
   ------------------------------
@@ -369,5 +352,26 @@ package HAC.Data is
 
   type Error_set is array (Compile_Error) of Boolean;
   error_free : constant Error_set := (others => False);
+
+  type Repair_kind is (none, insert, insert_line, replace_token);
+
+  use Ada.Strings.Unbounded;
+
+  type Repair_kit is tagged record
+    kind : Repair_kind      := none;
+    text : Unbounded_String := Null_Unbounded_String;
+  end record;
+
+  type Message_kind is (error, warning, note, style);
+
+  type Smart_error_pipe is access procedure (
+    message   : String;
+    file_name : String;
+    line      : Natural;
+    column_a  : Natural;       --  Before first selected character, can be 0.
+    column_z  : Natural;
+    kind      : Message_kind;  --  Error, or warning, or ? ...
+    repair    : Repair_kit     --  Can error be automatically repaired; if so, how ?
+  );
 
 end HAC.Data;

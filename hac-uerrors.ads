@@ -14,35 +14,11 @@ with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
 
 package HAC.UErrors is
 
-  type Message_kind is (error, warning, note, style);
+  use HAC.Data;
 
-  type Repair_kind is (none, insert, insert_line, replace_token);
-
-  has_new_line : array (Repair_kind) of Boolean := (insert_line => True, others => False);
-
-  type Repair_kit is tagged record
-    kind : Repair_kind      := none;
-    text : Unbounded_String := Null_Unbounded_String;
-  end record;
+  has_new_line : constant array (Repair_kind) of Boolean := (insert_line => True, others => False);
 
   nothing_to_repair : constant Repair_kit := (none, Null_Unbounded_String);
-
-  --  See current_error_pipe in HAC.Data for main pipe.
-
-  type Smart_error_pipe is access procedure (
-    message   : String;
-    file_name : String;
-    line      : Natural;
-    column_a  : Natural;       --  Before first selected character, can be 0.
-    column_z  : Natural;
-    kind      : Message_kind;  --  Error, or warning, or ? ...
-    repair    : Repair_kit     --  Can error be automatically repaired; if so, how ?
-  );
-
-  --  Error messages can be routed to a specialized pipe instead of
-  --  text-based Standard_Error.  !!  Global variable alarm!
-
-  current_error_pipe: HAC.UErrors.Smart_error_pipe := null;
 
   procedure Error (
     CD            : in out HAC.Compiler.Compiler_Data;
