@@ -229,14 +229,6 @@ package body HAC.PCode.Interpreter is
   end Post_Mortem_Dump;
 
   procedure Interpret (CD: HAC.Compiler.Compiler_Data)
-    --  Global Data Used (HAC.Data) :
-    --       S        : Stack
-    --       HAC.Data.IdTab         : Table of all identifiers
-    --       FAT      : File I/O table
-    --       HAC.Data.FloatPtTab    : Floating point constant table
-    --       HAC.Data.StringTab     : String table
-    --       HAC.Data.TaskDefTab    : table of Task definitions
-    --       HAC.Data.EntryTab      : task Entry table
   is
     Start_Time : constant Time := Clock;
     --  trap label

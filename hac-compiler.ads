@@ -32,18 +32,18 @@ package HAC.Compiler is
   --  the compiler and ignored by the interpreter):
   --
   type ATabEntry is record
-    Index_TYP    : Exact_Type;      --  C  Type of the index
-    Element_TYP  : Types;     --  C  Type of the elements of the array
-    ELREF        : Index;     --  C  Pointer to an entry in Arrays_Table if the
-                              --     elements of the array are themselves arrays
-    Size         : Index;     --  C  Total size of the array
-    Low, High    : Index;     --  Limits on the array index: array (Low .. High) of Element_TYP
-    ELSize       : Index;     --  Size of an element
+    Index_TYP    : Exact_Type;  --  C  Type of the index
+    Element_TYP  : Types;       --  C  Type of the elements of the array
+    ELREF        : Index;       --  C  Pointer to an entry in Arrays_Table if the
+                                --     elements of the array are themselves arrays
+    Size         : Index;       --  C  Total size of the array
+    Low, High    : Index;       --  Limits on the array index: array (Low .. High) of Element_TYP
+    ELSize       : Index;       --  Size of an element
   end record;
 
-  -- ----------------------------------------------------------------------
-  -- ---------------------------------------------------------BTabEntry----
-  -- ----------------------------------------------------------------------
+  -------------------------------------------------------------------------
+  ------------------------------------------------------------BTabEntry----
+  -------------------------------------------------------------------------
   --  Block-table Entry : Each entry represents a subprogram
   --  An activation record consists of:
   --
@@ -129,9 +129,6 @@ package HAC.Compiler is
   -----------------------
   --  Compiler tables  --
   -----------------------
-  --
-  --  WIP from 2020-04-19: we progressively stuff everything into compiler & scanner objects
-  --  until there is no more global data in HAC.Data.
 
   subtype Fixed_Size_Object_Code_Table is HAC.PCode.Object_Code_Table (0 .. CDMax);
 
@@ -149,6 +146,8 @@ package HAC.Compiler is
   ---------------------
   --  Compiler_Data  --
   ---------------------
+
+  --  !! TBD: make Compiler_Data private.
 
   type Compiler_Data is record
     --  Source code information and scanner data
@@ -185,17 +184,31 @@ package HAC.Compiler is
     Tasks_Definitions_Count : Natural;
     --  Object code
     ObjCode                 : Fixed_Size_Object_Code_Table;
-    LC                      : Integer;        --  Location counter in the Object_Code_Table
+    LC                      : Integer;  --  Location counter in the Object_Code_Table
+    CMax                    : Integer;  --  Top of available ObjCode table;
+                                        --  CMax + 1 .. CDMax: variable initialization code
     --  Information about source code
-    Block_Id_with_casing    : HAC.Data.Alfa;  --  Copy of current block's Id
+    Block_Id_with_casing      : HAC.Data.Alfa;                --  Copy of current block's Id
+    Main_Program_ID           : HAC.Data.Alfa := Empty_Alfa;  --  Main program name
+    Main_Program_ID_with_case : HAC.Data.Alfa := Empty_Alfa;
+    --
+    listing_requested   : Boolean;
+    comp_dump_requested : Boolean;
+    listing   : Ada.Text_IO.File_Type;
+    comp_dump : Ada.Text_IO.File_Type;
+    --
+    Err_Count : Natural;
+    Errs      : Error_set;
   end record;
 
   --  Main compilation procedure.
   --
   procedure Compile (
     CD                 : in out Compiler_Data;
-    asm_dump_file_name :        String  := "";
-    map                :        Boolean := False  --  Compile-time output of Global VAR Map !! as file name
+    asm_dump_file_name :        String  := "";  --  Assembler oputput of compiled object code
+    cmp_dump_file_name :        String  := "";  --  Compiler dump
+    listing_file_name  :        String  := "";  --  Listing of source code with details
+    var_map_file_name  :        String  := ""   --  Output of variables (map)
   );
 
   procedure Emit (

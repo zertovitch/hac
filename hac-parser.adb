@@ -648,12 +648,12 @@ package body HAC.Parser is
           LC1 := CD.LC;
           --  reset ObjCode pointer as if ObjCode had not been generated
           CD.LC := LC0;
-          --  copy ObjCode to end of ObjCode table in reverse order
+          --  Copy ObjCode to end of ObjCode table in reverse order
           ICode := ICode + (LC1 - LC0);  --  Size of initialization ObjCode
           while LC0 < LC1 loop
-            CD.ObjCode (CMax) := CD.ObjCode (LC0);
-            CMax              := CMax - 1;
-            LC0               := LC0 + 1;
+            CD.ObjCode (CD.CMax) := CD.ObjCode (LC0);
+            CD.CMax              := CD.CMax - 1;
+            LC0                  := LC0 + 1;
           end loop;
         end if;
         Test_Semicolon (CD, FSys);
@@ -1469,7 +1469,7 @@ package body HAC.Parser is
         nxtSym := Sentinal + Statement_Begin_Symbol;
         loop
           Statement (nxtSym); --MRC,was: UNTIL (Sy IN Sentinal);
-          exit when Sentinal (CD.Sy) or Err_Count > 0;
+          exit when Sentinal (CD.Sy) or CD.Err_Count > 0;
         end loop;
       end Multi_Statement;
 
@@ -1594,7 +1594,7 @@ package body HAC.Parser is
         F : Opcode;
         Block_Idx : Integer;
       begin
-        if Block_ID = Main_Program_ID then
+        if Block_ID = CD.Main_Program_ID then
           Error (CD, err_illegal_return_statement_from_main); -- !! but... this is legal in Ada !!
         end if;
         Block_Idx := Locate_Identifier (Block_ID);
@@ -2560,7 +2560,7 @@ package body HAC.Parser is
       I_Statement : Integer;
 
     begin  --  Statement
-      if Err_Count > 0 then
+      if CD.Err_Count > 0 then
         return;
       end if;
       if Statement_Begin_Symbol (CD.Sy) then
@@ -2669,13 +2669,13 @@ package body HAC.Parser is
       MaxDX              := Dx;
       CD.IdTab (Prt).Adr := CD.LC;
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
-      Init_Code_Idx := CMax + ICode;
-      while Init_Code_Idx > CMax loop
+      Init_Code_Idx := CD.CMax + ICode;
+      while Init_Code_Idx > CD.CMax loop
         CD.ObjCode (CD.LC) := CD.ObjCode (Init_Code_Idx);
         CD.LC              := CD.LC + 1;
         Init_Code_Idx      := Init_Code_Idx - 1;
       end loop;
-      CMax := CMax + ICode;  -- Restore CMax to the initial max (=CDMax)
+      CD.CMax := CD.CMax + ICode;  --  Restore CMax to the initial max (=CDMax)
     end Statements_Part_Setup;
 
     procedure Statements_List is
@@ -2685,7 +2685,7 @@ package body HAC.Parser is
       end if;
       loop
         Statement (FSys + END_Symbol);
-        exit when CD.Sy = END_Symbol or Err_Count > 0;
+        exit when CD.Sy = END_Symbol or CD.Err_Count > 0;
       end loop;
     end Statements_List;
 
@@ -2724,7 +2724,7 @@ package body HAC.Parser is
   begin  --  Block
     Restore_Block_ID := CD.Block_Id_with_casing;
     CD.Block_Id_with_casing := Block_ID_with_case;
-    if Err_Count > 0 then
+    if CD.Err_Count > 0 then
       return;
     end if;
     Dx    := 5;
@@ -2750,7 +2750,7 @@ package body HAC.Parser is
       Formal_Parameter_List;
     end if;
     --
-    if Err_Count > 0 then
+    if CD.Err_Count > 0 then
       return;
     end if;
     --
@@ -2800,7 +2800,7 @@ package body HAC.Parser is
       --
       if CD.Sy = END_Symbol then
         InSymbol;
-      elsif Err_Count > 0 then
+      elsif CD.Err_Count > 0 then
         return;  --  At this point the program is already FUBAR.
       else
         Error (CD, err_END_missing);
@@ -2822,7 +2822,7 @@ package body HAC.Parser is
       return;
     end if;
     --
-    if Block_ID /= Main_Program_ID and not Is_a_block_statement then
+    if Block_ID /= CD.Main_Program_ID and not Is_a_block_statement then
       InSymbol;  --  Consume ';' symbol after END [Subprogram_Id].
       --
       --  Now we have either another declaration,

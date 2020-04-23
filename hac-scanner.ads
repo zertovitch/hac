@@ -18,7 +18,5 @@ package HAC.Scanner is
   --  Source code scanning for the compiler
 
   procedure InSymbol (CD : in out Compiler_Data);
-  --  Communicates via global variables in HAC.Data (arrgh!)
-  --  WIP: moving globals to CD.
 
 end HAC.Scanner;

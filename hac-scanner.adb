@@ -170,13 +170,13 @@ package body HAC.Scanner is
     procedure NextCh is  --  Read Next Char; process line end
     begin
       if CD.CC = CD.LL then
-        if Listing_Was_Requested then
-          New_Line (Listing);
+        if CD.listing_requested then
+          New_Line (CD.listing);
         end if;
         CD.Line_Count := CD.Line_Count + 1;
-        if Listing_Was_Requested then
-          Put (Listing, CD.Line_Count, 4);
-          Put (Listing, "  ");
+        if CD.listing_requested then
+          Put (CD.listing, CD.Line_Count, 4);
+          Put (CD.listing, "  ");
           --  Put (Listing, LC, 5);
           --  Put (Listing, "  ");
         end if;
@@ -186,9 +186,9 @@ package body HAC.Scanner is
         CD.InpLine (1 .. CD.LL + 1) := theLine (1 .. CD.LL) & ' ';
         CD.LL := CD.LL + 1;
 
-        if Listing_Was_Requested then
-          New_Line (Listing);
-          Put_Line (Listing, CD.InpLine);
+        if CD.listing_requested then
+          New_Line (CD.listing);
+          Put_Line (CD.listing, CD.InpLine);
         end if;
       end if;
 
@@ -355,12 +355,14 @@ package body HAC.Scanner is
         CD.syStart := CD.CC - 1;
         if CharacterTypes (CD.CH) = Illegal then
           Error (CD, err_illegal_character);
-          if qDebug then
-            Put_Line (" Char is => " & Integer'Image (Character'Pos (CD.CH)));
-          end if;
-          if Listing_Was_Requested then
+          if CD.comp_dump_requested then
             Put_Line
-             (Listing,
+             (CD.comp_dump,
+              " Char is => " & Integer'Image (Character'Pos (CD.CH)));
+          end if;
+          if CD.listing_requested then
+            Put_Line
+             (CD.listing,
               " Char is => " & Integer'Image (Character'Pos (CD.CH)));
           end if;
           NextCh;
@@ -586,11 +588,11 @@ package body HAC.Scanner is
         when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
           --  duplicate case Constant '&',
           Error (CD, err_illegal_character);
-          if qDebug then
-            Put_Line (" [ $!@\^_?""&%  ]");
+          if CD.comp_dump_requested then
+            Put_Line (CD.comp_dump, " [ $!@\^_?""&%  ]");
           end if;
-          if Listing_Was_Requested then
-            Put_Line (Listing, " [ $!@\^_?""&%  ]");
+          if CD.listing_requested then
+            Put_Line (CD.listing, " [ $!@\^_?""&%  ]");
           end if;
           NextCh;
           exit_big_loop := False;
@@ -606,42 +608,41 @@ package body HAC.Scanner is
 
     CD.syEnd := CD.CC - 1;
 
-    if qDebug then
-      Put_Line(Sym_dump, CD.InpLine (1 .. CD.LL));
-      for i in 1 .. CD.CC-2 loop
-        Put(Sym_dump,'.');
+    if CD.comp_dump_requested then
+      Put_Line (CD.comp_dump, CD.InpLine (1 .. CD.LL));
+      for i in 1 .. CD.CC - 2 loop
+        Put (CD.comp_dump, '.');
       end loop;
-      Put_Line(Sym_dump,"^");
-      Put (Sym_dump,
+      Put_Line (CD.comp_dump,"^");
+      Put (CD.comp_dump,
         '[' & Integer'Image(CD.Line_Count) & ':' &
               Integer'Image(CD.CC) & ":] " &
         KeyWSymbol'Image (CD.Sy)
       );
       case CD.Sy is
         when IDent =>
-          Put (Sym_dump, ": " & CD.Id);
+          Put (CD.comp_dump, ": " & CD.Id);
         when IntCon =>
-          Put (Sym_dump, ": " & Integer'Image (CD.INum));
+          Put (CD.comp_dump, ": " & Integer'Image (CD.INum));
         when FloatCon =>
-          Put (Sym_dump, ": " & HAC_Float'Image (CD.RNum));
+          Put (CD.comp_dump, ": " & HAC_Float'Image (CD.RNum));
         when StrCon =>
-          Put (Sym_dump, ": """);
+          Put (CD.comp_dump, ": """);
           for i in CD.INum .. CD.INum + CD.SLeng - 1 loop
-            Put (Sym_dump, CD.Strings_Table (i));
+            Put (CD.comp_dump, CD.Strings_Table (i));
           end loop;
-          Put (Sym_dump, '"');
+          Put (CD.comp_dump, '"');
         when Becomes =>
-          Put (Sym_dump, " := ");
+          Put (CD.comp_dump, " := ");
         when Colon =>
-          Put (Sym_dump, " : ");
+          Put (CD.comp_dump, " : ");
         when CONSTANT_Symbol =>
-          Put (Sym_dump, " constant ");
+          Put (CD.comp_dump, " constant ");
         when others =>
           null;
       end case;
-      New_Line(Sym_dump, 2);
+      New_Line (CD.comp_dump, 2);
     end if;
-
   end InSymbol;
 
 end HAC.Scanner;

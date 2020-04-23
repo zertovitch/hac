@@ -23,9 +23,13 @@ package body HAC.Compiler is
     CD.Tasks_Definitions_Count := 0;
     CD.Entries_Count := 0;
     --  Location Counter (in output code)
-    CD.LC := 0;
+    CD.LC   := 0;
+    CD.CMax := CDMax;
     --  Current block name for debugging of HAC programs.
     CD.Block_Id_with_casing := To_Alfa ("[-- Nowhere --]");
+    --
+    CD.Main_Program_ID           := Empty_Alfa;
+    CD.Main_Program_ID_with_case := Empty_Alfa;
     --
     --  Scanner data
     --
@@ -34,6 +38,9 @@ package body HAC.Compiler is
     CD.LL := 0;
     CD.syStart := 1;
     CD.syEnd   := 1;
+    --
+    CD.Err_Count := 0;
+    CD.Errs      := error_free;
   end Init_Tables;
 
   --  Print_Tables is for debugging purposes.
@@ -41,92 +48,88 @@ package body HAC.Compiler is
   procedure Print_Tables (CD : in Compiler_Data) is
     use Ada.Text_IO, Ada.Integer_Text_IO;
   begin
-    New_Line;
-    Put (" Identifiers          Link  Obj  TYP  Ref  NRM  LEV  Adr");
-    New_Line;
+    New_Line (CD.comp_dump);
+    Put (CD.comp_dump, " Identifiers          Link  Obj  TYP  Ref  NRM  LEV  Adr");
+    New_Line (CD.comp_dump);
     for I in CD.Blocks_Table (1).Last .. CD.Id_Count loop
       declare
         r : IdTabEntry renames CD.IdTab (I);
       begin
-        Put (I, 4);
-        Put (' ');
-        Put (r.Name);
-        Put (r.Link, 10);
-        Put (aObject'Pos (r.Obj), 5);
-        Put (Types'Pos (r.TYP), 5);
-        Put (r.Ref, 5);
-        Put (Boolean'Pos (r.Normal), 5);
-        Put (r.LEV, 5);
-        Put (r.Adr, 5);
-        New_Line;
+        Put (CD.comp_dump, I, 4);
+        Put (CD.comp_dump, ' ' & r.Name);
+        Put (CD.comp_dump, r.Link, 10);
+        Put (CD.comp_dump, aObject'Pos (r.Obj), 5);
+        Put (CD.comp_dump, Types'Pos (r.TYP), 5);
+        Put (CD.comp_dump, r.Ref, 5);
+        Put (CD.comp_dump, Boolean'Pos (r.Normal), 5);
+        Put (CD.comp_dump, r.LEV, 5);
+        Put (CD.comp_dump, r.Adr, 5);
+        New_Line (CD.comp_dump);
       end;
     end loop;
 
-    New_Line;
-    Put_Line (" Tasks       Block#");
+    New_Line (CD.comp_dump);
+    Put_Line (CD.comp_dump, " Tasks       Block#");
     for I in 0 .. CD.Tasks_Definitions_Count loop
-      Put (I, 4);
-      Put (' ');
-      Put (CD.IdTab (CD.Tasks_Definitions_Table (I)).Name);
-      Put ("  ");
-      Put (CD.IdTab (CD.Tasks_Definitions_Table (I)).Ref);
-      New_Line;
+      Put (CD.comp_dump, I, 4);
+      Put (CD.comp_dump, ' ');
+      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).Name & "  ");
+      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).Ref);
+      New_Line (CD.comp_dump);
     end loop;
 
-    New_Line;
+    New_Line (CD.comp_dump);
 
     if CD.Entries_Count > 0 then
-      Put (" Entries ");
-      New_Line;
+      Put (CD.comp_dump, " Entries ");
+      New_Line (CD.comp_dump);
       for I in 1 .. CD.Entries_Count loop
-        Put (I, 4);
-        Put (' ');
-        Put (CD.IdTab (CD.Entries_Table (I)).Name);
-        Put ("in Task ");
-        Put (CD.IdTab (CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).Adr)).Name);
-        New_Line;
+        Put (CD.comp_dump, I, 4);
+        Put (CD.comp_dump,
+             ' ' & CD.IdTab (CD.Entries_Table (I)).Name & " in Task " &
+             CD.IdTab (CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).Adr)).Name
+        );
+        New_Line (CD.comp_dump);
       end loop;
-      New_Line;
+      New_Line (CD.comp_dump);
     end if;
 
-    Put_Line (" Blocks               last LPar PSze Vsze");
+    Put_Line (CD.comp_dump, " Blocks               last LPar PSze Vsze");
     --  There is a hidden block #0, "the Universe", with Standard
     for I in 1 .. CD.Blocks_Count loop
       declare
         r : BTabEntry renames CD.Blocks_Table (I);
       begin
-        Put (I, 4);
-        Put (' ');
-        Put (r.Id);
-        Put (r.Last, 10);
-        Put (r.LastPar, 5);
-        Put (r.PSize, 5);
-        Put (r.VSize, 5);
-        New_Line;
+        Put (CD.comp_dump, I, 4);
+        Put (CD.comp_dump, ' ' & r.Id);
+        Put (CD.comp_dump, r.Last, 10);
+        Put (CD.comp_dump, r.LastPar, 5);
+        Put (CD.comp_dump, r.PSize, 5);
+        Put (CD.comp_dump, r.VSize, 5);
+        New_Line (CD.comp_dump);
       end;
     end loop;
 
-    New_Line;
+    New_Line (CD.comp_dump);
 
     if CD.Arrays_Count > 0 then
-      Put_Line (" Arrays    Xtyp Etyp Eref  Low High ELSZ Size");
+      Put_Line (CD.comp_dump, " Arrays    Xtyp Etyp Eref  Low High ELSZ Size");
       for I in 1 .. CD.Arrays_Count loop
         declare
           r : ATabEntry renames CD.Arrays_Table (I);
         begin
-          Put (I, 4);
-          Put (Types'Image (r.Index_TYP.TYP) & "   " &
-               Types'Image (r.Element_TYP));
-          Put (r.ELREF, 5);
-          Put (r.Low, 5);
-          Put (r.High, 5);
-          Put (r.ELSize, 5);
-          Put (r.Size, 5);
-          New_Line;
+          Put (CD.comp_dump, I, 4);
+          Put (CD.comp_dump, Types'Image (r.Index_TYP.TYP) & "   " &
+                             Types'Image (r.Element_TYP));
+          Put (CD.comp_dump, r.ELREF, 5);
+          Put (CD.comp_dump, r.Low, 5);
+          Put (CD.comp_dump, r.High, 5);
+          Put (CD.comp_dump, r.ELSize, 5);
+          Put (CD.comp_dump, r.Size, 5);
+          New_Line (CD.comp_dump);
         end;
       end loop;
     end if;
-
   end Print_Tables;
 
   ---------------------------------------------------------------------------
@@ -234,8 +237,10 @@ package body HAC.Compiler is
 
   procedure Compile (
     CD                 : in out Compiler_Data;
-    asm_dump_file_name :        String := "";
-    map                :        Boolean := False  -- !! as file name
+    asm_dump_file_name :        String  := "";  --  Assembler oputput of compiled object code
+    cmp_dump_file_name :        String  := "";  --  Compiler dump
+    listing_file_name  :        String  := "";  --  Listing of source code with details
+    var_map_file_name  :        String  := ""   --  Output of variables (map)
   )
   is
 
@@ -315,35 +320,29 @@ package body HAC.Compiler is
       Enter ("QUANTUM   ",     Prozedure, NOTYP, 11); --{ Cramer }
       Enter ("PRIORITY  ",     Prozedure, NOTYP, 12); --{ Cramer }
       Enter ("INHERITP  ",     Prozedure, NOTYP, 13); --{ Cramer }
-      Enter (Main_Program_ID,  Prozedure, NOTYP, 0);
+      Enter (CD.Main_Program_ID,  Prozedure, NOTYP, 0);
     end Enter_Standard_Functions_and_Main;
 
     use Ada.Text_IO, Ada.Integer_Text_IO, HAC.Parser.Helpers;
 
     asm_dump : File_Type;
+    map_file : File_Type;
 
     procedure InSymbol is begin InSymbol (CD); end;
 
   begin  --  Compile
-
-    -- !! As options
-    Listing_Was_Requested:= False;
-    Debug:= False;
-
-    Errs:= error_free;
-    -- (MRC) Total error count, from PC version
-    Err_Count := 0;
-
     Init_Tables (CD);
 
-    if Listing_Was_Requested then
-      Create (Listing, Name => "compiler.lst");
-      Put_Line (Listing, Header);
+    CD.listing_requested := listing_file_name /= "";
+    if CD.listing_requested then
+      Create (CD.listing, Name => listing_file_name);
+      Put_Line (CD.listing, Header);
     end if;
 
-    if qDebug then
-      Create (Sym_dump, Name => "symbols.lst");
-      Put_Line ("Compiler: check for program heading");
+    CD.comp_dump_requested := cmp_dump_file_name /= "";
+    if CD.comp_dump_requested then
+      Create (CD.comp_dump, Name => cmp_dump_file_name);
+      Put_Line (CD.comp_dump, "Compiler: check for program heading");
     end if;
 
     InSymbol;
@@ -379,8 +378,8 @@ package body HAC.Compiler is
       end if;
     end if;
 
-    if qDebug then
-      Put_Line ("Compiler: check for main procedure");
+    if CD.comp_dump_requested then
+      Put_Line (CD.comp_dump, "Compiler: check for main procedure");
     end if;
 
     if CD.Sy /= PROCEDURE_Symbol then
@@ -390,14 +389,14 @@ package body HAC.Compiler is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing);
       else
-        Main_Program_ID           := CD.Id;
-        Main_Program_ID_with_case := CD.Id_with_case;
+        CD.Main_Program_ID           := CD.Id;
+        CD.Main_Program_ID_with_case := CD.Id_with_case;
         InSymbol;
       end if;
     end if;
 
-    if qDebug then
-      Put_Line ("Compiler: main procedure is " & Main_Program_ID);
+    if CD.comp_dump_requested then
+      Put_Line (CD.comp_dump, "Compiler: main procedure is " & CD.Main_Program_ID);
     end if;
 
     Enter_Standard_Functions_and_Main;  --  Enter Standard function id's and ProgramID
@@ -417,16 +416,16 @@ package body HAC.Compiler is
     --  Start Compiling
     Block (CD, Block_Begin_Symbol + Statement_Begin_Symbol,
            False, False, 1, CD.Id_Count,
-           CD.IdTab (CD.Id_Count).Name, Main_Program_ID_with_case);
+           CD.IdTab (CD.Id_Count).Name, CD.Main_Program_ID_with_case);
     --  Main procedure is parsed.
     Emit (CD, k_Halt_Interpreter);
 
     if CD.Sy /= Semicolon then
-      if qDebug then
-        Put_Line ("Compile terminated BEFORE FILE END");
+      if CD.comp_dump_requested then
+        Put_Line (CD.comp_dump, "Compile terminated BEFORE FILE END");
       end if;
-      if Listing_Was_Requested then
-        Put_Line (Listing, "Compile terminated BEFORE FILE END");
+      if CD.listing_requested then
+        Put_Line (CD.listing, "Compile terminated BEFORE FILE END");
       end if;
     end if;
 
@@ -435,48 +434,43 @@ package body HAC.Compiler is
     end if;
     CD.Blocks_Table (1).SrcTo := CD.Line_Count;  --(* Manuel : terminate source *)
 
-    if Listing_Was_Requested then
-      Close (Listing);
-    end if;
-    if qDebug then
-      Close (Sym_dump);
+    if CD.listing_requested then
+      Close (CD.listing);
     end if;
 
-    if qDebug and Debug then
+    if CD.comp_dump_requested then
       Print_Tables (CD);
+      Close (CD.comp_dump);
     end if;
-    if Errs /= error_free then
-      ErrorMsg;
-    --{Close(ErrFile);}
-    --{halt;}
-    elsif map then
-      if qDebug then
-        New_Line;
-        Put_Line ("  -* Symbol Table *-");
-        New_Line;
-        Put_Line ("  LOC  Name       scope");
-        Put_Line ("------------------------");
-        New_Line;
-        for Tx in CD.Blocks_Table (1).Last + 1 .. CD.Id_Count loop
-          if CD.IdTab (Tx).Obj = Variable then
-            if CD.IdTab (Tx).TYP /= NOTYP then
-              Put (CD.IdTab (Tx).Adr, 4);
-              Put (CD.IdTab (Tx).Name, Alng + 3);
-            end if;
-            if CD.IdTab (Tx).LEV = 1 then
-              Put (" Global(");
-            else
-              Put (" Local (");
-            end if;
-            Put (CD.IdTab (Tx).LEV, 1);
-            Put (')');
-            New_Line;
+
+    if CD.Errs /= error_free then
+      Compilation_Errors_Summary (CD);
+    elsif var_map_file_name /= "" then
+      Create (map_file, Out_File, var_map_file_name);
+      Put_Line (map_file, "  -* Symbol Table *-");
+      New_Line (map_file);
+      Put_Line (map_file, "  LOC  Name       scope");
+      Put_Line (map_file, "------------------------");
+      New_Line (map_file);
+      for Tx in CD.Blocks_Table (1).Last + 1 .. CD.Id_Count loop
+        if CD.IdTab (Tx).Obj = Variable then
+          if CD.IdTab (Tx).TYP /= NOTYP then
+            Put (map_file, CD.IdTab (Tx).Adr, 4);
+            Put (map_file, CD.IdTab (Tx).Name & "   ");
           end if;
-        end loop;
-        New_Line;
-      end if;
+          if CD.IdTab (Tx).LEV = 1 then
+            Put (map_file, " Global(");
+          else
+            Put (map_file, " Local (");
+          end if;
+          Put (map_file, CD.IdTab (Tx).LEV, 1);
+          Put (map_file, ')');
+          New_Line (map_file);
+        end if;
+      end loop;
+      New_Line (map_file);
+      Close (map_file);
     end if;
-    --{Close(ErrFile);}
 
     if asm_dump_file_name /= "" then
       Create (asm_dump, Out_File, asm_dump_file_name);

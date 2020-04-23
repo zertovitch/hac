@@ -7,7 +7,7 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  function Error_String (code: Compile_Error; hint: String:= "") return String is
+  function Error_String (code: HAC.Data.Compile_Error; hint: String:= "") return String is
   begin
     case code is
       when err_undefined_identifier =>
@@ -262,48 +262,46 @@ package body HAC.UErrors is
       others                          => nothing_to_repair
     );
 
-  procedure cFoundError (
-     errCode: Compile_Error;
-     srcNumber, charStart, charEnd, objNumber : Integer;
-     hint: String
-  )
-  is
-    use Ada.Text_IO;
-  begin
-    if qDebug then
-      Put_Line
-       (Current_Error,
-        " errCode=" &
-        HAC.UErrors.Compile_Error'Image (errCode) &
-        " (" &
-        HAC.UErrors.Error_String (errCode, hint) &
-        ") " &
-        " srcNumber=" &
-        Integer'Image (srcNumber) &
-        " charStart=" &
-        Integer'Image (charStart) &
-        " charEnd=" &
-        Integer'Image (charEnd) &
-        " objNumber=" &
-        Integer'Image (objNumber));
-    end if;
-  end cFoundError;
-
   procedure Error (
-    CD            : HAC.Compiler.Compiler_Data;
-    code          : Compile_Error;
-    hint          : String      := "";
-    stop_on_error : Boolean     := False
+    CD            : in out HAC.Compiler.Compiler_Data;
+    code          :        HAC.Data.Compile_Error;
+    hint          :        String      := "";
+    stop_on_error :        Boolean     := False
   )
   is
-  -- Write Error on current line & add To TOT ERR (?)
     use Ada.Text_IO;
+    --
+    procedure Show_to_comp_dump (
+       srcNumber, charStart, charEnd, objNumber : Integer;
+       hint: String
+    )
+    is
+    begin
+      if CD.comp_dump_requested then
+        Put_Line
+         (CD.comp_dump,
+          " Error code = " &
+          Compile_Error'Image (code) &
+          " (" &
+          Error_String (code, hint) &
+          ") " &
+          " srcNumber=" &
+          Integer'Image (srcNumber) &
+          " charStart=" &
+          Integer'Image (charStart) &
+          " charEnd=" &
+          Integer'Image (charEnd) &
+          " objNumber=" &
+          Integer'Image (objNumber));
+      end if;
+    end Show_to_comp_dump;
+    --
     updated_repair_kit : Repair_kit := repair_table (code);
     ub_hint : constant Unbounded_String := To_Unbounded_String (hint);
   begin
-    cFoundError (code, CD.Line_Count, CD.syStart, CD.syEnd, -1, hint);
-    Errs (code) := True;
-    Err_Count := Err_Count + 1;
+    Show_to_comp_dump (CD.Line_Count, CD.syStart, CD.syEnd, -1, hint);
+    CD.Errs (code) := True;
+    CD.Err_Count := CD.Err_Count + 1;
     if current_error_pipe = null then
       Put_Line(
         Current_Error,
@@ -347,14 +345,10 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  procedure Fatal (N : Table_OverFlow_Error) is
+  procedure Fatal (N: Table_OverFlow_Error; Current_Error_Output : Boolean := False) is
     use Ada.Text_IO;
   begin
-    if Errs /= error_free then
-      ErrorMsg;
-    end if;
-    --
-    if qDebug then
+    if Current_Error_Output then
       Put (Current_Error, "The Compiler TABLE for: *");
       case N is
         when FLOAT_CONSTANTS =>
@@ -368,12 +362,12 @@ package body HAC.UErrors is
         when others =>
           Put (Current_Error, Table_OverFlow_Error'Image (N));
       end case;
-      Put_Line ("* is too SMALL");
-      New_Line;
-      Put_Line (" Please take this output to the maintainers of ");
-      Put_Line (" HAC for your installation ");
-      New_Line;
-      Put_Line (" Fatal termination of HAC");
+      Put_Line (Current_Error, "* is too SMALL");
+      New_Line (Current_Error);
+      Put_Line (Current_Error, " Please take this output to the maintainers of ");
+      Put_Line (Current_Error, " HAC for your installation ");
+      New_Line (Current_Error);
+      Put_Line (Current_Error, " Fatal termination of HAC");
     end if;
     --
     raise Failure_1_0 with
@@ -386,34 +380,29 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  procedure ErrorMsg is
+  procedure Compilation_Errors_Summary (CD : HAC.Compiler.Compiler_Data) is
     use Ada.Text_IO;
-    --  package IIO is new Integer_IO (Integer); use IIO;
-    K : Compile_Error:= Compile_Error'First;
   begin
-    if qDebug then
-      New_Line;
-      Put_Line ("==== Error MESSAGE(S) ====");
+    if CD.comp_dump_requested then
+      New_Line (CD.comp_dump);
+      Put_Line (CD.comp_dump, "==== Error MESSAGE(S) ====");
     end if;
-    if Listing_Was_Requested then
-      New_Line (Listing);
-      Put_Line (Listing, "==== Error MESSAGE(S) ====");
+    if CD.listing_requested then
+      New_Line (CD.listing);
+      Put_Line (CD.listing, "==== Error MESSAGE(S) ====");
     end if;
-    while Errs /= error_free loop -- NB: Ouch! A single loop would be sufficient !!
-      while not Errs (K) loop
-        K := Compile_Error'Succ(K);
-      end loop;
-      if qDebug then
-        Put_Line (Compile_Error'Image(K) & ":  " & Error_String (K, ""));
-        -- Should be Error_hint(K,n) !!
+    for K in CD.Errs'Range loop
+      if CD.Errs (K) then
+        if CD.comp_dump_requested then
+          Put_Line (Compile_Error'Image(K) & ":  " & Error_String (K, ""));
+          -- Should be Error_hint(K,n) !!
+        end if;
+        if CD.listing_requested then
+          Put_Line (CD.listing, Compile_Error'Image(K) & "  " & Error_String (K, ""));
+          -- Should be Error_hint(K,n) !!
+        end if;
       end if;
-      if Listing_Was_Requested then
-        Put_Line (Listing, Compile_Error'Image(K) & "  " & Error_String (K, ""));
-        -- Should be Error_hint(K,n) !!
-      end if;
-      Errs (K) := False; -- we cancel the K-th sort of error
     end loop;
-
-  end ErrorMsg;
+  end Compilation_Errors_Summary;
 
 end HAC.UErrors;

@@ -1,6 +1,6 @@
 with Ada.Strings.Fixed;
-with Ada.Strings.Unbounded;
-use Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
+with Ada.Text_IO;
 
 package body HAC.Data is
 

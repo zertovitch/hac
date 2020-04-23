@@ -20,6 +20,7 @@ procedure HAX is
     "Compiler version: " & HAC.version & " dated " & HAC.reference & '.';
 
   asm_dump_file_name : Unbounded_String;
+  cmp_dump_file_name : Unbounded_String;
 
   procedure Compile_and_interpret_file (name: String) is
     f : Ada.Streams.Stream_IO.File_Type;
@@ -44,7 +45,11 @@ procedure HAX is
     CD.Line_Count:= 0;
     HAC.Data.c_Set_Stream (HAC.Data.Stream_Access(Stream(f)), name);
     t1 := Clock;
-    HAC.Compiler.Compile (CD, To_String (asm_dump_file_name));
+    HAC.Compiler.Compile (
+      CD,
+      To_String (asm_dump_file_name),
+      To_String (cmp_dump_file_name)
+    );
     t2 := Clock;
     Close (f);
     if verbosity >= 2 then
@@ -55,7 +60,7 @@ procedure HAX is
       );
     end if;
     --
-    if HAC.Data.Err_Count = 0 then
+    if CD.Err_Count = 0 then
       if verbosity >= 2 then
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       end if;
@@ -97,7 +102,6 @@ begin
   if Argument_Count = 0 then
     Help;
   end if;
-  HAC.Data.qDebug := False;
   for i in 1 .. Argument_Count loop
     if Argument (i) = "-h" then
       Help;
@@ -108,7 +112,7 @@ begin
     elsif Argument (i) = "-a" then
       asm_dump_file_name := To_Unbounded_String ("dump.pca");  --  PCA = PCode Assembler
     elsif Argument (i) = "-d" then
-      HAC.Data.qDebug := True;
+      cmp_dump_file_name := To_Unbounded_String ("symbols.lst");
     else
       Compile_and_interpret_file (Argument (i));
     end if;

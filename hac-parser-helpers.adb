@@ -9,13 +9,13 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Scanner;
+with HAC.Scanner, HAC.UErrors;
 
 with Ada.Strings.Unbounded;
 
 package body HAC.Parser.Helpers is
 
-  use HAC.Scanner, Ada.Strings.Unbounded;
+  use HAC.Scanner, HAC.UErrors, Ada.Strings.Unbounded;
 
   procedure Need (
     CD      : in out Compiler_Data;
@@ -139,7 +139,7 @@ package body HAC.Parser.Helpers is
     end if;
   end Test_END_Symbol;
 
-  procedure Check_Boolean (CD : Compiler_Data; T: Types) is
+  procedure Check_Boolean (CD : in out Compiler_Data; T: Types) is
   begin
     --  NB: T = NOTYP was admitted in SmallAda.
     if T /= Bools then
@@ -157,12 +157,12 @@ package body HAC.Parser.Helpers is
     end if;
   end Ignore_Extra_Semicolons;
 
-  procedure Argument_Type_Not_Supported (CD : Compiler_Data) is
+  procedure Argument_Type_Not_Supported (CD : in out Compiler_Data) is
   begin
     Error (CD, err_type_conversion_not_supported, "argument type not supported");
   end Argument_Type_Not_Supported;
 
-  procedure Forbid_Type_Coercion (CD : Compiler_Data; details: String) is
+  procedure Forbid_Type_Coercion (CD : in out Compiler_Data; details: String) is
   begin
     Error (CD, err_int_to_float_coercion, details, stop_on_error => True);
   end Forbid_Type_Coercion;

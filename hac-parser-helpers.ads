@@ -10,7 +10,6 @@
 --
 
 with HAC.Data;                          use HAC.Data;
-with HAC.UErrors;                       use HAC.UErrors;
 
 package HAC.Parser.Helpers is
 
@@ -64,18 +63,18 @@ package HAC.Parser.Helpers is
 
   procedure Test_END_Symbol (CD : in out Compiler_Data);
 
-  procedure Check_Boolean (CD : Compiler_Data; T: Types);
+  procedure Check_Boolean (CD : in out Compiler_Data; T: Types);
 
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data);
 
   type Type_Conversion_Kind is (To_Float, To_Integer, Unknown);
 
-  procedure Argument_Type_Not_Supported (CD : Compiler_Data);
+  procedure Argument_Type_Not_Supported (CD : in out Compiler_Data);
 
   --  https://en.wikipedia.org/wiki/Type_conversion#Implicit_type_conversion
   --  One of the most useful feature of Ada is the absence of type coercion.
   --
-  procedure Forbid_Type_Coercion (CD : Compiler_Data; details: String);
+  procedure Forbid_Type_Coercion (CD : in out Compiler_Data; details: String);
 
   No_Id : constant := 0;
 
