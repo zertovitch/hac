@@ -10,16 +10,16 @@ package body HAC.Compiler is
 
   use Ada.Strings.Unbounded;
 
-  procedure c_Set_Stream (
+  procedure Set_Source_Stream (
     CD        : in out Compiler_Data;
-    s         :        Stream_Access;
-    file_name :        String         --  Can be a virtual name (editor title, zip entry)
+    s         : access Ada.Streams.Root_Stream_Type'Class;
+    file_name :        String  --  Can be a virtual name (editor title, zip entry)
   )
   is
   begin
-    CD.current_compiler_stream := s;
+    CD.current_compiler_stream := Source_Stream_Access (s);
     CD.current_compiler_file_name := To_Unbounded_String (file_name);
-  end c_Set_Stream;
+  end Set_Source_Stream;
 
   function Get_Current_Source_Name (CD: Compiler_Data) return String is
   begin

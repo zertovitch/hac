@@ -145,7 +145,7 @@ package HAC.Compiler is
 
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 
-  type Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
+  type Source_Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
 
   ---------------------
   --  Compiler_Data  --
@@ -155,7 +155,7 @@ package HAC.Compiler is
 
   type Compiler_Data is record
     --  Source code information and scanner data
-    current_compiler_stream    : Stream_Access;
+    current_compiler_stream    : Source_Stream_Access;
     current_compiler_file_name : Ada.Strings.Unbounded.Unbounded_String;
     --
     Line_Count              : Natural;            --  Source line counter, used for listing
@@ -220,10 +220,10 @@ package HAC.Compiler is
   );
 
   --  Set current source stream (file, editor data, zipped file,...)
-  procedure c_Set_Stream (
+  procedure Set_Source_Stream (
     CD        : in out Compiler_Data;
-    s         :        Stream_Access;
-    file_name :        String         --  Can be a virtual name (editor title, zip entry)
+    s         : access Ada.Streams.Root_Stream_Type'Class;
+    file_name :        String  --  Can be a virtual name (editor title, zip entry)
   );
 
   function Get_Current_Source_Name (CD: Compiler_Data) return String;

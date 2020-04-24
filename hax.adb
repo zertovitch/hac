@@ -27,7 +27,8 @@ procedure HAX is
     HAC_margin_1 : constant String := "*******[ HAX ]*******   ";
     HAC_margin_2 : constant String := ". . . .[ HAX ]. . . .   ";
     HAC_margin_3 : constant String := "-------[ HAX ]-------   ";
-    CD : HAC.Compiler.Compiler_Data;
+    use HAC.Compiler;
+    CD : Compiler_Data;
   begin
     case verbosity is
       when 0 =>
@@ -42,9 +43,9 @@ procedure HAX is
     end case;
     Open (f, In_File, name);
     CD.Line_Count:= 0;
-    HAC.Compiler.c_Set_Stream (CD, HAC.Compiler.Stream_Access(Stream(f)), name);
+    Set_Source_Stream (CD, Stream(f), name);
     t1 := Clock;
-    HAC.Compiler.Compile (
+    Compile (
       CD,
       To_String (asm_dump_file_name),
       To_String (cmp_dump_file_name)
