@@ -9,6 +9,12 @@ procedure Enumerations is
   type E3 is (d, e, f);
   type E4 is (g, h, i, j);
 
+  procedure Test_ARRAY is
+    aa : array(d .. f) of E4;
+  begin
+    AA (e) := g;
+  end;
+
   x1 : E1;
   x2 : E2;
   x3 : E3;

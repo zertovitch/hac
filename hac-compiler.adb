@@ -137,8 +137,8 @@ package body HAC.Compiler is
         begin
           Put (CD.comp_dump, I, 4);
           Put (CD.comp_dump, Types'Image (r.Index_TYP.TYP) & "   " &
-                             Types'Image (r.Element_TYP));
-          Put (CD.comp_dump, r.ELREF, 5);
+                             Types'Image (r.Element_TYP.TYP));
+          Put (CD.comp_dump, r.Element_TYP.Ref, 5);
           Put (CD.comp_dump, r.Low, 5);
           Put (CD.comp_dump, r.High, 5);
           Put (CD.comp_dump, r.ELSize, 5);

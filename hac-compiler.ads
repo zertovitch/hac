@@ -35,9 +35,10 @@ package HAC.Compiler is
   --
   type ATabEntry is record
     Index_TYP    : Exact_Type;  --  C  Type of the index
-    Element_TYP  : Types;       --  C  Type of the elements of the array
-    ELREF        : Index;       --  C  Pointer to an entry in Arrays_Table if the
-                                --     elements of the array are themselves arrays
+    Element_TYP  : Exact_Type;  --  C  Type of the elements of the array.
+                                --        Element_TYP.Ref is an index to an entry
+                                --        in Arrays_Table if the elements of the array
+                                --        are themselves arrays
     Size         : Index;       --  C  Total size of the array
     Low, High    : Index;       --  Limits on the array index: array (Low .. High) of Element_TYP
     ELSize       : Index;       --  Size of an element

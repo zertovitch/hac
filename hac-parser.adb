@@ -297,9 +297,8 @@ package body HAC.Parser is
         declare
           r : ATabEntry renames CD.Arrays_Table (ARef);
         begin
-          r.Size        := Arsz;  --  NB: Index_TYP, Low, High already set
-          r.Element_TYP := ELTP;
-          r.ELREF       := ELRF;
+          r.Size        := Arsz;  --  NB: Index_TYP, Low, High already set by Enter_Array.
+          r.Element_TYP := (TYP => ELTP, Ref => ELRF);
           r.ELSize      := ELSZ;
         end;
       end Array_Typ;
@@ -818,8 +817,7 @@ package body HAC.Parser is
             else
               Emit1 (CD, k_Array_Index, AT_Index);
             end if;
-            V.TYP := CD.Arrays_Table (AT_Index).Element_TYP;
-            V.Ref := CD.Arrays_Table (AT_Index).ELREF;
+            V := CD.Arrays_Table (AT_Index).Element_TYP;
           else
             Error (CD, err_indexed_variable_must_be_an_array);
           end if;
@@ -1446,7 +1444,7 @@ package body HAC.Parser is
         Emit1 (CD, k_Integer_to_Float, 0);
         Emit (CD, k_Store);
       elsif X.TYP = Arrays and Y.TYP = Strings then
-        if CD.Arrays_Table (X.Ref).Element_TYP /= xChars then
+        if CD.Arrays_Table (X.Ref).Element_TYP.TYP /= xChars then
           Error (CD, err_types_of_assignment_must_match);
         else
           Emit1 (CD, k_String_assignment, CD.Arrays_Table (X.Ref).Size);  --  array size
