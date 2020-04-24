@@ -68,4 +68,8 @@ project Hac is
       for Default_Switches ("ada") use ("-g", "-j0");
    end Builder;
 
+   package Ide is
+      for Default_Switches ("adacontrol") use ("-f", "test/verif_hac.aru", "-r");
+   end Ide;
+
 end Hac;

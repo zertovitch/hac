@@ -1,0 +1,5 @@
+-- search global_references (all, function, procedure)
+search directly_accessed_globals;
+search usage (variable, from_spec);
+-- search usage (variable, from_visible);
+-- search usage (variable, from_private);
