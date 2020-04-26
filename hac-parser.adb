@@ -130,31 +130,6 @@ package body HAC.Parser is
     end Enter;
 
     ------------------------------------------------------------------
-    ------------------------------------------------Locate_Identifier-
-    function Locate_Identifier (
-      Id            : Alfa;
-      No_Id_Fail    : Boolean := True;
-      stop_on_error : Boolean := False) return Natural
-    is
-      L, J : Integer;
-    begin
-      L                    := Level;
-      CD.IdTab (No_Id).Name := Id;  --  Sentinel
-      loop
-        J := CD.Blocks_Table (CD.Display (L)).Last;
-        while CD.IdTab (J).Name /= Id loop  --  Scan all Id's on level L.
-          J := CD.IdTab (J).Link;
-        end loop;
-        L := L - 1;
-        exit when L < 0 or J /= No_Id;
-      end loop;
-      if J = No_Id and No_Id_Fail then
-        Error (CD, err_undefined_identifier, stop_on_error => stop_on_error);
-      end if;
-      return J;
-    end Locate_Identifier;
-
-    ------------------------------------------------------------------
     -------------------------------------------------Get_File_Pointer-
     function Get_File_Pointer (Id : Alfa) return Integer is    -- Schoening
     begin   -- locate Id in FileIOTab
@@ -216,7 +191,7 @@ package body HAC.Parser is
         if CD.Sy = IDent then
           --  Number defined using another one: "minus_pi : constant := -pi;"
           --  ... or, we have an enumeration item.
-          X := Locate_Identifier (CD.Id);
+          X := Locate_Identifier (CD, CD.Id, Level);
           if X /= 0 then
             if CD.IdTab (X).Obj /= Declared_Number_or_Enum_Item then
               Error (CD, err_illegal_constant_or_constant_identifier);
@@ -392,7 +367,7 @@ package body HAC.Parser is
         end if;
         case CD.Sy is
           when IDent =>
-            I := Locate_Identifier (CD.Id);
+            I := Locate_Identifier (CD, CD.Id, Level);
             if I /= 0 then
               if CD.IdTab (I).Obj = TypeMark then
                 TP := CD.IdTab (I).TYP;
@@ -459,7 +434,7 @@ package body HAC.Parser is
           if CD.Sy /= IDent then
             Error (CD, err_identifier_missing);
           else
-            X := Locate_Identifier (CD.Id);
+            X := Locate_Identifier (CD, CD.Id, Level);
             InSymbol;
             if X /= No_Id then
               if CD.IdTab (X).Obj = TypeMark then
@@ -556,7 +531,7 @@ package body HAC.Parser is
         T1 := CD.Id_Count;
         --
         if CD.Sy = IDent then
-          I_dummy := Locate_Identifier (CD.Id, stop_on_error => True);
+          I_dummy := Locate_Identifier (CD, CD.Id, Level, stop_on_error => True);
         end if;
         Test (CD, Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_Set, err_incorrectly_used_symbol);
         --
@@ -702,7 +677,7 @@ package body HAC.Parser is
       InSymbol;
       if CD.Sy = BODY_Symbol then  --  Task Body
         InSymbol;
-        I      := Locate_Identifier (CD.Id);
+        I      := Locate_Identifier (CD, CD.Id, Level);
         TaskID := CD.IdTab (I).Name;
         CD.Blocks_Table (CD.IdTab (I).Ref).SrcFrom := saveLineCount;  --(* Manuel *)
         InSymbol;
@@ -904,7 +879,7 @@ package body HAC.Parser is
               if CD.Sy /= IDent then
                 Error (CD, err_identifier_missing);
               else
-                K := Locate_Identifier (CD.Id);
+                K := Locate_Identifier (CD, CD.Id, Level);
                 InSymbol;
                 if K = 0 then
                   null;  --  Error already issued due to missing identifier
@@ -1128,7 +1103,7 @@ package body HAC.Parser is
             while Factor_Begin_Symbol (CD.Sy) loop
               case CD.Sy is
                 when IDent =>
-                  I := Locate_Identifier (CD.Id, stop_on_error => True);
+                  I := Locate_Identifier (CD, CD.Id, Level, stop_on_error => True);
                   InSymbol;
                   exit when I = No_Id;  --  Id not found, error already issued by Locate_Identifier
                   declare
@@ -1492,7 +1467,7 @@ package body HAC.Parser is
         I_Entry : Integer;
       begin  --  Accept_Statement
         InSymbol;
-        I_Entry := Locate_Identifier (CD.Id);
+        I_Entry := Locate_Identifier (CD, CD.Id, Level);
         if CD.IdTab (I_Entry).Obj /= aEntry then
           Error (CD, err_use_Small_Sp);
         end if;
@@ -1595,7 +1570,7 @@ package body HAC.Parser is
         if Block_ID = CD.Main_Program_ID then
           Error (CD, err_illegal_return_statement_from_main); -- !! but... this is legal in Ada !!
         end if;
-        Block_Idx := Locate_Identifier (Block_ID);
+        Block_Idx := Locate_Identifier (CD, Block_ID, Level);
         InSymbol;
         if CD.Sy = Semicolon then
           if Is_a_function then
@@ -1881,7 +1856,7 @@ package body HAC.Parser is
           O                  : Order;
           Y                  : Exact_Type;
         begin
-          I := Locate_Identifier (CD.Id);
+          I := Locate_Identifier (CD, CD.Id, Level);
           if CD.IdTab (I).Obj = aTask then
             InSymbol;
             Entry_Call (FSys, I, -1);
@@ -1992,7 +1967,7 @@ package body HAC.Parser is
 
           begin         -- Accept_Statment_2
             InSymbol;
-            I := Locate_Identifier (CD.Id);
+            I := Locate_Identifier (CD, CD.Id, Level);
             if CD.IdTab (I).Obj /= aEntry then
               Select_Error (err_use_Small_Sp);
             end if;
@@ -2242,7 +2217,7 @@ package body HAC.Parser is
                 if CD.Sy /= IDent then
                   Error (CD, err_identifier_missing);
                 else
-                  I := Locate_Identifier (CD.Id);
+                  I := Locate_Identifier (CD, CD.Id, Level);
                   InSymbol;
                   if I /= 0 then
                     if CD.IdTab (I).Obj /= Variable then
@@ -2359,7 +2334,7 @@ package body HAC.Parser is
               if CD.Sy /= IDent then
                 Error (CD, err_undefined_identifier);
               else
-                I := Locate_Identifier (CD.Id);
+                I := Locate_Identifier (CD, CD.Id, Level);
                 InSymbol;
                 if I /= 0 then
                   if CD.IdTab (I).Obj /= Variable then
@@ -2564,7 +2539,7 @@ package body HAC.Parser is
       if Statement_Begin_Symbol (CD.Sy) then
         case CD.Sy is
           when IDent =>
-            I_Statement := Locate_Identifier (CD.Id, No_Id_Fail => False);
+            I_Statement := Locate_Identifier (CD, CD.Id, Level, No_Id_Fail => False);
             InSymbol;
             if I_Statement = No_Id then
               --  New identifier: must be an identifier for a named Block_Statement or loop.
@@ -2698,7 +2673,7 @@ package body HAC.Parser is
       if CD.Sy = RETURN_Symbol then
         InSymbol;  --  FUNCTION TYPE
         if CD.Sy = IDent then
-          I_Res_Type := Locate_Identifier (CD.Id);
+          I_Res_Type := Locate_Identifier (CD, CD.Id, Level);
           InSymbol;
           if I_Res_Type /= 0 then
             if CD.IdTab (I_Res_Type).Obj /= TypeMark then

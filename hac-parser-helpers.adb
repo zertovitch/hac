@@ -174,4 +174,31 @@ package body HAC.Parser.Helpers is
     return res;
   end Singleton;
 
+  ------------------------------------------------------------------
+  ------------------------------------------------Locate_Identifier-
+  function Locate_Identifier (
+    CD            : in out Compiler_Data;
+    Id            :        Alfa;
+    Level         :        Integer;
+    No_Id_Fail    :        Boolean := True;
+    stop_on_error :        Boolean := False) return Natural
+  is
+    L, J : Integer;
+  begin
+    L                     := Level;
+    CD.IdTab (No_Id).Name := Id;  --  Sentinel
+    loop
+      J := CD.Blocks_Table (CD.Display (L)).Last;
+      while CD.IdTab (J).Name /= Id loop  --  Scan all Id's on level L.
+        J := CD.IdTab (J).Link;
+      end loop;
+      L := L - 1;  --  Decrease nesting level.
+      exit when L < 0 or J /= No_Id;
+    end loop;
+    if J = No_Id and No_Id_Fail then
+      Error (CD, err_undefined_identifier, stop_on_error => stop_on_error);
+    end if;
+    return J;
+  end Locate_Identifier;
+
 end HAC.Parser.Helpers;

@@ -15,6 +15,10 @@ package HAC.Parser.Helpers is
 
   use HAC.Compiler;
 
+  ----------------------
+  --  Symbol testing  --
+  ----------------------
+
   --  If needed symbol S is correct, consume it;
   --  otherwise output error code E.
   --
@@ -278,5 +282,14 @@ package HAC.Parser.Helpers is
     I  : Integer;
     R  : HAC_Float;
   end record;
+
+  ------------------------------------------------------------------
+  ------------------------------------------------Locate_Identifier-
+  function Locate_Identifier (
+    CD            : in out Compiler_Data;
+    Id            : Alfa;
+    Level         : Integer;
+    No_Id_Fail    : Boolean := True;
+    stop_on_error : Boolean := False) return Natural;
 
 end HAC.Parser.Helpers;
