@@ -836,15 +836,19 @@ package body HAC.Parser is
     end Selector;
 
     ------------------------------------------------------------------
-    -------------------------------------------------------------Call-
-    procedure Call (FSys : Symset; I, CallType : Integer) is
+    -----------------------------------------Subprogram_or_Entry_Call-
+    procedure Subprogram_or_Entry_Call (
+      FSys        :        Symset;
+      I, CallType :        Integer
+    )
+    is
       --****************************************************************
-      -- Generate ObjCode for procedure or Task Entry Call
+      -- Generate ObjCode for subprogram or Task Entry Call
       -- CallType specifies type of Call
-      --  = 0 then standard procedure Call,    CallSTDP
-      --  = 1 then standard Task Entry Call,    CallSTDE
-      --  = 2 then timed Task Entry Call,      CallTMDE
-      --  = 3 then conditional Task Entry Call,   CallCNDE
+      --   = 0 then standard subprogram Call,       CallSTDP
+      --   = 1 then standard Task Entry Call,       CallSTDE
+      --   = 2 then timed Task Entry Call,          CallTMDE
+      --   = 3 then conditional Task Entry Call,    CallCNDE
       --****************************************************************
       X            : Exact_Type;
       LastP, CP, K : Integer;
@@ -856,7 +860,7 @@ package body HAC.Parser is
         loop
           InSymbol;
           if CP >= LastP then
-            Error (CD, err_number_of_parameters_do_not_match);
+            Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
           else
             CP := CP + 1;
             if CD.IdTab (CP).Normal then           --  Value parameter (IN)
@@ -915,21 +919,19 @@ package body HAC.Parser is
         end loop;
         Need (CD, RParent, err_closing_parenthesis_missing);
       end if;
-      if CP < LastP then  --  Too few actual parameters
-        Error (CD, err_number_of_parameters_do_not_match);
+      if CP < LastP then
+        Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
       end if;
-
-      if CallType = CallSTDP then
-        Emit2 (CD, k_Call, CallType, CD.Blocks_Table (CD.IdTab (I).Ref).PSize - 1);
-      else
-        Emit2 (CD, k_Call, CallType, CD.Blocks_Table (CD.IdTab (I).Ref).PSize - 1);
+      --
+      Emit2 (CD, k_Call, CallType, CD.Blocks_Table (CD.IdTab (I).Ref).PSize - 1);
+      if CallType /= CallSTDP then  --  Some for of entry call
         Emit1 (CD, k_Exit_Call, CallType);  --  Return from Entry Call
       end if;
-
+      --
       if CD.IdTab (I).LEV < Level then
         Emit2 (CD, k_Update_Display_Vector, CD.IdTab (I).LEV, Level);
       end if;
-    end Call;
+    end Subprogram_or_Entry_Call;
 
     ------------------------------------------------------------------
     -------------------------------------------------------Entry_Call-
@@ -955,7 +957,7 @@ package body HAC.Parser is
 
           Addr := J;
           InSymbol;
-          Call (FSys, Addr, CallType);
+          Subprogram_or_Entry_Call (FSys, Addr, CallType);
         end if;
       end if;
     end Entry_Call;
@@ -1161,7 +1163,7 @@ package body HAC.Parser is
                         if r.LEV = 0 then
                           Standard_Function (r.Adr);
                         else
-                          Call (FSys, I, CallSTDP);
+                          Subprogram_or_Entry_Call (FSys, I, CallSTDP);
                         end if;
                         --
                       when others =>
@@ -2562,7 +2564,7 @@ package body HAC.Parser is
                   if CD.IdTab (I_Statement).LEV = 0 then
                     Standard_Procedure (CD.IdTab (I_Statement).Adr);
                   else
-                    Call (FSys, I_Statement, CallSTDP);
+                    Subprogram_or_Entry_Call (FSys, I_Statement, CallSTDP);
                   end if;
                 when Label =>
                   Error (CD, err_duplicate_label, To_String (CD.Id));

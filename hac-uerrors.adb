@@ -100,7 +100,7 @@ package body HAC.UErrors is
         return "a character literal is of the form 'x'; " &
                "strings are delimited by double quote character";
       when err_number_of_parameters_do_not_match =>
-        return "number of parameters do not match";
+        return "number of parameters do not match" & hint;
       when err_illegal_parameters_to_Get =>
         return "illegal parameters to ""Get""";
       when err_illegal_parameters_to_Put =>
