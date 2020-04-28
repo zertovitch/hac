@@ -30,11 +30,11 @@ procedure Recursion is
     N_Max : constant := 4;
     type Storage is array (0 .. M_Max, 0 .. N_Max) of Integer;
     --
-    Noise_1 : Integer := 11111;
+    Noise_1 : constant Integer := 11111;
     A : Storage;
     Noise_2 : Integer;
     B : Storage;
-    Noise_3 : Integer;    
+    Noise_3 : Integer;
   begin
     for M in 0 .. M_Max loop
       for N in reverse 0 .. N_Max loop
@@ -59,6 +59,61 @@ procedure Recursion is
     end if;
   end Ackarray;
 
+  procedure Nesting_Tests is
+    --  We compute in an horribly complicated way: 2 ** Level - 1.
+    --  This is for testing recursion *and* nesting together.
+
+    Max_L : constant := 20;
+
+    procedure Nesting_Test_P is
+      procedure Add_1_and_shift (N: in out Integer; Level : Integer) is
+        procedure Shift_and_add_1 (N: in out Integer) is
+        begin
+          if Level > 1 then
+            N := N * 2;
+            Add_1_and_shift (N, Level - 1);
+          end if;
+        end;
+      begin
+        N := N + 1;
+        Shift_and_add_1 (N);
+      end;
+      R : Integer;
+    begin
+      for L in 1 .. Max_L loop
+        R := 0;
+        Add_1_and_shift (R, L);
+        if R /= 2 ** L - 1 then
+          Put_Line ("Compiler bug [Nesting_Test_P]");
+        end if;
+      end loop;
+    end Nesting_Test_P;
+
+    procedure Nesting_Test_F is
+      function Add_1_and_shift (N: Integer; Level : Integer) return Integer is
+        function Shift_and_add_1 (N: Integer) return Integer is
+        begin
+          if Level > 1 then
+            return Add_1_and_shift (N * 2, Level - 1);
+          end if;
+          return N;
+        end;
+      begin
+        return Shift_and_add_1 (N + 1);
+      end;
+    begin
+      for L in 1 .. Max_L loop
+        if Add_1_and_shift (0, L) /= 2 ** L - 1 then
+          Put_Line ("Compiler bug [Nesting_Test_F]");
+        end if;
+      end loop;
+    end Nesting_Test_F;
+
+  begin
+    Nesting_Test_P;
+    Nesting_Test_F;
+  end Nesting_Tests;
+
 begin
   if Fibonacci (22) /= 17_711 then
     Put_Line ("Compiler bug [Fibonacci]");
@@ -67,4 +122,5 @@ begin
     Put_Line ("Compiler bug [Ackermann]");
   end if;
   Ackarray;
+  Nesting_Tests;
 end Recursion;
