@@ -1,3 +1,5 @@
+with HAC.Parser.Calls;       use HAC.Parser.Calls;
+with HAC.Parser.Expressions; use HAC.Parser.Expressions;
 with HAC.Parser.Helpers;     use HAC.Parser.Helpers;
 with HAC.PCode;              use HAC.PCode;
 with HAC.Scanner;            use HAC.Scanner;
@@ -78,23 +80,6 @@ package body HAC.Parser is
     end Enter_Block;
 
     ------------------------------------------------------------------
-    ----------------------------------------------Enter_or_find_Float-
-    procedure Enter_or_find_Float (X : HAC_Float) is
-    begin
-      if CD.Float_Constants_Count = C2Max - 1 then
-        Fatal (FLOAT_CONSTANTS);  --  Exception is raised there.
-      end if;
-      CD.Float_Constants_Table (CD.Float_Constants_Count + 1) := X;  --  We add X's value as an extra item.
-      CD.RNum_Index  := 1;
-      while CD.Float_Constants_Table (CD.RNum_Index) /= X loop
-        CD.RNum_Index := CD.RNum_Index + 1;
-      end loop;
-      if CD.RNum_Index > CD.Float_Constants_Count then  --  X's value was not previously in the table.
-        CD.Float_Constants_Count := CD.RNum_Index;
-      end if;
-    end Enter_or_find_Float;
-
-    ------------------------------------------------------------------
     ------------------------------------------------------------Enter-
     procedure Enter (Id, Id_with_case : Alfa; K : aObject) is
       J, L : Integer;
@@ -128,24 +113,6 @@ package body HAC.Parser is
         CD.Blocks_Table (CD.Display (Level)).Last := CD.Id_Count;  --  Update start of identifier chain
       end if;
     end Enter;
-
-    ------------------------------------------------------------------
-    -------------------------------------------------Get_File_Pointer-
-    function Get_File_Pointer (Id : Alfa) return Integer is    -- Schoening
-    begin   -- locate Id in FileIOTab
-      for I in 1 .. CD.File_IO_Table.Kount loop
-        if CD.File_IO_Table.Nam (I) (2) = ':' then
-          if CD.File_IO_Table.Nam (I) (3 .. CD.File_IO_Table.LNam (I) - 2) =
-             Id (1 .. CD.File_IO_Table.LNam (I) - 2)
-          then
-            return I;
-          end if;
-        elsif CD.File_IO_Table.Nam (I) = Id (1 .. CD.File_IO_Table.LNam (I)) then
-          return I;
-        end if;
-      end loop;
-      return No_File_Index;
-    end Get_File_Pointer;
 
     ------------------------------------------------------------------
     ---------------------------------------------------Enter_Variable-
@@ -579,8 +546,7 @@ package body HAC.Parser is
                 r.TYP := C.TP.TYP;
                 case C.TP.TYP is
                   when Floats =>
-                    Enter_or_find_Float (C.R);
-                    r.Adr := CD.RNum_Index;
+                    Enter_or_find_Float (CD, C.R, r.Adr);
                   when Ints =>
                     r.Adr := C.I;
                   when others =>
@@ -745,630 +711,6 @@ package body HAC.Parser is
     end Task_Declaration;
 
     ------------------------------------------------------------------
-    -------------------------------------------------------Expression-
-    procedure Expression (FSys : Symset; X : in out Exact_Type);
-
-    ------------------------------------------------------------------
-    ---------------------------------------------------------Selector-
-    procedure Selector (FSys : Symset; V : in out Exact_Type) is
-      --
-      procedure Record_Field_Selector is
-        Field_Offset, Field_Id : Integer;
-      begin
-        if V.TYP = Records then
-          Field_Id       := CD.Blocks_Table (V.Ref).Last;
-          CD.IdTab (0).Name := CD.Id;
-          while CD.IdTab (Field_Id).Name /= CD.Id loop  --  Search field identifier
-            Field_Id := CD.IdTab (Field_Id).Link;
-          end loop;
-          if Field_Id = No_Id then
-            Error (CD, err_undefined_identifier, stop_on_error => True);
-          end if;
-          V.TYP        := CD.IdTab (Field_Id).TYP;
-          V.Ref        := CD.IdTab (Field_Id).Ref;
-          Field_Offset := CD.IdTab (Field_Id).Adr;
-          if Field_Offset /= 0 then
-            Emit1 (CD, k_Record_Field_Offset, Field_Offset);
-          end if;
-        else
-          Error (CD, err_var_with_field_selector_must_be_record);
-        end if;
-        InSymbol;
-      end Record_Field_Selector;
-      --
-      procedure Array_Coordinates_Selector is
-        Array_Index_Expr : Exact_Type;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
-        AT_Index : Integer;             --  Index in the table of all arrays definitions.
-      begin
-        loop
-          InSymbol;  --  Consume '(' or ',' symbol.
-          Expression (FSys + Comma_RParent + RBrack, Array_Index_Expr);
-          if V.TYP = Arrays then
-            AT_Index := V.Ref;
-            if CD.Arrays_Table (AT_Index).Index_TYP /= Array_Index_Expr then
-              Error (CD, err_illegal_array_subscript);
-            elsif CD.Arrays_Table (AT_Index).ELSize = 1 then
-              Emit1 (CD, k_Array_Index_Element_Size_1, AT_Index);
-            else
-              Emit1 (CD, k_Array_Index, AT_Index);
-            end if;
-            V := CD.Arrays_Table (AT_Index).Element_TYP;
-          else
-            Error (CD, err_indexed_variable_must_be_an_array);
-          end if;
-          exit when CD.Sy /= Comma;
-        end loop;
-      end Array_Coordinates_Selector;
-      --
-      err : Compile_Error;
-    begin
-      pragma Assert (Selector_Symbol_Loose (CD.Sy));  --  '.' or '(' or (wrongly) '['
-      loop
-        if CD.Sy = Period then
-          InSymbol;  --  Consume '.' symbol.
-          if CD.Sy = IDent then
-            Record_Field_Selector;
-          else
-            Error (CD, err_identifier_missing);
-          end if;
-        else
-          if CD.Sy = LBrack then  --  '['
-            --  Common mistake by Pascal, Python or R programmers.
-            Error (CD, err_left_bracket_instead_of_parenthesis);
-          end if;
-          Array_Coordinates_Selector;
-          if CD.Sy = RBrack then  --  ']' : same kind of mistake as for '[' ...
-            Error (CD, err_right_bracket_instead_of_parenthesis);
-            InSymbol;
-          else
-            Need (CD, RParent, err_closing_parenthesis_missing);
-          end if;
-        end if;
-        exit when not Selector_Symbol_Loose (CD.Sy);
-      end loop;
-      --
-      if FSys = Semicolon_Set then
-        err := err_semicolon_missing;
-      else
-        err := err_incorrectly_used_symbol;
-      end if;
-      Test (CD, FSys, Empty_Symset, err);
-    end Selector;
-
-    ------------------------------------------------------------------
-    -----------------------------------------Subprogram_or_Entry_Call-
-    procedure Subprogram_or_Entry_Call (
-      FSys        :        Symset;
-      I, CallType :        Integer
-    )
-    is
-      --****************************************************************
-      -- Generate ObjCode for subprogram or Task Entry Call
-      -- CallType specifies type of Call
-      --   = 0 then standard subprogram Call,       CallSTDP
-      --   = 1 then standard Task Entry Call,       CallSTDE
-      --   = 2 then timed Task Entry Call,          CallTMDE
-      --   = 3 then conditional Task Entry Call,    CallCNDE
-      --****************************************************************
-      X            : Exact_Type;
-      LastP, CP, K : Integer;
-    begin
-      Emit1 (CD, k_Mark_Stack, I);
-      LastP := CD.Blocks_Table (CD.IdTab (I).Ref).LastPar;
-      CP    := I;
-      if CD.Sy = LParent then  --  Actual parameter list
-        loop
-          InSymbol;
-          if CP >= LastP then
-            Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
-          else
-            CP := CP + 1;
-            if CD.IdTab (CP).Normal then           --  Value parameter (IN)
-              Expression (FSys + Colon_Comma_RParent, X);
-              if X.TYP = CD.IdTab (CP).TYP then
-                if X.Ref /= CD.IdTab (CP).Ref then
-                  Error (CD, err_parameter_types_do_not_match);
-                elsif X.TYP = Arrays then
-                  Emit1 (CD, k_Load_Block, CD.Arrays_Table (X.Ref).Size);
-                elsif X.TYP = Records then
-                  Emit1 (CD, k_Load_Block, CD.Blocks_Table (X.Ref).VSize);
-                end if;
-              elsif X.TYP = Ints and CD.IdTab (CP).TYP = Floats then
-                Forbid_Type_Coercion (CD, "value is integer, parameter is floating-point");
-                Emit1 (CD, k_Integer_to_Float, 0);
-              elsif X.TYP /= NOTYP then
-                Error (CD, err_parameter_types_do_not_match);
-              end if;
-            else              -- Variable (Name) parameter (IN OUT, OUT)
-              if CD.Sy /= IDent then
-                Error (CD, err_identifier_missing);
-              else
-                K := Locate_Identifier (CD, CD.Id, Level);
-                InSymbol;
-                if K = 0 then
-                  null;  --  Error already issued due to missing identifier
-                elsif CD.IdTab (K).Obj /= Variable then
-                  Error (CD, err_variable_missing);
-                elsif CD.IdTab (K).Read_only then
-                  Error (
-                    CD, err_cannot_modify_constant_or_in_parameter,
-                    ": passed to OUT or IN OUT parameter"
-                  );
-                else
-                  X.TYP := CD.IdTab (K).TYP;
-                  X.Ref := CD.IdTab (K).Ref;
-                  if CD.IdTab (K).Normal then
-                    Emit2 (CD, k_Load_Address, CD.IdTab (K).LEV, CD.IdTab (K).Adr);
-                  else
-                    Emit2 (CD, k_Push_Value, CD.IdTab (K).LEV, CD.IdTab (K).Adr);
-                  end if;
-                   if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-                    Selector (FSys + Colon_Comma_RParent, X);
-                  end if;
-                  if (X.TYP /= CD.IdTab (CP).TYP) or
-                     (X.Ref /= CD.IdTab (CP).Ref)
-                  then
-                    Error (CD, err_parameter_types_do_not_match);
-                  end if;
-                end if;
-              end if;
-            end if;
-          end if;
-          Test (CD, Comma_RParent, FSys, err_incorrectly_used_symbol);
-          exit when CD.Sy /= Comma;
-        end loop;
-        Need (CD, RParent, err_closing_parenthesis_missing);
-      end if;
-      if CP < LastP then
-        Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
-      end if;
-      --
-      Emit2 (CD, k_Call, CallType, CD.Blocks_Table (CD.IdTab (I).Ref).PSize - 1);
-      if CallType /= CallSTDP then  --  Some for of entry call
-        Emit1 (CD, k_Exit_Call, CallType);  --  Return from Entry Call
-      end if;
-      --
-      if CD.IdTab (I).LEV < Level then
-        Emit2 (CD, k_Update_Display_Vector, CD.IdTab (I).LEV, Level);
-      end if;
-    end Subprogram_or_Entry_Call;
-
-    ------------------------------------------------------------------
-    -------------------------------------------------------Entry_Call-
-    procedure Entry_Call (FSys : Symset; I, CallType : Integer) is -- Hathorn
-      Addr, J : Integer;
-    begin
-      if CD.Sy /= Period then
-        Skip (CD, Semicolon, err_incorrectly_used_symbol);
-      else
-        InSymbol;                  --  Task Entry Selector
-        if CD.Sy /= IDent then
-          Skip (CD, Semicolon, err_identifier_missing);
-        else
-          J                 := CD.Blocks_Table (CD.IdTab (I).Ref).Last;
-          CD.IdTab (0).Name := CD.Id;
-          while CD.IdTab (J).Name /= CD.Id loop
-            J := CD.IdTab (J).Link;
-          end loop;
-
-          if J = 0 then
-            Error (CD, err_undefined_identifier);
-          end if;
-
-          Addr := J;
-          InSymbol;
-          Subprogram_or_Entry_Call (FSys, Addr, CallType);
-        end if;
-      end if;
-    end Entry_Call;
-
-    ------------------------------------------------------------------
-    -------------------------------------------------------Expression-
-    procedure Expression (FSys : Symset; X : in out Exact_Type) is
-      Y  : Exact_Type;
-      OP : KeyWSymbol;
-
-      procedure Simple_Expression (FSys : Symset; X : in out Exact_Type) is
-        Y  : Exact_Type;
-        OP : KeyWSymbol;
-
-        procedure Term (FSys : Symset; X : in out Exact_Type) is
-          Y  : Exact_Type;
-          OP : KeyWSymbol;
-
-          procedure Factor (FSys : Symset; X : in out Exact_Type) is
-            I : Integer;
-            F : Opcode;
-            err  : Compile_Error;
-
-            procedure Standard_Function (SF_Code : Integer) is
-              T_Argument : Typ_Set;  --  Expected type of the function's argument
-              N  : Integer := SF_Code;
-            begin  --  STANDARD FUNCTION NO. N , N >= SF_Clock INDICATES
-                   --  a NILADIC FUNCTION.
-              if N < SF_Clock then
-                Need (CD, LParent, err_missing_an_opening_parenthesis);
-                if N < SF_EOF or N > SF_EOLN then
-                  Expression (FSys + RParent, X);
-                  case N is
-                    when SF_Abs =>  --  Abs (NB: in Ada it's an operator, not a function)
-                      T_Argument       := Numeric_Typ_Set;
-                      CD.IdTab (I).TYP := X.TYP;
-                      if X.TYP = Floats then
-                        N := N + 1;
-                      end if;
-                    when SF_T_Val =>  --  S'Val : RM 3.5.5 (5)
-                      T_Argument := Ints_Typ;
-                    when SF_T_Pos =>  --  S'Pos : RM 3.5.5 (2)
-                      T_Argument := Discrete_Typ;
-                    when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
-                      T_Argument := Discrete_Typ;
-                      CD.IdTab (I).TYP := X.TYP;
-                    when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
-                         SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
-                      =>
-                      T_Argument := Numeric_Typ_Set;
-                      if Ints_Typ (X.TYP) then
-                        Forbid_Type_Coercion (CD, "value is of integer type; floating-point is expected here");
-                        Emit1 (CD, k_Integer_to_Float, 0);
-                      end if;
-                    --  Random
-                    when SF_Random =>
-                      T_Argument := Ints_Typ;
-                      CD.IdTab (I).TYP := X.TYP;
-                    when others =>
-                      null;
-                  end case;  --  N
-                  --
-                  if T_Argument (X.TYP) then
-                    Emit1 (CD, k_Standard_Functions, N);
-                  elsif X.TYP /= NOTYP then
-                    Error (CD, err_argument_to_std_function_of_wrong_type);
-                  end if;
-                else           --  N in [EOF, EOLN]
-                  if CD.Sy /= IDent then
-                    Error (CD, err_identifier_missing);
-                  elsif CD.Id(1..10) = "INPUT     " then  --  Standard_Input
-                    Emit2 (CD, k_Standard_Functions, 0, N);
-                  else
-                    I := Get_File_Pointer (CD.Id);
-                    if I = No_File_Index then -- NB: bug: was 0 instead of -1...
-                      Error (CD, err_undefined_identifier);
-                    else
-                      Emit2 (CD, k_Standard_Functions, I, N);
-                    end if;
-                  end if;
-                  InSymbol;
-                end if;        --  N in [EOF, EOLN]
-                X.TYP := CD.IdTab (I).TYP;
-                Need (CD, RParent, err_closing_parenthesis_missing);
-              else             --  NILADIC FUNCTION
-                case N is
-                  when SF_Clock =>
-                    Emit1 (CD, k_Standard_Functions, N);
-                  when others =>
-                    null;
-                end case;
-              end if;    -- NILADIC FUNCTIONS, N >= SF_Clock
-            end Standard_Function;
-
-            procedure Type_Conversion is  --  Ada RM 4.6
-              kind : Type_Conversion_Kind := Unknown;
-              Type_Id : constant String := To_String (CD.Id);
-            begin
-              Need (CD, LParent, err_missing_an_opening_parenthesis);
-              if Type_Id = HAC_Float_Name then
-                kind := To_Float;
-              elsif Type_Id = HAC_Integer_Name then
-                kind := To_Integer;
-              end if;
-              Expression (FSys + RParent, X);
-              case kind is
-                when To_Float =>
-                  case X.TYP is
-                    when Floats =>
-                      null;  --  !!  Emit warning "already float"
-                    when Ints =>
-                      Emit1 (CD, k_Integer_to_Float, 0);
-                    when others =>
-                      Argument_Type_Not_Supported (CD);
-                  end case;
-                  X.TYP := Floats;
-                when To_Integer =>
-                  case X.TYP is
-                    when Floats =>  --  Rounding to closest integer (Ada RM 4.6 (33)).
-                      Emit1 (CD, k_Standard_Functions, SF_Round_Float_to_Int);
-                    when Ints =>
-                      null;  --  !!  Emit warning "already integer"
-                    when others =>
-                      Argument_Type_Not_Supported (CD);
-                  end case;
-                  X.TYP := Ints;
-                when Unknown =>
-                  Error (CD, err_type_conversion_not_supported, "no support for target type " & Type_Id);
-              end case;
-              Need (CD, RParent, err_closing_parenthesis_missing);
-            end Type_Conversion;
-
-          begin  --  Factor
-            X.TYP := NOTYP;
-            X.Ref := 0;
-            Test (CD, Factor_Begin_Symbol + StrCon, FSys,
-              err_factor_unexpected_symbol
-            );
-            if CD.Sy = StrCon then
-              X.TYP := Strings;
-              Emit1 (CD, k_Literal, CD.SLeng);  --  String Literal Length
-              Emit1 (CD, k_Literal, CD.INum);   --  Index To String IdTab
-              InSymbol;
-            end if;
-            while Factor_Begin_Symbol (CD.Sy) loop
-              case CD.Sy is
-                when IDent =>
-                  I := Locate_Identifier (CD, CD.Id, Level, stop_on_error => True);
-                  InSymbol;
-                  exit when I = No_Id;  --  Id not found, error already issued by Locate_Identifier
-                  declare
-                    r : IdTabEntry renames CD.IdTab (I);
-                  begin
-                    case r.Obj is
-                      when Declared_Number_or_Enum_Item =>
-                        X.TYP := r.TYP;
-                        X.Ref := r.Ref;
-                        if X.TYP = Floats then
-                          --  Address is an index in the float constants table.
-                          Emit1 (CD, k_Load_Float, r.Adr);
-                        else
-                          --  Here the address is actually the immediate (discrete) value.
-                          Emit1 (CD, k_Literal, r.Adr);
-                        end if;
-                        --
-                      when Variable =>
-                        X.TYP := r.TYP;
-                        X.Ref := r.Ref;
-                        if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-                          if r.Normal then
-                            F := k_Load_Address;
-                          else
-                            F := k_Push_Value;
-                          end if;
-                          Emit2 (CD, F, r.LEV, r.Adr);
-                          Selector (FSys, X);
-                          if Standard_or_Enum_Typ (X.TYP) then
-                            Emit (CD, k_Case_34);
-                          end if;
-                        else
-                          if Standard_or_Enum_Typ (X.TYP) then
-                            if r.Normal then
-                              F := k_Push_Value;
-                            else
-                              F := k_Push_Indirect_Value;
-                            end if;
-                          elsif r.Normal then
-                            F := k_Load_Address;
-                          else
-                            F := k_Push_Value;
-                          end if;
-                          Emit2 (CD, F, r.LEV, r.Adr);
-                        end if;
-                        --
-                      when TypeMark =>
-                        Type_Conversion;
-                        --
-                      when Prozedure =>
-                        Error (CD, err_expected_constant_function_variable_or_subtype);
-                        --
-                      when Funktion =>
-                        X.TYP := r.TYP;
-                        if r.LEV = 0 then
-                          Standard_Function (r.Adr);
-                        else
-                          Subprogram_or_Entry_Call (FSys, I, CallSTDP);
-                        end if;
-                        --
-                      when others =>
-                        null;
-                    end case;
-                  end;
-                  --
-                when CharCon | IntCon | FloatCon =>
-                  if CD.Sy = FloatCon then
-                    X.TYP := Floats;
-                    Enter_or_find_Float (CD.RNum);
-                    Emit1 (CD, k_Load_Float, CD.RNum_Index);
-                  else
-                    if CD.Sy = CharCon then
-                      X.TYP := xChars;
-                    else
-                      X.TYP := Ints;
-                    end if;
-                    Emit1 (CD, k_Literal, CD.INum);
-                  end if;
-                  X.Ref := 0;
-                  InSymbol;
-                  --
-                when LParent =>    --  (
-                  InSymbol;
-                  Expression (FSys + RParent, X);
-                  Need (CD, RParent, err_closing_parenthesis_missing);
-                  --
-                when NOT_Symbol =>
-                  InSymbol;
-                  Factor (FSys, X);
-                  if X.TYP = Bools then
-                    Emit (CD, k_NOT_Boolean);
-                  elsif X.TYP /= NOTYP then
-                    Error (CD, err_resulting_type_should_be_Boolean);
-                  end if;
-                  --
-                when others =>
-                  null;
-              end case;
-              --
-              if FSys = Semicolon_Set then
-                err := err_semicolon_missing;
-              else
-                err := err_incorrectly_used_symbol;
-              end if;
-              Test (CD, FSys, Factor_Begin_Symbol, err);
-            end loop;
-          end Factor;
-
-        begin  --  Term
-          Factor (FSys + FactorZ, X);
-          while FactorZ (CD.Sy) loop
-            OP := CD.Sy;
-            InSymbol;
-            Factor (FSys + FactorZ, Y);
-            if X.TYP = NOTYP or X.TYP = NOTYP then
-              null;  --  Something is already wrong at this point; nothing to check or emit.
-            else
-              case OP is
-                when Times =>     --  *
-                  if X.TYP in Numeric_Typ then
-                    if X.TYP = Y.TYP then
-                      Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
-                    else
-                      Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
-                    end if;
-                  else
-                    Error (CD, err_operator_not_defined_for_types);
-                  end if;
-                when Divide =>    --  /
-                  if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
-                    Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
-                  else
-                    if X.TYP = Ints then
-                      Forbid_Type_Coercion (CD, "left operand's type is integer, right operand's isn't");
-                      Emit1 (CD, k_Integer_to_Float, 1);  --  NB: this assumed Y.TYP was Floats!
-                      X.TYP := Floats;
-                    end if;
-                    if Y.TYP = Ints then
-                      Forbid_Type_Coercion (CD, "right operand's type is integer, left operand's isn't");
-                      Emit1 (CD, k_Integer_to_Float, 0);  --  NB: this assumed Y.TYP was Floats!
-                      Y.TYP := Floats;
-                    end if;
-                    Error (CD, err_illegal_type_for_arithmetic_expression);
-                    X.TYP := NOTYP;
-                  end if;
-                when AND_Symbol =>
-                  if X.TYP = Bools and Y.TYP = Bools then
-                    Emit (CD, k_AND_Boolean);
-                  else
-                    Error (CD, err_resulting_type_should_be_Boolean);
-                    X.TYP := NOTYP;
-                  end if;
-                when MOD_Symbol =>
-                  if X.TYP = Ints and Y.TYP = Ints then
-                    Emit (CD, k_MOD_Integer);
-                  else
-                    Error (CD, err_mod_requires_integer_arguments);
-                    X.TYP := NOTYP;
-                  end if;
-                when Power =>
-                  if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
-                    Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
-                  elsif X.TYP = Floats and Y.TYP = Ints then
-                    Emit (CD, k_Power_Float_Integer);
-                  else
-                    Error (CD, err_invalid_power_operands);
-                  end if;
-                when others =>
-                  raise Internal_error with "Unknown operator in Term";
-              end case;
-            end if;
-          end loop;
-        end Term;
-
-      begin  --  Simple_Expression
-        --  + , -
-        if Plus_Minus (CD.Sy) then
-          OP := CD.Sy;
-          InSymbol;
-          Term (FSys + Plus_Minus, X);
-          if X.TYP not in Numeric_Typ then
-            Error (CD, err_illegal_type_for_arithmetic_expression);
-          elsif OP = Minus then
-            Emit_Unary_Minus (CD, X.TYP);
-          end if;
-        else
-          Term (FSys + TermZ, X);
-        end if;
-        while TermZ (CD.Sy) loop
-          OP := CD.Sy;
-          InSymbol;
-          Term (FSys + TermZ, Y);
-          if X.TYP = NOTYP or X.TYP = NOTYP then
-            null;  --  Something is already wrong at this point; nothing to check or emit.
-          else
-            case OP is
-              when OR_Symbol =>
-                if X.TYP = Bools and Y.TYP = Bools then
-                  Emit (CD, k_OR_Boolean);
-                else
-                  Error (CD, err_resulting_type_should_be_Boolean);
-                  X.TYP := NOTYP;
-                end if;
-              when XOR_Symbol =>
-                if X.TYP = Bools and Y.TYP = Bools then
-                  Emit (CD, k_XOR_Boolean);
-                else
-                  Error (CD, err_resulting_type_should_be_Boolean);
-                  X.TYP := NOTYP;
-                end if;
-              when Plus | Minus =>
-                if X.TYP in Numeric_Typ then
-                  if X.TYP = Y.TYP then
-                    Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
-                  else
-                    Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
-                  end if;
-                else
-                  Error (CD, err_operator_not_defined_for_types);
-                end if;
-              when others =>  --  Doesn't happen: TermZ(OP) is True.
-                null;
-            end case;
-          end if;
-        end loop;
-      end Simple_Expression;
-
-    begin  --  Expression
-      Simple_Expression (FSys + Comparison_Operator_Set, X);
-      if CD.Sy in Comparison_Operator then
-        OP := CD.Sy;
-        InSymbol;
-        Simple_Expression (FSys, Y);
-        if X.TYP = Ints and Y.TYP = Floats then
-          Forbid_Type_Coercion (CD, "left operand's type is integer, right operand's is floating-point");
-          X.TYP := Floats;
-          Emit1 (CD, k_Integer_to_Float, 1);
-        elsif Y.TYP = Ints and X.TYP = Floats then
-          Forbid_Type_Coercion (CD, "left operand's type is floating-point, right operand's is integer");
-          Y.TYP := Floats;
-          Emit1 (CD, k_Integer_to_Float, 0);
-        elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
-          Error (CD, err_incompatible_types_for_comparison);
-        elsif X.TYP = Y.TYP then
-          if Atomic_Typ (X.TYP) then
-            Emit_Comparison_Instruction (CD, OP, X.TYP);
-          else
-            Error (CD, err_operator_not_defined_for_types);
-          end if;
-        else
-          Error (CD, err_incompatible_types_for_comparison);
-        end if;
-        X.TYP := Bools;
-      end if;
-    end Expression;
-
-    procedure Boolean_Expression (FSys : Symset; X : in out Exact_Type) is
-    begin
-      Expression (FSys, X);
-      Check_Boolean (CD, X.TYP);
-    end Boolean_Expression;
-
-    ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
     procedure Assignment (I : Integer; Check_read_only : Boolean) is
       X, Y : Exact_Type;
@@ -1384,7 +726,7 @@ package body HAC.Parser is
       end if;
       Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr);
       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-        Selector (Becomes_EQL + FSys, X);
+        Selector (CD, Level, Becomes_EQL + FSys, X);
       end if;
       if CD.Sy = Becomes then
         InSymbol;
@@ -1398,7 +740,7 @@ package body HAC.Parser is
       if Check_read_only and then CD.IdTab (I).Read_only then
         Error (CD, err_cannot_modify_constant_or_in_parameter);
       end if;
-      Expression (Semicolon_Set, Y);
+      Expression (CD, Level, Semicolon_Set, Y);
       if X.TYP = Y.TYP then
         if X.TYP in Standard_Typ then
           Emit (CD, k_Store);
@@ -1504,7 +846,7 @@ package body HAC.Parser is
         InSymbol;  --  Consume EXIT symbol.
         if CD.Sy = WHEN_Symbol then  --  Conditional Exit
           InSymbol;
-          Boolean_Expression (Semicolon_Set, X);
+          Boolean_Expression (CD, Level, Semicolon_Set, X);
           Emit1 (CD, k_Conditional_Jump, CD.LC + 2);  --  Conditional jump around Exit
         end if;
         Emit1 (CD, k_Jump, dummy_address);  --  Unconditional jump with dummy address to be patched
@@ -1515,7 +857,7 @@ package body HAC.Parser is
         LC0, LC1 : Integer;
       begin
         InSymbol;
-        Boolean_Expression (FSys + DO_THEN, X);
+        Boolean_Expression (CD, Level, FSys + DO_THEN, X);
         LC1 := CD.LC;
         Emit (CD, k_Conditional_Jump);
         Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
@@ -1526,7 +868,7 @@ package body HAC.Parser is
           InSymbol;
           Emit1 (CD, k_Jump, dummy_address);  --  Unconditional jump with dummy address to be patched
           CD.ObjCode (LC1).Y := CD.LC;        --  Patch the previous conditional jump
-          Boolean_Expression (FSys + DO_THEN, X);
+          Boolean_Expression (CD, Level, FSys + DO_THEN, X);
           LC1 := CD.LC;
           Emit (CD, k_Conditional_Jump);
           Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
@@ -1593,7 +935,7 @@ package body HAC.Parser is
             end if;
             Emit2 (CD, F, CD.IdTab (Block_Idx).LEV + 1, 0);
             --
-            Expression (Semicolon_Set, Y);
+            Expression (CD, Level, Semicolon_Set, Y);
             if X.TYP = Y.TYP then
               if X.TYP in Standard_Typ then
                 Emit (CD, k_Store);
@@ -1625,7 +967,7 @@ package body HAC.Parser is
         if CD.Sy = Semicolon then
           Skip (CD, Semicolon, err_missing_expression_for_delay);
         else                  -- calculate delay value
-          Expression (Semicolon_Set, Y);
+          Expression (CD, Level, Semicolon_Set, Y);
           if Y.TYP /= Floats then
             Error (CD, err_wrong_type_in_DELAY);
           end if;
@@ -1712,7 +1054,7 @@ package body HAC.Parser is
         InSymbol;
         I := 0;
         J := 0;
-        Expression (FSys + Colon_Comma_IS_OF, X);
+        Expression (CD, Level, FSys + Colon_Comma_IS_OF, X);
         if not Discrete_Typ (X.TYP) then
           Error (CD, err_bad_type_for_a_case_statement);
         end if;
@@ -1758,7 +1100,7 @@ package body HAC.Parser is
       begin
         InSymbol;  --  Consume WHILE symbol.
         LC_Cond_Eval := CD.LC;
-        Boolean_Expression (FSys + DO_LOOP, X);
+        Boolean_Expression (CD, Level, FSys + DO_LOOP, X);
         LC_Cond_Jump := CD.LC;
         Emit (CD, k_Conditional_Jump);
         LOOP_Statement (k_Jump, LC_Cond_Eval);
@@ -1816,7 +1158,7 @@ package body HAC.Parser is
           --      a subtype_indication 3.2.2 (3) : name [constraint] like "Color [range red .. blue]"
           --      or a range 3.5 (3): "low .. high" or range_attribute_reference: A'Range
           --
-          Expression (END_LOOP_RANGE_Double_Dot + FSys, FOR_Lower_Bound);
+          Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys, FOR_Lower_Bound);
           CD.IdTab (CD.Id_Count).TYP := FOR_Lower_Bound.TYP;
           CD.IdTab (CD.Id_Count).Ref := FOR_Lower_Bound.Ref;  --  Need correct type if TYP = enums.
           if not Discrete_Typ (FOR_Lower_Bound.TYP) then
@@ -1824,7 +1166,7 @@ package body HAC.Parser is
           end if;
           if CD.Sy = Range_Double_Dot_Symbol then                          --  ..
             InSymbol;
-            Expression (FSys + LOOP_Symbol, FOR_Upper_Bound);
+            Expression (CD, Level, FSys + LOOP_Symbol, FOR_Upper_Bound);
             if FOR_Upper_Bound /= FOR_Lower_Bound then
               Error (CD, err_first_and_last_must_have_matching_types);
             end if;
@@ -1861,7 +1203,7 @@ package body HAC.Parser is
           I := Locate_Identifier (CD, CD.Id, Level);
           if CD.IdTab (I).Obj = aTask then
             InSymbol;
-            Entry_Call (FSys, I, -1);
+            Entry_Call (CD, Level, FSys, I, -1);
             if CD.ObjCode (CD.LC - 2).F = k_Call then  --  Need to patch CallType later
               patch (0) := CD.LC - 2;
             else
@@ -1888,7 +1230,7 @@ package body HAC.Parser is
                   Select_Error (err_missing_expression_for_delay);
                 else          -- calculate delay value
                   patch (2) := CD.LC;
-                  Expression (Semicolon_Set, Y);
+                  Expression (CD, Level, Semicolon_Set, Y);
                   patch (3) := CD.LC - 1;
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
@@ -2019,8 +1361,8 @@ package body HAC.Parser is
                 end loop;
                 -- patch
                 IAlt := 0;
-                InSymbol;          -- WHENSTATEMENT
-                Boolean_Expression (FSys + Finger, X);
+                InSymbol;          -- WHEN STATEMENT
+                Boolean_Expression (CD, Level, FSys + Finger, X);
                 InSymbol;
                 if CD.Sy = ACCEPT_Symbol then
                   if IAlt > 10 then
@@ -2039,7 +1381,7 @@ package body HAC.Parser is
                     Alt (IAlt) := CD.LC;
                     Emit (CD, k_Conditional_Jump);
                     InSymbol;
-                    Expression (FSys + Semicolon, Y);
+                    Expression (CD, Level, FSys + Semicolon, Y);
                     Emit2 (CD, k_Selective_Wait, 4, CD.LC + 2);  --  Update delay time
                     if Y.TYP /= Floats then
                       Select_Error (err_wrong_type_in_DELAY);
@@ -2110,7 +1452,7 @@ package body HAC.Parser is
                 if CD.Sy = Semicolon then
                   Skip (CD, Semicolon, err_missing_expression_for_delay);
                 else          -- calculate return value
-                  Expression (Semicolon_Set, Y);
+                  Expression (CD, Level, Semicolon_Set, Y);
                   Emit2 (CD, k_Selective_Wait, 4, CD.LC + 2);  --  Update delay time
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
@@ -2192,11 +1534,11 @@ package body HAC.Parser is
         X, Y              : Exact_Type;
         do_first_InSymbol : Boolean := True;
       begin
-        case N is -- Numbers: see EnterStdFcns in HAC.Compiler
+        case N is  --  Numbers: see EnterStdFcns in HAC.Compiler
           when 1 | 2 =>  -- GET, GET_LINE
             if CD.Sy = LParent then
               InSymbol;
-              I := Get_File_Pointer (CD.Id);  -- Schoening
+              I := Get_File_Pointer (CD, CD.Id);  -- Schoening
               if I = No_File_Index then
                 Emit1 (CD, k_Set_current_file_pointer, 0);
                 do_first_InSymbol := False;
@@ -2234,7 +1576,7 @@ package body HAC.Parser is
                       end if;
                       Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr);
                       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-                        Selector (FSys + Comma_RParent, X);
+                        Selector (CD, Level, FSys + Comma_RParent, X);
                       end if;
                       if X.TYP = Ints or
                          X.TYP = Floats or
@@ -2261,7 +1603,7 @@ package body HAC.Parser is
           when 3 | 4 =>          -- PUT, PUT_LINE
             if CD.Sy = LParent then
               InSymbol;
-              I := Get_File_Pointer (CD.Id);   -- Schoening
+              I := Get_File_Pointer (CD, CD.Id);   -- Schoening
               if I = No_File_Index then
                 Emit1 (CD, k_Set_current_file_pointer, 0);
                 do_first_InSymbol := False;
@@ -2282,11 +1624,11 @@ package body HAC.Parser is
                 end if;
                 do_first_InSymbol := True;
                 if CD.Sy = StrCon then
-                  Emit1 (CD, k_Literal, CD.SLeng);
+                  Emit1 (CD, k_Load_Discrete_Literal, CD.SLeng);
                   Emit1 (CD, k_Write_String, CD.INum);
                   InSymbol;
                 else
-                  Expression (FSys + Colon_Comma_RParent, X);
+                  Expression (CD, Level, FSys + Colon_Comma_RParent, X);
                   if X.TYP = Enums then
                     X.TYP := Ints;
                   end if;
@@ -2295,7 +1637,7 @@ package body HAC.Parser is
                   end if;
                   if CD.Sy = Colon then
                     InSymbol;
-                    Expression (FSys + Colon_Comma_RParent, Y);
+                    Expression (CD, Level, FSys + Colon_Comma_RParent, Y);
                     if Y.TYP /= Ints then
                       Error (CD, err_parameter_must_be_Integer);
                     end if;
@@ -2304,7 +1646,7 @@ package body HAC.Parser is
                         Error (CD, err_parameter_must_be_of_type_Float);
                       end if;
                       InSymbol;
-                      Expression (FSys + Comma_RParent, Y);
+                      Expression (CD, Level, FSys + Comma_RParent, Y);
                       if Y.TYP /= Ints then
                         Error (CD, err_parameter_must_be_Integer);
                       end if;
@@ -2351,7 +1693,7 @@ package body HAC.Parser is
                     end if;
                     Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr);
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-                      Selector (FSys + RParent, X);
+                      Selector (CD, Level, FSys + RParent, X);
                     end if;
                     if X.TYP = Ints then
                       if N = 5 then
@@ -2374,7 +1716,7 @@ package body HAC.Parser is
               Error (CD, err_missing_an_opening_parenthesis);
             else
               InSymbol;
-              I := Get_File_Pointer (CD.Id);
+              I := Get_File_Pointer (CD, CD.Id);
               if I = No_File_Index then
                 Error (CD, err_identifier_missing);
               else
@@ -2391,7 +1733,7 @@ package body HAC.Parser is
             else
               begin
                 InSymbol;
-                Expression (Colon_Comma_LParent_RParent_Semicolon, X);
+                Expression (CD, Level, Colon_Comma_LParent_RParent_Semicolon, X);
                 if X.TYP /= Ints then
                   Skip (CD, Semicolon, err_parameter_must_be_Integer);
                 end if;
@@ -2399,7 +1741,7 @@ package body HAC.Parser is
                   Skip (CD, Semicolon, err_COMMA_missing);
                 else
                   InSymbol;
-                  Expression (Colon_Comma_LParent_RParent_Semicolon, X);
+                  Expression (CD, Level, Colon_Comma_LParent_RParent_Semicolon, X);
                   if X.TYP /= Ints then
                     Skip (CD, Semicolon, err_parameter_must_be_Integer);
                   end if;
@@ -2421,7 +1763,7 @@ package body HAC.Parser is
               Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
-              Expression (RParent_Set, X);
+              Expression (CD, Level, RParent_Set, X);
               if X.TYP /= Floats then
                 Skip (CD, Semicolon, err_parameter_must_be_of_type_Float);
               end if;
@@ -2439,7 +1781,7 @@ package body HAC.Parser is
               Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
-              Expression (RParent_Set, X);
+              Expression (CD, Level, RParent_Set, X);
               if X.TYP /= Ints then
                 Skip (CD, Semicolon, err_parameter_must_be_Integer);
               end if;
@@ -2457,7 +1799,7 @@ package body HAC.Parser is
               Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
             else
               InSymbol;
-              Boolean_Expression (RParent_Set, X);
+              Boolean_Expression (CD, Level, RParent_Set, X);
               if CD.Sy /= RParent then
                 Skip (CD, Semicolon, err_closing_parenthesis_missing);
               else
@@ -2559,12 +1901,12 @@ package body HAC.Parser is
                   Error (CD, err_illegal_statement_start_symbol, "function name",
                          stop_on_error => True);
                 when aTask =>
-                  Entry_Call (FSys, I_Statement, CallSTDE);
+                  Entry_Call (CD, Level, FSys, I_Statement, CallSTDE);
                 when Prozedure =>
                   if CD.IdTab (I_Statement).LEV = 0 then
                     Standard_Procedure (CD.IdTab (I_Statement).Adr);
                   else
-                    Subprogram_or_Entry_Call (FSys, I_Statement, CallSTDP);
+                    Subprogram_or_Entry_Call (CD, Level, FSys, I_Statement, CallSTDP);
                   end if;
                 when Label =>
                   Error (CD, err_duplicate_label, To_String (CD.Id));

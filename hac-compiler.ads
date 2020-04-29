@@ -186,7 +186,6 @@ package HAC.Compiler is
     Blocks_Count            : Natural;
     Entries_Count           : Natural;
     Float_Constants_Count   : Natural;
-    RNum_Index              : Natural;
     Id_Count                : Natural;
     Strings_Table_Top       : Natural;
     Tasks_Definitions_Count : Natural;

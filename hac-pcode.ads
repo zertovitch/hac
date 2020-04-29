@@ -48,8 +48,8 @@ package HAC.PCode is
     k_Load_Block,
     k_Copy_Block,
     k_Store,
-    k_Literal,                          --  "Load immediate" in some assemblers.
-    k_Load_Float,
+    k_Load_Discrete_Literal,            --  "Load immediate" in some assemblers.
+    k_Load_Float_Literal,
     k_Integer_to_Float,
     --
     k_Read,

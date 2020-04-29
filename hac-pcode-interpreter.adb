@@ -963,7 +963,7 @@ package body HAC.PCode.Interpreter is
           end loop;
           Curr_TCB.T := Curr_TCB.T - 2;
 
-        when k_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
+        when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;
@@ -971,7 +971,7 @@ package body HAC.PCode.Interpreter is
             S (Curr_TCB.T).I := IR.Y;
           end if;
 
-        when k_Load_Float =>
+        when k_Load_Float_Literal =>
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;

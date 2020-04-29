@@ -292,4 +292,16 @@ package HAC.Parser.Helpers is
     No_Id_Fail    : Boolean := True;
     stop_on_error : Boolean := False) return Natural;
 
+  ------------------------------------------------------------------
+  -------------------------------------------------Get_File_Pointer-
+  function Get_File_Pointer (CD : Compiler_Data; Id : Alfa) return Integer;  -- Schoening
+
+  ------------------------------------------------------------------
+  ----------------------------------------------Enter_or_find_Float-
+  procedure Enter_or_find_Float (
+    CD         : in out Compiler_Data;
+    X          :        HAC_Float;
+    RNum_Index :    out Natural
+  );
+
 end HAC.Parser.Helpers;
