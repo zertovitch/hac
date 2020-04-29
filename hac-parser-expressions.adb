@@ -155,10 +155,8 @@ package body HAC.Parser.Expressions is
                       Forbid_Type_Coercion (CD, "value is of integer type; floating-point is expected here");
                       Emit1 (CD, k_Integer_to_Float, 0);
                     end if;
-                  --  Random
-                  when SF_Random =>
+                  when SF_Random_Int =>
                     T_Argument := Ints_Typ;
-                    CD.IdTab (I).TYP := X.TYP;
                   when others =>
                     null;
                 end case;  --  N
@@ -186,11 +184,9 @@ package body HAC.Parser.Expressions is
               X.TYP := CD.IdTab (I).TYP;
               Need (CD, RParent, err_closing_parenthesis_missing);
             else             --  NILADIC FUNCTION
-              case N is
-                when SF_Clock =>
+              case SF_Niladic (N) is
+                when SF_Clock | SF_Random_Float =>
                   Emit1 (CD, k_Standard_Functions, N);
-                when others =>
-                  null;
               end case;
             end if;    -- NILADIC FUNCTIONS, N >= SF_Clock
           end Standard_Function;

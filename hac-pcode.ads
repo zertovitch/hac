@@ -188,7 +188,13 @@ package HAC.PCode is
   SF_Arctan             : constant := 16;
   SF_EOF                : constant := 17;
   SF_EOLN               : constant := 18;
-  SF_Random             : constant := 19;
+  SF_Random_Int         : constant := 19;
+  --
+  --  Niladic functions.
+  --
   SF_Clock              : constant := 100;
+  SF_Random_Float       : constant := 101;
+
+  subtype SF_Niladic is Integer range SF_Clock .. SF_Random_Float;
 
 end HAC.PCode;

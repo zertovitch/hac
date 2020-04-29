@@ -725,18 +725,23 @@ package body HAC.PCode.Interpreter is
                     S (Curr_TCB.T).I := Boolean'Pos(Ada.Text_IO.End_Of_Line (FAT.FIL (IR.X)));
                   end if;
                 end if;
-              when SF_Random =>
-                S (Curr_TCB.T).I :=
-                  Integer (HAC.Data.HAC_Float (Random (Gen)) *
-                           HAC.Data.HAC_Float ((S (Curr_TCB.T).I + 1)));
-              when SF_Clock =>
-                --  CLOCK function, NILADIC functions have IR.Y => SF_Clock.
-                --  Return time of units of seconds.
+              when SF_Random_Int =>
+                S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen)) *
+                                    HAC.Data.HAC_Float ((S (Curr_TCB.T).I + 1));
+                S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (S (Curr_TCB.T).R));
+              when SF_Niladic =>
+                --  NILADIC functions have IR.Y >= SF_Clock.
                 Curr_TCB.T := Curr_TCB.T + 1;
                 if Curr_TCB.T > Curr_TCB.STACKSIZE then
                   PS := STKCHK;
                 else
-                  S (Curr_TCB.T).R := HAC.Data.HAC_Float (GetClock - Start_Time);
+                  case SF_Niladic (IR.Y) is
+                    when SF_Clock =>
+                      --  CLOCK function. Return time of units of seconds.
+                      S (Curr_TCB.T).R := HAC.Data.HAC_Float (GetClock - Start_Time);
+                    when SF_Random_Float =>
+                      S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen));
+                  end case;
                 end if;
               when others =>
                 null;  -- [P2Ada]: no otherwise / else in Pascal

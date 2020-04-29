@@ -318,8 +318,9 @@ package body HAC.Compiler is
       Enter ("Arctan",         Funktion, Floats, SF_Arctan);
       Enter ("EOF",            Funktion, Bools,  SF_EOF);
       Enter ("EOLN",           Funktion, Bools,  SF_EOLN);
-      Enter ("RANDOM",         Funktion, Ints,   SF_Random); --{ Schoening }
-      Enter ("CLOCK",          Funktion, Floats, SF_Clock);  --{ Cramer }
+      Enter ("RAND",           Funktion, Ints,   SF_Random_Int);    --{ Schoening }
+      Enter ("RND",            Funktion, Floats, SF_Random_Float);
+      Enter ("CLOCK",          Funktion, Floats, SF_Clock);         --{ Cramer }
       --{ Niladic functions such as CLOCK will have   }
       --{ IdTab[].Adr >= 100 To differentiate them from }
       --{ functions with args.  See Parser.StandFct.  }

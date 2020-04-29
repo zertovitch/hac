@@ -81,17 +81,17 @@ package body HAC_Pack is
     return REF.Exp(F);
   end Exp;
 
+  function Rand (I : Integer) return Integer is
+  begin
+    return Trunc (Rnd * Real(I + 1));
+  end Rand;
+
   gen: Generator;
 
-  function Random (I : Integer) return Integer is
+  function Rnd return Real is
   begin
-    return Trunc(Random(I));
-  end Random;
-
-  function Random (I : Integer) return Real is
-  begin
-    return Real (Random(gen)) * Real(I);
-  end Random;
+    return Real (Random (gen));
+  end Rnd;
 
   package IIO is new Ada.Text_IO.Integer_IO(Integer);
   package RIO is new Ada.Text_IO.Float_IO(Real);
