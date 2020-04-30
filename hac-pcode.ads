@@ -147,7 +147,11 @@ package HAC.PCode is
   procedure Patch_Addresses (OC : in out Object_Code_Table);
 
   --  Mechanism for patching instructions at selected addresses.
-  type Patch_Table is array (1 .. HAC.Data.Patch_Max) of Operand2;
+  type Patch_Table is array (Positive range <>) of Operand2;
+  subtype Fixed_Size_Patch_Table is Patch_Table (1 .. HAC.Data.Patch_Max);
+
+  --  Patch to OC'Last all addresses contained in the Patch_Table.
+  procedure Patch_Addresses (OC : in out Object_Code_Table; PT : Patch_Table);
 
   procedure Dump (OC : Object_Code_Table; Text : Ada.Text_IO.File_Type);
 

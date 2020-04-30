@@ -1279,14 +1279,13 @@ package body HAC.Parser is
 
         procedure Selective_Wait is         -- Kurtz <===================
           -- Jay, this Buds for you !!
-          JSD, Alt            : Patch_Table;
+          JSD, Alt            : Fixed_Size_Patch_Table;
           ISD, IAlt, StartSel : Integer;
           SelectDone          : Boolean;
           Y, X                : Exact_Type;
           do_terminate        : Boolean;
 
           procedure Accept_Statement_2 is      -- Kurtz
-            I : Integer;
 
             procedure Accept_Call_2 (FSys : Symset; I : Integer) is
             pragma Unreferenced (FSys, I);
@@ -1306,6 +1305,7 @@ package body HAC.Parser is
               end if;
             end Accept_Call_2;
 
+            I : Integer;
           begin         -- Accept_Statment_2
             InSymbol;
             I := Locate_Identifier (CD, CD.Id, Level);
@@ -1353,9 +1353,7 @@ package body HAC.Parser is
           loop
             case CD.Sy is
               when WHEN_Symbol =>
-                for I in 1 .. IAlt loop
-                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
-                end loop;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
                 IAlt := 0;
                 InSymbol;          -- WHEN STATEMENT
                 Boolean_Expression (CD, Level, FSys + Finger, X);
@@ -1403,9 +1401,7 @@ package body HAC.Parser is
               -- end WHEN_Symbol
 
               when ACCEPT_Symbol =>
-                for I in 1 .. IAlt loop
-                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
-                end loop;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
                 IAlt := 0;
                 Accept_Statement_2;
                 InSymbol;
@@ -1421,9 +1417,7 @@ package body HAC.Parser is
                 InSymbol;
 
               when ELSE_Symbol =>
-                for I in 1 .. IAlt loop
-                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
-                end loop;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
                 IAlt := 0;
                 InSymbol;
                 Multi_Statement (END_Set);
@@ -1436,9 +1430,7 @@ package body HAC.Parser is
               -- end ELSE_Symbol
 
               when DELAY_Symbol =>
-                for I in 1 .. IAlt loop
-                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
-                end loop;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
                 IAlt := 0;
                 --  Generate a Task delay, calculate return value if req'D
                 InSymbol;
@@ -1481,18 +1473,14 @@ package body HAC.Parser is
                   Select_Error (err_END_missing);
                 end if;
                 SelectDone := True;
-                for I in 1 .. IAlt loop
-                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
-                end loop;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
                 IAlt := 0;
                 if do_terminate then
                   Emit2 (CD, k_Selective_Wait, 5, StartSel);
                 else
                   Emit2 (CD, k_Selective_Wait, 6, StartSel);
                 end if;   -- Suspend
-                for I in 1 .. ISD loop
-                  CD.ObjCode (JSD (I)).Y := CD.LC;  --  Patch
-                end loop;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), JSD (1 .. ISD));
                 ISD := 0;
               -- end EndSy
 

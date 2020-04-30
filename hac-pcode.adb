@@ -65,9 +65,9 @@ package body HAC.PCode is
   function For_END (for_BEGIN: Opcode) return Opcode is
   begin
     case for_BEGIN is
-      when k_FOR_Forward_Begin    => return k_FOR_Forward_End;
+      when k_FOR_Forward_Begin => return k_FOR_Forward_End;
       when k_FOR_Reverse_Begin => return k_FOR_Reverse_End;
-      when others   => return for_BEGIN;
+      when others => return for_BEGIN;
     end case;
   end For_END;
 
@@ -124,6 +124,13 @@ package body HAC.PCode is
         OC (LC0).Y := OC'Last;
       end if;
       LC0 := LC0 + 1;
+    end loop;
+  end Patch_Addresses;
+
+  procedure Patch_Addresses (OC : in out Object_Code_Table; PT : Patch_Table) is
+  begin
+    for Instruction_Address of PT loop
+      OC (Instruction_Address).Y := OC'Last;
     end loop;
   end Patch_Addresses;
 
