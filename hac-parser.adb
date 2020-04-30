@@ -1279,10 +1279,7 @@ package body HAC.Parser is
 
         procedure Selective_Wait is         -- Kurtz <===================
           -- Jay, this Buds for you !!
-
-          type patch_ptr is array (1 .. 10) of Integer;
-
-          JSD, Alt            : patch_ptr;
+          JSD, Alt            : Patch_Table;
           ISD, IAlt, StartSel : Integer;
           SelectDone          : Boolean;
           Y, X                : Exact_Type;
@@ -1318,7 +1315,7 @@ package body HAC.Parser is
             InSymbol;
             Accept_Call_2 (FSys, I);
             Emit2 (CD, k_Selective_Wait, 2, I);          --  Retain Entry Index
-            if IAlt < 10 then
+            if IAlt < Alt'Last then
               IAlt := IAlt + 1;
             else
               Fatal (PATCHING);
@@ -1357,15 +1354,14 @@ package body HAC.Parser is
             case CD.Sy is
               when WHEN_Symbol =>
                 for I in 1 .. IAlt loop
-                  CD.ObjCode (Alt (I)).Y  := CD.LC;
+                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
                 end loop;
-                -- patch
                 IAlt := 0;
                 InSymbol;          -- WHEN STATEMENT
                 Boolean_Expression (CD, Level, FSys + Finger, X);
                 InSymbol;
                 if CD.Sy = ACCEPT_Symbol then
-                  if IAlt > 10 then
+                  if IAlt > Alt'Last then
                     Fatal (PATCHING);
                   else
                     IAlt       := IAlt + 1;
@@ -1374,7 +1370,7 @@ package body HAC.Parser is
                     Accept_Statement_2;
                   end if;
                 elsif CD.Sy = DELAY_Symbol then
-                  if IAlt > 10 then
+                  if IAlt > Alt'Last then
                     Fatal (PATCHING);
                   else
                     IAlt       := IAlt + 1;
@@ -1386,7 +1382,7 @@ package body HAC.Parser is
                     if Y.TYP /= Floats then
                       Select_Error (err_wrong_type_in_DELAY);
                     end if;
-                    if IAlt > 10 then
+                    if IAlt > Alt'Last then
                       Fatal (PATCHING);
                     end if;
                     IAlt       := IAlt + 1;
@@ -1398,7 +1394,7 @@ package body HAC.Parser is
                 end if;
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
-                if ISD > 10 then
+                if ISD > JSD'Last then
                   Fatal (PATCHING);
                 end if;
                 ISD       := ISD + 1;
@@ -1408,14 +1404,13 @@ package body HAC.Parser is
 
               when ACCEPT_Symbol =>
                 for I in 1 .. IAlt loop
-                  CD.ObjCode (Alt (I)).Y  := CD.LC;
+                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
                 end loop;
-                --  patch
                 IAlt := 0;
                 Accept_Statement_2;
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
-                if ISD > 10 then
+                if ISD > JSD'Last then
                   Fatal (PATCHING);
                 end if;
                 ISD       := ISD + 1;
@@ -1427,13 +1422,12 @@ package body HAC.Parser is
 
               when ELSE_Symbol =>
                 for I in 1 .. IAlt loop
-                  --  patch ObjCode
-                  CD.ObjCode (Alt (I)).Y  := CD.LC;
+                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
                 end loop;
                 IAlt := 0;
                 InSymbol;
                 Multi_Statement (END_Set);
-                if ISD > 10 then
+                if ISD > JSD'Last then
                   Fatal (PATCHING);
                 end if;
                 ISD       := ISD + 1;
@@ -1443,9 +1437,8 @@ package body HAC.Parser is
 
               when DELAY_Symbol =>
                 for I in 1 .. IAlt loop
-                  CD.ObjCode (Alt (I)).Y  := CD.LC;
+                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
                 end loop;
-                --  patch
                 IAlt := 0;
                 --  Generate a Task delay, calculate return value if req'D
                 InSymbol;
@@ -1457,7 +1450,7 @@ package body HAC.Parser is
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
                   end if;
-                  if IAlt > 10 then
+                  if IAlt > Alt'Last then
                     Fatal (PATCHING);
                   end if;
                   IAlt       := IAlt + 1;
@@ -1466,7 +1459,7 @@ package body HAC.Parser is
                 end if;
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
-                if ISD > 10 then
+                if ISD > JSD'Last then
                   Fatal (PATCHING);
                 end if;
                 ISD       := ISD + 1;
@@ -1489,9 +1482,8 @@ package body HAC.Parser is
                 end if;
                 SelectDone := True;
                 for I in 1 .. IAlt loop
-                  CD.ObjCode (Alt (I)).Y  := CD.LC;
+                  CD.ObjCode (Alt (I)).Y := CD.LC;  --  Patch
                 end loop;
-                -- patch
                 IAlt := 0;
                 if do_terminate then
                   Emit2 (CD, k_Selective_Wait, 5, StartSel);
@@ -1499,9 +1491,8 @@ package body HAC.Parser is
                   Emit2 (CD, k_Selective_Wait, 6, StartSel);
                 end if;   -- Suspend
                 for I in 1 .. ISD loop
-                  CD.ObjCode (JSD (I)).Y  := CD.LC;
+                  CD.ObjCode (JSD (I)).Y := CD.LC;  --  Patch
                 end loop;
-                -- patch
                 ISD := 0;
               -- end EndSy
 

@@ -58,6 +58,8 @@ package HAC.Data is
   Id_Table_Max : constant := 200;            --  Size of identifier table
   XMax         : constant Integer := MaxINT;
 
+  Patch_Max : constant := 100;
+
   HAC_Float_Name   : constant String := "REAL";
   HAC_Integer_Name : constant String := "INTEGER";
 

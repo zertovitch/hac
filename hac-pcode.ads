@@ -143,8 +143,11 @@ package HAC.PCode is
   --  When the code is emited, the address is still unknown.
   --  When the address is known, jump addresses are patched.
 
-  --  Patch all addresses which are = dummy_address to OC'Last.
+  --  Patch to OC'Last all addresses of Jump_Opcode's which are equal to dummy_address.
   procedure Patch_Addresses (OC : in out Object_Code_Table);
+
+  --  Mechanism for patching instructions at selected addresses.
+  type Patch_Table is array (1 .. HAC.Data.Patch_Max) of Operand2;
 
   procedure Dump (OC : Object_Code_Table; Text : Ada.Text_IO.File_Type);
 

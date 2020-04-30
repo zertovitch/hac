@@ -1,4 +1,4 @@
---  example of use, just written "live" using the
+--  Example of use, just written "live" using the
 --  LEA editor, during a homeschooling session.
 
 with HAC_Pack;  use HAC_Pack;
