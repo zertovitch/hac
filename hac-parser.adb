@@ -1315,12 +1315,7 @@ package body HAC.Parser is
             InSymbol;
             Accept_Call_2 (FSys, I);
             Emit2 (CD, k_Selective_Wait, 2, I);          --  Retain Entry Index
-            if IAlt < Alt'Last then
-              IAlt := IAlt + 1;
-            else
-              Fatal (PATCHING);
-            end if;
-            Alt (IAlt) := CD.LC;              --  SAVE LOCATION FOR PATCHING
+            Feed_Patch_Table (Alt, IAlt, CD.LC);
             Emit2 (CD, k_Selective_Wait, 3, CD.LC);  --  ACCEPT IF Ready ELSE Skip To LC
             -- CONDITIONAL ACCEPT MUST BE ATOMIC
             if CD.Sy = DO_Symbol then
@@ -1353,85 +1348,54 @@ package body HAC.Parser is
           loop
             case CD.Sy is
               when WHEN_Symbol =>
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
-                IAlt := 0;
-                InSymbol;          -- WHEN STATEMENT
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
+                InSymbol;  --  Consume WHEN symbol.
                 Boolean_Expression (CD, Level, FSys + Finger, X);
                 InSymbol;
                 if CD.Sy = ACCEPT_Symbol then
-                  if IAlt > Alt'Last then
-                    Fatal (PATCHING);
-                  else
-                    IAlt       := IAlt + 1;
-                    Alt (IAlt) := CD.LC;
-                    Emit (CD, k_Conditional_Jump);
-                    Accept_Statement_2;
-                  end if;
+                  Feed_Patch_Table (Alt, IAlt, CD.LC);
+                  Emit (CD, k_Conditional_Jump);
+                  Accept_Statement_2;
                 elsif CD.Sy = DELAY_Symbol then
-                  if IAlt > Alt'Last then
-                    Fatal (PATCHING);
-                  else
-                    IAlt       := IAlt + 1;
-                    Alt (IAlt) := CD.LC;
-                    Emit (CD, k_Conditional_Jump);
-                    InSymbol;
-                    Expression (CD, Level, FSys + Semicolon, Y);
-                    Emit2 (CD, k_Selective_Wait, 4, CD.LC + 2);  --  Update delay time
-                    if Y.TYP /= Floats then
-                      Select_Error (err_wrong_type_in_DELAY);
-                    end if;
-                    if IAlt > Alt'Last then
-                      Fatal (PATCHING);
-                    end if;
-                    IAlt       := IAlt + 1;
-                    Alt (IAlt) := CD.LC;
-                    Emit (CD, k_Jump);
+                  Feed_Patch_Table (Alt, IAlt, CD.LC);
+                  Emit (CD, k_Conditional_Jump);
+                  InSymbol;
+                  Expression (CD, Level, FSys + Semicolon, Y);
+                  Emit2 (CD, k_Selective_Wait, 4, CD.LC + 2);  --  Update delay time
+                  if Y.TYP /= Floats then
+                    Select_Error (err_wrong_type_in_DELAY);
                   end if;
+                  Feed_Patch_Table (Alt, IAlt, CD.LC);
+                  Emit (CD, k_Jump);
                 else
                   Select_Error (err_missing_a_procedure_declaration);
                 end if;
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
-                if ISD > JSD'Last then
-                  Fatal (PATCHING);
-                end if;
-                ISD       := ISD + 1;
-                JSD (ISD) := CD.LC;
+                Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);          --  patch JMP ADDRESS AT EndSy
               -- end WHEN_Symbol
 
               when ACCEPT_Symbol =>
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
-                IAlt := 0;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
                 Accept_Statement_2;
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
-                if ISD > JSD'Last then
-                  Fatal (PATCHING);
-                end if;
-                ISD       := ISD + 1;
-                JSD (ISD) := CD.LC;
+                Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);
 
-              when OR_Symbol =>  --  OR STATEMENT
-                InSymbol;
+              when OR_Symbol =>
+                InSymbol;  --  Consume OR symbol.
 
               when ELSE_Symbol =>
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
-                IAlt := 0;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
                 InSymbol;
                 Multi_Statement (END_Set);
-                if ISD > JSD'Last then
-                  Fatal (PATCHING);
-                end if;
-                ISD       := ISD + 1;
-                JSD (ISD) := CD.LC;
+                Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);
-              -- end ELSE_Symbol
 
               when DELAY_Symbol =>
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
-                IAlt := 0;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
                 --  Generate a Task delay, calculate return value if req'D
                 InSymbol;
                 if CD.Sy = Semicolon then
@@ -1442,22 +1406,13 @@ package body HAC.Parser is
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
                   end if;
-                  if IAlt > Alt'Last then
-                    Fatal (PATCHING);
-                  end if;
-                  IAlt       := IAlt + 1;
-                  Alt (IAlt) := CD.LC;
+                  Feed_Patch_Table (Alt, IAlt, CD.LC);
                   Emit (CD, k_Jump);
                 end if;
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
-                if ISD > JSD'Last then
-                  Fatal (PATCHING);
-                end if;
-                ISD       := ISD + 1;
-                JSD (ISD) := CD.LC;
+                Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);
-              -- end DELAY_Symbol
 
               when TERMINATE_Symbol =>
                 InSymbol;
@@ -1473,16 +1428,13 @@ package body HAC.Parser is
                   Select_Error (err_END_missing);
                 end if;
                 SelectDone := True;
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt (1 .. IAlt));
-                IAlt := 0;
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
                 if do_terminate then
                   Emit2 (CD, k_Selective_Wait, 5, StartSel);
                 else
                   Emit2 (CD, k_Selective_Wait, 6, StartSel);
                 end if;   -- Suspend
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), JSD (1 .. ISD));
-                ISD := 0;
-              -- end EndSy
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), JSD, ISD);
 
               when others =>
                 SelectDone := True;
@@ -1492,7 +1444,7 @@ package body HAC.Parser is
         end Selective_Wait;
 
       begin
-        InSymbol;  --  Consume SELECT_Symbol.
+        InSymbol;  --  Consume SELECT symbol.
         if CD.Sy = ACCEPT_Symbol or CD.Sy = WHEN_Symbol then
           Selective_Wait;
           InSymbol;

@@ -127,12 +127,33 @@ package body HAC.PCode is
     end loop;
   end Patch_Addresses;
 
-  procedure Patch_Addresses (OC : in out Object_Code_Table; PT : Patch_Table) is
+  procedure Patch_Addresses (
+    OC  : in out Object_Code_Table;
+    PT  :        Patch_Table;
+    Top : in out Natural
+  )
+  is
   begin
-    for Instruction_Address of PT loop
+    for Instruction_Address of PT (PT'First .. Top) loop
       OC (Instruction_Address).Y := OC'Last;
     end loop;
+    Top := 0;
   end Patch_Addresses;
+
+  procedure Feed_Patch_Table (
+    PT  : in out Patch_Table;
+    Top : in out Natural;
+    LC  :        Integer
+  )
+  is
+  begin
+    if Top < PT'Last then
+      Top := Top + 1;
+    else
+      Fatal (PATCHING);
+    end if;
+    PT (Top) := LC;
+  end Feed_Patch_Table;
 
   procedure Dump (OC : Object_Code_Table; Text : Ada.Text_IO.File_Type) is
     use Ada.Text_IO;

@@ -150,8 +150,21 @@ package HAC.PCode is
   type Patch_Table is array (Positive range <>) of Operand2;
   subtype Fixed_Size_Patch_Table is Patch_Table (1 .. HAC.Data.Patch_Max);
 
-  --  Patch to OC'Last all addresses contained in the Patch_Table.
-  procedure Patch_Addresses (OC : in out Object_Code_Table; PT : Patch_Table);
+  --  Patch to OC'Last all addresses for Jump instructions whose
+  --  addresses are contained in the Patch_Table, up to index Top.
+  --  Reset Top to 0.
+  procedure Patch_Addresses (
+    OC  : in out Object_Code_Table;
+    PT  :        Patch_Table;
+    Top : in out Natural
+  );
+
+  --  Add new instruction address to a Patch_Table.
+  procedure Feed_Patch_Table (
+    PT  : in out Patch_Table;
+    Top : in out Natural;
+    LC  :        Integer
+  );
 
   procedure Dump (OC : Object_Code_Table; Text : Ada.Text_IO.File_Type);
 
