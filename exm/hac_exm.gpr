@@ -18,6 +18,7 @@ project HAC_Exm is
      --
      "ackermann.adb",
      "days_1901.adb",
+     "einmaleins.adb",
      "hello.adb",
      "mandelbrot.adb",
      "merge_sort.adb",

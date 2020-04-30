@@ -354,4 +354,6 @@ package body HAC_Pack is
     raise Program_Error;
   end Signal;
 
+begin
+  Reset (gen);  --  Randomize.
 end HAC_Pack;

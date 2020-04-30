@@ -17,16 +17,25 @@ package body HAC.Compiler is
   )
   is
   begin
-    CD.current_compiler_stream := Source_Stream_Access (s);
-    CD.current_compiler_file_name := To_Unbounded_String (file_name);
+    CD.compiler_stream := Source_Stream_Access (s);
+    CD.source_file_name := To_Unbounded_String (file_name);
   end Set_Source_Stream;
 
   function Get_Current_Source_Name (CD: Compiler_Data) return String is
   begin
-    return To_String (CD.current_compiler_file_name);
+    return To_String (CD.source_file_name);
   end Get_Current_Source_Name;
 
-  procedure Init_Tables (CD : out Compiler_Data) is
+  procedure Set_Error_Pipe (
+    CD   : in out Compiler_Data;
+    pipe :        Smart_error_pipe
+  )
+  is
+  begin
+    CD.error_pipe := pipe;
+  end Set_Error_Pipe;
+
+  procedure Init (CD : out Compiler_Data) is
   begin
     --  Array and block tables are clearly 1-based
     CD.Arrays_Count := 0;
@@ -55,10 +64,11 @@ package body HAC.Compiler is
     CD.LL := 0;
     CD.syStart := 1;
     CD.syEnd   := 1;
+    CD.Line_Count := 0;
     --
     CD.Err_Count := 0;
     CD.Errs      := error_free;
-  end Init_Tables;
+  end Init;
 
   --  Print_Tables is for debugging purposes.
   --
@@ -349,7 +359,7 @@ package body HAC.Compiler is
     procedure InSymbol is begin InSymbol (CD); end;
 
   begin  --  Compile
-    Init_Tables (CD);
+    Init (CD);
 
     CD.listing_requested := listing_file_name /= "";
     if CD.listing_requested then
@@ -502,5 +512,10 @@ package body HAC.Compiler is
     when Compilation_abandoned =>
       null;  --  Just too many errors...
   end Compile;
+
+  function Unit_Compilation_Successful (CD: Compiler_Data) return Boolean is
+  begin
+    return CD.Err_Count = 0;
+  end Unit_Compilation_Successful;
 
 end HAC.Compiler;

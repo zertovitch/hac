@@ -172,7 +172,7 @@ package body HAC.Scanner is
       c   : Character;
     begin
       loop
-        Character'Read (CD.current_compiler_stream, c);
+        Character'Read (CD.compiler_stream, c);
         --  !! NB: if HAC ever happens to consume large input files,
         --         the one-character-at-a-time stream input could become
         --         a performance bottleneck.  --> buffered input (cf Zip-Ada)

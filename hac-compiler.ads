@@ -156,21 +156,21 @@ package HAC.Compiler is
 
   type Compiler_Data is record
     --  Source code information and scanner data
-    current_compiler_stream    : Source_Stream_Access;
-    current_compiler_file_name : Ada.Strings.Unbounded.Unbounded_String;
+    compiler_stream  : Source_Stream_Access;
+    source_file_name : Ada.Strings.Unbounded.Unbounded_String;  --  Indicative (error messages)
     --
-    Line_Count              : Natural;            --  Source line counter, used for listing
-    InpLine                 : Source_Line_String;
-    CH                      : Character;          --  Previous Character read from source program
-    CC                      : Integer;            --  Character counter (=column in current line)
-    LL                      : Natural;            --  Length of current line
-    Sy                      : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
-    syStart, syEnd          : Integer;            --  Start and end on line for the symbol in Sy
-    Id                      : Alfa;               --  Identifier from InSymbol
-    Id_with_case            : Alfa;               --  Same as Id, but with casing.
-    INum                    : Integer;            --  Integer from InSymbol
-    RNum                    : HAC_Float;          --  FLOAT Number from InSymbol
-    SLeng                   : Integer;            --  String Length
+    Line_Count       : Natural;            --  Source line counter, used for listing
+    InpLine          : Source_Line_String;
+    CH               : Character;          --  Previous Character read from source program
+    CC               : Integer;            --  Character counter (=column in current line)
+    LL               : Natural;            --  Length of current line
+    Sy               : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
+    syStart, syEnd   : Integer;            --  Start and end on line for the symbol in Sy
+    Id               : Alfa;               --  Identifier from InSymbol
+    Id_with_case     : Alfa;               --  Same as Id, but with casing.
+    INum             : Integer;            --  Integer from InSymbol
+    RNum             : HAC_Float;          --  FLOAT Number from InSymbol
+    SLeng            : Integer;            --  String Length
     --  Compiler tables
     Arrays_Table            : Arrays_Table_Type;  --  NB: only static-sized arrays so far.
     Blocks_Table            : Blocks_Table_Type;
@@ -195,18 +195,18 @@ package HAC.Compiler is
     CMax                    : Integer;  --  Top of available ObjCode table;
                                         --  CMax + 1 .. CDMax: variable initialization code
     --  Information about source code
-    Block_Id_with_casing      : HAC.Data.Alfa;                --  Copy of current block's Id
-    Main_Program_ID           : HAC.Data.Alfa := Empty_Alfa;  --  Main program name
-    Main_Program_ID_with_case : HAC.Data.Alfa := Empty_Alfa;
+    Block_Id_with_casing      : Alfa;                --  Copy of current block's Id
+    Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
+    Main_Program_ID_with_case : Alfa := Empty_Alfa;
     --
     listing_requested   : Boolean;
     comp_dump_requested : Boolean;
     listing   : Ada.Text_IO.File_Type;
     comp_dump : Ada.Text_IO.File_Type;
     --
-    Err_Count          : Natural;
-    Errs               : Error_set;
-    current_error_pipe : Smart_error_pipe := null;
+    Err_Count  : Natural;
+    Errs       : Error_set;
+    error_pipe : Smart_error_pipe := null;
   end record;
 
   --  Main compilation procedure.
@@ -227,6 +227,13 @@ package HAC.Compiler is
   );
 
   function Get_Current_Source_Name (CD: Compiler_Data) return String;
+
+  procedure Set_Error_Pipe (
+    CD   : in out Compiler_Data;
+    pipe :        Smart_error_pipe
+  );
+
+  function Unit_Compilation_Successful (CD: Compiler_Data) return Boolean;
 
   procedure Emit (
     CD   : in out Compiler_Data;

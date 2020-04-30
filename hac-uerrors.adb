@@ -302,7 +302,7 @@ package body HAC.UErrors is
     Show_to_comp_dump (CD.Line_Count, CD.syStart, CD.syEnd, -1, hint);
     CD.Errs (code) := True;
     CD.Err_Count := CD.Err_Count + 1;
-    if CD.current_error_pipe = null then
+    if CD.error_pipe = null then
       Put_Line(
         Current_Error,
         --  !! Ada "file" name here
@@ -326,7 +326,7 @@ package body HAC.UErrors is
         when others =>
           null;
       end case;
-      CD.current_error_pipe (
+      CD.error_pipe (
         message   => Error_String (code, hint),
         file_name => HAC.Compiler.Get_Current_Source_Name (CD),
         line      => CD.Line_Count,
