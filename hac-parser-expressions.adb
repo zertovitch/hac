@@ -1,8 +1,9 @@
-with HAC.Parser.Calls;       use HAC.Parser.Calls;
-with HAC.Parser.Helpers;     use HAC.Parser.Helpers;
-with HAC.PCode;              use HAC.PCode;
-with HAC.Scanner;            use HAC.Scanner;
-with HAC.UErrors;            use HAC.UErrors;
+with HAC.Parser.Calls;                  use HAC.Parser.Calls;
+with HAC.Parser.Helpers;                use HAC.Parser.Helpers;
+with HAC.Parser.Standard_Subprograms;   use HAC.Parser.Standard_Subprograms;
+with HAC.PCode;                         use HAC.PCode;
+with HAC.Scanner;                       use HAC.Scanner;
+with HAC.UErrors;                       use HAC.UErrors;
 
 package body HAC.Parser.Expressions is
 
@@ -120,80 +121,13 @@ package body HAC.Parser.Expressions is
         OP : KeyWSymbol;
 
         procedure Factor (FSys : Symset; X : out Exact_Type) is
-          I : Integer;
-          F : Opcode;
-          err  : Compile_Error;
-
-          procedure Standard_Function (SF_Code : Integer) is
-            T_Argument : Typ_Set;  --  Expected type of the function's argument
-            N  : Integer := SF_Code;
-          begin  --  STANDARD FUNCTION NO. N , N >= SF_Clock INDICATES
-                 --  a NILADIC FUNCTION.
-            if N < SF_Clock then
-              Need (CD, LParent, err_missing_an_opening_parenthesis);
-              if N < SF_EOF or N > SF_EOLN then
-                Expression (CD, Level, FSys + RParent, X);
-                case N is
-                  when SF_Abs =>  --  Abs (NB: in Ada it's an operator, not a function)
-                    T_Argument       := Numeric_Typ_Set;
-                    CD.IdTab (I).TYP := X.TYP;
-                    if X.TYP = Floats then
-                      N := N + 1;
-                    end if;
-                  when SF_T_Val =>  --  S'Val : RM 3.5.5 (5)
-                    T_Argument := Ints_Typ;
-                  when SF_T_Pos =>  --  S'Pos : RM 3.5.5 (2)
-                    T_Argument := Discrete_Typ;
-                  when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
-                    T_Argument := Discrete_Typ;
-                    CD.IdTab (I).TYP := X.TYP;
-                  when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
-                       SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
-                    =>
-                    T_Argument := Numeric_Typ_Set;
-                    if Ints_Typ (X.TYP) then
-                      Forbid_Type_Coercion (CD, "value is of integer type; floating-point is expected here");
-                      Emit1 (CD, k_Integer_to_Float, 0);
-                    end if;
-                  when SF_Random_Int =>
-                    T_Argument := Ints_Typ;
-                  when others =>
-                    null;
-                end case;  --  N
-                --
-                if T_Argument (X.TYP) then
-                  Emit1 (CD, k_Standard_Functions, N);
-                elsif X.TYP /= NOTYP then
-                  Error (CD, err_argument_to_std_function_of_wrong_type);
-                end if;
-              else           --  N in [EOF, EOLN]
-                if CD.Sy /= IDent then
-                  Error (CD, err_identifier_missing);
-                elsif Equal (CD.Id, "INPUT") then  --  Standard_Input
-                  Emit2 (CD, k_Standard_Functions, 0, N);
-                else
-                  I := Get_File_Pointer (CD, CD.Id);
-                  if I = No_File_Index then  --  NB: bug fix: was 0 instead of -1...
-                    Error (CD, err_undefined_identifier);
-                  else
-                    Emit2 (CD, k_Standard_Functions, I, N);
-                  end if;
-                end if;
-                InSymbol (CD);
-              end if;        --  N in [EOF, EOLN]
-              X.TYP := CD.IdTab (I).TYP;
-              Need (CD, RParent, err_closing_parenthesis_missing);
-            else             --  NILADIC FUNCTION
-              case SF_Niladic (N) is
-                when SF_Clock | SF_Random_Float =>
-                  Emit1 (CD, k_Standard_Functions, N);
-              end case;
-            end if;    -- NILADIC FUNCTIONS, N >= SF_Clock
-          end Standard_Function;
+          Ident_Index : Integer;
+          F           : Opcode;
+          err         : Compile_Error;
 
           procedure Type_Conversion is  --  Ada RM 4.6
-            kind : Type_Conversion_Kind := Unknown;
-            Type_Id : constant String := To_String (CD.Id);
+            kind    :          Type_Conversion_Kind := Unknown;
+            Type_Id : constant String               := To_String (CD.Id);
           begin
             Need (CD, LParent, err_missing_an_opening_parenthesis);
             if Type_Id = HAC_Float_Name then
@@ -241,11 +175,11 @@ package body HAC.Parser.Expressions is
           while Factor_Begin_Symbol (CD.Sy) loop
             case CD.Sy is
               when IDent =>
-                I := Locate_Identifier (CD, CD.Id, Level, stop_on_error => True);
+                Ident_Index := Locate_Identifier (CD, CD.Id, Level, stop_on_error => True);
                 InSymbol (CD);
-                exit when I = No_Id;  --  Id not found, error already issued by Locate_Identifier
+                exit when Ident_Index = No_Id;  --  Id not found, error already issued by Locate_Identifier
                 declare
-                  r : IdTabEntry renames CD.IdTab (I);
+                  r : IdTabEntry renames CD.IdTab (Ident_Index);
                 begin
                   case r.Obj is
                     when Declared_Number_or_Enum_Item =>
@@ -295,9 +229,9 @@ package body HAC.Parser.Expressions is
                     when Funktion =>
                       X.TYP := r.TYP;
                       if r.LEV = 0 then
-                        Standard_Function (r.Adr);
+                        Standard_Function (CD, Level, FSys, Ident_Index, r.Adr, X);
                       else
-                        Subprogram_or_Entry_Call (CD, Level, FSys, I, CallSTDP);
+                        Subprogram_or_Entry_Call (CD, Level, FSys, Ident_Index, CallSTDP);
                       end if;
                       --
                     when others =>
