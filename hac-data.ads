@@ -29,23 +29,24 @@ package HAC.Data is
 
   MaxINT     : constant Integer := Integer'Last - 1;
 
-  Alng       : constant := 40;            --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
-  AMax       : constant := 30;            --  Size OF ARRAY-TABLE
-  BMax       : constant := 25;            --  Size OF Block-TABLE
+  Alng                  : constant := 40;   --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
+  AMax                  : constant := 30;   --  Size OF ARRAY-TABLE
+  BMax                  : constant := 25;   --  Size OF Block-TABLE
+  Float_Const_Table_Max : constant := 100;
+  Cases_Max             : constant := 30;   --  Max number of cases in a CASE statement
+  CDMax                 : constant := 2500; --  Size OF ObjCode
+  ERMax                 : constant := 90;   --  MAX Error NO.
+  EMax                  : constant :=  77;  --  MAX EXPONENT of FLOAT NUMBERS
+  EMin                  : constant := -78;  --  MIN EXPONENT
+  EntryMax              : constant := 30;   --  Maximum Number of Entry Statements
+  FMax                  : constant := 20;   --  Maximum Number of files for I/O
+  KMax                  : constant := 7;    --  Max No. of significant digits
+  LMax                  : constant := 7;    --  maximum Level
+
   CallSTDP   : constant := 0;             --  Call type for standard procedure call
   CallSTDE   : constant := 1;             --  Call type for standard Entry Call
   CallTMDE   : constant := 2;             --  Call type for timed Entry Call
   CallCNDE   : constant := 3;             --  Call type for conditional Entry call
-  C2Max      : constant := 20;            --  Size OF FLOAT Constant TABLE
-  Cases_Max  : constant := 30;            --  Max number of cases in a CASE statement
-  CDMax      : constant := 2500;          --  Size OF ObjCode
-  ERMax      : constant := 90;            --  MAX Error NO.
-  EMax       : constant :=  77;           --  MAX EXPONENT of FLOAT NUMBERS
-  EMin       : constant := -78;           --  MIN EXPONENT
-  EntryMax   : constant := 30;            --  Maximum Number of Entry Statements
-  FMax       : constant := 20;            --  Maximum Number of files for I/O
-  KMax       : constant := 7;             --  Max No. of significant digits
-  LMax       : constant := 7;             --  maximum Level
 
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char
@@ -199,7 +200,7 @@ package HAC.Data is
   -- Identifiers --
   -----------------
 
-  --  Alfa is a space-padded string
+  --  Alfa is a space-padded string  --  !! Consider replacing by Unbounded_String or XString
   subtype Alfa is String (1 .. Alng);
   Empty_Alfa : constant Alfa := (others => ' ');
   function To_String (a: Alfa) return String;

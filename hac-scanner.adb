@@ -513,7 +513,7 @@ package body HAC.Scanner is
             if CD.Strings_Table_Top + K = SMax then
               Fatal (STRING_CONSTANTS);
             end if;
-            CD.Strings_Table (CD.Strings_Table_Top + K) := CD.CH;
+            CD.Strings_Constants_Table (CD.Strings_Table_Top + K) := CD.CH;
             K := K + 1;
             if CD.CC = 1 then
               K := 0;  --  END OF InpLine
@@ -545,7 +545,7 @@ package body HAC.Scanner is
             if CD.Strings_Table_Top + K = SMax then
               Fatal (STRING_CONSTANTS);
             end if;
-            CD.Strings_Table (CD.Strings_Table_Top + K) := CD.CH;
+            CD.Strings_Constants_Table (CD.Strings_Table_Top + K) := CD.CH;
             K := K + 1;
             if CD.CH = ''' and K = 1 then  --  The ''' case
               NextCh;
@@ -561,7 +561,7 @@ package body HAC.Scanner is
           --
           if K = 1 then  --  Correct, we have a "string" of length 1.
             CD.Sy := CharCon;
-            CD.INum  := Character'Pos (CD.Strings_Table (CD.Strings_Table_Top));
+            CD.INum  := Character'Pos (CD.Strings_Constants_Table (CD.Strings_Table_Top));
             --  CD.Strings_Table_Top is NOT incremented.
           elsif K = 0 then
             Error (CD, err_character_zero_chars);
@@ -657,7 +657,7 @@ package body HAC.Scanner is
         when StrCon =>
           Put (CD.comp_dump, ": """);
           for i in CD.INum .. CD.INum + CD.SLeng - 1 loop
-            Put (CD.comp_dump, CD.Strings_Table (i));
+            Put (CD.comp_dump, CD.Strings_Constants_Table (i));
           end loop;
           Put (CD.comp_dump, '"');
         when Becomes =>

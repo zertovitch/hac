@@ -13,7 +13,7 @@
 
 with HAC.Data;
 
-with Ada.Text_IO;
+with Ada.Text_IO;  --  Only used for file descriptors
 
 package HAC.PCode is
 

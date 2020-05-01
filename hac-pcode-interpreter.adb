@@ -1037,9 +1037,9 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.T := Curr_TCB.T - 1;
           while H1 > 0 loop
             if FAT.CURR = 0 then
-              Put_Console (CD.Strings_Table (H2));
+              Put_Console (CD.Strings_Constants_Table (H2));
             else
-              Ada.Text_IO.Put (FAT.FIL (FAT.CURR), CD.Strings_Table (H2));
+              Ada.Text_IO.Put (FAT.FIL (FAT.CURR), CD.Strings_Constants_Table (H2));
             end if;
             H1 := H1 - 1;        --  decrement length
             H2 := H2 + 1;
@@ -1306,7 +1306,7 @@ package body HAC.PCode.Interpreter is
           end if;
           while H1 < H5 loop
             --  Copy H5-H1 characters to the stack
-            S (H1).I := Character'Pos (CD.Strings_Table (H2));
+            S (H1).I := Character'Pos (CD.Strings_Constants_Table (H2));
             H1       := H1 + 1;
             H2       := H2 + 1;
           end loop;

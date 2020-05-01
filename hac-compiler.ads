@@ -135,14 +135,14 @@ package HAC.Compiler is
 
   subtype Fixed_Size_Object_Code_Table is HAC.PCode.Object_Code_Table (0 .. CDMax);
 
-  type Arrays_Table_Type            is array (1 .. AMax)         of ATabEntry;
-  type Blocks_Table_Type            is array (0 .. BMax)         of BTabEntry;
-  type Display_Type                 is array (Nesting_level)     of Integer;
-  type Entries_Table_Type           is array (0 .. EntryMax)     of Index;
-  type Float_Constants_Table_Type   is array (1 .. C2Max)        of HAC_Float;
-  type Identifier_Table_Type        is array (0 .. Id_Table_Max) of IdTabEntry;
-  type Strings_Table_Type           is array (0 .. SMax)         of Character;
-  type Tasks_Definitions_Table_Type is array (0 .. TaskMax)      of Index;
+  type Arrays_Table_Type            is array (1 .. AMax)                  of ATabEntry;
+  type Blocks_Table_Type            is array (0 .. BMax)                  of BTabEntry;
+  type Display_Type                 is array (Nesting_level)              of Integer;
+  type Entries_Table_Type           is array (0 .. EntryMax)              of Index;
+  type Float_Constants_Table_Type   is array (1 .. Float_Const_Table_Max) of HAC_Float;
+  type Identifier_Table_Type        is array (0 .. Id_Table_Max)          of IdTabEntry;
+  type Strings_Constants_Table_Type is array (0 .. SMax)                  of Character;
+  type Tasks_Definitions_Table_Type is array (0 .. TaskMax)               of Index;
 
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 
@@ -177,9 +177,9 @@ package HAC.Compiler is
     Display                 : Display_Type;
     Entries_Table           : Entries_Table_Type;
     File_IO_Table           : FilDescr;
-    Float_Constants_Table   : Float_Constants_Table_Type;
+    Float_Constants_Table   : Float_Constants_Table_Type;    --  Used by interpreter at run-time
     IdTab                   : Identifier_Table_Type;
-    Strings_Table           : Strings_Table_Type;
+    Strings_Constants_Table : Strings_Constants_Table_Type;  --  Used by interpreter at run-time
     Tasks_Definitions_Table : Tasks_Definitions_Table_Type;
     --  Indices to compiler tables
     Arrays_Count            : Natural;

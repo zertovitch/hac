@@ -228,7 +228,7 @@ package body HAC.Parser.Helpers is
     )
     is
     begin
-      if CD.Float_Constants_Count = C2Max - 1 then
+      if CD.Float_Constants_Count = Float_Const_Table_Max - 1 then
         Fatal (FLOAT_CONSTANTS);  --  Exception is raised there.
       end if;
       CD.Float_Constants_Table (CD.Float_Constants_Count + 1) := X;  --  We add X's value as an extra item.
