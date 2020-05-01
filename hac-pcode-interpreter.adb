@@ -33,9 +33,9 @@ package body HAC.PCode.Interpreter is
       FIN,
       INXCHK,  --  Out-of-range error
       -- NumErr  ,
-      ProgErr,
+      ProgErr,  --  Program_Error
       REDCHK,
-      STKCHK,  --  Stack overflow state
+      STKCHK,   --  Stack overflow state
       -- StoErr  ,
       -- TaskErr ,
       WAIT);
@@ -570,7 +570,7 @@ package body HAC.PCode.Interpreter is
           when k_Load_Address =>
             Curr_TCB.T := Curr_TCB.T + 1;
             if Curr_TCB.T > Curr_TCB.STACKSIZE then
-              PS := STKCHK;
+              PS := STKCHK;  --  Stack overflow
             else
               S (Curr_TCB.T).I := Curr_TCB.DISPLAY (IR.X) + IR.Y;
             end if;
@@ -578,7 +578,7 @@ package body HAC.PCode.Interpreter is
           when k_Push_Value =>
             Curr_TCB.T := Curr_TCB.T + 1;
             if Curr_TCB.T > Curr_TCB.STACKSIZE then
-              PS := STKCHK;
+              PS := STKCHK;  --  Stack overflow
             else
               S (Curr_TCB.T) := S (Curr_TCB.DISPLAY (IR.X) + IR.Y);
             end if;
@@ -586,19 +586,19 @@ package body HAC.PCode.Interpreter is
           when k_Push_Indirect_Value =>
             Curr_TCB.T := Curr_TCB.T + 1;
             if Curr_TCB.T > Curr_TCB.STACKSIZE then
-              PS := STKCHK;
+              PS := STKCHK;  --  Stack overflow
             else
               S (Curr_TCB.T) := S (S (Curr_TCB.DISPLAY (IR.X) + IR.Y).I);
             end if;
 
-          when k_Update_Display_Vector =>
-            H1 := IR.Y;
-            H2 := IR.X;
+          when k_Update_Display_Vector =>  --  Emitted at the end of Subprogram_or_Entry_Call.
+            H1 := IR.Y;  --  Current nesting level.
+            H2 := IR.X;  --  Called subprogram nesting level, lower than current.
             H3 := Curr_TCB.B;
             loop
               Curr_TCB.DISPLAY (H1) := H3;
-              H1                       := H1 - 1;
-              H3                       := S (H3 + 2).I;
+              H1                    := H1 - 1;  --  Decrease level as index in DISPLAY.
+              H3                    := S (H3 + 2).I;
               exit when H1 = H2;
             end loop;
 
@@ -707,7 +707,7 @@ package body HAC.PCode.Interpreter is
               when SF_EOF =>
                 Curr_TCB.T := Curr_TCB.T + 1;
                 if Curr_TCB.T > Curr_TCB.STACKSIZE then
-                  PS := STKCHK;
+                  PS := STKCHK;  --  Stack overflow
                 else
                   if IR.X = 0 then
                     S (Curr_TCB.T).I := Boolean'Pos(End_Of_File_Console);
@@ -718,7 +718,7 @@ package body HAC.PCode.Interpreter is
               when SF_EOLN =>
                 Curr_TCB.T := Curr_TCB.T + 1;
                 if Curr_TCB.T > Curr_TCB.STACKSIZE then
-                  PS := STKCHK;
+                  PS := STKCHK;  --  Stack overflow
                 else
                   if IR.X = 0 then
                     S (Curr_TCB.T).I := Boolean'Pos(End_Of_Line_Console);
@@ -734,7 +734,7 @@ package body HAC.PCode.Interpreter is
                 --  NILADIC functions have IR.Y >= SF_Clock.
                 Curr_TCB.T := Curr_TCB.T + 1;
                 if Curr_TCB.T > Curr_TCB.STACKSIZE then
-                  PS := STKCHK;
+                  PS := STKCHK;  --  Stack overflow
                 else
                   case SF_Niladic (IR.Y) is
                     when SF_Clock =>
@@ -755,8 +755,8 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.PC := IR.Y;
 
         when k_Conditional_Jump =>
-          if S (Curr_TCB.T).I = 0 then  --  False
-            Curr_TCB.PC := IR.Y;        --  Jump
+          if S (Curr_TCB.T).I = 0 then  --  if False, then ...
+            Curr_TCB.PC := IR.Y;        --  ... Jump.
           end if;
           Curr_TCB.T := Curr_TCB.T - 1;
 
@@ -826,7 +826,7 @@ package body HAC.PCode.Interpreter is
         when k_Mark_Stack =>
           H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Ref).VSize;
           if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
-            PS := STKCHK;
+            PS := STKCHK;  --  Stack overflow
           else
             Curr_TCB.T := Curr_TCB.T + 5; --  make room for fixed area
             S (Curr_TCB.T - 1).I := H1 - 1; --  vsize-1
@@ -949,7 +949,7 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.T := Curr_TCB.T - 1;
           H2            := IR.Y + Curr_TCB.T;
           if H2 > Curr_TCB.STACKSIZE then
-            PS := STKCHK;
+            PS := STKCHK;  --  Stack overflow
           else
             while Curr_TCB.T < H2 loop
               Curr_TCB.T     := Curr_TCB.T + 1;
@@ -972,7 +972,7 @@ package body HAC.PCode.Interpreter is
         when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;
+            PS := STKCHK;  --  Stack overflow
           else
             S (Curr_TCB.T).I := IR.Y;
           end if;
@@ -980,7 +980,7 @@ package body HAC.PCode.Interpreter is
         when k_Load_Float_Literal =>
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;
+            PS := STKCHK;  --  Stack overflow
           else
             S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
           end if;
@@ -1138,7 +1138,7 @@ package body HAC.PCode.Interpreter is
               if Curr_TCB.T > Curr_TCB.STACKSIZE then --  timed and
                                                             --conditional
                                                             --entry call
-                PS := STKCHK;      --  returns (32).  Push entry call
+                PS := STKCHK;  --  Stack overflow           --  returns (32).  Push entry call
               else
                 S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success
                                                             --indicator for
@@ -1146,9 +1146,9 @@ package body HAC.PCode.Interpreter is
               end if;
             end if;
           else
-            TActive        := TActive - 1;
+            TActive     := TActive - 1;
             Curr_TCB.TS := Completed;
-            SWITCH         := True;
+            SWITCH      := True;
           end if;
 
         when k_Exit_Function =>
@@ -1156,7 +1156,7 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.PC := S (Curr_TCB.B + 1).I;
           Curr_TCB.B  := S (Curr_TCB.B + 3).I;
           if IR.Y < 0 then
-            PS := ProgErr;
+            PS := ProgErr;  --  Program_Error (!! check: obviously, case of function's end reached)
           end if;
 
         when k_Case_34 =>
