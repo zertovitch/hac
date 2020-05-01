@@ -169,7 +169,7 @@ package body HAC.Parser.Expressions is
               else           --  N in [EOF, EOLN]
                 if CD.Sy /= IDent then
                   Error (CD, err_identifier_missing);
-                elsif CD.Id(1..10) = "INPUT     " then  --  Standard_Input
+                elsif Equal (CD.Id, "INPUT") then  --  Standard_Input
                   Emit2 (CD, k_Standard_Functions, 0, N);
                 else
                   I := Get_File_Pointer (CD, CD.Id);

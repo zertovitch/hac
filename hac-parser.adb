@@ -197,9 +197,8 @@ package body HAC.Parser is
       ELTP                 : Types;
       ELRF                 : Integer;
       ELSZ, Offset, T0, T1 : Integer;
-      StrArray             : Boolean;
 
-      procedure Array_Typ (ARef, Arsz : in out Integer; StrAr : Boolean) is
+      procedure Array_Typ (ARef, Arsz : in out Integer; String_Constrained_Subtype : Boolean) is
         ELTP                      : Types;
         Lower_Bound, Higher_Bound : Constant_Rec;
         ELRF, ELSZ                : Integer;
@@ -221,7 +220,7 @@ package body HAC.Parser is
         end if;
         Enter_Array (Lower_Bound.TP, Lower_Bound.I, Higher_Bound.I);
         ARef := CD.Arrays_Count;
-        if StrAr then
+        if String_Constrained_Subtype then
           ELTP := xChars;
           ELRF := 0;
           ELSZ := 1;
@@ -229,11 +228,11 @@ package body HAC.Parser is
         elsif CD.Sy = Comma then  --  Multidimensional array is array(range_1) of array(range_2,...)
           InSymbol;
           ELTP := Arrays;
-          Array_Typ (ELRF, ELSZ, StrAr);  --  Recursion for next array dimension.
+          Array_Typ (ELRF, ELSZ, False);  --  Recursion for next array dimension.
         else
           Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-          Need (CD, OF_Symbol, err_missing_OF);
-          TYP (FSys, ELTP, ELRF, ELSZ);
+          Need (CD, OF_Symbol, err_missing_OF);  --  "OF"         in  "array (...) OF Some_Type"
+          TYP (FSys, ELTP, ELRF, ELSZ);          --  "Some_Type"  in  "array (...) OF Some_Type"
         end if;
         Arsz := (Higher_Bound.I - Lower_Bound.I + 1) * ELSZ;
         declare
@@ -321,7 +320,7 @@ package body HAC.Parser is
         Level := Level - 1;
       end Record_Type;
 
-      I : Integer;
+      Ident_Index : Integer;
 
     begin  --  Type
       TP := NOTYP;
@@ -329,33 +328,35 @@ package body HAC.Parser is
       Sz := 0;
       Test (CD, Type_Begin_Symbol, FSys, err_missing_ARRAY_RECORD_or_ident);
       if Type_Begin_Symbol (CD.Sy) then
-        if CD.Id(1..10) = "STRING    " then -- !! Need to implement constraints...
-          CD.Sy := String_Symbol;
-        end if;
         case CD.Sy is
           when IDent =>
-            I := Locate_Identifier (CD, CD.Id, Level);
-            if I /= 0 then
-              if CD.IdTab (I).Obj = TypeMark then
-                TP := CD.IdTab (I).TYP;
-                RF := CD.IdTab (I).Ref;
-                Sz := CD.IdTab (I).Adr;
-                if TP = NOTYP then
-                  Error (CD, err_undefined_type);
+            if Equal (CD.Id, "STRING") then  --  !! Need to implement general constraints...
+              InSymbol;
+              Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
+              TP := Arrays;
+              Array_Typ (RF, Sz, String_Constrained_Subtype => True);
+            else
+              Ident_Index := Locate_Identifier (CD, CD.Id, Level);
+              if Ident_Index /= No_Id then
+                if CD.IdTab (Ident_Index).Obj = TypeMark then
+                  TP := CD.IdTab (Ident_Index).TYP;
+                  RF := CD.IdTab (Ident_Index).Ref;
+                  Sz := CD.IdTab (Ident_Index).Adr;
+                  if TP = NOTYP then
+                    Error (CD, err_undefined_type);
+                  end if;
+                else
+                  Error (CD, err_missing_a_type_identifier);
                 end if;
-              else
-                Error (CD, err_missing_a_type_identifier);
               end if;
+              InSymbol;
             end if;
-            InSymbol;
 
-          when ARRAY_Symbol | String_Symbol =>
-            StrArray := CD.Sy = String_Symbol;
+          when ARRAY_Symbol =>
             InSymbol;
             Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
             TP := Arrays;
-            Array_Typ (RF, Sz, StrArray);
-
+            Array_Typ (RF, Sz, String_Constrained_Subtype => False);
           when RECORD_Symbol =>
             Record_Type;
           when LParent =>

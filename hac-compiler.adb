@@ -376,11 +376,11 @@ package body HAC.Compiler is
     end if;
 
     InSymbol;
-    if CD.Sy /= WITH_Symbol then   -- WITH SMALL_SP;
+    if CD.Sy /= WITH_Symbol then  --  WITH HAC_PACK;
       Error (CD, err_WITH_Small_Sp, "", stop_on_error => True);
     else
       InSymbol;
-      if CD.Sy /= IDent or CD.Id(1..10) /= "HAC_PACK  " then
+      if CD.Sy /= IDent or not Equal (CD.Id, "HAC_PACK") then
         Error (CD, err_WITH_Small_Sp, "", stop_on_error => True);
       else
         InSymbol;
@@ -393,10 +393,10 @@ package body HAC.Compiler is
     end if;
 
     if CD.Sy /= USE_Symbol then
-      Error (CD, err_use_Small_Sp, ""); -- USE SMALL_SP;
+      Error (CD, err_use_Small_Sp, "");  --  USE HAC_PACK;
     else
       InSymbol;
-      if CD.Sy /= IDent or CD.Id(1..10) /= "HAC_PACK  " then
+      if CD.Sy /= IDent or not Equal (CD.Id, "HAC_PACK") then
         Error (CD, err_use_Small_Sp, "");
       else
         InSymbol;

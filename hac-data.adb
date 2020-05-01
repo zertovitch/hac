@@ -36,6 +36,11 @@ package body HAC.Data is
 
   use Ada.Strings, Ada.Strings.Fixed;
 
+  function Equal (a : Alfa; s : String) return Boolean is
+  begin
+    return To_String (a) = s;
+  end Equal;
+
   function To_String (a: Alfa) return String is
   begin
     return Trim (a, Right);

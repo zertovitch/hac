@@ -103,9 +103,8 @@ package HAC.Data is
     Finger,
     Becomes,
     IDent,
-    String_Symbol, -- !! hack ! used for constraining the String unconstrained array
-    USy,                -- (Apparently) unused symbol
-    Dummy_Symbol,       -- Symbol that is never parsed.
+    USy,                --  (Apparently) unused symbol
+    Dummy_Symbol,       --  Symbol that is never parsed.
     Ampersand_Symbol,
     --                  Ada keywords
     ABORT_Symbol,
@@ -207,6 +206,7 @@ package HAC.Data is
      --     detects all type incompatibilities except: slice = literal expressions.
   subtype Alfa is String (1 .. Alng);
   Empty_Alfa : constant Alfa := (others => ' ');
+  function Equal (a : Alfa; s : String) return Boolean;
   function To_String (a: Alfa) return String;
   function To_Alfa (s: String) return Alfa;
 
