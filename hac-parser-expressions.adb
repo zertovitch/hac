@@ -233,7 +233,7 @@ package body HAC.Parser.Expressions is
           X := (TYP => NOTYP, Ref => 0);
           Test (CD, Factor_Begin_Symbol + StrCon, FSys, err_factor_unexpected_symbol);
           if CD.Sy = StrCon then
-            X.TYP := Strings;
+            X.TYP := String_Literals;
             Emit1 (CD, k_Load_Discrete_Literal, CD.SLeng);  --  String Literal Length
             Emit1 (CD, k_Load_Discrete_Literal, CD.INum);   --  Index To String IdTab
             InSymbol (CD);

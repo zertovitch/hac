@@ -221,18 +221,20 @@ package body HAC.Parser is
         Enter_Array (Lower_Bound.TP, Lower_Bound.I, Higher_Bound.I);
         ARef := CD.Arrays_Count;
         if String_Constrained_Subtype then
+          --  We define String (L .. H) exactly as an "array (L .. H) of Character".
           ELTP := xChars;
           ELRF := 0;
           ELSZ := 1;
           Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-        elsif CD.Sy = Comma then  --  Multidimensional array is array(range_1) of array(range_2,...)
-          InSymbol;
+        elsif CD.Sy = Comma then
+          --  Multidimensional array is:  array(range_1) of array(range_2,...)
+          InSymbol;  --  Consume ',' symbol.
           ELTP := Arrays;
           Array_Typ (ELRF, ELSZ, False);  --  Recursion for next array dimension.
         else
           Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-          Need (CD, OF_Symbol, err_missing_OF);  --  "OF"         in  "array (...) OF Some_Type"
-          TYP (FSys, ELTP, ELRF, ELSZ);          --  "Some_Type"  in  "array (...) OF Some_Type"
+          Need (CD, OF_Symbol, err_missing_OF);  --  "of"         in  "array (...) of Some_Type"
+          TYP (FSys, ELTP, ELRF, ELSZ);          --  "Some_Type"  in  "array (...) of Some_Type"
         end if;
         Arsz := (Higher_Bound.I - Lower_Bound.I + 1) * ELSZ;
         declare
@@ -763,7 +765,7 @@ package body HAC.Parser is
         Forbid_Type_Coercion (CD, "integer type value assigned to floating-point variable");
         Emit1 (CD, k_Integer_to_Float, 0);
         Emit (CD, k_Store);
-      elsif X.TYP = Arrays and Y.TYP = Strings then
+      elsif X.TYP = Arrays and Y.TYP = String_Literals then
         if CD.Arrays_Table (X.Ref).Element_TYP.TYP /= xChars then
           Error (CD, err_types_of_assignment_must_match);
         else
@@ -1564,7 +1566,7 @@ package body HAC.Parser is
                   if X.TYP = Enums then
                     X.TYP := Ints;
                   end if;
-                  if (X.TYP not in Standard_Typ) and X.TYP /= Strings then
+                  if (X.TYP not in Standard_Typ) and X.TYP /= String_Literals then
                     Error (CD, err_illegal_parameters_to_Put);
                   end if;
                   if CD.Sy = Colon then
@@ -1586,7 +1588,7 @@ package body HAC.Parser is
                     else
                       Emit1 (CD, k_Write_2, Types'Pos (X.TYP));
                     end if;
-                  elsif X.TYP = Strings then
+                  elsif X.TYP = String_Literals then
                     Emit1 (CD, k_Write_String, X.Ref);
                   else
                     Emit1 (CD, k_Write_1, Types'Pos (X.TYP));

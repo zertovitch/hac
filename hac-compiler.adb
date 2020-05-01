@@ -309,7 +309,11 @@ package body HAC.Compiler is
       Enter ("Character",      TypeMark, xChars, 1);
       Enter ("Boolean",        TypeMark, Bools, 1);
       Enter (HAC_Integer_Name, TypeMark, Ints, 1);
-      Enter ("String",         TypeMark, Strings, 1);  --{ Hathorn }
+      Enter ("String",         TypeMark, String_Literals, 1);  --{ Hathorn }
+      --  String_Literals is used only for string literals like "abcd".
+      --  The "STRING" type identifier is treated separately in the TYP parser
+      --  and returns a constrained array of Character.
+      --  Here we just reserve the "STRING" identifier at level 0.
       Enter ("SEMAPHORE",      TypeMark, Ints, 1);     --{ Hathorn }
       Enter ("TEXT",           TypeMark, Ints, 1);     --{ Schoening }
       --

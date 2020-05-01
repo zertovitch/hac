@@ -220,7 +220,7 @@ package HAC.Data is
     Arrays,
     Records,
     Enums,
-    Strings
+    String_Literals
   );
 
   type Typ_Set is array (Types) of Boolean;
