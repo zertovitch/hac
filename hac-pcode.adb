@@ -182,7 +182,7 @@ package body HAC.PCode is
       Operand2_IO.Put (Text, OC (i).Y);
       Put (Text, "; ");
       Code_Pos_IO.Put (Text, OC (i).D.Line);
-      Put (Text, "  " & OC (i).D.Block);
+      Put (Text, "  " & HAC.Data.To_String (OC (i).D.Block));
       New_Line (Text);
     end loop;
   end Dump;

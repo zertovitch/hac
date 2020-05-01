@@ -95,7 +95,7 @@ package body HAC.Parser is
       end loop;
       --  Follow the chain of identifiers for current Level.
       if J /= No_Id then
-        Error (CD, err_duplicate_identifier, Id);
+        Error (CD, err_duplicate_identifier, To_String (Id));
       else      --  Enter identifier in table IdTab
         CD.Id_Count            := CD.Id_Count + 1;
         CD.IdTab (CD.Id_Count) :=

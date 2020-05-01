@@ -200,7 +200,11 @@ package HAC.Data is
   -- Identifiers --
   -----------------
 
-  --  Alfa is a space-padded string  --  !! Consider replacing by Unbounded_String or XString
+  --  Alfa is a space-padded string
+     --  !! Consider replacing by Unbounded_String or XString
+     --     First step for a smooth transition:
+     --       type Alfa is array (1 .. Alng) of Character;
+     --     detects all type incompatibilities except: slice = literal expressions.
   subtype Alfa is String (1 .. Alng);
   Empty_Alfa : constant Alfa := (others => ' ');
   function To_String (a: Alfa) return String;

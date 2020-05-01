@@ -117,7 +117,7 @@ package HAC.Compiler is
   subtype File_index is Integer range 1 .. FMax;
   type FilDescr_Texts is array (File_index) of Ada.Text_IO.File_Type;
   type FilDescr_Lname is array (File_index) of Natural;
-  type FilDescr_Names is array (File_index) of String (1 .. Alng);
+  type FilDescr_Names is array (File_index) of Alfa;
 
   type FilDescr is record
     Curr  : Integer;

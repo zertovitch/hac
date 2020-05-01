@@ -412,17 +412,17 @@ package body HAC.Scanner is
               CD.Id (K)           := UpCase (CD.CH);
               CD.Id_with_case (K) := CD.CH;
               if K > 1 and then CD.Id (K - 1 .. K) = "__" then
-                Error (CD, err_double_underline_not_permitted, CD.Id, stop_on_error => True);
+                Error (CD, err_double_underline_not_permitted, To_String (CD.Id), stop_on_error => True);
               end if;
             else
-              Error (CD, err_identifier_too_long, CD.Id);
+              Error (CD, err_identifier_too_long, To_String (CD.Id));
             end if;
             NextCh;
             exit when CD.CH /= '_'
                      and then special_or_illegal (CharacterTypes (CD.CH));
           end loop;
           if K > 0 and then CD.Id (K) ='_' then
-            Error (CD, err_identifier_cannot_end_with_underline, CD.Id, stop_on_error => True);
+            Error (CD, err_identifier_cannot_end_with_underline, To_String (CD.Id), stop_on_error => True);
           end if;
           --
           I := 1;
@@ -649,7 +649,7 @@ package body HAC.Scanner is
       );
       case CD.Sy is
         when IDent =>
-          Put (CD.comp_dump, ": " & CD.Id);
+          Put (CD.comp_dump, ": " & To_String (CD.Id));
         when IntCon =>
           Put (CD.comp_dump, ": " & Integer'Image (CD.INum));
         when FloatCon =>

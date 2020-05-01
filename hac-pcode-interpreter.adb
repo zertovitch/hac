@@ -168,7 +168,10 @@ package body HAC.PCode.Interpreter is
       New_Line;
       Put_Line ("Processor state: " & Processor_State'Image (InterDef.PS));
       New_Line;
-      Put_Line ("Stack Variables of Task " & CD.IdTab (CD.Tasks_Definitions_Table (InterDef.CurTask)).Name);
+      Put_Line (
+        "Stack Variables of Task " &
+        HAC.Data.To_String (CD.IdTab (CD.Tasks_Definitions_Table (InterDef.CurTask)).Name)
+      );
       InterDef.H1 := InterDef.TCB (InterDef.CurTask).B;   --  current bottom of stack
       InterDef.BLKCNT := 10;
       loop
@@ -179,7 +182,7 @@ package body HAC.PCode.Interpreter is
         end if;
         InterDef.H2 := S (InterDef.H1 + 4).I;  --  index into HAC.Data.IdTab for this process
         if InterDef.H1 /= 0 then
-          Put (CD.IdTab (InterDef.H2).Name);
+          Put (HAC.Data.To_String (CD.IdTab (InterDef.H2).Name));
           Put (" CALLED AT");
           Put (S (InterDef.H1 + 1).I, 5);
           New_Line;
@@ -200,7 +203,7 @@ package body HAC.PCode.Interpreter is
                 else
                   InterDef.H3 := InterDef.S (InterDef.H1 + P2Ada_Var_7.Adr).I;
                 end if;
-                Put ("  " & P2Ada_Var_7.Name & " = ");
+                Put ("  " & To_String (P2Ada_Var_7.Name) & " = ");
                 case P2Ada_Var_7.TYP is
                   when HAC.Data.Enums | HAC.Data.Ints =>
                     Put (S (H3).I);
@@ -333,19 +336,17 @@ package body HAC.PCode.Interpreter is
     is
       p  : InterDef.Eptr;
       ix : Integer;
-      use InterDef, Ada.Text_IO, Ada.Integer_Text_IO;
+      use HAC.Data, InterDef, Ada.Text_IO, Ada.Integer_Text_IO;
     begin
       ix := EIndex (Entry_Index);
       p  := InterDef.EList (ix).First;
-      Put ("Dumping q for entry ");
-      Put (CD.IdTab (Entry_Index).Name);
-      Put (" entry index=");
+      Put ("Dumping q for entry " & To_String (CD.IdTab (Entry_Index).Name) & " entry index=");
       Put (ix);
       New_Line;
       if p /= null then
         loop
           Put ("Task ");
-          Put (CD.IdTab (CD.Tasks_Definitions_Table (p.Task_Index)).Name);
+          Put (To_String (CD.IdTab (CD.Tasks_Definitions_Table (p.Task_Index)).Name));
           New_Line;
           p := p.Next;
           exit when p = null;

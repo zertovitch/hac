@@ -83,7 +83,7 @@ package body HAC.Compiler is
         r : IdTabEntry renames CD.IdTab (I);
       begin
         Put (CD.comp_dump, I, 4);
-        Put (CD.comp_dump, ' ' & r.Name);
+        Put (CD.comp_dump, ' ' & To_String (r.Name));
         Put (CD.comp_dump, r.Link, 10);
         Put (CD.comp_dump, aObject'Pos (r.Obj), 5);
         Put (CD.comp_dump, Types'Pos (r.TYP), 5);
@@ -100,7 +100,7 @@ package body HAC.Compiler is
     for I in 0 .. CD.Tasks_Definitions_Count loop
       Put (CD.comp_dump, I, 4);
       Put (CD.comp_dump, ' ');
-      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).Name & "  ");
+      Put (CD.comp_dump, To_String (CD.IdTab (CD.Tasks_Definitions_Table (I)).Name) & "  ");
       Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).Ref);
       New_Line (CD.comp_dump);
     end loop;
@@ -113,8 +113,10 @@ package body HAC.Compiler is
       for I in 1 .. CD.Entries_Count loop
         Put (CD.comp_dump, I, 4);
         Put (CD.comp_dump,
-             ' ' & CD.IdTab (CD.Entries_Table (I)).Name & " in Task " &
-             CD.IdTab (CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).Adr)).Name
+             ' ' & To_String (CD.IdTab (CD.Entries_Table (I)).Name) & " in Task " &
+             To_String (CD.IdTab (
+               CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).Adr)
+             ).Name)
         );
         New_Line (CD.comp_dump);
       end loop;
@@ -128,7 +130,7 @@ package body HAC.Compiler is
         r : BTabEntry renames CD.Blocks_Table (I);
       begin
         Put (CD.comp_dump, I, 4);
-        Put (CD.comp_dump, ' ' & r.Id);
+        Put (CD.comp_dump, ' ' & To_String (r.Id));
         Put (CD.comp_dump, r.Last, 10);
         Put (CD.comp_dump, r.LastPar, 5);
         Put (CD.comp_dump, r.PSize, 5);
@@ -279,13 +281,13 @@ package body HAC.Compiler is
         X2 : Types;
         X3 : Integer)
       is
-        X0A : Alfa := Empty_Alfa;
+        X0A  : constant Alfa := To_Alfa (X0);
+        X0AU : constant Alfa := To_Alfa (Ada.Characters.Handling.To_Upper (X0));
       begin
-        X0A (1 .. X0'Length)   := X0;
         CD.Id_Count            := CD.Id_Count + 1;  --  Enter standard identifier
         CD.IdTab (CD.Id_Count) :=
          (
-          Name           => Ada.Characters.Handling.To_Upper (X0A),
+          Name           => X0AU,
           Name_with_case => X0A,
           Link           => CD.Id_Count - 1,
           Obj            => X1,
@@ -348,7 +350,7 @@ package body HAC.Compiler is
       Enter ("QUANTUM   ",     Prozedure, NOTYP, 11); --{ Cramer }
       Enter ("PRIORITY  ",     Prozedure, NOTYP, 12); --{ Cramer }
       Enter ("INHERITP  ",     Prozedure, NOTYP, 13); --{ Cramer }
-      Enter (CD.Main_Program_ID,  Prozedure, NOTYP, 0);
+      Enter (To_String (CD.Main_Program_ID),  Prozedure, NOTYP, 0);
     end Enter_Standard_Functions_and_Main;
 
     use Ada.Text_IO, Ada.Integer_Text_IO, HAC.Parser.Helpers;
@@ -424,7 +426,7 @@ package body HAC.Compiler is
     end if;
 
     if CD.comp_dump_requested then
-      Put_Line (CD.comp_dump, "Compiler: main procedure is " & CD.Main_Program_ID);
+      Put_Line (CD.comp_dump, "Compiler: main procedure is " & To_String (CD.Main_Program_ID));
     end if;
 
     Enter_Standard_Functions_and_Main;  --  Enter Standard function id's and ProgramID
@@ -484,7 +486,7 @@ package body HAC.Compiler is
         if CD.IdTab (Tx).Obj = Variable then
           if CD.IdTab (Tx).TYP /= NOTYP then
             Put (map_file, CD.IdTab (Tx).Adr, 4);
-            Put (map_file, CD.IdTab (Tx).Name & "   ");
+            Put (map_file, To_String (CD.IdTab (Tx).Name) & "   ");
           end if;
           if CD.IdTab (Tx).LEV = 1 then
             Put (map_file, " Global(");
