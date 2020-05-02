@@ -410,19 +410,19 @@ package body HAC.Parser.Expressions is
                 Error (CD, err_operator_not_defined_for_types);
               end if;
             when Ampersand_Symbol =>  --  Concatenation. RM: Unbounded_String.
-              if X.TYP = VStrings and Y.TYP = VStrings then              --  v & v   RM A.4.5 (15)
+              if X.TYP = VStrings and Y.TYP = VStrings then            --  v & v     RM A.4.5 (15)
                 Emit1 (CD, k_Standard_Functions, SF_Two_VStrings_Concat);
-              elsif X.TYP = VStrings and Y.TYP = String_Literals then    --  v & "x" RM A.4.5 (16)
+              elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  v & "x"   RM A.4.5 (16)
                 --  Y is on top of the stack, we turn it into a VString.
                 Emit1 (CD, k_Standard_Functions, SF_Literal_to_VString);
                 --  Now we concatenate both VStrings.
                 Emit1 (CD, k_Standard_Functions, SF_Two_VStrings_Concat);
-              elsif X.TYP = String_Literals and Y.TYP = VStrings then    --  "x" & v RM A.4.5 (17)
+              elsif X.TYP = String_Literals and Y.TYP = VStrings then  --  "x" & v   RM A.4.5 (17)
                 Emit1 (CD, k_Standard_Functions, SF_LStr_VString_Concat);
                 X.TYP := VStrings;
-              elsif X.TYP = VStrings and Y.TYP = Chars then              --  v & 'x' RM A.4.5 (18)
+              elsif X.TYP = VStrings and Y.TYP = Chars then            --  v & 'x'   RM A.4.5 (18)
                 Emit1 (CD, k_Standard_Functions, SF_VString_Char_Concat);
-              elsif X.TYP = Chars and Y.TYP = VStrings then              --  'x' & v RM A.4.5 (19)
+              elsif X.TYP = Chars and Y.TYP = VStrings then            --  'x' & v   RM A.4.5 (19)
                 Emit1 (CD, k_Standard_Functions, SF_Char_VString_Concat);
                 X.TYP := VStrings;
               else

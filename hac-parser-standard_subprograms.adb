@@ -181,53 +181,40 @@ package body HAC.Parser.Standard_Subprograms is
               InSymbol (CD);
             end if;
             do_first_InSymbol := True;
-            if CD.Sy = StrCon then
-              --  !! This assumes the string literal is alone (no concatenation)
-              --     In both Pascal sources (Mac + Turbo/DOS):
-              --     if SY = STRCON then begin EMIT1(24,SLENG); EMIT1(28,INUM); INSYMBOL; end
-              --  !! But the case X.TYP = String_Literals below (Mac only) crashes if we remove
-              --     this special case...
-              --  !! Possible explanation: the expression evaluation pushes both length and index
-              --     on the stack.
-              Emit1 (CD, k_Load_Discrete_Literal, CD.SLeng);
-              Emit1 (CD, k_Write_String, CD.INum);
+            --
+            Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+            if X.TYP = Enums then
+              X.TYP := Ints;  --  Ow... Silent S'Pos
+            end if;
+            if (X.TYP not in Standard_Typ) and X.TYP /= String_Literals then
+              Error (CD, err_illegal_parameters_to_Put);
+            end if;
+            if CD.Sy = Colon then  --  ':' Pascal-ism (Write/WriteLn) !!
               InSymbol (CD);
-            else
-              Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-              if X.TYP = Enums then
-                X.TYP := Ints;  --  Ow... Silent S'Pos
+              Expression (CD, Level, FSys + Colon_Comma_RParent, Y);
+              if Y.TYP /= Ints then
+                Error (CD, err_parameter_must_be_Integer);
               end if;
-              if (X.TYP not in Standard_Typ) and X.TYP /= String_Literals then
-                Error (CD, err_illegal_parameters_to_Put);
-              end if;
-              if CD.Sy = Colon then
+              if CD.Sy = Colon then  --  ':' Pascal-ism (Write/WriteLn) !!
+                if X.TYP /= Floats then
+                  Error (CD, err_parameter_must_be_of_type_Float);
+                end if;
                 InSymbol (CD);
-                Expression (CD, Level, FSys + Colon_Comma_RParent, Y);
+                Expression (CD, Level, FSys + Comma_RParent, Y);
                 if Y.TYP /= Ints then
                   Error (CD, err_parameter_must_be_Integer);
                 end if;
-                if CD.Sy = Colon then  --  ':' Pascal-ism (Write/WriteLn) !!
-                  if X.TYP /= Floats then
-                    Error (CD, err_parameter_must_be_of_type_Float);
-                  end if;
-                  InSymbol (CD);
-                  Expression (CD, Level, FSys + Comma_RParent, Y);
-                  if Y.TYP /= Ints then
-                    Error (CD, err_parameter_must_be_Integer);
-                  end if;
-                  Emit (CD, k_Write_Float);
-                else
-                  Emit1 (CD, k_Write_2, Typs'Pos (X.TYP));
-                end if;
-              elsif X.TYP = String_Literals then
-                Emit1 (CD, k_Write_String, X.Ref);
+                Emit (CD, k_Write_Float);
               else
-                Emit1 (CD, k_Write_1, Typs'Pos (X.TYP));
+                Emit1 (CD, k_Write_2, Typs'Pos (X.TYP));
               end if;
+            elsif X.TYP = String_Literals then
+              Emit (CD, k_Write_String);
+            else
+              Emit1 (CD, k_Write_1, Typs'Pos (X.TYP));
             end if;
             exit when CD.Sy /= Comma;
           end loop;
-
           <<Label_21>>
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;

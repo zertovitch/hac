@@ -13,5 +13,9 @@ begin
   for i in 1 .. 4 loop Put ('"' & s1 & """    "); end loop; New_Line;
   s4 := "---> """ & s4 & '"';
   Put_Line (s4);
---  Put_Line (">> " & s4 & " <<");  -- Put & Put_Line borks with "x" & ...
-end;
+  Put_Line (">> " & s4 & ' ' & '!' & " <<");
+  s4 := +"abc" & "def";
+  --    if s4 = +"abcdef" then      --  Comparison VString to VString
+  --      null;
+  --    end if;
+end Strings_demo;

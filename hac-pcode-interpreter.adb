@@ -499,9 +499,9 @@ package body HAC.PCode.Interpreter is
     procedure SnapShot is null;
 
     procedure Pop (Amount : Positive := 1) is
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Curr_TCB_Top : Integer renames InterDef.TCB (InterDef.CurTask).T;
     begin
-      Curr_TCB.T := Curr_TCB.T - Amount;
+      Curr_TCB_Top := Curr_TCB_Top - Amount;
     end;
 
     procedure Do_Standard_Function is
@@ -646,7 +646,7 @@ package body HAC.PCode.Interpreter is
             null;
         end case;
       end if;
-      Curr_TCB.T := Curr_TCB.T - 1;
+      Pop;
       SWITCH := True;  --  give up control when doing I/O
     end Do_Write_Unformatted;
 
@@ -789,7 +789,7 @@ package body HAC.PCode.Interpreter is
 
           when k_Wait_Semaphore =>
             H1            := S (Curr_TCB.T).I;
-            Curr_TCB.T := Curr_TCB.T - 1;
+            Pop;
             if S (H1).I > 0 then
               S (H1).I       := S (H1).I - 1;
               Curr_TCB.TS := Critical;   --  In a critical section, task gets
@@ -803,7 +803,7 @@ package body HAC.PCode.Interpreter is
 
           when k_Signal_Semaphore =>
             H1         := S (Curr_TCB.T).I;
-            Curr_TCB.T := Curr_TCB.T - 1;
+            Pop;
             H2         := CD.Tasks_Definitions_Count + 1;
             H3         := Integer (Random (Gen) * Float (H2));
             while H2 >= 0 and TCB (H3).TS /= WaitSem and TCB (H3).SUSPEND /= H1
@@ -833,11 +833,11 @@ package body HAC.PCode.Interpreter is
           if S (Curr_TCB.T).I = 0 then  --  if False, then ...
             Curr_TCB.PC := IR.Y;        --  ... Jump.
           end if;
-          Curr_TCB.T := Curr_TCB.T - 1;
+          Pop;
 
         when k_CASE_Switch_1 =>  --  SWTC - switch (in a CASE instruction)
           H1         := S (Curr_TCB.T).I;
-          Curr_TCB.T := Curr_TCB.T - 1;
+          Pop;
           H2         := IR.Y;
           --
           --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
@@ -876,7 +876,7 @@ package body HAC.PCode.Interpreter is
             S (H2).I    := H1;
             Curr_TCB.PC := IR.Y;
           else
-            Curr_TCB.T := Curr_TCB.T - 3;
+            Pop (3);
           end if;
 
         when k_FOR_Reverse_Begin =>  --  Start of a FOR loop, reverse direction
@@ -895,7 +895,7 @@ package body HAC.PCode.Interpreter is
             S (H2).I    := H1;
             Curr_TCB.PC := IR.Y;
           else
-            Curr_TCB.T := Curr_TCB.T - 3;
+            Pop (3);
           end if;
 
         when k_Mark_Stack =>
@@ -914,7 +914,7 @@ package body HAC.PCode.Interpreter is
           if IR.X = HAC.Data.CallTMDE then
             --  Timed entry call
             F1 := S (Curr_TCB.T).R;  --  Pop delay time
-            Curr_TCB.T := Curr_TCB.T - 1;
+            Pop;
           end if;
           H1 := Curr_TCB.T - IR.Y;     --  base of activation record
           H2 := S (H1 + 4).I;          --  CD.IdTab index of called procedure/entry
@@ -1020,7 +1020,7 @@ package body HAC.PCode.Interpreter is
 
         when k_Load_Block =>
           H1         := S (Curr_TCB.T).I;   --  Pull source address
-          Curr_TCB.T := Curr_TCB.T - 1;
+          Pop;
           H2         := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
           if H2 > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
@@ -1041,7 +1041,7 @@ package body HAC.PCode.Interpreter is
             H1     := H1 + 1;
             H2     := H2 + 1;
           end loop;
-          Curr_TCB.T := Curr_TCB.T - 2;
+          Pop (2);
 
         when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
           Curr_TCB.T := Curr_TCB.T + 1;
@@ -1081,7 +1081,7 @@ package body HAC.PCode.Interpreter is
             S (H1).I := Character'Pos (' ');
             H1       := H1 + 1;
           end loop;
-          Curr_TCB.T := Curr_TCB.T - 3;
+          Pop (3);
 
         when k_Integer_to_Float =>
           H1       := Curr_TCB.T - IR.Y;
@@ -1107,7 +1107,7 @@ package body HAC.PCode.Interpreter is
                   null;  -- [P2Ada]: no otherwise / else in Pascal
               end case;
             end if;
-            Curr_TCB.T := Curr_TCB.T - 1;
+            Pop;
           else
             if Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
               PS := REDCHK;
@@ -1131,19 +1131,14 @@ package body HAC.PCode.Interpreter is
           SWITCH := True;  --  give up control when doing I/O
 
         when k_Write_String =>
-          H1 := S (Curr_TCB.T).I;   --  length of string
-          H2 := IR.Y;     --  pointer to 1st char in string
-          Curr_TCB.T := Curr_TCB.T - 1;
-          while H1 > 0 loop
-            if FAT.CURR = 0 then
-              Put_Console (CD.Strings_Constants_Table (H2));
-            else
-              Ada.Text_IO.Put (FAT.FIL (FAT.CURR), CD.Strings_Constants_Table (H2));
-            end if;
-            H1 := H1 - 1;        --  decrement length
-            H2 := H2 + 1;
-            --  increment char pointer
-          end loop;
+          Pop (2);
+          H1 := S (Curr_TCB.T + 1).I;  --  Length of string
+          H2 := S (Curr_TCB.T + 2).I;  --  Index to string table
+          if FAT.CURR = 0 then
+            Put_Console (CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
+          else
+            Ada.Text_IO.Put (FAT.FIL (FAT.CURR), CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
+          end if;
           SWITCH := True;        --  give up control when doing I/O
 
         when k_Write_1 =>
@@ -1187,8 +1182,8 @@ package body HAC.PCode.Interpreter is
             end case;
 
           end if;
-          Curr_TCB.T := Curr_TCB.T - 2;
-          SWITCH        := True;  --  give up control when doing I/O
+          Pop (2);
+          SWITCH := True;  --  give up control when doing I/O
 
         when k_Exit_Call =>  --  EXIT entry call or procedure call
           --  Cramer
@@ -1255,7 +1250,7 @@ package body HAC.PCode.Interpreter is
               S (Curr_TCB.T).I,
               0);
           end if;
-          Curr_TCB.T := Curr_TCB.T - 3;
+          Pop (3);
           SWITCH        := True;  --  give up control when doing I/O
 
         when k_Store =>
@@ -1263,7 +1258,7 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.T               := Curr_TCB.T - 2;
 
         when Binary_Operator_Opcode =>
-          Curr_TCB.T := Curr_TCB.T - 1;
+          Pop;
           --  Now, we do [T] <- [T] operator [T + 1]
           declare
             X : GRegister renames S (Curr_TCB.T);
@@ -1389,15 +1384,15 @@ package body HAC.PCode.Interpreter is
             SWITCH := True;          --  give up control
 
           end if;
-          Curr_TCB.T := Curr_TCB.T - 1;
+          Pop;
         --  Delay
 
         when k_Cursor_At =>
           --  Cramer
           H2         := S (Curr_TCB.T - 1).I;  --  row
           H1         := S (Curr_TCB.T).I;      --  column
-          Curr_TCB.T := Curr_TCB.T - 2; --  issue TPC call
-        -- GotoXY (H1, H2);
+          Pop (2);
+          -- GotoXY (H1, H2);        --  issue TPC call
 
         when k_Set_Quantum_Task =>
           --  Cramer
@@ -1405,7 +1400,7 @@ package body HAC.PCode.Interpreter is
             S (Curr_TCB.T).R := HAC.Data.HAC_Float (TSlice) * 0.001;
           end if;
           TCB (CurTask).QUANTUM := Duration (S (Curr_TCB.T).R);
-          Curr_TCB.T         := Curr_TCB.T - 1;
+          Pop;
 
         when k_Set_Task_Priority =>
           --  Cramer
@@ -1416,13 +1411,13 @@ package body HAC.PCode.Interpreter is
             S (Curr_TCB.T).I := 0;
           end if;
           TCB (CurTask).Pcontrol.UPRI := S (Curr_TCB.T).I;
-          Curr_TCB.T                  := Curr_TCB.T - 1;
+          Pop;
 
         when k_Set_Task_Priority_Inheritance =>
           --  Cramer
           Curr_TCB.Pcontrol.INHERIT := S (Curr_TCB.T).I /= 0;
           --  Set priority inherit indicator
-          Curr_TCB.T := Curr_TCB.T - 1;
+          Pop;
 
         when k_Selective_Wait =>
           --  Selective Wait Macro Instruction
@@ -1464,7 +1459,7 @@ package body HAC.PCode.Interpreter is
                   end if;
                 end if;
               end if;
-              Curr_TCB.T := Curr_TCB.T - 1;
+              Pop;
 
             when 5 | 6 => --  end of SELECT
 

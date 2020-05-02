@@ -12,7 +12,9 @@ with Ada.Strings.Unbounded;
 package HAC_Pack is
 
   type Real is digits 15;
-  subtype VString is Ada.Strings.Unbounded.Unbounded_String;
+
+  package VStrings_Pkg renames Ada.Strings.Unbounded;
+  subtype VString is VStrings_Pkg.Unbounded_String;
 
   type Semaphore is new Integer; -- private;
 
@@ -104,8 +106,12 @@ package HAC_Pack is
   procedure  Wait      ( S : Semaphore    );
   procedure  Signal    ( S : Semaphore    );
 
-  function "+" (S : String) return VString
-    renames Ada.Strings.Unbounded.To_Unbounded_String;
+  function "+" (S : String) return VString renames VStrings_Pkg.To_Unbounded_String;
+  function "&" (V1, V2 : VString) return VString renames VStrings_Pkg."&";
+  function "&" (V : VString; S : String) return VString renames VStrings_Pkg."&";
+  function "&" (S : String; V : VString) return VString renames VStrings_Pkg."&";
+  function "&" (V : VString; C : Character) return VString renames VStrings_Pkg."&";
+  function "&" (C : Character; V : VString) return VString renames VStrings_Pkg."&";
 
 private
 

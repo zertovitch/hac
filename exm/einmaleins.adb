@@ -3,12 +3,12 @@
 
 with HAC_Pack;  use HAC_Pack;
 
-procedure einmaleins is
-  x, y : integer;
+procedure Einmaleins is
+  x, y : Integer;
 begin
-  x := 1 + rand (9);
-  y := 1 + rand (9);
-  put(x);
-  put(y);
-  put(x*y);
+  x := 1 + Rand (9);
+  y := 1 + Rand (9);
+  Put (x);
+  Put (y);
+  Put (x*y);
 end;
