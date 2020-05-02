@@ -199,58 +199,39 @@ package body HAC_Pack is
     Ada.Text_IO.Put(C);
   end Put;
 
-   ---------
-   -- PUT --
-   ---------
-
   procedure Put (I : in  Integer) is
   begin
     IIO.Put(I);
   end Put;
-
-   ---------
-   -- PUT --
-   ---------
 
   procedure Put (I : in  Integer; W:  Width) is
   begin
     IIO.Put(I, W);
   end Put;
 
-   ---------
-   -- PUT --
-   ---------
-
   procedure Put (F : in  Real) is
   begin
     RIO.Put(F);
   end Put;
-
-   ---------
-   -- PUT --
-   ---------
 
   procedure Put (F : in  Real; W:  Width; D : Decimals) is
   begin
     RIO.Put(F,W,D);
   end Put;
 
-   ---------
-   -- PUT --
-   ---------
-
   procedure Put (B : in  Boolean) is
   begin
     BIO.Put(B);
   end Put;
 
-   ---------
-   -- PUT --
-   ---------
-
   procedure Put (S : in  String) is
   begin
     Ada.Text_IO.Put(S);
+  end Put;
+
+  procedure Put (V : in  VString) is
+  begin
+    Put (Ada.Strings.Unbounded.To_String (V));
   end Put;
 
    --------------
@@ -262,58 +243,39 @@ package body HAC_Pack is
     Put(C); New_Line;
   end Put_Line;
 
-   --------------
-   -- PUT_LINE --
-   --------------
-
   procedure Put_Line (I : in  Integer) is
   begin
     Put(I); New_Line;
   end Put_Line;
-
-   --------------
-   -- PUT_LINE --
-   --------------
 
   procedure Put_Line (I : in  Integer; W:  Width) is
   begin
     Put(I,W); New_Line;
   end Put_Line;
 
-   --------------
-   -- PUT_LINE --
-   --------------
-
   procedure Put_Line (F : in  Real) is
   begin
     Put(F); New_Line;
   end Put_Line;
-
-   --------------
-   -- PUT_LINE --
-   --------------
 
   procedure Put_Line (F : in  Real; W:  Width; D : Decimals) is
   begin
     Put(F,W,D); New_Line;
   end Put_Line;
 
-   --------------
-   -- PUT_LINE --
-   --------------
-
   procedure Put_Line (B : in  Boolean) is
   begin
     Put(B); New_Line;
   end Put_Line;
 
-   --------------
-   -- PUT_LINE --
-   --------------
-
   procedure Put_Line (S : in  String) is
   begin
     Ada.Text_IO.Put_Line(S);
+  end Put_Line;
+
+  procedure Put_Line (V : in  VString) is
+  begin
+    Put_Line (Ada.Strings.Unbounded.To_String (V));
   end Put_Line;
 
    --------------

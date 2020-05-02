@@ -757,24 +757,35 @@ package body HAC.Parser is
             when Records =>
               Emit1 (CD, k_Copy_Block, CD.Blocks_Table (X.Ref).VSize);
             when Enums =>
-              --  Behaves like a "Standard_Typ"; we have checked that X.Ref = Y.Ref (same type).
+              --  Behaves like a "Standard_Typ".
+              --  We have checked that X.Ref = Y.Ref (same actual type).
               Emit (CD, k_Store);
             when others =>
-              null;
+              raise Internal_error with "Assignment: X := Y on unsupported Typ ?";
           end case;
         end if;
       elsif X.TYP = Floats and Y.TYP = Ints then
         Forbid_Type_Coercion (CD, "integer type value assigned to floating-point variable");
         Emit1 (CD, k_Integer_to_Float, 0);
         Emit (CD, k_Store);
-      elsif X.TYP = Arrays and Y.TYP = String_Literals then
-        if CD.Arrays_Table (X.Ref).Element_TYP.TYP /= Chars then
-          Error (CD, err_types_of_assignment_must_match);
+      elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
+        Emit1 (CD, k_String_Literal_Assignment, CD.Arrays_Table (X.Ref).Size);  --  array size
+      elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
+        Error (CD, err_string_to_vstring_assignment);
+      elsif X.TYP = NOTYP then
+        if CD.Err_Count = 0 then
+          raise Internal_error with "Assignment: assigned variable (X) is typeless";
         else
-          Emit1 (CD, k_String_assignment, CD.Arrays_Table (X.Ref).Size);  --  array size
+          null;  --  All right, there were already enough compilation error messages...
         end if;
-      elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
-        Error (CD, err_types_of_assignment_must_match);
+      elsif Y.TYP = NOTYP then
+        if CD.Err_Count = 0 then
+          raise Internal_error with "Assignment: assigned value (Y) is typeless";
+        else
+          null;  --  All right, there were already enough compilation error messages...
+        end if;
+      else
+        Error (CD, err_types_of_assignment_must_match);  --  NB: X.TYP /= Y.TYP
       end if;
     end Assignment;
 

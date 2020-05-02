@@ -44,7 +44,7 @@ package body HAC.Compiler is
     --  Identifiers
     CD.Id_Count := 0;
     --  Strings
-    CD.Strings_Table_Top := 0;
+    CD.Strings_Table_Top := CD.Strings_Constants_Table'First;
     --  Tasks, Entries
     CD.Tasks_Definitions_Count := 0;
     CD.Entries_Count := 0;
@@ -314,8 +314,9 @@ package body HAC.Compiler is
       --  The "STRING" type identifier is treated separately in the TYP parser
       --  and returns a constrained array of Character.
       --  Here we just reserve the "STRING" identifier at level 0.
-      Enter ("SEMAPHORE",      TypeMark, Ints, 1);     --{ Hathorn }
-      Enter ("TEXT",           TypeMark, Ints, 1);     --{ Schoening }
+      Enter ("SEMAPHORE",      TypeMark, Ints, 1);      --{ Hathorn }
+      Enter ("TEXT",           TypeMark, Ints, 1);      --{ Schoening }
+      Enter ("VString",        TypeMark, VStrings, 1);  --  2020.05.02
       --
       --  Standard functions
       --

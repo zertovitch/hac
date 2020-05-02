@@ -3,6 +3,7 @@ with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 
+with Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 
 package body HAC.PCode.Interpreter is
@@ -55,12 +56,13 @@ package body HAC.PCode.Interpreter is
       INHERIT : Boolean;  --  Priority inheritance enabled
     end record;
 
-    type GRegister is record
+    type GRegister is record  --  !! time to add a discriminant
       --  General register - variant record in Pascal
       -- B : Boolean;
       -- C : Character;
       I : Integer; -- Also for former B (Boolean) and C (Character)
       R : HAC.Data.HAC_Float;
+      V : HAC.Data.HAC_VString;  --  !! makes copies slow (would a discriminant help?)
     end record;
 
     subtype Data_Type is GRegister;
@@ -496,6 +498,138 @@ package body HAC.PCode.Interpreter is
     procedure ShowTime is null;
     procedure SnapShot is null;
 
+    procedure Do_Standard_Function is
+      Curr_TCB : InterDef.Task_Control_Block
+        renames InterDef.TCB (InterDef.CurTask);
+      temp : HAC.Data.HAC_Float;
+      Idx, Len : Integer;
+      use Ada.Strings.Unbounded;
+    begin
+      case InterDef.IR.Y is
+        when SF_Abs =>
+          S (Curr_TCB.T).I := abs (S (Curr_TCB.T).I);
+        when SF_Abs + 1 =>
+          S (Curr_TCB.T).R := abs (S (Curr_TCB.T).R);
+        when SF_T_Val =>   --  S'Val : RM 3.5.5 (5)
+          if (S (Curr_TCB.T).I < HAC.Data.OrdMinChar) or
+            (S (Curr_TCB.T).I > HAC.Data.OrdMaxChar)  --  !! Character range
+          then
+            PS := INXCHK;  --  Seems an out-of-range
+          end if;
+        when SF_T_Pos =>   --  S'Pos : RM 3.5.5 (2)
+          null;
+        when SF_T_Succ =>  --  S'Succ : RM 3.5 (22)
+          S (Curr_TCB.T).I := S (Curr_TCB.T).I + 1;
+        when SF_T_Pred =>  --  S'Pred : RM 3.5 (25)
+          S (Curr_TCB.T).I := S (Curr_TCB.T).I - 1;
+        when SF_Round_Float_to_Int =>
+          S (Curr_TCB.T).I := Integer (S (Curr_TCB.T).R);
+        when SF_Trunc_Float_to_Int =>
+          S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (S (Curr_TCB.T).R));
+        when SF_Sin =>
+          S (Curr_TCB.T).R := Sin (S (Curr_TCB.T).R);
+        when SF_Cos =>
+          S (Curr_TCB.T).R := Cos (S (Curr_TCB.T).R);
+        when SF_Exp =>
+          S (Curr_TCB.T).R := Exp (S (Curr_TCB.T).R);
+        when SF_Log =>
+          S (Curr_TCB.T).R := Log (S (Curr_TCB.T).R);
+        when SF_Sqrt =>
+          S (Curr_TCB.T).R := Sqrt (S (Curr_TCB.T).R);
+        when SF_Arctan =>
+          S (Curr_TCB.T).R := Arctan (S (Curr_TCB.T).R);
+        when SF_EOF =>
+          Curr_TCB.T := Curr_TCB.T + 1;
+          if Curr_TCB.T > Curr_TCB.STACKSIZE then
+            PS := STKCHK;  --  Stack overflow
+          else
+            if IR.X = 0 then
+              S (Curr_TCB.T).I := Boolean'Pos(End_Of_File_Console);
+            else
+              S (Curr_TCB.T).I := Boolean'Pos(Ada.Text_IO.End_Of_File (FAT.FIL (IR.X)));
+            end if;
+          end if;
+        when SF_EOLN =>
+          Curr_TCB.T := Curr_TCB.T + 1;
+          if Curr_TCB.T > Curr_TCB.STACKSIZE then
+            PS := STKCHK;  --  Stack overflow
+          else
+            if IR.X = 0 then
+              S (Curr_TCB.T).I := Boolean'Pos(End_Of_Line_Console);
+            else
+              S (Curr_TCB.T).I := Boolean'Pos(Ada.Text_IO.End_Of_Line (FAT.FIL (IR.X)));
+            end if;
+          end if;
+        when SF_Random_Int =>
+          temp := HAC.Data.HAC_Float (Random (Gen)) *
+                  HAC.Data.HAC_Float ((S (Curr_TCB.T).I + 1));
+          S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (temp));
+        when SF_Niladic =>
+          --  NILADIC functions have IR.Y >= SF_Clock.
+          Curr_TCB.T := Curr_TCB.T + 1;
+          if Curr_TCB.T > Curr_TCB.STACKSIZE then
+            PS := STKCHK;  --  Stack overflow
+          else
+            case SF_Niladic (IR.Y) is
+              when SF_Clock =>
+                --  CLOCK function. Return time of units of seconds.
+                S (Curr_TCB.T).R := HAC.Data.HAC_Float (GetClock - Start_Time);
+              when SF_Random_Float =>
+                S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen));
+            end case;
+          end if;
+        when SF_Literal_to_VString =>
+          Idx := S (Curr_TCB.T).I;       --  Index to string table
+          Len := S (Curr_TCB.T - 1).I;   --  Length of string
+          Curr_TCB.T := Curr_TCB.T - 1;  --  Pop
+          S (Curr_TCB.T).V :=
+            To_Unbounded_String (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
+        when others =>
+          null;
+      end case;
+    end Do_Standard_Function;
+
+    procedure Do_Write_Unformatted is
+      Curr_TCB : InterDef.Task_Control_Block
+        renames InterDef.TCB (InterDef.CurTask);
+      use HAC.Data;
+      use Ada.Strings.Unbounded;
+    begin
+      if FAT.CURR = 0 then
+        case IR.Y is
+          when Typs'Pos (Ints) =>
+            Put_Console (S (Curr_TCB.T).I);
+          when Typs'Pos (Floats) =>
+            Put_Console (S (Curr_TCB.T).R);
+          when Typs'Pos (Bools) =>
+            Put_Console (Boolean'Image(Boolean'Val(S (Curr_TCB.T).I)));
+          when Typs'Pos (Chars) =>
+            Put_Console (Character'Val(S (Curr_TCB.T).I));
+          when Typs'Pos (VStrings) =>
+            Put_Console (To_String (S (Curr_TCB.T).V));
+          when others =>
+            null;
+        end case;
+      else
+        case IR.Y is
+          when Typs'Pos (Ints) =>
+            Ada.Integer_Text_IO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).I, 10);
+          when Typs'Pos (Floats) =>
+            RIO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).R, 22);
+          when Typs'Pos (Bools) =>
+            Boolean_Text_IO.Put (FAT.FIL (FAT.CURR), Boolean'Val(S (Curr_TCB.T).I), 10);
+          when Typs'Pos (Chars) =>
+            Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T).I));
+          when Typs'Pos (VStrings) =>
+            Ada.Text_IO.Put (To_String (S (Curr_TCB.T).V));
+          when others =>
+            null;
+        end case;
+      end if;
+      Curr_TCB.T := Curr_TCB.T - 1;
+      SWITCH := True;  --  give up control when doing I/O
+    end Do_Write_Unformatted;
+
   begin  --  Interpret
     InterDef.SNAP:= False;
     Init_main_task;
@@ -667,86 +801,10 @@ package body HAC.PCode.Interpreter is
             SWITCH := True;
 
           when k_Standard_Functions =>
+            Do_Standard_Function;
 
-            case IR.Y is
-              when SF_Abs =>
-                S (Curr_TCB.T).I := abs (S (Curr_TCB.T).I);
-              when SF_Abs + 1 =>
-                S (Curr_TCB.T).R := abs (S (Curr_TCB.T).R);
-              when SF_T_Val =>   --  S'Val : RM 3.5.5 (5)
-                if (S (Curr_TCB.T).I < HAC.Data.OrdMinChar) or
-                  (S (Curr_TCB.T).I > HAC.Data.OrdMaxChar)  --  !! Character range
-                then
-                  PS := INXCHK;  --  Seems an out-of-range
-                end if;
-              when SF_T_Pos =>   --  S'Pos : RM 3.5.5 (2)
-                null;
-              when SF_T_Succ =>  --  S'Succ : RM 3.5 (22)
-                S (Curr_TCB.T).I := S (Curr_TCB.T).I + 1;
-              when SF_T_Pred =>  --  S'Pred : RM 3.5 (25)
-                S (Curr_TCB.T).I := S (Curr_TCB.T).I - 1;
-              when SF_Round_Float_to_Int =>
-                S (Curr_TCB.T).I := Integer (S (Curr_TCB.T).R);
-              when SF_Trunc_Float_to_Int =>
-                S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (S (Curr_TCB.T).R));
-              when SF_Sin =>
-                S (Curr_TCB.T).R := Sin (S (Curr_TCB.T).R);
-              when SF_Cos =>
-                S (Curr_TCB.T).R := Cos (S (Curr_TCB.T).R);
-              when SF_Exp =>
-                S (Curr_TCB.T).R := Exp (S (Curr_TCB.T).R);
-              when SF_Log =>
-                S (Curr_TCB.T).R := Log (S (Curr_TCB.T).R);
-              when SF_Sqrt =>
-                S (Curr_TCB.T).R := Sqrt (S (Curr_TCB.T).R);
-              when SF_Arctan =>
-                S (Curr_TCB.T).R := Arctan (S (Curr_TCB.T).R);
-              when SF_EOF =>
-                Curr_TCB.T := Curr_TCB.T + 1;
-                if Curr_TCB.T > Curr_TCB.STACKSIZE then
-                  PS := STKCHK;  --  Stack overflow
-                else
-                  if IR.X = 0 then
-                    S (Curr_TCB.T).I := Boolean'Pos(End_Of_File_Console);
-                  else
-                    S (Curr_TCB.T).I := Boolean'Pos(Ada.Text_IO.End_Of_File (FAT.FIL (IR.X)));
-                  end if;
-                end if;
-              when SF_EOLN =>
-                Curr_TCB.T := Curr_TCB.T + 1;
-                if Curr_TCB.T > Curr_TCB.STACKSIZE then
-                  PS := STKCHK;  --  Stack overflow
-                else
-                  if IR.X = 0 then
-                    S (Curr_TCB.T).I := Boolean'Pos(End_Of_Line_Console);
-                  else
-                    S (Curr_TCB.T).I := Boolean'Pos(Ada.Text_IO.End_Of_Line (FAT.FIL (IR.X)));
-                  end if;
-                end if;
-              when SF_Random_Int =>
-                S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen)) *
-                                    HAC.Data.HAC_Float ((S (Curr_TCB.T).I + 1));
-                S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (S (Curr_TCB.T).R));
-              when SF_Niladic =>
-                --  NILADIC functions have IR.Y >= SF_Clock.
-                Curr_TCB.T := Curr_TCB.T + 1;
-                if Curr_TCB.T > Curr_TCB.STACKSIZE then
-                  PS := STKCHK;  --  Stack overflow
-                else
-                  case SF_Niladic (IR.Y) is
-                    when SF_Clock =>
-                      --  CLOCK function. Return time of units of seconds.
-                      S (Curr_TCB.T).R := HAC.Data.HAC_Float (GetClock - Start_Time);
-                    when SF_Random_Float =>
-                      S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen));
-                  end case;
-                end if;
-              when others =>
-                null;  -- [P2Ada]: no otherwise / else in Pascal
-            end case;
-
-        when k_Record_Field_Offset =>
-          S (Curr_TCB.T).I := S (Curr_TCB.T).I + IR.Y;
+          when k_Record_Field_Offset =>
+            S (Curr_TCB.T).I := S (Curr_TCB.T).I + IR.Y;
 
         when k_Jump =>
           Curr_TCB.PC := IR.Y;
@@ -981,6 +1039,30 @@ package body HAC.PCode.Interpreter is
             S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
           end if;
 
+        when k_String_Literal_Assignment =>  --  Hathorn
+          H1 := S (Curr_TCB.T - 2).I;  --  address of array
+          H2 := S (Curr_TCB.T).I;      --  index to string table
+          H3 := IR.Y;                  --  size of array
+          H4 := S (Curr_TCB.T - 1).I;  --  length of string
+          if H3 < H4 then
+            H5 := H1 + H3;    --  H5 is H1 + min of H3, H4
+          else
+            H5 := H1 + H4;
+          end if;
+          while H1 < H5 loop
+            --  Copy H5-H1 characters to the stack
+            S (H1).I := Character'Pos (CD.Strings_Constants_Table (H2));
+            H1       := H1 + 1;
+            H2       := H2 + 1;
+          end loop;
+          H5 := S (Curr_TCB.T - 2).I + H3;              --  H5 = H1 + H3
+          while H1 < H5 loop
+            --  fill with blanks if req'd
+            S (H1).I := Character'Pos (' ');
+            H1       := H1 + 1;
+          end loop;
+          Curr_TCB.T := Curr_TCB.T - 3;
+
         when k_Integer_to_Float =>
           H1       := Curr_TCB.T - IR.Y;
           S (H1).R := HAC.Data.HAC_Float (S (H1).I);
@@ -1045,35 +1127,7 @@ package body HAC.PCode.Interpreter is
           SWITCH := True;        --  give up control when doing I/O
 
         when k_Write_1 =>
-          if FAT.CURR = 0 then
-            case IR.Y is
-              when 1 =>   --  Burd
-                Put_Console (S (Curr_TCB.T).I);
-              when 2 =>
-                Put_Console (S (Curr_TCB.T).R);
-              when 3 =>
-                Put_Console (Boolean'Image(Boolean'Val(S (Curr_TCB.T).I)));
-              when 4 =>
-                Put_Console (Character'Val(S (Curr_TCB.T).I));
-              when others =>
-                null;  -- [P2Ada]: no otherwise / else in Pascal
-            end case;
-          else
-            case IR.Y is
-              when 1 =>     --  Schoening
-                Ada.Integer_Text_IO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).I, 10);
-              when 2 =>
-                RIO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).R, 22);
-              when 3 =>
-                Boolean_Text_IO.Put (FAT.FIL (FAT.CURR), Boolean'Val(S (Curr_TCB.T).I), 10);
-              when 4 =>
-                Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T).I));
-              when others =>
-                null;  -- [P2Ada]: no otherwise / else in Pascal
-            end case;
-          end if;
-          Curr_TCB.T := Curr_TCB.T - 1;
-          SWITCH        := True;  --  give up control when doing I/O
+          Do_Write_Unformatted;
 
         when k_Write_2 =>
           if FAT.CURR = 0 then
@@ -1189,7 +1243,8 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.T               := Curr_TCB.T - 2;
 
         when Binary_Operator_Opcode =>
-          Curr_TCB.T := Curr_TCB.T - 1;  --  [T] <- [T] operator [T + 1]
+          Curr_TCB.T := Curr_TCB.T - 1;
+          --  Now, we do [T] <- [T] operator [T + 1]
           declare
             X : GRegister renames S (Curr_TCB.T);
             Y : GRegister renames S (Curr_TCB.T + 1);
@@ -1295,31 +1350,6 @@ package body HAC.PCode.Interpreter is
             SWITCH         := True;
             Curr_TCB.PC := Curr_TCB.PC - 1;
           end if;
-
-        when k_String_assignment =>
-          --  Hathorn
-          H1 := S (Curr_TCB.T - 2).I;  --  address of array
-          H2 := S (Curr_TCB.T).I;      --  pointer to string table
-          H3 := IR.Y;                  --  size of array
-          H4 := S (Curr_TCB.T - 1).I;  --  length of string
-          if H3 < H4 then
-            H5 := H1 + H3;    --  H5 is H1 + min of H3, H4
-          else
-            H5 := H1 + H4;
-          end if;
-          while H1 < H5 loop
-            --  Copy H5-H1 characters to the stack
-            S (H1).I := Character'Pos (CD.Strings_Constants_Table (H2));
-            H1       := H1 + 1;
-            H2       := H2 + 1;
-          end loop;
-          H5 := S (Curr_TCB.T - 2).I + H3;              --  H5 = H1 + H3
-          while H1 < H5 loop
-            --  fill with blanks if req'd
-            S (H1).I := Character'Pos (' ');
-            H1       := H1 + 1;
-          end loop;
-          Curr_TCB.T := Curr_TCB.T - 3;
 
         when k_Delay =>  --  DLY - delay for a specified number of seconds
 

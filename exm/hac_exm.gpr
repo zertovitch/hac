@@ -23,6 +23,7 @@ project HAC_Exm is
      "mandelbrot.adb",
      "merge_sort.adb",
      "shell_sort.adb",
+	 "strings_demo.adb",
      "test1.adb",
      --
      --  2) * GNAT OK

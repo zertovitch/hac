@@ -61,9 +61,6 @@ package HAC.Data is
 
   Patch_Max : constant := 100;
 
-  HAC_Float_Name   : constant String := "REAL";
-  HAC_Integer_Name : constant String := "INTEGER";
-
   --------------------
   --  Global types  --
   --------------------
@@ -224,6 +221,7 @@ package HAC.Data is
     Floats,
     Bools,
     Chars,
+    VStrings,
     ------------------------------------
     --  Types defined by programmers  --
     ------------------------------------
@@ -238,7 +236,7 @@ package HAC.Data is
 
   type Typ_Set is array (Typs) of Boolean;
 
-  subtype Standard_Typ is Typs range NOTYP .. Chars;
+  subtype Standard_Typ is Typs range NOTYP .. VStrings;
 
   Standard_or_Enum_Typ : constant Typ_Set :=
     (Standard_Typ | Enums => True, others => False);
@@ -254,6 +252,10 @@ package HAC.Data is
   --  and is called "Real" in HAC's HAC_Pack package.
   --
   type HAC_Float is digits 15;
+  subtype HAC_VString is Ada.Strings.Unbounded.Unbounded_String;
+
+  HAC_Float_Name   : constant String := "REAL";
+  HAC_Integer_Name : constant String := "INTEGER";
 
   ------------------------------
   --  Compilation error type  --
@@ -367,7 +369,8 @@ package HAC.Data is
     err_case_others_alone_last,
     err_END_LOOP_ident_missing,
     err_END_LOOP_ident_wrong,
-    err_syntax_error                             --  A classic one. "Too long to explain more..."
+    err_syntax_error,                            --  A classic one. "Too long to explain more..."
+    err_string_to_vstring_assignment
   );
 
   type Error_set is array (Compile_Error) of Boolean;

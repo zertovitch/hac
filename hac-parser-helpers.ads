@@ -209,7 +209,7 @@ package HAC.Parser.Helpers is
 
   FactorZ : constant Symset :=
     (Times | Divide | MOD_Symbol | REM_Symbol | AND_Symbol => True,
-     Power => True,  --  !! The ** operator is probably at another precedence level
+     Power => True,  --  !! The ** operator has a higher precedence level 4.4 (6)
      others => False);
 
   Fail_after_FOR : constant Symset :=
@@ -275,7 +275,9 @@ package HAC.Parser.Helpers is
   --  Misc.  --
   -------------
 
-  No_File_Index: constant:= -1;
+  --  Check if we have an "array of Character", for instance a String.
+  --
+  function Is_Char_Array (CD : Compiler_Data; T : Exact_Typ) return Boolean;
 
   type Constant_Rec is record
     TP : Exact_Typ;
@@ -295,6 +297,8 @@ package HAC.Parser.Helpers is
   ------------------------------------------------------------------
   -------------------------------------------------Get_File_Pointer-
   function Get_File_Pointer (CD : Compiler_Data; Id : Alfa) return Integer;  -- Schoening
+
+  No_File_Index : constant := -1;
 
   ------------------------------------------------------------------
   ----------------------------------------------Enter_or_find_Float-

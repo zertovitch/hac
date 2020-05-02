@@ -174,6 +174,11 @@ package body HAC.Parser.Helpers is
     return res;
   end Singleton;
 
+  function Is_Char_Array (CD : Compiler_Data; T : Exact_Typ) return Boolean is
+  begin
+    return T.TYP = Arrays and then CD.Arrays_Table (T.Ref).Element_TYP.TYP = Chars;
+  end Is_Char_Array;
+
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-
   function Locate_Identifier (

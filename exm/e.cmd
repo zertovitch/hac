@@ -15,6 +15,8 @@ goto fin
 
 :gallery
 
+..\hax -v2 strings_demo.adb
+pause
 ..\hax -v2 hello.adb
 pause
 ..\hax -v2 ackermann.adb

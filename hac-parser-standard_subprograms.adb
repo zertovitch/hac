@@ -18,11 +18,29 @@ package body HAC.Parser.Standard_Subprograms is
     T_Argument : Typ_Set;  --  Expected type of the function's argument
     N : Integer := SF_Code;
     IFP : Integer;
-  begin  --  STANDARD FUNCTION NO. N , N >= SF_Clock INDICATES
-         --  a NILADIC FUNCTION.
-    if N < SF_Clock then
-      Need (CD, LParent, err_missing_an_opening_parenthesis);
-      if N < SF_EOF or N > SF_EOLN then
+  begin
+    case N is
+      when SF_EOF .. SF_EOLN =>
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        if CD.Sy /= IDent then
+          Error (CD, err_identifier_missing);
+        elsif Equal (CD.Id, "INPUT") then  --  Standard_Input
+          Emit2 (CD, k_Standard_Functions, 0, N);
+        else
+          IFP := Get_File_Pointer (CD, CD.Id);
+          if IFP = No_File_Index then  --  NB: bug fix: was 0 instead of -1...
+            Error (CD, err_undefined_identifier);
+          else
+            Emit2 (CD, k_Standard_Functions, IFP, N);
+          end if;
+        end if;
+        InSymbol (CD);
+        X.TYP := CD.IdTab (Ident_Index).TYP;
+        Need (CD, RParent, err_closing_parenthesis_missing);
+      when SF_Niladic =>
+        Emit1 (CD, k_Standard_Functions, N);
+      when others =>
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expression (CD, Level, FSys + RParent, X);
         case N is
           when SF_Abs =>  --  Abs (NB: in Ada it's an operator, not a function)
@@ -57,29 +75,9 @@ package body HAC.Parser.Standard_Subprograms is
         elsif X.TYP /= NOTYP then
           Error (CD, err_argument_to_std_function_of_wrong_type);
         end if;
-      else           --  N in [EOF, EOLN]
-        if CD.Sy /= IDent then
-          Error (CD, err_identifier_missing);
-        elsif Equal (CD.Id, "INPUT") then  --  Standard_Input
-          Emit2 (CD, k_Standard_Functions, 0, N);
-        else
-          IFP := Get_File_Pointer (CD, CD.Id);
-          if IFP = No_File_Index then  --  NB: bug fix: was 0 instead of -1...
-            Error (CD, err_undefined_identifier);
-          else
-            Emit2 (CD, k_Standard_Functions, IFP, N);
-          end if;
-        end if;
-        InSymbol (CD);
-      end if;        --  N in [EOF, EOLN]
-      X.TYP := CD.IdTab (Ident_Index).TYP;
-      Need (CD, RParent, err_closing_parenthesis_missing);
-    else             --  NILADIC FUNCTION
-      case SF_Niladic (N) is
-        when SF_Clock | SF_Random_Float =>
-          Emit1 (CD, k_Standard_Functions, N);
-      end case;
-    end if;    -- NILADIC FUNCTIONS, N >= SF_Clock
+        X.TYP := CD.IdTab (Ident_Index).TYP;
+        Need (CD, RParent, err_closing_parenthesis_missing);
+    end case;
   end Standard_Function;
 
   procedure Standard_Procedure (

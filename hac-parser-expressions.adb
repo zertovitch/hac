@@ -363,7 +363,10 @@ package body HAC.Parser.Expressions is
         OP := CD.Sy;
         InSymbol (CD);
         Term (FSys + Plus_Minus, X);
-        if X.TYP not in Numeric_Typ then
+        if OP = Plus and then X.TYP = String_Literals then  --  +"Hello"
+          Emit1 (CD, k_Standard_Functions, SF_Literal_to_VString);
+          X.TYP := VStrings;
+        elsif X.TYP not in Numeric_Typ then
           Error (CD, err_illegal_type_for_arithmetic_expression);
         elsif OP = Minus then
           Emit_Unary_Minus (CD, X.TYP);

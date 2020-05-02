@@ -48,15 +48,12 @@ package HAC.PCode is
     k_Load_Block,
     k_Copy_Block,
     k_Store,
+    --
     k_Load_Discrete_Literal,            --  "Load immediate" in some assemblers.
     k_Load_Float_Literal,
-    k_Integer_to_Float,
+    k_String_Literal_Assignment,
     --
-    k_Read,
-    k_Write_String,
-    k_Write_1,
-    k_Write_2,
-    k_Write_Float,
+    k_Integer_to_Float,                 --  The reverse conversion is done by a k_Standard_Functions
     --
     k_Exit_Call,
     k_Exit_Function,
@@ -98,12 +95,17 @@ package HAC.PCode is
     k_AND_Boolean,
     k_XOR_Boolean,
     --
+    k_Read,
+    k_Write_String,
+    k_Write_1,
+    k_Write_2,
+    k_Write_Float,
+    --
     k_Get_Newline,
     k_Put_Newline,
     k_Set_current_file_pointer,
     k_File_I_O,
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
-    k_String_assignment,
     k_Delay,
     k_Cursor_At,
     k_Set_Quantum_Task,
@@ -209,6 +211,7 @@ package HAC.PCode is
   SF_EOF                : constant := 17;
   SF_EOLN               : constant := 18;
   SF_Random_Int         : constant := 19;
+  SF_Literal_to_VString : constant := 20;
   --
   --  Niladic functions.
   --

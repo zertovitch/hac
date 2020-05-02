@@ -2,12 +2,17 @@
 --  routines for HAC. So far all HAC programs must have "with" and "use"
 --  of this package. Note: this requirement is kept for early stages of HAC.
 --  At some point HAC_Pack won't be needed anymore.
---  The package HAC_Pack is compilable by a real Ada compiler like
---  GNAT, so the test programs can be run on both HAC and GNAT.
+--
+--  The package HAC_Pack is compilable by a real Ada compiler
+--  like GNAT, so the test programs can be run on both HAC and
+--  a "real" Ada system.
+
+with Ada.Strings.Unbounded;
 
 package HAC_Pack is
 
   type Real is digits 15;
+  subtype VString is Ada.Strings.Unbounded.Unbounded_String;
 
   type Semaphore is new Integer; -- private;
 
@@ -51,7 +56,7 @@ package HAC_Pack is
   -- For example, Rand (10) returns equiprobable integer values
   -- between 0 and 10 (so, there are 11 possible values).
   function Rand (I : Integer) return Integer;
-  
+
   -- Random number from 0 to 1, uniform.
   function Rnd return Real;
 
@@ -78,6 +83,7 @@ package HAC_Pack is
   procedure  Put       ( F : in  Real;    W:  Width; D : Decimals);
   procedure  Put       ( B : in  Boolean  );
   procedure  Put       ( S : in  String   );
+  procedure  Put       ( V : in  VString  );
 
   -- Put and then NEW_LINE ( !! it is the same as Ada.Text_IO only for S )
   procedure  Put_Line  ( C : in  Character);
@@ -87,6 +93,7 @@ package HAC_Pack is
   procedure  Put_Line  ( F : in  Real;   W:  Width; D : Decimals);
   procedure  Put_Line  ( B : in  Boolean  );
   procedure  Put_Line  ( S : in  String   );
+  procedure  Put_Line  ( V : in  VString  );
 
   -- Mark End of Line
   procedure  New_Line                      ;
@@ -96,6 +103,9 @@ package HAC_Pack is
   -- Semaphore Procedures
   procedure  Wait      ( S : Semaphore    );
   procedure  Signal    ( S : Semaphore    );
+
+  function "+" (S : String) return VString
+    renames Ada.Strings.Unbounded.To_Unbounded_String;
 
 private
 
