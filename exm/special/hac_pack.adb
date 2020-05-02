@@ -316,6 +316,11 @@ package body HAC_Pack is
     raise Program_Error;
   end Signal;
 
+  function Argument (Number : Positive) return VString is
+  begin
+    return VStrings_Pkg.To_Unbounded_String (Ada.Command_Line.Argument (Number));
+  end Argument;
+
 begin
   Reset (gen);  --  Randomize.
 end HAC_Pack;

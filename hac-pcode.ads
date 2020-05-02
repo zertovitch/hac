@@ -218,11 +218,14 @@ package HAC.PCode is
   SF_Char_VString_Concat : constant :=  23;
   SF_LStr_VString_Concat : constant :=  24;
   --
+  SF_Argument            : constant :=  25;
+  --
   --  Niladic functions.
   --
   SF_Clock               : constant := 100;
   SF_Random_Float        : constant := 101;
+  SF_Argument_Count      : constant := 102;
 
-  subtype SF_Niladic is Integer range SF_Clock .. SF_Random_Float;
+  subtype SF_Niladic is Integer range SF_Clock .. SF_Argument_Count;
 
 end HAC.PCode;

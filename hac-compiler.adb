@@ -321,10 +321,10 @@ package body HAC.Compiler is
       --  Standard functions
       --
       Enter ("abs",            Funktion, Floats, SF_Abs);     --  abs is an Ada keyword...
-      Enter ("CHR",            Funktion, Chars, SF_T_Val);   --  S'Val : RM 3.5.5 (5)
+      Enter ("CHR",            Funktion, Chars,  SF_T_Val);   --  S'Val : RM 3.5.5 (5)
       Enter ("ORD",            Funktion, Ints,   SF_T_Pos);   --  S'Pos : RM 3.5.5 (2)
-      Enter ("SUCC",           Funktion, Chars, SF_T_Succ);  --  S'Succ : RM 3.5 (22)
-      Enter ("PRED",           Funktion, Chars, SF_T_Pred);  --  S'Pred : RM 3.5 (25)
+      Enter ("SUCC",           Funktion, Chars,  SF_T_Succ);  --  S'Succ : RM 3.5 (22)
+      Enter ("PRED",           Funktion, Chars,  SF_T_Pred);  --  S'Pred : RM 3.5 (25)
       Enter ("ROUND",          Funktion, Ints,   SF_Round_Float_to_Int);
       Enter ("TRUNC",          Funktion, Ints,   SF_Trunc_Float_to_Int);
       Enter ("Sin",            Funktion, Floats, SF_Sin);
@@ -338,6 +338,8 @@ package body HAC.Compiler is
       Enter ("RAND",           Funktion, Ints,   SF_Random_Int);    --{ Schoening }
       Enter ("RND",            Funktion, Floats, SF_Random_Float);
       Enter ("CLOCK",          Funktion, Floats, SF_Clock);         --{ Cramer }
+      Enter ("Argument_Count", Funktion, Ints,     SF_Argument_Count);
+      Enter ("Argument",       Funktion, VStrings, SF_Argument);
       --{ Niladic functions such as CLOCK will have   }
       --{ IdTab[].Adr >= 100 To differentiate them from }
       --{ functions with args.  See Parser.StandFct.  }

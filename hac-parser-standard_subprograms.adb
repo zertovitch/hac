@@ -15,7 +15,7 @@ package body HAC.Parser.Standard_Subprograms is
     X           :    out Exact_Typ
   )
   is
-    T_Argument : Typ_Set;  --  Expected type of the function's argument
+    Expected_Argument_Typ : Typ_Set;  --  Expected type of the function's argument
     N : Integer := SF_Code;
     IFP : Integer;
   begin
@@ -44,33 +44,35 @@ package body HAC.Parser.Standard_Subprograms is
         Expression (CD, Level, FSys + RParent, X);
         case N is
           when SF_Abs =>  --  Abs (NB: in Ada it's an operator, not a function)
-            T_Argument       := Numeric_Typ_Set;
+            Expected_Argument_Typ := Numeric_Typ_Set;
             CD.IdTab (Ident_Index).TYP := X.TYP;  --  !! Redefines the function's return type
             if X.TYP = Floats then
               N := N + 1;
             end if;
           when SF_T_Val =>  --  S'Val : RM 3.5.5 (5)
-            T_Argument := Ints_Typ;
+            Expected_Argument_Typ := Ints_Typ;
           when SF_T_Pos =>  --  S'Pos : RM 3.5.5 (2)
-            T_Argument := Discrete_Typ;
+            Expected_Argument_Typ := Discrete_Typ;
           when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
-            T_Argument := Discrete_Typ;
+            Expected_Argument_Typ := Discrete_Typ;
             CD.IdTab (Ident_Index).TYP := X.TYP;  --  !! Redefines the function's return type
           when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
                SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
             =>
-            T_Argument := Numeric_Typ_Set;
+            Expected_Argument_Typ := Numeric_Typ_Set;
             if Ints_Typ (X.TYP) then
               Forbid_Type_Coercion (CD, "value is of integer type; floating-point is expected here");
               Emit1 (CD, k_Integer_to_Float, 0);
             end if;
           when SF_Random_Int =>
-            T_Argument := Ints_Typ;
+            Expected_Argument_Typ := Ints_Typ;
+          when SF_Argument =>
+            Expected_Argument_Typ := Ints_Typ;
           when others =>
-            null;
+            raise Internal_error with "Unknown Standard_Function code" & Integer'Image (N);
         end case;  --  N
         --
-        if T_Argument (X.TYP) then
+        if Expected_Argument_Typ (X.TYP) then
           Emit1 (CD, k_Standard_Functions, N);
         elsif X.TYP /= NOTYP then
           Error (CD, err_argument_to_std_function_of_wrong_type);

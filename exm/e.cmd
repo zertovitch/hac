@@ -19,6 +19,8 @@ goto fin
 pause
 ..\hax -v2 hello.adb
 pause
+..\hax -v2 arguments.adb arg1 arg2 "arg 3 ..." arg4
+pause
 ..\hax -v2 ackermann.adb
 pause
 ..\hax -v2 anti_primes.adb

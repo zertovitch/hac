@@ -21,7 +21,7 @@ procedure HAX is
   asm_dump_file_name : Unbounded_String;
   cmp_dump_file_name : Unbounded_String;
 
-  procedure Compile_and_interpret_file (name: String) is
+  procedure Compile_and_interpret_file (name: String; arg_pos : Positive) is
     f : Ada.Streams.Stream_IO.File_Type;
     t1, t2 : Time;
     HAC_margin_1 : constant String := "*******[ HAX ]*******   ";
@@ -64,7 +64,7 @@ procedure HAX is
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       end if;
       t1 := Clock;
-      Interpret_on_Current_IO (CD);
+      Interpret_on_Current_IO (CD, arg_pos);
       t2 := Clock;
       if verbosity >= 2 then
         Put_Line (
@@ -76,7 +76,11 @@ procedure HAX is
     end if;
   exception
     when Ada.Streams.Stream_IO.Name_Error =>
-      Put_Line(HAC_margin_3 & "Error: file not found (perhaps in exm or test subdirectory ?)");
+      Put_Line (
+        Current_Error,
+        HAC_margin_3 &
+        "Error: file """ & name &
+        """ not found (perhaps in exm or test subdirectory ?)");
   end Compile_and_interpret_file;
 
   procedure Help is
@@ -113,7 +117,8 @@ begin
     elsif Argument (i) = "-d" then
       cmp_dump_file_name := To_Unbounded_String ("symbols.lst");
     else
-      Compile_and_interpret_file (Argument (i));
+      Compile_and_interpret_file (Argument (i), i);
+      exit;
     end if;
   end loop;
 exception

@@ -15,13 +15,14 @@ with Ada.Text_IO,
      Ada.Integer_Text_IO;
 
 package HAC.PCode.Interpreter is
+  use HAC.Compiler;
 
   --  We provide an ad-hoc pipe of ALL console Text I/O, in case we
   --  use something else than a standard terminal / console.
   --  Ouch.
   --
   --  See LEA project for a specific non-trivial (windowed) implementation.
-  --  See Interpret_on_Current_IO for a non-piped implementation.
+  --  See Interpret_on_Current_IO for a non-piped implementation (normal terminal).
 
   package Boolean_Text_IO is new Ada.Text_IO.Enumeration_IO (Boolean);
   package RIO is new Ada.Text_IO.Float_IO (HAC.Data.HAC_Float);
@@ -52,8 +53,16 @@ package HAC.PCode.Interpreter is
     with procedure Put_Console (s: in String);
     with procedure New_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
 
-  procedure Interpret (CD: HAC.Compiler.Compiler_Data);
+    --  We also abstract the command-line parameters.
+    --  Function profiles from Ada.Command_Line (RM A.15)
+    with function Argument_Count return Natural;
+    with function Argument (Number : in Positive) return String;
 
-  procedure Interpret_on_Current_IO (CD: HAC.Compiler.Compiler_Data);
+  procedure Interpret (CD: Compiler_Data);
+
+  procedure Interpret_on_Current_IO (
+    CD             : Compiler_Data;
+    Argument_Shift : Natural := 0    --  Number of arguments to be skipped
+  );
 
 end HAC.PCode.Interpreter;

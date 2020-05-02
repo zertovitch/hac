@@ -17,6 +17,7 @@ project HAC_Exm is
      --  1) HAC and GNAT OK (correct Ada, same output)
      --
      "ackermann.adb",
+     "arguments.adb",
      "days_1901.adb",
      "einmaleins.adb",
      "hello.adb",

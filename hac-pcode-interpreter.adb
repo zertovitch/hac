@@ -1,4 +1,5 @@
 with Ada.Calendar;                      use Ada.Calendar;
+with Ada.Command_Line;
 
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
@@ -159,8 +160,8 @@ package body HAC.PCode.Interpreter is
 
   --  Post Mortem Dump of the task stack causing the exception
   --
-  procedure Post_Mortem_Dump (CD: HAC.Compiler.Compiler_Data) is
-    use HAC.Compiler, InterDef;
+  procedure Post_Mortem_Dump (CD: Compiler_Data) is
+    use InterDef;
     use Ada.Text_IO, Ada.Integer_Text_IO, Boolean_Text_IO;
   begin
       New_Line;
@@ -231,7 +232,7 @@ package body HAC.PCode.Interpreter is
       end loop;
   end Post_Mortem_Dump;
 
-  procedure Interpret (CD: HAC.Compiler.Compiler_Data)
+  procedure Interpret (CD: Compiler_Data)
   is
     Start_Time : constant Time := Clock;
     --  trap label
@@ -507,7 +508,7 @@ package body HAC.PCode.Interpreter is
     procedure Do_Standard_Function is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       temp : HAC.Data.HAC_Float;
-      Idx, Len : Integer;
+      Idx, Len, Arg : Integer;
       use Ada.Strings.Unbounded;
     begin
       case InterDef.IR.Y is
@@ -569,20 +570,6 @@ package body HAC.PCode.Interpreter is
           temp := HAC.Data.HAC_Float (Random (Gen)) *
                   HAC.Data.HAC_Float ((S (Curr_TCB.T).I + 1));
           S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (temp));
-        when SF_Niladic =>
-          --  NILADIC functions have IR.Y >= SF_Clock.
-          Curr_TCB.T := Curr_TCB.T + 1;
-          if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
-          else
-            case SF_Niladic (IR.Y) is
-              when SF_Clock =>
-                --  CLOCK function. Return time of units of seconds.
-                S (Curr_TCB.T).R := HAC.Data.HAC_Float (GetClock - Start_Time);
-              when SF_Random_Float =>
-                S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen));
-            end case;
-          end if;
         when SF_Literal_to_VString =>  --  Unary "+"
           Pop;
           Len := S (Curr_TCB.T).I;      --  Length of string
@@ -599,11 +586,32 @@ package body HAC.PCode.Interpreter is
           Pop;
           S (Curr_TCB.T).V := Character'Val (S (Curr_TCB.T).I) & S (Curr_TCB.T + 1).V;
         when SF_LStr_VString_Concat =>
-          Pop (2);  --  Literal: two items, VString: one item, folded into one item.
+          --  Literal: 2 items, VString: 1 item. Total, 3 items folded into 1 item.
+          Pop (2);
           Len := S (Curr_TCB.T).I;      --  Length of string
           Idx := S (Curr_TCB.T + 1).I;  --  Index to string table
           S (Curr_TCB.T).V :=
             CD.Strings_Constants_Table (Idx .. Idx + Len - 1) & S (Curr_TCB.T + 2).V;
+        when SF_Argument =>
+          Arg := S (Curr_TCB.T).I;
+          --  The stack top may change its type here (if register has discriminant).
+          S (Curr_TCB.T).V := To_Unbounded_String (Argument (Arg));
+        when SF_Niladic =>
+          --  NILADIC functions have IR.Y >= SF_Clock.
+          Curr_TCB.T := Curr_TCB.T + 1;
+          if Curr_TCB.T > Curr_TCB.STACKSIZE then
+            PS := STKCHK;  --  Stack overflow
+          else
+            case SF_Niladic (IR.Y) is
+              when SF_Clock =>
+                --  CLOCK function. Return time of units of seconds.
+                S (Curr_TCB.T).R := HAC.Data.HAC_Float (GetClock - Start_Time);
+              when SF_Random_Float =>
+                S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen));
+              when SF_Argument_Count =>
+                S (Curr_TCB.T).I := Argument_Count;
+            end case;
+          end if;
         when others =>
           null;
       end case;
@@ -1544,22 +1552,40 @@ package body HAC.PCode.Interpreter is
 
   end Interpret;
 
-  procedure Interpret_on_Current_IO_Instance is new Interpret
-    ( Ada.Text_IO.End_Of_File,
-      Ada.Text_IO.End_Of_Line,
-      Ada.Integer_Text_IO.Get,
-      RIO.Get,
-      Ada.Text_IO.Get,
-      Ada.Text_IO.Skip_Line,
-      Ada.Integer_Text_IO.Put,
-      RIO.Put,
-      Boolean_Text_IO.Put,
-      Ada.Text_IO.Put,
-      Ada.Text_IO.Put,
-      Ada.Text_IO.New_Line);
+  procedure Interpret_on_Current_IO (
+    CD             : Compiler_Data;
+    Argument_Shift : Natural := 0    --  Number of arguments to be skipped
+  )
+  is
+    function Shifted_Argument_Count return Natural is
+    begin
+      return Ada.Command_Line.Argument_Count - Argument_Shift;
+    end;
 
-  procedure Interpret_on_Current_IO (CD: HAC.Compiler.Compiler_Data)
-    renames Interpret_on_Current_IO_Instance;
+    function Shifted_Argument (Number : Positive) return String is
+    begin
+      return Ada.Command_Line.Argument (Number + Argument_Shift);
+    end;
+
+    procedure Interpret_on_Current_IO_Instance is new Interpret
+      ( Ada.Text_IO.End_Of_File,
+        Ada.Text_IO.End_Of_Line,
+        Ada.Integer_Text_IO.Get,
+        RIO.Get,
+        Ada.Text_IO.Get,
+        Ada.Text_IO.Skip_Line,
+        Ada.Integer_Text_IO.Put,
+        RIO.Put,
+        Boolean_Text_IO.Put,
+        Ada.Text_IO.Put,
+        Ada.Text_IO.Put,
+        Ada.Text_IO.New_Line,
+        Shifted_Argument_Count,
+        Shifted_Argument
+      );
+
+  begin
+    Interpret_on_Current_IO_Instance (CD);
+  end Interpret_on_Current_IO;
 
 end HAC.PCode.Interpreter;
--- Translated on 23-Jan-2013 by (New) P2Ada v. 28-Oct-2009

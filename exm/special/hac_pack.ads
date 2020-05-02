@@ -7,6 +7,7 @@
 --  like GNAT, so the test programs can be run on both HAC and
 --  a "real" Ada system.
 
+with Ada.Command_Line;
 with Ada.Strings.Unbounded;
 
 package HAC_Pack is
@@ -112,6 +113,9 @@ package HAC_Pack is
   function "&" (S : String; V : VString) return VString renames VStrings_Pkg."&";
   function "&" (V : VString; C : Character) return VString renames VStrings_Pkg."&";
   function "&" (C : Character; V : VString) return VString renames VStrings_Pkg."&";
+
+  function Argument_Count return Natural renames Ada.Command_Line.Argument_Count;
+  function Argument (Number : Positive) return VString;
 
 private
 
