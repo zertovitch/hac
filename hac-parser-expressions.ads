@@ -7,21 +7,21 @@ package HAC.Parser.Expressions is
     CD    : in out Compiler_Data;
     Level :        Integer;
     FSys  :        Symset;
-    X     :    out Exact_Type
+    X     :    out Exact_Typ
   );
 
   procedure Expression (
     CD    : in out Compiler_Data;
     Level :        Integer;
     FSys  :        Symset;
-    X     :    out Exact_Type
+    X     :    out Exact_Typ
   );
 
   procedure Selector (
     CD    : in out Compiler_Data;
     Level :        Integer;
     FSys  :        Symset;
-    V     : in out Exact_Type
+    V     : in out Exact_Typ
   );
 
 end HAC.Parser.Expressions;

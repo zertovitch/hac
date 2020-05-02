@@ -67,7 +67,7 @@ package HAC.Parser.Helpers is
 
   procedure Test_END_Symbol (CD : in out Compiler_Data);
 
-  procedure Check_Boolean (CD : in out Compiler_Data; T: Types);
+  procedure Check_Boolean (CD : in out Compiler_Data; T: Typs);
 
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data);
 
@@ -278,7 +278,7 @@ package HAC.Parser.Helpers is
   No_File_Index: constant:= -1;
 
   type Constant_Rec is record
-    TP : Exact_Type;
+    TP : Exact_Typ;
     I  : Integer;
     R  : HAC_Float;
   end record;

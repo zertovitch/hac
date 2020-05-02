@@ -11,7 +11,9 @@ package body HAC.PCode.Interpreter is
   use REF, RIO;
   use type HAC.Data.HAC_Float;
 
-  package InterDef is -- sub-package, was a separate Turbo Pascal unit
+  package InterDef is
+    --  Sub-package, was a separate Turbo Pascal unit.
+    --  !! TBD: we'll wrap "global" variables there into a proper object type.
 
     --  DaysPast:array ( 1 .. 12 ) of  integer := --  Does not account for
     --leap year
@@ -24,20 +26,16 @@ package body HAC.PCode.Interpreter is
     subtype TRange is Integer range 0 .. HAC.Data.TaskMax; --  task index
 
     type Processor_State is (
-      RUN,     --  RUN is the normal processor state
+      RUN,               --  RUN is the normal processor state
       --
-      Case_Check_Error,
-      -- ConstErr,
+      Case_Check_Error,  --  Happens when a case was not found in a CASE statement.
       DEADLOCK,
-      DIVCHK,
+      DIVCHK,            --  Division by 0         !! -> Exception_Raised with Contraint_Error
       FIN,
-      INXCHK,  --  Out-of-range error
-      -- NumErr  ,
-      ProgErr,  --  Program_Error
-      REDCHK,
-      STKCHK,   --  Stack overflow state
-      -- StoErr  ,
-      -- TaskErr ,
+      INXCHK,            --  Out-of-range error    !! -> Exception_Raised with Contraint_Error
+      ProgErr,           --  Program_Error         !! -> Exception_Raised with Program_Error
+      REDCHK,            --  End_Error             !! -> Exception_Raised with End_Error
+      STKCHK,            --  Stack overflow        !! -> Exception_Raised with (Storage_Error, "Stack overflow")
       WAIT);
 
     type Task_State is (
@@ -73,7 +71,7 @@ package body HAC.PCode.Interpreter is
     subtype file_rng is Integer range 0 .. HAC.Data.FMax;
 
     type FFiles is array (1 .. HAC.Data.FMax) of Ada.Text_IO.File_Type;
-    type FNames is array (1 .. HAC.Data.FMax) of String (1 .. HAC.Data.Alng);
+    type FNames is array (1 .. HAC.Data.FMax) of HAC.Data.Alfa;
 
     type FilDescr is record
       CURR  : Integer;
@@ -84,7 +82,7 @@ package body HAC.PCode.Interpreter is
 
     FAT : FilDescr;                     --  File i/o table
 
-    type Display_type is array (1 .. HAC.Data.LMax) of Integer;
+    type Display_type is array (1 .. HAC.Data.Nesting_Level_Max) of Integer;
 
     type Task_Control_Block is record   --  Task Control Block
       --  index of current top of stack
@@ -214,7 +212,7 @@ package body HAC.PCode.Interpreter is
                   when HAC.Data.Floats =>
                     Put (S (H3).R);
                     New_Line;
-                  when HAC.Data.xChars =>
+                  when HAC.Data.Chars =>
                     Put (S (H3).I);
                     Put_Line (" (ASCII)");
                   when others =>
@@ -515,8 +513,7 @@ package body HAC.PCode.Interpreter is
         end if;
       else
         if InterDef.SWITCH or  --  ------------> Voluntary release of control
-           InterDef.SYSCLOCK >= InterDef.TIMER or   --  ---> Time slice
-                                                    --exceeded
+           InterDef.SYSCLOCK >= InterDef.TIMER or   --  ---> Time slice exceeded
            TasksToWake
         then --  ------> Awakened task causes switch
           if InterDef.CurTask >= 0 then
@@ -647,7 +644,7 @@ package body HAC.PCode.Interpreter is
               --  processor until section ends.
               Curr_TCB.SUSPEND := H1;
               Curr_TCB.TS      := WaitSem;
-              SWITCH              := True;
+              SWITCH           := True;
             end if;
 
           when k_Signal_Semaphore =>
@@ -798,7 +795,7 @@ package body HAC.PCode.Interpreter is
           H2 := S (Curr_TCB.T - 2).I;
           H1 := S (H2).I + 1;
           if H1 <= S (Curr_TCB.T).I then
-            S (H2).I       := H1;
+            S (H2).I    := H1;
             Curr_TCB.PC := IR.Y;
           else
             Curr_TCB.T := Curr_TCB.T - 3;
@@ -817,7 +814,7 @@ package body HAC.PCode.Interpreter is
           H2 := S (Curr_TCB.T - 2).I;
           H1 := S (H2).I - 1;
           if H1 >= S (Curr_TCB.T - 1).I then
-            S (H2).I       := H1;
+            S (H2).I    := H1;
             Curr_TCB.PC := IR.Y;
           else
             Curr_TCB.T := Curr_TCB.T - 3;
@@ -828,10 +825,9 @@ package body HAC.PCode.Interpreter is
           if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
           else
-            Curr_TCB.T := Curr_TCB.T + 5; --  make room for fixed area
+            Curr_TCB.T := Curr_TCB.T + 5;   --  make room for fixed area
             S (Curr_TCB.T - 1).I := H1 - 1; --  vsize-1
-            S (Curr_TCB.T).I := IR.Y;    --  HAC.Data.IdTab index of called
-                                            --procedure/entry
+            S (Curr_TCB.T).I := IR.Y;       --  HAC.Data.IdTab index of called procedure/entry
           end if;
 
         when k_Call =>
@@ -945,23 +941,23 @@ package body HAC.PCode.Interpreter is
           end if;
 
         when k_Load_Block =>
-          H1            := S (Curr_TCB.T).I;
+          H1         := S (Curr_TCB.T).I;   --  Pull source address
           Curr_TCB.T := Curr_TCB.T - 1;
-          H2            := IR.Y + Curr_TCB.T;
+          H2         := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
           if H2 > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
           else
             while Curr_TCB.T < H2 loop
               Curr_TCB.T     := Curr_TCB.T + 1;
               S (Curr_TCB.T) := S (H1);
-              H1                := H1 + 1;
+              H1             := H1 + 1;
             end loop;
           end if;
 
         when k_Copy_Block =>
-          H1 := S (Curr_TCB.T - 1).I;
-          H2 := S (Curr_TCB.T).I;
-          H3 := H1 + IR.Y;
+          H1 := S (Curr_TCB.T - 1).I;   --  Destination address
+          H2 := S (Curr_TCB.T).I;       --  Source address
+          H3 := H1 + IR.Y;              --  IR.Y = block length
           while H1 < H3 loop
             S (H1) := S (H2);
             H1     := H1 + 1;
@@ -1124,8 +1120,7 @@ package body HAC.PCode.Interpreter is
           --  Cramer
           Curr_TCB.T := Curr_TCB.B - 1;
           if IR.Y = HAC.Data.CallSTDP then
-            Curr_TCB.PC := S (Curr_TCB.B + 1).I;  --  Standard proc call
-                                                        --return
+            Curr_TCB.PC := S (Curr_TCB.B + 1).I;  --  Standard proc call return
           end if;
           if Curr_TCB.PC /= 0 then
             Curr_TCB.B := S (Curr_TCB.B + 3).I;
@@ -1267,14 +1262,21 @@ package body HAC.PCode.Interpreter is
                 Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
               end if;
               H1 := 0; -- was IOresult ;   --  clears any I/O error
-              Ada.Text_IO.Open (FAT.FIL (IR.X), Ada.Text_IO.In_File, FAT.NAM (IR.X) & ".DAT");
+              Ada.Text_IO.Open (
+                FAT.FIL (IR.X),
+                Ada.Text_IO.In_File,
+                HAC.Data.To_String (FAT.NAM (IR.X)) & ".DAT"
+              );
 
             when 8 =>
               if Ada.Text_IO.Is_Open (FAT.FIL (IR.X)) then
                 Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
               end if;
               H1 := 0; -- was IOresult ;   --  clears any I/O error
-              Ada.Text_IO.Create (FAT.FIL (IR.X), Ada.Text_IO.Out_File, FAT.NAM (IR.X) & ".DAT");
+              Ada.Text_IO.Create (FAT.FIL (IR.X),
+                Ada.Text_IO.Out_File,
+                HAC.Data.To_String (FAT.NAM (IR.X)) & ".DAT"
+              );
 
             when 9 =>
               Ada.Text_IO.Close (FAT.FIL (IR.X));    --  close file

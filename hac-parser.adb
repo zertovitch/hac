@@ -35,7 +35,7 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------------EnterArray-
 
-    procedure Enter_Array (Index_TP : Exact_Type; L, H : Integer) is
+    procedure Enter_Array (Index_TP : Exact_Typ; L, H : Integer) is
     begin
       if L > H then
         Error (CD,
@@ -144,7 +144,7 @@ package body HAC.Parser is
         return;
       end if;
       if CD.Sy = CharCon then  --  Untyped character constant, occurs only in ranges.
-        C.TP := (xChars, 0);
+        C.TP := (Chars, 0);
         C.I  := CD.INum;
         InSymbol;
       else
@@ -194,13 +194,13 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     --------------------------------------------------------------TYP-
 
-    procedure TYP (FSys : Symset; TP : out Types; RF, Sz : out Integer) is
-      ELTP                 : Types;
+    procedure TYP (FSys : Symset; TP : out Typs; RF, Sz : out Integer) is
+      ELTP                 : Typs;
       ELRF                 : Integer;
       ELSZ, Offset, T0, T1 : Integer;
 
       procedure Array_Typ (ARef, Arsz : in out Integer; String_Constrained_Subtype : Boolean) is
-        ELTP                      : Types;
+        ELTP                      : Typs;
         Lower_Bound, Higher_Bound : Constant_Rec;
         ELRF, ELSZ                : Integer;
       begin
@@ -223,7 +223,7 @@ package body HAC.Parser is
         ARef := CD.Arrays_Count;
         if String_Constrained_Subtype then
           --  We define String (L .. H) exactly as an "array (L .. H) of Character".
-          ELTP := xChars;
+          ELTP := Chars;
           ELRF := 0;
           ELSZ := 1;
           Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
@@ -282,7 +282,7 @@ package body HAC.Parser is
         Enter_Block (CD.Id_Count);
         TP := Records;
         RF := CD.Blocks_Count;
-        if Level = LMax then
+        if Level = Nesting_Level_Max then
           Fatal (LEVELS);  --  Exception is raised there.
         end if;
         Level              := Level + 1;
@@ -375,7 +375,7 @@ package body HAC.Parser is
     --------------------------------------------Formal_Parameter_List-
     procedure Formal_Parameter_List is
       RF, Sz, X, T0 : Integer;
-      TP            : Types := NOTYP;
+      TP            : Typs := NOTYP;
       ValParam      : Boolean;
     begin
       InSymbol;
@@ -456,7 +456,7 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------Type_Declaration-
     procedure Type_Declaration is
-      TP         : Types;
+      TP         : Typs;
       RF, Sz, T1 : Integer;
     begin
       InSymbol;
@@ -486,7 +486,7 @@ package body HAC.Parser is
       --  This procedure processes both Variable and Constant declarations.
       procedure Single_Var_Declaration is
         T0, T1, RF, Sz, T0i, LC0, LC1 : Integer;
-        TP                            : Types;
+        TP                            : Typs;
         is_constant, is_typed,
         is_untyped_constant           : Boolean;
         C                             : Constant_Rec;
@@ -673,7 +673,7 @@ package body HAC.Parser is
           InSymbol;  --  Task with no entries
         else  --  Parsing the Entry specs
           Need (CD, IS_Symbol, err_IS_missing);
-          if Level = LMax then
+          if Level = Nesting_Level_Max then
             Fatal (LEVELS);  --  Exception is raised there.
           end if;
           Level              := Level + 1;
@@ -717,7 +717,7 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
     procedure Assignment (I : Integer; Check_read_only : Boolean) is
-      X, Y : Exact_Type;
+      X, Y : Exact_Typ;
       F    : Opcode;
     begin
       pragma Assert (CD.IdTab (I).Obj = Variable);
@@ -756,7 +756,8 @@ package body HAC.Parser is
               Emit1 (CD, k_Copy_Block, CD.Arrays_Table (X.Ref).Size);
             when Records =>
               Emit1 (CD, k_Copy_Block, CD.Blocks_Table (X.Ref).VSize);
-            when Enums =>  --  Behaves like a standard type
+            when Enums =>
+              --  Behaves like a "Standard_Typ"; we have checked that X.Ref = Y.Ref (same type).
               Emit (CD, k_Store);
             when others =>
               null;
@@ -767,7 +768,7 @@ package body HAC.Parser is
         Emit1 (CD, k_Integer_to_Float, 0);
         Emit (CD, k_Store);
       elsif X.TYP = Arrays and Y.TYP = String_Literals then
-        if CD.Arrays_Table (X.Ref).Element_TYP.TYP /= xChars then
+        if CD.Arrays_Table (X.Ref).Element_TYP.TYP /= Chars then
           Error (CD, err_types_of_assignment_must_match);
         else
           Emit1 (CD, k_String_assignment, CD.Arrays_Table (X.Ref).Size);  --  array size
@@ -823,7 +824,7 @@ package body HAC.Parser is
         Accept_Call (FSys, I_Entry);
         Emit1 (CD, k_Accept_Rendezvous, I_Entry);
         if CD.Sy = DO_Symbol then
-          if Level = LMax then
+          if Level = Nesting_Level_Max then
             Fatal (LEVELS);  --  Exception is raised there.
           end if;
           Level              := Level + 1;
@@ -844,7 +845,7 @@ package body HAC.Parser is
 
       procedure Exit_Statement is
         --  Generate an absolute branch statement with a dummy end loop address
-        X : Exact_Type;
+        X : Exact_Typ;
       begin
         pragma Assert (CD.Sy = EXIT_Symbol);
         InSymbol;  --  Consume EXIT symbol.
@@ -857,7 +858,7 @@ package body HAC.Parser is
       end Exit_Statement;
 
       procedure IF_Statement is
-        X        : Exact_Type;
+        X        : Exact_Typ;
         LC0, LC1 : Integer;
       begin
         InSymbol;
@@ -911,7 +912,7 @@ package body HAC.Parser is
 
       procedure RETURN_Statement is           -- Hathorn
         --  Generate a procedure or function return Statement, calculate return value if req'D.
-        X, Y : Exact_Type;
+        X, Y : Exact_Typ;
         F : Opcode;
         Block_Idx : Integer;
       begin
@@ -965,7 +966,7 @@ package body HAC.Parser is
       end RETURN_Statement;
 
       procedure Delay_Statement is            -- Cramer. Generate a Task delay.
-        Y : Exact_Type;
+        Y : Exact_Typ;
       begin
         InSymbol;
         if CD.Sy = Semicolon then
@@ -980,7 +981,7 @@ package body HAC.Parser is
       end Delay_Statement;
 
       procedure CASE_Statement is
-        X         : Exact_Type;
+        X         : Exact_Typ;
         I, J, LC1 : Integer;
         type CASE_Label_Value is record
           Val : Integer;  --  value of a choice in a CASE statement
@@ -1099,7 +1100,7 @@ package body HAC.Parser is
       end CASE_Statement;
 
       procedure WHILE_Statement is  --  RM 5.5 (8)
-        X : Exact_Type;
+        X : Exact_Typ;
         LC_Cond_Eval, LC_Cond_Jump : Integer;
       begin
         InSymbol;  --  Consume WHILE symbol.
@@ -1113,7 +1114,7 @@ package body HAC.Parser is
 
       procedure FOR_Statement is  --  RM 5.5 (9)
         FOR_Lower_Bound,
-        FOR_Upper_Bound : Exact_Type;
+        FOR_Upper_Bound : Exact_Typ;
         F               : Opcode;
         LC1, last       : Integer;
       begin
@@ -1202,7 +1203,7 @@ package body HAC.Parser is
           I, J, IStart, IEnd : Integer;
           patch              : array (0 .. 4) of Integer;
           O                  : Order;
-          Y                  : Exact_Type;
+          Y                  : Exact_Typ;
         begin
           I := Locate_Identifier (CD, CD.Id, Level);
           if CD.IdTab (I).Obj = aTask then
@@ -1286,7 +1287,7 @@ package body HAC.Parser is
           JSD, Alt            : Fixed_Size_Patch_Table;
           ISD, IAlt, StartSel : Integer;
           SelectDone          : Boolean;
-          Y, X                : Exact_Type;
+          Y, X                : Exact_Typ;
           do_terminate        : Boolean;
 
           procedure Accept_Statement_2 is      -- Kurtz
@@ -1323,7 +1324,7 @@ package body HAC.Parser is
             Emit2 (CD, k_Selective_Wait, 3, CD.LC);  --  ACCEPT IF Ready ELSE Skip To LC
             -- CONDITIONAL ACCEPT MUST BE ATOMIC
             if CD.Sy = DO_Symbol then
-              if Level = LMax then
+              if Level = Nesting_Level_Max then
                 Fatal (LEVELS);  --  Exception is raised there.
               end if;
               Level              := Level + 1;
@@ -1694,7 +1695,7 @@ package body HAC.Parser is
     end if;
     Dx    := 5;
     ICode := 0;
-    if Level > LMax then
+    if Level > Nesting_Level_Max then
       Fatal (LEVELS);  --  Exception is raised there.
     end if;
     if Is_a_block_statement then

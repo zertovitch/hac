@@ -19,8 +19,8 @@ package HAC.Compiler is
 
   use HAC.Data;
 
-  type Exact_Type is record  --  NB: was called "Item" in SmallAda.
-    TYP : Types;
+  type Exact_Typ is record  --  NB: was called "Item" in SmallAda.
+    TYP : Typs;
     Ref : Index;
     --  If TYP is not a standard type, then (TYP, Ref) does identify the type.
     --  E.g. it can be (Enums, [index of the enumerated type definition]).
@@ -34,14 +34,14 @@ package HAC.Compiler is
   --  the compiler and ignored by the interpreter):
   --
   type ATabEntry is record
-    Index_TYP    : Exact_Type;  --  C  Type of the index
-    Element_TYP  : Exact_Type;  --  C  Type of the elements of the array.
-                                --        Element_TYP.Ref is an index to an entry
-                                --        in Arrays_Table if the elements of the array
-                                --        are themselves arrays
-    Size         : Index;       --  C  Total size of the array
-    Low, High    : Index;       --  Limits on the array index: array (Low .. High) of Element_TYP
-    ELSize       : Index;       --  Size of an element
+    Index_TYP    : Exact_Typ;  --  C  Type of the index
+    Element_TYP  : Exact_Typ;  --  C  Type of the elements of the array.
+                               --        Element_TYP.Ref is an index to an entry
+                               --        in Arrays_Table if the elements of the array
+                               --        are themselves arrays
+    Size         : Index;      --  C  Total size of the array
+    Low, High    : Index;      --  Limits on the array index: array (Low .. High) of Element_TYP
+    ELSize       : Index;      --  Size of an element
   end record;
 
   -------------------------------------------------------------------------
@@ -84,7 +84,7 @@ package HAC.Compiler is
       Label
   );
 
-  subtype Nesting_level is Integer range 0 .. LMax;
+  subtype Nesting_level is Integer range 0 .. Nesting_Level_Max;
 
   ------------------------------------------------------------------------
   ------------------------------------------------------------TabEntry----
@@ -99,7 +99,7 @@ package HAC.Compiler is
                                     --    Prozedure, Funktion, aTask, aEntry
     Read_only      : Boolean;       --  If Obj = Variable and Read_only = True,
                                     --    it's a typed constant.
-    TYP            : Types;         --  One of: NoTyp, Ints, Floats, Bools,
+    TYP            : Typs;         --  One of: NoTyp, Ints, Floats, Bools,
                                     --    xChars, Arrays, Records, Enums, Strings
     Ref            : Index;         --  Index into the Block table
     Normal         : Boolean;       --  value param?
@@ -252,7 +252,7 @@ package HAC.Compiler is
   procedure Emit_Comparison_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;
     Operator  :        HAC.Data.Comparison_Operator;
-    Base_Type :        HAC.Data.Types
+    Base_Type :        HAC.Data.Typs
   );
 
   procedure Emit_Unary_Minus (

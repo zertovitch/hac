@@ -86,7 +86,7 @@ package body HAC.Compiler is
         Put (CD.comp_dump, ' ' & To_String (r.Name));
         Put (CD.comp_dump, r.Link, 10);
         Put (CD.comp_dump, aObject'Pos (r.Obj), 5);
-        Put (CD.comp_dump, Types'Pos (r.TYP), 5);
+        Put (CD.comp_dump, Typs'Pos (r.TYP), 5);
         Put (CD.comp_dump, r.Ref, 5);
         Put (CD.comp_dump, Boolean'Pos (r.Normal), 5);
         Put (CD.comp_dump, r.LEV, 5);
@@ -148,8 +148,8 @@ package body HAC.Compiler is
           r : ATabEntry renames CD.Arrays_Table (I);
         begin
           Put (CD.comp_dump, I, 4);
-          Put (CD.comp_dump, Types'Image (r.Index_TYP.TYP) & "   " &
-                             Types'Image (r.Element_TYP.TYP));
+          Put (CD.comp_dump, Typs'Image (r.Index_TYP.TYP) & "   " &
+                             Typs'Image (r.Element_TYP.TYP));
           Put (CD.comp_dump, r.Element_TYP.Ref, 5);
           Put (CD.comp_dump, r.Low, 5);
           Put (CD.comp_dump, r.High, 5);
@@ -198,7 +198,7 @@ package body HAC.Compiler is
   procedure Emit_Comparison_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;
     Operator  :        HAC.Data.Comparison_Operator;
-    Base_Type :        HAC.Data.Types
+    Base_Type :        HAC.Data.Typs
   )
   is
   begin
@@ -278,7 +278,7 @@ package body HAC.Compiler is
       procedure Enter
        (X0 : String;
         X1 : aObject;
-        X2 : Types;
+        X2 : Typs;
         X3 : Integer)
       is
         X0A  : constant Alfa := To_Alfa (X0);
@@ -306,7 +306,7 @@ package body HAC.Compiler is
       Enter ("True",           Declared_Number_or_Enum_Item, Bools, 1);
       --
       Enter (HAC_Float_Name,   TypeMark, Floats, 1);
-      Enter ("Character",      TypeMark, xChars, 1);
+      Enter ("Character",      TypeMark, Chars, 1);
       Enter ("Boolean",        TypeMark, Bools, 1);
       Enter (HAC_Integer_Name, TypeMark, Ints, 1);
       Enter ("String",         TypeMark, String_Literals, 1);  --{ Hathorn }
@@ -320,10 +320,10 @@ package body HAC.Compiler is
       --  Standard functions
       --
       Enter ("abs",            Funktion, Floats, SF_Abs);     --  abs is an Ada keyword...
-      Enter ("CHR",            Funktion, xChars, SF_T_Val);   --  S'Val : RM 3.5.5 (5)
+      Enter ("CHR",            Funktion, Chars, SF_T_Val);   --  S'Val : RM 3.5.5 (5)
       Enter ("ORD",            Funktion, Ints,   SF_T_Pos);   --  S'Pos : RM 3.5.5 (2)
-      Enter ("SUCC",           Funktion, xChars, SF_T_Succ);  --  S'Succ : RM 3.5 (22)
-      Enter ("PRED",           Funktion, xChars, SF_T_Pred);  --  S'Pred : RM 3.5 (25)
+      Enter ("SUCC",           Funktion, Chars, SF_T_Succ);  --  S'Succ : RM 3.5 (22)
+      Enter ("PRED",           Funktion, Chars, SF_T_Pred);  --  S'Pred : RM 3.5 (25)
       Enter ("ROUND",          Funktion, Ints,   SF_Round_Float_to_Int);
       Enter ("TRUNC",          Funktion, Ints,   SF_Trunc_Float_to_Int);
       Enter ("Sin",            Funktion, Floats, SF_Sin);

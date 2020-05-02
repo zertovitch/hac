@@ -139,7 +139,7 @@ package body HAC.Parser.Helpers is
     end if;
   end Test_END_Symbol;
 
-  procedure Check_Boolean (CD : in out Compiler_Data; T: Types) is
+  procedure Check_Boolean (CD : in out Compiler_Data; T: Typs) is
   begin
     --  NB: T = NOTYP was admitted in SmallAda.
     if T /= Bools then

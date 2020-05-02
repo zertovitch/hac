@@ -13,7 +13,7 @@ package body HAC.Parser.Expressions is
     CD    : in out Compiler_Data;
     Level :        Integer;
     FSys  :        Symset;
-    V     : in out Exact_Type
+    V     : in out Exact_Typ
   )
   is
     --
@@ -42,7 +42,7 @@ package body HAC.Parser.Expressions is
     end Record_Field_Selector;
     --
     procedure Array_Coordinates_Selector is
-      Array_Index_Expr : Exact_Type;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
+      Array_Index_Expr : Exact_Typ;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
       AT_Index : Integer;             --  Index in the table of all arrays definitions.
     begin
       loop
@@ -106,21 +106,21 @@ package body HAC.Parser.Expressions is
     CD    : in out Compiler_Data;
     Level :        Integer;
     FSys  :        Symset;
-    X     :    out Exact_Type
+    X     :    out Exact_Typ
   )
   is
-    Y  : Exact_Type;
+    Y  : Exact_Typ;
     OP : KeyWSymbol;
 
-    procedure Simple_Expression (FSys : Symset; X : out Exact_Type) is
-      Y  : Exact_Type;
+    procedure Simple_Expression (FSys : Symset; X : out Exact_Typ) is
+      Y  : Exact_Typ;
       OP : KeyWSymbol;
 
-      procedure Term (FSys : Symset; X : out Exact_Type) is
-        Y  : Exact_Type;
+      procedure Term (FSys : Symset; X : out Exact_Typ) is
+        Y  : Exact_Typ;
         OP : KeyWSymbol;
 
-        procedure Factor (FSys : Symset; X : out Exact_Type) is
+        procedure Factor (FSys : Symset; X : out Exact_Typ) is
           Ident_Index : Integer;
           F           : Opcode;
           err         : Compile_Error;
@@ -250,7 +250,7 @@ package body HAC.Parser.Expressions is
                   end;
                 else
                   if CD.Sy = CharCon then
-                    X.TYP := xChars;
+                    X.TYP := Chars;
                   else
                     X.TYP := Ints;
                   end if;
@@ -288,11 +288,14 @@ package body HAC.Parser.Expressions is
 
       begin  --  Term
         Factor (FSys + FactorZ, X);
+        --
+        --  We collect here eventual factors: a {* b}
+        --
         while FactorZ (CD.Sy) loop
           OP := CD.Sy;
           InSymbol (CD);
           Factor (FSys + FactorZ, Y);
-          if X.TYP = NOTYP or X.TYP = NOTYP then
+          if X.TYP = NOTYP or Y.TYP = NOTYP then
             null;  --  Something is already wrong at this point; nothing to check or emit.
           else
             case OP is
@@ -353,8 +356,10 @@ package body HAC.Parser.Expressions is
       end Term;
 
     begin  --  Simple_Expression
-      --  + , -
       if Plus_Minus (CD.Sy) then
+        --
+        --  Unary + , -
+        --
         OP := CD.Sy;
         InSymbol (CD);
         Term (FSys + Plus_Minus, X);
@@ -366,11 +371,14 @@ package body HAC.Parser.Expressions is
       else
         Term (FSys + TermZ, X);
       end if;
+      --
+      --  We collect here eventual terms: a {+ b}
+      --
       while TermZ (CD.Sy) loop
         OP := CD.Sy;
         InSymbol (CD);
         Term (FSys + TermZ, Y);
-        if X.TYP = NOTYP or X.TYP = NOTYP then
+        if X.TYP = NOTYP or Y.TYP = NOTYP then
           null;  --  Something is already wrong at this point; nothing to check or emit.
         else
           case OP is
@@ -407,6 +415,9 @@ package body HAC.Parser.Expressions is
 
   begin  --  Expression
     Simple_Expression (FSys + Comparison_Operator_Set, X);
+    --
+    --  We collect here an eventual comparison: a {= b}
+    --
     if CD.Sy in Comparison_Operator then
       OP := CD.Sy;
       InSymbol (CD);
@@ -430,7 +441,11 @@ package body HAC.Parser.Expressions is
       else
         Error (CD, err_incompatible_types_for_comparison);
       end if;
-      X.TYP := Bools;
+      X.TYP := Bools;  --  The result of the comparison is always Boolean.
+    end if;
+    --
+    if X.TYP = NOTYP and then CD.Err_Count = 0 then
+      raise Internal_error with "Typeless expression, but no compilation error";
     end if;
   end Expression;
 
@@ -438,7 +453,7 @@ package body HAC.Parser.Expressions is
     CD    : in out Compiler_Data;
     Level :        Integer;
     FSys  :        Symset;
-    X     :    out Exact_Type
+    X     :    out Exact_Typ
   )
   is
   begin

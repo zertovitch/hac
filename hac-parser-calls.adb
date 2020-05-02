@@ -24,7 +24,7 @@ package body HAC.Parser.Calls is
     --   = 2 then timed Task Entry Call,          CallTMDE
     --   = 3 then conditional Task Entry Call,    CallCNDE
     --****************************************************************
-    X            : Exact_Type;
+    X            : Exact_Typ;
     LastP, CP, K : Integer;
   begin
     Emit1 (CD, k_Mark_Stack, I);

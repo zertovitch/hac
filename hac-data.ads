@@ -41,7 +41,7 @@ package HAC.Data is
   EntryMax              : constant := 30;   --  Maximum Number of Entry Statements
   FMax                  : constant := 20;   --  Maximum Number of files for I/O
   KMax                  : constant := 7;    --  Max No. of significant digits
-  LMax                  : constant := 7;    --  maximum Level
+  Nesting_Level_Max     : constant := 20;
 
   CallSTDP   : constant := 0;             --  Call type for standard procedure call
   CallSTDE   : constant := 1;             --  Call type for standard Entry Call
@@ -210,30 +210,43 @@ package HAC.Data is
   function To_String (a: Alfa) return String;
   function To_Alfa (s: String) return Alfa;
 
-  --  The order of these is significant
-  type Types is (
-    NOTYP,
+  --  Data types in HAC. We call them "Typ" (with an Akzent ;-) ) to avoid
+  --  confusion with the types of the HAC code itself.
+  --
+  --  The order of these is significant.
+  --
+  type Typs is (
+    ----------------------
+    --  Built-in types  --
+    ----------------------
+    NOTYP,  --  Appears when the parsing of an expression fails at some point.
     Ints,
     Floats,
     Bools,
-    xChars,
+    Chars,
+    ------------------------------------
+    --  Types defined by programmers  --
+    ------------------------------------
     Arrays,
     Records,
     Enums,
+    --------------------------------------------------
+    --  Special types appearing during the parsing  --
+    --------------------------------------------------
     String_Literals
   );
 
-  type Typ_Set is array (Types) of Boolean;
+  type Typ_Set is array (Typs) of Boolean;
 
-  subtype Standard_Typ is Types range NOTYP .. xChars;
+  subtype Standard_Typ is Typs range NOTYP .. Chars;
 
   Standard_or_Enum_Typ : constant Typ_Set :=
     (Standard_Typ | Enums => True, others => False);
 
   Discrete_Typ : constant Typ_Set :=  --  RM 3.2 (12)
-    (Ints | Bools | xChars | Enums => True, others  => False);
+    (Ints | Bools | Chars | Enums => True, others  => False);
 
-  subtype Numeric_Typ is Types range Ints .. Floats;  --  RM 3.2 (1)
+  subtype Numeric_Typ is Typs range Ints .. Floats;  --  RM 3.2 (1)
 
   subtype Index is Integer range -XMax .. +XMax;
 

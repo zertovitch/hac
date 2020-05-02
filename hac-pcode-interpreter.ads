@@ -45,7 +45,7 @@ package HAC.PCode.Interpreter is
       Exp  : Integer := RIO.Default_Exp
     );
     with procedure Put_Console (
-      b: in Boolean;
+      b     : in Boolean;
       Width : Ada.Text_IO.Field    := Boolean_Text_IO.Default_Width;
       Set   : Ada.Text_IO.Type_Set := Boolean_Text_IO.Default_Setting);
     with procedure Put_Console (c: in Character);

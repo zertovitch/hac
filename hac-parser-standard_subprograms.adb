@@ -12,7 +12,7 @@ package body HAC.Parser.Standard_Subprograms is
     FSys        :        Symset;
     Ident_Index :        Integer;
     SF_Code     :        Integer;
-    X           :    out Exact_Type
+    X           :    out Exact_Typ
   )
   is
     T_Argument : Typ_Set;  --  Expected type of the function's argument
@@ -91,7 +91,7 @@ package body HAC.Parser.Standard_Subprograms is
   is
     I                 : Integer;
     F                 : Opcode;
-    X, Y              : Exact_Type;
+    X, Y              : Exact_Typ;
     do_first_InSymbol : Boolean := True;
   begin
     case N is  --  Numbers: see EnterStdFcns in HAC.Compiler
@@ -140,10 +140,10 @@ package body HAC.Parser.Standard_Subprograms is
                   end if;
                   if X.TYP = Ints or
                      X.TYP = Floats or
-                     X.TYP = xChars or
+                     X.TYP = Chars or
                      X.TYP = NOTYP
                   then
-                    Emit1 (CD, k_Read, Types'Pos (X.TYP));
+                    Emit1 (CD, k_Read, Typs'Pos (X.TYP));
                   else
                     Error (CD, err_illegal_parameters_to_Put);
                   end if;
@@ -212,12 +212,12 @@ package body HAC.Parser.Standard_Subprograms is
                   end if;
                   Emit (CD, k_Write_Float);
                 else
-                  Emit1 (CD, k_Write_2, Types'Pos (X.TYP));
+                  Emit1 (CD, k_Write_2, Typs'Pos (X.TYP));
                 end if;
               elsif X.TYP = String_Literals then
                 Emit1 (CD, k_Write_String, X.Ref);
               else
-                Emit1 (CD, k_Write_1, Types'Pos (X.TYP));
+                Emit1 (CD, k_Write_1, Typs'Pos (X.TYP));
               end if;
             end if;
             exit when CD.Sy /= Comma;

@@ -13,7 +13,7 @@ package HAC.Parser.Standard_Subprograms is
     FSys        :        Symset;
     Ident_Index :        Integer;
     SF_Code     :        Integer;
-    X           :    out Exact_Type
+    X           :    out Exact_Typ
   );
 
   procedure Standard_Procedure (
