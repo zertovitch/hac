@@ -498,9 +498,14 @@ package body HAC.PCode.Interpreter is
     procedure ShowTime is null;
     procedure SnapShot is null;
 
+    procedure Pop (Amount : Positive := 1) is
+      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+    begin
+      Curr_TCB.T := Curr_TCB.T - Amount;
+    end;
+
     procedure Do_Standard_Function is
-      Curr_TCB : InterDef.Task_Control_Block
-        renames InterDef.TCB (InterDef.CurTask);
+      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       temp : HAC.Data.HAC_Float;
       Idx, Len : Integer;
       use Ada.Strings.Unbounded;
@@ -578,12 +583,27 @@ package body HAC.PCode.Interpreter is
                 S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen));
             end case;
           end if;
-        when SF_Literal_to_VString =>
-          Idx := S (Curr_TCB.T).I;       --  Index to string table
-          Len := S (Curr_TCB.T - 1).I;   --  Length of string
-          Curr_TCB.T := Curr_TCB.T - 1;  --  Pop
+        when SF_Literal_to_VString =>  --  Unary "+"
+          Pop;
+          Len := S (Curr_TCB.T).I;      --  Length of string
+          Idx := S (Curr_TCB.T + 1).I;  --  Index to string table
           S (Curr_TCB.T).V :=
             To_Unbounded_String (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
+        when SF_Two_VStrings_Concat =>
+          Pop;
+          S (Curr_TCB.T).V := S (Curr_TCB.T).V & S (Curr_TCB.T + 1).V;
+        when SF_VString_Char_Concat =>
+          Pop;
+          S (Curr_TCB.T).V := S (Curr_TCB.T).V & Character'Val (S (Curr_TCB.T + 1).I);
+        when SF_Char_VString_Concat =>
+          Pop;
+          S (Curr_TCB.T).V := Character'Val (S (Curr_TCB.T).I) & S (Curr_TCB.T + 1).V;
+        when SF_LStr_VString_Concat =>
+          Pop (2);  --  Literal: two items, VString: one item, folded into one item.
+          Len := S (Curr_TCB.T).I;      --  Length of string
+          Idx := S (Curr_TCB.T + 1).I;  --  Index to string table
+          S (Curr_TCB.T).V :=
+            CD.Strings_Constants_Table (Idx .. Idx + Len - 1) & S (Curr_TCB.T + 2).V;
         when others =>
           null;
       end case;

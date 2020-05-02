@@ -252,8 +252,10 @@ package HAC.Parser.Helpers is
     (LParent | RETURN_Symbol | IS_Symbol | Semicolon => True,
      others => False);
 
-  TermZ : constant Symset :=
-    (Plus | Minus | OR_Symbol | XOR_Symbol => True, others => False);
+  Binary_Adding_Operators : constant Symset :=  --  RM 4.5 (4)
+    (Plus | Minus | Ampersand_Symbol => True,
+     OR_Symbol | XOR_Symbol => True,  --  Wrong level !!
+     others => False);
 
   Type_Begin_Symbol : constant Symset :=
    (IDent                |

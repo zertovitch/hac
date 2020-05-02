@@ -358,7 +358,7 @@ package body HAC.Parser.Expressions is
     begin  --  Simple_Expression
       if Plus_Minus (CD.Sy) then
         --
-        --  Unary + , -
+        --  Unary + , -      RM 4.5 (5), 4.4 (4)
         --
         OP := CD.Sy;
         InSymbol (CD);
@@ -372,15 +372,15 @@ package body HAC.Parser.Expressions is
           Emit_Unary_Minus (CD, X.TYP);
         end if;
       else
-        Term (FSys + TermZ, X);
+        Term (FSys + Binary_Adding_Operators, X);
       end if;
       --
-      --  We collect here eventual terms: a {+ b}
+      --  We collect here eventual terms: a {+ b}      RM 4.4 (4)
       --
-      while TermZ (CD.Sy) loop
+      while Binary_Adding_Operators (CD.Sy) loop
         OP := CD.Sy;
         InSymbol (CD);
-        Term (FSys + TermZ, Y);
+        Term (FSys + Binary_Adding_Operators, Y);
         if X.TYP = NOTYP or Y.TYP = NOTYP then
           null;  --  Something is already wrong at this point; nothing to check or emit.
         else
@@ -409,7 +409,26 @@ package body HAC.Parser.Expressions is
               else
                 Error (CD, err_operator_not_defined_for_types);
               end if;
-            when others =>  --  Doesn't happen: TermZ(OP) is True.
+            when Ampersand_Symbol =>  --  Concatenation. RM: Unbounded_String.
+              if X.TYP = VStrings and Y.TYP = VStrings then              --  v & v   RM A.4.5 (15)
+                Emit1 (CD, k_Standard_Functions, SF_Two_VStrings_Concat);
+              elsif X.TYP = VStrings and Y.TYP = String_Literals then    --  v & "x" RM A.4.5 (16)
+                --  Y is on top of the stack, we turn it into a VString.
+                Emit1 (CD, k_Standard_Functions, SF_Literal_to_VString);
+                --  Now we concatenate both VStrings.
+                Emit1 (CD, k_Standard_Functions, SF_Two_VStrings_Concat);
+              elsif X.TYP = String_Literals and Y.TYP = VStrings then    --  "x" & v RM A.4.5 (17)
+                Emit1 (CD, k_Standard_Functions, SF_LStr_VString_Concat);
+                X.TYP := VStrings;
+              elsif X.TYP = VStrings and Y.TYP = Chars then              --  v & 'x' RM A.4.5 (18)
+                Emit1 (CD, k_Standard_Functions, SF_VString_Char_Concat);
+              elsif X.TYP = Chars and Y.TYP = VStrings then              --  'x' & v RM A.4.5 (19)
+                Emit1 (CD, k_Standard_Functions, SF_Char_VString_Concat);
+                X.TYP := VStrings;
+              else
+                Error (CD, err_operator_not_defined_for_types);
+              end if;
+            when others =>  --  Doesn't happen: Binary_Adding_Operators(OP) is True.
               null;
           end case;
         end if;

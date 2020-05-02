@@ -182,13 +182,20 @@ package body HAC.Parser.Standard_Subprograms is
             end if;
             do_first_InSymbol := True;
             if CD.Sy = StrCon then
+              --  !! This assumes the string literal is alone (no concatenation)
+              --     In both Pascal sources (Mac + Turbo/DOS):
+              --     if SY = STRCON then begin EMIT1(24,SLENG); EMIT1(28,INUM); INSYMBOL; end
+              --  !! But the case X.TYP = String_Literals below (Mac only) crashes if we remove
+              --     this special case...
+              --  !! Possible explanation: the expression evaluation pushes both length and index
+              --     on the stack.
               Emit1 (CD, k_Load_Discrete_Literal, CD.SLeng);
               Emit1 (CD, k_Write_String, CD.INum);
               InSymbol (CD);
             else
               Expression (CD, Level, FSys + Colon_Comma_RParent, X);
               if X.TYP = Enums then
-                X.TYP := Ints;
+                X.TYP := Ints;  --  Ow... Silent S'Pos
               end if;
               if (X.TYP not in Standard_Typ) and X.TYP /= String_Literals then
                 Error (CD, err_illegal_parameters_to_Put);

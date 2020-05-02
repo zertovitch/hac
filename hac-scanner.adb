@@ -45,6 +45,7 @@ package body HAC.Scanner is
         '0' .. '9' =>  Number,
         '+' | '-' | '*' | '/' |
         '(' | ')' |
+        '&' |
         '$' |
         '=' |
         ' ' |
