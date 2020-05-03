@@ -10,6 +10,7 @@
 --  Another purpose of this specification is to present the standard
 --  types and subprograms in HAC.
 
+with Ada.Characters.Handling;
 with Ada.Command_Line;
 with Ada.Strings.Unbounded;
 
@@ -86,11 +87,19 @@ package HAC_Pack is
   function "&" (V : VString; C : Character) return VString renames VStrings_Pkg."&";
   function "&" (C : Character; V : VString) return VString renames VStrings_Pkg."&";
   --
-  function "="  (Left, Right  : VString) return Boolean renames VStrings_Pkg."=";
-  function "<"  (Left, Right  : VString) return Boolean renames VStrings_Pkg."<";
-  function "<=" (Left, Right  : VString) return Boolean renames VStrings_Pkg."<=";
-  function ">"  (Left, Right  : VString) return Boolean renames VStrings_Pkg.">";
-  function ">=" (Left, Right  : VString) return Boolean renames VStrings_Pkg.">=";
+  function "="  (Left, Right : VString) return Boolean renames VStrings_Pkg."=";
+  function "<"  (Left, Right : VString) return Boolean renames VStrings_Pkg."<";
+  function "<=" (Left, Right : VString) return Boolean renames VStrings_Pkg."<=";
+  function ">"  (Left, Right : VString) return Boolean renames VStrings_Pkg.">";
+  function ">=" (Left, Right : VString) return Boolean renames VStrings_Pkg.">=";
+
+  function To_Lower (Item : Character) return Character  --  RM A.3.2 (6)
+    renames Ada.Characters.Handling.To_Lower;
+  function To_Upper (Item : Character) return Character  --  RM A.3.2 (6)
+    renames Ada.Characters.Handling.To_Upper;
+
+  function To_Lower (Item : VString) return VString;
+  function To_Upper (Item : VString) return VString;
 
   --  In the works:
   --

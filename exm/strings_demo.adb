@@ -62,6 +62,29 @@ procedure Strings_demo is
     end loop;
   end Slice_Show;
   --
+  procedure Up_Low (v : VString) is
+    row : VString;
+    c : Character;
+  begin
+    Put_Line (v);
+    New_Line;
+    Put_Line (To_Upper (v));
+    Put_Line (To_Lower (v));
+    New_Line;
+    for i in 1 .. Length (v) loop
+      row := +"";
+      for j in 1 .. Length (v) loop
+        c := Element (v, j);
+        if i = j then
+          row := row & To_Upper (c);
+        else
+          row := row & To_Lower (c);
+        end if;
+      end loop;
+      Put_Line (row);
+    end loop;
+  end Up_Low;
+
   s3 : constant VString := +" world";
   ZZ : Bi_Vector;
 begin
@@ -94,6 +117,7 @@ begin
   Show (ZZ.B);
   --
   Slice_Show (+"What's happening to this string?!");
+  Up_Low (+"Upside Down!");
   --
   if s4 /= +"abcdef" then  --  Comparison VString to VString
     Put ("Ooops?");

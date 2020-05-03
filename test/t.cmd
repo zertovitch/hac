@@ -35,6 +35,7 @@ echo.
 ..\hax -v1 loops.adb
 ..\hax -v1 recursion.adb
 ..\hax -v1 sorting_tests.adb
+..\hax -v1 strings.adb
 ..\hax -v1 type_conversion.adb
 pause
 

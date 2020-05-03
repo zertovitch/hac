@@ -23,6 +23,7 @@ project HAC_Test is
      "loops.adb",
      "recursion.adb",
      "sorting_tests.adb",
+     "strings.adb",
      "type_conversion.adb"
    );
 

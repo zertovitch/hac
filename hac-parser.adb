@@ -749,7 +749,7 @@ package body HAC.Parser is
         if X.TYP in Standard_Typ then
           Emit (CD, k_Store);
         elsif X.Ref /= Y.Ref then
-          Error (CD, err_types_of_assignment_must_match);
+          Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
         else
           case X.TYP is
             when Arrays =>
@@ -785,7 +785,8 @@ package body HAC.Parser is
           null;  --  All right, there were already enough compilation error messages...
         end if;
       else
-        Error (CD, err_types_of_assignment_must_match);  --  NB: X.TYP /= Y.TYP
+        Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
+        --  NB: We are in the X.TYP /= Y.TYP case.
       end if;
     end Assignment;
 

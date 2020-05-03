@@ -4,7 +4,7 @@ with HAC.Parser.Helpers;
 with HAC.PCode;                         use HAC.PCode;
 with HAC.Scanner;                       use HAC.Scanner;
 
-with Ada.Integer_Text_IO, Ada.Characters.Handling;
+with Ada.Integer_Text_IO, Ada.Characters.Handling, Ada.Strings.Fixed;
 
 package body HAC.Compiler is
 
@@ -73,22 +73,30 @@ package body HAC.Compiler is
   --  Print_Tables is for debugging purposes.
   --
   procedure Print_Tables (CD : in Compiler_Data) is
-    use Ada.Text_IO, Ada.Integer_Text_IO;
+    use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Strings.Fixed;
+    --
+    procedure Show_Padded (n : String; t : Positive) is
+    begin
+      Put (CD.comp_dump, "  " & n & Integer'Max (0, t - n'Length) * ' ');
+    end;
   begin
     New_Line (CD.comp_dump);
-    Put (CD.comp_dump, " Identifiers          Link  Obj  TYP  Ref  NRM  LEV  Adr");
+    Put (CD.comp_dump,
+       " Identifiers                Link  Obj                           "&
+       "TYP              Ref  NRM  Level  Adr"
+    );
     New_Line (CD.comp_dump);
     for I in CD.Blocks_Table (1).Last .. CD.Id_Count loop
       declare
         r : IdTabEntry renames CD.IdTab (I);
       begin
         Put (CD.comp_dump, I, 4);
-        Put (CD.comp_dump, ' ' & To_String (r.Name));
-        Put (CD.comp_dump, r.Link, 10);
-        Put (CD.comp_dump, aObject'Pos (r.Obj), 5);
-        Put (CD.comp_dump, Typen'Pos (r.TYP), 5);
+        Show_Padded (To_String (r.Name_with_case), 22);
+        Put (CD.comp_dump, r.Link, 4);
+        Show_Padded (aObject'Image (r.Obj), aObject'Width);
+        Show_Padded (Typen'Image (r.TYP), Typen'Width);
         Put (CD.comp_dump, r.Ref, 5);
-        Put (CD.comp_dump, Boolean'Pos (r.Normal), 5);
+        Show_Padded (Boolean'Image (r.Normal), Boolean'Width);
         Put (CD.comp_dump, r.LEV, 5);
         Put (CD.comp_dump, r.Adr, 5);
         New_Line (CD.comp_dump);
@@ -130,7 +138,7 @@ package body HAC.Compiler is
         r : BTabEntry renames CD.Blocks_Table (I);
       begin
         Put (CD.comp_dump, I, 4);
-        Put (CD.comp_dump, ' ' & To_String (r.Id));
+        Show_Padded (To_String (r.Id), 10);
         Put (CD.comp_dump, r.Last, 10);
         Put (CD.comp_dump, r.LastPar, 5);
         Put (CD.comp_dump, r.PSize, 5);
@@ -194,6 +202,15 @@ package body HAC.Compiler is
   begin
     PCode.Emit2 (CD.ObjCode, CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, a, B);
   end Emit2;
+
+  procedure Emit_Std_Funct (
+    CD   : in out Compiler_Data;
+    Code :        HAC.PCode.SF_Code
+  )
+  is
+  begin
+    Emit1 (CD, k_Standard_Functions, SF_Code'Pos (Code));
+  end;
 
   procedure Emit_Comparison_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;
@@ -309,6 +326,11 @@ package body HAC.Compiler is
           Adr            => X3);
       end Enter;
 
+      procedure Enter_Std_Funct (Name: String; T: Typen; Code: SF_Code) is
+      begin
+        Enter (Name, Funktion, T, SF_Code'Pos (Code));
+      end;
+
     begin
       Enter ("",               Variable,        NOTYP, 0);
       --
@@ -330,32 +352,32 @@ package body HAC.Compiler is
       --
       --  Standard functions
       --
-      Enter ("abs",            Funktion, Floats, SF_Abs);     --  abs is an Ada keyword...
-      Enter ("CHR",            Funktion, Chars,  SF_T_Val);   --  S'Val : RM 3.5.5 (5)
-      Enter ("ORD",            Funktion, Ints,   SF_T_Pos);   --  S'Pos : RM 3.5.5 (2)
-      Enter ("SUCC",           Funktion, Chars,  SF_T_Succ);  --  S'Succ : RM 3.5 (22)
-      Enter ("PRED",           Funktion, Chars,  SF_T_Pred);  --  S'Pred : RM 3.5 (25)
-      Enter ("ROUND",          Funktion, Ints,   SF_Round_Float_to_Int);
-      Enter ("TRUNC",          Funktion, Ints,   SF_Trunc_Float_to_Int);
-      Enter ("Sin",            Funktion, Floats, SF_Sin);
-      Enter ("Cos",            Funktion, Floats, SF_Cos);
-      Enter ("Exp",            Funktion, Floats, SF_Exp);
-      Enter ("Log",            Funktion, Floats, SF_Log);
-      Enter ("Sqrt",           Funktion, Floats, SF_Sqrt);
-      Enter ("Arctan",         Funktion, Floats, SF_Arctan);
-      Enter ("EOF",            Funktion, Bools,  SF_EOF);
-      Enter ("EOLN",           Funktion, Bools,  SF_EOLN);
-      Enter ("RAND",           Funktion, Ints,   SF_Random_Int);    --{ Schoening }
-      Enter ("RND",            Funktion, Floats, SF_Random_Float);
-      Enter ("CLOCK",          Funktion, Floats, SF_Clock);         --{ Cramer }
-      Enter ("Element",        Funktion, Chars,    SF_Element);
-      Enter ("Length",         Funktion, Ints,     SF_Length);
-      Enter ("Slice",          Funktion, VStrings, SF_Slice);
-      Enter ("Argument_Count", Funktion, Ints,     SF_Argument_Count);
-      Enter ("Argument",       Funktion, VStrings, SF_Argument);
-      --{ Niladic functions such as CLOCK will have   }
-      --{ IdTab[].Adr >= 100 To differentiate them from }
-      --{ functions with args.  See Parser.StandFct.  }
+      Enter_Std_Funct ("abs",            Floats, SF_Abs_Int);  --  abs is an Ada keyword...
+      Enter_Std_Funct ("CHR",            Chars,  SF_T_Val);    --  S'Val : RM 3.5.5 (5)
+      Enter_Std_Funct ("ORD",            Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)
+      Enter_Std_Funct ("SUCC",           Chars,  SF_T_Succ);   --  S'Succ : RM 3.5 (22)
+      Enter_Std_Funct ("PRED",           Chars,  SF_T_Pred);   --  S'Pred : RM 3.5 (25)
+      Enter_Std_Funct ("ROUND",          Ints,   SF_Round_Float_to_Int);
+      Enter_Std_Funct ("TRUNC",          Ints,   SF_Trunc_Float_to_Int);
+      Enter_Std_Funct ("Sin",            Floats, SF_Sin);
+      Enter_Std_Funct ("Cos",            Floats, SF_Cos);
+      Enter_Std_Funct ("Exp",            Floats, SF_Exp);
+      Enter_Std_Funct ("Log",            Floats, SF_Log);
+      Enter_Std_Funct ("Sqrt",           Floats, SF_Sqrt);
+      Enter_Std_Funct ("Arctan",         Floats, SF_Arctan);
+      Enter_Std_Funct ("EOF",            Bools,  SF_EOF);
+      Enter_Std_Funct ("EOLN",           Bools,  SF_EOLN);
+      Enter_Std_Funct ("RAND",           Ints,   SF_Random_Int);    --{ Schoening }
+      Enter_Std_Funct ("RND",            Floats, SF_Random_Float);
+      Enter_Std_Funct ("CLOCK",          Floats, SF_Clock);         --{ Cramer }
+      Enter_Std_Funct ("Element",        Chars,    SF_Element);
+      Enter_Std_Funct ("Length",         Ints,     SF_Length);
+      Enter_Std_Funct ("Slice",          VStrings, SF_Slice);
+      Enter_Std_Funct ("To_Lower",       Chars,    SF_To_Lower_Char);
+      Enter_Std_Funct ("To_Upper",       Chars,    SF_To_Upper_Char);
+      Enter_Std_Funct ("Argument_Count", Ints,     SF_Argument_Count);
+      Enter_Std_Funct ("Argument",       VStrings, SF_Argument);
+      --
       Enter ("Get       ",     Prozedure, NOTYP, 1);
       Enter ("Get_Line  ",     Prozedure, NOTYP, 2);
       Enter ("Put       ",     Prozedure, NOTYP, 3);

@@ -166,19 +166,53 @@ package body HAC.Parser.Helpers is
     Error (CD, err_int_to_float_coercion, details, stop_on_error => True);
   end Forbid_Type_Coercion;
 
-  procedure Parameter_Type_Mismatch (CD : in out Compiler_Data; X, Y : Exact_Typ) is
+  procedure Type_Mismatch (
+    CD               : in out Compiler_Data;
+    Err              :        Compile_Error;
+    Found, Expected  : Exact_Typ
+  )
+  is
   begin
-    if X.TYP /= Y.TYP then
-      Error (CD, err_parameter_types_do_not_match,
-        "found a " & Typen'Image(X.TYP) & ", expected a " & Typen'Image(Y.TYP)
-      );
+    if Found.TYP /= Expected.TYP then
+      Error (CD, Err,
+        "found a " & Typen'Image(Found.TYP) &
+        ", expected a " & Typen'Image(Expected.TYP));
     else
-      Error (CD, err_parameter_types_do_not_match,
-        "not exactly the same " & Typen'Image(X.TYP)
-        --  !! TBD: find the eventual names using X.REf, Y.Ref
-      );
+      Error (CD, Err, "not exactly the same " & Typen'Image(Found.TYP) & " type");
+        --  !! TBD: find the eventual names using X.Ref, Y.Ref
     end if;
-  end;
+  end Type_Mismatch;
+
+  procedure Type_Mismatch (
+    CD       : in out Compiler_Data;
+    Err      :        Compile_Error;
+    Found    :        Exact_Typ;
+    Expected :        Typ_Set
+  )
+  is
+    function Types_List (TS : Typ_Set) return String is
+      use VStrings_Pkg;
+      hint  : VString;
+      first : Boolean := True;
+    begin
+      for s in TS'Range loop
+        if TS (s) then
+          if not first then
+            hint := hint & ", ";
+          end if;
+          first := False;
+          hint := hint & Typen'Image (s);
+        end if;
+      end loop;
+      return To_String (hint);
+    end Types_List;
+  begin
+    Error (
+      CD, Err,
+      "found: " & Typen'Image (Found.TYP) &
+      ", expected: " & Types_List (Expected)
+    );
+  end Type_Mismatch;
 
   function Singleton (s: KeyWSymbol) return Symset is
     res : Symset := Empty_Symset;

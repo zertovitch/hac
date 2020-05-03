@@ -140,7 +140,7 @@ package body HAC.Parser.Expressions is
               when To_Float =>
                 case X.TYP is
                   when Floats =>
-                    null;  --  !!  Emit warning "already float"
+                    null;  --  !!  Emit warning: "already float"
                   when Ints =>
                     Emit1 (CD, k_Integer_to_Float, 0);
                   when others =>
@@ -150,9 +150,9 @@ package body HAC.Parser.Expressions is
               when To_Integer =>
                 case X.TYP is
                   when Floats =>  --  Rounding to closest integer (Ada RM 4.6 (33)).
-                    Emit1 (CD, k_Standard_Functions, SF_Round_Float_to_Int);
+                    Emit_Std_Funct (CD, SF_Round_Float_to_Int);
                   when Ints =>
-                    null;  --  !!  Emit warning "already integer"
+                    null;  --  !!  Emit warning: "already integer"
                   when others =>
                     Argument_Type_Not_Supported (CD);
                 end case;
@@ -229,7 +229,7 @@ package body HAC.Parser.Expressions is
                     when Funktion =>
                       X.TYP := r.TYP;
                       if r.LEV = 0 then
-                        Standard_Function (CD, Level, FSys, Ident_Index, r.Adr, X);
+                        Standard_Function (CD, Level, FSys, Ident_Index, SF_Code'Val (r.Adr), X);
                       else
                         Subprogram_or_Entry_Call (CD, Level, FSys, Ident_Index, CallSTDP);
                       end if;
@@ -364,7 +364,7 @@ package body HAC.Parser.Expressions is
         InSymbol (CD);
         Term (FSys + Plus_Minus, X);
         if OP = Plus and then X.TYP = String_Literals then  --  +"Hello"
-          Emit1 (CD, k_Standard_Functions, SF_Literal_to_VString);
+          Emit_Std_Funct (CD, SF_Literal_to_VString);
           X.TYP := VStrings;
         elsif X.TYP not in Numeric_Typ then
           Error (CD, err_illegal_type_for_arithmetic_expression);
@@ -411,19 +411,19 @@ package body HAC.Parser.Expressions is
               end if;
             when Ampersand_Symbol =>  --  Concatenation. RM: Unbounded_String.
               if X.TYP = VStrings and Y.TYP = VStrings then            --  v & v     RM A.4.5 (15)
-                Emit1 (CD, k_Standard_Functions, SF_Two_VStrings_Concat);
+                Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
               elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  v & "x"   RM A.4.5 (16)
                 --  Y is on top of the stack, we turn it into a VString.
-                Emit1 (CD, k_Standard_Functions, SF_Literal_to_VString);
+                Emit_Std_Funct (CD, SF_Literal_to_VString);
                 --  Now we concatenate both VStrings.
-                Emit1 (CD, k_Standard_Functions, SF_Two_VStrings_Concat);
+                Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
               elsif X.TYP = String_Literals and Y.TYP = VStrings then  --  "x" & v   RM A.4.5 (17)
-                Emit1 (CD, k_Standard_Functions, SF_LStr_VString_Concat);
+                Emit_Std_Funct (CD, SF_LStr_VString_Concat);
                 X.TYP := VStrings;
               elsif X.TYP = VStrings and Y.TYP = Chars then            --  v & 'x'   RM A.4.5 (18)
-                Emit1 (CD, k_Standard_Functions, SF_VString_Char_Concat);
+                Emit_Std_Funct (CD, SF_VString_Char_Concat);
               elsif X.TYP = Chars and Y.TYP = VStrings then            --  'x' & v   RM A.4.5 (19)
-                Emit1 (CD, k_Standard_Functions, SF_Char_VString_Concat);
+                Emit_Std_Funct (CD, SF_Char_VString_Concat);
                 X.TYP := VStrings;
               else
                 Error (CD, err_operator_not_defined_for_types);

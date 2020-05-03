@@ -1,6 +1,5 @@
 with HAC.Parser.Expressions; use HAC.Parser.Expressions;
 with HAC.Parser.Helpers;     use HAC.Parser.Helpers;
-with HAC.PCode;              use HAC.PCode;
 with HAC.Scanner;            use HAC.Scanner;
 with HAC.UErrors;            use HAC.UErrors;
 
@@ -11,7 +10,7 @@ package body HAC.Parser.Standard_Subprograms is
     Level       :        Integer;
     FSys        :        Symset;
     Ident_Index :        Integer;
-    SF_Code     :        Integer;
+    Code        :        SF_Code;
     Return_Typ  :    out Exact_Typ
   )
   is
@@ -19,7 +18,7 @@ package body HAC.Parser.Standard_Subprograms is
     Expected : array (1 .. Max_Args) of Typ_Set;    --  Expected type of the function's arguments
     Actual   : array (1 .. Max_Args) of Exact_Typ;  --  Actual type from argument expression
     Args : Natural;
-    N    : Integer := SF_Code;
+    Code_Adjusted : SF_Code := Code;
     IFP  : Integer;
     --
     procedure Parse_Arguments is
@@ -29,8 +28,11 @@ package body HAC.Parser.Standard_Subprograms is
         if Expected (a) (Actual (a).TYP) then
           null;  --  All right so far: argument type is in the admitted set of types.
         elsif Actual (a).TYP /= NOTYP then
-          Error (CD, err_argument_to_std_function_of_wrong_type);
-          exit;
+          Type_Mismatch (
+            CD, err_argument_to_std_function_of_wrong_type,
+            Found    => Actual (a),
+            Expected => Expected (a)
+          );
         end if;
         if a < Args then
           Need (CD, Comma, err_COMMA_missing);
@@ -41,15 +43,15 @@ package body HAC.Parser.Standard_Subprograms is
   begin
     Return_Typ := (CD.IdTab (Ident_Index).TYP, CD.IdTab (Ident_Index).Ref);
     --
-    case SF_Code is
+    case Code is
       when SF_Niladic => Args := 0;
       when SF_Element => Args := 2;
       when SF_Slice   => Args := 3;
       when others     => Args := 1;
     end case;
     --
-    case SF_Code is
-      when SF_Abs =>
+    case Code is
+      when SF_Abs_Int =>
         Expected (1) := Numeric_Typ_Set;
       when SF_T_Val =>  --  S'Val : RM 3.5.5 (5)
         Expected (1) := Ints_Set;
@@ -69,60 +71,79 @@ package body HAC.Parser.Standard_Subprograms is
         Expected (1) := VStrings_Set;
       when SF_Slice =>
         Expected (1 .. 3):= (VStrings_Set, Ints_Set, Ints_Set);
+      when SF_To_Lower_Char | SF_To_Upper_Char =>
+        Expected (1) := VStrings_or_Chars_Set;
       when SF_Niladic =>
         null;  --  Zero argument -> no argument type to check.
+      when SF_EOF | SF_EOLN =>
+        null;  --  Arguments are parsed separately.
       when others =>
-        raise Internal_error with "Unknown Standard_Function code" & Integer'Image (N);
+        null;  --  Here we have functions that are never parsed (e.g. SF_Abs_Float).
     end case;
     --
     --  Parameter parsing
     --
-    case SF_Code is
-      when SF_EOF .. SF_EOLN =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        if CD.Sy /= IDent then
-          Error (CD, err_identifier_missing);
-        elsif Equal (CD.Id, "INPUT") then  --  Standard_Input
-          Emit2 (CD, k_Standard_Functions, 0, SF_Code);
+    if Code in SF_EOF .. SF_EOLN then
+      --  Very special case...
+      Need (CD, LParent, err_missing_an_opening_parenthesis);
+      if CD.Sy /= IDent then
+        Error (CD, err_identifier_missing);
+      elsif Equal (CD.Id, "INPUT") then  --  Standard_Input
+        Emit2 (CD, k_Standard_Functions, 0, SF_Code'Pos (Code));
+      else
+        IFP := Get_File_Pointer (CD, CD.Id);
+        if IFP = No_File_Index then  --  NB: bug fix: was 0 instead of -1...
+          Error (CD, err_undefined_identifier);
         else
-          IFP := Get_File_Pointer (CD, CD.Id);
-          if IFP = No_File_Index then  --  NB: bug fix: was 0 instead of -1...
-            Error (CD, err_undefined_identifier);
-          else
-            Emit2 (CD, k_Standard_Functions, IFP, SF_Code);
-          end if;
+          Emit2 (CD, k_Standard_Functions, IFP, SF_Code'Pos (Code));
         end if;
-        InSymbol (CD);
-        Need (CD, RParent, err_closing_parenthesis_missing);
-      when SF_Niladic =>
-        Emit1 (CD, k_Standard_Functions, SF_Code);
-      when others =>
+      end if;
+      InSymbol (CD);
+      Need (CD, RParent, err_closing_parenthesis_missing);
+    else
+      if Args > 0 then
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Parse_Arguments;
-        --
-        case SF_Code is
-          when SF_Abs =>  --  Abs (NB: in Ada it's an operator, not a function)
-            Return_Typ := Actual (1);
-            if Actual (1).TYP = Floats then
-              N := N + 1;
-            end if;
-          when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
-            Return_Typ := Actual (1);
-          when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
-               SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
-            =>
-            if Ints_Set (Actual (1).TYP) then
-              Forbid_Type_Coercion (CD, "value is of integer type; floating-point is expected here");
-              Emit1 (CD, k_Integer_to_Float, 0);
-            end if;
-          when others =>
-            null;
-        end case;  --  N
-        --
-        Emit1 (CD, k_Standard_Functions, N);
-        --
+      end if;
+      --
+      --  Adjustments
+      --
+      case Code is
+        when SF_Abs_Int =>  --  Abs (NB: in Ada it's an operator, not a function)
+          Return_Typ := Actual (1);
+          if Actual (1).TYP = Floats then
+            Code_Adjusted := SF_Abs_Float;
+          end if;
+        when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
+          Return_Typ := Actual (1);
+        when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
+             SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
+          =>
+          if Ints_Set (Actual (1).TYP) then
+            Forbid_Type_Coercion (CD,
+              "value is of integer type; floating-point is expected as parameter");
+            Emit1 (CD, k_Integer_to_Float, 0);
+          end if;
+        when SF_To_Lower_Char =>
+          Return_Typ := Actual (1);
+          if Actual (1).TYP = VStrings then      --  To_Lower (Item : VString) return VString;
+            Code_Adjusted := SF_To_Lower_VStr;
+          end if;
+        when SF_To_Upper_Char =>
+          Return_Typ := Actual (1);
+          if Actual (1).TYP = VStrings then      --  To_Upper (Item : VString) return VString;
+            Code_Adjusted := SF_To_Upper_VStr;
+          end if;
+        when others =>
+          null;  --  Nothing
+      end case;
+      --
+      Emit_Std_Funct (CD, Code_Adjusted);
+      --
+      if Args > 0 then
         Need (CD, RParent, err_closing_parenthesis_missing);
-    end case;
+      end if;
+    end if;
   end Standard_Function;
 
   procedure Standard_Procedure (

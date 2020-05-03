@@ -3,6 +3,7 @@ with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Text_IO;
 
 package body HAC_Pack is
+  use Ada.Characters.Handling, VStrings_Pkg;
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions(Real);
 
@@ -92,6 +93,16 @@ package body HAC_Pack is
   begin
     return Real (Random (gen));
   end Rnd;
+
+  function To_Lower (Item : VString) return VString is
+  begin
+    return To_VString (To_Lower (To_String (Item)));
+  end;
+
+  function To_Upper (Item : VString) return VString is
+  begin
+    return To_VString (To_Upper (To_String (Item)));
+  end;
 
   package IIO is new Ada.Text_IO.Integer_IO(Integer);
   package RIO is new Ada.Text_IO.Float_IO(Real);

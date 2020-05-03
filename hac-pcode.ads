@@ -202,40 +202,48 @@ package HAC.PCode is
 
   --  Standard function operations
 
-  SF_Abs                 : constant :=   0;
-  SF_T_Val               : constant :=   5;  --  S'Val : RM 3.5.5 (5)
-  SF_T_Pos               : constant :=   6;  --  S'Pos : RM 3.5.5 (2)
-  SF_T_Succ              : constant :=   7;  --  S'Succ : RM 3.5 (22)
-  SF_T_Pred              : constant :=   8;  --  S'Pred : RM 3.5 (25)
-  SF_Round_Float_to_Int  : constant :=   9;
-  SF_Trunc_Float_to_Int  : constant :=  10;
-  SF_Sin                 : constant :=  11;
-  SF_Cos                 : constant :=  12;
-  SF_Exp                 : constant :=  13;
-  SF_Log                 : constant :=  14;
-  SF_Sqrt                : constant :=  15;
-  SF_Arctan              : constant :=  16;
-  SF_EOF                 : constant :=  17;
-  SF_EOLN                : constant :=  18;
-  SF_Random_Int          : constant :=  19;
-  --  VString operators.
-  SF_Literal_to_VString  : constant :=  20;
-  SF_Two_VStrings_Concat : constant :=  21;
-  SF_VString_Char_Concat : constant :=  22;
-  SF_Char_VString_Concat : constant :=  23;
-  SF_LStr_VString_Concat : constant :=  24;
-  SF_Element             : constant :=  25;
-  SF_Length              : constant :=  26;
-  SF_Slice               : constant :=  27;
-  --
-  SF_Argument            : constant :=  28;
-  --
-  --  Niladic functions.
-  --
-  SF_Clock               : constant := 100;
-  SF_Random_Float        : constant := 101;
-  SF_Argument_Count      : constant := 102;
+  type SF_Code is (
+    SF_Abs_Int,
+    SF_Abs_Float,
+    SF_T_Val,                   --  S'Val  : RM 3.5.5 (5)
+    SF_T_Pos,                   --  S'Pos  : RM 3.5.5 (2)
+    SF_T_Succ,                  --  S'Succ : RM 3.5 (22)
+    SF_T_Pred,                  --  S'Pred : RM 3.5 (25)
+    SF_Round_Float_to_Int,
+    SF_Trunc_Float_to_Int,
+    SF_Sin,
+    SF_Cos,
+    SF_Exp,
+    SF_Log,
+    SF_Sqrt,
+    SF_Arctan,
+    SF_EOF,
+    SF_EOLN,
+    SF_Random_Int,
+    --  VString functions
+    SF_Literal_to_VString,
+    SF_Two_VStrings_Concat,
+    SF_VString_Char_Concat,
+    SF_Char_VString_Concat,
+    SF_LStr_VString_Concat,
+    SF_Element,
+    SF_Length,
+    SF_Slice,
+    SF_To_Lower_Char,
+    SF_To_Upper_Char,
+    SF_To_Lower_VStr,
+    SF_To_Upper_VStr,
+    --
+    SF_Argument,
+    --
+    --  Niladic functions.
+    --
+    SF_Clock,
+    SF_Random_Float,
+    SF_Argument_Count
+  );
 
-  subtype SF_Niladic is Integer range SF_Clock .. SF_Argument_Count;
+  subtype SF_Niladic is
+    SF_Code range SF_Clock .. SF_Argument_Count;
 
 end HAC.PCode;

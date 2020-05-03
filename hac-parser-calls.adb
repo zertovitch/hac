@@ -28,7 +28,11 @@ package body HAC.Parser.Calls is
     LastP, CP, K : Integer;
     procedure Issue_Type_Mismatch_Error is
     begin
-      Parameter_Type_Mismatch (CD, X, Y => (CD.IdTab (CP).TYP, CD.IdTab (CP).Ref));
+      Type_Mismatch (
+        CD, err_parameter_types_do_not_match,
+        Found    => X,
+        Expected => Exact_Typ'(CD.IdTab (CP).TYP, CD.IdTab (CP).Ref)
+      );
     end;
   begin
     Emit1 (CD, k_Mark_Stack, I);

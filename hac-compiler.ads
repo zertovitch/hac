@@ -76,10 +76,13 @@ package HAC.Compiler is
       --
       Variable,
       TypeMark,
+      --
       Prozedure,
       Funktion,
+      --
       aTask,
       aEntry,
+      --
       Label
   );
 
@@ -103,10 +106,21 @@ package HAC.Compiler is
     Ref            : Index;         --  Index into the Block table
     Normal         : Boolean;       --  value param?
     LEV            : Nesting_level;
-    Adr            : Integer;       --  index into the Code table for the
-                                    --  procedure code (if Name is a
-                                    --  procedure or function)
+    Adr            : Integer;
   end record;
+
+  --  Obj                           Meaning of Adr
+  --  -------------------------------------------------------------------------------
+  --  Declared_Number_or_Enum_Item  ?
+  --  Variable                      ?
+  --  TypeMark                      ?
+  --  Prozedure                     Index into the Object Code table,
+  --                                    or Level 0 Standard Procedure code
+  --  Funktion                      Index into the Object Code table,
+  --                                    or Level 0 Standard Function code (SF_Code)
+  --  aTask                         ?
+  --  aEntry                        ?
+  --  Label                         ?
 
   ------------------------------------------------------------------------
   ------------------------------------------------------------FilDescr----
@@ -247,6 +261,11 @@ package HAC.Compiler is
     CD   : in out Compiler_Data;
     FCT  :        HAC.PCode.Opcode;
     a, B :        Integer);
+
+  procedure Emit_Std_Funct (
+    CD   : in out Compiler_Data;
+    Code :        HAC.PCode.SF_Code
+  );
 
   procedure Emit_Comparison_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;

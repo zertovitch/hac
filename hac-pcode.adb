@@ -183,6 +183,12 @@ package body HAC.PCode is
       Put (Text, "; ");
       Code_Pos_IO.Put (Text, OC (i).D.Line);
       Put (Text, "  " & HAC.Data.To_String (OC (i).D.Block));
+      case OC (i).F is  --  Extra information
+        when k_Standard_Functions =>
+          Put (Text, "; " & SF_Code'Image (SF_Code'Val (OC (i).Y)));
+        when others =>
+          null;
+      end case;
       New_Line (Text);
     end loop;
   end Dump;

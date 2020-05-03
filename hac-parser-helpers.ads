@@ -80,7 +80,18 @@ package HAC.Parser.Helpers is
   --
   procedure Forbid_Type_Coercion (CD : in out Compiler_Data; details: String);
 
-  procedure Parameter_Type_Mismatch (CD : in out Compiler_Data; X, Y : Exact_Typ);
+  procedure Type_Mismatch (
+    CD               : in out Compiler_Data;
+    Err              :        Compile_Error;
+    Found, Expected  : Exact_Typ
+  );
+
+  procedure Type_Mismatch (
+    CD       : in out Compiler_Data;
+    Err      :        Compile_Error;
+    Found    :        Exact_Typ;
+    Expected :        Typ_Set
+  );
 
   No_Id : constant := 0;
 
@@ -275,7 +286,9 @@ package HAC.Parser.Helpers is
   Chars_Set        : constant Typ_Set := (Chars       => True, others => False);
   Ints_Set         : constant Typ_Set := (Ints        => True, others => False);
   VStrings_Set     : constant Typ_Set := (VStrings    => True, others => False);
-  PCode_Atomic_Typ : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set or VStrings_Set;
+
+  PCode_Atomic_Typ      : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set or VStrings_Set;
+  VStrings_or_Chars_Set : constant Typ_Set := VStrings_Set or Chars_Set;
 
   -------------
   --  Misc.  --

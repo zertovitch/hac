@@ -114,13 +114,13 @@ package body HAC.UErrors is
       when err_illegal_return_statement_from_main =>
         return "ILLEGAL RETURN STATEMENT FROM MAIN";
       when err_types_of_assignment_must_match =>
-        return "types must match in an assignment";
+        return "types must match in an assignment: " & hint;
       when err_case_label_not_same_type_as_case_clause =>
         return "case label not of same type as case clause";
       when err_duplicate_case_choice_value =>
         return "duplicate choice value in ""case"" instruction";
       when err_argument_to_std_function_of_wrong_type =>
-        return "argument to std. function of wrong type";
+        return "wrong type of argument to standard function: " & hint;
       when err_stack_size =>
         return "the program requires too much storage";
       when err_illegal_symbol_for_a_number_declaration =>

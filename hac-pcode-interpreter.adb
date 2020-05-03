@@ -1,4 +1,5 @@
 with Ada.Calendar;                      use Ada.Calendar;
+with Ada.Characters.Handling;
 with Ada.Command_Line;
 
 with Ada.Numerics.Generic_Elementary_Functions;
@@ -506,44 +507,42 @@ package body HAC.PCode.Interpreter is
 
     procedure Do_Standard_Function is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Top_Item : InterDef.GRegister renames InterDef.S (Curr_TCB.T);
       temp : HAC.Data.HAC_Float;
       Idx, Len, Arg, From, To : Integer;
       C : Character;
-      use HAC.Data, HAC.Data.VStrings_Pkg;
+      use HAC.Data, HAC.Data.VStrings_Pkg, Ada.Characters.Handling;
+      Code : SF_Code;
     begin
-      case InterDef.IR.Y is
-        when SF_Abs =>
-          S (Curr_TCB.T).I := abs (S (Curr_TCB.T).I);
-        when SF_Abs + 1 =>
-          S (Curr_TCB.T).R := abs (S (Curr_TCB.T).R);
+      Code := SF_Code'Val (InterDef.IR.Y);
+      --  !! raise a HAC exception if code out of range !!
+      case Code is
+        when SF_Abs_Int =>
+          Top_Item.I := abs (Top_Item.I);
+        when SF_Abs_Float =>
+          Top_Item.R := abs (Top_Item.R);
         when SF_T_Val =>   --  S'Val : RM 3.5.5 (5)
-          if (S (Curr_TCB.T).I < HAC.Data.OrdMinChar) or
-            (S (Curr_TCB.T).I > HAC.Data.OrdMaxChar)  --  !! Character range
+          if (Top_Item.I < HAC.Data.OrdMinChar) or
+            (Top_Item.I > HAC.Data.OrdMaxChar)  --  !! Character range
           then
             PS := INXCHK;  --  Seems an out-of-range
           end if;
         when SF_T_Pos =>   --  S'Pos : RM 3.5.5 (2)
           null;
         when SF_T_Succ =>  --  S'Succ : RM 3.5 (22)
-          S (Curr_TCB.T).I := S (Curr_TCB.T).I + 1;
+          Top_Item.I := Top_Item.I + 1;
         when SF_T_Pred =>  --  S'Pred : RM 3.5 (25)
-          S (Curr_TCB.T).I := S (Curr_TCB.T).I - 1;
+          Top_Item.I := Top_Item.I - 1;
         when SF_Round_Float_to_Int =>
-          S (Curr_TCB.T).I := Integer (S (Curr_TCB.T).R);
+          Top_Item.I := Integer (Top_Item.R);
         when SF_Trunc_Float_to_Int =>
-          S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (S (Curr_TCB.T).R));
-        when SF_Sin =>
-          S (Curr_TCB.T).R := Sin (S (Curr_TCB.T).R);
-        when SF_Cos =>
-          S (Curr_TCB.T).R := Cos (S (Curr_TCB.T).R);
-        when SF_Exp =>
-          S (Curr_TCB.T).R := Exp (S (Curr_TCB.T).R);
-        when SF_Log =>
-          S (Curr_TCB.T).R := Log (S (Curr_TCB.T).R);
-        when SF_Sqrt =>
-          S (Curr_TCB.T).R := Sqrt (S (Curr_TCB.T).R);
-        when SF_Arctan =>
-          S (Curr_TCB.T).R := Arctan (S (Curr_TCB.T).R);
+          Top_Item.I := Integer (HAC.Data.HAC_Float'Floor (Top_Item.R));
+        when SF_Sin =>    Top_Item.R := Sin (Top_Item.R);
+        when SF_Cos =>    Top_Item.R := Cos (Top_Item.R);
+        when SF_Exp =>    Top_Item.R := Exp (Top_Item.R);
+        when SF_Log =>    Top_Item.R := Log (Top_Item.R);
+        when SF_Sqrt =>   Top_Item.R := Sqrt (Top_Item.R);
+        when SF_Arctan => Top_Item.R := Arctan (Top_Item.R);
         when SF_EOF =>
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
@@ -568,8 +567,8 @@ package body HAC.PCode.Interpreter is
           end if;
         when SF_Random_Int =>
           temp := HAC.Data.HAC_Float (Random (Gen)) *
-                  HAC.Data.HAC_Float ((S (Curr_TCB.T).I + 1));
-          S (Curr_TCB.T).I := Integer (HAC.Data.HAC_Float'Floor (temp));
+                  HAC.Data.HAC_Float ((Top_Item.I + 1));
+          Top_Item.I := Integer (HAC.Data.HAC_Float'Floor (temp));
         when SF_Literal_to_VString =>  --  Unary "+"
           Pop;
           Len := S (Curr_TCB.T).I;      --  Length of string
@@ -600,10 +599,10 @@ package body HAC.PCode.Interpreter is
           S (Curr_TCB.T).I := Character'Pos (C);
         when SF_Length =>
           --  [T] := Length ([T]) :
-          Len := Length (S (Curr_TCB.T).V);
+          Len := Length (Top_Item.V);
           --  !! Here: bound checking !!
-          --  The stack top may change its type here (if register has discriminant).
-          S (Curr_TCB.T).I := Len;
+          --  The stack top item may change its type here (if register has discriminant).
+          Top_Item.I := Len;
         when SF_Slice =>
           Pop (2);
           From := S (Curr_TCB.T + 1).I;
@@ -611,17 +610,25 @@ package body HAC.PCode.Interpreter is
           --  !! Here: bound checking !!
           --  [T] := Slice ([T], [T+1], [T+2]) :
           S (Curr_TCB.T).V := To_VString (Slice (S (Curr_TCB.T).V, From, To));
+        when SF_To_Lower_Char =>
+          Top_Item.I := Character'Pos (To_Lower (Character'Val (Top_Item.I)));
+        when SF_To_Upper_Char =>
+          Top_Item.I := Character'Pos (To_Upper (Character'Val (Top_Item.I)));
+        when SF_To_Lower_VStr =>
+          Top_Item.V := To_VString (To_Lower (To_String (Top_Item.V)));
+        when SF_To_Upper_VStr =>
+          Top_Item.V := To_VString (To_Upper (To_String (Top_Item.V)));
         when SF_Argument =>
-          Arg := S (Curr_TCB.T).I;
-          --  The stack top may change its type here (if register has discriminant).
-          S (Curr_TCB.T).V := To_VString (Argument (Arg));
+          Arg := Top_Item.I;
+          --  The stack top item may change its type here (if register has discriminant).
+         Top_Item.V := To_VString (Argument (Arg));
         when SF_Niladic =>
           --  NILADIC functions need to push a new item (their result).
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
           else
-            case SF_Niladic (IR.Y) is
+            case SF_Niladic (Code) is
               when SF_Clock =>
                 --  CLOCK function. Return time of units of seconds.
                 S (Curr_TCB.T).R := HAC.Data.HAC_Float (GetClock - Start_Time);
@@ -631,8 +638,6 @@ package body HAC.PCode.Interpreter is
                 S (Curr_TCB.T).I := Argument_Count;
             end case;
           end if;
-        when others =>
-          null;
       end case;
     end Do_Standard_Function;
 
