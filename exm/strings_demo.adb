@@ -25,8 +25,8 @@ procedure Strings_demo is
   --
   procedure Show (SV : in Str_Vector) is
   begin
-    for i in reverse 1 .. n loop
-      Put_Line (Slice (SV (i), 1, n));
+    for i in 1 .. n loop
+      Put_Line (SV (i));
     end loop;
   end Show;
   --
@@ -36,21 +36,21 @@ procedure Strings_demo is
     row : VString;
   begin
     for i in reverse 1 .. l loop
-      Put_Line ( Slice (V, 1, i) );
+      Put_Line ( Slice (v, 1, i) );
     end loop;
     --
     for i in 1 .. l loop
       for k in 1 .. i - 1 loop  --  !! We could have "*" A.4.5 (69, 70, 71)
         Put (' ');
       end loop;
-      Put_Line (Slice (V, i, l) );
+      Put_Line (Slice (v, i, l) );
     end loop;
     --
     for i in 1 .. l loop
       row := +"";
       for j in 1 .. l loop
         if i = j then
-          c := Element (V, i);
+          c := Element (v, i);
         elsif abs (i-j) = 1 then
           c := ' ';
         else
@@ -93,7 +93,7 @@ begin
   Reverso (ZZ.B);
   Show (ZZ.B);
   --
-  Slice_Show (+"What's happenning to this string?!");
+  Slice_Show (+"What's happening to this string?!");
   --
   if s4 /= +"abcdef" then  --  Comparison VString to VString
     Put ("Ooops?");

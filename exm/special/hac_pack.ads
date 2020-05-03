@@ -4,27 +4,22 @@
 --  At some point HAC_Pack won't be needed anymore.
 --
 --  The package HAC_Pack is compilable by a real Ada compiler
---  like GNAT, so the test programs can be run on both HAC and
+--  like GNAT, so the HAC programs can be run on both HAC and
 --  a "real" Ada system.
+--
+--  Another purpose of this specification is to present the standard
+--  types and subprograms in HAC.
 
 with Ada.Command_Line;
 with Ada.Strings.Unbounded;
 
 package HAC_Pack is
 
+  -----------------------------------------
+  --  Floating-point numeric type: Real  --
+  -----------------------------------------
+
   type Real is digits 15;
-
-  package VStrings_Pkg renames Ada.Strings.Unbounded;
-  subtype VString is VStrings_Pkg.Unbounded_String;
-  function To_VString (S : String) return VString renames VStrings_Pkg.To_Unbounded_String;
-  function "+" (S : String) return VString renames To_VString;
-  function "&" (V1, V2 : VString) return VString renames VStrings_Pkg."&";
-  function "&" (V : VString; S : String) return VString renames VStrings_Pkg."&";
-  function "&" (S : String; V : VString) return VString renames VStrings_Pkg."&";
-  function "&" (V : VString; C : Character) return VString renames VStrings_Pkg."&";
-  function "&" (C : Character; V : VString) return VString renames VStrings_Pkg."&";
-
-  type Semaphore is new Integer; -- private;
 
   function   "**" (f1, f2 : Real)  return Real;
 
@@ -70,13 +65,53 @@ package HAC_Pack is
   -- Random number from 0 to 1, uniform.
   function Rnd return Real;
 
-  -- Get
+  ------------------------------------------
+  --  Variable-size string type: VString  --
+  ------------------------------------------
+
+  package VStrings_Pkg renames Ada.Strings.Unbounded;
+  subtype VString is VStrings_Pkg.Unbounded_String;
+  --
+  function Element (Source : VString; Index : Positive) return Character
+    renames VStrings_Pkg.Element;
+  function Length (Source : VString) return Natural renames VStrings_Pkg.Length;
+  function Slice (Source : VString; Low : Positive; High : Natural) return String
+    renames VStrings_Pkg.Slice;
+  function To_VString (S : String) return VString   renames VStrings_Pkg.To_Unbounded_String;
+  --
+  function "+" (S : String) return VString renames To_VString;
+  function "&" (V1, V2 : VString) return VString renames VStrings_Pkg."&";
+  function "&" (V : VString; S : String) return VString renames VStrings_Pkg."&";
+  function "&" (S : String; V : VString) return VString renames VStrings_Pkg."&";
+  function "&" (V : VString; C : Character) return VString renames VStrings_Pkg."&";
+  function "&" (C : Character; V : VString) return VString renames VStrings_Pkg."&";
+  --
+  function "="  (Left, Right  : VString) return Boolean renames VStrings_Pkg."=";
+  function "<"  (Left, Right  : VString) return Boolean renames VStrings_Pkg."<";
+  function "<=" (Left, Right  : VString) return Boolean renames VStrings_Pkg."<=";
+  function ">"  (Left, Right  : VString) return Boolean renames VStrings_Pkg.">";
+  function ">=" (Left, Right  : VString) return Boolean renames VStrings_Pkg.">=";
+
+  --  In the works:
+  --
+  --  function Index (Source : VString; Pattern : String) return Natural;
+  --  function "*" (Left : Natural; Right : Character) return VString;
+  --  function "*" (Left : Natural; Right : VString) return VString;
+  --  function Trim_Left  (Source : VString) return VString;
+  --  function Trim_Right (Source : VString) return VString;
+  --  function Trim_Both  (Source : VString) return VString;
+
+  -------------------------
+  --  Text Input-Output  --
+  -------------------------
+
+  --  Get
   procedure  Get ( C : out Character);
   procedure  Get ( I : out Integer  );
   procedure  Get ( F : out Real    );
   procedure  Get ( B : out Boolean  );
 
-  -- Get and then move file pointer to next line
+  --  Get and then move file pointer to next line
   procedure  Get_Line  ( C : out Character);
   procedure  Get_Line  ( I : out Integer  );
   procedure  Get_Line  ( F : out Real    );
@@ -85,7 +120,7 @@ package HAC_Pack is
   subtype Width is Positive;
   subtype Decimals is Positive;
 
-  -- Put
+  --  Put
   procedure  Put       ( C : in  Character);
   procedure  Put       ( I : in  Integer  );
   procedure  Put       ( I : in  Integer;  W:  Width);
@@ -95,7 +130,7 @@ package HAC_Pack is
   procedure  Put       ( S : in  String   );
   procedure  Put       ( V : in  VString  );
 
-  -- Put and then NEW_LINE ( !! it is the same as Ada.Text_IO only for S )
+  --  Put and then NEW_LINE ( !! it is the same as Ada.Text_IO only for S )
   procedure  Put_Line  ( C : in  Character);
   procedure  Put_Line  ( I : in  Integer  );
   procedure  Put_Line  ( I : in  Integer; W:  Width);
@@ -105,12 +140,14 @@ package HAC_Pack is
   procedure  Put_Line  ( S : in  String   );
   procedure  Put_Line  ( V : in  VString  );
 
-  -- Mark End of Line
+  --  Mark End of Line
   procedure  New_Line                      ;
 
   procedure  CursorAt (X, Y: Integer);
 
-  -- Semaphore Procedures
+  type Semaphore is new Integer; -- private;
+
+  --  Semaphore Procedures
   procedure  Wait      ( S : Semaphore    );
   procedure  Signal    ( S : Semaphore    );
 
