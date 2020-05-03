@@ -4,7 +4,6 @@ with Ada.Command_Line;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 
-with Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 
 package body HAC.PCode.Interpreter is
@@ -63,7 +62,7 @@ package body HAC.PCode.Interpreter is
       -- C : Character;
       I : Integer; -- Also for former B (Boolean) and C (Character)
       R : HAC.Data.HAC_Float;
-      V : HAC.Data.HAC_VString;  --  !! makes copies slow (would a discriminant help?)
+      V : HAC.Data.VString;  --  !! might make copies slow (would a discriminant help?)
     end record;
 
     subtype Data_Type is GRegister;
@@ -508,8 +507,9 @@ package body HAC.PCode.Interpreter is
     procedure Do_Standard_Function is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       temp : HAC.Data.HAC_Float;
-      Idx, Len, Arg : Integer;
-      use Ada.Strings.Unbounded;
+      Idx, Len, Arg, From, To : Integer;
+      C : Character;
+      use HAC.Data, HAC.Data.VStrings_Pkg;
     begin
       case InterDef.IR.Y is
         when SF_Abs =>
@@ -575,7 +575,7 @@ package body HAC.PCode.Interpreter is
           Len := S (Curr_TCB.T).I;      --  Length of string
           Idx := S (Curr_TCB.T + 1).I;  --  Index to string table
           S (Curr_TCB.T).V :=
-            To_Unbounded_String (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
+            To_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
         when SF_Two_VStrings_Concat =>
           Pop;
           S (Curr_TCB.T).V := S (Curr_TCB.T).V & S (Curr_TCB.T + 1).V;
@@ -592,12 +592,31 @@ package body HAC.PCode.Interpreter is
           Idx := S (Curr_TCB.T + 1).I;  --  Index to string table
           S (Curr_TCB.T).V :=
             CD.Strings_Constants_Table (Idx .. Idx + Len - 1) & S (Curr_TCB.T + 2).V;
+        when SF_Element =>
+          Pop;
+          --  [T] := Element ([T], [T+1]) :
+          C := Element (S (Curr_TCB.T).V, S (Curr_TCB.T + 1).I);
+          --  The stack top may change its type here (if register has discriminant).
+          S (Curr_TCB.T).I := Character'Pos (C);
+        when SF_Length =>
+          --  [T] := Length ([T]) :
+          Len := Length (S (Curr_TCB.T).V);
+          --  !! Here: bound checking !!
+          --  The stack top may change its type here (if register has discriminant).
+          S (Curr_TCB.T).I := Len;
+        when SF_Slice =>
+          Pop (2);
+          From := S (Curr_TCB.T + 1).I;
+          To   := S (Curr_TCB.T + 2).I;
+          --  !! Here: bound checking !!
+          --  [T] := Slice ([T], [T+1], [T+2]) :
+          S (Curr_TCB.T).V := To_VString (Slice (S (Curr_TCB.T).V, From, To));
         when SF_Argument =>
           Arg := S (Curr_TCB.T).I;
           --  The stack top may change its type here (if register has discriminant).
-          S (Curr_TCB.T).V := To_Unbounded_String (Argument (Arg));
+          S (Curr_TCB.T).V := To_VString (Argument (Arg));
         when SF_Niladic =>
-          --  NILADIC functions have IR.Y >= SF_Clock.
+          --  NILADIC functions need to push a new item (their result).
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
@@ -618,38 +637,32 @@ package body HAC.PCode.Interpreter is
     end Do_Standard_Function;
 
     procedure Do_Write_Unformatted is
-      Curr_TCB : InterDef.Task_Control_Block
-        renames InterDef.TCB (InterDef.CurTask);
+      Item : InterDef.GRegister renames InterDef.S (InterDef.TCB (InterDef.CurTask).T);
       use HAC.Data;
-      use Ada.Strings.Unbounded;
+      use VStrings_Pkg;
     begin
       if FAT.CURR = 0 then
         case IR.Y is
-          when Typs'Pos (Ints) =>
-            Put_Console (S (Curr_TCB.T).I);
-          when Typs'Pos (Floats) =>
-            Put_Console (S (Curr_TCB.T).R);
-          when Typs'Pos (Bools) =>
-            Put_Console (Boolean'Image(Boolean'Val(S (Curr_TCB.T).I)));
-          when Typs'Pos (Chars) =>
-            Put_Console (Character'Val(S (Curr_TCB.T).I));
-          when Typs'Pos (VStrings) =>
-            Put_Console (To_String (S (Curr_TCB.T).V));
+          when Typen'Pos (Ints)     => Put_Console (Item.I);
+          when Typen'Pos (Floats)   => Put_Console (Item.R);
+          when Typen'Pos (Bools)    => Put_Console (Boolean'Image(Boolean'Val(Item.I)));
+          when Typen'Pos (Chars)    => Put_Console (Character'Val(Item.I));
+          when Typen'Pos (VStrings) => Put_Console (To_String (Item.V));
           when others =>
             null;
         end case;
       else
         case IR.Y is
-          when Typs'Pos (Ints) =>
-            Ada.Integer_Text_IO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).I, 10);
-          when Typs'Pos (Floats) =>
-            RIO.Put (FAT.FIL (FAT.CURR), S (Curr_TCB.T).R, 22);
-          when Typs'Pos (Bools) =>
-            Boolean_Text_IO.Put (FAT.FIL (FAT.CURR), Boolean'Val(S (Curr_TCB.T).I), 10);
-          when Typs'Pos (Chars) =>
-            Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T).I));
-          when Typs'Pos (VStrings) =>
-            Ada.Text_IO.Put (To_String (S (Curr_TCB.T).V));
+          when Typen'Pos (Ints) =>
+            Ada.Integer_Text_IO.Put (FAT.FIL (FAT.CURR), Item.I, 10);
+          when Typen'Pos (Floats) =>
+            RIO.Put (FAT.FIL (FAT.CURR), Item.R, 22);
+          when Typen'Pos (Bools) =>
+            Boolean_Text_IO.Put (FAT.FIL (FAT.CURR), Boolean'Val(Item.I), 10);
+          when Typen'Pos (Chars) =>
+            Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(Item.I));
+          when Typen'Pos (VStrings) =>
+            Ada.Text_IO.Put (To_String (Item.V));
           when others =>
             null;
         end case;
@@ -657,6 +670,840 @@ package body HAC.PCode.Interpreter is
       Pop;
       SWITCH := True;  --  give up control when doing I/O
     end Do_Write_Unformatted;
+
+    procedure Do_Binary_Operator is
+      Curr_TCB_Top : Integer renames InterDef.TCB (InterDef.CurTask).T;
+      X : GRegister renames S (Curr_TCB_Top - 1);
+      Y : GRegister renames S (Curr_TCB_Top);
+      use HAC.Data.VStrings_Pkg;
+    begin
+      --  We do  [T] <- ([T-1] operator [T])  and pop later.
+      case Binary_Operator_Opcode (IR.F) is
+        when k_EQL_Float =>   X.I := Boolean'Pos (X.R =  Y.R);
+        when k_NEQ_Float =>   X.I := Boolean'Pos (X.R /= Y.R);
+        when k_LSS_Float =>   X.I := Boolean'Pos (X.R <  Y.R);
+        when k_LEQ_Float =>   X.I := Boolean'Pos (X.R <= Y.R);
+        when k_GTR_Float =>   X.I := Boolean'Pos (X.R >  Y.R);
+        when k_GEQ_Float =>   X.I := Boolean'Pos (X.R >= Y.R);
+        --
+        when k_EQL_Integer => X.I := Boolean'Pos (X.I =  Y.I);
+        when k_NEQ_Integer => X.I := Boolean'Pos (X.I /= Y.I);
+        when k_LSS_Integer => X.I := Boolean'Pos (X.I <  Y.I);
+        when k_LEQ_Integer => X.I := Boolean'Pos (X.I <= Y.I);
+        when k_GTR_Integer => X.I := Boolean'Pos (X.I >  Y.I);
+        when k_GEQ_Integer => X.I := Boolean'Pos (X.I >= Y.I);
+        --
+        when k_EQL_VString => X.I := Boolean'Pos (X.V =  Y.V);
+        when k_NEQ_VString => X.I := Boolean'Pos (X.V /= Y.V);
+        when k_LSS_VString => X.I := Boolean'Pos (X.V <  Y.V);
+        when k_LEQ_VString => X.I := Boolean'Pos (X.V <= Y.V);
+        when k_GTR_VString => X.I := Boolean'Pos (X.V >  Y.V);
+        when k_GEQ_VString => X.I := Boolean'Pos (X.V >= Y.V);
+        --
+        when k_AND_Boolean => X.I := Boolean'Pos (Boolean'Val (X.I) and Boolean'Val (Y.I));
+        when k_OR_Boolean  => X.I := Boolean'Pos (Boolean'Val (X.I) or  Boolean'Val (Y.I));
+        when k_XOR_Boolean => X.I := Boolean'Pos (Boolean'Val (X.I) xor Boolean'Val (Y.I));
+        --
+        when k_ADD_Integer      => X.I := X.I + Y.I;
+        when k_SUBTRACT_Integer => X.I := X.I - Y.I;
+        when k_MULT_Integer     => X.I := X.I * Y.I;
+        when k_DIV_Integer      => if Y.I = 0 then PS := DIVCHK; else X.I := X.I / Y.I; end if;
+        when k_MOD_Integer      => if Y.I = 0 then PS := DIVCHK; else X.I := X.I mod Y.I; end if;
+        when k_Power_Integer    => X.I := X.I ** Y.I;
+        --
+        when k_ADD_Float           => X.R := X.R + Y.R;
+        when k_SUBTRACT_Float      => X.R := X.R - Y.R;
+        when k_MULT_Float          => X.R := X.R * Y.R;
+        when k_DIV_Float           => X.R := X.R / Y.R;
+        when k_Power_Float         => X.R := X.R ** Y.R;
+        when k_Power_Float_Integer => X.R := X.R ** Y.I;
+      end case;
+      Pop;
+    end Do_Binary_Operator;
+
+    procedure Fetch_Instruction is
+      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+    begin
+      InterDef.IR := CD.ObjCode (Curr_TCB.PC);
+      Curr_TCB.PC := Curr_TCB.PC + 1;
+    end Fetch_Instruction;
+
+    procedure Execute_Current_Instruction is
+      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      CH : Character;
+    begin
+      case InterDef.IR.F is
+
+        when k_Load_Address =>
+          Curr_TCB.T := Curr_TCB.T + 1;
+          if Curr_TCB.T > Curr_TCB.STACKSIZE then
+            PS := STKCHK;  --  Stack overflow
+          else
+            S (Curr_TCB.T).I := Curr_TCB.DISPLAY (IR.X) + IR.Y;
+          end if;
+
+        when k_Push_Value =>
+          Curr_TCB.T := Curr_TCB.T + 1;
+          if Curr_TCB.T > Curr_TCB.STACKSIZE then
+            PS := STKCHK;  --  Stack overflow
+          else
+            S (Curr_TCB.T) := S (Curr_TCB.DISPLAY (IR.X) + IR.Y);
+          end if;
+
+        when k_Push_Indirect_Value =>
+          Curr_TCB.T := Curr_TCB.T + 1;
+          if Curr_TCB.T > Curr_TCB.STACKSIZE then
+            PS := STKCHK;  --  Stack overflow
+          else
+            S (Curr_TCB.T) := S (S (Curr_TCB.DISPLAY (IR.X) + IR.Y).I);
+          end if;
+
+        when k_Update_Display_Vector =>  --  Emitted at the end of Subprogram_or_Entry_Call.
+          H1 := IR.Y;  --  Current nesting level.
+          H2 := IR.X;  --  Called subprogram nesting level, lower than current.
+          H3 := Curr_TCB.B;
+          loop
+            Curr_TCB.DISPLAY (H1) := H3;
+            H1                    := H1 - 1;  --  Decrease level as index in DISPLAY.
+            H3                    := S (H3 + 2).I;
+            exit when H1 = H2;
+          end loop;
+
+        when k_Accept_Rendezvous => -- Hathorn, Cramer
+          H1 := IR.Y;                    --  entry pointer
+          H2 := FirstCaller (H1);        --  first waiting task
+          H3 := CD.IdTab (H1).LEV;            --  level of accepting entry
+          if H2 >= 0 then
+            --  start rendzv if call is waiting
+            Curr_TCB.DISPLAY (H3 + 1) := TCB (H2).B; --  address callers
+            --parms
+            Curr_TCB.InRendzv := H2;  --  indicate that task is in Rendzv
+            if TCB (H2).TS = TimedRendz then
+              TCB (H2).TS := WaitRendzv;
+            end if;
+          else
+            --  or put self to sleep
+            Curr_TCB.SUSPEND := H1;
+            Curr_TCB.TS      := WaitRendzv;      --  status is waiting for
+            --rendezvous
+            Curr_TCB.PC      := Curr_TCB.PC - 1;          --  do this
+            --step again when awakened
+
+          end if;
+          SWITCH := True;
+
+        when k_End_Rendezvous => --  Hathorn
+          Curr_TCB.InRendzv := NilTask;  --  indicate rendezvous has ended
+          H1 := IR.Y;                   --  entry pointer
+          H2 := RemoveFirst (H1);       --  waiting task pointer
+          if H2 >= 0 then
+            --  wake up waiting task
+            TCB (H2).SUSPEND := 0;
+            TCB (H2).TS      := Ready;
+            SWITCH           := True;
+          end if;
+
+        when k_Wait_Semaphore =>
+          H1            := S (Curr_TCB.T).I;
+          Pop;
+          if S (H1).I > 0 then
+            S (H1).I       := S (H1).I - 1;
+            Curr_TCB.TS := Critical;   --  In a critical section, task gets
+            --  exclusive access to the virtual
+          else
+            --  processor until section ends.
+            Curr_TCB.SUSPEND := H1;
+            Curr_TCB.TS      := WaitSem;
+            SWITCH           := True;
+          end if;
+
+        when k_Signal_Semaphore =>
+          H1         := S (Curr_TCB.T).I;
+          Pop;
+          H2         := CD.Tasks_Definitions_Count + 1;
+          H3         := Integer (Random (Gen) * Float (H2));
+          while H2 >= 0 and TCB (H3).TS /= WaitSem and TCB (H3).SUSPEND /= H1
+          loop
+            H3 := (H3 + 1) mod (HAC.Data.TaskMax + 1);
+            H2 := H2 - 1;
+          end loop;
+          if H2 < 0 or S (H1).I < 0 then
+            S (H1).I := S (H1).I + 1;
+          else
+            TCB (H3).SUSPEND := 0;
+            TCB (H3).TS      := Ready;
+          end if;
+          Curr_TCB.TS := Ready; --  end critical section
+          SWITCH := True;
+
+        when k_Standard_Functions =>
+          Do_Standard_Function;
+
+        when k_Record_Field_Offset =>
+          S (Curr_TCB.T).I := S (Curr_TCB.T).I + IR.Y;
+
+      when k_Jump =>
+        Curr_TCB.PC := IR.Y;
+
+      when k_Conditional_Jump =>
+        if S (Curr_TCB.T).I = 0 then  --  if False, then ...
+          Curr_TCB.PC := IR.Y;        --  ... Jump.
+        end if;
+        Pop;
+
+      when k_CASE_Switch_1 =>  --  SWTC - switch (in a CASE instruction)
+        H1         := S (Curr_TCB.T).I;
+        Pop;
+        H2         := IR.Y;
+        --
+        --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
+        --
+        loop
+          if CD.ObjCode (H2).F /= k_CASE_Switch_2 then
+            PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
+            exit;                    --  ...happen: compiler should check it before run-time.
+          elsif CD.ObjCode (H2).Y = H1    --  either: - value is matching
+                or CD.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
+          then
+            Curr_TCB.PC := CD.ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
+            exit;
+          else
+            H2 := H2 + 2;  --  Check the next k_CASE_Switch_2 instruction pair.
+          end if;
+        end loop;
+
+      when k_CASE_Switch_2 =>
+        --  This instruction appears only in a special object code block, see k_CASE_Switch_1.
+        null;
+
+      when k_FOR_Forward_Begin =>  --  Start of a FOR loop, forward direction
+        H1 := S (Curr_TCB.T - 1).I;
+        if H1 <= S (Curr_TCB.T).I then
+          S (S (Curr_TCB.T - 2).I).I := H1;
+        else
+          Curr_TCB.T  := Curr_TCB.T - 3;
+          Curr_TCB.PC := IR.Y;
+        end if;
+
+      when k_FOR_Forward_End =>  --  End of a FOR loop, forward direction
+        H2 := S (Curr_TCB.T - 2).I;
+        H1 := S (H2).I + 1;
+        if H1 <= S (Curr_TCB.T).I then
+          S (H2).I    := H1;
+          Curr_TCB.PC := IR.Y;
+        else
+          Pop (3);
+        end if;
+
+      when k_FOR_Reverse_Begin =>  --  Start of a FOR loop, reverse direction
+        H1 := S (Curr_TCB.T).I;
+        if H1 >= S (Curr_TCB.T - 1).I then
+          S (S (Curr_TCB.T - 2).I).I := H1;
+        else
+          Curr_TCB.PC := IR.Y;
+          Curr_TCB.T  := Curr_TCB.T - 3;
+        end if;
+
+      when k_FOR_Reverse_End =>  --  End of a FOR loop, reverse direction
+        H2 := S (Curr_TCB.T - 2).I;
+        H1 := S (H2).I - 1;
+        if H1 >= S (Curr_TCB.T - 1).I then
+          S (H2).I    := H1;
+          Curr_TCB.PC := IR.Y;
+        else
+          Pop (3);
+        end if;
+
+      when k_Mark_Stack =>
+        H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Ref).VSize;
+        if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
+          PS := STKCHK;  --  Stack overflow
+        else
+          Curr_TCB.T := Curr_TCB.T + 5;   --  make room for fixed area
+          S (Curr_TCB.T - 1).I := H1 - 1; --  vsize-1
+          S (Curr_TCB.T).I := IR.Y;       --  HAC.Data.IdTab index of called procedure/entry
+        end if;
+
+      when k_Call =>
+        --  procedure and task entry CALL
+        --  Cramer
+        if IR.X = HAC.Data.CallTMDE then
+          --  Timed entry call
+          F1 := S (Curr_TCB.T).R;  --  Pop delay time
+          Pop;
+        end if;
+        H1 := Curr_TCB.T - IR.Y;     --  base of activation record
+        H2 := S (H1 + 4).I;          --  CD.IdTab index of called procedure/entry
+        H3                        := CD.IdTab (H2).LEV;
+        Curr_TCB.DISPLAY (H3 + 1) := H1;
+        S (H1 + 1).I              := Curr_TCB.PC;  --  return address
+
+        H4 := S (H1 + 3).I + H1; --  new top of stack
+        S (H1 + 2).I := Curr_TCB.DISPLAY (H3); --  static link
+        S (H1 + 3).I := Curr_TCB.B; --  dynamic link
+
+        for H3 in Curr_TCB.T + 1 .. H4 loop
+          S (H3).I := 0;  --  initialize local vars
+        end loop;
+        Curr_TCB.B := H1;
+        Curr_TCB.T := H4;
+        case IR.X is
+          when  --  Call type
+           HAC.Data.CallSTDP =>
+            --  Standard procedure call
+
+            Curr_TCB.PC := CD.IdTab (H2).Adr;
+
+          when HAC.Data.CallSTDE =>
+            --  Unconditional entry call
+            Queue (H2, CurTask);          --  put self on entry queue
+            Curr_TCB.TS := WaitRendzv;
+            H5          := CD.IdTab (H2).Adr;  --  Task being entered
+            if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
+               (TCB (H5).TS = TimedWait)
+            then
+              --  wake accepting task if necessary
+              TCB (H5).TS      := Ready;
+              TCB (H5).SUSPEND := 0;
+            end if;
+            SWITCH := True;                 --  give up control
+
+          when HAC.Data.CallTMDE =>
+            --  Timed entry call
+            Queue (H2, CurTask);      --  put self on entry queue
+            H5 := CD.IdTab (H2).Adr;  --  Task being entered
+            --
+            if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
+               (TCB (H5).TS = TimedWait)
+            then
+              --  wake accepting task if necessary
+              Curr_TCB.TS := WaitRendzv;     --  suspend self
+              TCB (H5).TS := Ready;          --  wake accepting task
+              TCB (H5).SUSPEND := 0;
+            else
+              Curr_TCB.TS := TimedRendz;     --  Timed Wait For Rendezvous
+              Curr_TCB.R1.I := 1;            --  Init R1 to specify NO timeout
+              Curr_TCB.R2.I := H2;           --  Save address of queue for purge
+              SYSCLOCK := GetClock; --  update System Clock
+              Curr_TCB.WAKETIME := SYSCLOCK + Duration (F1 * 1000.0);
+              --  internal time units is milliseconds so X 1000.0
+            end if;
+            SWITCH := True;       --  give up control
+
+          when HAC.Data.CallCNDE =>
+            --  Conditional Entry Call
+            H5 := CD.IdTab (H2).Adr;              --  Task being entered
+            if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
+               (TCB (H5).TS = TimedWait)
+            then
+              Queue (H2, CurTask);    --  put self on entry queue
+              Curr_TCB.R1.I := 1;       --  Indicate entry successful
+              Curr_TCB.TS := WaitRendzv;
+              TCB (H5).TS    := Ready;  --  wake accepting task if required
+              TCB (H5).SUSPEND := 0;
+              SWITCH           := True;       --  give up control
+            else
+              --  can't wait, forget about entry call
+              Curr_TCB.R1.I := 0;   --  Indicate entry failed in R1 1
+              --  failure will be acknowledged by next instruction, 32
+            end if;
+          when others =>
+            null;  -- [P2Ada]: no otherwise / else in Pascal
+        end case;
+
+      when k_Array_Index_Element_Size_1 =>
+        H1 := IR.Y;     --  H1 points to HAC.Data.Arrays_Table
+        H2 := CD.Arrays_Table (H1).Low;
+        H3 := S (Curr_TCB.T).I;
+        if H3 not in H2 .. CD.Arrays_Table (H1).High then
+          PS := INXCHK;  --  Out-of-range state
+        else
+          Curr_TCB.T       := Curr_TCB.T - 1;
+          S (Curr_TCB.T).I := S (Curr_TCB.T).I + (H3 - H2);
+        end if;
+
+      when k_Array_Index =>
+        H1 := IR.Y;      --  H1 POINTS TO HAC.Data.Arrays_Table
+        H2 := CD.Arrays_Table (H1).Low;
+        H3 := S (Curr_TCB.T).I;
+        if H3 not in H2 .. CD.Arrays_Table (H1).High then
+          PS := INXCHK;  --  Out-of-range state
+        else
+          Curr_TCB.T       := Curr_TCB.T - 1;
+          S (Curr_TCB.T).I := S (Curr_TCB.T).I +
+                                 (H3 - H2) * CD.Arrays_Table (H1).ELSize;
+        end if;
+
+      when k_Load_Block =>
+        H1         := S (Curr_TCB.T).I;   --  Pull source address
+        Pop;
+        H2         := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
+        if H2 > Curr_TCB.STACKSIZE then
+          PS := STKCHK;  --  Stack overflow
+        else
+          while Curr_TCB.T < H2 loop
+            Curr_TCB.T     := Curr_TCB.T + 1;
+            S (Curr_TCB.T) := S (H1);
+            H1             := H1 + 1;
+          end loop;
+        end if;
+
+      when k_Copy_Block =>
+        H1 := S (Curr_TCB.T - 1).I;   --  Destination address
+        H2 := S (Curr_TCB.T).I;       --  Source address
+        H3 := H1 + IR.Y;              --  IR.Y = block length
+        while H1 < H3 loop
+          S (H1) := S (H2);
+          H1     := H1 + 1;
+          H2     := H2 + 1;
+        end loop;
+        Pop (2);
+
+      when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
+        Curr_TCB.T := Curr_TCB.T + 1;
+        if Curr_TCB.T > Curr_TCB.STACKSIZE then
+          PS := STKCHK;  --  Stack overflow
+        else
+          S (Curr_TCB.T).I := IR.Y;
+        end if;
+
+      when k_Load_Float_Literal =>
+        Curr_TCB.T := Curr_TCB.T + 1;
+        if Curr_TCB.T > Curr_TCB.STACKSIZE then
+          PS := STKCHK;  --  Stack overflow
+        else
+          S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
+        end if;
+
+      when k_String_Literal_Assignment =>  --  Hathorn
+        H1 := S (Curr_TCB.T - 2).I;  --  address of array
+        H2 := S (Curr_TCB.T).I;      --  index to string table
+        H3 := IR.Y;                  --  size of array
+        H4 := S (Curr_TCB.T - 1).I;  --  length of string
+        if H3 < H4 then
+          H5 := H1 + H3;    --  H5 is H1 + min of H3, H4
+        else
+          H5 := H1 + H4;
+        end if;
+        while H1 < H5 loop
+          --  Copy H5-H1 characters to the stack
+          S (H1).I := Character'Pos (CD.Strings_Constants_Table (H2));
+          H1       := H1 + 1;
+          H2       := H2 + 1;
+        end loop;
+        H5 := S (Curr_TCB.T - 2).I + H3;              --  H5 = H1 + H3
+        while H1 < H5 loop
+          --  fill with blanks if req'd
+          S (H1).I := Character'Pos (' ');
+          H1       := H1 + 1;
+        end loop;
+        Pop (3);
+
+      when k_Integer_to_Float =>
+        H1       := Curr_TCB.T - IR.Y;
+        S (H1).R := HAC.Data.HAC_Float (S (H1).I);
+
+      when k_Read =>
+        if FAT.CURR = 0 then
+          if End_Of_File_Console then
+            PS := REDCHK;
+          else
+            case IR.Y is
+              when 1 =>
+                Get_Console (S (S (Curr_TCB.T).I).I);
+              when 2 =>
+                Get_Console (S (S (Curr_TCB.T).I).R);
+              when 3 =>
+                Get_Console (CH);
+                S (S (Curr_TCB.T).I).I := Character'Pos (CH);
+              when 4 =>
+                Get_Console (CH);
+                S (S (Curr_TCB.T).I).I := Character'Pos (CH);
+              when others =>
+                null;  -- [P2Ada]: no otherwise / else in Pascal
+            end case;
+          end if;
+          Pop;
+        else
+          if Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
+            PS := REDCHK;
+          else
+            case IR.Y is
+              when 1 =>
+                Ada.Integer_Text_IO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).I);
+              when 2 =>
+                RIO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).R);
+              when 3 =>
+                Ada.Text_IO.Get (FAT.FIL (FAT.CURR), CH);
+                S (S (Curr_TCB.T).I).I := Character'Pos (CH);
+              when 4 =>
+                Ada.Text_IO.Get (FAT.FIL (FAT.CURR), CH);
+                S (S (Curr_TCB.T).I).I := Character'Pos (CH);
+              when others =>
+                null;  -- [P2Ada]: no otherwise / else in Pascal
+            end case;
+          end if;
+        end if;
+        SWITCH := True;  --  give up control when doing I/O
+
+      when k_Write_String =>
+        Pop (2);
+        H1 := S (Curr_TCB.T + 1).I;  --  Length of string
+        H2 := S (Curr_TCB.T + 2).I;  --  Index to string table
+        if FAT.CURR = 0 then
+          Put_Console (CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
+        else
+          Ada.Text_IO.Put (FAT.FIL (FAT.CURR), CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
+        end if;
+        SWITCH := True;        --  give up control when doing I/O
+
+      when k_Write_1 =>
+        Do_Write_Unformatted;
+
+      when k_Write_2 =>
+        if FAT.CURR = 0 then
+          case IR.Y is
+            when 1 => --  Burd
+              Put_Console (S (Curr_TCB.T - 1).I, S (Curr_TCB.T).I);
+            when 2 =>
+              Put_Console (S (Curr_TCB.T - 1).R, S (Curr_TCB.T).I);
+            when 3 =>
+              Put_Console (Boolean'Val(S (Curr_TCB.T - 1).I), S (Curr_TCB.T).I);
+            when 4 =>
+              Put_Console (Character'Val(S (Curr_TCB.T - 1).I));
+            when others =>
+              null;  -- [P2Ada]: no otherwise / else in Pascal
+          end case;
+        else
+          case IR.Y is
+            when 1 =>         --  Schoening
+              Ada.Integer_Text_IO.Put
+               (FAT.FIL (FAT.CURR),
+                S (Curr_TCB.T - 1).I,
+                S (Curr_TCB.T).I);
+            when 2 =>
+              RIO.Put
+               (FAT.FIL (FAT.CURR),
+                S (Curr_TCB.T - 1).R,
+                S (Curr_TCB.T).I);
+            when 3 =>
+              Boolean_Text_IO.Put
+               (FAT.FIL (FAT.CURR),
+                Boolean'Val(S (Curr_TCB.T - 1).I),
+                S (Curr_TCB.T).I);
+            when 4 =>
+              Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T - 1).I));
+            when others =>
+              null;  -- [P2Ada]: no otherwise / else in Pascal
+          end case;
+
+        end if;
+        Pop (2);
+        SWITCH := True;  --  give up control when doing I/O
+
+      when k_Exit_Call =>  --  EXIT entry call or procedure call
+        --  Cramer
+        Curr_TCB.T := Curr_TCB.B - 1;
+        if IR.Y = HAC.Data.CallSTDP then
+          Curr_TCB.PC := S (Curr_TCB.B + 1).I;  --  Standard proc call return
+        end if;
+        if Curr_TCB.PC /= 0 then
+          Curr_TCB.B := S (Curr_TCB.B + 3).I;
+          if IR.Y = HAC.Data.CallTMDE or IR.Y = HAC.Data.CallCNDE then
+            if IR.Y = HAC.Data.CallTMDE and Curr_TCB.R1.I = 0 then
+              Curr_TCB.T := Curr_TCB.T + 1;         --  A JMPC
+                                                    --  instruction
+                                                    --  always follows
+            end if;
+            if Curr_TCB.T > Curr_TCB.STACKSIZE then --  timed and
+                                                          --conditional
+                                                          --entry call
+              PS := STKCHK;  --  Stack overflow           --  returns (32).  Push entry call
+            else
+              S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success
+                                                          --indicator for
+                                                          --JMPC.
+            end if;
+          end if;
+        else
+          TActive     := TActive - 1;
+          Curr_TCB.TS := Completed;
+          SWITCH      := True;
+        end if;
+
+      when k_Exit_Function =>
+        Curr_TCB.T  := Curr_TCB.B;
+        Curr_TCB.PC := S (Curr_TCB.B + 1).I;
+        Curr_TCB.B  := S (Curr_TCB.B + 3).I;
+        if IR.Y < 0 then
+          PS := ProgErr;  --  Program_Error (!! check: obviously, case of function's end reached)
+        end if;
+
+      when k_Case_34 =>
+        S (Curr_TCB.T) := S (S (Curr_TCB.T).I);  --  "stack_top := (stack_top.I).all"
+
+      when k_NOT_Boolean =>
+        S (Curr_TCB.T).I := Boolean'Pos (not Boolean'Val (S (Curr_TCB.T).I));
+
+      when k_Unary_MINUS_Integer =>
+        S (Curr_TCB.T).I := -S (Curr_TCB.T).I;
+
+      when k_Unary_MINUS_Float =>
+        S (Curr_TCB.T).R := -S (Curr_TCB.T).R;
+
+      when k_Write_Float =>  --  Put Float with 3 parameters
+        if FAT.CURR = 0 then
+          Put_Console
+           (S (Curr_TCB.T - 2).R,
+            S (Curr_TCB.T - 1).I,
+            S (Curr_TCB.T).I,
+            0);
+        else
+          RIO.Put
+           (FAT.FIL (FAT.CURR),
+            S (Curr_TCB.T - 2).R,
+            S (Curr_TCB.T - 1).I,
+            S (Curr_TCB.T).I,
+            0);
+        end if;
+        Pop (3);
+        SWITCH := True;  --  give up control when doing I/O
+
+      when k_Store =>
+        S (S (Curr_TCB.T - 1).I) := S (Curr_TCB.T);
+        Pop (2);
+
+      when Binary_Operator_Opcode =>
+        Do_Binary_Operator;
+
+      when k_Get_Newline =>
+        if FAT.CURR = 0 then       --  Schoening
+          if End_Of_File_Console then
+            PS := REDCHK;
+          else
+            Skip_Line_Console;
+          end if;
+        elsif Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
+          PS := REDCHK;
+        else
+          Ada.Text_IO.Skip_Line (FAT.FIL (FAT.CURR));
+        end if;
+        SWITCH := True;  --  give up control when doing I/O
+
+      when k_Put_Newline =>
+        if FAT.CURR = 0 then      --  Schoening
+          New_Line_Console;
+        else
+          Ada.Text_IO.New_Line (FAT.FIL (FAT.CURR));
+        end if;
+        SWITCH := True;  --  give up control when doing I/O
+
+      when k_Set_current_file_pointer =>
+        FAT.CURR := IR.Y;
+
+      when k_File_I_O =>
+        --  File I/O procedures - Schoening
+        case IR.Y is
+          when 7 =>
+            if Ada.Text_IO.Is_Open (FAT.FIL (IR.X)) then
+              Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
+            end if;
+            H1 := 0; -- was IOresult ;   --  clears any I/O error
+            Ada.Text_IO.Open (
+              FAT.FIL (IR.X),
+              Ada.Text_IO.In_File,
+              HAC.Data.To_String (FAT.NAM (IR.X)) & ".DAT"
+            );
+
+          when 8 =>
+            if Ada.Text_IO.Is_Open (FAT.FIL (IR.X)) then
+              Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
+            end if;
+            H1 := 0; -- was IOresult ;   --  clears any I/O error
+            Ada.Text_IO.Create (FAT.FIL (IR.X),
+              Ada.Text_IO.Out_File,
+              HAC.Data.To_String (FAT.NAM (IR.X)) & ".DAT"
+            );
+
+          when 9 =>
+            Ada.Text_IO.Close (FAT.FIL (IR.X));    --  close file
+
+          when others =>
+            null;  -- [P2Ada]: no otherwise / else in Pascal
+        end case;
+        --  case IR.Y
+        SWITCH := True;  --  give up control when doing I/O
+
+      when k_Halt_Interpreter =>
+        if TActive = 0 then
+          PS := FIN;
+        else
+          TCB (0).TS     := Completed;
+          SWITCH         := True;
+          Curr_TCB.PC := Curr_TCB.PC - 1;
+        end if;
+
+      when k_Delay =>  --  DLY - delay for a specified number of seconds
+
+        if S (Curr_TCB.T).R > 0.0 then
+          --  if positive delay time
+
+          Curr_TCB.TS := Delayed;           --  set task state to delayed
+
+          SYSCLOCK := GetClock;    --  update System Clock
+
+          Curr_TCB.WAKETIME := SYSCLOCK +
+                                  Duration (S (Curr_TCB.T).R * 1000.0);
+          --  set wakeup time
+
+          --  internal time units is milliseconds so X 1000.0
+
+          SWITCH := True;          --  give up control
+
+        end if;
+        Pop;
+      --  Delay
+
+      when k_Cursor_At =>
+        --  Cramer
+        H2         := S (Curr_TCB.T - 1).I;  --  row
+        H1         := S (Curr_TCB.T).I;      --  column
+        Pop (2);
+        -- GotoXY (H1, H2);        --  issue TPC call
+
+      when k_Set_Quantum_Task =>
+        --  Cramer
+        if S (Curr_TCB.T).R <= 0.0 then
+          S (Curr_TCB.T).R := HAC.Data.HAC_Float (TSlice) * 0.001;
+        end if;
+        TCB (CurTask).QUANTUM := Duration (S (Curr_TCB.T).R);
+        Pop;
+
+      when k_Set_Task_Priority =>
+        --  Cramer
+        if S (Curr_TCB.T).I > HAC.Data.PriMax then
+          S (Curr_TCB.T).I := HAC.Data.PriMax;
+        end if;
+        if S (Curr_TCB.T).I < 0 then
+          S (Curr_TCB.T).I := 0;
+        end if;
+        TCB (CurTask).Pcontrol.UPRI := S (Curr_TCB.T).I;
+        Pop;
+
+      when k_Set_Task_Priority_Inheritance =>
+        --  Cramer
+        Curr_TCB.Pcontrol.INHERIT := S (Curr_TCB.T).I /= 0;
+        --  Set priority inherit indicator
+        Pop;
+
+      when k_Selective_Wait =>
+        --  Selective Wait Macro Instruction
+
+        case IR.X is
+          when 1 => --  Start Selective Wait seq.
+            TCB (CurTask).R1.I := 0; --  next instruction if delay expires
+            TCB (CurTask).R2.R := -1.0; --  delay time
+
+          when 2 => --  Retain entry ID
+            TCB (CurTask).R3.I := IR.Y;
+
+          when 3 => --  Accept if its still on queue
+            H1 := TCB (CurTask).R3.I;
+            H2 := FirstCaller (H1);    --  first waiting task
+            H3 := CD.IdTab (H1).LEV;        --  level of accepting entry
+            if H2 >= 0 then
+              Curr_TCB.DISPLAY (H3 + 1) := TCB (H2).B; --  address
+                                                          --callers parms
+              Curr_TCB.InRendzv := H2;             --  indicate task
+                                                      --InRendz
+              if TCB (H2).TS = TimedRendz then --  turn off entry timeout
+                TCB (H2).TS := WaitRendzv;    --  if it was on
+              end if;
+            else
+              Curr_TCB.PC := IR.Y; --  Jump to patched in address
+            end if;
+            SWITCH := True;
+
+          when 4 => --  Update minimum delay time
+            if S (Curr_TCB.T).R > 0.0 then
+              if TCB (CurTask).R2.R = -1.0 then
+                TCB (CurTask).R2.R := S (Curr_TCB.T).R;
+                TCB (CurTask).R1.I := IR.Y;   --  ins after JMP
+              else
+                if S (Curr_TCB.T).R < TCB (CurTask).R2.R then
+                  TCB (CurTask).R2.R := S (Curr_TCB.T).R;
+                  TCB (CurTask).R1.I := IR.Y;   --  ins after JMP
+                end if;
+              end if;
+            end if;
+            Pop;
+
+          when 5 | 6 => --  end of SELECT
+
+            if TCB (CurTask).R2.R > 0.0 then
+              --  Timed Wait
+              Curr_TCB.TS       := TimedWait;
+              SYSCLOCK             := GetClock;
+              Curr_TCB.WAKETIME := SYSCLOCK +
+                                      Duration (TCB (CurTask).R2.R *
+                                                1000.0);
+              Curr_TCB.PC       := IR.Y; --  Do SELECT again when
+                                            --awakened by caller
+
+              SWITCH := True;                     --  give up control
+
+            end if;
+            --  AVL -- TERMINATE
+            --  IS THE PARENT TASK COMPLETED?
+            if TCB (0).TS = Completed and CurTask /= 0 and IR.X /= 6 then
+              NCALLS := 0; --  LET'S SEE IF THERE ARE CALLERS
+              for ITERM in 1 .. CD.Entries_Count loop
+                if EList (ITERM).First /= null then
+                  NCALLS := NCALLS + 1;
+                end if;
+              end loop;
+              --  YES, NO CALLERS
+              if NCALLS = 0 then  --  YES, NO CALLERS
+                --  ARE THE SIBLING TASKS EITHER COMPLETED OR
+                --  IN THE SAME STATE AS CURTASK?
+                NCOMPL := 0;
+                for ITERM in 1 .. CD.Tasks_Definitions_Count loop
+                  if TCB (ITERM).TS = Completed then
+                    NCOMPL := NCOMPL + 1;
+                  else
+                    if TCB (ITERM).TS = TCB (CurTask).TS then
+                      NCOMPL := NCOMPL + 1;
+                    else
+                      if TCB (ITERM).TS = Ready and
+                         TCB (CurTask).TS = Running
+                      then
+                        NCOMPL := NCOMPL + 1;
+                      end if;
+                    end if;
+                  end if;
+                end loop;
+                if CD.Tasks_Definitions_Count = NCOMPL then
+                  --  YES, THEN ALL TASKS ARE NOW TERMINATING
+                  for ITERM in 1 .. CD.Tasks_Definitions_Count loop
+                    TCB (ITERM).TS := Terminated;
+                  end loop;
+                  PS := FIN;
+                end if;
+              end if;
+            end if;
+          --               if ir.x = 6 then
+          --               begin
+          --                 term := false ;    {Task doesn't have a terminate}
+          --               end ;                {alternative}
+          --
+
+          when others =>
+            null;  -- [P2Ada]: no otherwise / else in Pascal
+        end case;
+        --  Selective Wait
+
+      end case;
+    end Execute_Current_Instruction;
 
   begin  --  Interpret
     InterDef.SNAP:= False;
@@ -709,833 +1556,13 @@ package body HAC.PCode.Interpreter is
         end if;
       end if;
 
-      --  FETCH INSTRUCTION
-      declare
-        Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
-      begin
-        InterDef.IR := CD.ObjCode (Curr_TCB.PC);
-        Curr_TCB.PC := Curr_TCB.PC + 1;
-      end;
+      Fetch_Instruction;
 
       --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED
       --  (removed)
 
-      declare
-        Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
-        CH : Character;
-      begin
-        case InterDef.IR.F is
+      Execute_Current_Instruction;
 
-          when k_Load_Address =>
-            Curr_TCB.T := Curr_TCB.T + 1;
-            if Curr_TCB.T > Curr_TCB.STACKSIZE then
-              PS := STKCHK;  --  Stack overflow
-            else
-              S (Curr_TCB.T).I := Curr_TCB.DISPLAY (IR.X) + IR.Y;
-            end if;
-
-          when k_Push_Value =>
-            Curr_TCB.T := Curr_TCB.T + 1;
-            if Curr_TCB.T > Curr_TCB.STACKSIZE then
-              PS := STKCHK;  --  Stack overflow
-            else
-              S (Curr_TCB.T) := S (Curr_TCB.DISPLAY (IR.X) + IR.Y);
-            end if;
-
-          when k_Push_Indirect_Value =>
-            Curr_TCB.T := Curr_TCB.T + 1;
-            if Curr_TCB.T > Curr_TCB.STACKSIZE then
-              PS := STKCHK;  --  Stack overflow
-            else
-              S (Curr_TCB.T) := S (S (Curr_TCB.DISPLAY (IR.X) + IR.Y).I);
-            end if;
-
-          when k_Update_Display_Vector =>  --  Emitted at the end of Subprogram_or_Entry_Call.
-            H1 := IR.Y;  --  Current nesting level.
-            H2 := IR.X;  --  Called subprogram nesting level, lower than current.
-            H3 := Curr_TCB.B;
-            loop
-              Curr_TCB.DISPLAY (H1) := H3;
-              H1                    := H1 - 1;  --  Decrease level as index in DISPLAY.
-              H3                    := S (H3 + 2).I;
-              exit when H1 = H2;
-            end loop;
-
-          when k_Accept_Rendezvous => -- Hathorn, Cramer
-            H1 := IR.Y;                    --  entry pointer
-            H2 := FirstCaller (H1);        --  first waiting task
-            H3 := CD.IdTab (H1).LEV;            --  level of accepting entry
-            if H2 >= 0 then
-              --  start rendzv if call is waiting
-              Curr_TCB.DISPLAY (H3 + 1) := TCB (H2).B; --  address callers
-              --parms
-              Curr_TCB.InRendzv := H2;  --  indicate that task is in Rendzv
-              if TCB (H2).TS = TimedRendz then
-                TCB (H2).TS := WaitRendzv;
-              end if;
-            else
-              --  or put self to sleep
-              Curr_TCB.SUSPEND := H1;
-              Curr_TCB.TS      := WaitRendzv;      --  status is waiting for
-              --rendezvous
-              Curr_TCB.PC      := Curr_TCB.PC - 1;          --  do this
-              --step again when awakened
-
-            end if;
-            SWITCH := True;
-
-          when k_End_Rendezvous => --  Hathorn
-            Curr_TCB.InRendzv := NilTask;  --  indicate rendezvous has ended
-            H1 := IR.Y;                   --  entry pointer
-            H2 := RemoveFirst (H1);       --  waiting task pointer
-            if H2 >= 0 then
-              --  wake up waiting task
-              TCB (H2).SUSPEND := 0;
-              TCB (H2).TS      := Ready;
-              SWITCH           := True;
-            end if;
-
-          when k_Wait_Semaphore =>
-            H1            := S (Curr_TCB.T).I;
-            Pop;
-            if S (H1).I > 0 then
-              S (H1).I       := S (H1).I - 1;
-              Curr_TCB.TS := Critical;   --  In a critical section, task gets
-              --  exclusive access to the virtual
-            else
-              --  processor until section ends.
-              Curr_TCB.SUSPEND := H1;
-              Curr_TCB.TS      := WaitSem;
-              SWITCH           := True;
-            end if;
-
-          when k_Signal_Semaphore =>
-            H1         := S (Curr_TCB.T).I;
-            Pop;
-            H2         := CD.Tasks_Definitions_Count + 1;
-            H3         := Integer (Random (Gen) * Float (H2));
-            while H2 >= 0 and TCB (H3).TS /= WaitSem and TCB (H3).SUSPEND /= H1
-            loop
-              H3 := (H3 + 1) mod (HAC.Data.TaskMax + 1);
-              H2 := H2 - 1;
-            end loop;
-            if H2 < 0 or S (H1).I < 0 then
-              S (H1).I := S (H1).I + 1;
-            else
-              TCB (H3).SUSPEND := 0;
-              TCB (H3).TS      := Ready;
-            end if;
-            Curr_TCB.TS := Ready; --  end critical section
-            SWITCH := True;
-
-          when k_Standard_Functions =>
-            Do_Standard_Function;
-
-          when k_Record_Field_Offset =>
-            S (Curr_TCB.T).I := S (Curr_TCB.T).I + IR.Y;
-
-        when k_Jump =>
-          Curr_TCB.PC := IR.Y;
-
-        when k_Conditional_Jump =>
-          if S (Curr_TCB.T).I = 0 then  --  if False, then ...
-            Curr_TCB.PC := IR.Y;        --  ... Jump.
-          end if;
-          Pop;
-
-        when k_CASE_Switch_1 =>  --  SWTC - switch (in a CASE instruction)
-          H1         := S (Curr_TCB.T).I;
-          Pop;
-          H2         := IR.Y;
-          --
-          --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
-          --
-          loop
-            if CD.ObjCode (H2).F /= k_CASE_Switch_2 then
-              PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
-              exit;                    --  ...happen: compiler should check it before run-time.
-            elsif CD.ObjCode (H2).Y = H1    --  either: - value is matching
-                  or CD.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
-            then
-              Curr_TCB.PC := CD.ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
-              exit;
-            else
-              H2 := H2 + 2;  --  Check the next k_CASE_Switch_2 instruction pair.
-            end if;
-          end loop;
-
-        when k_CASE_Switch_2 =>
-          --  This instruction appears only in a special object code block, see k_CASE_Switch_1.
-          null;
-
-        when k_FOR_Forward_Begin =>  --  Start of a FOR loop, forward direction
-          H1 := S (Curr_TCB.T - 1).I;
-          if H1 <= S (Curr_TCB.T).I then
-            S (S (Curr_TCB.T - 2).I).I := H1;
-          else
-            Curr_TCB.T  := Curr_TCB.T - 3;
-            Curr_TCB.PC := IR.Y;
-          end if;
-
-        when k_FOR_Forward_End =>  --  End of a FOR loop, forward direction
-          H2 := S (Curr_TCB.T - 2).I;
-          H1 := S (H2).I + 1;
-          if H1 <= S (Curr_TCB.T).I then
-            S (H2).I    := H1;
-            Curr_TCB.PC := IR.Y;
-          else
-            Pop (3);
-          end if;
-
-        when k_FOR_Reverse_Begin =>  --  Start of a FOR loop, reverse direction
-          H1 := S (Curr_TCB.T).I;
-          if H1 >= S (Curr_TCB.T - 1).I then
-            S (S (Curr_TCB.T - 2).I).I := H1;
-          else
-            Curr_TCB.PC := IR.Y;
-            Curr_TCB.T  := Curr_TCB.T - 3;
-          end if;
-
-        when k_FOR_Reverse_End =>  --  End of a FOR loop, reverse direction
-          H2 := S (Curr_TCB.T - 2).I;
-          H1 := S (H2).I - 1;
-          if H1 >= S (Curr_TCB.T - 1).I then
-            S (H2).I    := H1;
-            Curr_TCB.PC := IR.Y;
-          else
-            Pop (3);
-          end if;
-
-        when k_Mark_Stack =>
-          H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Ref).VSize;
-          if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
-          else
-            Curr_TCB.T := Curr_TCB.T + 5;   --  make room for fixed area
-            S (Curr_TCB.T - 1).I := H1 - 1; --  vsize-1
-            S (Curr_TCB.T).I := IR.Y;       --  HAC.Data.IdTab index of called procedure/entry
-          end if;
-
-        when k_Call =>
-          --  procedure and task entry CALL
-          --  Cramer
-          if IR.X = HAC.Data.CallTMDE then
-            --  Timed entry call
-            F1 := S (Curr_TCB.T).R;  --  Pop delay time
-            Pop;
-          end if;
-          H1 := Curr_TCB.T - IR.Y;     --  base of activation record
-          H2 := S (H1 + 4).I;          --  CD.IdTab index of called procedure/entry
-          H3                        := CD.IdTab (H2).LEV;
-          Curr_TCB.DISPLAY (H3 + 1) := H1;
-          S (H1 + 1).I              := Curr_TCB.PC;  --  return address
-
-          H4 := S (H1 + 3).I + H1; --  new top of stack
-          S (H1 + 2).I := Curr_TCB.DISPLAY (H3); --  static link
-          S (H1 + 3).I := Curr_TCB.B; --  dynamic link
-
-          for H3 in Curr_TCB.T + 1 .. H4 loop
-            S (H3).I := 0;  --  initialize local vars
-          end loop;
-          Curr_TCB.B := H1;
-          Curr_TCB.T := H4;
-          case IR.X is
-            when  --  Call type
-             HAC.Data.CallSTDP =>
-              --  Standard procedure call
-
-              Curr_TCB.PC := CD.IdTab (H2).Adr;
-
-            when HAC.Data.CallSTDE =>
-              --  Unconditional entry call
-              Queue (H2, CurTask);          --  put self on entry queue
-              Curr_TCB.TS := WaitRendzv;
-              H5          := CD.IdTab (H2).Adr;  --  Task being entered
-              if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
-                 (TCB (H5).TS = TimedWait)
-              then
-                --  wake accepting task if necessary
-                TCB (H5).TS      := Ready;
-                TCB (H5).SUSPEND := 0;
-              end if;
-              SWITCH := True;                 --  give up control
-
-            when HAC.Data.CallTMDE =>
-              --  Timed entry call
-              Queue (H2, CurTask);      --  put self on entry queue
-              H5 := CD.IdTab (H2).Adr;  --  Task being entered
-              --
-              if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
-                 (TCB (H5).TS = TimedWait)
-              then
-                --  wake accepting task if necessary
-                Curr_TCB.TS := WaitRendzv;     --  suspend self
-                TCB (H5).TS := Ready;          --  wake accepting task
-                TCB (H5).SUSPEND := 0;
-              else
-                Curr_TCB.TS := TimedRendz;     --  Timed Wait For Rendezvous
-                Curr_TCB.R1.I := 1;            --  Init R1 to specify NO timeout
-                Curr_TCB.R2.I := H2;           --  Save address of queue for purge
-                SYSCLOCK := GetClock; --  update System Clock
-                Curr_TCB.WAKETIME := SYSCLOCK + Duration (F1 * 1000.0);
-                --  internal time units is milliseconds so X 1000.0
-              end if;
-              SWITCH := True;       --  give up control
-
-            when HAC.Data.CallCNDE =>
-              --  Conditional Entry Call
-              H5 := CD.IdTab (H2).Adr;              --  Task being entered
-              if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
-                 (TCB (H5).TS = TimedWait)
-              then
-                Queue (H2, CurTask);    --  put self on entry queue
-                Curr_TCB.R1.I := 1;       --  Indicate entry successful
-                Curr_TCB.TS := WaitRendzv;
-                TCB (H5).TS    := Ready;  --  wake accepting task if required
-                TCB (H5).SUSPEND := 0;
-                SWITCH           := True;       --  give up control
-              else
-                --  can't wait, forget about entry call
-                Curr_TCB.R1.I := 0;   --  Indicate entry failed in R1 1
-                --  failure will be acknowledged by next instruction, 32
-              end if;
-            when others =>
-              null;  -- [P2Ada]: no otherwise / else in Pascal
-          end case;
-
-        when k_Array_Index_Element_Size_1 =>
-          H1 := IR.Y;     --  H1 points to HAC.Data.Arrays_Table
-          H2 := CD.Arrays_Table (H1).Low;
-          H3 := S (Curr_TCB.T).I;
-          if H3 not in H2 .. CD.Arrays_Table (H1).High then
-            PS := INXCHK;  --  Out-of-range state
-          else
-            Curr_TCB.T       := Curr_TCB.T - 1;
-            S (Curr_TCB.T).I := S (Curr_TCB.T).I + (H3 - H2);
-          end if;
-
-        when k_Array_Index =>
-          H1 := IR.Y;      --  H1 POINTS TO HAC.Data.Arrays_Table
-          H2 := CD.Arrays_Table (H1).Low;
-          H3 := S (Curr_TCB.T).I;
-          if H3 not in H2 .. CD.Arrays_Table (H1).High then
-            PS := INXCHK;  --  Out-of-range state
-          else
-            Curr_TCB.T       := Curr_TCB.T - 1;
-            S (Curr_TCB.T).I := S (Curr_TCB.T).I +
-                                   (H3 - H2) * CD.Arrays_Table (H1).ELSize;
-          end if;
-
-        when k_Load_Block =>
-          H1         := S (Curr_TCB.T).I;   --  Pull source address
-          Pop;
-          H2         := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
-          if H2 > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
-          else
-            while Curr_TCB.T < H2 loop
-              Curr_TCB.T     := Curr_TCB.T + 1;
-              S (Curr_TCB.T) := S (H1);
-              H1             := H1 + 1;
-            end loop;
-          end if;
-
-        when k_Copy_Block =>
-          H1 := S (Curr_TCB.T - 1).I;   --  Destination address
-          H2 := S (Curr_TCB.T).I;       --  Source address
-          H3 := H1 + IR.Y;              --  IR.Y = block length
-          while H1 < H3 loop
-            S (H1) := S (H2);
-            H1     := H1 + 1;
-            H2     := H2 + 1;
-          end loop;
-          Pop (2);
-
-        when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
-          Curr_TCB.T := Curr_TCB.T + 1;
-          if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
-          else
-            S (Curr_TCB.T).I := IR.Y;
-          end if;
-
-        when k_Load_Float_Literal =>
-          Curr_TCB.T := Curr_TCB.T + 1;
-          if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
-          else
-            S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
-          end if;
-
-        when k_String_Literal_Assignment =>  --  Hathorn
-          H1 := S (Curr_TCB.T - 2).I;  --  address of array
-          H2 := S (Curr_TCB.T).I;      --  index to string table
-          H3 := IR.Y;                  --  size of array
-          H4 := S (Curr_TCB.T - 1).I;  --  length of string
-          if H3 < H4 then
-            H5 := H1 + H3;    --  H5 is H1 + min of H3, H4
-          else
-            H5 := H1 + H4;
-          end if;
-          while H1 < H5 loop
-            --  Copy H5-H1 characters to the stack
-            S (H1).I := Character'Pos (CD.Strings_Constants_Table (H2));
-            H1       := H1 + 1;
-            H2       := H2 + 1;
-          end loop;
-          H5 := S (Curr_TCB.T - 2).I + H3;              --  H5 = H1 + H3
-          while H1 < H5 loop
-            --  fill with blanks if req'd
-            S (H1).I := Character'Pos (' ');
-            H1       := H1 + 1;
-          end loop;
-          Pop (3);
-
-        when k_Integer_to_Float =>
-          H1       := Curr_TCB.T - IR.Y;
-          S (H1).R := HAC.Data.HAC_Float (S (H1).I);
-
-        when k_Read =>
-          if FAT.CURR = 0 then
-            if End_Of_File_Console then
-              PS := REDCHK;
-            else
-              case IR.Y is
-                when 1 =>
-                  Get_Console (S (S (Curr_TCB.T).I).I);
-                when 2 =>
-                  Get_Console (S (S (Curr_TCB.T).I).R);
-                when 3 =>
-                  Get_Console (CH);
-                  S (S (Curr_TCB.T).I).I := Character'Pos (CH);
-                when 4 =>
-                  Get_Console (CH);
-                  S (S (Curr_TCB.T).I).I := Character'Pos (CH);
-                when others =>
-                  null;  -- [P2Ada]: no otherwise / else in Pascal
-              end case;
-            end if;
-            Pop;
-          else
-            if Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
-              PS := REDCHK;
-            else
-              case IR.Y is
-                when 1 =>
-                  Ada.Integer_Text_IO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).I);
-                when 2 =>
-                  RIO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).R);
-                when 3 =>
-                  Ada.Text_IO.Get (FAT.FIL (FAT.CURR), CH);
-                  S (S (Curr_TCB.T).I).I := Character'Pos (CH);
-                when 4 =>
-                  Ada.Text_IO.Get (FAT.FIL (FAT.CURR), CH);
-                  S (S (Curr_TCB.T).I).I := Character'Pos (CH);
-                when others =>
-                  null;  -- [P2Ada]: no otherwise / else in Pascal
-              end case;
-            end if;
-          end if;
-          SWITCH := True;  --  give up control when doing I/O
-
-        when k_Write_String =>
-          Pop (2);
-          H1 := S (Curr_TCB.T + 1).I;  --  Length of string
-          H2 := S (Curr_TCB.T + 2).I;  --  Index to string table
-          if FAT.CURR = 0 then
-            Put_Console (CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
-          else
-            Ada.Text_IO.Put (FAT.FIL (FAT.CURR), CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
-          end if;
-          SWITCH := True;        --  give up control when doing I/O
-
-        when k_Write_1 =>
-          Do_Write_Unformatted;
-
-        when k_Write_2 =>
-          if FAT.CURR = 0 then
-            case IR.Y is
-              when 1 => --  Burd
-                Put_Console (S (Curr_TCB.T - 1).I, S (Curr_TCB.T).I);
-              when 2 =>
-                Put_Console (S (Curr_TCB.T - 1).R, S (Curr_TCB.T).I);
-              when 3 =>
-                Put_Console (Boolean'Val(S (Curr_TCB.T - 1).I), S (Curr_TCB.T).I);
-              when 4 =>
-                Put_Console (Character'Val(S (Curr_TCB.T - 1).I));
-              when others =>
-                null;  -- [P2Ada]: no otherwise / else in Pascal
-            end case;
-          else
-            case IR.Y is
-              when 1 =>         --  Schoening
-                Ada.Integer_Text_IO.Put
-                 (FAT.FIL (FAT.CURR),
-                  S (Curr_TCB.T - 1).I,
-                  S (Curr_TCB.T).I);
-              when 2 =>
-                RIO.Put
-                 (FAT.FIL (FAT.CURR),
-                  S (Curr_TCB.T - 1).R,
-                  S (Curr_TCB.T).I);
-              when 3 =>
-                Boolean_Text_IO.Put
-                 (FAT.FIL (FAT.CURR),
-                  Boolean'Val(S (Curr_TCB.T - 1).I),
-                  S (Curr_TCB.T).I);
-              when 4 =>
-                Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T - 1).I));
-              when others =>
-                null;  -- [P2Ada]: no otherwise / else in Pascal
-            end case;
-
-          end if;
-          Pop (2);
-          SWITCH := True;  --  give up control when doing I/O
-
-        when k_Exit_Call =>  --  EXIT entry call or procedure call
-          --  Cramer
-          Curr_TCB.T := Curr_TCB.B - 1;
-          if IR.Y = HAC.Data.CallSTDP then
-            Curr_TCB.PC := S (Curr_TCB.B + 1).I;  --  Standard proc call return
-          end if;
-          if Curr_TCB.PC /= 0 then
-            Curr_TCB.B := S (Curr_TCB.B + 3).I;
-            if IR.Y = HAC.Data.CallTMDE or IR.Y = HAC.Data.CallCNDE then
-              if IR.Y = HAC.Data.CallTMDE and Curr_TCB.R1.I = 0 then
-                Curr_TCB.T := Curr_TCB.T + 1;         --  A JMPC
-                                                      --  instruction
-                                                      --  always follows
-              end if;
-              if Curr_TCB.T > Curr_TCB.STACKSIZE then --  timed and
-                                                            --conditional
-                                                            --entry call
-                PS := STKCHK;  --  Stack overflow           --  returns (32).  Push entry call
-              else
-                S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success
-                                                            --indicator for
-                                                            --JMPC.
-              end if;
-            end if;
-          else
-            TActive     := TActive - 1;
-            Curr_TCB.TS := Completed;
-            SWITCH      := True;
-          end if;
-
-        when k_Exit_Function =>
-          Curr_TCB.T  := Curr_TCB.B;
-          Curr_TCB.PC := S (Curr_TCB.B + 1).I;
-          Curr_TCB.B  := S (Curr_TCB.B + 3).I;
-          if IR.Y < 0 then
-            PS := ProgErr;  --  Program_Error (!! check: obviously, case of function's end reached)
-          end if;
-
-        when k_Case_34 =>
-          S (Curr_TCB.T) := S (S (Curr_TCB.T).I);  --  "stack_top := (stack_top.I).all"
-
-        when k_NOT_Boolean =>
-          S (Curr_TCB.T).I := Boolean'Pos (not Boolean'Val (S (Curr_TCB.T).I));
-
-        when k_Unary_MINUS_Integer =>
-          S (Curr_TCB.T).I := -S (Curr_TCB.T).I;
-
-        when k_Unary_MINUS_Float =>
-          S (Curr_TCB.T).R := -S (Curr_TCB.T).R;
-
-        when k_Write_Float =>  --  Put Float with 3 parameters
-          if FAT.CURR = 0 then
-            Put_Console
-             (S (Curr_TCB.T - 2).R,
-              S (Curr_TCB.T - 1).I,
-              S (Curr_TCB.T).I,
-              0);
-          else
-            RIO.Put
-             (FAT.FIL (FAT.CURR),
-              S (Curr_TCB.T - 2).R,
-              S (Curr_TCB.T - 1).I,
-              S (Curr_TCB.T).I,
-              0);
-          end if;
-          Pop (3);
-          SWITCH        := True;  --  give up control when doing I/O
-
-        when k_Store =>
-          S (S (Curr_TCB.T - 1).I) := S (Curr_TCB.T);
-          Curr_TCB.T               := Curr_TCB.T - 2;
-
-        when Binary_Operator_Opcode =>
-          Pop;
-          --  Now, we do [T] <- [T] operator [T + 1]
-          declare
-            X : GRegister renames S (Curr_TCB.T);
-            Y : GRegister renames S (Curr_TCB.T + 1);
-          begin
-            case Binary_Operator_Opcode (IR.F) is
-              when k_EQL_Float => X.I := Boolean'Pos (X.R = Y.R);
-              when k_NEQ_Float => X.I := Boolean'Pos (X.R /= Y.R);
-              when k_LSS_Float => X.I := Boolean'Pos (X.R < Y.R);
-              when k_LEQ_Float => X.I := Boolean'Pos (X.R <= Y.R);
-              when k_GTR_Float => X.I := Boolean'Pos (X.R > Y.R);
-              when k_GEQ_Float => X.I := Boolean'Pos (X.R >= Y.R);
-              --
-              when k_EQL_Integer => X.I := Boolean'Pos (X.I = Y.I);
-              when k_NEQ_Integer => X.I := Boolean'Pos (X.I /= Y.I);
-              when k_LSS_Integer => X.I := Boolean'Pos (X.I < Y.I);
-              when k_LEQ_Integer => X.I := Boolean'Pos (X.I <= Y.I);
-              when k_GTR_Integer => X.I := Boolean'Pos (X.I > Y.I);
-              when k_GEQ_Integer => X.I := Boolean'Pos (X.I >= Y.I);
-              --
-              when k_AND_Boolean => X.I := Boolean'Pos (Boolean'Val (X.I) and Boolean'Val (Y.I));
-              when k_OR_Boolean  => X.I := Boolean'Pos (Boolean'Val (X.I) or  Boolean'Val (Y.I));
-              when k_XOR_Boolean => X.I := Boolean'Pos (Boolean'Val (X.I) xor Boolean'Val (Y.I));
-              --
-              when k_ADD_Integer      => X.I := X.I + Y.I;
-              when k_SUBTRACT_Integer => X.I := X.I - Y.I;
-              when k_MULT_Integer     => X.I := X.I * Y.I;
-              when k_DIV_Integer      => if Y.I = 0 then PS := DIVCHK; else X.I := X.I / Y.I; end if;
-              when k_MOD_Integer      => if Y.I = 0 then PS := DIVCHK; else X.I := X.I mod Y.I; end if;
-              when k_Power_Integer    => X.I := X.I ** Y.I;
-              --
-              when k_ADD_Float           => X.R := X.R + Y.R;
-              when k_SUBTRACT_Float      => X.R := X.R - Y.R;
-              when k_MULT_Float          => X.R := X.R * Y.R;
-              when k_DIV_Float           => X.R := X.R / Y.R;
-              when k_Power_Float         => X.R := X.R ** Y.R;
-              when k_Power_Float_Integer => X.R := X.R ** Y.I;
-            end case;
-          end;
-
-        when k_Get_Newline =>
-          if FAT.CURR = 0 then       --  Schoening
-            if End_Of_File_Console then
-              PS := REDCHK;
-            else
-              Skip_Line_Console;
-            end if;
-          elsif Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
-            PS := REDCHK;
-          else
-            Ada.Text_IO.Skip_Line (FAT.FIL (FAT.CURR));
-          end if;
-          SWITCH := True;  --  give up control when doing I/O
-
-        when k_Put_Newline =>
-          if FAT.CURR = 0 then      --  Schoening
-            New_Line_Console;
-          else
-            Ada.Text_IO.New_Line (FAT.FIL (FAT.CURR));
-          end if;
-          SWITCH := True;  --  give up control when doing I/O
-
-        when k_Set_current_file_pointer =>
-          FAT.CURR := IR.Y;
-
-        when k_File_I_O =>
-          --  File I/O procedures - Schoening
-          case IR.Y is
-            when 7 =>
-              if Ada.Text_IO.Is_Open (FAT.FIL (IR.X)) then
-                Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
-              end if;
-              H1 := 0; -- was IOresult ;   --  clears any I/O error
-              Ada.Text_IO.Open (
-                FAT.FIL (IR.X),
-                Ada.Text_IO.In_File,
-                HAC.Data.To_String (FAT.NAM (IR.X)) & ".DAT"
-              );
-
-            when 8 =>
-              if Ada.Text_IO.Is_Open (FAT.FIL (IR.X)) then
-                Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
-              end if;
-              H1 := 0; -- was IOresult ;   --  clears any I/O error
-              Ada.Text_IO.Create (FAT.FIL (IR.X),
-                Ada.Text_IO.Out_File,
-                HAC.Data.To_String (FAT.NAM (IR.X)) & ".DAT"
-              );
-
-            when 9 =>
-              Ada.Text_IO.Close (FAT.FIL (IR.X));    --  close file
-
-            when others =>
-              null;  -- [P2Ada]: no otherwise / else in Pascal
-          end case;
-          --  case IR.Y
-          SWITCH := True;  --  give up control when doing I/O
-
-        when k_Halt_Interpreter =>
-          if TActive = 0 then
-            PS := FIN;
-          else
-            TCB (0).TS     := Completed;
-            SWITCH         := True;
-            Curr_TCB.PC := Curr_TCB.PC - 1;
-          end if;
-
-        when k_Delay =>  --  DLY - delay for a specified number of seconds
-
-          if S (Curr_TCB.T).R > 0.0 then
-            --  if positive delay time
-
-            Curr_TCB.TS := Delayed;           --  set task state to delayed
-
-            SYSCLOCK := GetClock;    --  update System Clock
-
-            Curr_TCB.WAKETIME := SYSCLOCK +
-                                    Duration (S (Curr_TCB.T).R * 1000.0);
-            --  set wakeup time
-
-            --  internal time units is milliseconds so X 1000.0
-
-            SWITCH := True;          --  give up control
-
-          end if;
-          Pop;
-        --  Delay
-
-        when k_Cursor_At =>
-          --  Cramer
-          H2         := S (Curr_TCB.T - 1).I;  --  row
-          H1         := S (Curr_TCB.T).I;      --  column
-          Pop (2);
-          -- GotoXY (H1, H2);        --  issue TPC call
-
-        when k_Set_Quantum_Task =>
-          --  Cramer
-          if S (Curr_TCB.T).R <= 0.0 then
-            S (Curr_TCB.T).R := HAC.Data.HAC_Float (TSlice) * 0.001;
-          end if;
-          TCB (CurTask).QUANTUM := Duration (S (Curr_TCB.T).R);
-          Pop;
-
-        when k_Set_Task_Priority =>
-          --  Cramer
-          if S (Curr_TCB.T).I > HAC.Data.PriMax then
-            S (Curr_TCB.T).I := HAC.Data.PriMax;
-          end if;
-          if S (Curr_TCB.T).I < 0 then
-            S (Curr_TCB.T).I := 0;
-          end if;
-          TCB (CurTask).Pcontrol.UPRI := S (Curr_TCB.T).I;
-          Pop;
-
-        when k_Set_Task_Priority_Inheritance =>
-          --  Cramer
-          Curr_TCB.Pcontrol.INHERIT := S (Curr_TCB.T).I /= 0;
-          --  Set priority inherit indicator
-          Pop;
-
-        when k_Selective_Wait =>
-          --  Selective Wait Macro Instruction
-
-          case IR.X is
-            when 1 => --  Start Selective Wait seq.
-              TCB (CurTask).R1.I := 0; --  next instruction if delay expires
-              TCB (CurTask).R2.R := -1.0; --  delay time
-
-            when 2 => --  Retain entry ID
-              TCB (CurTask).R3.I := IR.Y;
-
-            when 3 => --  Accept if its still on queue
-              H1 := TCB (CurTask).R3.I;
-              H2 := FirstCaller (H1);    --  first waiting task
-              H3 := CD.IdTab (H1).LEV;        --  level of accepting entry
-              if H2 >= 0 then
-                Curr_TCB.DISPLAY (H3 + 1) := TCB (H2).B; --  address
-                                                            --callers parms
-                Curr_TCB.InRendzv := H2;             --  indicate task
-                                                        --InRendz
-                if TCB (H2).TS = TimedRendz then --  turn off entry timeout
-                  TCB (H2).TS := WaitRendzv;    --  if it was on
-                end if;
-              else
-                Curr_TCB.PC := IR.Y; --  Jump to patched in address
-              end if;
-              SWITCH := True;
-
-            when 4 => --  Update minimum delay time
-              if S (Curr_TCB.T).R > 0.0 then
-                if TCB (CurTask).R2.R = -1.0 then
-                  TCB (CurTask).R2.R := S (Curr_TCB.T).R;
-                  TCB (CurTask).R1.I := IR.Y;   --  ins after JMP
-                else
-                  if S (Curr_TCB.T).R < TCB (CurTask).R2.R then
-                    TCB (CurTask).R2.R := S (Curr_TCB.T).R;
-                    TCB (CurTask).R1.I := IR.Y;   --  ins after JMP
-                  end if;
-                end if;
-              end if;
-              Pop;
-
-            when 5 | 6 => --  end of SELECT
-
-              if TCB (CurTask).R2.R > 0.0 then
-                --  Timed Wait
-                Curr_TCB.TS       := TimedWait;
-                SYSCLOCK             := GetClock;
-                Curr_TCB.WAKETIME := SYSCLOCK +
-                                        Duration (TCB (CurTask).R2.R *
-                                                  1000.0);
-                Curr_TCB.PC       := IR.Y; --  Do SELECT again when
-                                              --awakened by caller
-
-                SWITCH := True;                     --  give up control
-
-              end if;
-              --  AVL -- TERMINATE
-              --  IS THE PARENT TASK COMPLETED?
-              if TCB (0).TS = Completed and CurTask /= 0 and IR.X /= 6 then
-                NCALLS := 0; --  LET'S SEE IF THERE ARE CALLERS
-                for ITERM in 1 .. CD.Entries_Count loop
-                  if EList (ITERM).First /= null then
-                    NCALLS := NCALLS + 1;
-                  end if;
-                end loop;
-                --  YES, NO CALLERS
-                if NCALLS = 0 then  --  YES, NO CALLERS
-                  --  ARE THE SIBLING TASKS EITHER COMPLETED OR
-                  --  IN THE SAME STATE AS CURTASK?
-                  NCOMPL := 0;
-                  for ITERM in 1 .. CD.Tasks_Definitions_Count loop
-                    if TCB (ITERM).TS = Completed then
-                      NCOMPL := NCOMPL + 1;
-                    else
-                      if TCB (ITERM).TS = TCB (CurTask).TS then
-                        NCOMPL := NCOMPL + 1;
-                      else
-                        if TCB (ITERM).TS = Ready and
-                           TCB (CurTask).TS = Running
-                        then
-                          NCOMPL := NCOMPL + 1;
-                        end if;
-                      end if;
-                    end if;
-                  end loop;
-                  if CD.Tasks_Definitions_Count = NCOMPL then
-                    --  YES, THEN ALL TASKS ARE NOW TERMINATING
-                    for ITERM in 1 .. CD.Tasks_Definitions_Count loop
-                      TCB (ITERM).TS := Terminated;
-                    end loop;
-                    PS := FIN;
-                  end if;
-                end if;
-              end if;
-            --               if ir.x = 6 then
-            --               begin
-            --                 term := false ;    {Task doesn't have a terminate}
-            --               end ;                {alternative}
-            --
-
-            when others =>
-              null;  -- [P2Ada]: no otherwise / else in Pascal
-          end case;
-          --  Selective Wait
-
-        end case;
-        --  main case IR.F
-      end;
       exit when InterDef.PS /= InterDef.RUN;
     end loop Running_State;
     --

@@ -67,7 +67,7 @@ package HAC.Parser.Helpers is
 
   procedure Test_END_Symbol (CD : in out Compiler_Data);
 
-  procedure Check_Boolean (CD : in out Compiler_Data; T: Typs);
+  procedure Check_Boolean (CD : in out Compiler_Data; T: Typen);
 
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data);
 
@@ -79,6 +79,8 @@ package HAC.Parser.Helpers is
   --  One of the most useful feature of Ada is the absence of type coercion.
   --
   procedure Forbid_Type_Coercion (CD : in out Compiler_Data; details: String);
+
+  procedure Parameter_Type_Mismatch (CD : in out Compiler_Data; X, Y : Exact_Typ);
 
   No_Id : constant := 0;
 
@@ -269,9 +271,11 @@ package HAC.Parser.Helpers is
   --  Types sets  --
   ------------------
 
-  Numeric_Typ_Set : constant Typ_Set := (Numeric_Typ => True, others => False);
-  Atomic_Typ      : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set;
-  Ints_Typ        : constant Typ_Set := (Ints => True, others => False);
+  Numeric_Typ_Set  : constant Typ_Set := (Numeric_Typ => True, others => False);
+  Chars_Set        : constant Typ_Set := (Chars       => True, others => False);
+  Ints_Set         : constant Typ_Set := (Ints        => True, others => False);
+  VStrings_Set     : constant Typ_Set := (VStrings    => True, others => False);
+  PCode_Atomic_Typ : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set or VStrings_Set;
 
   -------------
   --  Misc.  --

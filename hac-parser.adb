@@ -194,13 +194,13 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     --------------------------------------------------------------TYP-
 
-    procedure TYP (FSys : Symset; TP : out Typs; RF, Sz : out Integer) is
-      ELTP                 : Typs;
+    procedure TYP (FSys : Symset; TP : out Typen; RF, Sz : out Integer) is
+      ELTP                 : Typen;
       ELRF                 : Integer;
       ELSZ, Offset, T0, T1 : Integer;
 
       procedure Array_Typ (ARef, Arsz : in out Integer; String_Constrained_Subtype : Boolean) is
-        ELTP                      : Typs;
+        ELTP                      : Typen;
         Lower_Bound, Higher_Bound : Constant_Rec;
         ELRF, ELSZ                : Integer;
       begin
@@ -375,7 +375,7 @@ package body HAC.Parser is
     --------------------------------------------Formal_Parameter_List-
     procedure Formal_Parameter_List is
       RF, Sz, X, T0 : Integer;
-      TP            : Typs := NOTYP;
+      TP            : Typen := NOTYP;
       ValParam      : Boolean;
     begin
       InSymbol;
@@ -456,7 +456,7 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------Type_Declaration-
     procedure Type_Declaration is
-      TP         : Typs;
+      TP         : Typen;
       RF, Sz, T1 : Integer;
     begin
       InSymbol;
@@ -486,7 +486,7 @@ package body HAC.Parser is
       --  This procedure processes both Variable and Constant declarations.
       procedure Single_Var_Declaration is
         T0, T1, RF, Sz, T0i, LC0, LC1 : Integer;
-        TP                            : Typs;
+        TP                            : Typen;
         is_constant, is_typed,
         is_untyped_constant           : Boolean;
         C                             : Constant_Rec;

@@ -26,6 +26,10 @@ package body HAC.Parser.Calls is
     --****************************************************************
     X            : Exact_Typ;
     LastP, CP, K : Integer;
+    procedure Issue_Type_Mismatch_Error is
+    begin
+      Parameter_Type_Mismatch (CD, X, Y => (CD.IdTab (CP).TYP, CD.IdTab (CP).Ref));
+    end;
   begin
     Emit1 (CD, k_Mark_Stack, I);
     LastP := CD.Blocks_Table (CD.IdTab (I).Ref).LastPar;
@@ -41,7 +45,7 @@ package body HAC.Parser.Calls is
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
             if X.TYP = CD.IdTab (CP).TYP then
               if X.Ref /= CD.IdTab (CP).Ref then
-                Error (CD, err_parameter_types_do_not_match);
+                Issue_Type_Mismatch_Error;
               elsif X.TYP = Arrays then
                 Emit1 (CD, k_Load_Block, CD.Arrays_Table (X.Ref).Size);
               elsif X.TYP = Records then
@@ -51,7 +55,7 @@ package body HAC.Parser.Calls is
               Forbid_Type_Coercion (CD, "value is integer, parameter is floating-point");
               Emit1 (CD, k_Integer_to_Float, 0);
             elsif X.TYP /= NOTYP then
-              Error (CD, err_parameter_types_do_not_match);
+              Issue_Type_Mismatch_Error;
             end if;
           else              -- Variable (Name) parameter (IN OUT, OUT)
             if CD.Sy /= IDent then
@@ -82,7 +86,7 @@ package body HAC.Parser.Calls is
                 if (X.TYP /= CD.IdTab (CP).TYP) or
                    (X.Ref /= CD.IdTab (CP).Ref)
                 then
-                  Error (CD, err_parameter_types_do_not_match);
+                  Issue_Type_Mismatch_Error;
                 end if;
               end if;
             end if;

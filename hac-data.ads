@@ -192,12 +192,21 @@ package HAC.Data is
   function "-" (a : Symset; b : KeyWSymbol) return Symset;
   Empty_Symset : constant Symset := (others => False);
 
+  -------------------------------
+  --  Variable-length strings  --
+  -------------------------------
+
+  package VStrings_Pkg renames Ada.Strings.Unbounded;  --  Could use XStrings instead.
+  subtype VString is VStrings_Pkg.Unbounded_String;
+  function To_VString (S : String) return VString renames VStrings_Pkg.To_Unbounded_String;
+  Null_VString : VString renames VStrings_Pkg.Null_Unbounded_String;
+
   -----------------
   -- Identifiers --
   -----------------
 
   --  Alfa is a space-padded string
-     --  !! Consider replacing by Unbounded_String or XString
+     --  !! Consider replacing by VString.
      --     First step for a smooth transition:
      --       type Alfa is array (1 .. Alng) of Character;
      --     detects all type incompatibilities except: slice = literal expressions.
@@ -212,7 +221,7 @@ package HAC.Data is
   --
   --  The order of these is significant.
   --
-  type Typs is (
+  type Typen is (
     ----------------------
     --  Built-in types  --
     ----------------------
@@ -234,9 +243,9 @@ package HAC.Data is
     String_Literals
   );
 
-  type Typ_Set is array (Typs) of Boolean;
+  type Typ_Set is array (Typen) of Boolean;
 
-  subtype Standard_Typ is Typs range NOTYP .. VStrings;
+  subtype Standard_Typ is Typen range NOTYP .. VStrings;
 
   Standard_or_Enum_Typ : constant Typ_Set :=
     (Standard_Typ | Enums => True, others => False);
@@ -244,7 +253,7 @@ package HAC.Data is
   Discrete_Typ : constant Typ_Set :=  --  RM 3.2 (12)
     (Ints | Bools | Chars | Enums => True, others  => False);
 
-  subtype Numeric_Typ is Typs range Ints .. Floats;  --  RM 3.2 (1)
+  subtype Numeric_Typ is Typen range Ints .. Floats;  --  RM 3.2 (1)
 
   subtype Index is Integer range -XMax .. +XMax;
 
@@ -252,8 +261,6 @@ package HAC.Data is
   --  and is called "Real" in HAC's HAC_Pack package.
   --
   type HAC_Float is digits 15;
-  subtype HAC_VString is Ada.Strings.Unbounded.Unbounded_String;
-
   HAC_Float_Name   : constant String := "REAL";
   HAC_Integer_Name : constant String := "INTEGER";
 

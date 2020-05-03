@@ -10,15 +10,13 @@
 
 with HAC.Compiler, HAC.Data;
 
-with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
-
 package HAC.UErrors is
 
   use HAC.Data;
 
   has_new_line : constant array (Repair_kind) of Boolean := (insert_line => True, others => False);
 
-  nothing_to_repair : constant Repair_kit := (none, Null_Unbounded_String);
+  nothing_to_repair : constant Repair_kit := (none, Null_VString);
 
   procedure Error (
     CD            : in out HAC.Compiler.Compiler_Data;

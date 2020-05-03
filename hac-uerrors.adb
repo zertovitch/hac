@@ -93,7 +93,7 @@ package body HAC.UErrors is
       when err_incompatible_types_for_comparison =>
         return "incompatible types for comparison";
       when err_parameter_types_do_not_match =>
-        return "parameter types do not match";
+        return "parameter types do not match: " & hint;
       when err_variable_missing =>
         return "missing a variable";
       when err_character_zero_chars =>
@@ -236,7 +236,7 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  function "+" (S : String) return Unbounded_String renames To_Unbounded_String;
+  function "+" (S : String) return VString renames To_VString;
 
   repair_table : constant array (Compile_Error) of Repair_kit :=
     (
@@ -298,7 +298,8 @@ package body HAC.UErrors is
     end Show_to_comp_dump;
     --
     updated_repair_kit : Repair_kit := repair_table (code);
-    ub_hint : constant Unbounded_String := To_Unbounded_String (hint);
+    ub_hint : constant VString := To_VString (hint);
+    use VStrings_Pkg;
   begin
     Show_to_comp_dump (CD.Line_Count, CD.syStart, CD.syEnd, -1, hint);
     CD.Errs (code) := True;

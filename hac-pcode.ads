@@ -70,6 +70,13 @@ package HAC.PCode is
     k_GTR_Integer,
     k_GEQ_Integer,
     --
+    k_EQL_VString,
+    k_NEQ_VString,
+    k_LSS_VString,
+    k_LEQ_VString,
+    k_GTR_VString,
+    k_GEQ_VString,
+    --
     k_EQL_Float,
     k_NEQ_Float,
     k_LSS_Float,
@@ -211,14 +218,17 @@ package HAC.PCode is
   SF_EOF                 : constant :=  17;
   SF_EOLN                : constant :=  18;
   SF_Random_Int          : constant :=  19;
-  --  VString operations.
+  --  VString operators.
   SF_Literal_to_VString  : constant :=  20;
   SF_Two_VStrings_Concat : constant :=  21;
   SF_VString_Char_Concat : constant :=  22;
   SF_Char_VString_Concat : constant :=  23;
   SF_LStr_VString_Concat : constant :=  24;
+  SF_Element             : constant :=  25;
+  SF_Length              : constant :=  26;
+  SF_Slice               : constant :=  27;
   --
-  SF_Argument            : constant :=  25;
+  SF_Argument            : constant :=  28;
   --
   --  Niladic functions.
   --

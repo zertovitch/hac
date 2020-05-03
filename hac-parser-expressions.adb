@@ -455,7 +455,7 @@ package body HAC.Parser.Expressions is
       elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
         Error (CD, err_incompatible_types_for_comparison);
       elsif X.TYP = Y.TYP then
-        if Atomic_Typ (X.TYP) then
+        if PCode_Atomic_Typ (X.TYP) then
           Emit_Comparison_Instruction (CD, OP, X.TYP);
         else
           Error (CD, err_operator_not_defined_for_types);

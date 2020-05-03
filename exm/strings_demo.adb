@@ -25,10 +25,42 @@ procedure Strings_demo is
   --
   procedure Show (SV : in Str_Vector) is
   begin
-    for i in 1 .. n loop
-      Put_Line (SV (i));
+    for i in reverse 1 .. n loop
+      Put_Line (Slice (SV (i), 1, n));
     end loop;
   end Show;
+  --
+  procedure Slice_Show (v : VString) is
+    l : constant Integer := Length (v);
+    c : Character;
+    row : VString;
+  begin
+    for i in reverse 1 .. l loop
+      Put_Line ( Slice (V, 1, i) );
+    end loop;
+    --
+    for i in 1 .. l loop
+      for k in 1 .. i - 1 loop  --  !! We could have "*" A.4.5 (69, 70, 71)
+        Put (' ');
+      end loop;
+      Put_Line (Slice (V, i, l) );
+    end loop;
+    --
+    for i in 1 .. l loop
+      row := +"";
+      for j in 1 .. l loop
+        if i = j then
+          c := Element (V, i);
+        elsif abs (i-j) = 1 then
+          c := ' ';
+        else
+          c := '_';
+        end if;
+        row := row & c;
+      end loop;
+      Put_Line (row);
+    end loop;
+  end Slice_Show;
   --
   s3 : constant VString := +" world";
   ZZ : Bi_Vector;
@@ -42,7 +74,7 @@ begin
   s4 := "---> """ & s4 & '"';
   Put_Line (s4);
   Put_Line (">> " & s4 & ' ' & '!' & " <<");
-  s4 := +"abc" & "def";
+  s4 := +"abc" & 'd' & "ef";
   --
   for i in 1 .. n loop
     ZZ.A (i) := +"";
@@ -60,7 +92,13 @@ begin
   Show (ZZ.B);
   Reverso (ZZ.B);
   Show (ZZ.B);
-  --    if s4 = +"abcdef" then      --  Comparison VString to VString
-  --      null;
-  --    end if;
+  --
+  Slice_Show (+"What's happenning to this string?!");
+  --
+  if s4 /= +"abcdef" then  --  Comparison VString to VString
+    Put ("Ooops?");
+  end if;
+  if Length (s4) /= 6 then
+    Put ("Ooops?");
+  end if;
 end Strings_demo;

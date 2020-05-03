@@ -12,72 +12,115 @@ package body HAC.Parser.Standard_Subprograms is
     FSys        :        Symset;
     Ident_Index :        Integer;
     SF_Code     :        Integer;
-    X           :    out Exact_Typ
+    Return_Typ  :    out Exact_Typ
   )
   is
-    Expected_Argument_Typ : Typ_Set;  --  Expected type of the function's argument
-    N : Integer := SF_Code;
-    IFP : Integer;
+    Max_Args : constant := 3;
+    Expected : array (1 .. Max_Args) of Typ_Set;    --  Expected type of the function's arguments
+    Actual   : array (1 .. Max_Args) of Exact_Typ;  --  Actual type from argument expression
+    Args : Natural;
+    N    : Integer := SF_Code;
+    IFP  : Integer;
+    --
+    procedure Parse_Arguments is
+    begin
+      for a in 1 .. Args loop
+        Expression (CD, Level, FSys + RParent + Comma, Actual (a));
+        if Expected (a) (Actual (a).TYP) then
+          null;  --  All right so far: argument type is in the admitted set of types.
+        elsif Actual (a).TYP /= NOTYP then
+          Error (CD, err_argument_to_std_function_of_wrong_type);
+          exit;
+        end if;
+        if a < Args then
+          Need (CD, Comma, err_COMMA_missing);
+        end if;
+      end loop;
+    end Parse_Arguments;
+    --
   begin
-    case N is
+    Return_Typ := (CD.IdTab (Ident_Index).TYP, CD.IdTab (Ident_Index).Ref);
+    --
+    case SF_Code is
+      when SF_Niladic => Args := 0;
+      when SF_Element => Args := 2;
+      when SF_Slice   => Args := 3;
+      when others     => Args := 1;
+    end case;
+    --
+    case SF_Code is
+      when SF_Abs =>
+        Expected (1) := Numeric_Typ_Set;
+      when SF_T_Val =>  --  S'Val : RM 3.5.5 (5)
+        Expected (1) := Ints_Set;
+      when SF_T_Pos =>  --  S'Pos : RM 3.5.5 (2)
+        Expected (1) := Discrete_Typ;
+      when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
+        Expected (1) := Discrete_Typ;
+      when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
+           SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
+        =>
+        Expected (1) := Numeric_Typ_Set;
+      when SF_Random_Int | SF_Argument =>
+        Expected (1) := Ints_Set;
+      when SF_Element =>
+        Expected (1 .. 2) := (VStrings_Set, Ints_Set);
+      when SF_Length =>
+        Expected (1) := VStrings_Set;
+      when SF_Slice =>
+        Expected (1 .. 3):= (VStrings_Set, Ints_Set, Ints_Set);
+      when SF_Niladic =>
+        null;  --  Zero argument -> no argument type to check.
+      when others =>
+        raise Internal_error with "Unknown Standard_Function code" & Integer'Image (N);
+    end case;
+    --
+    --  Parameter parsing
+    --
+    case SF_Code is
       when SF_EOF .. SF_EOLN =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         if CD.Sy /= IDent then
           Error (CD, err_identifier_missing);
         elsif Equal (CD.Id, "INPUT") then  --  Standard_Input
-          Emit2 (CD, k_Standard_Functions, 0, N);
+          Emit2 (CD, k_Standard_Functions, 0, SF_Code);
         else
           IFP := Get_File_Pointer (CD, CD.Id);
           if IFP = No_File_Index then  --  NB: bug fix: was 0 instead of -1...
             Error (CD, err_undefined_identifier);
           else
-            Emit2 (CD, k_Standard_Functions, IFP, N);
+            Emit2 (CD, k_Standard_Functions, IFP, SF_Code);
           end if;
         end if;
         InSymbol (CD);
-        X.TYP := CD.IdTab (Ident_Index).TYP;
         Need (CD, RParent, err_closing_parenthesis_missing);
       when SF_Niladic =>
-        Emit1 (CD, k_Standard_Functions, N);
+        Emit1 (CD, k_Standard_Functions, SF_Code);
       when others =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expression (CD, Level, FSys + RParent, X);
-        case N is
+        Parse_Arguments;
+        --
+        case SF_Code is
           when SF_Abs =>  --  Abs (NB: in Ada it's an operator, not a function)
-            Expected_Argument_Typ := Numeric_Typ_Set;
-            CD.IdTab (Ident_Index).TYP := X.TYP;  --  !! Redefines the function's return type
-            if X.TYP = Floats then
+            Return_Typ := Actual (1);
+            if Actual (1).TYP = Floats then
               N := N + 1;
             end if;
-          when SF_T_Val =>  --  S'Val : RM 3.5.5 (5)
-            Expected_Argument_Typ := Ints_Typ;
-          when SF_T_Pos =>  --  S'Pos : RM 3.5.5 (2)
-            Expected_Argument_Typ := Discrete_Typ;
           when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
-            Expected_Argument_Typ := Discrete_Typ;
-            CD.IdTab (Ident_Index).TYP := X.TYP;  --  !! Redefines the function's return type
+            Return_Typ := Actual (1);
           when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
                SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
             =>
-            Expected_Argument_Typ := Numeric_Typ_Set;
-            if Ints_Typ (X.TYP) then
+            if Ints_Set (Actual (1).TYP) then
               Forbid_Type_Coercion (CD, "value is of integer type; floating-point is expected here");
               Emit1 (CD, k_Integer_to_Float, 0);
             end if;
-          when SF_Random_Int =>
-            Expected_Argument_Typ := Ints_Typ;
-          when SF_Argument =>
-            Expected_Argument_Typ := Ints_Typ;
           when others =>
-            raise Internal_error with "Unknown Standard_Function code" & Integer'Image (N);
+            null;
         end case;  --  N
         --
-        if Expected_Argument_Typ (X.TYP) then
-          Emit1 (CD, k_Standard_Functions, N);
-        elsif X.TYP /= NOTYP then
-          Error (CD, err_argument_to_std_function_of_wrong_type);
-        end if;
-        X.TYP := CD.IdTab (Ident_Index).TYP;
+        Emit1 (CD, k_Standard_Functions, N);
+        --
         Need (CD, RParent, err_closing_parenthesis_missing);
     end case;
   end Standard_Function;
@@ -143,7 +186,7 @@ package body HAC.Parser.Standard_Subprograms is
                      X.TYP = Chars or
                      X.TYP = NOTYP
                   then
-                    Emit1 (CD, k_Read, Typs'Pos (X.TYP));
+                    Emit1 (CD, k_Read, Typen'Pos (X.TYP));
                   else
                     Error (CD, err_illegal_parameters_to_Put);
                   end if;
@@ -208,12 +251,12 @@ package body HAC.Parser.Standard_Subprograms is
                 end if;
                 Emit (CD, k_Write_Float);
               else
-                Emit1 (CD, k_Write_2, Typs'Pos (X.TYP));
+                Emit1 (CD, k_Write_2, Typen'Pos (X.TYP));
               end if;
             elsif X.TYP = String_Literals then
               Emit (CD, k_Write_String);
             else
-              Emit1 (CD, k_Write_1, Typs'Pos (X.TYP));
+              Emit1 (CD, k_Write_1, Typen'Pos (X.TYP));
             end if;
             exit when CD.Sy /= Comma;
           end loop;

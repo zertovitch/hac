@@ -11,11 +11,9 @@
 
 with HAC.Scanner, HAC.UErrors;
 
-with Ada.Strings.Unbounded;
-
 package body HAC.Parser.Helpers is
 
-  use HAC.Scanner, HAC.UErrors, Ada.Strings.Unbounded;
+  use HAC.Scanner, HAC.UErrors;
 
   procedure Need (
     CD      : in out Compiler_Data;
@@ -85,10 +83,11 @@ package body HAC.Parser.Helpers is
     N             : Compile_Error;
     stop_on_error : Boolean:= False)
   is
+    use VStrings_Pkg;
   begin
     if not S1 (CD.Sy) then
       declare
-        hint  : Unbounded_String;
+        hint  : VString;
         first : Boolean := True;
       begin
         for s in S1'Range loop
@@ -139,7 +138,7 @@ package body HAC.Parser.Helpers is
     end if;
   end Test_END_Symbol;
 
-  procedure Check_Boolean (CD : in out Compiler_Data; T: Typs) is
+  procedure Check_Boolean (CD : in out Compiler_Data; T: Typen) is
   begin
     --  NB: T = NOTYP was admitted in SmallAda.
     if T /= Bools then
@@ -166,6 +165,20 @@ package body HAC.Parser.Helpers is
   begin
     Error (CD, err_int_to_float_coercion, details, stop_on_error => True);
   end Forbid_Type_Coercion;
+
+  procedure Parameter_Type_Mismatch (CD : in out Compiler_Data; X, Y : Exact_Typ) is
+  begin
+    if X.TYP /= Y.TYP then
+      Error (CD, err_parameter_types_do_not_match,
+        "found a " & Typen'Image(X.TYP) & ", expected a " & Typen'Image(Y.TYP)
+      );
+    else
+      Error (CD, err_parameter_types_do_not_match,
+        "not exactly the same " & Typen'Image(X.TYP)
+        --  !! TBD: find the eventual names using X.REf, Y.Ref
+      );
+    end if;
+  end;
 
   function Singleton (s: KeyWSymbol) return Symset is
     res : Symset := Empty_Symset;

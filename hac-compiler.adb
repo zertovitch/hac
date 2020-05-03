@@ -8,7 +8,7 @@ with Ada.Integer_Text_IO, Ada.Characters.Handling;
 
 package body HAC.Compiler is
 
-  use Ada.Strings.Unbounded;
+  use VStrings_Pkg;
 
   procedure Set_Source_Stream (
     CD        : in out Compiler_Data;
@@ -18,7 +18,7 @@ package body HAC.Compiler is
   is
   begin
     CD.compiler_stream := Source_Stream_Access (s);
-    CD.source_file_name := To_Unbounded_String (file_name);
+    CD.source_file_name := To_VString (file_name);
   end Set_Source_Stream;
 
   function Get_Current_Source_Name (CD: Compiler_Data) return String is
@@ -86,7 +86,7 @@ package body HAC.Compiler is
         Put (CD.comp_dump, ' ' & To_String (r.Name));
         Put (CD.comp_dump, r.Link, 10);
         Put (CD.comp_dump, aObject'Pos (r.Obj), 5);
-        Put (CD.comp_dump, Typs'Pos (r.TYP), 5);
+        Put (CD.comp_dump, Typen'Pos (r.TYP), 5);
         Put (CD.comp_dump, r.Ref, 5);
         Put (CD.comp_dump, Boolean'Pos (r.Normal), 5);
         Put (CD.comp_dump, r.LEV, 5);
@@ -148,8 +148,8 @@ package body HAC.Compiler is
           r : ATabEntry renames CD.Arrays_Table (I);
         begin
           Put (CD.comp_dump, I, 4);
-          Put (CD.comp_dump, Typs'Image (r.Index_TYP.TYP) & "   " &
-                             Typs'Image (r.Element_TYP.TYP));
+          Put (CD.comp_dump, Typen'Image (r.Index_TYP.TYP) & "   " &
+                             Typen'Image (r.Element_TYP.TYP));
           Put (CD.comp_dump, r.Element_TYP.Ref, 5);
           Put (CD.comp_dump, r.Low, 5);
           Put (CD.comp_dump, r.High, 5);
@@ -198,11 +198,11 @@ package body HAC.Compiler is
   procedure Emit_Comparison_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;
     Operator  :        HAC.Data.Comparison_Operator;
-    Base_Type :        HAC.Data.Typs
+    Base_Typ  :        HAC.Data.Typen
   )
   is
   begin
-    if Base_Type = Floats then
+    if Base_Typ = Floats then
       case Operator is
         when EQL => Emit (CD, k_EQL_Float);
         when NEQ => Emit (CD, k_NEQ_Float);
@@ -211,7 +211,7 @@ package body HAC.Compiler is
         when GTR => Emit (CD, k_GTR_Float);
         when GEQ => Emit (CD, k_GEQ_Float);
       end case;
-    elsif Discrete_Typ (Base_Type) then
+    elsif Discrete_Typ (Base_Typ) then
       case Operator is
         when EQL => Emit (CD, k_EQL_Integer);
         when NEQ => Emit (CD, k_NEQ_Integer);
@@ -220,18 +220,28 @@ package body HAC.Compiler is
         when GTR => Emit (CD, k_GTR_Integer);
         when GEQ => Emit (CD, k_GEQ_Integer);
       end case;
+    elsif Base_Typ = VStrings then
+      case Operator is
+        when EQL => Emit (CD, k_EQL_VString);
+        when NEQ => Emit (CD, k_NEQ_VString);
+        when LSS => Emit (CD, k_LSS_VString);
+        when LEQ => Emit (CD, k_LEQ_VString);
+        when GTR => Emit (CD, k_GTR_VString);
+        when GEQ => Emit (CD, k_GEQ_VString);
+      end case;
     else
-      raise Internal_error with "Comparison instructions only for atomic types";
+      raise Internal_error with
+        "Emit_Comparison_Instruction: comparison instruction for not supported type";
     end if;
   end Emit_Comparison_Instruction;
 
   procedure Emit_Unary_Minus (
     CD        : in out HAC.Compiler.Compiler_Data;
-    Base_Type :        HAC.Data.Numeric_Typ
+    Base_Typ  :        HAC.Data.Numeric_Typ
   )
   is
   begin
-    case Base_Type is
+    case Base_Typ is
       when Floats => Emit (CD, k_Unary_MINUS_Float);
       when Ints   => Emit (CD, k_Unary_MINUS_Integer);
     end case;
@@ -240,11 +250,11 @@ package body HAC.Compiler is
   procedure Emit_Arithmetic_Binary_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;
     Operator  :        HAC.Data.Arithmetic_Binary_Operator;
-    Base_Type :        HAC.Data.Numeric_Typ
+    Base_Typ  :        HAC.Data.Numeric_Typ
   )
   is
   begin
-    case Base_Type is
+    case Base_Typ is
       when Floats =>
         case Operator is
           when Plus    => Emit (CD, k_ADD_Float);
@@ -278,7 +288,7 @@ package body HAC.Compiler is
       procedure Enter
        (X0 : String;
         X1 : aObject;
-        X2 : Typs;
+        X2 : Typen;
         X3 : Integer)
       is
         X0A  : constant Alfa := To_Alfa (X0);
@@ -338,6 +348,9 @@ package body HAC.Compiler is
       Enter ("RAND",           Funktion, Ints,   SF_Random_Int);    --{ Schoening }
       Enter ("RND",            Funktion, Floats, SF_Random_Float);
       Enter ("CLOCK",          Funktion, Floats, SF_Clock);         --{ Cramer }
+      Enter ("Element",        Funktion, Chars,    SF_Element);
+      Enter ("Length",         Funktion, Ints,     SF_Length);
+      Enter ("Slice",          Funktion, VStrings, SF_Slice);
       Enter ("Argument_Count", Funktion, Ints,     SF_Argument_Count);
       Enter ("Argument",       Funktion, VStrings, SF_Argument);
       --{ Niladic functions such as CLOCK will have   }

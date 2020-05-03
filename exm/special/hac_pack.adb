@@ -318,7 +318,7 @@ package body HAC_Pack is
 
   function Argument (Number : Positive) return VString is
   begin
-    return VStrings_Pkg.To_Unbounded_String (Ada.Command_Line.Argument (Number));
+    return To_VString (Ada.Command_Line.Argument (Number));
   end Argument;
 
 begin

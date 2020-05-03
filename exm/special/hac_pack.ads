@@ -16,6 +16,13 @@ package HAC_Pack is
 
   package VStrings_Pkg renames Ada.Strings.Unbounded;
   subtype VString is VStrings_Pkg.Unbounded_String;
+  function To_VString (S : String) return VString renames VStrings_Pkg.To_Unbounded_String;
+  function "+" (S : String) return VString renames To_VString;
+  function "&" (V1, V2 : VString) return VString renames VStrings_Pkg."&";
+  function "&" (V : VString; S : String) return VString renames VStrings_Pkg."&";
+  function "&" (S : String; V : VString) return VString renames VStrings_Pkg."&";
+  function "&" (V : VString; C : Character) return VString renames VStrings_Pkg."&";
+  function "&" (C : Character; V : VString) return VString renames VStrings_Pkg."&";
 
   type Semaphore is new Integer; -- private;
 
@@ -106,13 +113,6 @@ package HAC_Pack is
   -- Semaphore Procedures
   procedure  Wait      ( S : Semaphore    );
   procedure  Signal    ( S : Semaphore    );
-
-  function "+" (S : String) return VString renames VStrings_Pkg.To_Unbounded_String;
-  function "&" (V1, V2 : VString) return VString renames VStrings_Pkg."&";
-  function "&" (V : VString; S : String) return VString renames VStrings_Pkg."&";
-  function "&" (S : String; V : VString) return VString renames VStrings_Pkg."&";
-  function "&" (V : VString; C : Character) return VString renames VStrings_Pkg."&";
-  function "&" (C : Character; V : VString) return VString renames VStrings_Pkg."&";
 
   function Argument_Count return Natural renames Ada.Command_Line.Argument_Count;
   function Argument (Number : Positive) return VString;

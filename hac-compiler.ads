@@ -12,7 +12,6 @@
 with HAC.Data, HAC.PCode;
 
 with Ada.Streams;
-with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 package HAC.Compiler is
@@ -20,7 +19,7 @@ package HAC.Compiler is
   use HAC.Data;
 
   type Exact_Typ is record  --  NB: was called "Item" in SmallAda.
-    TYP : Typs;
+    TYP : Typen;
     Ref : Index;
     --  If TYP is not a standard type, then (TYP, Ref) does identify the type.
     --  E.g. it can be (Enums, [index of the enumerated type definition]).
@@ -99,7 +98,7 @@ package HAC.Compiler is
                                     --    Prozedure, Funktion, aTask, aEntry
     Read_only      : Boolean;       --  If Obj = Variable and Read_only = True,
                                     --    it's a typed constant.
-    TYP            : Typs;         --  One of: NoTyp, Ints, Floats, Bools,
+    TYP            : Typen;         --  One of: NoTyp, Ints, Floats, Bools,
                                     --    xChars, Arrays, Records, Enums, Strings
     Ref            : Index;         --  Index into the Block table
     Normal         : Boolean;       --  value param?
@@ -157,7 +156,7 @@ package HAC.Compiler is
   type Compiler_Data is record
     --  Source code information and scanner data
     compiler_stream  : Source_Stream_Access;
-    source_file_name : Ada.Strings.Unbounded.Unbounded_String;  --  Indicative (error messages)
+    source_file_name : VString;  --  Indicative (error messages)
     --
     Line_Count       : Natural;            --  Source line counter, used for listing
     InpLine          : Source_Line_String;
@@ -252,18 +251,18 @@ package HAC.Compiler is
   procedure Emit_Comparison_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;
     Operator  :        HAC.Data.Comparison_Operator;
-    Base_Type :        HAC.Data.Typs
+    Base_Typ  :        HAC.Data.Typen
   );
 
   procedure Emit_Unary_Minus (
     CD        : in out HAC.Compiler.Compiler_Data;
-    Base_Type :        HAC.Data.Numeric_Typ
+    Base_Typ  :        HAC.Data.Numeric_Typ
   );
 
   procedure Emit_Arithmetic_Binary_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;
     Operator  :        HAC.Data.Arithmetic_Binary_Operator;
-    Base_Type :        HAC.Data.Numeric_Typ
+    Base_Typ  :        HAC.Data.Numeric_Typ
   );
 
 end HAC.Compiler;
