@@ -262,6 +262,8 @@ package HAC.Data is
   --
   type HAC_Float is digits 15;
   HAC_Float_Name   : constant String := "REAL";
+
+  subtype HAC_Integer is Integer;  --  !! TBD: set it to a 64-bit signed.
   HAC_Integer_Name : constant String := "INTEGER";
 
   ------------------------------

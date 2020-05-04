@@ -20,6 +20,7 @@ project HAC_Exm is
      "arguments.adb",
      "days_1901.adb",
      "einmaleins.adb",
+     "env.adb",
      "hello.adb",
      "mandelbrot.adb",
      "merge_sort.adb",

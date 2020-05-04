@@ -1566,7 +1566,7 @@ package body HAC.Parser is
                   Entry_Call (CD, Level, FSys, I_Statement, CallSTDE);
                 when Prozedure =>
                   if CD.IdTab (I_Statement).LEV = 0 then
-                    Standard_Procedure (CD, Level, FSys, CD.IdTab (I_Statement).Adr);
+                    Standard_Procedure (CD, Level, FSys, SP_Code'Val (CD.IdTab (I_Statement).Adr));
                   else
                     Subprogram_or_Entry_Call (CD, Level, FSys, I_Statement, CallSTDP);
                   end if;

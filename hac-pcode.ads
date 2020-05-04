@@ -127,8 +127,12 @@ package HAC.PCode is
 
   function For_END (for_BEGIN: Opcode) return Opcode;
 
-  subtype Operand1 is Integer;       -- was -LMax..+LMax (levels)
-  subtype Operand2 is Integer;  --  !! TBD: set it to a 64-bit signed.
+  subtype Operand_1_Type is Integer;       -- was -LMax..+LMax (levels)
+
+  --  Type for operand 2 (Y) is large enough for containing
+  --  addresses, plus signed integer values *in* HAC programs.
+  --
+  subtype Operand_2_Type is HAC.Data.HAC_Integer;
 
   type Debug_Info is record
     Line  : Positive;       --  Line number in the source code.
@@ -138,10 +142,10 @@ package HAC.PCode is
 
   --  PCode instruction record (stores a compiled PCode instruction)
   type Order is record
-    F : Opcode;    --  Opcode (or instruction field)
-    X : Operand1;  --  Operand 1 is used to point to the static level
-    Y : Operand2;  --  Operand 2 is used to pass operands to the instructions
-                   --    or immediate discrete values (k_Literal).
+    F : Opcode;          --  Opcode (or instruction field)
+    X : Operand_1_Type;  --  Operand 1 is mostly used to point to the static level
+    Y : Operand_2_Type;  --  Operand 2 is used to pass addresses and sizes to the
+                         --    instructions or immediate discrete values (k_Literal).
     D : Debug_Info;
   end record;
 
@@ -156,7 +160,7 @@ package HAC.PCode is
   procedure Patch_Addresses (OC : in out Object_Code_Table);
 
   --  Mechanism for patching instructions at selected addresses.
-  type Patch_Table is array (Positive range <>) of Operand2;
+  type Patch_Table is array (Positive range <>) of Operand_2_Type;
   subtype Fixed_Size_Patch_Table is Patch_Table (1 .. HAC.Data.Patch_Max);
 
   --  Patch to OC'Last all addresses for Jump instructions whose
@@ -183,24 +187,31 @@ package HAC.PCode is
     LC   : in out Integer;
     D    :        Debug_Info;
     FCT  :        Opcode);
+
   procedure Emit1 (
     OC   : in out Object_Code_Table;
     LC   : in out Integer;
     D    :        Debug_Info;
     FCT  :        Opcode;
-    B    :        Integer);
+    B    :        Operand_2_Type
+  );
+
   procedure Emit2 (
     OC   : in out Object_Code_Table;
     LC   : in out Integer;
     D    :        Debug_Info;
     FCT  :        Opcode;
-    a, B :        Integer);
+    a    :        Operand_1_Type;
+    B    :        Operand_2_Type
+  );
 
   --  Save and restore an object file
   procedure SaveOBJ (FileName: String);
   procedure RestoreOBJ (FileName: String);
 
-  --  Standard function operations
+  ------------------------------------
+  --  Standard function operations  --
+  ------------------------------------
 
   type SF_Code is (
     SF_Abs_Int,
@@ -209,6 +220,7 @@ package HAC.PCode is
     SF_T_Pos,                   --  S'Pos  : RM 3.5.5 (2)
     SF_T_Succ,                  --  S'Succ : RM 3.5 (22)
     SF_T_Pred,                  --  S'Pred : RM 3.5 (25)
+    --  Numerical functions
     SF_Round_Float_to_Int,
     SF_Trunc_Float_to_Int,
     SF_Sin,
@@ -233,8 +245,15 @@ package HAC.PCode is
     SF_To_Upper_Char,
     SF_To_Lower_VStr,
     SF_To_Upper_VStr,
+    SF_Index,
+    SF_Int_Times_Char,
+    SF_Int_Times_VStr,
+    SF_Trim_Left,
+    SF_Trim_Right,
+    SF_Trim_Both,
     --
     SF_Argument,
+    SF_Get_Env,
     --
     --  Niladic functions.
     --
@@ -245,5 +264,27 @@ package HAC.PCode is
 
   subtype SF_Niladic is
     SF_Code range SF_Clock .. SF_Argument_Count;
+
+  -------------------------------------
+  --  Standard procedure operations  --
+  -------------------------------------
+
+  type SP_Code is (
+    SP_Get,
+    SP_Get_Line,
+    SP_Put,
+    SP_Put_Line,
+    SP_New_Line,
+    SP_Wait,
+    SP_Signal,
+    SP_Reset,
+    SP_Rewrite,
+    SP_Close,
+    SP_CursorAt,
+    SP_Quantum,
+    SP_Priority,
+    SP_InheritP,
+    SP_Set_Env
+  );
 
 end HAC.PCode;

@@ -300,12 +300,18 @@ package body HAC.Parser.Expressions is
           else
             case OP is
               when Times =>     --  *
-                if X.TYP in Numeric_Typ then
+                if X.TYP in Numeric_Typ and then Y.TYP in Numeric_Typ then
                   if X.TYP = Y.TYP then
                     Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
                   else
                     Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
                   end if;
+                elsif X.TYP = Ints and then Y.TYP = Chars then     --  N * Some_Char
+                  Emit_Std_Funct (CD, SF_Int_Times_Char);
+                  X.TYP := VStrings;
+                elsif X.TYP = Ints and then Y.TYP = VStrings then  --  N * Some_VString
+                  Emit_Std_Funct (CD, SF_Int_Times_VStr);
+                  X.TYP := VStrings;
                 else
                   Error (CD, err_operator_not_defined_for_types);
                 end if;

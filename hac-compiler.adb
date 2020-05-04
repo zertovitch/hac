@@ -184,7 +184,8 @@ package body HAC.Compiler is
 
   procedure Emit (
     CD   : in out Compiler_Data;
-    FCT  :        HAC.PCode.Opcode)
+    FCT  :        Opcode
+  )
   is
   begin
     PCode.Emit (CD.ObjCode, CD.LC, Compiler_Data_to_Debug_Info (CD), FCT);
@@ -192,8 +193,9 @@ package body HAC.Compiler is
 
   procedure Emit1 (
     CD   : in out Compiler_Data;
-    FCT  :        HAC.PCode.Opcode;
-    B    :        Integer)
+    FCT  :        Opcode;
+    B    :        Operand_2_Type
+  )
   is
   begin
     PCode.Emit1 (CD.ObjCode, CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, B);
@@ -201,8 +203,10 @@ package body HAC.Compiler is
 
   procedure Emit2 (
     CD   : in out Compiler_Data;
-    FCT  :        HAC.PCode.Opcode;
-    a, B :        Integer)
+    FCT  :        Opcode;
+    a    :        Operand_1_Type;
+    B    :        Operand_2_Type
+  )
   is
   begin
     PCode.Emit2 (CD.ObjCode, CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, a, B);
@@ -210,7 +214,7 @@ package body HAC.Compiler is
 
   procedure Emit_Std_Funct (
     CD   : in out Compiler_Data;
-    Code :        HAC.PCode.SF_Code
+    Code :        SF_Code
   )
   is
   begin
@@ -218,9 +222,9 @@ package body HAC.Compiler is
   end;
 
   procedure Emit_Comparison_Instruction (
-    CD        : in out HAC.Compiler.Compiler_Data;
-    Operator  :        HAC.Data.Comparison_Operator;
-    Base_Typ  :        HAC.Data.Typen
+    CD        : in out Compiler_Data;
+    Operator  :        Comparison_Operator;
+    Base_Typ  :        Typen
   )
   is
   begin
@@ -258,8 +262,8 @@ package body HAC.Compiler is
   end Emit_Comparison_Instruction;
 
   procedure Emit_Unary_Minus (
-    CD        : in out HAC.Compiler.Compiler_Data;
-    Base_Typ  :        HAC.Data.Numeric_Typ
+    CD        : in out Compiler_Data;
+    Base_Typ  :        Numeric_Typ
   )
   is
   begin
@@ -270,9 +274,9 @@ package body HAC.Compiler is
   end Emit_Unary_Minus;
 
   procedure Emit_Arithmetic_Binary_Instruction (
-    CD        : in out HAC.Compiler.Compiler_Data;
-    Operator  :        HAC.Data.Arithmetic_Binary_Operator;
-    Base_Typ  :        HAC.Data.Numeric_Typ
+    CD        : in out Compiler_Data;
+    Operator  :        Arithmetic_Binary_Operator;
+    Base_Typ  :        Numeric_Typ
   )
   is
   begin
@@ -336,6 +340,11 @@ package body HAC.Compiler is
         Enter (Name, Funktion, T, SF_Code'Pos (Code));
       end;
 
+      procedure Enter_Std_Proc (Name: String; Code: SP_Code) is
+      begin
+        Enter (Name, Prozedure, NOTYP, SP_Code'Pos (Code));
+      end;
+
     begin
       Enter ("",               Variable,        NOTYP, 0);
       --
@@ -375,28 +384,39 @@ package body HAC.Compiler is
       Enter_Std_Funct ("RAND",           Ints,   SF_Random_Int);    --{ Schoening }
       Enter_Std_Funct ("RND",            Floats, SF_Random_Float);
       Enter_Std_Funct ("CLOCK",          Floats, SF_Clock);         --{ Cramer }
+      --
       Enter_Std_Funct ("Element",        Chars,    SF_Element);
       Enter_Std_Funct ("Length",         Ints,     SF_Length);
       Enter_Std_Funct ("Slice",          VStrings, SF_Slice);
       Enter_Std_Funct ("To_Lower",       Chars,    SF_To_Lower_Char);
       Enter_Std_Funct ("To_Upper",       Chars,    SF_To_Upper_Char);
+      Enter_Std_Funct ("Index",          Ints,     SF_Index);
+      Enter_Std_Funct ("Trim_Left",      VStrings, SF_Trim_Left);
+      Enter_Std_Funct ("Trim_Right",     VStrings, SF_Trim_Right);
+      Enter_Std_Funct ("Trim_Both",      VStrings, SF_Trim_Both);
+      --
       Enter_Std_Funct ("Argument_Count", Ints,     SF_Argument_Count);
       Enter_Std_Funct ("Argument",       VStrings, SF_Argument);
+      Enter_Std_Funct ("Get_Env",        VStrings, SF_Get_Env);
       --
-      Enter ("Get       ",     Prozedure, NOTYP, 1);
-      Enter ("Get_Line  ",     Prozedure, NOTYP, 2);
-      Enter ("Put       ",     Prozedure, NOTYP, 3);
-      Enter ("Put_Line  ",     Prozedure, NOTYP, 4);
-      Enter ("New_Line  ",     Prozedure, NOTYP, 4); --{ Hathorn }
-      Enter ("WAIT      ",     Prozedure, NOTYP, 5);
-      Enter ("SIGNAL    ",     Prozedure, NOTYP, 6);
-      Enter ("RESET     ",     Prozedure, NOTYP, 7); --{ Schoening }
-      Enter ("REWRITE   ",     Prozedure, NOTYP, 8); --{ Schoening }
-      Enter ("CLOSE     ",     Prozedure, NOTYP, 9); --{ Schoening }
-      Enter ("CURSORAT  ",     Prozedure, NOTYP, 10); --{ Cramer }
-      Enter ("QUANTUM   ",     Prozedure, NOTYP, 11); --{ Cramer }
-      Enter ("PRIORITY  ",     Prozedure, NOTYP, 12); --{ Cramer }
-      Enter ("INHERITP  ",     Prozedure, NOTYP, 13); --{ Cramer }
+      Enter_Std_Proc ("Get",      SP_Get);
+      Enter_Std_Proc ("Get_Line", SP_Get_Line);
+      Enter_Std_Proc ("Put",      SP_Put);
+      Enter_Std_Proc ("Put_Line", SP_Put_Line);
+      Enter_Std_Proc ("New_Line", SP_New_Line);
+      Enter_Std_Proc ("Wait",     SP_Wait);
+      Enter_Std_Proc ("Signal",   SP_Signal);
+      --
+      Enter_Std_Proc ("Reset",    SP_Reset);
+      Enter_Std_Proc ("Rewrite",  SP_Rewrite);
+      Enter_Std_Proc ("Close",    SP_Close);
+      --
+      Enter_Std_Proc ("CursorAt", SP_CursorAt);
+      Enter_Std_Proc ("Quantum",  SP_Quantum);
+      Enter_Std_Proc ("Priority", SP_Priority);
+      Enter_Std_Proc ("InheritP", SP_InheritP);
+      --
+      Enter_Std_Proc ("Set_Env",  SP_Set_Env);
       --
       --  Enter Main.
       --

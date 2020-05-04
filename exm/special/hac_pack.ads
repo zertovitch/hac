@@ -12,6 +12,7 @@
 
 with Ada.Characters.Handling;
 with Ada.Command_Line;
+with Ada.Environment_Variables;
 with Ada.Strings.Unbounded;
 
 package HAC_Pack is
@@ -72,13 +73,14 @@ package HAC_Pack is
 
   package VStrings_Pkg renames Ada.Strings.Unbounded;
   subtype VString is VStrings_Pkg.Unbounded_String;
+  Null_VString : VString renames VStrings_Pkg.Null_Unbounded_String;
+  function To_VString (S : String) return VString renames VStrings_Pkg.To_Unbounded_String;
   --
   function Element (Source : VString; Index : Positive) return Character
     renames VStrings_Pkg.Element;
   function Length (Source : VString) return Natural renames VStrings_Pkg.Length;
   function Slice (Source : VString; Low : Positive; High : Natural) return String
     renames VStrings_Pkg.Slice;
-  function To_VString (S : String) return VString   renames VStrings_Pkg.To_Unbounded_String;
   --
   function "+" (S : String) return VString renames To_VString;
   function "&" (V1, V2 : VString) return VString renames VStrings_Pkg."&";
@@ -101,14 +103,12 @@ package HAC_Pack is
   function To_Lower (Item : VString) return VString;
   function To_Upper (Item : VString) return VString;
 
-  --  In the works:
-  --
-  --  function Index (Source : VString; Pattern : String) return Natural;
-  --  function "*" (Left : Natural; Right : Character) return VString;
-  --  function "*" (Left : Natural; Right : VString) return VString;
-  --  function Trim_Left  (Source : VString) return VString;
-  --  function Trim_Right (Source : VString) return VString;
-  --  function Trim_Both  (Source : VString) return VString;
+  function Index (Source : VString; Pattern : VString) return Natural;
+  function "*" (Left : Natural; Right : Character) return VString renames VStrings_Pkg."*";
+  function "*" (Left : Natural; Right : VString) return VString renames VStrings_Pkg."*";
+  function Trim_Left  (Source : VString) return VString;
+  function Trim_Right (Source : VString) return VString;
+  function Trim_Both  (Source : VString) return VString;
 
   -------------------------
   --  Text Input-Output  --
@@ -160,8 +160,18 @@ package HAC_Pack is
   procedure  Wait      ( S : Semaphore    );
   procedure  Signal    ( S : Semaphore    );
 
+  --  Misc.
+
   function Argument_Count return Natural renames Ada.Command_Line.Argument_Count;
   function Argument (Number : Positive) return VString;
+
+  function Get_Env (Name : String) return VString;
+  function Get_Env (Name : VString) return VString;
+
+  procedure Set_Env (Name : String; Value : String) renames Ada.Environment_Variables.Set;
+  procedure Set_Env (Name : VString; Value : String);
+  procedure Set_Env (Name : String; Value : VString);
+  procedure Set_Env (Name : VString; Value : VString);
 
 private
 

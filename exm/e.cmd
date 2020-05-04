@@ -15,9 +15,11 @@ goto fin
 
 :gallery
 
+..\hax -v2 hello.adb
+pause
 ..\hax -v2 strings_demo.adb
 pause
-..\hax -v2 hello.adb
+..\hax -v2 env.adb
 pause
 ..\hax -v2 arguments.adb arg1 arg2 "arg 3 ..." arg4
 pause

@@ -95,7 +95,7 @@ procedure HAX is
     Put_Line (Current_Error, "         -v, v1 : verbose");
     Put_Line (Current_Error, "         -v2    : very verbose");
     Put_Line (Current_Error, "         -a     : assembler output");
-    Put_Line (Current_Error, "         -d     : debug information");
+    Put_Line (Current_Error, "         -d     : dump compiler information");
     New_Line (Current_Error);
     Put_Line (Current_Error, caveat);
     Show_License (Current_Error, "hac.ads");

@@ -90,7 +90,8 @@ package body HAC.PCode is
     LC   : in out Integer;
     D    :        Debug_Info;
     FCT  :        Opcode;
-    B    :        Integer)
+    B    :        Operand_2_Type
+  )
   is
   begin
     Emit2 (OC, LC, D, FCT, 0, B);    --  Order's X is not used
@@ -103,7 +104,9 @@ package body HAC.PCode is
     LC   : in out Integer;
     D    :        Debug_Info;
     FCT  :        Opcode;
-    a, B :        Integer)
+    a    :        Operand_1_Type;
+    B    :        Operand_2_Type
+  )
   is
   begin
     if LC = OC'Last then
@@ -159,8 +162,8 @@ package body HAC.PCode is
     use Ada.Text_IO;
     package Opcode_IO   is new Enumeration_IO (Opcode);
     package Code_Pos_IO is new Integer_IO (Natural);
-    package Operand1_IO is new Integer_IO (Operand1);
-    package Operand2_IO is new Integer_IO (Operand2);
+    package Operand1_IO is new Integer_IO (Operand_1_Type);
+    package Operand2_IO is new Integer_IO (Operand_2_Type);
     --
     function Padded_Opcode (o: Opcode) return String is
       s : String (1 .. Opcode'Width);

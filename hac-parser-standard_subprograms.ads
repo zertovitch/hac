@@ -5,7 +5,7 @@ package HAC.Parser.Standard_Subprograms is
 
   use HAC.Data;
 
-  --  NB: Most of the supplied subprograms will disappear when modularity,
+  --  NB: Some of the supplied subprograms may disappear when modularity,
   --  Ada.Text_IO etc. will be implemented, as well as overloading.
 
   procedure Standard_Function (
@@ -21,7 +21,7 @@ package HAC.Parser.Standard_Subprograms is
     CD      : in out Compiler_Data;
     Level   :        Integer;
     FSys    :        Symset;
-    N       :        Integer
+    N       :        SP_Code
   );
 
 end HAC.Parser.Standard_Subprograms;

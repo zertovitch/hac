@@ -36,13 +36,11 @@ procedure Strings_demo is
     row : VString;
   begin
     for i in reverse 1 .. l loop
-      Put_Line ( Slice (v, 1, i) );
+      Put_Line (Slice (v, 1, i) );
     end loop;
     --
     for i in 1 .. l loop
-      for k in 1 .. i - 1 loop  --  !! We could have "*" A.4.5 (69, 70, 71)
-        Put (' ');
-      end loop;
+      Put ((i - 1) * ' ');
       Put_Line (Slice (v, i, l) );
     end loop;
     --
@@ -87,13 +85,19 @@ procedure Strings_demo is
 
   s3 : constant VString := +" world";
   ZZ : Bi_Vector;
+  padded : VString;
 begin
   s2 := +"Hello";             --  Copy from literal
   s1 := s2;                   --  Copy VString to VString
-  s4 := s1 & s3;              --  Concatenation
-  for i in 1 .. 4 loop Put (s1 & ' '); end loop; New_Line;
+  s4 := s1 & s3;              --  Concatenation VString & VString
+  Put_Line (5 * (s1 & ' '));  --  Multiplication, and Concatenation with Character
   for i in 1 .. 4 loop Put ('.' & s1); end loop; New_Line;
-  for i in 1 .. 4 loop Put ('"' & s1 & """    "); end loop; New_Line;
+  padded := +"   " & '"' & s1 & """    ";
+  New_Line;
+  Put_Line ("->" & padded & "<- original");
+  Put_Line ("->" & Trim_Left (padded)  & "<-  Trim_Left");
+  Put_Line ("->" & Trim_Right (padded) & "<-  Trim_Right");
+  Put_Line ("->" & Trim_Both (padded)  & "<-  Trim_Both");
   s4 := "---> """ & s4 & '"';
   Put_Line (s4);
   Put_Line (">> " & s4 & ' ' & '!' & " <<");
@@ -117,12 +121,15 @@ begin
   Show (ZZ.B);
   --
   Slice_Show (+"What's happening to this string?!");
-  Up_Low (+"Upside Down!");
+  Up_Low (+"Upside Down");
   --
   if s4 /= +"abcdef" then  --  Comparison VString to VString
     Put ("Ooops?");
   end if;
   if Length (s4) /= 6 then
+    Put ("Ooops?");
+  end if;
+  if Index (s4, +"cd") /= 3 then
     Put ("Ooops?");
   end if;
 end Strings_demo;

@@ -1,10 +1,12 @@
 with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Characters.Handling;
 with Ada.Command_Line;
+with Ada.Environment_Variables;
 
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 
+with Ada.Strings;                       use Ada.Strings;
 with Ada.Unchecked_Deallocation;
 
 package body HAC.PCode.Interpreter is
@@ -517,10 +519,8 @@ package body HAC.PCode.Interpreter is
       Code := SF_Code'Val (InterDef.IR.Y);
       --  !! raise a HAC exception if code out of range !!
       case Code is
-        when SF_Abs_Int =>
-          Top_Item.I := abs (Top_Item.I);
-        when SF_Abs_Float =>
-          Top_Item.R := abs (Top_Item.R);
+        when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
+        when SF_Abs_Float => Top_Item.R := abs (Top_Item.R);
         when SF_T_Val =>   --  S'Val : RM 3.5.5 (5)
           if (Top_Item.I < HAC.Data.OrdMinChar) or
             (Top_Item.I > HAC.Data.OrdMaxChar)  --  !! Character range
@@ -529,13 +529,13 @@ package body HAC.PCode.Interpreter is
           end if;
         when SF_T_Pos =>   --  S'Pos : RM 3.5.5 (2)
           null;
-        when SF_T_Succ =>  --  S'Succ : RM 3.5 (22)
-          Top_Item.I := Top_Item.I + 1;
-        when SF_T_Pred =>  --  S'Pred : RM 3.5 (25)
-          Top_Item.I := Top_Item.I - 1;
+        when SF_T_Succ => Top_Item.I := Top_Item.I + 1;  --  S'Succ : RM 3.5 (22)
+        when SF_T_Pred => Top_Item.I := Top_Item.I - 1;  --  S'Pred : RM 3.5 (25)
         when SF_Round_Float_to_Int =>
+          --  The stack top may change its type here (if register has discriminant).
           Top_Item.I := Integer (Top_Item.R);
         when SF_Trunc_Float_to_Int =>
+          --  The stack top may change its type here (if register has discriminant).
           Top_Item.I := Integer (HAC.Data.HAC_Float'Floor (Top_Item.R));
         when SF_Sin =>    Top_Item.R := Sin (Top_Item.R);
         when SF_Cos =>    Top_Item.R := Cos (Top_Item.R);
@@ -618,10 +618,37 @@ package body HAC.PCode.Interpreter is
           Top_Item.V := To_VString (To_Lower (To_String (Top_Item.V)));
         when SF_To_Upper_VStr =>
           Top_Item.V := To_VString (To_Upper (To_String (Top_Item.V)));
+        when SF_Index =>
+          Pop;
+          --  [T] := Index ([T], [T+1]) :
+          S (Curr_TCB.T).I :=
+            VStrings_Pkg.Index (S (Curr_TCB.T).V, To_String (S (Curr_TCB.T + 1).V));
+        when SF_Int_Times_Char =>
+          Pop;
+          --  [T] := [T] * [T+1] :
+          S (Curr_TCB.T).V := S (Curr_TCB.T).I * Character'Val (S (Curr_TCB.T + 1).I);
+        when SF_Int_Times_VStr =>
+          Pop;
+          --  [T] := [T] * [T+1] :
+          S (Curr_TCB.T).V := S (Curr_TCB.T).I * S (Curr_TCB.T + 1).V;
+        when SF_Trim_Left  => Top_Item.V := Trim (Top_Item.V, Left);
+        when SF_Trim_Right => Top_Item.V := Trim (Top_Item.V, Right);
+        when SF_Trim_Both  => Top_Item.V := Trim (Top_Item.V, Both);
         when SF_Argument =>
           Arg := Top_Item.I;
           --  The stack top item may change its type here (if register has discriminant).
-         Top_Item.V := To_VString (Argument (Arg));
+          Top_Item.V := To_VString (Argument (Arg));
+        when SF_Get_Env =>
+          declare
+            use Ada.Environment_Variables;
+            Name : constant String := To_String (Top_Item.V);
+          begin
+            if Exists (Name) then
+              Top_Item.V := To_VString (Value (Name));
+            else
+              Top_Item.V := Null_VString;
+            end if;
+          end;
         when SF_Niladic =>
           --  NILADIC functions need to push a new item (their result).
           Curr_TCB.T := Curr_TCB.T + 1;
@@ -1306,10 +1333,9 @@ package body HAC.PCode.Interpreter is
       when k_Set_current_file_pointer =>
         FAT.CURR := IR.Y;
 
-      when k_File_I_O =>
-        --  File I/O procedures - Schoening
-        case IR.Y is
-          when 7 =>
+      when k_File_I_O =>  --  File I/O procedures - Schoening
+        case SP_Code'Val (IR.Y) is
+          when SP_Reset =>
             if Ada.Text_IO.Is_Open (FAT.FIL (IR.X)) then
               Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
             end if;
@@ -1319,8 +1345,7 @@ package body HAC.PCode.Interpreter is
               Ada.Text_IO.In_File,
               HAC.Data.To_String (FAT.NAM (IR.X)) & ".DAT"
             );
-
-          when 8 =>
+          when SP_Rewrite =>
             if Ada.Text_IO.Is_Open (FAT.FIL (IR.X)) then
               Ada.Text_IO.Close (FAT.FIL (IR.X));   --  just in case
             end if;
@@ -1329,14 +1354,17 @@ package body HAC.PCode.Interpreter is
               Ada.Text_IO.Out_File,
               HAC.Data.To_String (FAT.NAM (IR.X)) & ".DAT"
             );
-
-          when 9 =>
-            Ada.Text_IO.Close (FAT.FIL (IR.X));    --  close file
-
+          when SP_Close =>
+            Ada.Text_IO.Close (FAT.FIL (IR.X));
+          when SP_Set_Env =>
+            Ada.Environment_Variables.Set (
+              HAC.Data.VStrings_Pkg.To_String (S (Curr_TCB.T - 1).V),
+              HAC.Data.VStrings_Pkg.To_String (S (Curr_TCB.T).V)
+            );
+            Pop (2);
           when others =>
-            null;  -- [P2Ada]: no otherwise / else in Pascal
+            null;
         end case;
-        --  case IR.Y
         SWITCH := True;  --  give up control when doing I/O
 
       when k_Halt_Interpreter =>

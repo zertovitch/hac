@@ -16,11 +16,11 @@ with Ada.Text_IO;
 
 package HAC.Compiler is
 
-  use HAC.Data;
+  use HAC.Data, HAC.PCode;
 
   type Exact_Typ is record  --  NB: was called "Item" in SmallAda.
-    TYP : Typen;
-    Ref : Index;
+    TYP  : Typen;
+    Ref  : Index;
     --  If TYP is not a standard type, then (TYP, Ref) does identify the type.
     --  E.g. it can be (Enums, [index of the enumerated type definition]).
   end record;
@@ -34,13 +34,13 @@ package HAC.Compiler is
   --
   type ATabEntry is record
     Index_xTyp   : Exact_Typ;  --  C  Type of the index
+    Element_Size : Index;      --  Size of an element
     Element_xTyp : Exact_Typ;  --  C  Type of the elements of the array.
-                               --        Element_TYP.Ref is an index to an entry
+                               --        Element_xTYP.Ref is an index to an entry
                                --        in Arrays_Table if the elements of the array
                                --        are themselves arrays
-    Array_Size         : Index;      --  C  Total size of the array
+    Array_Size   : Index;      --  C  Total size of the array
     Low, High    : Index;      --  Limits on the array index: array (Low .. High) of Element_TYP
-    Element_Size : Index;      --  Size of an element
   end record;
 
   -------------------------------------------------------------------------
@@ -253,38 +253,42 @@ package HAC.Compiler is
 
   procedure Emit (
     CD   : in out Compiler_Data;
-    FCT  :        HAC.PCode.Opcode);
+    FCT  :        Opcode
+  );
 
   procedure Emit1 (
     CD   : in out Compiler_Data;
-    FCT  :        HAC.PCode.Opcode;
-    B    :        Integer);
+    FCT  :        Opcode;
+    B    :        Operand_2_Type
+  );
 
   procedure Emit2 (
     CD   : in out Compiler_Data;
-    FCT  :        HAC.PCode.Opcode;
-    a, B :        Integer);
+    FCT  :        Opcode;
+    a    :        Operand_1_Type;
+    B    :        Operand_2_Type
+  );
 
   procedure Emit_Std_Funct (
     CD   : in out Compiler_Data;
-    Code :        HAC.PCode.SF_Code
+    Code :        SF_Code
   );
 
   procedure Emit_Comparison_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;
-    Operator  :        HAC.Data.Comparison_Operator;
-    Base_Typ  :        HAC.Data.Typen
+    Operator  :        Comparison_Operator;
+    Base_Typ  :        Typen
   );
 
   procedure Emit_Unary_Minus (
     CD        : in out HAC.Compiler.Compiler_Data;
-    Base_Typ  :        HAC.Data.Numeric_Typ
+    Base_Typ  :        Numeric_Typ
   );
 
   procedure Emit_Arithmetic_Binary_Instruction (
     CD        : in out HAC.Compiler.Compiler_Data;
-    Operator  :        HAC.Data.Arithmetic_Binary_Operator;
-    Base_Typ  :        HAC.Data.Numeric_Typ
+    Operator  :        Arithmetic_Binary_Operator;
+    Base_Typ  :        Numeric_Typ
   );
 
 end HAC.Compiler;

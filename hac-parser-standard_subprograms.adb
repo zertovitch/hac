@@ -5,6 +5,16 @@ with HAC.UErrors;            use HAC.UErrors;
 
 package body HAC.Parser.Standard_Subprograms is
 
+  SF_Args : constant array (SF_Code) of Natural :=
+    ( SF_Niladic            => 0,
+      SF_Element |
+      SF_Index |
+      SF_Int_Times_Char |
+      SF_Int_Times_VStr     => 2,
+      SF_Slice              => 3,
+      others                => 1
+    );
+
   procedure Standard_Function (
     CD          : in out Compiler_Data;
     Level       :        Integer;
@@ -15,9 +25,9 @@ package body HAC.Parser.Standard_Subprograms is
   )
   is
     Max_Args : constant := 3;
+    Args : constant Natural := SF_Args (Code);
     Expected : array (1 .. Max_Args) of Typ_Set;    --  Expected type of the function's arguments
     Actual   : array (1 .. Max_Args) of Exact_Typ;  --  Actual type from argument expression
-    Args : Natural;
     Code_Adjusted : SF_Code := Code;
     IFP  : Integer;
     --
@@ -44,13 +54,6 @@ package body HAC.Parser.Standard_Subprograms is
     Return_Typ := (CD.IdTab (Ident_Index).TYP, CD.IdTab (Ident_Index).Ref);
     --
     case Code is
-      when SF_Niladic => Args := 0;
-      when SF_Element => Args := 2;
-      when SF_Slice   => Args := 3;
-      when others     => Args := 1;
-    end case;
-    --
-    case Code is
       when SF_Abs_Int =>
         Expected (1) := Numeric_Typ_Set;
       when SF_T_Val =>  --  S'Val : RM 3.5.5 (5)
@@ -67,18 +70,25 @@ package body HAC.Parser.Standard_Subprograms is
         Expected (1) := Ints_Set;
       when SF_Element =>
         Expected (1 .. 2) := (VStrings_Set, Ints_Set);
-      when SF_Length =>
+      when SF_Length |
+           SF_Trim_Left .. SF_Trim_Both =>
         Expected (1) := VStrings_Set;
       when SF_Slice =>
         Expected (1 .. 3):= (VStrings_Set, Ints_Set, Ints_Set);
       when SF_To_Lower_Char | SF_To_Upper_Char =>
         Expected (1) := VStrings_or_Chars_Set;
+      when SF_Index =>
+        Expected (1 .. 2) := (VStrings_Set, VStrings_Set);
+      when SF_Get_Env =>
+        Expected (1) := VStrings_or_Str_Lit_Set;  --  Get_Env ("PATH")  _or_  Get_Env (+"PATH")
       when SF_Niladic =>
         null;  --  Zero argument -> no argument type to check.
       when SF_EOF | SF_EOLN =>
         null;  --  Arguments are parsed separately.
       when others =>
-        null;  --  Here we have functions that are never parsed (e.g. SF_Abs_Float).
+        null;
+        --  Here we have functions that are never parsed
+        --  E.g. SF_Abs_Float, parsed as SF_Abs_Int, or "&" operators.
     end case;
     --
     --  Parameter parsing
@@ -134,6 +144,10 @@ package body HAC.Parser.Standard_Subprograms is
           if Actual (1).TYP = VStrings then      --  To_Upper (Item : VString) return VString;
             Code_Adjusted := SF_To_Upper_VStr;
           end if;
+        when SF_Get_Env =>
+          if Actual (1).TYP = String_Literals then
+            Emit_Std_Funct (CD, SF_Literal_to_VString);
+          end if;
         when others =>
           null;  --  Nothing
       end case;
@@ -150,7 +164,7 @@ package body HAC.Parser.Standard_Subprograms is
     CD      : in out Compiler_Data;
     Level   :        Integer;
     FSys    :        Symset;
-    N       :        Integer
+    N       :        SP_Code
   )
   is
     I                 : Integer;
@@ -158,8 +172,8 @@ package body HAC.Parser.Standard_Subprograms is
     X, Y              : Exact_Typ;
     do_first_InSymbol : Boolean := True;
   begin
-    case N is  --  Numbers: see EnterStdFcns in HAC.Compiler
-      when 1 | 2 =>  -- GET, GET_LINE
+    case N is
+      when SP_Get | SP_Get_Line =>
         if CD.Sy = LParent then
           InSymbol (CD);
           I := Get_File_Pointer (CD, CD.Id);  -- Schoening
@@ -220,11 +234,11 @@ package body HAC.Parser.Standard_Subprograms is
           <<SKIP1b>>
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
-        if N = 2 then
+        if N = SP_Get_Line then
           Emit (CD, k_Get_Newline);
         end if;
 
-      when 3 | 4 =>          -- PUT, PUT_LINE
+      when SP_Put | SP_Put_Line =>
         if CD.Sy = LParent then
           InSymbol (CD);
           I := Get_File_Pointer (CD, CD.Id);   -- Schoening
@@ -284,11 +298,14 @@ package body HAC.Parser.Standard_Subprograms is
           <<Label_21>>
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
-        if N = 4 then
+        if N = SP_Put_Line then
           Emit (CD, k_Put_Newline);
         end if;
 
-      when 5 | 6 =>                  -- Wait, SIGNAL
+      when SP_New_Line =>
+        Emit (CD, k_Put_Newline);
+
+      when SP_Wait | SP_Signal =>
         if CD.Sy /= LParent then
           Error (CD, err_missing_an_opening_parenthesis);
         else
@@ -314,7 +331,7 @@ package body HAC.Parser.Standard_Subprograms is
                   Selector (CD, Level, FSys + RParent, X);
                 end if;
                 if X.TYP = Ints then
-                  if N = 5 then
+                  if N = SP_Wait then
                     Emit (CD, k_Wait_Semaphore);
                   else
                     Emit (CD, k_Signal_Semaphore);
@@ -328,7 +345,7 @@ package body HAC.Parser.Standard_Subprograms is
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
 
-      when 7 | 8 | 9 =>    -- reset, Rewrite, Close
+      when SP_Reset | SP_Rewrite | SP_Close =>
         -- Schoening
         if CD.Sy /= LParent then
           Error (CD, err_missing_an_opening_parenthesis);
@@ -338,13 +355,13 @@ package body HAC.Parser.Standard_Subprograms is
           if I = No_File_Index then
             Error (CD, err_identifier_missing);
           else
-            Emit2 (CD, k_File_I_O, I, N);
+            Emit2 (CD, k_File_I_O, I, SP_Code'Pos (N));
           end if;
           InSymbol (CD);
           Need (CD, RParent, err_closing_parenthesis_missing);
-        end if;  -- reset
+        end if;
 
-      when 10 =>        -- CursorAt
+      when SP_CursorAt =>
         -- Cramer
         if CD.Sy /= LParent then
           Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
@@ -373,9 +390,9 @@ package body HAC.Parser.Standard_Subprograms is
               end if;
             end if;
           end;
-        end if;                -- CursorAt
+        end if;
 
-      when 11 =>                   -- Quantum
+      when SP_Quantum =>
         -- Cramer
         if CD.Sy /= LParent then
           Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
@@ -391,9 +408,9 @@ package body HAC.Parser.Standard_Subprograms is
             Emit (CD, k_Set_Quantum_Task);
             InSymbol (CD);
           end if;
-        end if;                -- Quantum
+        end if;
 
-      when 12 =>                   -- Set Priority
+      when SP_Priority =>
         -- Cramer
         if CD.Sy /= LParent then
           Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
@@ -409,9 +426,9 @@ package body HAC.Parser.Standard_Subprograms is
             Emit (CD, k_Set_Task_Priority);
             InSymbol (CD);
           end if;
-        end if;                -- Priority
+        end if;
         --
-      when 13 =>                   -- Set Priority Inheritance,INHERITP
+      when SP_InheritP =>
         -- Cramer
         if CD.Sy /= LParent then
           Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
@@ -424,10 +441,31 @@ package body HAC.Parser.Standard_Subprograms is
             Emit (CD, k_Set_Task_Priority_Inheritance);
             InSymbol (CD);
           end if;
-        end if;                -- Inheritp
+        end if;
         --
-      when others =>
-        null;
+      when SP_Set_Env =>
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        for a in 1 .. 2 loop
+          Expression (CD, Level, RParent_Set, X);  --  We push the arguments in the stack.
+          if VStrings_or_Str_Lit_Set (X.TYP) then
+            --  Set_Env ("HAC_Var", "Hello");       <-  String_Literals
+            --  Set_Env (+"HAC_Var", +"Hello");     <-  VStrings
+            if X.TYP = String_Literals then
+              Emit_Std_Funct (CD, SF_Literal_to_VString);
+            end if;
+          else
+            Type_Mismatch (
+              CD, err_parameter_types_do_not_match,
+              Found    => X,
+              Expected => VStrings_or_Str_Lit_Set
+            );
+          end if;
+          if a < 2 then
+            Need (CD, Comma, err_COMMA_missing);
+          end if;
+        end loop;
+        Emit2 (CD, k_File_I_O, I, SP_Code'Pos (N));
+        Need (CD, RParent, err_closing_parenthesis_missing);
     end case;
   end Standard_Procedure;
 

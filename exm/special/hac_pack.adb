@@ -1,5 +1,6 @@
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 with Ada.Numerics.Generic_Elementary_Functions;
+with Ada.Strings; use Ada.Strings;
 with Ada.Text_IO;
 
 package body HAC_Pack is
@@ -102,6 +103,26 @@ package body HAC_Pack is
   function To_Upper (Item : VString) return VString is
   begin
     return To_VString (To_Upper (To_String (Item)));
+  end;
+
+  function Index (Source : VString; Pattern : VString) return Natural is
+  begin
+    return Index (Source, To_String (Pattern));
+  end;
+
+  function Trim_Left  (Source : VString) return VString is
+  begin
+    return Trim (Source, Left);
+  end;
+
+  function Trim_Right (Source : VString) return VString is
+  begin
+    return Trim (Source, Right);
+  end;
+
+  function Trim_Both  (Source : VString) return VString is
+  begin
+    return Trim (Source, Both);
   end;
 
   package IIO is new Ada.Text_IO.Integer_IO(Integer);
@@ -331,6 +352,37 @@ package body HAC_Pack is
   begin
     return To_VString (Ada.Command_Line.Argument (Number));
   end Argument;
+
+  function Get_Env (Name : String) return VString is
+    use Ada.Environment_Variables;
+  begin
+    if Exists (Name) then
+      return To_VString (Value (Name));
+    else
+      return Null_VString;
+    end if;
+  end;
+
+  function Get_Env (Name : VString) return VString is
+  begin
+    return Get_Env (To_String (Name));
+  end;
+
+  procedure Set_Env (Name : VString; Value : String) is
+  begin
+    Set_Env (To_String (Name), Value);
+  end;
+
+  procedure Set_Env (Name : String; Value : VString) is
+  begin
+    Set_Env (Name, To_String (Value));
+  end;
+
+  procedure Set_Env (Name : VString; Value : VString) is
+  begin
+    Set_Env (To_String (Name), To_String (Value));
+  end;
+
 
 begin
   Reset (gen);  --  Randomize.
