@@ -190,7 +190,7 @@ package body HAC.PCode.Interpreter is
         else
           Put_Line ("Task Variables");
         end if;
-        InterDef.H2 := CD.Blocks_Table (CD.IdTab (InterDef.H2).Ref).Last;
+        InterDef.H2 := CD.Blocks_Table (CD.IdTab (InterDef.H2).Ref).Last_Id_Idx;
         while InterDef.H2 /= 0 loop
           -- [P2Ada]: WITH instruction
           declare
@@ -1023,7 +1023,7 @@ package body HAC.PCode.Interpreter is
         if H3 not in H2 .. CD.Arrays_Table (H1).High then
           PS := INXCHK;  --  Out-of-range state
         else
-          Curr_TCB.T       := Curr_TCB.T - 1;
+          Pop;
           S (Curr_TCB.T).I := S (Curr_TCB.T).I + (H3 - H2);
         end if;
 
@@ -1034,9 +1034,9 @@ package body HAC.PCode.Interpreter is
         if H3 not in H2 .. CD.Arrays_Table (H1).High then
           PS := INXCHK;  --  Out-of-range state
         else
-          Curr_TCB.T       := Curr_TCB.T - 1;
+          Pop;
           S (Curr_TCB.T).I := S (Curr_TCB.T).I +
-                                 (H3 - H2) * CD.Arrays_Table (H1).ELSize;
+                                 (H3 - H2) * CD.Arrays_Table (H1).Element_Size;
         end if;
 
       when k_Load_Block =>
@@ -1162,10 +1162,10 @@ package body HAC.PCode.Interpreter is
         end if;
         SWITCH := True;        --  give up control when doing I/O
 
-      when k_Write_1 =>
+      when k_Write_Unformatted =>
         Do_Write_Unformatted;
 
-      when k_Write_2 =>
+      when k_Write_Formatted =>
         if FAT.CURR = 0 then
           case IR.Y is
             when 1 => --  Burd

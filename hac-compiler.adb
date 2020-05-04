@@ -81,23 +81,28 @@ package body HAC.Compiler is
     end;
   begin
     New_Line (CD.comp_dump);
-    Put (CD.comp_dump,
-       " Identifiers                Link  Obj                           "&
-       "TYP              Ref  NRM  Level  Adr"
+    Put_Line (CD.comp_dump,
+       " Identifiers" & (Alng - 6) * ' ' & "Link  Object                        " &
+       "TYP              Ref  Norm Lvl  Adr"
     );
-    New_Line (CD.comp_dump);
-    for I in CD.Blocks_Table (1).Last .. CD.Id_Count loop
+    Put_Line (CD.comp_dump,
+       (Alng + aObject'Width + Typen'Width + Boolean'Width + 29) * '-'
+    );
+    --  We list all definitions, starting
+    --  from Main (last Id of the "zero block" / standard).
+    --
+    for I in CD.Blocks_Table (0).Last_Id_Idx .. CD.Id_Count loop
       declare
         r : IdTabEntry renames CD.IdTab (I);
       begin
         Put (CD.comp_dump, I, 4);
-        Show_Padded (To_String (r.Name_with_case), 22);
+        Show_Padded (To_String (r.Name_with_case), Alng);
         Put (CD.comp_dump, r.Link, 4);
         Show_Padded (aObject'Image (r.Obj), aObject'Width);
         Show_Padded (Typen'Image (r.TYP), Typen'Width);
         Put (CD.comp_dump, r.Ref, 5);
         Show_Padded (Boolean'Image (r.Normal), Boolean'Width);
-        Put (CD.comp_dump, r.LEV, 5);
+        Put (CD.comp_dump, r.LEV, 3);
         Put (CD.comp_dump, r.Adr, 5);
         New_Line (CD.comp_dump);
       end;
@@ -131,16 +136,16 @@ package body HAC.Compiler is
       New_Line (CD.comp_dump);
     end if;
 
-    Put_Line (CD.comp_dump, " Blocks               last LPar PSze Vsze");
+    Put_Line (CD.comp_dump, " Blocks" & Alng * ' ' & "  Last_ID LPar PSze Vsze");
     --  There is a hidden block #0, "the Universe", with Standard
-    for I in 1 .. CD.Blocks_Count loop
+    for I in 0 .. CD.Blocks_Count loop
       declare
         r : BTabEntry renames CD.Blocks_Table (I);
       begin
         Put (CD.comp_dump, I, 4);
-        Show_Padded (To_String (r.Id), 10);
-        Put (CD.comp_dump, r.Last, 10);
-        Put (CD.comp_dump, r.LastPar, 5);
+        Show_Padded (To_String (r.Id), Alng);
+        Put (CD.comp_dump, r.Last_Id_Idx, 10);
+        Put (CD.comp_dump, r.Last_Param_Id_Idx, 5);
         Put (CD.comp_dump, r.PSize, 5);
         Put (CD.comp_dump, r.VSize, 5);
         New_Line (CD.comp_dump);
@@ -156,13 +161,13 @@ package body HAC.Compiler is
           r : ATabEntry renames CD.Arrays_Table (I);
         begin
           Put (CD.comp_dump, I, 4);
-          Put (CD.comp_dump, Typen'Image (r.Index_TYP.TYP) & "   " &
-                             Typen'Image (r.Element_TYP.TYP));
-          Put (CD.comp_dump, r.Element_TYP.Ref, 5);
+          Put (CD.comp_dump, Typen'Image (r.Index_xTyp.TYP) & "   " &
+                             Typen'Image (r.Element_xTyp.TYP));
+          Put (CD.comp_dump, r.Element_xTyp.Ref, 5);
           Put (CD.comp_dump, r.Low, 5);
           Put (CD.comp_dump, r.High, 5);
-          Put (CD.comp_dump, r.ELSize, 5);
-          Put (CD.comp_dump, r.Size, 5);
+          Put (CD.comp_dump, r.Element_Size, 5);
+          Put (CD.comp_dump, r.Array_Size, 5);
           New_Line (CD.comp_dump);
         end;
       end loop;
@@ -392,6 +397,9 @@ package body HAC.Compiler is
       Enter ("QUANTUM   ",     Prozedure, NOTYP, 11); --{ Cramer }
       Enter ("PRIORITY  ",     Prozedure, NOTYP, 12); --{ Cramer }
       Enter ("INHERITP  ",     Prozedure, NOTYP, 13); --{ Cramer }
+      --
+      --  Enter Main.
+      --
       Enter (To_String (CD.Main_Program_ID),  Prozedure, NOTYP, 0);
     end Enter_Standard_Functions_and_Main;
 
@@ -474,13 +482,13 @@ package body HAC.Compiler is
     Enter_Standard_Functions_and_Main;  --  Enter Standard function id's and ProgramID
 
     CD.Blocks_Table (0) :=  --  Block Table Entry for Standard [was Main, 1]
-     (Id      => To_Alfa ("Std Defns"),
-      Last    => CD.Id_Count,
-      LastPar => 1,
-      PSize   => 0,
-      VSize   => 0,
-      SrcFrom => CD.Line_Count,
-      SrcTo   => CD.Line_Count);
+     (Id                => To_Alfa ("-- Standard Definitions (The Universe)"),
+      Last_Id_Idx       => CD.Id_Count,
+      Last_Param_Id_Idx => 1,
+      PSize             => 0,
+      VSize             => 0,
+      SrcFrom           => CD.Line_Count,
+      SrcTo             => CD.Line_Count);
     CD.Display (0) := 0;  --  Added 7-Dec-2009
 
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  { Task Table Entry }
@@ -524,7 +532,7 @@ package body HAC.Compiler is
       Put_Line (map_file, "  LOC  Name       scope");
       Put_Line (map_file, "------------------------");
       New_Line (map_file);
-      for Tx in CD.Blocks_Table (1).Last + 1 .. CD.Id_Count loop
+      for Tx in CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count loop
         if CD.IdTab (Tx).Obj = Variable then
           if CD.IdTab (Tx).TYP /= NOTYP then
             Put (map_file, CD.IdTab (Tx).Adr, 4);

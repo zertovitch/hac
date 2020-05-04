@@ -56,9 +56,9 @@ package body HAC.Parser is
       declare
         New_A : ATabEntry renames CD.Arrays_Table (CD.Arrays_Count);
       begin
-        New_A.Index_TYP := Index_TP;
-        New_A.Low       := L;
-        New_A.High      := H;
+        New_A.Index_xTyp := Index_TP;
+        New_A.Low        := L;
+        New_A.High       := H;
       end;
     end Enter_Array;
 
@@ -73,10 +73,10 @@ package body HAC.Parser is
       declare
         New_B : BTabEntry renames CD.Blocks_Table (CD.Blocks_Count);
       begin
-        New_B.Id      := CD.IdTab (Tptr).Name;
-        New_B.Last    := 0;
-        New_B.LastPar := 0;
-        New_B.SrcFrom := CD.Line_Count;
+        New_B.Id                := CD.IdTab (Tptr).Name;
+        New_B.Last_Id_Idx       := 0;
+        New_B.Last_Param_Id_Idx := 0;
+        New_B.SrcFrom           := CD.Line_Count;
       end;
     end Enter_Block;
 
@@ -89,7 +89,7 @@ package body HAC.Parser is
         Fatal (IDENTIFIERS);  --  Exception is raised there.
       end if;
       CD.IdTab (No_Id).Name := Id;  --  Sentinel
-      J                     := CD.Blocks_Table (CD.Display (Level)).Last;
+      J                     := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
       L                     := J;
       while CD.IdTab (J).Name /= Id loop
         J := CD.IdTab (J).Link;
@@ -100,18 +100,19 @@ package body HAC.Parser is
       else      --  Enter identifier in table IdTab
         CD.Id_Count            := CD.Id_Count + 1;
         CD.IdTab (CD.Id_Count) :=
-         (Name           => Id,
-          Name_with_case => Id_with_case,
-          Link           => L,
-          Obj            => K,
-          Read_only      => False,
-          TYP            => NOTYP,
-          Ref            => 0,
-          Normal         => True,
-          LEV            => Level,
-          Adr            => 0
+         (  Name           => Id,
+            Name_with_case => Id_with_case,
+            Link           => L,
+            Obj            => K,
+            Read_only      => False,
+            TYP            => NOTYP,
+            Ref            => 0,
+            Normal         => True,
+            LEV            => Level,
+            Adr            => 0
         );
-        CD.Blocks_Table (CD.Display (Level)).Last := CD.Id_Count;  --  Update start of identifier chain
+        --  Update start of identifier chain:
+        CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
       end if;
     end Enter;
 
@@ -192,17 +193,19 @@ package body HAC.Parser is
     end Number_Declaration_or_Enum_Item;
 
     ------------------------------------------------------------------
-    --------------------------------------------------------------TYP-
+    -----------------------------------Type_Definition - RM 3.2.1 (4)-
 
-    procedure TYP (FSys : Symset; TP : out Typen; RF, Sz : out Integer) is
-      ELTP                 : Typen;
-      ELRF                 : Integer;
-      ELSZ, Offset, T0, T1 : Integer;
+    procedure Type_Definition (FSys : Symset; xTP : out Exact_Typ; Sz : out Integer) is
 
-      procedure Array_Typ (ARef, Arsz : in out Integer; String_Constrained_Subtype : Boolean) is
-        ELTP                      : Typen;
-        Lower_Bound, Higher_Bound : Constant_Rec;
-        ELRF, ELSZ                : Integer;
+      procedure Array_Typ (
+        Arr_Tab_Ref, Arr_Size      : out Integer;
+        String_Constrained_Subtype :     Boolean
+      )
+      is
+        Element_Exact_Typ : Exact_Typ;
+        Element_Size      : Integer;
+        Lower_Bound,
+        Higher_Bound      : Constant_Rec;
       begin
         Number_Declaration_or_Enum_Item (OF_RANGE_Double_Dot_RParent + FSys, Lower_Bound);
         --
@@ -220,38 +223,36 @@ package body HAC.Parser is
           Higher_Bound.I := Lower_Bound.I;
         end if;
         Enter_Array (Lower_Bound.TP, Lower_Bound.I, Higher_Bound.I);
-        ARef := CD.Arrays_Count;
+        Arr_Tab_Ref := CD.Arrays_Count;
         if String_Constrained_Subtype then
           --  We define String (L .. H) exactly as an "array (L .. H) of Character".
-          ELTP := Chars;
-          ELRF := 0;
-          ELSZ := 1;
+          Element_Exact_Typ := (TYP => Chars, Ref => 0);
+          Element_Size := 1;
           Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
         elsif CD.Sy = Comma then
-          --  Multidimensional array is:  array(range_1) of array(range_2,...)
+          --  Multidimensional array is equivalant to:  array (range_1) of array (range_2,...).
           InSymbol;  --  Consume ',' symbol.
-          ELTP := Arrays;
-          Array_Typ (ELRF, ELSZ, False);  --  Recursion for next array dimension.
+          Element_Exact_Typ.TYP := Arrays;  --  Recursion for next array dimension.
+          Array_Typ (Element_Exact_Typ.Ref, Element_Size, False);
         else
           Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-          Need (CD, OF_Symbol, err_missing_OF);  --  "of"         in  "array (...) of Some_Type"
-          TYP (FSys, ELTP, ELRF, ELSZ);          --  "Some_Type"  in  "array (...) of Some_Type"
+          Need (CD, OF_Symbol, err_missing_OF);         --  "of"  in  "array (...) of Some_Type"
+          Type_Definition (FSys, Element_Exact_Typ, Element_Size);  --  "Some_Type"
         end if;
-        Arsz := (Higher_Bound.I - Lower_Bound.I + 1) * ELSZ;
+        Arr_Size := (Higher_Bound.I - Lower_Bound.I + 1) * Element_Size;
         declare
-          r : ATabEntry renames CD.Arrays_Table (ARef);
+          New_A : ATabEntry renames CD.Arrays_Table (Arr_Tab_Ref);
         begin
-          r.Size        := Arsz;  --  NB: Index_TYP, Low, High already set by Enter_Array.
-          r.Element_TYP := (TYP => ELTP, Ref => ELRF);
-          r.ELSize      := ELSZ;
+          New_A.Array_Size   := Arr_Size;  --  Index_xTyp, Low, High already set by Enter_Array.
+          New_A.Element_xTyp := Element_Exact_Typ;
+          New_A.Element_Size := Element_Size;
         end;
       end Array_Typ;
 
-      procedure Enumeration_Type is  --  RM 3.5.1 Enumeration Types
+      procedure Enumeration_Typ is  --  RM 3.5.1 Enumeration Types
         enum_count : Natural := 0;
       begin
-        TP := Enums;
-        RF := CD.Id_Count;
+        xTP := (TYP => Enums, Ref => CD.Id_Count);
         loop
           InSymbol;  --  Consume '(' symbol.
           if CD.Sy = IDent then
@@ -262,7 +263,7 @@ package body HAC.Parser is
             begin
               New_Enum_Item.Read_only := True;
               New_Enum_Item.TYP       := Enums;
-              New_Enum_Item.Ref       := RF;
+              New_Enum_Item.Ref       := xTP.Ref;
               New_Enum_Item.Adr       := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
             end;
           else
@@ -274,14 +275,15 @@ package body HAC.Parser is
         Sz := enum_count;
         --  Huh ?? size should be 1 (to be checked !!) but Sz is perhaps misused as a count
         Need (CD, RParent, err_closing_parenthesis_missing);
-      end Enumeration_Type;
+      end Enumeration_Typ;
 
-      procedure Record_Type is
+      procedure Record_Typ is
+        Field_Exact_Typ : Exact_Typ;
+        Field_Size, Offset, T0, T1 : Integer;
       begin
         InSymbol;  --  Consume RECORD symbol.
         Enter_Block (CD.Id_Count);
-        TP := Records;
-        RF := CD.Blocks_Count;
+        xTP := (TYP => Records, Ref => CD.Blocks_Count);
         if Level = Nesting_Level_Max then
           Fatal (LEVELS);  --  Exception is raised there.
         end if;
@@ -301,13 +303,13 @@ package body HAC.Parser is
             end loop;
             Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
             T1 := CD.Id_Count;
-            TYP (FSys + Comma_END_IDent_Semicolon, ELTP, ELRF, ELSZ);
+            Type_Definition (FSys + Comma_END_IDent_Semicolon, Field_Exact_Typ, Field_Size);
             while T0 < T1 loop
               T0                := T0 + 1;
-              CD.IdTab (T0).TYP := ELTP;
-              CD.IdTab (T0).Ref := ELRF;
+              CD.IdTab (T0).TYP := Field_Exact_Typ.TYP;
+              CD.IdTab (T0).Ref := Field_Exact_Typ.Ref;
               CD.IdTab (T0).Adr := Offset;
-              Offset            := Offset + ELSZ;
+              Offset            := Offset + Field_Size;
             end loop;
           end if;
           Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
@@ -315,19 +317,18 @@ package body HAC.Parser is
           exit when CD.Sy = END_Symbol;
         end loop;
         --
-        CD.Blocks_Table (RF).VSize := Offset;
-        Sz                  := Offset;
-        CD.Blocks_Table (RF).PSize := 0;
+        CD.Blocks_Table (xTP.Ref).VSize := Offset;
+        Sz                              := Offset;
+        CD.Blocks_Table (xTP.Ref).PSize := 0;
         InSymbol;
         Need (CD, RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
         Level := Level - 1;
-      end Record_Type;
+      end Record_Typ;
 
       Ident_Index : Integer;
 
     begin  --  Type
-      TP := NOTYP;
-      RF := 0;
+      xTP := (TYP => NOTYP, Ref => 0);
       Sz := 0;
       Test (CD, Type_Begin_Symbol, FSys, err_missing_ARRAY_RECORD_or_ident);
       if Type_Begin_Symbol (CD.Sy) then
@@ -336,16 +337,16 @@ package body HAC.Parser is
             if Equal (CD.Id, "STRING") then  --  !! Need to implement general constraints...
               InSymbol;
               Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
-              TP := Arrays;
-              Array_Typ (RF, Sz, String_Constrained_Subtype => True);
+              xTP.TYP := Arrays;
+              Array_Typ (xTP.Ref, Sz, String_Constrained_Subtype => True);
             else
               Ident_Index := Locate_Identifier (CD, CD.Id, Level);
               if Ident_Index /= No_Id then
                 if CD.IdTab (Ident_Index).Obj = TypeMark then
-                  TP := CD.IdTab (Ident_Index).TYP;
-                  RF := CD.IdTab (Ident_Index).Ref;
-                  Sz := CD.IdTab (Ident_Index).Adr;
-                  if TP = NOTYP then
+                  xTP.TYP := CD.IdTab (Ident_Index).TYP;
+                  xTP.Ref := CD.IdTab (Ident_Index).Ref;
+                  Sz      := CD.IdTab (Ident_Index).Adr;
+                  if xTP.TYP = NOTYP then
                     Error (CD, err_undefined_type);
                   end if;
                 else
@@ -358,18 +359,18 @@ package body HAC.Parser is
           when ARRAY_Symbol =>
             InSymbol;
             Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
-            TP := Arrays;
-            Array_Typ (RF, Sz, String_Constrained_Subtype => False);
+            xTP.TYP := Arrays;
+            Array_Typ (xTP.Ref, Sz, String_Constrained_Subtype => False);
           when RECORD_Symbol =>
-            Record_Type;
+            Record_Typ;
           when LParent =>
-            Enumeration_Type;
+            Enumeration_Typ;
           when others =>
             null;
         end case;  --  CD.Sy
         Test (CD, FSys, Empty_Symset, err_incorrectly_used_symbol);
       end if;
-    end TYP;
+    end Type_Definition;
 
     ------------------------------------------------------------------
     --------------------------------------------Formal_Parameter_List-
@@ -456,8 +457,8 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------Type_Declaration-
     procedure Type_Declaration is
-      TP         : Typen;
-      RF, Sz, T1 : Integer;
+      xTyp : Exact_Typ;
+      Sz, T1 : Integer;
     begin
       InSymbol;
       Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
@@ -465,12 +466,11 @@ package body HAC.Parser is
       T1 := CD.Id_Count;
       InSymbol;
       Need (CD, IS_Symbol, err_IS_missing);
-      TP := NOTYP;
-      RF := 0;
+      xTyp := (TYP => NOTYP, Ref => 0);
       Sz := 0;
-      TYP (Comma_IDent_Semicolon + FSys, TP, RF, Sz);
-      CD.IdTab (T1).TYP := TP;
-      CD.IdTab (T1).Ref := RF;
+      Type_Definition (Comma_IDent_Semicolon + FSys, xTyp, Sz);
+      CD.IdTab (T1).TYP := xTyp.TYP;
+      CD.IdTab (T1).Ref := xTyp.Ref;
       CD.IdTab (T1).Adr := Sz;
       --
       Test_Semicolon (CD, FSys);
@@ -485,12 +485,12 @@ package body HAC.Parser is
     procedure Var_Declaration is
       --  This procedure processes both Variable and Constant declarations.
       procedure Single_Var_Declaration is
-        T0, T1, RF, Sz, T0i, LC0, LC1 : Integer;
-        TP                            : Typen;
+        T0, T1, Sz, T0i, LC0, LC1 : Integer;
+        xTyp                      : Exact_Typ;
         is_constant, is_typed,
-        is_untyped_constant           : Boolean;
-        C                             : Constant_Rec;
-        I_dummy                       : Integer;
+        is_untyped_constant       : Boolean;
+        C                         : Constant_Rec;
+        I_dummy                   : Integer;
       begin
         T0 := CD.Id_Count;
         Enter_Variable;
@@ -515,7 +515,7 @@ package body HAC.Parser is
         is_typed := False;
         if Type_Begin_Symbol (CD.Sy) then  --  Here, a type name or an anonymous type definition
           is_typed := True;
-          TYP (Becomes_Comma_IDent_Semicolon + FSys, TP, RF, Sz);
+          Type_Definition (Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
         end if;
         Test (CD, Becomes_EQL_Semicolon, Empty_Symset, err_incorrectly_used_symbol);
         --
@@ -559,8 +559,8 @@ package body HAC.Parser is
                     r.Adr := C.I;
                 end case;
               else  --  A variable or a typed constant
-                r.TYP := TP;
-                r.Ref := RF;
+                r.TYP := xTyp.TYP;
+                r.Ref := xTyp.Ref;
                 r.Adr := Dx;
                 Dx    := Dx + Sz;
               end if;
@@ -753,7 +753,7 @@ package body HAC.Parser is
         else
           case X.TYP is
             when Arrays =>
-              Emit1 (CD, k_Copy_Block, CD.Arrays_Table (X.Ref).Size);
+              Emit1 (CD, k_Copy_Block, CD.Arrays_Table (X.Ref).Array_Size);
             when Records =>
               Emit1 (CD, k_Copy_Block, CD.Blocks_Table (X.Ref).VSize);
             when Enums =>
@@ -769,7 +769,7 @@ package body HAC.Parser is
         Emit1 (CD, k_Integer_to_Float, 0);
         Emit (CD, k_Store);
       elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
-        Emit1 (CD, k_String_Literal_Assignment, CD.Arrays_Table (X.Ref).Size);  --  array size
+        Emit1 (CD, k_String_Literal_Assignment, CD.Arrays_Table (X.Ref).Array_Size);
       elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
         Error (CD, err_string_to_vstring_assignment);
       elsif X.TYP = NOTYP then
@@ -1127,8 +1127,8 @@ package body HAC.Parser is
       procedure FOR_Statement is  --  RM 5.5 (9)
         FOR_Lower_Bound,
         FOR_Upper_Bound : Exact_Typ;
-        F               : Opcode;
-        LC1, last       : Integer;
+        FOR_Begin       : Opcode;    --  Forward or Reverse
+        LC_FOR_Begin, Previous_Last       : Integer;
       begin
         InSymbol;  --  Consume FOR symbol.
         if CD.Sy = IDent then
@@ -1136,22 +1136,21 @@ package body HAC.Parser is
             Fatal (IDENTIFIERS);  --  Exception is raised there.
           end if;
           --  Declare local loop control Variable  --  added Hathorn
-          last := CD.Blocks_Table (CD.Display (Level)).Last;
+          Previous_Last := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
           CD.Id_Count := CD.Id_Count + 1;
-          declare
-            Loop_Parameter : IdTabEntry renames CD.IdTab (CD.Id_Count);
-          begin
-            Loop_Parameter.Name      := CD.Id;
-            Loop_Parameter.Link      := last;
-            Loop_Parameter.Obj       := Variable;
-            Loop_Parameter.Read_only := True;
-            Loop_Parameter.TYP       := NOTYP;
-            Loop_Parameter.Ref       := 0;
-            Loop_Parameter.Normal    := True;
-            Loop_Parameter.LEV       := Level;
-            Loop_Parameter.Adr       := Dx;
-          end;
-          CD.Blocks_Table (CD.Display (Level)).Last  := CD.Id_Count;
+          CD.IdTab (CD.Id_Count) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
+             (  Name           => CD.Id,
+                Name_with_case => CD.Id_with_case,
+                Link           => Previous_Last,
+                Obj            => Variable,
+                Read_only      => True,
+                TYP            => NOTYP,
+                Ref            => 0,
+                Normal         => True,
+                LEV            => Level,
+                Adr            => Dx
+             );
+          CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx  := CD.Id_Count;
           Dx := Dx + 1;
           if Dx > MaxDX then
             MaxDX := Dx;
@@ -1163,11 +1162,11 @@ package body HAC.Parser is
         --
         Emit2 (CD, k_Load_Address, CD.IdTab (CD.Id_Count).LEV, CD.IdTab (CD.Id_Count).Adr);
         InSymbol;
-        F := k_FOR_Forward_Begin;
+        FOR_Begin := k_FOR_Forward_Begin;
         if CD.Sy = IN_Symbol then         --       "IN"  in  "for i in reverse 1 .. 10 loop"
           InSymbol;
           if CD.Sy = REVERSE_Symbol then  --  "REVERSE"  in  "for i in reverse 1 .. 10 loop"
-            F := k_FOR_Reverse_Begin;
+            FOR_Begin := k_FOR_Reverse_Begin;
             InSymbol;
           end if;
           --  !!  Here we should have a more general syntax:
@@ -1181,7 +1180,7 @@ package body HAC.Parser is
           if not Discrete_Typ (FOR_Lower_Bound.TYP) then
             Error (CD, err_control_variable_of_the_wrong_type);
           end if;
-          if CD.Sy = Range_Double_Dot_Symbol then                          --  ..
+          if CD.Sy = Range_Double_Dot_Symbol then                          --  ".."
             InSymbol;
             Expression (CD, Level, FSys + LOOP_Symbol, FOR_Upper_Bound);
             if FOR_Upper_Bound /= FOR_Lower_Bound then
@@ -1193,14 +1192,14 @@ package body HAC.Parser is
         else
           Skip (CD, FSys + LOOP_Symbol, err_IN_missing);
         end if;
-        LC1 := CD.LC;
-        Emit (CD, F);
-        LOOP_Statement (For_END (F), CD.LC);
-        --  Forget the iterator variable.
-        CD.ObjCode (LC1).Y                        := CD.LC;
-        CD.Id_Count                               := CD.Id_Count - 1;
-        CD.Blocks_Table (CD.Display (Level)).Last := last;
-        Dx                                        := Dx - 1;
+        LC_FOR_Begin := CD.LC;
+        Emit (CD, FOR_Begin);
+        LOOP_Statement (For_END (FOR_Begin), CD.LC);
+        CD.ObjCode (LC_FOR_Begin).Y := CD.LC;  --  Address of the code just after the loop's end.
+        --  Forget the iterator variable:
+        CD.Id_Count := CD.Id_Count - 1;
+        CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := Previous_Last;
+        Dx := Dx - 1;
       end FOR_Statement;
 
       procedure Select_Statement is
@@ -1474,7 +1473,7 @@ package body HAC.Parser is
         end if;
       end Select_Statement;
 
-      procedure Block_Statement (block_name: Alfa) is  -- RM: 5.6
+      procedure Block_Statement (block_name: Alfa) is  --  RM: 5.6
       begin
         Error (
           CD, err_not_yet_implemented,
@@ -1489,6 +1488,8 @@ package body HAC.Parser is
         -- !! * object code and nesting... works on some cases at least (test.adb) !...
         -- !! Perhaps keep same level but have local declarations as for the
         --    variable in a FOR_Statement.
+        -- !! Either both FOR and Block statements forget their definitions, or there
+        --    is perhaps a problem with the stack (DX).
         -- !! Local bodies of subprograms surely mess the object code.
       end Block_Statement;
 
@@ -1732,8 +1733,8 @@ package body HAC.Parser is
       return;
     end if;
     --
-    CD.Blocks_Table (PRB).LastPar := CD.Id_Count;
-    CD.Blocks_Table (PRB).PSize   := Dx;
+    CD.Blocks_Table (PRB).Last_Param_Id_Idx := CD.Id_Count;
+    CD.Blocks_Table (PRB).PSize := Dx;
     --
     if Is_a_function and not Is_a_block_statement then
       Function_Result_Profile;

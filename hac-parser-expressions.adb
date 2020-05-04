@@ -21,7 +21,7 @@ package body HAC.Parser.Expressions is
       Field_Offset, Field_Id : Integer;
     begin
       if V.TYP = Records then
-        Field_Id       := CD.Blocks_Table (V.Ref).Last;
+        Field_Id := CD.Blocks_Table (V.Ref).Last_Id_Idx;
         CD.IdTab (0).Name := CD.Id;
         while CD.IdTab (Field_Id).Name /= CD.Id loop  --  Search field identifier
           Field_Id := CD.IdTab (Field_Id).Link;
@@ -43,21 +43,21 @@ package body HAC.Parser.Expressions is
     --
     procedure Array_Coordinates_Selector is
       Array_Index_Expr : Exact_Typ;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
-      AT_Index : Integer;             --  Index in the table of all arrays definitions.
+      Arr_Tab_Index : Integer;       --  Index in the table of all arrays definitions.
     begin
       loop
         InSymbol (CD);  --  Consume '(' or ',' symbol.
         Expression (CD, Level, FSys + Comma_RParent + RBrack, Array_Index_Expr);
         if V.TYP = Arrays then
-          AT_Index := V.Ref;
-          if CD.Arrays_Table (AT_Index).Index_TYP /= Array_Index_Expr then
+          Arr_Tab_Index := V.Ref;
+          if CD.Arrays_Table (Arr_Tab_Index).Index_xTyp /= Array_Index_Expr then
             Error (CD, err_illegal_array_subscript);
-          elsif CD.Arrays_Table (AT_Index).ELSize = 1 then
-            Emit1 (CD, k_Array_Index_Element_Size_1, AT_Index);
+          elsif CD.Arrays_Table (Arr_Tab_Index).Element_Size = 1 then
+            Emit1 (CD, k_Array_Index_Element_Size_1, Arr_Tab_Index);
           else
-            Emit1 (CD, k_Array_Index, AT_Index);
+            Emit1 (CD, k_Array_Index, Arr_Tab_Index);
           end if;
-          V := CD.Arrays_Table (AT_Index).Element_TYP;
+          V := CD.Arrays_Table (Arr_Tab_Index).Element_xTyp;
         else
           Error (CD, err_indexed_variable_must_be_an_array);
         end if;

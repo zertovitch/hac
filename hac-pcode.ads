@@ -104,8 +104,8 @@ package HAC.PCode is
     --
     k_Read,
     k_Write_String,
-    k_Write_1,
-    k_Write_2,
+    k_Write_Unformatted,
+    k_Write_Formatted,
     k_Write_Float,
     --
     k_Get_Newline,

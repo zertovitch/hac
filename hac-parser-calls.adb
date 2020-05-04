@@ -25,7 +25,7 @@ package body HAC.Parser.Calls is
     --   = 3 then conditional Task Entry Call,    CallCNDE
     --****************************************************************
     X            : Exact_Typ;
-    LastP, CP, K : Integer;
+    Last_Param, CP, K : Integer;
     procedure Issue_Type_Mismatch_Error is
     begin
       Type_Mismatch (
@@ -36,22 +36,22 @@ package body HAC.Parser.Calls is
     end;
   begin
     Emit1 (CD, k_Mark_Stack, I);
-    LastP := CD.Blocks_Table (CD.IdTab (I).Ref).LastPar;
+    Last_Param := CD.Blocks_Table (CD.IdTab (I).Ref).Last_Param_Id_Idx;
     CP    := I;
     if CD.Sy = LParent then  --  Actual parameter list
       loop
         InSymbol (CD);
-        if CP >= LastP then
+        if CP >= Last_Param then
           Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
         else
           CP := CP + 1;
-          if CD.IdTab (CP).Normal then           --  Value parameter (IN)
+          if CD.IdTab (CP).Normal then           --  Value parameter (IN), by copy
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
             if X.TYP = CD.IdTab (CP).TYP then
               if X.Ref /= CD.IdTab (CP).Ref then
                 Issue_Type_Mismatch_Error;
               elsif X.TYP = Arrays then
-                Emit1 (CD, k_Load_Block, CD.Arrays_Table (X.Ref).Size);
+                Emit1 (CD, k_Load_Block, CD.Arrays_Table (X.Ref).Array_Size);
               elsif X.TYP = Records then
                 Emit1 (CD, k_Load_Block, CD.Blocks_Table (X.Ref).VSize);
               end if;
@@ -61,13 +61,13 @@ package body HAC.Parser.Calls is
             elsif X.TYP /= NOTYP then
               Issue_Type_Mismatch_Error;
             end if;
-          else              -- Variable (Name) parameter (IN OUT, OUT)
+          else              --  Variable (Name) parameter (IN OUT, OUT), by reference
             if CD.Sy /= IDent then
               Error (CD, err_identifier_missing);
             else
               K := Locate_Identifier (CD, CD.Id, Level);
               InSymbol (CD);
-              if K = 0 then
+              if K = No_Id then
                 null;  --  Error already issued due to missing identifier
               elsif CD.IdTab (K).Obj /= Variable then
                 Error (CD, err_variable_missing);
@@ -84,7 +84,7 @@ package body HAC.Parser.Calls is
                 else
                   Emit2 (CD, k_Push_Value, CD.IdTab (K).LEV, CD.IdTab (K).Adr);
                 end if;
-                 if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
+                if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                   Selector (CD, Level, FSys + Colon_Comma_RParent, X);
                 end if;
                 if (X.TYP /= CD.IdTab (CP).TYP) or
@@ -101,7 +101,7 @@ package body HAC.Parser.Calls is
       end loop;
       Need (CD, RParent, err_closing_parenthesis_missing);
     end if;
-    if CP < LastP then
+    if CP < Last_Param then
       Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
     end if;
     --
@@ -133,7 +133,7 @@ package body HAC.Parser.Calls is
       if CD.Sy /= IDent then
         Skip (CD, Semicolon, err_identifier_missing);
       else
-        J                 := CD.Blocks_Table (CD.IdTab (I).Ref).Last;
+        J := CD.Blocks_Table (CD.IdTab (I).Ref).Last_Id_Idx;
         CD.IdTab (0).Name := CD.Id;
         while CD.IdTab (J).Name /= CD.Id loop
           J := CD.IdTab (J).Link;

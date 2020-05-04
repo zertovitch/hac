@@ -272,12 +272,12 @@ package body HAC.Parser.Standard_Subprograms is
                 end if;
                 Emit (CD, k_Write_Float);
               else
-                Emit1 (CD, k_Write_2, Typen'Pos (X.TYP));
+                Emit1 (CD, k_Write_Formatted, Typen'Pos (X.TYP));
               end if;
             elsif X.TYP = String_Literals then
               Emit (CD, k_Write_String);
             else
-              Emit1 (CD, k_Write_1, Typen'Pos (X.TYP));
+              Emit1 (CD, k_Write_Unformatted, Typen'Pos (X.TYP));
             end if;
             exit when CD.Sy /= Comma;
           end loop;

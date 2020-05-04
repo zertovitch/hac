@@ -33,21 +33,22 @@ package HAC.Compiler is
   --  the compiler and ignored by the interpreter):
   --
   type ATabEntry is record
-    Index_TYP    : Exact_Typ;  --  C  Type of the index
-    Element_TYP  : Exact_Typ;  --  C  Type of the elements of the array.
+    Index_xTyp   : Exact_Typ;  --  C  Type of the index
+    Element_xTyp : Exact_Typ;  --  C  Type of the elements of the array.
                                --        Element_TYP.Ref is an index to an entry
                                --        in Arrays_Table if the elements of the array
                                --        are themselves arrays
-    Size         : Index;      --  C  Total size of the array
+    Array_Size         : Index;      --  C  Total size of the array
     Low, High    : Index;      --  Limits on the array index: array (Low .. High) of Element_TYP
-    ELSize       : Index;      --  Size of an element
+    Element_Size : Index;      --  Size of an element
   end record;
 
   -------------------------------------------------------------------------
   ------------------------------------------------------------BTabEntry----
   -------------------------------------------------------------------------
-  --  Block-table Entry : Each entry represents a subprogram
-  --  An activation record consists of:
+  --  Block-table Entry : Each entry represents a subprogram or a record type.
+  --
+  --  A subprogram activation record consists of:
   --
   --         (1) the five word fixed area; (see definition of S in Interpreter)
   --         (2) an area for the actual parameters (whether values or
@@ -57,15 +58,15 @@ package HAC.Compiler is
   --  Once again, fields marked with C are used only by the compiler
   --
   type BTabEntry is record
-    Id   : Alfa;            --   Name of the block
-    Last : Index;           -- C pointer to the last identifier in this subprogram
-    LastPar : Index;        -- C pointer to the last parameter in this subprogram
-    PSize : Index;          --  sum of the lengths of areas (1) & (2) above
-    VSize : Index := 0;     --  sum of PSize and length of area (3)
-                            --  (i.e. size of the activation record for
-                            --  this subprogram)
-    SrcFrom : Positive;     --  Source code line count.  Source starts here
-    SrcTo   : Positive;     --  and goes until here    (* Manuel *)
+    Id                : Alfa;         --   Name of the block
+    Last_Id_Idx       : Index;        -- C pointer to the last identifier in this block
+    Last_Param_Id_Idx : Index;        -- C pointer to the last parameter in this block
+    PSize             : Index;        --   sum of the lengths of areas (1) & (2) above
+    VSize             : Index := 0;   --   sum of PSize and length of area (3)
+                                      --   (i.e. size of the activation record for
+                                      --    this block if it is a subprogram)
+    SrcFrom           : Positive;     --   Source code line count.  Source starts here
+    SrcTo             : Positive;     --   and goes until here    (* Manuel *)
   end record;
 
   type aObject is
@@ -101,9 +102,10 @@ package HAC.Compiler is
                                     --    Prozedure, Funktion, aTask, aEntry
     Read_only      : Boolean;       --  If Obj = Variable and Read_only = True,
                                     --    it's a typed constant.
-    TYP            : Typen;         --  One of: NoTyp, Ints, Floats, Bools,
-                                    --    xChars, Arrays, Records, Enums, Strings
-    Ref            : Index;         --  Index into the Block table
+    TYP            : Typen;         --  One of: NoTyp, Ints, Floats, Bools, ...
+    Ref            : Index;         --  Index into the Block_Table, or
+                                    --    the Arrays_Table if TYP = Arrays, or
+                                    --    the Id table (the type's name) if TYP = Enums.
     Normal         : Boolean;       --  value param?
     LEV            : Nesting_level;
     Adr            : Integer;
@@ -112,8 +114,9 @@ package HAC.Compiler is
   --  Obj                           Meaning of Adr
   --  -------------------------------------------------------------------------------
   --  Declared_Number_or_Enum_Item  ?
-  --  Variable                      ?
-  --  TypeMark                      ?
+  --  Variable                      Relative position in the stack.
+  --  TypeMark                      Size (in PCode stack items) of an object
+  --                                    of the declared type.
   --  Prozedure                     Index into the Object Code table,
   --                                    or Level 0 Standard Procedure code
   --  Funktion                      Index into the Object Code table,

@@ -223,7 +223,7 @@ package body HAC.Parser.Helpers is
 
   function Is_Char_Array (CD : Compiler_Data; T : Exact_Typ) return Boolean is
   begin
-    return T.TYP = Arrays and then CD.Arrays_Table (T.Ref).Element_TYP.TYP = Chars;
+    return T.TYP = Arrays and then CD.Arrays_Table (T.Ref).Element_xTyp.TYP = Chars;
   end Is_Char_Array;
 
   ------------------------------------------------------------------
@@ -240,7 +240,7 @@ package body HAC.Parser.Helpers is
     L                     := Level;
     CD.IdTab (No_Id).Name := Id;  --  Sentinel
     loop
-      J := CD.Blocks_Table (CD.Display (L)).Last;
+      J := CD.Blocks_Table (CD.Display (L)).Last_Id_Idx;
       while CD.IdTab (J).Name /= Id loop  --  Scan all Id's on level L.
         J := CD.IdTab (J).Link;
       end loop;
