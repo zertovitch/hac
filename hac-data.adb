@@ -55,4 +55,19 @@ package body HAC.Data is
     end if;
   end To_Alfa;
 
+  function HAC_Image (I : HAC_Integer) return String is
+    Im : constant String := HAC_Integer'Image (I);
+  begin
+    if I < 0 then
+      return Im;
+    else
+      return Im (Im'First + 1 .. Im'Last);
+    end if;
+  end HAC_Image;
+
+  function HAC_Image (F : HAC_Float) return String is
+  begin
+    return HAC_Pack.HAC_Image (HAC_Pack.Real (F));
+  end;
+
 end HAC.Data;

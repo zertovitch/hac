@@ -415,7 +415,8 @@ package body HAC.Parser.Expressions is
               else
                 Error (CD, err_operator_not_defined_for_types);
               end if;
-            when Ampersand_Symbol =>  --  Concatenation. RM: Unbounded_String.
+            when Ampersand_Symbol =>
+              --  Concatenation. RM References: Unbounded_String.
               if X.TYP = VStrings and Y.TYP = VStrings then            --  v & v     RM A.4.5 (15)
                 Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
               elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  v & "x"   RM A.4.5 (16)
@@ -430,6 +431,16 @@ package body HAC.Parser.Expressions is
                 Emit_Std_Funct (CD, SF_VString_Char_Concat);
               elsif X.TYP = Chars and Y.TYP = VStrings then            --  'x' & v   RM A.4.5 (19)
                 Emit_Std_Funct (CD, SF_Char_VString_Concat);
+                X.TYP := VStrings;
+              elsif X.TYP = VStrings and Y.TYP = Ints then             --  v & 123
+                Emit_Std_Funct (CD, SF_VString_Int_Concat);
+              elsif X.TYP = Ints and Y.TYP = VStrings then             --  123 & v
+                Emit_Std_Funct (CD, SF_Int_VString_Concat);
+                X.TYP := VStrings;
+              elsif X.TYP = VStrings and Y.TYP = Floats then           --  v & 3.14159
+                Emit_Std_Funct (CD, SF_VString_Float_Concat);
+              elsif X.TYP = Floats and Y.TYP = VStrings then           --  3.14159 & v
+                Emit_Std_Funct (CD, SF_Float_VString_Concat);
                 X.TYP := VStrings;
               else
                 Error (CD, err_operator_not_defined_for_types);
@@ -459,7 +470,7 @@ package body HAC.Parser.Expressions is
         Y.TYP := Floats;
         Emit1 (CD, k_Integer_to_Float, 0);
       elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
-        Error (CD, err_incompatible_types_for_comparison);
+        Error (CD, err_incompatible_types_for_comparison, "not the same enumeration type");
       elsif X.TYP = Y.TYP then
         if PCode_Atomic_Typ (X.TYP) then
           Emit_Comparison_Instruction (CD, OP, X.TYP);
@@ -467,7 +478,7 @@ package body HAC.Parser.Expressions is
           Error (CD, err_operator_not_defined_for_types);
         end if;
       else
-        Error (CD, err_incompatible_types_for_comparison);
+        Type_Mismatch (CD, err_incompatible_types_for_comparison, Found => Y, Expected => X);
       end if;
       X.TYP := Bools;  --  The result of the comparison is always Boolean.
     end if;

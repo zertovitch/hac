@@ -108,8 +108,8 @@ package HAC.PCode is
     k_Write_Formatted,
     k_Write_Float,
     --
-    k_Get_Newline,
-    k_Put_Newline,
+    k_Skip_Line,
+    k_New_Line,
     k_Set_current_file_pointer,
     k_File_I_O,
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
@@ -233,11 +233,16 @@ package HAC.PCode is
     SF_EOLN,
     SF_Random_Int,
     --  VString functions
-    SF_Literal_to_VString,
-    SF_Two_VStrings_Concat,
-    SF_VString_Char_Concat,
-    SF_Char_VString_Concat,
-    SF_LStr_VString_Concat,
+    SF_Literal_to_VString,      --  +"Hello"
+    SF_Two_VStrings_Concat,     --  V1 & V2
+    SF_VString_Char_Concat,     --  V & 'x'
+    SF_Char_VString_Concat,     --  'x' & V
+    SF_LStr_VString_Concat,     --  "Hello " & V
+    --
+    SF_VString_Int_Concat,      --  V & 123
+    SF_Int_VString_Concat,      --  123 & V
+    SF_VString_Float_Concat,    --  V & 3.14159
+    SF_Float_VString_Concat,    --  3.14159 & V
     SF_Element,
     SF_Length,
     SF_Slice,
@@ -272,6 +277,7 @@ package HAC.PCode is
   type SP_Code is (
     SP_Get,
     SP_Get_Line,
+    SP_Skip_Line,
     SP_Put,
     SP_Put_Line,
     SP_New_Line,

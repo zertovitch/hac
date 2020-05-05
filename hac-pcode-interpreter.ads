@@ -25,13 +25,12 @@ package HAC.PCode.Interpreter is
   --  See Interpret_on_Current_IO for a non-piped implementation (normal terminal).
 
   package Boolean_Text_IO is new Ada.Text_IO.Enumeration_IO (Boolean);
-  package RIO is new Ada.Text_IO.Float_IO (HAC.Data.HAC_Float);
 
   generic
     with function End_Of_File_Console return Boolean;
     with function End_Of_Line_Console return Boolean;
     with procedure Get_Console (i: out Integer; Width : Ada.Text_IO.Field := 0);
-    with procedure Get_Console (f: out HAC.Data.HAC_Float;   Width : Ada.Text_IO.Field := 0);
+    with procedure Get_Console (f: out HAC.Data.HAC_Float; Width : Ada.Text_IO.Field := 0);
     with procedure Get_Console (c: out Character);
     with procedure Skip_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
     --
@@ -41,9 +40,9 @@ package HAC.PCode.Interpreter is
       Base  : Ada.Text_IO.Number_Base := Ada.Integer_Text_IO.Default_Base);
     with procedure Put_Console (
       f    : HAC.Data.HAC_Float;
-      Fore : Integer := RIO.Default_Fore;
-      Aft  : Integer := RIO.Default_Aft;
-      Exp  : Integer := RIO.Default_Exp
+      Fore : Integer := HAC.Data.RIO.Default_Fore;
+      Aft  : Integer := HAC.Data.RIO.Default_Aft;
+      Exp  : Integer := HAC.Data.RIO.Default_Exp
     );
     with procedure Put_Console (
       b     : in Boolean;

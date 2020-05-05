@@ -18,6 +18,7 @@ project HAC_Exm is
      --
      "ackermann.adb",
      "arguments.adb",
+     "console_io.adb",
      "days_1901.adb",
      "einmaleins.adb",
      "env.adb",

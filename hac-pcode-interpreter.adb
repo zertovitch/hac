@@ -12,7 +12,7 @@ with Ada.Unchecked_Deallocation;
 package body HAC.PCode.Interpreter is
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions (HAC.Data.HAC_Float);
-  use REF, RIO;
+  use REF, HAC.Data.RIO;
   use type HAC.Data.HAC_Float;
 
   package InterDef is
@@ -63,7 +63,7 @@ package body HAC.PCode.Interpreter is
       --  General register - variant record in Pascal
       -- B : Boolean;
       -- C : Character;
-      I : Integer; -- Also for former B (Boolean) and C (Character)
+      I : HAC.Data.HAC_Integer; -- Also for former B (Boolean) and C (Character)
       R : HAC.Data.HAC_Float;
       V : HAC.Data.VString;  --  !! might make copies slow (would a discriminant help?)
     end record;
@@ -591,6 +591,18 @@ package body HAC.PCode.Interpreter is
           Idx := S (Curr_TCB.T + 1).I;  --  Index to string table
           S (Curr_TCB.T).V :=
             CD.Strings_Constants_Table (Idx .. Idx + Len - 1) & S (Curr_TCB.T + 2).V;
+        when SF_VString_Int_Concat =>
+          Pop;
+          S (Curr_TCB.T).V := S (Curr_TCB.T).V & To_VString (HAC_Image (S (Curr_TCB.T + 1).I));
+        when SF_Int_VString_Concat =>
+          Pop;
+          S (Curr_TCB.T).V := To_VString (HAC_Image (S (Curr_TCB.T).I)) & S (Curr_TCB.T + 1).V;
+        when SF_VString_Float_Concat =>
+          Pop;
+          S (Curr_TCB.T).V := S (Curr_TCB.T).V & To_VString (HAC_Image (S (Curr_TCB.T + 1).R));
+        when SF_Float_VString_Concat =>
+          Pop;
+          S (Curr_TCB.T).V := To_VString (HAC_Image (S (Curr_TCB.T).R)) & S (Curr_TCB.T + 1).V;
         when SF_Element =>
           Pop;
           --  [T] := Element ([T], [T+1]) :
@@ -1164,7 +1176,7 @@ package body HAC.PCode.Interpreter is
               when 1 =>
                 Ada.Integer_Text_IO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).I);
               when 2 =>
-                RIO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).R);
+                HAC.Data.RIO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).R);
               when 3 =>
                 Ada.Text_IO.Get (FAT.FIL (FAT.CURR), CH);
                 S (S (Curr_TCB.T).I).I := Character'Pos (CH);
@@ -1214,7 +1226,7 @@ package body HAC.PCode.Interpreter is
                 S (Curr_TCB.T - 1).I,
                 S (Curr_TCB.T).I);
             when 2 =>
-              RIO.Put
+              HAC.Data.RIO.Put
                (FAT.FIL (FAT.CURR),
                 S (Curr_TCB.T - 1).R,
                 S (Curr_TCB.T).I);
@@ -1291,7 +1303,7 @@ package body HAC.PCode.Interpreter is
             S (Curr_TCB.T).I,
             0);
         else
-          RIO.Put
+          HAC.Data.RIO.Put
            (FAT.FIL (FAT.CURR),
             S (Curr_TCB.T - 2).R,
             S (Curr_TCB.T - 1).I,
@@ -1308,13 +1320,11 @@ package body HAC.PCode.Interpreter is
       when Binary_Operator_Opcode =>
         Do_Binary_Operator;
 
-      when k_Get_Newline =>
+      when k_Skip_Line =>
         if FAT.CURR = 0 then       --  Schoening
-          if End_Of_File_Console then
-            PS := REDCHK;
-          else
-            Skip_Line_Console;
-          end if;
+          --  The End_Of_File_Console check
+          --  is skipped here (disturbs GNAT's run-time).
+          Skip_Line_Console;
         elsif Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
           PS := REDCHK;
         else
@@ -1322,7 +1332,7 @@ package body HAC.PCode.Interpreter is
         end if;
         SWITCH := True;  --  give up control when doing I/O
 
-      when k_Put_Newline =>
+      when k_New_Line =>
         if FAT.CURR = 0 then      --  Schoening
           New_Line_Console;
         else
@@ -1631,11 +1641,11 @@ package body HAC.PCode.Interpreter is
       ( Ada.Text_IO.End_Of_File,
         Ada.Text_IO.End_Of_Line,
         Ada.Integer_Text_IO.Get,
-        RIO.Get,
+        HAC.Data.RIO.Get,
         Ada.Text_IO.Get,
         Ada.Text_IO.Skip_Line,
         Ada.Integer_Text_IO.Put,
-        RIO.Put,
+        HAC.Data.RIO.Put,
         Boolean_Text_IO.Put,
         Ada.Text_IO.Put,
         Ada.Text_IO.Put,

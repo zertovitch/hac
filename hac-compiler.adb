@@ -367,12 +367,12 @@ package body HAC.Compiler is
       --  Standard functions
       --
       Enter_Std_Funct ("abs",            Floats, SF_Abs_Int);  --  abs is an Ada keyword...
-      Enter_Std_Funct ("CHR",            Chars,  SF_T_Val);    --  S'Val : RM 3.5.5 (5)
-      Enter_Std_Funct ("ORD",            Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)
-      Enter_Std_Funct ("SUCC",           Chars,  SF_T_Succ);   --  S'Succ : RM 3.5 (22)
-      Enter_Std_Funct ("PRED",           Chars,  SF_T_Pred);   --  S'Pred : RM 3.5 (25)
-      Enter_Std_Funct ("ROUND",          Ints,   SF_Round_Float_to_Int);
-      Enter_Std_Funct ("TRUNC",          Ints,   SF_Trunc_Float_to_Int);
+      Enter_Std_Funct ("Chr",            Chars,  SF_T_Val);    --  S'Val : RM 3.5.5 (5)
+      Enter_Std_Funct ("Ord",            Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)
+      Enter_Std_Funct ("Succ",           Chars,  SF_T_Succ);   --  S'Succ : RM 3.5 (22)
+      Enter_Std_Funct ("Pred",           Chars,  SF_T_Pred);   --  S'Pred : RM 3.5 (25)
+      Enter_Std_Funct ("Round",          Ints,   SF_Round_Float_to_Int);
+      Enter_Std_Funct ("Trunc",          Ints,   SF_Trunc_Float_to_Int);
       Enter_Std_Funct ("Sin",            Floats, SF_Sin);
       Enter_Std_Funct ("Cos",            Floats, SF_Cos);
       Enter_Std_Funct ("Exp",            Floats, SF_Exp);
@@ -381,8 +381,8 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Arctan",         Floats, SF_Arctan);
       Enter_Std_Funct ("EOF",            Bools,  SF_EOF);
       Enter_Std_Funct ("EOLN",           Bools,  SF_EOLN);
-      Enter_Std_Funct ("RAND",           Ints,   SF_Random_Int);    --{ Schoening }
-      Enter_Std_Funct ("RND",            Floats, SF_Random_Float);
+      Enter_Std_Funct ("Rand",           Ints,   SF_Random_Int);    --{ Schoening }
+      Enter_Std_Funct ("Rnd",            Floats, SF_Random_Float);
       Enter_Std_Funct ("CLOCK",          Floats, SF_Clock);         --{ Cramer }
       --
       Enter_Std_Funct ("Element",        Chars,    SF_Element);
@@ -399,24 +399,25 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Argument",       VStrings, SF_Argument);
       Enter_Std_Funct ("Get_Env",        VStrings, SF_Get_Env);
       --
-      Enter_Std_Proc ("Get",      SP_Get);
-      Enter_Std_Proc ("Get_Line", SP_Get_Line);
-      Enter_Std_Proc ("Put",      SP_Put);
-      Enter_Std_Proc ("Put_Line", SP_Put_Line);
-      Enter_Std_Proc ("New_Line", SP_New_Line);
-      Enter_Std_Proc ("Wait",     SP_Wait);
-      Enter_Std_Proc ("Signal",   SP_Signal);
+      Enter_Std_Proc ("Get",       SP_Get);
+      Enter_Std_Proc ("Get_Line",  SP_Get_Line);
+      Enter_Std_Proc ("Skip_Line", SP_Skip_Line);
+      Enter_Std_Proc ("Put",       SP_Put);
+      Enter_Std_Proc ("Put_Line",  SP_Put_Line);
+      Enter_Std_Proc ("New_Line",  SP_New_Line);
+      Enter_Std_Proc ("Wait",      SP_Wait);
+      Enter_Std_Proc ("Signal",    SP_Signal);
       --
-      Enter_Std_Proc ("Reset",    SP_Reset);
-      Enter_Std_Proc ("Rewrite",  SP_Rewrite);
-      Enter_Std_Proc ("Close",    SP_Close);
+      Enter_Std_Proc ("Reset",     SP_Reset);
+      Enter_Std_Proc ("Rewrite",   SP_Rewrite);
+      Enter_Std_Proc ("Close",     SP_Close);
       --
-      Enter_Std_Proc ("CursorAt", SP_CursorAt);
-      Enter_Std_Proc ("Quantum",  SP_Quantum);
-      Enter_Std_Proc ("Priority", SP_Priority);
-      Enter_Std_Proc ("InheritP", SP_InheritP);
+      Enter_Std_Proc ("CursorAt",  SP_CursorAt);
+      Enter_Std_Proc ("Quantum",   SP_Quantum);
+      Enter_Std_Proc ("Priority",  SP_Priority);
+      Enter_Std_Proc ("InheritP",  SP_InheritP);
       --
-      Enter_Std_Proc ("Set_Env",  SP_Set_Env);
+      Enter_Std_Proc ("Set_Env",   SP_Set_Env);
       --
       --  Enter Main.
       --

@@ -1,5 +1,5 @@
---  We check numerical recursive functions (and
---  also a bit the correctness of array operations).
+--  We check numerical recursive functions (and also a bit the
+--  correctness of array operations, and nested subprograms too).
 
 with HAC_Pack;  use HAC_Pack;
 
@@ -60,36 +60,44 @@ procedure Recursion is
   end Ackarray;
 
   procedure Nesting_Tests is
-    --  We compute in an horribly complicated way: 2 ** Level - 1.
-    --  This is for testing recursion *and* nesting together.
+    --  We compute in an horribly complicated way the value: 2 ** Level - 1.
+    --  This is for testing recursion *and* nested subprograms together.
 
     Max_L : constant := 20;
 
+    type Usine_a_Gaz is record
+      ant, bat : Real;
+      N        : Integer;
+      cat, dog : Boolean;
+    end record;
+
     procedure Nesting_Test_P is
-      procedure Add_1_and_shift (N: in out Integer; Level : Integer) is
-        procedure Shift_and_add_1 (N: in out Integer) is
+      --  Outer calls inner and vice-versa.
+      procedure Add_1_and_shift (U: in out Usine_a_Gaz; Level : Integer) is
+        procedure Shift_and_add_1 (U: in out Usine_a_Gaz) is
         begin
           if Level > 1 then
-            N := N * 2;
-            Add_1_and_shift (N, Level - 1);
+            U.N := U.N * 2;
+            Add_1_and_shift (U, Level - 1);
           end if;
         end;
       begin
-        N := N + 1;
-        Shift_and_add_1 (N);
+        U.N := U.N + 1;
+        Shift_and_add_1 (U);
       end;
-      R : Integer;
+      R : Usine_a_Gaz;
     begin
       for L in 1 .. Max_L loop
-        R := 0;
+        R.N := 0;
         Add_1_and_shift (R, L);
-        if R /= 2 ** L - 1 then
+        if R.N /= 2 ** L - 1 then
           Put_Line ("Compiler bug [Nesting_Test_P]");
         end if;
       end loop;
     end Nesting_Test_P;
 
     procedure Nesting_Test_F is
+      --  Outer calls inner and vice-versa.
       function Add_1_and_shift (N: Integer; Level : Integer) return Integer is
         function Shift_and_add_1 (N: Integer) return Integer is
         begin

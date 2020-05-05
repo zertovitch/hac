@@ -8,14 +8,31 @@
 --
 -------------------------------------------------------------------------------------
 
---  This packages contains constants and types for the
+--  This package contains constants and types for the
 --  compiler and the p-code interpreter.
 
+with HAC_Pack;
+
 with Ada.Strings.Unbounded;
+with Ada.Text_IO;
 
 package HAC.Data is
 
-  pragma Elaborate_Body;
+  subtype HAC_Integer is Integer;  --  !! TBD: set it to a 64-bit signed.
+  HAC_Integer_Name : constant String := "INTEGER";
+  function HAC_Image (I : HAC_Integer) return String;
+
+  --  HAC's default floating-point type is double-precision
+  --  and is called "Real" in HAC's HAC_Pack package.
+  --
+  type HAC_Float is digits HAC_Pack.Real'Digits;
+  HAC_Float_Name : constant String := "REAL";
+  function HAC_Image (F : HAC_Float) return String;
+
+  --  Max & Min Exponents. IEEE Double Precision.
+  --  TBD: find the attribute, applied on HAC_Float, that matches this value.
+  EMax : constant :=  308;
+  EMin : constant := -308;
 
   ------------------------
   --  Global constants  --
@@ -33,14 +50,11 @@ package HAC.Data is
   AMax                  : constant := 30;   --  Size OF ARRAY-TABLE
   BMax                  : constant := 25;   --  Size OF Block-TABLE
   Float_Const_Table_Max : constant := 100;
-  Cases_Max             : constant := 30;   --  Max number of cases in a CASE statement
-  CDMax                 : constant := 2500; --  Size OF ObjCode
-  ERMax                 : constant := 90;   --  MAX Error NO.
-  EMax                  : constant :=  77;  --  MAX EXPONENT of FLOAT NUMBERS
-  EMin                  : constant := -78;  --  MIN EXPONENT
+  Cases_Max             : constant := 30;    --  Max number of cases in a CASE statement
+  CDMax                 : constant := 2500;  --  Size OF ObjCode
   EntryMax              : constant := 30;   --  Maximum Number of Entry Statements
   FMax                  : constant := 20;   --  Maximum Number of files for I/O
-  KMax                  : constant := 7;    --  Max No. of significant digits
+  KMax                  : constant := HAC_Float'Digits;
   Nesting_Level_Max     : constant := 20;
 
   CallSTDP   : constant := 0;             --  Call type for standard procedure call
@@ -257,15 +271,6 @@ package HAC.Data is
 
   subtype Index is Integer range -XMax .. +XMax;
 
-  --  HAC's default floating-point type is double-precision
-  --  and is called "Real" in HAC's HAC_Pack package.
-  --
-  type HAC_Float is digits 15;
-  HAC_Float_Name   : constant String := "REAL";
-
-  subtype HAC_Integer is Integer;  --  !! TBD: set it to a 64-bit signed.
-  HAC_Integer_Name : constant String := "INTEGER";
-
   ------------------------------
   --  Compilation error type  --
   ------------------------------
@@ -370,7 +375,7 @@ package HAC.Data is
     err_unexpected_end_of_text,                  --  2018-04-01
     err_not_yet_implemented,                     --  2019-03-24
     err_type_conversion_not_supported,           --  2020-03-31
-    err_int_to_float_coercion,                   --  2020-04-06
+    err_numeric_type_coercion,                   --  2020-04-06
     err_operator_not_defined_for_types,          --  2020-04-06
     err_no_null_functions,                       --  2020-04-10
     err_digit_expected,
@@ -405,5 +410,7 @@ package HAC.Data is
     kind      : Message_kind;  --  Error, or warning, or ? ...
     repair    : Repair_kit     --  Can error be automatically repaired; if so, how ?
   );
+
+  package RIO is new Ada.Text_IO.Float_IO (HAC.Data.HAC_Float);
 
 end HAC.Data;

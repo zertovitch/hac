@@ -91,7 +91,7 @@ package body HAC.UErrors is
       when err_mod_requires_integer_arguments =>
         return """mod"" requires integer arguments";
       when err_incompatible_types_for_comparison =>
-        return "incompatible types for comparison";
+        return "incompatible types for comparison: " & hint;
       when err_parameter_types_do_not_match =>
         return "parameter types do not match: " & hint;
       when err_variable_missing =>
@@ -210,7 +210,7 @@ package body HAC.UErrors is
         return "construct not yet correctly implemented or supported by HAC";
       when err_type_conversion_not_supported =>
         return "this type conversion is not supported: " & hint;
-      when err_int_to_float_coercion =>
+      when err_numeric_type_coercion =>
         return "numeric types don't match: " & hint & " - please use explicit conversion";
       when err_operator_not_defined_for_types =>
         return "operator is not defined for those operand types";

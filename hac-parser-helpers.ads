@@ -77,6 +77,8 @@ package HAC.Parser.Helpers is
 
   --  https://en.wikipedia.org/wiki/Type_conversion#Implicit_type_conversion
   --  One of the most useful feature of Ada is the absence of type coercion.
+  --  Note from the Python 2.5 doc:
+  --  "In Python 3.0, coercion will not be supported."
   --
   procedure Forbid_Type_Coercion (CD : in out Compiler_Data; details: String);
 

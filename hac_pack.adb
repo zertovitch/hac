@@ -1,6 +1,6 @@
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 with Ada.Numerics.Generic_Elementary_Functions;
-with Ada.Strings; use Ada.Strings;
+with Ada.Strings.Fixed; use Ada.Strings;
 with Ada.Text_IO;
 
 package body HAC_Pack is
@@ -8,9 +8,9 @@ package body HAC_Pack is
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions(Real);
 
-  function "**" (f1, f2 : Real) return Real is
+  function "**" (F1, F2 : Real) return Real is
   begin
-    return REF."**" (f1, f2);
+    return REF."**" (F1, F2);
   end;
 
   function Sqrt (I : Integer) return Real is
@@ -23,15 +23,10 @@ package body HAC_Pack is
     return REF.Sqrt(F);
   end Sqrt;
 
-  function Odd (I : Integer) return Boolean is
-  begin
-    return I mod 2 = 1;
-  end Odd;
-
-  function ASCII (I : Integer) return Character is
+  function Chr (I : Integer) return Character is
   begin
     return Character'Val(I);
-  end ASCII;
+  end Chr;
 
   function Ord (C : Character) return Integer is
   begin
@@ -95,6 +90,42 @@ package body HAC_Pack is
     return Real (Random (gen));
   end Rnd;
 
+  function HAC_Image (I : Integer) return String is
+    Im : constant String := Integer'Image (I);
+  begin
+    if I < 0 then
+      return Im;
+    else
+      return Im (Im'First + 1 .. Im'Last);
+    end if;
+  end HAC_Image;
+
+  function Slice (Source : VString; From : Positive; To : Natural) return VString
+  is
+  begin
+    return To_VString (VStrings_Pkg.Slice (Source, From, To));
+  end Slice;
+
+  function "&" (I : Integer; V : VString) return VString is
+  begin
+    return HAC_Image (I) & V;
+  end;
+
+  function "&" (V : VString; I : Integer) return VString is
+  begin
+    return V & HAC_Image (I);
+  end;
+
+  function "&" (R : Real; V : VString) return VString is
+  begin
+    return HAC_Image (R) & V;
+  end;
+
+  function "&" (V : VString; R : Real) return VString is
+  begin
+    return V & HAC_Image (R);
+  end;
+
   function To_Lower (Item : VString) return VString is
   begin
     return To_VString (To_Lower (To_String (Item)));
@@ -138,40 +169,19 @@ package body HAC_Pack is
     Ada.Text_IO.Get(C);
   end Get;
 
-   ---------
-   -- GET --
-   ---------
-
   procedure Get (I : out Integer) is
-  pragma Unreferenced (I);
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "GET unimplemented");
-    raise Program_Error;
+    IIO.Get (I);
   end Get;
-
-   ---------
-   -- GET --
-   ---------
 
   procedure Get (F : out Real) is
-  pragma Unreferenced (F);
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "GET unimplemented");
-    raise Program_Error;
+    RIO.Get (F);
   end Get;
 
-   ---------
-   -- GET --
-   ---------
-
   procedure Get (B : out Boolean) is
-  pragma Unreferenced (B);
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "GET unimplemented");
-    raise Program_Error;
+    BIO.Get (B);
   end Get;
 
    --------------
@@ -179,52 +189,37 @@ package body HAC_Pack is
    --------------
 
   procedure Get_Line (C : out Character) is
-  pragma Unreferenced (C);
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "GET_LINE unimplemented");
-    raise Program_Error;
+    Get (C);
+    Ada.Text_IO.Skip_Line;
   end Get_Line;
-
-   --------------
-   -- GET_LINE --
-   --------------
 
   procedure Get_Line (I : out Integer) is
-  pragma Unreferenced (I);
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "GET_LINE unimplemented");
-    raise Program_Error;
+    Get (I);
+    Ada.Text_IO.Skip_Line;
   end Get_Line;
-
-   --------------
-   -- GET_LINE --
-   --------------
 
   procedure Get_Line (F : out Real) is
-  pragma Unreferenced (F);
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "GET_LINE unimplemented");
-    raise Program_Error;
+    Get (F);
+    Ada.Text_IO.Skip_Line;
   end Get_Line;
-
-   --------------
-   -- GET_LINE --
-   --------------
 
   procedure Get_Line (B : out Boolean) is
-  pragma Unreferenced (B);
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "GET_LINE unimplemented");
-    raise Program_Error;
+    Get (B);
+    Ada.Text_IO.Skip_Line;
   end Get_Line;
 
-   ---------
-   -- PUT --
-   ---------
+  procedure Skip_Line is
+  begin
+    Ada.Text_IO.Skip_Line;  --  Without the optional parameter, Spacing.
+  end;
+
+  ---------
+  -- PUT --
+  ---------
 
   procedure Put (C : in  Character) is
   begin
@@ -310,10 +305,6 @@ package body HAC_Pack is
     Put_Line (Ada.Strings.Unbounded.To_String (V));
   end Put_Line;
 
-   --------------
-   -- NEW_LINE --
-   --------------
-
   procedure New_Line is
   begin
     Ada.Text_IO.New_Line;
@@ -324,28 +315,22 @@ package body HAC_Pack is
     null; -- !!
   end;
 
-   ----------
-   -- WAIT --
-   ----------
+  ----------
+  -- WAIT --
+  ----------
 
   procedure Wait (S : Semaphore) is
-  pragma Unreferenced (S);
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "WAIT unimplemented");
-    raise Program_Error;
+    raise Program_Error with "WAIT unimplemented";
   end Wait;
 
-   ------------
-   -- SIGNAL --
-   ------------
+  ------------
+  -- SIGNAL --
+  ------------
 
   procedure Signal (S : Semaphore) is
-  pragma Unreferenced (S);
   begin
-      --  Generated stub: replace with real body!
-    pragma Compile_Time_Warning (Standard.True, "SIGNAL unimplemented");
-    raise Program_Error;
+    raise Program_Error with "SIGNAL unimplemented";
   end Signal;
 
   function Argument (Number : Positive) return VString is
@@ -383,6 +368,76 @@ package body HAC_Pack is
     Set_Env (To_String (Name), To_String (Value));
   end;
 
+  --  Code from TeXCAD (tc.adb, TeX_Number),
+  --  less a few simplifications.
+  --
+  function HAC_Image (F : Real) return String is
+    s : String (1 .. Real'Digits + 15);
+    na, nb, np, ne : Natural;
+    function Image_with_exponent return String is
+    begin
+      RIO.Put (s, F);
+      na := s'First;
+      for i in s'Range loop
+        case s (i) is
+          when ' ' => na := i + 1;  --  * Trim spaces on the left
+          when others => null;
+        end case;
+      end loop;
+      ne := Ada.Strings.Fixed.Index (s, "0E");
+      if ne > 0 then
+        --  Simplify "4.56000000000000E+68" into "4.56E+68".
+        --  * Remove extra '0's...
+        nb := ne - 1;
+        while s (nb) = '0' loop
+          nb := nb - 1;
+        end loop;
+        if s (nb) = '.' then  --  "4.E+68" from "4.00000000000000E+68" would be too much...
+          nb := nb + 1;  --  We keep one '0' -> "4.0E+68"
+        end if;
+        return s (na .. nb) & s (ne + 1 .. s'Last);
+      end if;
+      return s (na .. s'Last);
+    end;
+  begin
+    if abs (F) < 10.0 ** (1 - Real'Digits) then
+      --  Banana skin: for a very small value, we'll have 0.0 if
+      --  we dont make this special case. HAC Code:
+      --  ...
+      --  for e in reverse -20 .. -1 loop
+      --    Put_Line (+"" & 10.0 ** e);
+      --  end loop;
+      --  0.000000000001
+      --  0.0000000000001
+      --  0.00000000000001
+      --  1.0E-15
+      --  1.0E-16
+      --  ...
+      return Image_with_exponent;
+    end if;
+    RIO.Put (s, F, Exp => 0);  --  Image without exponent (E)
+    na := s'First;
+    nb := s'Last;
+    np := 0;
+    for i in s'Range loop
+      case s (i) is
+        when '.' => np := i; exit;    --  Find a decimal point
+        when ' ' => na := i + 1;      --  * Trim spaces on the left
+        when others => null;
+      end case;
+    end loop;
+    if np > 0 then
+      --  In case of a decimal point.
+      while nb > np + 1 and then s (nb) = '0' loop
+        nb := nb - 1;                 --  * Remove extra '0's except for "x.0"
+      end loop;
+    end if;
+    return s (na .. nb);
+  exception
+    when Ada.Text_IO.Layout_Error =>
+      --  Number too large, we fall back to show the version with exponent.
+      return Image_with_exponent;
+  end HAC_Image;
 
 begin
   Reset (gen);  --  Randomize.

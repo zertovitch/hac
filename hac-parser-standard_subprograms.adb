@@ -235,8 +235,11 @@ package body HAC.Parser.Standard_Subprograms is
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
         if N = SP_Get_Line then
-          Emit (CD, k_Get_Newline);
+          Emit (CD, k_Skip_Line);
         end if;
+
+      when SP_Skip_Line =>
+        Emit (CD, k_Skip_Line);
 
       when SP_Put | SP_Put_Line =>
         if CD.Sy = LParent then
@@ -299,11 +302,11 @@ package body HAC.Parser.Standard_Subprograms is
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
         if N = SP_Put_Line then
-          Emit (CD, k_Put_Newline);
+          Emit (CD, k_New_Line);
         end if;
 
       when SP_New_Line =>
-        Emit (CD, k_Put_Newline);
+        Emit (CD, k_New_Line);
 
       when SP_Wait | SP_Signal =>
         if CD.Sy /= LParent then

@@ -163,7 +163,7 @@ package body HAC.Parser.Helpers is
 
   procedure Forbid_Type_Coercion (CD : in out Compiler_Data; details: String) is
   begin
-    Error (CD, err_int_to_float_coercion, details, stop_on_error => True);
+    Error (CD, err_numeric_type_coercion, details, stop_on_error => True);
   end Forbid_Type_Coercion;
 
   procedure Type_Mismatch (
