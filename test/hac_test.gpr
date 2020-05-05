@@ -34,7 +34,7 @@ project HAC_Test is
          for Object_Dir use "../obj/fast";
    end case;
 
-   for Source_Dirs use (".", "../exm/special");
+   for Source_Dirs use (".", "..");
    for Exec_Dir use ".";
 
    package Pretty_Printer is

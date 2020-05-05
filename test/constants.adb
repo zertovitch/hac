@@ -15,9 +15,9 @@ procedure Constants is
   r3 : constant Real := 456.0;
 
   i1 : constant Integer := 7;
-  
+
   type R is record a,b : Integer; end record;
-  
+
   s1 : R;
   s2 : R := s1;
   s3 : constant R := s2;
@@ -44,7 +44,7 @@ procedure Constants is
   end;
 
   type Animal is (ant, bat, cat, dog);
-  
+
   pet : constant Animal := dog;
 
 begin

@@ -12,7 +12,7 @@ procedure Enumerations is
   procedure Test_ARRAY is
     aa : array(d .. f) of E4;
   begin
-    AA (e) := g;
+    aa (e) := g;
   end;
 
   x1 : E1;
@@ -37,7 +37,7 @@ procedure Enumerations is
   pet2: Animal;
 
   procedure Test_CASE is
-    a : Animal;
+    a : Animal := dog;
   begin
     case a is
       --  when d => null;  --  <-- wrong enum type

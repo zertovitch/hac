@@ -20,7 +20,7 @@ procedure Floats is
 
   procedure Test_Trigo is
     pi : constant := 3.141592653;
-    scale : Real := pi * 0.25;
+    scale : constant Real := pi * 0.25;
     steps : constant := 100;
     x, s, c, t : Real;
   begin
