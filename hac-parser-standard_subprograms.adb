@@ -63,7 +63,8 @@ package body HAC.Parser.Standard_Subprograms is
       when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
         Expected (1) := Discrete_Typ;
       when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
-           SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
+           SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan |
+           SF_Image_Ints
         =>
         Expected (1) := Numeric_Typ_Set;
       when SF_Random_Int | SF_Argument =>
@@ -71,16 +72,20 @@ package body HAC.Parser.Standard_Subprograms is
       when SF_Element =>
         Expected (1 .. 2) := (VStrings_Set, Ints_Set);
       when SF_Length |
-           SF_Trim_Left .. SF_Trim_Both =>
+           SF_Trim_Left .. SF_Trim_Both |
+           SF_Float_Value | SF_Integer_Value
+        =>
         Expected (1) := VStrings_Set;
       when SF_Slice =>
         Expected (1 .. 3):= (VStrings_Set, Ints_Set, Ints_Set);
       when SF_To_Lower_Char | SF_To_Upper_Char =>
         Expected (1) := VStrings_or_Chars_Set;
       when SF_Index =>
-        Expected (1 .. 2) := (VStrings_Set, VStrings_Set);
-      when SF_Get_Env =>
-        Expected (1) := VStrings_or_Str_Lit_Set;  --  Get_Env ("PATH")  _or_  Get_Env (+"PATH")
+        --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
+        Expected (1 .. 2) := (VStrings_Set, VStrings_or_Str_Lit_Set);
+      when SF_Get_Env | SF_Shell_Execute =>
+        --  Get_Env (+"PATH")  _or_  Get_Env ("PATH")
+        Expected (1) := VStrings_or_Str_Lit_Set;
       when SF_Niladic =>
         null;  --  Zero argument -> no argument type to check.
       when SF_EOF | SF_EOLN =>
@@ -134,6 +139,10 @@ package body HAC.Parser.Standard_Subprograms is
               "value is of integer type; floating-point is expected as parameter");
             Emit1 (CD, k_Integer_to_Float, 0);
           end if;
+        when SF_Image_Ints =>
+          if Actual (1).TYP = Floats then
+            Code_Adjusted := SF_Image_Floats;
+          end if;
         when SF_To_Lower_Char =>
           Return_Typ := Actual (1);
           if Actual (1).TYP = VStrings then      --  To_Lower (Item : VString) return VString;
@@ -144,7 +153,13 @@ package body HAC.Parser.Standard_Subprograms is
           if Actual (1).TYP = VStrings then      --  To_Upper (Item : VString) return VString;
             Code_Adjusted := SF_To_Upper_VStr;
           end if;
-        when SF_Get_Env =>
+        when SF_Index =>
+          --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
+          if Actual (2).TYP = String_Literals then
+            Emit_Std_Funct (CD, SF_Literal_to_VString);
+          end if;
+        when SF_Get_Env | SF_Shell_Execute =>
+          --  Get_Env ("PATH")  ->  Get_Env (+"PATH")
           if Actual (1).TYP = String_Literals then
             Emit_Std_Funct (CD, SF_Literal_to_VString);
           end if;

@@ -112,12 +112,18 @@ package HAC_Pack is
   function To_Lower (Item : VString) return VString;
   function To_Upper (Item : VString) return VString;
 
+  function Index (Source : VString; Pattern : String) return Natural;
   function Index (Source : VString; Pattern : VString) return Natural;
   function "*" (Left : Natural; Right : Character) return VString renames VStrings_Pkg."*";
   function "*" (Left : Natural; Right : VString) return VString renames VStrings_Pkg."*";
   function Trim_Left  (Source : VString) return VString;
   function Trim_Right (Source : VString) return VString;
   function Trim_Both  (Source : VString) return VString;
+
+  function Image (I : Integer) return VString;
+  function Image (F : Real) return VString;
+  function Integer_Value (V: VString) return Integer;
+  function Float_Value (V: VString) return Real;
 
   -------------------------
   --  Text Input-Output  --
@@ -184,7 +190,17 @@ package HAC_Pack is
   procedure Set_Env (Name : String;  Value : VString);
   procedure Set_Env (Name : VString; Value : VString);
 
-  --  This is public, but principally used by HAC itself to avoid too much code duplication.
+  function Shell_Execute (Command : String) return Integer;
+  function Shell_Execute (Command : VString) return Integer;
+
+  --  This is public, but directly used by the HAC system itself only
+  --  (HAC programs cannot return String's).
+  --  That way, we avoid code duplication or incompatibilities between
+  --  HAC_Pack (as compatibility package) and the HAC run-tim system itself.
+
+  generic
+    type Abstract_Integer is range <>;
+  function HAC_Generic_Image (I : Abstract_Integer) return String;
 
   function HAC_Image (F : Real) return String;
 

@@ -394,10 +394,14 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Trim_Left",      VStrings, SF_Trim_Left);
       Enter_Std_Funct ("Trim_Right",     VStrings, SF_Trim_Right);
       Enter_Std_Funct ("Trim_Both",      VStrings, SF_Trim_Both);
+      Enter_Std_Funct ("Image",          VStrings, SF_Image_Ints);
+      Enter_Std_Funct ("Integer_Value",  Ints,     SF_Integer_Value);
+      Enter_Std_Funct ("Float_Value",    Floats,   SF_Float_Value);
       --
       Enter_Std_Funct ("Argument_Count", Ints,     SF_Argument_Count);
       Enter_Std_Funct ("Argument",       VStrings, SF_Argument);
       Enter_Std_Funct ("Get_Env",        VStrings, SF_Get_Env);
+      Enter_Std_Funct ("Shell_Execute",  Ints,     SF_Shell_Execute);
       --
       Enter_Std_Proc ("Get",       SP_Get);
       Enter_Std_Proc ("Get_Line",  SP_Get_Line);

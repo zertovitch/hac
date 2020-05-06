@@ -53,12 +53,17 @@ package HAC.PCode.Interpreter is
     with procedure New_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
 
     --  We also abstract the command-line parameters.
-    --  Function profiles from Ada.Command_Line (RM A.15)
+    --  Function profiles from Ada.Command_Line (RM A.15).
     with function Argument_Count return Natural;
     with function Argument (Number : in Positive) return String;
+    --  Same for shell execution.
+    with function Shell_Execute (Command : String) return Integer;
 
   procedure Interpret (CD: Compiler_Data);
 
+  --  We provide a ready-to-use, "standard" instantiation,
+  --  with Ada.Text_IO, Ada.Command_Line, ...
+  --
   procedure Interpret_on_Current_IO (
     CD             : Compiler_Data;
     Argument_Shift : Natural := 0    --  Number of arguments to be skipped

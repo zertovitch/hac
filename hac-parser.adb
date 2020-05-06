@@ -1009,7 +1009,11 @@ package body HAC.Parser is
         begin
           Number_Declaration_or_Enum_Item (FSys + Alt_Finger, Lab);
           if Lab.TP /= X then
-            Error (CD, err_case_label_not_same_type_as_case_clause);
+            Type_Mismatch (
+              CD, err_case_label_not_same_type_as_case_clause,
+              Found    => Lab.TP,
+              Expected => X
+            );
           elsif I = Cases_Max then
             Fatal (Case_Labels);  --  Exception is raised there.
           else

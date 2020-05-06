@@ -256,9 +256,14 @@ package HAC.PCode is
     SF_Trim_Left,
     SF_Trim_Right,
     SF_Trim_Both,
+    SF_Image_Ints,
+    SF_Image_Floats,
+    SF_Integer_Value,
+    SF_Float_Value,
     --
     SF_Argument,
     SF_Get_Env,
+    SF_Shell_Execute,
     --
     --  Niladic functions.
     --

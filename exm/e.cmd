@@ -41,5 +41,7 @@ pause
 pause
 ..\hax -v2 days_1901.adb
 pause
+..\hax -v2 shell.adb
+pause
 
 :fin

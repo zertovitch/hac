@@ -124,16 +124,20 @@ begin
   Up_Low (+"Upside Down");
   --
   Put_Line (+"  [" & (-123) & "]  [" & 123 & "]  [" & 3.14159 & ']');
-  Put_Line (123 & (+" Right VString"));
-  Put_Line ((-456.0) & (+" Right VString"));
-  Put_Line ((-456.0e9) & (+" Right VString"));
-  Put_Line (456.0e11 & (+" Right VString"));
-  Put_Line (456.0e66 & (+" Right VString"));
-  Put_Line (456.789e13 & (+" Right VString"));
-  Put_Line (4.56789e13 & (+" Right VString"));
-  Put_Line (4.56789e14 & (+" Right VString"));
-  Put_Line (4.56789e15 & (+" Right VString"));
-  Put_Line (1.79769313486232E+307 & (+" Right VString"));
+  Put_Line (123 & (+" & Right VString"));
+  Put_Line ((-456.0) & (+" & Right VString"));
+  Put_Line ((-456.0e9) & (+" & Right VString"));
+  Put_Line (456.0e11 & (+" & Right VString"));
+  Put_Line (456.0e66 & (+" & Right VString"));
+  Put_Line (456.789e13 & (+" & Right VString"));
+  Put_Line (4.56789e13 & (+" & Right VString"));
+  Put_Line (4.56789e14 & (+" & Right VString"));
+  Put_Line (4.56789e15 & (+" & Right VString"));
+  Put_Line (1.79769313486232E+307 & (+" & Right VString"));
+  Put_Line ("Image... " & Image (4.56789e15));
+  Put_Line ("Image... " & Image (456789));
+  Put_Line (Float_Value   (+"456.789e13"));  --  Text_IO display of the Real number
+  Put_Line (Integer_Value (+"456"));         --  Text_IO display of the Integer number
   --
   if s4 /= +"abcdef" then  --  Comparison VString to VString
     Put ("Ooops?");

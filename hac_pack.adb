@@ -3,6 +3,8 @@ with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Strings.Fixed; use Ada.Strings;
 with Ada.Text_IO;
 
+with Interfaces.C;
+
 package body HAC_Pack is
   use Ada.Characters.Handling, VStrings_Pkg;
 
@@ -136,9 +138,14 @@ package body HAC_Pack is
     return To_VString (To_Upper (To_String (Item)));
   end;
 
+  function Index (Source : VString; Pattern : String) return Natural is
+  begin
+    return VStrings_Pkg.Index (Source, Pattern);
+  end;
+
   function Index (Source : VString; Pattern : VString) return Natural is
   begin
-    return Index (Source, To_String (Pattern));
+    return VStrings_Pkg.Index (Source, To_String (Pattern));
   end;
 
   function Trim_Left  (Source : VString) return VString is
@@ -154,6 +161,28 @@ package body HAC_Pack is
   function Trim_Both  (Source : VString) return VString is
   begin
     return Trim (Source, Both);
+  end;
+
+  function Image (I : Integer) return VString is
+    function HAC_Image is
+      new HAC_Pack.HAC_Generic_Image (Abstract_Integer => Integer);
+  begin
+    return To_VString (HAC_Image (I));
+  end Image;
+
+  function Image (F : Real) return VString is
+  begin
+    return To_VString (HAC_Image (F));
+  end;
+
+  function Integer_Value (V: VString) return Integer is
+  begin
+    return Integer'Value (To_String (V));
+  end;
+
+  function Float_Value (V: VString) return Real is
+  begin
+    return Real'Value (To_String (V));
   end;
 
   package IIO is new Ada.Text_IO.Integer_IO(Integer);
@@ -368,10 +397,19 @@ package body HAC_Pack is
     Set_Env (To_String (Name), To_String (Value));
   end;
 
-  --  Code from TeXCAD (tc.adb, TeX_Number),
-  --  less a few simplifications.
-  --
+  function HAC_Generic_Image (I : Abstract_Integer) return String is
+    Im : constant String := Abstract_Integer'Image (I);
+  begin
+    if I < 0 then
+      return Im;
+    else
+      return Im (Im'First + 1 .. Im'Last);
+    end if;
+  end HAC_Generic_Image;
+
   function HAC_Image (F : Real) return String is
+    --  Code from TeXCAD (tc.adb, TeX_Number),
+    --  less a few simplifications.
     s : String (1 .. Real'Digits + 15);
     na, nb, np, ne : Natural;
     function Image_with_exponent return String is
@@ -392,17 +430,20 @@ package body HAC_Pack is
         while s (nb) = '0' loop
           nb := nb - 1;
         end loop;
-        if s (nb) = '.' then  --  "4.E+68" from "4.00000000000000E+68" would be too much...
-          nb := nb + 1;  --  We keep one '0' -> "4.0E+68"
+        if s (nb) = '.' then
+          --  "4.E+68" from "4.00000000000000E+68" would be too much trimming...
+          nb := nb + 1;  --  We keep one '0' -> "4.0E+68".
         end if;
         return s (na .. nb) & s (ne + 1 .. s'Last);
       end if;
       return s (na .. s'Last);
-    end;
+    end Image_with_exponent;
   begin
     if abs (F) < 10.0 ** (1 - Real'Digits) then
-      --  Banana skin: for a very small value, we'll have 0.0 if
-      --  we dont make this special case. HAC Code:
+      --  Banana skin: for a very small value, we'll have"0.0" from Put
+      --  with Exp = 0 if we dont make this special case.
+      --
+      --  HAC sample code *with* the special case:
       --  ...
       --  for e in reverse -20 .. -1 loop
       --    Put_Line (+"" & 10.0 ** e);
@@ -438,6 +479,20 @@ package body HAC_Pack is
       --  Number too large, we fall back to show the version with exponent.
       return Image_with_exponent;
   end HAC_Image;
+
+  function Shell_Execute (Command : String) return Integer is
+    use Interfaces.C;
+    --  https://rosettacode.org/wiki/Execute_a_system_command#Ada
+    function Sys (Arg : char_array) return Integer;
+    pragma Import(C, Sys, "system");
+  begin
+    return Sys (To_C (Command));
+  end Shell_Execute;
+
+  function Shell_Execute (Command : VString) return Integer is
+  begin
+    return Shell_Execute (To_String (Command));
+  end;
 
 begin
   Reset (gen);  --  Randomize.

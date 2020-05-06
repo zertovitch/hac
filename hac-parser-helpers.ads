@@ -85,7 +85,7 @@ package HAC.Parser.Helpers is
   procedure Type_Mismatch (
     CD               : in out Compiler_Data;
     Err              :        Compile_Error;
-    Found, Expected  : Exact_Typ
+    Found, Expected  :        Exact_Typ
   );
 
   procedure Type_Mismatch (

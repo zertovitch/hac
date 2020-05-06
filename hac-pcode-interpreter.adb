@@ -1,3 +1,5 @@
+with HAC_Pack;
+
 with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Characters.Handling;
 with Ada.Command_Line;
@@ -646,6 +648,10 @@ package body HAC.PCode.Interpreter is
         when SF_Trim_Left  => Top_Item.V := Trim (Top_Item.V, Left);
         when SF_Trim_Right => Top_Item.V := Trim (Top_Item.V, Right);
         when SF_Trim_Both  => Top_Item.V := Trim (Top_Item.V, Both);
+        when SF_Image_Ints    => Top_Item.V := To_VString (HAC_Image (Top_Item.I));
+        when SF_Image_Floats  => Top_Item.V := To_VString (HAC_Image (Top_Item.R));
+        when SF_Integer_Value => Top_Item.I := HAC_Integer'Value (To_String (Top_Item.V));
+        when SF_Float_Value   => Top_Item.R := HAC_Float'Value   (To_String (Top_Item.V));
         when SF_Argument =>
           Arg := Top_Item.I;
           --  The stack top item may change its type here (if register has discriminant).
@@ -661,6 +667,8 @@ package body HAC.PCode.Interpreter is
               Top_Item.V := Null_VString;
             end if;
           end;
+        when SF_Shell_Execute =>
+          Top_Item.I := Shell_Execute (To_String (Top_Item.V));
         when SF_Niladic =>
           --  NILADIC functions need to push a new item (their result).
           Curr_TCB.T := Curr_TCB.T + 1;
@@ -1651,7 +1659,8 @@ package body HAC.PCode.Interpreter is
         Ada.Text_IO.Put,
         Ada.Text_IO.New_Line,
         Shifted_Argument_Count,
-        Shifted_Argument
+        Shifted_Argument,
+        HAC_Pack.Shell_Execute
       );
 
   begin

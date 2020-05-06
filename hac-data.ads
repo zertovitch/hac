@@ -20,7 +20,7 @@ package HAC.Data is
 
   subtype HAC_Integer is Integer;  --  !! TBD: set it to a 64-bit signed.
   HAC_Integer_Name : constant String := "INTEGER";
-  function HAC_Image (I : HAC_Integer) return String;
+  function HAC_Image is new HAC_Pack.HAC_Generic_Image (Abstract_Integer => HAC_Integer);
 
   --  HAC's default floating-point type is double-precision
   --  and is called "Real" in HAC's HAC_Pack package.
