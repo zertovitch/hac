@@ -6,8 +6,8 @@ with HAC_Pack;  use HAC_Pack;
 procedure Einmaleins is
   x, y : Integer;
 begin
-  x := 2 + Rand (8);  --  Random, 2 to 10
-  y := 2 + Rand (8);  --  Random, 2 to 10
+  x := 2 + Rand (7);  --  Random, 2 to 9
+  y := 2 + Rand (7);  --  Random, 2 to 9
   if Rnd < 0.5 then
     x := x * 10;
   else 

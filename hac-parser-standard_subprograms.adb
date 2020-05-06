@@ -234,11 +234,13 @@ package body HAC.Parser.Standard_Subprograms is
                   if X.TYP = Ints or
                      X.TYP = Floats or
                      X.TYP = Chars or
-                     X.TYP = NOTYP
+                     X.TYP = VStrings
                   then
                     Emit1 (CD, k_Read, Typen'Pos (X.TYP));
+                  elsif X.TYP = NOTYP then
+                    null;  --  Error(s) already appeared in the parsing.
                   else
-                    Error (CD, err_illegal_parameters_to_Put);
+                    Error (CD, err_illegal_parameters_to_Get);
                   end if;
                 end if;
               end if;
@@ -249,7 +251,9 @@ package body HAC.Parser.Standard_Subprograms is
           <<SKIP1b>>
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
-        if N = SP_Get_Line then
+        if N = SP_Get_Line
+          and X.TYP /= VStrings  --  A string is already got via a Get_Line.
+        then
           Emit (CD, k_Skip_Line);
         end if;
 

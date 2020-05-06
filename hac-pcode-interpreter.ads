@@ -32,6 +32,7 @@ package HAC.PCode.Interpreter is
     with procedure Get_Console (i: out Integer; Width : Ada.Text_IO.Field := 0);
     with procedure Get_Console (f: out HAC.Data.HAC_Float; Width : Ada.Text_IO.Field := 0);
     with procedure Get_Console (c: out Character);
+    with function Get_Line_Console return String;
     with procedure Skip_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
     --
     with procedure Put_Console (

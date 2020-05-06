@@ -208,11 +208,6 @@ package body HAC_Pack is
     RIO.Get (F);
   end Get;
 
-  procedure Get (B : out Boolean) is
-  begin
-    BIO.Get (B);
-  end Get;
-
    --------------
    -- GET_LINE --
    --------------
@@ -235,10 +230,9 @@ package body HAC_Pack is
     Ada.Text_IO.Skip_Line;
   end Get_Line;
 
-  procedure Get_Line (B : out Boolean) is
+  procedure Get_Line (V : out VString) is
   begin
-    Get (B);
-    Ada.Text_IO.Skip_Line;
+    V := To_VString (Ada.Text_IO.Get_Line);
   end Get_Line;
 
   procedure Skip_Line is
@@ -438,9 +432,28 @@ package body HAC_Pack is
       end if;
       return s (na .. s'Last);
     end Image_with_exponent;
+    --
+    -- Ada 95 Quality and Style Guide, 7.2.7:
+    -- Tests for
+    --
+    -- (1) absolute "equality" to 0 in storage,
+    -- (2) absolute "equality" to 0 in computation,
+    -- (3) relative "equality" to 0 in storage, and
+    -- (4) relative "equality" to 0 in computation:
+    --
+    --  abs X <= Float_Type'Model_Small                      -- (1)
+    --  abs X <= Float_Type'Base'Model_Small                 -- (2)
+    --  abs X <= abs X * Float_Type'Model_Epsilon            -- (3)
+    --  abs X <= abs X * Float_Type'Base'Model_Epsilon       -- (4)
+    --
+    function Almost_zero (x : Real) return Boolean is
+    begin
+      return abs x <= Real'Base'Model_Small;
+    end Almost_zero;
+    --
   begin
-    if abs (F) < 10.0 ** (1 - Real'Digits) then
-      --  Banana skin: for a very small value, we'll have"0.0" from Put
+    if abs (F) < 10.0 ** (1 - Real'Digits)
+      --  Banana skin: for a very small value, we'll have "0.0" from Put
       --  with Exp = 0 if we dont make this special case.
       --
       --  HAC sample code *with* the special case:
@@ -454,6 +467,10 @@ package body HAC_Pack is
       --  1.0E-15
       --  1.0E-16
       --  ...
+      and then not Almost_zero (F)
+      --  ^ Special case within the special case: for zero,
+      --    we want to display 0.0 and not 0.0E+00
+    then
       return Image_with_exponent;
     end if;
     RIO.Put (s, F, Exp => 0);  --  Image without exponent (E)

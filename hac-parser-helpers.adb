@@ -166,6 +166,22 @@ package body HAC.Parser.Helpers is
     Error (CD, err_numeric_type_coercion, details, stop_on_error => True);
   end Forbid_Type_Coercion;
 
+  function Nice_Image (T: Typen) return String is
+  begin
+    case T is
+      when NOTYP           => return "(undefined type)";
+      when Ints            => return "integer type";
+      when Chars           => return "character type";
+      when Bools           => return "boolean type";
+      when Floats          => return "floating-point type";
+      when Arrays          => return "array type";
+      when Records         => return "record type";
+      when Enums           => return "enumeration type";
+      when String_Literals => return "fixed-size string type";
+      when VStrings        => return "variable-size string type";
+    end case;
+  end Nice_Image;
+
   procedure Type_Mismatch (
     CD               : in out Compiler_Data;
     Err              :        Compile_Error;
@@ -175,10 +191,10 @@ package body HAC.Parser.Helpers is
   begin
     if Found.TYP /= Expected.TYP then
       Error (CD, Err,
-        "found a " & Typen'Image(Found.TYP) &
-        ", expected a " & Typen'Image(Expected.TYP));
+        "found a "      & Nice_Image (Found.TYP) &
+        ", expected a " & Nice_Image (Expected.TYP));
     else
-      Error (CD, Err, "not exactly the same " & Typen'Image(Found.TYP) & " type");
+      Error (CD, Err, "not exactly the same " & Nice_Image (Found.TYP));
         --  !! TBD: find the eventual names using X.Ref, Y.Ref
     end if;
   end Type_Mismatch;
@@ -201,7 +217,7 @@ package body HAC.Parser.Helpers is
             hint := hint & ", ";
           end if;
           first := False;
-          hint := hint & Typen'Image (s);
+          hint := hint & Nice_Image (s);
         end if;
       end loop;
       return To_String (hint);
@@ -209,7 +225,7 @@ package body HAC.Parser.Helpers is
   begin
     Error (
       CD, Err,
-      "found: " & Typen'Image (Found.TYP) &
+      "found: "      & Nice_Image (Found.TYP) &
       ", expected: " & Types_List (Expected)
     );
   end Type_Mismatch;

@@ -44,8 +44,8 @@ package HAC is
   -- Information about this package - e.g. for an "about" box --
   --------------------------------------------------------------
 
-  version   : constant String:= "0.044";
-  reference : constant String:= "04-May-2020";
+  version   : constant String:= "0.05";
+  reference : constant String:= "06-May-2020";
   --  Hopefully the latest version is at one of those URLs:
   web       : constant String:= "http://sf.net/projects/hacadacompiler/";
   web2      : constant String:= "https://github.com/zertovitch/hac";

@@ -1,10 +1,11 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure Strings is
-  s1, s2, s3, s4: VString;
+  s1, s2, s3, s4 : VString;
   Planck   : constant := 6.62607015e-34;
   Pi       : constant := 3.141592653;
   Avogadro : constant := 6.02214076e023;
+  r : Real;
 begin
   s4 := +"abc" & 'd' & "ef";
   if s4 /= +"abcdef" then
@@ -49,10 +50,20 @@ begin
   --
   if Index (s4, +"cat") /= 0 then Put_Line ("Compiler bug [Index 1]");    end if;
   if Index (s4, +"cde") /= 3 then Put_Line ("Compiler bug [Index 2]");    end if;
+  if Index (s4,  "cat") /= 0 then Put_Line ("Compiler bug [Index 3]");    end if;
+  if Index (s4,  "cde") /= 3 then Put_Line ("Compiler bug [Index 4]");    end if;
   --
   if  0 * 'x' /= +""                       then Put_Line ("Compiler bug [* 1]"); end if;
   if 10 * 'x' /= +"xxxxxxxxxx"             then Put_Line ("Compiler bug [* 2]"); end if;
   if  0 * (+"Fritz") /= +""                then Put_Line ("Compiler bug [* 3]"); end if;
   if  3 * (+"Fritz") /= +"FritzFritzFritz" then Put_Line ("Compiler bug [* 4]"); end if;
   --
+  for i in -5 .. 5 loop
+    if Integer_Value (Image (i)) /= i then Put_Line ("Compiler bug [Im/Val I]"); end if;
+    r := Real (i);
+    if Float_Value (Image (r)) /= r then Put_Line ("Compiler bug [Im/Val R 1]"); end if;
+    r := Real (i) * 1.0e20;
+    if Float_Value (Image (r)) /= r then Put_Line ("Compiler bug [Im/Val R 2]"); end if;
+    --  put_line (image(r));
+  end loop;
 end Strings;

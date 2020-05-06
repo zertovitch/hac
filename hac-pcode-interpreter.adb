@@ -773,6 +773,48 @@ package body HAC.PCode.Interpreter is
       Pop;
     end Do_Binary_Operator;
 
+    procedure Do_Text_Read is
+      CH : Character;
+      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      use HAC.Data;
+      Out_Param : Index renames S (Curr_TCB.T).I;
+    begin
+      if FAT.CURR = 0 then
+        if End_Of_File_Console then
+          PS := REDCHK;
+        else
+          case Typen'Val (IR.Y) is
+            when Ints     => Get_Console (S (Out_Param).I);
+            when Floats   => Get_Console (S (Out_Param).R);
+            when VStrings => S (Out_Param).V := To_VString (Get_Line_Console);
+            when Chars    => Get_Console (CH); S (Out_Param).I := Character'Pos (CH);
+            when others =>
+              null;
+          end case;
+        end if;
+      else
+        if Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
+          PS := REDCHK;
+        else
+          case Typen'Val (IR.Y) is
+            when Ints =>
+              Ada.Integer_Text_IO.Get (FAT.FIL (FAT.CURR), S (Out_Param).I);
+            when Floats =>
+              HAC.Data.RIO.Get (FAT.FIL (FAT.CURR), S (Out_Param).R);
+            when Chars =>
+              Ada.Text_IO.Get (FAT.FIL (FAT.CURR), CH);
+              S (Out_Param).I := Character'Pos (CH);
+            when VStrings =>
+              S (Out_Param).V := To_VString (Ada.Text_IO.Get_Line (FAT.FIL (FAT.CURR)));
+            when others =>
+              null;
+          end case;
+        end if;
+      end if;
+      Pop;
+      SWITCH := True;  --  give up control when doing I/O
+    end Do_Text_Read;
+
     procedure Fetch_Instruction is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
     begin
@@ -782,7 +824,6 @@ package body HAC.PCode.Interpreter is
 
     procedure Execute_Current_Instruction is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
-      CH : Character;
     begin
       case InterDef.IR.F is
 
@@ -1156,47 +1197,7 @@ package body HAC.PCode.Interpreter is
         S (H1).R := HAC.Data.HAC_Float (S (H1).I);
 
       when k_Read =>
-        if FAT.CURR = 0 then
-          if End_Of_File_Console then
-            PS := REDCHK;
-          else
-            case IR.Y is
-              when 1 =>
-                Get_Console (S (S (Curr_TCB.T).I).I);
-              when 2 =>
-                Get_Console (S (S (Curr_TCB.T).I).R);
-              when 3 =>
-                Get_Console (CH);
-                S (S (Curr_TCB.T).I).I := Character'Pos (CH);
-              when 4 =>
-                Get_Console (CH);
-                S (S (Curr_TCB.T).I).I := Character'Pos (CH);
-              when others =>
-                null;  -- [P2Ada]: no otherwise / else in Pascal
-            end case;
-          end if;
-          Pop;
-        else
-          if Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
-            PS := REDCHK;
-          else
-            case IR.Y is
-              when 1 =>
-                Ada.Integer_Text_IO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).I);
-              when 2 =>
-                HAC.Data.RIO.Get (FAT.FIL (FAT.CURR), S (S (Curr_TCB.T).I).R);
-              when 3 =>
-                Ada.Text_IO.Get (FAT.FIL (FAT.CURR), CH);
-                S (S (Curr_TCB.T).I).I := Character'Pos (CH);
-              when 4 =>
-                Ada.Text_IO.Get (FAT.FIL (FAT.CURR), CH);
-                S (S (Curr_TCB.T).I).I := Character'Pos (CH);
-              when others =>
-                null;  -- [P2Ada]: no otherwise / else in Pascal
-            end case;
-          end if;
-        end if;
-        SWITCH := True;  --  give up control when doing I/O
+        Do_Text_Read;
 
       when k_Write_String =>
         Pop (2);
@@ -1651,6 +1652,7 @@ package body HAC.PCode.Interpreter is
         Ada.Integer_Text_IO.Get,
         HAC.Data.RIO.Get,
         Ada.Text_IO.Get,
+        Ada.Text_IO.Get_Line,
         Ada.Text_IO.Skip_Line,
         Ada.Integer_Text_IO.Put,
         HAC.Data.RIO.Put,

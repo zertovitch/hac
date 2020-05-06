@@ -765,7 +765,7 @@ package body HAC.Parser is
           end case;
         end if;
       elsif X.TYP = Floats and Y.TYP = Ints then
-        Forbid_Type_Coercion (CD, "integer type value assigned to floating-point variable");
+        Forbid_Type_Coercion (CD, "integer value assigned to floating-point variable");
         Emit1 (CD, k_Integer_to_Float, 0);
         Emit (CD, k_Store);
       elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then

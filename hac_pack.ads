@@ -133,16 +133,16 @@ package HAC_Pack is
   procedure Get (C : out Character);
   procedure Get (I : out Integer  );
   procedure Get (F : out Real     );
-  procedure Get (B : out Boolean  );
 
   --  Get and then move file pointer to next line (Skip_Line)
   procedure Get_Line (C : out Character);
   procedure Get_Line (I : out Integer  );
   procedure Get_Line (F : out Real     );
-  procedure Get_Line (B : out Boolean  );
+  procedure Get_Line (V : out VString  );  --  Gets the line till its end.
 
   procedure Skip_Line;
 
+  --  !! Will replace those Pascal stuff by Ada ones (Fore, Aft, Exp)
   subtype Width is Positive;
   subtype Decimals is Positive;
 
@@ -156,7 +156,7 @@ package HAC_Pack is
   procedure  Put (S : in  String   );
   procedure  Put (V : in  VString  );
 
-  --  Put and then New_Line ( !! it is the same as Ada.Text_IO only for S )
+  --  Put and then New_Line (for S: it is the same as Ada.Text_IO.Put_Line)
   procedure  Put_Line (C : in  Character);
   procedure  Put_Line (I : in  Integer  );
   procedure  Put_Line (I : in  Integer; W:  Width);
@@ -166,7 +166,6 @@ package HAC_Pack is
   procedure  Put_Line (S : in  String   );
   procedure  Put_Line (V : in  VString  );
 
-  --  Mark End of Line
   procedure  New_Line                      ;
 
   procedure  CursorAt (X, Y: Integer);
