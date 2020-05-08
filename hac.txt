@@ -5,6 +5,8 @@ Alternative names: Hacker's Ada Compiler, Hello-world Ada Compiler
 
 HAC is perhaps the first open-source (albeit very partial) Ada
 compiler and virtual machine interpreter fully programmed in Ada itself.
+Note: HAC was not written from scratch, but is based on a renovation of
+SmallAda, a system developped around 1990 and abandoned since then.
 
 Objectives
 ==========
@@ -26,21 +28,23 @@ Read copyright notice and license in hac.ads
 Getting started
 ===============
 Assuming you have the GNAT compiler installed, do the
-following from a command line interpreter:
+following from a command line interpreter (please replace
+'\' by '/' on Unix-like platforms):
 
 gnatmake -p -P hac
 cd exm
 ..\hax hello.adb
-..\hax test.adb
+..\hax strings_demo.adb
 
-NB: the Windows script e.cmd does the same, but runs plenty of other demos.
+NB: the Windows script e.cmd does the same, but runs plenty of other
+demos that are located in the "exm" folder.
 You can test HAC on any other example (*.adb files in the
 "exm" and "test" directories).
 As a bonus, you can build some examples with GNAT to compare the output.
 You can do it easily with the hac_exm.gpr project file.
 Since hac_exm.gpr is a text file, you can see there the progress
 (or the lack thereof) in the pieces of Ada code that are really
-working with HAC. See the "Bugs" section below as well.
+working with HAC. See the "Limitations" section below as well.
 
 Some design points
 ==================
@@ -50,37 +54,54 @@ Some design points
     an editor buffer (see the LEA project), from a source stored in memory,
     etc.
 - One goal is to complement or challenge GNAT, for instance in terms of
-    compilation speed, or run-time performance of certain portions of code,
-    or object code compactness, or useability on certain targets. This will
-    require compiling on other targets than p-code, that is real machine code
-    for various platforms.
+    compilation speed, or object code compactness, or useability on certain
+    targets or for certain purposes (like scripting jobs).
+- HAC could theoretically be also used for tuning run-time performance;
+    this would require compiling on other targets than p-code, that is,
+    real machine code for various platforms.
 
-Bugs
-====
-You need to assume that almost nothing works with HAC.
-There is a very short (but growing!) list of small programs that are
+Limitations
+===========
+
+HAC supports a very small subset of the Ada language. On the other hand,
+Ada is very large, so even a small subset could already fit your needs.
+There is a short (and growing) list of small programs that are
 working (in the meaning: the compilation succeeds and the execution gives
 a correct output). They are listed in the project file hac_exm.gpr
 in the "exm" directory.
-You will see that the "Pascal subset" is more or less supported, so you
-have things like subprograms, including nested subprograms, recursive
-subprograms, simple expressions working, for instance.
+
+You will see that the "Pascal subset" plus tasking is more or less
+supported, so you have things like subprograms (including nested
+subprograms), recursive subprograms, simple expressions, that are
+working, for instance.
+
+* You can define your own data types: enumerations, records, arrays
+    (and every combination of records and arrays).
+* Unconstrained types are not supported (they are Ada-only types and
+    not in the "Pascal subset" anyway).
+* There are no pointers (access types) and nor heap allocation,
+    but you will be surprised how far you can go without pointers!
+* Task are implemented, but not yet tested.
 
 A more systematic testing is done in the "test" directory.
 
-History
-=======
+History of HAC
+==============
 
-- 2020: Presentation at FOSDEM's Ada Developer Room:
-          https://fosdem.org/2020/schedule/event/ada_hac/
-          Starting a bit more serious testing and code cleanup.
+- 2020: presentation at FOSDEM's Ada Developer Room:
+          https://fosdem.org/2020/schedule/event/ada_hac/ ;
+          starting a bit more serious testing and code cleanup.
 - 2013: January 24th: Day One of HAC: Hello World, Fibonacci
           and other tests work!
-- 2009: a bit further trying to make it work (P2Ada was improved on the way,
-          for WITH statements and modularity)...
-- 1999: automatic translation of Mac Pascal sources to Ada, using P2Ada
-- 1989: SmallAda is derived from CoPascal; works only inside
-          very system-dependent environments (a Mac GUI, a DOS GUI)
+- 2009: a bit further trying to make the translation of SmallAda sources
+          succeed (P2Ada was improved on the way, for WITH statements
+          and modularity)...
+- 1999: automatic translation of Mac Pascal SmallAda sources
+          to Ada, using P2Ada
+- 1989: SmallAda is derived from CoPascal; works only within two
+          very system-dependent environments (a Mac GUI, a DOS GUI);
+          two similar source sets in two Pascal dialects (Mac Pascal,
+          Turbo Pascal)
 - 1986: CoPascal (Schoening)
 - 1970: Pascal-S (Wirth)
 
@@ -91,5 +112,11 @@ History
     1988 Stuart Cramer and Jay Kurtz   refinement of tasking model
     1987 Frederick C. Hathorn          conversion of CoPascal
 
-  Author of CoPascal (derived from Pascal-S by Niklaus Wirth)
+  Author of CoPascal (derived from Niklaus Wirth's Pascal-S)
     1986 Charles Schoening
+
+You can find the SmallAda sources and examples in the "archeology" folder.
+The Turbo Pascal sources files are smaller than the Mac Pascal ones,
+probably because of the memory constraints of the 16-bit DOS system.
+So the Turbo Pascal sources are especially cryptic and sparsely commented,
+full with magic numbers and 1-letter variables, many of them global - ouch!

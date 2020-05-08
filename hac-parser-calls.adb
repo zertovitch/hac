@@ -24,19 +24,19 @@ package body HAC.Parser.Calls is
     --   = 2 then timed Task Entry Call,          CallTMDE
     --   = 3 then conditional Task Entry Call,    CallCNDE
     --****************************************************************
-    X            : Exact_Typ;
+    X                 : Exact_Typ;
     Last_Param, CP, K : Integer;
     procedure Issue_Type_Mismatch_Error is
     begin
       Type_Mismatch (
         CD, err_parameter_types_do_not_match,
         Found    => X,
-        Expected => Exact_Typ'(CD.IdTab (CP).TYP, CD.IdTab (CP).Ref)
+        Expected => CD.IdTab (CP).xTyp
       );
     end;
   begin
     Emit1 (CD, k_Mark_Stack, I);
-    Last_Param := CD.Blocks_Table (CD.IdTab (I).Ref).Last_Param_Id_Idx;
+    Last_Param := CD.Blocks_Table (CD.IdTab (I).Block_Ref).Last_Param_Id_Idx;
     CP    := I;
     if CD.Sy = LParent then  --  Actual parameter list
       loop
@@ -47,15 +47,15 @@ package body HAC.Parser.Calls is
           CP := CP + 1;
           if CD.IdTab (CP).Normal then           --  Value parameter (IN), by copy
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-            if X.TYP = CD.IdTab (CP).TYP then
-              if X.Ref /= CD.IdTab (CP).Ref then
+            if X.TYP = CD.IdTab (CP).xTyp.TYP then
+              if X.Ref /= CD.IdTab (CP).xTyp.Ref then
                 Issue_Type_Mismatch_Error;
               elsif X.TYP = Arrays then
                 Emit1 (CD, k_Load_Block, CD.Arrays_Table (X.Ref).Array_Size);
               elsif X.TYP = Records then
                 Emit1 (CD, k_Load_Block, CD.Blocks_Table (X.Ref).VSize);
               end if;
-            elsif X.TYP = Ints and CD.IdTab (CP).TYP = Floats then
+            elsif X.TYP = Ints and CD.IdTab (CP).xTyp.TYP = Floats then
               Forbid_Type_Coercion (CD, "value is integer, parameter is floating-point");
               Emit1 (CD, k_Integer_to_Float, 0);
             elsif X.TYP /= NOTYP then
@@ -77,8 +77,7 @@ package body HAC.Parser.Calls is
                   ": passed to OUT or IN OUT parameter"
                 );
               else
-                X.TYP := CD.IdTab (K).TYP;
-                X.Ref := CD.IdTab (K).Ref;
+                X := CD.IdTab (K).xTyp;
                 if CD.IdTab (K).Normal then
                   Emit2 (CD, k_Load_Address, CD.IdTab (K).LEV, CD.IdTab (K).Adr);
                 else
@@ -87,9 +86,7 @@ package body HAC.Parser.Calls is
                 if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                   Selector (CD, Level, FSys + Colon_Comma_RParent, X);
                 end if;
-                if (X.TYP /= CD.IdTab (CP).TYP) or
-                   (X.Ref /= CD.IdTab (CP).Ref)
-                then
+                if X /= CD.IdTab (CP).xTyp then
                   Issue_Type_Mismatch_Error;
                 end if;
               end if;
@@ -105,7 +102,7 @@ package body HAC.Parser.Calls is
       Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
     end if;
     --
-    Emit2 (CD, k_Call, CallType, CD.Blocks_Table (CD.IdTab (I).Ref).PSize - 1);
+    Emit2 (CD, k_Call, CallType, CD.Blocks_Table (CD.IdTab (I).Block_Ref).PSize - 1);
     if CallType /= CallSTDP then  --  Some for of entry call
       Emit1 (CD, k_Exit_Call, CallType);  --  Return from Entry Call
     end if;
@@ -133,7 +130,7 @@ package body HAC.Parser.Calls is
       if CD.Sy /= IDent then
         Skip (CD, Semicolon, err_identifier_missing);
       else
-        J := CD.Blocks_Table (CD.IdTab (I).Ref).Last_Id_Idx;
+        J := CD.Blocks_Table (CD.IdTab (I).Block_Ref).Last_Id_Idx;
         CD.IdTab (0).Name := CD.Id;
         while CD.IdTab (J).Name /= CD.Id loop
           J := CD.IdTab (J).Link;

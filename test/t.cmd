@@ -25,18 +25,8 @@ REM pause
 echo.
 echo *******[ HAC Testing ]******* "Silent tests": when there is zero output and no compilation error, then it's all fine.
 echo.
-
-..\hax -v1 case_statement.adb
-..\hax -v1 constants.adb
-..\hax -v1 declarations.adb
-..\hax -v1 enumerations.adb
-..\hax -v1 floats.adb
-..\hax -v1 integers.adb
-..\hax -v1 loops.adb
-..\hax -v1 recursion.adb
-..\hax -v1 sorting_tests.adb
-..\hax -v1 strings.adb
-..\hax -v1 type_conversion.adb
+rem Here HAX will call itself for each test!...
+..\hax all_silent_tests.adb
 pause
 
 goto fin

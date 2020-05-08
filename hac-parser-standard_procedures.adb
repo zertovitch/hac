@@ -50,8 +50,7 @@ package body HAC.Parser.Standard_Procedures is
                 if CD.IdTab (I).Obj /= Variable then
                   Error (CD, err_variable_missing);
                 else
-                  X.TYP := CD.IdTab (I).TYP;
-                  X.Ref := CD.IdTab (I).Ref;
+                  X := CD.IdTab (I).xTyp;
                   if CD.IdTab (I).Normal then
                     F := k_Load_Address;
                   else
@@ -171,8 +170,7 @@ package body HAC.Parser.Standard_Procedures is
               if CD.IdTab (I).Obj /= Variable then
                 Error (CD, err_variable_missing);
               else
-                X.TYP := CD.IdTab (I).TYP;
-                X.Ref := CD.IdTab (I).Ref;
+                X := CD.IdTab (I).xTyp;
                 if CD.IdTab (I).Normal then
                   F := k_Load_Address;
                 else

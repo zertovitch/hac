@@ -105,8 +105,8 @@ package body HAC.Parser is
             Link           => L,
             Obj            => K,
             Read_only      => False,
-            TYP            => NOTYP,
-            Ref            => 0,
+            xTyp           => (TYP => NOTYP, Ref => 0),
+            Block_Ref      => 0,
             Normal         => True,
             LEV            => Level,
             Adr            => 0
@@ -165,7 +165,7 @@ package body HAC.Parser is
             if CD.IdTab (X).Obj /= Declared_Number_or_Enum_Item then
               Error (CD, err_illegal_constant_or_constant_identifier);
             else
-              C.TP := (CD.IdTab (X).TYP, CD.IdTab (X).Ref);
+              C.TP := CD.IdTab (X).xTyp;
               if C.TP.TYP = Floats then
                 C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr);
               else
@@ -262,8 +262,7 @@ package body HAC.Parser is
               New_Enum_Item : IdTabEntry renames CD.IdTab (CD.Id_Count);
             begin
               New_Enum_Item.Read_only := True;
-              New_Enum_Item.TYP       := Enums;
-              New_Enum_Item.Ref       := xTP.Ref;
+              New_Enum_Item.xTyp      := xTP;
               New_Enum_Item.Adr       := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
             end;
           else
@@ -272,8 +271,8 @@ package body HAC.Parser is
           InSymbol;
           exit when CD.Sy /= Comma;
         end loop;
-        Sz := enum_count;
-        --  Huh ?? size should be 1 (to be checked !!) but Sz is perhaps misused as a count
+        Sz := 1;  --  Was: enum_count -> caused stack corruption on calls to P (e: in Enum).
+        --  TBD : store enum_count somewhere, for T'Last.
         Need (CD, RParent, err_closing_parenthesis_missing);
       end Enumeration_Typ;
 
@@ -305,11 +304,10 @@ package body HAC.Parser is
             T1 := CD.Id_Count;
             Type_Definition (FSys + Comma_END_IDent_Semicolon, Field_Exact_Typ, Field_Size);
             while T0 < T1 loop
-              T0                := T0 + 1;
-              CD.IdTab (T0).TYP := Field_Exact_Typ.TYP;
-              CD.IdTab (T0).Ref := Field_Exact_Typ.Ref;
-              CD.IdTab (T0).Adr := Offset;
-              Offset            := Offset + Field_Size;
+              T0                 := T0 + 1;
+              CD.IdTab (T0).xTyp := Field_Exact_Typ;
+              CD.IdTab (T0).Adr  := Offset;
+              Offset             := Offset + Field_Size;
             end loop;
           end if;
           Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
@@ -343,9 +341,8 @@ package body HAC.Parser is
               Ident_Index := Locate_Identifier (CD, CD.Id, Level);
               if Ident_Index /= No_Id then
                 if CD.IdTab (Ident_Index).Obj = TypeMark then
-                  xTP.TYP := CD.IdTab (Ident_Index).TYP;
-                  xTP.Ref := CD.IdTab (Ident_Index).Ref;
-                  Sz      := CD.IdTab (Ident_Index).Adr;
+                  xTP := CD.IdTab (Ident_Index).xTyp;
+                  Sz  := CD.IdTab (Ident_Index).Adr;
                   if xTP.TYP = NOTYP then
                     Error (CD, err_undefined_type);
                   end if;
@@ -410,8 +407,8 @@ package body HAC.Parser is
             InSymbol;
             if X /= No_Id then
               if CD.IdTab (X).Obj = TypeMark then
-                TP := CD.IdTab (X).TYP;
-                RF := CD.IdTab (X).Ref;
+                TP := CD.IdTab (X).xTyp.TYP;
+                RF := CD.IdTab (X).xTyp.Ref;
                 if ValParam then
                   Sz := CD.IdTab (X).Adr;
                 else
@@ -428,8 +425,7 @@ package body HAC.Parser is
             declare
               r : IdTabEntry renames CD.IdTab (T0);
             begin
-              r.TYP       := TP;
-              r.Ref       := RF;
+              r.xTyp      := (TP, RF);
               r.Normal    := ValParam;
               r.Read_only := ValParam;
               r.Adr       := Dx;
@@ -469,9 +465,8 @@ package body HAC.Parser is
       xTyp := (TYP => NOTYP, Ref => 0);
       Sz := 0;
       Type_Definition (Comma_IDent_Semicolon + FSys, xTyp, Sz);
-      CD.IdTab (T1).TYP := xTyp.TYP;
-      CD.IdTab (T1).Ref := xTyp.Ref;
-      CD.IdTab (T1).Adr := Sz;
+      CD.IdTab (T1).xTyp := xTyp;
+      CD.IdTab (T1).Adr  := Sz;
       --
       Test_Semicolon (CD, FSys);
     end Type_Declaration;
@@ -547,7 +542,7 @@ package body HAC.Parser is
               r.Read_only := is_constant;
               if is_untyped_constant then
                 r.Obj := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
-                r.TYP := C.TP.TYP;
+                r.xTyp := C.TP;
                 case C.TP.TYP is
                   when Floats =>
                     Enter_or_find_Float (CD, C.R, r.Adr);
@@ -559,10 +554,9 @@ package body HAC.Parser is
                     r.Adr := C.I;
                 end case;
               else  --  A variable or a typed constant
-                r.TYP := xTyp.TYP;
-                r.Ref := xTyp.Ref;
-                r.Adr := Dx;
-                Dx    := Dx + Sz;
+                r.xTyp := xTyp;
+                r.Adr  := Dx;
+                Dx     := Dx + Sz;
               end if;
             end;
           end loop;  --  While T0 < T1
@@ -649,7 +643,7 @@ package body HAC.Parser is
         InSymbol;
         I      := Locate_Identifier (CD, CD.Id, Level);
         TaskID := CD.IdTab (I).Name;
-        CD.Blocks_Table (CD.IdTab (I).Ref).SrcFrom := saveLineCount;  --(* Manuel *)
+        CD.Blocks_Table (CD.IdTab (I).Block_Ref).SrcFrom := saveLineCount;  --  (* Manuel *)
         InSymbol;
         Block (CD, FSys, False, False, Level + 1, I, TaskID, TaskID);  --  !! up/low case
         Emit1 (CD, k_Exit_Call, CallSTDP);
@@ -667,7 +661,7 @@ package body HAC.Parser is
         Enter (TaskID, TaskID, aTask);  --  !! casing
         CD.Tasks_Definitions_Table (CD.Tasks_Definitions_Count) := CD.Id_Count;
         Enter_Block (CD.Id_Count);
-        CD.IdTab (CD.Id_Count).Ref := CD.Blocks_Count;
+        CD.IdTab (CD.Id_Count).Block_Ref := CD.Blocks_Count;
         InSymbol;
         if CD.Sy = Semicolon then
           InSymbol;  --  Task with no entries
@@ -721,8 +715,7 @@ package body HAC.Parser is
       F    : Opcode;
     begin
       pragma Assert (CD.IdTab (I).Obj = Variable);
-      X.TYP := CD.IdTab (I).TYP;
-      X.Ref := CD.IdTab (I).Ref;
+      X := CD.IdTab (I).xTyp;
       if CD.IdTab (I).Normal then
         F := k_Load_Address;
       else
@@ -840,7 +833,7 @@ package body HAC.Parser is
             Fatal (LEVELS);  --  Exception is raised there.
           end if;
           Level              := Level + 1;
-          CD.Display (Level) := CD.IdTab (I_Entry).Ref;
+          CD.Display (Level) := CD.IdTab (I_Entry).Block_Ref;
           InSymbol;
           Multi_Statement (END_Set);
           Test_END_Symbol (CD);
@@ -942,9 +935,8 @@ package body HAC.Parser is
             Error (CD, err_procedures_cannot_return_a_value, stop_on_error => True);
           end if;
           --  Calculate return value (destination: X; expression: Y).
-          if CD.IdTab (Block_Idx).Ref = CD.Display (Level) then
-            X.TYP := CD.IdTab (Block_Idx).TYP;
-            X.Ref := CD.IdTab (Block_Idx).Ref;
+          if CD.IdTab (Block_Idx).Block_Ref = CD.Display (Level) then
+            X := CD.IdTab (Block_Idx).xTyp;
             if CD.IdTab (Block_Idx).Normal then
               F := k_Load_Address;
             else
@@ -954,17 +946,25 @@ package body HAC.Parser is
             --
             Expression (CD, Level, Semicolon_Set, Y);
             if X.TYP = Y.TYP then
-              if X.TYP in Standard_Typ then
+              if (X.TYP in Standard_Typ) or else (X.TYP = Enums and then X = Y) then
                 Emit (CD, k_Store);
               elsif X.Ref /= Y.Ref then
-                Error (CD, err_type_of_return_statement_doesnt_match);
+                Type_Mismatch (
+                  CD, err_type_of_return_statement_doesnt_match,
+                  Found    => Y,
+                  Expected => X
+                );
               end if;
             elsif X.TYP = Floats and Y.TYP = Ints then
               Forbid_Type_Coercion (CD, "integer type value returned as floating-point");
               Emit1 (CD, k_Integer_to_Float, 0);
               Emit (CD, k_Store);
             elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
-              Error (CD, err_type_of_return_statement_doesnt_match);
+              Type_Mismatch (
+                CD, err_type_of_return_statement_doesnt_match,
+                Found    => Y,
+                Expected => X
+              );
             end if;
           else
             Error (CD, err_illegal_return_statement_from_main);
@@ -1148,8 +1148,8 @@ package body HAC.Parser is
                 Link           => Previous_Last,
                 Obj            => Variable,
                 Read_only      => True,
-                TYP            => NOTYP,
-                Ref            => 0,
+                xTyp           => (TYP => NOTYP, Ref => 0),
+                Block_Ref      => 0,
                 Normal         => True,
                 LEV            => Level,
                 Adr            => Dx
@@ -1179,8 +1179,7 @@ package body HAC.Parser is
           --      or a range 3.5 (3): "low .. high" or range_attribute_reference: A'Range
           --
           Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys, FOR_Lower_Bound);
-          CD.IdTab (CD.Id_Count).TYP := FOR_Lower_Bound.TYP;
-          CD.IdTab (CD.Id_Count).Ref := FOR_Lower_Bound.Ref;  --  Need correct type if TYP = enums.
+          CD.IdTab (CD.Id_Count).xTyp := FOR_Lower_Bound;
           if not Discrete_Typ (FOR_Lower_Bound.TYP) then
             Error (CD, err_control_variable_of_the_wrong_type);
           end if;
@@ -1188,7 +1187,11 @@ package body HAC.Parser is
             InSymbol;
             Expression (CD, Level, FSys + LOOP_Symbol, FOR_Upper_Bound);
             if FOR_Upper_Bound /= FOR_Lower_Bound then
-              Error (CD, err_first_and_last_must_have_matching_types);
+              Type_Mismatch (
+                CD, err_first_and_last_must_have_matching_types,
+                Found    => FOR_Upper_Bound,
+                Expected => FOR_Lower_Bound
+              );
             end if;
           else
             Skip (CD, END_LOOP_Semicolon + FSys, err_expecting_double_dot);
@@ -1343,7 +1346,7 @@ package body HAC.Parser is
                 Fatal (LEVELS);  --  Exception is raised there.
               end if;
               Level              := Level + 1;
-              CD.Display (Level) := CD.IdTab (I).Ref;
+              CD.Display (Level) := CD.IdTab (I).Block_Ref;
               InSymbol;
               Multi_Statement (END_Set);
               Test_END_Symbol (CD);
@@ -1688,8 +1691,8 @@ package body HAC.Parser is
           if I_Res_Type /= 0 then
             if CD.IdTab (I_Res_Type).Obj /= TypeMark then
               Error (CD, err_missing_a_type_identifier, stop_on_error => True);
-            elsif CD.IdTab (I_Res_Type).TYP in Standard_Typ then
-              CD.IdTab (Prt).TYP := CD.IdTab (I_Res_Type).TYP;
+            elsif Standard_or_Enum_Typ (CD.IdTab (I_Res_Type).xTyp.TYP) then
+              CD.IdTab (Prt).xTyp := CD.IdTab (I_Res_Type).xTyp;
             else
               Error (CD, err_bad_result_type_for_a_function, stop_on_error => True);
             end if;
@@ -1720,15 +1723,15 @@ package body HAC.Parser is
     else
       Test (CD, Symbols_after_Subprogram_Identifier, FSys, err_incorrectly_used_symbol);
     end if;
-    if CD.IdTab (Prt).Ref > 0 then
-      PRB := CD.IdTab (Prt).Ref;
+    if CD.IdTab (Prt).Block_Ref > 0 then
+      PRB := CD.IdTab (Prt).Block_Ref;
     else
       Enter_Block (Prt);
-      PRB                := CD.Blocks_Count;
-      CD.IdTab (Prt).Ref := PRB;
+      PRB                      := CD.Blocks_Count;
+      CD.IdTab (Prt).Block_Ref := PRB;
     end if;
     CD.Display (Level) := PRB;
-    CD.IdTab (Prt).TYP := NOTYP;
+    CD.IdTab (Prt).xTyp := (TYP => NOTYP, Ref => 0);
     if CD.Sy = LParent and Level > 1 then
       Formal_Parameter_List;
     end if;

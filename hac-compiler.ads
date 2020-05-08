@@ -23,6 +23,9 @@ package HAC.Compiler is
     Ref  : Index;
     --  If TYP is not a standard type, then (TYP, Ref) does identify the type.
     --  E.g. it can be (Enums, [index of the enumerated type definition]).
+    --  If TYP = Records, Ref is an index into the Block_Table;
+    --  if TYP = Arrays,  Ref is an index into the Arrays_Table , or
+    --  if TYP = Enums,   Ref is an index into the Id table (the type's name).
   end record;
 
   -------------------------------------------------------------------------
@@ -102,10 +105,9 @@ package HAC.Compiler is
                                     --    Prozedure, Funktion, aTask, aEntry
     Read_only      : Boolean;       --  If Obj = Variable and Read_only = True,
                                     --    it's a typed constant.
-    TYP            : Typen;         --  One of: NoTyp, Ints, Floats, Bools, ...
-    Ref            : Index;         --  Index into the Block_Table, or
-                                    --    the Arrays_Table if TYP = Arrays, or
-                                    --    the Id table (the type's name) if TYP = Enums.
+    xTyp           : Exact_Typ;     --  Type identification
+    Block_Ref      : Index;         --  Was: Ref (was used also for what is now xTyp.Ref,
+                                    --       which caused a mixup for functions return types!)
     Normal         : Boolean;       --  value param?
     LEV            : Nesting_level;
     Adr            : Integer;

@@ -15,33 +15,6 @@ goto fin
 
 :gallery
 
-..\hax -v2 hello.adb
-pause
-..\hax -v2 strings_demo.adb
-pause
-..\hax -v2 env.adb
-pause
-..\hax -v2 arguments.adb arg1 arg2 "arg 3 ..." arg4
-pause
-..\hax -v2 ackermann.adb
-pause
-..\hax -v2 anti_primes.adb
-pause
-..\hax -v2 doors.adb
-pause
-..\hax -v2 mandelbrot.adb
-pause
-..\hax -v2 test.adb
-pause
-..\hax -v2 test1.adb
-pause
-..\hax -v2 shell_sort.adb
-pause
-..\hax -v2 merge_sort.adb
-pause
-..\hax -v2 days_1901.adb
-pause
-..\hax -v2 shell.adb
-pause
+..\hax gallery.adb
 
 :fin

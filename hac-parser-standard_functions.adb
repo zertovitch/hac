@@ -51,7 +51,7 @@ package body HAC.Parser.Standard_Functions is
     end Parse_Arguments;
     --
   begin
-    Return_Typ := (CD.IdTab (Ident_Index).TYP, CD.IdTab (Ident_Index).Ref);
+    Return_Typ := CD.IdTab (Ident_Index).xTyp;
     --
     case Code is
       when SF_Abs_Int =>

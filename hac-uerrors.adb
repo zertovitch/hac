@@ -47,7 +47,7 @@ package body HAC.UErrors is
       when err_bad_result_type_for_a_function =>
         return "bad result type for a function";
       when err_type_of_return_statement_doesnt_match =>
-        return "type of expression in return statement doesn't match";
+        return "type of expression in return statement doesn't match: " & hint;
       when err_illegal_statement_start_symbol =>
         return "statement cannot start with a " & hint;
       when err_expecting_a_boolean_expression =>

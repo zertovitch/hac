@@ -99,8 +99,8 @@ package body HAC.Compiler is
         Show_Padded (To_String (r.Name_with_case), Alng);
         Put (CD.comp_dump, r.Link, 4);
         Show_Padded (aObject'Image (r.Obj), aObject'Width);
-        Show_Padded (Typen'Image (r.TYP), Typen'Width);
-        Put (CD.comp_dump, r.Ref, 5);
+        Show_Padded (Typen'Image (r.xTyp.TYP), Typen'Width);
+        Put (CD.comp_dump, r.xTyp.Ref, 5);
         Show_Padded (Boolean'Image (r.Normal), Boolean'Width);
         Put (CD.comp_dump, r.LEV, 3);
         Put (CD.comp_dump, r.Adr, 5);
@@ -114,7 +114,7 @@ package body HAC.Compiler is
       Put (CD.comp_dump, I, 4);
       Put (CD.comp_dump, ' ');
       Put (CD.comp_dump, To_String (CD.IdTab (CD.Tasks_Definitions_Table (I)).Name) & "  ");
-      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).Ref);
+      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).Block_Ref);
       New_Line (CD.comp_dump);
     end loop;
 
@@ -328,8 +328,8 @@ package body HAC.Compiler is
           Link           => CD.Id_Count - 1,
           Obj            => X1,
           Read_only      => True,
-          TYP            => X2,
-          Ref            => 0,
+          xTyp           => (TYP => X2, Ref => 0),
+          Block_Ref      => 0,
           Normal         => True,
           LEV            => 0,
           Adr            => X3);
@@ -559,7 +559,7 @@ package body HAC.Compiler is
       New_Line (map_file);
       for Tx in CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count loop
         if CD.IdTab (Tx).Obj = Variable then
-          if CD.IdTab (Tx).TYP /= NOTYP then
+          if CD.IdTab (Tx).xTyp.TYP /= NOTYP then
             Put (map_file, CD.IdTab (Tx).Adr, 4);
             Put (map_file, To_String (CD.IdTab (Tx).Name) & "   ");
           end if;

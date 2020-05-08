@@ -29,8 +29,7 @@ package body HAC.Parser.Expressions is
         if Field_Id = No_Id then
           Error (CD, err_undefined_identifier, stop_on_error => True);
         end if;
-        V.TYP        := CD.IdTab (Field_Id).TYP;
-        V.Ref        := CD.IdTab (Field_Id).Ref;
+        V            := CD.IdTab (Field_Id).xTyp;
         Field_Offset := CD.IdTab (Field_Id).Adr;
         if Field_Offset /= 0 then
           Emit1 (CD, k_Record_Field_Offset, Field_Offset);
@@ -183,7 +182,7 @@ package body HAC.Parser.Expressions is
                 begin
                   case r.Obj is
                     when Declared_Number_or_Enum_Item =>
-                      X := (TYP => r.TYP, Ref => r.Ref);
+                      X := r.xTyp;
                       if X.TYP = Floats then
                         --  Address is an index in the float constants table.
                         Emit1 (CD, k_Load_Float_Literal, r.Adr);
@@ -193,7 +192,7 @@ package body HAC.Parser.Expressions is
                       end if;
                       --
                     when Variable =>
-                      X := (TYP => r.TYP, Ref => r.Ref);
+                      X := r.xTyp;
                       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                         if r.Normal then
                           F := k_Load_Address;
@@ -227,7 +226,7 @@ package body HAC.Parser.Expressions is
                       Error (CD, err_expected_constant_function_variable_or_subtype);
                       --
                     when Funktion =>
-                      X.TYP := r.TYP;
+                      X := r.xTyp;
                       if r.LEV = 0 then
                         Standard_Function (CD, Level, FSys, Ident_Index, SF_Code'Val (r.Adr), X);
                       else

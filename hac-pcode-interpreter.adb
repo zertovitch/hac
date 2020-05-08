@@ -194,7 +194,7 @@ package body HAC.PCode.Interpreter is
         else
           Put_Line ("Task Variables");
         end if;
-        InterDef.H2 := CD.Blocks_Table (CD.IdTab (InterDef.H2).Ref).Last_Id_Idx;
+        InterDef.H2 := CD.Blocks_Table (CD.IdTab (InterDef.H2).Block_Ref).Last_Id_Idx;
         while InterDef.H2 /= 0 loop
           -- [P2Ada]: WITH instruction
           declare
@@ -202,14 +202,14 @@ package body HAC.PCode.Interpreter is
             use HAC.Data;
           begin
             if P2Ada_Var_7.Obj = Variable then
-              if HAC.Data.Standard_or_Enum_Typ (P2Ada_Var_7.TYP) then
+              if HAC.Data.Standard_or_Enum_Typ (P2Ada_Var_7.xTyp.TYP) then
                 if P2Ada_Var_7.Normal then
                   InterDef.H3 := InterDef.H1 + P2Ada_Var_7.Adr;
                 else
                   InterDef.H3 := InterDef.S (InterDef.H1 + P2Ada_Var_7.Adr).I;
                 end if;
                 Put ("  " & To_String (P2Ada_Var_7.Name) & " = ");
-                case P2Ada_Var_7.TYP is
+                case P2Ada_Var_7.xTyp.TYP is
                   when HAC.Data.Enums | HAC.Data.Ints =>
                     Put (S (H3).I);
                     New_Line;
@@ -470,7 +470,7 @@ package body HAC.PCode.Interpreter is
           H1 := CD.Tasks_Definitions_Table (CurTask) ;
           Curr_TCB.PC := CD.IdTab (H1).Adr ;
           Curr_TCB.B := TCB (CurTask - 1).STACKSIZE + 1 ;
-          Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).Ref).VSize - 1 ;
+          Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).Block_Ref).VSize - 1 ;
           S (Curr_TCB.B + 1).I := 0 ;
           S (Curr_TCB.B + 2).I := 0 ;
           S (Curr_TCB.B + 3).I := -1 ;
@@ -1008,7 +1008,7 @@ package body HAC.PCode.Interpreter is
         end if;
 
       when k_Mark_Stack =>
-        H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Ref).VSize;
+        H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Block_Ref).VSize;
         if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
           PS := STKCHK;  --  Stack overflow
         else
