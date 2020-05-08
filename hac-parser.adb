@@ -1,9 +1,9 @@
 with HAC.Parser.Calls;                  use HAC.Parser.Calls;
 with HAC.Parser.Expressions;            use HAC.Parser.Expressions;
 with HAC.Parser.Helpers;                use HAC.Parser.Helpers;
-with HAC.Parser.Standard_Subprograms;   use HAC.Parser.Standard_Subprograms;
 with HAC.PCode;                         use HAC.PCode;
 with HAC.Scanner;                       use HAC.Scanner;
+with HAC.Parser.Standard_Procedures;    use HAC.Parser.Standard_Procedures;
 with HAC.UErrors;                       use HAC.UErrors;
 
 package body HAC.Parser is
