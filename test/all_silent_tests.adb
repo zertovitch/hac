@@ -30,12 +30,16 @@ procedure All_Silent_Tests is
     procedure Launch_HAX (Ada_file_name : VString) is
       dummy : Integer;
     begin
-      dummy := Shell_Execute ("..\hax -v1 " & Ada_file_name);
+      dummy := Shell_Execute (
+        +".." & Directory_Separator (k) &
+        "hax -v1 " & Ada_file_name
+      );
     end Launch_HAX;
 
     procedure Build_HAX is
       dummy : Integer;
     begin
+      Put_Line ("(Re-)building HAX...");
       dummy :=
         Shell_Execute (+"gprbuild -P .." & Directory_Separator (k) & "hac");
     end Build_HAX;

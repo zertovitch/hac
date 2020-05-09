@@ -451,6 +451,11 @@ package body HAC.Parser.Expressions is
       end loop;
     end Simple_Expression;
 
+    procedure Issue_Type_Mismatch_Error is
+    begin
+      Type_Mismatch (CD, err_incompatible_types_for_comparison, Found => Y, Expected => X);
+    end Issue_Type_Mismatch_Error;
+
   begin  --  Expression
     Simple_Expression (FSys + Comparison_Operator_Set, X);
     --
@@ -469,7 +474,7 @@ package body HAC.Parser.Expressions is
         Y.TYP := Floats;
         Emit1 (CD, k_Integer_to_Float, 0);
       elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
-        Error (CD, err_incompatible_types_for_comparison, "not the same enumeration type");
+        Issue_Type_Mismatch_Error;
       elsif X.TYP = Y.TYP then
         if PCode_Atomic_Typ (X.TYP) then
           Emit_Comparison_Instruction (CD, OP, X.TYP);
@@ -477,7 +482,7 @@ package body HAC.Parser.Expressions is
           Error (CD, err_operator_not_defined_for_types);
         end if;
       else
-        Type_Mismatch (CD, err_incompatible_types_for_comparison, Found => Y, Expected => X);
+        Issue_Type_Mismatch_Error;
       end if;
       X.TYP := Bools;  --  The result of the comparison is always Boolean.
     end if;

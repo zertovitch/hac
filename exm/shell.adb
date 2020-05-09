@@ -11,9 +11,11 @@ begin
     k := Nixux;
   end if;
   --
+  Set_Env ("HAC_Rules", "Good Day, Ladies and Gentlemen!");
+  --
   case k is
-    when Nixux   => r := Shell_Execute ("ls *.ad*");
-    when Windoze => r := Shell_Execute ("dir *.ad*");
+    when Nixux   => r := Shell_Execute ("echo The env. var. is set... [$HAC_Rules]");
+    when Windoze => r := Shell_Execute ("echo The env. var. is set... [%HAC_Rules%]");
   end case;
   Put_Line (+"Result of command = " & r);
 end;

@@ -182,6 +182,20 @@ package body HAC.Parser.Helpers is
     end case;
   end Nice_Image;
 
+  function Enum_Name (CD : Compiler_Data; E_Ref : Index) return String is
+  begin
+    return To_String (CD.IdTab (E_Ref).Name_with_case);
+  end Enum_Name;
+
+  function Nice_Exact_Image (CD : Compiler_Data; xT: Exact_Typ) return String is
+  begin
+    if xT.TYP = Enums then
+      return Nice_Image (xT.TYP) & " (" & Enum_Name (CD, xT.Ref) & ')';
+    else
+      return Nice_Image (xT.TYP);
+    end if;
+  end Nice_Exact_Image;
+
   procedure Type_Mismatch (
     CD               : in out Compiler_Data;
     Err              :        Compile_Error;
@@ -191,11 +205,16 @@ package body HAC.Parser.Helpers is
   begin
     if Found.TYP /= Expected.TYP then
       Error (CD, Err,
-        "found a "      & Nice_Image (Found.TYP) &
-        ", expected a " & Nice_Image (Expected.TYP));
+        "found "      & Nice_Exact_Image (CD, Found) &
+        ", expected " & Nice_Exact_Image (CD, Expected));
+    elsif Found.TYP = Enums then
+      Error (CD, Err,
+        "found "      & Enum_Name (CD, Found.Ref) &
+        ", expected " & Enum_Name (CD, Expected.Ref));
     else
       Error (CD, Err, "not exactly the same " & Nice_Image (Found.TYP));
-        --  !! TBD: find the eventual names using X.Ref, Y.Ref
+        --  !! TBD: find the eventual array or record
+        --     names using X.Ref, Y.Ref ... if they have names!
     end if;
   end Type_Mismatch;
 
@@ -225,7 +244,7 @@ package body HAC.Parser.Helpers is
   begin
     Error (
       CD, Err,
-      "found: "      & Nice_Image (Found.TYP) &
+      "found: "      & Nice_Exact_Image (CD, Found) &
       ", expected: " & Types_List (Expected)
     );
   end Type_Mismatch;

@@ -8,10 +8,12 @@ procedure Einmaleins is
 begin
   x := 2 + Rand (7);  --  Random, 2 to 9
   y := 2 + Rand (7);  --  Random, 2 to 9
+  --
   if Rnd < 0.5 then
     x := x * 10;
-  else 
+  else
     y := y * 10;
   end if;
+  --
   Put (x); Put (y); Put ("  ="); Put (x * y);
 end;

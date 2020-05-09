@@ -50,7 +50,11 @@ procedure Enumerations is
     end case;
   end Test_CASE;
 
+  --  type Beast is Animal;  --  Pascal ghost, should be subtype
+  --  wild : Beast;
+
 begin
+  --  wild := a;
   v.x1 := a;
   v.x2 := c;
   x3 := e;

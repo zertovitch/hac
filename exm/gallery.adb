@@ -30,7 +30,10 @@ procedure Gallery is
     procedure Launch_HAX (Ada_file_name : VString) is
       dummy : Integer;
     begin
-      dummy := Shell_Execute ("..\hax -v2 " & Ada_file_name);
+      dummy := Shell_Execute (
+        +".." & Directory_Separator (k) &
+        "hax -v2 " & Ada_file_name
+      );
       Put ("--- Press Return to continue in the HAC gallery...");
       Skip_Line;
     end Launch_HAX;
@@ -38,6 +41,7 @@ procedure Gallery is
     procedure Build_HAX is
       dummy : Integer;
     begin
+      Put_Line ("(Re-)building HAX...");
       dummy :=
         Shell_Execute (+"gprbuild -P .." & Directory_Separator (k) & "hac");
     end Build_HAX;

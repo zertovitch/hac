@@ -1264,18 +1264,12 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.B := S (Curr_TCB.B + 3).I;
           if IR.Y = HAC.Data.CallTMDE or IR.Y = HAC.Data.CallCNDE then
             if IR.Y = HAC.Data.CallTMDE and Curr_TCB.R1.I = 0 then
-              Curr_TCB.T := Curr_TCB.T + 1;         --  A JMPC
-                                                    --  instruction
-                                                    --  always follows
+              Curr_TCB.T := Curr_TCB.T + 1;  --  A JMPC instruction always follows
             end if;
-            if Curr_TCB.T > Curr_TCB.STACKSIZE then --  timed and
-                                                          --conditional
-                                                          --entry call
+            if Curr_TCB.T > Curr_TCB.STACKSIZE then  --  timed and conditional entry call
               PS := STKCHK;  --  Stack overflow           --  returns (32).  Push entry call
             else
-              S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success
-                                                          --indicator for
-                                                          --JMPC.
+              S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
             end if;
           end if;
         else
@@ -1288,8 +1282,8 @@ package body HAC.PCode.Interpreter is
         Curr_TCB.T  := Curr_TCB.B;
         Curr_TCB.PC := S (Curr_TCB.B + 1).I;
         Curr_TCB.B  := S (Curr_TCB.B + 3).I;
-        if IR.Y < 0 then
-          PS := ProgErr;  --  Program_Error (!! check: obviously, case of function's end reached)
+        if IR.Y = HAC.Data.End_Function_without_Return then
+          PS := ProgErr;  --  !! with message "End function reached without ""return"" statement".
         end if;
 
       when k_Case_34 =>

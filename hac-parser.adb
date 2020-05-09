@@ -625,7 +625,7 @@ package body HAC.Parser is
                CD.IdTab (CD.Id_Count).Name, Id_subprog_with_case);
       end;
       if IsFun then
-        Emit1 (CD, k_Exit_Function, 1);
+        Emit1 (CD, k_Exit_Function, End_Function_without_Return);
       else
         Emit1 (CD, k_Exit_Call, CallSTDP);
       end if;
@@ -713,6 +713,10 @@ package body HAC.Parser is
     procedure Assignment (I : Integer; Check_read_only : Boolean) is
       X, Y : Exact_Typ;
       F    : Opcode;
+      procedure Issue_Type_Mismatch_Error is
+      begin
+        Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
+      end Issue_Type_Mismatch_Error;
     begin
       pragma Assert (CD.IdTab (I).Obj = Variable);
       X := CD.IdTab (I).xTyp;
@@ -742,7 +746,7 @@ package body HAC.Parser is
         if X.TYP in Standard_Typ then
           Emit (CD, k_Store);
         elsif X.Ref /= Y.Ref then
-          Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
+          Issue_Type_Mismatch_Error;
         else
           case X.TYP is
             when Arrays =>
@@ -778,7 +782,7 @@ package body HAC.Parser is
           null;  --  All right, there were already enough compilation error messages...
         end if;
       else
-        Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
+        Issue_Type_Mismatch_Error;
         --  NB: We are in the X.TYP /= Y.TYP case.
       end if;
     end Assignment;
@@ -920,6 +924,10 @@ package body HAC.Parser is
         X, Y : Exact_Typ;
         F : Opcode;
         Block_Idx : Integer;
+        procedure Issue_Type_Mismatch_Error is
+        begin
+          Type_Mismatch (CD, err_type_of_return_statement_doesnt_match, Found => Y, Expected => X);
+        end Issue_Type_Mismatch_Error;
       begin
         if Block_ID = CD.Main_Program_ID then
           Error (CD, err_illegal_return_statement_from_main); -- !! but... this is legal in Ada !!
@@ -949,22 +957,14 @@ package body HAC.Parser is
               if (X.TYP in Standard_Typ) or else (X.TYP = Enums and then X = Y) then
                 Emit (CD, k_Store);
               elsif X.Ref /= Y.Ref then
-                Type_Mismatch (
-                  CD, err_type_of_return_statement_doesnt_match,
-                  Found    => Y,
-                  Expected => X
-                );
+                Issue_Type_Mismatch_Error;
               end if;
             elsif X.TYP = Floats and Y.TYP = Ints then
               Forbid_Type_Coercion (CD, "integer type value returned as floating-point");
               Emit1 (CD, k_Integer_to_Float, 0);
               Emit (CD, k_Store);
             elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
-              Type_Mismatch (
-                CD, err_type_of_return_statement_doesnt_match,
-                Found    => Y,
-                Expected => X
-              );
+              Issue_Type_Mismatch_Error;
             end if;
           else
             Error (CD, err_illegal_return_statement_from_main);

@@ -57,6 +57,7 @@ package HAC.Data is
   KMax                  : constant := HAC_Float'Digits;
   Nesting_Level_Max     : constant := 20;
 
+  End_Function_without_Return : constant := -1;
   CallSTDP   : constant := 0;             --  Call type for standard procedure call
   CallSTDE   : constant := 1;             --  Call type for standard Entry Call
   CallTMDE   : constant := 2;             --  Call type for timed Entry Call
