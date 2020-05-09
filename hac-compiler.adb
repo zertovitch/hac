@@ -103,7 +103,7 @@ package body HAC.Compiler is
         Put (CD.comp_dump, r.xTyp.Ref, 5);
         Show_Padded (Boolean'Image (r.Normal), Boolean'Width);
         Put (CD.comp_dump, r.LEV, 3);
-        Put (CD.comp_dump, r.Adr, 5);
+        Put (CD.comp_dump, r.Adr_or_Sz, 5);
         New_Line (CD.comp_dump);
       end;
     end loop;
@@ -128,7 +128,7 @@ package body HAC.Compiler is
         Put (CD.comp_dump,
              ' ' & To_String (CD.IdTab (CD.Entries_Table (I)).Name) & " in Task " &
              To_String (CD.IdTab (
-               CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).Adr)
+               CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).Adr_or_Sz)
              ).Name)
         );
         New_Line (CD.comp_dump);
@@ -332,7 +332,7 @@ package body HAC.Compiler is
           Block_Ref      => 0,
           Normal         => True,
           LEV            => 0,
-          Adr            => X3);
+          Adr_or_Sz      => X3);
       end Enter;
 
       procedure Enter_Std_Funct (Name: String; T: Typen; Code: SF_Code) is
@@ -560,7 +560,7 @@ package body HAC.Compiler is
       for Tx in CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count loop
         if CD.IdTab (Tx).Obj = Variable then
           if CD.IdTab (Tx).xTyp.TYP /= NOTYP then
-            Put (map_file, CD.IdTab (Tx).Adr, 4);
+            Put (map_file, CD.IdTab (Tx).Adr_or_Sz, 4);
             Put (map_file, To_String (CD.IdTab (Tx).Name) & "   ");
           end if;
           if CD.IdTab (Tx).LEV = 1 then

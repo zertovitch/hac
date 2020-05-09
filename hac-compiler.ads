@@ -110,12 +110,12 @@ package HAC.Compiler is
                                     --       which caused a mixup for functions return types!)
     Normal         : Boolean;       --  value param?
     LEV            : Nesting_level;
-    Adr            : Integer;
+    Adr_or_Sz      : Integer;
   end record;
 
-  --  Obj                           Meaning of Adr
+  --  Obj                           Meaning of Adr_or_Sz
   --  -------------------------------------------------------------------------------
-  --  Declared_Number_or_Enum_Item  ?
+  --  Declared_Number_or_Enum_Item  Value (number), position (enumerated type)
   --  Variable                      Relative position in the stack.
   --  TypeMark                      Size (in PCode stack items) of an object
   --                                    of the declared type.

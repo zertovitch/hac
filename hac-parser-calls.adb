@@ -79,9 +79,9 @@ package body HAC.Parser.Calls is
               else
                 X := CD.IdTab (K).xTyp;
                 if CD.IdTab (K).Normal then
-                  Emit2 (CD, k_Load_Address, CD.IdTab (K).LEV, CD.IdTab (K).Adr);
+                  Emit2 (CD, k_Load_Address, CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
                 else
-                  Emit2 (CD, k_Push_Value, CD.IdTab (K).LEV, CD.IdTab (K).Adr);
+                  Emit2 (CD, k_Push_Value, CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
                 end if;
                 if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                   Selector (CD, Level, FSys + Colon_Comma_RParent, X);

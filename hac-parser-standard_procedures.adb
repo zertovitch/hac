@@ -56,7 +56,7 @@ package body HAC.Parser.Standard_Procedures is
                   else
                     F := k_Push_Value;
                   end if;
-                  Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr);
+                  Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr_or_Sz);
                   if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                     Selector (CD, Level, FSys + Comma_RParent, X);
                   end if;
@@ -176,7 +176,7 @@ package body HAC.Parser.Standard_Procedures is
                 else
                   F := k_Push_Value;
                 end if;
-                Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr);
+                Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr_or_Sz);
                 if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                   Selector (CD, Level, FSys + RParent, X);
                 end if;

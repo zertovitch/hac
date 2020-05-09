@@ -30,7 +30,7 @@ package body HAC.Parser.Expressions is
           Error (CD, err_undefined_identifier, stop_on_error => True);
         end if;
         V            := CD.IdTab (Field_Id).xTyp;
-        Field_Offset := CD.IdTab (Field_Id).Adr;
+        Field_Offset := CD.IdTab (Field_Id).Adr_or_Sz;
         if Field_Offset /= 0 then
           Emit1 (CD, k_Record_Field_Offset, Field_Offset);
         end if;
@@ -185,10 +185,10 @@ package body HAC.Parser.Expressions is
                       X := r.xTyp;
                       if X.TYP = Floats then
                         --  Address is an index in the float constants table.
-                        Emit1 (CD, k_Load_Float_Literal, r.Adr);
+                        Emit1 (CD, k_Load_Float_Literal, r.Adr_or_Sz);
                       else
                         --  Here the address is actually the immediate (discrete) value.
-                        Emit1 (CD, k_Load_Discrete_Literal, r.Adr);
+                        Emit1 (CD, k_Load_Discrete_Literal, r.Adr_or_Sz);
                       end if;
                       --
                     when Variable =>
@@ -199,7 +199,7 @@ package body HAC.Parser.Expressions is
                         else
                           F := k_Push_Value;
                         end if;
-                        Emit2 (CD, F, r.LEV, r.Adr);
+                        Emit2 (CD, F, r.LEV, r.Adr_or_Sz);
                         Selector (CD, Level, FSys, X);
                         if Standard_or_Enum_Typ (X.TYP) then
                           Emit (CD, k_Case_34);
@@ -216,7 +216,7 @@ package body HAC.Parser.Expressions is
                         else
                           F := k_Push_Value;
                         end if;
-                        Emit2 (CD, F, r.LEV, r.Adr);
+                        Emit2 (CD, F, r.LEV, r.Adr_or_Sz);
                       end if;
                       --
                     when TypeMark =>
@@ -228,7 +228,7 @@ package body HAC.Parser.Expressions is
                     when Funktion =>
                       X := r.xTyp;
                       if r.LEV = 0 then
-                        Standard_Function (CD, Level, FSys, Ident_Index, SF_Code'Val (r.Adr), X);
+                        Standard_Function (CD, Level, FSys, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
                       else
                         Subprogram_or_Entry_Call (CD, Level, FSys, Ident_Index, CallSTDP);
                       end if;

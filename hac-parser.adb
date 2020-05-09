@@ -109,7 +109,7 @@ package body HAC.Parser is
             Block_Ref      => 0,
             Normal         => True,
             LEV            => Level,
-            Adr            => 0
+            Adr_or_Sz      => 0
         );
         --  Update start of identifier chain:
         CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
@@ -167,9 +167,9 @@ package body HAC.Parser is
             else
               C.TP := CD.IdTab (X).xTyp;
               if C.TP.TYP = Floats then
-                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr);
+                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr_or_Sz);
               else
-                C.I := Sign * CD.IdTab (X).Adr;
+                C.I := Sign * CD.IdTab (X).Adr_or_Sz;
                 if signed and then C.TP.TYP not in Numeric_Typ then
                   Error (CD, err_numeric_constant_expected);
                 end if;
@@ -263,7 +263,7 @@ package body HAC.Parser is
             begin
               New_Enum_Item.Read_only := True;
               New_Enum_Item.xTyp      := xTP;
-              New_Enum_Item.Adr       := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
+              New_Enum_Item.Adr_or_Sz := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
             end;
           else
             Error (CD, err_identifier_missing);
@@ -304,10 +304,10 @@ package body HAC.Parser is
             T1 := CD.Id_Count;
             Type_Definition (FSys + Comma_END_IDent_Semicolon, Field_Exact_Typ, Field_Size);
             while T0 < T1 loop
-              T0                 := T0 + 1;
-              CD.IdTab (T0).xTyp := Field_Exact_Typ;
-              CD.IdTab (T0).Adr  := Offset;
-              Offset             := Offset + Field_Size;
+              T0                      := T0 + 1;
+              CD.IdTab (T0).xTyp      := Field_Exact_Typ;
+              CD.IdTab (T0).Adr_or_Sz := Offset;
+              Offset                  := Offset + Field_Size;
             end loop;
           end if;
           Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
@@ -342,7 +342,7 @@ package body HAC.Parser is
               if Ident_Index /= No_Id then
                 if CD.IdTab (Ident_Index).Obj = TypeMark then
                   xTP := CD.IdTab (Ident_Index).xTyp;
-                  Sz  := CD.IdTab (Ident_Index).Adr;
+                  Sz  := CD.IdTab (Ident_Index).Adr_or_Sz;
                   if xTP.TYP = NOTYP then
                     Error (CD, err_undefined_type);
                   end if;
@@ -372,14 +372,14 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     --------------------------------------------Formal_Parameter_List-
     procedure Formal_Parameter_List is
-      RF, Sz, X, T0 : Integer;
-      TP            : Typen := NOTYP;
-      ValParam      : Boolean;
+      Sz, X, T0 : Integer;
+      ValParam  : Boolean;
+      xTP       : Exact_Typ := (TYP => NOTYP, Ref => 0);
     begin
-      InSymbol;
-      RF := 0;
+      InSymbol;  --  Consume '(' symbol.
       Sz := 0;
       Test (CD, IDent_Set, FSys + RParent, err_identifier_missing, stop_on_error => True);
+      --
       while CD.Sy = IDent loop
         T0 := CD.Id_Count;
         Enter_Variable;
@@ -387,12 +387,13 @@ package body HAC.Parser is
           InSymbol;
           Enter_Variable;
         end loop;
-        if CD.Sy = Colon then  --  ':'  in  "function F (x,y : in Real) return Real;"
+        --
+        if CD.Sy = Colon then  --  The ':'  in  "function F (x, y : in Real) return Real;"
           InSymbol;
           if CD.Sy = IN_Symbol then
             InSymbol;
           end if;
-          if Is_a_function then -- if I am a function, no InOut parms allowed
+          if Is_a_function then  --  If I am a function, no InOut parms allowed
             ValParam := True;
           elsif CD.Sy /= OUT_Symbol then
             ValParam := True;
@@ -407,10 +408,9 @@ package body HAC.Parser is
             InSymbol;
             if X /= No_Id then
               if CD.IdTab (X).Obj = TypeMark then
-                TP := CD.IdTab (X).xTyp.TYP;
-                RF := CD.IdTab (X).xTyp.Ref;
+                xTP := CD.IdTab (X).xTyp;
                 if ValParam then
-                  Sz := CD.IdTab (X).Adr;
+                  Sz := CD.IdTab (X).Adr_or_Sz;
                 else
                   Sz := 1;
                 end if;
@@ -425,10 +425,10 @@ package body HAC.Parser is
             declare
               r : IdTabEntry renames CD.IdTab (T0);
             begin
-              r.xTyp      := (TP, RF);
+              r.xTyp      := xTP;
               r.Normal    := ValParam;
               r.Read_only := ValParam;
-              r.Adr       := Dx;
+              r.Adr_or_Sz := Dx;
               r.LEV       := Level;
               Dx          := Dx + Sz;
             end;
@@ -442,6 +442,7 @@ package body HAC.Parser is
           Test (CD, IDent_Set, FSys + RParent, err_incorrectly_used_symbol);
         end if;
       end loop;  --  while Sy = IDent
+      --
       if CD.Sy = RParent then
         InSymbol;
         Test (CD, After_Subprogram_Parameters, FSys, err_incorrectly_used_symbol);
@@ -465,8 +466,8 @@ package body HAC.Parser is
       xTyp := (TYP => NOTYP, Ref => 0);
       Sz := 0;
       Type_Definition (Comma_IDent_Semicolon + FSys, xTyp, Sz);
-      CD.IdTab (T1).xTyp := xTyp;
-      CD.IdTab (T1).Adr  := Sz;
+      CD.IdTab (T1).xTyp      := xTyp;
+      CD.IdTab (T1).Adr_or_Sz := Sz;
       --
       Test_Semicolon (CD, FSys);
     end Type_Declaration;
@@ -545,18 +546,18 @@ package body HAC.Parser is
                 r.xTyp := C.TP;
                 case C.TP.TYP is
                   when Floats =>
-                    Enter_or_find_Float (CD, C.R, r.Adr);
+                    Enter_or_find_Float (CD, C.R, r.Adr_or_Sz);
                   when Ints =>
-                    r.Adr := C.I;
+                    r.Adr_or_Sz := C.I;
                   when others =>
                     Error (CD, err_numeric_constant_expected);
                     --  "boo : constant := True;" or "x: constant := 'a';" are wrong in Ada.
-                    r.Adr := C.I;
+                    r.Adr_or_Sz := C.I;
                 end case;
               else  --  A variable or a typed constant
-                r.xTyp := xTyp;
-                r.Adr  := Dx;
-                Dx     := Dx + Sz;
+                r.xTyp      := xTyp;
+                r.Adr_or_Sz := Dx;
+                Dx          := Dx + Sz;
               end if;
             end;
           end loop;  --  While T0 < T1
@@ -578,8 +579,8 @@ package body HAC.Parser is
           T0 := T0i;
           while T0 < T1 - 1 loop
             T0 := T0 + 1;
-            Emit2 (CD, k_Load_Address, CD.IdTab (T0).LEV, CD.IdTab (T0).Adr);
-            Emit2 (CD, k_Push_Value,   CD.IdTab (T1).LEV, CD.IdTab (T1).Adr);
+            Emit2 (CD, k_Load_Address, CD.IdTab (T0).LEV, CD.IdTab (T0).Adr_or_Sz);
+            Emit2 (CD, k_Push_Value,   CD.IdTab (T1).LEV, CD.IdTab (T1).Adr_or_Sz);
             Emit (CD, k_Store);
           end loop;
           --
@@ -688,7 +689,7 @@ package body HAC.Parser is
             InSymbol;
             Block (CD, FSys, False, False, Level + 1, CD.Id_Count,
                    CD.IdTab (CD.Id_Count).Name, CD.IdTab (CD.Id_Count).Name_with_case);
-            CD.IdTab (T0).Adr := CD.Tasks_Definitions_Count;
+            CD.IdTab (T0).Adr_or_Sz := CD.Tasks_Definitions_Count;
             if CD.Sy = Semicolon then
               InSymbol;
             else
@@ -725,7 +726,7 @@ package body HAC.Parser is
       else
         F := k_Push_Value;
       end if;
-      Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr);
+      Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr_or_Sz);
       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
         Selector (CD, Level, Becomes_EQL + FSys, X);
       end if;
@@ -1152,7 +1153,7 @@ package body HAC.Parser is
                 Block_Ref      => 0,
                 Normal         => True,
                 LEV            => Level,
-                Adr            => Dx
+                Adr_or_Sz      => Dx
              );
           CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx  := CD.Id_Count;
           Dx := Dx + 1;
@@ -1164,7 +1165,7 @@ package body HAC.Parser is
           Skip (CD, Fail_after_FOR + FSys, err_identifier_missing);
         end if;
         --
-        Emit2 (CD, k_Load_Address, CD.IdTab (CD.Id_Count).LEV, CD.IdTab (CD.Id_Count).Adr);
+        Emit2 (CD, k_Load_Address, CD.IdTab (CD.Id_Count).LEV, CD.IdTab (CD.Id_Count).Adr_or_Sz);
         InSymbol;
         FOR_Begin := k_FOR_Forward_Begin;
         if CD.Sy = IN_Symbol then         --       "IN"  in  "for i in reverse 1 .. 10 loop"
@@ -1573,7 +1574,7 @@ package body HAC.Parser is
                   Entry_Call (CD, Level, FSys, I_Statement, CallSTDE);
                 when Prozedure =>
                   if CD.IdTab (I_Statement).LEV = 0 then
-                    Standard_Procedure (CD, Level, FSys, SP_Code'Val (CD.IdTab (I_Statement).Adr));
+                    Standard_Procedure (CD, Level, FSys, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
                   else
                     Subprogram_or_Entry_Call (CD, Level, FSys, I_Statement, CallSTDP);
                   end if;
@@ -1652,8 +1653,8 @@ package body HAC.Parser is
     procedure Statements_Part_Setup is
       Init_Code_Idx : Integer;
     begin
-      MaxDX              := Dx;
-      CD.IdTab (Prt).Adr := CD.LC;
+      MaxDX                    := Dx;
+      CD.IdTab (Prt).Adr_or_Sz := CD.LC;
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
       Init_Code_Idx := CD.CMax + ICode;
       while Init_Code_Idx > CD.CMax loop
@@ -1749,7 +1750,7 @@ package body HAC.Parser is
     --
     if CD.Sy = Semicolon then  --  end of specification part
       CD.Blocks_Table (PRB).VSize := Dx;
-      CD.IdTab (Prt).Adr          := -1;    -- address of body TBD
+      CD.IdTab (Prt).Adr_or_Sz    := -1;    -- address of body TBD
       return;
     end if;
     --

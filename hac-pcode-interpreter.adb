@@ -204,9 +204,9 @@ package body HAC.PCode.Interpreter is
             if P2Ada_Var_7.Obj = Variable then
               if HAC.Data.Standard_or_Enum_Typ (P2Ada_Var_7.xTyp.TYP) then
                 if P2Ada_Var_7.Normal then
-                  InterDef.H3 := InterDef.H1 + P2Ada_Var_7.Adr;
+                  InterDef.H3 := InterDef.H1 + P2Ada_Var_7.Adr_or_Sz;
                 else
-                  InterDef.H3 := InterDef.S (InterDef.H1 + P2Ada_Var_7.Adr).I;
+                  InterDef.H3 := InterDef.S (InterDef.H1 + P2Ada_Var_7.Adr_or_Sz).I;
                 end if;
                 Put ("  " & To_String (P2Ada_Var_7.Name) & " = ");
                 case P2Ada_Var_7.xTyp.TYP is
@@ -446,7 +446,7 @@ package body HAC.PCode.Interpreter is
       declare
         Main_TCB : Task_Control_Block renames TCB(0);
       begin
-        Main_TCB.PC := CD.IdTab (CD.Tasks_Definitions_Table (0)).Adr ; --  first pcode instruction
+        Main_TCB.PC := CD.IdTab (CD.Tasks_Definitions_Table (0)).Adr_or_Sz ; --  first pcode instruction
         Main_TCB.T := CD.Blocks_Table (1).VSize - 1 ; -- was CD.Blocks_Table (2)
         Main_TCB.B := 0 ;
         Main_TCB.TS := Ready ;
@@ -468,7 +468,7 @@ package body HAC.PCode.Interpreter is
           Curr_TCB : Task_Control_Block renames TCB(CurTask);
         begin
           H1 := CD.Tasks_Definitions_Table (CurTask) ;
-          Curr_TCB.PC := CD.IdTab (H1).Adr ;
+          Curr_TCB.PC := CD.IdTab (H1).Adr_or_Sz ;
           Curr_TCB.B := TCB (CurTask - 1).STACKSIZE + 1 ;
           Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).Block_Ref).VSize - 1 ;
           S (Curr_TCB.B + 1).I := 0 ;
@@ -489,7 +489,7 @@ package body HAC.PCode.Interpreter is
       end loop;
       --  Initially no queued entry calls
       for H1 in 1 .. CD.Entries_Count loop
-        EList (H1).Task_Index := CD.IdTab (CD.Entries_Table (H1)).Adr ;  --  Task index
+        EList (H1).Task_Index := CD.IdTab (CD.Entries_Table (H1)).Adr_or_Sz ;  --  Task index
         EList (H1).First := null ;
         EList (H1).Last  := null ;
       end loop;
@@ -1045,13 +1045,13 @@ package body HAC.PCode.Interpreter is
            HAC.Data.CallSTDP =>
             --  Standard procedure call
 
-            Curr_TCB.PC := CD.IdTab (H2).Adr;
+            Curr_TCB.PC := CD.IdTab (H2).Adr_or_Sz;
 
           when HAC.Data.CallSTDE =>
             --  Unconditional entry call
             Queue (H2, CurTask);          --  put self on entry queue
             Curr_TCB.TS := WaitRendzv;
-            H5          := CD.IdTab (H2).Adr;  --  Task being entered
+            H5          := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
             if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
                (TCB (H5).TS = TimedWait)
             then
@@ -1064,7 +1064,7 @@ package body HAC.PCode.Interpreter is
           when HAC.Data.CallTMDE =>
             --  Timed entry call
             Queue (H2, CurTask);      --  put self on entry queue
-            H5 := CD.IdTab (H2).Adr;  --  Task being entered
+            H5 := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
             --
             if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
                (TCB (H5).TS = TimedWait)
@@ -1085,7 +1085,7 @@ package body HAC.PCode.Interpreter is
 
           when HAC.Data.CallCNDE =>
             --  Conditional Entry Call
-            H5 := CD.IdTab (H2).Adr;              --  Task being entered
+            H5 := CD.IdTab (H2).Adr_or_Sz;              --  Task being entered
             if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
                (TCB (H5).TS = TimedWait)
             then
