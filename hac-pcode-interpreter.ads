@@ -26,9 +26,13 @@ package HAC.PCode.Interpreter is
   generic
     with function End_Of_File_Console return Boolean;
     with function End_Of_Line_Console return Boolean;
+    with function Get_Needs_Skip_Line return Boolean;
+    --  ^ True  for a real console with Ada.Text_IO (line buffer);
+    --    False for input boxes (like in LEA) or other kind of immediate input.
     with procedure Get_Console (i: out Integer; Width : Ada.Text_IO.Field := 0);
     with procedure Get_Console (f: out HAC.Data.HAC_Float; Width : Ada.Text_IO.Field := 0);
     with procedure Get_Console (c: out Character);
+    with procedure Get_Immediate_Console (c: out Character);
     with function Get_Line_Console return String;
     with procedure Skip_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
     --

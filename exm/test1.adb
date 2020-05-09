@@ -11,6 +11,7 @@ procedure Test1 is
 
   Ten: constant Integer := 10;     -- Integer    (*  test  *)
   Twenty: constant  := 20;
+  Zwanzig : Integer;
   TenpOne: constant := 10.1;        -- Real
   CA: constant  Character := 'A';          -- Character
   CE: constant  Character := 'E';          -- Character
@@ -38,15 +39,15 @@ procedure Test1 is
 
   I1, I2, I3:  Integer := 99;
   I4: constant Integer := -I1 + 10;
-  I5, I6, I7:  Integer;
   R1: Real := 1.23;
   R2: Real := TenpOne;
   C2: constant Character := '+';
   C1 : constant Character := '+';
   C3: constant Character := CA;
   B3, B4, B5: Boolean := False;
+  X3 : Type3;
   A:  array(1..5) of Integer;
-  WeekDay: Day;
+  r : Real;
 
   function  Add(X, Y: Integer) return Integer is
     Value: Integer;
@@ -61,7 +62,42 @@ procedure Test1 is
     else Put_Line("Reverse Order");  end if;
   end IComp;
 
+  weekday : Day;
+
+  procedure Comp_10_20 (I1 : Integer) is
+  begin
+    Put(I1); Put(" compared to 10 and 20 is :  ");
+    if I1 < 10 then
+      Put_Line("the smallest");
+    elsif I1 < 20 then
+      Put_Line("in the middle");
+    else
+      Put_Line("the largest");
+    end if;
+  end Comp_10_20;
+
 begin
+  for d in Sun .. Sat loop
+    case d is
+      when Sun => Put ("Sunday. ");
+      when Mon => Put ("Monday. ");
+      when Tue => Put ("Tuesday. ");
+      when Wed => Put ("Wednesday. ");
+      when Thu => Put ("Thursday. ");
+      when Fri => Put ("Friday! "); weekday := d;
+      when Sat => Put ("Saturday.");
+    end case;
+  end loop;
+  New_Line;
+  for i in 1 ..4 loop
+    X3 (i).X := i;
+    X3 (i).Y := Real (i);
+  end loop;
+  r := 1.0;
+  for i in 1 ..4 loop
+    r := r * X3 (i).Y;
+  end loop;
+  Put_Line (+"Expected: 24, computed: " & r);
   --CONSTANT Check
   Put_Line("CONSTANT Check");
   Put("Ten     = ");  Put_Line(Ten);
@@ -78,15 +114,15 @@ begin
   Put(R1); Put(R2); New_Line;
   Put_Line("c1, c2, c3 (++A):");
   Put(C1); Put(C2); Put(C3); New_Line;
-  Put_Line("b1, .., b5 (T,T,F,F,F):");
-  Put("   "); Put(B1); Put(' '); Put(B2); Put(' '); Put(B3); Put(' '); Put(
-    B4); Put(' '); Put(B5); New_Line;
-  B3:= True;
-  B4:= True;
+  Put_Line("b1, .., b5. Expected:  (T,T,F,F,F):");
+  Put("   ");
+  Put(B1); Put(' '); Put(B2); Put(' '); Put(B3); Put(' '); Put(B4); Put(' '); Put(B5); New_Line;
+  B3:= weekday = Fri;
+  B4:= weekday /= Mon;
   B5:= B3 = not B4;
-  Put_Line("b1, .., b5 (T,T,T,T,F):");
-  Put("   "); Put(B1); Put(' '); Put(B2); Put(' '); Put(B3); Put(' '); Put(
-    B4); Put(' '); Put(B5); New_Line;
+  Put_Line("b1, .., b5. Expected: (T,T,T,T,F):");
+  Put("   ");
+  Put(B1); Put(' '); Put(B2); Put(' '); Put(B3); Put(' '); Put(B4); Put(' '); Put(B5); New_Line;
   New_Line;
 
   Put_Line("ARITHMETIC Check");
@@ -156,25 +192,16 @@ begin
   New_Line;
 
   Put_Line("IF and BOOLEAN Check");
-  if Ten > Twenty then
-    Put(Ten); Put('>'); Put(Twenty); Put_Line("O_o: bug with > operator");
+  Zwanzig := Ten + Ten + X3 (3).X - 3;
+  if Ten > Zwanzig then
+    Put(Ten); Put('>'); Put(Twenty); Put_Line("O_o: bug with IF or with "">"" operator");
   else
-    Put(Ten); Put("<="); Put(Twenty); Put_Line(" > operator works.");
+    Put(Ten); Put("<="); Put(Twenty); Put_Line(" (Waw, the "">"" operator works on integers)");
   end if;
 
-  I1 := 99;
-  Put(I1); Put(" compared to 10 and 20 is :  ");
-  if I1 < 10 then
-    Put_Line("the smallest");
-  elsif I1 < 20 then
-    Put_Line("in the middle");
-  else
-    Put_Line("the largest");
-  end if;
-
-  if Twenty > 10 then
-    Put(Twenty); Put('>'); Put(Ten); New_Line;
-  end if;
+  Comp_10_20 (-6);
+  Comp_10_20 (99);
+  Comp_10_20 (19);
 
   if not False then Put_Line ("(1/2) NOT is OK"); else Put_Line (
       "(1/2) NOT is not OK"); end if;

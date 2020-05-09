@@ -18,7 +18,7 @@ package body HAC.Parser.Standard_Procedures is
     do_first_InSymbol : Boolean := True;
   begin
     case Code is
-      when SP_Get | SP_Get_Line =>
+      when SP_Get | SP_Get_Immediate | SP_Get_Line =>
         if CD.Sy = LParent then
           InSymbol (CD);
           I := Get_File_Pointer (CD, CD.Id);  --  Schoening
@@ -65,7 +65,7 @@ package body HAC.Parser.Standard_Procedures is
                      X.TYP = Chars or
                      X.TYP = VStrings
                   then
-                    Emit1 (CD, k_Read, Typen'Pos (X.TYP));
+                    Emit2 (CD, k_Read, Boolean'Pos (Code = SP_Get_Immediate), Typen'Pos (X.TYP));
                   elsif X.TYP = NOTYP then
                     null;  --  Error(s) already appeared in the parsing.
                   else
@@ -81,7 +81,7 @@ package body HAC.Parser.Standard_Procedures is
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
         if Code = SP_Get_Line
-          and X.TYP /= VStrings  --  A string is already got via a Get_Line.
+          and X.TYP /= VStrings  --  A string is already got via an external Get_Line.
         then
           Emit (CD, k_Skip_Line);
         end if;

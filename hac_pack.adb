@@ -1,7 +1,6 @@
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Strings.Fixed; use Ada.Strings;
-with Ada.Text_IO;
 
 with Interfaces.C;
 
@@ -192,11 +191,6 @@ package body HAC_Pack is
    ---------
    -- GET --
    ---------
-
-  procedure Get (C : out Character) is
-  begin
-    Ada.Text_IO.Get(C);
-  end Get;
 
   procedure Get (I : out Integer) is
   begin

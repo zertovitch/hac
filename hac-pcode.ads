@@ -269,11 +269,12 @@ package HAC.PCode is
     --
     SF_Clock,
     SF_Random_Float,
-    SF_Argument_Count
+    SF_Argument_Count,
+    SF_Get_Needs_Skip_Line  --  Informs whether Get from console needs Skip_Line
   );
 
   subtype SF_Niladic is
-    SF_Code range SF_Clock .. SF_Argument_Count;
+    SF_Code range SF_Clock .. SF_Get_Needs_Skip_Line;
 
   -------------------------------------
   --  Standard procedure operations  --
@@ -281,6 +282,7 @@ package HAC.PCode is
 
   type SP_Code is (
     SP_Get,
+    SP_Get_Immediate,
     SP_Get_Line,
     SP_Skip_Line,
     SP_Put,

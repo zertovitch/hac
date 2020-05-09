@@ -682,6 +682,8 @@ package body HAC.PCode.Interpreter is
                 S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen));
               when SF_Argument_Count =>
                 S (Curr_TCB.T).I := Argument_Count;
+              when SF_Get_Needs_Skip_Line =>
+                S (Curr_TCB.T).I := Boolean'Pos (Get_Needs_Skip_Line);
             end case;
           end if;
       end case;
@@ -806,6 +808,7 @@ package body HAC.PCode.Interpreter is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       use HAC.Data;
       Out_Param : Index renames S (Curr_TCB.T).I;
+      Immediate : Boolean;
     begin
       if FAT.CURR = 0 then
         if End_Of_File_Console then
@@ -815,7 +818,14 @@ package body HAC.PCode.Interpreter is
             when Ints     => Get_Console (S (Out_Param).I);
             when Floats   => Get_Console (S (Out_Param).R);
             when VStrings => S (Out_Param).V := To_VString (Get_Line_Console);
-            when Chars    => Get_Console (CH); S (Out_Param).I := Character'Pos (CH);
+            when Chars    =>
+              Immediate := Boolean'Val (IR.X);
+              if Immediate then
+                Get_Console (CH);
+              else
+                Get_Immediate_Console (CH);
+              end if;
+              S (Out_Param).I := Character'Pos (CH);
             when others =>
               null;
           end case;
@@ -1627,12 +1637,19 @@ package body HAC.PCode.Interpreter is
       return Ada.Command_Line.Argument (Number + Argument_Shift);
     end;
 
+    function Get_Needs_Skip_Line return Boolean is
+    begin
+      return True;  --  The input is buffered with Ada.Text_IO.Get (not Get_Immediate).
+    end Get_Needs_Skip_Line;
+
     procedure Interpret_on_Current_IO_Instance is new Interpret
       ( Ada.Text_IO.End_Of_File,
         Ada.Text_IO.End_Of_Line,
+        Get_Needs_Skip_Line,
         HAC.Data.IIO.Get,
         HAC.Data.RIO.Get,
         Ada.Text_IO.Get,
+        Ada.Text_IO.Get_Immediate,
         Ada.Text_IO.Get_Line,
         Ada.Text_IO.Skip_Line,
         HAC.Data.IIO.Put,

@@ -19,6 +19,7 @@ with Ada.Characters.Handling;
 with Ada.Command_Line;
 with Ada.Environment_Variables;
 with Ada.Strings.Unbounded;
+with Ada.Text_IO;
 
 package HAC_Pack is
 
@@ -129,10 +130,19 @@ package HAC_Pack is
   --  Text Input-Output  --
   -------------------------
 
+  --  We have a real console/terminal input where several
+  --  inputs can be made on the same line, followed by a
+  --  "Return". It behaves like for a file. Actually it
+  --  *could* be a file, if run like this: prog <input.txt .
+  --
+  function Get_Needs_Skip_Line return Boolean is (True);
+
   --  Get
-  procedure Get (C : out Character);
+  procedure Get (C : out Character) renames Ada.Text_IO.Get;
   procedure Get (I : out Integer  );
   procedure Get (F : out Real     );
+
+  procedure Get_Immediate (C : out Character) renames Ada.Text_IO.Get_Immediate;
 
   --  Get and then move file pointer to next line (Skip_Line)
   procedure Get_Line (C : out Character);
