@@ -808,28 +808,24 @@ package body HAC.PCode.Interpreter is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       use HAC.Data;
       Out_Param : Index renames S (Curr_TCB.T).I;
-      Immediate : Boolean;
+      Immediate : constant Boolean := Boolean'Val (IR.X);
     begin
       if FAT.CURR = 0 then
-        if End_Of_File_Console then
-          PS := REDCHK;
-        else
-          case Typen'Val (IR.Y) is
-            when Ints     => Get_Console (S (Out_Param).I);
-            when Floats   => Get_Console (S (Out_Param).R);
-            when VStrings => S (Out_Param).V := To_VString (Get_Line_Console);
-            when Chars    =>
-              Immediate := Boolean'Val (IR.X);
-              if Immediate then
-                Get_Console (CH);
-              else
-                Get_Immediate_Console (CH);
-              end if;
-              S (Out_Param).I := Character'Pos (CH);
-            when others =>
-              null;
-          end case;
-        end if;
+        --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
+        case Typen'Val (IR.Y) is
+          when Ints     => Get_Console (S (Out_Param).I);
+          when Floats   => Get_Console (S (Out_Param).R);
+          when VStrings => S (Out_Param).V := To_VString (Get_Line_Console);
+          when Chars    =>
+            if Immediate then
+              Get_Immediate_Console (CH);
+            else
+              Get_Console (CH);
+            end if;
+            S (Out_Param).I := Character'Pos (CH);
+          when others =>
+            null;
+        end case;
       else
         if Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
           PS := REDCHK;
@@ -1322,8 +1318,7 @@ package body HAC.PCode.Interpreter is
 
       when k_Skip_Line =>
         if FAT.CURR = 0 then       --  Schoening
-          --  The End_Of_File_Console check
-          --  is skipped here (disturbs GNAT's run-time).
+          --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
           Skip_Line_Console;
         elsif Ada.Text_IO.End_Of_File (FAT.FIL (FAT.CURR)) then
           PS := REDCHK;

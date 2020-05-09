@@ -18,8 +18,9 @@ procedure Console_IO is
     --
     if Get_Needs_Skip_Line then
       Put_Line ("Type 2 characters. This time there is no need for pressing Return.");
-      Get_Immediate (C1);
-      Get_Immediate (C2);
+      Get_Immediate (C1); Put (+"[" & C1 & ']');
+      Get_Immediate (C2); Put (+"[" & C2 & ']');
+      New_Line;
       Put_Line (+"You have typed [" & C1 & "] [" & C2 & "]");
     end if;
     --
