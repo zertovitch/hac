@@ -428,7 +428,7 @@ package body HAC.Compiler is
       Enter (To_String (CD.Main_Program_ID),  Prozedure, NOTYP, 0);
     end Enter_Standard_Functions_and_Main;
 
-    use Ada.Text_IO, Ada.Integer_Text_IO, HAC.Parser.Helpers;
+    use Ada.Text_IO, HAC.Parser.Helpers;
 
     asm_dump : File_Type;
     map_file : File_Type;
@@ -560,7 +560,7 @@ package body HAC.Compiler is
       for Tx in CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count loop
         if CD.IdTab (Tx).Obj = Variable then
           if CD.IdTab (Tx).xTyp.TYP /= NOTYP then
-            Put (map_file, CD.IdTab (Tx).Adr_or_Sz, 4);
+            Ada.Integer_Text_IO.Put (map_file, CD.IdTab (Tx).Adr_or_Sz, 4);
             Put (map_file, To_String (CD.IdTab (Tx).Name) & "   ");
           end if;
           if CD.IdTab (Tx).LEV = 1 then
@@ -568,7 +568,7 @@ package body HAC.Compiler is
           else
             Put (map_file, " Local (");
           end if;
-          Put (map_file, CD.IdTab (Tx).LEV, 1);
+          Ada.Integer_Text_IO.Put (map_file, CD.IdTab (Tx).LEV, 1);
           Put (map_file, ')');
           New_Line (map_file);
         end if;

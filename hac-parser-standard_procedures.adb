@@ -140,7 +140,7 @@ package body HAC.Parser.Standard_Procedures is
                 Emit1 (CD, k_Write_Formatted, Typen'Pos (X.TYP));
               end if;
             elsif X.TYP = String_Literals then
-              Emit (CD, k_Write_String);
+              Emit (CD, k_Write_String_Literal);
             else
               Emit1 (CD, k_Write_Unformatted, Typen'Pos (X.TYP));
             end if;

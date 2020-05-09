@@ -3,15 +3,16 @@
 --
 --  https://en.wikipedia.org/wiki/Burrows%E2%80%93Wheeler_transform
 
---  !! Fails on HAC (2018-11-07) because the ">" doesn't seem to
---     work on arrays. Works nicely on "real" compilers.
+--  !! Fails on HAC (2018-11-07) because the ">" operator is not
+--     predefined work on arrays. Works nicely on "real" compilers.
+--     See remarks around line 46.
 --     See extras/bwt* files in Zip-Ada project for newer developments.
 --
-with Hac_Pack; use Hac_Pack;
+with HAC_Pack; use HAC_Pack;
 
 procedure BWT is
 
-  n: constant := 10;
+  n: constant := 20;
 
   type Row is array(1..n) of Character;  --  new String (1..n);
   --  type Row is String (1..n);  --  Bogus Ada (HAC...)
@@ -41,7 +42,9 @@ procedure BWT is
         stop:= False;
         while (j > step) and not stop loop
           j := j - step;
-          if b(j) > temp then  --  !!  Comparison of strings seems to be wrong under HAC.
+          if b(j) > temp then
+            --  HAC: need unary "+" for converting to VString
+            --  or ">" for array-of-discrete comparisons (RM 4.5.2 (26)).
             b(j+step):= b(j);
           else
             b(j+step):= temp;
@@ -58,30 +61,37 @@ procedure BWT is
 
   procedure Show (m : Table) is
   begin
-    for i in 1 .. n loop  
+    Put_Line ("--- Table ---");
+    for i in 1 .. n loop
       Put (i);
       Put (' ');
-      for j in 1 .. n loop  
-        Put (m(i)(j));  
-      end loop;  
-      new_line;  
-    end loop;  
+      for j in 1 .. n loop
+        Put (m(i)(j));
+      end loop;
+      New_Line;
+    end loop;
   end;
 
   s, t, u : Row;
   m : Table;
   index: Integer; --  !!Positive; (no range in HAC so far)
+  line : VString;
 
 begin
+  Put_Line (+"Enter " & n & " characters");
+  Put_Line ((n - 1) * '.' & '*');
+  Get_Line (line);
   for i in 1 .. n loop
-    Get (s(i));
+    s(i) := Element (line, i);
   end loop;
   New_Line;
+  --  Fill the matrix
   for i in 1 .. n loop
     for j in 1 .. n loop
-      m(i)(j) := s(1 + (j-1 + i-1) mod n);
+      m(i)(j) := Element (line, (1 + (j-1 + i-1) mod n));
     end loop;
   end loop;
+  --
   Shell_Sort (m);
   Show (m);
   for i in 1 .. n loop
@@ -91,15 +101,13 @@ begin
     end if;
   end loop;
   --
-  Put_Line ("Output with transform:");  
-  for i in 1 .. n loop
-    Put ('-');
-  end loop;
-  New_Line;
+  Put_Line ("Output with transform:");
+  Put_Line (n * '-');
   for i in 1 .. n loop
     Put (t(i));
   end loop;
   New_Line;
+  Put_Line (n * '-');
   --  De-transform
   for i in 1 .. n loop
     for j in 1 .. n loop
@@ -135,15 +143,11 @@ begin
   --
   --  Output of table.
   --
-  Show (m);    
+  Show (m);
   --
   Put_Line ("Output de-transformed.");
   --
-  New_Line;
-  for i in 1 .. n loop
-    Put ('-');
-  end loop;
-  New_Line;
+  Put_Line (n * '-');
   for i in 1 .. n loop
     Put (u (i));
   end loop;

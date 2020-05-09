@@ -33,6 +33,7 @@ project HAC_Exm is
      --  2) * GNAT OK
      --     * HAC KO (feature not yet supported)
      --  
+     "bwt.adb",
      "overloading.adb",
      --
      --  3) * GNAT OK

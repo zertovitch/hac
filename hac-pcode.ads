@@ -103,7 +103,7 @@ package HAC.PCode is
     k_XOR_Boolean,
     --
     k_Read,
-    k_Write_String,
+    k_Write_String_Literal,
     k_Write_Unformatted,
     k_Write_Formatted,
     k_Write_Float,

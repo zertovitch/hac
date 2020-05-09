@@ -412,6 +412,8 @@ package HAC.Data is
     repair    : Repair_kit     --  Can error be automatically repaired; if so, how ?
   );
 
+  package IIO is new Ada.Text_IO.Integer_IO (HAC.Data.HAC_Integer);
   package RIO is new Ada.Text_IO.Float_IO (HAC.Data.HAC_Float);
+  package BIO is new Ada.Text_IO.Enumeration_IO (Boolean);
 
 end HAC.Data;

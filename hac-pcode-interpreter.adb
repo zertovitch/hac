@@ -165,8 +165,7 @@ package body HAC.PCode.Interpreter is
   --  Post Mortem Dump of the task stack causing the exception
   --
   procedure Post_Mortem_Dump (CD: Compiler_Data) is
-    use InterDef;
-    use Ada.Text_IO, Ada.Integer_Text_IO, Boolean_Text_IO;
+    use InterDef, Ada.Text_IO, HAC.Data.IIO;
   begin
       New_Line;
       Put_Line ("HAC - PCode - Post Mortem Dump");
@@ -214,7 +213,7 @@ package body HAC.PCode.Interpreter is
                     Put (S (H3).I);
                     New_Line;
                   when HAC.Data.Bools =>
-                    Put (Boolean'Val (S (H3).I));
+                    BIO.Put (Boolean'Val (S (H3).I));
                     New_Line;
                   when HAC.Data.Floats =>
                     Put (S (H3).R);
@@ -341,12 +340,12 @@ package body HAC.PCode.Interpreter is
     is
       p  : InterDef.Eptr;
       ix : Integer;
-      use HAC.Data, InterDef, Ada.Text_IO, Ada.Integer_Text_IO;
+      use HAC.Data, InterDef, Ada.Text_IO;
     begin
       ix := EIndex (Entry_Index);
       p  := InterDef.EList (ix).First;
       Put ("Dumping q for entry " & To_String (CD.IdTab (Entry_Index).Name) & " entry index=");
-      Put (ix);
+      IIO.Put (ix);
       New_Line;
       if p /= null then
         loop
@@ -689,32 +688,28 @@ package body HAC.PCode.Interpreter is
     end Do_Standard_Function;
 
     procedure Do_Write_Unformatted is
+      --  !!  We will merge Unformatted and Formatted at some point.
       Item : InterDef.GRegister renames InterDef.S (InterDef.TCB (InterDef.CurTask).T);
       use HAC.Data;
       use VStrings_Pkg;
     begin
       if FAT.CURR = 0 then
-        case IR.Y is
-          when Typen'Pos (Ints)     => Put_Console (Item.I);
-          when Typen'Pos (Floats)   => Put_Console (Item.R);
-          when Typen'Pos (Bools)    => Put_Console (Boolean'Image(Boolean'Val(Item.I)));
-          when Typen'Pos (Chars)    => Put_Console (Character'Val(Item.I));
-          when Typen'Pos (VStrings) => Put_Console (To_String (Item.V));
+        case Typen'Val (IR.Y) is
+          when Ints     => Put_Console (Item.I);
+          when Floats   => Put_Console (Item.R);
+          when Bools    => Put_Console (Boolean'Val (Item.I));
+          when Chars    => Put_Console (Character'Val (Item.I));
+          when VStrings => Put_Console (To_String (Item.V));
           when others =>
             null;
         end case;
       else
-        case IR.Y is
-          when Typen'Pos (Ints) =>
-            Ada.Integer_Text_IO.Put (FAT.FIL (FAT.CURR), Item.I, 10);
-          when Typen'Pos (Floats) =>
-            RIO.Put (FAT.FIL (FAT.CURR), Item.R, 22);
-          when Typen'Pos (Bools) =>
-            Boolean_Text_IO.Put (FAT.FIL (FAT.CURR), Boolean'Val(Item.I), 10);
-          when Typen'Pos (Chars) =>
-            Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(Item.I));
-          when Typen'Pos (VStrings) =>
-            Ada.Text_IO.Put (To_String (Item.V));
+        case Typen'Val (IR.Y) is
+          when Ints     => IIO.Put         (FAT.FIL (FAT.CURR), Item.I);
+          when Floats   => RIO.Put         (FAT.FIL (FAT.CURR), Item.R);
+          when Bools    => BIO.Put         (FAT.FIL (FAT.CURR), Boolean'Val(Item.I));
+          when Chars    => Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(Item.I));
+          when VStrings => Ada.Text_IO.Put (FAT.FIL (FAT.CURR), To_String (Item.V));
           when others =>
             null;
         end case;
@@ -722,6 +717,39 @@ package body HAC.PCode.Interpreter is
       Pop;
       SWITCH := True;  --  give up control when doing I/O
     end Do_Write_Unformatted;
+
+    procedure Do_Write_Formatted is
+      --  !!  We will merge Unformatted and Formatted at some point.
+      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Item     : InterDef.GRegister renames InterDef.S (Curr_TCB.T - 1);
+      Format_1 : constant HAC.Data.HAC_Integer := S (Curr_TCB.T).I;
+      use HAC.Data;
+      use VStrings_Pkg;
+    begin
+      if FAT.CURR = 0 then
+        case Typen'Val (IR.Y) is
+          when Ints     => Put_Console (Item.I, Format_1);
+          when Floats   => Put_Console (Item.R, Format_1);
+          when Bools    => Put_Console (Boolean'Val (Item.I), Format_1);
+          when Chars    => Put_Console (Character'Val (Item.I));
+          when VStrings => Put_Console (To_String (Item.V));
+          when others =>
+            null;
+        end case;
+      else
+        case Typen'Val (IR.Y) is
+          when Ints     => IIO.Put         (FAT.FIL (FAT.CURR), Item.I, Format_1);
+          when Floats   => RIO.Put         (FAT.FIL (FAT.CURR), Item.R, Format_1);
+          when Bools    => BIO.Put         (FAT.FIL (FAT.CURR), Boolean'Val (Item.I), Format_1);
+          when Chars    => Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val (Item.I));
+          when VStrings => Ada.Text_IO.Put (FAT.FIL (FAT.CURR), To_String (Item.V));
+          when others =>
+            null;
+        end case;
+      end if;
+      Pop (2);
+      SWITCH := True;  --  give up control when doing I/O
+    end Do_Write_Formatted;
 
     procedure Do_Binary_Operator is
       Curr_TCB_Top : Integer renames InterDef.TCB (InterDef.CurTask).T;
@@ -798,7 +826,7 @@ package body HAC.PCode.Interpreter is
         else
           case Typen'Val (IR.Y) is
             when Ints =>
-              Ada.Integer_Text_IO.Get (FAT.FIL (FAT.CURR), S (Out_Param).I);
+              HAC.Data.IIO.Get (FAT.FIL (FAT.CURR), S (Out_Param).I);
             when Floats =>
               HAC.Data.RIO.Get (FAT.FIL (FAT.CURR), S (Out_Param).R);
             when Chars =>
@@ -1199,7 +1227,7 @@ package body HAC.PCode.Interpreter is
       when k_Read =>
         Do_Text_Read;
 
-      when k_Write_String =>
+      when k_Write_String_Literal =>
         Pop (2);
         H1 := S (Curr_TCB.T + 1).I;  --  Length of string
         H2 := S (Curr_TCB.T + 2).I;  --  Index to string table
@@ -1210,49 +1238,8 @@ package body HAC.PCode.Interpreter is
         end if;
         SWITCH := True;        --  give up control when doing I/O
 
-      when k_Write_Unformatted =>
-        Do_Write_Unformatted;
-
-      when k_Write_Formatted =>
-        if FAT.CURR = 0 then
-          case IR.Y is
-            when 1 => --  Burd
-              Put_Console (S (Curr_TCB.T - 1).I, S (Curr_TCB.T).I);
-            when 2 =>
-              Put_Console (S (Curr_TCB.T - 1).R, S (Curr_TCB.T).I);
-            when 3 =>
-              Put_Console (Boolean'Val(S (Curr_TCB.T - 1).I), S (Curr_TCB.T).I);
-            when 4 =>
-              Put_Console (Character'Val(S (Curr_TCB.T - 1).I));
-            when others =>
-              null;  -- [P2Ada]: no otherwise / else in Pascal
-          end case;
-        else
-          case IR.Y is
-            when 1 =>         --  Schoening
-              Ada.Integer_Text_IO.Put
-               (FAT.FIL (FAT.CURR),
-                S (Curr_TCB.T - 1).I,
-                S (Curr_TCB.T).I);
-            when 2 =>
-              HAC.Data.RIO.Put
-               (FAT.FIL (FAT.CURR),
-                S (Curr_TCB.T - 1).R,
-                S (Curr_TCB.T).I);
-            when 3 =>
-              Boolean_Text_IO.Put
-               (FAT.FIL (FAT.CURR),
-                Boolean'Val(S (Curr_TCB.T - 1).I),
-                S (Curr_TCB.T).I);
-            when 4 =>
-              Ada.Text_IO.Put (FAT.FIL (FAT.CURR), Character'Val(S (Curr_TCB.T - 1).I));
-            when others =>
-              null;  -- [P2Ada]: no otherwise / else in Pascal
-          end case;
-
-        end if;
-        Pop (2);
-        SWITCH := True;  --  give up control when doing I/O
+      when k_Write_Unformatted => Do_Write_Unformatted;
+      when k_Write_Formatted   => Do_Write_Formatted;
 
       when k_Exit_Call =>  --  EXIT entry call or procedure call
         --  Cramer
@@ -1643,14 +1630,14 @@ package body HAC.PCode.Interpreter is
     procedure Interpret_on_Current_IO_Instance is new Interpret
       ( Ada.Text_IO.End_Of_File,
         Ada.Text_IO.End_Of_Line,
-        Ada.Integer_Text_IO.Get,
+        HAC.Data.IIO.Get,
         HAC.Data.RIO.Get,
         Ada.Text_IO.Get,
         Ada.Text_IO.Get_Line,
         Ada.Text_IO.Skip_Line,
-        Ada.Integer_Text_IO.Put,
+        HAC.Data.IIO.Put,
         HAC.Data.RIO.Put,
-        Boolean_Text_IO.Put,
+        HAC.Data.BIO.Put,
         Ada.Text_IO.Put,
         Ada.Text_IO.Put,
         Ada.Text_IO.New_Line,
