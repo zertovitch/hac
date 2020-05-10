@@ -14,6 +14,8 @@ Objectives
  - have a simple, quick compiler and execution tool
  - be useful for small Ada sandboxed prototypes
  - produce the smallest Hello-world executable!
+ - stay compatible (HAC programs can be compiled
+     and run by other Ada compilers)
 
 What HAC will most probably never be
 ====================================
@@ -34,10 +36,10 @@ following from a command line interpreter (please replace
 gnatmake -p -P hac
 cd exm
 ..\hax hello.adb
-..\hax strings_demo.adb
+..\hax gallery.adb
 
-NB: the Windows script e.cmd does the same, but runs plenty of other
-demos that are located in the "exm" folder.
+The program "gallery.adb" will run a bunch of demos that
+are located in the "exm" directory.
 You can test HAC on any other example (*.adb files in the
 "exm" and "test" directories).
 As a bonus, you can build some examples with GNAT to compare the output.
@@ -60,9 +62,13 @@ Some design points
     this would require compiling on other targets than p-code, that is,
     real machine code for various platforms.
 
+To-do list
+==========
+The to-do list is located in the spreadsheet "To do", within the
+workbook "hac_work.xls".
+
 Limitations
 ===========
-
 HAC supports a very small subset of the Ada language. On the other hand,
 Ada is very large, so even a small subset could already fit your needs.
 There is a short (and growing) list of small programs that are
