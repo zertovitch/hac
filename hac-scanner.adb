@@ -42,7 +42,8 @@ package body HAC.Scanner is
   CharacterTypes : constant array (Character) of CHTP :=
     (   'A' .. 'Z' => Letter,
         'a' .. 'z' => LowCase,
-        '0' .. '9' =>  Number,
+        '0' .. '9' => Number,
+        '#' |
         '+' | '-' | '*' | '/' |
         '(' | ')' |
         '&' |
@@ -299,6 +300,55 @@ package body HAC.Scanner is
       end if;
     end Adjust_Scale;
 
+    procedure Read_with_Sharp is
+      --  For numbers in bases other than 10, we fall back to Ada
+      --  library's parsing, at the price of a less detailed
+      --  error diagnostic.
+      s : Source_Line_String;
+      l : Natural := s'First - 1;
+      has_point : Boolean := False;
+    begin
+      --  Number has been read until the first '#'.
+      loop
+        NextCh;
+        l := l + 1;
+        s (l) := CD.CH;
+        exit when CD.CH = '#';  --  Second '#'.
+        has_point := has_point or CD.CH = '.';
+      end loop;
+      NextCh;
+      if CD.CH = 'E' or CD.CH = 'e' then
+        --  Exponent. Special case because of eventual '+' or '-' which
+        --  are not operators (e.g. 8#123#e+5 vs. 8#123#+5, = 8#123# + 5)...
+        --  Otherwise we could have done it all in the previous loop.
+        for c in 1 .. 2 loop
+          l := l + 1;
+          s (l) := CD.CH;  --  We concatenate "e+", "e-", "e5".
+          NextCh;
+        end loop;
+        while CD.CH in '0' .. '9' loop
+          l := l + 1;
+          s (l) := CD.CH;  --  We concatenate the rest of the exponent.
+          NextCh;
+        end loop;
+      end if;
+      declare
+        complete_string : constant String :=
+          Integer'Image (CD.INum) & '#' & s (s'First .. l);
+      begin
+        if has_point then
+          CD.Sy   := FloatCon;
+          CD.RNum := HAC_Float'Value (complete_string);
+        else
+          CD.Sy   := IntCon;
+          CD.INum := HAC_Integer'Value (complete_string);
+        end if;
+      exception
+        when others =>
+          Error (CD, err_illegal_character_in_number);
+      end;
+    end Read_with_Sharp;
+
     procedure Scan_Number is
       procedure Skip_eventual_underscore is
       begin
@@ -318,7 +368,7 @@ package body HAC.Scanner is
       --  Scan the integer part of the number.
       loop
         CD.INum := CD.INum * 10 + Character'Pos (CD.CH) - Character'Pos ('0');
-        K    := K + 1;
+        K := K + 1;
         NextCh;
         Skip_eventual_underscore;
         exit when CharacterTypes (CD.CH) /= Number;
@@ -333,40 +383,47 @@ package body HAC.Scanner is
         CD.INum := 0;
         K       := 0;
       end if;
-      if CD.CH = '.' then
-        NextCh;
-        if CD.CH = '.' then  --  Double dot.
-          CD.CH := c128;
-        else
-          --  Read decimal part.
-          CD.Sy := FloatCon;
-          CD.RNum  := HAC_Float (CD.INum);
-          e     := 0;
-          while CharacterTypes (CD.CH) = Number loop
-            e    := e - 1;
-            CD.RNum := 10.0 * CD.RNum +
-                    HAC_Float (Character'Pos (CD.CH) - Character'Pos ('0'));
-            NextCh;
-            Skip_eventual_underscore;
-          end loop;
-          if e = 0 then
-            Error (CD, err_illegal_character_in_number, "; expected digit after '.'");
+      --  Integer part is read (CD.INum).
+      case CD.CH is
+        when '.' =>
+          --  Floating-point number 123.456.
+          NextCh;
+          if CD.CH = '.' then  --  Double dot.
+            CD.CH := c128;
+          else
+            --  Read decimal part.
+            CD.Sy := FloatCon;
+            CD.RNum := HAC_Float (CD.INum);
+            e := 0;
+            while CharacterTypes (CD.CH) = Number loop
+              e := e - 1;
+              CD.RNum := 10.0 * CD.RNum +
+                      HAC_Float (Character'Pos (CD.CH) - Character'Pos ('0'));
+              NextCh;
+              Skip_eventual_underscore;
+            end loop;
+            if e = 0 then
+              Error (CD, err_illegal_character_in_number, "; expected digit after '.'");
+            end if;
+            if CD.CH = 'E' or CD.CH = 'e' then
+              Read_Scale (True);
+            end if;
+            if e /= 0 then
+              Adjust_Scale;
+            end if;
           end if;
-          if CD.CH = 'E' or CD.CH = 'e' then
-            Read_Scale (True);
-          end if;
+        when 'E' | 'e' =>
+          --  Integer with exponent: 123e4.
+          e := 0;
+          Read_Scale (False);
           if e /= 0 then
-            Adjust_Scale;
+            CD.INum := CD.INum * 10 ** e;
           end if;
-        end if;
-      elsif CD.CH = 'E' or CD.CH = 'e' then
-        --  Integer with exponent: 123e4.
-        e := 0;
-        Read_Scale (False);
-        if e /= 0 then
-          CD.INum := CD.INum * 10 ** e;
-        end if;
-      end if;
+        when '#' =>
+          Read_with_Sharp;
+        when others =>
+          null;  --  Number was an integer in base 10.
+      end case;
     end Scan_Number;
 
     exit_big_loop : Boolean;

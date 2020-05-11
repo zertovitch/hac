@@ -186,7 +186,7 @@ package HAC.Compiler is
     syStart, syEnd   : Integer;            --  Start and end on line for the symbol in Sy
     Id               : Alfa;               --  Identifier from InSymbol
     Id_with_case     : Alfa;               --  Same as Id, but with casing.
-    INum             : Integer;            --  Integer from InSymbol
+    INum             : HAC_Integer;        --  Integer from InSymbol
     RNum             : HAC_Float;          --  FLOAT Number from InSymbol
     SLeng            : Integer;            --  String Length
     --  Compiler tables
