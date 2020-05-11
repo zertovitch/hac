@@ -1,11 +1,7 @@
-with HAC.Data; use HAC.Data;
-
 with Ada.Strings.Fixed;                 use Ada.Strings, Ada.Strings.Fixed;
 with Ada.Text_IO;
 
 package body HAC.UErrors is
-
-  ----------------------------------------------------------------------------
 
   function Error_String (code: HAC.Data.Compile_Error; hint: String:= "") return String is
   begin
@@ -148,7 +144,7 @@ package body HAC.UErrors is
       when err_missing_closing_IF =>
         return "missing closing ""if""";
       when err_WHEN_missing =>
-        return "missing ""when""";
+        return "missing ""when"" (must have at least one alternative)";
       when err_FINGER_missing =>
         return "missing the finger ""=>""";
       when err_missing_closing_CASE =>
@@ -188,6 +184,8 @@ package body HAC.UErrors is
         return "program incomplete";
       when err_OF_instead_of_IS =>
         return "found ""of"", should be ""is""";
+      when err_THEN_instead_of_Arrow =>
+        return "found ""then"", should be ""=>""";
       when err_EQUALS_instead_of_BECOMES =>
         return "found ""="", should be "":=""";
       when err_numeric_constant_expected =>
@@ -251,6 +249,7 @@ package body HAC.UErrors is
       err_IN_missing                  => (insert,        +"in "),
       err_IS_missing                  => (insert,        +"is "),
       err_OF_instead_of_IS            => (replace_token, +"is"),
+      err_THEN_instead_of_Arrow       => (replace_token, +"=>"),
       err_FINGER_missing              => (insert,        +" => "),
       err_closing_LOOP_missing        => (insert,        +" loop"),
       err_missing_closing_CASE        => (insert,        +" case"),

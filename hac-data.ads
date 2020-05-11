@@ -38,8 +38,8 @@ package HAC.Data is
   --  Global constants  --
   ------------------------
 
-  StMax   : constant := 2000;          --  Maximum Stack Size
-  STKINCR : constant := 200;           --  Stack Increment allocated per Task
+  StMax   : constant := 20_000;       --  Maximum Stack Size
+  STKINCR : constant :=  2_000;       --  Stack Increment allocated per Task
 
   Header : constant String := "HAC - Hacker's Ada Compiler";
   --  Was: "Small-Ada  Macintosh Ver 1.1  Nov 1989  George Washington University"
@@ -365,6 +365,7 @@ package HAC.Data is
     err_program_incomplete,
     -- These errors messages are new in HAC and weren't in SmallAda
     err_OF_instead_of_IS,
+    err_THEN_instead_of_Arrow,
     err_EQUALS_instead_of_BECOMES,
     err_numeric_constant_expected,
     err_identifier_too_long,

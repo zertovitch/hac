@@ -116,6 +116,7 @@ package HAC_Pack is
   function Index (Source : VString; Pattern : String) return Natural;
   function Index (Source : VString; Pattern : VString) return Natural;
   function "*" (Left : Natural; Right : Character) return VString renames VStrings_Pkg."*";
+  function "*" (Left : Natural; Right : String) return VString;
   function "*" (Left : Natural; Right : VString) return VString renames VStrings_Pkg."*";
   function Trim_Left  (Source : VString) return VString;
   function Trim_Right (Source : VString) return VString;

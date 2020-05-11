@@ -25,6 +25,7 @@ project HAC_Exm is
      "hello.adb",
      "mandelbrot.adb",
      "merge_sort.adb",
+	 "names_in_boxes.adb",
      "shell_sort.adb",
      "shell.adb",
 	 "strings_demo.adb",

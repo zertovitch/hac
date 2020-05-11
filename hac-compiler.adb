@@ -1,7 +1,6 @@
 with HAC.UErrors;                       use HAC.UErrors;
 with HAC.Parser;                        use HAC.Parser;
 with HAC.Parser.Helpers;
-with HAC.PCode;                         use HAC.PCode;
 with HAC.Scanner;                       use HAC.Scanner;
 
 with Ada.Integer_Text_IO, Ada.Characters.Handling, Ada.Strings.Fixed;

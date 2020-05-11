@@ -1008,7 +1008,7 @@ package body HAC.Parser is
           Lab : Constant_Rec;
           K   : Integer;
         begin
-          Number_Declaration_or_Enum_Item (FSys + Alt_Finger, Lab);
+          Number_Declaration_or_Enum_Item (FSys + Alt_Finger_THEN, Lab);
           if Lab.TP /= X then
             Type_Mismatch (
               CD, err_case_label_not_same_type_as_case_clause,
@@ -1034,42 +1034,44 @@ package body HAC.Parser is
 
         procedure One_CASE is
         begin
-          if CD.Sy = WHEN_Symbol then
-            InSymbol;
-            if Constant_Definition_Begin_Symbol (CD.Sy) then
-              if others_flag then  --  Normal choice list *atfer* the "others" choice.
-                Error (CD, err_case_others_alone_last);
-              end if;
-              CASE_Label;
-              while CD.Sy = Alt loop
-                InSymbol;  --  Consume '|' symbol.
-                if CD.Sy = OTHERS_Symbol then  --  "others" mixed with normal choices.
-                  Error (CD, err_case_others_alone_last);
-                else
-                  CASE_Label;
-                end if;
-              end loop;
-            elsif CD.Sy = OTHERS_Symbol then        -- Hathorn
-              if others_flag then  --  Duplicate "others".
-                Error (CD, err_case_others_alone_last);
-              end if;
-              others_flag := True;
-              if I = Cases_Max then
-                Fatal (Case_Labels);  --  Exception is raised there.
-              end if;
-              I               := I + 1;
-              CaseTab (I).Val := 0;
-              CaseTab (I).LC  := -CD.LC;
-              InSymbol;
+          pragma Assert (CD.Sy = WHEN_Symbol);  --  One_Case called only on WHEN_Symbol.
+          InSymbol;
+          if Constant_Definition_Begin_Symbol (CD.Sy) then
+            if others_flag then  --  Normal choice list *atfer* the "others" choice.
+              Error (CD, err_case_others_alone_last);
             end if;
-            Need (CD, Finger, err_FINGER_missing);
-            Multi_Statement (END_WHEN);
-            J           := J + 1;
-            ExitTab (J) := CD.LC;
-            Emit (CD, k_Jump);
-          else
-            Error (CD, err_WHEN_missing);
+            CASE_Label;
+            while CD.Sy = Alt loop
+              InSymbol;  --  Consume '|' symbol.
+              if CD.Sy = OTHERS_Symbol then  --  "others" mixed with normal choices.
+                Error (CD, err_case_others_alone_last);
+              else
+                CASE_Label;
+              end if;
+            end loop;
+          elsif CD.Sy = OTHERS_Symbol then        -- Hathorn
+            if others_flag then  --  Duplicate "others".
+              Error (CD, err_case_others_alone_last);
+            end if;
+            others_flag := True;
+            if I = Cases_Max then
+              Fatal (Case_Labels);  --  Exception is raised there.
+            end if;
+            I               := I + 1;
+            CaseTab (I).Val := 0;
+            CaseTab (I).LC  := -CD.LC;
+            InSymbol;
           end if;
+          if CD.Sy = THEN_Symbol then  --  Happens when converting IF statements to CASE.
+            Error (CD, err_THEN_instead_of_Arrow, stop_on_error => True);
+            InSymbol;
+          else
+            Need (CD, Finger, err_FINGER_missing);
+          end if;
+          Multi_Statement (END_WHEN);
+          J           := J + 1;
+          ExitTab (J) := CD.LC;
+          Emit (CD, k_Jump);
         end One_CASE;
 
       begin  --  CASE_Statement
@@ -1091,8 +1093,12 @@ package body HAC.Parser is
           Error (CD, err_IS_missing);
         end if;
 
-        while CD.Sy = WHEN_Symbol loop  --  All cases are parsed here.
+        if CD.Sy /= WHEN_Symbol then
+          Error (CD, err_WHEN_missing, stop_on_error => True);
+        end if;
+        loop  --  All cases are parsed here.
           One_CASE;
+          exit when CD.Sy /= WHEN_Symbol;
         end loop;
 
         CD.ObjCode (LC1).Y := CD.LC;  --  Set correct instruction address for k_CASE_Switch_1 above.

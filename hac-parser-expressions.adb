@@ -305,12 +305,23 @@ package body HAC.Parser.Expressions is
                   else
                     Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
                   end if;
-                elsif X.TYP = Ints and then Y.TYP = Chars then     --  N * Some_Char
-                  Emit_Std_Funct (CD, SF_Int_Times_Char);
-                  X.TYP := VStrings;
-                elsif X.TYP = Ints and then Y.TYP = VStrings then  --  N * Some_VString
-                  Emit_Std_Funct (CD, SF_Int_Times_VStr);
-                  X.TYP := VStrings;
+                elsif X.TYP = Ints then
+                  --  N * (something non-numeric)
+                  case Y.TYP is
+                    when Chars =>
+                      Emit_Std_Funct (CD, SF_Int_Times_Char);  --  N * Some_Char
+                      X.TYP := VStrings;
+                    when String_Literals =>
+                      --  Y is on top of the stack, we turn it into a VString.
+                      Emit_Std_Funct (CD, SF_Literal_to_VString);
+                      Emit_Std_Funct (CD, SF_Int_Times_VStr);  --  N * Some_String_Literal
+                      X.TYP := VStrings;
+                    when VStrings =>
+                      Emit_Std_Funct (CD, SF_Int_Times_VStr);  --  N * Some_VString
+                      X.TYP := VStrings;
+                    when others =>
+                      Error (CD, err_operator_not_defined_for_types);
+                  end case;
                 else
                   Error (CD, err_operator_not_defined_for_types);
                 end if;

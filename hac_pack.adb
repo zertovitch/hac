@@ -104,7 +104,7 @@ package body HAC_Pack is
   function Slice (Source : VString; From : Positive; To : Natural) return VString
   is
   begin
-    return To_VString (VStrings_Pkg.Slice (Source, From, To));
+    return +VStrings_Pkg.Slice (Source, From, To);
   end Slice;
 
   function "&" (I : Integer; V : VString) return VString is
@@ -129,12 +129,12 @@ package body HAC_Pack is
 
   function To_Lower (Item : VString) return VString is
   begin
-    return To_VString (To_Lower (To_String (Item)));
+    return +To_Lower (To_String (Item));
   end;
 
   function To_Upper (Item : VString) return VString is
   begin
-    return To_VString (To_Upper (To_String (Item)));
+    return +To_Upper (To_String (Item));
   end;
 
   function Index (Source : VString; Pattern : String) return Natural is
@@ -146,6 +146,11 @@ package body HAC_Pack is
   begin
     return VStrings_Pkg.Index (Source, To_String (Pattern));
   end;
+
+  function "*" (Left : Natural; Right : String) return VString is
+  begin
+    return +Ada.Strings.Fixed."*" (Left, Right);
+  end "*";
 
   function Trim_Left  (Source : VString) return VString is
   begin
@@ -166,12 +171,12 @@ package body HAC_Pack is
     function HAC_Image is
       new HAC_Pack.HAC_Generic_Image (Abstract_Integer => Integer);
   begin
-    return To_VString (HAC_Image (I));
+    return +HAC_Image (I);
   end Image;
 
   function Image (F : Real) return VString is
   begin
-    return To_VString (HAC_Image (F));
+    return +HAC_Image (F);
   end;
 
   function Integer_Value (V: VString) return Integer is
@@ -226,7 +231,7 @@ package body HAC_Pack is
 
   procedure Get_Line (V : out VString) is
   begin
-    V := To_VString (Ada.Text_IO.Get_Line);
+    V := +Ada.Text_IO.Get_Line;
   end Get_Line;
 
   procedure Skip_Line is
@@ -352,14 +357,14 @@ package body HAC_Pack is
 
   function Argument (Number : Positive) return VString is
   begin
-    return To_VString (Ada.Command_Line.Argument (Number));
+    return +Ada.Command_Line.Argument (Number);
   end Argument;
 
   function Get_Env (Name : String) return VString is
     use Ada.Environment_Variables;
   begin
     if Exists (Name) then
-      return To_VString (Value (Name));
+      return +Value (Name);
     else
       return Null_VString;
     end if;

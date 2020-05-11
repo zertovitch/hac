@@ -116,8 +116,10 @@ package HAC.Parser.Helpers is
 
   --  Specific sets:
 
-  Alt_Finger : constant Symset :=
-    (Alt | Finger => True, others => False);
+  Alt_Finger_THEN : constant Symset :=
+    --  For "WHEN" in CASE statements ("THEN" is wrong,
+    --  but that error is processed specifically).
+    (Alt | Finger | THEN_Symbol => True, others => False);
 
   Becomes_Comma_IDent_Semicolon : constant Symset :=
     (Semicolon | Comma | IDent | Becomes => True, others => False);
