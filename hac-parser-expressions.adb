@@ -195,19 +195,20 @@ package body HAC.Parser.Expressions is
                       X := r.xTyp;
                       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                         if r.Normal then
-                          F := k_Load_Address;
+                          F := k_Push_Address;  --  Composite: push "v'Access".
                         else
-                          F := k_Push_Value;
+                          F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                         end if;
                         Emit2 (CD, F, r.LEV, r.Adr_or_Sz);
                         Selector (CD, Level, FSys, X);
                         if Standard_or_Enum_Typ (X.TYP) then
                           --  We are at a leaf point of composite type selection,
                           --  so the stack top is expected to contain a value, not
-                          --  an address.
+                          --  an address (for an expression).
                           Emit (CD, k_Dereference);
                         end if;
                       else
+                        --  No selector.
                         if Standard_or_Enum_Typ (X.TYP) then
                           if r.Normal then
                             F := k_Push_Value;           --  Push variable v's value.
@@ -215,7 +216,7 @@ package body HAC.Parser.Expressions is
                             F := k_Push_Indirect_Value;  --  Push "v.all" (v is an access).
                           end if;
                         elsif r.Normal then
-                          F := k_Load_Address;  --  Composite: push "v'Access".
+                          F := k_Push_Address;  --  Composite: push "v'Access".
                         else
                           F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                         end if;

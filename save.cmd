@@ -25,7 +25,7 @@ set root=hac
 
 cd..
 
-set examples=%root%/exm/*.ad*  %root%/exm/*.gpr  %root%/exm/e.cmd
+set examples=%root%/exm/*.ad*  %root%/exm/*.gpr  %root%/exm/e.cmd %root%/exm/not_working/*.ad*
    set tests=%root%/test/*.ad* %root%/test/*.gpr %root%/test/t.cmd %root%/test/*.aru %root%/test/future/*.ad*
 
 set files=%root%/*.ad* %root%/*.gpr %root%/*.xls %root%/save.cmd %root%/build.cmd %root%/*.txt

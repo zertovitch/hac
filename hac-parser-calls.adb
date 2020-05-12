@@ -45,8 +45,13 @@ package body HAC.Parser.Calls is
           Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
         else
           CP := CP + 1;
-          if CD.IdTab (CP).Normal then           --  Value parameter (IN), by copy
+          if CD.IdTab (CP).Normal then
+            ------------------------------------------
+            --  Value parameter (IN)                --
+            --  Currently we pass it only by copy.  --
+            ------------------------------------------
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+            --
             if X.TYP = CD.IdTab (CP).xTyp.TYP then
               if X.Ref /= CD.IdTab (CP).xTyp.Ref then
                 Issue_Type_Mismatch_Error;
@@ -61,7 +66,11 @@ package body HAC.Parser.Calls is
             elsif X.TYP /= NOTYP then
               Issue_Type_Mismatch_Error;
             end if;
-          else              --  Variable (Name) parameter (IN OUT, OUT), by reference
+          else
+            -----------------------------------------------
+            --  Variable (Name) parameter (IN OUT, OUT)  --
+            --  This is passed by reference              --
+            -----------------------------------------------
             if CD.Sy /= IDent then
               Error (CD, err_identifier_missing);
             else
@@ -79,9 +88,11 @@ package body HAC.Parser.Calls is
               else
                 X := CD.IdTab (K).xTyp;
                 if CD.IdTab (K).Normal then
-                  Emit2 (CD, k_Load_Address, CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
+                  --  Push "v'Access".
+                  Emit2 (CD, k_Push_Address, CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
                 else
-                  Emit2 (CD, k_Push_Value, CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
+                  --  Push "(v.all)'Access", that is, v which is actually an access type.
+                  Emit2 (CD, k_Push_Value,   CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
                 end if;
                 if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                   Selector (CD, Level, FSys + Colon_Comma_RParent, X);

@@ -579,7 +579,7 @@ package body HAC.Parser is
           T0 := T0i;
           while T0 < T1 - 1 loop
             T0 := T0 + 1;
-            Emit2 (CD, k_Load_Address, CD.IdTab (T0).LEV, CD.IdTab (T0).Adr_or_Sz);
+            Emit2 (CD, k_Push_Address, CD.IdTab (T0).LEV, CD.IdTab (T0).Adr_or_Sz);
             Emit2 (CD, k_Push_Value,   CD.IdTab (T1).LEV, CD.IdTab (T1).Adr_or_Sz);
             Emit (CD, k_Store);
           end loop;
@@ -722,7 +722,7 @@ package body HAC.Parser is
       pragma Assert (CD.IdTab (I).Obj = Variable);
       X := CD.IdTab (I).xTyp;
       if CD.IdTab (I).Normal then
-        F := k_Load_Address;
+        F := k_Push_Address;
       else
         F := k_Push_Value;
       end if;
@@ -947,7 +947,7 @@ package body HAC.Parser is
           if CD.IdTab (Block_Idx).Block_Ref = CD.Display (Level) then
             X := CD.IdTab (Block_Idx).xTyp;
             if CD.IdTab (Block_Idx).Normal then
-              F := k_Load_Address;
+              F := k_Push_Address;
             else
               F := k_Push_Value;
             end if;
@@ -1171,7 +1171,7 @@ package body HAC.Parser is
           Skip (CD, Fail_after_FOR + FSys, err_identifier_missing);
         end if;
         --
-        Emit2 (CD, k_Load_Address, CD.IdTab (CD.Id_Count).LEV, CD.IdTab (CD.Id_Count).Adr_or_Sz);
+        Emit2 (CD, k_Push_Address, CD.IdTab (CD.Id_Count).LEV, CD.IdTab (CD.Id_Count).Adr_or_Sz);
         InSymbol;
         FOR_Begin := k_FOR_Forward_Begin;
         if CD.Sy = IN_Symbol then         --       "IN"  in  "for i in reverse 1 .. 10 loop"

@@ -864,7 +864,7 @@ package body HAC.PCode.Interpreter is
     begin
       case InterDef.IR.F is
 
-        when k_Load_Address =>
+        when k_Push_Address =>  --  Push "v'Access" of variable v
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
@@ -872,7 +872,7 @@ package body HAC.PCode.Interpreter is
             S (Curr_TCB.T).I := Curr_TCB.DISPLAY (IR.X) + IR.Y;
           end if;
 
-        when k_Push_Value =>
+        when k_Push_Value =>  --  Push variable v's value.
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
@@ -880,7 +880,7 @@ package body HAC.PCode.Interpreter is
             S (Curr_TCB.T) := S (Curr_TCB.DISPLAY (IR.X) + IR.Y);
           end if;
 
-        when k_Push_Indirect_Value =>
+        when k_Push_Indirect_Value =>  --  Push "v.all" (v is an access).
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow

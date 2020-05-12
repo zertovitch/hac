@@ -52,7 +52,7 @@ package body HAC.Parser.Standard_Procedures is
                 else
                   X := CD.IdTab (I).xTyp;
                   if CD.IdTab (I).Normal then
-                    F := k_Load_Address;
+                    F := k_Push_Address;
                   else
                     F := k_Push_Value;
                   end if;
@@ -172,7 +172,7 @@ package body HAC.Parser.Standard_Procedures is
               else
                 X := CD.IdTab (I).xTyp;
                 if CD.IdTab (I).Normal then
-                  F := k_Load_Address;
+                  F := k_Push_Address;
                 else
                   F := k_Push_Value;
                 end if;

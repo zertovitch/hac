@@ -21,7 +21,7 @@ package HAC.PCode is
 
   type Opcode is
   (
-    k_Load_Address,
+    k_Push_Address,
     k_Push_Value,
     k_Push_Indirect_Value,
     k_Update_Display_Vector,
