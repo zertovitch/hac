@@ -104,6 +104,12 @@ package HAC_Pack is
   function "<=" (Left, Right : VString) return Boolean renames VStrings_Pkg."<=";
   function ">"  (Left, Right : VString) return Boolean renames VStrings_Pkg.">";
   function ">=" (Left, Right : VString) return Boolean renames VStrings_Pkg.">=";
+  --
+  function "="  (Left : VString;  Right : String) return Boolean renames VStrings_Pkg."=";
+  function "<"  (Left : VString;  Right : String) return Boolean renames VStrings_Pkg."<";
+  function "<=" (Left : VString;  Right : String) return Boolean renames VStrings_Pkg."<=";
+  function ">"  (Left : VString;  Right : String) return Boolean renames VStrings_Pkg.">";
+  function ">=" (Left : VString;  Right : String) return Boolean renames VStrings_Pkg.">=";
 
   function To_Lower (Item : Character) return Character  --  RM A.3.2 (6)
     renames Ada.Characters.Handling.To_Lower;
