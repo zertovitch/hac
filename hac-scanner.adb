@@ -671,14 +671,13 @@ package body HAC.Scanner is
             NextCh;
           end if;
 
-        when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' =>
-          --  duplicate case Constant '&',
+        when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' | '#' =>
           Error (CD, err_illegal_character);
           if CD.comp_dump_requested then
-            Put_Line (CD.comp_dump, " [ $!@\^_?""&%  ]");
+            Put_Line (CD.comp_dump, " [ $!@\^_?%# ]");
           end if;
           if CD.listing_requested then
-            Put_Line (CD.listing, " [ $!@\^_?""&%  ]");
+            Put_Line (CD.listing,   " [ $!@\^_?%# ]");
           end if;
           NextCh;
           exit_big_loop := False;

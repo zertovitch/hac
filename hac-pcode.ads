@@ -57,7 +57,7 @@ package HAC.PCode is
     --
     k_Exit_Call,
     k_Exit_Function,
-    k_Case_34,                          --  The instruction #34: "stack_top := (stack_top.I).all"
+    k_Dereference,
     --
     k_Unary_MINUS_Float,                --  2020-04-04
     k_Unary_MINUS_Integer,
@@ -257,7 +257,8 @@ package HAC.PCode is
     SF_Trim_Right,
     SF_Trim_Both,
     SF_Image_Ints,
-    SF_Image_Floats,
+    SF_Image_Floats,            --  "Nice" image
+    SF_Image_Attribute_Floats,  --  Image attribute "as is"
     SF_Integer_Value,
     SF_Float_Value,
     --

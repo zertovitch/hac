@@ -123,7 +123,8 @@ package HAC_Pack is
   function Trim_Both  (Source : VString) return VString;
 
   function Image (I : Integer) return VString;
-  function Image (F : Real) return VString;
+  function Image (F : Real) return VString;            --  "nice" image of F
+  function Image_Attribute (F : Real) return VString;  --  returns +Real'Image(F) "as is"
   function Integer_Value (V: VString) return Integer;
   function Float_Value (V: VString) return Real;
 

@@ -202,19 +202,22 @@ package body HAC.Parser.Expressions is
                         Emit2 (CD, F, r.LEV, r.Adr_or_Sz);
                         Selector (CD, Level, FSys, X);
                         if Standard_or_Enum_Typ (X.TYP) then
-                          Emit (CD, k_Case_34);
+                          --  We are at a leaf point of composite type selection,
+                          --  so the stack top is expected to contain a value, not
+                          --  an address.
+                          Emit (CD, k_Dereference);
                         end if;
                       else
                         if Standard_or_Enum_Typ (X.TYP) then
                           if r.Normal then
-                            F := k_Push_Value;
+                            F := k_Push_Value;           --  Push variable v's value.
                           else
-                            F := k_Push_Indirect_Value;
+                            F := k_Push_Indirect_Value;  --  Push "v.all" (v is an access).
                           end if;
                         elsif r.Normal then
-                          F := k_Load_Address;
+                          F := k_Load_Address;  --  Composite: push "v'Access".
                         else
-                          F := k_Push_Value;
+                          F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                         end if;
                         Emit2 (CD, F, r.LEV, r.Adr_or_Sz);
                       end if;
@@ -431,6 +434,8 @@ package body HAC.Parser.Expressions is
                 Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
               elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  v & "x"   RM A.4.5 (16)
                 --  Y is on top of the stack, we turn it into a VString.
+                --  If this becomes a perfomance issue we could consider
+                --  an opcode for (VStr op Lit_Str).
                 Emit_Std_Funct (CD, SF_Literal_to_VString);
                 --  Now we concatenate both VStrings.
                 Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
@@ -477,15 +482,22 @@ package body HAC.Parser.Expressions is
       InSymbol (CD);
       Simple_Expression (FSys, Y);
       if X.TYP = Ints and Y.TYP = Floats then
-        Forbid_Type_Coercion (CD, "left operand's type is integer, right operand's is floating-point");
+        Forbid_Type_Coercion (CD,
+          "left operand's type is integer, right operand's is floating-point");
         X.TYP := Floats;
         Emit1 (CD, k_Integer_to_Float, 1);
-      elsif Y.TYP = Ints and X.TYP = Floats then
-        Forbid_Type_Coercion (CD, "left operand's type is floating-point, right operand's is integer");
+      elsif X.TYP = Floats and Y.TYP = Ints then
+        Forbid_Type_Coercion (CD,
+          "left operand's type is floating-point, right operand's is integer");
         Y.TYP := Floats;
         Emit1 (CD, k_Integer_to_Float, 0);
       elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
         Issue_Type_Mismatch_Error;
+      elsif X.TYP = VStrings and Y.TYP = String_Literals then
+        --  Y is on top of the stack, we turn it into a VString.
+        --  If this becomes a perfomance issue we could consider an opcode for (VStr op Lit_Str).
+        Emit_Std_Funct (CD, SF_Literal_to_VString);
+        Emit_Comparison_Instruction (CD, OP, VStrings);
       elsif X.TYP = Y.TYP then
         if PCode_Atomic_Typ (X.TYP) then
           Emit_Comparison_Instruction (CD, OP, X.TYP);

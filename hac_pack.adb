@@ -177,17 +177,22 @@ package body HAC_Pack is
   function Image (F : Real) return VString is
   begin
     return +HAC_Image (F);
-  end;
+  end Image;
+
+  function Image_Attribute (F : Real) return VString is
+  begin
+    return +Real'Image(F);
+  end Image_Attribute;
 
   function Integer_Value (V: VString) return Integer is
   begin
     return Integer'Value (To_String (V));
-  end;
+  end Integer_Value;
 
   function Float_Value (V: VString) return Real is
   begin
     return Real'Value (To_String (V));
-  end;
+  end Float_Value;
 
   package IIO is new Ada.Text_IO.Integer_IO(Integer);
   package RIO is new Ada.Text_IO.Float_IO(Real);
@@ -452,7 +457,7 @@ package body HAC_Pack is
     --
   begin
     if abs (F) < 10.0 ** (1 - Real'Digits)
-      --  Banana skin: for a very small value, we'll have "0.0" from Put
+      --  Banana skin 1: for a very small value, we'll have "0.0" from Put
       --  with Exp = 0 if we dont make this special case.
       --
       --  HAC sample code *with* the special case:
@@ -466,6 +471,8 @@ package body HAC_Pack is
       --  1.0E-15
       --  1.0E-16
       --  ...
+      --
+      --  !! TBD: Banana skin 2: loss of digits !!
       and then not Almost_zero (F)
       --  ^ Special case within the special case: for zero,
       --    we want to display 0.0 and not 0.0E+00

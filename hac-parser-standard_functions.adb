@@ -67,6 +67,8 @@ package body HAC.Parser.Standard_Functions is
            SF_Image_Ints
         =>
         Expected (1) := Numeric_Typ_Set;
+      when SF_Image_Attribute_Floats =>
+        Expected (1) := Floats_Set;
       when SF_Random_Int | SF_Argument =>
         Expected (1) := Ints_Set;
       when SF_Element =>

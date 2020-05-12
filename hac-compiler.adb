@@ -394,6 +394,7 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Trim_Right",          VStrings, SF_Trim_Right);
       Enter_Std_Funct ("Trim_Both",           VStrings, SF_Trim_Both);
       Enter_Std_Funct ("Image",               VStrings, SF_Image_Ints);
+      Enter_Std_Funct ("Image_Attribute",     VStrings, SF_Image_Attribute_Floats);
       Enter_Std_Funct ("Integer_Value",       Ints,     SF_Integer_Value);
       Enter_Std_Funct ("Float_Value",         Floats,   SF_Float_Value);
       --

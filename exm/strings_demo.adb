@@ -134,12 +134,18 @@ begin
   Put_Line (4.56789e14 & (+" & Right VString"));
   Put_Line (4.56789e15 & (+" & Right VString"));
   Put_Line (1.79769313486232E+307 & (+" & Right VString"));
-  Put_Line ("Image... " & Image (4.56789e15));
+  Put_Line ("Image... " &           Image (4.56789e10));
+  Put_Line ("Image..."  & Image_Attribute (4.56789e10));
   Put_Line ("Image... " & Image (456789));
   Put_Line (Float_Value   (+"456.789e13"));  --  Text_IO display of the Real number
   Put_Line (Integer_Value (+"456"));         --  Text_IO display of the Integer number
   --
+  --  Quick tests. More tests in:  test/strings.adb
+  --
   if s4 /= +"abcdef" then  --  Comparison VString to VString
+    Put ("Ooops?");
+  end if;
+  if s4 /=  "abcdef" then  --  Comparison VString to String_Literal
     Put ("Ooops?");
   end if;
   if Length (s4) /= 6 then

@@ -647,8 +647,11 @@ package body HAC.PCode.Interpreter is
         when SF_Trim_Left  => Top_Item.V := Trim (Top_Item.V, Left);
         when SF_Trim_Right => Top_Item.V := Trim (Top_Item.V, Right);
         when SF_Trim_Both  => Top_Item.V := Trim (Top_Item.V, Both);
-        when SF_Image_Ints    => Top_Item.V := To_VString (HAC_Image (Top_Item.I));
-        when SF_Image_Floats  => Top_Item.V := To_VString (HAC_Image (Top_Item.R));
+        --
+        when SF_Image_Ints             => Top_Item.V := To_VString (HAC_Image (Top_Item.I));
+        when SF_Image_Floats           => Top_Item.V := To_VString (HAC_Image (Top_Item.R));
+        when SF_Image_Attribute_Floats => Top_Item.V := To_VString (HAC_Float'Image (Top_Item.R));
+        --
         when SF_Integer_Value => Top_Item.I := HAC_Integer'Value (To_String (Top_Item.V));
         when SF_Float_Value   => Top_Item.R := HAC_Float'Value   (To_String (Top_Item.V));
         when SF_Argument =>
@@ -1279,7 +1282,7 @@ package body HAC.PCode.Interpreter is
           PS := ProgErr;  --  !! with message "End function reached without ""return"" statement".
         end if;
 
-      when k_Case_34 =>
+      when k_Dereference =>
         S (Curr_TCB.T) := S (S (Curr_TCB.T).I);  --  "stack_top := (stack_top.I).all"
 
       when k_NOT_Boolean =>
