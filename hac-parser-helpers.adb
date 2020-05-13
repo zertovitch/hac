@@ -215,6 +215,7 @@ package body HAC.Parser.Helpers is
       Error (CD, Err, "not exactly the same " & Nice_Image (Found.TYP));
         --  !! TBD: find the eventual array or record
         --     names using X.Ref, Y.Ref ... if they have names!
+        --     (same for Operator_Undefined)
     end if;
   end Type_Mismatch;
 
@@ -248,6 +249,44 @@ package body HAC.Parser.Helpers is
       ", expected: " & Types_List (Expected)
     );
   end Type_Mismatch;
+
+  procedure Operator_Undefined (
+    CD          : in out Compiler_Data;
+    OP          :        KeyWSymbol;
+    Left, Right :        Exact_Typ
+  )
+  is
+    function Op_Hint return Character is
+    --  Displayed as "operator (+) is not defined..."
+    begin
+      case OP is
+        when Plus             => return '+';
+        when Minus            => return '-';
+        when Times            => return '*';
+        when Ampersand_Symbol => return '&';
+        when others           => return '?';
+      end case;
+    end;
+  begin
+    if Left.TYP /= Right.TYP then
+      Error (CD, err_operator_not_defined_for_types,
+        Op_Hint &
+        "left is "    & Nice_Exact_Image (CD, Left) &
+        ", right is " & Nice_Exact_Image (CD, Right));
+    elsif Left.TYP = Enums then
+      Error (CD, err_operator_not_defined_for_types,
+        Op_Hint &
+        "left is "    & Enum_Name (CD, Left.Ref) &
+        ", right is " & Enum_Name (CD, Right.Ref));
+    else
+      Error (CD, err_operator_not_defined_for_types,
+        Op_Hint &
+        "not exactly the same " & Nice_Image (Left.TYP));
+        --  !! TBD: find the eventual array or record
+        --     names using X.Ref, Y.Ref ... if they have names!
+        --     (same for Type_Mismatch)
+    end if;
+  end Operator_Undefined;
 
   function Singleton (s: KeyWSymbol) return Symset is
     res : Symset := Empty_Symset;

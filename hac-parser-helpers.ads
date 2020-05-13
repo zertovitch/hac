@@ -95,6 +95,12 @@ package HAC.Parser.Helpers is
     Expected :        Typ_Set
   );
 
+  procedure Operator_Undefined (
+    CD          : in out Compiler_Data;
+    OP          :        KeyWSymbol;
+    Left, Right :        Exact_Typ
+  );
+
   No_Id : constant := 0;
 
   ------------------------------------

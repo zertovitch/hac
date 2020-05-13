@@ -211,7 +211,9 @@ package body HAC.UErrors is
       when err_numeric_type_coercion =>
         return "numeric types don't match: " & hint & " - please use explicit conversion";
       when err_operator_not_defined_for_types =>
-        return "operator is not defined for those operand types";
+        return "operator (" & hint (hint'First) &
+               ") is not defined for those operand types: " &
+               hint (hint'First + 1 .. hint'Last);
       when err_no_null_functions =>
         return "a function cannot be null; only a procedure can";
       when err_digit_expected =>

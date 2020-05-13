@@ -111,6 +111,11 @@ package body HAC.Parser.Expressions is
     Y  : Exact_Typ;
     OP : KeyWSymbol;
 
+    procedure Issue_Operator_Undefined_Error (OP : KeyWSymbol; X, Y : Exact_Typ) is
+    begin
+      Operator_Undefined (CD, OP, X, Y);
+    end Issue_Operator_Undefined_Error;
+
     procedure Simple_Expression (FSys : Symset; X : out Exact_Typ) is
       Y  : Exact_Typ;
       OP : KeyWSymbol;
@@ -120,9 +125,6 @@ package body HAC.Parser.Expressions is
         OP : KeyWSymbol;
 
         procedure Factor (FSys : Symset; X : out Exact_Typ) is
-          Ident_Index : Integer;
-          F           : Opcode;
-          err         : Compile_Error;
 
           procedure Type_Conversion is  --  Ada RM 4.6
             kind    :          Type_Conversion_Kind := Unknown;
@@ -162,6 +164,9 @@ package body HAC.Parser.Expressions is
             Need (CD, RParent, err_closing_parenthesis_missing);
           end Type_Conversion;
 
+          F   : Opcode;
+          err : Compile_Error;
+          Ident_Index : Integer;
         begin  --  Factor
           X := (TYP => NOTYP, Ref => 0);
           Test (CD, Factor_Begin_Symbol + StrCon, FSys, err_factor_unexpected_symbol);
@@ -324,10 +329,10 @@ package body HAC.Parser.Expressions is
                       Emit_Std_Funct (CD, SF_Int_Times_VStr);  --  N * Some_VString
                       X.TYP := VStrings;
                     when others =>
-                      Error (CD, err_operator_not_defined_for_types);
+                      Issue_Operator_Undefined_Error (OP, X, Y);
                   end case;
                 else
-                  Error (CD, err_operator_not_defined_for_types);
+                  Issue_Operator_Undefined_Error (OP, X, Y);
                 end if;
               when Divide =>    --  /
                 if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
@@ -420,14 +425,14 @@ package body HAC.Parser.Expressions is
                 X.TYP := NOTYP;
               end if;
             when Plus | Minus =>
-              if X.TYP in Numeric_Typ then
+              if X.TYP in Numeric_Typ and then Y.TYP in Numeric_Typ then
                 if X.TYP = Y.TYP then
                   Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
                 else
                   Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
                 end if;
               else
-                Error (CD, err_operator_not_defined_for_types);
+                Issue_Operator_Undefined_Error (OP, X, Y);
               end if;
             when Ampersand_Symbol =>
               --  Concatenation. RM References: Unbounded_String.
@@ -459,7 +464,7 @@ package body HAC.Parser.Expressions is
                 Emit_Std_Funct (CD, SF_Float_VString_Concat);
                 X.TYP := VStrings;
               else
-                Error (CD, err_operator_not_defined_for_types);
+                Issue_Operator_Undefined_Error (OP, X, Y);
               end if;
             when others =>  --  Doesn't happen: Binary_Adding_Operators(OP) is True.
               null;
@@ -468,10 +473,10 @@ package body HAC.Parser.Expressions is
       end loop;
     end Simple_Expression;
 
-    procedure Issue_Type_Mismatch_Error is
+    procedure Issue_Comparison_Type_Mismatch_Error is
     begin
       Type_Mismatch (CD, err_incompatible_types_for_comparison, Found => Y, Expected => X);
-    end Issue_Type_Mismatch_Error;
+    end Issue_Comparison_Type_Mismatch_Error;
 
   begin  --  Expression
     Simple_Expression (FSys + Comparison_Operator_Set, X);
@@ -493,7 +498,7 @@ package body HAC.Parser.Expressions is
         Y.TYP := Floats;
         Emit1 (CD, k_Integer_to_Float, 0);
       elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
-        Issue_Type_Mismatch_Error;
+        Issue_Comparison_Type_Mismatch_Error;
       elsif X.TYP = VStrings and Y.TYP = String_Literals then
         --  Y is on top of the stack, we turn it into a VString.
         --  If this becomes a perfomance issue we could consider an opcode for (VStr op Lit_Str).
@@ -503,10 +508,10 @@ package body HAC.Parser.Expressions is
         if PCode_Atomic_Typ (X.TYP) then
           Emit_Comparison_Instruction (CD, OP, X.TYP);
         else
-          Error (CD, err_operator_not_defined_for_types);
+          Issue_Operator_Undefined_Error (OP, X, Y);
         end if;
       else
-        Issue_Type_Mismatch_Error;
+        Issue_Comparison_Type_Mismatch_Error;
       end if;
       X.TYP := Bools;  --  The result of the comparison is always Boolean.
     end if;
