@@ -189,6 +189,8 @@ package body HAC.PCode is
       case OC (i).F is  --  Extra information
         when k_Standard_Functions =>
           Put (Text, "; " & SF_Code'Image (SF_Code'Val (OC (i).Y)));
+        when k_File_I_O =>
+          Put (Text, "; " & SP_Code'Image (SP_Code'Val (OC (i).Y)));
         when others =>
           null;
       end case;

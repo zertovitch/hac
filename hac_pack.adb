@@ -194,10 +194,6 @@ package body HAC_Pack is
     return Real'Value (To_String (V));
   end Float_Value;
 
-  package IIO is new Ada.Text_IO.Integer_IO(Integer);
-  package RIO is new Ada.Text_IO.Float_IO(Real);
-  package BIO is new Ada.Text_IO.Enumeration_IO(Boolean);
-
    ---------
    -- GET --
    ---------
@@ -250,32 +246,31 @@ package body HAC_Pack is
 
   procedure Put (C : in  Character) is
   begin
-    Ada.Text_IO.Put(C);
+    Ada.Text_IO.Put (C);
   end Put;
 
-  procedure Put (I : in  Integer) is
+  procedure  Put (I     : in  Integer;
+                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
+                  Base  : Ada.Text_IO.Number_Base := IIO.Default_Base)
+  is
   begin
-    IIO.Put(I);
-  end Put;
+    IIO.Put (I, Width, Base);
+  end;
 
-  procedure Put (I : in  Integer; W:  Width) is
+  procedure  Put (F    : in  Real;
+                  Fore : Integer := RIO.Default_Fore;
+                  Aft  : Integer := RIO.Default_Aft;
+                  Exp  : Integer := RIO.Default_Exp)
+  is
   begin
-    IIO.Put(I, W);
-  end Put;
+    RIO.Put (F, Fore, Aft, Exp);
+  end;
 
-  procedure Put (F : in  Real) is
+  procedure Put (B     : in  Boolean;
+                 Width : Ada.Text_IO.Field := BIO.Default_Width )
+  is
   begin
-    RIO.Put(F);
-  end Put;
-
-  procedure Put (F : in  Real; W:  Width; D : Decimals) is
-  begin
-    RIO.Put(F,W,D);
-  end Put;
-
-  procedure Put (B : in  Boolean) is
-  begin
-    BIO.Put(B);
+    BIO.Put (B, Width);
   end Put;
 
   procedure Put (S : in  String) is
@@ -297,29 +292,31 @@ package body HAC_Pack is
     Put(C); New_Line;
   end Put_Line;
 
-  procedure Put_Line (I : in  Integer) is
+  procedure Put_Line (I     : in  Integer;
+                      Width : Ada.Text_IO.Field       := IIO.Default_Width;
+                      Base  : Ada.Text_IO.Number_Base := IIO.Default_Base)
+  is
   begin
-    Put(I); New_Line;
-  end Put_Line;
+    Put (I, Width, Base);
+    New_Line;
+  end;
 
-  procedure Put_Line (I : in  Integer; W:  Width) is
+  procedure Put_Line (F    : in  Real;
+                      Fore : Integer := RIO.Default_Fore;
+                      Aft  : Integer := RIO.Default_Aft;
+                      Exp  : Integer := RIO.Default_Exp)
+  is
   begin
-    Put(I,W); New_Line;
-  end Put_Line;
+    Put (F, Fore, Aft, Exp);
+    New_Line;
+  end;
 
-  procedure Put_Line (F : in  Real) is
+  procedure Put_Line (B     : in  Boolean;
+                      Width : Ada.Text_IO.Field := BIO.Default_Width )
+  is
   begin
-    Put(F); New_Line;
-  end Put_Line;
-
-  procedure Put_Line (F : in  Real; W:  Width; D : Decimals) is
-  begin
-    Put(F,W,D); New_Line;
-  end Put_Line;
-
-  procedure Put_Line (B : in  Boolean) is
-  begin
-    Put(B); New_Line;
+    Put (B, Width);
+    New_Line;
   end Put_Line;
 
   procedure Put_Line (S : in  String) is

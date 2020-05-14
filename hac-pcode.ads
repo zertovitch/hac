@@ -104,14 +104,11 @@ package HAC.PCode is
     --
     k_Read,
     k_Write_String_Literal,
-    k_Write_Unformatted,
     k_Write_Formatted,
-    k_Write_Float,
-    --
     k_Skip_Line,
     k_New_Line,
-    k_Set_current_file_pointer,
     k_File_I_O,
+    --
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
     k_Delay,
     k_Cursor_At,
@@ -294,6 +291,8 @@ package HAC.PCode is
     SP_Reset,
     SP_Rewrite,
     SP_Close,
+    SP_Push_Abstract_Console,
+    --
     SP_CursorAt,
     SP_Quantum,
     SP_Priority,

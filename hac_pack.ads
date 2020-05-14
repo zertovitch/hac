@@ -28,6 +28,7 @@ package HAC_Pack is
   -----------------------------------------
 
   type Real is digits 15;
+  package RIO is new Ada.Text_IO.Float_IO (Real);
 
   function   "**" (F1, F2 : Real)  return Real;
 
@@ -69,6 +70,9 @@ package HAC_Pack is
 
   -- Random number from 0 to 1, uniform.
   function Rnd return Real;
+
+  package IIO is new Ada.Text_IO.Integer_IO (Integer);
+  package BIO is new Ada.Text_IO.Enumeration_IO (Boolean);
 
   ------------------------------------------
   --  Variable-size string type: VString  --
@@ -165,24 +169,32 @@ package HAC_Pack is
   subtype Decimals is Positive;
 
   --  Put
-  procedure  Put (C : in  Character);
-  procedure  Put (I : in  Integer  );
-  procedure  Put (I : in  Integer;  W:  Width);
-  procedure  Put (F : in  Real    );
-  procedure  Put (F : in  Real;    W:  Width; D : Decimals);
-  procedure  Put (B : in  Boolean  );
-  procedure  Put (S : in  String   );
-  procedure  Put (V : in  VString  );
+  procedure  Put (C     : in  Character);
+  procedure  Put (I     : in  Integer;
+                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
+                  Base  : Ada.Text_IO.Number_Base := IIO.Default_Base);
+  procedure  Put (F     : in  Real;
+                  Fore  : Integer := RIO.Default_Fore;
+                  Aft   : Integer := RIO.Default_Aft;
+                  Exp   : Integer := RIO.Default_Exp);
+  procedure  Put (B     : in  Boolean;
+                  Width : Ada.Text_IO.Field       := BIO.Default_Width );
+  procedure  Put (S    : in  String   );
+  procedure  Put (V    : in  VString  );
 
   --  Put and then New_Line (for S: it is the same as Ada.Text_IO.Put_Line)
-  procedure  Put_Line (C : in  Character);
-  procedure  Put_Line (I : in  Integer  );
-  procedure  Put_Line (I : in  Integer; W:  Width);
-  procedure  Put_Line (F : in  Real    );
-  procedure  Put_Line (F : in  Real;   W:  Width; D : Decimals);
-  procedure  Put_Line (B : in  Boolean  );
-  procedure  Put_Line (S : in  String   );
-  procedure  Put_Line (V : in  VString  );
+  procedure  Put_Line (C     : in  Character);
+  procedure  Put_Line (I     : in  Integer;
+                       Width : Ada.Text_IO.Field       := IIO.Default_Width;
+                       Base  : Ada.Text_IO.Number_Base := IIO.Default_Base);
+  procedure  Put_Line (F    : in  Real;
+                       Fore : Integer := RIO.Default_Fore;
+                       Aft  : Integer := RIO.Default_Aft;
+                       Exp  : Integer := RIO.Default_Exp);
+  procedure  Put_Line (B     : in  Boolean;
+                       Width : Ada.Text_IO.Field := BIO.Default_Width);
+  procedure  Put_Line (S    : in  String   );
+  procedure  Put_Line (V    : in  VString  );
 
   procedure  New_Line;
 

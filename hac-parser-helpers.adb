@@ -179,6 +179,7 @@ package body HAC.Parser.Helpers is
       when Enums           => return "enumeration type";
       when String_Literals => return "fixed-size string type";
       when VStrings        => return "variable-size string type";
+      when Text_Files      => return "text file type";
     end case;
   end Nice_Image;
 

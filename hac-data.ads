@@ -246,6 +246,8 @@ package HAC.Data is
     Bools,
     Chars,
     VStrings,
+    --
+    Text_Files,  --  This one is limited (like Ada's File_Type).
     ------------------------------------
     --  Types defined by programmers  --
     ------------------------------------

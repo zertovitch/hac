@@ -129,7 +129,7 @@ procedure Test is
               --  HAC 0.01 accepted "b(i,j):= i * j" without Real(...);
               b(i,j):= Real(i * j);
             when 4 =>  --  display array b
-              Put(b(i,j));
+              Put(b(i,j), 5, 1, 0);  --  Fore, Aft, Exp.
               Put(' ');
               if j = h2 then
                 New_Line;

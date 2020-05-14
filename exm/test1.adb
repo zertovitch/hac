@@ -12,7 +12,7 @@ procedure Test1 is
   Ten: constant Integer := 10;     -- Integer    (*  test  *)
   Twenty: constant  := 20;
   Zwanzig : Integer;
-  TenpOne: constant := 10.1;        -- Real
+  Ten_plus_0_Point_One: constant := 10.1;        -- Real
   CA: constant  Character := 'A';          -- Character
   CE: constant  Character := 'E';          -- Character
   B1, B2: constant Boolean:= True;        -- Boolean
@@ -40,7 +40,7 @@ procedure Test1 is
   I1, I2, I3:  Integer := 99;
   I4: constant Integer := -I1 + 10;
   R1: Real := 1.23;
-  R2: Real := TenpOne;
+  R2: Real := Ten_plus_0_Point_One;
   C2: constant Character := '+';
   C1 : constant Character := '+';
   C3: constant Character := CA;
@@ -101,8 +101,9 @@ begin
   --CONSTANT Check
   Put_Line("CONSTANT Check");
   Put("Ten     = ");  Put_Line(Ten);
-  Put("Twenty  = ");  Put_Line(Twenty);
-  Put("TenpOne = ");  Put_Line(TenpOne,10,1);
+  Put("Twenty  = ");  Put(Twenty,  11, 16);    Put_Line (" in base 16");
+  Put("Ten_plus_0_Point_One = ");  Put(Ten_plus_0_Point_One, 10, 16);    Put_Line (" with 16 digits");
+  Put("Ten_plus_0_Point_One = ");  Put(Ten_plus_0_Point_One, 10, 16, 0); Put_Line (" with 16 digits, no exponent");
   Put("CA      = ");  Put(CA); New_Line;
   Put("B1, B2  = ");  Put(B1); Put(' '); Put_Line(B2);
   New_Line;
@@ -135,7 +136,7 @@ begin
   I3 := I1 mod 5;       Put(I3); Put_Line(" (i3:= i1 MOD 5)");
   R1 := 20.4;           Put(R1); Put_Line(" (r1:= 20.4)");
   R2 := R1/2.0;         Put(R2); Put_Line(" (r2:= r1/2.0 = 10.2)");
-  Put(10.0 * TenpOne); Put_Line(" (10*10.1)");
+  Put(10.0 * Ten_plus_0_Point_One); Put_Line(" (10*10.1)");
   New_Line;
 
   Put_Line("LOOP and ARRAY Check");
@@ -176,9 +177,9 @@ begin
   New_Line;
 
   --REPEAT Check
-  New_Line;   Put_Line("REPEAT Check");
+  New_Line;   Put_Line("REPEAT Check, until Ten");
   loop
-    Put("Rpt  ");
+    Put_Line (+"Rpt  " & I1);
     I1 := I1 + 1;
     exit when I1 = Ten;
   end loop;
