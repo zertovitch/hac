@@ -184,7 +184,12 @@ package HAC_Pack is
   procedure  Put_Line (S : in  String   );
   procedure  Put_Line (V : in  VString  );
 
-  procedure  New_Line                      ;
+  procedure  New_Line;
+
+  function End_Of_Line return Boolean renames Ada.Text_IO.End_Of_Line;
+  function End_Of_File return Boolean renames Ada.Text_IO.End_Of_File;
+
+  --  Misc.
 
   procedure  CursorAt (X, Y: Integer);
 

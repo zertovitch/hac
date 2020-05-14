@@ -102,21 +102,27 @@ package body HAC.Parser.Standard_Functions is
     --
     if Code in SF_EOF .. SF_EOLN then
       --  Very special case...
-      Need (CD, LParent, err_missing_an_opening_parenthesis);
-      if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing);
-      elsif Equal (CD.Id, "INPUT") then  --  Standard_Input
-        Emit2 (CD, k_Standard_Functions, 0, SF_Code'Pos (Code));
-      else
-        IFP := Get_File_Pointer (CD, CD.Id);
-        if IFP = No_File_Index then  --  NB: bug fix: was 0 instead of -1...
-          Error (CD, err_undefined_identifier);
+      if CD.Sy = LParent then  --  End_Of_File (...), End_Of_Line (...)
+        InSymbol (CD);
+        --  !!  TBD: genuine File_Type
+        if CD.Sy /= IDent then
+          Error (CD, err_identifier_missing);
+        elsif Equal (CD.Id, "INPUT") then  --  !!  Standard_Input
+          Emit2 (CD, k_Standard_Functions, 0, SF_Code'Pos (Code));
         else
-          Emit2 (CD, k_Standard_Functions, IFP, SF_Code'Pos (Code));
+          IFP := Get_File_Pointer (CD, CD.Id);
+          if IFP = No_File_Index then  --  NB: bug fix: was 0 instead of -1...
+            Error (CD, err_undefined_identifier);
+          else
+            Emit2 (CD, k_Standard_Functions, IFP, SF_Code'Pos (Code));
+          end if;
         end if;
+        InSymbol (CD);
+        Need (CD, RParent, err_closing_parenthesis_missing);
+      else
+        --  End_Of_File, End_Of_Line without parameter.
+        Emit2 (CD, k_Standard_Functions, 0, SF_Code'Pos (Code));
       end if;
-      InSymbol (CD);
-      Need (CD, RParent, err_closing_parenthesis_missing);
     else
       if Args > 0 then
         Need (CD, LParent, err_missing_an_opening_parenthesis);

@@ -378,8 +378,8 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Log",                 Floats, SF_Log);
       Enter_Std_Funct ("Sqrt",                Floats, SF_Sqrt);
       Enter_Std_Funct ("Arctan",              Floats, SF_Arctan);
-      Enter_Std_Funct ("EOF",                 Bools,  SF_EOF);
-      Enter_Std_Funct ("EOLN",                Bools,  SF_EOLN);
+      Enter_Std_Funct ("End_Of_File",         Bools,  SF_EOF);
+      Enter_Std_Funct ("End_Of_Line",         Bools,  SF_EOLN);
       Enter_Std_Funct ("Rand",                Ints,   SF_Random_Int);
       Enter_Std_Funct ("Rnd",                 Floats, SF_Random_Float);
       Enter_Std_Funct ("CLOCK",               Floats, SF_Clock);

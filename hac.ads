@@ -44,10 +44,10 @@ package HAC is
   -- Information about this package - e.g. for an "about" box --
   --------------------------------------------------------------
 
-  version   : constant String:= "0.053";
-  reference : constant String:= "11-May-2020";
+  version   : constant String:= "0.0531";
+  reference : constant String:= "14-May-2020";
   --  Hopefully the latest version is at one of those URLs:
-  web       : constant String:= "http://sf.net/projects/hacadacompiler/";
+  web       : constant String:= "https://hacadacompiler.sourceforge.io/";
   web2      : constant String:= "https://github.com/zertovitch/hac";
 
 end HAC;

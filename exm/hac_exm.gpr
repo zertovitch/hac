@@ -20,6 +20,7 @@ project HAC_Exm is
      "arguments.adb",
      "console_io.adb",
      "days_1901.adb",
+     "echo.adb",
      "einmaleins.adb",
      "env.adb",
      "hello.adb",
