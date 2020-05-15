@@ -328,12 +328,6 @@ package HAC.Parser.Helpers is
     stop_on_error : Boolean := False) return Natural;
 
   ------------------------------------------------------------------
-  -------------------------------------------------Get_File_Pointer-
-  function Get_File_Pointer (CD : Compiler_Data; Id : Alfa) return Integer;  -- Schoening
-
-  No_File_Index : constant := -1;
-
-  ------------------------------------------------------------------
   ----------------------------------------------Enter_or_find_Float-
   procedure Enter_or_find_Float (
     CD         : in out Compiler_Data;

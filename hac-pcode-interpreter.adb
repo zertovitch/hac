@@ -525,10 +525,8 @@ package body HAC.PCode.Interpreter is
       Idx, Len, Arg, From, To : Integer;
       C : Character;
       use HAC.Data, HAC.Data.VStrings_Pkg, Ada.Characters.Handling;
-      Code : SF_Code;
+      Code : constant SF_Code := SF_Code'Val (InterDef.IR.Y);
     begin
-      Code := SF_Code'Val (InterDef.IR.Y);
-      --  !! raise a HAC exception if code out of range !!
       case Code is
         when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
         when SF_Abs_Float => Top_Item.R := abs (Top_Item.R);
@@ -554,27 +552,24 @@ package body HAC.PCode.Interpreter is
         when SF_Log =>    Top_Item.R := Log (Top_Item.R);
         when SF_Sqrt =>   Top_Item.R := Sqrt (Top_Item.R);
         when SF_Arctan => Top_Item.R := Arctan (Top_Item.R);
-        when SF_EOF =>
-          if IR.X = 0 then  --  Niladic End_Of_File
+        when SF_File_Information =>
+          if IR.X = 0 then  --  Niladic File info function -> abstract console
             Curr_TCB.T := Curr_TCB.T + 1;
             if Curr_TCB.T > Curr_TCB.STACKSIZE then
               PS := STKCHK;  --  Stack overflow
             else
-              S (Curr_TCB.T).I := Boolean'Pos (End_Of_File_Console);
+              case SF_File_Information (Code) is
+                when SF_EOF  => S (Curr_TCB.T).I := Boolean'Pos (End_Of_File_Console);
+                when SF_EOLN => S (Curr_TCB.T).I := Boolean'Pos (End_Of_Line_Console);
+              end case;
             end if;
           else
-            S (Curr_TCB.T).I := Boolean'Pos (Ada.Text_IO.End_Of_File (S (Curr_TCB.T).Txt.all));
-          end if;
-        when SF_EOLN =>
-          if IR.X = 0 then  --  Niladic End_Of_Line
-            Curr_TCB.T := Curr_TCB.T + 1;
-            if Curr_TCB.T > Curr_TCB.STACKSIZE then
-              PS := STKCHK;  --  Stack overflow
-            else
-              S (Curr_TCB.T).I := Boolean'Pos (End_Of_Line_Console);
-            end if;
-          else
-            S (Curr_TCB.T).I := Boolean'Pos (Ada.Text_IO.End_Of_Line (S (Curr_TCB.T).Txt.all));
+            case SF_File_Information (Code) is
+              when SF_EOF =>
+                S (Curr_TCB.T).I := Boolean'Pos (Ada.Text_IO.End_Of_File (S (Curr_TCB.T).Txt.all));
+              when SF_EOLN =>
+                S (Curr_TCB.T).I := Boolean'Pos (Ada.Text_IO.End_Of_Line (S (Curr_TCB.T).Txt.all));
+            end case;
           end if;
         when SF_Random_Int =>
           temp := HAC.Data.HAC_Float (Random (Gen)) *
@@ -702,6 +697,53 @@ package body HAC.PCode.Interpreter is
       end case;
     end Do_Standard_Function;
 
+    procedure Do_Text_Read is
+      CH : Character;
+      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      use HAC.Data;
+      Out_Param : Index renames S (Curr_TCB.T).I;
+      Immediate : constant Boolean := Boolean'Val (IR.X);
+      FP : constant File_Ptr := S (Curr_TCB.T - 1).Txt;
+    begin
+      if FP = Abstract_Console then
+        --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
+        case Typen'Val (IR.Y) is
+          when Ints     => Get_Console (S (Out_Param).I);
+          when Floats   => Get_Console (S (Out_Param).R);
+          when VStrings => S (Out_Param).V := To_VString (Get_Line_Console);
+          when Chars    =>
+            if Immediate then
+              Get_Immediate_Console (CH);
+            else
+              Get_Console (CH);
+            end if;
+            S (Out_Param).I := Character'Pos (CH);
+          when others =>
+            null;
+        end case;
+      else
+        if Ada.Text_IO.End_Of_File (FP.all) then
+          PS := REDCHK;
+        else
+          case Typen'Val (IR.Y) is
+            when Ints =>
+              HAC.Data.IIO.Get (FP.all, S (Out_Param).I);
+            when Floats =>
+              HAC.Data.RIO.Get (FP.all, S (Out_Param).R);
+            when Chars =>
+              Ada.Text_IO.Get (FP.all, CH);
+              S (Out_Param).I := Character'Pos (CH);
+            when VStrings =>
+              S (Out_Param).V := To_VString (Ada.Text_IO.Get_Line (FP.all));
+            when others =>
+              null;
+          end case;
+        end if;
+      end if;
+      Pop (2);
+      SWITCH := True;  --  give up control when doing I/O
+    end Do_Text_Read;
+
     procedure Do_Write_Formatted is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       FP       : constant File_Ptr             := S (Curr_TCB.T - 4).Txt;
@@ -736,6 +778,21 @@ package body HAC.PCode.Interpreter is
       Pop (5);
       SWITCH := True;  --  give up control when doing I/O
     end Do_Write_Formatted;
+
+    procedure Do_Write_String_Literal is
+      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      FP : constant File_Ptr := S (Curr_TCB.T - 2).Txt;
+    begin
+      H1 := S (Curr_TCB.T - 1).I;  --  Length of string
+      H2 := S (Curr_TCB.T    ).I;  --  Index to string table
+      if FP = Abstract_Console then
+        Put_Console (CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
+      else
+        Ada.Text_IO.Put (FP.all, CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
+      end if;
+      Pop (3);
+      SWITCH := True;        --  give up control when doing I/O
+    end Do_Write_String_Literal;
 
     procedure Do_Binary_Operator is
       Curr_TCB_Top : Integer renames InterDef.TCB (InterDef.CurTask).T;
@@ -786,68 +843,6 @@ package body HAC.PCode.Interpreter is
       end case;
       Pop;
     end Do_Binary_Operator;
-
-    procedure Do_Text_Read is
-      CH : Character;
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
-      use HAC.Data;
-      Out_Param : Index renames S (Curr_TCB.T).I;
-      Immediate : constant Boolean := Boolean'Val (IR.X);
-      FP : constant File_Ptr := S (Curr_TCB.T - 1).Txt;
-    begin
-      if FP = Abstract_Console then
-        --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
-        case Typen'Val (IR.Y) is
-          when Ints     => Get_Console (S (Out_Param).I);
-          when Floats   => Get_Console (S (Out_Param).R);
-          when VStrings => S (Out_Param).V := To_VString (Get_Line_Console);
-          when Chars    =>
-            if Immediate then
-              Get_Immediate_Console (CH);
-            else
-              Get_Console (CH);
-            end if;
-            S (Out_Param).I := Character'Pos (CH);
-          when others =>
-            null;
-        end case;
-      else
-        if Ada.Text_IO.End_Of_File (FP.all) then
-          PS := REDCHK;
-        else
-          case Typen'Val (IR.Y) is
-            when Ints =>
-              HAC.Data.IIO.Get (FP.all, S (Out_Param).I);
-            when Floats =>
-              HAC.Data.RIO.Get (FP.all, S (Out_Param).R);
-            when Chars =>
-              Ada.Text_IO.Get (FP.all, CH);
-              S (Out_Param).I := Character'Pos (CH);
-            when VStrings =>
-              S (Out_Param).V := To_VString (Ada.Text_IO.Get_Line (FP.all));
-            when others =>
-              null;
-          end case;
-        end if;
-      end if;
-      Pop (2);
-      SWITCH := True;  --  give up control when doing I/O
-    end Do_Text_Read;
-
-    procedure Do_Write_String_Literal is
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
-      FP : constant File_Ptr := S (Curr_TCB.T - 2).Txt;
-    begin
-      H1 := S (Curr_TCB.T - 1).I;  --  Length of string
-      H2 := S (Curr_TCB.T    ).I;  --  Index to string table
-      if FP = Abstract_Console then
-        Put_Console (CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
-      else
-        Ada.Text_IO.Put (FP.all, CD.Strings_Constants_Table (H2 .. H2 + H1 - 1));
-      end if;
-      Pop (3);
-      SWITCH := True;        --  give up control when doing I/O
-    end Do_Write_String_Literal;
 
     procedure Fetch_Instruction is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
@@ -1230,13 +1225,9 @@ package body HAC.PCode.Interpreter is
         H1       := Curr_TCB.T - IR.Y;
         S (H1).R := HAC.Data.HAC_Float (S (H1).I);
 
-      when k_Read =>
-        Do_Text_Read;
-
-      when k_Write_String_Literal =>
-        Do_Write_String_Literal;
-
-      when k_Write_Formatted   => Do_Write_Formatted;
+      when k_Read                 => Do_Text_Read;
+      when k_Write_String_Literal => Do_Write_String_Literal;
+      when k_Write_Formatted      => Do_Write_Formatted;
 
       when k_Exit_Call =>  --  EXIT entry call or procedure call
         --  Cramer

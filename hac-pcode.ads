@@ -271,8 +271,9 @@ package HAC.PCode is
     SF_Get_Needs_Skip_Line  --  Informs whether Get from console needs Skip_Line
   );
 
-  subtype SF_Niladic is
-    SF_Code range SF_Clock .. SF_Get_Needs_Skip_Line;
+  subtype SF_Niladic is SF_Code range SF_Clock .. SF_Get_Needs_Skip_Line;
+
+  subtype SF_File_Information is SF_Code range SF_EOF .. SF_EOLN;
 
   -------------------------------------
   --  Standard procedure operations  --

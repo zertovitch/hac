@@ -5,16 +5,15 @@ with HAC.UErrors;            use HAC.UErrors;
 
 package body HAC.Parser.Standard_Procedures is
 
-  type Def_param_val is array (1 .. 3) of Integer;
-  type Def_param_type is array (Typen) of Def_param_val;
+  type Def_param_type is array (Typen, 1 .. 3) of Integer;
 
-  invalid_def_param  : constant := -1;
+  invalid : constant := -1;
 
   def_param : constant Def_param_type :=
-    (Ints   => (IIO.Default_Width, IIO.Default_Base,  invalid_def_param),
-     Floats => (RIO.Default_Fore,  RIO.Default_Aft,   RIO.Default_Exp),
-     Bools  => (BIO.Default_Width, invalid_def_param, invalid_def_param),
-     others => (others => invalid_def_param));
+    (Ints    =>  (IIO.Default_Width,   IIO.Default_Base,   invalid),
+     Floats  =>  (RIO.Default_Fore,    RIO.Default_Aft,    RIO.Default_Exp),
+     Bools   =>  (BIO.Default_Width,   invalid,            invalid),
+     others  =>  (others => invalid));
 
   procedure Standard_Procedure (
     CD      : in out Compiler_Data;
@@ -93,7 +92,9 @@ package body HAC.Parser.Standard_Procedures is
       end loop;
       --  Check given / default parameters (nice short common solution, isn't it ?)
       for Param in 1 .. Format_Params loop
-        if def_param (X.TYP) (Param) = invalid_def_param then
+        --  First we check if the programmer didn't put too many
+        --  (then, undefined) parameters.
+        if def_param (X.TYP, Param) = invalid then
           Error (CD, err_illegal_parameters_to_Put);
         end if;
       end loop;
@@ -102,7 +103,10 @@ package body HAC.Parser.Standard_Procedures is
       else
         for Param in Format_Params + 1 .. 3 loop
           --  Send default parameters to the stack.
-          Emit1 (CD, k_Load_Discrete_Literal, def_param (X.TYP) (Param));
+          --  In order to have a fixed number of parameters in all cases,
+          --  we push also the "invalid" ones. See Do_Write_Formatted
+          --  to have an idea on how everybody is retrieved from the stack.
+          Emit1 (CD, k_Load_Discrete_Literal, def_param (X.TYP, Param));
         end loop;
         Emit1 (CD, k_Write_Formatted, Typen'Pos (X.TYP));
       end if;

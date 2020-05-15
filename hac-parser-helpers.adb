@@ -328,44 +328,26 @@ package body HAC.Parser.Helpers is
     return J;
   end Locate_Identifier;
 
-    ------------------------------------------------------------------
-    -------------------------------------------------Get_File_Pointer-
-    function Get_File_Pointer (CD : Compiler_Data; Id : Alfa) return Integer is  -- Schoening
-    begin   -- locate Id in FileIOTab
-      for I in 1 .. CD.File_IO_Table.Kount loop
-        if CD.File_IO_Table.Nam (I) (2) = ':' then
-          if CD.File_IO_Table.Nam (I) (3 .. CD.File_IO_Table.LNam (I) - 2) =
-             Id (1 .. CD.File_IO_Table.LNam (I) - 2)
-          then
-            return I;
-          end if;
-        elsif CD.File_IO_Table.Nam (I) = Id (1 .. CD.File_IO_Table.LNam (I)) then
-          return I;
-        end if;
-      end loop;
-      return No_File_Index;
-    end Get_File_Pointer;
-
-    ------------------------------------------------------------------
-    ----------------------------------------------Enter_or_find_Float-
-    procedure Enter_or_find_Float (
-      CD         : in out Compiler_Data;
-      X          :        HAC_Float;
-      RNum_Index :    out Natural
-    )
-    is
-    begin
-      if CD.Float_Constants_Count = Float_Const_Table_Max - 1 then
-        Fatal (FLOAT_CONSTANTS);  --  Exception is raised there.
-      end if;
-      CD.Float_Constants_Table (CD.Float_Constants_Count + 1) := X;  --  We add X's value as an extra item.
-      RNum_Index := 1;
-      while CD.Float_Constants_Table (RNum_Index) /= X loop
-        RNum_Index := RNum_Index + 1;
-      end loop;
-      if RNum_Index > CD.Float_Constants_Count then  --  X's value was not previously in the table.
-        CD.Float_Constants_Count := RNum_Index;
-      end if;
-    end Enter_or_find_Float;
+  ------------------------------------------------------------------
+  ----------------------------------------------Enter_or_find_Float-
+  procedure Enter_or_find_Float (
+    CD         : in out Compiler_Data;
+    X          :        HAC_Float;
+    RNum_Index :    out Natural
+  )
+  is
+  begin
+    if CD.Float_Constants_Count = Float_Const_Table_Max - 1 then
+      Fatal (FLOAT_CONSTANTS);  --  Exception is raised there.
+    end if;
+    CD.Float_Constants_Table (CD.Float_Constants_Count + 1) := X;  --  We add X's value as an extra item.
+    RNum_Index := 1;
+    while CD.Float_Constants_Table (RNum_Index) /= X loop  --  Binary equality.
+      RNum_Index := RNum_Index + 1;
+    end loop;
+    if RNum_Index > CD.Float_Constants_Count then  --  X's value was not previously in the table.
+      CD.Float_Constants_Count := RNum_Index;
+    end if;
+  end Enter_or_find_Float;
 
 end HAC.Parser.Helpers;
