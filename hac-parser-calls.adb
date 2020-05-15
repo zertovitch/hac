@@ -1,4 +1,3 @@
-with HAC.Compiler;           use HAC.Compiler;
 with HAC.Parser.Expressions; use HAC.Parser.Expressions;
 with HAC.Parser.Helpers;     use HAC.Parser.Helpers;
 with HAC.PCode;              use HAC.PCode;
@@ -6,6 +5,76 @@ with HAC.Scanner;            use HAC.Scanner;
 with HAC.UErrors;            use HAC.UErrors;
 
 package body HAC.Parser.Calls is
+
+  procedure Push_by_Value_Parameter (
+    CD       : in out HAC.Compiler.Compiler_Data;
+    Level    :        Integer;
+    FSys     :        Symset;
+    Expected :        Exact_Typ
+  )
+  is
+    X : Exact_Typ;
+  begin
+    Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+    --
+    if X.TYP = Expected.TYP then
+      if X.Ref /= Expected.Ref then
+        Type_Mismatch (CD, err_parameter_types_do_not_match, Found => X, Expected => Expected);
+      elsif X.TYP = Arrays then
+        Emit1 (CD, k_Load_Block, CD.Arrays_Table (X.Ref).Array_Size);
+      elsif X.TYP = Records then
+        Emit1 (CD, k_Load_Block, CD.Blocks_Table (X.Ref).VSize);
+      end if;
+    elsif X.TYP = Ints and Expected.TYP = Floats then
+      Forbid_Type_Coercion (CD, "value is integer, parameter is floating-point");
+      Emit1 (CD, k_Integer_to_Float, 0);  --  Left as a "souvenir" of SmallAda...
+    elsif X.TYP /= NOTYP then
+      Type_Mismatch (CD, err_parameter_types_do_not_match, Found => X, Expected => Expected);
+    end if;
+  end Push_by_Value_Parameter;
+
+  procedure Push_by_Reference_Parameter (
+    CD       : in out HAC.Compiler.Compiler_Data;
+    Level    :        Integer;
+    FSys     :        Symset;
+    Expected :        Exact_Typ
+  )
+  is
+    K : Integer;
+    X : Exact_Typ;
+  begin
+    if CD.Sy /= IDent then
+      Error (CD, err_identifier_missing);
+    else
+      K := Locate_Identifier (CD, CD.Id, Level);
+      InSymbol (CD);
+      if K = No_Id then
+        null;  --  Error already issued due to missing identifier
+      elsif CD.IdTab (K).Obj /= Variable then
+        Error (CD, err_variable_missing);
+      elsif CD.IdTab (K).Read_only then
+        Error (
+          CD, err_cannot_modify_constant_or_in_parameter,
+          ": passed to OUT or IN OUT parameter"
+        );
+      else
+        X := CD.IdTab (K).xTyp;
+        if CD.IdTab (K).Normal then
+          --  Push "v'Access".
+          Emit2 (CD, k_Push_Address, CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
+        else
+          --  Push "(v.all)'Access", that is, v which is actually an access type.
+          Emit2 (CD, k_Push_Value,   CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
+        end if;
+        if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
+          Selector (CD, Level, FSys + Colon_Comma_RParent, X);
+        end if;
+        if X /= Expected then
+          Type_Mismatch (CD, err_parameter_types_do_not_match, Found => X, Expected => Expected);
+        end if;
+      end if;
+    end if;
+  end Push_by_Reference_Parameter;
 
   ------------------------------------------------------------------
   -----------------------------------------Subprogram_or_Entry_Call-
@@ -24,16 +93,7 @@ package body HAC.Parser.Calls is
     --   = 2 then timed Task Entry Call,          CallTMDE
     --   = 3 then conditional Task Entry Call,    CallCNDE
     --****************************************************************
-    X                 : Exact_Typ;
-    Last_Param, CP, K : Integer;
-    procedure Issue_Type_Mismatch_Error is
-    begin
-      Type_Mismatch (
-        CD, err_parameter_types_do_not_match,
-        Found    => X,
-        Expected => CD.IdTab (CP).xTyp
-      );
-    end;
+    Last_Param, CP : Integer;
   begin
     Emit1 (CD, k_Mark_Stack, I);
     Last_Param := CD.Blocks_Table (CD.IdTab (I).Block_Ref).Last_Param_Id_Idx;
@@ -46,62 +106,17 @@ package body HAC.Parser.Calls is
         else
           CP := CP + 1;
           if CD.IdTab (CP).Normal then
-            ------------------------------------------
-            --  Value parameter (IN)                --
-            --  Currently we pass it only by copy.  --
-            ------------------------------------------
-            Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-            --
-            if X.TYP = CD.IdTab (CP).xTyp.TYP then
-              if X.Ref /= CD.IdTab (CP).xTyp.Ref then
-                Issue_Type_Mismatch_Error;
-              elsif X.TYP = Arrays then
-                Emit1 (CD, k_Load_Block, CD.Arrays_Table (X.Ref).Array_Size);
-              elsif X.TYP = Records then
-                Emit1 (CD, k_Load_Block, CD.Blocks_Table (X.Ref).VSize);
-              end if;
-            elsif X.TYP = Ints and CD.IdTab (CP).xTyp.TYP = Floats then
-              Forbid_Type_Coercion (CD, "value is integer, parameter is floating-point");
-              Emit1 (CD, k_Integer_to_Float, 0);
-            elsif X.TYP /= NOTYP then
-              Issue_Type_Mismatch_Error;
-            end if;
+            --------------------------------------------------
+            --  Value parameter (IN)                        --
+            --  Currently we pass it only by value (copy).  --
+            --------------------------------------------------
+            Push_by_Value_Parameter (CD, Level, FSys, Expected => CD.IdTab (CP).xTyp);
           else
             -----------------------------------------------
             --  Variable (Name) parameter (IN OUT, OUT)  --
             --  This is passed by reference              --
             -----------------------------------------------
-            if CD.Sy /= IDent then
-              Error (CD, err_identifier_missing);
-            else
-              K := Locate_Identifier (CD, CD.Id, Level);
-              InSymbol (CD);
-              if K = No_Id then
-                null;  --  Error already issued due to missing identifier
-              elsif CD.IdTab (K).Obj /= Variable then
-                Error (CD, err_variable_missing);
-              elsif CD.IdTab (K).Read_only then
-                Error (
-                  CD, err_cannot_modify_constant_or_in_parameter,
-                  ": passed to OUT or IN OUT parameter"
-                );
-              else
-                X := CD.IdTab (K).xTyp;
-                if CD.IdTab (K).Normal then
-                  --  Push "v'Access".
-                  Emit2 (CD, k_Push_Address, CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
-                else
-                  --  Push "(v.all)'Access", that is, v which is actually an access type.
-                  Emit2 (CD, k_Push_Value,   CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
-                end if;
-                if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-                  Selector (CD, Level, FSys + Colon_Comma_RParent, X);
-                end if;
-                if X /= CD.IdTab (CP).xTyp then
-                  Issue_Type_Mismatch_Error;
-                end if;
-              end if;
-            end if;
+            Push_by_Reference_Parameter (CD, Level, FSys, Expected => CD.IdTab (CP).xTyp);
           end if;
         end if;
         Test (CD, Comma_RParent, FSys, err_incorrectly_used_symbol);
