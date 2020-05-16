@@ -6,7 +6,7 @@ with HAC.UErrors;            use HAC.UErrors;
 
 package body HAC.Parser.Calls is
 
-  procedure Push_by_Value_Parameter (
+  procedure Push_and_Check_by_Value_Parameter (
     CD       : in out HAC.Compiler.Compiler_Data;
     Level    :        Integer;
     FSys     :        Symset;
@@ -15,11 +15,13 @@ package body HAC.Parser.Calls is
   is
     X : Exact_Typ;
   begin
+    --  Expression does all the job of parsing and
+    --  emitting the right "push" instructions.
     Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-    --
+    --  We just need to check types:
     if X.TYP = Expected.TYP then
       if X.Ref /= Expected.Ref then
-        Type_Mismatch (CD, err_parameter_types_do_not_match, Found => X, Expected => Expected);
+        Type_Mismatch (CD, err_parameter_types_do_not_match, X, Expected);
       elsif X.TYP = Arrays then
         Emit1 (CD, k_Load_Block, CD.Arrays_Table (X.Ref).Array_Size);
       elsif X.TYP = Records then
@@ -29,19 +31,19 @@ package body HAC.Parser.Calls is
       Forbid_Type_Coercion (CD, "value is integer, parameter is floating-point");
       Emit1 (CD, k_Integer_to_Float, 0);  --  Left as a "souvenir" of SmallAda...
     elsif X.TYP /= NOTYP then
-      Type_Mismatch (CD, err_parameter_types_do_not_match, Found => X, Expected => Expected);
+      Type_Mismatch (CD, err_parameter_types_do_not_match, X, Expected);
     end if;
-  end Push_by_Value_Parameter;
+  end Push_and_Check_by_Value_Parameter;
 
   procedure Push_by_Reference_Parameter (
     CD       : in out HAC.Compiler.Compiler_Data;
     Level    :        Integer;
     FSys     :        Symset;
-    Expected :        Exact_Typ
+    Found    :    out Exact_Typ  --  Funny note: Found is itself pushed by reference...
   )
   is
     K : Integer;
-    X : Exact_Typ;
+    F : Opcode;
   begin
     if CD.Sy /= IDent then
       Error (CD, err_identifier_missing);
@@ -58,19 +60,15 @@ package body HAC.Parser.Calls is
           ": passed to OUT or IN OUT parameter"
         );
       else
-        X := CD.IdTab (K).xTyp;
+        Found := CD.IdTab (K).xTyp;
         if CD.IdTab (K).Normal then
-          --  Push "v'Access".
-          Emit2 (CD, k_Push_Address, CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
+          F := k_Push_Address;  --  Push "v'Access".
         else
-          --  Push "(v.all)'Access", that is, v which is actually an access type.
-          Emit2 (CD, k_Push_Value,   CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
+          F := k_Push_Value;    --  Push "(v.all)'Access", that is, v (v is an access type).
         end if;
+        Emit2 (CD, F, CD.IdTab (K).LEV, CD.IdTab (K).Adr_or_Sz);
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-          Selector (CD, Level, FSys + Colon_Comma_RParent, X);
-        end if;
-        if X /= Expected then
-          Type_Mismatch (CD, err_parameter_types_do_not_match, Found => X, Expected => Expected);
+          Selector (CD, Level, FSys + Colon_Comma_RParent, Found);
         end if;
       end if;
     end if;
@@ -94,6 +92,7 @@ package body HAC.Parser.Calls is
     --   = 3 then conditional Task Entry Call,    CallCNDE
     --****************************************************************
     Last_Param, CP : Integer;
+    Found, Expected : Exact_Typ;
   begin
     Emit1 (CD, k_Mark_Stack, I);
     Last_Param := CD.Blocks_Table (CD.IdTab (I).Block_Ref).Last_Param_Id_Idx;
@@ -105,18 +104,22 @@ package body HAC.Parser.Calls is
           Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
         else
           CP := CP + 1;
+          Expected := CD.IdTab (CP).xTyp;
           if CD.IdTab (CP).Normal then
             --------------------------------------------------
             --  Value parameter (IN)                        --
             --  Currently we pass it only by value (copy).  --
             --------------------------------------------------
-            Push_by_Value_Parameter (CD, Level, FSys, Expected => CD.IdTab (CP).xTyp);
+            Push_and_Check_by_Value_Parameter (CD, Level, FSys, Expected);
           else
             -----------------------------------------------
             --  Variable (Name) parameter (IN OUT, OUT)  --
             --  This is passed by reference              --
             -----------------------------------------------
-            Push_by_Reference_Parameter (CD, Level, FSys, Expected => CD.IdTab (CP).xTyp);
+            Push_by_Reference_Parameter (CD, Level, FSys, Found);
+            if Found /= Expected then
+              Type_Mismatch (CD, err_parameter_types_do_not_match, Found, Expected);
+            end if;
           end if;
         end if;
         Test (CD, Comma_RParent, FSys, err_incorrectly_used_symbol);

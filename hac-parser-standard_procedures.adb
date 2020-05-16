@@ -1,3 +1,4 @@
+with HAC.Parser.Calls;       use HAC.Parser.Calls;
 with HAC.Parser.Expressions; use HAC.Parser.Expressions;
 with HAC.Parser.Helpers;     use HAC.Parser.Helpers;
 with HAC.Scanner;            use HAC.Scanner;
@@ -22,59 +23,31 @@ package body HAC.Parser.Standard_Procedures is
     Code    :        SP_Code
   )
   is
-    I                 : Integer;
-    F                 : Opcode;
-    X, Y              : Exact_Typ;
     --
-    procedure Parse_Gets is
+    procedure Parse_Gets (X : out Exact_Typ) is
     --  Parse Get & Co after an eventual File parameter
     begin
       --  The "out" variable for Get, Get_Immediate, Get_Line.
-      if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing);
+      Push_by_Reference_Parameter (CD, Level, FSys, X);
+      if X.TYP = NOTYP then
+        null;  --  Error(s) already appeared in the parsing.
+      elsif X.TYP in Standard_Typ and then X.TYP /= Bools then
+        Emit2 (CD, k_Read, Boolean'Pos (Code = SP_Get_Immediate), Typen'Pos (X.TYP));
       else
-        I := Locate_Identifier (CD, CD.Id, Level);
-        InSymbol (CD);
-        if I /= 0 then
-          if CD.IdTab (I).Obj /= Variable then
-            Error (CD, err_variable_missing);
-          else
-            X := CD.IdTab (I).xTyp;
-            if CD.IdTab (I).Normal then
-              F := k_Push_Address;
-            else
-              F := k_Push_Value;
-            end if;
-            Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr_or_Sz);
-            if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-              Selector (CD, Level, FSys + Comma_RParent, X);
-            end if;
-            if X.TYP = Ints or
-               X.TYP = Floats or
-               X.TYP = Chars or
-               X.TYP = VStrings
-            then
-              Emit2 (CD, k_Read, Boolean'Pos (Code = SP_Get_Immediate), Typen'Pos (X.TYP));
-            elsif X.TYP = NOTYP then
-              null;  --  Error(s) already appeared in the parsing.
-            else
-              Error (CD, err_illegal_parameters_to_Get);
-            end if;
-          end if;
-        end if;
+        Error (CD, err_illegal_parameters_to_Get);
       end if;
     end Parse_Gets;
     --
     procedure Parse_Puts is
     --  Parse Put & Co after an eventual File parameter
+      Item_Typ, Format_Param_Typ : Exact_Typ;
       Format_Params : Natural := 0;
     begin
-      Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-      --  Now X is the type of the item to Put.
-      if X.TYP = Enums then
-        X.TYP := Ints;  --  Ow... Silent S'Pos. We keep this hack until 'Image is done.
+      Expression (CD, Level, FSys + Colon_Comma_RParent, Item_Typ);
+      if Item_Typ.TYP = Enums then
+        Item_Typ.TYP := Ints;  --  Ow... Silent S'Pos. We keep this hack until 'Image is done.
       end if;
-      if (X.TYP not in Standard_Typ) and X.TYP /= String_Literals then
+      if (Item_Typ.TYP not in Standard_Typ) and Item_Typ.TYP /= String_Literals then
         Error (CD, err_illegal_parameters_to_Put);
       end if;
       for Param in 1 .. 3 loop
@@ -85,8 +58,8 @@ package body HAC.Parser.Standard_Procedures is
         --    Width, Base    for Put ([F,] I [, Width [, Base]]);
         --    Fore, Aft, Exp for Put ([F,] R [, Fore[, Aft[, Exp]]]);
         --    Width          for Put ([F,] B [, Width]);
-        Expression (CD, Level, FSys + Colon_Comma_RParent, Y);
-        if Y.TYP /= Ints then
+        Expression (CD, Level, FSys + Colon_Comma_RParent, Format_Param_Typ);
+        if Format_Param_Typ.TYP /= Ints then
           Error (CD, err_parameter_must_be_Integer);
         end if;
       end loop;
@@ -94,11 +67,11 @@ package body HAC.Parser.Standard_Procedures is
       for Param in 1 .. Format_Params loop
         --  First we check if the programmer didn't put too many
         --  (then, undefined) parameters.
-        if def_param (X.TYP, Param) = invalid then
+        if def_param (Item_Typ.TYP, Param) = invalid then
           Error (CD, err_illegal_parameters_to_Put);
         end if;
       end loop;
-      if X.TYP = String_Literals then
+      if Item_Typ.TYP = String_Literals then
         Emit (CD, k_Write_String_Literal);
       else
         for Param in Format_Params + 1 .. 3 loop
@@ -106,23 +79,29 @@ package body HAC.Parser.Standard_Procedures is
           --  In order to have a fixed number of parameters in all cases,
           --  we push also the "invalid" ones. See Do_Write_Formatted
           --  to have an idea on how everybody is retrieved from the stack.
-          Emit1 (CD, k_Load_Discrete_Literal, def_param (X.TYP, Param));
+          Emit1 (CD, k_Load_Discrete_Literal, def_param (Item_Typ.TYP, Param));
         end loop;
-        Emit1 (CD, k_Write_Formatted, Typen'Pos (X.TYP));
+        Emit1 (CD, k_Write_Formatted, Typen'Pos (Item_Typ.TYP));
       end if;
     end Parse_Puts;
     --
+    procedure File_I_O_Call (Code : SP_Code) is
+    begin
+      Emit1 (CD, k_File_I_O, SP_Code'Pos (Code));
+    end;
+
     procedure Set_Abstract_Console is
     begin
-      Emit1 (CD, k_File_I_O, SP_Code'Pos (SP_Push_Abstract_Console));
+      File_I_O_Call (SP_Push_Abstract_Console);
     end;
     --
+    X : Exact_Typ;
   begin
     case Code is
       when SP_Get | SP_Get_Immediate | SP_Get_Line =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Set_Abstract_Console;
-        Parse_Gets;
+        Parse_Gets (X);
         Need (CD, RParent, err_closing_parenthesis_missing);
         --
         if Code = SP_Get_Line
@@ -156,36 +135,15 @@ package body HAC.Parser.Standard_Procedures is
           Error (CD, err_missing_an_opening_parenthesis);
         else
           InSymbol (CD);
-          if CD.Sy /= IDent then
-            Error (CD, err_undefined_identifier);
-          else
-            I := Locate_Identifier (CD, CD.Id, Level);
-            InSymbol (CD);
-            if I /= 0 then
-              if CD.IdTab (I).Obj /= Variable then
-                Error (CD, err_variable_missing);
-              else
-                X := CD.IdTab (I).xTyp;
-                if CD.IdTab (I).Normal then
-                  F := k_Push_Address;
-                else
-                  F := k_Push_Value;
-                end if;
-                Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr_or_Sz);
-                if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-                  Selector (CD, Level, FSys + RParent, X);
-                end if;
-                if X.TYP = Ints then
-                  if Code = SP_Wait then
-                    Emit (CD, k_Wait_Semaphore);
-                  else
-                    Emit (CD, k_Signal_Semaphore);
-                  end if;
-                else
-                  Error (CD, err_parameter_must_be_Integer);
-                end if;
-              end if;
+          Push_by_Reference_Parameter (CD, Level, FSys, X);
+          if X.TYP = Ints then
+            if Code = SP_Wait then
+              Emit (CD, k_Wait_Semaphore);
+            else
+              Emit (CD, k_Signal_Semaphore);
             end if;
+          else
+            Error (CD, err_parameter_must_be_Integer);
           end if;
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
@@ -204,7 +162,7 @@ package body HAC.Parser.Standard_Procedures is
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
             Type_Mismatch (CD, err_syntax_error, Found => X, Expected => VStrings_Set);
           end if;
-          Emit2 (CD, k_File_I_O, I, SP_Code'Pos (Code));
+          File_I_O_Call (Code);
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
 
@@ -311,7 +269,7 @@ package body HAC.Parser.Standard_Procedures is
             Need (CD, Comma, err_COMMA_missing);
           end if;
         end loop;
-        Emit2 (CD, k_File_I_O, I, SP_Code'Pos (Code));
+        File_I_O_Call (Code);
         Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Push_Abstract_Console =>

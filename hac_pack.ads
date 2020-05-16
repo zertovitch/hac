@@ -164,10 +164,6 @@ package HAC_Pack is
 
   procedure Skip_Line;
 
-  --  !! Will replace those Pascal stuff by Ada ones (Fore, Aft, Exp)
-  subtype Width is Positive;
-  subtype Decimals is Positive;
-
   --  Put
   procedure  Put (C     : in  Character);
   procedure  Put (I     : in  Integer;

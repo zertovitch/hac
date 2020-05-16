@@ -3,7 +3,7 @@ with HAC.Data;               use HAC.Data;
 
 package HAC.Parser.Calls is
 
-  procedure Push_by_Value_Parameter (
+  procedure Push_and_Check_by_Value_Parameter (
     CD       : in out HAC.Compiler.Compiler_Data;
     Level    :        Integer;
     FSys     :        Symset;
@@ -14,7 +14,7 @@ package HAC.Parser.Calls is
     CD       : in out HAC.Compiler.Compiler_Data;
     Level    :        Integer;
     FSys     :        Symset;
-    Expected :        Exact_Typ
+    Found    :    out Exact_Typ
   );
 
   procedure Entry_Call (
