@@ -24,15 +24,15 @@ package body HAC.Parser.Standard_Procedures is
   )
   is
     --
-    procedure Parse_Gets (X : out Exact_Typ) is
+    procedure Parse_Gets (Found : out Exact_Typ) is
     --  Parse Get & Co after an eventual File parameter
     begin
       --  The "out" variable for Get, Get_Immediate, Get_Line.
-      Push_by_Reference_Parameter (CD, Level, FSys, X);
-      if X.TYP = NOTYP then
+      Push_by_Reference_Parameter (CD, Level, FSys, Found);
+      if Found.TYP = NOTYP then
         null;  --  Error(s) already appeared in the parsing.
-      elsif X.TYP in Standard_Typ and then X.TYP /= Bools then
-        Emit2 (CD, k_Read, Boolean'Pos (Code = SP_Get_Immediate), Typen'Pos (X.TYP));
+      elsif Found.TYP in Standard_Typ and then Found.TYP /= Bools then
+        Emit2 (CD, k_Read, Boolean'Pos (Code = SP_Get_Immediate), Typen'Pos (Found.TYP));
       else
         Error (CD, err_illegal_parameters_to_Get);
       end if;

@@ -1,14 +1,79 @@
 with HAC.Parser.Calls;                  use HAC.Parser.Calls;
 with HAC.Parser.Expressions;            use HAC.Parser.Expressions;
 with HAC.Parser.Helpers;                use HAC.Parser.Helpers;
+with HAC.Parser.Tasking;
 with HAC.PCode;                         use HAC.PCode;
-with HAC.Scanner;                       use HAC.Scanner;
+with HAC.Scanner;
 with HAC.Parser.Standard_Procedures;    use HAC.Parser.Standard_Procedures;
 with HAC.UErrors;                       use HAC.UErrors;
 
 package body HAC.Parser is
 
   use HAC.Compiler, HAC.Data;
+
+  ------------------------------------------------------------------
+  ------------------------------------------------------Enter_Block-
+  procedure Enter_Block (
+    CD    : in out HAC.Compiler.Compiler_Data;
+    Tptr  :        Integer
+  )
+  is
+  begin
+    if CD.Blocks_Count = BMax then
+      Fatal (PROCEDURES);  --  Exception is raised there.
+    end if;
+    CD.Blocks_Count := CD.Blocks_Count + 1;
+    declare
+      New_B : BTabEntry renames CD.Blocks_Table (CD.Blocks_Count);
+    begin
+      New_B.Id                := CD.IdTab (Tptr).Name;
+      New_B.Last_Id_Idx       := 0;
+      New_B.Last_Param_Id_Idx := 0;
+      New_B.SrcFrom           := CD.Line_Count;
+    end;
+  end Enter_Block;
+
+  ------------------------------------------------------------------
+  ------------------------------------------------------------Enter-
+  procedure Enter (
+    CD               : in out HAC.Compiler.Compiler_Data;
+    Level            :        Integer;
+    Id, Id_with_case :        HAC.Data.Alfa;
+    K                :        HAC.Compiler.aObject
+  )
+  is
+    J, L : Integer;
+  begin
+    if CD.Id_Count = Id_Table_Max then
+      Fatal (IDENTIFIERS);  --  Exception is raised there.
+    end if;
+    CD.IdTab (No_Id).Name := Id;  --  Sentinel
+    J                     := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
+    L                     := J;
+    while CD.IdTab (J).Name /= Id loop
+      J := CD.IdTab (J).Link;
+    end loop;
+    --  Follow the chain of identifiers for current Level.
+    if J /= No_Id then
+      Error (CD, err_duplicate_identifier, To_String (Id));
+    else      --  Enter identifier in table IdTab
+      CD.Id_Count            := CD.Id_Count + 1;
+      CD.IdTab (CD.Id_Count) :=
+       (  Name           => Id,
+          Name_with_case => Id_with_case,
+          Link           => L,
+          Obj            => K,
+          Read_only      => False,
+          xTyp           => (TYP => NOTYP, Ref => 0),
+          Block_Ref      => 0,
+          Normal         => True,
+          LEV            => Level,
+          Adr_or_Sz      => 0
+      );
+      --  Update start of identifier chain:
+      CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
+    end if;
+  end Enter;
 
   ------------------------------------------------------------------
   ------------------------------------------------------------Block-
@@ -25,7 +90,7 @@ package body HAC.Parser is
   )
   is
     Level : Integer := Level_A;
-    procedure InSymbol is begin InSymbol (CD); end;
+    procedure InSymbol is begin Scanner.InSymbol (CD); end;
 
     Dx      : Integer;  -- data allocation Index
     MaxDX   : Integer;
@@ -63,65 +128,11 @@ package body HAC.Parser is
     end Enter_Array;
 
     ------------------------------------------------------------------
-    ------------------------------------------------------Enter_Block-
-    procedure Enter_Block (Tptr : Integer) is
-    begin
-      if CD.Blocks_Count = BMax then
-        Fatal (PROCEDURES);  --  Exception is raised there.
-      end if;
-      CD.Blocks_Count := CD.Blocks_Count + 1;
-      declare
-        New_B : BTabEntry renames CD.Blocks_Table (CD.Blocks_Count);
-      begin
-        New_B.Id                := CD.IdTab (Tptr).Name;
-        New_B.Last_Id_Idx       := 0;
-        New_B.Last_Param_Id_Idx := 0;
-        New_B.SrcFrom           := CD.Line_Count;
-      end;
-    end Enter_Block;
-
-    ------------------------------------------------------------------
-    ------------------------------------------------------------Enter-
-    procedure Enter (Id, Id_with_case : Alfa; K : aObject) is
-      J, L : Integer;
-    begin
-      if CD.Id_Count = Id_Table_Max then
-        Fatal (IDENTIFIERS);  --  Exception is raised there.
-      end if;
-      CD.IdTab (No_Id).Name := Id;  --  Sentinel
-      J                     := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
-      L                     := J;
-      while CD.IdTab (J).Name /= Id loop
-        J := CD.IdTab (J).Link;
-      end loop;
-      --  Follow the chain of identifiers for current Level.
-      if J /= No_Id then
-        Error (CD, err_duplicate_identifier, To_String (Id));
-      else      --  Enter identifier in table IdTab
-        CD.Id_Count            := CD.Id_Count + 1;
-        CD.IdTab (CD.Id_Count) :=
-         (  Name           => Id,
-            Name_with_case => Id_with_case,
-            Link           => L,
-            Obj            => K,
-            Read_only      => False,
-            xTyp           => (TYP => NOTYP, Ref => 0),
-            Block_Ref      => 0,
-            Normal         => True,
-            LEV            => Level,
-            Adr_or_Sz      => 0
-        );
-        --  Update start of identifier chain:
-        CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
-      end if;
-    end Enter;
-
-    ------------------------------------------------------------------
     ---------------------------------------------------Enter_Variable-
     procedure Enter_Variable is
     begin
       if CD.Sy = IDent then
-        Enter (CD.Id, CD.Id_with_case, Variable);
+        Enter (CD, Level, CD.Id, CD.Id_with_case, Variable);
         InSymbol;
       else
         Error (CD, err_identifier_missing);
@@ -257,7 +268,7 @@ package body HAC.Parser is
           InSymbol;  --  Consume '(' symbol.
           if CD.Sy = IDent then
             enum_count := enum_count + 1;
-            Enter (CD.Id, CD.Id_with_case, Declared_Number_or_Enum_Item);
+            Enter (CD, Level, CD.Id, CD.Id_with_case, Declared_Number_or_Enum_Item);
             declare
               New_Enum_Item : IdTabEntry renames CD.IdTab (CD.Id_Count);
             begin
@@ -281,7 +292,7 @@ package body HAC.Parser is
         Field_Size, Offset, T0, T1 : Integer;
       begin
         InSymbol;  --  Consume RECORD symbol.
-        Enter_Block (CD.Id_Count);
+        Enter_Block (CD, CD.Id_Count);
         xTP := (TYP => Records, Ref => CD.Blocks_Count);
         if Level = Nesting_Level_Max then
           Fatal (LEVELS);  --  Exception is raised there.
@@ -459,7 +470,7 @@ package body HAC.Parser is
     begin
       InSymbol;
       Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
-      Enter (CD.Id, CD.Id_with_case, TypeMark);
+      Enter (CD, Level, CD.Id, CD.Id_with_case, TypeMark);
       T1 := CD.Id_Count;
       InSymbol;
       Need (CD, IS_Symbol, err_IS_missing);
@@ -617,9 +628,9 @@ package body HAC.Parser is
         Id_subprog_with_case : constant Alfa := CD.Id_with_case;
       begin
         if IsFun then
-          Enter (CD.Id, CD.Id_with_case, Funktion);
+          Enter (CD, Level, CD.Id, CD.Id_with_case, Funktion);
         else
-          Enter (CD.Id, CD.Id_with_case, Prozedure);
+          Enter (CD, Level, CD.Id, CD.Id_with_case, Prozedure);
         end if;
         InSymbol;
         Block (CD, FSys, IsFun, False, Level + 1, CD.Id_Count,
@@ -631,83 +642,6 @@ package body HAC.Parser is
         Emit1 (CD, k_Exit_Call, CallSTDP);
       end if;
     end Proc_Func_Declaration;
-
-    ------------------------------------------------------------------
-    -------------------------------------------------Task_Declaration-
-    procedure Task_Declaration is          -- Hathorn
-      I, T0         : Integer;
-      TaskID        : Alfa;
-      saveLineCount : constant Integer := CD.Line_Count;  --  Source line where Task appeared
-    begin
-      InSymbol;
-      if CD.Sy = BODY_Symbol then  --  Task Body
-        InSymbol;
-        I      := Locate_Identifier (CD, CD.Id, Level);
-        TaskID := CD.IdTab (I).Name;
-        CD.Blocks_Table (CD.IdTab (I).Block_Ref).SrcFrom := saveLineCount;  --  (* Manuel *)
-        InSymbol;
-        Block (CD, FSys, False, False, Level + 1, I, TaskID, TaskID);  --  !! up/low case
-        Emit1 (CD, k_Exit_Call, CallSTDP);
-      else                         --  Task Specification
-        if CD.Sy = IDent then
-          TaskID := CD.Id;
-        else
-          Error (CD, err_identifier_missing);
-          CD.Id := Empty_Alfa;
-        end if;
-        CD.Tasks_Definitions_Count := CD.Tasks_Definitions_Count + 1;
-        if CD.Tasks_Definitions_Count > TaskMax then
-          Fatal (TASKS);  --  Exception is raised there.
-        end if;
-        Enter (TaskID, TaskID, aTask);  --  !! casing
-        CD.Tasks_Definitions_Table (CD.Tasks_Definitions_Count) := CD.Id_Count;
-        Enter_Block (CD.Id_Count);
-        CD.IdTab (CD.Id_Count).Block_Ref := CD.Blocks_Count;
-        InSymbol;
-        if CD.Sy = Semicolon then
-          InSymbol;  --  Task with no entries
-        else  --  Parsing the Entry specs
-          Need (CD, IS_Symbol, err_IS_missing);
-          if Level = Nesting_Level_Max then
-            Fatal (LEVELS);  --  Exception is raised there.
-          end if;
-          Level              := Level + 1;
-          CD.Display (Level) := CD.Blocks_Count;
-          while CD.Sy = ENTRY_Symbol loop
-            InSymbol;
-            if CD.Sy /= IDent then
-              Error (CD, err_identifier_missing);
-              CD.Id := Empty_Alfa;
-            end if;
-            CD.Entries_Count := CD.Entries_Count + 1;
-            if CD.Entries_Count > EntryMax then
-              Fatal (ENTRIES);  --  Exception is raised there.
-            end if;
-            Enter (CD.Id, CD.Id_with_case, aEntry);
-            CD.Entries_Table (CD.Entries_Count) := CD.Id_Count;  --  point to identifier table location
-            T0                                  := CD.Id_Count;  --  of TaskID
-            InSymbol;
-            Block (CD, FSys, False, False, Level + 1, CD.Id_Count,
-                   CD.IdTab (CD.Id_Count).Name, CD.IdTab (CD.Id_Count).Name_with_case);
-            CD.IdTab (T0).Adr_or_Sz := CD.Tasks_Definitions_Count;
-            if CD.Sy = Semicolon then
-              InSymbol;
-            else
-              Error (CD, err_semicolon_missing);
-            end if;
-          end loop;  --  while CD.Sy = ENTRY_Symbol
-
-          Level := Level - 1;
-          Test_END_Symbol (CD);
-          if CD.Sy = IDent and CD.Id = TaskID then
-            InSymbol;
-          else
-            Skip (CD, Semicolon, err_incorrect_block_name);
-          end if;
-          Test_Semicolon (CD, FSys);
-        end if;
-      end if;
-    end Task_Declaration;
 
     ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
@@ -1527,7 +1461,7 @@ package body HAC.Parser is
         end Check_ID_after_END_LOOP;
         --
       begin
-        Enter (new_ident_for_statement, CD.Id_with_case, Label);
+        Enter (CD, Level, new_ident_for_statement, CD.Id_with_case, Label);
         Test (CD, Colon_Set, FSys,
           err_colon_missing_for_named_statement,
           stop_on_error => True
@@ -1643,7 +1577,7 @@ package body HAC.Parser is
           Type_Declaration;
         end if;
         if CD.Sy = TASK_Symbol then
-          Task_Declaration;
+          Tasking.Task_Declaration (CD, FSys, Level);
         end if;
         CD.Blocks_Table (PRB).VSize := Dx;
         --  ^ TBD: check if this is still correct for declarations that appear
@@ -1733,7 +1667,7 @@ package body HAC.Parser is
     if CD.IdTab (Prt).Block_Ref > 0 then
       PRB := CD.IdTab (Prt).Block_Ref;
     else
-      Enter_Block (Prt);
+      Enter_Block (CD, Prt);
       PRB                      := CD.Blocks_Count;
       CD.IdTab (Prt).Block_Ref := PRB;
     end if;

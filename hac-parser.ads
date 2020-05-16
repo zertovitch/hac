@@ -13,6 +13,18 @@ with HAC.Compiler, HAC.Data;
 
 package HAC.Parser is
 
+  procedure Enter_Block (
+    CD    : in out HAC.Compiler.Compiler_Data;
+    Tptr  :        Integer
+  );
+
+  procedure Enter (
+    CD               : in out HAC.Compiler.Compiler_Data;
+    Level            :        Integer;
+    Id, Id_with_case :        HAC.Data.Alfa;
+    K                :        HAC.Compiler.aObject
+  );
+
   procedure Block (
     CD                   : in out HAC.Compiler.Compiler_Data;
     FSys                 :        HAC.Data.Symset;
