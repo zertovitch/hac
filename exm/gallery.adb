@@ -41,7 +41,7 @@ procedure Gallery is
     procedure Build_HAX is
       dummy : Integer;
     begin
-      Put_Line ("(Re-)building HAX...");
+      Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
       dummy :=
         Shell_Execute (+"gprbuild -P .." & Directory_Separator (k) & "hac");
     end Build_HAX;

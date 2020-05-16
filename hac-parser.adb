@@ -141,7 +141,7 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     ----------------------------------Number_Declaration_or_Enum_Item-
-    procedure Number_Declaration_or_Enum_Item (FSys : Symset; C : out Constant_Rec) is
+    procedure Number_Declaration_or_Enum_Item (FSys_ND : Symset; C : out Constant_Rec) is
       --  This covers number declarations (RM 3.3.2) and enumeration items (RM 3.5.1).
       --  Additionally this compiler does on-the-fly declarations for static values:
       --  bounds in ranges (FOR, ARRAY), and values in CASE statements.
@@ -151,7 +151,7 @@ package body HAC.Parser is
     begin
       C.TP := (NOTYP, 0);
       C.I  := 0;
-      Test (CD, Constant_Definition_Begin_Symbol, FSys, err_illegal_symbol_for_a_number_declaration);
+      Test (CD, Constant_Definition_Begin_Symbol, FSys_ND, err_illegal_symbol_for_a_number_declaration);
       if not Constant_Definition_Begin_Symbol (CD.Sy) then
         return;
       end if;
@@ -197,16 +197,16 @@ package body HAC.Parser is
           C.R  := HAC_Float (Sign) * CD.RNum;
           InSymbol;
         else
-          Skip (CD, FSys, err_illegal_symbol_for_a_number_declaration);
+          Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
         end if;
       end if;
-      Test (CD, FSys, Empty_Symset, err_incorrectly_used_symbol);
+      Test (CD, FSys_ND, Empty_Symset, err_incorrectly_used_symbol);
     end Number_Declaration_or_Enum_Item;
 
     ------------------------------------------------------------------
     -----------------------------------Type_Definition - RM 3.2.1 (4)-
 
-    procedure Type_Definition (FSys : Symset; xTP : out Exact_Typ; Sz : out Integer) is
+    procedure Type_Definition (FSys_TD : Symset; xTP : out Exact_Typ; Sz : out Integer) is
 
       procedure Array_Typ (
         Arr_Tab_Ref, Arr_Size      : out Integer;
@@ -218,7 +218,7 @@ package body HAC.Parser is
         Lower_Bound,
         Higher_Bound      : Constant_Rec;
       begin
-        Number_Declaration_or_Enum_Item (OF_RANGE_Double_Dot_RParent + FSys, Lower_Bound);
+        Number_Declaration_or_Enum_Item (OF_RANGE_Double_Dot_RParent + FSys_TD, Lower_Bound);
         --
         if Lower_Bound.TP.TYP = Floats then
           Error (CD, err_illegal_array_bounds, "a float type is not expected for a bound");
@@ -227,7 +227,7 @@ package body HAC.Parser is
         end if;
         Need (CD, Range_Double_Dot_Symbol, err_expecting_double_dot);
         --
-        Number_Declaration_or_Enum_Item (Comma_OF_RParent + FSys, Higher_Bound);
+        Number_Declaration_or_Enum_Item (Comma_OF_RParent + FSys_TD, Higher_Bound);
         --
         if Higher_Bound.TP /= Lower_Bound.TP then
           Error (CD, err_illegal_array_bounds, "bound types do not match");
@@ -248,7 +248,7 @@ package body HAC.Parser is
         else
           Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
           Need (CD, OF_Symbol, err_missing_OF);         --  "of"  in  "array (...) of Some_Type"
-          Type_Definition (FSys, Element_Exact_Typ, Element_Size);  --  "Some_Type"
+          Type_Definition (FSys_TD, Element_Exact_Typ, Element_Size);  --  "Some_Type"
         end if;
         Arr_Size := (Higher_Bound.I - Lower_Bound.I + 1) * Element_Size;
         declare
@@ -313,7 +313,7 @@ package body HAC.Parser is
             end loop;
             Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
             T1 := CD.Id_Count;
-            Type_Definition (FSys + Comma_END_IDent_Semicolon, Field_Exact_Typ, Field_Size);
+            Type_Definition (FSys_TD + Comma_END_IDent_Semicolon, Field_Exact_Typ, Field_Size);
             while T0 < T1 loop
               T0                      := T0 + 1;
               CD.IdTab (T0).xTyp      := Field_Exact_Typ;
@@ -339,7 +339,7 @@ package body HAC.Parser is
     begin  --  Type
       xTP := (TYP => NOTYP, Ref => 0);
       Sz := 0;
-      Test (CD, Type_Begin_Symbol, FSys, err_missing_ARRAY_RECORD_or_ident);
+      Test (CD, Type_Begin_Symbol, FSys_TD, err_missing_ARRAY_RECORD_or_ident);
       if Type_Begin_Symbol (CD.Sy) then
         case CD.Sy is
           when IDent =>
@@ -376,7 +376,7 @@ package body HAC.Parser is
           when others =>
             null;
         end case;  --  CD.Sy
-        Test (CD, FSys, Empty_Symset, err_incorrectly_used_symbol);
+        Test (CD, FSys_TD, Empty_Symset, err_incorrectly_used_symbol);
       end if;
     end Type_Definition;
 
@@ -724,7 +724,7 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     --------------------------------------------------------Statement--
-    procedure Statement (FSys : Symset) is
+    procedure Statement (FSys_St : Symset) is
 
       procedure Multi_Statement (Sentinal : Symset) is   -- Hathorn
         nxtSym : Symset;
@@ -741,8 +741,7 @@ package body HAC.Parser is
 
       procedure Accept_Statement is            -- Hathorn
 
-        procedure Accept_Call (FSys : Symset; I : Integer) is
-          pragma Unreferenced (I, FSys);
+        procedure Accept_Call is
         begin   --  !!  Check to make sure parameters match with Entry Statement
           if CD.Sy = Semicolon then
             return;
@@ -765,7 +764,7 @@ package body HAC.Parser is
           Error (CD, err_use_Small_Sp);
         end if;
         InSymbol;
-        Accept_Call (FSys, I_Entry);
+        Accept_Call;
         Emit1 (CD, k_Accept_Rendezvous, I_Entry);
         if CD.Sy = DO_Symbol then
           if Level = Nesting_Level_Max then
@@ -806,7 +805,7 @@ package body HAC.Parser is
         LC0, LC1 : Integer;
       begin
         InSymbol;
-        Boolean_Expression (CD, Level, FSys + DO_THEN, X);
+        Boolean_Expression (CD, Level, FSys_St + DO_THEN, X);
         LC1 := CD.LC;
         Emit (CD, k_Conditional_Jump);
         Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
@@ -817,7 +816,7 @@ package body HAC.Parser is
           InSymbol;
           Emit1 (CD, k_Jump, dummy_address);  --  Unconditional jump with dummy address to be patched
           CD.ObjCode (LC1).Y := CD.LC;        --  Patch the previous conditional jump
-          Boolean_Expression (CD, Level, FSys + DO_THEN, X);
+          Boolean_Expression (CD, Level, FSys_St + DO_THEN, X);
           LC1 := CD.LC;
           Emit (CD, k_Conditional_Jump);
           Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
@@ -942,7 +941,7 @@ package body HAC.Parser is
           Lab : Constant_Rec;
           K   : Integer;
         begin
-          Number_Declaration_or_Enum_Item (FSys + Alt_Finger_THEN, Lab);
+          Number_Declaration_or_Enum_Item (FSys_St + Alt_Finger_THEN, Lab);
           if Lab.TP /= X then
             Type_Mismatch (
               CD, err_case_label_not_same_type_as_case_clause,
@@ -1012,7 +1011,7 @@ package body HAC.Parser is
         InSymbol;
         I := 0;
         J := 0;
-        Expression (CD, Level, FSys + Colon_Comma_IS_OF, X);
+        Expression (CD, Level, FSys_St + Colon_Comma_IS_OF, X);
         if not Discrete_Typ (X.TYP) then
           Error (CD, err_bad_type_for_a_case_statement);
         end if;
@@ -1062,7 +1061,7 @@ package body HAC.Parser is
       begin
         InSymbol;  --  Consume WHILE symbol.
         LC_Cond_Eval := CD.LC;
-        Boolean_Expression (CD, Level, FSys + DO_LOOP, X);
+        Boolean_Expression (CD, Level, FSys_St + DO_LOOP, X);
         LC_Cond_Jump := CD.LC;
         Emit (CD, k_Conditional_Jump);
         LOOP_Statement (k_Jump, LC_Cond_Eval);
@@ -1102,7 +1101,7 @@ package body HAC.Parser is
           end if;
           CD.Blocks_Table (CD.Display (Level)).VSize := MaxDX;
         else
-          Skip (CD, Fail_after_FOR + FSys, err_identifier_missing);
+          Skip (CD, Fail_after_FOR + FSys_St, err_identifier_missing);
         end if;
         --
         Emit2 (CD, k_Push_Address, CD.IdTab (CD.Id_Count).LEV, CD.IdTab (CD.Id_Count).Adr_or_Sz);
@@ -1119,14 +1118,14 @@ package body HAC.Parser is
           --      a subtype_indication 3.2.2 (3) : name [constraint] like "Color [range red .. blue]"
           --      or a range 3.5 (3): "low .. high" or range_attribute_reference: A'Range
           --
-          Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys, FOR_Lower_Bound);
+          Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys_St, FOR_Lower_Bound);
           CD.IdTab (CD.Id_Count).xTyp := FOR_Lower_Bound;
           if not Discrete_Typ (FOR_Lower_Bound.TYP) then
             Error (CD, err_control_variable_of_the_wrong_type);
           end if;
           if CD.Sy = Range_Double_Dot_Symbol then                          --  ".."
             InSymbol;
-            Expression (CD, Level, FSys + LOOP_Symbol, FOR_Upper_Bound);
+            Expression (CD, Level, FSys_St + LOOP_Symbol, FOR_Upper_Bound);
             if FOR_Upper_Bound /= FOR_Lower_Bound then
               Type_Mismatch (
                 CD, err_first_and_last_must_have_matching_types,
@@ -1135,10 +1134,10 @@ package body HAC.Parser is
               );
             end if;
           else
-            Skip (CD, END_LOOP_Semicolon + FSys, err_expecting_double_dot);
+            Skip (CD, END_LOOP_Semicolon + FSys_St, err_expecting_double_dot);
           end if;
         else
-          Skip (CD, FSys + LOOP_Symbol, err_IN_missing);
+          Skip (CD, FSys_St + LOOP_Symbol, err_IN_missing);
         end if;
         LC_FOR_Begin := CD.LC;
         Emit (CD, FOR_Begin);
@@ -1167,7 +1166,7 @@ package body HAC.Parser is
           I := Locate_Identifier (CD, CD.Id, Level);
           if CD.IdTab (I).Obj = aTask then
             InSymbol;
-            Entry_Call (CD, Level, FSys, I, -1);
+            Entry_Call (CD, Level, FSys_St, I, -1);
             if CD.ObjCode (CD.LC - 2).F = k_Call then  --  Need to patch CallType later
               patch (0) := CD.LC - 2;
             else
@@ -1243,7 +1242,7 @@ package body HAC.Parser is
 
         procedure Selective_Wait is         -- Kurtz <===================
           -- Jay, this Buds for you !!
-          JSD, Alt            : Fixed_Size_Patch_Table;
+          JSD, Alt_Patch      : Fixed_Size_Patch_Table;
           ISD, IAlt, StartSel : Integer;
           SelectDone          : Boolean;
           Y, X                : Exact_Typ;
@@ -1251,8 +1250,7 @@ package body HAC.Parser is
 
           procedure Accept_Statement_2 is      -- Kurtz
 
-            procedure Accept_Call_2 (FSys : Symset; I : Integer) is
-            pragma Unreferenced (FSys, I);
+            procedure Accept_Call_2 is
             begin
               --  Check to make sure parameters match with Entry Statement
               if CD.Sy = Semicolon then
@@ -1277,9 +1275,9 @@ package body HAC.Parser is
               Select_Error (err_use_Small_Sp);
             end if;
             InSymbol;
-            Accept_Call_2 (FSys, I);
+            Accept_Call_2;
             Emit2 (CD, k_Selective_Wait, 2, I);          --  Retain Entry Index
-            Feed_Patch_Table (Alt, IAlt, CD.LC);
+            Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
             Emit2 (CD, k_Selective_Wait, 3, CD.LC);  --  ACCEPT IF Ready ELSE Skip To LC
             -- CONDITIONAL ACCEPT MUST BE ATOMIC
             if CD.Sy = DO_Symbol then
@@ -1312,24 +1310,24 @@ package body HAC.Parser is
           loop
             case CD.Sy is
               when WHEN_Symbol =>
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
                 InSymbol;  --  Consume WHEN symbol.
-                Boolean_Expression (CD, Level, FSys + Finger, X);
+                Boolean_Expression (CD, Level, FSys_St + Finger, X);
                 InSymbol;
                 if CD.Sy = ACCEPT_Symbol then
-                  Feed_Patch_Table (Alt, IAlt, CD.LC);
+                  Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
                   Emit (CD, k_Conditional_Jump);
                   Accept_Statement_2;
                 elsif CD.Sy = DELAY_Symbol then
-                  Feed_Patch_Table (Alt, IAlt, CD.LC);
+                  Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
                   Emit (CD, k_Conditional_Jump);
                   InSymbol;
-                  Expression (CD, Level, FSys + Semicolon, Y);
+                  Expression (CD, Level, FSys_St + Semicolon, Y);
                   Emit2 (CD, k_Selective_Wait, 4, CD.LC + 2);  --  Update delay time
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
                   end if;
-                  Feed_Patch_Table (Alt, IAlt, CD.LC);
+                  Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
                   Emit (CD, k_Jump);
                 else
                   Select_Error (err_missing_a_procedure_declaration);
@@ -1341,7 +1339,7 @@ package body HAC.Parser is
               -- end WHEN_Symbol
 
               when ACCEPT_Symbol =>
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
                 Accept_Statement_2;
                 InSymbol;
                 Multi_Statement (ELSE_END_OR);
@@ -1352,14 +1350,14 @@ package body HAC.Parser is
                 InSymbol;  --  Consume OR symbol.
 
               when ELSE_Symbol =>
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
                 InSymbol;
                 Multi_Statement (END_Set);
                 Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);
 
               when DELAY_Symbol =>
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
                 --  Generate a Task delay, calculate return value if req'D
                 InSymbol;
                 if CD.Sy = Semicolon then
@@ -1370,7 +1368,7 @@ package body HAC.Parser is
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
                   end if;
-                  Feed_Patch_Table (Alt, IAlt, CD.LC);
+                  Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
                   Emit (CD, k_Jump);
                 end if;
                 InSymbol;
@@ -1392,7 +1390,7 @@ package body HAC.Parser is
                   Select_Error (err_END_missing);
                 end if;
                 SelectDone := True;
-                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt, IAlt);
+                Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
                 if do_terminate then
                   Emit2 (CD, k_Selective_Wait, 5, StartSel);
                 else
@@ -1429,7 +1427,7 @@ package body HAC.Parser is
           stop_on_error => True
         );
         --
-        Block (CD, FSys, Is_a_function, True, Level + 1, CD.Id_Count, block_name, block_name);  --  !! up/low case
+        Block (CD, FSys_St, Is_a_function, True, Level + 1, CD.Id_Count, block_name, block_name);  --  !! up/low case
         --
         -- !! to check:
         -- !! * stack management of variables when entering / quitting the block
@@ -1462,7 +1460,7 @@ package body HAC.Parser is
         --
       begin
         Enter (CD, Level, new_ident_for_statement, CD.Id_with_case, Label);
-        Test (CD, Colon_Set, FSys,
+        Test (CD, Colon_Set, FSys_St,
           err_colon_missing_for_named_statement,
           stop_on_error => True
         );
@@ -1511,16 +1509,16 @@ package body HAC.Parser is
                   Error (CD, err_illegal_statement_start_symbol, "function name",
                          stop_on_error => True);
                 when aTask =>
-                  Entry_Call (CD, Level, FSys, I_Statement, CallSTDE);
+                  Entry_Call (CD, Level, FSys_St, I_Statement, CallSTDE);
                 when Prozedure =>
                   if CD.IdTab (I_Statement).LEV = 0 then
-                    Standard_Procedure (CD, Level, FSys, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
+                    Standard_Procedure (CD, Level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
                   else
-                    Subprogram_or_Entry_Call (CD, Level, FSys, I_Statement, CallSTDP);
+                    Subprogram_or_Entry_Call (CD, Level, FSys_St, I_Statement, CallSTDP);
                   end if;
                 when Label =>
                   Error (CD, err_duplicate_label, To_String (CD.Id));
-                  Test (CD, Colon_Set, FSys, err_colon_missing);
+                  Test (CD, Colon_Set, FSys_St, err_colon_missing);
                   InSymbol;
                 when others =>
                   null;
@@ -1558,7 +1556,7 @@ package body HAC.Parser is
         Need (CD, Semicolon, err_semicolon_missing);
       end if;  --  CD.Sy in Statement_Begin_Symbol
       --
-      Test (CD, FSys - Semicolon, Semicolon_Set, err_incorrectly_used_symbol);
+      Test (CD, FSys_St - Semicolon, Semicolon_Set, err_incorrectly_used_symbol);
     end Statement;
 
     procedure Declarative_Part is

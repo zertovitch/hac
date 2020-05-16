@@ -275,7 +275,7 @@ package body HAC.UErrors is
     --
     procedure Show_to_comp_dump (
        srcNumber, charStart, charEnd, objNumber : Integer;
-       hint: String
+       hint_for_dump: String
     )
     is
     begin
@@ -285,7 +285,7 @@ package body HAC.UErrors is
           " Error code = " &
           Compile_Error'Image (code) &
           " (" &
-          Error_String (code, hint) &
+          Error_String (code, hint_for_dump) &
           ") " &
           " srcNumber=" &
           Integer'Image (srcNumber) &

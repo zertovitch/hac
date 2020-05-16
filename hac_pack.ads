@@ -21,6 +21,8 @@ with Ada.Environment_Variables;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
+pragma Warnings ("H");  --  Disable warning: declaration of "=" hides predefined operator.
+
 package HAC_Pack is
 
   -----------------------------------------
@@ -125,9 +127,9 @@ package HAC_Pack is
 
   function Index (Source : VString; Pattern : String) return Natural;
   function Index (Source : VString; Pattern : VString) return Natural;
-  function "*" (Left : Natural; Right : Character) return VString renames VStrings_Pkg."*";
-  function "*" (Left : Natural; Right : String) return VString;
-  function "*" (Left : Natural; Right : VString) return VString renames VStrings_Pkg."*";
+  function "*" (Num : Natural; Pattern : Character) return VString renames VStrings_Pkg."*";
+  function "*" (Num : Natural; Pattern : String) return VString;
+  function "*" (Num : Natural; Pattern : VString) return VString renames VStrings_Pkg."*";
   function Trim_Left  (Source : VString) return VString;
   function Trim_Right (Source : VString) return VString;
   function Trim_Both  (Source : VString) return VString;
@@ -172,7 +174,7 @@ package HAC_Pack is
   procedure  Put (F     : in  Real;
                   Fore  : Integer := RIO.Default_Fore;
                   Aft   : Integer := RIO.Default_Aft;
-                  Exp   : Integer := RIO.Default_Exp);
+                  Expo  : Integer := RIO.Default_Exp);
   procedure  Put (B     : in  Boolean;
                   Width : Ada.Text_IO.Field       := BIO.Default_Width );
   procedure  Put (S    : in  String   );
@@ -186,7 +188,7 @@ package HAC_Pack is
   procedure  Put_Line (F    : in  Real;
                        Fore : Integer := RIO.Default_Fore;
                        Aft  : Integer := RIO.Default_Aft;
-                       Exp  : Integer := RIO.Default_Exp);
+                       Expo : Integer := RIO.Default_Exp);
   procedure  Put_Line (B     : in  Boolean;
                        Width : Ada.Text_IO.Field := BIO.Default_Width);
   procedure  Put_Line (S    : in  String   );

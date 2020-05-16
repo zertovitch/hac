@@ -67,7 +67,7 @@ package HAC.PCode.Interpreter is
   --  with Ada.Text_IO, Ada.Command_Line, ...
   --
   procedure Interpret_on_Current_IO (
-    CD             : Compiler_Data;
+    CD_CIO         : Compiler_Data;
     Argument_Shift : Natural := 0    --  Number of arguments to be skipped
   );
 

@@ -108,23 +108,16 @@ package body HAC.Parser.Expressions is
     X     :    out Exact_Typ
   )
   is
-    Y  : Exact_Typ;
-    OP : KeyWSymbol;
-
-    procedure Issue_Operator_Undefined_Error (OP : KeyWSymbol; X, Y : Exact_Typ) is
+    procedure Issue_Undefined_Operator_Error (Undef_OP : KeyWSymbol; X, Y : Exact_Typ) is
     begin
-      Operator_Undefined (CD, OP, X, Y);
-    end Issue_Operator_Undefined_Error;
+      Operator_Undefined (CD, Undef_OP, X, Y);
+    end Issue_Undefined_Operator_Error;
 
-    procedure Simple_Expression (FSys : Symset; X : out Exact_Typ) is
-      Y  : Exact_Typ;
-      OP : KeyWSymbol;
+    procedure Simple_Expression (FSys_SE : Symset; X : out Exact_Typ) is
 
-      procedure Term (FSys : Symset; X : out Exact_Typ) is
-        Y  : Exact_Typ;
-        OP : KeyWSymbol;
+      procedure Term (FSys_Term : Symset; X : out Exact_Typ) is
 
-        procedure Factor (FSys : Symset; X : out Exact_Typ) is
+        procedure Factor (FSys_Fact : Symset; X : out Exact_Typ) is
 
           procedure Type_Conversion is  --  Ada RM 4.6
             kind    :          Type_Conversion_Kind := Unknown;
@@ -136,7 +129,7 @@ package body HAC.Parser.Expressions is
             elsif Type_Id = HAC_Integer_Name then
               kind := To_Integer;
             end if;
-            Expression (CD, Level, FSys + RParent, X);
+            Expression (CD, Level, FSys_Fact + RParent, X);
             case kind is
               when To_Float =>
                 case X.TYP is
@@ -169,7 +162,7 @@ package body HAC.Parser.Expressions is
           Ident_Index : Integer;
         begin  --  Factor
           X := (TYP => NOTYP, Ref => 0);
-          Test (CD, Factor_Begin_Symbol + StrCon, FSys, err_factor_unexpected_symbol);
+          Test (CD, Factor_Begin_Symbol + StrCon, FSys_Fact, err_factor_unexpected_symbol);
           if CD.Sy = StrCon then
             X.TYP := String_Literals;
             Emit1 (CD, k_Load_Discrete_Literal, CD.SLeng);  --  String Literal Length
@@ -205,7 +198,7 @@ package body HAC.Parser.Expressions is
                           F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                         end if;
                         Emit2 (CD, F, r.LEV, r.Adr_or_Sz);
-                        Selector (CD, Level, FSys, X);
+                        Selector (CD, Level, FSys_Fact, X);
                         if Standard_or_Enum_Typ (X.TYP) then
                           --  We are at a leaf point of composite type selection,
                           --  so the stack top is expected to contain a value, not
@@ -237,9 +230,9 @@ package body HAC.Parser.Expressions is
                     when Funktion =>
                       X := r.xTyp;
                       if r.LEV = 0 then
-                        Standard_Function (CD, Level, FSys, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
+                        Standard_Function (CD, Level, FSys_Fact, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
                       else
-                        Subprogram_or_Entry_Call (CD, Level, FSys, Ident_Index, CallSTDP);
+                        Subprogram_or_Entry_Call (CD, Level, FSys_Fact, Ident_Index, CallSTDP);
                       end if;
                       --
                     when others =>
@@ -269,12 +262,12 @@ package body HAC.Parser.Expressions is
                 --
               when LParent =>    --  (
                 InSymbol (CD);
-                Expression (CD, Level, FSys + RParent, X);
+                Expression (CD, Level, FSys_Fact + RParent, X);
                 Need (CD, RParent, err_closing_parenthesis_missing);
                 --
               when NOT_Symbol =>
                 InSymbol (CD);
-                Factor (FSys, X);
+                Factor (FSys_Fact, X);
                 if X.TYP = Bools then
                   Emit (CD, k_NOT_Boolean);
                 elsif X.TYP /= NOTYP then
@@ -285,32 +278,34 @@ package body HAC.Parser.Expressions is
                 null;
             end case;
             --
-            if FSys = Semicolon_Set then
+            if FSys_Fact = Semicolon_Set then
               err := err_semicolon_missing;
             else
               err := err_incorrectly_used_symbol;
             end if;
-            Test (CD, FSys, Factor_Begin_Symbol, err);
+            Test (CD, FSys_Fact, Factor_Begin_Symbol, err);
           end loop;
         end Factor;
 
+        Mult_OP : KeyWSymbol;
+        Y       : Exact_Typ;
       begin  --  Term
-        Factor (FSys + FactorZ, X);
+        Factor (FSys_Term + FactorZ, X);
         --
         --  We collect here eventual factors: a {* b}
         --
         while FactorZ (CD.Sy) loop
-          OP := CD.Sy;
+          Mult_OP := CD.Sy;
           InSymbol (CD);
-          Factor (FSys + FactorZ, Y);
+          Factor (FSys_Term + FactorZ, Y);
           if X.TYP = NOTYP or Y.TYP = NOTYP then
             null;  --  Something is already wrong at this point; nothing to check or emit.
           else
-            case OP is
+            case Mult_OP is
               when Times =>     --  *
                 if X.TYP in Numeric_Typ and then Y.TYP in Numeric_Typ then
                   if X.TYP = Y.TYP then
-                    Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
+                    Emit_Arithmetic_Binary_Instruction (CD, Mult_OP, X.TYP);
                   else
                     Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
                   end if;
@@ -329,14 +324,14 @@ package body HAC.Parser.Expressions is
                       Emit_Std_Funct (CD, SF_Int_Times_VStr);  --  N * Some_VString
                       X.TYP := VStrings;
                     when others =>
-                      Issue_Operator_Undefined_Error (OP, X, Y);
+                      Issue_Undefined_Operator_Error (Mult_OP, X, Y);
                   end case;
                 else
-                  Issue_Operator_Undefined_Error (OP, X, Y);
+                  Issue_Undefined_Operator_Error (Mult_OP, X, Y);
                 end if;
               when Divide =>    --  /
                 if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
-                  Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
+                  Emit_Arithmetic_Binary_Instruction (CD, Mult_OP, X.TYP);
                 else
                   if X.TYP = Ints then
                     Forbid_Type_Coercion (CD, "left operand's type is integer, right operand's isn't");
@@ -367,7 +362,7 @@ package body HAC.Parser.Expressions is
                 end if;
               when Power =>
                 if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
-                  Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
+                  Emit_Arithmetic_Binary_Instruction (CD, Mult_OP, X.TYP);
                 elsif X.TYP = Floats and Y.TYP = Ints then
                   Emit (CD, k_Power_Float_Integer);
                 else
@@ -380,36 +375,38 @@ package body HAC.Parser.Expressions is
         end loop;
       end Term;
 
+      Adding_OP : KeyWSymbol;
+      Y         : Exact_Typ;
     begin  --  Simple_Expression
       if Plus_Minus (CD.Sy) then
         --
         --  Unary + , -      RM 4.5 (5), 4.4 (4)
         --
-        OP := CD.Sy;
+        Adding_OP := CD.Sy;
         InSymbol (CD);
-        Term (FSys + Plus_Minus, X);
-        if OP = Plus and then X.TYP = String_Literals then  --  +"Hello"
+        Term (FSys_SE + Plus_Minus, X);
+        if Adding_OP = Plus and then X.TYP = String_Literals then  --  +"Hello"
           Emit_Std_Funct (CD, SF_Literal_to_VString);
           X.TYP := VStrings;
         elsif X.TYP not in Numeric_Typ then
           Error (CD, err_illegal_type_for_arithmetic_expression);
-        elsif OP = Minus then
+        elsif Adding_OP = Minus then
           Emit_Unary_Minus (CD, X.TYP);
         end if;
       else
-        Term (FSys + Binary_Adding_Operators, X);
+        Term (FSys_SE + Binary_Adding_Operators, X);
       end if;
       --
       --  We collect here eventual terms: a {+ b}      RM 4.4 (4)
       --
       while Binary_Adding_Operators (CD.Sy) loop
-        OP := CD.Sy;
+        Adding_OP := CD.Sy;
         InSymbol (CD);
-        Term (FSys + Binary_Adding_Operators, Y);
+        Term (FSys_SE + Binary_Adding_Operators, Y);
         if X.TYP = NOTYP or Y.TYP = NOTYP then
           null;  --  Something is already wrong at this point; nothing to check or emit.
         else
-          case OP is
+          case Adding_OP is
             when OR_Symbol =>
               if X.TYP = Bools and Y.TYP = Bools then
                 Emit (CD, k_OR_Boolean);
@@ -427,12 +424,12 @@ package body HAC.Parser.Expressions is
             when Plus | Minus =>
               if X.TYP in Numeric_Typ and then Y.TYP in Numeric_Typ then
                 if X.TYP = Y.TYP then
-                  Emit_Arithmetic_Binary_Instruction (CD, OP, X.TYP);
+                  Emit_Arithmetic_Binary_Instruction (CD, Adding_OP, X.TYP);
                 else
                   Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
                 end if;
               else
-                Issue_Operator_Undefined_Error (OP, X, Y);
+                Issue_Undefined_Operator_Error (Adding_OP, X, Y);
               end if;
             when Ampersand_Symbol =>
               --  Concatenation. RM References: Unbounded_String.
@@ -464,7 +461,7 @@ package body HAC.Parser.Expressions is
                 Emit_Std_Funct (CD, SF_Float_VString_Concat);
                 X.TYP := VStrings;
               else
-                Issue_Operator_Undefined_Error (OP, X, Y);
+                Issue_Undefined_Operator_Error (Adding_OP, X, Y);
               end if;
             when others =>  --  Doesn't happen: Binary_Adding_Operators(OP) is True.
               null;
@@ -472,6 +469,9 @@ package body HAC.Parser.Expressions is
         end if;
       end loop;
     end Simple_Expression;
+
+    Rel_OP : KeyWSymbol;
+    Y      : Exact_Typ;
 
     procedure Issue_Comparison_Type_Mismatch_Error is
     begin
@@ -484,7 +484,7 @@ package body HAC.Parser.Expressions is
     --  We collect here an eventual comparison: a {= b}
     --
     if CD.Sy in Comparison_Operator then
-      OP := CD.Sy;
+      Rel_OP := CD.Sy;
       InSymbol (CD);
       Simple_Expression (FSys, Y);
       if X.TYP = Ints and Y.TYP = Floats then
@@ -503,12 +503,12 @@ package body HAC.Parser.Expressions is
         --  Y is on top of the stack, we turn it into a VString.
         --  If this becomes a perfomance issue we could consider an opcode for (VStr op Lit_Str).
         Emit_Std_Funct (CD, SF_Literal_to_VString);
-        Emit_Comparison_Instruction (CD, OP, VStrings);
+        Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
       elsif X.TYP = Y.TYP then
         if PCode_Atomic_Typ (X.TYP) then
-          Emit_Comparison_Instruction (CD, OP, X.TYP);
+          Emit_Comparison_Instruction (CD, Rel_OP, X.TYP);
         else
-          Issue_Operator_Undefined_Error (OP, X, Y);
+          Issue_Undefined_Operator_Error (Rel_OP, X, Y);
         end if;
       else
         Issue_Comparison_Type_Mismatch_Error;

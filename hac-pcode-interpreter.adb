@@ -84,8 +84,6 @@ package body HAC.PCode.Interpreter is
     --  Stack
     S : array (1 .. HAC.Data.StMax) of Data_Type;
 
-    type Display_type is array (1 .. HAC.Data.Nesting_Level_Max) of Integer;
-
     type Task_Control_Block is record   --  Task Control Block
       --  index of current top of stack
       T : Integer;
@@ -106,7 +104,7 @@ package body HAC.PCode.Interpreter is
       --  time last run end (fairness)
       LASTRUN : Time;
       --  binding
-      DISPLAY : Display_type;
+      DISPLAY : Display_Type;
       --  stack overflow if exceeded
       STACKSIZE : Integer;
       --  id of object suspended on
@@ -472,13 +470,13 @@ package body HAC.PCode.Interpreter is
 
     procedure Init_other_tasks is
     begin
-      for CurTask in 1 .. CD.Tasks_Definitions_Count loop
+      for Task_To_Init in 1 .. CD.Tasks_Definitions_Count loop
         declare
-          Curr_TCB : Task_Control_Block renames TCB(CurTask);
+          Curr_TCB : Task_Control_Block renames TCB(Task_To_Init);
         begin
-          H1 := CD.Tasks_Definitions_Table (CurTask) ;
+          H1 := CD.Tasks_Definitions_Table (Task_To_Init) ;
           Curr_TCB.PC := CD.IdTab (H1).Adr_or_Sz ;
-          Curr_TCB.B := TCB (CurTask - 1).STACKSIZE + 1 ;
+          Curr_TCB.B := TCB (Task_To_Init - 1).STACKSIZE + 1 ;
           Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).Block_Ref).VSize - 1 ;
           S (Curr_TCB.B + 1).I := 0 ;
           S (Curr_TCB.B + 2).I := 0 ;
@@ -497,10 +495,10 @@ package body HAC.PCode.Interpreter is
         end;
       end loop;
       --  Initially no queued entry calls
-      for H1 in 1 .. CD.Entries_Count loop
-        EList (H1).Task_Index := CD.IdTab (CD.Entries_Table (H1)).Adr_or_Sz ;  --  Task index
-        EList (H1).First := null ;
-        EList (H1).Last  := null ;
+      for E_Idx in 1 .. CD.Entries_Count loop
+        EList (E_Idx).Task_Index := CD.IdTab (CD.Entries_Table (E_Idx)).Adr_or_Sz ;  --  Task index
+        EList (E_Idx).First := null ;
+        EList (E_Idx).Last  := null ;
       end loop;
       TActive := CD.Tasks_Definitions_Count ;  --  All tasks are active initially
       CurTask := 0 ;  --  IT WAS -1 ?
@@ -1064,8 +1062,8 @@ package body HAC.PCode.Interpreter is
         S (H1 + 2).I := Curr_TCB.DISPLAY (H3); --  static link
         S (H1 + 3).I := Curr_TCB.B; --  dynamic link
 
-        for H3 in Curr_TCB.T + 1 .. H4 loop
-          S (H3).I := 0;  --  initialize local vars
+        for H3b in Curr_TCB.T + 1 .. H4 loop
+          S (H3b).I := 0;  --  initialize local vars
         end loop;
         Curr_TCB.B := H1;
         Curr_TCB.T := H4;
@@ -1584,7 +1582,7 @@ package body HAC.PCode.Interpreter is
   end Interpret;
 
   procedure Interpret_on_Current_IO (
-    CD             : Compiler_Data;
+    CD_CIO         : Compiler_Data;
     Argument_Shift : Natural := 0    --  Number of arguments to be skipped
   )
   is
@@ -1625,7 +1623,7 @@ package body HAC.PCode.Interpreter is
       );
 
   begin
-    Interpret_on_Current_IO_Instance (CD);
+    Interpret_on_Current_IO_Instance (CD_CIO);
   end Interpret_on_Current_IO;
 
 end HAC.PCode.Interpreter;

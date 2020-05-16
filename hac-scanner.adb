@@ -5,9 +5,6 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 package body HAC.Scanner is
 
-  package IIO is new Integer_IO (Integer);
-  use IIO;
-
   type SSTBzz is array (Character'(' ') .. ']') of KeyWSymbol;
 
   Special_Symbols : constant SSTBzz :=
@@ -205,7 +202,7 @@ package body HAC.Scanner is
         end if;
         CD.Line_Count := CD.Line_Count + 1;
         if CD.listing_requested then
-          Put (CD.listing, CD.Line_Count, 4);
+          HAC.Data.IIO.Put (CD.listing, CD.Line_Count, 4);
           Put (CD.listing, "  ");
           --  Put (Listing, LC, 5);
           --  Put (Listing, "  ");

@@ -97,7 +97,7 @@ package body HAC.Parser.Standard_Functions is
       end loop;
     end Parse_Arguments;
     --
-    procedure Parse_Information_Function (Code : SF_Code) is
+    procedure Parse_File_Information_Function (FIF_Code : SF_Code) is
       file_parameter : Boolean;
     begin
       if CD.Sy = LParent then
@@ -113,8 +113,8 @@ package body HAC.Parser.Standard_Functions is
         --  Niladic End_Of_File, End_Of_Line without parameter.
         file_parameter := False;
       end if;
-      Emit2 (CD, k_Standard_Functions, Boolean'Pos (file_parameter), SF_Code'Pos (Code));
-    end Parse_Information_Function;
+      Emit2 (CD, k_Standard_Functions, Boolean'Pos (file_parameter), SF_Code'Pos (FIF_Code));
+    end Parse_File_Information_Function;
     --
     procedure Adjustments_to_Parameter_Types is
     begin
@@ -169,7 +169,7 @@ package body HAC.Parser.Standard_Functions is
     Prepare_Accepted_Parameter_Types;
     --
     if Code in SF_File_Information then
-      Parse_Information_Function (Code);
+      Parse_File_Information_Function (Code);
     else
       if Args > 0 then
         Need (CD, LParent, err_missing_an_opening_parenthesis);

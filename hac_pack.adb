@@ -147,9 +147,9 @@ package body HAC_Pack is
     return VStrings_Pkg.Index (Source, To_String (Pattern));
   end;
 
-  function "*" (Left : Natural; Right : String) return VString is
+  function "*" (Num : Natural; Pattern : String) return VString is
   begin
-    return +Ada.Strings.Fixed."*" (Left, Right);
+    return +Ada.Strings.Fixed."*" (Num, Pattern);
   end "*";
 
   function Trim_Left  (Source : VString) return VString is
@@ -168,10 +168,10 @@ package body HAC_Pack is
   end;
 
   function Image (I : Integer) return VString is
-    function HAC_Image is
+    function HAC_Image_for_Integer is
       new HAC_Pack.HAC_Generic_Image (Abstract_Integer => Integer);
   begin
-    return +HAC_Image (I);
+    return +HAC_Image_for_Integer (I);
   end Image;
 
   function Image (F : Real) return VString is
@@ -260,10 +260,10 @@ package body HAC_Pack is
   procedure  Put (F    : in  Real;
                   Fore : Integer := RIO.Default_Fore;
                   Aft  : Integer := RIO.Default_Aft;
-                  Exp  : Integer := RIO.Default_Exp)
+                  Expo : Integer := RIO.Default_Exp)
   is
   begin
-    RIO.Put (F, Fore, Aft, Exp);
+    RIO.Put (F, Fore, Aft, Expo);
   end;
 
   procedure Put (B     : in  Boolean;
@@ -304,10 +304,10 @@ package body HAC_Pack is
   procedure Put_Line (F    : in  Real;
                       Fore : Integer := RIO.Default_Fore;
                       Aft  : Integer := RIO.Default_Aft;
-                      Exp  : Integer := RIO.Default_Exp)
+                      Expo : Integer := RIO.Default_Exp)
   is
   begin
-    Put (F, Fore, Aft, Exp);
+    Put (F, Fore, Aft, Expo);
     New_Line;
   end;
 

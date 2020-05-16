@@ -21,7 +21,7 @@ procedure HAX is
   asm_dump_file_name : Unbounded_String;
   cmp_dump_file_name : Unbounded_String;
 
-  procedure Compile_and_interpret_file (name: String; arg_pos : Positive) is
+  procedure Compile_and_interpret_file (Ada_file_name: String; arg_pos : Positive) is
     f : Ada.Streams.Stream_IO.File_Type;
     t1, t2 : Time;
     HAC_margin_1 : constant String := "*******[ HAX ]*******   ";
@@ -34,15 +34,15 @@ procedure HAX is
       when 0 =>
         null;
       when 1 =>
-        Put_Line (HAC_margin_2 & "Compiling and running from file: " & name);
+        Put_Line (HAC_margin_2 & "Compiling and running from file: " & Ada_file_name);
       when others =>
         New_Line;
         Put_Line (HAC_margin_1 & version_info);
         Put_Line (HAC_margin_1 & caveat & " Type ""hax"" for license.");
-        Put_Line (HAC_margin_2 & "Compiling from file: " & name);
+        Put_Line (HAC_margin_2 & "Compiling from file: " & Ada_file_name);
     end case;
-    Open (f, In_File, name);
-    Set_Source_Stream (CD, Stream(f), name);
+    Open (f, In_File, Ada_file_name);
+    Set_Source_Stream (CD, Stream(f), Ada_file_name);
     t1 := Clock;
     Compile (
       CD,
@@ -79,7 +79,7 @@ procedure HAX is
       Put_Line (
         Current_Error,
         HAC_margin_3 &
-        "Error: file """ & name &
+        "Error: file """ & Ada_file_name &
         """ not found (perhaps in exm or test subdirectory ?)");
   end Compile_and_interpret_file;
 

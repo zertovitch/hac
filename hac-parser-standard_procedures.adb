@@ -85,9 +85,9 @@ package body HAC.Parser.Standard_Procedures is
       end if;
     end Parse_Puts;
     --
-    procedure File_I_O_Call (Code : SP_Code) is
+    procedure File_I_O_Call (FIO_Code : SP_Code) is
     begin
-      Emit1 (CD, k_File_I_O, SP_Code'Pos (Code));
+      Emit1 (CD, k_File_I_O, SP_Code'Pos (FIO_Code));
     end;
 
     procedure Set_Abstract_Console is
