@@ -1,94 +1,30 @@
-with HAC.Parser.Calls;                  use HAC.Parser.Calls;
-with HAC.Parser.Expressions;            use HAC.Parser.Expressions;
-with HAC.Parser.Helpers;                use HAC.Parser.Helpers;
-with HAC.Parser.Tasking;
-with HAC.PCode;                         use HAC.PCode;
-with HAC.Scanner;
-with HAC.Parser.Standard_Procedures;
-with HAC.UErrors;                       use HAC.UErrors;
+with HAC.Parser.Calls,
+     HAC.Parser.Enter_Def,
+     HAC.Parser.Expressions,
+     HAC.Parser.Helpers,
+     HAC.Parser.Standard_Procedures,
+     HAC.Parser.Tasking,
+     HAC.Scanner,
+     HAC.UErrors;
 
 package body HAC.Parser is
-
-  use HAC.Compiler, HAC.Data;
-
-  ------------------------------------------------------------------
-  ------------------------------------------------------Enter_Block-
-  procedure Enter_Block (
-    CD    : in out HAC.Compiler.Compiler_Data;
-    Tptr  :        Integer
-  )
-  is
-  begin
-    if CD.Blocks_Count = BMax then
-      Fatal (PROCEDURES);  --  Exception is raised there.
-    end if;
-    CD.Blocks_Count := CD.Blocks_Count + 1;
-    declare
-      New_B : BTabEntry renames CD.Blocks_Table (CD.Blocks_Count);
-    begin
-      New_B.Id                := CD.IdTab (Tptr).Name;
-      New_B.Last_Id_Idx       := 0;
-      New_B.Last_Param_Id_Idx := 0;
-      New_B.SrcFrom           := CD.Line_Count;
-    end;
-  end Enter_Block;
-
-  ------------------------------------------------------------------
-  ------------------------------------------------------------Enter-
-  procedure Enter (
-    CD               : in out HAC.Compiler.Compiler_Data;
-    Level            :        HAC.PCode.Nesting_level;
-    Id, Id_with_case :        HAC.Data.Alfa;
-    K                :        HAC.Compiler.aObject
-  )
-  is
-    J, L : Integer;
-  begin
-    if CD.Id_Count = Id_Table_Max then
-      Fatal (IDENTIFIERS);  --  Exception is raised there.
-    end if;
-    CD.IdTab (No_Id).Name := Id;  --  Sentinel
-    J                     := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
-    L                     := J;
-    while CD.IdTab (J).Name /= Id loop
-      J := CD.IdTab (J).Link;
-    end loop;
-    --  Follow the chain of identifiers for current Level.
-    if J /= No_Id then
-      Error (CD, err_duplicate_identifier, To_String (Id));
-    else      --  Enter identifier in table IdTab
-      CD.Id_Count            := CD.Id_Count + 1;
-      CD.IdTab (CD.Id_Count) :=
-       (  Name           => Id,
-          Name_with_case => Id_with_case,
-          Link           => L,
-          Obj            => K,
-          Read_only      => False,
-          xTyp           => (TYP => NOTYP, Ref => 0),
-          Block_Ref      => 0,
-          Normal         => True,
-          LEV            => Level,
-          Adr_or_Sz      => 0
-      );
-      --  Update start of identifier chain:
-      CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
-    end if;
-  end Enter;
 
   ------------------------------------------------------------------
   ------------------------------------------------------------Block-
 
   procedure Block (
-    CD                   : in out HAC.Compiler.Compiler_Data;
-    FSys                 :        HAC.Data.Symset;
+    CD                   : in out Compiler.Compiler_Data;
+    FSys                 :        Data.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  5.6 Block Statements
-    Initial_Level        :        HAC.PCode.Nesting_level;
+    Initial_Level        :        PCode.Nesting_level;
     Prt                  :        Integer;
-    Block_ID             :        HAC.Data.Alfa;  --  Name of this block (if any)
-    Block_ID_with_case   :        HAC.Data.Alfa
+    Block_ID             :        Data.Alfa;  --  Name of this block (if any)
+    Block_ID_with_case   :        Data.Alfa
   )
   is
+    use Calls, Compiler, Data, Enter_Def, Expressions, Helpers, PCode, UErrors;
+    --
     Level : Nesting_level := Initial_Level;
     procedure InSymbol is begin Scanner.InSymbol (CD); end;
 

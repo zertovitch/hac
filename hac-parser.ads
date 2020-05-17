@@ -13,27 +13,15 @@ with HAC.Compiler, HAC.Data, HAC.PCode;
 
 package HAC.Parser is
 
-  procedure Enter_Block (
-    CD    : in out HAC.Compiler.Compiler_Data;
-    Tptr  :        Integer
-  );
-
-  procedure Enter (
-    CD               : in out HAC.Compiler.Compiler_Data;
-    Level            :        HAC.PCode.Nesting_level;
-    Id, Id_with_case :        HAC.Data.Alfa;
-    K                :        HAC.Compiler.aObject
-  );
-
   procedure Block (
-    CD                   : in out HAC.Compiler.Compiler_Data;
-    FSys                 :        HAC.Data.Symset;
+    CD                   : in out Compiler.Compiler_Data;
+    FSys                 :        Data.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  RM: 5.6 Block Statements
-    Initial_Level        :        HAC.PCode.Nesting_level;
+    Initial_Level        :        PCode.Nesting_level;
     Prt                  :        Integer;
-    Block_ID             :        HAC.Data.Alfa;  --  Name of this block (if any)
-    Block_ID_with_case   :        HAC.Data.Alfa
+    Block_ID             :        Data.Alfa;  --  Name of this block (if any)
+    Block_ID_with_case   :        Data.Alfa
   );
 
   --  E.g. : in the case of a block statement within a function, the value
