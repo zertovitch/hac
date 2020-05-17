@@ -64,12 +64,12 @@ package body HAC.PCode.Interpreter is
 
     type File_Ptr is access Ada.Text_IO.File_Type;
 
-    Abstract_Console : File_Ptr := null;
+    Abstract_Console : constant File_Ptr := null;
 
     type GRegister is new Ada.Finalization.Controlled with record
       --  General register - variant record in Pascal
       --  !! To save place we'll reintroduce a discriminant
-      --     - and conversions in the interpreter.
+      --     - and use aux variables for conversions in the interpreter.
       --
       I   : HAC.Data.HAC_Integer;  --  Also used for Bools, Chars and Enums.
       R   : HAC.Data.HAC_Float;
@@ -77,6 +77,7 @@ package body HAC.PCode.Interpreter is
       Txt : File_Ptr := Abstract_Console;
     end record;
 
+    procedure Allocate_Text_File (R : in out GRegister);
     overriding procedure Finalize (R : in out GRegister);
 
     subtype Data_Type is GRegister;
@@ -161,6 +162,14 @@ package body HAC.PCode.Interpreter is
   end InterDef;
 
   package body InterDef is
+
+    procedure Allocate_Text_File (R : in out GRegister) is
+    begin
+      if R.Txt = null then
+        R.Txt := new Ada.Text_IO.File_Type;
+      end if;
+    end Allocate_Text_File;
+
     overriding procedure Finalize (R : in out GRegister) is
       procedure Free is new Ada.Unchecked_Deallocation (Ada.Text_IO.File_Type, File_Ptr);
     begin
@@ -842,6 +851,18 @@ package body HAC.PCode.Interpreter is
       Pop;
     end Do_Binary_Operator;
 
+    procedure Do_Code_for_Automatic_Initialization is
+      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      use Data;
+      Var_Addr : constant HAC_Integer := S (Curr_TCB.T).I;
+    begin
+      case Typen'Val (IR.Y) is
+        when VStrings   => S (Var_Addr).V := Null_VString;
+        when Text_Files => Allocate_Text_File (S (Var_Addr));
+        when others     => null;
+      end case;
+    end Do_Code_for_Automatic_Initialization;
+
     procedure Fetch_Instruction is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
     begin
@@ -877,6 +898,17 @@ package body HAC.PCode.Interpreter is
           else
             S (Curr_TCB.T) := S (S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y).I);
           end if;
+
+        when k_Duplicate_Top =>
+          --  Duplicate element on top (like "Enter" on HP calculators).
+          Curr_TCB.T := Curr_TCB.T + 1;
+          if Curr_TCB.T > Curr_TCB.STACKSIZE then
+            PS := STKCHK;  --  Stack overflow
+          else
+            S (Curr_TCB.T) := S (Curr_TCB.T - 1);
+          end if;
+
+        when k_Init => Do_Code_for_Automatic_Initialization;
 
         when k_Update_Display_Vector =>
           --  Emitted at the end of Subprogram_or_Entry_Call, when the

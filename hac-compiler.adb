@@ -334,6 +334,11 @@ package body HAC.Compiler is
           Adr_or_Sz      => X3);
       end Enter;
 
+      procedure Enter_Typ (Name: String; T: Typen) is
+      begin
+        Enter (Name, TypeMark, T, 1);
+      end;
+
       procedure Enter_Std_Funct (Name: String; T: Typen; Code: SF_Code) is
       begin
         Enter (Name, Funktion, T, SF_Code'Pos (Code));
@@ -350,18 +355,18 @@ package body HAC.Compiler is
       Enter ("False",          Declared_Number_or_Enum_Item, Bools, 0);
       Enter ("True",           Declared_Number_or_Enum_Item, Bools, 1);
       --
-      Enter (HAC_Float_Name,   TypeMark, Floats, 1);
-      Enter ("Character",      TypeMark, Chars, 1);
-      Enter ("Boolean",        TypeMark, Bools, 1);
-      Enter (HAC_Integer_Name, TypeMark, Ints, 1);
-      Enter ("String",         TypeMark, String_Literals, 1);  --{ Hathorn }
+      Enter_Typ (HAC_Float_Name,   Floats);
+      Enter_Typ ("Character",      Chars);
+      Enter_Typ ("Boolean",        Bools);
+      Enter_Typ (HAC_Integer_Name, Ints);
+      Enter_Typ ("String",         String_Literals);  --{ Hathorn }
       --  String_Literals is used only for string literals like "abcd".
       --  The "STRING" type identifier is treated separately in the TYP parser
       --  and returns a constrained array of Character.
       --  Here we just reserve the "STRING" identifier at level 0.
-      Enter ("SEMAPHORE",      TypeMark, Ints, 1);      --{ Hathorn }
-      Enter ("TEXT",           TypeMark, Ints, 1);      --{ Schoening }
-      Enter ("VString",        TypeMark, VStrings, 1);  --  2020.05.02
+      Enter_Typ ("SEMAPHORE",      Ints);      --{ Hathorn }
+      Enter_Typ ("VString",        VStrings);    --  2020.05.02
+      --  Enter_Typ ("File_Type",      Text_Files);  --  2020.05.17
       --
       --  Standard functions
       --
@@ -408,6 +413,8 @@ package body HAC.Compiler is
       Enter_Std_Proc ("Get",           SP_Get);
       Enter_Std_Proc ("Get_Immediate", SP_Get_Immediate);
       Enter_Std_Proc ("Get_Line",      SP_Get_Line);
+      Enter_Std_Proc ("Get_F",         SP_Get_F);
+      Enter_Std_Proc ("Get_Line_F",    SP_Get_Line_F);
       Enter_Std_Proc ("Skip_Line",     SP_Skip_Line);
       Enter_Std_Proc ("Put",           SP_Put);
       Enter_Std_Proc ("Put_Line",      SP_Put_Line);
@@ -415,8 +422,8 @@ package body HAC.Compiler is
       Enter_Std_Proc ("Wait",          SP_Wait);
       Enter_Std_Proc ("Signal",        SP_Signal);
       --
-      Enter_Std_Proc ("Reset",         SP_Reset);
-      Enter_Std_Proc ("Rewrite",       SP_Rewrite);
+      Enter_Std_Proc ("Open",          SP_Reset);
+      Enter_Std_Proc ("Create",        SP_Rewrite);
       Enter_Std_Proc ("Close",         SP_Close);
       --
       Enter_Std_Proc ("CursorAt",      SP_CursorAt);

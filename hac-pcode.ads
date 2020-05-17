@@ -24,6 +24,8 @@ package HAC.PCode is
     k_Push_Address,
     k_Push_Value,
     k_Push_Indirect_Value,
+    k_Duplicate_Top,
+    k_Init,
     k_Update_Display_Vector,
     k_Accept_Rendezvous,
     k_End_Rendezvous,
@@ -281,19 +283,24 @@ package HAC.PCode is
   -------------------------------------
 
   type SP_Code is (
+    SP_Close,
+    SP_Push_Abstract_Console,
+    --
+    SP_Reset,
     SP_Get,
     SP_Get_Immediate,
     SP_Get_Line,
+    SP_Get_F,
+    SP_Get_Line_F,
     SP_Skip_Line,
+    --
+    SP_Rewrite,
     SP_Put,
     SP_Put_Line,
     SP_New_Line,
+    --
     SP_Wait,
     SP_Signal,
-    SP_Reset,
-    SP_Rewrite,
-    SP_Close,
-    SP_Push_Abstract_Console,
     --
     SP_CursorAt,
     SP_Quantum,

@@ -113,6 +113,26 @@ package body HAC.Parser.Standard_Procedures is
           Emit (CD, k_Skip_Line);
         end if;
 
+      when SP_Get_F | SP_Get_Line_F =>
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+        --  Here we get the File_Type variable, pushed by value.
+        if Code = SP_Get_Line_F then
+          Emit (CD, k_Duplicate_Top);  --  Re-push the file handle, for the Skip_Line part.
+        end if;
+        if X.TYP /= Text_Files then
+          Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
+        end if;
+        Need (CD, Comma, err_COMMA_missing);
+        Parse_Gets (X);
+        Need (CD, RParent, err_closing_parenthesis_missing);
+        --
+        if Code = SP_Get_Line_F
+          and X.TYP /= VStrings  --  A string is already got via an external Get_Line.
+        then
+          Emit (CD, k_Skip_Line);
+        end if;
+
       when SP_Skip_Line =>
         Set_Abstract_Console;
         Emit (CD, k_Skip_Line);
@@ -159,10 +179,26 @@ package body HAC.Parser.Standard_Procedures is
           if X.TYP /= Text_Files then
             Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
           end if;
+          --
+          --  We pass the File_Type variable as value parameter.
+          --  It could be by reference, with forced initialization of
+          --  the corresponding File_Ptr in the VM.
+          --  But File_Ptr is always initialized anyway, to avoid
+          --  text files being routed accidentally to the abstract
+          --  console (= null) if Create or Open was not called.
+          --
           if Code = SP_Reset or Code = SP_Rewrite then
             Need (CD, Comma, err_COMMA_missing);
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-            Type_Mismatch (CD, err_syntax_error, Found => X, Expected => VStrings_Set);
+            if not VStrings_or_Str_Lit_Set (X.TYP) then
+              Type_Mismatch (CD, err_syntax_error,
+                Found    => X,
+                Expected => VStrings_or_Str_Lit_Set
+              );
+            end if;
+            if X.TYP = String_Literals then
+              Emit_Std_Funct (CD, SF_Literal_to_VString);
+            end if;
           end if;
           File_I_O_Call (Code);
           Need (CD, RParent, err_closing_parenthesis_missing);

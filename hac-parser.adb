@@ -380,14 +380,139 @@ package body HAC.Parser is
 
     ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
-    procedure Assignment (I : Integer; Check_read_only : Boolean);
+    procedure Assignment (I : Integer; Check_read_only : Boolean) is
+      X, Y : Exact_Typ;
+      F    : Opcode;
+      procedure Issue_Type_Mismatch_Error is
+      begin
+        Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
+      end Issue_Type_Mismatch_Error;
+    begin
+      pragma Assert (CD.IdTab (I).Obj = Variable);
+      X := CD.IdTab (I).xTyp;
+      if CD.IdTab (I).Normal then
+        F := k_Push_Address;
+      else
+        F := k_Push_Value;
+      end if;
+      Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr_or_Sz);
+      if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
+        Selector (CD, Level, Becomes_EQL + FSys, X);
+      end if;
+      if CD.Sy = Becomes then
+        InSymbol;
+      elsif CD.Sy = EQL then
+        --  Common mistake by BASIC or C programmers.
+        Error (CD, err_EQUALS_instead_of_BECOMES);
+        InSymbol;
+      else
+        Error (CD, err_BECOMES_missing);
+      end if;
+      if Check_read_only and then CD.IdTab (I).Read_only then
+        Error (CD, err_cannot_modify_constant_or_in_parameter);
+      end if;
+      Expression (CD, Level, Semicolon_Set, Y);
+      if X.TYP = Y.TYP then
+        if X.TYP in Standard_Typ then
+          Emit (CD, k_Store);
+        elsif X.Ref /= Y.Ref then
+          Issue_Type_Mismatch_Error;  --  E.g. different arrays, enums, ...
+        else
+          case X.TYP is
+            when Arrays =>
+              Emit1 (CD, k_Copy_Block, CD.Arrays_Table (X.Ref).Array_Size);
+            when Records =>
+              Emit1 (CD, k_Copy_Block, CD.Blocks_Table (X.Ref).VSize);
+            when Enums =>
+              --  Behaves like a "Standard_Typ".
+              --  We have checked that X.Ref = Y.Ref (same actual type).
+              Emit (CD, k_Store);
+            when others =>
+              raise Internal_error with "Assignment: X := Y on unsupported Typ ?";
+          end case;
+        end if;
+      elsif X.TYP = Floats and Y.TYP = Ints then
+        Forbid_Type_Coercion (CD, "integer value assigned to floating-point variable");
+        Emit1 (CD, k_Integer_to_Float, 0);
+        Emit (CD, k_Store);
+      elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
+        Emit1 (CD, k_String_Literal_Assignment, CD.Arrays_Table (X.Ref).Array_Size);
+      elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
+        Error (CD, err_string_to_vstring_assignment);
+      elsif X.TYP = NOTYP then
+        if CD.Err_Count = 0 then
+          raise Internal_error with "Assignment: assigned variable (X) is typeless";
+        else
+          null;  --  All right, there were already enough compilation error messages...
+        end if;
+      elsif Y.TYP = NOTYP then
+        if CD.Err_Count = 0 then
+          raise Internal_error with "Assignment: assigned value (Y) is typeless";
+        else
+          null;  --  All right, there were already enough compilation error messages...
+        end if;
+      else
+        Issue_Type_Mismatch_Error;
+        --  NB: We are in the X.TYP /= Y.TYP case.
+      end if;
+    end Assignment;
 
     ------------------------------------------------------------------
     --------------------------------------------------Var_Declaration-
     procedure Var_Declaration is
       --  This procedure processes both Variable and Constant declarations.
       procedure Single_Var_Declaration is
-        T0, T1, Sz, T0i, LC0, LC1 : Integer;
+        procedure Initialized_Constant_or_Variable (
+          explicit       : Boolean;
+          Id_From, Id_To : Integer
+        )
+        is
+          LC0 : Integer :=  CD.LC;
+          LC1 : Integer;
+        begin
+          --  Create constant or variable initialization ObjCode
+          if explicit then
+            --  The new variables Id's are in the range Id_From .. Id_To.
+            --  We do an assignment to the last one.
+            --  Example: for  "a, b, c : Real := F (x);"  we do  "c := F (x)".
+            Assignment (Id_To, Check_read_only => False);
+            --  Id_To has been assigned; we copy the value of Id_To to Id_From .. Id_To - 1.
+            --  In the example:  "a := c"  and  "b := c".
+            for Var_Id in Id_From .. Id_To - 1 loop
+              Emit2 (CD, k_Push_Address, Operand_1_Type (CD.IdTab (Var_Id).LEV),
+                                                         CD.IdTab (Var_Id).Adr_or_Sz);
+              Emit2 (CD, k_Push_Value, Operand_1_Type (CD.IdTab (Id_To).LEV),
+                                                       CD.IdTab (Id_To).Adr_or_Sz);
+              Emit (CD, k_Store);
+              --  !! O-o... can't work for composite types (arrays or records) !!
+            end loop;
+          else
+            for Var_Id in Id_From .. Id_To loop
+              declare
+                Var : IdTabEntry renames CD.IdTab (Var_Id);
+              begin
+                if Auto_Init_Typ (Var.xTyp.TYP) then
+                  Emit2 (CD, k_Push_Address, Operand_1_Type (Var.LEV), Var.Adr_or_Sz);
+                  Emit1 (CD, k_Init, Typen'Pos (Var.xTyp.TYP));
+                end if;
+                --  !!  TBD: Must handle composite types (arrays or records) too...
+              end;
+            end loop;
+          end if;
+          --
+          LC1 := CD.LC;
+          --  Reset ObjCode pointer as if ObjCode had not been generated
+          CD.LC := LC0;
+          --  Copy ObjCode to end of ObjCode table in reverse order
+          ICode := ICode + (LC1 - LC0);  --  Size of initialization ObjCode
+          while LC0 < LC1 loop
+            CD.ObjCode (CD.CMax) := CD.ObjCode (LC0);
+            CD.CMax              := CD.CMax - 1;
+            LC0                  := LC0 + 1;
+          end loop;
+        end Initialized_Constant_or_Variable;
+        --
+        T0, T1, Sz, T0i           : Integer;
         xTyp                      : Exact_Typ;
         is_constant, is_typed,
         is_untyped_constant       : Boolean;
@@ -418,6 +543,7 @@ package body HAC.Parser is
         Test (CD, Becomes_EQL_Semicolon, Empty_Symset, err_incorrectly_used_symbol);
         --
         if CD.Sy = EQL then
+          --  Common mistake by BASIC or C programmers.
           Error (CD, err_EQUALS_instead_of_BECOMES);
           CD.Sy := Becomes;
         end if;
@@ -465,37 +591,21 @@ package body HAC.Parser is
           end loop;  --  While T0 < T1
         end if;
         --
+        if CD.Sy = EQL and not is_untyped_constant then
+          Error (CD, err_EQUALS_instead_of_BECOMES);
+          CD.Sy := Becomes;
+        end if;
         if is_constant and is_typed then
           --  For typed constants, the ":=" is required and consumed with the Assignment below.
-          Test (CD, Becomes_EQL, Empty_Symset, err_BECOMES_missing);
-          if CD.Sy = EQL then
-            Error (CD, err_EQUALS_instead_of_BECOMES);
-            CD.Sy := Becomes;
-          end if;
+          Test (CD, Becomes_Set, Empty_Symset, err_BECOMES_missing);
         end if;
         --
-        if CD.Sy = Becomes and not is_untyped_constant then
-          --  Create constant or variable initialization ObjCode
-          LC0 := CD.LC;
-          Assignment (T1, Check_read_only => False);
-          T0 := T0i;
-          while T0 < T1 - 1 loop
-            T0 := T0 + 1;
-            Emit2 (CD, k_Push_Address, Operand_1_Type (CD.IdTab (T0).LEV), CD.IdTab (T0).Adr_or_Sz);
-            Emit2 (CD, k_Push_Value,   Operand_1_Type (CD.IdTab (T1).LEV), CD.IdTab (T1).Adr_or_Sz);
-            Emit (CD, k_Store);
-          end loop;
-          --
-          LC1 := CD.LC;
-          --  reset ObjCode pointer as if ObjCode had not been generated
-          CD.LC := LC0;
-          --  Copy ObjCode to end of ObjCode table in reverse order
-          ICode := ICode + (LC1 - LC0);  --  Size of initialization ObjCode
-          while LC0 < LC1 loop
-            CD.ObjCode (CD.CMax) := CD.ObjCode (LC0);
-            CD.CMax              := CD.CMax - 1;
-            LC0                  := LC0 + 1;
-          end loop;
+        if not is_untyped_constant then
+          Initialized_Constant_or_Variable (
+            explicit => CD.Sy = Becomes,
+            Id_From  => T0i + 1,
+            Id_To    => T1
+          );
         end if;
         Test_Semicolon (CD, FSys);
       end Single_Var_Declaration;
@@ -533,85 +643,6 @@ package body HAC.Parser is
         Emit1 (CD, k_Exit_Call, CallSTDP);
       end if;
     end Proc_Func_Declaration;
-
-    ------------------------------------------------------------------
-    -------------------------------------------------------Assignment-
-    procedure Assignment (I : Integer; Check_read_only : Boolean) is
-      X, Y : Exact_Typ;
-      F    : Opcode;
-      procedure Issue_Type_Mismatch_Error is
-      begin
-        Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
-      end Issue_Type_Mismatch_Error;
-    begin
-      pragma Assert (CD.IdTab (I).Obj = Variable);
-      X := CD.IdTab (I).xTyp;
-      if CD.IdTab (I).Normal then
-        F := k_Push_Address;
-      else
-        F := k_Push_Value;
-      end if;
-      Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr_or_Sz);
-      if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-        Selector (CD, Level, Becomes_EQL + FSys, X);
-      end if;
-      if CD.Sy = Becomes then
-        InSymbol;
-      elsif CD.Sy = EQL then
-        --  Common mistake by BASIC or C programmers.
-        Error (CD, err_EQUALS_instead_of_BECOMES);
-        InSymbol;
-      else
-        Error (CD, err_BECOMES_missing);
-      end if;
-      if Check_read_only and then CD.IdTab (I).Read_only then
-        Error (CD, err_cannot_modify_constant_or_in_parameter);
-      end if;
-      Expression (CD, Level, Semicolon_Set, Y);
-      if X.TYP = Y.TYP then
-        if X.TYP in Standard_Typ then
-          Emit (CD, k_Store);
-        elsif X.Ref /= Y.Ref then
-          Issue_Type_Mismatch_Error;
-        else
-          case X.TYP is
-            when Arrays =>
-              Emit1 (CD, k_Copy_Block, CD.Arrays_Table (X.Ref).Array_Size);
-            when Records =>
-              Emit1 (CD, k_Copy_Block, CD.Blocks_Table (X.Ref).VSize);
-            when Enums =>
-              --  Behaves like a "Standard_Typ".
-              --  We have checked that X.Ref = Y.Ref (same actual type).
-              Emit (CD, k_Store);
-            when others =>
-              raise Internal_error with "Assignment: X := Y on unsupported Typ ?";
-          end case;
-        end if;
-      elsif X.TYP = Floats and Y.TYP = Ints then
-        Forbid_Type_Coercion (CD, "integer value assigned to floating-point variable");
-        Emit1 (CD, k_Integer_to_Float, 0);
-        Emit (CD, k_Store);
-      elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
-        Emit1 (CD, k_String_Literal_Assignment, CD.Arrays_Table (X.Ref).Array_Size);
-      elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
-        Error (CD, err_string_to_vstring_assignment);
-      elsif X.TYP = NOTYP then
-        if CD.Err_Count = 0 then
-          raise Internal_error with "Assignment: assigned variable (X) is typeless";
-        else
-          null;  --  All right, there were already enough compilation error messages...
-        end if;
-      elsif Y.TYP = NOTYP then
-        if CD.Err_Count = 0 then
-          raise Internal_error with "Assignment: assigned value (Y) is typeless";
-        else
-          null;  --  All right, there were already enough compilation error messages...
-        end if;
-      else
-        Issue_Type_Mismatch_Error;
-        --  NB: We are in the X.TYP /= Y.TYP case.
-      end if;
-    end Assignment;
 
     ------------------------------------------------------------------
     --------------------------------------------------------Statement--

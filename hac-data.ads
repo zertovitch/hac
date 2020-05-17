@@ -272,6 +272,9 @@ package HAC.Data is
 
   subtype Numeric_Typ is Typen range Ints .. Floats;  --  RM 3.2 (1)
 
+  Auto_Init_Typ : constant Typ_Set :=
+    (VStrings | Text_Files => True, others => False);
+
   subtype Index is Integer range -XMax .. +XMax;
 
   ------------------------------

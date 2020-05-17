@@ -114,6 +114,7 @@ package HAC.Parser.Helpers is
 
   --  Specific singletons:
 
+  Becomes_Set   : constant Symset := (Becomes    => True, others => False);
   Colon_Set     : constant Symset := (Colon      => True, others => False);
   END_Set       : constant Symset := (END_Symbol => True, others => False);
   IDent_Set     : constant Symset := (IDent      => True, others => False);
