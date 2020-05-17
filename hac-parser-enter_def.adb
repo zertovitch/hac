@@ -1,4 +1,5 @@
 with HAC.Parser.Helpers,
+     HAC.Scanner,
      HAC.UErrors;
 
 package body HAC.Parser.Enter_Def is
@@ -58,7 +59,7 @@ package body HAC.Parser.Enter_Def is
           Link           => L,
           Obj            => K,
           Read_only      => False,
-          xTyp           => (TYP => NOTYP, Ref => 0),
+          xTyp           => Type_Undefined,
           Block_Ref      => 0,
           Normal         => True,
           LEV            => Level,
@@ -68,5 +69,66 @@ package body HAC.Parser.Enter_Def is
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
     end if;
   end Enter;
+
+  ------------------------------------------------------------------
+  -------------------------------------------------------EnterArray-
+
+  procedure Enter_Array (
+    CD       : in out Compiler.Compiler_Data;
+    Index_TP :        Exact_Typ;
+    L, H     :        Integer
+  )
+  is
+  begin
+    if L > H then
+      Error (CD,
+        err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)", -- !!
+        stop_on_error => True
+      );
+    end if;
+    if abs (L) > XMax or abs (H) > XMax then
+      Error (CD,
+        err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",
+        stop_on_error => True
+      );
+    end if;
+    if CD.Arrays_Count = AMax then
+      Fatal (ARRAYS);  --  Exception is raised there.
+    end if;
+    CD.Arrays_Count := CD.Arrays_Count + 1;
+    declare
+      New_A : ATabEntry renames CD.Arrays_Table (CD.Arrays_Count);
+    begin
+      New_A.Index_xTyp := Index_TP;
+      New_A.Low        := L;
+      New_A.High       := H;
+    end;
+  end Enter_Array;
+
+  ------------------------------------------------------------------
+  --------------------------------------------------Enter_Variables-
+
+  procedure Enter_Variables (
+    CD    : in out Compiler.Compiler_Data;
+    Level :        PCode.Nesting_level
+  )
+  is
+    procedure Enter_Variable is
+    begin
+      if CD.Sy = IDent then
+        Enter (CD, Level, CD.Id, CD.Id_with_case, Variable);
+        Scanner.InSymbol (CD);
+      else
+        Error (CD, err_identifier_missing);
+      end if;
+    end Enter_Variable;
+    --
+  begin
+    Enter_Variable;
+    while CD.Sy = Comma loop  --  ','  in  "a, b, c : Integer;"
+      Scanner.InSymbol (CD);
+      Enter_Variable;
+    end loop;
+  end Enter_Variables;
 
 end HAC.Parser.Enter_Def;

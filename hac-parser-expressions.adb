@@ -161,7 +161,7 @@ package body HAC.Parser.Expressions is
           err : Compile_Error;
           Ident_Index : Integer;
         begin  --  Factor
-          X := (TYP => NOTYP, Ref => 0);
+          X := Type_Undefined;
           Test (CD, Factor_Begin_Symbol + StrCon, FSys_Fact, err_factor_unexpected_symbol);
           if CD.Sy = StrCon then
             X.TYP := String_Literals;

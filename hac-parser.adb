@@ -34,48 +34,6 @@ package body HAC.Parser is
     ICode   : Integer;  -- Size of initialization ObjCode generated
 
     ------------------------------------------------------------------
-    -------------------------------------------------------EnterArray-
-
-    procedure Enter_Array (Index_TP : Exact_Typ; L, H : Integer) is
-    begin
-      if L > H then
-        Error (CD,
-          err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)", -- !!
-          stop_on_error => True
-        );
-      end if;
-      if abs (L) > XMax or abs (H) > XMax then
-        Error (CD,
-          err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",
-          stop_on_error => True
-        );
-      end if;
-      if CD.Arrays_Count = AMax then
-        Fatal (ARRAYS);  --  Exception is raised there.
-      end if;
-      CD.Arrays_Count := CD.Arrays_Count + 1;
-      declare
-        New_A : ATabEntry renames CD.Arrays_Table (CD.Arrays_Count);
-      begin
-        New_A.Index_xTyp := Index_TP;
-        New_A.Low        := L;
-        New_A.High       := H;
-      end;
-    end Enter_Array;
-
-    ------------------------------------------------------------------
-    ---------------------------------------------------Enter_Variable-
-    procedure Enter_Variable is
-    begin
-      if CD.Sy = IDent then
-        Enter (CD, Level, CD.Id, CD.Id_with_case, Variable);
-        InSymbol;
-      else
-        Error (CD, err_identifier_missing);
-      end if;
-    end Enter_Variable;
-
-    ------------------------------------------------------------------
     ----------------------------------Number_Declaration_or_Enum_Item-
     procedure Number_Declaration_or_Enum_Item (FSys_ND : Symset; C : out Constant_Rec) is
       --  This covers number declarations (RM 3.3.2) and enumeration items (RM 3.5.1).
@@ -85,7 +43,7 @@ package body HAC.Parser is
       X, Sign : Integer;
       signed : Boolean := False;
     begin
-      C.TP := (NOTYP, 0);
+      C.TP := Type_Undefined;
       C.I  := 0;
       Test (CD, Constant_Definition_Begin_Symbol, FSys_ND, err_illegal_symbol_for_a_number_declaration);
       if not Constant_Definition_Begin_Symbol (CD.Sy) then
@@ -169,7 +127,7 @@ package body HAC.Parser is
           Error (CD, err_illegal_array_bounds, "bound types do not match");
           Higher_Bound.I := Lower_Bound.I;
         end if;
-        Enter_Array (Lower_Bound.TP, Lower_Bound.I, Higher_Bound.I);
+        Enter_Array (CD, Lower_Bound.TP, Lower_Bound.I, Higher_Bound.I);
         Arr_Tab_Ref := CD.Arrays_Count;
         if String_Constrained_Subtype then
           --  We define String (L .. H) exactly as an "array (L .. H) of Character".
@@ -242,11 +200,7 @@ package body HAC.Parser is
             Error (CD, err_identifier_missing, stop_on_error => True);
           else  --  RM 3.8 Component declaration
             T0 := CD.Id_Count;
-            Enter_Variable;
-            while CD.Sy = Comma loop  --  ','  in  "a, b, c : Integer;"
-              InSymbol;
-              Enter_Variable;
-            end loop;
+            Enter_Variables (CD, Level);
             Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
             T1 := CD.Id_Count;
             Type_Definition (FSys_TD + Comma_END_IDent_Semicolon, Field_Exact_Typ, Field_Size);
@@ -270,36 +224,45 @@ package body HAC.Parser is
         Level := Level - 1;
       end Record_Typ;
 
-      Ident_Index : Integer;
+      procedure String_Sub_Typ is
+        --  Prototype of constraining an array type: String -> String (1 .. 26)
+        --  !! Need to implement general constraints...
+      begin
+        InSymbol;
+        Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
+        xTP.TYP := Arrays;
+        Array_Typ (xTP.Ref, Sz, String_Constrained_Subtype => True);
+      end String_Sub_Typ;
 
-    begin  --  Type
-      xTP := (TYP => NOTYP, Ref => 0);
+      procedure Sub_Typ is
+        Ident_Index : constant Integer := Locate_Identifier (CD, CD.Id, Level);
+      begin
+        if Ident_Index /= No_Id then
+          if CD.IdTab (Ident_Index).Obj = TypeMark then
+            xTP := CD.IdTab (Ident_Index).xTyp;
+            Sz  := CD.IdTab (Ident_Index).Adr_or_Sz;
+            if xTP.TYP = NOTYP then
+              Error (CD, err_undefined_type);
+            end if;
+          else
+            Error (CD, err_missing_a_type_identifier);
+          end if;
+        end if;
+        InSymbol;
+      end Sub_Typ;
+
+    begin
+      xTP := Type_Undefined;
       Sz := 0;
       Test (CD, Type_Begin_Symbol, FSys_TD, err_missing_ARRAY_RECORD_or_ident);
       if Type_Begin_Symbol (CD.Sy) then
         case CD.Sy is
           when IDent =>
-            if Equal (CD.Id, "STRING") then  --  !! Need to implement general constraints...
-              InSymbol;
-              Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
-              xTP.TYP := Arrays;
-              Array_Typ (xTP.Ref, Sz, String_Constrained_Subtype => True);
+            if Equal (CD.Id, "STRING") then
+              String_Sub_Typ;
             else
-              Ident_Index := Locate_Identifier (CD, CD.Id, Level);
-              if Ident_Index /= No_Id then
-                if CD.IdTab (Ident_Index).Obj = TypeMark then
-                  xTP := CD.IdTab (Ident_Index).xTyp;
-                  Sz  := CD.IdTab (Ident_Index).Adr_or_Sz;
-                  if xTP.TYP = NOTYP then
-                    Error (CD, err_undefined_type);
-                  end if;
-                else
-                  Error (CD, err_missing_a_type_identifier);
-                end if;
-              end if;
-              InSymbol;
+              Sub_Typ;
             end if;
-
           when ARRAY_Symbol =>
             InSymbol;
             Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
@@ -321,7 +284,7 @@ package body HAC.Parser is
     procedure Formal_Parameter_List is
       Sz, X, T0 : Integer;
       ValParam  : Boolean;
-      xTP       : Exact_Typ := (TYP => NOTYP, Ref => 0);
+      xTP       : Exact_Typ := Type_Undefined;
     begin
       InSymbol;  --  Consume '(' symbol.
       Sz := 0;
@@ -329,11 +292,7 @@ package body HAC.Parser is
       --
       while CD.Sy = IDent loop
         T0 := CD.Id_Count;
-        Enter_Variable;
-        while CD.Sy = Comma loop
-          InSymbol;
-          Enter_Variable;
-        end loop;
+        Enter_Variables (CD, Level);
         --
         if CD.Sy = Colon then  --  The ':'  in  "function F (x, y : in Real) return Real;"
           InSymbol;
@@ -410,7 +369,7 @@ package body HAC.Parser is
       T1 := CD.Id_Count;
       InSymbol;
       Need (CD, IS_Symbol, err_IS_missing);
-      xTyp := (TYP => NOTYP, Ref => 0);
+      xTyp := Type_Undefined;
       Sz := 0;
       Type_Definition (Comma_IDent_Semicolon + FSys, xTyp, Sz);
       CD.IdTab (T1).xTyp      := xTyp;
@@ -436,11 +395,7 @@ package body HAC.Parser is
         I_dummy                   : Integer;
       begin
         T0 := CD.Id_Count;
-        Enter_Variable;
-        while CD.Sy = Comma loop
-          InSymbol;
-          Enter_Variable;
-        end loop;
+        Enter_Variables (CD, Level);
         Need (CD, Colon, err_colon_missing);  --  ':'   in   "x, y : Integer;"
         T1 := CD.Id_Count;
         --
@@ -1024,7 +979,7 @@ package body HAC.Parser is
                 Link           => Previous_Last,
                 Obj            => Variable,
                 Read_only      => True,
-                xTyp           => (TYP => NOTYP, Ref => 0),
+                xTyp           => Type_Undefined,
                 Block_Ref      => 0,
                 Normal         => True,
                 LEV            => Level,
@@ -1604,7 +1559,7 @@ package body HAC.Parser is
       CD.IdTab (Prt).Block_Ref := PRB;
     end if;
     CD.Display (Level) := PRB;
-    CD.IdTab (Prt).xTyp := (TYP => NOTYP, Ref => 0);
+    CD.IdTab (Prt).xTyp := Type_Undefined;
     if CD.Sy = LParent and Level > 1 then
       Formal_Parameter_List;
     end if;

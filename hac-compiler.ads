@@ -28,6 +28,8 @@ package HAC.Compiler is
     --  if TYP = Enums,   Ref is an index into the Id table (the type's name).
   end record;
 
+  Type_Undefined : constant Exact_Typ := (TYP => NOTYP, Ref => 0);
+
   -------------------------------------------------------------------------
   ------------------------------------------------------------ATabEntry----
   -------------------------------------------------------------------------

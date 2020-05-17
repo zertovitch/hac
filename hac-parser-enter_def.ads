@@ -25,4 +25,15 @@ package HAC.Parser.Enter_Def is  --  Package around entering definitions.
     K                :        Compiler.aObject
   );
 
+  procedure Enter_Array (
+    CD       : in out Compiler.Compiler_Data;
+    Index_TP :        Compiler.Exact_Typ;
+    L, H     : Integer
+  );
+
+  procedure Enter_Variables (
+    CD    : in out Compiler.Compiler_Data;
+    Level :        PCode.Nesting_level
+  );
+
 end HAC.Parser.Enter_Def;
