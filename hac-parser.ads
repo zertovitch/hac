@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Compiler, HAC.Data;
+with HAC.Compiler, HAC.Data, HAC.PCode;
 
 package HAC.Parser is
 
@@ -20,7 +20,7 @@ package HAC.Parser is
 
   procedure Enter (
     CD               : in out HAC.Compiler.Compiler_Data;
-    Level            :        Integer;
+    Level            :        HAC.PCode.Nesting_level;
     Id, Id_with_case :        HAC.Data.Alfa;
     K                :        HAC.Compiler.aObject
   );
@@ -30,7 +30,7 @@ package HAC.Parser is
     FSys                 :        HAC.Data.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  RM: 5.6 Block Statements
-    Level_A              :        Integer;
+    Initial_Level        :        HAC.PCode.Nesting_level;
     Prt                  :        Integer;
     Block_ID             :        HAC.Data.Alfa;  --  Name of this block (if any)
     Block_ID_with_case   :        HAC.Data.Alfa

@@ -4,6 +4,8 @@ with HAC.Scanner;            use HAC.Scanner;
 
 package body HAC.Parser.Standard_Functions is
 
+  use Compiler, Data, PCode;
+
   SF_Args : constant array (SF_Code) of Natural :=
     ( SF_Niladic            => 0,
       SF_Element |
@@ -15,12 +17,12 @@ package body HAC.Parser.Standard_Functions is
     );
 
   procedure Standard_Function (
-    CD          : in out Compiler_Data;
-    Level       :        Integer;
-    FSys        :        Symset;
+    CD          : in out Compiler.Compiler_Data;
+    Level       :        PCode.Nesting_level;
+    FSys        :        Data.Symset;
     Ident_Index :        Integer;
-    Code        :        SF_Code;
-    Return_Typ  :    out Exact_Typ
+    Code        :        PCode.SF_Code;
+    Return_Typ  :    out Compiler.Exact_Typ
   )
   is
     Max_Args : constant := 3;

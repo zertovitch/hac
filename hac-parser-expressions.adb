@@ -1,6 +1,6 @@
 with HAC.Parser.Calls;                  use HAC.Parser.Calls;
 with HAC.Parser.Helpers;                use HAC.Parser.Helpers;
-with HAC.Parser.Standard_Functions;     use HAC.Parser.Standard_Functions;
+with HAC.Parser.Standard_Functions;
 with HAC.PCode;                         use HAC.PCode;
 with HAC.Scanner;                       use HAC.Scanner;
 with HAC.UErrors;                       use HAC.UErrors;
@@ -11,7 +11,7 @@ package body HAC.Parser.Expressions is
   ---------------------------------------------------------Selector-
   procedure Selector (
     CD    : in out Compiler_Data;
-    Level :        Integer;
+    Level :        PCode.Nesting_level;
     FSys  :        Symset;
     V     : in out Exact_Typ
   )
@@ -103,7 +103,7 @@ package body HAC.Parser.Expressions is
   -------------------------------------------------------Expression-
   procedure Expression (
     CD    : in out Compiler_Data;
-    Level :        Integer;
+    Level :        PCode.Nesting_level;
     FSys  :        Symset;
     X     :    out Exact_Typ
   )
@@ -230,7 +230,8 @@ package body HAC.Parser.Expressions is
                     when Funktion =>
                       X := r.xTyp;
                       if r.LEV = 0 then
-                        Standard_Function (CD, Level, FSys_Fact, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
+                        Standard_Functions.Standard_Function
+                          (CD, Level, FSys_Fact, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
                       else
                         Subprogram_or_Entry_Call (CD, Level, FSys_Fact, Ident_Index, CallSTDP);
                       end if;
@@ -523,7 +524,7 @@ package body HAC.Parser.Expressions is
 
   procedure Boolean_Expression (
     CD    : in out Compiler_Data;
-    Level :        Integer;
+    Level :        PCode.Nesting_level;
     FSys  :        Symset;
     X     :    out Exact_Typ
   )

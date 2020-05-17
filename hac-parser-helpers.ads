@@ -323,7 +323,7 @@ package HAC.Parser.Helpers is
   function Locate_Identifier (
     CD            : in out Compiler_Data;
     Id            : Alfa;
-    Level         : Integer;
+    Level         : HAC.PCode.Nesting_level;
     No_Id_Fail    : Boolean := True;
     stop_on_error : Boolean := False) return Natural;
 

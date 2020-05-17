@@ -4,7 +4,7 @@ with HAC.Parser.Helpers;                use HAC.Parser.Helpers;
 with HAC.Parser.Tasking;
 with HAC.PCode;                         use HAC.PCode;
 with HAC.Scanner;
-with HAC.Parser.Standard_Procedures;    use HAC.Parser.Standard_Procedures;
+with HAC.Parser.Standard_Procedures;
 with HAC.UErrors;                       use HAC.UErrors;
 
 package body HAC.Parser is
@@ -37,7 +37,7 @@ package body HAC.Parser is
   ------------------------------------------------------------Enter-
   procedure Enter (
     CD               : in out HAC.Compiler.Compiler_Data;
-    Level            :        Integer;
+    Level            :        HAC.PCode.Nesting_level;
     Id, Id_with_case :        HAC.Data.Alfa;
     K                :        HAC.Compiler.aObject
   )
@@ -83,13 +83,13 @@ package body HAC.Parser is
     FSys                 :        HAC.Data.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  5.6 Block Statements
-    Level_A              :        Integer;
+    Initial_Level        :        HAC.PCode.Nesting_level;
     Prt                  :        Integer;
     Block_ID             :        HAC.Data.Alfa;  --  Name of this block (if any)
     Block_ID_with_case   :        HAC.Data.Alfa
   )
   is
-    Level : Integer := Level_A;
+    Level : Nesting_level := Initial_Level;
     procedure InSymbol is begin Scanner.InSymbol (CD); end;
 
     Dx      : Integer;  -- data allocation Index
@@ -590,8 +590,8 @@ package body HAC.Parser is
           T0 := T0i;
           while T0 < T1 - 1 loop
             T0 := T0 + 1;
-            Emit2 (CD, k_Push_Address, CD.IdTab (T0).LEV, CD.IdTab (T0).Adr_or_Sz);
-            Emit2 (CD, k_Push_Value,   CD.IdTab (T1).LEV, CD.IdTab (T1).Adr_or_Sz);
+            Emit2 (CD, k_Push_Address, Operand_1_Type (CD.IdTab (T0).LEV), CD.IdTab (T0).Adr_or_Sz);
+            Emit2 (CD, k_Push_Value,   Operand_1_Type (CD.IdTab (T1).LEV), CD.IdTab (T1).Adr_or_Sz);
             Emit (CD, k_Store);
           end loop;
           --
@@ -1512,7 +1512,8 @@ package body HAC.Parser is
                   Entry_Call (CD, Level, FSys_St, I_Statement, CallSTDE);
                 when Prozedure =>
                   if CD.IdTab (I_Statement).LEV = 0 then
-                    Standard_Procedure (CD, Level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
+                    Standard_Procedures.Standard_Procedure
+                      (CD, Level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
                   else
                     Subprogram_or_Entry_Call (CD, Level, FSys_St, I_Statement, CallSTDP);
                   end if;
@@ -1654,9 +1655,6 @@ package body HAC.Parser is
     end if;
     Dx    := 5;
     ICode := 0;
-    if Level > Nesting_Level_Max then
-      Fatal (LEVELS);  --  Exception is raised there.
-    end if;
     if Is_a_block_statement then
       null;  --  We should be here with Sy = BEGIN_Symbol or Sy = DECLARE_Symbol.
     else

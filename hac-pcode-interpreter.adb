@@ -142,8 +142,8 @@ package body HAC.PCode.Interpreter is
 
     CurTask : Integer;  --  index of currently executing task
 
-    H1, H2, H3, H4, H5 : Integer;  --  Internal integer registers
-    F1     : HAC.Data.HAC_Float;   --  Internal float registers
+    H1, H2, H3, H4, H5 : HAC.Data.HAC_Integer;  --  Internal integer registers
+    F1     : HAC.Data.HAC_Float;                --  Internal float registers
     BLKCNT : Integer;
 
     NCALLS : Integer;   --  AVL  TERMINATE
@@ -859,7 +859,7 @@ package body HAC.PCode.Interpreter is
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
           else
-            S (Curr_TCB.T).I := Curr_TCB.DISPLAY (IR.X) + IR.Y;
+            S (Curr_TCB.T).I := Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y;
           end if;
 
         when k_Push_Value =>  --  Push variable v's value.
@@ -867,7 +867,7 @@ package body HAC.PCode.Interpreter is
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
           else
-            S (Curr_TCB.T) := S (Curr_TCB.DISPLAY (IR.X) + IR.Y);
+            S (Curr_TCB.T) := S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y);
           end if;
 
         when k_Push_Indirect_Value =>  --  Push "v.all" (v is an access).
@@ -875,28 +875,32 @@ package body HAC.PCode.Interpreter is
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
             PS := STKCHK;  --  Stack overflow
           else
-            S (Curr_TCB.T) := S (S (Curr_TCB.DISPLAY (IR.X) + IR.Y).I);
+            S (Curr_TCB.T) := S (S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y).I);
           end if;
 
-        when k_Update_Display_Vector =>  --  Emitted at the end of Subprogram_or_Entry_Call.
-          H1 := IR.Y;  --  Current nesting level.
-          H2 := IR.X;  --  Called subprogram nesting level, lower than current.
-          H3 := Curr_TCB.B;
-          loop
-            Curr_TCB.DISPLAY (H1) := H3;
-            H1                    := H1 - 1;  --  Decrease level as index in DISPLAY.
-            H3                    := S (H3 + 2).I;
-            exit when H1 = H2;
-          end loop;
+        when k_Update_Display_Vector =>
+          --  Emitted at the end of Subprogram_or_Entry_Call, when the
+          --  called's nesting level is *lower* than the caller's.
+          declare
+            Low_Level, High_Level : Nesting_level;
+          begin
+            High_Level := Nesting_level (IR.Y);  --  Current nesting level.
+            Low_Level  := Nesting_level (IR.X);  --  Called subprogram nesting level.
+            H3 := Curr_TCB.B;
+            for L in reverse Low_Level + 1 .. High_Level loop
+              Curr_TCB.DISPLAY (L) := H3;
+              H3 := S (H3 + 2).I;
+            end loop;
+          end;
 
         when k_Accept_Rendezvous => -- Hathorn, Cramer
-          H1 := IR.Y;                    --  entry pointer
-          H2 := FirstCaller (H1);        --  first waiting task
-          H3 := CD.IdTab (H1).LEV;            --  level of accepting entry
+          H1 := IR.Y;                         --  entry pointer
+          H2 := FirstCaller (H1);             --  first waiting task
+          H3 := Integer (CD.IdTab (H1).LEV);  --  level of accepting entry
           if H2 >= 0 then
             --  start rendzv if call is waiting
-            Curr_TCB.DISPLAY (H3 + 1) := TCB (H2).B; --  address callers
-            --parms
+            Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := TCB (H2).B; --  address callers
+            --  parms
             Curr_TCB.InRendzv := H2;  --  indicate that task is in Rendzv
             if TCB (H2).TS = TimedRendz then
               TCB (H2).TS := WaitRendzv;
@@ -1054,17 +1058,17 @@ package body HAC.PCode.Interpreter is
         end if;
         H1 := Curr_TCB.T - IR.Y;     --  base of activation record
         H2 := S (H1 + 4).I;          --  CD.IdTab index of called procedure/entry
-        H3                        := CD.IdTab (H2).LEV;
-        Curr_TCB.DISPLAY (H3 + 1) := H1;
-        S (H1 + 1).I              := Curr_TCB.PC;  --  return address
+        H3 := Integer (CD.IdTab (H2).LEV);
+        Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := H1;
+        S (H1 + 1).I := Curr_TCB.PC;  --  return address
 
-        H4 := S (H1 + 3).I + H1; --  new top of stack
-        S (H1 + 2).I := Curr_TCB.DISPLAY (H3); --  static link
-        S (H1 + 3).I := Curr_TCB.B; --  dynamic link
+        H4 := S (H1 + 3).I + H1;  --  new top of stack
+        S (H1 + 2).I := Curr_TCB.DISPLAY (Nesting_level (H3));  --  static link
+        S (H1 + 3).I := Curr_TCB.B;  --  dynamic link
 
-        for H3b in Curr_TCB.T + 1 .. H4 loop
-          S (H3b).I := 0;  --  initialize local vars
-        end loop;
+        --  for H3b in Curr_TCB.T + 1 .. H4 loop
+        --    S (H3b).I := 0;  --  initialize local vars
+        --  end loop;
         Curr_TCB.B := H1;
         Curr_TCB.T := H4;
         case IR.X is
@@ -1412,12 +1416,11 @@ package body HAC.PCode.Interpreter is
           when 3 => --  Accept if its still on queue
             H1 := TCB (CurTask).R3.I;
             H2 := FirstCaller (H1);    --  first waiting task
-            H3 := CD.IdTab (H1).LEV;        --  level of accepting entry
+            H3 := HAC.Data.HAC_Integer (CD.IdTab (H1).LEV);     --  level of accepting entry
             if H2 >= 0 then
-              Curr_TCB.DISPLAY (H3 + 1) := TCB (H2).B; --  address
-                                                          --callers parms
-              Curr_TCB.InRendzv := H2;             --  indicate task
-                                                      --InRendz
+              Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := TCB (H2).B;
+                --  address callers parms
+              Curr_TCB.InRendzv := H2;         --  indicate task InRendz
               if TCB (H2).TS = TimedRendz then --  turn off entry timeout
                 TCB (H2).TS := WaitRendzv;    --  if it was on
               end if;

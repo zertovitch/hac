@@ -101,7 +101,7 @@ package body HAC.Compiler is
         Show_Padded (Typen'Image (r.xTyp.TYP), Typen'Width);
         Put (CD.comp_dump, r.xTyp.Ref, 5);
         Show_Padded (Boolean'Image (r.Normal), Boolean'Width);
-        Put (CD.comp_dump, r.LEV, 3);
+        Put (CD.comp_dump, Integer (r.LEV), 3);
         Put (CD.comp_dump, r.Adr_or_Sz, 5);
         New_Line (CD.comp_dump);
       end;
@@ -571,7 +571,7 @@ package body HAC.Compiler is
           else
             Put (map_file, " Local (");
           end if;
-          Ada.Integer_Text_IO.Put (map_file, CD.IdTab (Tx).LEV, 1);
+          Put (map_file, Nesting_level'Image (CD.IdTab (Tx).LEV));
           Put (map_file, ')');
           New_Line (map_file);
         end if;

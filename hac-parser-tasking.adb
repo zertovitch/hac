@@ -5,22 +5,22 @@ with HAC.UErrors;                       use HAC.UErrors;
 
 package body HAC.Parser.Tasking is
 
-  use HAC.Compiler, HAC.Data;
+  use Compiler, Data;
 
   ------------------------------------------------------------------
   -------------------------------------------------Task_Declaration-
   --  Hathorn
   procedure Task_Declaration (
-    CD      : in out HAC.Compiler.Compiler_Data;
-    FSys    :        HAC.Data.Symset;
-    Level_A :        Integer
+    CD            : in out Compiler.Compiler_Data;
+    FSys          :        Data.Symset;
+    Initial_Level :        Nesting_level
   )
   is
-    Level : Integer := Level_A;
-    I, T0         : Integer;
-    TaskID        : Alfa;
+    Level : Nesting_level := Initial_Level;
     saveLineCount : constant Integer := CD.Line_Count;  --  Source line where Task appeared
     procedure InSymbol is begin Scanner.InSymbol (CD); end;
+    I, T0  : Integer;
+    TaskID : Alfa;
   begin
     InSymbol;
     if CD.Sy = BODY_Symbol then  --  Task Body
@@ -90,6 +90,7 @@ package body HAC.Parser.Tasking is
         Test_Semicolon (CD, FSys);
       end if;
     end if;
+    pragma Assert (Level = Initial_Level);
   end Task_Declaration;
 
 end HAC.Parser.Tasking;

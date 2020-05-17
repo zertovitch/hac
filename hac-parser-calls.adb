@@ -8,7 +8,7 @@ package body HAC.Parser.Calls is
 
   procedure Push_and_Check_by_Value_Parameter (
     CD       : in out HAC.Compiler.Compiler_Data;
-    Level    :        Integer;
+    Level    :        HAC.PCode.Nesting_level;
     FSys     :        Symset;
     Expected :        Exact_Typ
   )
@@ -37,7 +37,7 @@ package body HAC.Parser.Calls is
 
   procedure Push_by_Reference_Parameter (
     CD       : in out HAC.Compiler.Compiler_Data;
-    Level    :        Integer;
+    Level    :        HAC.PCode.Nesting_level;
     FSys     :        Symset;
     Found    :    out Exact_Typ  --  Funny note: Found is itself pushed by reference...
   )
@@ -78,9 +78,10 @@ package body HAC.Parser.Calls is
   -----------------------------------------Subprogram_or_Entry_Call-
   procedure Subprogram_or_Entry_Call (
     CD          : in out HAC.Compiler.Compiler_Data;
-    Level       :        Integer;
+    Level       :        HAC.PCode.Nesting_level;
     FSys        :        Symset;
-    I, CallType :        Integer
+    I           :        Integer;
+    CallType    :        HAC.PCode.Operand_1_Type
   )
   is
     --****************************************************************
@@ -133,11 +134,11 @@ package body HAC.Parser.Calls is
     --
     Emit2 (CD, k_Call, CallType, CD.Blocks_Table (CD.IdTab (I).Block_Ref).PSize - 1);
     if CallType /= CallSTDP then  --  Some for of entry call
-      Emit1 (CD, k_Exit_Call, CallType);  --  Return from Entry Call
+      Emit1 (CD, k_Exit_Call, Operand_2_Type (CallType));  --  Return from Entry Call
     end if;
     --
     if CD.IdTab (I).LEV < Level then
-      Emit2 (CD, k_Update_Display_Vector, CD.IdTab (I).LEV, Level);
+      Emit2 (CD, k_Update_Display_Vector, CD.IdTab (I).LEV, Operand_2_Type (Level));
     end if;
   end Subprogram_or_Entry_Call;
 
@@ -145,9 +146,10 @@ package body HAC.Parser.Calls is
   -------------------------------------------------------Entry_Call-
   procedure Entry_Call (
     CD          : in out HAC.Compiler.Compiler_Data;
-    Level       :        Integer;
+    Level       :        Nesting_level;
     FSys        :        Symset;
-    I, CallType :        Integer
+    I           :        Integer;
+    CallType    :        HAC.PCode.Operand_1_Type
   )
   is -- Hathorn
     Addr, J : Integer;

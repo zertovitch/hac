@@ -124,7 +124,8 @@ package HAC.PCode is
 
   function For_END (for_BEGIN: Opcode) return Opcode;
 
-  subtype Operand_1_Type is Integer;       -- was -LMax..+LMax (levels)
+  type Operand_1_Type is new Integer;  --  Mostly used to pass nesting levels
+  subtype Nesting_level is Operand_1_Type range 0 .. HAC.Data.Nesting_Level_Max;
 
   --  Type for operand 2 (Y) is large enough for containing
   --  addresses, plus signed integer values *in* HAC programs.
