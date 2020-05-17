@@ -1,11 +1,12 @@
-with HAC.Parser.Helpers;                use HAC.Parser.Helpers;
-with HAC.PCode;                         use HAC.PCode;
-with HAC.Scanner;
-with HAC.UErrors;                       use HAC.UErrors;
+with HAC.Parser.Enter_Def,
+     HAC.Parser.Helpers,
+     HAC.PCode,
+     HAC.Scanner,
+     HAC.UErrors;
 
 package body HAC.Parser.Tasking is
 
-  use Compiler, Data;
+  use Compiler, Data, Enter_Def, Helpers, PCode, UErrors;
 
   ------------------------------------------------------------------
   -------------------------------------------------Task_Declaration-
