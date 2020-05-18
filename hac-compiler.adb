@@ -420,8 +420,8 @@ package body HAC.Compiler is
       Enter_Std_Proc ("Wait",          SP_Wait);
       Enter_Std_Proc ("Signal",        SP_Signal);
       --
-      Enter_Std_Proc ("Open",          SP_Reset);
-      Enter_Std_Proc ("Create",        SP_Rewrite);
+      Enter_Std_Proc ("Open",          SP_Open);
+      Enter_Std_Proc ("Create",        SP_Create);
       Enter_Std_Proc ("Close",         SP_Close);
       --
       Enter_Std_Proc ("CursorAt",      SP_CursorAt);

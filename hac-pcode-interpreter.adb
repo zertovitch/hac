@@ -3,8 +3,8 @@ with HAC_Pack;
 with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Characters.Handling;
 with Ada.Command_Line;
+with Ada.Containers.Vectors;
 with Ada.Environment_Variables;
---  with Ada.Finalization;
 
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
@@ -76,8 +76,6 @@ package body HAC.PCode.Interpreter is
       V   : Data.VString;  --  !! might make copies slow (would a discriminant help?)
       Txt : File_Ptr := Abstract_Console;
     end record;
-
-    procedure Allocate_Text_File (R : in out GRegister);
 
     subtype Data_Type is GRegister;
 
@@ -153,21 +151,47 @@ package body HAC.PCode.Interpreter is
 
     SNAP: Boolean;  --  SNAP-shot flag To Display sched. status
 
+    package File_Vectors is new Ada.Containers.Vectors (Positive, File_Ptr);
+
     type Interpreter_Data is record
-      --  We'll move here all "global" stuff.
-      dummy : Integer := 0;
+      Files : File_Vectors.Vector;
     end record;
+
+    procedure Allocate_Text_File (
+      ND : in out Interpreter_Data;
+      R  : in out GRegister
+    );
+
+    procedure Free_Allocated_Contents (
+      ND : in out Interpreter_Data
+    );
 
   end InterDef;
 
   package body InterDef is
 
-    procedure Allocate_Text_File (R : in out GRegister) is
+    procedure Allocate_Text_File (
+      ND : in out Interpreter_Data;
+      R  : in out GRegister
+    )
+    is
     begin
       if R.Txt = null then
         R.Txt := new Ada.Text_IO.File_Type;
+        ND.Files.Append (R.Txt);
       end if;
     end Allocate_Text_File;
+
+    procedure Free_Allocated_Contents (
+      ND : in out Interpreter_Data
+    )
+    is
+      procedure Free is new Ada.Unchecked_Deallocation (Ada.Text_IO.File_Type, File_Ptr);
+    begin
+      for F of ND.Files loop
+        Free (F);
+      end loop;
+    end Free_Allocated_Contents;
 
   end InterDef;
 
@@ -860,7 +884,7 @@ package body HAC.PCode.Interpreter is
     begin
       case Typen'Val (IR.Y) is
         when VStrings   => S (Var_Addr).V := Null_VString;
-        when Text_Files => Allocate_Text_File (S (Var_Addr));
+        when Text_Files => Allocate_Text_File (ND, S (Var_Addr));
         when others     => null;
       end case;
       Pop;
@@ -871,14 +895,14 @@ package body HAC.PCode.Interpreter is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
     begin
       case Code is
-        when SP_Reset =>
+        when SP_Open =>
           Ada.Text_IO.Open (
             S (Curr_TCB.T - 1).Txt.all,
             Ada.Text_IO.In_File,
             HAC.Data.VStrings_Pkg.To_String (S (Curr_TCB.T).V)
           );
           Pop (2);
-        when SP_Rewrite =>
+        when SP_Create =>
           Ada.Text_IO.Create (
             S (Curr_TCB.T - 1).Txt.all,
             Ada.Text_IO.Out_File,
@@ -905,6 +929,23 @@ package body HAC.PCode.Interpreter is
           Do_Text_Read (Code);
         when SP_Put |SP_Put_Line | SP_Put_F | SP_Put_Line_F =>
           Do_Write_Formatted (Code);
+        when SP_New_Line =>
+          if S (Curr_TCB.T).Txt = Abstract_Console then
+            New_Line_Console;
+          else
+            Ada.Text_IO.New_Line (S (Curr_TCB.T).Txt.all);
+          end if;
+          Pop;
+        when SP_Skip_Line =>
+          if S (Curr_TCB.T).Txt = Abstract_Console then
+            --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
+            Skip_Line_Console;
+          elsif Ada.Text_IO.End_Of_File (S (Curr_TCB.T).Txt.all) then
+            PS := REDCHK;
+          else
+            Ada.Text_IO.Skip_Line (S (Curr_TCB.T).Txt.all);
+          end if;
+          Pop;
         when others =>
           null;
       end case;
@@ -1346,29 +1387,7 @@ package body HAC.PCode.Interpreter is
         S (S (Curr_TCB.T - 1).I) := S (Curr_TCB.T);
         Pop (2);
 
-      when Binary_Operator_Opcode =>
-        Do_Binary_Operator;
-
-      when k_Skip_Line =>
-        if S (Curr_TCB.T).Txt = Abstract_Console then
-          --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
-          Skip_Line_Console;
-        elsif Ada.Text_IO.End_Of_File (S (Curr_TCB.T).Txt.all) then
-          PS := REDCHK;
-        else
-          Ada.Text_IO.Skip_Line (S (Curr_TCB.T).Txt.all);
-        end if;
-        Pop;
-        SWITCH := True;  --  give up control when doing I/O
-
-      when k_New_Line =>
-        if S (Curr_TCB.T).Txt = Abstract_Console then
-          New_Line_Console;
-        else
-          Ada.Text_IO.New_Line (S (Curr_TCB.T).Txt.all);
-        end if;
-        Pop;
-        SWITCH := True;  --  give up control when doing I/O
+      when Binary_Operator_Opcode => Do_Binary_Operator;
 
       when k_File_I_O =>  --  File I/O procedures - Schoening
         Do_File_IO;
@@ -1543,12 +1562,6 @@ package body HAC.PCode.Interpreter is
       end case;
     end Execute_Current_Instruction;
 
-    procedure Free_Allocated_Contents is
-      procedure Free is new Ada.Unchecked_Deallocation (Ada.Text_IO.File_Type, File_Ptr);
-    begin
-      null;  --  !! vector of allocated files.
-    end Free_Allocated_Contents;
-
   begin  --  Interpret
     InterDef.SNAP:= False;
     Init_main_task;
@@ -1613,14 +1626,8 @@ package body HAC.PCode.Interpreter is
     if InterDef.PS /= InterDef.FIN then
       Post_Mortem_Dump (CD, ND);
     end if;
-    --  begin
-    --  --  GotoXY (1, 20) ;
     --
-    --    New_Line;
-    --    Put ("Program terminated normally ...");
-    --    New_Line;
-    --  end;
-    Free_Allocated_Contents;
+    Free_Allocated_Contents (ND);
   end Interpret;
 
   procedure Interpret_on_Current_IO (

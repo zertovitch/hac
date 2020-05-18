@@ -194,60 +194,64 @@ package body HAC_Pack is
     return Real'Value (To_String (V));
   end Float_Value;
 
+  procedure Open (File : in out File_Type; Name : String) is
+    use Ada.Text_IO;
+  begin
+    Open (File, In_File, Name);
+  end Open;
+
+  procedure Open (File : in out File_Type; Name : VString) is
+    begin Open (File, To_String (Name)); end;
+
+  procedure Create (File : in out File_Type; Name : String) is
+    use Ada.Text_IO;
+  begin
+    Create (File, Out_File, Name);
+  end Create;
+
+  procedure Create (File : in out File_Type; Name : VString) is
+    begin Create (File, To_String (Name)); end;
+
    ---------
    -- GET --
    ---------
 
-  procedure Get (I : out Integer) is
-  begin
-    IIO.Get (I);
-  end Get;
+  procedure Get (I : out Integer) is begin IIO.Get (I); end;
+  procedure Get (File : File_Type; I : out Integer) is begin IIO.Get (File, I); end;
 
-  procedure Get (F : out Real) is
-  begin
-    RIO.Get (F);
-  end Get;
+  procedure Get (F : out Real) is begin RIO.Get (F); end;
+  procedure Get (File : File_Type; F : out Real) is begin RIO.Get (File, F); end;
 
    --------------
    -- GET_LINE --
    --------------
 
-  procedure Get_Line (C : out Character) is
-  begin
-    Get (C);
-    Ada.Text_IO.Skip_Line;
-  end Get_Line;
+  procedure Get_Line (C : out Character) is begin Get (C); Skip_Line; end;
+  procedure Get_Line (File : File_Type; C : out Character) is
+    begin Get (File, C); Skip_Line (File); end;
 
-  procedure Get_Line (I : out Integer) is
-  begin
-    Get (I);
-    Ada.Text_IO.Skip_Line;
-  end Get_Line;
+  procedure Get_Line (I : out Integer) is begin Get (I); Skip_Line; end;
+  procedure Get_Line (File : File_Type; I : out Integer) is
+    begin Get (File, I); Skip_Line (File); end;
 
-  procedure Get_Line (F : out Real) is
-  begin
-    Get (F);
-    Ada.Text_IO.Skip_Line;
-  end Get_Line;
+  procedure Get_Line (F : out Real) is begin Get (F); Skip_Line; end;
+  procedure Get_Line (File : File_Type; F : out Real) is
+    begin Get (File, F); Skip_Line (File); end;
 
-  procedure Get_Line (V : out VString) is
-  begin
-    V := +Ada.Text_IO.Get_Line;
-  end Get_Line;
+  procedure Get_Line (V : out VString) is begin V := +Ada.Text_IO.Get_Line; end;
+  procedure Get_Line (File : File_Type; V : out VString) is
+    begin V := +Ada.Text_IO.Get_Line (File); end;
 
-  procedure Skip_Line is
-  begin
-    Ada.Text_IO.Skip_Line;  --  Without the optional parameter, Spacing.
-  end;
+  --  Ada.Text_IO's Skip_Line is called without the optional parameter, Spacing.
+  procedure Skip_Line is begin Ada.Text_IO.Skip_Line; end;
+  procedure Skip_Line (File : File_Type) is begin Ada.Text_IO.Skip_Line (File); end;
 
   ---------
   -- PUT --
   ---------
 
-  procedure Put (C : in  Character) is
-  begin
-    Ada.Text_IO.Put (C);
-  end Put;
+  procedure Put (C : in  Character) is begin Ada.Text_IO.Put (C); end;
+  procedure Put (File : File_Type; C : in  Character) is begin Ada.Text_IO.Put (File, C); end;
 
   procedure  Put (I     : in  Integer;
                   Width : Ada.Text_IO.Field       := IIO.Default_Width;
@@ -255,7 +259,16 @@ package body HAC_Pack is
   is
   begin
     IIO.Put (I, Width, Base);
-  end;
+  end Put;
+
+  procedure  Put (File  : File_Type;
+                  I     : in  Integer;
+                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
+                  Base  : Ada.Text_IO.Number_Base := IIO.Default_Base)
+  is
+  begin
+    IIO.Put (File, I, Width, Base);
+  end Put;
 
   procedure  Put (F    : in  Real;
                   Fore : Integer := RIO.Default_Fore;
@@ -264,7 +277,17 @@ package body HAC_Pack is
   is
   begin
     RIO.Put (F, Fore, Aft, Expo);
-  end;
+  end Put;
+
+  procedure  Put (File : File_Type;
+                  F     : in  Real;
+                  Fore  : Integer := RIO.Default_Fore;
+                  Aft   : Integer := RIO.Default_Aft;
+                  Expo  : Integer := RIO.Default_Exp)
+  is
+  begin
+    RIO.Put (File, F, Fore, Aft, Expo);
+  end Put;
 
   procedure Put (B     : in  Boolean;
                  Width : Ada.Text_IO.Field := BIO.Default_Width )
@@ -273,35 +296,48 @@ package body HAC_Pack is
     BIO.Put (B, Width);
   end Put;
 
-  procedure Put (S : in  String) is
+  procedure  Put (File : File_Type;
+                  B     : in  Boolean;
+                  Width : Ada.Text_IO.Field       := BIO.Default_Width )
+  is
   begin
-    Ada.Text_IO.Put(S);
+    BIO.Put (File, B, Width);
   end Put;
 
-  procedure Put (V : in  VString) is
-  begin
-    Put (Ada.Strings.Unbounded.To_String (V));
-  end Put;
+  procedure Put (S : in String) is begin Ada.Text_IO.Put (S); end;
+  procedure Put (File : File_Type; S : in String) is begin Ada.Text_IO.Put (File, S); end;
+
+  procedure Put (V : in VString) is begin Put (To_String (V)); end;
+  procedure Put (File : File_Type; V : in VString) is begin Put (File, To_String (V)); end;
 
    --------------
    -- PUT_LINE --
    --------------
 
-  procedure Put_Line (C : in  Character) is
-  begin
-    Put(C); New_Line;
-  end Put_Line;
+  procedure Put_Line (C : Character) is begin Put(C); New_Line; end;
+  procedure  Put_Line (File : File_Type; C : in Character) is
+    begin Put(File, C); New_Line (File); end;
 
-  procedure Put_Line (I     : in  Integer;
+  procedure Put_Line (I     : Integer;
                       Width : Ada.Text_IO.Field       := IIO.Default_Width;
                       Base  : Ada.Text_IO.Number_Base := IIO.Default_Base)
   is
   begin
     Put (I, Width, Base);
     New_Line;
-  end;
+  end Put_Line;
 
-  procedure Put_Line (F    : in  Real;
+  procedure  Put_Line (File  : File_Type;
+                       I     : Integer;
+                       Width : Ada.Text_IO.Field       := IIO.Default_Width;
+                       Base  : Ada.Text_IO.Number_Base := IIO.Default_Base)
+  is
+  begin
+    Put (File, I, Width, Base);
+    New_Line (File);
+  end Put_Line;
+
+  procedure Put_Line (F    : Real;
                       Fore : Integer := RIO.Default_Fore;
                       Aft  : Integer := RIO.Default_Aft;
                       Expo : Integer := RIO.Default_Exp)
@@ -309,9 +345,20 @@ package body HAC_Pack is
   begin
     Put (F, Fore, Aft, Expo);
     New_Line;
-  end;
+  end Put_Line;
 
-  procedure Put_Line (B     : in  Boolean;
+  procedure Put_Line (File : File_Type;
+                      F    : Real;
+                      Fore : Integer := RIO.Default_Fore;
+                      Aft  : Integer := RIO.Default_Aft;
+                      Expo : Integer := RIO.Default_Exp)
+  is
+  begin
+    Put (File, F, Fore, Aft, Expo);
+    New_Line (File);
+  end Put_Line;
+
+  procedure Put_Line (B     : Boolean;
                       Width : Ada.Text_IO.Field := BIO.Default_Width )
   is
   begin
@@ -319,20 +366,23 @@ package body HAC_Pack is
     New_Line;
   end Put_Line;
 
-  procedure Put_Line (S : in  String) is
+  procedure Put_Line (File  : File_Type;
+                      B     : Boolean;
+                      Width : Ada.Text_IO.Field := BIO.Default_Width )
+  is
   begin
-    Ada.Text_IO.Put_Line(S);
+    Put (File, B, Width);
+    New_Line (File);
   end Put_Line;
 
-  procedure Put_Line (V : in  VString) is
-  begin
-    Put_Line (Ada.Strings.Unbounded.To_String (V));
-  end Put_Line;
+  procedure Put_Line (S : String) is begin Ada.Text_IO.Put_Line (S); end;
+  procedure Put_Line (File : File_Type; S : String) is begin Ada.Text_IO.Put_Line (File, S); end;
 
-  procedure New_Line is
-  begin
-    Ada.Text_IO.New_Line;
-  end New_Line;
+  procedure Put_Line (V : VString) is begin Put_Line (To_String (V)); end;
+  procedure Put_Line (File : File_Type; V : VString) is begin Put_Line (File, To_String (V)); end;
+
+  procedure New_Line is begin Ada.Text_IO.New_Line; end;
+  procedure New_Line (File : File_Type) is begin Ada.Text_IO.New_Line (File); end;
 
   procedure  CursorAt (X, Y: Integer) is
   begin

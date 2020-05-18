@@ -137,16 +137,21 @@ package body HAC.Parser.Standard_Procedures is
       when SP_Get | SP_Get_Immediate | SP_Get_Line =>
         Parse_Gets (Code);
 
-      when SP_Skip_Line =>
-        Set_Abstract_Console;
-        Emit (CD, k_Skip_Line);
-
       when SP_Put | SP_Put_Line =>
         Parse_Puts (Code);
 
-      when SP_New_Line =>
-        Set_Abstract_Console;
-        Emit (CD, k_New_Line);
+      when SP_New_Line | SP_Skip_Line =>
+        if CD.Sy = LParent then  --  "New_Line (File);"
+          InSymbol (CD);
+          Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+          if X.TYP /= Text_Files then
+            Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
+          end if;
+          Need (CD, RParent, err_closing_parenthesis_missing);
+        else  --  "New_Line;"
+          Set_Abstract_Console;
+        end if;
+        File_I_O_Call (Code);
 
       when SP_Wait | SP_Signal =>
         if CD.Sy /= LParent then
@@ -166,7 +171,7 @@ package body HAC.Parser.Standard_Procedures is
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
 
-      when SP_Reset | SP_Rewrite | SP_Close =>
+      when SP_Open | SP_Create | SP_Close =>
         if CD.Sy /= LParent then
           Error (CD, err_missing_an_opening_parenthesis);
         else
@@ -183,7 +188,7 @@ package body HAC.Parser.Standard_Procedures is
           --  text files being routed accidentally to the abstract
           --  console (= null) if Create or Open was not called.
           --
-          if Code = SP_Reset or Code = SP_Rewrite then
+          if Code = SP_Open or Code = SP_Create then
             Need (CD, Comma, err_COMMA_missing);
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
             if not VStrings_or_Str_Lit_Set (X.TYP) then

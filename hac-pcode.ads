@@ -103,8 +103,6 @@ package HAC.PCode is
     k_AND_Boolean,
     k_XOR_Boolean,
     --
-    k_Skip_Line,
-    k_New_Line,
     k_File_I_O,
     --
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
@@ -286,7 +284,7 @@ package HAC.PCode is
     SP_Close,
     SP_Push_Abstract_Console,
     --
-    SP_Reset,
+    SP_Open,
     SP_Get,
     SP_Get_Immediate,
     SP_Get_Line,
@@ -294,7 +292,7 @@ package HAC.PCode is
     SP_Get_Line_F,
     SP_Skip_Line,
     --
-    SP_Rewrite,
+    SP_Create,
     SP_Put,
     SP_Put_Line,
     SP_Put_F,

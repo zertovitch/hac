@@ -29,13 +29,14 @@ procedure Gallery is
 
     procedure Launch_HAX (Ada_file_name : VString) is
       dummy : Integer;
+      c : Character;
     begin
       dummy := Shell_Execute (
         +".." & Directory_Separator (k) &
         "hax -v2 " & Ada_file_name
       );
-      Put ("--- Press Return to continue in the HAC gallery...");
-      Skip_Line;
+      Put ("--- Press any key to continue in the HAC gallery...");
+      Get_Immediate (C);
     end Launch_HAX;
 
     procedure Build_HAX is

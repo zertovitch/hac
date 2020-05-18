@@ -141,8 +141,9 @@ package HAC_Pack is
   function Float_Value (V: VString) return Real;
 
   -------------------------
-  --  Text Input-Output  --
+  --  Text Input/Output  --
   -------------------------
+  --  1) Console I/O
 
   --  We have a real console/terminal input where several
   --  inputs can be made on the same line, followed by a
@@ -167,41 +168,111 @@ package HAC_Pack is
   procedure Skip_Line;
 
   --  Put
-  procedure  Put (C     : in  Character);
-  procedure  Put (I     : in  Integer;
+  procedure  Put (C     : Character);
+  procedure  Put (I     : Integer;
                   Width : Ada.Text_IO.Field       := IIO.Default_Width;
                   Base  : Ada.Text_IO.Number_Base := IIO.Default_Base);
-  procedure  Put (F     : in  Real;
+  procedure  Put (F     : Real;
                   Fore  : Integer := RIO.Default_Fore;
                   Aft   : Integer := RIO.Default_Aft;
                   Expo  : Integer := RIO.Default_Exp);
-  procedure  Put (B     : in  Boolean;
+  procedure  Put (B     : Boolean;
                   Width : Ada.Text_IO.Field       := BIO.Default_Width );
-  procedure  Put (S    : in  String   );
-  procedure  Put (V    : in  VString  );
+  procedure  Put (S    :  String   );
+  procedure  Put (V    :  VString  );
 
   --  Put and then New_Line (for S: it is the same as Ada.Text_IO.Put_Line)
-  procedure  Put_Line (C     : in  Character);
-  procedure  Put_Line (I     : in  Integer;
+  procedure  Put_Line (C     : Character);
+  procedure  Put_Line (I     : Integer;
                        Width : Ada.Text_IO.Field       := IIO.Default_Width;
                        Base  : Ada.Text_IO.Number_Base := IIO.Default_Base);
-  procedure  Put_Line (F    : in  Real;
+  procedure  Put_Line (F    : Real;
                        Fore : Integer := RIO.Default_Fore;
                        Aft  : Integer := RIO.Default_Aft;
                        Expo : Integer := RIO.Default_Exp);
-  procedure  Put_Line (B     : in  Boolean;
+  procedure  Put_Line (B     : Boolean;
                        Width : Ada.Text_IO.Field := BIO.Default_Width);
-  procedure  Put_Line (S    : in  String   );
-  procedure  Put_Line (V    : in  VString  );
+  procedure  Put_Line (S    : String   );
+  procedure  Put_Line (V    : VString  );
 
   procedure  New_Line;
 
   function End_Of_Line return Boolean renames Ada.Text_IO.End_Of_Line;
   function End_Of_File return Boolean renames Ada.Text_IO.End_Of_File;
 
+  -------------------------
+  --  Text Input/Output  --
+  -------------------------
+  --  2) File I/O
+
+  subtype File_Type is Ada.Text_IO.File_Type;
+
+  procedure Open (File : in out File_Type; Name : String);   --  Open as In_File (input).
+  procedure Open (File : in out File_Type; Name : VString);  --  Open as In_File (input).
+
+  procedure Create (File : in out File_Type; Name : String);   --  Create as Out_File (output).
+  procedure Create (File : in out File_Type; Name : VString);  --  Create as Out_File (output).
+
+  procedure Close (File : in out File_Type) renames Ada.Text_IO.Close;
+
+  --  Get
+  procedure Get (File : File_Type; C : out Character) renames Ada.Text_IO.Get;
+  procedure Get (File : File_Type; I : out Integer  );
+  procedure Get (File : File_Type; F : out Real     );
+
+  --  Get and then move file pointer to next line (Skip_Line)
+  procedure Get_Line (File : File_Type; C : out Character);
+  procedure Get_Line (File : File_Type; I : out Integer  );
+  procedure Get_Line (File : File_Type; F : out Real     );
+  procedure Get_Line (File : File_Type; V : out VString  );  --  Gets the line till its end.
+
+  procedure Skip_Line (File : File_Type);
+
+  --  Put
+  procedure  Put (File  : File_Type; C : Character);
+  procedure  Put (File  : File_Type;
+                  I     : Integer;
+                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
+                  Base  : Ada.Text_IO.Number_Base := IIO.Default_Base);
+  procedure  Put (File  : File_Type;
+                  F     : Real;
+                  Fore  : Integer := RIO.Default_Fore;
+                  Aft   : Integer := RIO.Default_Aft;
+                  Expo  : Integer := RIO.Default_Exp);
+  procedure  Put (File  : File_Type;
+                  B     : Boolean;
+                  Width : Ada.Text_IO.Field       := BIO.Default_Width );
+  procedure  Put (File : File_Type;
+                  S    : String);
+  procedure  Put (File : File_Type;
+                  V    : VString);
+
+  --  Put and then New_Line (for S: it is the same as Ada.Text_IO.Put_Line)
+  procedure  Put_Line (File : File_Type;
+                       C    : Character);
+  procedure  Put_Line (File  : File_Type;
+                       I     : Integer;
+                       Width : Ada.Text_IO.Field       := IIO.Default_Width;
+                       Base  : Ada.Text_IO.Number_Base := IIO.Default_Base);
+  procedure  Put_Line (File : File_Type;
+                       F    : Real;
+                       Fore : Integer := RIO.Default_Fore;
+                       Aft  : Integer := RIO.Default_Aft;
+                       Expo : Integer := RIO.Default_Exp);
+  procedure  Put_Line (File  : File_Type;
+                       B     :  Boolean;
+                       Width : Ada.Text_IO.Field := BIO.Default_Width);
+  procedure  Put_Line (File : File_Type; S : String);
+  procedure  Put_Line (File : File_Type; V : VString);
+
+  procedure  New_Line (File : File_Type);
+
+  function End_Of_Line (File : File_Type) return Boolean renames Ada.Text_IO.End_Of_Line;
+  function End_Of_File (File : File_Type) return Boolean renames Ada.Text_IO.End_Of_File;
+
   --  Misc.
 
-  procedure  CursorAt (X, Y: Integer);
+  procedure CursorAt (X, Y: Integer);  --  Inactive so far (remnant of SmallAda)
 
   type Semaphore is new Integer; -- private;
 
