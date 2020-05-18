@@ -366,7 +366,7 @@ package body HAC.Compiler is
       --  Here we just reserve the "STRING" identifier at level 0.
       Enter_Typ ("SEMAPHORE",      Ints);      --{ Hathorn }
       Enter_Typ ("VString",        VStrings);    --  2020.05.02
-      --  Enter_Typ ("File_Type",      Text_Files);  --  2020.05.17
+      Enter_Typ ("File_Type",      Text_Files);  --  2020.05.17
       --
       --  Standard functions
       --
@@ -413,8 +413,6 @@ package body HAC.Compiler is
       Enter_Std_Proc ("Get",           SP_Get);
       Enter_Std_Proc ("Get_Immediate", SP_Get_Immediate);
       Enter_Std_Proc ("Get_Line",      SP_Get_Line);
-      Enter_Std_Proc ("Get_F",         SP_Get_F);
-      Enter_Std_Proc ("Get_Line_F",    SP_Get_Line_F);
       Enter_Std_Proc ("Skip_Line",     SP_Skip_Line);
       Enter_Std_Proc ("Put",           SP_Put);
       Enter_Std_Proc ("Put_Line",      SP_Put_Line);
@@ -589,7 +587,7 @@ package body HAC.Compiler is
 
     if asm_dump_file_name /= "" then
       Create (asm_dump, Out_File, asm_dump_file_name);
-      Dump (CD.ObjCode (CD.ObjCode'First .. CD.LC - 1), asm_dump);
+      Dump (CD.ObjCode (CD.ObjCode'First .. CD.LC - 1), CD.Strings_Constants_Table, asm_dump);
       Close (asm_dump);
     end if;
 

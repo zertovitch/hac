@@ -158,12 +158,20 @@ package body HAC.PCode is
     PT (Top) := LC;
   end Feed_Patch_Table;
 
-  procedure Dump (OC : Object_Code_Table; Text : Ada.Text_IO.File_Type) is
+  procedure Dump (
+    OC        : Object_Code_Table;
+    Str_Const : String;
+    Text      : Ada.Text_IO.File_Type
+  )
+  is
     use Ada.Text_IO;
     package Opcode_IO   is new Enumeration_IO (Opcode);
     package Code_Pos_IO is new Integer_IO (Natural);
     package Operand1_IO is new Integer_IO (Operand_1_Type);
     package Operand2_IO is new Integer_IO (Operand_2_Type);
+    SF_C : SF_Code;
+    SP_C : SP_Code;
+    Old_Y1, Old_Y2, Old_Y3, Old_Y4 : Operand_2_Type := 0;
     --
     function Padded_Opcode (o: Opcode) return String is
       s : String (1 .. Opcode'Width);
@@ -171,12 +179,13 @@ package body HAC.PCode is
       Opcode_IO.Put(s, o);
       return s;
     end Padded_Opcode;
+    use Data;
   begin
     Put_Line
       (Text, "Position   : Opcode " & (Opcode'Width - 7) * ' ' &
              "Lvl X " &
              "Addr/Val Y" &
-             ";      Approx. source location");
+             ";      Approx. source location; Extra information");
     Put_Line (Text, 90 * '-');
     for i in OC'Range loop
       Code_Pos_IO.Put (Text, i);
@@ -185,16 +194,37 @@ package body HAC.PCode is
       Operand2_IO.Put (Text, OC (i).Y);
       Put (Text, "; ");
       Code_Pos_IO.Put (Text, OC (i).D.Line);
-      Put (Text, "  " & HAC.Data.To_String (OC (i).D.Block));
+      Put (Text, "  " & Data.To_String (OC (i).D.Block));
       case OC (i).F is  --  Extra information
+        when k_Variable_Initialization =>
+          Put (Text, "; " & Data.Typen'Image (Data.Typen'Val (OC (i).Y)));
         when k_Standard_Functions =>
-          Put (Text, "; " & SF_Code'Image (SF_Code'Val (OC (i).Y)));
+          SF_C := SF_Code'Val (OC (i).Y);
+          Put (Text, "; " & SF_Code'Image (SF_C));
+          if SF_C = SF_Literal_to_VString then
+            Put (Text, "; """ & Str_Const (Old_Y1 .. Old_Y1 + Old_Y2 - 1) & '"');
+          end if;
         when k_File_I_O =>
-          Put (Text, "; " & SP_Code'Image (SP_Code'Val (OC (i).Y)));
+          SP_C := SP_Code'Val (OC (i).X);
+          Put (Text, "; " & SP_Code'Image (SP_C));
+          case SP_C is
+            when SP_Get .. SP_Get_Line =>
+              Put (Text, "; " & Data.Typen'Image (Data.Typen'Val (OC (i).Y)));
+            when SP_Put .. SP_Put_Line =>
+              if Data.Typen'Val (OC (i).Y) = Data.String_Literals then
+                Put (Text, "; """ & Str_Const (Old_Y3 .. Old_Y3 + Old_Y4 - 1) & '"');
+              end if;
+            when others =>
+              null;
+          end case;
         when others =>
           null;
       end case;
       New_Line (Text);
+      Old_Y4 := Old_Y3;
+      Old_Y3 := Old_Y2;
+      Old_Y2 := Old_Y1;
+      Old_Y1 := OC (i).Y;
     end loop;
   end Dump;
 

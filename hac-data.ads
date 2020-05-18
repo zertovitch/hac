@@ -262,7 +262,7 @@ package HAC.Data is
 
   type Typ_Set is array (Typen) of Boolean;
 
-  subtype Standard_Typ is Typen range NOTYP .. VStrings;
+  subtype Standard_Typ is Typen range NOTYP .. Text_Files;
 
   Standard_or_Enum_Typ : constant Typ_Set :=
     (Standard_Typ | Enums => True, others => False);

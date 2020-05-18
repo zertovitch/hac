@@ -169,7 +169,7 @@ package body HAC.Parser.Expressions is
             Emit1 (CD, k_Load_Discrete_Literal, CD.INum);   --  Index To String IdTab
             InSymbol (CD);
           end if;
-          while Factor_Begin_Symbol (CD.Sy) loop
+          while Factor_Begin_Symbol (CD.Sy) loop  --  !!  Why a loop here ?... Why StrCon excluded ?
             case CD.Sy is
               when IDent =>
                 Ident_Index := Locate_Identifier (CD, CD.Id, Level, stop_on_error => True);

@@ -64,6 +64,7 @@ procedure Gallery is
     Launch_HAX (+"merge_sort.adb");
     Launch_HAX (+"days_1901.adb");
     Launch_HAX (+"shell.adb");
+    Launch_HAX (+"file_read.adb");
   end Launch_Tests;
 
 begin

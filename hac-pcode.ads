@@ -24,8 +24,7 @@ package HAC.PCode is
     k_Push_Address,
     k_Push_Value,
     k_Push_Indirect_Value,
-    k_Duplicate_Top,
-    k_Init,
+    k_Variable_Initialization,
     k_Update_Display_Vector,
     k_Accept_Rendezvous,
     k_End_Rendezvous,
@@ -104,9 +103,6 @@ package HAC.PCode is
     k_AND_Boolean,
     k_XOR_Boolean,
     --
-    k_Read,
-    k_Write_String_Literal,
-    k_Write_Formatted,
     k_Skip_Line,
     k_New_Line,
     k_File_I_O,
@@ -179,7 +175,11 @@ package HAC.PCode is
     LC  :        Integer
   );
 
-  procedure Dump (OC : Object_Code_Table; Text : Ada.Text_IO.File_Type);
+  procedure Dump (
+    OC        : Object_Code_Table;
+    Str_Const : String;
+    Text      : Ada.Text_IO.File_Type
+  );
 
   --  Store PCode instruction in the object code table OC at position LC and increments LC.
   procedure Emit (
@@ -297,6 +297,8 @@ package HAC.PCode is
     SP_Rewrite,
     SP_Put,
     SP_Put_Line,
+    SP_Put_F,
+    SP_Put_Line_F,
     SP_New_Line,
     --
     SP_Wait,

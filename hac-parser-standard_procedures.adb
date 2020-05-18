@@ -25,27 +25,63 @@ package body HAC.Parser.Standard_Procedures is
     Code    :        PCode.SP_Code
   )
   is
-    --
-    procedure Parse_Gets (Found : out Exact_Typ) is
-    --  Parse Get & Co after an eventual File parameter
+    procedure File_I_O_Call (FIO_Code : SP_Code; Param : Operand_2_Type := 0) is
     begin
-      --  The "out" variable for Get, Get_Immediate, Get_Line.
+      Emit2 (CD, k_File_I_O, SP_Code'Pos (FIO_Code), Param);
+    end;
+    --
+    procedure Set_Abstract_Console is
+    begin
+      File_I_O_Call (SP_Push_Abstract_Console);
+    end;
+    --
+    procedure Parse_Gets (Code : PCode.SP_Code) is
+      --  Parse Get & Co including an eventual File parameter
+      Found : Exact_Typ;
+      with_file : Boolean;
+      Code_2 : PCode.SP_Code := Code;
+    begin
+      Need (CD, LParent, err_missing_an_opening_parenthesis);
       Push_by_Reference_Parameter (CD, Level, FSys, Found);
+      with_file := Found.TYP = Text_Files;
+      if with_file then
+        Emit (CD, k_Dereference);  --  File handle's value on the stack.
+        Need (CD, Comma, err_COMMA_missing);
+        Push_by_Reference_Parameter (CD, Level, FSys, Found);
+      end if;
+      --  The "out" variable for Get, Get_Immediate, Get_Line
+      --  has been pushed by reference now.
       if Found.TYP = NOTYP then
         null;  --  Error(s) already appeared in the parsing.
       elsif Found.TYP in Standard_Typ and then Found.TYP /= Bools then
-        Emit2 (CD, k_Read, Boolean'Pos (Code = SP_Get_Immediate), Typen'Pos (Found.TYP));
+        if with_file then
+          if Code = SP_Get_Line then
+            Code_2 := SP_Get_Line_F;
+          else
+            Code_2 := SP_Get_F;
+          end if;
+        end if;
+        File_I_O_Call (Code_2, Typen'Pos (Found.TYP));
       else
         Error (CD, err_illegal_parameters_to_Get);
       end if;
+      Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Gets;
     --
-    procedure Parse_Puts is
-    --  Parse Put & Co after an eventual File parameter
+    procedure Parse_Puts (Code : PCode.SP_Code) is
+      --  Parse Put & Co including an eventual File parameter
       Item_Typ, Format_Param_Typ : Exact_Typ;
       Format_Params : Natural := 0;
+      with_file : Boolean;
+      Code_2 : PCode.SP_Code := Code;
     begin
+      Need (CD, LParent, err_missing_an_opening_parenthesis);
       Expression (CD, Level, FSys + Colon_Comma_RParent, Item_Typ);
+      with_file := Item_Typ.TYP = Text_Files;
+      if with_file then
+        Need (CD, Comma, err_COMMA_missing);
+        Expression (CD, Level, FSys + Colon_Comma_RParent, Item_Typ);
+      end if;
       if Item_Typ.TYP = Enums then
         Item_Typ.TYP := Ints;  --  Ow... Silent S'Pos. We keep this hack until 'Image is done.
       end if;
@@ -74,79 +110,39 @@ package body HAC.Parser.Standard_Procedures is
         end if;
       end loop;
       if Item_Typ.TYP = String_Literals then
-        Emit (CD, k_Write_String_Literal);
-      else
-        for Param in Format_Params + 1 .. 3 loop
-          --  Send default parameters to the stack.
-          --  In order to have a fixed number of parameters in all cases,
-          --  we push also the "invalid" ones. See Do_Write_Formatted
-          --  to have an idea on how everybody is retrieved from the stack.
-          Emit1 (CD, k_Load_Discrete_Literal, def_param (Item_Typ.TYP, Param));
-        end loop;
-        Emit1 (CD, k_Write_Formatted, Typen'Pos (Item_Typ.TYP));
+        --  With String_Literals we have *two* values pushed on the stack.
+        Format_Params := Format_Params + 1;
       end if;
+      for Param in Format_Params + 1 .. 3 loop
+        --  Send default parameters to the stack.
+        --  In order to have a fixed number of parameters in all cases,
+        --  we push also the "invalid" ones. See Do_Write_Formatted
+        --  to have an idea on how everybody is retrieved from the stack.
+        Emit1 (CD, k_Load_Discrete_Literal, def_param (Item_Typ.TYP, Param));
+      end loop;
+      if with_file then
+        if Code = SP_Put_Line then
+          Code_2 := SP_Put_Line_F;
+        else
+          Code_2 := SP_Put_F;
+        end if;
+      end if;
+      File_I_O_Call (Code_2, Typen'Pos (Item_Typ.TYP));
+      Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Puts;
-    --
-    procedure File_I_O_Call (FIO_Code : SP_Code) is
-    begin
-      Emit1 (CD, k_File_I_O, SP_Code'Pos (FIO_Code));
-    end;
-
-    procedure Set_Abstract_Console is
-    begin
-      File_I_O_Call (SP_Push_Abstract_Console);
-    end;
     --
     X : Exact_Typ;
   begin
     case Code is
       when SP_Get | SP_Get_Immediate | SP_Get_Line =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Set_Abstract_Console;
-        Parse_Gets (X);
-        Need (CD, RParent, err_closing_parenthesis_missing);
-        --
-        if Code = SP_Get_Line
-          and X.TYP /= VStrings  --  A string is already got via an external Get_Line.
-        then
-          Set_Abstract_Console;
-          Emit (CD, k_Skip_Line);
-        end if;
-
-      when SP_Get_F | SP_Get_Line_F =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-        --  Here we get the File_Type variable, pushed by value.
-        if Code = SP_Get_Line_F then
-          Emit (CD, k_Duplicate_Top);  --  Re-push the file handle, for the Skip_Line part.
-        end if;
-        if X.TYP /= Text_Files then
-          Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
-        end if;
-        Need (CD, Comma, err_COMMA_missing);
-        Parse_Gets (X);
-        Need (CD, RParent, err_closing_parenthesis_missing);
-        --
-        if Code = SP_Get_Line_F
-          and X.TYP /= VStrings  --  A string is already got via an external Get_Line.
-        then
-          Emit (CD, k_Skip_Line);
-        end if;
+        Parse_Gets (Code);
 
       when SP_Skip_Line =>
         Set_Abstract_Console;
         Emit (CD, k_Skip_Line);
 
       when SP_Put | SP_Put_Line =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Set_Abstract_Console;
-        Parse_Puts;
-        Need (CD, RParent, err_closing_parenthesis_missing);
-        --
-        if Code = SP_Put_Line then
-          Set_Abstract_Console;
-          Emit (CD, k_New_Line);
-        end if;
+        Parse_Puts (Code);
 
       when SP_New_Line =>
         Set_Abstract_Console;
@@ -312,6 +308,9 @@ package body HAC.Parser.Standard_Procedures is
 
       when SP_Push_Abstract_Console =>
         null;  --  Used by Get, Put, ... without file parameter.
+      when SP_Get_F | SP_Get_Line_F |
+           SP_Put_F | SP_Put_Line_F =>
+        null;  --  "Fronted" by SP_Get, SP_Get_Line,... Used by VM.
     end case;
   end Standard_Procedure;
 

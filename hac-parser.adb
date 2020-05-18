@@ -493,7 +493,7 @@ package body HAC.Parser is
               begin
                 if Auto_Init_Typ (Var.xTyp.TYP) then
                   Emit2 (CD, k_Push_Address, Operand_1_Type (Var.LEV), Var.Adr_or_Sz);
-                  Emit1 (CD, k_Init, Typen'Pos (Var.xTyp.TYP));
+                  Emit1 (CD, k_Variable_Initialization, Typen'Pos (Var.xTyp.TYP));
                 end if;
                 --  !!  TBD: Must handle composite types (arrays or records) too...
               end;
