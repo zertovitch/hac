@@ -1,31 +1,30 @@
 HAC - HAC Ada Compiler
 ======================
 
-Alternative names: Hacker's Ada Compiler, Hello-world Ada Compiler
-
 HAC is perhaps the first open-source (albeit very partial) Ada
-compiler and virtual machine interpreter fully programmed in Ada itself.
+compiler (and virtual machine interpreter) fully programmed in Ada itself.
 Note: HAC was not written from scratch, but is based on a renovation of
 SmallAda, a system developped around 1990 and abandoned since then.
 
 Objectives
 ==========
- - fun!
- - have a simple, quick compiler and execution tool
- - be useful for small Ada sandboxed prototypes
- - produce the smallest Hello-world executable!
- - stay compatible (HAC programs can be compiled
-     and run by other Ada compilers)
+ - Fun!
+ - Have a simple, quick Ada compiler and execution tool.
+ - Be useful for small Ada sandboxed prototypes.
+ - Produce the smallest Hello-world executable!
+ - Have a tool for script-like jobs (avoid long
+     programming-compiling-binding-linking-running cycles).
+ - Stay compatible (HAC programs can be compiled
+     and run by other Ada compilers, currently through
+     compatibility package HAC_Pack).
 
-What HAC will most probably never be
-====================================
- - a real, serious Ada compiler - there are enough serious ones!
- - a complete compiler - only a subset is covered
+HAC will most probably never be a complete compiler.
 
 Warning & legal
 ===============
 There is NO WARRANTY in this software.
-Read copyright notice and license in hac.ads
+Read copyright notice and license in hac.ads .
+The license is the open-source license MIT.
 
 Getting started
 ===============
@@ -35,23 +34,31 @@ following from a command line interpreter (please replace
 
 gnatmake -p -P hac
 cd exm
-..\hax hello.adb
 ..\hax gallery.adb
+
+Alternatively, on Windows and with mouse only, you can go
+into the "exm" folder and double-click "e.cmd" .
 
 The program "gallery.adb" will run a bunch of demos that
 are located in the "exm" directory.
-You can test HAC on any other example (*.adb files in the
-"exm" and "test" directories).
+You can test HAC on any other example of course (the "*.adb"
+files in the "exm" and "test" directories).
 As a bonus, you can build some examples with GNAT to compare the output.
 You can do it easily with the hac_exm.gpr project file.
 Since hac_exm.gpr is a text file, you can see there the progress
 (or the lack thereof) in the pieces of Ada code that are really
 working with HAC. See the "Limitations" section below as well.
 
+Directories
+===========
+   src      sources of HAC, plus the compatibility package HAC_Pack
+   exm      examples
+   test     testing
+
 Some design points
 ==================
 - HAC reads Ada sources from any stream. In addition to files, it is able
-    to read from Zip archive (plan is to have sets with many sources like
+    to read from a Zip archive (plan is to have sets with many sources like
     libraries in Zip files, for instance), from an internet stream, from
     an editor buffer (see the LEA project), from a source stored in memory,
     etc.
@@ -78,7 +85,7 @@ in the "exm" directory.
 
 You will see that the "Pascal subset" plus tasking is more or less
 supported, so you have things like subprograms (including nested
-subprograms), recursive subprograms, simple expressions, that are
+subprograms), recursive subprograms, expressions, that are
 working, for instance.
 
 * You can define your own data types: enumerations, records, arrays
@@ -94,22 +101,22 @@ A more systematic testing is done in the "test" directory.
 History of HAC
 ==============
 
-- 2020: presentation at FOSDEM's Ada Developer Room:
-          https://fosdem.org/2020/schedule/event/ada_hac/ ;
-          starting a bit more serious testing and code cleanup.
-- 2013: January 24th: Day One of HAC: Hello World, Fibonacci
-          and other tests work!
-- 2009: a bit further trying to make the translation of SmallAda sources
-          succeed (P2Ada was improved on the way, for WITH statements
-          and modularity)...
-- 1999: automatic translation of Mac Pascal SmallAda sources
-          to Ada, using P2Ada
-- 1989: SmallAda is derived from CoPascal; works only within two
-          very system-dependent environments (a Mac GUI, a DOS GUI);
-          two similar source sets in two Pascal dialects (Mac Pascal,
-          Turbo Pascal)
-- 1986: CoPascal (Schoening)
-- 1970: Pascal-S (Wirth)
+    - 2020: Presentation at FOSDEM's Ada Developer Room:
+              https://fosdem.org/2020/schedule/event/ada_hac/ .
+              Starting a bit more serious testing and code cleanup.
+    - 2013: January 24th: Day One of HAC: Hello World, Fibonacci
+              and other tests work!
+    - 2009: A bit further trying to make the translation of SmallAda sources
+              succeed (P2Ada was improved on the way, for WITH statements
+              and modularity)...
+    - 1999: Automatic translation of Mac Pascal SmallAda sources
+              to Ada, using P2Ada.
+    - 1989: SmallAda is derived from CoPascal; works only within two
+              very system-dependent environments (a Mac GUI, a DOS GUI);
+              two similar source sets in two Pascal dialects (Mac Pascal,
+              Turbo Pascal).
+    - 1986: CoPascal (Schoening).
+    - 1970: Pascal-S (Wirth).
 
   Authors of SmallAda (in Pascal):
     1990 Manuel A. Perez               Macintosh version
