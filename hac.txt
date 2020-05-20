@@ -55,6 +55,12 @@ Directories
    exm      examples
    test     testing
 
+Key files in the main directory
+===============================
+   hac.txt        this file
+   hac.gpr        project file for building HAC with GNAT
+   hac_work.xls   workbook containing, notably, a bug list and a to-do list
+
 Some design points
 ==================
 - HAC reads Ada sources from any stream. In addition to files, it is able
