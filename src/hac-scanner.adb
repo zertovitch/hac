@@ -1,4 +1,4 @@
-with HAC.Data;    use HAC.Data;
+with HAC.Defs;    use HAC.Defs;
 with HAC.UErrors; use HAC.UErrors;
 
 with Ada.Text_IO; use Ada.Text_IO;
@@ -202,7 +202,7 @@ package body HAC.Scanner is
         end if;
         CD.Line_Count := CD.Line_Count + 1;
         if CD.listing_requested then
-          HAC.Data.IIO.Put (CD.listing, CD.Line_Count, 4);
+          HAC.Defs.IIO.Put (CD.listing, CD.Line_Count, 4);
           Put (CD.listing, "  ");
           --  Put (Listing, LC, 5);
           --  Put (Listing, "  ");

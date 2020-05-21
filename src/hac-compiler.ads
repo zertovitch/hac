@@ -9,14 +9,14 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Data, HAC.PCode;
+with HAC.Defs, HAC.PCode;
 
 with Ada.Streams;
 with Ada.Text_IO;
 
 package HAC.Compiler is
 
-  use HAC.Data, HAC.PCode;
+  use HAC.Defs, HAC.PCode;
 
   type Exact_Typ is record  --  NB: was called "Item" in SmallAda.
     TYP  : Typen;

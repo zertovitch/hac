@@ -4,7 +4,7 @@ with HAC.Parser.Helpers,
 
 package body HAC.Parser.Enter_Def is
 
-  use Compiler, Data, Helpers, UErrors;
+  use Compiler, Defs, Helpers, UErrors;
 
   ------------------------------------------------------------------
   ------------------------------------------------------Enter_Block-
@@ -33,7 +33,7 @@ package body HAC.Parser.Enter_Def is
   procedure Enter (
     CD               : in out Compiler.Compiler_Data;
     Level            :        PCode.Nesting_level;
-    Id, Id_with_case :        Data.Alfa;
+    Id, Id_with_case :        Defs.Alfa;
     K                :        Compiler.aObject
   )
   is

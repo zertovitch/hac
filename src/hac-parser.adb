@@ -14,16 +14,16 @@ package body HAC.Parser is
 
   procedure Block (
     CD                   : in out Compiler.Compiler_Data;
-    FSys                 :        Data.Symset;
+    FSys                 :        Defs.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  5.6 Block Statements
     Initial_Level        :        PCode.Nesting_level;
     Prt                  :        Integer;
-    Block_ID             :        Data.Alfa;  --  Name of this block (if any)
-    Block_ID_with_case   :        Data.Alfa
+    Block_ID             :        Defs.Alfa;  --  Name of this block (if any)
+    Block_ID_with_case   :        Defs.Alfa
   )
   is
-    use Calls, Compiler, Data, Enter_Def, Expressions, Helpers, PCode, UErrors;
+    use Calls, Compiler, Defs, Enter_Def, Expressions, Helpers, PCode, UErrors;
     --
     Level : Nesting_level := Initial_Level;
     procedure InSymbol is begin Scanner.InSymbol (CD); end;

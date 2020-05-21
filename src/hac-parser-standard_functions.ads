@@ -8,7 +8,7 @@ private package HAC.Parser.Standard_Functions is
   procedure Standard_Function (
     CD          : in out Compiler.Compiler_Data;
     Level       :        PCode.Nesting_level;
-    FSys        :        Data.Symset;
+    FSys        :        Defs.Symset;
     Ident_Index :        Integer;
     Code        :        PCode.SF_Code;
     Return_Typ  :    out Compiler.Exact_Typ

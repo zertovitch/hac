@@ -16,7 +16,7 @@ with HAC_Pack;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
-package HAC.Data is
+package HAC.Defs is
 
   subtype HAC_Integer is Integer;  --  !! TBD: set it to a 64-bit signed.
   HAC_Integer_Name : constant String := "INTEGER";
@@ -419,8 +419,8 @@ package HAC.Data is
     repair    : Repair_kit     --  Can error be automatically repaired; if so, how ?
   );
 
-  package IIO is new Ada.Text_IO.Integer_IO (HAC.Data.HAC_Integer);
-  package RIO is new Ada.Text_IO.Float_IO (HAC.Data.HAC_Float);
+  package IIO is new Ada.Text_IO.Integer_IO (HAC.Defs.HAC_Integer);
+  package RIO is new Ada.Text_IO.Float_IO (HAC.Defs.HAC_Float);
   package BIO is new Ada.Text_IO.Enumeration_IO (Boolean);
 
-end HAC.Data;
+end HAC.Defs;

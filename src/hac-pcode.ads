@@ -11,7 +11,7 @@
 
 --  This package defines the PCode Virtual Machine.
 
-with HAC.Data;
+with HAC.Defs;
 
 with Ada.Text_IO;  --  Only used for file descriptors
 
@@ -121,16 +121,16 @@ package HAC.PCode is
   function For_END (for_BEGIN: Opcode) return Opcode;
 
   type Operand_1_Type is new Integer;  --  Mostly used to pass nesting levels
-  subtype Nesting_level is Operand_1_Type range 0 .. HAC.Data.Nesting_Level_Max;
+  subtype Nesting_level is Operand_1_Type range 0 .. HAC.Defs.Nesting_Level_Max;
 
   --  Type for operand 2 (Y) is large enough for containing
   --  addresses, plus signed integer values *in* HAC programs.
   --
-  subtype Operand_2_Type is HAC.Data.HAC_Integer;
+  subtype Operand_2_Type is HAC.Defs.HAC_Integer;
 
   type Debug_Info is record
     Line  : Positive;       --  Line number in the source code.
-    Block : HAC.Data.Alfa;  --  Current block's identifier (if any).
+    Block : HAC.Defs.Alfa;  --  Current block's identifier (if any).
     --  Unit  : HAC.Data.Alfa;  --  Compilation unit identifier.
   end record;
 
@@ -155,7 +155,7 @@ package HAC.PCode is
 
   --  Mechanism for patching instructions at selected addresses.
   type Patch_Table is array (Positive range <>) of Operand_2_Type;
-  subtype Fixed_Size_Patch_Table is Patch_Table (1 .. HAC.Data.Patch_Max);
+  subtype Fixed_Size_Patch_Table is Patch_Table (1 .. HAC.Defs.Patch_Max);
 
   --  Patch to OC'Last all addresses for Jump instructions whose
   --  addresses are contained in the Patch_Table, up to index Top.

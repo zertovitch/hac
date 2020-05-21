@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Compiler, HAC.Data;
+with HAC.Compiler, HAC.Defs;
 
 with Ada.Text_IO;
 
@@ -30,26 +30,26 @@ package HAC.PCode.Interpreter is
     --  ^ True  for a real console with Ada.Text_IO (line buffer);
     --    False for input boxes (like in LEA) or other kind of immediate input.
     with procedure Get_Console (i: out Integer; Width : Ada.Text_IO.Field := 0);
-    with procedure Get_Console (f: out HAC.Data.HAC_Float; Width : Ada.Text_IO.Field := 0);
+    with procedure Get_Console (f: out HAC.Defs.HAC_Float; Width : Ada.Text_IO.Field := 0);
     with procedure Get_Console (c: out Character);
     with procedure Get_Immediate_Console (c: out Character);
     with function Get_Line_Console return String;
     with procedure Skip_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
     --
     with procedure Put_Console (
-      i     : HAC.Data.HAC_Integer;
-      Width : Ada.Text_IO.Field       := HAC.Data.IIO.Default_Width;
-      Base  : Ada.Text_IO.Number_Base := HAC.Data.IIO.Default_Base);
+      i     : HAC.Defs.HAC_Integer;
+      Width : Ada.Text_IO.Field       := HAC.Defs.IIO.Default_Width;
+      Base  : Ada.Text_IO.Number_Base := HAC.Defs.IIO.Default_Base);
     with procedure Put_Console (
-      f    : HAC.Data.HAC_Float;
-      Fore : Integer := HAC.Data.RIO.Default_Fore;
-      Aft  : Integer := HAC.Data.RIO.Default_Aft;
-      Exp  : Integer := HAC.Data.RIO.Default_Exp
+      f    : HAC.Defs.HAC_Float;
+      Fore : Integer := HAC.Defs.RIO.Default_Fore;
+      Aft  : Integer := HAC.Defs.RIO.Default_Aft;
+      Exp  : Integer := HAC.Defs.RIO.Default_Exp
     );
     with procedure Put_Console (
       b     : in Boolean;
-      Width : Ada.Text_IO.Field    := HAC.Data.BIO.Default_Width;
-      Set   : Ada.Text_IO.Type_Set := HAC.Data.BIO.Default_Setting);
+      Width : Ada.Text_IO.Field    := HAC.Defs.BIO.Default_Width;
+      Set   : Ada.Text_IO.Type_Set := HAC.Defs.BIO.Default_Setting);
     with procedure Put_Console (c: in Character);
     with procedure Put_Console (s: in String);
     with procedure New_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);

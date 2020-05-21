@@ -179,7 +179,7 @@ package body HAC.PCode is
       Opcode_IO.Put(s, o);
       return s;
     end Padded_Opcode;
-    use Data;
+    use Defs;
   begin
     Put_Line
       (Text, "Position   : Opcode " & (Opcode'Width - 7) * ' ' &
@@ -194,10 +194,10 @@ package body HAC.PCode is
       Operand2_IO.Put (Text, OC (i).Y);
       Put (Text, "; ");
       Code_Pos_IO.Put (Text, OC (i).D.Line);
-      Put (Text, "  " & Data.To_String (OC (i).D.Block));
+      Put (Text, "  " & Defs.To_String (OC (i).D.Block));
       case OC (i).F is  --  Extra information
         when k_Variable_Initialization =>
-          Put (Text, "; " & Data.Typen'Image (Data.Typen'Val (OC (i).Y)));
+          Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
         when k_Standard_Functions =>
           SF_C := SF_Code'Val (OC (i).Y);
           Put (Text, "; " & SF_Code'Image (SF_C));
@@ -209,9 +209,9 @@ package body HAC.PCode is
           Put (Text, "; " & SP_Code'Image (SP_C));
           case SP_C is
             when SP_Get .. SP_Get_Line =>
-              Put (Text, "; " & Data.Typen'Image (Data.Typen'Val (OC (i).Y)));
+              Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
             when SP_Put .. SP_Put_Line =>
-              if Data.Typen'Val (OC (i).Y) = Data.String_Literals then
+              if Defs.Typen'Val (OC (i).Y) = Defs.String_Literals then
                 Put (Text, "; """ & Str_Const (Old_Y3 .. Old_Y3 + Old_Y4 - 1) & '"');
               end if;
             when others =>

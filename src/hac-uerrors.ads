@@ -8,11 +8,11 @@
 --
 -------------------------------------------------------------------------------------
 
-with HAC.Compiler, HAC.Data;
+with HAC.Compiler, HAC.Defs;
 
 package HAC.UErrors is
 
-  use HAC.Data;
+  use HAC.Defs;
 
   has_new_line : constant array (Repair_kind) of Boolean := (insert_line => True, others => False);
 
@@ -20,7 +20,7 @@ package HAC.UErrors is
 
   procedure Error (
     CD   : in out HAC.Compiler.Compiler_Data;
-    code :        HAC.Data.Compile_Error;
+    code :        HAC.Defs.Compile_Error;
     hint :        String      := "";
     stop :        Boolean     := False
   );
@@ -46,6 +46,6 @@ package HAC.UErrors is
   Failure_1_0: exception;
   Compilation_abandoned: exception;
 
-  function Error_String (code: HAC.Data.Compile_Error; hint: String:= "") return String;
+  function Error_String (code: HAC.Defs.Compile_Error; hint: String:= "") return String;
 
 end HAC.UErrors;

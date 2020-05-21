@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Data;                          use HAC.Data;
+with HAC.Defs;                          use HAC.Defs;
 
 package HAC.Parser.Helpers is
 

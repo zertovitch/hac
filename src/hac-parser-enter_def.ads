@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Compiler, HAC.Data, HAC.PCode;
+with HAC.Compiler, HAC.Defs, HAC.PCode;
 
 private package HAC.Parser.Enter_Def is  --  Package around entering definitions.
 
@@ -21,7 +21,7 @@ private package HAC.Parser.Enter_Def is  --  Package around entering definitions
   procedure Enter (
     CD               : in out Compiler.Compiler_Data;
     Level            :        PCode.Nesting_level;
-    Id, Id_with_case :        Data.Alfa;
+    Id, Id_with_case :        Defs.Alfa;
     K                :        Compiler.aObject
   );
 

@@ -6,7 +6,7 @@ with HAC.UErrors;            use HAC.UErrors;
 
 package body HAC.Parser.Standard_Procedures is
 
-  use Compiler, Data, PCode;
+  use Compiler, Defs, PCode;
 
   type Def_param_type is array (Typen, 1 .. 3) of Integer;
 
@@ -21,7 +21,7 @@ package body HAC.Parser.Standard_Procedures is
   procedure Standard_Procedure (
     CD      : in out Compiler.Compiler_Data;
     Level   :        PCode.Nesting_level;
-    FSys    :        Data.Symset;
+    FSys    :        Defs.Symset;
     Code    :        PCode.SP_Code
   )
   is

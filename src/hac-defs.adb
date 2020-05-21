@@ -1,6 +1,6 @@
 with Ada.Strings.Fixed;
 
-package body HAC.Data is
+package body HAC.Defs is
 
   function "+" (a, b : Symset) return Symset is
     c : Symset;
@@ -60,4 +60,4 @@ package body HAC.Data is
     return HAC_Pack.HAC_Image (HAC_Pack.Real (F));
   end HAC_Image;
 
-end HAC.Data;
+end HAC.Defs;

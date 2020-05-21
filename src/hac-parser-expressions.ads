@@ -1,5 +1,5 @@
 with HAC.Compiler;           use HAC.Compiler;
-with HAC.Data;               use HAC.Data;
+with HAC.Defs;               use HAC.Defs;
 
 private package HAC.Parser.Expressions is
 

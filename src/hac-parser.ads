@@ -9,19 +9,19 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Compiler, HAC.Data, HAC.PCode;
+with HAC.Compiler, HAC.Defs, HAC.PCode;
 
 package HAC.Parser is
 
   procedure Block (
     CD                   : in out Compiler.Compiler_Data;
-    FSys                 :        Data.Symset;
+    FSys                 :        Defs.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  RM: 5.6 Block Statements
     Initial_Level        :        PCode.Nesting_level;
     Prt                  :        Integer;
-    Block_ID             :        Data.Alfa;  --  Name of this block (if any)
-    Block_ID_with_case   :        Data.Alfa
+    Block_ID             :        Defs.Alfa;  --  Name of this block (if any)
+    Block_ID_with_case   :        Defs.Alfa
   );
 
   --  E.g. : in the case of a block statement within a function, the value

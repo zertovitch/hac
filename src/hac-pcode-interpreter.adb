@@ -14,9 +14,9 @@ with Ada.Unchecked_Deallocation;
 
 package body HAC.PCode.Interpreter is
 
-  package REF is new Ada.Numerics.Generic_Elementary_Functions (HAC.Data.HAC_Float);
-  use REF, HAC.Data.RIO;
-  use type HAC.Data.HAC_Float;
+  package REF is new Ada.Numerics.Generic_Elementary_Functions (HAC.Defs.HAC_Float);
+  use REF, HAC.Defs.RIO;
+  use type HAC.Defs.HAC_Float;
 
   package InterDef is
     --  Sub-package, was a separate Turbo Pascal unit.
@@ -30,7 +30,7 @@ package body HAC.PCode.Interpreter is
 
     NilTask : Integer := -1;
 
-    subtype TRange is Integer range 0 .. HAC.Data.TaskMax; --  task index
+    subtype TRange is Integer range 0 .. HAC.Defs.TaskMax; --  task index
 
     type Processor_State is (
       RUN,               --  RUN is the normal processor state
@@ -71,16 +71,16 @@ package body HAC.PCode.Interpreter is
       --  !! To save place we'll reintroduce a discriminant
       --     - and use aux variables for conversions in the interpreter.
       --
-      I   : Data.HAC_Integer;  --  Also used for Bools, Chars and Enums.
-      R   : Data.HAC_Float;
-      V   : Data.VString;  --  !! might make copies slow (would a discriminant help?)
+      I   : Defs.HAC_Integer;  --  Also used for Bools, Chars and Enums.
+      R   : Defs.HAC_Float;
+      V   : Defs.VString;  --  !! might make copies slow (would a discriminant help?)
       Txt : File_Ptr := Abstract_Console;
     end record;
 
     subtype Data_Type is GRegister;
 
     --  Stack
-    S : array (1 .. Data.StMax) of Data_Type;
+    S : array (1 .. Defs.StMax) of Data_Type;
 
     type Task_Control_Block is record   --  Task Control Block
       --  index of current top of stack
@@ -132,7 +132,7 @@ package body HAC.PCode.Interpreter is
     PS       : Processor_State := RUN;    --  Processor status register
 
     TCB      : array (TRange) of Task_Control_Block;  --  Task control blocks
-    EList    : array (1 .. HAC.Data.EntryMax) of EHeader; --  Entry queue array
+    EList    : array (1 .. HAC.Defs.EntryMax) of EHeader; --  Entry queue array
     SWITCH   : Boolean:= False; --  invoke scheduler on next cycle flag
     SYSCLOCK : Time:= Clock;    --  (ms after 00:00:00 Jan 1, current year)
     TIMER    : Time:= SYSCLOCK; --  set to end of current task's time slice
@@ -140,8 +140,8 @@ package body HAC.PCode.Interpreter is
 
     CurTask : Integer;  --  index of currently executing task
 
-    H1, H2, H3, H4, H5 : HAC.Data.HAC_Integer;  --  Internal integer registers
-    F1     : HAC.Data.HAC_Float;                --  Internal float registers
+    H1, H2, H3, H4, H5 : HAC.Defs.HAC_Integer;  --  Internal integer registers
+    F1     : HAC.Defs.HAC_Float;                --  Internal float registers
     BLKCNT : Integer;
 
     NCALLS : Integer;   --  AVL  TERMINATE
@@ -199,7 +199,7 @@ package body HAC.PCode.Interpreter is
   --
   procedure Post_Mortem_Dump (CD: Compiler_Data; ND: InterDef.Interpreter_Data) is
   pragma Unreferenced (ND);
-    use InterDef, Ada.Text_IO, HAC.Data.IIO;
+    use InterDef, Ada.Text_IO, HAC.Defs.IIO;
   begin
       New_Line;
       Put_Line ("HAC - PCode - Post Mortem Dump");
@@ -208,7 +208,7 @@ package body HAC.PCode.Interpreter is
       New_Line;
       Put_Line (
         "Stack Variables of Task " &
-        HAC.Data.To_String (CD.IdTab (CD.Tasks_Definitions_Table (InterDef.CurTask)).Name)
+        HAC.Defs.To_String (CD.IdTab (CD.Tasks_Definitions_Table (InterDef.CurTask)).Name)
       );
       InterDef.H1 := InterDef.TCB (InterDef.CurTask).B;   --  current bottom of stack
       InterDef.BLKCNT := 10;
@@ -220,7 +220,7 @@ package body HAC.PCode.Interpreter is
         end if;
         InterDef.H2 := S (InterDef.H1 + 4).I;  --  index into HAC.Data.IdTab for this process
         if InterDef.H1 /= 0 then
-          Put (HAC.Data.To_String (CD.IdTab (InterDef.H2).Name));
+          Put (HAC.Defs.To_String (CD.IdTab (InterDef.H2).Name));
           Put (" CALLED AT");
           Put (S (InterDef.H1 + 1).I, 5);
           New_Line;
@@ -232,10 +232,10 @@ package body HAC.PCode.Interpreter is
           -- [P2Ada]: WITH instruction
           declare
             P2Ada_Var_7 : IdTabEntry renames CD.IdTab (InterDef.H2);
-            use HAC.Data;
+            use HAC.Defs;
           begin
             if P2Ada_Var_7.Obj = Variable then
-              if HAC.Data.Standard_or_Enum_Typ (P2Ada_Var_7.xTyp.TYP) then
+              if HAC.Defs.Standard_or_Enum_Typ (P2Ada_Var_7.xTyp.TYP) then
                 if P2Ada_Var_7.Normal then
                   InterDef.H3 := InterDef.H1 + P2Ada_Var_7.Adr_or_Sz;
                 else
@@ -243,16 +243,16 @@ package body HAC.PCode.Interpreter is
                 end if;
                 Put ("  " & To_String (P2Ada_Var_7.Name) & " = ");
                 case P2Ada_Var_7.xTyp.TYP is
-                  when HAC.Data.Enums | HAC.Data.Ints =>
+                  when HAC.Defs.Enums | HAC.Defs.Ints =>
                     Put (S (H3).I);
                     New_Line;
-                  when HAC.Data.Bools =>
+                  when HAC.Defs.Bools =>
                     BIO.Put (Boolean'Val (S (H3).I));
                     New_Line;
-                  when HAC.Data.Floats =>
+                  when HAC.Defs.Floats =>
                     Put (S (H3).R);
                     New_Line;
-                  when HAC.Data.Chars =>
+                  when HAC.Defs.Chars =>
                     Put (S (H3).I);
                     Put_Line (" (ASCII)");
                   when others =>
@@ -375,7 +375,7 @@ package body HAC.PCode.Interpreter is
     is
       p  : InterDef.Eptr;
       ix : Integer;
-      use HAC.Data, InterDef, Ada.Text_IO;
+      use HAC.Defs, InterDef, Ada.Text_IO;
     begin
       ix := EIndex (Entry_Index);
       p  := InterDef.EList (ix).First;
@@ -486,7 +486,7 @@ package body HAC.PCode.Interpreter is
         Main_TCB.TS := Ready ;
         Main_TCB.InRendzv := NilTask ;
         Main_TCB.DISPLAY (1) := 0 ;
-        Main_TCB.STACKSIZE := HAC.Data.StMax - (CD.Tasks_Definitions_Count * HAC.Data.STKINCR) ;
+        Main_TCB.STACKSIZE := HAC.Defs.StMax - (CD.Tasks_Definitions_Count * HAC.Defs.STKINCR) ;
         Main_TCB.SUSPEND := 0 ;
         Main_TCB.QUANTUM := Duration (TSlice * 0.001);
         Main_TCB.Pcontrol.UPRI := 0 ;
@@ -511,7 +511,7 @@ package body HAC.PCode.Interpreter is
           S (Curr_TCB.B + 4).I := H1 ;
           Curr_TCB.DISPLAY (1) := 0 ;
           Curr_TCB.DISPLAY (2) := Curr_TCB.B ;
-          Curr_TCB.STACKSIZE := Curr_TCB.B + HAC.Data.STKINCR - 1 ;
+          Curr_TCB.STACKSIZE := Curr_TCB.B + HAC.Defs.STKINCR - 1 ;
           Curr_TCB.SUSPEND := 0 ;
           Curr_TCB.TS := Ready ;
           Curr_TCB.InRendzv := NilTask ;
@@ -546,18 +546,18 @@ package body HAC.PCode.Interpreter is
     procedure Do_Standard_Function is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       Top_Item : InterDef.GRegister renames InterDef.S (Curr_TCB.T);
-      temp : HAC.Data.HAC_Float;
+      temp : HAC.Defs.HAC_Float;
       Idx, Len, Arg, From, To : Integer;
       C : Character;
-      use HAC.Data, HAC.Data.VStrings_Pkg, Ada.Characters.Handling;
+      use HAC.Defs, HAC.Defs.VStrings_Pkg, Ada.Characters.Handling;
       Code : constant SF_Code := SF_Code'Val (InterDef.IR.Y);
     begin
       case Code is
         when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
         when SF_Abs_Float => Top_Item.R := abs (Top_Item.R);
         when SF_T_Val =>   --  S'Val : RM 3.5.5 (5)
-          if (Top_Item.I < HAC.Data.OrdMinChar) or
-            (Top_Item.I > HAC.Data.OrdMaxChar)  --  !! Character range
+          if (Top_Item.I < HAC.Defs.OrdMinChar) or
+            (Top_Item.I > HAC.Defs.OrdMaxChar)  --  !! Character range
           then
             PS := INXCHK;  --  Seems an out-of-range
           end if;
@@ -570,7 +570,7 @@ package body HAC.PCode.Interpreter is
           Top_Item.I := Integer (Top_Item.R);
         when SF_Trunc_Float_to_Int =>
           --  The stack top may change its type here (if register has discriminant).
-          Top_Item.I := Integer (HAC.Data.HAC_Float'Floor (Top_Item.R));
+          Top_Item.I := Integer (HAC.Defs.HAC_Float'Floor (Top_Item.R));
         when SF_Sin =>    Top_Item.R := Sin (Top_Item.R);
         when SF_Cos =>    Top_Item.R := Cos (Top_Item.R);
         when SF_Exp =>    Top_Item.R := Exp (Top_Item.R);
@@ -597,9 +597,9 @@ package body HAC.PCode.Interpreter is
             end case;
           end if;
         when SF_Random_Int =>
-          temp := HAC.Data.HAC_Float (Random (Gen)) *
-                  HAC.Data.HAC_Float ((Top_Item.I + 1));
-          Top_Item.I := Integer (HAC.Data.HAC_Float'Floor (temp));
+          temp := HAC.Defs.HAC_Float (Random (Gen)) *
+                  HAC.Defs.HAC_Float ((Top_Item.I + 1));
+          Top_Item.I := Integer (HAC.Defs.HAC_Float'Floor (temp));
         when SF_Literal_to_VString =>  --  Unary "+"
           Pop;
           Len := S (Curr_TCB.T).I;      --  Length of string
@@ -710,9 +710,9 @@ package body HAC.PCode.Interpreter is
             case SF_Niladic (Code) is
               when SF_Clock =>
                 --  CLOCK function. Return time of units of seconds.
-                S (Curr_TCB.T).R := HAC.Data.HAC_Float (GetClock - Start_Time);
+                S (Curr_TCB.T).R := HAC.Defs.HAC_Float (GetClock - Start_Time);
               when SF_Random_Float =>
-                S (Curr_TCB.T).R := HAC.Data.HAC_Float (Random (Gen));
+                S (Curr_TCB.T).R := HAC.Defs.HAC_Float (Random (Gen));
               when SF_Argument_Count =>
                 S (Curr_TCB.T).I := Argument_Count;
               when SF_Get_Needs_Skip_Line =>
@@ -725,7 +725,7 @@ package body HAC.PCode.Interpreter is
     procedure Do_Text_Read (Code : SP_Code) is
       CH : Character;
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
-      use HAC.Data;
+      use HAC.Defs;
       Out_Param : Index renames S (Curr_TCB.T).I;
       Typ : constant Typen := Typen'Val (IR.Y);
       Immediate : constant Boolean := Code = SP_Get_Immediate;
@@ -758,9 +758,9 @@ package body HAC.PCode.Interpreter is
         else
           case Typ is
             when Ints =>
-              HAC.Data.IIO.Get (FP.all, S (Out_Param).I);
+              HAC.Defs.IIO.Get (FP.all, S (Out_Param).I);
             when Floats =>
-              HAC.Data.RIO.Get (FP.all, S (Out_Param).R);
+              HAC.Defs.RIO.Get (FP.all, S (Out_Param).R);
             when Chars =>
               Ada.Text_IO.Get (FP.all, CH);
               S (Out_Param).I := Character'Pos (CH);
@@ -782,11 +782,11 @@ package body HAC.PCode.Interpreter is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
       FP       : File_Ptr;
       Item     : InterDef.GRegister renames       S (Curr_TCB.T - 3);
-      Format_1 : constant HAC.Data.HAC_Integer := S (Curr_TCB.T - 2).I;
-      Format_2 : constant HAC.Data.HAC_Integer := S (Curr_TCB.T - 1).I;
-      Format_3 : constant HAC.Data.HAC_Integer := S (Curr_TCB.T    ).I;
+      Format_1 : constant HAC.Defs.HAC_Integer := S (Curr_TCB.T - 2).I;
+      Format_2 : constant HAC.Defs.HAC_Integer := S (Curr_TCB.T - 1).I;
+      Format_3 : constant HAC.Defs.HAC_Integer := S (Curr_TCB.T    ).I;
       --  Valid parameters used: see def_param in HAC.Parser.Standard_Procedures.
-      use HAC.Data, HAC.Data.VStrings_Pkg;
+      use HAC.Defs, HAC.Defs.VStrings_Pkg;
     begin
       if Code in SP_Put .. SP_Put_Line then
         case Typen'Val (IR.Y) is
@@ -831,7 +831,7 @@ package body HAC.PCode.Interpreter is
       Curr_TCB_Top : Integer renames InterDef.TCB (InterDef.CurTask).T;
       X : GRegister renames S (Curr_TCB_Top - 1);
       Y : GRegister renames S (Curr_TCB_Top);
-      use HAC.Data.VStrings_Pkg;
+      use HAC.Defs.VStrings_Pkg;
     begin
       --  We do  [T] <- ([T-1] operator [T])  and pop later.
       case Binary_Operator_Opcode (IR.F) is
@@ -879,7 +879,7 @@ package body HAC.PCode.Interpreter is
 
     procedure Do_Code_for_Automatic_Initialization is
       Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
-      use Data;
+      use Defs;
       Var_Addr : constant HAC_Integer := S (Curr_TCB.T).I;
     begin
       case Typen'Val (IR.Y) is
@@ -899,14 +899,14 @@ package body HAC.PCode.Interpreter is
           Ada.Text_IO.Open (
             S (Curr_TCB.T - 1).Txt.all,
             Ada.Text_IO.In_File,
-            HAC.Data.VStrings_Pkg.To_String (S (Curr_TCB.T).V)
+            HAC.Defs.VStrings_Pkg.To_String (S (Curr_TCB.T).V)
           );
           Pop (2);
         when SP_Create =>
           Ada.Text_IO.Create (
             S (Curr_TCB.T - 1).Txt.all,
             Ada.Text_IO.Out_File,
-            HAC.Data.VStrings_Pkg.To_String (S (Curr_TCB.T).V)
+            HAC.Defs.VStrings_Pkg.To_String (S (Curr_TCB.T).V)
           );
           Pop (2);
         when SP_Close =>
@@ -914,8 +914,8 @@ package body HAC.PCode.Interpreter is
           Pop;
         when SP_Set_Env =>
           Ada.Environment_Variables.Set (
-            HAC.Data.VStrings_Pkg.To_String (S (Curr_TCB.T - 1).V),
-            HAC.Data.VStrings_Pkg.To_String (S (Curr_TCB.T).V)
+            HAC.Defs.VStrings_Pkg.To_String (S (Curr_TCB.T - 1).V),
+            HAC.Defs.VStrings_Pkg.To_String (S (Curr_TCB.T).V)
           );
           Pop (2);
         when SP_Push_Abstract_Console =>
@@ -1060,7 +1060,7 @@ package body HAC.PCode.Interpreter is
           H3         := Integer (Random (Gen) * Float (H2));
           while H2 >= 0 and TCB (H3).TS /= WaitSem and TCB (H3).SUSPEND /= H1
           loop
-            H3 := (H3 + 1) mod (HAC.Data.TaskMax + 1);
+            H3 := (H3 + 1) mod (HAC.Defs.TaskMax + 1);
             H2 := H2 - 1;
           end loop;
           if H2 < 0 or S (H1).I < 0 then
@@ -1163,7 +1163,7 @@ package body HAC.PCode.Interpreter is
       when k_Call =>
         --  procedure and task entry CALL
         --  Cramer
-        if IR.X = HAC.Data.CallTMDE then
+        if IR.X = HAC.Defs.CallTMDE then
           --  Timed entry call
           F1 := S (Curr_TCB.T).R;  --  Pop delay time
           Pop;
@@ -1185,12 +1185,12 @@ package body HAC.PCode.Interpreter is
         Curr_TCB.T := H4;
         case IR.X is
           when  --  Call type
-           HAC.Data.CallSTDP =>
+           HAC.Defs.CallSTDP =>
             --  Standard procedure call
 
             Curr_TCB.PC := CD.IdTab (H2).Adr_or_Sz;
 
-          when HAC.Data.CallSTDE =>
+          when HAC.Defs.CallSTDE =>
             --  Unconditional entry call
             Queue (H2, CurTask);          --  put self on entry queue
             Curr_TCB.TS := WaitRendzv;
@@ -1204,7 +1204,7 @@ package body HAC.PCode.Interpreter is
             end if;
             SWITCH := True;                 --  give up control
 
-          when HAC.Data.CallTMDE =>
+          when HAC.Defs.CallTMDE =>
             --  Timed entry call
             Queue (H2, CurTask);      --  put self on entry queue
             H5 := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
@@ -1226,7 +1226,7 @@ package body HAC.PCode.Interpreter is
             end if;
             SWITCH := True;       --  give up control
 
-          when HAC.Data.CallCNDE =>
+          when HAC.Defs.CallCNDE =>
             --  Conditional Entry Call
             H5 := CD.IdTab (H2).Adr_or_Sz;              --  Task being entered
             if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
@@ -1337,18 +1337,18 @@ package body HAC.PCode.Interpreter is
 
       when k_Integer_to_Float =>
         H1       := Curr_TCB.T - IR.Y;
-        S (H1).R := HAC.Data.HAC_Float (S (H1).I);
+        S (H1).R := HAC.Defs.HAC_Float (S (H1).I);
 
       when k_Exit_Call =>  --  EXIT entry call or procedure call
         --  Cramer
         Curr_TCB.T := Curr_TCB.B - 1;
-        if IR.Y = HAC.Data.CallSTDP then
+        if IR.Y = HAC.Defs.CallSTDP then
           Curr_TCB.PC := S (Curr_TCB.B + 1).I;  --  Standard proc call return
         end if;
         if Curr_TCB.PC /= 0 then
           Curr_TCB.B := S (Curr_TCB.B + 3).I;
-          if IR.Y = HAC.Data.CallTMDE or IR.Y = HAC.Data.CallCNDE then
-            if IR.Y = HAC.Data.CallTMDE and Curr_TCB.R1.I = 0 then
+          if IR.Y = HAC.Defs.CallTMDE or IR.Y = HAC.Defs.CallCNDE then
+            if IR.Y = HAC.Defs.CallTMDE and Curr_TCB.R1.I = 0 then
               Curr_TCB.T := Curr_TCB.T + 1;  --  A JMPC instruction always follows
             end if;
             if Curr_TCB.T > Curr_TCB.STACKSIZE then  --  timed and conditional entry call
@@ -1367,7 +1367,7 @@ package body HAC.PCode.Interpreter is
         Curr_TCB.T  := Curr_TCB.B;
         Curr_TCB.PC := S (Curr_TCB.B + 1).I;
         Curr_TCB.B  := S (Curr_TCB.B + 3).I;
-        if IR.Y = HAC.Data.End_Function_without_Return then
+        if IR.Y = HAC.Defs.End_Function_without_Return then
           PS := ProgErr;  --  !! with message "End function reached without ""return"" statement".
         end if;
 
@@ -1432,15 +1432,15 @@ package body HAC.PCode.Interpreter is
       when k_Set_Quantum_Task =>
         --  Cramer
         if S (Curr_TCB.T).R <= 0.0 then
-          S (Curr_TCB.T).R := HAC.Data.HAC_Float (TSlice) * 0.001;
+          S (Curr_TCB.T).R := HAC.Defs.HAC_Float (TSlice) * 0.001;
         end if;
         TCB (CurTask).QUANTUM := Duration (S (Curr_TCB.T).R);
         Pop;
 
       when k_Set_Task_Priority =>
         --  Cramer
-        if S (Curr_TCB.T).I > HAC.Data.PriMax then
-          S (Curr_TCB.T).I := HAC.Data.PriMax;
+        if S (Curr_TCB.T).I > HAC.Defs.PriMax then
+          S (Curr_TCB.T).I := HAC.Defs.PriMax;
         end if;
         if S (Curr_TCB.T).I < 0 then
           S (Curr_TCB.T).I := 0;
@@ -1468,7 +1468,7 @@ package body HAC.PCode.Interpreter is
           when 3 => --  Accept if its still on queue
             H1 := TCB (CurTask).R3.I;
             H2 := FirstCaller (H1);    --  first waiting task
-            H3 := HAC.Data.HAC_Integer (CD.IdTab (H1).LEV);     --  level of accepting entry
+            H3 := HAC.Defs.HAC_Integer (CD.IdTab (H1).LEV);     --  level of accepting entry
             if H2 >= 0 then
               Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := TCB (H2).B;
                 --  address callers parms
@@ -1654,15 +1654,15 @@ package body HAC.PCode.Interpreter is
       ( Ada.Text_IO.End_Of_File,
         Ada.Text_IO.End_Of_Line,
         Get_Needs_Skip_Line,
-        HAC.Data.IIO.Get,
-        HAC.Data.RIO.Get,
+        HAC.Defs.IIO.Get,
+        HAC.Defs.RIO.Get,
         Ada.Text_IO.Get,
         Ada.Text_IO.Get_Immediate,
         Ada.Text_IO.Get_Line,
         Ada.Text_IO.Skip_Line,
-        HAC.Data.IIO.Put,
-        HAC.Data.RIO.Put,
-        HAC.Data.BIO.Put,
+        HAC.Defs.IIO.Put,
+        HAC.Defs.RIO.Put,
+        HAC.Defs.BIO.Put,
         Ada.Text_IO.Put,
         Ada.Text_IO.Put,
         Ada.Text_IO.New_Line,

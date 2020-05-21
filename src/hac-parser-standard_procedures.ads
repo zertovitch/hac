@@ -8,7 +8,7 @@ private package HAC.Parser.Standard_Procedures is
   procedure Standard_Procedure (
     CD      : in out Compiler.Compiler_Data;
     Level   :        PCode.Nesting_level;
-    FSys    :        Data.Symset;
+    FSys    :        Defs.Symset;
     Code    :        PCode.SP_Code
   );
 

@@ -3,7 +3,7 @@ with Ada.Text_IO;
 
 package body HAC.UErrors is
 
-  function Error_String (code: HAC.Data.Compile_Error; hint: String:= "") return String is
+  function Error_String (code: HAC.Defs.Compile_Error; hint: String:= "") return String is
   begin
     case code is
       when err_undefined_identifier =>
@@ -270,7 +270,7 @@ package body HAC.UErrors is
 
   procedure Error (
     CD   : in out HAC.Compiler.Compiler_Data;
-    code :        HAC.Data.Compile_Error;
+    code :        HAC.Defs.Compile_Error;
     hint :        String      := "";
     stop :        Boolean     := False
   )

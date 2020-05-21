@@ -6,14 +6,14 @@ with HAC.Parser.Enter_Def,
 
 package body HAC.Parser.Tasking is
 
-  use Compiler, Data, Enter_Def, Helpers, PCode, UErrors;
+  use Compiler, Defs, Enter_Def, Helpers, PCode, UErrors;
 
   ------------------------------------------------------------------
   -------------------------------------------------Task_Declaration-
   --  Hathorn
   procedure Task_Declaration (
     CD            : in out Compiler.Compiler_Data;
-    FSys          :        Data.Symset;
+    FSys          :        Defs.Symset;
     Initial_Level :        Nesting_level
   )
   is

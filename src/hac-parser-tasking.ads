@@ -1,4 +1,4 @@
-with HAC.Compiler, HAC.Data;
+with HAC.Compiler, HAC.Defs;
 
 private package HAC.Parser.Tasking is
 
@@ -7,7 +7,7 @@ private package HAC.Parser.Tasking is
   --  Hathorn
   procedure Task_Declaration (
     CD            : in out Compiler.Compiler_Data;
-    FSys          :        Data.Symset;
+    FSys          :        Defs.Symset;
     Initial_Level :        PCode.Nesting_level
   );
 
