@@ -407,6 +407,7 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Argument",            VStrings, SF_Argument);
       Enter_Std_Funct ("Get_Env",             VStrings, SF_Get_Env);
       Enter_Std_Funct ("Shell_Execute",       Ints,     SF_Shell_Execute);
+      Enter_Std_Funct ("Directory_Separator", Chars,    SF_Directory_Separator);
       --
       Enter_Std_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
       --

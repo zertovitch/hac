@@ -550,19 +550,30 @@ package body HAC_Pack is
       return Image_with_exponent;
   end HAC_Image;
 
-  function Shell_Execute (Command : String) return Integer is
-    use Interfaces.C;
-    --  https://rosettacode.org/wiki/Execute_a_system_command#Ada
-    function Sys (Arg : char_array) return Integer;
+  --  Here is the non-Ada-standard stuff in HAC_Pack.
+  package Non_Standard is
+    function Sys (Arg : Interfaces.C.char_array) return Integer;
     pragma Import(C, Sys, "system");
+
+    Directory_Separator : Character;
+    pragma Import (C, Directory_Separator, "__gnat_dir_separator");
+  end Non_Standard;
+
+  function Shell_Execute (Command : String) return Integer is
+    --  https://rosettacode.org/wiki/Execute_a_system_command#Ada
   begin
-    return Sys (To_C (Command));
+    return Non_Standard.Sys (Interfaces.C.To_C (Command));
   end Shell_Execute;
 
   function Shell_Execute (Command : VString) return Integer is
   begin
     return Shell_Execute (To_String (Command));
-  end;
+  end Shell_Execute;
+
+  function Directory_Separator return Character is
+  begin
+    return Non_Standard.Directory_Separator;
+  end Directory_Separator;
 
 begin
   Reset (gen);  --  Randomize.

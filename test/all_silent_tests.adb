@@ -5,47 +5,32 @@ with HAC_Pack;  use HAC_Pack;
 
 procedure All_Silent_Tests is
 
-  type OS_Kind is (Nixux, Windoze);
-
-  function Determine_OS_Kind return OS_Kind is
-  begin
-    if Index (Get_Env ("OS"), "Windows") > 0 then
-      return Windoze;
-    else
-      return Nixux;
-    end if;
-  end Determine_OS_Kind;
-
-  function Directory_Separator (k : OS_Kind) return Character is
-  begin
-    case k is
-      when Nixux   => return '/';
-      when Windoze => return '\';
-    end case;
-  end Directory_Separator;
-
   procedure Launch_Tests is
-    k : OS_Kind;
 
-    procedure Launch_HAX (Ada_file_name : VString) is
+    procedure Shell (command : VString; echo : Boolean) is
       dummy : Integer;
     begin
-      dummy := Shell_Execute (
-        +".." & Directory_Separator (k) &
-        "hax -v1 " & Ada_file_name
+      if echo then
+        Put_Line ("Executing: [" & command & ']');
+      end if;
+      dummy := Shell_Execute (command);
+    end Shell;
+
+    procedure Launch_HAX (Ada_file_name : VString) is
+    begin
+      Shell (
+        +".." & Directory_Separator & "hax -v1 " & Ada_file_name,
+        False
       );
     end Launch_HAX;
 
     procedure Build_HAX is
-      dummy : Integer;
     begin
       Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
-      dummy :=
-        Shell_Execute (+"gprbuild -P .." & Directory_Separator (k) & "hac");
+      Shell (+"gprbuild -P .." & Directory_Separator & "hac", True);
     end Build_HAX;
 
   begin
-    k := Determine_OS_Kind;
     Build_HAX;  --  Redundant if this program is run through HAX.
     --
     Launch_HAX (+"case_statement.adb");
@@ -59,6 +44,7 @@ procedure All_Silent_Tests is
     Launch_HAX (+"sorting_tests.adb");
     Launch_HAX (+"strings.adb");
     Launch_HAX (+"type_conversion.adb");
+    Launch_HAX (+"var_init.adb");
   end Launch_Tests;
 
 begin

@@ -715,6 +715,8 @@ package body HAC.PCode.Interpreter is
                 S (Curr_TCB.T).R := HAC.Defs.HAC_Float (Random (Gen));
               when SF_Argument_Count =>
                 S (Curr_TCB.T).I := Argument_Count;
+              when SF_Directory_Separator =>
+                S (Curr_TCB.T).I := Character'Pos (Directory_Separator);
               when SF_Get_Needs_Skip_Line =>
                 S (Curr_TCB.T).I := Boolean'Pos (Get_Needs_Skip_Line);
             end case;
@@ -1668,7 +1670,8 @@ package body HAC.PCode.Interpreter is
         Ada.Text_IO.New_Line,
         Shifted_Argument_Count,
         Shifted_Argument,
-        HAC_Pack.Shell_Execute
+        HAC_Pack.Shell_Execute,
+        HAC_Pack.Directory_Separator
       );
 
   begin

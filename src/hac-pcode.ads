@@ -269,6 +269,7 @@ package HAC.PCode is
     SF_Clock,
     SF_Random_Float,
     SF_Argument_Count,
+    SF_Directory_Separator,
     SF_Get_Needs_Skip_Line  --  Informs whether Get from console needs Skip_Line
   );
 

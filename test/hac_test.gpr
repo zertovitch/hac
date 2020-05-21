@@ -24,7 +24,8 @@ project HAC_Test is
      "recursion.adb",
      "sorting_tests.adb",
      "strings.adb",
-     "type_conversion.adb"
+     "type_conversion.adb",
+     "var_init.adb"
    );
 
    case Build_Mode is

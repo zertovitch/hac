@@ -296,6 +296,8 @@ package HAC_Pack is
   function Shell_Execute (Command : String) return Integer;
   function Shell_Execute (Command : VString) return Integer;
 
+  function Directory_Separator return Character;
+
   --  This is public, but directly used by the HAC system itself only
   --  (HAC programs cannot return String's).
   --  That way, we avoid code duplication or incompatibilities between
