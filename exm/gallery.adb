@@ -17,13 +17,14 @@ procedure Gallery is
     end Shell;
 
     procedure Launch_HAX (Ada_file_name : VString) is
+      dummy : Character;
     begin
       Shell (
         +".." & Directory_Separator & "hax -v1 " & Ada_file_name,
         False
       );
       Put ("--- Press any key to continue in the HAC gallery...");
-      Get_Immediate (C);
+      Get_Immediate (dummy);
     end Launch_HAX;
 
     procedure Build_HAX is

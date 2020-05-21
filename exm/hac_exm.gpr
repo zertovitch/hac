@@ -24,6 +24,7 @@ project HAC_Exm is
      "einmaleins.adb",
      "env.adb",
      "hello.adb",
+     "gallery.adb",
      "file_copy.adb",
      "file_read.adb",
      "mandelbrot.adb",
