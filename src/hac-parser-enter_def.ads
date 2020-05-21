@@ -11,7 +11,7 @@
 
 with HAC.Compiler, HAC.Data, HAC.PCode;
 
-package HAC.Parser.Enter_Def is  --  Package around entering definitions.
+private package HAC.Parser.Enter_Def is  --  Package around entering definitions.
 
   procedure Enter_Block (
     CD    : in out Compiler.Compiler_Data;

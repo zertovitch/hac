@@ -101,7 +101,7 @@ package body HAC.Parser.Helpers is
         end loop;
         hint := "Found: " & KeyWSymbol'Image (CD.Sy) & "; expected: " & hint;
         if stop_on_error then
-          Error (CD, N, stop_on_error => True, hint => To_String (hint));
+          Error (CD, N, stop => True, hint => To_String (hint));
         end if;
         Skip (CD, S1 + S2, N, To_String (hint));
       end;
@@ -160,11 +160,6 @@ package body HAC.Parser.Helpers is
   begin
     Error (CD, err_type_conversion_not_supported, "argument type not supported");
   end Argument_Type_Not_Supported;
-
-  procedure Forbid_Type_Coercion (CD : in out Compiler_Data; details: String) is
-  begin
-    Error (CD, err_numeric_type_coercion, details, stop_on_error => True);
-  end Forbid_Type_Coercion;
 
   function Nice_Image (T: Typen) return String is
   begin
@@ -251,43 +246,73 @@ package body HAC.Parser.Helpers is
     );
   end Type_Mismatch;
 
+  function Op_Hint (OP : KeyWSymbol) return Character is
+  --  Displayed as "operator (+) is not defined..."
+  begin
+    case OP is
+      when Plus             => return '+';
+      when Minus            => return '-';
+      when Times            => return '*';
+      when Divide           => return '/';
+      when Ampersand_Symbol => return '&';
+      when others           => return '?';
+    end case;
+  end;
+
   procedure Operator_Undefined (
     CD          : in out Compiler_Data;
-    OP          :        KeyWSymbol;
+    Operator    :        KeyWSymbol;
     Left, Right :        Exact_Typ
   )
   is
-    function Op_Hint return Character is
-    --  Displayed as "operator (+) is not defined..."
-    begin
-      case OP is
-        when Plus             => return '+';
-        when Minus            => return '-';
-        when Times            => return '*';
-        when Ampersand_Symbol => return '&';
-        when others           => return '?';
-      end case;
-    end;
   begin
     if Left.TYP /= Right.TYP then
       Error (CD, err_operator_not_defined_for_types,
-        Op_Hint &
+        Op_Hint (Operator) &
         "left is "    & Nice_Exact_Image (CD, Left) &
         ", right is " & Nice_Exact_Image (CD, Right));
     elsif Left.TYP = Enums then
       Error (CD, err_operator_not_defined_for_types,
-        Op_Hint &
+        Op_Hint (Operator) &
         "left is "    & Enum_Name (CD, Left.Ref) &
         ", right is " & Enum_Name (CD, Right.Ref));
     else
       Error (CD, err_operator_not_defined_for_types,
-        Op_Hint &
+        Op_Hint (Operator) &
         "not exactly the same " & Nice_Image (Left.TYP));
         --  !! TBD: find the eventual array or record
         --     names using X.Ref, Y.Ref ... if they have names!
         --     (same for Type_Mismatch)
     end if;
   end Operator_Undefined;
+
+  procedure Forbid_Type_Coercion (
+    CD          : in out Compiler_Data;
+    Operator    :        KeyWSymbol;
+    Left, Right :        Exact_Typ
+  )
+  is
+  begin
+    Error (CD,
+      err_numeric_type_coercion_operator,
+        Op_Hint (Operator) &
+        "left is "    & Nice_Exact_Image (CD, Left) &
+        ", right is " & Nice_Exact_Image (CD, Right),
+      stop => True
+    );
+  end Forbid_Type_Coercion;
+
+  procedure Forbid_Type_Coercion (
+    CD              : in out Compiler_Data;
+    Found, Expected :        Exact_Typ
+  )
+  is
+  begin
+    Error (CD, err_numeric_type_coercion,
+      "found "    & Nice_Exact_Image (CD, Found) &
+      ", expected " & Nice_Exact_Image (CD, Expected),
+      stop => True);
+  end Forbid_Type_Coercion;
 
   function Singleton (s: KeyWSymbol) return Symset is
     res : Symset := Empty_Symset;
@@ -325,7 +350,7 @@ package body HAC.Parser.Helpers is
       exit when L < 0 or J /= No_Id;
     end loop;
     if J = No_Id and No_Id_Fail then
-      Error (CD, err_undefined_identifier, stop_on_error => stop_on_error);
+      Error (CD, err_undefined_identifier, stop => stop_on_error);
     end if;
     return J;
   end Locate_Identifier;

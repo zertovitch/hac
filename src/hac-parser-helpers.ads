@@ -75,13 +75,6 @@ package HAC.Parser.Helpers is
 
   procedure Argument_Type_Not_Supported (CD : in out Compiler_Data);
 
-  --  https://en.wikipedia.org/wiki/Type_conversion#Implicit_type_conversion
-  --  One of the most useful feature of Ada is the absence of type coercion.
-  --  Note from the Python 2.5 doc:
-  --  "In Python 3.0, coercion will not be supported."
-  --
-  procedure Forbid_Type_Coercion (CD : in out Compiler_Data; details: String);
-
   procedure Type_Mismatch (
     CD               : in out Compiler_Data;
     Err              :        Compile_Error;
@@ -97,8 +90,24 @@ package HAC.Parser.Helpers is
 
   procedure Operator_Undefined (
     CD          : in out Compiler_Data;
-    OP          :        KeyWSymbol;
+    Operator    :        KeyWSymbol;
     Left, Right :        Exact_Typ
+  );
+
+  --  https://en.wikipedia.org/wiki/Type_conversion#Implicit_type_conversion
+  --  One of the most useful feature of Ada is the absence of type coercion.
+  --  Note from the Python 2.5 doc:
+  --  "In Python 3.0, coercion will not be supported."
+  --
+  procedure Forbid_Type_Coercion (
+    CD          : in out Compiler_Data;
+    Operator    :        KeyWSymbol;
+    Left, Right :        Exact_Typ
+  );
+
+  procedure Forbid_Type_Coercion (
+    CD              : in out Compiler_Data;
+    Found, Expected :        Exact_Typ
   );
 
   No_Id : constant := 0;

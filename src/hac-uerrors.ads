@@ -19,10 +19,10 @@ package HAC.UErrors is
   nothing_to_repair : constant Repair_kit := (none, Null_VString);
 
   procedure Error (
-    CD            : in out HAC.Compiler.Compiler_Data;
-    code          :        HAC.Data.Compile_Error;
-    hint          :        String      := "";
-    stop_on_error :        Boolean     := False
+    CD   : in out HAC.Compiler.Compiler_Data;
+    code :        HAC.Data.Compile_Error;
+    hint :        String      := "";
+    stop :        Boolean     := False
   );
 
   procedure Compilation_Errors_Summary (CD : HAC.Compiler.Compiler_Data);

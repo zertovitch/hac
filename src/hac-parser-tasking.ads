@@ -1,6 +1,6 @@
 with HAC.Compiler, HAC.Data;
 
-package HAC.Parser.Tasking is
+private package HAC.Parser.Tasking is
 
   ------------------------------------------------------------------
   -------------------------------------------------Task_Declaration-

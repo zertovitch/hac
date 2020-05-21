@@ -460,11 +460,11 @@ package body HAC.Compiler is
 
     InSymbol;
     if CD.Sy /= WITH_Symbol then  --  WITH HAC_PACK;
-      Error (CD, err_WITH_Small_Sp, "", stop_on_error => True);
+      Error (CD, err_WITH_Small_Sp, "", stop => True);
     else
       InSymbol;
       if CD.Sy /= IDent or not Equal (CD.Id, "HAC_PACK") then
-        Error (CD, err_WITH_Small_Sp, "", stop_on_error => True);
+        Error (CD, err_WITH_Small_Sp, "", stop => True);
       else
         InSymbol;
         if CD.Sy /= Semicolon then

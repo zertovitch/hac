@@ -27,7 +27,7 @@ package body HAC.Parser.Expressions is
           Field_Id := CD.IdTab (Field_Id).Link;
         end loop;
         if Field_Id = No_Id then
-          Error (CD, err_undefined_identifier, stop_on_error => True);
+          Error (CD, err_undefined_identifier, stop => True);
         end if;
         V            := CD.IdTab (Field_Id).xTyp;
         Field_Offset := CD.IdTab (Field_Id).Adr_or_Sz;
@@ -42,21 +42,28 @@ package body HAC.Parser.Expressions is
     --
     procedure Array_Coordinates_Selector is
       Array_Index_Expr : Exact_Typ;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
-      Arr_Tab_Index : Integer;       --  Index in the table of all arrays definitions.
     begin
       loop
         InSymbol (CD);  --  Consume '(' or ',' symbol.
         Expression (CD, Level, FSys + Comma_RParent + RBrack, Array_Index_Expr);
         if V.TYP = Arrays then
-          Arr_Tab_Index := V.Ref;
-          if CD.Arrays_Table (Arr_Tab_Index).Index_xTyp /= Array_Index_Expr then
-            Error (CD, err_illegal_array_subscript);
-          elsif CD.Arrays_Table (Arr_Tab_Index).Element_Size = 1 then
-            Emit1 (CD, k_Array_Index_Element_Size_1, Arr_Tab_Index);
-          else
-            Emit1 (CD, k_Array_Index, Arr_Tab_Index);
-          end if;
-          V := CD.Arrays_Table (Arr_Tab_Index).Element_xTyp;
+          declare
+            ATI : constant Integer := V.Ref;
+            ATE : ATabEntry renames CD.Arrays_Table (ATI);
+          begin
+            if ATE.Index_xTyp /= Array_Index_Expr then
+              Type_Mismatch (
+                CD, err_illegal_array_subscript,
+                Found    => Array_Index_Expr,
+                Expected => ATE.Index_xTyp
+              );
+            elsif ATE.Element_Size = 1 then
+              Emit1 (CD, k_Array_Index_Element_Size_1, ATI);
+            else
+              Emit1 (CD, k_Array_Index, ATI);
+            end if;
+            V := ATE.Element_xTyp;
+          end;
         else
           Error (CD, err_indexed_variable_must_be_an_array);
         end if;
@@ -308,7 +315,7 @@ package body HAC.Parser.Expressions is
                   if X.TYP = Y.TYP then
                     Emit_Arithmetic_Binary_Instruction (CD, Mult_OP, X.TYP);
                   else
-                    Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
+                    Forbid_Type_Coercion (CD, Mult_OP, X, Y);
                   end if;
                 elsif X.TYP = Ints then
                   --  N * (something non-numeric)
@@ -335,12 +342,12 @@ package body HAC.Parser.Expressions is
                   Emit_Arithmetic_Binary_Instruction (CD, Mult_OP, X.TYP);
                 else
                   if X.TYP = Ints then
-                    Forbid_Type_Coercion (CD, "left operand's type is integer, right operand's isn't");
+                    Forbid_Type_Coercion (CD, Mult_OP, X, Y);
                     Emit1 (CD, k_Integer_to_Float, 1);  --  NB: this assumed Y.TYP was Floats!
                     X.TYP := Floats;
                   end if;
                   if Y.TYP = Ints then
-                    Forbid_Type_Coercion (CD, "right operand's type is integer, left operand's isn't");
+                    Forbid_Type_Coercion (CD, Mult_OP, X, Y);
                     Emit1 (CD, k_Integer_to_Float, 0);  --  NB: this assumed Y.TYP was Floats!
                     Y.TYP := Floats;
                   end if;
@@ -427,7 +434,7 @@ package body HAC.Parser.Expressions is
                 if X.TYP = Y.TYP then
                   Emit_Arithmetic_Binary_Instruction (CD, Adding_OP, X.TYP);
                 else
-                  Forbid_Type_Coercion (CD, "for this standard operator, types must be the same");
+                  Forbid_Type_Coercion (CD, Adding_OP, X, Y);
                 end if;
               else
                 Issue_Undefined_Operator_Error (Adding_OP, X, Y);
@@ -489,13 +496,11 @@ package body HAC.Parser.Expressions is
       InSymbol (CD);
       Simple_Expression (FSys, Y);
       if X.TYP = Ints and Y.TYP = Floats then
-        Forbid_Type_Coercion (CD,
-          "left operand's type is integer, right operand's is floating-point");
+        Forbid_Type_Coercion (CD, Rel_OP, X, Y);
         X.TYP := Floats;
         Emit1 (CD, k_Integer_to_Float, 1);
       elsif X.TYP = Floats and Y.TYP = Ints then
-        Forbid_Type_Coercion (CD,
-          "left operand's type is floating-point, right operand's is integer");
+        Forbid_Type_Coercion (CD, Rel_OP, X, Y);
         Y.TYP := Floats;
         Emit1 (CD, k_Integer_to_Float, 0);
       elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then

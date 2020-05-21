@@ -1,6 +1,6 @@
 with HAC.Compiler, HAC.PCode;
 
-package HAC.Parser.Standard_Functions is
+private package HAC.Parser.Standard_Functions is
 
   --  NB: Some of the supplied subprograms may disappear when modularity,
   --  Ada.Text_IO etc. will be implemented, as well as overloading.

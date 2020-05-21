@@ -383,6 +383,7 @@ package HAC.Data is
     err_not_yet_implemented,                     --  2019-03-24
     err_type_conversion_not_supported,           --  2020-03-31
     err_numeric_type_coercion,                   --  2020-04-06
+    err_numeric_type_coercion_operator,
     err_operator_not_defined_for_types,          --  2020-04-06
     err_no_null_functions,                       --  2020-04-10
     err_digit_expected,

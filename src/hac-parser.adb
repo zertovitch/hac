@@ -197,7 +197,7 @@ package body HAC.Parser is
         --
         loop
           if CD.Sy /= IDent then
-            Error (CD, err_identifier_missing, stop_on_error => True);
+            Error (CD, err_identifier_missing, stop => True);
           else  --  RM 3.8 Component declaration
             T0 := CD.Id_Count;
             Enter_Variables (CD, Level);
@@ -321,7 +321,7 @@ package body HAC.Parser is
                   Sz := 1;
                 end if;
               else
-                Error (CD, err_missing_a_type_identifier, stop_on_error => True);
+                Error (CD, err_missing_a_type_identifier, stop => True);
               end if;
             end if;  --  X /= No_Id
           end if;
@@ -340,7 +340,7 @@ package body HAC.Parser is
             end;
           end loop;  --  while T0 < CD.Id_Count
         else
-          Error (CD, err_colon_missing, stop_on_error => True);
+          Error (CD, err_colon_missing, stop => True);
         end if;
         if CD.Sy /= RParent then
           Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
@@ -432,7 +432,7 @@ package body HAC.Parser is
           end case;
         end if;
       elsif X.TYP = Floats and Y.TYP = Ints then
-        Forbid_Type_Coercion (CD, "integer value assigned to floating-point variable");
+        Forbid_Type_Coercion (CD, Found => Y, Expected => X);
         Emit1 (CD, k_Integer_to_Float, 0);
         Emit (CD, k_Store);
       elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
@@ -796,7 +796,7 @@ package body HAC.Parser is
           end if;
         else
           if not Is_a_function then
-            Error (CD, err_procedures_cannot_return_a_value, stop_on_error => True);
+            Error (CD, err_procedures_cannot_return_a_value, stop => True);
           end if;
           --  Calculate return value (destination: X; expression: Y).
           if CD.IdTab (Block_Idx).Block_Ref = CD.Display (Level) then
@@ -816,7 +816,7 @@ package body HAC.Parser is
                 Issue_Type_Mismatch_Error;
               end if;
             elsif X.TYP = Floats and Y.TYP = Ints then
-              Forbid_Type_Coercion (CD, "integer type value returned as floating-point");
+              Forbid_Type_Coercion (CD, Found => Y, Expected => X);
               Emit1 (CD, k_Integer_to_Float, 0);
               Emit (CD, k_Store);
             elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
@@ -918,7 +918,7 @@ package body HAC.Parser is
             InSymbol;
           end if;
           if CD.Sy = THEN_Symbol then  --  Happens when converting IF statements to CASE.
-            Error (CD, err_THEN_instead_of_Arrow, stop_on_error => True);
+            Error (CD, err_THEN_instead_of_Arrow, stop => True);
             InSymbol;
           else
             Need (CD, Finger, err_FINGER_missing);
@@ -949,7 +949,7 @@ package body HAC.Parser is
         end if;
 
         if CD.Sy /= WHEN_Symbol then
-          Error (CD, err_WHEN_missing, stop_on_error => True);
+          Error (CD, err_WHEN_missing, stop => True);
         end if;
         loop  --  All cases are parsed here.
           One_CASE;
@@ -1346,7 +1346,7 @@ package body HAC.Parser is
         Error (
           CD, err_not_yet_implemented,
           hint => "Block statements don't work yet",
-          stop_on_error => True
+          stop => True
         );
         --
         Block (CD, FSys_St, Is_a_function, True, Level + 1, CD.Id_Count, block_name, block_name);  --  !! up/low case
@@ -1424,12 +1424,12 @@ package body HAC.Parser is
                   Assignment (I_Statement, Check_read_only => True);
                 when Declared_Number_or_Enum_Item =>
                   Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
-                         stop_on_error => True);
+                         stop => True);
                 when TypeMark =>
-                  Error (CD, err_illegal_statement_start_symbol, "type name", stop_on_error => True);
+                  Error (CD, err_illegal_statement_start_symbol, "type name", stop => True);
                 when Funktion =>
                   Error (CD, err_illegal_statement_start_symbol, "function name",
-                         stop_on_error => True);
+                         stop => True);
                 when aTask =>
                   Entry_Call (CD, Level, FSys_St, I_Statement, CallSTDE);
                 when Prozedure =>
@@ -1552,18 +1552,18 @@ package body HAC.Parser is
           InSymbol;
           if I_Res_Type /= 0 then
             if CD.IdTab (I_Res_Type).Obj /= TypeMark then
-              Error (CD, err_missing_a_type_identifier, stop_on_error => True);
+              Error (CD, err_missing_a_type_identifier, stop => True);
             elsif Standard_or_Enum_Typ (CD.IdTab (I_Res_Type).xTyp.TYP) then
               CD.IdTab (Prt).xTyp := CD.IdTab (I_Res_Type).xTyp;
             else
-              Error (CD, err_bad_result_type_for_a_function, stop_on_error => True);
+              Error (CD, err_bad_result_type_for_a_function, stop => True);
             end if;
           end if;
         else
-          Error (CD, err_identifier_missing, stop_on_error => True);
+          Error (CD, err_identifier_missing, stop => True);
         end if;
       else
-        Error (CD, err_RETURN_missing, stop_on_error => True);
+        Error (CD, err_RETURN_missing, stop => True);
       end if;
     end Function_Result_Profile;
 

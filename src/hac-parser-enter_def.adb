@@ -83,13 +83,13 @@ package body HAC.Parser.Enter_Def is
     if L > H then
       Error (CD,
         err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)", -- !!
-        stop_on_error => True
+        stop => True
       );
     end if;
     if abs (L) > XMax or abs (H) > XMax then
       Error (CD,
         err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",
-        stop_on_error => True
+        stop => True
       );
     end if;
     if CD.Arrays_Count = AMax then

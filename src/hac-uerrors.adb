@@ -69,7 +69,7 @@ package body HAC.UErrors is
       when err_illegal_constant_or_constant_identifier =>
         return "illegal constant or constant identifier";
       when err_illegal_array_subscript =>
-        return "illegal array subscript (check type)";
+        return "type mismatch in array subscript: " & hint;
       when err_illegal_array_bounds =>
         return "illegal bounds for an array index: " & hint;
       when err_indexed_variable_must_be_an_array =>
@@ -210,6 +210,10 @@ package body HAC.UErrors is
         return "this type conversion is not supported: " & hint;
       when err_numeric_type_coercion =>
         return "numeric types don't match: " & hint & " - please use explicit conversion";
+      when err_numeric_type_coercion_operator =>
+        return "numeric types don't match (" &
+               hint (hint'First) & "): " & hint (hint'First + 1 .. hint'Last) &
+               " - please use explicit conversion";
       when err_operator_not_defined_for_types =>
         return "operator (" & hint (hint'First) &
                ") is not defined for those operand types: " &
@@ -265,10 +269,10 @@ package body HAC.UErrors is
     );
 
   procedure Error (
-    CD            : in out HAC.Compiler.Compiler_Data;
-    code          :        HAC.Data.Compile_Error;
-    hint          :        String      := "";
-    stop_on_error :        Boolean     := False
+    CD   : in out HAC.Compiler.Compiler_Data;
+    code :        HAC.Data.Compile_Error;
+    hint :        String      := "";
+    stop :        Boolean     := False
   )
   is
     use Ada.Text_IO;
@@ -341,7 +345,7 @@ package body HAC.UErrors is
     end if;
     --  Uncomment the next line for getting a nice trace-back of 1st error.
     --  raise Constraint_Error;
-    if stop_on_error then
+    if stop then
       raise Compilation_abandoned;
     end if;
   end Error;

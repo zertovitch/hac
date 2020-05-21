@@ -1,7 +1,7 @@
 with HAC.Compiler;           use HAC.Compiler;
 with HAC.Data;               use HAC.Data;
 
-package HAC.Parser.Calls is
+private package HAC.Parser.Calls is
 
   procedure Push_and_Check_by_Value_Parameter (
     CD       : in out HAC.Compiler.Compiler_Data;

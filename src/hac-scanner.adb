@@ -352,9 +352,9 @@ package body HAC.Scanner is
         if CD.CH = '_' then
           NextCh;
           if CD.CH = '_' then
-            Error (CD, err_double_underline_not_permitted, stop_on_error => True);
+            Error (CD, err_double_underline_not_permitted, stop => True);
           elsif CharacterTypes (CD.CH) /= Number then
-            Error (CD, err_digit_expected, stop_on_error => True);
+            Error (CD, err_digit_expected, stop => True);
           end if;
         end if;
       end Skip_eventual_underscore;
@@ -467,7 +467,7 @@ package body HAC.Scanner is
               CD.Id (K)           := UpCase (CD.CH);
               CD.Id_with_case (K) := CD.CH;
               if K > 1 and then CD.Id (K - 1 .. K) = "__" then
-                Error (CD, err_double_underline_not_permitted, To_String (CD.Id), stop_on_error => True);
+                Error (CD, err_double_underline_not_permitted, To_String (CD.Id), stop => True);
               end if;
             else
               Error (CD, err_identifier_too_long, To_String (CD.Id));
@@ -477,7 +477,7 @@ package body HAC.Scanner is
                      and then special_or_illegal (CharacterTypes (CD.CH));
           end loop;
           if K > 0 and then CD.Id (K) ='_' then
-            Error (CD, err_identifier_cannot_end_with_underline, To_String (CD.Id), stop_on_error => True);
+            Error (CD, err_identifier_cannot_end_with_underline, To_String (CD.Id), stop => True);
           end if;
           --
           I := 1;

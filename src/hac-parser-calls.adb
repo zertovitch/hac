@@ -28,7 +28,7 @@ package body HAC.Parser.Calls is
         Emit1 (CD, k_Load_Block, CD.Blocks_Table (X.Ref).VSize);
       end if;
     elsif X.TYP = Ints and Expected.TYP = Floats then
-      Forbid_Type_Coercion (CD, "value is integer, parameter is floating-point");
+      Forbid_Type_Coercion (CD, X, Expected);
       Emit1 (CD, k_Integer_to_Float, 0);  --  Left as a "souvenir" of SmallAda...
     elsif X.TYP /= NOTYP then
       Type_Mismatch (CD, err_parameter_types_do_not_match, X, Expected);
