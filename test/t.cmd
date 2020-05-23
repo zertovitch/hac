@@ -3,6 +3,7 @@
 cd..
 call build
 cd test
+set haxbuild=done
 
 if "%1"=="" goto gallery
 

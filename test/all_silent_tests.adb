@@ -26,6 +26,9 @@ procedure All_Silent_Tests is
 
     procedure Build_HAX is
     begin
+      if Get_Env("haxbuild") = "done" then
+        return;
+      end if;   
       Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
       Shell (+"gprbuild -P .." & Directory_Separator & "hac", True);
     end Build_HAX;

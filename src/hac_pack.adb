@@ -555,7 +555,7 @@ package body HAC_Pack is
     function Sys (Arg : Interfaces.C.char_array) return Integer;
     pragma Import(C, Sys, "system");
 
-    Directory_Separator : Character;
+    Directory_Separator : constant Character;
     pragma Import (C, Directory_Separator, "__gnat_dir_separator");
   end Non_Standard;
 

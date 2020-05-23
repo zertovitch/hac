@@ -1,8 +1,10 @@
 @echo off
 
+echo (Re-)building HAX
 cd..
 call build
 cd exm
+set haxbuild=done
 
 if "%1"=="" goto gallery
 

@@ -20,21 +20,25 @@ procedure Gallery is
       dummy : Character;
     begin
       Shell (
-        +".." & Directory_Separator & "hax -v1 " & Ada_file_name,
+        +".." & Directory_Separator & "hax -v2 " & Ada_file_name,
         False
       );
       Put ("--- Press any key to continue in the HAC gallery...");
       Get_Immediate (dummy);
+      New_Line;
     end Launch_HAX;
 
     procedure Build_HAX is
     begin
+      if Get_Env("haxbuild") = "done" then
+        return;
+      end if;   
       Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
       Shell (+"gprbuild -P .." & Directory_Separator & "hac", True);
     end Build_HAX;
 
   begin
-    Build_HAX;  --  Redundant if this program is run through HAX.
+    Build_HAX;  --  Redundant if this program is itself run through HAX.
     --
     Launch_HAX (+"hello.adb");
     Launch_HAX (+"strings_demo.adb");

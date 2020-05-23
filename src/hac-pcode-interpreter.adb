@@ -20,7 +20,7 @@ package body HAC.PCode.Interpreter is
 
   package InterDef is
     --  Sub-package, was a separate Turbo Pascal unit.
-    --  !! TBD: we'll wrap "global" variables there into a proper object type.
+    --  !! WIP: we're wrapping "global" variables there into a proper object type.
 
     --  DaysPast:array ( 1 .. 12 ) of  integer := --  Does not account for
     --leap year
@@ -28,7 +28,7 @@ package body HAC.PCode.Interpreter is
     --  (    0,  31,  59,  90, 120, 151, 181, 212, 243, 273, 304, 335  );
     --  Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec
 
-    NilTask : Integer := -1;
+    NilTask : constant := -1;
 
     subtype TRange is Integer range 0 .. HAC.Defs.TaskMax; --  task index
 
@@ -79,8 +79,7 @@ package body HAC.PCode.Interpreter is
 
     subtype Data_Type is GRegister;
 
-    --  Stack
-    S : array (1 .. Defs.StMax) of Data_Type;
+    type Stack_Type is array (1 .. Defs.StMax) of Data_Type;
 
     type Task_Control_Block is record   --  Task Control Block
       --  index of current top of stack
@@ -114,9 +113,9 @@ package body HAC.PCode.Interpreter is
     type Enode;
     type Eptr is access Enode; --  task entry rendzv pointer
 
-    type Enode is record        --  task entry structure
+    type Enode is record    --  task entry structure
       Task_Index : TRange;  --  index of task enqueued for rendzv
-      Next : Eptr;  --  next entry in list
+      Next       : Eptr;    --  next entry in list
     end record;
 
     procedure Dispose is new Ada.Unchecked_Deallocation (Enode, Eptr);
@@ -124,37 +123,32 @@ package body HAC.PCode.Interpreter is
     type EHeader is record
       Task_Index : TRange;  --  index of task that contains entry
       First : Eptr;  --  ptr to first node in rendzv queue
-      Last : Eptr;  --  ptr to last  node in rendzv queue
+      Last : Eptr;   --  ptr to last  node in rendzv queue
     end record;
 
-    IR       : Order;  --  Instruction register
-
-    PS       : Processor_State := RUN;    --  Processor status register
-
-    TCB      : array (TRange) of Task_Control_Block;  --  Task control blocks
-    EList    : array (1 .. HAC.Defs.EntryMax) of EHeader; --  Entry queue array
-    SWITCH   : Boolean:= False; --  invoke scheduler on next cycle flag
-    SYSCLOCK : Time:= Clock;    --  (ms after 00:00:00 Jan 1, current year)
-    TIMER    : Time:= SYSCLOCK; --  set to end of current task's time slice
-    TActive  : TRange;  --  no. of active tasks
-
-    CurTask : Integer;  --  index of currently executing task
-
-    H1, H2, H3, H4, H5 : HAC.Defs.HAC_Integer;  --  Internal integer registers
-    F1     : HAC.Defs.HAC_Float;                --  Internal float registers
-    BLKCNT : Integer;
-
-    NCALLS : Integer;   --  AVL  TERMINATE
-    NCOMPL : Integer;   --  AVL  TERMINATE
+    type Entry_Queue is array (1 .. HAC.Defs.EntryMax) of EHeader;
 
     function GetClock return Time renames Clock;
 
-    SNAP: Boolean;  --  SNAP-shot flag To Display sched. status
-
     package File_Vectors is new Ada.Containers.Vectors (Positive, File_Ptr);
 
+    type Task_Control_Blocks is array (TRange) of Task_Control_Block;
+
+    --  !! move into Interpreter_Data.
+    S : Stack_Type;
+
+    --  Objects of type Interpreter_Data contains data that may be useful
+    --  to be kept post-mortem or in a snapshot to "outside", or
+    --  passed to the scheduler.
+
     type Interpreter_Data is record
-      Files : File_Vectors.Vector;
+      PS          : Processor_State := RUN;  --  Processor status register
+      CurTask     : Integer;                 --  Index of currently executing task
+      TCB         : Task_Control_Blocks;
+      Files       : File_Vectors.Vector;
+      Snap        : Boolean;   --  Snapshot flag to display scheduler status
+      Nb_Callers  : Integer;   --  AVL  TERMINATE
+      Nb_Complete : Integer;   --  AVL  TERMINATE
     end record;
 
     procedure Allocate_Text_File (
@@ -198,48 +192,49 @@ package body HAC.PCode.Interpreter is
   --  Post Mortem Dump of the task stack causing the exception
   --
   procedure Post_Mortem_Dump (CD: Compiler_Data; ND: InterDef.Interpreter_Data) is
-  pragma Unreferenced (ND);
     use InterDef, Ada.Text_IO, HAC.Defs.IIO;
+    BLKCNT : Integer;
+    H1, H2, H3 : HAC.Defs.HAC_Integer;
   begin
       New_Line;
       Put_Line ("HAC - PCode - Post Mortem Dump");
       New_Line;
-      Put_Line ("Processor state: " & Processor_State'Image (InterDef.PS));
+      Put_Line ("Processor state: " & Processor_State'Image (ND.PS));
       New_Line;
       Put_Line (
         "Stack Variables of Task " &
-        HAC.Defs.To_String (CD.IdTab (CD.Tasks_Definitions_Table (InterDef.CurTask)).Name)
+        HAC.Defs.To_String (CD.IdTab (CD.Tasks_Definitions_Table (ND.CurTask)).Name)
       );
-      InterDef.H1 := InterDef.TCB (InterDef.CurTask).B;   --  current bottom of stack
-      InterDef.BLKCNT := 10;
+      H1 := ND.TCB (ND.CurTask).B;   --  current bottom of stack
+      BLKCNT := 10;
       loop
         New_Line;
-        InterDef.BLKCNT := InterDef.BLKCNT - 1;
-        if InterDef.BLKCNT = 0 then
-          InterDef.H1 := 0;
+        BLKCNT := BLKCNT - 1;
+        if BLKCNT = 0 then
+          H1 := 0;
         end if;
-        InterDef.H2 := S (InterDef.H1 + 4).I;  --  index into HAC.Data.IdTab for this process
-        if InterDef.H1 /= 0 then
-          Put (HAC.Defs.To_String (CD.IdTab (InterDef.H2).Name));
+        H2 := S (H1 + 4).I;  --  index into HAC.Data.IdTab for this process
+        if H1 /= 0 then
+          Put (HAC.Defs.To_String (CD.IdTab (H2).Name));
           Put (" CALLED AT");
-          Put (S (InterDef.H1 + 1).I, 5);
+          Put (S (H1 + 1).I, 5);
           New_Line;
         else
           Put_Line ("Task Variables");
         end if;
-        InterDef.H2 := CD.Blocks_Table (CD.IdTab (InterDef.H2).Block_Ref).Last_Id_Idx;
-        while InterDef.H2 /= 0 loop
+        H2 := CD.Blocks_Table (CD.IdTab (H2).Block_Ref).Last_Id_Idx;
+        while H2 /= 0 loop
           -- [P2Ada]: WITH instruction
           declare
-            P2Ada_Var_7 : IdTabEntry renames CD.IdTab (InterDef.H2);
+            P2Ada_Var_7 : IdTabEntry renames CD.IdTab (H2);
             use HAC.Defs;
           begin
             if P2Ada_Var_7.Obj = Variable then
               if HAC.Defs.Standard_or_Enum_Typ (P2Ada_Var_7.xTyp.TYP) then
                 if P2Ada_Var_7.Normal then
-                  InterDef.H3 := InterDef.H1 + P2Ada_Var_7.Adr_or_Sz;
+                  H3 := H1 + P2Ada_Var_7.Adr_or_Sz;
                 else
-                  InterDef.H3 := InterDef.S (InterDef.H1 + P2Ada_Var_7.Adr_or_Sz).I;
+                  H3 := InterDef.S (H1 + P2Ada_Var_7.Adr_or_Sz).I;
                 end if;
                 Put ("  " & To_String (P2Ada_Var_7.Name) & " = ");
                 case P2Ada_Var_7.xTyp.TYP is
@@ -260,41 +255,42 @@ package body HAC.PCode.Interpreter is
                 end case;
               end if;
             end if;
-            InterDef.H2 := P2Ada_Var_7.Link;
+            H2 := P2Ada_Var_7.Link;
           end; -- [P2Ada]: end of WITH
 
         end loop;
-        InterDef.H1 := InterDef.S (InterDef.H1 + 3).I;
-        exit when InterDef.H1 < 0;
+        H1 := InterDef.S (H1 + 3).I;
+        exit when H1 < 0;
       end loop;
   end Post_Mortem_Dump;
 
-  procedure Interpret (CD: Compiler_Data)
+  procedure Interpret (CD : Compiler_Data)
   is
-    ND: InterDef.Interpreter_Data;
+    ND : InterDef.Interpreter_Data;
     Start_Time : constant Time := Clock;
     --  trap label
     Gen : Generator;
+    IR  : Order;  --  Instruction register
+    EList    : InterDef.Entry_Queue;
+    SWITCH   : Boolean := False;   --  invoke scheduler on next cycle flag
+    SYSCLOCK : Time := Clock;      --  (ms after 00:00:00 Jan 1, current year)
+    TIMER    : Time := SYSCLOCK;   --  set to end of current task's time slice
+    TActive  : InterDef.TRange;    --  no. of active tasks
+
+    H1, H2, H3, H4, H5 : HAC.Defs.HAC_Integer;  --  Internal integer registers
+    F1     : HAC.Defs.HAC_Float;                --  Internal float registers
 
     function AnyTaskDelayed return Boolean is
-      Result_AnyTaskDelayed : Boolean;
-
-      t           : InterDef.TRange;
-      taskdelayed : Boolean;
-
       use InterDef;
-
+      taskdelayed : Boolean := False;
     begin
-      taskdelayed := False;
-      t           := 0;
-      while t <= CD.Tasks_Definitions_Count and not taskdelayed loop
-        taskdelayed := TCB (t).TS = Delayed or
-                       TCB (t).TS = TimedRendz or
-                       TCB (t).TS = TimedWait;
-        t           := t + 1;
+      for t in TRange'First .. CD.Tasks_Definitions_Count loop
+        exit when taskdelayed;
+        taskdelayed := ND.TCB (t).TS = Delayed or
+                       ND.TCB (t).TS = TimedRendz or
+                       ND.TCB (t).TS = TimedWait;
       end loop;
-      Result_AnyTaskDelayed := taskdelayed;
-      return Result_AnyTaskDelayed;
+      return taskdelayed;
     end AnyTaskDelayed;
     pragma Unreferenced (AnyTaskDelayed);
 
@@ -322,7 +318,7 @@ package body HAC.PCode.Interpreter is
       enode_var.Task_Index := CallingTask;
       enode_var.Next                  := null;
       declare
-        E_Q_Header : InterDef.EHeader renames InterDef.EList (ix);
+        E_Q_Header : InterDef.EHeader renames EList (ix);
       begin
         if E_Q_Header.First = null then
           E_Q_Header.First := enode_var;
@@ -338,25 +334,22 @@ package body HAC.PCode.Interpreter is
       use InterDef;
     begin
       ix := EIndex (Entry_Index);
-      if InterDef.EList (ix).First = null then
+      if EList (ix).First = null then
         val := -1;
       else
-        val := InterDef.EList (ix).First.Task_Index;
+        val := EList (ix).First.Task_Index;
       end if;
       return val;
     end FirstCaller;
 
-    function RemoveFirst
-     (Entry_Index : Integer)
-      return                   InterDef.TRange
-    is
+    function RemoveFirst (Entry_Index : Integer) return InterDef.TRange is
       ix, val : Integer;
       dmy     : InterDef.Eptr;
       use InterDef;
     begin
       ix := EIndex (Entry_Index);
       declare
-        E_Q_Header : InterDef.EHeader renames InterDef.EList (ix);
+        E_Q_Header : EHeader renames EList (ix);
       begin
         val := E_Q_Header.First.Task_Index;
         if E_Q_Header.First = E_Q_Header.Last then
@@ -365,11 +358,11 @@ package body HAC.PCode.Interpreter is
         else
           dmy              := E_Q_Header.First;
           E_Q_Header.First := E_Q_Header.First.Next;
-          InterDef.Dispose (dmy);
+          Dispose (dmy);
         end if;
       end;
       return val;
-    end RemoveFirst;   --  RemoveFirst
+    end RemoveFirst;
 
     procedure ShowQ (Entry_Index : Integer)  --  for debugging
     is
@@ -378,7 +371,7 @@ package body HAC.PCode.Interpreter is
       use HAC.Defs, InterDef, Ada.Text_IO;
     begin
       ix := EIndex (Entry_Index);
-      p  := InterDef.EList (ix).First;
+      p  := EList (ix).First;
       Put ("Dumping q for entry " & To_String (CD.IdTab (Entry_Index).Name) & " entry index=");
       IIO.Put (ix);
       New_Line;
@@ -439,19 +432,19 @@ package body HAC.PCode.Interpreter is
     begin
       count := 0;
       for t in 0 .. CD.Tasks_Definitions_Count loop
-        if (TCB (t).TS = Delayed or
-            TCB (t).TS = TimedRendz or
-            TCB (t).TS = TimedWait) and
-           SYSCLOCK >= TCB (t).WAKETIME
+        if (ND.TCB (t).TS = Delayed or
+            ND.TCB (t).TS = TimedRendz or
+            ND.TCB (t).TS = TimedWait) and
+           SYSCLOCK >= ND.TCB (t).WAKETIME
         then
-          if TCB (t).TS = TimedRendz then
-            TCB (t).R1.I := 0; --  timeout on rendezvous
-            Purge (TCB (t).R2.I, t);  --  remove from callee's q
+          if ND.TCB (t).TS = TimedRendz then
+            ND.TCB (t).R1.I := 0; --  timeout on rendezvous
+            Purge (ND.TCB (t).R2.I, t);  --  remove from callee's q
           end if;
-          if TCB (t).TS = TimedWait then
-            TCB (t).PC := TCB (t).R1.I; --  t.out on accept
+          if ND.TCB (t).TS = TimedWait then
+            ND.TCB (t).PC := ND.TCB (t).R1.I; --  t.out on accept
           end if;
-          TCB (t).TS := Ready;
+          ND.TCB (t).TS := Ready;
           count      := count + 1;
         end if;
       end loop;
@@ -478,7 +471,7 @@ package body HAC.PCode.Interpreter is
       S (3).I := -1 ;
       S (4).I := CD.Tasks_Definitions_Table (0) ;
       declare
-        Main_TCB : Task_Control_Block renames TCB(0);
+        Main_TCB : Task_Control_Block renames ND.TCB (0);
       begin
         Main_TCB.PC := CD.IdTab (CD.Tasks_Definitions_Table (0)).Adr_or_Sz ; --  first pcode instruction
         Main_TCB.T := CD.Blocks_Table (1).VSize - 1 ; -- was CD.Blocks_Table (2)
@@ -499,11 +492,11 @@ package body HAC.PCode.Interpreter is
     begin
       for Task_To_Init in 1 .. CD.Tasks_Definitions_Count loop
         declare
-          Curr_TCB : Task_Control_Block renames TCB(Task_To_Init);
+          Curr_TCB : Task_Control_Block renames ND.TCB (Task_To_Init);
         begin
           H1 := CD.Tasks_Definitions_Table (Task_To_Init) ;
           Curr_TCB.PC := CD.IdTab (H1).Adr_or_Sz ;
-          Curr_TCB.B := TCB (Task_To_Init - 1).STACKSIZE + 1 ;
+          Curr_TCB.B := ND.TCB (Task_To_Init - 1).STACKSIZE + 1 ;
           Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).Block_Ref).VSize - 1 ;
           S (Curr_TCB.B + 1).I := 0 ;
           S (Curr_TCB.B + 2).I := 0 ;
@@ -528,29 +521,29 @@ package body HAC.PCode.Interpreter is
         EList (E_Idx).Last  := null ;
       end loop;
       TActive := CD.Tasks_Definitions_Count ;  --  All tasks are active initially
-      CurTask := 0 ;  --  IT WAS -1 ?
+      ND.CurTask := 0 ;  --  IT WAS -1 ?
       SWITCH := True ;
       TIMER := Start_Time; -- was 0.0
-      PS := RUN ;
+      ND.PS := RUN ;
     end Init_other_tasks;
 
     procedure ShowTime is null;
     procedure SnapShot is null;
 
     procedure Pop (Amount : Positive := 1) is
-      Curr_TCB_Top : Integer renames InterDef.TCB (InterDef.CurTask).T;
+      Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
     begin
       Curr_TCB_Top := Curr_TCB_Top - Amount;
     end;
 
     procedure Do_Standard_Function is
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Curr_TCB : InterDef.Task_Control_Block renames ND.TCB (ND.CurTask);
       Top_Item : InterDef.GRegister renames InterDef.S (Curr_TCB.T);
       temp : HAC.Defs.HAC_Float;
       Idx, Len, Arg, From, To : Integer;
       C : Character;
       use HAC.Defs, HAC.Defs.VStrings_Pkg, Ada.Characters.Handling;
-      Code : constant SF_Code := SF_Code'Val (InterDef.IR.Y);
+      Code : constant SF_Code := SF_Code'Val (IR.Y);
     begin
       case Code is
         when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
@@ -559,7 +552,7 @@ package body HAC.PCode.Interpreter is
           if (Top_Item.I < HAC.Defs.OrdMinChar) or
             (Top_Item.I > HAC.Defs.OrdMaxChar)  --  !! Character range
           then
-            PS := INXCHK;  --  Seems an out-of-range
+            ND.PS := INXCHK;  --  Seems an out-of-range
           end if;
         when SF_T_Pos =>   --  S'Pos : RM 3.5.5 (2)
           null;
@@ -581,7 +574,7 @@ package body HAC.PCode.Interpreter is
           if IR.X = 0 then  --  Niladic File info function -> abstract console
             Curr_TCB.T := Curr_TCB.T + 1;
             if Curr_TCB.T > Curr_TCB.STACKSIZE then
-              PS := STKCHK;  --  Stack overflow
+              ND.PS := STKCHK;  --  Stack overflow
             else
               case SF_File_Information (Code) is
                 when SF_EOF  => S (Curr_TCB.T).I := Boolean'Pos (End_Of_File_Console);
@@ -705,7 +698,7 @@ package body HAC.PCode.Interpreter is
           --  NILADIC functions need to push a new item (their result).
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
+            ND.PS := STKCHK;  --  Stack overflow
           else
             case SF_Niladic (Code) is
               when SF_Clock =>
@@ -726,7 +719,7 @@ package body HAC.PCode.Interpreter is
 
     procedure Do_Text_Read (Code : SP_Code) is
       CH : Character;
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Curr_TCB : InterDef.Task_Control_Block renames ND.TCB (ND.CurTask);
       use HAC.Defs;
       Out_Param : Index renames S (Curr_TCB.T).I;
       Typ : constant Typen := Typen'Val (IR.Y);
@@ -756,7 +749,7 @@ package body HAC.PCode.Interpreter is
       else
         FP := S (Curr_TCB.T - 1).Txt;
         if Ada.Text_IO.End_Of_File (FP.all) then
-          PS := REDCHK;
+          ND.PS := REDCHK;
         else
           case Typ is
             when Ints =>
@@ -781,7 +774,7 @@ package body HAC.PCode.Interpreter is
     end Do_Text_Read;
 
     procedure Do_Write_Formatted (Code : SP_Code) is
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Curr_TCB : InterDef.Task_Control_Block renames ND.TCB (ND.CurTask);
       FP       : File_Ptr;
       Item     : InterDef.GRegister renames       S (Curr_TCB.T - 3);
       Format_1 : constant HAC.Defs.HAC_Integer := S (Curr_TCB.T - 2).I;
@@ -830,7 +823,7 @@ package body HAC.PCode.Interpreter is
     end Do_Write_Formatted;
 
     procedure Do_Binary_Operator is
-      Curr_TCB_Top : Integer renames InterDef.TCB (InterDef.CurTask).T;
+      Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
       X : GRegister renames S (Curr_TCB_Top - 1);
       Y : GRegister renames S (Curr_TCB_Top);
       use HAC.Defs.VStrings_Pkg;
@@ -865,8 +858,8 @@ package body HAC.PCode.Interpreter is
         when k_ADD_Integer      => X.I := X.I + Y.I;
         when k_SUBTRACT_Integer => X.I := X.I - Y.I;
         when k_MULT_Integer     => X.I := X.I * Y.I;
-        when k_DIV_Integer      => if Y.I = 0 then PS := DIVCHK; else X.I := X.I / Y.I; end if;
-        when k_MOD_Integer      => if Y.I = 0 then PS := DIVCHK; else X.I := X.I mod Y.I; end if;
+        when k_DIV_Integer      => if Y.I = 0 then ND.PS := DIVCHK; else X.I := X.I / Y.I; end if;
+        when k_MOD_Integer      => if Y.I = 0 then ND.PS := DIVCHK; else X.I := X.I mod Y.I; end if;
         when k_Power_Integer    => X.I := X.I ** Y.I;
         --
         when k_ADD_Float           => X.R := X.R + Y.R;
@@ -880,7 +873,7 @@ package body HAC.PCode.Interpreter is
     end Do_Binary_Operator;
 
     procedure Do_Code_for_Automatic_Initialization is
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Curr_TCB : InterDef.Task_Control_Block renames ND.TCB (ND.CurTask);
       use Defs;
       Var_Addr : constant HAC_Integer := S (Curr_TCB.T).I;
     begin
@@ -894,7 +887,7 @@ package body HAC.PCode.Interpreter is
 
     procedure Do_File_IO is
       Code : constant SP_Code := SP_Code'Val (IR.X);
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Curr_TCB : InterDef.Task_Control_Block renames ND.TCB (ND.CurTask);
     begin
       case Code is
         when SP_Open =>
@@ -923,7 +916,7 @@ package body HAC.PCode.Interpreter is
         when SP_Push_Abstract_Console =>
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
+            ND.PS := STKCHK;  --  Stack overflow
           else
             S (Curr_TCB.T).Txt := Abstract_Console;
           end if;
@@ -943,7 +936,7 @@ package body HAC.PCode.Interpreter is
             --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
             Skip_Line_Console;
           elsif Ada.Text_IO.End_Of_File (S (Curr_TCB.T).Txt.all) then
-            PS := REDCHK;
+            ND.PS := REDCHK;
           else
             Ada.Text_IO.Skip_Line (S (Curr_TCB.T).Txt.all);
           end if;
@@ -955,21 +948,21 @@ package body HAC.PCode.Interpreter is
     end Do_File_IO;
 
     procedure Fetch_Instruction is
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Curr_TCB : InterDef.Task_Control_Block renames ND.TCB (ND.CurTask);
     begin
-      InterDef.IR := CD.ObjCode (Curr_TCB.PC);
+      IR := CD.ObjCode (Curr_TCB.PC);
       Curr_TCB.PC := Curr_TCB.PC + 1;
     end Fetch_Instruction;
 
     procedure Execute_Current_Instruction is
-      Curr_TCB : InterDef.Task_Control_Block renames InterDef.TCB (InterDef.CurTask);
+      Curr_TCB : InterDef.Task_Control_Block renames ND.TCB (ND.CurTask);
     begin
-      case InterDef.IR.F is
+      case IR.F is
 
         when k_Push_Address =>  --  Push "v'Access" of variable v
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
+            ND.PS := STKCHK;  --  Stack overflow
           else
             S (Curr_TCB.T).I := Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y;
           end if;
@@ -977,7 +970,7 @@ package body HAC.PCode.Interpreter is
         when k_Push_Value =>  --  Push variable v's value.
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
+            ND.PS := STKCHK;  --  Stack overflow
           else
             S (Curr_TCB.T) := S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y);
           end if;
@@ -985,7 +978,7 @@ package body HAC.PCode.Interpreter is
         when k_Push_Indirect_Value =>  --  Push "v.all" (v is an access).
           Curr_TCB.T := Curr_TCB.T + 1;
           if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            PS := STKCHK;  --  Stack overflow
+            ND.PS := STKCHK;  --  Stack overflow
           else
             S (Curr_TCB.T) := S (S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y).I);
           end if;
@@ -1013,11 +1006,11 @@ package body HAC.PCode.Interpreter is
           H3 := Integer (CD.IdTab (H1).LEV);  --  level of accepting entry
           if H2 >= 0 then
             --  start rendzv if call is waiting
-            Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := TCB (H2).B; --  address callers
+            Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := ND.TCB (H2).B; --  address callers
             --  parms
             Curr_TCB.InRendzv := H2;  --  indicate that task is in Rendzv
-            if TCB (H2).TS = TimedRendz then
-              TCB (H2).TS := WaitRendzv;
+            if ND.TCB (H2).TS = TimedRendz then
+              ND.TCB (H2).TS := WaitRendzv;
             end if;
           else
             --  or put self to sleep
@@ -1036,9 +1029,9 @@ package body HAC.PCode.Interpreter is
           H2 := RemoveFirst (H1);       --  waiting task pointer
           if H2 >= 0 then
             --  wake up waiting task
-            TCB (H2).SUSPEND := 0;
-            TCB (H2).TS      := Ready;
-            SWITCH           := True;
+            ND.TCB (H2).SUSPEND := 0;
+            ND.TCB (H2).TS      := Ready;
+            SWITCH              := True;
           end if;
 
         when k_Wait_Semaphore =>
@@ -1060,7 +1053,7 @@ package body HAC.PCode.Interpreter is
           Pop;
           H2         := CD.Tasks_Definitions_Count + 1;
           H3         := Integer (Random (Gen) * Float (H2));
-          while H2 >= 0 and TCB (H3).TS /= WaitSem and TCB (H3).SUSPEND /= H1
+          while H2 >= 0 and ND.TCB (H3).TS /= WaitSem and ND.TCB (H3).SUSPEND /= H1
           loop
             H3 := (H3 + 1) mod (HAC.Defs.TaskMax + 1);
             H2 := H2 - 1;
@@ -1068,8 +1061,8 @@ package body HAC.PCode.Interpreter is
           if H2 < 0 or S (H1).I < 0 then
             S (H1).I := S (H1).I + 1;
           else
-            TCB (H3).SUSPEND := 0;
-            TCB (H3).TS      := Ready;
+            ND.TCB (H3).SUSPEND := 0;
+            ND.TCB (H3).TS      := Ready;
           end if;
           Curr_TCB.TS := Ready; --  end critical section
           SWITCH := True;
@@ -1098,8 +1091,8 @@ package body HAC.PCode.Interpreter is
         --
         loop
           if CD.ObjCode (H2).F /= k_CASE_Switch_2 then
-            PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
-            exit;                    --  ...happen: compiler should check it before run-time.
+            ND.PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
+            exit;                       --  ...happen: compiler should check it before run-time.
           elsif CD.ObjCode (H2).Y = H1    --  either: - value is matching
                 or CD.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
           then
@@ -1155,7 +1148,7 @@ package body HAC.PCode.Interpreter is
       when k_Mark_Stack =>
         H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Block_Ref).VSize;
         if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
-          PS := STKCHK;  --  Stack overflow
+          ND.PS := STKCHK;  --  Stack overflow
         else
           Curr_TCB.T := Curr_TCB.T + 5;   --  make room for fixed area
           S (Curr_TCB.T - 1).I := H1 - 1; --  vsize-1
@@ -1175,71 +1168,63 @@ package body HAC.PCode.Interpreter is
         H3 := Integer (CD.IdTab (H2).LEV);
         Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := H1;
         S (H1 + 1).I := Curr_TCB.PC;  --  return address
-
         H4 := S (H1 + 3).I + H1;  --  new top of stack
         S (H1 + 2).I := Curr_TCB.DISPLAY (Nesting_level (H3));  --  static link
         S (H1 + 3).I := Curr_TCB.B;  --  dynamic link
-
-        --  for H3b in Curr_TCB.T + 1 .. H4 loop
-        --    S (H3b).I := 0;  --  initialize local vars
-        --  end loop;
         Curr_TCB.B := H1;
         Curr_TCB.T := H4;
-        case IR.X is
-          when  --  Call type
-           HAC.Defs.CallSTDP =>
+        case IR.X is  --  Call type
+          when HAC.Defs.CallSTDP =>
             --  Standard procedure call
-
             Curr_TCB.PC := CD.IdTab (H2).Adr_or_Sz;
 
           when HAC.Defs.CallSTDE =>
             --  Unconditional entry call
-            Queue (H2, CurTask);          --  put self on entry queue
+            Queue (H2, ND.CurTask);          --  put self on entry queue
             Curr_TCB.TS := WaitRendzv;
             H5          := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
-            if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
-               (TCB (H5).TS = TimedWait)
+            if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
+               (ND.TCB (H5).TS = TimedWait)
             then
               --  wake accepting task if necessary
-              TCB (H5).TS      := Ready;
-              TCB (H5).SUSPEND := 0;
+              ND.TCB (H5).TS      := Ready;
+              ND.TCB (H5).SUSPEND := 0;
             end if;
             SWITCH := True;                 --  give up control
 
           when HAC.Defs.CallTMDE =>
             --  Timed entry call
-            Queue (H2, CurTask);      --  put self on entry queue
+            Queue (H2, ND.CurTask);         --  put self on entry queue
             H5 := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
             --
-            if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
-               (TCB (H5).TS = TimedWait)
+            if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
+               (ND.TCB (H5).TS = TimedWait)
             then
               --  wake accepting task if necessary
               Curr_TCB.TS := WaitRendzv;     --  suspend self
-              TCB (H5).TS := Ready;          --  wake accepting task
-              TCB (H5).SUSPEND := 0;
+              ND.TCB (H5).TS := Ready;       --  wake accepting task
+              ND.TCB (H5).SUSPEND := 0;
             else
               Curr_TCB.TS := TimedRendz;     --  Timed Wait For Rendezvous
               Curr_TCB.R1.I := 1;            --  Init R1 to specify NO timeout
               Curr_TCB.R2.I := H2;           --  Save address of queue for purge
               SYSCLOCK := GetClock; --  update System Clock
-              Curr_TCB.WAKETIME := SYSCLOCK + Duration (F1 * 1000.0);
-              --  internal time units is milliseconds so X 1000.0
+              Curr_TCB.WAKETIME := SYSCLOCK + Duration (F1);
             end if;
             SWITCH := True;       --  give up control
 
           when HAC.Defs.CallCNDE =>
             --  Conditional Entry Call
             H5 := CD.IdTab (H2).Adr_or_Sz;              --  Task being entered
-            if ((TCB (H5).TS = WaitRendzv) and (TCB (H5).SUSPEND = H2)) or
-               (TCB (H5).TS = TimedWait)
+            if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
+               (ND.TCB (H5).TS = TimedWait)
             then
-              Queue (H2, CurTask);    --  put self on entry queue
-              Curr_TCB.R1.I := 1;       --  Indicate entry successful
+              Queue (H2, ND.CurTask);    --  put self on entry queue
+              Curr_TCB.R1.I := 1;        --  Indicate entry successful
               Curr_TCB.TS := WaitRendzv;
-              TCB (H5).TS    := Ready;  --  wake accepting task if required
-              TCB (H5).SUSPEND := 0;
-              SWITCH           := True;       --  give up control
+              ND.TCB (H5).TS      := Ready;  --  wake accepting task if required
+              ND.TCB (H5).SUSPEND := 0;
+              SWITCH              := True;   --  give up control
             else
               --  can't wait, forget about entry call
               Curr_TCB.R1.I := 0;   --  Indicate entry failed in R1 1
@@ -1254,7 +1239,7 @@ package body HAC.PCode.Interpreter is
         H2 := CD.Arrays_Table (H1).Low;
         H3 := S (Curr_TCB.T).I;
         if H3 not in H2 .. CD.Arrays_Table (H1).High then
-          PS := INXCHK;  --  Out-of-range state
+          ND.PS := INXCHK;  --  Out-of-range state
         else
           Pop;
           S (Curr_TCB.T).I := S (Curr_TCB.T).I + (H3 - H2);
@@ -1265,7 +1250,7 @@ package body HAC.PCode.Interpreter is
         H2 := CD.Arrays_Table (H1).Low;
         H3 := S (Curr_TCB.T).I;
         if H3 not in H2 .. CD.Arrays_Table (H1).High then
-          PS := INXCHK;  --  Out-of-range state
+          ND.PS := INXCHK;  --  Out-of-range state
         else
           Pop;
           S (Curr_TCB.T).I := S (Curr_TCB.T).I +
@@ -1277,7 +1262,7 @@ package body HAC.PCode.Interpreter is
         Pop;
         H2         := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
         if H2 > Curr_TCB.STACKSIZE then
-          PS := STKCHK;  --  Stack overflow
+          ND.PS := STKCHK;  --  Stack overflow
         else
           while Curr_TCB.T < H2 loop
             Curr_TCB.T     := Curr_TCB.T + 1;
@@ -1300,7 +1285,7 @@ package body HAC.PCode.Interpreter is
       when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
         Curr_TCB.T := Curr_TCB.T + 1;
         if Curr_TCB.T > Curr_TCB.STACKSIZE then
-          PS := STKCHK;  --  Stack overflow
+          ND.PS := STKCHK;  --  Stack overflow
         else
           S (Curr_TCB.T).I := IR.Y;
         end if;
@@ -1308,7 +1293,7 @@ package body HAC.PCode.Interpreter is
       when k_Load_Float_Literal =>
         Curr_TCB.T := Curr_TCB.T + 1;
         if Curr_TCB.T > Curr_TCB.STACKSIZE then
-          PS := STKCHK;  --  Stack overflow
+          ND.PS := STKCHK;  --  Stack overflow
         else
           S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
         end if;
@@ -1354,7 +1339,7 @@ package body HAC.PCode.Interpreter is
               Curr_TCB.T := Curr_TCB.T + 1;  --  A JMPC instruction always follows
             end if;
             if Curr_TCB.T > Curr_TCB.STACKSIZE then  --  timed and conditional entry call
-              PS := STKCHK;  --  Stack overflow           --  returns (32).  Push entry call
+              ND.PS := STKCHK;  --  Stack overflow   --  returns (32).  Push entry call
             else
               S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
             end if;
@@ -1370,7 +1355,7 @@ package body HAC.PCode.Interpreter is
         Curr_TCB.PC := S (Curr_TCB.B + 1).I;
         Curr_TCB.B  := S (Curr_TCB.B + 3).I;
         if IR.Y = HAC.Defs.End_Function_without_Return then
-          PS := ProgErr;  --  !! with message "End function reached without ""return"" statement".
+          ND.PS := ProgErr;  --  !! with message "End function reached without ""return"" statement".
         end if;
 
       when k_Dereference =>
@@ -1396,33 +1381,22 @@ package body HAC.PCode.Interpreter is
 
       when k_Halt_Interpreter =>
         if TActive = 0 then
-          PS := FIN;
+          ND.PS := FIN;
         else
-          TCB (0).TS     := Completed;
+          ND.TCB (0).TS  := Completed;
           SWITCH         := True;
           Curr_TCB.PC := Curr_TCB.PC - 1;
         end if;
 
-      when k_Delay =>  --  DLY - delay for a specified number of seconds
-
+      when k_Delay =>
         if S (Curr_TCB.T).R > 0.0 then
-          --  if positive delay time
-
-          Curr_TCB.TS := Delayed;           --  set task state to delayed
-
+          Curr_TCB.TS := Delayed;  --  set task state to delayed
           SYSCLOCK := GetClock;    --  update System Clock
-
-          Curr_TCB.WAKETIME := SYSCLOCK +
-                                  Duration (S (Curr_TCB.T).R * 1000.0);
+          Curr_TCB.WAKETIME := SYSCLOCK + Duration (S (Curr_TCB.T).R);
           --  set wakeup time
-
-          --  internal time units is milliseconds so X 1000.0
-
           SWITCH := True;          --  give up control
-
         end if;
         Pop;
-      --  Delay
 
       when k_Cursor_At =>
         --  Cramer
@@ -1436,7 +1410,7 @@ package body HAC.PCode.Interpreter is
         if S (Curr_TCB.T).R <= 0.0 then
           S (Curr_TCB.T).R := HAC.Defs.HAC_Float (TSlice) * 0.001;
         end if;
-        TCB (CurTask).QUANTUM := Duration (S (Curr_TCB.T).R);
+        Curr_TCB.QUANTUM := Duration (S (Curr_TCB.T).R);
         Pop;
 
       when k_Set_Task_Priority =>
@@ -1447,7 +1421,7 @@ package body HAC.PCode.Interpreter is
         if S (Curr_TCB.T).I < 0 then
           S (Curr_TCB.T).I := 0;
         end if;
-        TCB (CurTask).Pcontrol.UPRI := S (Curr_TCB.T).I;
+        Curr_TCB.Pcontrol.UPRI := S (Curr_TCB.T).I;
         Pop;
 
       when k_Set_Task_Priority_Inheritance =>
@@ -1461,22 +1435,22 @@ package body HAC.PCode.Interpreter is
 
         case IR.X is
           when 1 => --  Start Selective Wait seq.
-            TCB (CurTask).R1.I := 0; --  next instruction if delay expires
-            TCB (CurTask).R2.R := -1.0; --  delay time
+            Curr_TCB.R1.I := 0; --  next instruction if delay expires
+            Curr_TCB.R2.R := -1.0; --  delay time
 
           when 2 => --  Retain entry ID
-            TCB (CurTask).R3.I := IR.Y;
+            Curr_TCB.R3.I := IR.Y;
 
           when 3 => --  Accept if its still on queue
-            H1 := TCB (CurTask).R3.I;
+            H1 := Curr_TCB.R3.I;
             H2 := FirstCaller (H1);    --  first waiting task
             H3 := HAC.Defs.HAC_Integer (CD.IdTab (H1).LEV);     --  level of accepting entry
             if H2 >= 0 then
-              Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := TCB (H2).B;
+              Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := ND.TCB (H2).B;
                 --  address callers parms
-              Curr_TCB.InRendzv := H2;         --  indicate task InRendz
-              if TCB (H2).TS = TimedRendz then --  turn off entry timeout
-                TCB (H2).TS := WaitRendzv;    --  if it was on
+              Curr_TCB.InRendzv := H2;             --  indicate task InRendz
+              if ND.TCB (H2).TS = TimedRendz then  --  turn off entry timeout
+                ND.TCB (H2).TS := WaitRendzv;      --  if it was on
               end if;
             else
               Curr_TCB.PC := IR.Y; --  Jump to patched in address
@@ -1485,13 +1459,13 @@ package body HAC.PCode.Interpreter is
 
           when 4 => --  Update minimum delay time
             if S (Curr_TCB.T).R > 0.0 then
-              if TCB (CurTask).R2.R = -1.0 then
-                TCB (CurTask).R2.R := S (Curr_TCB.T).R;
-                TCB (CurTask).R1.I := IR.Y;   --  ins after JMP
+              if Curr_TCB.R2.R = -1.0 then
+                Curr_TCB.R2.R := S (Curr_TCB.T).R;
+                Curr_TCB.R1.I := IR.Y;   --  ins after JMP
               else
-                if S (Curr_TCB.T).R < TCB (CurTask).R2.R then
-                  TCB (CurTask).R2.R := S (Curr_TCB.T).R;
-                  TCB (CurTask).R1.I := IR.Y;   --  ins after JMP
+                if S (Curr_TCB.T).R < Curr_TCB.R2.R then
+                  Curr_TCB.R2.R := S (Curr_TCB.T).R;
+                  Curr_TCB.R1.I := IR.Y;   --  ins after JMP
                 end if;
               end if;
             end if;
@@ -1499,54 +1473,49 @@ package body HAC.PCode.Interpreter is
 
           when 5 | 6 => --  end of SELECT
 
-            if TCB (CurTask).R2.R > 0.0 then
+            if Curr_TCB.R2.R > 0.0 then
               --  Timed Wait
               Curr_TCB.TS       := TimedWait;
-              SYSCLOCK             := GetClock;
-              Curr_TCB.WAKETIME := SYSCLOCK +
-                                      Duration (TCB (CurTask).R2.R *
-                                                1000.0);
-              Curr_TCB.PC       := IR.Y; --  Do SELECT again when
-                                            --awakened by caller
-
-              SWITCH := True;                     --  give up control
-
+              SYSCLOCK          := GetClock;
+              Curr_TCB.WAKETIME := SYSCLOCK + Duration (Curr_TCB.R2.R);
+              Curr_TCB.PC       := IR.Y; --  Do SELECT again when awakened by caller
+              SWITCH := True;  --  give up control
             end if;
             --  AVL -- TERMINATE
             --  IS THE PARENT TASK COMPLETED?
-            if TCB (0).TS = Completed and CurTask /= 0 and IR.X /= 6 then
-              NCALLS := 0; --  LET'S SEE IF THERE ARE CALLERS
+            if ND.TCB (0).TS = Completed and ND.CurTask /= 0 and IR.X /= 6 then
+              ND.Nb_Callers := 0; --  LET'S SEE IF THERE ARE CALLERS
               for ITERM in 1 .. CD.Entries_Count loop
                 if EList (ITERM).First /= null then
-                  NCALLS := NCALLS + 1;
+                  ND.Nb_Callers := ND.Nb_Callers + 1;
                 end if;
               end loop;
               --  YES, NO CALLERS
-              if NCALLS = 0 then  --  YES, NO CALLERS
+              if ND.Nb_Callers = 0 then  --  YES, NO CALLERS
                 --  ARE THE SIBLING TASKS EITHER COMPLETED OR
                 --  IN THE SAME STATE AS CURTASK?
-                NCOMPL := 0;
+                ND.Nb_Complete := 0;
                 for ITERM in 1 .. CD.Tasks_Definitions_Count loop
-                  if TCB (ITERM).TS = Completed then
-                    NCOMPL := NCOMPL + 1;
+                  if ND.TCB (ITERM).TS = Completed then
+                    ND.Nb_Complete := ND.Nb_Complete + 1;
                   else
-                    if TCB (ITERM).TS = TCB (CurTask).TS then
-                      NCOMPL := NCOMPL + 1;
+                    if ND.TCB (ITERM).TS = Curr_TCB.TS then
+                      ND.Nb_Complete := ND.Nb_Complete + 1;
                     else
-                      if TCB (ITERM).TS = Ready and
-                         TCB (CurTask).TS = Running
+                      if ND.TCB (ITERM).TS = Ready and
+                         Curr_TCB.TS = Running
                       then
-                        NCOMPL := NCOMPL + 1;
+                        ND.Nb_Complete := ND.Nb_Complete + 1;
                       end if;
                     end if;
                   end if;
                 end loop;
-                if CD.Tasks_Definitions_Count = NCOMPL then
+                if CD.Tasks_Definitions_Count = ND.Nb_Complete then
                   --  YES, THEN ALL TASKS ARE NOW TERMINATING
                   for ITERM in 1 .. CD.Tasks_Definitions_Count loop
-                    TCB (ITERM).TS := Terminated;
+                    ND.TCB (ITERM).TS := Terminated;
                   end loop;
-                  PS := FIN;
+                  ND.PS := FIN;
                 end if;
               end if;
             end if;
@@ -1565,52 +1534,52 @@ package body HAC.PCode.Interpreter is
     end Execute_Current_Instruction;
 
   begin  --  Interpret
-    InterDef.SNAP:= False;
+    ND.Snap:= False;
     Init_main_task;
     Init_other_tasks;
 
     Running_State:
     loop  --  until Processor state /= RUN
       SYSCLOCK := GetClock;
-      if InterDef.SNAP then
-        ShowTime ;
+      if ND.Snap then
+        ShowTime;
       end if;
-      if InterDef.TCB (InterDef.CurTask).TS = InterDef.Critical then
-        if InterDef.SNAP then
-          SnapShot ;
+      if ND.TCB (ND.CurTask).TS = InterDef.Critical then
+        if ND.Snap then
+          SnapShot;
         end if;
       else
-        if InterDef.SWITCH or  --  ------------> Voluntary release of control
-           InterDef.SYSCLOCK >= InterDef.TIMER or   --  ---> Time slice exceeded
+        if SWITCH or  --  ------------> Voluntary release of control
+           SYSCLOCK >= TIMER or   --  ---> Time slice exceeded
            TasksToWake
         then --  ------> Awakened task causes switch
-          if InterDef.CurTask >= 0 then
-            TCB (CurTask).LASTRUN := SYSCLOCK;
-            if TCB (CurTask).TS = Running then
-              TCB (CurTask).TS := Ready;
+          if ND.CurTask >= 0 then
+            ND.TCB (ND.CurTask).LASTRUN := SYSCLOCK;
+            if ND.TCB (ND.CurTask).TS = Running then
+              ND.TCB (ND.CurTask).TS := Ready;
               --  SWITCH PROCCESS
             end if;
           end if;
           loop --  Call Main Scheduler
             --  Schedule(Scheduler,CurTask, PS);
-            PS := RUN; -- !! Should call the task scheduler instead !!
-            InterDef.SYSCLOCK := GetClock;
-            if InterDef.SNAP then
-              ShowTime ;
+            ND.PS := RUN;  --  !! Should call the task scheduler instead !!
+            SYSCLOCK := GetClock;
+            if ND.Snap then
+              ShowTime;
             end if;
-            if InterDef.SNAP then
-              SnapShot ;
+            if ND.Snap then
+              SnapShot;
             end if;
-            exit when PS /= WAIT;
+            exit when ND.PS /= WAIT;
           end loop;
           --
-          exit Running_State when PS = DEADLOCK or PS = FIN;
+          exit Running_State when ND.PS = DEADLOCK or ND.PS = FIN;
           --
-          TIMER:= InterDef.SYSCLOCK + InterDef.TCB (InterDef.CurTask).QUANTUM;
-          InterDef.TCB (InterDef.CurTask).TS := Running;
-          SWITCH:= False;
-          if InterDef.SNAP then
-            SnapShot ;
+          TIMER:= SYSCLOCK + ND.TCB (ND.CurTask).QUANTUM;
+          ND.TCB (ND.CurTask).TS := Running;
+          SWITCH := False;
+          if ND.Snap then
+            SnapShot;
           end if;
         end if;
       end if;
@@ -1622,10 +1591,10 @@ package body HAC.PCode.Interpreter is
 
       Execute_Current_Instruction;
 
-      exit when InterDef.PS /= InterDef.RUN;
+      exit when ND.PS /= RUN;
     end loop Running_State;
     --
-    if InterDef.PS /= InterDef.FIN then
+    if ND.PS /= FIN then
       Post_Mortem_Dump (CD, ND);
     end if;
     --

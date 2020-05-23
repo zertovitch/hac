@@ -8,15 +8,15 @@ SmallAda, a system developped around 1990 and abandoned since then.
 
 Objectives
 ==========
- - Fun!
- - Have a simple, quick Ada compiler and execution tool.
- - Be useful for small Ada sandboxed prototypes.
- - Produce the smallest Hello-world executable!
- - Have a tool for script-like jobs (avoid long
-     programming-compiling-binding-linking-running cycles).
- - Stay compatible (HAC programs can be compiled
-     and run by other Ada compilers, currently through
-     compatibility package HAC_Pack).
+  - Fun!
+  - Have a simple, quick Ada compiler and execution tool.
+  - Be useful for small Ada sandboxed prototypes.
+  - Produce the smallest Hello-world executable!
+  - Have a tool for script-like jobs (avoid long
+      programming-compiling-binding-linking-running cycles).
+  - Stay compatible (HAC programs can be compiled
+      and run by other Ada compilers, currently through
+      compatibility package HAC_Pack).
 
 HAC will most probably never be a complete compiler.
 
@@ -63,25 +63,25 @@ Key files in the main directory
 
 Some design points
 ==================
-- HAC reads Ada sources from any stream. In addition to files, it is able
-    to read from a Zip archive (plan is to have sets with many sources like
-    libraries in Zip files, for instance), from an internet stream, from
-    an editor buffer (see the LEA project), from a source stored in memory,
-    etc.
-- One goal is to complement or challenge GNAT, for instance in terms of
-    compilation speed, or object code compactness, or useability on certain
-    targets or for certain purposes (like scripting jobs).
-- HAC could theoretically be also used for tuning run-time performance;
-    this would require compiling on other targets than p-code, that is,
-    real machine code for various platforms.
+  - HAC reads Ada sources from any stream. In addition to files, it is able
+      to read from a Zip archive (plan is to have sets with many sources
+      like libraries in Zip files, for instance), from an internet stream,
+      from an editor buffer (see the LEA project), from a source stored in
+      memory, etc.
+  - One goal is to complement or challenge GNAT, for instance in terms of
+      compilation speed, or object code compactness, or useability on
+      certain targets or for certain purposes (like scripting jobs).
+  - HAC could theoretically be also used for tuning run-time performance;
+      this would require compiling on other targets than p-code, that is,
+      real machine code for various platforms.
 
 To-do list
 ==========
 The to-do list is located in the spreadsheet "To do", within the
 workbook "hac_work.xls".
 
-Limitations
-===========
+Language subset
+===============
 HAC supports a very small subset of the Ada language. On the other hand,
 Ada is very large, so even a small subset could already fit your needs.
 There is a short (and growing) list of small programs that are
@@ -91,18 +91,27 @@ in the "exm" directory.
 
 You will see that the "Pascal subset" plus tasking is more or less
 supported, so you have things like subprograms (including nested
-subprograms), recursive subprograms, expressions, that are
-working, for instance.
+and recursive subprograms), expressions, that are working, for instance.
 
-* You can define your own data types: enumerations, records, arrays
-    (and every combination of records and arrays).
-* Unconstrained types are not supported (they are Ada-only types and
-    not in the "Pascal subset" anyway).
-* There are no pointers (access types) and nor heap allocation,
-    but you will be surprised how far you can go without pointers!
-* Task are implemented, but not yet tested.
+  - You can define your own data types: enumerations, records, arrays
+      (and every combination of records and arrays).
+  - Only constrained types are supported (unconstrained types are Ada-only
+      types and not in the "Pascal subset" anyway).
+  - There are no pointers (access types) and nor heap allocation,
+      but you will be surprised how far you can go without pointers!
+  - Task are implemented, but not yet tested.
 
 A more systematic testing is done in the "test" directory.
+
+Thanks
+======
+  - The authors of SmallAda (list below) for making their work open-source.
+  - J-P. Rosen for the free AdaControl tool (
+        https://www.adalog.fr/en/adacontrol.html ,
+        https://sourceforge.net/projects/adacontrol/ ) which was very
+        helpful detecting global variables stemming from SmallAda's code.
+  - AdaCore for providing their excellent Ada compiler for free:
+        https://www.adacore.com/community .
 
 History of HAC
 ==============
