@@ -1,5 +1,6 @@
 @echo off
 
+echo (Re-)building HAX
 cd..
 call build
 cd test
