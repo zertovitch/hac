@@ -38,16 +38,16 @@ procedure Anti_Primes is
     end loop;
   end Search;
 
- begin
-   Search;
-   --
-   Put_Line ("The first anti-primes are:");
-   for i in 1 .. stop loop
-      Put (results (i));
-      Put(" has");
-      Put (div_count (i));
-      Put(" divisors.");
-      New_Line;
-   end loop;
-   New_Line;
+begin
+  Search;
+  --
+  Put_Line ("The first anti-primes are:");
+  for i in 1 .. stop loop
+    Put (results (i));
+    Put(" has");
+    Put (div_count (i));
+    Put(" divisors.");
+    New_Line;
+  end loop;
+  New_Line;
 end Anti_Primes;
