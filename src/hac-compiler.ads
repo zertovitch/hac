@@ -127,24 +127,6 @@ package HAC.Compiler is
   --  aEntry                        ?
   --  Label                         ?
 
-  ------------------------------------------------------------------------
-  ------------------------------------------------------------FilDescr----
-  ------------------------------------------------------------------------
-
-  subtype File_count is Integer range 0 .. FMax;
-  subtype File_index is Integer range 1 .. FMax;
-  type FilDescr_Texts is array (File_index) of Ada.Text_IO.File_Type;
-  type FilDescr_Lname is array (File_index) of Natural;
-  type FilDescr_Names is array (File_index) of Alfa;
-
-  type FilDescr is record
-    Curr  : Integer;
-    Kount : File_count:= 0;
-    Fil   : FilDescr_Texts;
-    Nam   : FilDescr_Names;
-    LNam  : FilDescr_Lname;
-  end record;
-
   subtype Source_Line_String is String (1 .. 1000);
 
   -----------------------
@@ -194,7 +176,6 @@ package HAC.Compiler is
     Blocks_Table            : Blocks_Table_Type;
     Display                 : Display_Type;
     Entries_Table           : Entries_Table_Type;
-    File_IO_Table           : FilDescr;
     Float_Constants_Table   : Float_Constants_Table_Type;    --  Used by interpreter at run-time
     IdTab                   : Identifier_Table_Type;
     Strings_Constants_Table : Strings_Constants_Table_Type;  --  Used by interpreter at run-time

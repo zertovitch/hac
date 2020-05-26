@@ -28,7 +28,7 @@ The license is the open-source license MIT.
 
 Getting started
 ===============
-Assuming you have the GNAT compiler installed, do the
+Assuming you have the GNAT (*) compiler installed, do the
 following from a command line interpreter (please replace
 '\' by '/' on Unix-like platforms):
 
@@ -48,6 +48,12 @@ You can do it easily with the hac_exm.gpr project file.
 Since hac_exm.gpr is a text file, you can see there the progress
 (or the lack thereof) in the pieces of Ada code that are really
 working with HAC. See the "Limitations" section below as well.
+___
+(*) On Debian-based Linuxes like Ubuntu, GNAT is part of the standard
+packages. For other systems, you can get GNAT from AdaCore's Web site:
+https://www.adacore.com/community or from other sites providing GCC
+(the GNU Compiler Collection) with Ada support.
+Check http://www.getadanow.com/ for instance.
 
 Directories
 ===========
@@ -97,6 +103,12 @@ and recursive subprograms), expressions, that are working, for instance.
       (and every combination of records and arrays).
   - Only constrained types are supported (unconstrained types are Ada-only
       types and not in the "Pascal subset" anyway).
+  - The "String" type (unconstrained) is implemented in a very limited
+      way. So far you can only define variables with it, like:
+        Digits : constant String (1..10) := "0123456789";
+      For general string manipulation, the only practical way with
+      the current versions of HAC is to use the VString variable-length
+      string type.
   - There are no pointers (access types) and nor heap allocation,
       but you will be surprised how far you can go without pointers!
   - Task are implemented, but not yet tested.

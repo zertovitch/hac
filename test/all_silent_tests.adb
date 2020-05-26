@@ -30,11 +30,11 @@ procedure All_Silent_Tests is
         return;
       end if;   
       Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
-      Shell (+"gprbuild -P .." & Directory_Separator & "hac", True);
+      Shell (+"gprbuild -p -P .." & Directory_Separator & "hac", True);
     end Build_HAX;
 
   begin
-    Build_HAX;  --  Redundant if this program is run through HAX.
+    Build_HAX;  --  Redundant if this program is itself run through HAX.
     --
     Launch_HAX (+"case_statement.adb");
     Launch_HAX (+"constants.adb");

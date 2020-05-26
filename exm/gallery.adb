@@ -34,7 +34,7 @@ procedure Gallery is
         return;
       end if;   
       Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
-      Shell (+"gprbuild -P .." & Directory_Separator & "hac", True);
+      Shell (+"gprbuild -p -P .." & Directory_Separator & "hac", True);
     end Build_HAX;
 
   begin
