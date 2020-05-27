@@ -1,5 +1,6 @@
 with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Containers.Vectors;
+with Ada.Numerics.Float_Random;
 with Ada.Unchecked_Deallocation;
 
 package HAC.PCode.Interpreter.In_Defs is
@@ -125,9 +126,12 @@ package HAC.PCode.Interpreter.In_Defs is
     Nb_Callers  : Integer;   --  AVL  TERMINATE
     Nb_Complete : Integer;   --  AVL  TERMINATE
     EList       : Entry_Queue;
+    TActive     : TRange;    --  no. of active tasks
+    Start_Time  : Time;
     SWITCH      : Boolean;   --  invoke scheduler on next cycle flag
     SYSCLOCK    : Time;      --  (ms after 00:00:00 Jan 1, current year)
     TIMER       : Time;      --  set to end of current task's time slice
+    Gen         : Ada.Numerics.Float_Random.Generator;
   end record;
 
   procedure Allocate_Text_File (

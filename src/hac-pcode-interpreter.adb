@@ -9,9 +9,9 @@ with Ada.Command_Line;
 with Ada.Environment_Variables;
 
 with Ada.Numerics.Generic_Elementary_Functions;
-with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 
 with Ada.Strings;                       use Ada.Strings;
+with Ada.Numerics.Float_Random;
 
 package body HAC.PCode.Interpreter is
 
@@ -97,240 +97,12 @@ package body HAC.PCode.Interpreter is
   is
     use In_Defs;
     ND : Interpreter_Data;
-    Start_Time : constant Time := Clock;
-    --  trap label
-    Gen : Generator;
-    TActive  : TRange;    --  no. of active tasks
 
     H1, H2, H3, H4, H5 : Defs.HAC_Integer;  --  Internal integer registers
     F1     : Defs.HAC_Float;                --  Internal float registers
 
-    function AnyTaskDelayed return Boolean is
-      taskdelayed : Boolean := False;
-    begin
-      for t in TRange'First .. CD.Tasks_Definitions_Count loop
-        exit when taskdelayed;
-        taskdelayed := ND.TCB (t).TS = Delayed or
-                       ND.TCB (t).TS = TimedRendz or
-                       ND.TCB (t).TS = TimedWait;
-      end loop;
-      return taskdelayed;
-    end AnyTaskDelayed;
-    pragma Unreferenced (AnyTaskDelayed);
-
-    function EIndex (Entry_Index : Integer) return Integer is
-      i, e : Integer;
-    begin
-      e := -1;
-      i := 1;
-      while i <= CD.Entries_Count and e = -1 loop
-        if Entry_Index = CD.Entries_Table (i) then
-          e := i;
-        end if;
-        i := i + 1;
-      end loop;
-      return e;
-    end EIndex;
-
-    procedure Queue (Entry_Index : Integer; CallingTask: TRange) is
-      ix        : Integer;
-      enode_var : Eptr;
-    begin  --  Queue an entry call by CallingTask for entry 'Entry'.
-      ix                              := EIndex (Entry_Index);
-      enode_var                       := new Enode;
-      enode_var.Task_Index := CallingTask;
-      enode_var.Next                  := null;
-      declare
-        E_Q_Header : EHeader renames ND.EList (ix);
-      begin
-        if E_Q_Header.First = null then
-          E_Q_Header.First := enode_var;
-        else
-          E_Q_Header.Last.Next := enode_var;
-        end if;
-        E_Q_Header.Last := enode_var;
-      end;
-    end Queue;
-
-    function RemoveFirst (Entry_Index : Integer) return TRange is
-      ix, val : Integer;
-      dmy     : Eptr;
-    begin
-      ix := EIndex (Entry_Index);
-      declare
-        E_Q_Header : EHeader renames ND.EList (ix);
-      begin
-        val := E_Q_Header.First.Task_Index;
-        if E_Q_Header.First = E_Q_Header.Last then
-          E_Q_Header.First := null;
-          E_Q_Header.Last  := null;
-        else
-          dmy              := E_Q_Header.First;
-          E_Q_Header.First := E_Q_Header.First.Next;
-          Dispose (dmy);
-        end if;
-      end;
-      return val;
-    end RemoveFirst;
-
-    procedure ShowQ (Entry_Index : Integer)  --  for debugging
-    is
-      p  : Eptr;
-      ix : Integer;
-      use Defs, Ada.Text_IO;
-    begin
-      ix := EIndex (Entry_Index);
-      p  := ND.EList (ix).First;
-      Put ("Dumping q for entry " & To_String (CD.IdTab (Entry_Index).Name) & " entry index=");
-      IIO.Put (ix);
-      New_Line;
-      if p /= null then
-        loop
-          Put ("Task ");
-          Put (To_String (CD.IdTab (CD.Tasks_Definitions_Table (p.Task_Index)).Name));
-          New_Line;
-          p := p.Next;
-          exit when p = null;
-        end loop;
-      else
-        Put ("*** EMPTY ***");
-        New_Line;
-      end if;
-    end ShowQ;
-    pragma Unreferenced (ShowQ);
-
-    procedure Purge (Entry_Index : Integer; t : TRange) is
-      p, q : Eptr;     --  has timed out, the entry
-      ix : Integer;     --  is purged from the q.
-    begin
-      ix := EIndex (Entry_Index);
-      q  := null;
-      p  := ND.EList (ix).First;
-      while p /= null loop
-        if p.Task_Index = t then
-          if ND.EList (ix).First =ND. EList (ix).Last then
-            ND.EList (ix).First := null;
-            ND.EList (ix).Last  := null;
-          else
-            if p = ND.EList (ix).First then
-              ND.EList (ix).First := p.Next;
-            else
-              if p = ND.EList (ix).Last then
-                ND.EList (ix).Last := q;
-                q.Next      := null;
-              else
-                q.Next := p.Next;
-              end if;
-            end if;
-          end if;
-          Dispose (p);
-          p := null; --  to exit loop
-        else
-          --  try next entry in list
-          q := p;
-          p := p.Next;
-        end if;
-      end loop;
-    end Purge;
-
-    function TasksToWake return Boolean is
-      Result_TasksToWake : Boolean;
-      count              : Integer;
-    begin
-      count := 0;
-      for t in 0 .. CD.Tasks_Definitions_Count loop
-        if (ND.TCB (t).TS = Delayed or
-            ND.TCB (t).TS = TimedRendz or
-            ND.TCB (t).TS = TimedWait) and
-           ND.SYSCLOCK >= ND.TCB (t).WAKETIME
-        then
-          if ND.TCB (t).TS = TimedRendz then
-            ND.TCB (t).R1.I := 0; --  timeout on rendezvous
-            Purge (ND.TCB (t).R2.I, t);  --  remove from callee's q
-          end if;
-          if ND.TCB (t).TS = TimedWait then
-            ND.TCB (t).PC := ND.TCB (t).R1.I; --  t.out on accept
-          end if;
-          ND.TCB (t).TS := Ready;
-          count      := count + 1;
-        end if;
-      end loop;
-      Result_TasksToWake := (count > 0);
-      return Result_TasksToWake;
-    end TasksToWake;
-
     --  $I sched.pas
     --  This file contains the different scheduling strategies
-
-    --  Default Task time-slice in seconds
-    --  Feldman: 60ths of a sec on Mac
-    TSlice : constant Duration := 0.016666666;
-
-    procedure Init_main_task is
-    begin
-      Reset(Gen); --  initialize TPC random number generator
-      --  After compiled, just begin exec
-      --  Initialize run-time stack
-      ND.S (1).I := 0 ;
-      ND.S (2).I := 0 ;
-      ND.S (3).I := -1 ;
-      ND.S (4).I := CD.Tasks_Definitions_Table (0) ;
-      declare
-        Main_TCB : Task_Control_Block renames ND.TCB (0);
-      begin
-        Main_TCB.PC := CD.IdTab (CD.Tasks_Definitions_Table (0)).Adr_or_Sz ; --  first pcode instruction
-        Main_TCB.T := CD.Blocks_Table (1).VSize - 1 ; -- was CD.Blocks_Table (2)
-        Main_TCB.B := 0 ;
-        Main_TCB.TS := Ready ;
-        Main_TCB.InRendzv := NilTask ;
-        Main_TCB.DISPLAY (1) := 0 ;
-        Main_TCB.STACKSIZE := Defs.StMax - (CD.Tasks_Definitions_Count * Defs.STKINCR) ;
-        Main_TCB.SUSPEND := 0 ;
-        Main_TCB.QUANTUM := TSlice;
-        Main_TCB.Pcontrol.UPRI := 0 ;
-        Main_TCB.Pcontrol.INHERIT := False ;
-        Main_TCB.LASTRUN := Start_Time ;
-      end;
-    end Init_main_task;
-
-    procedure Init_other_tasks is
-    begin
-      for Task_To_Init in 1 .. CD.Tasks_Definitions_Count loop
-        declare
-          Curr_TCB : Task_Control_Block renames ND.TCB (Task_To_Init);
-        begin
-          H1 := CD.Tasks_Definitions_Table (Task_To_Init) ;
-          Curr_TCB.PC := CD.IdTab (H1).Adr_or_Sz ;
-          Curr_TCB.B := ND.TCB (Task_To_Init - 1).STACKSIZE + 1 ;
-          Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).Block_Ref).VSize - 1 ;
-          ND.S (Curr_TCB.B + 1).I := 0 ;
-          ND.S (Curr_TCB.B + 2).I := 0 ;
-          ND.S (Curr_TCB.B + 3).I := -1 ;
-          ND.S (Curr_TCB.B + 4).I := H1 ;
-          Curr_TCB.DISPLAY (1) := 0 ;
-          Curr_TCB.DISPLAY (2) := Curr_TCB.B ;
-          Curr_TCB.STACKSIZE := Curr_TCB.B + Defs.STKINCR - 1 ;
-          Curr_TCB.SUSPEND := 0 ;
-          Curr_TCB.TS := Ready ;
-          Curr_TCB.InRendzv := NilTask ;
-          Curr_TCB.QUANTUM := TSlice;
-          Curr_TCB.Pcontrol.UPRI := 0 ;
-          Curr_TCB.Pcontrol.INHERIT := False ;
-          Curr_TCB.LASTRUN := Start_Time ;
-        end;
-      end loop;
-      --  Initially no queued entry calls
-      for E_Idx in 1 .. CD.Entries_Count loop
-        ND.EList (E_Idx).Task_Index := CD.IdTab (CD.Entries_Table (E_Idx)).Adr_or_Sz ;  --  Task index
-        ND.EList (E_Idx).First := null ;
-        ND.EList (E_Idx).Last  := null ;
-      end loop;
-      TActive := CD.Tasks_Definitions_Count ;  --  All tasks are active initially
-      ND.CurTask := 0 ;  --  IT WAS -1 ?
-      ND.SWITCH := True ;
-      ND.TIMER := Start_Time; -- was 0.0
-      ND.PS := RUN ;
-    end Init_other_tasks;
 
     procedure ShowTime is null;
     procedure SnapShot is null;
@@ -345,7 +117,7 @@ package body HAC.PCode.Interpreter is
       Idx, Len, Arg, From, To : Integer;
       C : Character;
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
-      use Defs, Defs.VStrings_Pkg, REF, Ada.Characters.Handling;
+      use Defs, Defs.VStrings_Pkg, REF, Ada.Characters.Handling, Ada.Numerics.Float_Random;
     begin
       case Code is
         when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
@@ -388,7 +160,7 @@ package body HAC.PCode.Interpreter is
             end case;
           end if;
         when SF_Random_Int =>
-          temp := Defs.HAC_Float (Random (Gen)) *
+          temp := Defs.HAC_Float (Random (ND.Gen)) *
                   Defs.HAC_Float ((Top_Item.I + 1));
           Top_Item.I := Integer (Defs.HAC_Float'Floor (temp));
         when SF_Literal_to_VString =>  --  Unary "+"
@@ -499,9 +271,9 @@ package body HAC.PCode.Interpreter is
           case SF_Niladic (Code) is
             when SF_Clock =>
               --  CLOCK function. Return time of units of seconds.
-              ND.S (Curr_TCB.T).R := Defs.HAC_Float (GetClock - Start_Time);
+              ND.S (Curr_TCB.T).R := Defs.HAC_Float (GetClock - ND.Start_Time);
             when SF_Random_Float =>
-              ND.S (Curr_TCB.T).R := Defs.HAC_Float (Random (Gen));
+              ND.S (Curr_TCB.T).R := Defs.HAC_Float (Random (ND.Gen));
             when SF_Argument_Count =>
               ND.S (Curr_TCB.T).I := Argument_Count;
             when SF_Directory_Separator =>
@@ -750,6 +522,7 @@ package body HAC.PCode.Interpreter is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       IR : Order renames ND.IR;
       use type Defs.HAC_Float;
+      use HAC.PCode.Interpreter.Tasking;
     begin
       case ND.IR.F is
 
@@ -782,54 +555,13 @@ package body HAC.PCode.Interpreter is
             end loop;
           end;
 
-        when k_Accept_Rendezvous =>  HAC.PCode.Interpreter.Tasking.Do_Accept_Rendezvous (CD, ND);
+        when k_Accept_Rendezvous  =>  Do_Accept_Rendezvous (CD, ND);
+        when k_End_Rendezvous     =>  Do_End_Rendezvous (CD, ND);
 
-        when k_End_Rendezvous => --  Hathorn
-          Curr_TCB.InRendzv := NilTask;  --  indicate rendezvous has ended
-          H1 := IR.Y;                   --  entry pointer
-          H2 := RemoveFirst (H1);       --  waiting task pointer
-          if H2 >= 0 then
-            --  wake up waiting task
-            ND.TCB (H2).SUSPEND := 0;
-            ND.TCB (H2).TS      := Ready;
-            ND.SWITCH              := True;
-          end if;
+        when k_Wait_Semaphore     => Do_Wait_Semaphore (ND);
+        when k_Signal_Semaphore   => Do_Signal_Semaphore (CD, ND);
 
-        when k_Wait_Semaphore =>
-          H1 := ND.S (Curr_TCB.T).I;
-          Pop;
-          if ND.S (H1).I > 0 then
-            ND.S (H1).I       := ND.S (H1).I - 1;
-            Curr_TCB.TS := Critical;   --  In a critical section, task gets
-            --  exclusive access to the virtual
-          else
-            --  processor until section ends.
-            Curr_TCB.SUSPEND := H1;
-            Curr_TCB.TS      := WaitSem;
-            ND.SWITCH           := True;
-          end if;
-
-        when k_Signal_Semaphore =>
-          H1 := ND.S (Curr_TCB.T).I;
-          Pop;
-          H2 := CD.Tasks_Definitions_Count + 1;
-          H3 := Integer (Random (Gen) * Float (H2));
-          while H2 >= 0 and ND.TCB (H3).TS /= WaitSem and ND.TCB (H3).SUSPEND /= H1
-          loop
-            H3 := (H3 + 1) mod (Defs.TaskMax + 1);
-            H2 := H2 - 1;
-          end loop;
-          if H2 < 0 or ND.S (H1).I < 0 then
-            ND.S (H1).I := ND.S (H1).I + 1;
-          else
-            ND.TCB (H3).SUSPEND := 0;
-            ND.TCB (H3).TS      := Ready;
-          end if;
-          Curr_TCB.TS := Ready; --  end critical section
-          ND.SWITCH := True;
-
-        when k_Standard_Functions =>
-          Do_Standard_Function;
+        when k_Standard_Functions => Do_Standard_Function;
 
         when k_Record_Field_Offset =>
           ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
@@ -941,7 +673,7 @@ package body HAC.PCode.Interpreter is
 
           when Defs.CallSTDE =>
             --  Unconditional entry call
-            Queue (H2, ND.CurTask);          --  put self on entry queue
+            Queue (CD, ND, H2, ND.CurTask);          --  put self on entry queue
             Curr_TCB.TS := WaitRendzv;
             H5          := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
             if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
@@ -955,7 +687,7 @@ package body HAC.PCode.Interpreter is
 
           when Defs.CallTMDE =>
             --  Timed entry call
-            Queue (H2, ND.CurTask);         --  put self on entry queue
+            Queue (CD, ND, H2, ND.CurTask);         --  put self on entry queue
             H5 := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
             --
             if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
@@ -980,7 +712,7 @@ package body HAC.PCode.Interpreter is
             if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
                (ND.TCB (H5).TS = TimedWait)
             then
-              Queue (H2, ND.CurTask);    --  put self on entry queue
+              Queue (CD, ND, H2, ND.CurTask);    --  put self on entry queue
               Curr_TCB.R1.I := 1;        --  Indicate entry successful
               Curr_TCB.TS := WaitRendzv;
               ND.TCB (H5).TS      := Ready;  --  wake accepting task if required
@@ -1097,9 +829,9 @@ package body HAC.PCode.Interpreter is
             ND.S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
           end if;
         else
-          TActive     := TActive - 1;
+          ND.TActive  := ND.TActive - 1;
           Curr_TCB.TS := Completed;
-          ND.SWITCH      := True;
+          ND.SWITCH   := True;
         end if;
 
       when k_Exit_Function =>
@@ -1128,15 +860,14 @@ package body HAC.PCode.Interpreter is
 
       when Binary_Operator_Opcode => Do_Binary_Operator;
 
-      when k_File_I_O =>  --  File I/O procedures - Schoening
-        Do_File_IO;
+      when k_File_I_O => Do_File_IO;
 
       when k_Halt_Interpreter =>
-        if TActive = 0 then
+        if ND.TActive = 0 then
           ND.PS := FIN;
         else
-          ND.TCB (0).TS  := Completed;
-          ND.SWITCH         := True;
+          ND.TCB (0).TS := Completed;
+          ND.SWITCH     := True;
           Curr_TCB.PC := Curr_TCB.PC - 1;
         end if;
 
@@ -1182,7 +913,7 @@ package body HAC.PCode.Interpreter is
         --  Set priority inherit indicator
         Pop;
 
-        when k_Selective_Wait => HAC.PCode.Interpreter.Tasking.Do_Selective_Wait (CD, ND);
+        when k_Selective_Wait => Do_Selective_Wait (CD, ND);
 
       end case;
     exception
@@ -1190,13 +921,16 @@ package body HAC.PCode.Interpreter is
         ND.PS := STKCHK;  --  Stack overflow
     end Execute_Current_Instruction;
 
+    Result_Tasks_to_wake : Boolean;
+
   begin  --  Interpret
+    ND.Start_Time := Clock;
     ND.Snap     := False;
-    ND.SWITCH   := False;      --  invoke scheduler on next cycle flag
-    ND.SYSCLOCK := Clock;      --  (ms after 00:00:00 Jan 1, current year)
-    ND.TIMER    := ND.SYSCLOCK;   --  set to end of current task's time slice
-    Init_main_task;
-    Init_other_tasks;
+    ND.SWITCH   := False;           --  invoke scheduler on next cycle flag
+    ND.SYSCLOCK := ND.Start_Time;
+    ND.TIMER    := ND.SYSCLOCK;     --  set to end of current task's time slice
+    HAC.PCode.Interpreter.Tasking.Init_main_task (CD, ND);
+    HAC.PCode.Interpreter.Tasking.Init_other_tasks (CD, ND);
 
     Running_State:
     loop  --  until Processor state /= RUN
@@ -1209,9 +943,10 @@ package body HAC.PCode.Interpreter is
           SnapShot;
         end if;
       else
+        HAC.PCode.Interpreter.Tasking.Tasks_to_wake (CD, ND, Result_Tasks_to_wake);
         if ND.SWITCH or  --  ------------> Voluntary release of control
            ND.SYSCLOCK >= ND.TIMER or   --  ---> Time slice exceeded
-           TasksToWake
+           Result_Tasks_to_wake
         then --  ------> Awakened task causes switch
           if ND.CurTask >= 0 then
             ND.TCB (ND.CurTask).LASTRUN := ND.SYSCLOCK;
