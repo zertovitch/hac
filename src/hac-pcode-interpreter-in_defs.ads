@@ -124,6 +124,10 @@ package HAC.PCode.Interpreter.In_Defs is
     Snap        : Boolean;   --  Snapshot flag to display scheduler status
     Nb_Callers  : Integer;   --  AVL  TERMINATE
     Nb_Complete : Integer;   --  AVL  TERMINATE
+    EList       : Entry_Queue;
+    SWITCH      : Boolean;   --  invoke scheduler on next cycle flag
+    SYSCLOCK    : Time;      --  (ms after 00:00:00 Jan 1, current year)
+    TIMER       : Time;      --  set to end of current task's time slice
   end record;
 
   procedure Allocate_Text_File (
@@ -134,6 +138,10 @@ package HAC.PCode.Interpreter.In_Defs is
   procedure Free_Allocated_Contents (
     ND : in out Interpreter_Data
   );
+
+  procedure Pop (ND : in out Interpreter_Data; Amount : Positive := 1);
+
+  procedure Push (ND : in out Interpreter_Data; Amount : Positive := 1);
 
   Stack_Overflow, Stack_Underflow : exception;
 
