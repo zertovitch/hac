@@ -1,16 +1,16 @@
+with HAC.PCode.Interpreter.In_Defs;
+
 with HAC_Pack;
 
 with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Characters.Handling;
 with Ada.Command_Line;
-with Ada.Containers.Vectors;
 with Ada.Environment_Variables;
 
 with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
 
 with Ada.Strings;                       use Ada.Strings;
-with Ada.Unchecked_Deallocation;
 
 package body HAC.PCode.Interpreter is
 
@@ -18,172 +18,10 @@ package body HAC.PCode.Interpreter is
   use REF, Defs.RIO;
   use type Defs.HAC_Float;
 
-  package InterDef is
-    --  Sub-package, was a separate Turbo Pascal unit.
-
-    NilTask : constant := -1;
-
-    subtype TRange is Integer range 0 .. Defs.TaskMax;  --  task index
-
-    type Processor_State is (
-      RUN,               --  RUN is the normal processor state
-      --
-      Case_Check_Error,  --  Happens when a case was not found in a CASE statement.
-      DEADLOCK,
-      DIVCHK,            --  Division by 0         !! -> Exception_Raised with Contraint_Error
-      FIN,
-      INXCHK,            --  Out-of-range error    !! -> Exception_Raised with Contraint_Error
-      ProgErr,           --  Program_Error         !! -> Exception_Raised with Program_Error
-      REDCHK,            --  End_Error             !! -> Exception_Raised with End_Error
-      STKCHK,            --  Stack overflow        !! -> Exception_Raised with (Storage_Error, "Stack overflow")
-      WAIT);
-
-    type Task_State is (
-      Completed,
-      Delayed,
-      Ready,
-      Running,
-      Critical,
-      WaitRendzv,
-      WaitSem,
-      TimedRendz,
-      TimedWait,
-      Terminated);
-
-    type PriCB is record  --  Priority Control Block
-      UPRI    : Integer;  --  User specified priority
-      INHERIT : Boolean;  --  Priority inheritance enabled
-    end record;
-
-    type File_Ptr is access Ada.Text_IO.File_Type;
-
-    Abstract_Console : constant File_Ptr := null;
-
-    type GRegister is record
-      --  General register - variant record in Pascal
-      --  !! To save place we'll reintroduce a discriminant
-      --     - and use aux variables for conversions in the interpreter.
-      --
-      I   : Defs.HAC_Integer;  --  Also used for Bools, Chars and Enums.
-      R   : Defs.HAC_Float;
-      V   : Defs.VString;  --  !! might make copies slow (would a discriminant help?)
-      Txt : File_Ptr := Abstract_Console;
-    end record;
-
-    subtype Data_Type is GRegister;
-
-    type Stack_Type is array (1 .. Defs.StMax) of Data_Type;
-
-    type Task_Control_Block is record   --  Task Control Block
-      --  index of current top of stack
-      T : Integer;
-      --  index of current base of stack
-      B : Integer;
-      --  program counter, next pcode
-      PC : Integer;
-      --  current task state
-      TS : Task_State;
-      --  task in rendz with or -1
-      InRendzv : Integer;
-      --  end of delay period
-      WAKETIME : Time;
-      --  task priority parameter rec.
-      Pcontrol : PriCB;
-      --  millisecond time slice
-      QUANTUM : Duration;
-      --  time last run end (fairness)
-      LASTRUN : Time;
-      --  binding
-      DISPLAY : Display_Type;
-      --  stack overflow if exceeded
-      STACKSIZE : Integer;
-      --  id of object suspended on
-      SUSPEND : Integer;
-      --  general use registers
-      R1, R2, R3 : GRegister;
-    end record;
-
-    type Enode;
-    type Eptr is access Enode; --  task entry rendzv pointer
-
-    type Enode is record    --  task entry structure
-      Task_Index : TRange;  --  index of task enqueued for rendzv
-      Next       : Eptr;    --  next entry in list
-    end record;
-
-    procedure Dispose is new Ada.Unchecked_Deallocation (Enode, Eptr);
-
-    type EHeader is record
-      Task_Index : TRange;  --  index of task that contains entry
-      First : Eptr;  --  ptr to first node in rendzv queue
-      Last : Eptr;   --  ptr to last  node in rendzv queue
-    end record;
-
-    type Entry_Queue is array (1 .. Defs.EntryMax) of EHeader;
-
-    function GetClock return Time renames Clock;
-
-    package File_Vectors is new Ada.Containers.Vectors (Positive, File_Ptr);
-
-    type Task_Control_Blocks is array (TRange) of Task_Control_Block;
-
-    --  Objects of type Interpreter_Data contains data that may be useful
-    --  to be kept post-mortem or in a snapshot to "outside", or
-    --  passed to the scheduler.
-
-    type Interpreter_Data is record
-      S           : Stack_Type;
-      PS          : Processor_State := RUN;  --  Processor status register
-      CurTask     : Integer;                 --  Index of currently executing task
-      TCB         : Task_Control_Blocks;
-      Files       : File_Vectors.Vector;
-      Snap        : Boolean;   --  Snapshot flag to display scheduler status
-      Nb_Callers  : Integer;   --  AVL  TERMINATE
-      Nb_Complete : Integer;   --  AVL  TERMINATE
-    end record;
-
-    procedure Allocate_Text_File (
-      ND : in out Interpreter_Data;
-      R  : in out GRegister
-    );
-
-    procedure Free_Allocated_Contents (
-      ND : in out Interpreter_Data
-    );
-
-  end InterDef;
-
-  package body InterDef is
-
-    procedure Allocate_Text_File (
-      ND : in out Interpreter_Data;
-      R  : in out GRegister
-    )
-    is
-    begin
-      if R.Txt = null then
-        R.Txt := new Ada.Text_IO.File_Type;
-        ND.Files.Append (R.Txt);
-      end if;
-    end Allocate_Text_File;
-
-    procedure Free_Allocated_Contents (
-      ND : in out Interpreter_Data
-    )
-    is
-      procedure Free is new Ada.Unchecked_Deallocation (Ada.Text_IO.File_Type, File_Ptr);
-    begin
-      for F of ND.Files loop
-        Free (F);
-      end loop;
-    end Free_Allocated_Contents;
-
-  end InterDef;
-
   --  Post Mortem Dump of the task stack causing the exception
   --
-  procedure Post_Mortem_Dump (CD: Compiler_Data; ND: InterDef.Interpreter_Data) is
-    use InterDef, Ada.Text_IO, Defs.IIO;
+  procedure Post_Mortem_Dump (CD: Compiler_Data; ND: In_Defs.Interpreter_Data) is
+    use In_Defs, Ada.Text_IO, Defs.IIO;
     BLKCNT : Integer;
     H1, H2, H3 : Defs.HAC_Integer;
   begin
@@ -257,7 +95,7 @@ package body HAC.PCode.Interpreter is
 
   procedure Interpret (CD : Compiler_Data)
   is
-    use InterDef;
+    use In_Defs;
     ND : Interpreter_Data;
     Start_Time : constant Time := Clock;
     --  trap label
