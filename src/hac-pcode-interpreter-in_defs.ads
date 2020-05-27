@@ -135,4 +135,6 @@ package HAC.PCode.Interpreter.In_Defs is
     ND : in out Interpreter_Data
   );
 
+  Stack_Overflow, Stack_Underflow : exception;
+
 end HAC.PCode.Interpreter.In_Defs;

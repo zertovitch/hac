@@ -277,9 +277,9 @@ package body HAC.PCode.Interpreter is
     --  $I sched.pas
     --  This file contains the different scheduling strategies
 
-    --  Default Task time-slice in milliseconds
+    --  Default Task time-slice in seconds
     --  Feldman: 60ths of a sec on Mac
-    TSlice : constant := 16.666666;
+    TSlice : constant Duration := 0.016666666;
 
     procedure Init_main_task is
     begin
@@ -301,7 +301,7 @@ package body HAC.PCode.Interpreter is
         Main_TCB.DISPLAY (1) := 0 ;
         Main_TCB.STACKSIZE := Defs.StMax - (CD.Tasks_Definitions_Count * Defs.STKINCR) ;
         Main_TCB.SUSPEND := 0 ;
-        Main_TCB.QUANTUM := Duration (TSlice * 0.001);
+        Main_TCB.QUANTUM := TSlice;
         Main_TCB.Pcontrol.UPRI := 0 ;
         Main_TCB.Pcontrol.INHERIT := False ;
         Main_TCB.LASTRUN := Start_Time ;
@@ -328,7 +328,7 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.SUSPEND := 0 ;
           Curr_TCB.TS := Ready ;
           Curr_TCB.InRendzv := NilTask ;
-          Curr_TCB.QUANTUM := Duration (TSlice * 0.001);
+          Curr_TCB.QUANTUM := TSlice;
           Curr_TCB.Pcontrol.UPRI := 0 ;
           Curr_TCB.Pcontrol.INHERIT := False ;
           Curr_TCB.LASTRUN := Start_Time ;
@@ -354,7 +354,19 @@ package body HAC.PCode.Interpreter is
       Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
     begin
       Curr_TCB_Top := Curr_TCB_Top - Amount;
+      if Curr_TCB_Top < ND.S'First then
+        raise Stack_Underflow;
+      end if;
     end Pop;
+
+    procedure Push (Amount : Positive := 1) is
+      Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
+    begin
+      Curr_TCB.T := Curr_TCB.T + Amount;
+      if Curr_TCB.T > Curr_TCB.STACKSIZE then
+        raise Stack_Overflow;
+      end if;
+    end Push;
 
     procedure Do_Standard_Function is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
@@ -392,15 +404,11 @@ package body HAC.PCode.Interpreter is
         when SF_Arctan => Top_Item.R := Arctan (Top_Item.R);
         when SF_File_Information =>
           if ND.IR.X = 0 then  --  Niladic File info function -> abstract console
-            Curr_TCB.T := Curr_TCB.T + 1;
-            if Curr_TCB.T > Curr_TCB.STACKSIZE then
-              ND.PS := STKCHK;  --  Stack overflow
-            else
-              case SF_File_Information (Code) is
-                when SF_EOF  => ND.S (Curr_TCB.T).I := Boolean'Pos (End_Of_File_Console);
-                when SF_EOLN => ND.S (Curr_TCB.T).I := Boolean'Pos (End_Of_Line_Console);
-              end case;
-            end if;
+            Push;
+            case SF_File_Information (Code) is
+              when SF_EOF  => ND.S (Curr_TCB.T).I := Boolean'Pos (End_Of_File_Console);
+              when SF_EOLN => ND.S (Curr_TCB.T).I := Boolean'Pos (End_Of_Line_Console);
+            end case;
           else
             case SF_File_Information (Code) is
               when SF_EOF =>
@@ -421,6 +429,7 @@ package body HAC.PCode.Interpreter is
             To_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
         when SF_Two_VStrings_Concat =>
           Pop;
+          --  [T] := [T] & [T+1] :
           ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & ND.S (Curr_TCB.T + 1).V;
         when SF_VString_Char_Concat =>
           Pop;
@@ -515,25 +524,21 @@ package body HAC.PCode.Interpreter is
         when SF_Shell_Execute =>
           Top_Item.I := Shell_Execute (To_String (Top_Item.V));
         when SF_Niladic =>
-          --  NILADIC functions need to push a new item (their result).
-          Curr_TCB.T := Curr_TCB.T + 1;
-          if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            ND.PS := STKCHK;  --  Stack overflow
-          else
-            case SF_Niladic (Code) is
-              when SF_Clock =>
-                --  CLOCK function. Return time of units of seconds.
-                ND.S (Curr_TCB.T).R := Defs.HAC_Float (GetClock - Start_Time);
-              when SF_Random_Float =>
-                ND.S (Curr_TCB.T).R := Defs.HAC_Float (Random (Gen));
-              when SF_Argument_Count =>
-                ND.S (Curr_TCB.T).I := Argument_Count;
-              when SF_Directory_Separator =>
-                ND.S (Curr_TCB.T).I := Character'Pos (Directory_Separator);
-              when SF_Get_Needs_Skip_Line =>
-                ND.S (Curr_TCB.T).I := Boolean'Pos (Get_Needs_Skip_Line);
-            end case;
-          end if;
+          --  NILADIC functions need to push a new item (their own result).
+          Push;
+          case SF_Niladic (Code) is
+            when SF_Clock =>
+              --  CLOCK function. Return time of units of seconds.
+              ND.S (Curr_TCB.T).R := Defs.HAC_Float (GetClock - Start_Time);
+            when SF_Random_Float =>
+              ND.S (Curr_TCB.T).R := Defs.HAC_Float (Random (Gen));
+            when SF_Argument_Count =>
+              ND.S (Curr_TCB.T).I := Argument_Count;
+            when SF_Directory_Separator =>
+              ND.S (Curr_TCB.T).I := Character'Pos (Directory_Separator);
+            when SF_Get_Needs_Skip_Line =>
+              ND.S (Curr_TCB.T).I := Boolean'Pos (Get_Needs_Skip_Line);
+          end case;
       end case;
     end Do_Standard_Function;
 
@@ -735,12 +740,8 @@ package body HAC.PCode.Interpreter is
           );
           Pop (2);
         when SP_Push_Abstract_Console =>
-          Curr_TCB.T := Curr_TCB.T + 1;
-          if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            ND.PS := STKCHK;  --  Stack overflow
-          else
-            ND.S (Curr_TCB.T).Txt := Abstract_Console;
-          end if;
+          Push;
+          ND.S (Curr_TCB.T).Txt := Abstract_Console;
         when SP_Get | SP_Get_Immediate | SP_Get_Line | SP_Get_F | SP_Get_Line_F =>
           Do_Text_Read (Code);
         when SP_Put |SP_Put_Line | SP_Put_F | SP_Put_Line_F =>
@@ -783,28 +784,16 @@ package body HAC.PCode.Interpreter is
       case ND.IR.F is
 
         when k_Push_Address =>  --  Push "v'Access" of variable v
-          Curr_TCB.T := Curr_TCB.T + 1;
-          if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            ND.PS := STKCHK;  --  Stack overflow
-          else
-            ND.S (Curr_TCB.T).I := Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y;
-          end if;
+          Push;
+          ND.S (Curr_TCB.T).I := Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y;
 
         when k_Push_Value =>  --  Push variable v's value.
-          Curr_TCB.T := Curr_TCB.T + 1;
-          if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            ND.PS := STKCHK;  --  Stack overflow
-          else
-            ND.S (Curr_TCB.T) := ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y);
-          end if;
+          Push;
+          ND.S (Curr_TCB.T) := ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y);
 
         when k_Push_Indirect_Value =>  --  Push "v.all" (v is an access).
-          Curr_TCB.T := Curr_TCB.T + 1;
-          if Curr_TCB.T > Curr_TCB.STACKSIZE then
-            ND.PS := STKCHK;  --  Stack overflow
-          else
-            ND.S (Curr_TCB.T) := ND.S (ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y).I);
-          end if;
+          Push;
+          ND.S (Curr_TCB.T) := ND.S (ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y).I);
 
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
 
@@ -858,7 +847,7 @@ package body HAC.PCode.Interpreter is
           end if;
 
         when k_Wait_Semaphore =>
-          H1            := ND.S (Curr_TCB.T).I;
+          H1 := ND.S (Curr_TCB.T).I;
           Pop;
           if ND.S (H1).I > 0 then
             ND.S (H1).I       := ND.S (H1).I - 1;
@@ -872,10 +861,10 @@ package body HAC.PCode.Interpreter is
           end if;
 
         when k_Signal_Semaphore =>
-          H1         := ND.S (Curr_TCB.T).I;
+          H1 := ND.S (Curr_TCB.T).I;
           Pop;
-          H2         := CD.Tasks_Definitions_Count + 1;
-          H3         := Integer (Random (Gen) * Float (H2));
+          H2 := CD.Tasks_Definitions_Count + 1;
+          H3 := Integer (Random (Gen) * Float (H2));
           while H2 >= 0 and ND.TCB (H3).TS /= WaitSem and ND.TCB (H3).SUSPEND /= H1
           loop
             H3 := (H3 + 1) mod (Defs.TaskMax + 1);
@@ -896,19 +885,19 @@ package body HAC.PCode.Interpreter is
         when k_Record_Field_Offset =>
           ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
 
-      when k_Jump =>
-        Curr_TCB.PC := IR.Y;
+        when k_Jump =>
+          Curr_TCB.PC := IR.Y;
 
-      when k_Conditional_Jump =>
-        if ND.S (Curr_TCB.T).I = 0 then  --  if False, then ...
-          Curr_TCB.PC := IR.Y;        --  ... Jump.
-        end if;
-        Pop;
+        when k_Conditional_Jump =>
+          if ND.S (Curr_TCB.T).I = 0 then  --  if False, then ...
+            Curr_TCB.PC := IR.Y;        --  ... Jump.
+          end if;
+          Pop;
 
       when k_CASE_Switch_1 =>  --  SWTC - switch (in a CASE instruction)
-        H1         := ND.S (Curr_TCB.T).I;
+        H1 := ND.S (Curr_TCB.T).I;
         Pop;
-        H2         := IR.Y;
+        H2 := IR.Y;
         --
         --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
         --
@@ -1081,9 +1070,9 @@ package body HAC.PCode.Interpreter is
         end if;
 
       when k_Load_Block =>
-        H1         := ND.S (Curr_TCB.T).I;   --  Pull source address
+        H1 := ND.S (Curr_TCB.T).I;   --  Pull source address
         Pop;
-        H2         := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
+        H2 := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
         if H2 > Curr_TCB.STACKSIZE then
           ND.PS := STKCHK;  --  Stack overflow
         else
@@ -1097,7 +1086,7 @@ package body HAC.PCode.Interpreter is
       when k_Copy_Block =>
         H1 := ND.S (Curr_TCB.T - 1).I;   --  Destination address
         H2 := ND.S (Curr_TCB.T).I;       --  Source address
-        H3 := H1 + IR.Y;              --  IR.Y = block length
+        H3 := H1 + IR.Y;                 --  IR.Y = block length
         while H1 < H3 loop
           ND.S (H1) := ND.S (H2);
           H1     := H1 + 1;
@@ -1106,20 +1095,12 @@ package body HAC.PCode.Interpreter is
         Pop (2);
 
       when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
-        Curr_TCB.T := Curr_TCB.T + 1;
-        if Curr_TCB.T > Curr_TCB.STACKSIZE then
-          ND.PS := STKCHK;  --  Stack overflow
-        else
-          ND.S (Curr_TCB.T).I := IR.Y;
-        end if;
+        Push;
+        ND.S (Curr_TCB.T).I := IR.Y;
 
       when k_Load_Float_Literal =>
-        Curr_TCB.T := Curr_TCB.T + 1;
-        if Curr_TCB.T > Curr_TCB.STACKSIZE then
-          ND.PS := STKCHK;  --  Stack overflow
-        else
-          ND.S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
-        end if;
+        Push;
+        ND.S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
 
       when k_String_Literal_Assignment =>  --  Hathorn
         H1 := ND.S (Curr_TCB.T - 2).I;  --  address of array
@@ -1159,13 +1140,12 @@ package body HAC.PCode.Interpreter is
           Curr_TCB.B := ND.S (Curr_TCB.B + 3).I;
           if IR.Y = Defs.CallTMDE or IR.Y = Defs.CallCNDE then
             if IR.Y = Defs.CallTMDE and Curr_TCB.R1.I = 0 then
-              Curr_TCB.T := Curr_TCB.T + 1;  --  A JMPC instruction always follows
+              Push;
             end if;
-            if Curr_TCB.T > Curr_TCB.STACKSIZE then  --  timed and conditional entry call
-              ND.PS := STKCHK;  --  Stack overflow   --  returns (32).  Push entry call
-            else
-              ND.S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
-            end if;
+            --  A JMPC instruction always follows (?)
+            --  timed and conditional entry call
+            --  returns (32).  Push entry call
+            ND.S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
           end if;
         else
           TActive     := TActive - 1;
@@ -1231,7 +1211,7 @@ package body HAC.PCode.Interpreter is
       when k_Set_Quantum_Task =>
         --  Cramer
         if ND.S (Curr_TCB.T).R <= 0.0 then
-          ND.S (Curr_TCB.T).R := Defs.HAC_Float (TSlice) * 0.001;
+          ND.S (Curr_TCB.T).R := Defs.HAC_Float (TSlice);
         end if;
         Curr_TCB.QUANTUM := Duration (ND.S (Curr_TCB.T).R);
         Pop;
@@ -1354,6 +1334,9 @@ package body HAC.PCode.Interpreter is
         --  Selective Wait
 
       end case;
+    exception
+      when Stack_Overflow | Stack_Underflow =>
+        ND.PS := STKCHK;  --  Stack overflow
     end Execute_Current_Instruction;
 
   begin  --  Interpret
