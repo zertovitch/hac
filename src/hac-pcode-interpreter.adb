@@ -15,12 +15,11 @@ with Ada.Strings;                       use Ada.Strings;
 package body HAC.PCode.Interpreter is
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions (Defs.HAC_Float);
-  use REF, Defs.RIO;
-  use type Defs.HAC_Float;
 
   --  Post Mortem Dump of the task stack causing the exception
   --
   procedure Post_Mortem_Dump (CD: Compiler_Data; ND: In_Defs.Interpreter_Data) is
+    use Defs.RIO;
     use In_Defs, Ada.Text_IO, Defs.IIO;
     BLKCNT : Integer;
     H1, H2, H3 : Defs.HAC_Integer;
@@ -100,7 +99,6 @@ package body HAC.PCode.Interpreter is
     Start_Time : constant Time := Clock;
     --  trap label
     Gen : Generator;
-    IR  : Order;  --  Instruction register
     EList    : Entry_Queue;
     SWITCH   : Boolean := False;   --  invoke scheduler on next cycle flag
     SYSCLOCK : Time := Clock;      --  (ms after 00:00:00 Jan 1, current year)
@@ -356,7 +354,7 @@ package body HAC.PCode.Interpreter is
       Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
     begin
       Curr_TCB_Top := Curr_TCB_Top - Amount;
-    end;
+    end Pop;
 
     procedure Do_Standard_Function is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
@@ -364,8 +362,8 @@ package body HAC.PCode.Interpreter is
       temp : Defs.HAC_Float;
       Idx, Len, Arg, From, To : Integer;
       C : Character;
-      use Defs, Defs.VStrings_Pkg, Ada.Characters.Handling;
-      Code : constant SF_Code := SF_Code'Val (IR.Y);
+      Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
+      use Defs, Defs.VStrings_Pkg, REF, Ada.Characters.Handling;
     begin
       case Code is
         when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
@@ -393,7 +391,7 @@ package body HAC.PCode.Interpreter is
         when SF_Sqrt =>   Top_Item.R := Sqrt (Top_Item.R);
         when SF_Arctan => Top_Item.R := Arctan (Top_Item.R);
         when SF_File_Information =>
-          if IR.X = 0 then  --  Niladic File info function -> abstract console
+          if ND.IR.X = 0 then  --  Niladic File info function -> abstract console
             Curr_TCB.T := Curr_TCB.T + 1;
             if Curr_TCB.T > Curr_TCB.STACKSIZE then
               ND.PS := STKCHK;  --  Stack overflow
@@ -544,7 +542,7 @@ package body HAC.PCode.Interpreter is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       use Defs;
       Out_Param : Index renames ND.S (Curr_TCB.T).I;
-      Typ : constant Typen := Typen'Val (IR.Y);
+      Typ : constant Typen := Typen'Val (ND.IR.Y);
       Immediate : constant Boolean := Code = SP_Get_Immediate;
       FP : File_Ptr;
     begin
@@ -606,7 +604,7 @@ package body HAC.PCode.Interpreter is
       use Defs, Defs.VStrings_Pkg;
     begin
       if Code in SP_Put .. SP_Put_Line then
-        case Typen'Val (IR.Y) is
+        case Typen'Val (ND.IR.Y) is
           when Ints            => Put_Console (Item.I, Format_1, Format_2);
           when Floats          => Put_Console (Item.R, Format_1, Format_2, Format_3);
           when Bools           => Put_Console (Boolean'Val (Item.I), Format_1);
@@ -624,7 +622,7 @@ package body HAC.PCode.Interpreter is
         Pop (4);
       else
         FP := ND.S (Curr_TCB.T - 4).Txt;
-        case Typen'Val (IR.Y) is
+        case Typen'Val (ND.IR.Y) is
           when Ints            => IIO.Put         (FP.all, Item.I, Format_1, Format_2);
           when Floats          => RIO.Put         (FP.all, Item.R, Format_1, Format_2, Format_3);
           when Bools           => BIO.Put         (FP.all, Boolean'Val (Item.I), Format_1);
@@ -648,10 +646,11 @@ package body HAC.PCode.Interpreter is
       Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
       X : GRegister renames ND.S (Curr_TCB_Top - 1);
       Y : GRegister renames ND.S (Curr_TCB_Top);
-      use Defs.VStrings_Pkg;
+      use Defs.VStrings_Pkg, REF;
+      use type Defs.HAC_Float;
     begin
       --  We do  [T] <- ([T-1] operator [T])  and pop later.
-      case Binary_Operator_Opcode (IR.F) is
+      case Binary_Operator_Opcode (ND.IR.F) is
         when k_EQL_Float =>   X.I := Boolean'Pos (X.R =  Y.R);
         when k_NEQ_Float =>   X.I := Boolean'Pos (X.R /= Y.R);
         when k_LSS_Float =>   X.I := Boolean'Pos (X.R <  Y.R);
@@ -699,7 +698,7 @@ package body HAC.PCode.Interpreter is
       use Defs;
       Var_Addr : constant HAC_Integer := ND.S (Curr_TCB.T).I;
     begin
-      case Typen'Val (IR.Y) is
+      case Typen'Val (ND.IR.Y) is
         when VStrings   => ND.S (Var_Addr).V := Null_VString;
         when Text_Files => Allocate_Text_File (ND, ND.S (Var_Addr));
         when others     => null;
@@ -708,7 +707,7 @@ package body HAC.PCode.Interpreter is
     end Do_Code_for_Automatic_Initialization;
 
     procedure Do_File_IO is
-      Code : constant SP_Code := SP_Code'Val (IR.X);
+      Code : constant SP_Code := SP_Code'Val (ND.IR.X);
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     begin
       case Code is
@@ -772,14 +771,16 @@ package body HAC.PCode.Interpreter is
     procedure Fetch_Instruction is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     begin
-      IR := CD.ObjCode (Curr_TCB.PC);
+      ND.IR := CD.ObjCode (Curr_TCB.PC);
       Curr_TCB.PC := Curr_TCB.PC + 1;
     end Fetch_Instruction;
 
     procedure Execute_Current_Instruction is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
+      IR : Order renames ND.IR;
+      use type Defs.HAC_Float;
     begin
-      case IR.F is
+      case ND.IR.F is
 
         when k_Push_Address =>  --  Push "v'Access" of variable v
           Curr_TCB.T := Curr_TCB.T + 1;

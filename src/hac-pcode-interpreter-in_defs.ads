@@ -117,6 +117,7 @@ package HAC.PCode.Interpreter.In_Defs is
   type Interpreter_Data is record
     S           : Stack_Type;
     PS          : Processor_State := RUN;  --  Processor status register
+    IR          : Order;                   --  Instruction register
     CurTask     : Integer;                 --  Index of currently executing task
     TCB         : Task_Control_Blocks;
     Files       : File_Vectors.Vector;
