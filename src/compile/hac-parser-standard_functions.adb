@@ -1,10 +1,11 @@
-with HAC.Parser.Expressions; use HAC.Parser.Expressions;
-with HAC.Parser.Helpers;     use HAC.Parser.Helpers;
-with HAC.Scanner;            use HAC.Scanner;
+with HAC.Compiler.PCode_Emit,
+     HAC.Parser.Expressions,
+     HAC.Parser.Helpers,
+     HAC.Scanner;
 
 package body HAC.Parser.Standard_Functions is
 
-  use Defs, PCode;
+  use Defs, Expressions, Helpers, PCode, PCode_Emit, Scanner;
 
   SF_Args : constant array (SF_Code) of Natural :=
     ( SF_Niladic            => 0,

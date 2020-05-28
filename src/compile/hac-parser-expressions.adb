@@ -1,3 +1,4 @@
+with HAC.Compiler.PCode_Emit;
 with HAC.Parser.Calls;                  use HAC.Parser.Calls;
 with HAC.Parser.Helpers;                use HAC.Parser.Helpers;
 with HAC.Parser.Standard_Functions;
@@ -6,6 +7,8 @@ with HAC.Scanner;                       use HAC.Scanner;
 with HAC.UErrors;                       use HAC.UErrors;
 
 package body HAC.Parser.Expressions is
+
+  use PCode_Emit;
 
   ------------------------------------------------------------------
   ---------------------------------------------------------Selector-

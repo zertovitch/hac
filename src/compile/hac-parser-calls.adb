@@ -1,10 +1,13 @@
-with HAC.Parser.Expressions; use HAC.Parser.Expressions;
-with HAC.Parser.Helpers;     use HAC.Parser.Helpers;
-with HAC.PCode;              use HAC.PCode;
-with HAC.Scanner;            use HAC.Scanner;
-with HAC.UErrors;            use HAC.UErrors;
+with HAC.Compiler.PCode_Emit,
+     HAC.Parser.Expressions,
+     HAC.Parser.Helpers,
+     HAC.PCode,
+     HAC.Scanner,
+     HAC.UErrors;
 
 package body HAC.Parser.Calls is
+
+  use Compiler.PCode_Emit, Expressions, Helpers, PCode, Scanner, UErrors;
 
   procedure Push_and_Check_by_Value_Parameter (
     CD       : in out Compiler_Data;

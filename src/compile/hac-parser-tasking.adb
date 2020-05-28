@@ -1,4 +1,5 @@
 with HAC.Co_Defs,
+     HAC.Compiler.PCode_Emit,
      HAC.Parser.Enter_Def,
      HAC.Parser.Helpers,
      HAC.PCode,
@@ -7,7 +8,7 @@ with HAC.Co_Defs,
 
 package body HAC.Parser.Tasking is
 
-  use Compiler, Co_Defs, Defs, Enter_Def, Helpers, PCode, UErrors;
+  use Compiler, Compiler.PCode_Emit, Co_Defs, Defs, Enter_Def, Helpers, PCode, UErrors;
 
   ------------------------------------------------------------------
   -------------------------------------------------Task_Declaration-

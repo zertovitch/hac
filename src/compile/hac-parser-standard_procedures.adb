@@ -1,12 +1,13 @@
-with HAC.Parser.Calls;       use HAC.Parser.Calls;
-with HAC.Parser.Expressions; use HAC.Parser.Expressions;
-with HAC.Parser.Helpers;     use HAC.Parser.Helpers;
-with HAC.Scanner;            use HAC.Scanner;
-with HAC.UErrors;            use HAC.UErrors;
+with HAC.Compiler.PCode_Emit,
+     HAC.Parser.Calls,
+     HAC.Parser.Expressions,
+     HAC.Parser.Helpers,
+     HAC.Scanner,
+     HAC.UErrors;
 
 package body HAC.Parser.Standard_Procedures is
 
-  use Compiler, Defs, PCode;
+  use Calls, Defs, Expressions, Helpers, PCode, PCode_Emit, Scanner, UErrors;
 
   type Def_param_type is array (Typen, 1 .. 3) of Integer;
 

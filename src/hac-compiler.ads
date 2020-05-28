@@ -9,13 +9,13 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Co_Defs, HAC.Defs, HAC.PCode;
+with HAC.Co_Defs, HAC.Defs;
 
 with Ada.Streams, Ada.Text_IO;
 
 package HAC.Compiler is
 
-  use HAC.Co_Defs, HAC.Defs, HAC.PCode;
+  use HAC.Co_Defs, HAC.Defs;
 
   ---------------------
   --  Compiler_Data  --
@@ -102,45 +102,5 @@ package HAC.Compiler is
   );
 
   function Unit_Compilation_Successful (CD: Compiler_Data) return Boolean;
-
-  procedure Emit (
-    CD   : in out Compiler_Data;
-    FCT  :        Opcode
-  );
-
-  procedure Emit1 (
-    CD   : in out Compiler_Data;
-    FCT  :        Opcode;
-    B    :        Operand_2_Type
-  );
-
-  procedure Emit2 (
-    CD   : in out Compiler_Data;
-    FCT  :        Opcode;
-    a    :        Operand_1_Type;
-    B    :        Operand_2_Type
-  );
-
-  procedure Emit_Std_Funct (
-    CD   : in out Compiler_Data;
-    Code :        SF_Code
-  );
-
-  procedure Emit_Comparison_Instruction (
-    CD        : in out HAC.Compiler.Compiler_Data;
-    Operator  :        Comparison_Operator;
-    Base_Typ  :        Typen
-  );
-
-  procedure Emit_Unary_Minus (
-    CD        : in out HAC.Compiler.Compiler_Data;
-    Base_Typ  :        Numeric_Typ
-  );
-
-  procedure Emit_Arithmetic_Binary_Instruction (
-    CD        : in out HAC.Compiler.Compiler_Data;
-    Operator  :        Arithmetic_Binary_Operator;
-    Base_Typ  :        Numeric_Typ
-  );
 
 end HAC.Compiler;

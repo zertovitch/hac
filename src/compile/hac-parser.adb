@@ -1,4 +1,5 @@
 with HAC.Co_Defs,
+     HAC.Compiler.PCode_Emit,
      HAC.Parser.Calls,
      HAC.Parser.Enter_Def,
      HAC.Parser.Expressions,
@@ -24,7 +25,8 @@ package body HAC.Parser is
     Block_ID_with_case   :        Defs.Alfa
   )
   is
-    use Calls, Compiler, Co_Defs, Defs, Enter_Def, Expressions, Helpers, PCode, UErrors;
+    use Calls, Compiler, Co_Defs, Defs, Enter_Def,
+        Expressions, Helpers, PCode, Compiler.PCode_Emit, UErrors;
     --
     Level : Nesting_level := Initial_Level;
     procedure InSymbol is begin Scanner.InSymbol (CD); end;
