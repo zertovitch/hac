@@ -89,6 +89,7 @@ package body HAC.Parser.Standard_Procedures is
       if Item_Typ.TYP in Standard_Typ or else Item_Typ.TYP = String_Literals then
         null;  --  Good, Put[_Line] can do it all "as is"!
       elsif Is_Char_Array (CD, Item_Typ) then
+        --  Address is already pushed; we need to push the string's length.
         Emit1 (CD, k_Load_Discrete_Literal, CD.Arrays_Table (Item_Typ.Ref).Array_Size);
       else
         Error (CD, err_illegal_parameters_to_Put);

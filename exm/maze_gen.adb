@@ -15,8 +15,8 @@ procedure Maze_Gen is
     Visited : Boolean;
   end record;
 
-  Height : constant := 10;
-  Width  : constant := 20;
+  Height : constant := 15;
+  Width  : constant := 24;
 
   type Maze_Grid is array (1 .. Height, 1 .. Width) of Cells;
 
@@ -135,6 +135,8 @@ procedure Maze_Gen is
     --  Choose starting cell
     Maze.Start.Row := Rand (1_000_000) mod Height + 1;
     Maze.Start.Col := Rand (1_000_000) mod Width + 1;
+    Put_Line
+       (+"Height: " & Height & ", Width: " & Width);
     Put_Line
        (+"Starting generation at " &
         Maze.Start.Row & ", " & Maze.Start.Col);

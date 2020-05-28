@@ -4,12 +4,11 @@ procedure Merge_Sort is
 
   procedure Merge is
 
-   --  SUBTYPE VECTOR IS STRING(1..26); -- !! Hangs HAC
-   --  TYPE VECTOR IS NEW STRING(1..26); -- !! Unknown to HAC
-   --  type Vector is array (1..26) of Character;
-
-   v                : String (1 .. 26);
-   temp_array       : String (1 .. 26);
+   -- SUBTYPE VECTOR IS STRING(1..26); -- !! Hangs HAC
+   -- TYPE VECTOR IS NEW STRING(1..26); -- !! Unknown to HAC
+   type Vector is array (1..26) of Character;
+   v                : Vector;
+   temp_array       : Vector;
    max              : Integer;
    cur_length       : Integer;
    m                : Integer;
@@ -26,7 +25,10 @@ procedure Merge_Sort is
     New_Line;
     Put_Line ("String at start:");
     Put_Line ("----------------");
-    Put_Line (v);
+    for k in 1..26 loop
+      Put (v(k));
+    end loop;
+    New_Line;
     New_Line;
     --
     cur_length := 1;
@@ -87,9 +89,12 @@ procedure Merge_Sort is
       cur_length := cur_length * 2;
     end loop;
     New_Line;
-    Put_Line("Result of Merge Sort:");
-    Put_Line("---------------------");
-    Put_Line (v);
+    Put_Line ("Result of Merge Sort:");
+    Put_Line ("---------------------");
+    for k in 1..26 loop
+      Put (v(k));
+    end loop;
+    New_Line;
   end Merge;
 
 begin

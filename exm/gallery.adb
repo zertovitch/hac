@@ -32,7 +32,7 @@ procedure Gallery is
     begin
       if Get_Env("haxbuild") = "done" then
         return;
-      end if;   
+      end if;
       Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
       Shell (+"gprbuild -p -P .." & Directory_Separator & "hac", True);
     end Build_HAX;
