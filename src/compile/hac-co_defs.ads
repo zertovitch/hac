@@ -11,7 +11,7 @@
 
 with HAC.Defs, HAC.PCode;
 
-with Ada.Streams;
+with Ada.Streams, Ada.Text_IO;
 
 package HAC.Co_Defs is  --  Compiler definitions
   --  NB: cannot be a child package of Compiler because of Parser, Scanner, ...
@@ -147,5 +147,63 @@ package HAC.Co_Defs is  --  Compiler definitions
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 
   type Source_Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
+
+  ---------------------
+  --  Compiler_Data  --
+  ---------------------
+
+  type Compiler_Data is record
+    --  Source code information and scanner data
+    compiler_stream  : Source_Stream_Access;
+    source_file_name : VString;  --  Indicative (error messages)
+    --
+    Line_Count       : Natural;            --  Source line counter, used for listing
+    InpLine          : Source_Line_String;
+    CH               : Character;          --  Previous Character read from source program
+    CC               : Integer;            --  Character counter (=column in current line)
+    LL               : Natural;            --  Length of current line
+    Sy               : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
+    syStart, syEnd   : Integer;            --  Start and end on line for the symbol in Sy
+    Id               : Alfa;               --  Identifier from InSymbol
+    Id_with_case     : Alfa;               --  Same as Id, but with casing.
+    INum             : HAC_Integer;        --  Integer from InSymbol
+    RNum             : HAC_Float;          --  FLOAT Number from InSymbol
+    SLeng            : Integer;            --  String Length
+    --  Compiler tables
+    Arrays_Table            : Arrays_Table_Type;  --  NB: only static-sized arrays so far.
+    Blocks_Table            : Blocks_Table_Type;
+    Display                 : Display_Type;
+    Entries_Table           : Entries_Table_Type;
+    Float_Constants_Table   : Float_Constants_Table_Type;    --  Used by interpreter at run-time
+    IdTab                   : Identifier_Table_Type;
+    Strings_Constants_Table : Strings_Constants_Table_Type;  --  Used by interpreter at run-time
+    Tasks_Definitions_Table : Tasks_Definitions_Table_Type;
+    --  Indices to compiler tables
+    Arrays_Count            : Natural;
+    Blocks_Count            : Natural;
+    Entries_Count           : Natural;
+    Float_Constants_Count   : Natural;
+    Id_Count                : Natural;
+    Strings_Table_Top       : Natural;
+    Tasks_Definitions_Count : Natural;
+    --  Object code
+    ObjCode                 : Fixed_Size_Object_Code_Table;
+    LC                      : Integer;  --  Location counter in the Object_Code_Table
+    CMax                    : Integer;  --  Top of available ObjCode table;
+                                        --  CMax + 1 .. CDMax: variable initialization code
+    --  Information about source code
+    Block_Id_with_casing      : Alfa;                --  Copy of current block's Id
+    Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
+    Main_Program_ID_with_case : Alfa := Empty_Alfa;
+    --
+    listing_requested   : Boolean;
+    comp_dump_requested : Boolean;
+    listing   : Ada.Text_IO.File_Type;
+    comp_dump : Ada.Text_IO.File_Type;
+    --
+    Err_Count  : Natural;
+    Errs       : Error_set;
+    error_pipe : Smart_error_pipe := null;
+  end record;
 
 end HAC.Co_Defs;

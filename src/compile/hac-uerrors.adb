@@ -1,3 +1,5 @@
+with HAC.Compiler;
+
 with Ada.Strings.Fixed;                 use Ada.Strings, Ada.Strings.Fixed;
 with Ada.Text_IO;
 
@@ -269,8 +271,8 @@ package body HAC.UErrors is
     );
 
   procedure Error (
-    CD   : in out HAC.Compiler.Compiler_Data;
-    code :        HAC.Defs.Compile_Error;
+    CD   : in out Compiler_Data;
+    code :        Compile_Error;
     hint :        String      := "";
     stop :        Boolean     := False
   )
@@ -335,7 +337,7 @@ package body HAC.UErrors is
       end case;
       CD.error_pipe (
         message   => Error_String (code, hint),
-        file_name => HAC.Compiler.Get_Current_Source_Name (CD),
+        file_name => Compiler.Get_Current_Source_Name (CD),
         line      => CD.Line_Count,
         column_a  => CD.syStart,
         column_z  => CD.syEnd,
@@ -387,7 +389,7 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  procedure Compilation_Errors_Summary (CD : HAC.Compiler.Compiler_Data) is
+  procedure Compilation_Errors_Summary (CD : Compiler_Data) is
     use Ada.Text_IO;
   begin
     if CD.comp_dump_requested then

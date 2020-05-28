@@ -39,18 +39,18 @@ package HAC.Compiler.PCode_Emit is
   );
 
   procedure Emit_Comparison_Instruction (
-    CD        : in out HAC.Compiler.Compiler_Data;
+    CD        : in out Compiler_Data;
     Operator  :        Comparison_Operator;
     Base_Typ  :        Typen
   );
 
   procedure Emit_Unary_Minus (
-    CD        : in out HAC.Compiler.Compiler_Data;
+    CD        : in out Compiler_Data;
     Base_Typ  :        Numeric_Typ
   );
 
   procedure Emit_Arithmetic_Binary_Instruction (
-    CD        : in out HAC.Compiler.Compiler_Data;
+    CD        : in out Compiler_Data;
     Operator  :        Arithmetic_Binary_Operator;
     Base_Typ  :        Numeric_Typ
   );

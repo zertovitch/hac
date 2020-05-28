@@ -9,13 +9,13 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Compiler, HAC.Defs;
+with HAC.Co_Defs, HAC.Defs;
 
 with Ada.Text_IO;
 
 package HAC.PCode.Interpreter is
 
-  use Compiler;
+  use Co_Defs;
 
   ------------------------------------------------------------------------------
   --  Here, we provide a ready-to-use, "standard" instantiation of the        --

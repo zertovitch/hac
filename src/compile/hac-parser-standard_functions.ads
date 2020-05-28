@@ -1,8 +1,6 @@
-with HAC.Compiler, HAC.Co_Defs, HAC.PCode;
+with HAC.PCode;
 
 private package HAC.Parser.Standard_Functions is
-
-  use Compiler, Co_Defs;
 
   --  NB: Some of the supplied subprograms may disappear when modularity,
   --  Ada.Text_IO etc. will be implemented, as well as overloading.

@@ -1,10 +1,10 @@
-with HAC.Co_Defs, HAC.Defs, HAC.UErrors;
+with HAC.Defs, HAC.UErrors;
 
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body HAC.Scanner is
 
-  use Co_Defs, Defs, UErrors;
+  use Defs, UErrors;
 
   type SSTBzz is array (Character'(' ') .. ']') of KeyWSymbol;
 

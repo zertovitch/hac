@@ -5,7 +5,7 @@ with HAC.Parser.Helpers;
 with HAC.PCode;
 with HAC.Scanner;                       use HAC.Scanner;
 
-with Ada.Integer_Text_IO, Ada.Characters.Handling, Ada.Strings.Fixed;
+with Ada.Integer_Text_IO, Ada.Characters.Handling, Ada.Strings.Fixed, Ada.Text_IO;
 
 package body HAC.Compiler is
 

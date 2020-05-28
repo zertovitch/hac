@@ -9,12 +9,14 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Compiler, HAC.Defs, HAC.PCode;
+with HAC.Co_Defs, HAC.Defs, HAC.PCode;
 
 package HAC.Parser is
 
+  use Co_Defs;
+
   procedure Block (
-    CD                   : in out Compiler.Compiler_Data;
+    CD                   : in out Compiler_Data;
     FSys                 :        Defs.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  RM: 5.6 Block Statements

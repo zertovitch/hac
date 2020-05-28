@@ -5,7 +5,7 @@ with HAC.Compiler.PCode_Emit,
 
 package body HAC.Parser.Standard_Functions is
 
-  use Defs, Expressions, Helpers, PCode, PCode_Emit, Scanner;
+  use Compiler.PCode_Emit, Defs, Expressions, Helpers, PCode, Scanner;
 
   SF_Args : constant array (SF_Code) of Natural :=
     ( SF_Niladic            => 0,

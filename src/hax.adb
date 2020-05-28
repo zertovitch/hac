@@ -1,4 +1,5 @@
 with HAC.Compiler,
+     HAC.Co_Defs,
      HAC.PCode.Interpreter;
 
 with Show_License;
@@ -27,7 +28,7 @@ procedure HAX is
     HAC_margin_1 : constant String := "*******[ HAX ]*******   ";
     HAC_margin_2 : constant String := ". . . .[ HAX ]. . . .   ";
     HAC_margin_3 : constant String := "-------[ HAX ]-------   ";
-    use HAC.Compiler, HAC.PCode.Interpreter;
+    use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter;
     CD : Compiler_Data;
   begin
     case verbosity is

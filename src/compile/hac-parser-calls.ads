@@ -1,8 +1,8 @@
-with HAC.Compiler, HAC.Co_Defs, HAC.Defs;
+with HAC.Defs;
 
 private package HAC.Parser.Calls is
 
-  use Compiler, Co_Defs, Defs;
+  use Defs;
 
   procedure Push_and_Check_by_Value_Parameter (
     CD       : in out Compiler_Data;

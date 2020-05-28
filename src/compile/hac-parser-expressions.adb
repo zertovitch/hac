@@ -5,10 +5,11 @@ with HAC.Parser.Standard_Functions;
 with HAC.PCode;                         use HAC.PCode;
 with HAC.Scanner;                       use HAC.Scanner;
 with HAC.UErrors;                       use HAC.UErrors;
+with HAC.Compiler;
 
 package body HAC.Parser.Expressions is
 
-  use PCode_Emit;
+  use Compiler.PCode_Emit;
 
   ------------------------------------------------------------------
   ---------------------------------------------------------Selector-

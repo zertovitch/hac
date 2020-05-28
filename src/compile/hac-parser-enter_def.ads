@@ -9,11 +9,11 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Compiler, HAC.Co_Defs, HAC.Defs, HAC.PCode;
+with HAC.Defs, HAC.PCode;
 
 private package HAC.Parser.Enter_Def is  --  Package around entering definitions.
 
-  use Compiler, Co_Defs, Defs;
+  use Defs;
 
   procedure Enter_Block (
     CD    : in out Compiler_Data;

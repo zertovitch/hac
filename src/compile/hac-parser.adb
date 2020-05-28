@@ -1,5 +1,4 @@
-with HAC.Co_Defs,
-     HAC.Compiler.PCode_Emit,
+with HAC.Compiler.PCode_Emit,
      HAC.Parser.Calls,
      HAC.Parser.Enter_Def,
      HAC.Parser.Expressions,
@@ -15,7 +14,7 @@ package body HAC.Parser is
   ------------------------------------------------------------Block-
 
   procedure Block (
-    CD                   : in out Compiler.Compiler_Data;
+    CD                   : in out Compiler_Data;
     FSys                 :        Defs.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  5.6 Block Statements
@@ -25,7 +24,7 @@ package body HAC.Parser is
     Block_ID_with_case   :        Defs.Alfa
   )
   is
-    use Calls, Compiler, Co_Defs, Defs, Enter_Def,
+    use Calls, Compiler, Defs, Enter_Def,
         Expressions, Helpers, PCode, Compiler.PCode_Emit, UErrors;
     --
     Level : Nesting_level := Initial_Level;

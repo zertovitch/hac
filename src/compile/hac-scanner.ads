@@ -9,11 +9,11 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Compiler;
+with HAC.Co_Defs;
 
 package HAC.Scanner is
 
-  use HAC.Compiler;
+  use Co_Defs;
 
   --  Source code scanning for the compiler
 

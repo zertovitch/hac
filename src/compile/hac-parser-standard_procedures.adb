@@ -7,7 +7,7 @@ with HAC.Compiler.PCode_Emit,
 
 package body HAC.Parser.Standard_Procedures is
 
-  use Calls, Defs, Expressions, Helpers, PCode, PCode_Emit, Scanner, UErrors;
+  use Calls, Compiler.PCode_Emit, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
 
   type Def_param_type is array (Typen, 1 .. 3) of Integer;
 
