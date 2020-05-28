@@ -9,11 +9,11 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC.Defs;                          use HAC.Defs;
+with HAC.Co_Defs, HAC.Defs;
 
 package HAC.Parser.Helpers is
 
-  use HAC.Compiler;
+  use Compiler, Co_Defs, Defs;
 
   ----------------------
   --  Symbol testing  --

@@ -1,3 +1,5 @@
+with HAC.Co_Defs;
+
 with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Containers.Vectors;
 with Ada.Numerics.Float_Random;
@@ -78,7 +80,7 @@ package HAC.PCode.Interpreter.In_Defs is
     --  time last run end (fairness)
     LASTRUN : Time;
     --  binding
-    DISPLAY : Display_Type;
+    DISPLAY : Co_Defs.Display_Type;
     --  stack overflow if exceeded
     STACKSIZE : Integer;
     --  id of object suspended on

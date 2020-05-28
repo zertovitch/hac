@@ -1,24 +1,25 @@
-with HAC.Compiler;           use HAC.Compiler;
-with HAC.Defs;               use HAC.Defs;
+with HAC.Compiler, HAC.Co_Defs, HAC.Defs;
 
 private package HAC.Parser.Calls is
 
+  use Compiler, Co_Defs, Defs;
+
   procedure Push_and_Check_by_Value_Parameter (
-    CD       : in out HAC.Compiler.Compiler_Data;
+    CD       : in out Compiler_Data;
     Level    :        HAC.PCode.Nesting_level;
     FSys     :        Symset;
     Expected :        Exact_Typ
   );
 
   procedure Push_by_Reference_Parameter (
-    CD       : in out HAC.Compiler.Compiler_Data;
+    CD       : in out Compiler_Data;
     Level    :        HAC.PCode.Nesting_level;
     FSys     :        Symset;
     Found    :    out Exact_Typ
   );
 
   procedure Entry_Call (
-    CD          : in out HAC.Compiler.Compiler_Data;
+    CD          : in out Compiler_Data;
     Level       :        HAC.PCode.Nesting_level;
     FSys        :        Symset;
     I           :        Integer;
@@ -26,7 +27,7 @@ private package HAC.Parser.Calls is
   );
 
   procedure Subprogram_or_Entry_Call (
-    CD          : in out HAC.Compiler.Compiler_Data;
+    CD          : in out Compiler_Data;
     Level       :        HAC.PCode.Nesting_level;
     FSys        :        Symset;
     I           :        Integer;

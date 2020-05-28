@@ -1,7 +1,8 @@
-with HAC.Compiler;           use HAC.Compiler;
-with HAC.Defs;               use HAC.Defs;
+with HAC.Compiler, HAC.Co_Defs, HAC.Defs;
 
 private package HAC.Parser.Expressions is
+
+  use Compiler, Co_Defs, Defs;
 
   procedure Boolean_Expression (
     CD    : in out Compiler_Data;

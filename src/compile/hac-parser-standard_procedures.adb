@@ -19,7 +19,7 @@ package body HAC.Parser.Standard_Procedures is
      others  =>  (others => invalid));
 
   procedure Standard_Procedure (
-    CD      : in out Compiler.Compiler_Data;
+    CD      : in out Compiler_Data;
     Level   :        PCode.Nesting_level;
     FSys    :        Defs.Symset;
     Code    :        PCode.SP_Code

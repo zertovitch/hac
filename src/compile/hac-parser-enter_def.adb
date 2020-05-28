@@ -4,12 +4,12 @@ with HAC.Parser.Helpers,
 
 package body HAC.Parser.Enter_Def is
 
-  use Compiler, Defs, Helpers, UErrors;
+  use Helpers, UErrors;
 
   ------------------------------------------------------------------
   ------------------------------------------------------Enter_Block-
   procedure Enter_Block (
-    CD    : in out Compiler.Compiler_Data;
+    CD    : in out Compiler_Data;
     Tptr  :        Integer
   )
   is
@@ -31,10 +31,10 @@ package body HAC.Parser.Enter_Def is
   ------------------------------------------------------------------
   ------------------------------------------------------------Enter-
   procedure Enter (
-    CD               : in out Compiler.Compiler_Data;
+    CD               : in out Compiler_Data;
     Level            :        PCode.Nesting_level;
     Id, Id_with_case :        Defs.Alfa;
-    K                :        Compiler.aObject
+    K                :        aObject
   )
   is
     J, L : Integer;
@@ -74,7 +74,7 @@ package body HAC.Parser.Enter_Def is
   -------------------------------------------------------EnterArray-
 
   procedure Enter_Array (
-    CD       : in out Compiler.Compiler_Data;
+    CD       : in out Compiler_Data;
     Index_TP :        Exact_Typ;
     L, H     :        Integer
   )
@@ -109,7 +109,7 @@ package body HAC.Parser.Enter_Def is
   --------------------------------------------------Enter_Variables-
 
   procedure Enter_Variables (
-    CD    : in out Compiler.Compiler_Data;
+    CD    : in out Compiler_Data;
     Level :        PCode.Nesting_level
   )
   is

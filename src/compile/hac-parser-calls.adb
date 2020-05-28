@@ -7,7 +7,7 @@ with HAC.UErrors;            use HAC.UErrors;
 package body HAC.Parser.Calls is
 
   procedure Push_and_Check_by_Value_Parameter (
-    CD       : in out HAC.Compiler.Compiler_Data;
+    CD       : in out Compiler_Data;
     Level    :        HAC.PCode.Nesting_level;
     FSys     :        Symset;
     Expected :        Exact_Typ
@@ -36,7 +36,7 @@ package body HAC.Parser.Calls is
   end Push_and_Check_by_Value_Parameter;
 
   procedure Push_by_Reference_Parameter (
-    CD       : in out HAC.Compiler.Compiler_Data;
+    CD       : in out Compiler_Data;
     Level    :        HAC.PCode.Nesting_level;
     FSys     :        Symset;
     Found    :    out Exact_Typ  --  Funny note: Found is itself pushed by reference...
@@ -77,7 +77,7 @@ package body HAC.Parser.Calls is
   ------------------------------------------------------------------
   -----------------------------------------Subprogram_or_Entry_Call-
   procedure Subprogram_or_Entry_Call (
-    CD          : in out HAC.Compiler.Compiler_Data;
+    CD          : in out Compiler_Data;
     Level       :        HAC.PCode.Nesting_level;
     FSys        :        Symset;
     I           :        Integer;
@@ -145,7 +145,7 @@ package body HAC.Parser.Calls is
   ------------------------------------------------------------------
   -------------------------------------------------------Entry_Call-
   procedure Entry_Call (
-    CD          : in out HAC.Compiler.Compiler_Data;
+    CD          : in out Compiler_Data;
     Level       :        Nesting_level;
     FSys        :        Symset;
     I           :        Integer;

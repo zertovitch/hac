@@ -1,4 +1,5 @@
-with HAC.PCode.Interpreter.In_Defs,
+with HAC.Co_Defs,
+     HAC.PCode.Interpreter.In_Defs,
      HAC.PCode.Interpreter.Tasking;
 
 with HAC_Pack;
@@ -20,8 +21,7 @@ package body HAC.PCode.Interpreter is
   --  Post Mortem Dump of the task stack causing the exception
   --
   procedure Post_Mortem_Dump (CD: Compiler_Data; ND: In_Defs.Interpreter_Data) is
-    use Defs.RIO;
-    use In_Defs, Ada.Text_IO, Defs.IIO;
+    use Co_Defs, In_Defs, Ada.Text_IO, Defs.IIO, Defs.RIO;
     BLKCNT : Integer;
     H1, H2, H3 : Defs.HAC_Integer;
   begin
