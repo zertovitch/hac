@@ -339,10 +339,20 @@ package body HAC.PCode.Interpreter is
       ND.SWITCH := True;  --  give up control when doing I/O
     end Do_Text_Read;
 
+    --  We have an "array of Character" (cf Is_Char_Array) on the stack
+    function Get_String_from_Stack (Idx, Size : Defs.HAC_Integer) return String is
+      Res : String (1 .. Integer (Size));
+    begin
+      for i in Res'Range loop
+        Res (i) := Character'Val (ND.S (Idx + Defs.HAC_Integer (i) - 1).I);
+      end loop;
+      return Res;
+    end Get_String_from_Stack;
+
     procedure Do_Write_Formatted (Code : SP_Code) is
-      Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
+      Curr_TCB : Task_Control_Block renames   ND.TCB (ND.CurTask);
       FP       : File_Ptr;
-      Item     : GRegister renames       ND.S (Curr_TCB.T - 3);
+      Item     : GRegister renames            ND.S (Curr_TCB.T - 3);
       Format_1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 2).I;
       Format_2 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
       Format_3 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T    ).I;
@@ -359,6 +369,7 @@ package body HAC.PCode.Interpreter is
           when String_Literals => Put_Console (
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Item.I - 1)
             );
+          when Arrays          => Put_Console (Get_String_from_Stack (Item.I, Format_1));
           when others =>
             null;
         end case;
@@ -377,6 +388,8 @@ package body HAC.PCode.Interpreter is
           when String_Literals => Ada.Text_IO.Put (FP.all,
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Item.I - 1)
             );
+          when Arrays          => Ada.Text_IO.Put (FP.all,
+              Get_String_from_Stack (Item.I, Format_1));
           when others =>
             null;
         end case;

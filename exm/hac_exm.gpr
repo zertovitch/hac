@@ -28,11 +28,12 @@ project HAC_Exm is
      "file_copy.adb",
      "file_read.adb",
      "mandelbrot.adb",
+     "maze_gen.adb",
      "merge_sort.adb",
-	 "names_in_boxes.adb",
+     "names_in_boxes.adb",
      "shell_sort.adb",
      "shell.adb",
-	 "strings_demo.adb",
+     "strings_demo.adb",
      "test1.adb",
      --
      --  2) * GNAT OK

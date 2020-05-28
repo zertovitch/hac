@@ -86,7 +86,11 @@ package body HAC.Parser.Standard_Procedures is
       if Item_Typ.TYP = Enums then
         Item_Typ.TYP := Ints;  --  Ow... Silent S'Pos. We keep this hack until 'Image is done.
       end if;
-      if (Item_Typ.TYP not in Standard_Typ) and Item_Typ.TYP /= String_Literals then
+      if Item_Typ.TYP in Standard_Typ or else Item_Typ.TYP = String_Literals then
+        null;  --  Good, Put[_Line] can do it all "as is"!
+      elsif Is_Char_Array (CD, Item_Typ) then
+        Emit1 (CD, k_Load_Discrete_Literal, CD.Arrays_Table (Item_Typ.Ref).Array_Size);
+      else
         Error (CD, err_illegal_parameters_to_Put);
       end if;
       for Param in 1 .. 3 loop
@@ -110,8 +114,8 @@ package body HAC.Parser.Standard_Procedures is
           Error (CD, err_illegal_parameters_to_Put);
         end if;
       end loop;
-      if Item_Typ.TYP = String_Literals then
-        --  With String_Literals we have *two* values pushed on the stack.
+      if Item_Typ.TYP = String_Literals or else Is_Char_Array (CD, Item_Typ) then
+        --  With String_Literals and String's we have *two* values pushed on the stack.
         Format_Params := Format_Params + 1;
       end if;
       for Param in Format_Params + 1 .. 3 loop

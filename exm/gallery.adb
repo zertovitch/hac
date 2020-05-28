@@ -41,6 +41,7 @@ procedure Gallery is
     Build_HAX;  --  Redundant if this program is itself run through HAX.
     --
     Launch_HAX (+"hello.adb");
+    Launch_HAX (+"maze_gen.adb");
     Launch_HAX (+"strings_demo.adb");
     Launch_HAX (+"env.adb");
     Launch_HAX (+"arguments.adb arg1 arg2 ""arg 3 ..."" arg4");

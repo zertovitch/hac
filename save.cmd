@@ -28,7 +28,8 @@ cd..
 set examples=%root%/exm/*.ad*  %root%/exm/*.gpr  %root%/exm/e.cmd %root%/exm/not_working/*.ad*
    set tests=%root%/test/*.ad* %root%/test/*.gpr %root%/test/t.cmd %root%/test/*.aru %root%/test/future/*.ad*
 
-set files=%root%/src/*.ad* %root%/*.gpr %root%/*.xls %root%/save.cmd %root%/build.cmd %root%/*.txt
+set files=%root%/src/*.ad* %root%/src/compile/*.ad* %root%/src/execute/*.ad* 
+set files=%files% %root%/*.gpr %root%/*.xls %root%/save.cmd %root%/build.cmd %root%/*.txt
 set files=%files% %root%/debug.pra %root%/obj/debug/create_dir.txt %root%/obj/fast/create_dir.txt
 
 set files=%files% %examples% %tests%

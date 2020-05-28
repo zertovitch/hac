@@ -86,6 +86,7 @@ procedure Strings_demo is
   s3 : constant VString := +" world";
   ZZ : Bi_Vector;
   padded : VString;
+  Str3 : constant String (6..8) := "But";
 begin
   s2 := +"Hello";             --  Copy from literal
   s1 := s2;                   --  Copy VString to VString
@@ -139,6 +140,7 @@ begin
   Put_Line ("Image... " & Image (456789));
   Put_Line (Float_Value   (+"456.789e13"));  --  Text_IO display of the Real number
   Put_Line (Integer_Value (+"456"));         --  Text_IO display of the Integer number
+  Put (Str3); Put ('!'); New_Line;
   --
   --  Quick tests. More tests in:  test/strings.adb
   --

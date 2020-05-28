@@ -5,7 +5,7 @@ procedure Shell_Sort is
   -- ch : character;
 
   procedure Shell is
-    b : String(1..26);
+    b : String (1 .. 26);
     i, j, step : Integer;
     step_size : array(1..4) of Integer;
     stop : Boolean;
@@ -16,10 +16,7 @@ procedure Shell_Sort is
     New_Line;
     Put_Line ("String at start:");
     Put_Line ("----------------");
-    for k in 1..26 loop
-      Put(b(k));
-    end loop;
-    New_Line;
+    Put_Line (b);
     New_Line;
     -- Put_Line(B);
     -- 'steps' contains decreasing increments for each
@@ -68,12 +65,9 @@ procedure Shell_Sort is
       New_Line;
     end loop; -- for pass in 1..npass
     New_Line;
-    Put_Line("Result of Shell Sort:");
-    Put_Line("---------------------");
-    for k in 1..26 loop
-      Put(b(k));
-    end loop;
-    New_Line;
+    Put_Line ("Result of Shell Sort:");
+    Put_Line ("---------------------");
+    Put_Line (b);
   end Shell;
 
 begin
