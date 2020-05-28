@@ -14,14 +14,26 @@ with HAC.Compiler, HAC.Defs;
 with Ada.Text_IO;
 
 package HAC.PCode.Interpreter is
-  use HAC.Compiler;
 
-  --  We provide an ad-hoc pipe of ALL console Text I/O, in case we
-  --  use something else than a standard terminal / console.
-  --  Ouch.
-  --
-  --  See LEA project for a specific non-trivial (windowed) implementation.
-  --  See Interpret_on_Current_IO for a non-piped implementation (normal terminal).
+  use Compiler;
+
+  ------------------------------------------------------------------------------
+  --  Here, we provide a ready-to-use, "standard" instantiation of the        --
+  --  interpreter, with Ada.Text_IO, Ada.Command_Line, ..., for the console.  --
+  --  See hax.adb for an example where it is used.                            --
+  ------------------------------------------------------------------------------
+
+  procedure Interpret_on_Current_IO (
+    CD_CIO         : Compiler_Data;
+    Argument_Shift : Natural := 0    --  Number of arguments to be skipped
+  );
+
+  ----------------------------------------------------------------------------------
+  --  This version of the interpreter abstracts ALL console Text I/O, in case we  --
+  --  use something else than a standard terminal / console. Same for             --
+  --  Argument_Count and a few others.                                            --
+  --  See the LEA project for a specific non-trivial (windowed) implementation.   --
+  ----------------------------------------------------------------------------------
 
   generic
     with function End_Of_File_Console return Boolean;
@@ -63,13 +75,5 @@ package HAC.PCode.Interpreter is
     with function Directory_Separator return Character;
 
   procedure Interpret (CD: Compiler_Data);
-
-  --  We provide a ready-to-use, "standard" instantiation,
-  --  with Ada.Text_IO, Ada.Command_Line, ...
-  --
-  procedure Interpret_on_Current_IO (
-    CD_CIO         : Compiler_Data;
-    Argument_Shift : Natural := 0    --  Number of arguments to be skipped
-  );
 
 end HAC.PCode.Interpreter;
