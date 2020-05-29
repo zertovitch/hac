@@ -5,7 +5,7 @@ with Ada.Strings.Fixed; use Ada.Strings;
 with Interfaces.C;
 
 package body HAC_Pack is
-  use Ada.Characters.Handling, VStrings_Pkg;
+  use Ada.Characters.Handling, VStr_Pkg;
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions(Real);
 
@@ -104,7 +104,7 @@ package body HAC_Pack is
   function Slice (Source : VString; From : Positive; To : Natural) return VString
   is
   begin
-    return +VStrings_Pkg.Slice (Source, From, To);
+    return +VStr_Pkg.Slice (Source, From, To);
   end Slice;
 
   function "&" (I : Integer; V : VString) return VString is
@@ -137,15 +137,49 @@ package body HAC_Pack is
     return +To_Upper (To_String (Item));
   end;
 
+  function Head (Source : VString; Count : Natural) return VString is
+  begin
+    return VStr_Pkg.Head (Source, Count);  --  We use the default padding: ' '.
+  end Head;
+
+  function Tail (Source : VString; Count : Natural) return VString is
+  begin
+    return VStr_Pkg.Tail (Source, Count);  --  We use the default padding: ' '.
+  end Tail;
+
+  function Starts_With (Item : VString; Pattern : String) return Boolean is
+  begin
+    return Pattern'Length <= Length (Item)
+             and then To_String (VStr_Pkg.Head (Item, Pattern'Length)) = Pattern;
+  end Starts_With;
+
+  function Starts_With (Item : VString; Pattern : VString) return Boolean is
+  begin
+    return Length (Pattern) <= Length (Item)
+             and then VStr_Pkg.Head (Item, Length (Pattern)) = Pattern;
+  end Starts_With;
+
+  function Ends_With (Item : VString; Pattern : String) return Boolean is
+  begin
+    return Pattern'Length <= Length (Item)
+             and then To_String (VStr_Pkg.Tail (Item, Pattern'Length)) = Pattern;
+  end Ends_With;
+
+  function Ends_With (Item : VString; Pattern : VString) return Boolean is
+  begin
+    return Length (Pattern) <= Length (Item)
+             and then VStr_Pkg.Tail (Item, Length (Pattern)) = Pattern;
+  end Ends_With;
+
   function Index (Source : VString; Pattern : String) return Natural is
   begin
-    return VStrings_Pkg.Index (Source, Pattern);
-  end;
+    return VStr_Pkg.Index (Source, Pattern);
+  end Index;
 
   function Index (Source : VString; Pattern : VString) return Natural is
   begin
-    return VStrings_Pkg.Index (Source, To_String (Pattern));
-  end;
+    return VStr_Pkg.Index (Source, To_String (Pattern));
+  end Index;
 
   function "*" (Num : Natural; Pattern : String) return VString is
   begin

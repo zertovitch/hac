@@ -140,9 +140,13 @@ begin
   Put_Line ("Image... " & Image (456789));
   Put_Line (Float_Value   (+"456.789e13"));  --  Text_IO display of the Real number
   Put_Line (Integer_Value (+"456"));         --  Text_IO display of the Integer number
-  Put (Str3); Put ('!'); New_Line;
+  Put (Str3); Put ("! ");
   s1 := +Str3;
   Put_Line (s1 & "!!");
+  Put ("Heads: "); for i in 1 .. 10 loop Put (Head (+"Head...", i)); end loop;
+  New_Line;
+  Put ("Tails: "); for i in 1 .. 10 loop Put (Tail (+"...Tail", i)); end loop;
+  New_Line;
   --
   --  Quick tests. More tests in:  test/strings.adb
   --
@@ -158,4 +162,14 @@ begin
   if Index (s4, +"cd") /= 3 then
     Put ("Ooops?");
   end if;
+  --
+  if Starts_With (+"package",  "proc") then Put ("Ooops?"); end if;
+  if Starts_With (+"package", +"proc") then Put ("Ooops?"); end if;
+  if not Starts_With (+"package",  "pack") then Put ("Ooops?"); end if;
+  if not Starts_With (+"package", +"pack") then Put ("Ooops?"); end if;
+  --
+  if Ends_With (+"package",  "proc") then Put ("Ooops?"); end if;
+  if Ends_With (+"package", +"proc") then Put ("Ooops?"); end if;
+  if not Ends_With (+"package",  "age") then Put ("Ooops?"); end if;
+  if not Ends_With (+"package", +"age") then Put ("Ooops?"); end if;
 end Strings_demo;

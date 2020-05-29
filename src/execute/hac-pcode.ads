@@ -176,6 +176,7 @@ package HAC.PCode is
   procedure Dump (
     OC        : Object_Code_Table;
     Str_Const : String;
+    Flt_Const : Defs.Float_Constants_Table_Type;
     Text      : Ada.Text_IO.File_Type
   );
 
@@ -242,9 +243,11 @@ package HAC.PCode is
     SF_Int_VString_Concat,      --  123 & V
     SF_VString_Float_Concat,    --  V & 3.14159
     SF_Float_VString_Concat,    --  3.14159 & V
+    --
     SF_Element,
     SF_Length,
     SF_Slice,
+    --
     SF_To_Lower_Char,
     SF_To_Upper_Char,
     SF_To_Lower_VStr,
@@ -252,9 +255,16 @@ package HAC.PCode is
     SF_Index,
     SF_Int_Times_Char,
     SF_Int_Times_VStr,
+    --
     SF_Trim_Left,
     SF_Trim_Right,
     SF_Trim_Both,
+    --
+    SF_Head,
+    SF_Tail,
+    SF_Starts_With,
+    SF_Ends_With,
+    --
     SF_Image_Ints,
     SF_Image_Floats,            --  "Nice" image
     SF_Image_Attribute_Floats,  --  Image attribute "as is"

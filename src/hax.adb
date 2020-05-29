@@ -70,9 +70,10 @@ procedure HAX is
       if verbosity >= 2 then
         Put_Line (
           HAC_margin_3 & "VM interpreter done after " &
-          (Duration'Image(t2-t1)) &
-          " seconds."
+          (Duration'Image(t2-t1)) & " seconds."
         );
+        Put_Line (
+          HAC_margin_3 & " Execution of " & Ada_file_name & " completed.");
       end if;
     end if;
   exception

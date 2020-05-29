@@ -80,24 +80,44 @@ package HAC_Pack is
   --  Variable-size string type: VString  --
   ------------------------------------------
 
-  package VStrings_Pkg renames Ada.Strings.Unbounded;
-  subtype VString is VStrings_Pkg.Unbounded_String;
-  Null_VString : VString renames VStrings_Pkg.Null_Unbounded_String;
-  function To_VString (S : String) return VString renames VStrings_Pkg.To_Unbounded_String;
+  package VStr_Pkg renames Ada.Strings.Unbounded;
+  subtype VString is VStr_Pkg.Unbounded_String;
+  Null_VString : VString renames VStr_Pkg.Null_Unbounded_String;
+  function To_VString (S : String) return VString renames VStr_Pkg.To_Unbounded_String;
+  package ACH renames Ada.Characters.Handling;
   --
-  function Element (Source : VString; Index : Positive) return Character
-    renames VStrings_Pkg.Element;
-  function Length (Source : VString) return Natural renames VStrings_Pkg.Length;
+  function Element (Source : VString; Index : Positive) return Character renames VStr_Pkg.Element;
+  function Ends_With (Item : VString; Pattern : String) return Boolean;
+  function Ends_With (Item : VString; Pattern : VString) return Boolean;
+  function Head (Source : VString; Count : Natural) return VString;
+  function Index (Source : VString; Pattern : String) return Natural;
+  function Index (Source : VString; Pattern : VString) return Natural;
+  function Length (Source : VString) return Natural renames VStr_Pkg.Length;
   function Slice (Source : VString; From : Positive; To : Natural) return VString;
+  function Tail (Source : VString; Count : Natural) return VString;
+  function Starts_With (Item : VString; Pattern : String) return Boolean;
+  function Starts_With (Item : VString; Pattern : VString) return Boolean;
+  function To_Lower (Item : Character) return Character renames ACH.To_Lower;  --  RM A.3.2 (6)
+  function To_Upper (Item : Character) return Character renames ACH.To_Upper;  --  RM A.3.2 (6)
+  function To_Lower (Item : VString) return VString;
+  function To_Upper (Item : VString) return VString;
+  function Trim_Left  (Source : VString) return VString;
+  function Trim_Right (Source : VString) return VString;
+  function Trim_Both  (Source : VString) return VString;
   --
   function "+" (S : String) return VString renames To_VString;
-  function "&" (V1, V2 : VString) return VString renames VStrings_Pkg."&";
   --
-  function "&" (V : VString; S : String) return VString renames VStrings_Pkg."&";
-  function "&" (S : String; V : VString) return VString renames VStrings_Pkg."&";
+  function "*" (Num : Natural; Pattern : Character) return VString renames VStr_Pkg."*";
+  function "*" (Num : Natural; Pattern : String) return VString;
+  function "*" (Num : Natural; Pattern : VString) return VString renames VStr_Pkg."*";
   --
-  function "&" (V : VString; C : Character) return VString renames VStrings_Pkg."&";
-  function "&" (C : Character; V : VString) return VString renames VStrings_Pkg."&";
+  function "&" (V1, V2 : VString) return VString renames VStr_Pkg."&";
+  --
+  function "&" (V : VString; S : String) return VString renames VStr_Pkg."&";
+  function "&" (S : String; V : VString) return VString renames VStr_Pkg."&";
+  --
+  function "&" (V : VString; C : Character) return VString renames VStr_Pkg."&";
+  function "&" (C : Character; V : VString) return VString renames VStr_Pkg."&";
   --
   function "&" (I : Integer; V : VString) return VString;
   function "&" (V : VString; I : Integer) return VString;
@@ -105,34 +125,17 @@ package HAC_Pack is
   function "&" (R : Real; V : VString) return VString;
   function "&" (V : VString; R : Real) return VString;
   --
-  function "="  (Left, Right : VString) return Boolean renames VStrings_Pkg."=";
-  function "<"  (Left, Right : VString) return Boolean renames VStrings_Pkg."<";
-  function "<=" (Left, Right : VString) return Boolean renames VStrings_Pkg."<=";
-  function ">"  (Left, Right : VString) return Boolean renames VStrings_Pkg.">";
-  function ">=" (Left, Right : VString) return Boolean renames VStrings_Pkg.">=";
+  function "="  (Left, Right : VString) return Boolean renames VStr_Pkg."=";
+  function "<"  (Left, Right : VString) return Boolean renames VStr_Pkg."<";
+  function "<=" (Left, Right : VString) return Boolean renames VStr_Pkg."<=";
+  function ">"  (Left, Right : VString) return Boolean renames VStr_Pkg.">";
+  function ">=" (Left, Right : VString) return Boolean renames VStr_Pkg.">=";
   --
-  function "="  (Left : VString;  Right : String) return Boolean renames VStrings_Pkg."=";
-  function "<"  (Left : VString;  Right : String) return Boolean renames VStrings_Pkg."<";
-  function "<=" (Left : VString;  Right : String) return Boolean renames VStrings_Pkg."<=";
-  function ">"  (Left : VString;  Right : String) return Boolean renames VStrings_Pkg.">";
-  function ">=" (Left : VString;  Right : String) return Boolean renames VStrings_Pkg.">=";
-
-  function To_Lower (Item : Character) return Character  --  RM A.3.2 (6)
-    renames Ada.Characters.Handling.To_Lower;
-  function To_Upper (Item : Character) return Character  --  RM A.3.2 (6)
-    renames Ada.Characters.Handling.To_Upper;
-
-  function To_Lower (Item : VString) return VString;
-  function To_Upper (Item : VString) return VString;
-
-  function Index (Source : VString; Pattern : String) return Natural;
-  function Index (Source : VString; Pattern : VString) return Natural;
-  function "*" (Num : Natural; Pattern : Character) return VString renames VStrings_Pkg."*";
-  function "*" (Num : Natural; Pattern : String) return VString;
-  function "*" (Num : Natural; Pattern : VString) return VString renames VStrings_Pkg."*";
-  function Trim_Left  (Source : VString) return VString;
-  function Trim_Right (Source : VString) return VString;
-  function Trim_Both  (Source : VString) return VString;
+  function "="  (Left : VString;  Right : String) return Boolean renames VStr_Pkg."=";
+  function "<"  (Left : VString;  Right : String) return Boolean renames VStr_Pkg."<";
+  function "<=" (Left : VString;  Right : String) return Boolean renames VStr_Pkg."<=";
+  function ">"  (Left : VString;  Right : String) return Boolean renames VStr_Pkg.">";
+  function ">=" (Left : VString;  Right : String) return Boolean renames VStr_Pkg.">=";
 
   function Image (I : Integer) return VString;
   function Image (F : Real) return VString;            --  "nice" image of F

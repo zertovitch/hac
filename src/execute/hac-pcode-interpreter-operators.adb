@@ -1,3 +1,5 @@
+with HAC_Pack;
+
 with Ada.Calendar,
      Ada.Characters.Handling,
      Ada.Environment_Variables,
@@ -170,6 +172,26 @@ package body HAC.PCode.Interpreter.Operators is
           --  [T] := Index ([T], [T+1]) :
           ND.S (Curr_TCB.T).I :=
             VStrings_Pkg.Index (ND.S (Curr_TCB.T).V, To_String (ND.S (Curr_TCB.T + 1).V));
+        when SF_Head =>
+          Pop (ND);
+          --  [T] := Head ([T], [T+1]) :
+          ND.S (Curr_TCB.T).V :=
+            VStrings_Pkg.Head (ND.S (Curr_TCB.T).V, Natural (ND.S (Curr_TCB.T + 1).I));
+        when SF_Tail =>
+          Pop (ND);
+          --  [T] := Tail ([T], [T+1]) :
+          ND.S (Curr_TCB.T).V :=
+            VStrings_Pkg.Tail (ND.S (Curr_TCB.T).V, Natural (ND.S (Curr_TCB.T + 1).I));
+        when SF_Starts_With =>
+          Pop (ND);
+          --  [T] := Starts_With ([T], [T+1]) :
+          ND.S (Curr_TCB.T).I :=
+            Boolean'Pos (HAC_Pack.Starts_With (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).V));
+        when SF_Ends_With =>
+          Pop (ND);
+          --  [T] := Ends_With ([T], [T+1]) :
+          ND.S (Curr_TCB.T).I :=
+            Boolean'Pos (HAC_Pack.Ends_With (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).V));
         when SF_Int_Times_Char =>
           Pop (ND);
           --  [T] := [T] * [T+1] :

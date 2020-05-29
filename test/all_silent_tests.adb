@@ -34,8 +34,13 @@ procedure All_Silent_Tests is
     end Build_HAX;
 
   begin
+    Put_Line( "    ___________");
+    Put_Line( "   / *  HAC  * \    ""Silent tests"": when there is zero output");
+    Put_Line( "   \__Testing__/    and no compilation error, then it's all fine.");
+    New_Line;
     Build_HAX;  --  Redundant if this program is itself run through HAX.
     --
+    Put_Line( "---- Launching tests (one instance of HAX each)...");
     Launch_HAX (+"case_statement.adb");
     Launch_HAX (+"constants.adb");
     Launch_HAX (+"declarations.adb");
@@ -48,6 +53,7 @@ procedure All_Silent_Tests is
     Launch_HAX (+"strings.adb");
     Launch_HAX (+"type_conversion.adb");
     Launch_HAX (+"var_init.adb");
+    Put_Line ("---- Done.");
   end Launch_Tests;
 
 begin

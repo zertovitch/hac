@@ -10,6 +10,9 @@ package body HAC.Parser.Standard_Functions is
   SF_Args : constant array (SF_Code) of Natural :=
     ( SF_Niladic            => 0,
       SF_Element |
+      SF_Head | SF_Tail |
+      SF_Starts_With |
+      SF_Ends_With |
       SF_Index |
       SF_Int_Times_Char |
       SF_Int_Times_VStr     => 2,
@@ -53,7 +56,7 @@ package body HAC.Parser.Standard_Functions is
           Expected (1) := Floats_Set;
         when SF_Random_Int | SF_Argument =>
           Expected (1) := Ints_Set;
-        when SF_Element =>
+        when SF_Element | SF_Head | SF_Tail =>
           Expected (1 .. 2) := (VStrings_Set, Ints_Set);
         when SF_Length |
              SF_Trim_Left .. SF_Trim_Both |
@@ -64,7 +67,7 @@ package body HAC.Parser.Standard_Functions is
           Expected (1 .. 3):= (VStrings_Set, Ints_Set, Ints_Set);
         when SF_To_Lower_Char | SF_To_Upper_Char =>
           Expected (1) := VStrings_or_Chars_Set;
-        when SF_Index =>
+        when SF_Index | SF_Starts_With | SF_Ends_With =>
           --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
           Expected (1 .. 2) := (VStrings_Set, VStrings_or_Str_Lit_Set);
         when SF_Get_Env | SF_Shell_Execute =>
@@ -150,7 +153,7 @@ package body HAC.Parser.Standard_Functions is
           if Actual (1).TYP = VStrings then    --  To_Upper (Item : VString) return VString;
             Code_Adjusted := SF_To_Upper_VStr;
           end if;
-        when SF_Index =>
+        when SF_Index | SF_Starts_With | SF_Ends_With =>
           --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
           if Actual (2).TYP = String_Literals then
             Emit_Std_Funct (CD, SF_Literal_to_VString);

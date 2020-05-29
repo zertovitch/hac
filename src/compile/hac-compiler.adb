@@ -274,9 +274,16 @@ package body HAC.Compiler is
       Enter_Std_Funct ("To_Lower",            Chars,    SF_To_Lower_Char);
       Enter_Std_Funct ("To_Upper",            Chars,    SF_To_Upper_Char);
       Enter_Std_Funct ("Index",               Ints,     SF_Index);
+      --
       Enter_Std_Funct ("Trim_Left",           VStrings, SF_Trim_Left);
       Enter_Std_Funct ("Trim_Right",          VStrings, SF_Trim_Right);
       Enter_Std_Funct ("Trim_Both",           VStrings, SF_Trim_Both);
+      --
+      Enter_Std_Funct ("Head",                VStrings, SF_Head);
+      Enter_Std_Funct ("Tail",                VStrings, SF_Tail);
+      Enter_Std_Funct ("Starts_With",         Bools,    SF_Starts_With);
+      Enter_Std_Funct ("Ends_With",           Bools,    SF_Ends_With);
+      --
       Enter_Std_Funct ("Image",               VStrings, SF_Image_Ints);
       Enter_Std_Funct ("Image_Attribute",     VStrings, SF_Image_Attribute_Floats);
       Enter_Std_Funct ("Integer_Value",       Ints,     SF_Integer_Value);
@@ -467,7 +474,12 @@ package body HAC.Compiler is
 
     if asm_dump_file_name /= "" then
       Create (asm_dump, Out_File, asm_dump_file_name);
-      Dump (CD.ObjCode (CD.ObjCode'First .. CD.LC - 1), CD.Strings_Constants_Table, asm_dump);
+      Dump (
+        CD.ObjCode (CD.ObjCode'First .. CD.LC - 1),  --  Dump only compiled part.
+        CD.Strings_Constants_Table,
+        CD.Float_Constants_Table,
+        asm_dump
+      );
       Close (asm_dump);
     end if;
 

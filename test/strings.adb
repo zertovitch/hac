@@ -75,4 +75,14 @@ begin
   if +fs1 /= Slice (s4, 4, 6) then
     Put_Line ("Compiler bug [Fixed String to VString]");
   end if;
+  --
+  if Starts_With (+"package",  "proc") then Put ("Ooops?"); end if;
+  if Starts_With (+"package", +"proc") then Put ("Ooops?"); end if;
+  if not Starts_With (+"package",  "pack") then Put ("Ooops?"); end if;
+  if not Starts_With (+"package", +"pack") then Put ("Ooops?"); end if;
+  --
+  if Ends_With (+"package",  "proc") then Put ("Ooops?"); end if;
+  if Ends_With (+"package", +"proc") then Put ("Ooops?"); end if;
+  if not Ends_With (+"package",  "age") then Put ("Ooops?"); end if;
+  if not Ends_With (+"package", +"age") then Put ("Ooops?"); end if;
 end Strings;

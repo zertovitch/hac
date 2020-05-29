@@ -139,7 +139,6 @@ package HAC.Co_Defs is  --  Compiler definitions
   type    Blocks_Table_Type            is array (0 .. BMax)                  of BTabEntry;
   type    Display_Type                 is array (PCode.Nesting_level)        of Integer;
   type    Entries_Table_Type           is array (0 .. EntryMax)              of Index;
-  type    Float_Constants_Table_Type   is array (1 .. Float_Const_Table_Max) of HAC_Float;
   type    Identifier_Table_Type        is array (0 .. Id_Table_Max)          of IdTabEntry;
   subtype Strings_Constants_Table_Type is String (1 .. SMax);
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)               of Index;

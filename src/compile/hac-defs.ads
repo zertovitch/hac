@@ -50,7 +50,7 @@ package HAC.Defs is
   Alng                  : constant := 40;   --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
   AMax                  : constant := 30;   --  Size OF ARRAY-TABLE
   BMax                  : constant := 25;   --  Size OF Block-TABLE
-  Float_Const_Table_Max : constant := 100;
+  Float_Const_Table_Max : constant := 200;
   Cases_Max             : constant := 30;    --  Max number of cases in a CASE statement
   CDMax                 : constant := 2500;  --  Size OF ObjCode
   EntryMax              : constant := 30;   --  Maximum Number of Entry Statements
@@ -59,6 +59,7 @@ package HAC.Defs is
   Nesting_Level_Max     : constant := 20;
 
   End_Function_without_Return : constant := -1;
+
   CallSTDP   : constant := 0;             --  Call type for standard procedure call
   CallSTDE   : constant := 1;             --  Call type for standard Entry Call
   CallTMDE   : constant := 2;             --  Call type for timed Entry Call
@@ -277,6 +278,8 @@ package HAC.Defs is
     (VStrings | Text_Files => True, others => False);
 
   subtype Index is Integer range -XMax .. +XMax;
+
+  type Float_Constants_Table_Type is array (1 .. Float_Const_Table_Max) of HAC_Float;
 
   ------------------------------
   --  Compilation error type  --
