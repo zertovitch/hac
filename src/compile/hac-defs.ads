@@ -13,6 +13,7 @@
 
 with HAC_Pack;
 
+with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
@@ -422,5 +423,7 @@ package HAC.Defs is
   package IIO is new Ada.Text_IO.Integer_IO (HAC.Defs.HAC_Integer);
   package RIO is new Ada.Text_IO.Float_IO (HAC.Defs.HAC_Float);
   package BIO is new Ada.Text_IO.Enumeration_IO (Boolean);
+
+  package REF is new Ada.Numerics.Generic_Elementary_Functions (Defs.HAC_Float);
 
 end HAC.Defs;

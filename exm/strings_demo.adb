@@ -141,6 +141,8 @@ begin
   Put_Line (Float_Value   (+"456.789e13"));  --  Text_IO display of the Real number
   Put_Line (Integer_Value (+"456"));         --  Text_IO display of the Integer number
   Put (Str3); Put ('!'); New_Line;
+  s1 := +Str3;
+  Put_Line (s1 & "!!");
   --
   --  Quick tests. More tests in:  test/strings.adb
   --

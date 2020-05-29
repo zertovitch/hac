@@ -397,8 +397,13 @@ package body HAC.Parser.Expressions is
         Adding_OP := CD.Sy;
         InSymbol (CD);
         Term (FSys_SE + Plus_Minus, X);
-        if Adding_OP = Plus and then X.TYP = String_Literals then  --  +"Hello"
+        if Adding_OP = Plus and then X.TYP = String_Literals then   --  +"Hello"
           Emit_Std_Funct (CD, SF_Literal_to_VString);
+          X.TYP := VStrings;
+        elsif Adding_OP = Plus and then Is_Char_Array (CD, X) then  --  +S
+          --  Address is already pushed; we need to push the string's length.
+          Emit1 (CD, k_Load_Discrete_Literal, CD.Arrays_Table (X.Ref).Array_Size);
+          Emit_Std_Funct (CD, SF_String_to_VString);
           X.TYP := VStrings;
         elsif X.TYP not in Numeric_Typ then
           Error (CD, err_illegal_type_for_arithmetic_expression);

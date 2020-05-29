@@ -231,6 +231,7 @@ package HAC.PCode is
     SF_EOLN,
     SF_Random_Int,
     --  VString functions
+    SF_String_to_VString,       --  +S
     SF_Literal_to_VString,      --  +"Hello"
     SF_Two_VStrings_Concat,     --  V1 & V2
     SF_VString_Char_Concat,     --  V & 'x'

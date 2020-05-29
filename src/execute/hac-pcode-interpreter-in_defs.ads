@@ -145,6 +145,9 @@ package HAC.PCode.Interpreter.In_Defs is
     ND : in out Interpreter_Data
   );
 
+  --  We have an "array of Character" (cf Is_Char_Array) on the stack
+  function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Defs.HAC_Integer) return String;
+
   procedure Pop (ND : in out Interpreter_Data; Amount : Positive := 1);
 
   procedure Push (ND : in out Interpreter_Data; Amount : Positive := 1);

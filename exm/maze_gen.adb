@@ -144,34 +144,35 @@ procedure Maze_Gen is
   end Initialize;
 
   procedure Put_Grid (Item : Maze_Type) is
-    H_Bar : array (False .. True) of String (1 .. 4);
+    H_Bar : array (False .. True) of VString;
     V_Bar : array (False .. True) of Character;
-    S_Cell : array (False .. True) of String (1 .. 3);
+    S_Cell : array (False .. True) of VString;
+    Line : VString;
   begin
-    H_Bar (False) := "   +";
-    H_Bar (True ) := "---+";
+    H_Bar (False) := +"   +";
+    H_Bar (True ) := +"---+";
     V_Bar (False) := ' ';
     V_Bar (True)  := '|';
-    S_Cell (False) := "   ";
-    S_Cell (True)  := " X ";
-    Put ('+');
+    S_Cell (False) := +"   ";
+    S_Cell (True)  := +" X ";
+    Line := +"+";
     for Col in 1 .. Width loop
-      Put (H_Bar (Item.Grid (1, Col).Walls (North)));
+      Line := Line & H_Bar (Item.Grid (1, Col).Walls (North));
     end loop;
-    New_Line;
+    Put_Line (Line);
     for Row in 1 .. Height loop
+      Line := +"" & V_Bar (Item.Grid (Row, 1).Walls (West));
       for Col in 1 .. Width loop
-        Put (V_Bar (Item.Grid (Row, Col).Walls (West)));
-        Put (S_Cell ((Row = Item.Start.Row) and (Col = Item.Start.Col))
-             --  ! Full Ada: () useless (HAC has wrong priority)  !!
-        );
+        Line := Line & S_Cell ((Row = Item.Start.Row) and (Col = Item.Start.Col))
+             --  ! Full Ada: () useless in "() and ()" (HAC has wrong priority)  !!
+                     & V_Bar (Item.Grid (Row, Col).Walls (East));
       end loop;
-      Put_Line (V_Bar (Item.Grid (Row, Width).Walls (East)));
-      Put ('+');
+      Put_Line (Line);
+      Line := +"+";
       for Col in 1 .. Width loop
-        Put (H_Bar (Item.Grid (Row, Col).Walls (South)));
+        Line := Line & H_Bar (Item.Grid (Row, Col).Walls (South));
       end loop;
-      New_Line;
+      Put_Line (Line);
     end loop;
   end Put_Grid;
 

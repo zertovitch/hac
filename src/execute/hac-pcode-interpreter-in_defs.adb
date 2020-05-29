@@ -23,6 +23,15 @@ package body HAC.PCode.Interpreter.In_Defs is
     end loop;
   end Free_Allocated_Contents;
 
+  function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Defs.HAC_Integer) return String is
+    Res : String (1 .. Integer (Size));
+  begin
+    for i in Res'Range loop
+      Res (i) := Character'Val (ND.S (Idx + Defs.HAC_Integer (i) - 1).I);
+    end loop;
+    return Res;
+  end Get_String_from_Stack;
+
   procedure Pop (ND : in out Interpreter_Data; Amount : Positive := 1) is
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
   begin

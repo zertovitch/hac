@@ -6,6 +6,7 @@ procedure Strings is
   Pi       : constant := 3.141592653;
   Avogadro : constant := 6.02214076e023;
   r : Real;
+  fs1 : String (4 .. 6);
 begin
   s4 := +"abc" & 'd' & "ef";
   if s4 /= +"abcdef" then
@@ -69,4 +70,9 @@ begin
     if Float_Value (Image (r)) /= r then Put_Line ("Compiler bug [Im/Val R 2]"); end if;
     --  put_line (image(r));
   end loop;
+  --
+  fs1 := "def";
+  if +fs1 /= Slice (s4, 4, 6) then
+    Put_Line ("Compiler bug [Fixed String to VString]");
+  end if;
 end Strings;
