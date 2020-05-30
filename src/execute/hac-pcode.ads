@@ -114,12 +114,14 @@ package HAC.PCode is
     k_Selective_Wait
   );
 
-  subtype Jump_Opcode is Opcode range k_Jump .. k_Conditional_Jump;
   subtype Unary_Operator_Opcode  is Opcode range k_Integer_to_Float .. k_NOT_Boolean;
   subtype Binary_Operator_Opcode is Opcode range k_EQL_Integer .. k_XOR_Boolean;
-  subtype Tasking_Opcode is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
-  subtype Calling_Opcode is Opcode range k_Mark_Stack .. k_Exit_Function;
-  subtype Composite_Data_Opcode is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
+  --
+  subtype Calling_Opcode         is Opcode range k_Mark_Stack .. k_Exit_Function;
+  subtype Composite_Data_Opcode  is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
+  subtype Jump_Opcode            is Opcode range k_Jump .. k_Conditional_Jump;
+  subtype Multi_Statement_Opcode is Opcode range k_CASE_Switch_1 .. k_FOR_Reverse_End;
+  subtype Tasking_Opcode         is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
 
   function For_END (for_BEGIN: Opcode) return Opcode;
 

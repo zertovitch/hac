@@ -1,6 +1,7 @@
 with HAC.PCode.Interpreter.Calls,
      HAC.PCode.Interpreter.Composite_Data,
      HAC.PCode.Interpreter.In_Defs,
+     HAC.PCode.Interpreter.Multi_Statement,
      HAC.PCode.Interpreter.Operators,
      HAC.PCode.Interpreter.Tasking;
 
@@ -16,7 +17,7 @@ package body HAC.PCode.Interpreter is
   is
     use In_Defs;
     ND : Interpreter_Data;
-    H1, H2, H3 : Defs.HAC_Integer;  --  Internal integer registers
+    H3 : Defs.HAC_Integer;  --  Internal integer register
 
     --  $I sched.pas
     --  This file contains the different scheduling strategies
@@ -275,110 +276,38 @@ package body HAC.PCode.Interpreter is
       IR : Order renames ND.IR;
     begin
       case ND.IR.F is
-
         when k_Push_Address =>  --  Push "v'Access" of variable v
           Push;
           ND.S (Curr_TCB.T).I := Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y;
-
         when k_Push_Value =>  --  Push variable v's value.
           Push;
           ND.S (Curr_TCB.T) := ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y);
-
         when k_Push_Indirect_Value =>  --  Push "v.all" (v is an access).
           Push;
           ND.S (Curr_TCB.T) := ND.S (ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y).I);
-
-        when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
-        when k_Update_Display_Vector   => Do_Update_Display_Vector;
-
-        when k_File_I_O           => Do_File_IO;
-        when k_Standard_Functions => Do_Standard_Function;
-
+        when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
+          Push;
+          ND.S (Curr_TCB.T).I := IR.Y;
+        when k_Load_Float_Literal =>
+          Push;
+          ND.S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
         when k_Jump => Curr_TCB.PC := IR.Y;
-
         when k_Conditional_Jump =>
           if ND.S (Curr_TCB.T).I = 0 then  --  if False, then ...
             Curr_TCB.PC := IR.Y;           --  ... Jump.
           end if;
           Pop;
-
-        when k_CASE_Switch_1 =>  --  SWTC - switch (in a CASE instruction)
-          H1 := ND.S (Curr_TCB.T).I;
-          Pop;
-          H2 := IR.Y;
-          --
-          --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
-          --
-          loop
-            if CD.ObjCode (H2).F /= k_CASE_Switch_2 then
-              ND.PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
-              exit;                       --  ...happen: compiler should check it before run-time.
-            elsif CD.ObjCode (H2).Y = H1    --  either: - value is matching
-                  or CD.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
-            then
-              Curr_TCB.PC := CD.ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
-              exit;
-            else
-              H2 := H2 + 2;  --  Check the next k_CASE_Switch_2 instruction pair.
-            end if;
-          end loop;
-
-        when k_CASE_Switch_2 =>
-          --  This instruction appears only in a special object code block, see k_CASE_Switch_1.
-          null;
-
-        when k_FOR_Forward_Begin =>  --  Start of a FOR loop, forward direction
-          H1 := ND.S (Curr_TCB.T - 1).I;
-          if H1 <= ND.S (Curr_TCB.T).I then
-            ND.S (ND.S (Curr_TCB.T - 2).I).I := H1;
-          else
-            Curr_TCB.T  := Curr_TCB.T - 3;
-            Curr_TCB.PC := IR.Y;
-          end if;
-
-        when k_FOR_Forward_End =>  --  End of a FOR loop, forward direction
-          H2 := ND.S (Curr_TCB.T - 2).I;
-          H1 := ND.S (H2).I + 1;
-          if H1 <= ND.S (Curr_TCB.T).I then
-            ND.S (H2).I    := H1;
-            Curr_TCB.PC := IR.Y;
-          else
-            Pop (3);
-          end if;
-
-        when k_FOR_Reverse_Begin =>  --  Start of a FOR loop, reverse direction
-          H1 := ND.S (Curr_TCB.T).I;
-          if H1 >= ND.S (Curr_TCB.T - 1).I then
-            ND.S (ND.S (Curr_TCB.T - 2).I).I := H1;
-          else
-            Curr_TCB.PC := IR.Y;
-            Curr_TCB.T  := Curr_TCB.T - 3;
-          end if;
-
-        when k_FOR_Reverse_End =>  --  End of a FOR loop, reverse direction
-          H2 := ND.S (Curr_TCB.T - 2).I;
-          H1 := ND.S (H2).I - 1;
-          if H1 >= ND.S (Curr_TCB.T - 1).I then
-            ND.S (H2).I    := H1;
-            Curr_TCB.PC := IR.Y;
-          else
-            Pop (3);
-          end if;
-
-        when Composite_Data_Opcode => Composite_Data.Do_Composite_Data_Operation (CD, ND);
-
         when k_Store =>  --  [T-1].all := [T]
           ND.S (ND.S (Curr_TCB.T - 1).I) := ND.S (Curr_TCB.T);
           Pop (2);
-
-        when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
-          Push;
-          ND.S (Curr_TCB.T).I := IR.Y;
-
-        when k_Load_Float_Literal =>
-          Push;
-          ND.S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
-
+        --
+        when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
+        when k_Update_Display_Vector   => Do_Update_Display_Vector;
+        when k_File_I_O                => Do_File_IO;
+        when k_Standard_Functions      => Do_Standard_Function;
+        --
+        when Multi_Statement_Opcode => Multi_Statement.Do_Multi_Statement_Operation (CD, ND);
+        when Composite_Data_Opcode  => Composite_Data.Do_Composite_Data_Operation (CD, ND);
         when Unary_Operator_Opcode  => Operators.Do_Unary_Operator (ND);
         when Binary_Operator_Opcode => Operators.Do_Binary_Operator (ND);
         when Calling_Opcode         => Calls.Do_Calling_Operation (CD, ND);
