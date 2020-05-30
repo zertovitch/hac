@@ -62,8 +62,10 @@ package body HAC.PCode.Interpreter.Operators is
       when k_ADD_Integer      => X.I := X.I + Y.I;
       when k_SUBTRACT_Integer => X.I := X.I - Y.I;
       when k_MULT_Integer     => X.I := X.I * Y.I;
-      when k_DIV_Integer      => if Y.I = 0 then ND.PS := DIVCHK; else X.I := X.I / Y.I; end if;
-      when k_MOD_Integer      => if Y.I = 0 then ND.PS := DIVCHK; else X.I := X.I mod Y.I; end if;
+      when k_DIV_Integer      =>
+        if Y.I = 0 then raise VM_Division_by_0; else X.I := X.I / Y.I; end if;
+      when k_MOD_Integer      =>
+        if Y.I = 0 then raise VM_Division_by_0; else X.I := X.I mod Y.I; end if;
       when k_Power_Integer    => X.I := X.I ** Y.I;
       --
       when k_ADD_Float           => X.R := X.R + Y.R;
@@ -94,7 +96,7 @@ package body HAC.PCode.Interpreter.Operators is
           if (Top_Item.I < Defs.OrdMinChar) or
             (Top_Item.I > Defs.OrdMaxChar)  --  !! Character range
           then
-            ND.PS := INXCHK;  --  Seems an out-of-range
+            raise VM_Out_of_Range;
           end if;
         when SF_T_Pos =>   --  S'Pos : RM 3.5.5 (2)
           null;

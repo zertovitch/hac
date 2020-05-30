@@ -11,14 +11,15 @@ package body HAC.PCode.Interpreter.Calls is
     F1     : Defs.HAC_Float;                --  Internal float registers
 
     procedure Do_Mark_Stack is
+      VSize : constant Integer :=
+        Integer (CD.Blocks_Table (CD.IdTab (IR.Y).Block_Ref).VSize);
     begin
-      H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Block_Ref).VSize;
-      if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
-        ND.PS := STKCHK;  --  Stack overflow
+      if Curr_TCB.T + VSize > Curr_TCB.STACKSIZE then
+        raise VM_Stack_Overflow;
       else
-        Curr_TCB.T := Curr_TCB.T + 5;   --  make room for fixed area
-        ND.S (Curr_TCB.T - 1).I := H1 - 1; --  vsize-1
-        ND.S (Curr_TCB.T).I := IR.Y;       --  HAC.Data.IdTab index of called procedure/entry
+        Curr_TCB.T := Curr_TCB.T + 5;          --  Make room for fixed area
+        ND.S (Curr_TCB.T - 1).I := VSize - 1;
+        ND.S (Curr_TCB.T    ).I := IR.Y;       --  CD.IdTab index of called procedure/entry
       end if;
     end Do_Mark_Stack;
 
@@ -132,7 +133,7 @@ package body HAC.PCode.Interpreter.Calls is
       Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;
       Curr_TCB.B  := ND.S (Curr_TCB.B + 3).I;
       if IR.Y = Defs.End_Function_without_Return then
-        ND.PS := ProgErr;  --  !! with message "End function reached without ""return"" statement".
+        raise VM_Function_End_without_Return;
       end if;
     end Do_Exit_Function;
 

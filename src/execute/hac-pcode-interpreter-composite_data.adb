@@ -4,31 +4,18 @@ package body HAC.PCode.Interpreter.Composite_Data is
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     IR : Order renames ND.IR;
     H1, H2, H3, H4, H5 : Defs.HAC_Integer;  --  Internal integer registers
+    use Defs;
 
-    procedure Do_Array_Index_Element_Size_1 is
+    procedure Do_Array_Index (Element_Size : Index) is
+      ATI : constant Integer := IR.Y;
+      ATE : ATabEntry renames CD.Arrays_Table (ATI);
+      Idx : constant Index := Index (ND.S (Curr_TCB.T).I);
     begin
-      H1 := IR.Y;     --  H1 points to HAC.Data.Arrays_Table
-      H2 := CD.Arrays_Table (H1).Low;
-      H3 := ND.S (Curr_TCB.T).I;
-      if H3 not in H2 .. CD.Arrays_Table (H1).High then
-        ND.PS := INXCHK;  --  Out-of-range state
+      if Idx in ATE.Low .. ATE.High then
+        Pop (ND);  --  Pull array index, then adjust array element pointer.
+        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + (Idx - ATE.Low) * Element_Size;
       else
-        Pop (ND);
-        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + (H3 - H2);
-      end if;
-    end Do_Array_Index_Element_Size_1;
-
-    procedure Do_Array_Index is
-    begin
-      H1 := IR.Y;      --  H1 POINTS TO HAC.Data.Arrays_Table
-      H2 := CD.Arrays_Table (H1).Low;
-      H3 := ND.S (Curr_TCB.T).I;
-      if H3 not in H2 .. CD.Arrays_Table (H1).High then
-        ND.PS := INXCHK;  --  Out-of-range state
-      else
-        Pop (ND);
-        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I +
-                               (H3 - H2) * CD.Arrays_Table (H1).Element_Size;
+        raise VM_Out_of_Range;
       end if;
     end Do_Array_Index;
 
@@ -38,12 +25,12 @@ package body HAC.PCode.Interpreter.Composite_Data is
       Pop (ND);
       H2 := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
       if H2 > Curr_TCB.STACKSIZE then
-        ND.PS := STKCHK;  --  Stack overflow
+        raise VM_Stack_Overflow;
       else
         while Curr_TCB.T < H2 loop
-          Curr_TCB.T     := Curr_TCB.T + 1;
+          Curr_TCB.T := Curr_TCB.T + 1;
           ND.S (Curr_TCB.T) := ND.S (H1);
-          H1             := H1 + 1;
+          H1 := H1 + 1;
         end loop;
       end if;
     end Do_Load_Block;
@@ -90,8 +77,8 @@ package body HAC.PCode.Interpreter.Composite_Data is
 
   begin
     case Composite_Data_Opcode (ND.IR.F) is
-      when k_Array_Index_Element_Size_1 => Do_Array_Index_Element_Size_1;
-      when k_Array_Index                => Do_Array_Index;
+      when k_Array_Index_Element_Size_1 => Do_Array_Index (1);
+      when k_Array_Index                => Do_Array_Index (CD.Arrays_Table (IR.Y).Element_Size);
       when k_Record_Field_Offset        => ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
       when k_Load_Block                 => Do_Load_Block;
       when k_Copy_Block                 => Do_Copy_Block;

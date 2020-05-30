@@ -103,7 +103,7 @@ package body HAC.PCode.Interpreter is
       else
         FP := ND.S (Curr_TCB.T - 1).Txt;
         if Ada.Text_IO.End_Of_File (FP.all) then
-          ND.PS := REDCHK;
+          raise VM_End_Error;
         else
           case Typ is
             when Ints =>
@@ -253,7 +253,7 @@ package body HAC.PCode.Interpreter is
             --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
             Skip_Line_Console;
           elsif Ada.Text_IO.End_Of_File (ND.S (Curr_TCB.T).Txt.all) then
-            ND.PS := REDCHK;
+            raise VM_End_Error;
           else
             Ada.Text_IO.Skip_Line (ND.S (Curr_TCB.T).Txt.all);
           end if;
@@ -303,10 +303,12 @@ package body HAC.PCode.Interpreter is
         when k_Store =>  --  [T-1].all := [T]
           ND.S (ND.S (Curr_TCB.T - 1).I) := ND.S (Curr_TCB.T);
           Pop (2);
+        --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
         when k_Update_Display_Vector   => Do_Update_Display_Vector;
         when k_File_I_O                => Do_File_IO;
         when k_Standard_Functions      => Do_Standard_Function;
+        --
         when Multi_Statement_Opcode  => Multi_Statement.Do_Multi_Statement_Operation (CD, ND);
         when Atomic_Data_Push_Opcode => Do_Atomic_Data_Push_Operation;
         when Composite_Data_Opcode   => Composite_Data.Do_Composite_Data_Operation (CD, ND);
@@ -316,8 +318,20 @@ package body HAC.PCode.Interpreter is
         when Tasking_Opcode          => Tasking.Do_Tasking_Operation (CD, ND);
       end case;
     exception
-      when VM_Stack_Overflow | VM_Stack_Underflow =>
-        ND.PS := STKCHK;  --  Stack overflow
+      when VM_Case_Check_Error =>
+        ND.PS := Case_Check_Error;
+      when VM_Division_by_0 =>
+        ND.PS := DIVCHK;
+      when VM_End_Error =>
+        ND.PS := REDCHK;
+      when VM_Function_End_without_Return =>
+        ND.PS := Func_Ret_ProgErr;  --  !! with message "End function reached without ""return"" statement".
+      when VM_Out_of_Range  =>
+        ND.PS := INXCHK;
+      when VM_Stack_Overflow  =>
+        ND.PS := STKCHK;
+      when VM_Stack_Underflow =>
+        ND.PS := STKCHK;
     end Execute_Current_Instruction;
 
     Result_Tasks_to_wake : Boolean;

@@ -15,8 +15,8 @@ package body HAC.PCode.Interpreter.Multi_Statement is
       --
       loop
         if CD.ObjCode (H2).F /= k_CASE_Switch_2 then
-          ND.PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
-          exit;                       --  ...happen: compiler should check it before run-time.
+          --  Value, or OTHERS not found. This situation should not happen (compile-time check).
+          raise VM_Case_Check_Error;
         elsif CD.ObjCode (H2).Y = H1    --  either: - value is matching
               or CD.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
         then

@@ -14,14 +14,17 @@ package HAC.PCode.Interpreter.In_Defs is
   type Processor_State is (
     RUN,               --  RUN is the normal processor state
     --
-    Case_Check_Error,  --  Happens when a case was not found in a CASE statement.
-    DEADLOCK,
+    --  !! The exception states will be merged into a single one, soon...
+    --
+    Case_Check_Error,  --  Happens when a case was not found in a CASE statement. -> Program_Error
     DIVCHK,            --  Division by 0         !! -> Exception_Raised with Contraint_Error
-    FIN,
     INXCHK,            --  Out-of-range error    !! -> Exception_Raised with Contraint_Error
-    ProgErr,           --  Program_Error         !! -> Exception_Raised with Program_Error
+    Func_Ret_ProgErr,  --  Program_Error         !! -> Exception_Raised with Program_Error
     REDCHK,            --  End_Error             !! -> Exception_Raised with End_Error
     STKCHK,            --  Stack overflow        !! -> Exception_Raised with (Storage_Error, "Stack overflow")
+    --
+    FIN,
+    DEADLOCK,
     WAIT);
 
   type Task_State is (
@@ -149,10 +152,15 @@ package HAC.PCode.Interpreter.In_Defs is
   function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Defs.HAC_Integer) return String;
 
   procedure Pop (ND : in out Interpreter_Data; Amount : Positive := 1);
-
   procedure Push (ND : in out Interpreter_Data; Amount : Positive := 1);
 
-  VM_Stack_Overflow, VM_Stack_Underflow : exception;
+  VM_Case_Check_Error            : exception;
+  VM_Division_by_0               : exception;
+  VM_End_Error                   : exception;
+  VM_Function_End_without_Return : exception;
+  VM_Out_of_Range                : exception;
+  VM_Stack_Overflow              : exception;
+  VM_Stack_Underflow             : exception;
 
   --  Post Mortem Dump of the task stack causing the exception
   --
