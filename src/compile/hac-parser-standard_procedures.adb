@@ -211,37 +211,6 @@ package body HAC.Parser.Standard_Procedures is
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
 
-      when SP_CursorAt =>
-        --  Cramer
-        if CD.Sy /= LParent then
-          Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
-        else
-          begin
-            InSymbol (CD);
-            Expression (CD, Level, Colon_Comma_LParent_RParent_Semicolon, X);
-            if X.TYP /= Ints then
-              Skip (CD, Semicolon, err_parameter_must_be_Integer);
-            end if;
-            if CD.Sy /= Comma then
-              Skip (CD, Semicolon, err_COMMA_missing);
-            else
-              InSymbol (CD);
-              Expression (CD, Level, Colon_Comma_LParent_RParent_Semicolon, X);
-              if X.TYP /= Ints then
-                Skip (CD, Semicolon, err_parameter_must_be_Integer);
-              end if;
-              if CD.Sy = Comma then
-                Skip (CD, Semicolon, err_number_of_parameters_do_not_match);
-              elsif CD.Sy /= RParent then
-                Skip (CD, Semicolon, err_closing_parenthesis_missing);
-              else
-                Emit (CD, k_Cursor_At);
-                InSymbol (CD);
-              end if;
-            end if;
-          end;
-        end if;
-
       when SP_Quantum =>
         --  Cramer
         if CD.Sy /= LParent then

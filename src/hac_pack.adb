@@ -418,11 +418,6 @@ package body HAC_Pack is
   procedure New_Line is begin Ada.Text_IO.New_Line; end;
   procedure New_Line (File : File_Type) is begin Ada.Text_IO.New_Line (File); end;
 
-  procedure  CursorAt (X, Y: Integer) is
-  begin
-    null; -- !!
-  end;
-
   ----------
   -- WAIT --
   ----------

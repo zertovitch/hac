@@ -26,10 +26,7 @@ package HAC.PCode is
     k_Push_Indirect_Value,
     k_Variable_Initialization,
     k_Update_Display_Vector,
-    k_Accept_Rendezvous,
-    k_End_Rendezvous,
-    k_Wait_Semaphore,
-    k_Signal_Semaphore,
+    --
     k_Standard_Functions,
     k_Record_Field_Offset,
     --
@@ -54,12 +51,12 @@ package HAC.PCode is
     k_Load_Float_Literal,
     k_String_Literal_Assignment,
     --
-    k_Integer_to_Float,                 --  The reverse conversion is done by a k_Standard_Functions
     --
     k_Exit_Call,
     k_Exit_Function,
-    k_Dereference,
     --
+    k_Integer_to_Float,                 --  The reverse conversion is done by a k_Standard_Functions
+    k_Dereference,
     k_Unary_MINUS_Float,                --  2020-04-04
     k_Unary_MINUS_Integer,
     k_NOT_Boolean,
@@ -106,8 +103,11 @@ package HAC.PCode is
     k_File_I_O,
     --
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
+    k_Accept_Rendezvous,
+    k_End_Rendezvous,
+    k_Wait_Semaphore,
+    k_Signal_Semaphore,
     k_Delay,
-    k_Cursor_At,
     k_Set_Quantum_Task,
     k_Set_Task_Priority,
     k_Set_Task_Priority_Inheritance,
@@ -115,8 +115,9 @@ package HAC.PCode is
   );
 
   subtype Jump_Opcode is Opcode range k_Jump .. k_Conditional_Jump;
+  subtype Unary_Operator_Opcode  is Opcode range k_Integer_to_Float .. k_NOT_Boolean;
   subtype Binary_Operator_Opcode is Opcode range k_EQL_Integer .. k_XOR_Boolean;
-  subtype Unary_Operator_Opcode  is Opcode range k_Unary_MINUS_Float .. k_NOT_Boolean;
+  subtype Tasking_Opcode is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
 
   function For_END (for_BEGIN: Opcode) return Opcode;
 
@@ -314,7 +315,6 @@ package HAC.PCode is
     SP_Wait,
     SP_Signal,
     --
-    SP_CursorAt,
     SP_Quantum,
     SP_Priority,
     SP_InheritP,

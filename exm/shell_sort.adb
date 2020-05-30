@@ -53,11 +53,11 @@ procedure Shell_Sort is
             b(j+step):= temp;
             stop:= True;
           end if;
-          CursorAt(15,14+(j+step)); Put(b(j+step));
+          --  CursorAt(15,14+(j+step)); Put(b(j+step));
         end loop;
         if not stop then
           b(1):= temp;
-          CursorAt(15,14+0);
+          --  CursorAt(15,14+0);
           Put(temp);
         end if;
         i := i + step;

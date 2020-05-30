@@ -8,10 +8,27 @@ with Ada.Calendar,
 
 package body HAC.PCode.Interpreter.Operators is
 
+  procedure Do_Unary_Operator (ND : in out Interpreter_Data) is
+    Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
+    X : GRegister renames ND.S (Curr_TCB_Top);
+    H1 : Defs.HAC_Integer;
+    use type Defs.HAC_Float;
+  begin
+    case Unary_Operator_Opcode (ND.IR.F) is
+      when k_Dereference         => X := ND.S (X.I);  --  "[T] := ([T].I).all"
+      when k_NOT_Boolean         => X.I := Boolean'Pos (not Boolean'Val (X.I));
+      when k_Unary_MINUS_Integer => X.I := -X.I;
+      when k_Unary_MINUS_Float   => X.R := -X.R;
+      when k_Integer_to_Float =>
+        H1          := Curr_TCB_Top - ND.IR.Y;
+        ND.S (H1).R := Defs.HAC_Float (ND.S (H1).I);
+    end case;
+  end Do_Unary_Operator;
+
   procedure Do_Binary_Operator (ND : in out Interpreter_Data) is
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
-    X : GRegister renames ND.S (Curr_TCB_Top - 1);
-    Y : GRegister renames ND.S (Curr_TCB_Top);
+    X : GRegister renames ND.S (Curr_TCB_Top - 1);  --  X = [T-1]
+    Y : GRegister renames ND.S (Curr_TCB_Top);      --  Y = [T]
     use Defs.VStrings_Pkg, Defs.REF;
     use type Defs.HAC_Float;
   begin

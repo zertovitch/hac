@@ -275,8 +275,6 @@ package HAC_Pack is
 
   --  Misc.
 
-  procedure CursorAt (X, Y: Integer);  --  Inactive so far (remnant of SmallAda)
-
   type Semaphore is new Integer; -- private;
 
   --  Semaphore Procedures

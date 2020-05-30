@@ -47,23 +47,23 @@ package HAC.Defs is
 
   MaxINT     : constant Integer := Integer'Last - 1;
 
-  Alng                  : constant := 40;   --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
-  AMax                  : constant := 30;   --  Size OF ARRAY-TABLE
-  BMax                  : constant := 25;   --  Size OF Block-TABLE
+  Alng                  : constant := 40;    --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
+  AMax                  : constant := 30;    --  Size OF ARRAY-TABLE
+  BMax                  : constant := 25;    --  Size OF Block-TABLE
   Float_Const_Table_Max : constant := 200;
   Cases_Max             : constant := 30;    --  Max number of cases in a CASE statement
   CDMax                 : constant := 2500;  --  Size OF ObjCode
-  EntryMax              : constant := 30;   --  Maximum Number of Entry Statements
-  FMax                  : constant := 20;   --  Maximum Number of files for I/O
+  EntryMax              : constant := 30;    --  Maximum Number of Entry Statements
+  FMax                  : constant := 20;    --  Maximum Number of files for I/O
   KMax                  : constant := HAC_Float'Digits;
   Nesting_Level_Max     : constant := 20;
 
   End_Function_without_Return : constant := -1;
 
-  CallSTDP   : constant := 0;             --  Call type for standard procedure call
-  CallSTDE   : constant := 1;             --  Call type for standard Entry Call
-  CallTMDE   : constant := 2;             --  Call type for timed Entry Call
-  CallCNDE   : constant := 3;             --  Call type for conditional Entry call
+  Standard_Procedure_Call : constant := 0;
+  Standard_Entry_Call     : constant := 1;
+  Timed_Entry_Call        : constant := 2;
+  Conditional_Entry_Call  : constant := 3;
 
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char

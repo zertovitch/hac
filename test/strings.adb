@@ -1,6 +1,10 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure Strings is
+  procedure Assert(Check : in Boolean) is  --  RM 11.4.2
+  begin
+    if not Check then Put_Line ("Assert fails"); end if;
+  end;
   s1, s2, s3, s4 : VString;
   Planck   : constant := 6.62607015e-34;
   Pi       : constant := 3.141592653;
@@ -85,4 +89,17 @@ begin
   if Ends_With (+"package", +"proc") then Put ("Ooops?"); end if;
   if not Ends_With (+"package",  "age") then Put ("Ooops?"); end if;
   if not Ends_With (+"package", +"age") then Put ("Ooops?"); end if;
+  --  The following test is in one answer of
+  --  https://stackoverflow.com/questions/62080743/how-do-you-check-if-string-ends-with-another-string-in-ada  
+  Assert (Ends_With (+"John Johnson", "son") = True);
+  Assert (Ends_With (+""  , ""  ) = True);
+  Assert (Ends_With (+" " , ""  ) = True);
+  Assert (Ends_With (+""  , " " ) = False);
+  Assert (Ends_With (+" " , " " ) = True);
+  Assert (Ends_With (+""  , "n" ) = False);
+  Assert (Ends_With (+"n"  , "" ) = True);
+  Assert (Ends_With (+"n ", "n ") = True);
+  Assert (Ends_With (+" n", "n" ) = True);
+  Assert (Ends_With (+"n" , " n") = False);
+  Assert (Ends_With (+" n", " n") = True);
 end Strings;

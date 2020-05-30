@@ -311,7 +311,6 @@ package body HAC.Compiler is
       Enter_Std_Proc ("Create",        SP_Create);
       Enter_Std_Proc ("Close",         SP_Close);
       --
-      Enter_Std_Proc ("CursorAt",      SP_CursorAt);
       Enter_Std_Proc ("Quantum",       SP_Quantum);
       Enter_Std_Proc ("Priority",      SP_Priority);
       Enter_Std_Proc ("InheritP",      SP_InheritP);

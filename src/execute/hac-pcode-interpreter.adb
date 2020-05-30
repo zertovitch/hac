@@ -334,8 +334,6 @@ package body HAC.PCode.Interpreter is
     procedure Execute_Current_Instruction is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       IR : Order renames ND.IR;
-      use type Defs.HAC_Float;
-      use HAC.PCode.Interpreter.Tasking;
     begin
       case ND.IR.F is
 
@@ -368,366 +366,287 @@ package body HAC.PCode.Interpreter is
             end loop;
           end;
 
-        when k_Accept_Rendezvous  =>  Do_Accept_Rendezvous (CD, ND);
-        when k_End_Rendezvous     =>  Do_End_Rendezvous (CD, ND);
-
-        when k_Wait_Semaphore     => Do_Wait_Semaphore (ND);
-        when k_Signal_Semaphore   => Do_Signal_Semaphore (CD, ND);
-
+        when k_File_I_O           => Do_File_IO;
         when k_Standard_Functions => Do_Standard_Function;
 
         when k_Record_Field_Offset =>
           ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
 
-        when k_Jump =>
-          Curr_TCB.PC := IR.Y;
+        when k_Jump => Curr_TCB.PC := IR.Y;
 
         when k_Conditional_Jump =>
           if ND.S (Curr_TCB.T).I = 0 then  --  if False, then ...
-            Curr_TCB.PC := IR.Y;        --  ... Jump.
+            Curr_TCB.PC := IR.Y;           --  ... Jump.
           end if;
           Pop;
 
-      when k_CASE_Switch_1 =>  --  SWTC - switch (in a CASE instruction)
-        H1 := ND.S (Curr_TCB.T).I;
-        Pop;
-        H2 := IR.Y;
-        --
-        --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
-        --
-        loop
-          if CD.ObjCode (H2).F /= k_CASE_Switch_2 then
-            ND.PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
-            exit;                       --  ...happen: compiler should check it before run-time.
-          elsif CD.ObjCode (H2).Y = H1    --  either: - value is matching
-                or CD.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
-          then
-            Curr_TCB.PC := CD.ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
-            exit;
-          else
-            H2 := H2 + 2;  --  Check the next k_CASE_Switch_2 instruction pair.
-          end if;
-        end loop;
-
-      when k_CASE_Switch_2 =>
-        --  This instruction appears only in a special object code block, see k_CASE_Switch_1.
-        null;
-
-      when k_FOR_Forward_Begin =>  --  Start of a FOR loop, forward direction
-        H1 := ND.S (Curr_TCB.T - 1).I;
-        if H1 <= ND.S (Curr_TCB.T).I then
-          ND.S (ND.S (Curr_TCB.T - 2).I).I := H1;
-        else
-          Curr_TCB.T  := Curr_TCB.T - 3;
-          Curr_TCB.PC := IR.Y;
-        end if;
-
-      when k_FOR_Forward_End =>  --  End of a FOR loop, forward direction
-        H2 := ND.S (Curr_TCB.T - 2).I;
-        H1 := ND.S (H2).I + 1;
-        if H1 <= ND.S (Curr_TCB.T).I then
-          ND.S (H2).I    := H1;
-          Curr_TCB.PC := IR.Y;
-        else
-          Pop (3);
-        end if;
-
-      when k_FOR_Reverse_Begin =>  --  Start of a FOR loop, reverse direction
-        H1 := ND.S (Curr_TCB.T).I;
-        if H1 >= ND.S (Curr_TCB.T - 1).I then
-          ND.S (ND.S (Curr_TCB.T - 2).I).I := H1;
-        else
-          Curr_TCB.PC := IR.Y;
-          Curr_TCB.T  := Curr_TCB.T - 3;
-        end if;
-
-      when k_FOR_Reverse_End =>  --  End of a FOR loop, reverse direction
-        H2 := ND.S (Curr_TCB.T - 2).I;
-        H1 := ND.S (H2).I - 1;
-        if H1 >= ND.S (Curr_TCB.T - 1).I then
-          ND.S (H2).I    := H1;
-          Curr_TCB.PC := IR.Y;
-        else
-          Pop (3);
-        end if;
-
-      when k_Mark_Stack =>
-        H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Block_Ref).VSize;
-        if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
-          ND.PS := STKCHK;  --  Stack overflow
-        else
-          Curr_TCB.T := Curr_TCB.T + 5;   --  make room for fixed area
-          ND.S (Curr_TCB.T - 1).I := H1 - 1; --  vsize-1
-          ND.S (Curr_TCB.T).I := IR.Y;       --  HAC.Data.IdTab index of called procedure/entry
-        end if;
-
-      when k_Call =>
-        --  procedure and task entry CALL
-        --  Cramer
-        if IR.X = Defs.CallTMDE then
-          --  Timed entry call
-          F1 := ND.S (Curr_TCB.T).R;  --  Pop delay time
+        when k_CASE_Switch_1 =>  --  SWTC - switch (in a CASE instruction)
+          H1 := ND.S (Curr_TCB.T).I;
           Pop;
-        end if;
-        H1 := Curr_TCB.T - IR.Y;     --  base of activation record
-        H2 := ND.S (H1 + 4).I;          --  CD.IdTab index of called procedure/entry
-        H3 := Integer (CD.IdTab (H2).LEV);
-        Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := H1;
-        ND.S (H1 + 1).I := Curr_TCB.PC;  --  return address
-        H4 := ND.S (H1 + 3).I + H1;  --  new top of stack
-        ND.S (H1 + 2).I := Curr_TCB.DISPLAY (Nesting_level (H3));  --  static link
-        ND.S (H1 + 3).I := Curr_TCB.B;  --  dynamic link
-        Curr_TCB.B := H1;
-        Curr_TCB.T := H4;
-        case IR.X is  --  Call type
-          when Defs.CallSTDP =>
-            --  Standard procedure call
-            Curr_TCB.PC := CD.IdTab (H2).Adr_or_Sz;
-
-          when Defs.CallSTDE =>
-            --  Unconditional entry call
-            Queue (CD, ND, H2, ND.CurTask);          --  put self on entry queue
-            Curr_TCB.TS := WaitRendzv;
-            H5          := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
-            if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
-               (ND.TCB (H5).TS = TimedWait)
+          H2 := IR.Y;
+          --
+          --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
+          --
+          loop
+            if CD.ObjCode (H2).F /= k_CASE_Switch_2 then
+              ND.PS := Case_Check_Error;  --  Value or OTHERS not found. This situation should not...
+              exit;                       --  ...happen: compiler should check it before run-time.
+            elsif CD.ObjCode (H2).Y = H1    --  either: - value is matching
+                  or CD.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
             then
-              --  wake accepting task if necessary
-              ND.TCB (H5).TS      := Ready;
-              ND.TCB (H5).SUSPEND := 0;
-            end if;
-            ND.SWITCH := True;                 --  give up control
-
-          when Defs.CallTMDE =>
-            --  Timed entry call
-            Queue (CD, ND, H2, ND.CurTask);         --  put self on entry queue
-            H5 := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
-            --
-            if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
-               (ND.TCB (H5).TS = TimedWait)
-            then
-              --  wake accepting task if necessary
-              Curr_TCB.TS := WaitRendzv;     --  suspend self
-              ND.TCB (H5).TS := Ready;       --  wake accepting task
-              ND.TCB (H5).SUSPEND := 0;
+              Curr_TCB.PC := CD.ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
+              exit;
             else
-              Curr_TCB.TS := TimedRendz;     --  Timed Wait For Rendezvous
-              Curr_TCB.R1.I := 1;            --  Init R1 to specify NO timeout
-              Curr_TCB.R2.I := H2;           --  Save address of queue for purge
-              ND.SYSCLOCK := GetClock; --  update System Clock
-              Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (F1);
+              H2 := H2 + 2;  --  Check the next k_CASE_Switch_2 instruction pair.
             end if;
-            ND.SWITCH := True;       --  give up control
-
-          when Defs.CallCNDE =>
-            --  Conditional Entry Call
-            H5 := CD.IdTab (H2).Adr_or_Sz;              --  Task being entered
-            if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
-               (ND.TCB (H5).TS = TimedWait)
-            then
-              Queue (CD, ND, H2, ND.CurTask);    --  put self on entry queue
-              Curr_TCB.R1.I := 1;        --  Indicate entry successful
-              Curr_TCB.TS := WaitRendzv;
-              ND.TCB (H5).TS      := Ready;  --  wake accepting task if required
-              ND.TCB (H5).SUSPEND := 0;
-              ND.SWITCH              := True;   --  give up control
-            else
-              --  can't wait, forget about entry call
-              Curr_TCB.R1.I := 0;   --  Indicate entry failed in R1 1
-              --  failure will be acknowledged by next instruction, 32
-            end if;
-          when others =>
-            null;  -- [P2Ada]: no otherwise / else in Pascal
-        end case;
-
-      when k_Array_Index_Element_Size_1 =>
-        H1 := IR.Y;     --  H1 points to HAC.Data.Arrays_Table
-        H2 := CD.Arrays_Table (H1).Low;
-        H3 := ND.S (Curr_TCB.T).I;
-        if H3 not in H2 .. CD.Arrays_Table (H1).High then
-          ND.PS := INXCHK;  --  Out-of-range state
-        else
-          Pop;
-          ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + (H3 - H2);
-        end if;
-
-      when k_Array_Index =>
-        H1 := IR.Y;      --  H1 POINTS TO HAC.Data.Arrays_Table
-        H2 := CD.Arrays_Table (H1).Low;
-        H3 := ND.S (Curr_TCB.T).I;
-        if H3 not in H2 .. CD.Arrays_Table (H1).High then
-          ND.PS := INXCHK;  --  Out-of-range state
-        else
-          Pop;
-          ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I +
-                                 (H3 - H2) * CD.Arrays_Table (H1).Element_Size;
-        end if;
-
-      when k_Load_Block =>
-        H1 := ND.S (Curr_TCB.T).I;   --  Pull source address
-        Pop;
-        H2 := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
-        if H2 > Curr_TCB.STACKSIZE then
-          ND.PS := STKCHK;  --  Stack overflow
-        else
-          while Curr_TCB.T < H2 loop
-            Curr_TCB.T     := Curr_TCB.T + 1;
-            ND.S (Curr_TCB.T) := ND.S (H1);
-            H1             := H1 + 1;
           end loop;
-        end if;
 
-      when k_Copy_Block =>
-        H1 := ND.S (Curr_TCB.T - 1).I;   --  Destination address
-        H2 := ND.S (Curr_TCB.T).I;       --  Source address
-        H3 := H1 + IR.Y;                 --  IR.Y = block length
-        while H1 < H3 loop
-          ND.S (H1) := ND.S (H2);
-          H1     := H1 + 1;
-          H2     := H2 + 1;
-        end loop;
-        Pop (2);
+        when k_CASE_Switch_2 =>
+          --  This instruction appears only in a special object code block, see k_CASE_Switch_1.
+          null;
 
-      when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
-        Push;
-        ND.S (Curr_TCB.T).I := IR.Y;
-
-      when k_Load_Float_Literal =>
-        Push;
-        ND.S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
-
-      when k_String_Literal_Assignment =>  --  Hathorn
-        H1 := ND.S (Curr_TCB.T - 2).I;  --  address of array
-        H2 := ND.S (Curr_TCB.T).I;      --  index to string table
-        H3 := IR.Y;                  --  size of array
-        H4 := ND.S (Curr_TCB.T - 1).I;  --  length of string
-        if H3 < H4 then
-          H5 := H1 + H3;    --  H5 is H1 + min of H3, H4
-        else
-          H5 := H1 + H4;
-        end if;
-        while H1 < H5 loop
-          --  Copy H5-H1 characters to the stack
-          ND.S (H1).I := Character'Pos (CD.Strings_Constants_Table (H2));
-          H1       := H1 + 1;
-          H2       := H2 + 1;
-        end loop;
-        H5 := ND.S (Curr_TCB.T - 2).I + H3;              --  H5 = H1 + H3
-        while H1 < H5 loop
-          --  fill with blanks if req'd
-          ND.S (H1).I := Character'Pos (' ');
-          H1       := H1 + 1;
-        end loop;
-        Pop (3);
-
-      when k_Integer_to_Float =>
-        H1       := Curr_TCB.T - IR.Y;
-        ND.S (H1).R := Defs.HAC_Float (ND.S (H1).I);
-
-      when k_Exit_Call =>  --  EXIT entry call or procedure call
-        --  Cramer
-        Curr_TCB.T := Curr_TCB.B - 1;
-        if IR.Y = Defs.CallSTDP then
-          Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;  --  Standard proc call return
-        end if;
-        if Curr_TCB.PC /= 0 then
-          Curr_TCB.B := ND.S (Curr_TCB.B + 3).I;
-          if IR.Y = Defs.CallTMDE or IR.Y = Defs.CallCNDE then
-            if IR.Y = Defs.CallTMDE and Curr_TCB.R1.I = 0 then
-              Push;
-            end if;
-            --  A JMPC instruction always follows (?)
-            --  timed and conditional entry call
-            --  returns (32).  Push entry call
-            ND.S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
+        when k_FOR_Forward_Begin =>  --  Start of a FOR loop, forward direction
+          H1 := ND.S (Curr_TCB.T - 1).I;
+          if H1 <= ND.S (Curr_TCB.T).I then
+            ND.S (ND.S (Curr_TCB.T - 2).I).I := H1;
+          else
+            Curr_TCB.T  := Curr_TCB.T - 3;
+            Curr_TCB.PC := IR.Y;
           end if;
-        else
-          ND.TActive  := ND.TActive - 1;
-          Curr_TCB.TS := Completed;
-          ND.SWITCH   := True;
-        end if;
 
-      when k_Exit_Function =>
-        Curr_TCB.T  := Curr_TCB.B;
-        Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;
-        Curr_TCB.B  := ND.S (Curr_TCB.B + 3).I;
-        if IR.Y = Defs.End_Function_without_Return then
-          ND.PS := ProgErr;  --  !! with message "End function reached without ""return"" statement".
-        end if;
+        when k_FOR_Forward_End =>  --  End of a FOR loop, forward direction
+          H2 := ND.S (Curr_TCB.T - 2).I;
+          H1 := ND.S (H2).I + 1;
+          if H1 <= ND.S (Curr_TCB.T).I then
+            ND.S (H2).I    := H1;
+            Curr_TCB.PC := IR.Y;
+          else
+            Pop (3);
+          end if;
 
-      when k_Dereference =>
-        ND.S (Curr_TCB.T) := ND.S (ND.S (Curr_TCB.T).I);  --  "stack_top := (stack_top.I).all"
+        when k_FOR_Reverse_Begin =>  --  Start of a FOR loop, reverse direction
+          H1 := ND.S (Curr_TCB.T).I;
+          if H1 >= ND.S (Curr_TCB.T - 1).I then
+            ND.S (ND.S (Curr_TCB.T - 2).I).I := H1;
+          else
+            Curr_TCB.PC := IR.Y;
+            Curr_TCB.T  := Curr_TCB.T - 3;
+          end if;
 
-      when k_NOT_Boolean =>
-        ND.S (Curr_TCB.T).I := Boolean'Pos (not Boolean'Val (ND.S (Curr_TCB.T).I));
+        when k_FOR_Reverse_End =>  --  End of a FOR loop, reverse direction
+          H2 := ND.S (Curr_TCB.T - 2).I;
+          H1 := ND.S (H2).I - 1;
+          if H1 >= ND.S (Curr_TCB.T - 1).I then
+            ND.S (H2).I    := H1;
+            Curr_TCB.PC := IR.Y;
+          else
+            Pop (3);
+          end if;
 
-      when k_Unary_MINUS_Integer =>
-        ND.S (Curr_TCB.T).I := -ND.S (Curr_TCB.T).I;
+        when k_Mark_Stack =>
+          H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Block_Ref).VSize;
+          if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
+            ND.PS := STKCHK;  --  Stack overflow
+          else
+            Curr_TCB.T := Curr_TCB.T + 5;   --  make room for fixed area
+            ND.S (Curr_TCB.T - 1).I := H1 - 1; --  vsize-1
+            ND.S (Curr_TCB.T).I := IR.Y;       --  HAC.Data.IdTab index of called procedure/entry
+          end if;
 
-      when k_Unary_MINUS_Float =>
-        ND.S (Curr_TCB.T).R := -ND.S (Curr_TCB.T).R;
+        when k_Call =>
+          --  procedure and task entry CALL
+          --  Cramer
+          if IR.X = Defs.Timed_Entry_Call then
+            --  Timed entry call
+            F1 := ND.S (Curr_TCB.T).R;  --  Pop delay time
+            Pop;
+          end if;
+          H1 := Curr_TCB.T - IR.Y;     --  base of activation record
+          H2 := ND.S (H1 + 4).I;          --  CD.IdTab index of called procedure/entry
+          H3 := Integer (CD.IdTab (H2).LEV);
+          Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := H1;
+          ND.S (H1 + 1).I := Curr_TCB.PC;  --  return address
+          H4 := ND.S (H1 + 3).I + H1;  --  new top of stack
+          ND.S (H1 + 2).I := Curr_TCB.DISPLAY (Nesting_level (H3));  --  static link
+          ND.S (H1 + 3).I := Curr_TCB.B;  --  dynamic link
+          Curr_TCB.B := H1;
+          Curr_TCB.T := H4;
+          case IR.X is  --  Call type
+            when Defs.Standard_Procedure_Call =>
+              Curr_TCB.PC := CD.IdTab (H2).Adr_or_Sz;
 
-      when k_Store =>
-        ND.S (ND.S (Curr_TCB.T - 1).I) := ND.S (Curr_TCB.T);
-        Pop (2);
+            when Defs.Standard_Entry_Call =>
+              Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
+              Curr_TCB.TS := WaitRendzv;
+              H5          := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
+              if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
+                 (ND.TCB (H5).TS = TimedWait)
+              then
+                --  wake accepting task if necessary
+                ND.TCB (H5).TS      := Ready;
+                ND.TCB (H5).SUSPEND := 0;
+              end if;
+              ND.SWITCH := True;                 --  give up control
 
-      when Binary_Operator_Opcode => Operators.Do_Binary_Operator (ND);
+            when Defs.Timed_Entry_Call =>
+              Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
+              H5 := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
+              --
+              if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
+                 (ND.TCB (H5).TS = TimedWait)
+              then
+                --  wake accepting task if necessary
+                Curr_TCB.TS := WaitRendzv;     --  suspend self
+                ND.TCB (H5).TS := Ready;       --  wake accepting task
+                ND.TCB (H5).SUSPEND := 0;
+              else
+                Curr_TCB.TS := TimedRendz;     --  Timed Wait For Rendezvous
+                Curr_TCB.R1.I := 1;            --  Init R1 to specify NO timeout
+                Curr_TCB.R2.I := H2;           --  Save address of queue for purge
+                ND.SYSCLOCK := GetClock; --  update System Clock
+                Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (F1);
+              end if;
+              ND.SWITCH := True;       --  give up control
 
-      when k_File_I_O => Do_File_IO;
+            when Defs.Conditional_Entry_Call =>
+              H5 := CD.IdTab (H2).Adr_or_Sz;              --  Task being entered
+              if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
+                 (ND.TCB (H5).TS = TimedWait)
+              then
+                Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
+                Curr_TCB.R1.I := 1;        --  Indicate entry successful
+                Curr_TCB.TS := WaitRendzv;
+                ND.TCB (H5).TS      := Ready;  --  wake accepting task if required
+                ND.TCB (H5).SUSPEND := 0;
+                ND.SWITCH              := True;   --  give up control
+              else
+                --  can't wait, forget about entry call
+                Curr_TCB.R1.I := 0;   --  Indicate entry failed in R1 1
+                --  failure will be acknowledged by next instruction, 32
+              end if;
+            when others =>
+              null;  -- [P2Ada]: no otherwise / else in Pascal
+          end case;
 
-      when k_Halt_Interpreter =>
-        if ND.TActive = 0 then
-          ND.PS := FIN;
-        else
-          ND.TCB (0).TS := Completed;
-          ND.SWITCH     := True;
-          Curr_TCB.PC := Curr_TCB.PC - 1;
-        end if;
+        when k_Array_Index_Element_Size_1 =>
+          H1 := IR.Y;     --  H1 points to HAC.Data.Arrays_Table
+          H2 := CD.Arrays_Table (H1).Low;
+          H3 := ND.S (Curr_TCB.T).I;
+          if H3 not in H2 .. CD.Arrays_Table (H1).High then
+            ND.PS := INXCHK;  --  Out-of-range state
+          else
+            Pop;
+            ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + (H3 - H2);
+          end if;
 
-      when k_Delay =>
-        if ND.S (Curr_TCB.T).R > 0.0 then
-          Curr_TCB.TS := Delayed;  --  set task state to delayed
-          ND.SYSCLOCK := GetClock;    --  update System Clock
-          Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (ND.S (Curr_TCB.T).R);
-          --  set wakeup time
-          ND.SWITCH := True;          --  give up control
-        end if;
-        Pop;
+        when k_Array_Index =>
+          H1 := IR.Y;      --  H1 POINTS TO HAC.Data.Arrays_Table
+          H2 := CD.Arrays_Table (H1).Low;
+          H3 := ND.S (Curr_TCB.T).I;
+          if H3 not in H2 .. CD.Arrays_Table (H1).High then
+            ND.PS := INXCHK;  --  Out-of-range state
+          else
+            Pop;
+            ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I +
+                                   (H3 - H2) * CD.Arrays_Table (H1).Element_Size;
+          end if;
 
-      when k_Cursor_At =>
-        --  Cramer
-        H2         := ND.S (Curr_TCB.T - 1).I;  --  row
-        H1         := ND.S (Curr_TCB.T).I;      --  column
-        Pop (2);
-        -- GotoXY (H1, H2);        --  issue TPC call
+        when k_Load_Block =>
+          H1 := ND.S (Curr_TCB.T).I;   --  Pull source address
+          Pop;
+          H2 := IR.Y + Curr_TCB.T;  --  Stack top after pushing block
+          if H2 > Curr_TCB.STACKSIZE then
+            ND.PS := STKCHK;  --  Stack overflow
+          else
+            while Curr_TCB.T < H2 loop
+              Curr_TCB.T     := Curr_TCB.T + 1;
+              ND.S (Curr_TCB.T) := ND.S (H1);
+              H1             := H1 + 1;
+            end loop;
+          end if;
 
-      when k_Set_Quantum_Task =>
-        --  Cramer
-        if ND.S (Curr_TCB.T).R <= 0.0 then
-          ND.S (Curr_TCB.T).R := Defs.HAC_Float (TSlice);
-        end if;
-        Curr_TCB.QUANTUM := Duration (ND.S (Curr_TCB.T).R);
-        Pop;
+        when k_Copy_Block =>
+          H1 := ND.S (Curr_TCB.T - 1).I;   --  Destination address
+          H2 := ND.S (Curr_TCB.T).I;       --  Source address
+          H3 := H1 + IR.Y;                 --  IR.Y = block length
+          while H1 < H3 loop
+            ND.S (H1) := ND.S (H2);
+            H1     := H1 + 1;
+            H2     := H2 + 1;
+          end loop;
+          Pop (2);
 
-      when k_Set_Task_Priority =>
-        --  Cramer
-        if ND.S (Curr_TCB.T).I > Defs.PriMax then
-          ND.S (Curr_TCB.T).I := Defs.PriMax;
-        end if;
-        if ND.S (Curr_TCB.T).I < 0 then
-          ND.S (Curr_TCB.T).I := 0;
-        end if;
-        Curr_TCB.Pcontrol.UPRI := ND.S (Curr_TCB.T).I;
-        Pop;
+        when k_Store =>  --  [T-1].all := [T]
+          ND.S (ND.S (Curr_TCB.T - 1).I) := ND.S (Curr_TCB.T);
+          Pop (2);
 
-      when k_Set_Task_Priority_Inheritance =>
-        --  Cramer
-        Curr_TCB.Pcontrol.INHERIT := ND.S (Curr_TCB.T).I /= 0;
-        --  Set priority inherit indicator
-        Pop;
+        when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
+          Push;
+          ND.S (Curr_TCB.T).I := IR.Y;
 
-        when k_Selective_Wait => Do_Selective_Wait (CD, ND);
+        when k_Load_Float_Literal =>
+          Push;
+          ND.S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
 
+        when k_String_Literal_Assignment =>  --  Hathorn
+          H1 := ND.S (Curr_TCB.T - 2).I;  --  address of array
+          H2 := ND.S (Curr_TCB.T).I;      --  index to string table
+          H3 := IR.Y;                     --  size of array
+          H4 := ND.S (Curr_TCB.T - 1).I;  --  length of string
+          if H3 < H4 then
+            H5 := H1 + H3;    --  H5 is H1 + min of H3, H4
+          else
+            H5 := H1 + H4;
+          end if;
+          while H1 < H5 loop
+            --  Copy H5-H1 characters to the stack
+            ND.S (H1).I := Character'Pos (CD.Strings_Constants_Table (H2));
+            H1       := H1 + 1;
+            H2       := H2 + 1;
+          end loop;
+          --  Padding (!! will be removed)
+          H5 := ND.S (Curr_TCB.T - 2).I + H3;              --  H5 = H1 + H3
+          while H1 < H5 loop
+            --  fill with blanks if req'd
+            ND.S (H1).I := Character'Pos (' ');
+            H1       := H1 + 1;
+          end loop;
+          Pop (3);
+
+        when k_Exit_Call =>  --  EXIT entry call or procedure call
+          --  Cramer
+          Curr_TCB.T := Curr_TCB.B - 1;
+          if IR.Y = Defs.Standard_Procedure_Call then
+            Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;  --  Standard proc call return
+          end if;
+          if Curr_TCB.PC /= 0 then
+            Curr_TCB.B := ND.S (Curr_TCB.B + 3).I;
+            if IR.Y = Defs.Timed_Entry_Call or IR.Y = Defs.Conditional_Entry_Call then
+              if IR.Y = Defs.Timed_Entry_Call and Curr_TCB.R1.I = 0 then
+                Push;
+              end if;
+              --  A JMPC instruction always follows (?)
+              --  timed and conditional entry call
+              --  returns (32).  Push entry call
+              ND.S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
+            end if;
+          else
+            ND.TActive  := ND.TActive - 1;
+            Curr_TCB.TS := Completed;
+            ND.SWITCH   := True;
+          end if;
+
+        when k_Exit_Function =>
+          Curr_TCB.T  := Curr_TCB.B;
+          Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;
+          Curr_TCB.B  := ND.S (Curr_TCB.B + 3).I;
+          if IR.Y = Defs.End_Function_without_Return then
+            ND.PS := ProgErr;  --  !! with message "End function reached without ""return"" statement".
+          end if;
+
+        when Unary_Operator_Opcode  => Operators.Do_Unary_Operator (ND);
+        when Binary_Operator_Opcode => Operators.Do_Binary_Operator (ND);
+        when Tasking_Opcode         => Tasking.Do_Tasking_Operation (CD, ND);
       end case;
     exception
       when Stack_Overflow | Stack_Underflow =>

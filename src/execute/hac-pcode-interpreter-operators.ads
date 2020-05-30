@@ -8,6 +8,7 @@ package HAC.PCode.Interpreter.Operators is
   -----------------------
 
   --  Execute operator stored as Opcode in ND.IR.F.
+  procedure Do_Unary_Operator (ND : in out Interpreter_Data);
   procedure Do_Binary_Operator (ND : in out Interpreter_Data);
 
   --  Execute operator through the Opcode k_Standard_Functions.

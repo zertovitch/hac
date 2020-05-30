@@ -642,7 +642,7 @@ package body HAC.Parser is
       if IsFun then
         Emit1 (CD, k_Exit_Function, End_Function_without_Return);
       else
-        Emit1 (CD, k_Exit_Call, CallSTDP);
+        Emit1 (CD, k_Exit_Call, Standard_Procedure_Call);
       end if;
     end Proc_Func_Declaration;
 
@@ -829,9 +829,9 @@ package body HAC.Parser is
           end if;       -- !! but... this is legal in Ada !!
         end if;
         if Is_a_function then
-          Emit1 (CD, k_Exit_Function, CallSTDP);
+          Emit1 (CD, k_Exit_Function, Standard_Procedure_Call);
         else
-          Emit1 (CD, k_Exit_Call, CallSTDP);
+          Emit1 (CD, k_Exit_Call, Standard_Procedure_Call);
         end if;
       end RETURN_Statement;
 
@@ -1108,8 +1108,8 @@ package body HAC.Parser is
               Multi_Statement (ELSE_OR);
             end if;
             if CD.Sy = OR_Symbol then  --  =====================> Timed Entry Call
-              CD.ObjCode (patch (0)).X      := CallTMDE;  --  Timed Entry Call
-              CD.ObjCode (patch (0) + 1).Y  := CallTMDE;  --  Exit type matches Entry type
+              CD.ObjCode (patch (0)).X     := Timed_Entry_Call;
+              CD.ObjCode (patch (0) + 1).Y := Timed_Entry_Call;  --  Exit type matches Entry type
               InSymbol;
               if CD.Sy = DELAY_Symbol then
                 InSymbol;
@@ -1142,9 +1142,9 @@ package body HAC.Parser is
               end if;
             -- end Sy = OrSy
             else              -- Sy = ELSE_Symbol, ===============> Conditional Entry Call
-              CD.ObjCode (patch (0)).X      := CallCNDE;  --  Conditional Entry Call
-              CD.ObjCode (patch (0) + 1).Y  := CallCNDE;
-              patch (2)                     := CD.LC;
+              CD.ObjCode (patch (0)).X     := Conditional_Entry_Call;
+              CD.ObjCode (patch (0) + 1).Y := Conditional_Entry_Call;
+              patch (2)                    := CD.LC;
               Emit1 (CD, k_Jump, dummy_address);  -- JMP, address patched in after END SELECT
               patch (3) := CD.LC;
               InSymbol;
@@ -1433,13 +1433,13 @@ package body HAC.Parser is
                   Error (CD, err_illegal_statement_start_symbol, "function name",
                          stop => True);
                 when aTask =>
-                  Entry_Call (CD, Level, FSys_St, I_Statement, CallSTDE);
+                  Entry_Call (CD, Level, FSys_St, I_Statement, Standard_Entry_Call);
                 when Prozedure =>
                   if CD.IdTab (I_Statement).LEV = 0 then
                     Standard_Procedures.Standard_Procedure
                       (CD, Level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
                   else
-                    Subprogram_or_Entry_Call (CD, Level, FSys_St, I_Statement, CallSTDP);
+                    Subprogram_or_Entry_Call (CD, Level, FSys_St, I_Statement, Standard_Procedure_Call);
                   end if;
                 when Label =>
                   Error (CD, err_duplicate_label, To_String (CD.Id));
