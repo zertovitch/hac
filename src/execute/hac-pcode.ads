@@ -28,7 +28,6 @@ package HAC.PCode is
     k_Update_Display_Vector,
     --
     k_Standard_Functions,
-    k_Record_Field_Offset,
     --
     k_Jump,
     k_Conditional_Jump,
@@ -42,14 +41,14 @@ package HAC.PCode is
     --
     k_Array_Index_Element_Size_1,
     k_Array_Index,
+    k_Record_Field_Offset,
     k_Load_Block,
     k_Copy_Block,
+    k_String_Literal_Assignment,
     k_Store,
     --
     k_Load_Discrete_Literal,            --  "Load immediate" in some assemblers.
     k_Load_Float_Literal,
-    k_String_Literal_Assignment,
-    --
     --
     k_Mark_Stack,                       --  First instruction for a Call
     k_Call,                             --  Procedure and task entry Call
@@ -120,6 +119,7 @@ package HAC.PCode is
   subtype Binary_Operator_Opcode is Opcode range k_EQL_Integer .. k_XOR_Boolean;
   subtype Tasking_Opcode is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
   subtype Calling_Opcode is Opcode range k_Mark_Stack .. k_Exit_Function;
+  subtype Composite_Data_Opcode is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
 
   function For_END (for_BEGIN: Opcode) return Opcode;
 

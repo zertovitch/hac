@@ -8,7 +8,7 @@ package HAC.PCode.Interpreter.Tasking is
   -----------------------
 
   --  Execute tasking instruction stored as Opcode in ND.IR.F.
-  --  ND.IR.F is in the Tasking_Opcode subtype.
+  --  ND.IR.F is in the Tasking_Opcode subtype range.
   procedure Do_Tasking_Operation (CD : Compiler_Data; ND: in out Interpreter_Data);
 
   -------------
