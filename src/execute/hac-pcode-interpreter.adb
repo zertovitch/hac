@@ -1,4 +1,5 @@
-with HAC.PCode.Interpreter.In_Defs,
+with HAC.PCode.Interpreter.Calls,
+     HAC.PCode.Interpreter.In_Defs,
      HAC.PCode.Interpreter.Operators,
      HAC.PCode.Interpreter.Tasking;
 
@@ -10,88 +11,11 @@ with Ada.Environment_Variables;
 
 package body HAC.PCode.Interpreter is
 
-  --  Post Mortem Dump of the task stack causing the exception
-  --
-  procedure Post_Mortem_Dump (CD: Compiler_Data; ND: In_Defs.Interpreter_Data) is
-    use In_Defs, Ada.Text_IO, Defs.IIO, Defs.RIO;
-    BLKCNT : Integer;
-    H1, H2, H3 : Defs.HAC_Integer;
-  begin
-      New_Line;
-      Put_Line ("HAC - PCode - Post Mortem Dump");
-      New_Line;
-      Put_Line ("Processor state: " & Processor_State'Image (ND.PS));
-      New_Line;
-      Put_Line (
-        "Stack Variables of Task " &
-        Defs.To_String (CD.IdTab (CD.Tasks_Definitions_Table (ND.CurTask)).Name)
-      );
-      H1 := ND.TCB (ND.CurTask).B;   --  current bottom of stack
-      BLKCNT := 10;
-      loop
-        New_Line;
-        BLKCNT := BLKCNT - 1;
-        if BLKCNT = 0 then
-          H1 := 0;
-        end if;
-        H2 := ND.S (H1 + 4).I;  --  index into HAC.Data.IdTab for this process
-        if H1 /= 0 then
-          Put (Defs.To_String (CD.IdTab (H2).Name));
-          Put (" CALLED AT");
-          Put (ND.S (H1 + 1).I, 5);
-          New_Line;
-        else
-          Put_Line ("Task Variables");
-        end if;
-        H2 := CD.Blocks_Table (CD.IdTab (H2).Block_Ref).Last_Id_Idx;
-        while H2 /= 0 loop
-          -- [P2Ada]: WITH instruction
-          declare
-            P2Ada_Var_7 : IdTabEntry renames CD.IdTab (H2);
-            use Defs;
-          begin
-            if P2Ada_Var_7.Obj = Variable then
-              if Defs.Standard_or_Enum_Typ (P2Ada_Var_7.xTyp.TYP) then
-                if P2Ada_Var_7.Normal then
-                  H3 := H1 + P2Ada_Var_7.Adr_or_Sz;
-                else
-                  H3 := ND.S (H1 + P2Ada_Var_7.Adr_or_Sz).I;
-                end if;
-                Put ("  " & To_String (P2Ada_Var_7.Name) & " = ");
-                case P2Ada_Var_7.xTyp.TYP is
-                  when Defs.Enums | Defs.Ints =>
-                    Put (ND.S (H3).I);
-                    New_Line;
-                  when Defs.Bools =>
-                    BIO.Put (Boolean'Val (ND.S (H3).I));
-                    New_Line;
-                  when Defs.Floats =>
-                    Put (ND.S (H3).R);
-                    New_Line;
-                  when Defs.Chars =>
-                    Put (ND.S (H3).I);
-                    Put_Line (" (ASCII)");
-                  when others =>
-                    null;  -- [P2Ada]: no otherwise / else in Pascal
-                end case;
-              end if;
-            end if;
-            H2 := P2Ada_Var_7.Link;
-          end; -- [P2Ada]: end of WITH
-
-        end loop;
-        H1 := ND.S (H1 + 3).I;
-        exit when H1 < 0;
-      end loop;
-  end Post_Mortem_Dump;
-
   procedure Interpret (CD : Compiler_Data)
   is
     use In_Defs;
     ND : Interpreter_Data;
-
     H1, H2, H3, H4, H5 : Defs.HAC_Integer;  --  Internal integer registers
-    F1     : Defs.HAC_Float;                --  Internal float registers
 
     --  $I sched.pas
     --  This file contains the different scheduling strategies
@@ -443,91 +367,6 @@ package body HAC.PCode.Interpreter is
             Pop (3);
           end if;
 
-        when k_Mark_Stack =>
-          H1 := CD.Blocks_Table (CD.IdTab (IR.Y).Block_Ref).VSize;
-          if Curr_TCB.T + H1 > Curr_TCB.STACKSIZE then
-            ND.PS := STKCHK;  --  Stack overflow
-          else
-            Curr_TCB.T := Curr_TCB.T + 5;   --  make room for fixed area
-            ND.S (Curr_TCB.T - 1).I := H1 - 1; --  vsize-1
-            ND.S (Curr_TCB.T).I := IR.Y;       --  HAC.Data.IdTab index of called procedure/entry
-          end if;
-
-        when k_Call =>
-          --  procedure and task entry CALL
-          --  Cramer
-          if IR.X = Defs.Timed_Entry_Call then
-            --  Timed entry call
-            F1 := ND.S (Curr_TCB.T).R;  --  Pop delay time
-            Pop;
-          end if;
-          H1 := Curr_TCB.T - IR.Y;     --  base of activation record
-          H2 := ND.S (H1 + 4).I;          --  CD.IdTab index of called procedure/entry
-          H3 := Integer (CD.IdTab (H2).LEV);
-          Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := H1;
-          ND.S (H1 + 1).I := Curr_TCB.PC;  --  return address
-          H4 := ND.S (H1 + 3).I + H1;  --  new top of stack
-          ND.S (H1 + 2).I := Curr_TCB.DISPLAY (Nesting_level (H3));  --  static link
-          ND.S (H1 + 3).I := Curr_TCB.B;  --  dynamic link
-          Curr_TCB.B := H1;
-          Curr_TCB.T := H4;
-          case IR.X is  --  Call type
-            when Defs.Standard_Procedure_Call =>
-              Curr_TCB.PC := CD.IdTab (H2).Adr_or_Sz;
-
-            when Defs.Standard_Entry_Call =>
-              Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
-              Curr_TCB.TS := WaitRendzv;
-              H5          := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
-              if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
-                 (ND.TCB (H5).TS = TimedWait)
-              then
-                --  wake accepting task if necessary
-                ND.TCB (H5).TS      := Ready;
-                ND.TCB (H5).SUSPEND := 0;
-              end if;
-              ND.SWITCH := True;                 --  give up control
-
-            when Defs.Timed_Entry_Call =>
-              Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
-              H5 := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
-              --
-              if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
-                 (ND.TCB (H5).TS = TimedWait)
-              then
-                --  wake accepting task if necessary
-                Curr_TCB.TS := WaitRendzv;     --  suspend self
-                ND.TCB (H5).TS := Ready;       --  wake accepting task
-                ND.TCB (H5).SUSPEND := 0;
-              else
-                Curr_TCB.TS := TimedRendz;     --  Timed Wait For Rendezvous
-                Curr_TCB.R1.I := 1;            --  Init R1 to specify NO timeout
-                Curr_TCB.R2.I := H2;           --  Save address of queue for purge
-                ND.SYSCLOCK := GetClock; --  update System Clock
-                Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (F1);
-              end if;
-              ND.SWITCH := True;       --  give up control
-
-            when Defs.Conditional_Entry_Call =>
-              H5 := CD.IdTab (H2).Adr_or_Sz;              --  Task being entered
-              if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
-                 (ND.TCB (H5).TS = TimedWait)
-              then
-                Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
-                Curr_TCB.R1.I := 1;        --  Indicate entry successful
-                Curr_TCB.TS := WaitRendzv;
-                ND.TCB (H5).TS      := Ready;  --  wake accepting task if required
-                ND.TCB (H5).SUSPEND := 0;
-                ND.SWITCH              := True;   --  give up control
-              else
-                --  can't wait, forget about entry call
-                Curr_TCB.R1.I := 0;   --  Indicate entry failed in R1 1
-                --  failure will be acknowledged by next instruction, 32
-              end if;
-            when others =>
-              null;  -- [P2Ada]: no otherwise / else in Pascal
-          end case;
-
         when k_Array_Index_Element_Size_1 =>
           H1 := IR.Y;     --  H1 points to HAC.Data.Arrays_Table
           H2 := CD.Arrays_Table (H1).Low;
@@ -613,43 +452,13 @@ package body HAC.PCode.Interpreter is
           end loop;
           Pop (3);
 
-        when k_Exit_Call =>  --  EXIT entry call or procedure call
-          --  Cramer
-          Curr_TCB.T := Curr_TCB.B - 1;
-          if IR.Y = Defs.Standard_Procedure_Call then
-            Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;  --  Standard proc call return
-          end if;
-          if Curr_TCB.PC /= 0 then
-            Curr_TCB.B := ND.S (Curr_TCB.B + 3).I;
-            if IR.Y = Defs.Timed_Entry_Call or IR.Y = Defs.Conditional_Entry_Call then
-              if IR.Y = Defs.Timed_Entry_Call and Curr_TCB.R1.I = 0 then
-                Push;
-              end if;
-              --  A JMPC instruction always follows (?)
-              --  timed and conditional entry call
-              --  returns (32).  Push entry call
-              ND.S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
-            end if;
-          else
-            ND.TActive  := ND.TActive - 1;
-            Curr_TCB.TS := Completed;
-            ND.SWITCH   := True;
-          end if;
-
-        when k_Exit_Function =>
-          Curr_TCB.T  := Curr_TCB.B;
-          Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;
-          Curr_TCB.B  := ND.S (Curr_TCB.B + 3).I;
-          if IR.Y = Defs.End_Function_without_Return then
-            ND.PS := ProgErr;  --  !! with message "End function reached without ""return"" statement".
-          end if;
-
         when Unary_Operator_Opcode  => Operators.Do_Unary_Operator (ND);
         when Binary_Operator_Opcode => Operators.Do_Binary_Operator (ND);
+        when Calling_Opcode         => Calls.Do_Calling_Operation (CD, ND);
         when Tasking_Opcode         => Tasking.Do_Tasking_Operation (CD, ND);
       end case;
     exception
-      when Stack_Overflow | Stack_Underflow =>
+      when VM_Stack_Overflow | VM_Stack_Underflow =>
         ND.PS := STKCHK;  --  Stack overflow
     end Execute_Current_Instruction;
 

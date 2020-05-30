@@ -61,294 +61,283 @@ package body HAC.PCode.Interpreter.Tasking is
     E_Q_Header.Last := enode_var;
   end Queue;
 
-  use Ada.Calendar;
-
-  procedure Do_Accept_Rendezvous (CD : Compiler_Data; ND: in out Interpreter_Data) is
-    --  Hathorn, Cramer
+  procedure Do_Tasking_Operation (CD : Compiler_Data; ND: in out Interpreter_Data) is
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     IR : Order renames ND.IR;
-    H1, H2, H3 : Defs.HAC_Integer;  --  Internal integer registers
-  begin
-    H1 := IR.Y;                         --  entry pointer
-    H2 := First_Caller (CD, ND, H1);     --  first waiting task
-    H3 := Integer (CD.IdTab (H1).LEV);  --  level of accepting entry
-    if H2 >= 0 then
-      --  start rendzv if call is waiting
-      Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := ND.TCB (H2).B; --  address callers
-      --  parms
-      Curr_TCB.InRendzv := H2;  --  indicate that task is in Rendzv
-      if ND.TCB (H2).TS = TimedRendz then
-        ND.TCB (H2).TS := WaitRendzv;
-      end if;
-    else
-      --  or put self to sleep
-      Curr_TCB.SUSPEND := H1;
-      Curr_TCB.TS      := WaitRendzv;      --  status is waiting for
-      --rendezvous
-      Curr_TCB.PC      := Curr_TCB.PC - 1;          --  do this
-      --step again when awakened
 
-    end if;
-    ND.SWITCH := True;
-  end Do_Accept_Rendezvous;
-
-  procedure Do_End_Rendezvous (CD : Compiler_Data; ND: in out Interpreter_Data) is
-    --  Hathorn
-    function Remove_First (Entry_Index : Integer) return TRange is
-      ix, val : Integer;
-      dmy     : Eptr;
+   procedure Do_Accept_Rendezvous is
+      --  Hathorn, Cramer
+      H1, H2, H3 : Defs.HAC_Integer;
     begin
-      ix := EIndex (CD, Entry_Index);
-      declare
-        E_Q_Header : EHeader renames ND.EList (ix);
+      H1 := IR.Y;                         --  entry pointer
+      H2 := First_Caller (CD, ND, H1);     --  first waiting task
+      H3 := Integer (CD.IdTab (H1).LEV);  --  level of accepting entry
+      if H2 >= 0 then
+        --  start rendzv if call is waiting
+        Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := ND.TCB (H2).B; --  address callers
+        --  parms
+        Curr_TCB.InRendzv := H2;  --  indicate that task is in Rendzv
+        if ND.TCB (H2).TS = TimedRendz then
+          ND.TCB (H2).TS := WaitRendzv;
+        end if;
+      else
+        --  or put self to sleep
+        Curr_TCB.SUSPEND := H1;
+        Curr_TCB.TS      := WaitRendzv;      --  status is waiting for
+        --rendezvous
+        Curr_TCB.PC      := Curr_TCB.PC - 1;          --  do this
+        --step again when awakened
+
+      end if;
+      ND.SWITCH := True;
+    end Do_Accept_Rendezvous;
+
+    procedure Do_End_Rendezvous is
+      --  Hathorn
+      function Remove_First (Entry_Index : Integer) return TRange is
+        ix, val : Integer;
+        dmy     : Eptr;
       begin
-        val := E_Q_Header.First.Task_Index;
-        if E_Q_Header.First = E_Q_Header.Last then
-          E_Q_Header.First := null;
-          E_Q_Header.Last  := null;
-        else
-          dmy              := E_Q_Header.First;
-          E_Q_Header.First := E_Q_Header.First.Next;
-          Dispose (dmy);
-        end if;
-      end;
-      return val;
-    end Remove_First;
-    --
-    Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-    H1, H2 : Defs.HAC_Integer;  --  Internal integer registers
-  begin
-    Curr_TCB.InRendzv := NilTask;  --  indicate rendezvous has ended
-    H1 := ND.IR.Y;                   --  entry pointer
-    H2 := Remove_First (H1);       --  waiting task pointer
-    if H2 >= 0 then
-      --  wake up waiting task
-      ND.TCB (H2).SUSPEND := 0;
-      ND.TCB (H2).TS      := Ready;
-      ND.SWITCH              := True;
-    end if;
-  end Do_End_Rendezvous;
-
-  procedure Do_Selective_Wait (CD : Compiler_Data; ND: in out Interpreter_Data) is
-    Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-    IR : Order renames ND.IR;
-    use type Defs.HAC_Float;
-    H1, H2, H3 : Defs.HAC_Integer;  --  Internal integer registers
-  begin
-    case IR.X is
-      when 1 => --  Start Selective Wait seq.
-        Curr_TCB.R1.I := 0; --  next instruction if delay expires
-        Curr_TCB.R2.R := -1.0; --  delay time
-
-      when 2 => --  Retain entry ID
-        Curr_TCB.R3.I := IR.Y;
-
-      when 3 => --  Accept if its still on queue
-        H1 := Curr_TCB.R3.I;
-        H2 := First_Caller (CD, ND, H1);    --  first waiting task
-        H3 := Defs.HAC_Integer (CD.IdTab (H1).LEV);     --  level of accepting entry
-        if H2 >= 0 then
-          Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := ND.TCB (H2).B;
-            --  address callers parms
-          Curr_TCB.InRendzv := H2;             --  indicate task InRendz
-          if ND.TCB (H2).TS = TimedRendz then  --  turn off entry timeout
-            ND.TCB (H2).TS := WaitRendzv;      --  if it was on
-          end if;
-        else
-          Curr_TCB.PC := IR.Y; --  Jump to patched in address
-        end if;
-        ND.SWITCH := True;
-
-      when 4 => --  Update minimum delay time
-        if ND.S (Curr_TCB.T).R > 0.0 then
-          if Curr_TCB.R2.R = -1.0 then
-            Curr_TCB.R2.R := ND.S (Curr_TCB.T).R;
-            Curr_TCB.R1.I := IR.Y;   --  ins after JMP
+        ix := EIndex (CD, Entry_Index);
+        declare
+          E_Q_Header : EHeader renames ND.EList (ix);
+        begin
+          val := E_Q_Header.First.Task_Index;
+          if E_Q_Header.First = E_Q_Header.Last then
+            E_Q_Header.First := null;
+            E_Q_Header.Last  := null;
           else
-            if ND.S (Curr_TCB.T).R < Curr_TCB.R2.R then
+            dmy              := E_Q_Header.First;
+            E_Q_Header.First := E_Q_Header.First.Next;
+            Dispose (dmy);
+          end if;
+        end;
+        return val;
+      end Remove_First;
+      --
+      H1, H2 : Defs.HAC_Integer;
+    begin
+      Curr_TCB.InRendzv := NilTask;  --  indicate rendezvous has ended
+      H1 := ND.IR.Y;                   --  entry pointer
+      H2 := Remove_First (H1);       --  waiting task pointer
+      if H2 >= 0 then
+        --  wake up waiting task
+        ND.TCB (H2).SUSPEND := 0;
+        ND.TCB (H2).TS      := Ready;
+        ND.SWITCH              := True;
+      end if;
+    end Do_End_Rendezvous;
+
+    procedure Do_Selective_Wait is
+      use type Defs.HAC_Float, Ada.Calendar.Time;
+      H1, H2, H3 : Defs.HAC_Integer;
+    begin
+      case IR.X is
+        when 1 => --  Start Selective Wait seq.
+          Curr_TCB.R1.I := 0; --  next instruction if delay expires
+          Curr_TCB.R2.R := -1.0; --  delay time
+
+        when 2 => --  Retain entry ID
+          Curr_TCB.R3.I := IR.Y;
+
+        when 3 => --  Accept if its still on queue
+          H1 := Curr_TCB.R3.I;
+          H2 := First_Caller (CD, ND, H1);    --  first waiting task
+          H3 := Defs.HAC_Integer (CD.IdTab (H1).LEV);     --  level of accepting entry
+          if H2 >= 0 then
+            Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := ND.TCB (H2).B;
+              --  address callers parms
+            Curr_TCB.InRendzv := H2;             --  indicate task InRendz
+            if ND.TCB (H2).TS = TimedRendz then  --  turn off entry timeout
+              ND.TCB (H2).TS := WaitRendzv;      --  if it was on
+            end if;
+          else
+            Curr_TCB.PC := IR.Y; --  Jump to patched in address
+          end if;
+          ND.SWITCH := True;
+
+        when 4 => --  Update minimum delay time
+          if ND.S (Curr_TCB.T).R > 0.0 then
+            if Curr_TCB.R2.R = -1.0 then
               Curr_TCB.R2.R := ND.S (Curr_TCB.T).R;
               Curr_TCB.R1.I := IR.Y;   --  ins after JMP
+            else
+              if ND.S (Curr_TCB.T).R < Curr_TCB.R2.R then
+                Curr_TCB.R2.R := ND.S (Curr_TCB.T).R;
+                Curr_TCB.R1.I := IR.Y;   --  ins after JMP
+              end if;
             end if;
           end if;
-        end if;
-        Pop (ND);
+          Pop (ND);
 
-      when 5 | 6 => --  end of SELECT
+        when 5 | 6 => --  end of SELECT
 
-        if Curr_TCB.R2.R > 0.0 then
-          --  Timed Wait
-          Curr_TCB.TS       := TimedWait;
-          ND.SYSCLOCK          := GetClock;
-          Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (Curr_TCB.R2.R);
-          Curr_TCB.PC       := IR.Y; --  Do SELECT again when awakened by caller
-          ND.SWITCH := True;  --  give up control
-        end if;
-        --  AVL -- TERMINATE
-        --  IS THE PARENT TASK COMPLETED?
-        if ND.TCB (0).TS = Completed and ND.CurTask /= 0 and IR.X /= 6 then
-          ND.Nb_Callers := 0; --  LET'S SEE IF THERE ARE CALLERS
-          for ITERM in 1 .. CD.Entries_Count loop
-            if ND.EList (ITERM).First /= null then
-              ND.Nb_Callers := ND.Nb_Callers + 1;
-            end if;
-          end loop;
-          --  YES, NO CALLERS
-          if ND.Nb_Callers = 0 then  --  YES, NO CALLERS
-            --  ARE THE SIBLING TASKS EITHER COMPLETED OR
-            --  IN THE SAME STATE AS CURTASK?
-            ND.Nb_Complete := 0;
-            for ITERM in 1 .. CD.Tasks_Definitions_Count loop
-              if ND.TCB (ITERM).TS = Completed then
-                ND.Nb_Complete := ND.Nb_Complete + 1;
-              else
-                if ND.TCB (ITERM).TS = Curr_TCB.TS then
-                  ND.Nb_Complete := ND.Nb_Complete + 1;
-                else
-                  if ND.TCB (ITERM).TS = Ready and
-                     Curr_TCB.TS = Running
-                  then
-                    ND.Nb_Complete := ND.Nb_Complete + 1;
-                  end if;
-                end if;
+          if Curr_TCB.R2.R > 0.0 then
+            --  Timed Wait
+            Curr_TCB.TS       := TimedWait;
+            ND.SYSCLOCK          := GetClock;
+            Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (Curr_TCB.R2.R);
+            Curr_TCB.PC       := IR.Y; --  Do SELECT again when awakened by caller
+            ND.SWITCH := True;  --  give up control
+          end if;
+          --  AVL -- TERMINATE
+          --  IS THE PARENT TASK COMPLETED?
+          if ND.TCB (0).TS = Completed and ND.CurTask /= 0 and IR.X /= 6 then
+            ND.Nb_Callers := 0; --  LET'S SEE IF THERE ARE CALLERS
+            for ITERM in 1 .. CD.Entries_Count loop
+              if ND.EList (ITERM).First /= null then
+                ND.Nb_Callers := ND.Nb_Callers + 1;
               end if;
             end loop;
-            if CD.Tasks_Definitions_Count = ND.Nb_Complete then
-              --  YES, THEN ALL TASKS ARE NOW TERMINATING
+            --  YES, NO CALLERS
+            if ND.Nb_Callers = 0 then  --  YES, NO CALLERS
+              --  ARE THE SIBLING TASKS EITHER COMPLETED OR
+              --  IN THE SAME STATE AS CURTASK?
+              ND.Nb_Complete := 0;
               for ITERM in 1 .. CD.Tasks_Definitions_Count loop
-                ND.TCB (ITERM).TS := Terminated;
+                if ND.TCB (ITERM).TS = Completed then
+                  ND.Nb_Complete := ND.Nb_Complete + 1;
+                else
+                  if ND.TCB (ITERM).TS = Curr_TCB.TS then
+                    ND.Nb_Complete := ND.Nb_Complete + 1;
+                  else
+                    if ND.TCB (ITERM).TS = Ready and
+                       Curr_TCB.TS = Running
+                    then
+                      ND.Nb_Complete := ND.Nb_Complete + 1;
+                    end if;
+                  end if;
+                end if;
               end loop;
-              ND.PS := FIN;
+              if CD.Tasks_Definitions_Count = ND.Nb_Complete then
+                --  YES, THEN ALL TASKS ARE NOW TERMINATING
+                for ITERM in 1 .. CD.Tasks_Definitions_Count loop
+                  ND.TCB (ITERM).TS := Terminated;
+                end loop;
+                ND.PS := FIN;
+              end if;
             end if;
           end if;
-        end if;
-      --               if ir.x = 6 then
-      --               begin
-      --                 term := false ;    {Task doesn't have a terminate}
-      --               end ;                {alternative}
-      --
+        --               if ir.x = 6 then
+        --               begin
+        --                 term := false ;    {Task doesn't have a terminate}
+        --               end ;                {alternative}
+        --
 
-      when others =>
-        null;  -- [P2Ada]: no otherwise / else in Pascal
-    end case;
-  end Do_Selective_Wait;
+        when others =>
+          null;  -- [P2Ada]: no otherwise / else in Pascal
+      end case;
+    end Do_Selective_Wait;
 
-  procedure Do_Signal_Semaphore (CD : Compiler_Data; ND: in out Interpreter_Data) is
-    Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-    H1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
-    H2, H3 : Defs.HAC_Integer;
-    use Ada.Numerics.Float_Random;
-  begin
-    Pop (ND);
-    H2 := CD.Tasks_Definitions_Count + 1;
-    H3 := Integer (Random (ND.Gen) * Float (H2));
-    while H2 >= 0 and ND.TCB (H3).TS /= WaitSem and ND.TCB (H3).SUSPEND /= H1
-    loop
-      H3 := (H3 + 1) mod (Defs.TaskMax + 1);
-      H2 := H2 - 1;
-    end loop;
-    if H2 < 0 or ND.S (H1).I < 0 then
-      ND.S (H1).I := ND.S (H1).I + 1;
-    else
-      ND.TCB (H3).SUSPEND := 0;
-      ND.TCB (H3).TS      := Ready;
-    end if;
-    Curr_TCB.TS := Ready; --  end critical section
-    ND.SWITCH := True;
-  end Do_Signal_Semaphore;
+    procedure Do_Signal_Semaphore is
+      H1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
+      H2, H3 : Defs.HAC_Integer;
+      use Ada.Numerics.Float_Random;
+    begin
+      Pop (ND);
+      H2 := CD.Tasks_Definitions_Count + 1;
+      H3 := Integer (Random (ND.Gen) * Float (H2));
+      while H2 >= 0 and ND.TCB (H3).TS /= WaitSem and ND.TCB (H3).SUSPEND /= H1
+      loop
+        H3 := (H3 + 1) mod (Defs.TaskMax + 1);
+        H2 := H2 - 1;
+      end loop;
+      if H2 < 0 or ND.S (H1).I < 0 then
+        ND.S (H1).I := ND.S (H1).I + 1;
+      else
+        ND.TCB (H3).SUSPEND := 0;
+        ND.TCB (H3).TS      := Ready;
+      end if;
+      Curr_TCB.TS := Ready; --  end critical section
+      ND.SWITCH := True;
+    end Do_Signal_Semaphore;
 
-  procedure Do_Wait_Semaphore (ND: in out Interpreter_Data) is
-    Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-    H1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
-  begin
-    Pop (ND);
-    if ND.S (H1).I > 0 then
-      ND.S (H1).I       := ND.S (H1).I - 1;
-      Curr_TCB.TS := Critical;   --  In a critical section, task gets
-      --  exclusive access to the virtual
-    else
-      --  processor until section ends.
-      Curr_TCB.SUSPEND := H1;
-      Curr_TCB.TS      := WaitSem;
-      ND.SWITCH           := True;
-    end if;
-  end Do_Wait_Semaphore;
+    procedure Do_Wait_Semaphore is
+      H1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
+    begin
+      Pop (ND);
+      if ND.S (H1).I > 0 then
+        ND.S (H1).I := ND.S (H1).I - 1;
+        Curr_TCB.TS := Critical;   --  In a critical section, task gets
+        --  exclusive access to the virtual
+      else
+        --  processor until section ends.
+        Curr_TCB.SUSPEND := H1;
+        Curr_TCB.TS      := WaitSem;
+        ND.SWITCH        := True;
+      end if;
+    end Do_Wait_Semaphore;
 
-  procedure Do_Set_Quantum_Task (ND: in out Interpreter_Data) is
-    Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-    use type Defs.HAC_Float;
-  begin
-    --  Cramer
-    if ND.S (Curr_TCB.T).R <= 0.0 then
-      ND.S (Curr_TCB.T).R := Defs.HAC_Float (TSlice);
-    end if;
-    Curr_TCB.QUANTUM := Duration (ND.S (Curr_TCB.T).R);
-    Pop (ND);
-  end Do_Set_Quantum_Task;
+    procedure Do_Set_Quantum_Task is
+      use type Defs.HAC_Float;
+    begin
+      --  Cramer
+      if ND.S (Curr_TCB.T).R <= 0.0 then
+        ND.S (Curr_TCB.T).R := Defs.HAC_Float (TSlice);
+      end if;
+      Curr_TCB.QUANTUM := Duration (ND.S (Curr_TCB.T).R);
+      Pop (ND);
+    end Do_Set_Quantum_Task;
 
-  procedure Do_Set_Task_Priority (ND: in out Interpreter_Data) is
-    Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-  begin
-    --  Cramer
-    if ND.S (Curr_TCB.T).I > Defs.PriMax then
-      ND.S (Curr_TCB.T).I := Defs.PriMax;
-    end if;
-    if ND.S (Curr_TCB.T).I < 0 then
-      ND.S (Curr_TCB.T).I := 0;
-    end if;
-    Curr_TCB.Pcontrol.UPRI := ND.S (Curr_TCB.T).I;
-    Pop (ND);
-  end Do_Set_Task_Priority;
+    procedure Do_Set_Task_Priority is
+    begin
+      --  Cramer
+      if ND.S (Curr_TCB.T).I > Defs.PriMax then
+        ND.S (Curr_TCB.T).I := Defs.PriMax;
+      end if;
+      if ND.S (Curr_TCB.T).I < 0 then
+        ND.S (Curr_TCB.T).I := 0;
+      end if;
+      Curr_TCB.Pcontrol.UPRI := ND.S (Curr_TCB.T).I;
+      Pop (ND);
+    end Do_Set_Task_Priority;
 
-  procedure Do_Set_Task_Priority_Inheritance (ND: in out Interpreter_Data) is
-    Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-  begin
-    --  Cramer
-    Curr_TCB.Pcontrol.INHERIT := ND.S (Curr_TCB.T).I /= 0;
-    --  Set priority inherit indicator
-    Pop (ND);
-  end Do_Set_Task_Priority_Inheritance;
+    procedure Do_Set_Task_Priority_Inheritance is
+    begin
+      --  Cramer
+      Curr_TCB.Pcontrol.INHERIT := ND.S (Curr_TCB.T).I /= 0;
+      --  Set priority inherit indicator
+      Pop (ND);
+    end Do_Set_Task_Priority_Inheritance;
 
-  procedure Do_Delay (ND: in out Interpreter_Data) is
-    Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-    use type Defs.HAC_Float;
-  begin
-    if ND.S (Curr_TCB.T).R > 0.0 then
-      Curr_TCB.TS := Delayed;  --  set task state to delayed
-      ND.SYSCLOCK := GetClock;    --  update System Clock
-      Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (ND.S (Curr_TCB.T).R);
-      --  set wakeup time
-      ND.SWITCH := True;          --  give up control
-    end if;
-    Pop (ND);
-  end Do_Delay;
+    procedure Do_Delay is
+      use type Defs.HAC_Float, Ada.Calendar.Time;
+    begin
+      if ND.S (Curr_TCB.T).R > 0.0 then
+        Curr_TCB.TS := Delayed;  --  set task state to delayed
+        ND.SYSCLOCK := GetClock;    --  update System Clock
+        Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (ND.S (Curr_TCB.T).R);
+        --  set wakeup time
+        ND.SWITCH := True;          --  give up control
+      end if;
+      Pop (ND);
+    end Do_Delay;
 
-  procedure Do_Halt_Interpreter (ND: in out Interpreter_Data) is
-    Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-  begin
-    if ND.TActive = 0 then
-      ND.PS := FIN;
-    else
-      ND.TCB (0).TS := Completed;
-      ND.SWITCH     := True;
-      Curr_TCB.PC := Curr_TCB.PC - 1;
-    end if;
-  end Do_Halt_Interpreter;
+    procedure Do_Halt_Interpreter is
+    begin
+      if ND.TActive = 0 then
+        ND.PS := FIN;
+      else
+        ND.TCB (0).TS := Completed;
+        ND.SWITCH     := True;
+        Curr_TCB.PC := Curr_TCB.PC - 1;
+      end if;
+    end Do_Halt_Interpreter;
 
-  procedure Do_Tasking_Operation (CD : Compiler_Data; ND: in out Interpreter_Data) is
   begin
     case Tasking_Opcode (ND.IR.F) is
-      when k_Accept_Rendezvous             => Do_Accept_Rendezvous (CD, ND);
-      when k_End_Rendezvous                => Do_End_Rendezvous (CD, ND);
-      when k_Wait_Semaphore                => Do_Wait_Semaphore (ND);
-      when k_Signal_Semaphore              => Do_Signal_Semaphore (CD, ND);
-      when k_Set_Quantum_Task              => Do_Set_Quantum_Task (ND);
-      when k_Set_Task_Priority             => Do_Set_Task_Priority (ND);
-      when k_Set_Task_Priority_Inheritance => Do_Set_Task_Priority_Inheritance (ND);
-      when k_Selective_Wait                => Do_Selective_Wait (CD, ND);
-      when k_Delay                         => Do_Delay (ND);
-      when k_Halt_Interpreter              => Do_Halt_Interpreter (ND);
+      when k_Accept_Rendezvous             => Do_Accept_Rendezvous;
+      when k_End_Rendezvous                => Do_End_Rendezvous;
+      when k_Wait_Semaphore                => Do_Wait_Semaphore;
+      when k_Signal_Semaphore              => Do_Signal_Semaphore;
+      when k_Set_Quantum_Task              => Do_Set_Quantum_Task;
+      when k_Set_Task_Priority             => Do_Set_Task_Priority;
+      when k_Set_Task_Priority_Inheritance => Do_Set_Task_Priority_Inheritance;
+      when k_Selective_Wait                => Do_Selective_Wait;
+      when k_Delay                         => Do_Delay;
+      when k_Halt_Interpreter              => Do_Halt_Interpreter;
     end case;
-  end;
+  end Do_Tasking_Operation;
 
   procedure Init_main_task (CD : Compiler_Data; ND: in out Interpreter_Data) is
     use Ada.Numerics.Float_Random;
@@ -486,6 +475,7 @@ package body HAC.PCode.Interpreter.Tasking is
     end Purge;
     --
     count : Integer := 0;
+    use type Ada.Calendar.Time;
   begin
     for t in 0 .. CD.Tasks_Definitions_Count loop
       if (ND.TCB (t).TS = Delayed or

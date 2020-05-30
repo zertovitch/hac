@@ -39,8 +39,7 @@ package HAC.PCode is
     k_FOR_Forward_End,
     k_FOR_Reverse_Begin,
     k_FOR_Reverse_End,
-    k_Mark_Stack,                       --  First instruction for a Call
-    k_Call,                             --  Procedure and task entry CALL
+    --
     k_Array_Index_Element_Size_1,
     k_Array_Index,
     k_Load_Block,
@@ -52,6 +51,8 @@ package HAC.PCode is
     k_String_Literal_Assignment,
     --
     --
+    k_Mark_Stack,                       --  First instruction for a Call
+    k_Call,                             --  Procedure and task entry Call
     k_Exit_Call,
     k_Exit_Function,
     --
@@ -118,6 +119,7 @@ package HAC.PCode is
   subtype Unary_Operator_Opcode  is Opcode range k_Integer_to_Float .. k_NOT_Boolean;
   subtype Binary_Operator_Opcode is Opcode range k_EQL_Integer .. k_XOR_Boolean;
   subtype Tasking_Opcode is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
+  subtype Calling_Opcode is Opcode range k_Mark_Stack .. k_Exit_Function;
 
   function For_END (for_BEGIN: Opcode) return Opcode;
 

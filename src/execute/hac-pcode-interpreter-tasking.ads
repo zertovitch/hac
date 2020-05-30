@@ -7,21 +7,8 @@ package HAC.PCode.Interpreter.Tasking is
   --  VM Instructions  --
   -----------------------
 
-  --  procedure Do_Accept_Rendezvous (CD : Compiler_Data; ND: in out Interpreter_Data);
-  --  procedure Do_End_Rendezvous (CD : Compiler_Data; ND: in out Interpreter_Data);
-  --
-  --  procedure Do_Selective_Wait (CD : Compiler_Data; ND: in out Interpreter_Data);
-  --
-  --  procedure Do_Signal_Semaphore (CD : Compiler_Data; ND: in out Interpreter_Data);
-  --  procedure Do_Wait_Semaphore (ND: in out Interpreter_Data);
-  --
-  --  procedure Do_Set_Quantum_Task (ND: in out Interpreter_Data);
-  --  procedure Do_Set_Task_Priority (ND: in out Interpreter_Data);
-  --  procedure Do_Set_Task_Priority_Inheritance (ND: in out Interpreter_Data);
-  --
-  --  procedure Do_Delay (ND: in out Interpreter_Data);
-  --
   --  Execute tasking instruction stored as Opcode in ND.IR.F.
+  --  ND.IR.F is in the Tasking_Opcode subtype.
   procedure Do_Tasking_Operation (CD : Compiler_Data; ND: in out Interpreter_Data);
 
   -------------

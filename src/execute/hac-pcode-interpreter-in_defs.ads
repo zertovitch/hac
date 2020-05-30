@@ -152,6 +152,10 @@ package HAC.PCode.Interpreter.In_Defs is
 
   procedure Push (ND : in out Interpreter_Data; Amount : Positive := 1);
 
-  Stack_Overflow, Stack_Underflow : exception;
+  VM_Stack_Overflow, VM_Stack_Underflow : exception;
+
+  --  Post Mortem Dump of the task stack causing the exception
+  --
+  procedure Post_Mortem_Dump (CD: Compiler_Data; ND: In_Defs.Interpreter_Data);
 
 end HAC.PCode.Interpreter.In_Defs;

@@ -1,7 +1,7 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure Strings is
-  procedure Assert(Check : in Boolean) is  --  RM 11.4.2
+  procedure Assert(Check : in Boolean) is  --  Similar to RM 11.4.2
   begin
     if not Check then Put_Line ("Assert fails"); end if;
   end;
