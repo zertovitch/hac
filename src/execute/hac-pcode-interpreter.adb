@@ -274,23 +274,26 @@ package body HAC.PCode.Interpreter is
     procedure Execute_Current_Instruction is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       IR : Order renames ND.IR;
+      --
+      procedure Do_Atomic_Data_Push_Operation is
+      begin
+        Push;
+        case Atomic_Data_Push_Opcode (ND.IR.F) is
+          when k_Push_Address =>           --  Push "v'Access" of variable v
+            ND.S (Curr_TCB.T).I := Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y;
+          when k_Push_Value =>             --  Push variable v's value.
+            ND.S (Curr_TCB.T) := ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y);
+          when k_Push_Indirect_Value =>    --  Push "v.all" (v is an access).
+            ND.S (Curr_TCB.T) := ND.S (ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y).I);
+          when k_Push_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
+            ND.S (Curr_TCB.T).I := IR.Y;
+          when k_Push_Float_Literal =>
+            ND.S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
+        end case;
+      end Do_Atomic_Data_Push_Operation;
+      --
     begin
       case ND.IR.F is
-        when k_Push_Address =>  --  Push "v'Access" of variable v
-          Push;
-          ND.S (Curr_TCB.T).I := Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y;
-        when k_Push_Value =>  --  Push variable v's value.
-          Push;
-          ND.S (Curr_TCB.T) := ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y);
-        when k_Push_Indirect_Value =>  --  Push "v.all" (v is an access).
-          Push;
-          ND.S (Curr_TCB.T) := ND.S (ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y).I);
-        when k_Load_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
-          Push;
-          ND.S (Curr_TCB.T).I := IR.Y;
-        when k_Load_Float_Literal =>
-          Push;
-          ND.S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
         when k_Jump => Curr_TCB.PC := IR.Y;
         when k_Conditional_Jump =>
           if ND.S (Curr_TCB.T).I = 0 then  --  if False, then ...
@@ -300,18 +303,17 @@ package body HAC.PCode.Interpreter is
         when k_Store =>  --  [T-1].all := [T]
           ND.S (ND.S (Curr_TCB.T - 1).I) := ND.S (Curr_TCB.T);
           Pop (2);
-        --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
         when k_Update_Display_Vector   => Do_Update_Display_Vector;
         when k_File_I_O                => Do_File_IO;
         when k_Standard_Functions      => Do_Standard_Function;
-        --
-        when Multi_Statement_Opcode => Multi_Statement.Do_Multi_Statement_Operation (CD, ND);
-        when Composite_Data_Opcode  => Composite_Data.Do_Composite_Data_Operation (CD, ND);
-        when Unary_Operator_Opcode  => Operators.Do_Unary_Operator (ND);
-        when Binary_Operator_Opcode => Operators.Do_Binary_Operator (ND);
-        when Calling_Opcode         => Calls.Do_Calling_Operation (CD, ND);
-        when Tasking_Opcode         => Tasking.Do_Tasking_Operation (CD, ND);
+        when Multi_Statement_Opcode  => Multi_Statement.Do_Multi_Statement_Operation (CD, ND);
+        when Atomic_Data_Push_Opcode => Do_Atomic_Data_Push_Operation;
+        when Composite_Data_Opcode   => Composite_Data.Do_Composite_Data_Operation (CD, ND);
+        when Unary_Operator_Opcode   => Operators.Do_Unary_Operator (ND);
+        when Binary_Operator_Opcode  => Operators.Do_Binary_Operator (ND);
+        when Calling_Opcode          => Calls.Do_Calling_Operation (CD, ND);
+        when Tasking_Opcode          => Tasking.Do_Tasking_Operation (CD, ND);
       end case;
     exception
       when VM_Stack_Overflow | VM_Stack_Underflow =>

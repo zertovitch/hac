@@ -197,7 +197,7 @@ package body HAC.PCode is
       Code_Pos_IO.Put (Text, OC (i).D.Line);
       Put (Text, "  " & Defs.To_String (OC (i).D.Block));
       case OC (i).F is  --  Extra information
-        when k_Load_Float_Literal =>
+        when k_Push_Float_Literal =>
           Put (Text, "; " & HAC_Image (Flt_Const (OC (i).Y)));
         when k_Variable_Initialization =>
           Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));

@@ -176,8 +176,8 @@ package body HAC.Parser.Expressions is
           Test (CD, Factor_Begin_Symbol + StrCon, FSys_Fact, err_factor_unexpected_symbol);
           if CD.Sy = StrCon then
             X.TYP := String_Literals;
-            Emit1 (CD, k_Load_Discrete_Literal, CD.SLeng);  --  String Literal Length
-            Emit1 (CD, k_Load_Discrete_Literal, CD.INum);   --  Index To String IdTab
+            Emit1 (CD, k_Push_Discrete_Literal, CD.SLeng);  --  String Literal Length
+            Emit1 (CD, k_Push_Discrete_Literal, CD.INum);   --  Index To String IdTab
             InSymbol (CD);
           end if;
           while Factor_Begin_Symbol (CD.Sy) loop  --  !!  Why a loop here ?... Why StrCon excluded ?
@@ -194,10 +194,10 @@ package body HAC.Parser.Expressions is
                       X := r.xTyp;
                       if X.TYP = Floats then
                         --  Address is an index in the float constants table.
-                        Emit1 (CD, k_Load_Float_Literal, r.Adr_or_Sz);
+                        Emit1 (CD, k_Push_Float_Literal, r.Adr_or_Sz);
                       else
                         --  Here the address is actually the immediate (discrete) value.
-                        Emit1 (CD, k_Load_Discrete_Literal, r.Adr_or_Sz);
+                        Emit1 (CD, k_Push_Discrete_Literal, r.Adr_or_Sz);
                       end if;
                       --
                     when Variable =>
@@ -259,7 +259,7 @@ package body HAC.Parser.Expressions is
                     RNum_Index : Natural;
                   begin
                     Enter_or_find_Float (CD, CD.RNum, RNum_Index);
-                    Emit1 (CD, k_Load_Float_Literal, RNum_Index);
+                    Emit1 (CD, k_Push_Float_Literal, RNum_Index);
                   end;
                 else
                   if CD.Sy = CharCon then
@@ -267,7 +267,7 @@ package body HAC.Parser.Expressions is
                   else
                     X.TYP := Ints;
                   end if;
-                  Emit1 (CD, k_Load_Discrete_Literal, CD.INum);
+                  Emit1 (CD, k_Push_Discrete_Literal, CD.INum);
                 end if;
                 X.Ref := 0;
                 InSymbol (CD);
@@ -402,7 +402,7 @@ package body HAC.Parser.Expressions is
           X.TYP := VStrings;
         elsif Adding_OP = Plus and then Is_Char_Array (CD, X) then  --  +S
           --  Address is already pushed; we need to push the string's length.
-          Emit1 (CD, k_Load_Discrete_Literal, CD.Arrays_Table (X.Ref).Array_Size);
+          Emit1 (CD, k_Push_Discrete_Literal, CD.Arrays_Table (X.Ref).Array_Size);
           Emit_Std_Funct (CD, SF_String_to_VString);
           X.TYP := VStrings;
         elsif X.TYP not in Numeric_Typ then

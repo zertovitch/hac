@@ -90,7 +90,7 @@ package body HAC.Parser.Standard_Procedures is
         null;  --  Good, Put[_Line] can do it all "as is"!
       elsif Is_Char_Array (CD, Item_Typ) then
         --  Address is already pushed; we need to push the string's length.
-        Emit1 (CD, k_Load_Discrete_Literal, CD.Arrays_Table (Item_Typ.Ref).Array_Size);
+        Emit1 (CD, k_Push_Discrete_Literal, CD.Arrays_Table (Item_Typ.Ref).Array_Size);
       else
         Error (CD, err_illegal_parameters_to_Put);
       end if;
@@ -124,7 +124,7 @@ package body HAC.Parser.Standard_Procedures is
         --  In order to have a fixed number of parameters in all cases,
         --  we push also the "invalid" ones. See Do_Write_Formatted
         --  to have an idea on how everybody is retrieved from the stack.
-        Emit1 (CD, k_Load_Discrete_Literal, def_param (Item_Typ.TYP, Param));
+        Emit1 (CD, k_Push_Discrete_Literal, def_param (Item_Typ.TYP, Param));
       end loop;
       if with_file then
         if Code = SP_Put_Line then

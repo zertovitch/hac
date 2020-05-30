@@ -24,8 +24,12 @@ package HAC.PCode is
     k_Push_Address,
     k_Push_Value,
     k_Push_Indirect_Value,
+    k_Push_Discrete_Literal,
+    k_Push_Float_Literal,
+    --
     k_Variable_Initialization,
     k_Update_Display_Vector,
+    k_Store,
     --
     k_Standard_Functions,
     --
@@ -45,10 +49,6 @@ package HAC.PCode is
     k_Load_Block,
     k_Copy_Block,
     k_String_Literal_Assignment,
-    k_Store,
-    --
-    k_Load_Discrete_Literal,            --  "Load immediate" in some assemblers.
-    k_Load_Float_Literal,
     --
     k_Mark_Stack,                       --  First instruction for a Call
     k_Call,                             --  Procedure and task entry Call
@@ -117,11 +117,12 @@ package HAC.PCode is
   subtype Unary_Operator_Opcode  is Opcode range k_Integer_to_Float .. k_NOT_Boolean;
   subtype Binary_Operator_Opcode is Opcode range k_EQL_Integer .. k_XOR_Boolean;
   --
-  subtype Calling_Opcode         is Opcode range k_Mark_Stack .. k_Exit_Function;
-  subtype Composite_Data_Opcode  is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
-  subtype Jump_Opcode            is Opcode range k_Jump .. k_Conditional_Jump;
-  subtype Multi_Statement_Opcode is Opcode range k_CASE_Switch_1 .. k_FOR_Reverse_End;
-  subtype Tasking_Opcode         is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
+  subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Literal;
+  subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Exit_Function;
+  subtype Composite_Data_Opcode   is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
+  subtype Jump_Opcode             is Opcode range k_Jump .. k_Conditional_Jump;
+  subtype Multi_Statement_Opcode  is Opcode range k_CASE_Switch_1 .. k_FOR_Reverse_End;
+  subtype Tasking_Opcode          is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
 
   function For_END (for_BEGIN: Opcode) return Opcode;
 
