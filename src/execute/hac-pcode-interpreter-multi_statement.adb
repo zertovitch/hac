@@ -6,33 +6,32 @@ package body HAC.PCode.Interpreter.Multi_Statement is
     H1, H2 : Defs.HAC_Integer;  --  Internal integer registers
 
     procedure Do_CASE_Switch_1 is
+      Value : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
     begin
-      H1 := ND.S (Curr_TCB.T).I;
       Pop (ND);
       H2 := IR.Y;
       --
-      --  Now we loop over a bunch of k_CASE_Switch_2 instruction pairs that covers all cases.
+      --  Now we loop over a bunch of k_CASE_Switch_2 instruction
+      --  pairs that should covers all cases.
       --
       loop
         if CD.ObjCode (H2).F /= k_CASE_Switch_2 then
-          --  Value, or OTHERS not found. This situation should not happen (compile-time check).
+          --  We hit the bogus instruction following the k_CASE_Switch_2 pairs.
+          --  This means that Value, or OTHERS were not found so far.
+          --  This situation should not happen (compile-time check).
           raise VM_Case_Check_Error;
-        elsif CD.ObjCode (H2).Y = H1    --  either: - value is matching
-              or CD.ObjCode (H2).X < 0  --      or: - "WHEN OTHERS =>" case
+        elsif CD.ObjCode (H2).Y = Value
+              or CD.ObjCode (H2).X = Defs.Case_when_others
         then
-          Curr_TCB.PC := CD.ObjCode (H2 + 1).Y;  --  Execute instructions after "=>".
+          Curr_TCB.PC := CD.ObjCode (H2 + 1).Y;
+          --  Will execute instructions following "=>".
+          --  The address is stored with a 2nd k_CASE_Switch_2.
           exit;
         else
           H2 := H2 + 2;  --  Check the next k_CASE_Switch_2 instruction pair.
         end if;
       end loop;
     end Do_CASE_Switch_1;
-
-    procedure Do_CASE_Switch_2 is
-    --  This instruction appears only in a special object code block, see k_CASE_Switch_1.
-    begin
-      null;
-    end;
 
     procedure Do_FOR_Forward_Begin is  --  Start of a FOR loop, forward direction
     begin
@@ -83,7 +82,7 @@ package body HAC.PCode.Interpreter.Multi_Statement is
   begin
     case Multi_Statement_Opcode (ND.IR.F) is
       when k_CASE_Switch_1      => Do_CASE_Switch_1;
-      when k_CASE_Switch_2      => Do_CASE_Switch_2;
+      when k_CASE_Switch_2      => null;  --  Only via k_CASE_Switch_1.
       when k_FOR_Forward_Begin  => Do_FOR_Forward_Begin;
       when k_FOR_Forward_End    => Do_FOR_Forward_End;
       when k_FOR_Reverse_Begin  => Do_FOR_Reverse_Begin;

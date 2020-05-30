@@ -60,6 +60,9 @@ package HAC.Defs is
 
   End_Function_without_Return : constant := -1;
 
+  Case_when_something : constant := +1;
+  Case_when_others    : constant := -1;
+
   Standard_Procedure_Call : constant := 0;
   Standard_Entry_Call     : constant := 1;
   Timed_Entry_Call        : constant := 2;

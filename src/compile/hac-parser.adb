@@ -853,10 +853,6 @@ package body HAC.Parser is
       procedure CASE_Statement is
         X         : Exact_Typ;
         I, J, LC1 : Integer;
-        type CASE_Label_Value is record
-          Val : Integer;  --  value of a choice in a CASE statement
-          LC  : Integer;  --  instruction address
-        end record;
         CaseTab : array (1 .. Cases_Max) of CASE_Label_Value;
         ExitTab : array (1 .. Cases_Max) of Integer;
         others_flag : Boolean := False;
@@ -875,10 +871,9 @@ package body HAC.Parser is
           elsif I = Cases_Max then
             Fatal (Case_Labels);  --  Exception is raised there.
           else
-            I               := I + 1;
-            CaseTab (I).Val := Lab.I;
-            CaseTab (I).LC  := CD.LC;
-            K               := 0;
+            I := I + 1;
+            CaseTab (I) := (Val => Lab.I, LC => CD.LC, Is_others => False);
+            K := 0;
             loop
               K := K + 1;
               exit when CaseTab (K).Val = Lab.I;
@@ -914,19 +909,18 @@ package body HAC.Parser is
             if I = Cases_Max then
               Fatal (Case_Labels);  --  Exception is raised there.
             end if;
-            I               := I + 1;
-            CaseTab (I).Val := 0;
-            CaseTab (I).LC  := -CD.LC;
+            I := I + 1;
+            CaseTab (I) := (Val => 0, LC => CD.LC, Is_others => True);
             InSymbol;
           end if;
-          if CD.Sy = THEN_Symbol then  --  Happens when converting IF statements to CASE.
+          if CD.Sy = THEN_Symbol then  --  Mistake happens when converting IF statements to CASE.
             Error (CD, err_THEN_instead_of_Arrow, stop => True);
             InSymbol;
           else
             Need (CD, Finger, err_FINGER_missing);
           end if;
           Multi_Statement (END_WHEN);
-          J           := J + 1;
+          J := J + 1;
           ExitTab (J) := CD.LC;
           Emit (CD, k_Jump);
         end One_CASE;
@@ -958,22 +952,22 @@ package body HAC.Parser is
           exit when CD.Sy /= WHEN_Symbol;
         end loop;
 
-        CD.ObjCode (LC1).Y := CD.LC;  --  Set correct instruction address for k_CASE_Switch_1 above.
+        CD.ObjCode (LC1).Y := CD.LC;
+        --  Set correct address for k_CASE_Switch_1 above.
+        --  This is the address of the following bunch of k_CASE_Switch_2's.
         for K in 1 .. I loop
-          if CaseTab (K).LC > 0 then
-            Emit2 (CD, k_CASE_Switch_2, 1, CaseTab (K).Val);
-            Emit1 (CD, k_CASE_Switch_2,    CaseTab (K).LC);
+          if CaseTab (K).Is_others then
+            Emit2 (CD, k_CASE_Switch_2, Case_when_others, 0);
           else
-            --  "WHEN OTHERS =>" case
-            Emit2 (CD, k_CASE_Switch_2, -1, CaseTab (K).Val);  --!! val = 0
-            Emit1 (CD, k_CASE_Switch_2,    -CaseTab (K).LC);
+            Emit2 (CD, k_CASE_Switch_2, Case_when_something, CaseTab (K).Val);
           end if;
+          Emit1 (CD, k_CASE_Switch_2, CaseTab (K).LC);
         end loop;
         --  Bogus instruction for having the interpreter exiting the k_CASE_Switch_2 loop.
-        Emit1 (CD, k_Jump, 0);
+        Emit (CD, k_Jump);
         --
         for K in 1 .. J loop
-          CD.ObjCode (ExitTab (K)).Y  := CD.LC;
+          CD.ObjCode (ExitTab (K)).Y := CD.LC;  --  Patch k_Jump addresses to after "END CASE;".
         end loop;
         Need (CD, END_Symbol,  err_END_missing);           --  END (CASE)
         Need (CD, CASE_Symbol, err_missing_closing_CASE);  --  (END) CASE

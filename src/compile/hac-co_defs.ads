@@ -106,8 +106,8 @@ package HAC.Co_Defs is  --  Compiler definitions
     Read_only      : Boolean;       --  If Obj = Variable and Read_only = True,
                                     --    it's a typed constant.
     xTyp           : Exact_Typ;     --  Type identification
-    Block_Ref      : Index;         --  Was: Ref (was used also for what is now xTyp.Ref,
-                                    --       which caused a mixup for functions return types!)
+    Block_Ref      : Index;         --  Was: Ref (that was used also for what is now xTyp.Ref,
+                                    --       which caused a mixup for functions' return types!)
     Normal         : Boolean;       --  value param?
     LEV            : PCode.Nesting_level;
     Adr_or_Sz      : Integer;
@@ -203,6 +203,12 @@ package HAC.Co_Defs is  --  Compiler definitions
     Err_Count  : Natural;
     Errs       : Error_set;
     error_pipe : Smart_error_pipe := null;
+  end record;
+
+  type CASE_Label_Value is record
+    Val       : Integer;  --  value of a choice in a CASE statement
+    LC        : Integer;  --  instruction address
+    Is_others : Boolean;
   end record;
 
 end HAC.Co_Defs;
