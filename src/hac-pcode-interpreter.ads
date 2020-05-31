@@ -21,19 +21,20 @@ package HAC.PCode.Interpreter is
   --  Exceptions  --
   ------------------
 
-  type Exception_Identity is private;
-  function Is_in_Exception (E: Exception_Identity) return Boolean;
-  function Image (E: Exception_Identity) return String;
+  type Exception_Propagation_Data is private;
 
-  package Stack_Trace_Messages is
-    new Ada.Containers.Vectors (Positive, Defs.VString, Defs.VStrings_Pkg."=");
-  subtype Stack_Trace_Message is Stack_Trace_Messages.Vector;
+  function Is_in_Exception (E: Exception_Propagation_Data) return Boolean;
 
-  type Exception_Propagation_Data is record
-    Currently_Raised  : Exception_Identity;
-    ST_Message        : Stack_Trace_Message;
-    Exception_Message : Defs.VString;
-  end record;
+  function Image (E: Exception_Propagation_Data) return String;
+  function Message (E: Exception_Propagation_Data) return String;
+
+  generic
+    with procedure Show_Line_Information (
+      File_Name  : String;   --  Example: hac-pcode-interpreter.adb
+      Block_Name : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
+      Number     : Positive
+    );
+  procedure Show_Trace_Back (E: Exception_Propagation_Data);
 
   ------------------------------------------------------------------------------
   --  Here, we provide a ready-to-use, "standard" instantiation of the        --
@@ -110,6 +111,22 @@ private
   type Exception_Identity is record
     Ex_Typ : Exception_Type;
     Detail : Integer;  --  For the VME_Custom choice
+  end record;
+
+  type Stack_Trace_Back_Row is record
+    File_Name  : Defs.VString;   --  Example: hac-pcode-interpreter.adb
+    Block_Name : Defs.VString;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
+    Number     : Positive;
+  end record;
+
+  package Stack_Trace_Messages is
+    new Ada.Containers.Vectors (Positive, Stack_Trace_Back_Row);
+  subtype Stack_Trace_Message is Stack_Trace_Messages.Vector;
+
+  type Exception_Propagation_Data is record
+    Currently_Raised  : Exception_Identity;
+    ST_Message        : Stack_Trace_Message;
+    Exception_Message : Defs.VString;
   end record;
 
 end HAC.PCode.Interpreter;

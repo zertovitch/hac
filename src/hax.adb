@@ -1,6 +1,5 @@
 with HAC.Compiler,
      HAC.Co_Defs,
-     HAC.Defs,
      HAC.PCode.Interpreter;
 
 with Show_License;
@@ -24,12 +23,25 @@ procedure HAX is
   cmp_dump_file_name : Unbounded_String;
 
   procedure Compile_and_interpret_file (Ada_file_name: String; arg_pos : Positive) is
+    procedure Show_Line_Information (
+      File_Name  : String;   --  Example: hac-pcode-interpreter.adb
+      Block_Name : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
+      Number     : Positive
+    )
+    is
+    begin
+      Put_Line (Current_Error, File_Name & ": " & Block_Name & ":" & Integer'Image (Number));
+    end Show_Line_Information;
+    --
+    use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter;
+    --
+    procedure CIO_Trace_Back is new Show_Trace_Back (Show_Line_Information);
+    --
     f : Ada.Streams.Stream_IO.File_Type;
     t1, t2 : Time;
     HAC_margin_1 : constant String := "*******[ HAX ]*******   ";
     HAC_margin_2 : constant String := ". . . .[ HAX ]. . . .   ";
     HAC_margin_3 : constant String := "-------[ HAX ]-------   ";
-    use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter;
     CD : Compiler_Data;
     unhandled : Exception_Propagation_Data;
     unhandled_found : Boolean;
@@ -70,28 +82,26 @@ procedure HAX is
       t1 := Clock;
       Interpret_on_Current_IO (CD, arg_pos, unhandled);
       t2 := Clock;
-      unhandled_found := Is_in_Exception (unhandled.Currently_Raised);
+      unhandled_found := Is_in_Exception (unhandled);
       if verbosity >= 2 then
         if unhandled_found then
         Put_Line (
           HAC_margin_3 & "VM interpreter stopped execution of " &
-            Ada_file_name & " due to an unhandled exception");
+            Ada_file_name & " due to an unhandled exception.");
         else
         Put_Line (
           HAC_margin_3 & "VM interpreter done after " &
           (Duration'Image(t2-t1)) & " seconds."
         );
         Put_Line (
-          HAC_margin_3 & " Execution of " & Ada_file_name & " completed.");
+          HAC_margin_3 & "Execution of " & Ada_file_name & " completed.");
         end if;
       end if;
       if unhandled_found then
-        Put_Line (Current_Error, "HAC VM: raised " & Image (unhandled.Currently_Raised));
-        Put_Line (Current_Error, HAC.Defs.To_String (unhandled.Exception_Message));
+        Put_Line (Current_Error, "HAC VM: raised " & Image (unhandled));
+        Put_Line (Current_Error, Message (unhandled));
         Put_Line (Current_Error, "Trace-back locations:");
-        for ST of unhandled.ST_Message loop
-          Put_Line (Current_Error, HAC.Defs.To_String (ST));
-        end loop;
+        CIO_Trace_Back (unhandled);
       end if;
     end if;
   exception

@@ -484,9 +484,9 @@ package body HAC.PCode.Interpreter is
     Interpret_on_Current_IO_Instance (CD_CIO, Unhandled);
   end Interpret_on_Current_IO;
 
-  function Image (E: Exception_Identity) return String is
+  function Image (E: Exception_Propagation_Data) return String is
   begin
-    case E.Ex_Typ is
+    case E.Currently_Raised.Ex_Typ is
       when No_Exception         => return "";
       when VME_Constraint_Error => return "Constraint_Error";
       when VME_Program_Error    => return "Program_Error";
@@ -496,9 +496,25 @@ package body HAC.PCode.Interpreter is
     end case;
   end Image;
 
-  function Is_in_Exception (E: Exception_Identity) return Boolean is
+  function Message (E: Exception_Propagation_Data) return String is
   begin
-    return E.Ex_Typ /= No_Exception;
+    return Defs.To_String (E.Exception_Message);
+  end Message;
+
+  function Is_in_Exception (E: Exception_Propagation_Data) return Boolean is
+  begin
+    return E.Currently_Raised.Ex_Typ /= No_Exception;
   end Is_in_Exception;
+
+  procedure Show_Trace_Back (E: Exception_Propagation_Data) is
+  begin
+    for STL of E.ST_Message loop
+      Show_Line_Information (
+        Defs.To_String (STL.File_Name),
+        Defs.To_String (STL.Block_Name),
+        STL.Number
+      );
+    end loop;
+  end Show_Trace_Back;
 
 end HAC.PCode.Interpreter;
