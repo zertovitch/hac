@@ -1564,14 +1564,13 @@ package body HAC.Parser is
       end if;
     end Function_Result_Profile;
 
-    Restore_Block_ID : VString := CD.Full_Block_Id;
+    Restore_Block_ID : constant VString := CD.Full_Block_Id;
     use VStrings_Pkg;
 
   begin  --  Block
     if CD.Err_Count > 0 then
       return;
     end if;
-    Restore_Block_ID := CD.Full_Block_Id;
     if CD.Full_Block_Id = Universe then
       CD.Full_Block_Id := To_VString (To_String (Block_ID_with_case));
     else

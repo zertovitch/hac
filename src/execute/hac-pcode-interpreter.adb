@@ -316,9 +316,9 @@ package body HAC.PCode.Interpreter is
       end if;
     end Scheduling;
 
-    procedure Add_Stack_Trace_Line is
+    procedure Add_Stack_Trace_Line (Offset : Natural) is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-      D : Debug_Info renames CD.ObjCode (Curr_TCB.PC).D;
+      D : Debug_Info renames CD.ObjCode (Curr_TCB.PC - Offset).D;
       use Defs.VStrings_Pkg;
     begin
       if D.Full_Block_Id /= Universe then
@@ -386,7 +386,7 @@ package body HAC.PCode.Interpreter is
       end case;
     exception
       when others =>
-        Add_Stack_Trace_Line;
+        Add_Stack_Trace_Line (Offset => 0);
         ND.PS := Exception_Raised;
         raise;
     end Execute_Current_Instruction;
@@ -416,7 +416,9 @@ package body HAC.PCode.Interpreter is
       begin
         Execute_Current_Instruction;
         if ND.PS = Exception_Raised then
-          Add_Stack_Trace_Line;
+          --  We have just executed an Exit, so the last instruction (with
+          --  the program counter back to the caller side), was a Call.
+          Add_Stack_Trace_Line (Offset => 1);
         end if;
       exception
         when VM_Case_Check_Error =>

@@ -17,6 +17,9 @@ project HAC_Test is
      "constants.adb",
      "declarations.adb",
      "enumerations.adb",
+     "exception_01.adb",
+     "exception_02.adb",
+     "exception_03.adb",
      "floats.adb",
      --  "if_then_elsif_else.adb",
      "integers.adb",
@@ -64,7 +67,7 @@ project HAC_Test is
    package Binder is
       case Build_Mode is
          when "Debug" =>
-            for Default_Switches ("ada") use ("-E");
+            for Default_Switches ("ada") use ("-Es");
          when "Fast" =>
       end case;
    end Binder;

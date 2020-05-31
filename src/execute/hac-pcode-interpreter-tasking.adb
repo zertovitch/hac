@@ -318,7 +318,7 @@ package body HAC.PCode.Interpreter.Tasking is
       if ND.TActive = 0 then
         ND.PS := FIN;
         --  OK even when PS = Exception_Raised.
-        --  At this point the exception is clarly unhandled.
+        --  At this point the exception is clearly unhandled.
       else
         ND.TCB (0).TS := Completed;
         ND.SWITCH := True;
