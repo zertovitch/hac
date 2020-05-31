@@ -11,11 +11,29 @@
 
 with HAC.Co_Defs, HAC.Defs;
 
-with Ada.Text_IO;
+with Ada.Containers.Vectors, Ada.Text_IO;
 
 package HAC.PCode.Interpreter is
 
   use Co_Defs;
+
+  ------------------
+  --  Exceptions  --
+  ------------------
+
+  type Exception_Identity is private;
+  function Is_in_Exception (E: Exception_Identity) return Boolean;
+  function Image (E: Exception_Identity) return String;
+
+  package Stack_Trace_Messages is
+    new Ada.Containers.Vectors (Positive, Defs.VString, Defs.VStrings_Pkg."=");
+  subtype Stack_Trace_Message is Stack_Trace_Messages.Vector;
+
+  type Exception_Propagation_Data is record
+    Currently_Raised  : Exception_Identity;
+    ST_Message        : Stack_Trace_Message;
+    Exception_Message : Defs.VString;
+  end record;
 
   ------------------------------------------------------------------------------
   --  Here, we provide a ready-to-use, "standard" instantiation of the        --
@@ -24,8 +42,9 @@ package HAC.PCode.Interpreter is
   ------------------------------------------------------------------------------
 
   procedure Interpret_on_Current_IO (
-    CD_CIO         : Compiler_Data;
-    Argument_Shift : Natural := 0    --  Number of arguments to be skipped
+    CD_CIO         :     Compiler_Data;
+    Argument_Shift :     Natural := 0;    --  Number of arguments to be skipped
+    Unhandled      : out Exception_Propagation_Data
   );
 
   ----------------------------------------------------------------------------------
@@ -74,6 +93,23 @@ package HAC.PCode.Interpreter is
     with function Shell_Execute (Command : String) return Integer;
     with function Directory_Separator return Character;
 
-  procedure Interpret (CD: Compiler_Data);
+  procedure Interpret (CD: Compiler_Data; Unhandled : out Exception_Propagation_Data);
+
+  Abnormal_Termination : exception;
+
+private
+
+  type Exception_Type is
+    (No_Exception,
+     VME_Constraint_Error, VME_Program_Error, VME_End_Error, VME_Storage_Error,
+     VME_Custom);
+
+  subtype Exception_Detail is Integer;
+  --  Currently a placeholder (this is for the VME_Custom choice)
+
+  type Exception_Identity is record
+    Ex_Typ : Exception_Type;
+    Detail : Integer;  --  For the VME_Custom choice
+  end record;
 
 end HAC.PCode.Interpreter;

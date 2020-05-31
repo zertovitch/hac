@@ -1,5 +1,6 @@
 with HAC.Compiler,
      HAC.Co_Defs,
+     HAC.Defs,
      HAC.PCode.Interpreter;
 
 with Show_License;
@@ -30,6 +31,8 @@ procedure HAX is
     HAC_margin_3 : constant String := "-------[ HAX ]-------   ";
     use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter;
     CD : Compiler_Data;
+    unhandled : Exception_Propagation_Data;
+    unhandled_found : Boolean;
   begin
     case verbosity is
       when 0 =>
@@ -65,18 +68,38 @@ procedure HAX is
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       end if;
       t1 := Clock;
-      Interpret_on_Current_IO (CD, arg_pos);
+      Interpret_on_Current_IO (CD, arg_pos, unhandled);
       t2 := Clock;
+      unhandled_found := Is_in_Exception (unhandled.Currently_Raised);
       if verbosity >= 2 then
+        if unhandled_found then
+        Put_Line (
+          HAC_margin_3 & "VM interpreter stopped execution of " &
+            Ada_file_name & " due to an unhandled exception");
+        else
         Put_Line (
           HAC_margin_3 & "VM interpreter done after " &
           (Duration'Image(t2-t1)) & " seconds."
         );
         Put_Line (
           HAC_margin_3 & " Execution of " & Ada_file_name & " completed.");
+        end if;
+      end if;
+      if unhandled_found then
+        Put_Line (Current_Error, "HAC VM: raised " & Image (unhandled.Currently_Raised));
+        Put_Line (Current_Error, HAC.Defs.To_String (unhandled.Exception_Message));
+        Put_Line (Current_Error, "Trace-back locations:");
+        for ST of unhandled.ST_Message loop
+          Put_Line (Current_Error, HAC.Defs.To_String (ST));
+        end loop;
       end if;
     end if;
   exception
+    when E: Abnormal_Termination =>
+      Put_Line (
+        Current_Error,
+        Ada.Exceptions.Exception_Message (E)
+      );
     when Ada.Streams.Stream_IO.Name_Error =>
       Put_Line (
         Current_Error,

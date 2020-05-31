@@ -13,7 +13,7 @@ with Ada.Calendar,
 
 package body HAC.PCode.Interpreter is
 
-  procedure Interpret (CD : Compiler_Data)
+  procedure Interpret (CD: Compiler_Data; Unhandled : out Exception_Propagation_Data)
   is
     use In_Defs;
     ND : Interpreter_Data;
@@ -33,7 +33,7 @@ package body HAC.PCode.Interpreter is
       Top_Item : GRegister renames ND.S (Curr_TCB.T);
       Arg : Integer;
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
-      use Defs, Defs.VStrings_Pkg;
+      use Defs;
     begin
       case Code is
         when SF_File_Information =>
@@ -135,7 +135,7 @@ package body HAC.PCode.Interpreter is
       Format_2 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
       Format_3 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T    ).I;
       --  Valid parameters used: see def_param in HAC.Parser.Standard_Procedures.
-      use Defs, Defs.VStrings_Pkg;
+      use Defs;
     begin
       if Code in SP_Put .. SP_Put_Line then
         case Typen'Val (ND.IR.Y) is
@@ -318,26 +318,16 @@ package body HAC.PCode.Interpreter is
         when Tasking_Opcode          => Tasking.Do_Tasking_Operation (CD, ND);
       end case;
     exception
-      when VM_Case_Check_Error =>
-        ND.PS := Case_Check_Error;
-      when VM_Division_by_0 =>
-        ND.PS := DIVCHK;
-      when VM_End_Error =>
-        ND.PS := REDCHK;
-      when VM_Function_End_without_Return =>
-        ND.PS := Func_Ret_ProgErr;  --  !! with message "End function reached without ""return"" statement".
-      when VM_Out_of_Range  =>
-        ND.PS := INXCHK;
-      when VM_Stack_Overflow  =>
-        ND.PS := STKCHK;
-      when VM_Stack_Underflow =>
-        ND.PS := STKCHK;
+      when others =>
+        ND.PS := Exception_Raised;
+        raise;
     end Execute_Current_Instruction;
 
     Result_Tasks_to_wake : Boolean;
     use Ada.Calendar;
 
   begin  --  Interpret
+    ND.PS := Running;
     ND.Start_Time := Clock;
     ND.Snap     := False;
     ND.SWITCH   := False;           --  invoke scheduler on next cycle flag
@@ -347,7 +337,7 @@ package body HAC.PCode.Interpreter is
     HAC.PCode.Interpreter.Tasking.Init_other_tasks (CD, ND);
 
     Running_State:
-    loop  --  until Processor state /= RUN
+    loop  --  until Processor state /= Running or Exception_Raised
       ND.SYSCLOCK := GetClock;
       if ND.Snap then
         ShowTime;
@@ -371,7 +361,7 @@ package body HAC.PCode.Interpreter is
           end if;
           loop --  Call Main Scheduler
             --  Schedule(Scheduler,CurTask, PS);
-            ND.PS := RUN;  --  !! Should call the task scheduler instead !!
+            ND.PS := Running;  --  !! Should call the task scheduler instead !!
             ND.SYSCLOCK := GetClock;
             if ND.Snap then
               ShowTime;
@@ -398,21 +388,59 @@ package body HAC.PCode.Interpreter is
       --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED
       --  (removed)
 
-      Execute_Current_Instruction;
+      declare
+        EI : Exception_Propagation_Data renames ND.TCB (ND.CurTask).Exception_Info;
+      begin
+        Execute_Current_Instruction;
+      exception
+        when VM_Case_Check_Error =>
+          EI.Currently_Raised  := (VME_Program_Error, 0);
+          EI.Exception_Message := Defs.To_VString ("CASE Statement doesn't cover all cases");
+        when VM_Division_by_0 =>
+          EI.Currently_Raised  := (VME_Constraint_Error, 0);
+          EI.Exception_Message := Defs.To_VString ("Division by 0");
+        when VM_End_Error =>
+          EI.Currently_Raised  := (VME_End_Error, 0);
+        when VM_Function_End_without_Return =>
+          EI.Currently_Raised  := (VME_Program_Error, 0);
+          EI.Exception_Message := Defs.To_VString ("Function's end reached without ""return"" statement");
+        when VM_Out_of_Range  =>
+          EI.Currently_Raised  := (VME_Constraint_Error, 0);
+          EI.Exception_Message := Defs.To_VString ("Out of range");
+        when VM_Stack_Overflow  =>
+          EI.Currently_Raised  := (VME_Storage_Error, 0);
+          EI.Exception_Message := Defs.To_VString ("Stack overflow");
+        when VM_Stack_Underflow =>
+          EI.Currently_Raised  := (VME_Storage_Error, 0);
+          EI.Exception_Message := Defs.To_VString ("Stack underflow");
+      end;
 
-      exit when ND.PS /= RUN;
+      exit when ND.PS not in Running .. Running;
+      --  !!  not in Running .. Exception_Raised when exception handling is programmed.
     end loop Running_State;
     --
-    if ND.PS /= FIN then
+    if ND.PS not in Exception_Raised .. FIN then
       Post_Mortem_Dump (CD, ND);
     end if;
     --
     Free_Allocated_Contents (ND);
+    --
+    Unhandled := ND.TCB (ND.CurTask).Exception_Info;
+    --  Use Is_in_Exception to check whether an exception was unhandled
+    --  when leaving the interpreter.
+    case ND.PS is
+      when FIN              => null;  --  All good, end reached.
+      when Running          => null;  --  Should not happen here.
+      when Exception_Raised => null;  --  Unhandled exception information stored in Unhandled.
+      when DEADLOCK         => raise Abnormal_Termination with "Tasking: Deadlock";
+      when WAIT             => raise Abnormal_Termination with "Tasking: Wait";
+    end case;
   end Interpret;
 
   procedure Interpret_on_Current_IO (
-    CD_CIO         : Compiler_Data;
-    Argument_Shift : Natural := 0    --  Number of arguments to be skipped
+    CD_CIO         :     Compiler_Data;
+    Argument_Shift :     Natural := 0;    --  Number of arguments to be skipped
+    Unhandled      : out Exception_Propagation_Data
   )
   is
     function Shifted_Argument_Count return Natural is
@@ -453,7 +481,24 @@ package body HAC.PCode.Interpreter is
       );
 
   begin
-    Interpret_on_Current_IO_Instance (CD_CIO);
+    Interpret_on_Current_IO_Instance (CD_CIO, Unhandled);
   end Interpret_on_Current_IO;
+
+  function Image (E: Exception_Identity) return String is
+  begin
+    case E.Ex_Typ is
+      when No_Exception         => return "";
+      when VME_Constraint_Error => return "Constraint_Error";
+      when VME_Program_Error    => return "Program_Error";
+      when VME_End_Error        => return "End_Error";
+      when VME_Storage_Error    => return "Storage_Error";
+      when VME_Custom           => return "(custom)";  --  needs to use details
+    end case;
+  end Image;
+
+  function Is_in_Exception (E: Exception_Identity) return Boolean is
+  begin
+    return E.Ex_Typ /= No_Exception;
+  end Is_in_Exception;
 
 end HAC.PCode.Interpreter;

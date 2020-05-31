@@ -4,6 +4,7 @@ with Ada.Calendar;                      use Ada.Calendar;
 with Ada.Containers.Vectors;
 with Ada.Numerics.Float_Random;
 with Ada.Unchecked_Deallocation;
+with HAC.Defs;
 
 package HAC.PCode.Interpreter.In_Defs is
 
@@ -12,16 +13,8 @@ package HAC.PCode.Interpreter.In_Defs is
   subtype TRange is Integer range 0 .. Defs.TaskMax;  --  task index
 
   type Processor_State is (
-    RUN,               --  RUN is the normal processor state
-    --
-    --  !! The exception states will be merged into a single one, soon...
-    --
-    Case_Check_Error,  --  Happens when a case was not found in a CASE statement. -> Program_Error
-    DIVCHK,            --  Division by 0         !! -> Exception_Raised with Contraint_Error
-    INXCHK,            --  Out-of-range error    !! -> Exception_Raised with Contraint_Error
-    Func_Ret_ProgErr,  --  Program_Error         !! -> Exception_Raised with Program_Error
-    REDCHK,            --  End_Error             !! -> Exception_Raised with End_Error
-    STKCHK,            --  Stack overflow        !! -> Exception_Raised with (Storage_Error, "Stack overflow")
+    Running,           --  Normal processor state
+    Exception_Raised,
     --
     FIN,
     DEADLOCK,
@@ -32,6 +25,7 @@ package HAC.PCode.Interpreter.In_Defs is
     Delayed,
     Ready,
     Running,
+    Exception_Raised,
     Critical,
     WaitRendzv,
     WaitSem,
@@ -63,37 +57,25 @@ package HAC.PCode.Interpreter.In_Defs is
 
   type Stack_Type is array (1 .. Defs.StMax) of Data_Type;
 
-  type Task_Control_Block is record   --  Task Control Block
-    --  index of current top of stack
-    T : Integer;
-    --  index of current base of stack
-    B : Integer;
-    --  program counter, next pcode
-    PC : Integer;
-    --  current task state
-    TS : Task_State;
-    --  task in rendz with or -1
-    InRendzv : Integer;
-    --  end of delay period
-    WAKETIME : Time;
-    --  task priority parameter rec.
-    Pcontrol : PriCB;
-    --  millisecond time slice
-    QUANTUM : Duration;
-    --  time last run end (fairness)
-    LASTRUN : Time;
-    --  binding
-    DISPLAY : Co_Defs.Display_Type;
-    --  stack overflow if exceeded
-    STACKSIZE : Integer;
-    --  id of object suspended on
-    SUSPEND : Integer;
-    --  general use registers
-    R1, R2, R3 : GRegister;
+  type Task_Control_Block is record
+    T              : Integer;               --  index of current top of stack
+    B              : Integer;               --  index of current base of stack
+    PC             : Integer;               --  program counter, next pcode
+    TS             : Task_State;            --  current task state
+    InRendzv       : Integer;               --  task in rendz with or -1
+    WAKETIME       : Time;                  --  end of delay period
+    Pcontrol       : PriCB;                 --  task priority parameter rec.
+    QUANTUM        : Duration;              --  time slice
+    LASTRUN        : Time;                  --  time last run end (fairness)
+    DISPLAY        : Co_Defs.Display_Type;  --  binding
+    STACKSIZE      : Integer;               --  stack overflow if exceeded
+    SUSPEND        : Integer;               --  id of object suspended on
+    R1, R2, R3     : GRegister;             --  general use registers
+    Exception_Info : Exception_Propagation_Data;
   end record;
 
   type Enode;
-  type Eptr is access Enode; --  task entry rendzv pointer
+  type Eptr is access Enode;  --  task entry rendzv pointer
 
   type Enode is record    --  task entry structure
     Task_Index : TRange;  --  index of task enqueued for rendzv
@@ -122,9 +104,9 @@ package HAC.PCode.Interpreter.In_Defs is
 
   type Interpreter_Data is record
     S           : Stack_Type;
-    PS          : Processor_State := RUN;  --  Processor status register
-    IR          : Order;                   --  Instruction register
-    CurTask     : Integer;                 --  Index of currently executing task
+    PS          : Processor_State;             --  Processor status register
+    IR          : Order;                       --  Instruction register
+    CurTask     : Integer;                     --  Index of currently executing task
     TCB         : Task_Control_Blocks;
     Files       : File_Vectors.Vector;
     Snap        : Boolean;   --  Snapshot flag to display scheduler status

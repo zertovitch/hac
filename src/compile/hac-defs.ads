@@ -219,6 +219,7 @@ package HAC.Defs is
   package VStrings_Pkg renames Ada.Strings.Unbounded;  --  Could use XStrings instead.
   subtype VString is VStrings_Pkg.Unbounded_String;
   function To_VString (S : String) return VString renames VStrings_Pkg.To_Unbounded_String;
+  function To_String (V : VString) return String renames VStrings_Pkg.To_String;
   Null_VString : VString renames VStrings_Pkg.Null_Unbounded_String;
 
   -----------------

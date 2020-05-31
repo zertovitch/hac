@@ -24,7 +24,7 @@ package body HAC.Compiler is
 
   function Get_Current_Source_Name (CD: Compiler_Data) return String is
   begin
-    return To_String (CD.source_file_name);
+    return Defs.To_String (CD.source_file_name);
   end Get_Current_Source_Name;
 
   procedure Set_Error_Pipe (

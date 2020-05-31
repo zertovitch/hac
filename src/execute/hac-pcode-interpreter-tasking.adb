@@ -364,6 +364,7 @@ package body HAC.PCode.Interpreter.Tasking is
       Main_TCB.Pcontrol.UPRI := 0 ;
       Main_TCB.Pcontrol.INHERIT := False ;
       Main_TCB.LASTRUN := ND.Start_Time ;
+      Main_TCB.Exception_Info.Currently_Raised := (No_Exception, 0);
     end;
   end Init_main_task;
 
@@ -392,6 +393,7 @@ package body HAC.PCode.Interpreter.Tasking is
         Curr_TCB.Pcontrol.UPRI := 0 ;
         Curr_TCB.Pcontrol.INHERIT := False ;
         Curr_TCB.LASTRUN := ND.Start_Time ;
+        Curr_TCB.Exception_Info.Currently_Raised := (No_Exception, 0);
       end;
     end loop;
     --  Initially no queued entry calls
@@ -404,7 +406,7 @@ package body HAC.PCode.Interpreter.Tasking is
     ND.CurTask := 0 ;  --  IT WAS -1 ?
     ND.SWITCH := True ;
     ND.TIMER := ND.Start_Time; -- was 0.0
-    ND.PS := RUN ;
+    ND.PS := Running ;
   end Init_other_tasks;
 
   procedure ShowQ (

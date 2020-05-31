@@ -183,14 +183,14 @@ package body HAC.PCode.Interpreter.Operators is
         when SF_To_Upper_Char =>
           Top_Item.I := Character'Pos (To_Upper (Character'Val (Top_Item.I)));
         when SF_To_Lower_VStr =>
-          Top_Item.V := To_VString (To_Lower (To_String (Top_Item.V)));
+          Top_Item.V := To_VString (To_Lower (Defs.To_String (Top_Item.V)));
         when SF_To_Upper_VStr =>
-          Top_Item.V := To_VString (To_Upper (To_String (Top_Item.V)));
+          Top_Item.V := To_VString (To_Upper (Defs.To_String (Top_Item.V)));
         when SF_Index =>
           Pop (ND);
           --  [T] := Index ([T], [T+1]) :
           ND.S (Curr_TCB.T).I :=
-            VStrings_Pkg.Index (ND.S (Curr_TCB.T).V, To_String (ND.S (Curr_TCB.T + 1).V));
+            VStrings_Pkg.Index (ND.S (Curr_TCB.T).V, Defs.To_String (ND.S (Curr_TCB.T + 1).V));
         when SF_Head =>
           Pop (ND);
           --  [T] := Head ([T], [T+1]) :
@@ -227,12 +227,12 @@ package body HAC.PCode.Interpreter.Operators is
         when SF_Image_Floats           => Top_Item.V := To_VString (HAC_Image (Top_Item.R));
         when SF_Image_Attribute_Floats => Top_Item.V := To_VString (HAC_Float'Image (Top_Item.R));
         --
-        when SF_Integer_Value => Top_Item.I := HAC_Integer'Value (To_String (Top_Item.V));
-        when SF_Float_Value   => Top_Item.R := HAC_Float'Value   (To_String (Top_Item.V));
+        when SF_Integer_Value => Top_Item.I := HAC_Integer'Value (Defs.To_String (Top_Item.V));
+        when SF_Float_Value   => Top_Item.R := HAC_Float'Value   (Defs.To_String (Top_Item.V));
         when SF_Get_Env =>
           declare
             use Ada.Environment_Variables;
-            Name : constant String := To_String (Top_Item.V);
+            Name : constant String := Defs.To_String (Top_Item.V);
           begin
             if Exists (Name) then
               Top_Item.V := To_VString (Value (Name));

@@ -101,9 +101,9 @@ package body HAC.Parser.Helpers is
         end loop;
         hint := "Found: " & KeyWSymbol'Image (CD.Sy) & "; expected: " & hint;
         if stop_on_error then
-          Error (CD, N, stop => True, hint => To_String (hint));
+          Error (CD, N, stop => True, hint => Defs.To_String (hint));
         end if;
-        Skip (CD, S1 + S2, N, To_String (hint));
+        Skip (CD, S1 + S2, N, Defs.To_String (hint));
       end;
     end if;
   end Test;
@@ -236,7 +236,7 @@ package body HAC.Parser.Helpers is
           hint := hint & Nice_Image (s);
         end if;
       end loop;
-      return To_String (hint);
+      return Defs.To_String (hint);
     end Types_List;
   begin
     Error (
