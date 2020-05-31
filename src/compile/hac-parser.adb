@@ -1564,13 +1564,18 @@ package body HAC.Parser is
       end if;
     end Function_Result_Profile;
 
-    Restore_Block_ID : Alfa := CD.Block_Id_with_casing;
+    Restore_Block_ID : VString := CD.Full_Block_Id;
+    use VStrings_Pkg;
 
   begin  --  Block
-    Restore_Block_ID := CD.Block_Id_with_casing;
-    CD.Block_Id_with_casing := Block_ID_with_case;
     if CD.Err_Count > 0 then
       return;
+    end if;
+    Restore_Block_ID := CD.Full_Block_Id;
+    if CD.Full_Block_Id = Universe then
+      CD.Full_Block_Id := To_VString (To_String (Block_ID_with_case));
+    else
+      CD.Full_Block_Id := CD.Full_Block_Id & '.' & To_String (Block_ID_with_case);
     end if;
     Dx    := 5;
     ICode := 0;
@@ -1675,7 +1680,7 @@ package body HAC.Parser is
         err_incorrectly_used_symbol
       );
     end if;
-    CD.Block_Id_with_casing := Restore_Block_ID;
+    CD.Full_Block_Id := Restore_Block_ID;
   end Block;
 
 end HAC.Parser;

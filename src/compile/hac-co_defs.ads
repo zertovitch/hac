@@ -191,7 +191,7 @@ package HAC.Co_Defs is  --  Compiler definitions
     CMax                    : Integer;  --  Top of available ObjCode table;
                                         --  CMax + 1 .. CDMax: variable initialization code
     --  Information about source code
-    Block_Id_with_casing      : Alfa;                --  Copy of current block's Id
+    Full_Block_Id             : VString;             --  Full block's Id (P1.P2.F3.P4)
     Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
     Main_Program_ID_with_case : Alfa := Empty_Alfa;
     --
@@ -204,6 +204,8 @@ package HAC.Co_Defs is  --  Compiler definitions
     Errs       : Error_set;
     error_pipe : Smart_error_pipe := null;
   end record;
+
+  Universe : constant VString := To_VString ("[-- The Universe --]");
 
   type CASE_Label_Value is record
     Val       : Integer;  --  value of a choice in a CASE statement

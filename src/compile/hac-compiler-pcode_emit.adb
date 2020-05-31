@@ -16,7 +16,7 @@ package body HAC.Compiler.PCode_Emit is
   function Compiler_Data_to_Debug_Info (CD: Compiler_Data) return Debug_Info is
   begin
     return (Line  => CD.Line_Count,
-            Block => CD.Block_Id_with_casing);
+            Full_Block_Id => CD.Full_Block_Id);
   end Compiler_Data_to_Debug_Info;
 
   procedure Emit (

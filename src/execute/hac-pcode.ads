@@ -138,9 +138,10 @@ package HAC.PCode is
   subtype Operand_2_Type is HAC.Defs.HAC_Integer;
 
   type Debug_Info is record
-    Line  : Positive;       --  Line number in the source code.
-    Block : HAC.Defs.Alfa;  --  Current block's identifier (if any).
-    --  Unit  : HAC.Data.Alfa;  --  Compilation unit identifier.
+    Line          : Positive;       --  Line number in the source code.
+    Full_Block_Id : Defs.VString;   --  Current block's path (if any): P1.P2.F3.P4.
+    --  !! ^ TBD: consider an index or a reference, to save memory !!
+    --  Unit  : Defs.Alfa;  --  Compilation unit identifier.
   end record;
 
   --  PCode instruction record (stores a compiled PCode instruction)

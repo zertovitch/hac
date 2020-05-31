@@ -53,7 +53,7 @@ package body HAC.Compiler is
     CD.LC   := 0;
     CD.CMax := CDMax;
     --  Current block name for debugging of HAC programs.
-    CD.Block_Id_with_casing := To_Alfa ("[-- Nowhere --]");
+    CD.Full_Block_Id := Universe;
     --
     CD.Main_Program_ID           := Empty_Alfa;
     CD.Main_Program_ID_with_case := Empty_Alfa;
