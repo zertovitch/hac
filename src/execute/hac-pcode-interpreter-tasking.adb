@@ -501,4 +501,61 @@ package body HAC.PCode.Interpreter.Tasking is
     Result := count > 0;
   end Tasks_to_wake;
 
+  procedure ShowTime is null;
+  procedure SnapShot is null;
+
+  procedure Scheduling (CD : Compiler_Data; ND: in out Interpreter_Data) is
+    Result_Tasks_to_wake : Boolean;
+    use Ada.Calendar;
+  --  $I sched.pas
+  --  This file contains the different scheduling strategies
+  begin
+    ND.SYSCLOCK := GetClock;
+    if ND.Snap then
+      ShowTime;
+    end if;
+    if ND.TCB (ND.CurTask).TS = Critical then
+      if ND.Snap then
+        SnapShot;
+      end if;
+    else
+      HAC.PCode.Interpreter.Tasking.Tasks_to_wake (CD, ND, Result_Tasks_to_wake);
+      if ND.SWITCH or  --  ------------> Voluntary release of control
+         ND.SYSCLOCK >= ND.TIMER or   --  ---> Time slice exceeded
+         Result_Tasks_to_wake
+      then --  ------> Awakened task causes switch
+        if ND.CurTask >= 0 then
+          ND.TCB (ND.CurTask).LASTRUN := ND.SYSCLOCK;
+          if ND.TCB (ND.CurTask).TS = Running then
+            ND.TCB (ND.CurTask).TS := Ready;
+            --  SWITCH PROCCESS
+          end if;
+        end if;
+        loop --  Call Main Scheduler
+          --  Schedule(Scheduler,CurTask, PS);
+          ND.PS := Running;  --  !! Should call the task scheduler instead !!
+          ND.SYSCLOCK := GetClock;
+          if ND.Snap then
+            ShowTime;
+          end if;
+          if ND.Snap then
+            SnapShot;
+          end if;
+          exit when ND.PS /= WAIT;
+        end loop;
+        --
+        if ND.PS = DEADLOCK or ND.PS = FIN then
+          return;
+        end if;
+        --
+        ND.TIMER:= ND.SYSCLOCK + ND.TCB (ND.CurTask).QUANTUM;
+        ND.TCB (ND.CurTask).TS := Running;
+        ND.SWITCH := False;
+        if ND.Snap then
+          SnapShot;
+        end if;
+      end if;
+    end if;
+  end Scheduling;
+
 end HAC.PCode.Interpreter.Tasking;

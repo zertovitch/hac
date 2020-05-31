@@ -45,4 +45,6 @@ package HAC.PCode.Interpreter.Tasking is
   --  Feldman: 60ths of a sec on Mac
   TSlice : constant Duration := 0.016666666;
 
+  procedure Scheduling (CD : Compiler_Data; ND: in out Interpreter_Data);
+
 end HAC.PCode.Interpreter.Tasking;

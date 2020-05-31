@@ -145,6 +145,7 @@ package HAC.PCode.Interpreter.In_Defs is
   VM_Out_of_Range                : exception;
   VM_Stack_Overflow              : exception;
   VM_Stack_Underflow             : exception;
+  VM_Raised_Exception            : exception;  --  See Name_Error for an example.
 
   --  Post Mortem Dump of the task stack causing the exception
   --

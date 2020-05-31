@@ -23,7 +23,7 @@ package HAC.PCode.Interpreter is
 
   type Exception_Propagation_Data is private;
 
-  function Is_in_Exception (E: Exception_Propagation_Data) return Boolean;
+  function Is_Exception_Raised (E: Exception_Propagation_Data) return Boolean;
 
   function Image (E: Exception_Propagation_Data) return String;
   function Message (E: Exception_Propagation_Data) return String;
@@ -102,7 +102,12 @@ private
 
   type Exception_Type is
     (No_Exception,
-     VME_Constraint_Error, VME_Program_Error, VME_End_Error, VME_Storage_Error,
+     VME_Constraint_Error,
+     VME_Program_Error,
+     VME_End_Error,
+     VME_Name_Error,
+     VME_Use_Error,
+     VME_Storage_Error,
      VME_Custom);
 
   subtype Exception_Detail is Integer;

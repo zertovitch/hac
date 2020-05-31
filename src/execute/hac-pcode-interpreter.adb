@@ -19,14 +19,27 @@ package body HAC.PCode.Interpreter is
     ND : Interpreter_Data;
     H3 : Defs.HAC_Integer;  --  Internal integer register
 
-    --  $I sched.pas
-    --  This file contains the different scheduling strategies
-
-    procedure ShowTime is null;
-    procedure SnapShot is null;
-
     procedure Pop (Amount : Positive := 1) is  begin Pop (ND, Amount); end;
     procedure Push (Amount : Positive := 1) is begin Push (ND, Amount); end;
+
+    procedure Start_Interpreter is
+    begin
+      ND.PS := Running;
+      ND.Start_Time := Ada.Calendar.Clock;
+      ND.Snap     := False;
+      ND.SWITCH   := False;           --  invoke scheduler on next cycle flag
+      ND.SYSCLOCK := ND.Start_Time;
+      ND.TIMER    := ND.SYSCLOCK;     --  set to end of current task's time slice
+      HAC.PCode.Interpreter.Tasking.Init_main_task (CD, ND);
+      HAC.PCode.Interpreter.Tasking.Init_other_tasks (CD, ND);
+    end Start_Interpreter;
+
+    procedure Raise_Standard (SE: Exception_Type; Msg : String) is
+      EI : Exception_Propagation_Data renames ND.TCB (ND.CurTask).Exception_Info;
+    begin
+      EI.Currently_Raised  := (SE, 0);
+      EI.Exception_Message := Defs.To_VString (Msg);
+    end Raise_Standard;
 
     procedure Do_Standard_Function is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
@@ -212,19 +225,19 @@ package body HAC.PCode.Interpreter is
     begin
       case Code is
         when SP_Open =>
+          Pop (2);
           Ada.Text_IO.Open (
-            ND.S (Curr_TCB.T - 1).Txt.all,
+            ND.S (Curr_TCB.T + 1).Txt.all,
             Ada.Text_IO.In_File,
-            Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T).V)
+            Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T + 2).V)
           );
-          Pop (2);
         when SP_Create =>
-          Ada.Text_IO.Create (
-            ND.S (Curr_TCB.T - 1).Txt.all,
-            Ada.Text_IO.Out_File,
-            Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T).V)
-          );
           Pop (2);
+          Ada.Text_IO.Create (
+            ND.S (Curr_TCB.T + 1).Txt.all,
+            Ada.Text_IO.Out_File,
+            Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T + 2).V)
+          );
         when SP_Close =>
           Ada.Text_IO.Close (ND.S (Curr_TCB.T).Txt.all);
           Pop;
@@ -262,59 +275,16 @@ package body HAC.PCode.Interpreter is
           null;
       end case;
       ND.SWITCH := True;  --  give up control when doing I/O
+    exception
+      when Ada.Text_IO.Name_Error =>
+        Raise_Standard (VME_Name_Error,
+          "File not found: " & Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T + 2).V));
+        raise VM_Raised_Exception;
+      when Ada.Text_IO.Use_Error =>
+        Raise_Standard (VME_Use_Error,
+          "Cannot access file: " & Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T + 2).V));
+        raise VM_Raised_Exception;
     end Do_File_IO;
-
-    procedure Scheduling is
-      Result_Tasks_to_wake : Boolean;
-      use Ada.Calendar;
-    begin
-      ND.SYSCLOCK := GetClock;
-      if ND.Snap then
-        ShowTime;
-      end if;
-      if ND.TCB (ND.CurTask).TS = Critical then
-        if ND.Snap then
-          SnapShot;
-        end if;
-      else
-        HAC.PCode.Interpreter.Tasking.Tasks_to_wake (CD, ND, Result_Tasks_to_wake);
-        if ND.SWITCH or  --  ------------> Voluntary release of control
-           ND.SYSCLOCK >= ND.TIMER or   --  ---> Time slice exceeded
-           Result_Tasks_to_wake
-        then --  ------> Awakened task causes switch
-          if ND.CurTask >= 0 then
-            ND.TCB (ND.CurTask).LASTRUN := ND.SYSCLOCK;
-            if ND.TCB (ND.CurTask).TS = Running then
-              ND.TCB (ND.CurTask).TS := Ready;
-              --  SWITCH PROCCESS
-            end if;
-          end if;
-          loop --  Call Main Scheduler
-            --  Schedule(Scheduler,CurTask, PS);
-            ND.PS := Running;  --  !! Should call the task scheduler instead !!
-            ND.SYSCLOCK := GetClock;
-            if ND.Snap then
-              ShowTime;
-            end if;
-            if ND.Snap then
-              SnapShot;
-            end if;
-            exit when ND.PS /= WAIT;
-          end loop;
-          --
-          if ND.PS = DEADLOCK or ND.PS = FIN then
-            return;
-          end if;
-          --
-          ND.TIMER:= ND.SYSCLOCK + ND.TCB (ND.CurTask).QUANTUM;
-          ND.TCB (ND.CurTask).TS := Running;
-          ND.SWITCH := False;
-          if ND.Snap then
-            SnapShot;
-          end if;
-        end if;
-      end if;
-    end Scheduling;
 
     procedure Add_Stack_Trace_Line (Offset : Natural) is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
@@ -391,58 +361,45 @@ package body HAC.PCode.Interpreter is
         raise;
     end Execute_Current_Instruction;
 
-  begin  --  Interpret
-    ND.PS := Running;
-    ND.Start_Time := Ada.Calendar.Clock;
-    ND.Snap     := False;
-    ND.SWITCH   := False;           --  invoke scheduler on next cycle flag
-    ND.SYSCLOCK := ND.Start_Time;
-    ND.TIMER    := ND.SYSCLOCK;     --  set to end of current task's time slice
-    HAC.PCode.Interpreter.Tasking.Init_main_task (CD, ND);
-    HAC.PCode.Interpreter.Tasking.Init_other_tasks (CD, ND);
+    procedure Execute_Current_Instruction_with_Exception is
+    begin
+      Execute_Current_Instruction;
+      if ND.PS = Exception_Raised then
+        --  We have just executed an Exit, so the last instruction (with
+        --  the program counter back to the caller side), was a Call.
+        Add_Stack_Trace_Line (Offset => 1);
+      end if;
+    exception
+      when VM_Case_Check_Error =>
+        Raise_Standard (VME_Program_Error, "CASE Statement doesn't cover all cases");
+      when VM_Division_by_0 =>
+        Raise_Standard (VME_Constraint_Error, "Division by 0");
+      when VM_End_Error =>
+        Raise_Standard (VME_End_Error, "");
+      when VM_Function_End_without_Return =>
+        Raise_Standard (VME_Program_Error, "Function's end reached without ""return"" statement");
+      when VM_Out_of_Range  =>
+        Raise_Standard (VME_Constraint_Error, "Out of range");
+      when VM_Stack_Overflow  =>
+        Raise_Standard (VME_Storage_Error, "Stack overflow");
+      when VM_Stack_Underflow =>
+        Raise_Standard (VME_Storage_Error, "Stack underflow");
+      when VM_Raised_Exception =>
+        null;  --  HAC exception has been already raised (see Name_Error for an example).
+    end Execute_Current_Instruction_with_Exception;
 
+  begin  --  Interpret
+    Start_Interpreter;
+    --
     Running_State:
     loop  --  until Processor state is not Running or Exception_Raised
-      Scheduling;
+      Tasking.Scheduling (CD, ND);
       exit when ND.PS = DEADLOCK or ND.PS = FIN;
       --
       Fetch_Instruction;
-
-      --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED
-      --  (removed)
-
-      declare
-        EI : Exception_Propagation_Data renames ND.TCB (ND.CurTask).Exception_Info;
-      begin
-        Execute_Current_Instruction;
-        if ND.PS = Exception_Raised then
-          --  We have just executed an Exit, so the last instruction (with
-          --  the program counter back to the caller side), was a Call.
-          Add_Stack_Trace_Line (Offset => 1);
-        end if;
-      exception
-        when VM_Case_Check_Error =>
-          EI.Currently_Raised  := (VME_Program_Error, 0);
-          EI.Exception_Message := Defs.To_VString ("CASE Statement doesn't cover all cases");
-        when VM_Division_by_0 =>
-          EI.Currently_Raised  := (VME_Constraint_Error, 0);
-          EI.Exception_Message := Defs.To_VString ("Division by 0");
-        when VM_End_Error =>
-          EI.Currently_Raised  := (VME_End_Error, 0);
-        when VM_Function_End_without_Return =>
-          EI.Currently_Raised  := (VME_Program_Error, 0);
-          EI.Exception_Message := Defs.To_VString ("Function's end reached without ""return"" statement");
-        when VM_Out_of_Range  =>
-          EI.Currently_Raised  := (VME_Constraint_Error, 0);
-          EI.Exception_Message := Defs.To_VString ("Out of range");
-        when VM_Stack_Overflow  =>
-          EI.Currently_Raised  := (VME_Storage_Error, 0);
-          EI.Exception_Message := Defs.To_VString ("Stack overflow");
-        when VM_Stack_Underflow =>
-          EI.Currently_Raised  := (VME_Storage_Error, 0);
-          EI.Exception_Message := Defs.To_VString ("Stack underflow");
-      end;
-
+      --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED (removed)
+      Execute_Current_Instruction_with_Exception;
+      --
       exit when ND.PS not in Running_or_in_Exception;
     end loop Running_State;
     --
@@ -453,10 +410,10 @@ package body HAC.PCode.Interpreter is
     Free_Allocated_Contents (ND);
     --
     Unhandled := ND.TCB (ND.CurTask).Exception_Info;
-    --  Use Is_in_Exception to check whether an exception was unhandled
-    --  when leaving the interpreter.
+    --  Use Is_Exception_Raised to check whether an exception was
+    --  unhandled when leaving the interpreter.
     case ND.PS is
-      when FIN              => null;  --  All good, end reached.
+      when FIN              => null;  --  All good, end reached (can have an unhandled exception).
       when Running          => null;  --  Should not happen here.
       when Exception_Raised => null;  --  Unhandled exception information stored in Unhandled.
       when DEADLOCK         => raise Abnormal_Termination with "Tasking: Deadlock";
@@ -518,6 +475,8 @@ package body HAC.PCode.Interpreter is
       when VME_Constraint_Error => return "Constraint_Error";
       when VME_Program_Error    => return "Program_Error";
       when VME_End_Error        => return "End_Error";
+      when VME_Name_Error       => return "Name_Error";
+      when VME_Use_Error        => return "Use_Error";
       when VME_Storage_Error    => return "Storage_Error";
       when VME_Custom           => return "(custom)";  --  needs to use details
     end case;
@@ -528,10 +487,10 @@ package body HAC.PCode.Interpreter is
     return Defs.To_String (E.Exception_Message);
   end Message;
 
-  function Is_in_Exception (E: Exception_Propagation_Data) return Boolean is
+  function Is_Exception_Raised (E: Exception_Propagation_Data) return Boolean is
   begin
     return E.Currently_Raised.Ex_Typ /= No_Exception;
-  end Is_in_Exception;
+  end Is_Exception_Raised;
 
   procedure Show_Trace_Back (E: Exception_Propagation_Data) is
   begin

@@ -87,7 +87,7 @@ procedure HAX is
       t1 := Clock;
       Interpret_on_Current_IO (CD, arg_pos, unhandled);
       t2 := Clock;
-      unhandled_found := Is_in_Exception (unhandled);
+      unhandled_found := Is_Exception_Raised (unhandled);
       if verbosity >= 2 then
         if unhandled_found then
         Put_Line (
