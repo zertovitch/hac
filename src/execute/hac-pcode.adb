@@ -194,7 +194,7 @@ package body HAC.PCode is
       Operand1_IO.Put (Text, OC (i).X, 5);
       Operand2_IO.Put (Text, OC (i).Y);
       Put (Text, "; ");
-      Code_Pos_IO.Put (Text, OC (i).D.Line);
+      Code_Pos_IO.Put (Text, OC (i).D.Line_Number);
       Put (Text, "  " & Defs.To_String (OC (i).D.Full_Block_Id));
       case OC (i).F is  --  Extra information
         when k_Push_Float_Literal =>

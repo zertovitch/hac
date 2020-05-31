@@ -132,7 +132,7 @@ package body HAC.PCode.Interpreter.Calls is
       Curr_TCB.T  := Curr_TCB.B;
       Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;
       Curr_TCB.B  := ND.S (Curr_TCB.B + 3).I;
-      if IR.Y = Defs.End_Function_without_Return then
+      if IR.Y = Defs.End_Function_without_Return and then ND.PS /= Exception_Raised then
         raise VM_Function_End_without_Return;
       end if;
     end Do_Exit_Function;

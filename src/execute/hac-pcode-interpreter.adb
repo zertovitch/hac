@@ -264,9 +264,76 @@ package body HAC.PCode.Interpreter is
       ND.SWITCH := True;  --  give up control when doing I/O
     end Do_File_IO;
 
+    procedure Scheduling is
+      Result_Tasks_to_wake : Boolean;
+      use Ada.Calendar;
+    begin
+      ND.SYSCLOCK := GetClock;
+      if ND.Snap then
+        ShowTime;
+      end if;
+      if ND.TCB (ND.CurTask).TS = Critical then
+        if ND.Snap then
+          SnapShot;
+        end if;
+      else
+        HAC.PCode.Interpreter.Tasking.Tasks_to_wake (CD, ND, Result_Tasks_to_wake);
+        if ND.SWITCH or  --  ------------> Voluntary release of control
+           ND.SYSCLOCK >= ND.TIMER or   --  ---> Time slice exceeded
+           Result_Tasks_to_wake
+        then --  ------> Awakened task causes switch
+          if ND.CurTask >= 0 then
+            ND.TCB (ND.CurTask).LASTRUN := ND.SYSCLOCK;
+            if ND.TCB (ND.CurTask).TS = Running then
+              ND.TCB (ND.CurTask).TS := Ready;
+              --  SWITCH PROCCESS
+            end if;
+          end if;
+          loop --  Call Main Scheduler
+            --  Schedule(Scheduler,CurTask, PS);
+            ND.PS := Running;  --  !! Should call the task scheduler instead !!
+            ND.SYSCLOCK := GetClock;
+            if ND.Snap then
+              ShowTime;
+            end if;
+            if ND.Snap then
+              SnapShot;
+            end if;
+            exit when ND.PS /= WAIT;
+          end loop;
+          --
+          if ND.PS = DEADLOCK or ND.PS = FIN then
+            return;
+          end if;
+          --
+          ND.TIMER:= ND.SYSCLOCK + ND.TCB (ND.CurTask).QUANTUM;
+          ND.TCB (ND.CurTask).TS := Running;
+          ND.SWITCH := False;
+          if ND.Snap then
+            SnapShot;
+          end if;
+        end if;
+      end if;
+    end Scheduling;
+
+    procedure Add_Stack_Trace_Line is
+      Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
+      D : Debug_Info renames CD.ObjCode (Curr_TCB.PC).D;
+      use Defs.VStrings_Pkg;
+    begin
+      if D.Full_Block_Id /= Universe then
+        ND.TCB (ND.CurTask).Exception_Info.ST_Message.Append (D);
+      end if;
+    end Add_Stack_Trace_Line;
+
     procedure Fetch_Instruction is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     begin
+      if ND.PS = Exception_Raised then
+        while not OK_for_Exception (CD.ObjCode (Curr_TCB.PC).F) loop
+          Curr_TCB.PC := Curr_TCB.PC + 1;
+        end loop;
+      end if;
       ND.IR := CD.ObjCode (Curr_TCB.PC);
       Curr_TCB.PC := Curr_TCB.PC + 1;
     end Fetch_Instruction;
@@ -319,16 +386,14 @@ package body HAC.PCode.Interpreter is
       end case;
     exception
       when others =>
+        Add_Stack_Trace_Line;
         ND.PS := Exception_Raised;
         raise;
     end Execute_Current_Instruction;
 
-    Result_Tasks_to_wake : Boolean;
-    use Ada.Calendar;
-
   begin  --  Interpret
     ND.PS := Running;
-    ND.Start_Time := Clock;
+    ND.Start_Time := Ada.Calendar.Clock;
     ND.Snap     := False;
     ND.SWITCH   := False;           --  invoke scheduler on next cycle flag
     ND.SYSCLOCK := ND.Start_Time;
@@ -337,52 +402,10 @@ package body HAC.PCode.Interpreter is
     HAC.PCode.Interpreter.Tasking.Init_other_tasks (CD, ND);
 
     Running_State:
-    loop  --  until Processor state /= Running or Exception_Raised
-      ND.SYSCLOCK := GetClock;
-      if ND.Snap then
-        ShowTime;
-      end if;
-      if ND.TCB (ND.CurTask).TS = Critical then
-        if ND.Snap then
-          SnapShot;
-        end if;
-      else
-        HAC.PCode.Interpreter.Tasking.Tasks_to_wake (CD, ND, Result_Tasks_to_wake);
-        if ND.SWITCH or  --  ------------> Voluntary release of control
-           ND.SYSCLOCK >= ND.TIMER or   --  ---> Time slice exceeded
-           Result_Tasks_to_wake
-        then --  ------> Awakened task causes switch
-          if ND.CurTask >= 0 then
-            ND.TCB (ND.CurTask).LASTRUN := ND.SYSCLOCK;
-            if ND.TCB (ND.CurTask).TS = Running then
-              ND.TCB (ND.CurTask).TS := Ready;
-              --  SWITCH PROCCESS
-            end if;
-          end if;
-          loop --  Call Main Scheduler
-            --  Schedule(Scheduler,CurTask, PS);
-            ND.PS := Running;  --  !! Should call the task scheduler instead !!
-            ND.SYSCLOCK := GetClock;
-            if ND.Snap then
-              ShowTime;
-            end if;
-            if ND.Snap then
-              SnapShot;
-            end if;
-            exit when ND.PS /= WAIT;
-          end loop;
-          --
-          exit Running_State when ND.PS = DEADLOCK or ND.PS = FIN;
-          --
-          ND.TIMER:= ND.SYSCLOCK + ND.TCB (ND.CurTask).QUANTUM;
-          ND.TCB (ND.CurTask).TS := Running;
-          ND.SWITCH := False;
-          if ND.Snap then
-            SnapShot;
-          end if;
-        end if;
-      end if;
-
+    loop  --  until Processor state is not Running or Exception_Raised
+      Scheduling;
+      exit when ND.PS = DEADLOCK or ND.PS = FIN;
+      --
       Fetch_Instruction;
 
       --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED
@@ -392,6 +415,9 @@ package body HAC.PCode.Interpreter is
         EI : Exception_Propagation_Data renames ND.TCB (ND.CurTask).Exception_Info;
       begin
         Execute_Current_Instruction;
+        if ND.PS = Exception_Raised then
+          Add_Stack_Trace_Line;
+        end if;
       exception
         when VM_Case_Check_Error =>
           EI.Currently_Raised  := (VME_Program_Error, 0);
@@ -415,8 +441,7 @@ package body HAC.PCode.Interpreter is
           EI.Exception_Message := Defs.To_VString ("Stack underflow");
       end;
 
-      exit when ND.PS not in Running .. Running;
-      --  !!  not in Running .. Exception_Raised when exception handling is programmed.
+      exit when ND.PS not in Running_or_in_Exception;
     end loop Running_State;
     --
     if ND.PS not in Exception_Raised .. FIN then
@@ -511,8 +536,8 @@ package body HAC.PCode.Interpreter is
     for STL of E.ST_Message loop
       Show_Line_Information (
         Defs.To_String (STL.File_Name),
-        Defs.To_String (STL.Block_Name),
-        STL.Number
+        Defs.To_String (STL.Full_Block_Id),
+        STL.Line_Number
       );
     end loop;
   end Show_Trace_Back;

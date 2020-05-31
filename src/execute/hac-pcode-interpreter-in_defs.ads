@@ -20,6 +20,8 @@ package HAC.PCode.Interpreter.In_Defs is
     DEADLOCK,
     WAIT);
 
+  subtype Running_or_in_Exception is Processor_State range Running .. Exception_Raised;
+
   type Task_State is (
     Completed,
     Delayed,

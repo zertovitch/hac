@@ -129,6 +129,10 @@ package HAC.PCode is
 
   function For_END (for_BEGIN: Opcode) return Opcode;
 
+  type Opcode_Set is array (Opcode) of Boolean;
+  OK_for_Exception : constant Opcode_Set :=
+    (k_Exit_Call .. k_Exit_Function | k_Halt_Interpreter => True, others => False);
+
   type Operand_1_Type is new Integer;  --  Mostly used to pass nesting levels
   subtype Nesting_level is Operand_1_Type range 0 .. HAC.Defs.Nesting_Level_Max;
 
@@ -138,11 +142,14 @@ package HAC.PCode is
   subtype Operand_2_Type is HAC.Defs.HAC_Integer;
 
   type Debug_Info is record
-    Line          : Positive;       --  Line number in the source code.
-    Full_Block_Id : Defs.VString;   --  Current block's path (if any): P1.P2.F3.P4.
-    --  !! ^ TBD: consider an index or a reference, to save memory !!
-    --  Unit  : Defs.Alfa;  --  Compilation unit identifier.
+    --  Line number in the source code.
+    Line_Number   : Positive;
+    --  Current block's path (if any). Example: hac-pcode-interpreter.adb.
+    Full_Block_Id : Defs.VString;
+    --  Source code file name.         Example: HAC.PCode.Interpreter.Do_Write_Formatted.
+    File_Name     : Defs.VString;
   end record;
+  --  !! TBD: consider an index or a reference, in case copies wase save memory !!
 
   --  PCode instruction record (stores a compiled PCode instruction)
   type Order is record

@@ -30,7 +30,7 @@ procedure HAX is
     )
     is
     begin
-      Put_Line (Current_Error, File_Name & ": " & Block_Name & ":" & Integer'Image (Number));
+      Put_Line (Current_Error, File_Name & ": " & Block_Name & ':' & Integer'Image (Number));
     end Show_Line_Information;
     --
     use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter;

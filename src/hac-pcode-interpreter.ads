@@ -113,14 +113,7 @@ private
     Detail : Integer;  --  For the VME_Custom choice
   end record;
 
-  type Stack_Trace_Back_Row is record
-    File_Name  : Defs.VString;   --  Example: hac-pcode-interpreter.adb
-    Block_Name : Defs.VString;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
-    Number     : Positive;
-  end record;
-
-  package Stack_Trace_Messages is
-    new Ada.Containers.Vectors (Positive, Stack_Trace_Back_Row);
+  package Stack_Trace_Messages is new Ada.Containers.Vectors (Positive, Debug_Info);
   subtype Stack_Trace_Message is Stack_Trace_Messages.Vector;
 
   type Exception_Propagation_Data is record
