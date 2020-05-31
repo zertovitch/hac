@@ -11,24 +11,25 @@ package body HAC.PCode.Interpreter.Multi_Statement is
       Pop (ND);
       H2 := IR.Y;
       --
-      --  Now we loop over a bunch of k_CASE_Switch_2 instruction
-      --  pairs that should covers all cases.
+      --  Now we loop over a bunch of (k_CASE_Choice_Data, k_CASE_Match_Jump) pairs
+      --  that should covers all cases.
       --
       loop
-        if CD.ObjCode (H2).F /= k_CASE_Switch_2 then
-          --  We hit the bogus instruction following the k_CASE_Switch_2 pairs.
-          --  This means that Value, or OTHERS were not found so far.
-          --  This situation should not happen (compile-time check).
+        if CD.ObjCode (H2).F /= k_CASE_Choice_Data then
+          --  We hit the end of (k_CASE_Choice_Data, k_CASE_Match_Jump) pairs.
+          --  This means that Value, or OTHERS, were not found so far.
+          --  This situation should not happen; should be caught at compile-time.
           raise VM_Case_Check_Error;
         elsif CD.ObjCode (H2).Y = Value
               or CD.ObjCode (H2).X = Defs.Case_when_others
         then
           Curr_TCB.PC := CD.ObjCode (H2 + 1).Y;
-          --  Will execute instructions following "=>".
-          --  The address is stored with a 2nd k_CASE_Switch_2.
+          --  The interpreter will execute instructions following "=>".
+          --  The address is stored with a k_CASE_Match_Jump.
           exit;
         else
-          H2 := H2 + 2;  --  Check the next k_CASE_Switch_2 instruction pair.
+          --  Check the next (k_CASE_Choice_Data, k_CASE_Match_Jump) instruction pair:
+          H2 := H2 + 2;
         end if;
       end loop;
     end Do_CASE_Switch_1;
@@ -81,8 +82,8 @@ package body HAC.PCode.Interpreter.Multi_Statement is
 
   begin
     case Multi_Statement_Opcode (ND.IR.F) is
-      when k_CASE_Switch_1      => Do_CASE_Switch_1;
-      when k_CASE_Switch_2      => null;  --  Only via k_CASE_Switch_1.
+      when k_CASE_Switch        => Do_CASE_Switch_1;
+      when CASE_Data_Opcode     => null;  --  Only via k_CASE_Switch.
       when k_FOR_Forward_Begin  => Do_FOR_Forward_Begin;
       when k_FOR_Forward_End    => Do_FOR_Forward_End;
       when k_FOR_Reverse_Begin  => Do_FOR_Reverse_Begin;

@@ -36,8 +36,10 @@ package HAC.PCode is
     k_Jump,
     k_Conditional_Jump,
     --
-    k_CASE_Switch_1,
-    k_CASE_Switch_2,
+    k_CASE_Switch,
+    k_CASE_Choice_Data,
+    k_CASE_Match_Jump,
+    k_CASE_No_Choice_Found,
     k_FOR_Forward_Begin,
     k_FOR_Forward_End,
     k_FOR_Reverse_Begin,
@@ -119,9 +121,10 @@ package HAC.PCode is
   --
   subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Literal;
   subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Exit_Function;
+  subtype CASE_Data_Opcode        is Opcode range k_CASE_Choice_Data .. k_CASE_No_Choice_Found;
   subtype Composite_Data_Opcode   is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
   subtype Jump_Opcode             is Opcode range k_Jump .. k_Conditional_Jump;
-  subtype Multi_Statement_Opcode  is Opcode range k_CASE_Switch_1 .. k_FOR_Reverse_End;
+  subtype Multi_Statement_Opcode  is Opcode range k_CASE_Switch .. k_FOR_Reverse_End;
   subtype Tasking_Opcode          is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
 
   function For_END (for_BEGIN: Opcode) return Opcode;

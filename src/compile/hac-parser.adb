@@ -934,7 +934,7 @@ package body HAC.Parser is
           Error (CD, err_bad_type_for_a_case_statement);
         end if;
         LC1 := CD.LC;
-        Emit (CD, k_CASE_Switch_1);
+        Emit (CD, k_CASE_Switch);
         if CD.Sy = IS_Symbol then  --  Was OF_Symbol in SmallAda! I.e. "case x OF when 1 => ..."
           InSymbol;
         elsif CD.Sy = OF_Symbol then
@@ -953,18 +953,19 @@ package body HAC.Parser is
         end loop;
 
         CD.ObjCode (LC1).Y := CD.LC;
-        --  Set correct address for k_CASE_Switch_1 above.
-        --  This is the address of the following bunch of k_CASE_Switch_2's.
+        --  Set correct address for k_CASE_Switch above.
+        --  This is the address of the following bunch of
+        --  (k_CASE_Choice_Data, k_CASE_Match_Jump) pairs.
         for K in 1 .. I loop
           if CaseTab (K).Is_others then
-            Emit2 (CD, k_CASE_Switch_2, Case_when_others, 0);
+            Emit2 (CD, k_CASE_Choice_Data, Case_when_others, 0);
           else
-            Emit2 (CD, k_CASE_Switch_2, Case_when_something, CaseTab (K).Val);
+            Emit2 (CD, k_CASE_Choice_Data, Case_when_something, CaseTab (K).Val);
           end if;
-          Emit1 (CD, k_CASE_Switch_2, CaseTab (K).LC);
+          Emit1 (CD, k_CASE_Match_Jump, CaseTab (K).LC);
         end loop;
-        --  Bogus instruction for having the interpreter exiting the k_CASE_Switch_2 loop.
-        Emit (CD, k_Jump);
+        --  This is for having the interpreter exiting the k_CASE_Choice_Data loop.
+        Emit (CD, k_CASE_No_Choice_Found);
         --
         for K in 1 .. J loop
           CD.ObjCode (ExitTab (K)).Y := CD.LC;  --  Patch k_Jump addresses to after "END CASE;".
