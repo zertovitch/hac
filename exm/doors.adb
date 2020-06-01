@@ -25,8 +25,8 @@ begin
   end loop;
   --
   for i in 1..last_door loop
-     Put ("Door "); Put (i);
-     Put (" is ");  Put (the_doors(i));
-     New_Line;
+    Put ("Door "); Put (i);
+    Put (" is ");  Put (the_doors(i));  --  <- implicit 'Pos (temp HAC hack)
+    New_Line;
   end loop;
 end Doors;
