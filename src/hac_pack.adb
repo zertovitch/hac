@@ -513,49 +513,26 @@ package body HAC_Pack is
       return s (na .. s'Last);
     end Image_with_exponent;
     --
-    -- Ada 95 Quality and Style Guide, 7.2.7:
-    -- Tests for
-    --
-    -- (1) absolute "equality" to 0 in storage,
-    -- (2) absolute "equality" to 0 in computation,
-    -- (3) relative "equality" to 0 in storage, and
-    -- (4) relative "equality" to 0 in computation:
-    --
-    --  abs X <= Float_Type'Model_Small                      -- (1)
-    --  abs X <= Float_Type'Base'Model_Small                 -- (2)
-    --  abs X <= abs X * Float_Type'Model_Epsilon            -- (3)
-    --  abs X <= abs X * Float_Type'Base'Model_Epsilon       -- (4)
-    --
-    function Almost_zero (x : Real) return Boolean is
+    function Count_Nonzero_Digits (any : String) return Natural is
+      n : Natural := 0;
     begin
-      return abs x <= Real'Base'Model_Small;
-    end Almost_zero;
-    --
+      for i in any'Range loop
+        exit when any (i) = 'E';  --  Ignore exponent part.
+        if any (i) in '1' .. '9' then
+          n := n + 1;
+        end if;
+      end loop;
+      return n;
+    end Count_Nonzero_Digits;
   begin
-    if abs (F) < 10.0 ** (1 - Real'Digits)
-      --  Banana skin 1: for a very small value, we'll have "0.0" from Put
-      --  with Exp = 0 if we dont make this special case.
-      --
-      --  HAC sample code *with* the special case:
-      --  ...
-      --  for e in reverse -20 .. -1 loop
-      --    Put_Line (+"" & 10.0 ** e);
-      --  end loop;
-      --  0.000000000001
-      --  0.0000000000001
-      --  0.00000000000001
-      --  1.0E-15
-      --  1.0E-16
-      --  ...
-      --
-      --  !! TBD: Banana skin 2: loss of digits !!
-      and then not Almost_zero (F)
-      --  ^ Special case within the special case: for zero,
-      --    we want to display 0.0 and not 0.0E+00
-    then
-      return Image_with_exponent;
+    --  Image without exponent (E).
+    --  If the number is too large for this layout, a Layout_Error
+    --  is raised and we call Image_with_exponent.
+    RIO.Put (s, F, Exp => 0);
+    if Count_Nonzero_Digits (s) < Count_Nonzero_Digits (Real'Image (F)) then
+      return Image_with_exponent;  --  Loss of significant digits.
     end if;
-    RIO.Put (s, F, Exp => 0);  --  Image without exponent (E)
+    --  We don't lose any digits in decimal representation without exponent.
     na := s'First;
     nb := s'Last;
     np := 0;

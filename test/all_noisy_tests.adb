@@ -42,9 +42,9 @@ procedure All_Noisy_Tests is
     end Pause;
 
   begin
-    Put_Line( "    ___________      _____________________________________");
-    Put_Line( "   / *  HAC  * \    /  ""Noisy tests"": a human is        \");
-    Put_Line( "   \__Testing__/    \__required to check the output and.__/");
+    Put_Line( "    ___________      _________________________________");
+    Put_Line( "   / *  HAC  * \    /  ""Noisy tests"": a human is    \");
+    Put_Line( "   \__Testing__/    \__required to check the output.__/");
     New_Line;
     Build_HAX;  --  Redundant if this program is itself run through HAX.
     --
@@ -54,6 +54,8 @@ procedure All_Noisy_Tests is
     end loop;
     Pause;
     Launch_HAX (+"if_then_elsif_else.adb");
+    Pause;
+    Launch_HAX (+"digitz.adb");
     Put_Line ("----> Done.");
   end Launch_Tests;
 
