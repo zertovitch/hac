@@ -30,9 +30,9 @@ package HAC.PCode.Interpreter is
 
   generic
     with procedure Show_Line_Information (
-      File_Name  : String;   --  Example: hac-pcode-interpreter.adb
-      Block_Name : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
-      Number     : Positive
+      File_Name   : String;   --  Example: hac-pcode-interpreter.adb
+      Block_Name  : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
+      Line_Number : Positive
     );
   procedure Show_Trace_Back (E: Exception_Propagation_Data);
 

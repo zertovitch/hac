@@ -24,9 +24,9 @@ procedure HAX is
 
   procedure Compile_and_interpret_file (Ada_file_name: String; arg_pos : Positive) is
     procedure Show_Line_Information (
-      File_Name  : String;   --  Example: hac-pcode-interpreter.adb
-      Block_Name : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
-      Number     : Positive
+      File_Name   : String;   --  Example: hac-pcode-interpreter.adb
+      Block_Name  : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
+      Line_Number : Positive
     )
     is
     begin
@@ -34,7 +34,7 @@ procedure HAX is
         Current_Error,
         File_Name & ": " &
         Block_Name & " at line" &
-        Integer'Image (Number)
+        Integer'Image (Line_Number)
       );
     end Show_Line_Information;
     --
@@ -90,16 +90,16 @@ procedure HAX is
       unhandled_found := Is_Exception_Raised (unhandled);
       if verbosity >= 2 then
         if unhandled_found then
-        Put_Line (
-          HAC_margin_3 & "VM interpreter stopped execution of " &
-            Ada_file_name & " due to an unhandled exception.");
+          Put_Line (
+            HAC_margin_3 & "VM interpreter stopped execution of " &
+              Ada_file_name & " due to an unhandled exception.");
         else
-        Put_Line (
-          HAC_margin_3 & "VM interpreter done after " &
-          (Duration'Image(t2-t1)) & " seconds."
-        );
-        Put_Line (
-          HAC_margin_3 & "Execution of " & Ada_file_name & " completed.");
+          Put_Line (
+            HAC_margin_3 & "VM interpreter done after " &
+            (Duration'Image(t2-t1)) & " seconds."
+          );
+          Put_Line (
+            HAC_margin_3 & "Execution of " & Ada_file_name & " completed.");
         end if;
       end if;
       if unhandled_found then

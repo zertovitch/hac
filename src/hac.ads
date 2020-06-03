@@ -45,7 +45,7 @@ package HAC is
   --------------------------------------------------------------
 
   version   : constant String:= "0.07";
-  reference : constant String:= "31-May-2020";
+  reference : constant String:= "03-Jun-2020";
   --  Hopefully the latest version is at one of those URLs:
   web       : constant String:= "https://hacadacompiler.sourceforge.io/";
   web2      : constant String:= "https://github.com/zertovitch/hac";
