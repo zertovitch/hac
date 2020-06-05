@@ -149,7 +149,6 @@ package HAC.PCode is
     --  Source code file name.         Example: HAC.PCode.Interpreter.Do_Write_Formatted.
     File_Name     : Defs.VString;
   end record;
-  --  !! TBD: consider an index or a reference, in case copies wase save memory !!
 
   --  PCode instruction record (stores a compiled PCode instruction)
   type Order is record

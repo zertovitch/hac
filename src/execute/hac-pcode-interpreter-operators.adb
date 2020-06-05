@@ -10,9 +10,10 @@ package body HAC.PCode.Interpreter.Operators is
 
   procedure Do_Unary_Operator (ND : in out Interpreter_Data) is
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
-    X : GRegister renames ND.S (Curr_TCB_Top);
+    X : General_Register renames ND.S (Curr_TCB_Top);
     H1 : Defs.HAC_Integer;
     use type Defs.HAC_Float;
+    I_to_F : Defs.HAC_Float;
   begin
     case Unary_Operator_Opcode (ND.IR.F) is
       when k_Dereference         => X := ND.S (X.I);  --  "[T] := ([T].I).all"
@@ -20,15 +21,16 @@ package body HAC.PCode.Interpreter.Operators is
       when k_Unary_MINUS_Integer => X.I := -X.I;
       when k_Unary_MINUS_Float   => X.R := -X.R;
       when k_Integer_to_Float =>
-        H1          := Curr_TCB_Top - ND.IR.Y;
-        ND.S (H1).R := Defs.HAC_Float (ND.S (H1).I);
+        H1 := Curr_TCB_Top - ND.IR.Y;
+        I_to_F := Defs.HAC_Float (ND.S (H1).I);
+        ND.S (H1) := GR_Real (I_to_F);
     end case;
   end Do_Unary_Operator;
 
   procedure Do_Binary_Operator (ND : in out Interpreter_Data) is
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
-    X : GRegister renames ND.S (Curr_TCB_Top - 1);  --  X = [T-1]
-    Y : GRegister renames ND.S (Curr_TCB_Top);      --  Y = [T]
+    X : General_Register renames ND.S (Curr_TCB_Top - 1);  --  X = [T-1]
+    Y : General_Register renames ND.S (Curr_TCB_Top);      --  Y = [T]
     use Defs.VStrings_Pkg, Defs.REF;
     use type Defs.HAC_Float;
   begin
@@ -80,7 +82,7 @@ package body HAC.PCode.Interpreter.Operators is
 
   procedure Do_SF_Operator (CD : Compiler_Data; ND : in out Interpreter_Data) is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-      Top_Item : GRegister renames ND.S (Curr_TCB.T);
+      Top_Item : General_Register renames ND.S (Curr_TCB.T);
       temp : Defs.HAC_Float;
       Idx, Len, From, To : Integer;
       C : Character;
@@ -103,10 +105,8 @@ package body HAC.PCode.Interpreter.Operators is
         when SF_T_Succ => Top_Item.I := Top_Item.I + 1;  --  S'Succ : RM 3.5 (22)
         when SF_T_Pred => Top_Item.I := Top_Item.I - 1;  --  S'Pred : RM 3.5 (25)
         when SF_Round_Float_to_Int =>
-          --  The stack top may change its type here (if register has discriminant).
           Top_Item.I := Integer (Top_Item.R);
         when SF_Trunc_Float_to_Int =>
-          --  The stack top may change its type here (if register has discriminant).
           Top_Item.I := Integer (Defs.HAC_Float'Floor (Top_Item.R));
         when SF_Sin =>    Top_Item.R := Sin (Top_Item.R);
         when SF_Cos =>    Top_Item.R := Cos (Top_Item.R);
@@ -122,14 +122,12 @@ package body HAC.PCode.Interpreter.Operators is
           Pop (ND);
           Idx := ND.S (Curr_TCB.T).I;      --  Index in the stack
           Len := ND.S (Curr_TCB.T + 1).I;  --  Length of string
-          ND.S (Curr_TCB.T).V :=
-            To_VString (Get_String_from_Stack (ND, Idx, Len));
+          ND.S (Curr_TCB.T) := GR_VString (Get_String_from_Stack (ND, Idx, Len));
         when SF_Literal_to_VString =>  --  Unary "+"
           Pop (ND);
           Len := ND.S (Curr_TCB.T).I;      --  Length of string
           Idx := ND.S (Curr_TCB.T + 1).I;  --  Index to string table
-          ND.S (Curr_TCB.T).V :=
-            To_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
+          ND.S (Curr_TCB.T) := GR_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
         when SF_Two_VStrings_Concat =>
           Pop (ND);
           --  [T] := [T] & [T+1] :
@@ -139,37 +137,37 @@ package body HAC.PCode.Interpreter.Operators is
           ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & Character'Val (ND.S (Curr_TCB.T + 1).I);
         when SF_Char_VString_Concat =>
           Pop (ND);
-          ND.S (Curr_TCB.T).V := Character'Val (ND.S (Curr_TCB.T).I) & ND.S (Curr_TCB.T + 1).V;
+          ND.S (Curr_TCB.T) :=
+            GR_VString (Character'Val (ND.S (Curr_TCB.T).I) & ND.S (Curr_TCB.T + 1).V);
         when SF_LStr_VString_Concat =>
           --  Literal: 2 items, VString: 1 item. Total, 3 items folded into 1 item.
           Pop (ND, 2);
           Len := ND.S (Curr_TCB.T).I;      --  Length of string
           Idx := ND.S (Curr_TCB.T + 1).I;  --  Index to string table
-          ND.S (Curr_TCB.T).V :=
-            CD.Strings_Constants_Table (Idx .. Idx + Len - 1) & ND.S (Curr_TCB.T + 2).V;
+          ND.S (Curr_TCB.T) :=
+            GR_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1) & ND.S (Curr_TCB.T + 2).V);
         when SF_VString_Int_Concat =>
           Pop (ND);
           ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & To_VString (HAC_Image (ND.S (Curr_TCB.T + 1).I));
         when SF_Int_VString_Concat =>
           Pop (ND);
-          ND.S (Curr_TCB.T).V := To_VString (HAC_Image (ND.S (Curr_TCB.T).I)) & ND.S (Curr_TCB.T + 1).V;
+          ND.S (Curr_TCB.T) := GR_VString ((HAC_Image (ND.S (Curr_TCB.T).I)) & ND.S (Curr_TCB.T + 1).V);
         when SF_VString_Float_Concat =>
           Pop (ND);
           ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & To_VString (HAC_Image (ND.S (Curr_TCB.T + 1).R));
         when SF_Float_VString_Concat =>
           Pop (ND);
-          ND.S (Curr_TCB.T).V := To_VString (HAC_Image (ND.S (Curr_TCB.T).R)) & ND.S (Curr_TCB.T + 1).V;
+          ND.S (Curr_TCB.T) :=
+            GR_VString (To_VString (HAC_Image (ND.S (Curr_TCB.T).R)) & ND.S (Curr_TCB.T + 1).V);
         when SF_Element =>
           Pop (ND);
           --  [T] := Element ([T], [T+1]) :
           C := Element (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).I);
-          --  The stack top may change its type here (if register has discriminant).
           ND.S (Curr_TCB.T).I := Character'Pos (C);
         when SF_Length =>
           --  [T] := Length ([T]) :
           Len := Length (Top_Item.V);
           --  !! Here: bound checking !!
-          --  The stack top item may change its type here (if register has discriminant).
           Top_Item.I := Len;
         when SF_Slice =>
           Pop (ND, 2);
@@ -213,22 +211,27 @@ package body HAC.PCode.Interpreter.Operators is
             Boolean'Pos (HAC_Pack.Ends_With (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).V));
         when SF_Int_Times_Char =>
           Pop (ND);
+          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range; end if;
           --  [T] := [T] * [T+1] :
-          ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).I * Character'Val (ND.S (Curr_TCB.T + 1).I);
+          ND.S (Curr_TCB.T) :=
+            GR_VString (ND.S (Curr_TCB.T).I * Character'Val (ND.S (Curr_TCB.T + 1).I));
         when SF_Int_Times_VStr =>
           Pop (ND);
+          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range; end if;
           --  [T] := [T] * [T+1] :
-          ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).I * ND.S (Curr_TCB.T + 1).V;
+          ND.S (Curr_TCB.T) :=
+            GR_VString (ND.S (Curr_TCB.T).I * ND.S (Curr_TCB.T + 1).V);
         when SF_Trim_Left  => Top_Item.V := Trim (Top_Item.V, Left);
         when SF_Trim_Right => Top_Item.V := Trim (Top_Item.V, Right);
         when SF_Trim_Both  => Top_Item.V := Trim (Top_Item.V, Both);
         --
-        when SF_Image_Ints             => Top_Item.V := To_VString (HAC_Image (Top_Item.I));
-        when SF_Image_Floats           => Top_Item.V := To_VString (HAC_Image (Top_Item.R));
-        when SF_Image_Attribute_Floats => Top_Item.V := To_VString (HAC_Float'Image (Top_Item.R));
+        when SF_Image_Ints             => Top_Item := GR_VString (HAC_Image (Top_Item.I));
+        when SF_Image_Floats           => Top_Item := GR_VString (HAC_Image (Top_Item.R));
+        when SF_Image_Attribute_Floats => Top_Item := GR_VString (HAC_Float'Image (Top_Item.R));
         --
         when SF_Integer_Value => Top_Item.I := HAC_Integer'Value (Defs.To_String (Top_Item.V));
-        when SF_Float_Value   => Top_Item.R := HAC_Float'Value   (Defs.To_String (Top_Item.V));
+        when SF_Float_Value =>
+          Top_Item := GR_Real (HAC_Float'Value (Defs.To_String (Top_Item.V)));
         when SF_Get_Env =>
           declare
             use Ada.Environment_Variables;

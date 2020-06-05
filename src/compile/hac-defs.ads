@@ -265,6 +265,7 @@ package HAC.Defs is
     --------------------------------------------------
     String_Literals
   );
+  for Typen'Size use 8;
 
   type Typ_Set is array (Typen) of Boolean;
 

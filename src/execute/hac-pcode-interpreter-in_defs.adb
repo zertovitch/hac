@@ -2,10 +2,14 @@ package body HAC.PCode.Interpreter.In_Defs is
 
   procedure Allocate_Text_File (
     ND : in out Interpreter_Data;
-    R  : in out GRegister
+    R  : in out General_Register
   )
   is
+    use Defs;
   begin
+    if R.Special /= Text_Files then
+      R := GR_Abstract_Console;
+    end if;
     if R.Txt = null then
       R.Txt := new Ada.Text_IO.File_Type;
       ND.Files.Append (R.Txt);
@@ -31,6 +35,21 @@ package body HAC.PCode.Interpreter.In_Defs is
     end loop;
     return Res;
   end Get_String_from_Stack;
+
+  function GR_Real (R : Defs.HAC_Float) return General_Register is
+  begin
+    return (Special => Defs.Floats, I => 0, R => R);
+  end;
+
+  function GR_VString (S : String) return General_Register is
+  begin
+    return (Special => Defs.VStrings, I => 0, V => Defs.To_VString (S));
+  end;
+
+  function GR_VString (V : Defs.VString) return General_Register is
+  begin
+    return (Special => Defs.VStrings, I => 0, V => V);
+  end;
 
   procedure Pop (ND : in out Interpreter_Data; Amount : Positive := 1) is
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;

@@ -103,6 +103,7 @@ private
   type Exception_Type is
     (No_Exception,
      VME_Constraint_Error,
+     VME_Data_Error,
      VME_Program_Error,
      VME_End_Error,
      VME_Name_Error,

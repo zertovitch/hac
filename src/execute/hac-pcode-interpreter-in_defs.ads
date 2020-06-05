@@ -44,18 +44,28 @@ package HAC.PCode.Interpreter.In_Defs is
 
   Abstract_Console : constant File_Ptr := null;
 
-  type GRegister is record
-    --  General register - variant record in Pascal
-    --  !! To save place we'll reintroduce a discriminant
-    --     - and use aux variables for conversions in the interpreter.
-    --
-    I   : Defs.HAC_Integer;  --  Also used for Bools, Chars and Enums.
-    R   : Defs.HAC_Float;
-    V   : Defs.VString;  --  !! might make copies slow (would a discriminant help?)
-    Txt : File_Ptr := Abstract_Console;
+  type General_Register (Special : Defs.Typen := Defs.NOTYP) is record
+    --  I is used for most uses: indices in the stack, Integers, Bools, Chars and Enums.
+    I : Defs.HAC_Integer;
+    case Special is  --  This part is variant to save place.
+      when Defs.Floats     => R   : Defs.HAC_Float;
+      when Defs.VStrings   => V   : Defs.VString;
+      when Defs.Text_Files => Txt : File_Ptr := Abstract_Console;
+      when others          => null;
+    end case;
   end record;
 
-  subtype Data_Type is GRegister;
+  GR_Abstract_Console : constant General_Register :=
+    (Special => Defs.Text_Files,
+     I       => 0,
+     Txt     => Abstract_Console);
+
+  function GR_Real (R : Defs.HAC_Float) return General_Register;
+
+  function GR_VString (S : String) return General_Register;
+  function GR_VString (V : Defs.VString) return General_Register;
+
+  subtype Data_Type is General_Register;
 
   type Stack_Type is array (1 .. Defs.StMax) of Data_Type;
 
@@ -72,7 +82,7 @@ package HAC.PCode.Interpreter.In_Defs is
     DISPLAY        : Co_Defs.Display_Type;  --  binding
     STACKSIZE      : Integer;               --  stack overflow if exceeded
     SUSPEND        : Integer;               --  id of object suspended on
-    R1, R2, R3     : GRegister;             --  general use registers
+    R1, R2, R3     : General_Register;
     Exception_Info : Exception_Propagation_Data;
   end record;
 
@@ -125,7 +135,7 @@ package HAC.PCode.Interpreter.In_Defs is
 
   procedure Allocate_Text_File (
     ND : in out Interpreter_Data;
-    R  : in out GRegister
+    R  : in out General_Register
   );
 
   procedure Free_Allocated_Contents (

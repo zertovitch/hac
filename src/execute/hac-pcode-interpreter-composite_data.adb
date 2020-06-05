@@ -65,7 +65,7 @@ package body HAC.PCode.Interpreter.Composite_Data is
         H1 := H1 + 1;
         H2 := H2 + 1;
       end loop;
-      --  Padding (!! will be removed)
+      --  Padding (!! this will be removed)
       H5 := ND.S (Curr_TCB.T - 2).I + H3;              --  H5 = H1 + H3
       while H1 < H5 loop
         --  fill with blanks if req'd

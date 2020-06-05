@@ -9,7 +9,8 @@ with HAC_Pack;
 
 with Ada.Calendar,
      Ada.Command_Line,
-     Ada.Environment_Variables;
+     Ada.Environment_Variables,
+     Ada.IO_Exceptions;
 
 package body HAC.PCode.Interpreter is
 
@@ -34,7 +35,7 @@ package body HAC.PCode.Interpreter is
       HAC.PCode.Interpreter.Tasking.Init_other_tasks (CD, ND);
     end Start_Interpreter;
 
-    procedure Raise_Standard (SE: Exception_Type; Msg : String) is
+    procedure Raise_Standard (SE: Exception_Type; Msg : String := "") is
       EI : Exception_Propagation_Data renames ND.TCB (ND.CurTask).Exception_Info;
     begin
       EI.Currently_Raised  := (SE, 0);
@@ -43,8 +44,7 @@ package body HAC.PCode.Interpreter is
 
     procedure Do_Standard_Function is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-      Top_Item : GRegister renames ND.S (Curr_TCB.T);
-      Arg : Integer;
+      Top_Item : General_Register renames ND.S (Curr_TCB.T);
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
       use Defs;
     begin
@@ -65,9 +65,8 @@ package body HAC.PCode.Interpreter is
             end case;
           end if;
         when SF_Argument =>
-          Arg := Top_Item.I;
-          --  The stack top item may change its type here (if register has discriminant).
-          Top_Item.V := To_VString (Argument (Arg));
+          --  The stack top item may change its type here.
+          Top_Item := GR_VString (Argument (Top_Item.I));
         when SF_Shell_Execute =>
           Top_Item.I := Shell_Execute (To_String (Top_Item.V));
         when SF_Argument_Count =>
@@ -97,8 +96,10 @@ package body HAC.PCode.Interpreter is
         --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
         case Typ is
           when Ints     => Get_Console (ND.S (Out_Param).I);
-          when Floats   => Get_Console (ND.S (Out_Param).R);
-          when VStrings => ND.S (Out_Param).V := To_VString (Get_Line_Console);
+          when Floats   =>
+            ND.S (Out_Param) := GR_Real (0.0);  --  First, switch type to Floats.
+            Get_Console (ND.S (Out_Param).R);
+          when VStrings => ND.S (Out_Param) := GR_VString (Get_Line_Console);
           when Chars    =>
             if Immediate then
               Get_Immediate_Console (CH);
@@ -127,7 +128,7 @@ package body HAC.PCode.Interpreter is
               Ada.Text_IO.Get (FP.all, CH);
               ND.S (Out_Param).I := Character'Pos (CH);
             when VStrings =>
-              ND.S (Out_Param).V := To_VString (Ada.Text_IO.Get_Line (FP.all));
+              ND.S (Out_Param) := GR_VString (Ada.Text_IO.Get_Line (FP.all));
             when others =>
               null;
           end case;
@@ -138,12 +139,16 @@ package body HAC.PCode.Interpreter is
         Pop (2);
       end if;
       ND.SWITCH := True;  --  give up control when doing I/O
+    exception
+      when Ada.IO_Exceptions.Data_Error =>
+        Raise_Standard (VME_Data_Error);
+        raise VM_Raised_Exception;
     end Do_Text_Read;
 
     procedure Do_Write_Formatted (Code : SP_Code) is
       Curr_TCB : Task_Control_Block renames   ND.TCB (ND.CurTask);
       FP       : File_Ptr;
-      Item     : GRegister renames            ND.S (Curr_TCB.T - 3);
+      Item     : General_Register renames     ND.S (Curr_TCB.T - 3);
       Format_1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 2).I;
       Format_2 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
       Format_3 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T    ).I;
@@ -198,7 +203,7 @@ package body HAC.PCode.Interpreter is
       Var_Addr : constant HAC_Integer := ND.S (Curr_TCB.T).I;
     begin
       case Typen'Val (ND.IR.Y) is
-        when VStrings   => ND.S (Var_Addr).V := Null_VString;
+        when VStrings   => ND.S (Var_Addr) := GR_VString (Null_VString);
         when Text_Files => Allocate_Text_File (ND, ND.S (Var_Addr));
         when others     => null;
       end case;
@@ -249,7 +254,7 @@ package body HAC.PCode.Interpreter is
           Pop (2);
         when SP_Push_Abstract_Console =>
           Push;
-          ND.S (Curr_TCB.T).Txt := Abstract_Console;
+          ND.S (Curr_TCB.T) := GR_Abstract_Console;
         when SP_Get | SP_Get_Immediate | SP_Get_Line | SP_Get_F | SP_Get_Line_F =>
           Do_Text_Read (Code);
         when SP_Put |SP_Put_Line | SP_Put_F | SP_Put_Line_F =>
@@ -325,7 +330,11 @@ package body HAC.PCode.Interpreter is
           when k_Push_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
             ND.S (Curr_TCB.T).I := IR.Y;
           when k_Push_Float_Literal =>
-            ND.S (Curr_TCB.T).R := CD.Float_Constants_Table (IR.Y);
+            ND.S (Curr_TCB.T) := (
+              Special => Defs.Floats,
+              I       => 0,
+              R       => CD.Float_Constants_Table (IR.Y)
+            );
         end case;
       end Do_Atomic_Data_Push_Operation;
       --
@@ -473,11 +482,12 @@ package body HAC.PCode.Interpreter is
     case E.Currently_Raised.Ex_Typ is
       when No_Exception         => return "";
       when VME_Constraint_Error => return "Constraint_Error";
-      when VME_Program_Error    => return "Program_Error";
+      when VME_Data_Error       => return "Data_Error";
       when VME_End_Error        => return "End_Error";
       when VME_Name_Error       => return "Name_Error";
-      when VME_Use_Error        => return "Use_Error";
+      when VME_Program_Error    => return "Program_Error";
       when VME_Storage_Error    => return "Storage_Error";
+      when VME_Use_Error        => return "Use_Error";
       when VME_Custom           => return "(custom)";  --  needs to use details
     end case;
   end Image;

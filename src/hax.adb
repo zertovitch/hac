@@ -1,6 +1,6 @@
 with HAC.Compiler,
      HAC.Co_Defs,
-     HAC.PCode.Interpreter;
+     HAC.PCode.Interpreter.In_Defs;
 
 with Show_License;
 
@@ -15,7 +15,7 @@ with GNAT.Traceback.Symbolic, Ada.Exceptions;
 procedure HAX is
 
   verbosity : Natural := 0;
-  caveat       : constant String := "Caution: HAC is not a real Ada compiler.";
+  caveat       : constant String := "Caution: HAC is not a complete Ada compiler.";
   version_info : constant String :=
     "Compiler version: " & HAC.version & " dated " & HAC.reference & '.';
 
@@ -141,13 +141,12 @@ procedure HAX is
     Show_License (Current_Error, "hac.ads");
   end Help;
 
+  no_haxing : Boolean := True;
+
 begin
-  if Argument_Count = 0 then
-    Help;
-  end if;
   for i in 1 .. Argument_Count loop
     if Argument (i) = "-h" then
-      Help;
+      exit;
     elsif Argument (i) = "-v" or else Argument (i) = "-v1" then
       verbosity := 1;
     elsif Argument (i) = "-v2" then
@@ -158,9 +157,19 @@ begin
       cmp_dump_file_name := To_Unbounded_String ("symbols.lst");
     else
       Compile_and_interpret_file (Argument (i), i);
-      exit;
+      no_haxing := False;
+      exit;  --  The other arguments are for the HAC program.
     end if;
   end loop;
+  if no_haxing then
+    Help;
+    if verbosity > 1 then
+      Put_Line ("Size of a HAC VM memory unit:" &
+        Integer'Image (HAC.PCode.Interpreter.In_Defs.Data_Type'Size / 8) &
+        " bytes"
+      );
+    end if;
+  end if;
 exception
   when E: others =>
     New_Line (Current_Error);
