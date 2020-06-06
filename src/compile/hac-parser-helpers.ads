@@ -225,6 +225,7 @@ package HAC.Parser.Helpers is
 
   Declaration_Symbol : constant Symset :=
     (IDent            |
+     SUBTYPE_Symbol   |
      TYPE_Symbol      |
      TASK_Symbol      |
      PROCEDURE_Symbol |
@@ -321,12 +322,6 @@ package HAC.Parser.Helpers is
   --  Check if we have an "array of Character", for instance a String.
   --
   function Is_Char_Array (CD : Compiler_Data; T : Exact_Typ) return Boolean;
-
-  type Constant_Rec is record
-    TP : Exact_Typ;
-    I  : Integer;
-    R  : HAC_Float;
-  end record;
 
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-

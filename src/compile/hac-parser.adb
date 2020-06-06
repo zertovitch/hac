@@ -5,6 +5,7 @@ with HAC.Compiler.PCode_Emit,
      HAC.Parser.Helpers,
      HAC.Parser.Standard_Procedures,
      HAC.Parser.Tasking,
+     HAC.Parser.Type_Def,
      HAC.Scanner,
      HAC.UErrors;
 
@@ -25,7 +26,8 @@ package body HAC.Parser is
   )
   is
     use Calls, Compiler, Defs, Enter_Def,
-        Expressions, Helpers, PCode, Compiler.PCode_Emit, UErrors;
+        Expressions, Helpers, PCode, Compiler.PCode_Emit,
+        Type_Def, UErrors;
     --
     Level : Nesting_level := Initial_Level;
     procedure InSymbol is begin Scanner.InSymbol (CD); end;
@@ -34,252 +36,6 @@ package body HAC.Parser is
     MaxDX   : Integer;
     PRB     : Integer;  -- B-Index of this procedure
     ICode   : Integer;  -- Size of initialization ObjCode generated
-
-    ------------------------------------------------------------------
-    ----------------------------------Number_Declaration_or_Enum_Item-
-    procedure Number_Declaration_or_Enum_Item (FSys_ND : Symset; C : out Constant_Rec) is
-      --  This covers number declarations (RM 3.3.2) and enumeration items (RM 3.5.1).
-      --  Additionally this compiler does on-the-fly declarations for static values:
-      --  bounds in ranges (FOR, ARRAY), and values in CASE statements.
-      --  Was: Constant in the Pascal compiler.
-      X, Sign : Integer;
-      signed : Boolean := False;
-    begin
-      C.TP := Type_Undefined;
-      C.I  := 0;
-      Test (CD, Constant_Definition_Begin_Symbol, FSys_ND, err_illegal_symbol_for_a_number_declaration);
-      if not Constant_Definition_Begin_Symbol (CD.Sy) then
-        return;
-      end if;
-      if CD.Sy = CharCon then  --  Untyped character constant, occurs only in ranges.
-        C.TP := (Chars, 0);
-        C.I  := CD.INum;
-        InSymbol;
-      else
-        Sign := 1;
-        if Plus_Minus (CD.Sy) then
-          signed := True;
-          if CD.Sy = Minus then
-            Sign := -1;
-          end if;
-          InSymbol;
-        end if;
-        if CD.Sy = IDent then
-          --  Number defined using another one: "minus_pi : constant := -pi;"
-          --  ... or, we have an enumeration item.
-          X := Locate_Identifier (CD, CD.Id, Level);
-          if X /= 0 then
-            if CD.IdTab (X).Obj /= Declared_Number_or_Enum_Item then
-              Error (CD, err_illegal_constant_or_constant_identifier);
-            else
-              C.TP := CD.IdTab (X).xTyp;
-              if C.TP.TYP = Floats then
-                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr_or_Sz);
-              else
-                C.I := Sign * CD.IdTab (X).Adr_or_Sz;
-                if signed and then C.TP.TYP not in Numeric_Typ then
-                  Error (CD, err_numeric_constant_expected);
-                end if;
-              end if;
-            end if;
-          end if;  --  X /= 0
-          InSymbol;
-        elsif CD.Sy = IntCon then
-          C.TP := (Ints, 0);
-          C.I  := Sign * CD.INum;
-          InSymbol;
-        elsif CD.Sy = FloatCon then
-          C.TP := (Floats, 0);
-          C.R  := HAC_Float (Sign) * CD.RNum;
-          InSymbol;
-        else
-          Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
-        end if;
-      end if;
-      Test (CD, FSys_ND, Empty_Symset, err_incorrectly_used_symbol);
-    end Number_Declaration_or_Enum_Item;
-
-    ------------------------------------------------------------------
-    -----------------------------------Type_Definition - RM 3.2.1 (4)-
-
-    procedure Type_Definition (FSys_TD : Symset; xTP : out Exact_Typ; Sz : out Integer) is
-
-      procedure Array_Typ (
-        Arr_Tab_Ref, Arr_Size      : out Integer;
-        String_Constrained_Subtype :     Boolean
-      )
-      is
-        Element_Exact_Typ : Exact_Typ;
-        Element_Size      : Integer;
-        Lower_Bound,
-        Higher_Bound      : Constant_Rec;
-      begin
-        Number_Declaration_or_Enum_Item (OF_RANGE_Double_Dot_RParent + FSys_TD, Lower_Bound);
-        --
-        if Lower_Bound.TP.TYP = Floats then
-          Error (CD, err_illegal_array_bounds, "a float type is not expected for a bound");
-          Lower_Bound.TP := (Ints, 0);
-          Lower_Bound.I  := 0;
-        end if;
-        Need (CD, Range_Double_Dot_Symbol, err_expecting_double_dot);
-        --
-        Number_Declaration_or_Enum_Item (Comma_OF_RParent + FSys_TD, Higher_Bound);
-        --
-        if Higher_Bound.TP /= Lower_Bound.TP then
-          Error (CD, err_illegal_array_bounds, "bound types do not match");
-          Higher_Bound.I := Lower_Bound.I;
-        end if;
-        Enter_Array (CD, Lower_Bound.TP, Lower_Bound.I, Higher_Bound.I);
-        Arr_Tab_Ref := CD.Arrays_Count;
-        if String_Constrained_Subtype then
-          --  We define String (L .. H) exactly as an "array (L .. H) of Character".
-          Element_Exact_Typ := (TYP => Chars, Ref => 0);
-          Element_Size := 1;
-          Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-        elsif CD.Sy = Comma then
-          --  Multidimensional array is equivalant to:  array (range_1) of array (range_2,...).
-          InSymbol;  --  Consume ',' symbol.
-          Element_Exact_Typ.TYP := Arrays;  --  Recursion for next array dimension.
-          Array_Typ (Element_Exact_Typ.Ref, Element_Size, False);
-        else
-          Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-          Need (CD, OF_Symbol, err_missing_OF);         --  "of"  in  "array (...) of Some_Type"
-          Type_Definition (FSys_TD, Element_Exact_Typ, Element_Size);  --  "Some_Type"
-        end if;
-        Arr_Size := (Higher_Bound.I - Lower_Bound.I + 1) * Element_Size;
-        declare
-          New_A : ATabEntry renames CD.Arrays_Table (Arr_Tab_Ref);
-        begin
-          New_A.Array_Size   := Arr_Size;  --  Index_xTyp, Low, High already set by Enter_Array.
-          New_A.Element_xTyp := Element_Exact_Typ;
-          New_A.Element_Size := Element_Size;
-        end;
-      end Array_Typ;
-
-      procedure Enumeration_Typ is  --  RM 3.5.1 Enumeration Types
-        enum_count : Natural := 0;
-      begin
-        xTP := (TYP => Enums, Ref => CD.Id_Count);
-        loop
-          InSymbol;  --  Consume '(' symbol.
-          if CD.Sy = IDent then
-            enum_count := enum_count + 1;
-            Enter (CD, Level, CD.Id, CD.Id_with_case, Declared_Number_or_Enum_Item);
-            declare
-              New_Enum_Item : IdTabEntry renames CD.IdTab (CD.Id_Count);
-            begin
-              New_Enum_Item.Read_only := True;
-              New_Enum_Item.xTyp      := xTP;
-              New_Enum_Item.Adr_or_Sz := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
-            end;
-          else
-            Error (CD, err_identifier_missing);
-          end if;
-          InSymbol;
-          exit when CD.Sy /= Comma;
-        end loop;
-        Sz := 1;  --  Was: enum_count -> caused stack corruption on calls to P (e: in Enum).
-        --  TBD : store enum_count somewhere, for T'Last.
-        Need (CD, RParent, err_closing_parenthesis_missing);
-      end Enumeration_Typ;
-
-      procedure Record_Typ is
-        Field_Exact_Typ : Exact_Typ;
-        Field_Size, Offset, T0, T1 : Integer;
-      begin
-        InSymbol;  --  Consume RECORD symbol.
-        Enter_Block (CD, CD.Id_Count);
-        xTP := (TYP => Records, Ref => CD.Blocks_Count);
-        if Level = Nesting_Level_Max then
-          Fatal (LEVELS);  --  Exception is raised there.
-        end if;
-        Level              := Level + 1;
-        CD.Display (Level) := CD.Blocks_Count;
-        Offset             := 0;
-        --
-        loop
-          if CD.Sy /= IDent then
-            Error (CD, err_identifier_missing, stop => True);
-          else  --  RM 3.8 Component declaration
-            T0 := CD.Id_Count;
-            Enter_Variables (CD, Level);
-            Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
-            T1 := CD.Id_Count;
-            Type_Definition (FSys_TD + Comma_END_IDent_Semicolon, Field_Exact_Typ, Field_Size);
-            while T0 < T1 loop
-              T0                      := T0 + 1;
-              CD.IdTab (T0).xTyp      := Field_Exact_Typ;
-              CD.IdTab (T0).Adr_or_Sz := Offset;
-              Offset                  := Offset + Field_Size;
-            end loop;
-          end if;
-          Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
-          Ignore_Extra_Semicolons (CD);
-          exit when CD.Sy = END_Symbol;
-        end loop;
-        --
-        CD.Blocks_Table (xTP.Ref).VSize := Offset;
-        Sz                              := Offset;
-        CD.Blocks_Table (xTP.Ref).PSize := 0;
-        InSymbol;
-        Need (CD, RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
-        Level := Level - 1;
-      end Record_Typ;
-
-      procedure String_Sub_Typ is
-        --  Prototype of constraining an array type: String -> String (1 .. 26)
-        --  !! Need to implement general constraints...
-      begin
-        InSymbol;
-        Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
-        xTP.TYP := Arrays;
-        Array_Typ (xTP.Ref, Sz, String_Constrained_Subtype => True);
-      end String_Sub_Typ;
-
-      procedure Sub_Typ is
-        Ident_Index : constant Integer := Locate_Identifier (CD, CD.Id, Level);
-      begin
-        if Ident_Index /= No_Id then
-          if CD.IdTab (Ident_Index).Obj = TypeMark then
-            xTP := CD.IdTab (Ident_Index).xTyp;
-            Sz  := CD.IdTab (Ident_Index).Adr_or_Sz;
-            if xTP.TYP = NOTYP then
-              Error (CD, err_undefined_type);
-            end if;
-          else
-            Error (CD, err_missing_a_type_identifier);
-          end if;
-        end if;
-        InSymbol;
-      end Sub_Typ;
-
-    begin
-      xTP := Type_Undefined;
-      Sz := 0;
-      Test (CD, Type_Begin_Symbol, FSys_TD, err_missing_ARRAY_RECORD_or_ident);
-      if Type_Begin_Symbol (CD.Sy) then
-        case CD.Sy is
-          when IDent =>
-            if Equal (CD.Id, "STRING") then
-              String_Sub_Typ;
-            else
-              Sub_Typ;
-            end if;
-          when ARRAY_Symbol =>
-            InSymbol;
-            Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
-            xTP.TYP := Arrays;
-            Array_Typ (xTP.Ref, Sz, String_Constrained_Subtype => False);
-          when RECORD_Symbol =>
-            Record_Typ;
-          when LParent =>
-            Enumeration_Typ;
-          when others =>
-            null;
-        end case;  --  CD.Sy
-        Test (CD, FSys_TD, Empty_Symset, err_incorrectly_used_symbol);
-      end if;
-    end Type_Definition;
 
     ------------------------------------------------------------------
     --------------------------------------------Formal_Parameter_List-
@@ -358,27 +114,6 @@ package body HAC.Parser is
         Error (CD, err_closing_parenthesis_missing);
       end if;
     end Formal_Parameter_List;
-
-    ------------------------------------------------------------------
-    -------------------------------------------------Type_Declaration-
-    procedure Type_Declaration is
-      xTyp : Exact_Typ;
-      Sz, T1 : Integer;
-    begin
-      InSymbol;
-      Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
-      Enter (CD, Level, CD.Id, CD.Id_with_case, TypeMark);
-      T1 := CD.Id_Count;
-      InSymbol;
-      Need (CD, IS_Symbol, err_IS_missing);
-      xTyp := Type_Undefined;
-      Sz := 0;
-      Type_Definition (Comma_IDent_Semicolon + FSys, xTyp, Sz);
-      CD.IdTab (T1).xTyp      := xTyp;
-      CD.IdTab (T1).Adr_or_Sz := Sz;
-      --
-      Test_Semicolon (CD, FSys);
-    end Type_Declaration;
 
     ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
@@ -520,6 +255,8 @@ package body HAC.Parser is
         is_untyped_constant       : Boolean;
         C                         : Constant_Rec;
         I_dummy                   : Integer;
+        Dummy_First               : HAC_Integer;
+        Dummy_Last                : HAC_Integer;
       begin
         T0 := CD.Id_Count;
         Enter_Variables (CD, Level);
@@ -540,7 +277,10 @@ package body HAC.Parser is
         is_typed := False;
         if Type_Begin_Symbol (CD.Sy) then  --  Here, a type name or an anonymous type definition
           is_typed := True;
-          Type_Definition (Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
+          Type_Definition (
+            CD, Level, Becomes_Comma_IDent_Semicolon + FSys,
+            xTyp, Sz, Dummy_First, Dummy_Last
+          );
         end if;
         Test (CD, Becomes_EQL_Semicolon, Empty_Symset, err_incorrectly_used_symbol);
         --
@@ -556,7 +296,7 @@ package body HAC.Parser is
           --  Numeric constant: we parse the number here ("k : constant := 123.0").
           if CD.Sy = Becomes then
             InSymbol;
-            Number_Declaration_or_Enum_Item (Comma_IDent_Semicolon + FSys, C);
+            Number_Declaration_or_Enum_Item (CD, Level, Comma_IDent_Semicolon + FSys, C);
           else
             Error (CD, err_BECOMES_missing);
           end if;
@@ -861,7 +601,7 @@ package body HAC.Parser is
           Lab : Constant_Rec;
           K   : Integer;
         begin
-          Number_Declaration_or_Enum_Item (FSys_St + Alt_Finger_THEN, Lab);
+          Number_Declaration_or_Enum_Item (CD, Level, FSys_St + Alt_Finger_THEN, Lab);
           if Lab.TP /= X then
             Type_Mismatch (
               CD, err_case_label_not_same_type_as_case_clause,
@@ -1011,7 +751,9 @@ package body HAC.Parser is
                 Block_Ref      => 0,
                 Normal         => True,
                 LEV            => Level,
-                Adr_or_Sz      => Dx
+                Adr_or_Sz      => Dx,
+                Discrete_First => 0,
+                Discrete_Last  => 0
              );
           CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx  := CD.Id_Count;
           Dx := Dx + 1;
@@ -1491,8 +1233,8 @@ package body HAC.Parser is
         if CD.Sy = IDent then
           Var_Declaration;
         end if;
-        if CD.Sy = TYPE_Symbol then
-          Type_Declaration;
+        if CD.Sy = TYPE_Symbol or CD.Sy = SUBTYPE_Symbol then
+          Type_Declaration (CD, Level, FSys);
         end if;
         if CD.Sy = TASK_Symbol then
           Tasking.Task_Declaration (CD, FSys, Level);
@@ -1680,6 +1422,9 @@ package body HAC.Parser is
       );
     end if;
     CD.Full_Block_Id := Restore_Block_ID;
+    if CD.Err_Count = 0 then
+      pragma Assert (Level = Initial_Level);
+    end if;
   end Block;
 
 end HAC.Parser;

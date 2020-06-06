@@ -189,11 +189,13 @@ package body HAC.Compiler is
 
     procedure Enter_Standard_Functions_and_Main is
 
-      procedure Enter
-       (X0 : String;
-        X1 : aObject;
-        X2 : Typen;
-        X3 : Integer)
+      procedure Enter_Std
+       (X0    : String;
+        X1    : aObject;
+        X2    : Typen;
+        Size  : Integer;
+        First : HAC_Integer := 0;
+        Last  : HAC_Integer := 0)
       is
         X0A  : constant Alfa := To_Alfa (X0);
         X0AU : constant Alfa := To_Alfa (Ada.Characters.Handling.To_Upper (X0));
@@ -210,42 +212,44 @@ package body HAC.Compiler is
           Block_Ref      => 0,
           Normal         => True,
           LEV            => 0,
-          Adr_or_Sz      => X3);
-      end Enter;
+          Adr_or_Sz      => Size,
+          Discrete_First => First,
+          Discrete_Last  => Last);
+      end Enter_Std;
 
-      procedure Enter_Typ (Name: String; T: Typen) is
+      procedure Enter_Typ (Name: String; T: Typen; First, Last: HAC_Integer) is
       begin
-        Enter (Name, TypeMark, T, 1);
+        Enter_Std (Name, TypeMark, T, 1, First, Last);
       end;
 
       procedure Enter_Std_Funct (Name: String; T: Typen; Code: SF_Code) is
       begin
-        Enter (Name, Funktion, T, SF_Code'Pos (Code));
+        Enter_Std (Name, Funktion, T, SF_Code'Pos (Code));
       end;
 
       procedure Enter_Std_Proc (Name: String; Code: SP_Code) is
       begin
-        Enter (Name, Prozedure, NOTYP, SP_Code'Pos (Code));
+        Enter_Std (Name, Prozedure, NOTYP, SP_Code'Pos (Code));
       end;
 
     begin
-      Enter ("",               Variable,        NOTYP, 0);
+      Enter_Std ("",               Variable,        NOTYP, 0);
       --
-      Enter ("False",          Declared_Number_or_Enum_Item, Bools, 0);
-      Enter ("True",           Declared_Number_or_Enum_Item, Bools, 1);
+      Enter_Std ("False",          Declared_Number_or_Enum_Item, Bools, 0);
+      Enter_Std ("True",           Declared_Number_or_Enum_Item, Bools, 1);
       --
-      Enter_Typ (HAC_Float_Name,   Floats);
-      Enter_Typ ("Character",      Chars);
-      Enter_Typ ("Boolean",        Bools);
-      Enter_Typ (HAC_Integer_Name, Ints);
-      Enter_Typ ("String",         String_Literals);  --{ Hathorn }
+      Enter_Typ (HAC_Float_Name,   Floats, 0, 0);
+      Enter_Typ ("Character",      Chars, 0, 255);
+      Enter_Typ ("Boolean",        Bools, 0, 1);
+      Enter_Typ (HAC_Integer_Name, Ints, HAC_Integer'First, HAC_Integer'Last);
+      Enter_Typ ("String",         String_Literals, 0, 0);
       --  String_Literals is used only for string literals like "abcd".
       --  The "STRING" type identifier is treated separately in the TYP parser
       --  and returns a constrained array of Character.
       --  Here we just reserve the "STRING" identifier at level 0.
-      Enter_Typ ("SEMAPHORE",      Ints);      --{ Hathorn }
-      Enter_Typ ("VString",        VStrings);    --  2020.05.02
-      Enter_Typ ("File_Type",      Text_Files);  --  2020.05.17
+      Enter_Typ ("SEMAPHORE",      Ints, 0, 0);
+      Enter_Typ ("VString",        VStrings, 0, 0);    --  2020.05.02
+      Enter_Typ ("File_Type",      Text_Files, 0, 0);  --  2020.05.17
       --
       --  Standard functions
       --
@@ -319,7 +323,7 @@ package body HAC.Compiler is
       --
       --  Enter Main.
       --
-      Enter (To_String (CD.Main_Program_ID),  Prozedure, NOTYP, 0);
+      Enter_Std (To_String (CD.Main_Program_ID),  Prozedure, NOTYP, 0);
     end Enter_Standard_Functions_and_Main;
 
     use Ada.Text_IO, HAC.Parser.Helpers;

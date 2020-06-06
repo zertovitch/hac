@@ -63,7 +63,9 @@ package body HAC.Parser.Enter_Def is
           Block_Ref      => 0,
           Normal         => True,
           LEV            => Level,
-          Adr_or_Sz      => 0
+          Adr_or_Sz      => 0,
+          Discrete_First => 0,
+          Discrete_Last  => 0
       );
       --  Update start of identifier chain:
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;

@@ -111,6 +111,8 @@ package HAC.Co_Defs is  --  Compiler definitions
     Normal         : Boolean;       --  value param?
     LEV            : PCode.Nesting_level;
     Adr_or_Sz      : Integer;
+    Discrete_First : HAC_Integer;   --  If Obj = TypeMark, T'First
+    Discrete_Last  : HAC_Integer;   --  If Obj = TypeMark, T'Last
   end record;
 
   --  Obj                           Meaning of Adr_or_Sz
@@ -211,6 +213,12 @@ package HAC.Co_Defs is  --  Compiler definitions
     Val       : Integer;  --  value of a choice in a CASE statement
     LC        : Integer;  --  instruction address
     Is_others : Boolean;
+  end record;
+
+  type Constant_Rec is record
+    TP : Exact_Typ;
+    I  : Integer;
+    R  : HAC_Float;
   end record;
 
 end HAC.Co_Defs;
