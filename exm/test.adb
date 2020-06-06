@@ -159,14 +159,15 @@ procedure Test is
   end Show_hs;
 
   procedure Int_Layout is
-    procedure IL_Base (b: Integer) is
-      procedure IL_Val (i: Integer) is
-        procedure IL_Width (w: Integer) is
+    procedure IL_Base (b : Integer) is
+      procedure IL_Val (i : Integer) is
+        procedure IL_Width (w : Integer) is
         begin
           --  if i >= 0 then Put (' '); end if;
           Put ('['); Put (i, w, b); Put (']');
         end;
       begin
+        Put("    ");
         for w in 0 .. 4 loop IL_Width (w); end loop;
         IL_Width (8);
         IL_Width (12);
@@ -182,6 +183,29 @@ procedure Test is
     IL_Base (10);
     IL_Base (16);
   end Int_Layout;
+
+  procedure Float_Layout is
+    procedure FL_Exp (e : Integer) is
+      procedure FL_Val (r : Real) is
+        procedure FL_Fore (f : Integer) is
+        begin
+          --  if i >= 0 then Put (' '); end if;
+          Put ('['); Put (r, f, 2, e); Put (']');
+        end;
+      begin
+        Put("    ");
+        for w in 0 .. 5 loop FL_Fore (w); end loop;
+        New_Line;
+      end;
+    begin
+      FL_Val (+123.0);
+      FL_Val (-123.0);
+    end;
+  begin
+    Put_Line ("Float layout: ");
+    FL_Exp (0);
+    FL_Exp (4);
+  end Float_Layout;
 
 begin
   Put('A');
@@ -205,6 +229,7 @@ begin
   Show_hs;
   --
   Int_Layout;
+  Float_Layout;
   -- My_Put(s, 1 , 5);
   New_Line;
   Put(Twenty); Put_Line(" ... should be: 20");
