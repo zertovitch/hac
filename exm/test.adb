@@ -76,9 +76,9 @@ procedure Test is
   -- Recursive Fibonacci numbers demonstration --
   -----------------------------------------------
 
-  procedure Fibo_demo(X: Integer) is -- !! Natural to be defined in HAC
+  procedure Fibo_demo(X: Natural) is
 
-    function Fib(P: Integer) return Integer is
+    function Fib(P: Natural) return Positive is
     begin
       if P <= 2 then
         return 1;
@@ -89,9 +89,9 @@ procedure Test is
 
   begin
     Put("  Fibonacci(");
-    Put(X);
-    Put(" ) = ");
-    Put(Fib(X));
+    Put(X, 2);
+    Put(") = ");
+    Put(Fib(X), 5);
     New_Line;
   end Fibo_demo;
 
@@ -151,15 +151,11 @@ procedure Test is
   Ten_point_one: constant := 10.1;
   c: Character;
   -- ABCDEFGHIJKLMNOPQRSTUVWXYZ: Character; -- Testing a long identifier
-  hs: String(1..7);
+  hs: String (1 .. 7);
 
   procedure Show_hs is
   begin
-    -- Put(hs); -- !! issues ERR_ILLEGAL_PARAMETERS_TO_PUT:  illegal parameters to "Put"
-    for i in 1..7 loop
-      Put(hs(i));
-    end loop;
-    New_Line;
+    Put_Line (hs);
   end Show_hs;
 
 begin
@@ -215,18 +211,14 @@ begin
   Put("Bla bla");
   Put("");
   Put_Line(" and more bla bla!");
-  for gagl in 1..20 loop
+  for gagl in 1 .. 20 loop
     Put(gagl);
-    Put(' ');
+    Put(" choice : ");
     case gagl is
-      when 4 =>
-        Put_Line("choice: four");
-      when 2 =>
-        Put_Line("choice: two");
-      when others =>
-        Put("choice: ");
-        Put(gagl); -- !! HAC: Put(gagl, 1) prints two integer...
-        Put_Line(" (others)");
+      when 4      => Put_Line ("... four");
+      when 2      => Put_Line ("... two");
+      when 7      => Put_Line ("... seven");
+      when others => Put (gagl, 1); Put_Line (" (others)");
     end case;
     exit when gagl = 8;
   end loop;

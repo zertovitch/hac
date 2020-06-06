@@ -5,9 +5,7 @@ with HAC_Pack; use HAC_Pack;
 
 procedure Ackermann is
 
-  --  !! Note: we should use Natural here (not yet defined by HAC).
-
-  function A (M, N : Integer) return Integer is
+  function A (M, N : Natural) return Positive is
   begin
     if M = 0 then
       return N + 1;
@@ -20,12 +18,10 @@ procedure Ackermann is
 
 begin
   Put_Line ("Ackermann function");
-  --  with M >= 4, numbers and recursions become HUGE
-  --  - see table of values in the Wikipedia page !
+  --  With M >= 4, numbers and recursions become HUGE.
+  --  See table of values in the Wikipedia page!
   for M in 0 .. 3 loop
-    --  !! HAC borks with N > 4, probably a stack
-    --     overflow due to recursion.
-    for N in 0 .. 4 loop
+    for N in 0 .. 6 loop
       Put (A (M, N));
     end loop;
     New_Line;

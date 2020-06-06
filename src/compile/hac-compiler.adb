@@ -250,6 +250,8 @@ package body HAC.Compiler is
       Enter_Typ ("SEMAPHORE",      Ints, 0, 0);
       Enter_Typ ("VString",        VStrings, 0, 0);    --  2020.05.02
       Enter_Typ ("File_Type",      Text_Files, 0, 0);  --  2020.05.17
+      Enter_Typ ("Natural",        Ints, 0, HAC_Integer'Last);
+      Enter_Typ ("Positive",       Ints, 1, HAC_Integer'Last);
       --
       --  Standard functions
       --

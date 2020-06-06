@@ -5,7 +5,7 @@ with HAC_Pack;  use HAC_Pack;
 
 procedure Recursion is
 
-  function Fibonacci (P: Integer) return Integer is
+  function Fibonacci (P: Natural) return Positive is
   begin
     if P <= 2 then
       return 1;
@@ -14,7 +14,7 @@ procedure Recursion is
     end if;
   end Fibonacci;
 
-  function Ackermann (M, N : Integer) return Integer is
+  function Ackermann (M, N : Natural) return Positive is
   begin
     if M = 0 then
       return N + 1;
