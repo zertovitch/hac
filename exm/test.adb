@@ -158,6 +158,31 @@ procedure Test is
     Put_Line (hs);
   end Show_hs;
 
+  procedure Int_Layout is
+    procedure IL_Base (b: Integer) is
+      procedure IL_Val (i: Integer) is
+        procedure IL_Width (w: Integer) is
+        begin
+          --  if i >= 0 then Put (' '); end if;
+          Put ('['); Put (i, w, b); Put (']');
+        end;
+      begin
+        for w in 0 .. 4 loop IL_Width (w); end loop;
+        IL_Width (8);
+        IL_Width (12);
+        New_Line;
+      end;
+    begin
+      IL_Val (+123);
+      IL_Val (-123);
+    end;
+  begin
+    Put_Line ("Integer layout: ");
+    IL_Base (2);
+    IL_Base (10);
+    IL_Base (16);
+  end Int_Layout;
+
 begin
   Put('A');
   c:= 'B';
@@ -179,6 +204,7 @@ begin
   hs:= "Hel'l'o";
   Show_hs;
   --
+  Int_Layout;
   -- My_Put(s, 1 , 5);
   New_Line;
   Put(Twenty); Put_Line(" ... should be: 20");
