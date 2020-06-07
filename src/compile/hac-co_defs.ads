@@ -217,7 +217,7 @@ package HAC.Co_Defs is  --  Compiler definitions
 
   type Constant_Rec is record
     TP : Exact_Typ;
-    I  : Integer;
+    I  : HAC_Integer;
     R  : HAC_Float;
   end record;
 

@@ -131,6 +131,8 @@ package body HAC.Parser.Type_Def is
     Level : Nesting_level := Initial_Level;
     procedure InSymbol is begin Scanner.InSymbol (CD); end;
     --
+    --  constrained_array_definition 3.6 (5)
+    --
     procedure Array_Typ (
       Arr_Tab_Ref, Arr_Size      : out Integer;
       String_Constrained_Subtype :     Boolean
