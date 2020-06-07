@@ -183,21 +183,21 @@ procedure Floats is
   end Produce_Base_Test;
 
   --  This is a copy of an example (see "exm/three_lakes_s.adb") of a
-  --  deterministic dynamic system.
+  --  deterministic dynamic system (in this case, a differential equation).
   --  Here, we check the end result of the calculation.
   --
   procedure Three_Lakes_S is
     type Lake is (Morat, Neuchatel, Bienne);
-    type Lake_Vector is array (Morat .. Bienne) of Real;
+    type Lake_Vector is array (Lake) of Real;
 
     procedure Times (l : Real; v : Lake_Vector; r : out Lake_Vector) is
     begin
-      for i in Morat .. Bienne loop r(i) := v(i) * l; end loop;
+      for i in Lake loop r(i) := v(i) * l; end loop;
     end Times;
 
     procedure Plus (a, b : Lake_Vector; r : out Lake_Vector) is
     begin
-      for i in Morat .. Bienne loop r(i) := a(i) + b(i); end loop;
+      for i in Lake loop r(i) := a(i) + b(i); end loop;
     end Plus;
 
     function Sign (i: Real) return Real is

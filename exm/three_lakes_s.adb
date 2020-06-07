@@ -34,8 +34,7 @@ procedure Three_Lakes_S is
 
   type Lake is (Morat, Neuchatel, Bienne);
 
-  type Lake_Vector is array (Morat .. Bienne) of Real;
-  --  ! Full Ada: we could write "array (Lake) of" too.
+  type Lake_Vector is array (Lake) of Real;
 
   --  ! Full Ada: programmable operators.
 
@@ -55,14 +54,12 @@ procedure Three_Lakes_S is
 
   procedure Times (l : Real; v : Lake_Vector; r : out Lake_Vector) is
   begin
-    for i in Morat .. Bienne loop r(i) := v(i) * l; end loop;
-    --  ! Full Ada: range: "Lake" or "v'Range"
+    for i in Lake loop r(i) := v(i) * l; end loop;
   end Times;
 
   procedure Plus (a, b : Lake_Vector; r : out Lake_Vector) is
   begin
-    for i in Morat .. Bienne loop r(i) := a(i) + b(i); end loop;
-    --  ! Full Ada: range: "Lake" or "v'Range"
+    for i in Lake loop r(i) := a(i) + b(i); end loop;
   end Plus;
 
   function Sign (i: Real) return Real is
@@ -182,7 +179,7 @@ procedure Three_Lakes_S is
 
     Create (f, sim_output);
     Put (f, "t");
-    for l in Morat .. Bienne loop  --  ! range: "Lake"
+    for l in Lake loop
       Put (f, sep);
       Put (f, l);  --  ! Lake'Image ()
     end loop;
@@ -190,7 +187,7 @@ procedure Three_Lakes_S is
     for i in 0 .. n_iter loop
       if i mod out_step = 0 then
         Put (f, i);
-        for l in Morat .. Bienne loop  --  ! range: "Lake"
+        for l in Lake loop
           Put (f, sep);
           Put (f, x(l), 4, 5, 0);
         end loop;

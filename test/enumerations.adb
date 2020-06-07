@@ -10,7 +10,7 @@ procedure Enumerations is
   type E4 is (g, h, i, j);
 
   procedure Test_ARRAY is
-    aa : array(d .. f) of E4;
+    aa : array (E3) of E4;
   begin
     aa (e) := g;
   end;
@@ -30,7 +30,7 @@ procedure Enumerations is
 
   v : R;
 
-  zz : array (d .. f) of R;
+  zz : array (E3) of R;
 
   type Animal is (ant, bat, cat, dog);
 

@@ -774,7 +774,10 @@ package body HAC.Parser is
             FOR_Begin := k_FOR_Reverse_Begin;
             InSymbol;
           end if;
-          Ranges.Dynamic_Range (CD, Level, FSys_St, err_control_variable_of_the_wrong_type);
+          Ranges.Dynamic_Range (CD, Level, FSys_St,
+            err_control_variable_of_the_wrong_type,
+            CD.IdTab (CD.Id_Count).xTyp  --  Set the type of "C" in "for C in Red .. Blue loop"
+          );
         else
           Skip (CD, FSys_St + LOOP_Symbol, err_IN_missing);
         end if;

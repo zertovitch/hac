@@ -18,4 +18,6 @@ begin
       Put_Line ("Compiler bug [B (missed exit]");
     end if;
   end loop;
+  --
+  --  for b in Boolean loop put_line (b); end loop;
 end Loops;
