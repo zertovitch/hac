@@ -3,6 +3,7 @@ with HAC.Compiler.PCode_Emit,
      HAC.Parser.Enter_Def,
      HAC.Parser.Expressions,
      HAC.Parser.Helpers,
+     HAC.Parser.Ranges,
      HAC.Parser.Standard_Procedures,
      HAC.Parser.Tasking,
      HAC.Parser.Type_Def,
@@ -728,10 +729,9 @@ package body HAC.Parser is
       end WHILE_Statement;
 
       procedure FOR_Statement is  --  RM 5.5 (9)
-        FOR_Lower_Bound,
-        FOR_Upper_Bound : Exact_Typ;
-        FOR_Begin       : Opcode;    --  Forward or Reverse
-        LC_FOR_Begin, Previous_Last       : Integer;
+        FOR_Begin : Opcode; --  Forward  or  Reverse
+        LC_FOR_Begin,
+        Previous_Last : Integer;
       begin
         InSymbol;  --  Consume FOR symbol.
         if CD.Sy = IDent then
@@ -774,29 +774,7 @@ package body HAC.Parser is
             FOR_Begin := k_FOR_Reverse_Begin;
             InSymbol;
           end if;
-          --  !!  Here we should have a more general syntax:
-          --      discrete_subtype_definition RM 3.6 (6) which is either
-          --      a subtype_indication 3.2.2 (3) : name [constraint] like "Color [range red .. blue]"
-          --      or a range 3.5 (3): "low .. high" or range_attribute_reference: A'Range
-          --
-          Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys_St, FOR_Lower_Bound);
-          CD.IdTab (CD.Id_Count).xTyp := FOR_Lower_Bound;
-          if not Discrete_Typ (FOR_Lower_Bound.TYP) then
-            Error (CD, err_control_variable_of_the_wrong_type);
-          end if;
-          if CD.Sy = Range_Double_Dot_Symbol then                          --  ".."
-            InSymbol;
-            Expression (CD, Level, FSys_St + LOOP_Symbol, FOR_Upper_Bound);
-            if FOR_Upper_Bound /= FOR_Lower_Bound then
-              Type_Mismatch (
-                CD, err_first_and_last_must_have_matching_types,
-                Found    => FOR_Upper_Bound,
-                Expected => FOR_Lower_Bound
-              );
-            end if;
-          else
-            Skip (CD, END_LOOP_Semicolon + FSys_St, err_expecting_double_dot);
-          end if;
+          Ranges.Dynamic_Range (CD, Level, FSys_St, err_control_variable_of_the_wrong_type);
         else
           Skip (CD, FSys_St + LOOP_Symbol, err_IN_missing);
         end if;

@@ -30,11 +30,12 @@ private package HAC.Parser.Ranges is
   --      type A is array (1 .. 5)
   --
   procedure Static_Range (
-    CD         : in out Compiler_Data;
-    Level      :        PCode.Nesting_level;
-    FSys       :        Defs.Symset;
-    Low_Bound  :    out Defs.HAC_Integer;
-    High_Bound :    out Defs.HAC_Integer
+    CD             : in out Compiler_Data;
+    Level          : in     PCode.Nesting_level;
+    FSys           : in     Defs.Symset;
+    Specific_Error : in     Defs.Compile_Error;
+    Lower_Bound    :    out Constant_Rec;
+    Higher_Bound   :    out Constant_Rec
   );
 
   --  (2) A range with dynamic bounds is parsed.
@@ -44,9 +45,10 @@ private package HAC.Parser.Ranges is
   --      for I in J .. N loop
 
   procedure Dynamic_Range (
-    CD         : in out Compiler_Data;
-    Level      :        PCode.Nesting_level;
-    FSys       :        Defs.Symset
+    CD                 : in out Compiler_Data;
+    Level              : in     PCode.Nesting_level;
+    FSys               : in     Defs.Symset;
+    Non_Discrete_Error : in     Defs.Compile_Error
   );
 
 end HAC.Parser.Ranges;

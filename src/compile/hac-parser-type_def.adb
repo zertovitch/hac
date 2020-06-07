@@ -11,6 +11,7 @@
 
 with HAC.Parser.Enter_Def,
      HAC.Parser.Helpers,
+     HAC.Parser.Ranges,
      HAC.Scanner,
      HAC.UErrors;
 
@@ -140,26 +141,13 @@ package body HAC.Parser.Type_Def is
     is
       Element_Exact_Typ : Exact_Typ;
       Element_Size      : Integer;
-      Lower_Bound,
+      Lower_Bound       : Constant_Rec;
       Higher_Bound      : Constant_Rec;
       Dummy_First       : HAC_Integer;
       Dummy_Last        : HAC_Integer;
+      use Ranges;
     begin
-      Number_Declaration_or_Enum_Item (CD, Level, OF_RANGE_Double_Dot_RParent + FSys_TD, Lower_Bound);
-      --
-      if Lower_Bound.TP.TYP = Floats then
-        Error (CD, err_illegal_array_bounds, "a float type is not expected for a bound");
-        Lower_Bound.TP := (Ints, 0);
-        Lower_Bound.I  := 0;
-      end if;
-      Need (CD, Range_Double_Dot_Symbol, err_expecting_double_dot);
-      --
-      Number_Declaration_or_Enum_Item (CD, Level, Comma_OF_RParent + FSys_TD, Higher_Bound);
-      --
-      if Higher_Bound.TP /= Lower_Bound.TP then
-        Error (CD, err_illegal_array_bounds, "bound types do not match");
-        Higher_Bound.I := Lower_Bound.I;
-      end if;
+      Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
       Enter_Array (CD, Lower_Bound.TP, Lower_Bound.I, Higher_Bound.I);
       Arr_Tab_Ref := CD.Arrays_Count;
       if String_Constrained_Subtype then
