@@ -1,18 +1,20 @@
 --  ***  This HAC demo is a version of the Three_Lakes
 --  ***  program in MathPaqs. The program is scaled down for
---  ***  meeting HAC v.0.06 syntax subset.
+--  ***  meeting HAC v.0.072 syntax subset.
 --  ***  We mark the downscaling with "!" in comments.
 --  ***
 --  ***  See "three_lakes.adb" @
 --  ***    https://mathpaqs.sourceforge.io/ or
 --  ***    https://github.com/zertovitch/mathpaqs .
 
---  This program solves a vectorial differential equation.
---  The unknown is a vector containing the levels of three lakes.
---  The lakes are connected by two channels.
---  There is an initial condition (levels at t = 0).
---  Boundary conditions take the form of natural inflows into the lakes,
---  and a single, controlled outflow out of one of the lakes.
+--  This program solves a vectorial ordinary differential equation
+--  (or a system of ordinary differential equations).
+--
+--  * The unknown is a vector containing the levels of three lakes.
+--  * The lakes are connected by two channels.
+--  * There is an initial condition: the levels at t = 0.
+--  * Boundary conditions take the form of natural inflows into the lakes,
+--    and a single, controlled outflow out of one of the lakes.
 --
 --  Related publication:
 --    Evolution simulee des niveaux dans le systeme des Trois-Lacs,
@@ -86,13 +88,14 @@ procedure Three_Lakes_S is
     ivs (Bienne    ) := 1.0 / 4.0870e7;
   end;
 
+  --  We solve numerically   x' (t) = f (x (t), t)   over the time step h.
+  --
   procedure Evolution (x : in out Lake_Vector; q_e : Lake_Vector; q_sb, h : Real) is
     --
     --  ! function f (x : Lake_Vector) return Lake_Vector is
-    --
     --  ! Full Ada: functions with non-atomic results.
 
-    procedure f (x : Lake_Vector; r: out Lake_Vector) is
+    procedure f (x : Lake_Vector; res_f: out Lake_Vector) is
       q_tr_mn, q_tr_nb : Real;
       --
       procedure Flux_tansfert is
@@ -114,34 +117,34 @@ procedure Three_Lakes_S is
       end Flux_tansfert;
     begin
       Flux_tansfert;
-      r (Morat    ) := (q_e (Morat)     - q_tr_mn                 ) * ivs (Morat);
-      r (Neuchatel) := (q_e (Neuchatel) + q_tr_mn - q_tr_nb       ) * ivs (Neuchatel);
-      r (Bienne   ) := (q_e (Bienne)              + q_tr_nb - q_sb) * ivs (Bienne);
+      res_f (Morat    ) := (q_e (Morat)     - q_tr_mn                 ) * ivs (Morat);
+      res_f (Neuchatel) := (q_e (Neuchatel) + q_tr_mn - q_tr_nb       ) * ivs (Neuchatel);
+      res_f (Bienne   ) := (q_e (Bienne)              + q_tr_nb - q_sb) * ivs (Bienne);
     end f;
     k1, k2, k3, k4, tmp_a, tmp_b, dbk2, dbk3 : Lake_Vector;
   begin
     --  Runge-Kutta, Order 4
     --
-    --  ! Full Ada: so much simpler with operators!
+    --  ! Full Ada: sooooo much simpler with operators!
     --
-    --  ! k1 := f (x               );
-    --  ! k2 := f (x + h * 0.5 * k1);
-    --  ! k3 := f (x + h * 0.5 * k2);
-    --  ! k4 := f (x + h *       k3);
-    --  ! x := x + h * (1.0/6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
+    --  !  k1 := f (x               );
+    --  !  k2 := f (x + h * 0.5 * k1);
+    --  !  k3 := f (x + h * 0.5 * k2);
+    --  !  k4 := f (x + h *       k3);
+    --  !  x := x + h * (1.0/6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
     --
     f (x               , k1);
     --
     Times (h * 0.5, k1, tmp_a);
-    Plus (x, tmp_a, tmp_b);      --  tmp_b = x + h * 0.5 * k1    
+    Plus (x, tmp_a, tmp_b);      --  tmp_b = x + h * 0.5 * k1
     f (tmp_b, k2);
     --
     Times (h * 0.5, k2, tmp_a);
-    Plus (x, tmp_a, tmp_b);      --  tmp_b = x + h * 0.5 * k2    
+    Plus (x, tmp_a, tmp_b);      --  tmp_b = x + h * 0.5 * k2
     f (tmp_b, k3);
     --
     Times (h, k3, tmp_a);
-    Plus (x, tmp_a, tmp_b);      --  tmp_b = x + h * k3    
+    Plus (x, tmp_a, tmp_b);      --  tmp_b = x + h * k3
     f (tmp_b, k4);
     --
     Times (2.0, k2, dbk2);
@@ -160,7 +163,7 @@ procedure Three_Lakes_S is
     q_sb, h : Real;
     n_iter : Integer;
     out_step : Integer;
-    f : File_Type;
+    rf : File_Type;
     sep : constant Character := ';';
   begin
     h := 3600.0;
@@ -177,31 +180,36 @@ procedure Three_Lakes_S is
     q_e (Bienne)    := 100.0;
     q_sb := 200.0;                                               --  Outflow (could be dynamic).
 
-    Create (f, sim_output);
-    Put (f, "t");
+    Create (rf, sim_output);
+    Put (rf, "t");
     for l in Lake loop
-      Put (f, sep);
-      Put (f, l);  --  ! Lake'Image ()
+      Put (rf, sep);
+      case l is  --  ! Full Ada: Put (rf, Lake'Image (l));
+        when Morat     => Put (rf, "Morat");
+        when Neuchatel => Put (rf, "Neuchatel");
+        when Bienne    => Put (rf, "Bienne");
+      end case;
     end loop;
-    New_Line (f);
+    New_Line (rf);
     for i in 0 .. n_iter loop
       if i mod out_step = 0 then
-        Put (f, i);
+        Put (rf, i);
         for l in Lake loop
-          Put (f, sep);
-          Put (f, x(l), 4, 5, 0);
+          Put (rf, sep);
+          Put (rf, x(l), 4, 5, 0);
         end loop;
-        New_Line (f);
+        New_Line (rf);
       end if;
       Evolution (x, q_e, q_sb, h);
     end loop;
-    Close (f);
+    Close (rf);
   end Simulation;
 
-  sim_output : VString := +"3_lakes_s.csv";
+  sim_output : constant VString := +"3_lakes_s.csv";
 
 begin
-  Put_Line("Three_Lakes_S Simulation. Output in: " & sim_output);
+  Put_Line("Three_Lakes_S Simulation.");
+  Put_Line("Output in: " & sim_output);
   Init_Sensitivity;
   Simulation (sim_output);
   Put_Line("Done");

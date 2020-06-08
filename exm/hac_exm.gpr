@@ -34,6 +34,7 @@ project HAC_Exm is
      "shell_sort.adb",
      "shell.adb",
      "strings_demo.adb",
+     "three_lakes_s.adb",
      "test1.adb",
      --
      --  2) * GNAT OK

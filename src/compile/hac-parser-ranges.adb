@@ -11,7 +11,7 @@ package body HAC.Parser.Ranges is
   --  like "Color" in "Color [range red .. blue]" ?
   --  In that case, we return the range red .. blue.
   --
-  procedure Subtype_Indication (  --  RM 3.2.2
+  procedure Static_Subtype_Indication (  --  RM 3.2.2
     CD        : in out Compiler_Data;
     Level     : in     PCode.Nesting_level;
     Low, High :    out Constant_Rec;
@@ -40,7 +40,7 @@ package body HAC.Parser.Ranges is
         end if;
       end;
     end if;
-  end Subtype_Indication;
+  end Static_Subtype_Indication;
 
   ------------------
   -- Static_Range --
@@ -60,7 +60,7 @@ package body HAC.Parser.Ranges is
     Is_SI_Found : Boolean;
     use Defs, Helpers, Type_Def, UErrors;
   begin
-    Subtype_Indication (CD, Level, Lower_Bound, Higher_Bound, Is_SI_Found);
+    Static_Subtype_Indication (CD, Level, Lower_Bound, Higher_Bound, Is_SI_Found);
     if Is_SI_Found then
       return;
       --  All right, we have parsed, e.g., "Boolean" and
@@ -108,7 +108,7 @@ package body HAC.Parser.Ranges is
     Is_SI_Found : Boolean;
     use Compiler.PCode_Emit, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
   begin
-    Subtype_Indication (CD, Level, Lower_Bound_Static, Higher_Bound_Static, Is_SI_Found);
+    Static_Subtype_Indication (CD, Level, Lower_Bound_Static, Higher_Bound_Static, Is_SI_Found);
     if Is_SI_Found then
       --  All right, we have parsed, e.g., "Boolean".
       --  Since we are in a dynamic context, we need to push
