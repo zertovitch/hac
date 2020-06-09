@@ -11,7 +11,7 @@
 
 with HAC.Co_Defs, HAC.Defs;
 
-with Ada.Containers.Vectors, Ada.Text_IO;
+with Ada.Calendar, Ada.Containers.Vectors, Ada.Text_IO;
 
 package HAC.PCode.Interpreter is
 
@@ -48,42 +48,48 @@ package HAC.PCode.Interpreter is
     Unhandled      : out Exception_Propagation_Data
   );
 
-  ----------------------------------------------------------------------------------
-  --  This version of the interpreter abstracts ALL console Text I/O, in case we  --
-  --  use something else than a standard terminal / console. Same for             --
-  --  Argument_Count and a few others.                                            --
-  --  See the LEA project for a specific non-trivial (windowed) implementation.   --
-  ----------------------------------------------------------------------------------
+  ---------------------------------------------------------------------------------
+  --  The following version of the interpreter abstracts ALL console Text I/O,   --
+  --  in case we use something else than a standard terminal / console.          --
+  --  Same for Argument_Count and a few others.                                  --
+  --  See the LEA project for a specific non-trivial (windowed) implementation.  --
+  ---------------------------------------------------------------------------------
 
   generic
+    with procedure Feedback (
+      Stack_Current, Stack_Total : in     Natural;
+      Wall_Clock                 : in     Ada.Calendar.Time;
+      User_Abort                 :    out Boolean
+    );
+    --
     with function End_Of_File_Console return Boolean;
     with function End_Of_Line_Console return Boolean;
     with function Get_Needs_Skip_Line return Boolean;
     --  ^ True  for a real console with Ada.Text_IO (line buffer);
     --    False for input boxes (like in LEA) or other kind of immediate input.
-    with procedure Get_Console (i: out Integer; Width : Ada.Text_IO.Field := 0);
-    with procedure Get_Console (f: out HAC.Defs.HAC_Float; Width : Ada.Text_IO.Field := 0);
-    with procedure Get_Console (c: out Character);
-    with procedure Get_Immediate_Console (c: out Character);
+    with procedure Get_Console (I: out Integer; Width : Ada.Text_IO.Field := 0);
+    with procedure Get_Console (F: out HAC.Defs.HAC_Float; Width : Ada.Text_IO.Field := 0);
+    with procedure Get_Console (C: out Character);
+    with procedure Get_Immediate_Console (C: out Character);
     with function Get_Line_Console return String;
     with procedure Skip_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
     --
     with procedure Put_Console (
-      i     : HAC.Defs.HAC_Integer;
+      I     : HAC.Defs.HAC_Integer;
       Width : Ada.Text_IO.Field       := HAC.Defs.IIO.Default_Width;
       Base  : Ada.Text_IO.Number_Base := HAC.Defs.IIO.Default_Base);
     with procedure Put_Console (
-      f    : HAC.Defs.HAC_Float;
+      F    : HAC.Defs.HAC_Float;
       Fore : Integer := HAC.Defs.RIO.Default_Fore;
       Aft  : Integer := HAC.Defs.RIO.Default_Aft;
       Exp  : Integer := HAC.Defs.RIO.Default_Exp
     );
     with procedure Put_Console (
-      b     : in Boolean;
+      B     : in Boolean;
       Width : Ada.Text_IO.Field    := HAC.Defs.BIO.Default_Width;
       Set   : Ada.Text_IO.Type_Set := HAC.Defs.BIO.Default_Setting);
-    with procedure Put_Console (c: in Character);
-    with procedure Put_Console (s: in String);
+    with procedure Put_Console (C: in Character);
+    with procedure Put_Console (S: in String);
     with procedure New_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
 
     --  We also abstract the command-line parameters.
@@ -102,6 +108,7 @@ private
 
   type Exception_Type is
     (No_Exception,
+     --  Ada classics:
      VME_Constraint_Error,
      VME_Data_Error,
      VME_Program_Error,
@@ -109,7 +116,10 @@ private
      VME_Name_Error,
      VME_Use_Error,
      VME_Storage_Error,
-     VME_Custom);
+     --
+     VME_User_Abort,
+     VME_Custom
+    );
 
   subtype Exception_Detail is Integer;
   --  Currently a placeholder (this is for the VME_Custom choice)

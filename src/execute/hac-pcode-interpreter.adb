@@ -7,8 +7,7 @@ with HAC.PCode.Interpreter.Calls,
 
 with HAC_Pack;
 
-with Ada.Calendar,
-     Ada.Command_Line,
+with Ada.Command_Line,
      Ada.Environment_Variables,
      Ada.IO_Exceptions;
 
@@ -40,6 +39,7 @@ package body HAC.PCode.Interpreter is
     begin
       EI.Currently_Raised  := (SE, 0);
       EI.Exception_Message := Defs.To_VString (Msg);
+      ND.PS := Exception_Raised;
     end Raise_Standard;
 
     procedure Do_Standard_Function is
@@ -397,12 +397,23 @@ package body HAC.PCode.Interpreter is
         null;  --  HAC exception has been already raised (see Name_Error for an example).
     end Execute_Current_Instruction_with_Exception;
 
+    User_Abort : Boolean;
+
   begin  --  Interpret
     Start_Interpreter;
     --
     Running_State:
     loop  --  until Processor state is not Running or Exception_Raised
       Tasking.Scheduling (CD, ND);
+      Feedback (
+        Stack_Current => ND.TCB (ND.CurTask).T,
+        Stack_Total   => ND.S'Last,
+        Wall_Clock    => ND.SYSCLOCK,
+        User_Abort    => User_Abort
+      );
+      if User_Abort then
+        Raise_Standard (VME_User_Abort, "");
+      end if;
       exit when ND.PS = DEADLOCK or ND.PS = FIN;
       --
       Fetch_Instruction;
@@ -436,6 +447,18 @@ package body HAC.PCode.Interpreter is
     Unhandled      : out Exception_Propagation_Data
   )
   is
+
+    procedure No_Feedback (
+      Stack_Current, Stack_Total : in     Natural;
+      Wall_Clock                 : in     Ada.Calendar.Time;
+      User_Abort                 :    out Boolean
+    )
+    is
+    pragma Unreferenced (Stack_Current, Stack_Total, Wall_Clock);
+    begin
+      User_Abort := False;  --  Ctrl-C will make it - in a less polite way...
+    end;
+
     function Shifted_Argument_Count return Natural is
     begin
       return Ada.Command_Line.Argument_Count - Argument_Shift;
@@ -452,7 +475,8 @@ package body HAC.PCode.Interpreter is
     end Get_Needs_Skip_Line;
 
     procedure Interpret_on_Current_IO_Instance is new Interpret
-      ( Ada.Text_IO.End_Of_File,
+      ( No_Feedback,
+        Ada.Text_IO.End_Of_File,
         Ada.Text_IO.End_Of_Line,
         Get_Needs_Skip_Line,
         Defs.IIO.Get,
@@ -488,6 +512,7 @@ package body HAC.PCode.Interpreter is
       when VME_Program_Error    => return "Program_Error";
       when VME_Storage_Error    => return "Storage_Error";
       when VME_Use_Error        => return "Use_Error";
+      when VME_User_Abort       => return "User_Abort";
       when VME_Custom           => return "(custom)";  --  needs to use details
     end case;
   end Image;
