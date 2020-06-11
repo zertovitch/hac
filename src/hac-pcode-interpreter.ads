@@ -48,12 +48,64 @@ package HAC.PCode.Interpreter is
     Unhandled      : out Exception_Propagation_Data
   );
 
+  --  Part of the subprograms useed for the Interpret_on_Current_IO
+  --  instanciation.
+  --
+  function Current_IO_Get_Needs_Skip_Line return Boolean;
+
   ---------------------------------------------------------------------------------
   --  The following version of the interpreter abstracts ALL console Text I/O,   --
   --  in case we use something else than a standard terminal / console.          --
-  --  Same for Argument_Count and a few others.                                  --
+  --  Similarily we abstract Argument_Count and a few others.                    --
   --  See the LEA project for a specific non-trivial (windowed) implementation.  --
   ---------------------------------------------------------------------------------
+
+  --  Due to the large amount of abstracted subprograms, we wrap
+  --  some groups into "traits". The idea is explained here:
+  --  https://blog.adacore.com/traits-based-containers
+  --
+  generic
+    with function End_Of_File return Boolean;
+    with function End_Of_Line return Boolean;
+    with function Get_Needs_Skip_Line return Boolean;
+    --  ^ True  for a real console with Ada.Text_IO (line buffer);
+    --    False for input boxes (like in LEA) or other kind of immediate input.
+    with procedure Get (I: out Integer; Width : Ada.Text_IO.Field := 0);
+    with procedure Get (F: out HAC.Defs.HAC_Float; Width : Ada.Text_IO.Field := 0);
+    with procedure Get (C: out Character);
+    with procedure Get_Immediate (C: out Character);
+    with function Get_Line return String;
+    with procedure Skip_Line (Spacing : Ada.Text_IO.Positive_Count := 1);
+    --
+    with procedure Put (
+      I     : HAC.Defs.HAC_Integer;
+      Width : Ada.Text_IO.Field       := HAC.Defs.IIO.Default_Width;
+      Base  : Ada.Text_IO.Number_Base := HAC.Defs.IIO.Default_Base);
+    with procedure Put (
+      F    : HAC.Defs.HAC_Float;
+      Fore : Integer := HAC.Defs.RIO.Default_Fore;
+      Aft  : Integer := HAC.Defs.RIO.Default_Aft;
+      Exp  : Integer := HAC.Defs.RIO.Default_Exp
+    );
+    with procedure Put (
+      B     : in Boolean;
+      Width : Ada.Text_IO.Field    := HAC.Defs.BIO.Default_Width;
+      Set   : Ada.Text_IO.Type_Set := HAC.Defs.BIO.Default_Setting);
+    with procedure Put (C: in Character);
+    with procedure Put (S: in String);
+    with procedure New_Line (Spacing : Ada.Text_IO.Positive_Count := 1);
+  package Console_Traits is
+  end;
+
+  generic
+    --  Function profiles for Argument* are from Ada.Command_Line (RM A.15).
+    with function Argument_Count return Natural;
+    with function Argument (Number : in Positive) return String;
+    --  Shell execution, Directory_Separator, ... are also abstracted.
+    with function Shell_Execute (Command : String) return Integer;
+    with function Directory_Separator return Character;
+  package System_Calls_Traits is
+  end;
 
   generic
     with procedure Feedback (
@@ -61,45 +113,9 @@ package HAC.PCode.Interpreter is
       Wall_Clock                 : in     Ada.Calendar.Time;
       User_Abort                 :    out Boolean
     );
+    with package Console is new Console_Traits (<>);
+    with package System_Calls is new System_Calls_Traits (<>);
     --
-    with function End_Of_File_Console return Boolean;
-    with function End_Of_Line_Console return Boolean;
-    with function Get_Needs_Skip_Line return Boolean;
-    --  ^ True  for a real console with Ada.Text_IO (line buffer);
-    --    False for input boxes (like in LEA) or other kind of immediate input.
-    with procedure Get_Console (I: out Integer; Width : Ada.Text_IO.Field := 0);
-    with procedure Get_Console (F: out HAC.Defs.HAC_Float; Width : Ada.Text_IO.Field := 0);
-    with procedure Get_Console (C: out Character);
-    with procedure Get_Immediate_Console (C: out Character);
-    with function Get_Line_Console return String;
-    with procedure Skip_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
-    --
-    with procedure Put_Console (
-      I     : HAC.Defs.HAC_Integer;
-      Width : Ada.Text_IO.Field       := HAC.Defs.IIO.Default_Width;
-      Base  : Ada.Text_IO.Number_Base := HAC.Defs.IIO.Default_Base);
-    with procedure Put_Console (
-      F    : HAC.Defs.HAC_Float;
-      Fore : Integer := HAC.Defs.RIO.Default_Fore;
-      Aft  : Integer := HAC.Defs.RIO.Default_Aft;
-      Exp  : Integer := HAC.Defs.RIO.Default_Exp
-    );
-    with procedure Put_Console (
-      B     : in Boolean;
-      Width : Ada.Text_IO.Field    := HAC.Defs.BIO.Default_Width;
-      Set   : Ada.Text_IO.Type_Set := HAC.Defs.BIO.Default_Setting);
-    with procedure Put_Console (C: in Character);
-    with procedure Put_Console (S: in String);
-    with procedure New_Line_Console (Spacing : Ada.Text_IO.Positive_Count := 1);
-
-    --  We also abstract the command-line parameters.
-    --  Function profiles are from Ada.Command_Line (RM A.15).
-    with function Argument_Count return Natural;
-    with function Argument (Number : in Positive) return String;
-    --  Shell execution, Directory_Separator, ... are also abstracted.
-    with function Shell_Execute (Command : String) return Integer;
-    with function Directory_Separator return Character;
-
   procedure Interpret (CD: Compiler_Data; Unhandled : out Exception_Propagation_Data);
 
   Abnormal_Termination : exception;

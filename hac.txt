@@ -106,13 +106,16 @@ and recursive subprograms), expressions, that are working, for instance.
   - The "String" type (unconstrained) is implemented in a very limited
       way. So far you can only define variables (or types, record fields)
       with it, like:
-        Digits : constant String (1..10) := "0123456789";
+        Digitz : constant String (1..10) := "0123456789";
       ... and output them with Put, Put_Line.
       For general string manipulation, the most practical way with
       the current versions of HAC is to use the VString variable-length
       string type.
   - There are no pointers (access types) and nor heap allocation,
       but you will be surprised how far you can go without pointers!
+  - Subprograms names cannot be overloaded, although some *predefined*
+      subprograms (including operators) are overloaded many times, like
+      "Put", "Get", "+", "&", ...
   - Task are implemented, but not yet tested.
 
 A more systematic testing is done in the "test" directory.

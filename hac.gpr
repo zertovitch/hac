@@ -7,7 +7,7 @@ project Hac is
    type Build_Mode_Type is ("Debug", "Fast");
    Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
 
-   for Main use ("hax.adb");
+   for Main use ("hax.adb", "hax_mini.adb", "hax_multi.adb");
 
    case Build_Mode is
       when "Debug" =>

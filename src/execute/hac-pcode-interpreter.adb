@@ -53,8 +53,8 @@ package body HAC.PCode.Interpreter is
           if ND.IR.X = 0 then  --  Niladic File info function -> abstract console
             Push;
             case SF_File_Information (Code) is
-              when SF_EOF  => ND.S (Curr_TCB.T).I := Boolean'Pos (End_Of_File_Console);
-              when SF_EOLN => ND.S (Curr_TCB.T).I := Boolean'Pos (End_Of_Line_Console);
+              when SF_EOF  => ND.S (Curr_TCB.T).I := Boolean'Pos (Console.End_Of_File);
+              when SF_EOLN => ND.S (Curr_TCB.T).I := Boolean'Pos (Console.End_Of_Line);
             end case;
           else
             case SF_File_Information (Code) is
@@ -66,18 +66,18 @@ package body HAC.PCode.Interpreter is
           end if;
         when SF_Argument =>
           --  The stack top item may change its type here.
-          Top_Item := GR_VString (Argument (Top_Item.I));
+          Top_Item := GR_VString (System_Calls.Argument (Top_Item.I));
         when SF_Shell_Execute =>
-          Top_Item.I := Shell_Execute (To_String (Top_Item.V));
+          Top_Item.I := System_Calls.Shell_Execute (To_String (Top_Item.V));
         when SF_Argument_Count =>
           Push;  --  Niladic function, needs to push a new item (their own result).
-          ND.S (Curr_TCB.T).I := Argument_Count;
+          ND.S (Curr_TCB.T).I := System_Calls.Argument_Count;
         when SF_Directory_Separator =>
           Push;  --  Niladic function, needs to push a new item (their own result).
-          ND.S (Curr_TCB.T).I := Character'Pos (Directory_Separator);
+          ND.S (Curr_TCB.T).I := Character'Pos (System_Calls.Directory_Separator);
         when SF_Get_Needs_Skip_Line =>
           Push;  --  Niladic function, needs to push a new item (their own result).
-          ND.S (Curr_TCB.T).I := Boolean'Pos (Get_Needs_Skip_Line);
+          ND.S (Curr_TCB.T).I := Boolean'Pos (Console.Get_Needs_Skip_Line);
         when others =>
           Operators.Do_SF_Operator (CD, ND);  --  Doesn't need generic stuff.
       end case;
@@ -95,23 +95,23 @@ package body HAC.PCode.Interpreter is
       if Code in SP_Get .. SP_Get_Line then
         --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
         case Typ is
-          when Ints     => Get_Console (ND.S (Out_Param).I);
+          when Ints     => Console.Get (ND.S (Out_Param).I);
           when Floats   =>
             ND.S (Out_Param) := GR_Real (0.0);  --  First, switch type to Floats.
-            Get_Console (ND.S (Out_Param).R);
-          when VStrings => ND.S (Out_Param) := GR_VString (Get_Line_Console);
+            Console.Get (ND.S (Out_Param).R);
+          when VStrings => ND.S (Out_Param) := GR_VString (Console.Get_Line);
           when Chars    =>
             if Immediate then
-              Get_Immediate_Console (CH);
+              Console.Get_Immediate (CH);
             else
-              Get_Console (CH);
+              Console.Get (CH);
             end if;
             ND.S (Out_Param).I := Character'Pos (CH);
           when others =>
             null;
         end case;
         if Code = SP_Get_Line and Typ /= VStrings then
-          Skip_Line_Console;
+          Console.Skip_Line;
         end if;
         Pop;
       else
@@ -157,20 +157,20 @@ package body HAC.PCode.Interpreter is
     begin
       if Code in SP_Put .. SP_Put_Line then
         case Typen'Val (ND.IR.Y) is
-          when Ints            => Put_Console (Item.I, Format_1, Format_2);
-          when Floats          => Put_Console (Item.R, Format_1, Format_2, Format_3);
-          when Bools           => Put_Console (Boolean'Val (Item.I), Format_1);
-          when Chars           => Put_Console (Character'Val (Item.I));
-          when VStrings        => Put_Console (To_String (Item.V));
-          when String_Literals => Put_Console (
+          when Ints            => Console.Put (Item.I, Format_1, Format_2);
+          when Floats          => Console.Put (Item.R, Format_1, Format_2, Format_3);
+          when Bools           => Console.Put (Boolean'Val (Item.I), Format_1);
+          when Chars           => Console.Put (Character'Val (Item.I));
+          when VStrings        => Console.Put (To_String (Item.V));
+          when String_Literals => Console.Put (
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Item.I - 1)
             );
-          when Arrays          => Put_Console (Get_String_from_Stack (ND, Item.I, Format_1));
+          when Arrays          => Console.Put (Get_String_from_Stack (ND, Item.I, Format_1));
           when others =>
             null;
         end case;
         if Code = SP_Put_Line then
-          New_Line_Console;
+          Console.New_Line;
         end if;
         Pop (4);
       else
@@ -261,7 +261,7 @@ package body HAC.PCode.Interpreter is
           Do_Write_Formatted (Code);
         when SP_New_Line =>
           if ND.S (Curr_TCB.T).Txt = Abstract_Console then
-            New_Line_Console;
+            Console.New_Line;
           else
             Ada.Text_IO.New_Line (ND.S (Curr_TCB.T).Txt.all);
           end if;
@@ -269,7 +269,7 @@ package body HAC.PCode.Interpreter is
         when SP_Skip_Line =>
           if ND.S (Curr_TCB.T).Txt = Abstract_Console then
             --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
-            Skip_Line_Console;
+            Console.Skip_Line;
           elsif Ada.Text_IO.End_Of_File (ND.S (Curr_TCB.T).Txt.all) then
             raise VM_End_Error;
           else
@@ -441,6 +441,11 @@ package body HAC.PCode.Interpreter is
     end case;
   end Interpret;
 
+  function Current_IO_Get_Needs_Skip_Line return Boolean is
+  begin
+    return True;  --  The input is buffered with Ada.Text_IO.Get (not Get_Immediate).
+  end Current_IO_Get_Needs_Skip_Line;
+
   procedure Interpret_on_Current_IO (
     CD_CIO         :     Compiler_Data;
     Argument_Shift :     Natural := 0;    --  Number of arguments to be skipped
@@ -457,7 +462,7 @@ package body HAC.PCode.Interpreter is
     pragma Unreferenced (Stack_Current, Stack_Total, Wall_Clock);
     begin
       User_Abort := False;  --  Ctrl-C will make it - in a less polite way...
-    end;
+    end No_Feedback;
 
     function Shifted_Argument_Count return Natural is
     begin
@@ -469,33 +474,39 @@ package body HAC.PCode.Interpreter is
       return Ada.Command_Line.Argument (Number + Argument_Shift);
     end;
 
-    function Get_Needs_Skip_Line return Boolean is
-    begin
-      return True;  --  The input is buffered with Ada.Text_IO.Get (not Get_Immediate).
-    end Get_Needs_Skip_Line;
+    package Current_IO_Console is new
+      Console_Traits
+        ( Ada.Text_IO.End_Of_File,
+          Ada.Text_IO.End_Of_Line,
+          Current_IO_Get_Needs_Skip_Line,
+          Defs.IIO.Get,
+          Defs.RIO.Get,
+          Ada.Text_IO.Get,
+          Ada.Text_IO.Get_Immediate,
+          Ada.Text_IO.Get_Line,
+          Ada.Text_IO.Skip_Line,
+          Defs.IIO.Put,
+          Defs.RIO.Put,
+          Defs.BIO.Put,
+          Ada.Text_IO.Put,
+          Ada.Text_IO.Put,
+          Ada.Text_IO.New_Line
+        );
 
-    procedure Interpret_on_Current_IO_Instance is new Interpret
-      ( No_Feedback,
-        Ada.Text_IO.End_Of_File,
-        Ada.Text_IO.End_Of_Line,
-        Get_Needs_Skip_Line,
-        Defs.IIO.Get,
-        Defs.RIO.Get,
-        Ada.Text_IO.Get,
-        Ada.Text_IO.Get_Immediate,
-        Ada.Text_IO.Get_Line,
-        Ada.Text_IO.Skip_Line,
-        Defs.IIO.Put,
-        Defs.RIO.Put,
-        Defs.BIO.Put,
-        Ada.Text_IO.Put,
-        Ada.Text_IO.Put,
-        Ada.Text_IO.New_Line,
-        Shifted_Argument_Count,
-        Shifted_Argument,
-        HAC_Pack.Shell_Execute,
-        HAC_Pack.Directory_Separator
-      );
+    package Custom_System_Calls is new
+      System_Calls_Traits
+        ( Shifted_Argument_Count,
+          Shifted_Argument,
+          HAC_Pack.Shell_Execute,
+          HAC_Pack.Directory_Separator
+        );
+
+    procedure Interpret_on_Current_IO_Instance is new
+      Interpret
+        ( No_Feedback,
+          Current_IO_Console,
+          Custom_System_Calls
+        );
 
   begin
     Interpret_on_Current_IO_Instance (CD_CIO, Unhandled);
