@@ -175,7 +175,7 @@ package body HAC.PCode.Interpreter.Tasking is
           if Curr_TCB.R2.R > 0.0 then
             --  Timed Wait
             Curr_TCB.TS       := TimedWait;
-            ND.SYSCLOCK          := GetClock;
+            ND.SYSCLOCK       := Ada.Calendar.Clock;
             Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (Curr_TCB.R2.R);
             Curr_TCB.PC       := IR.Y; --  Do SELECT again when awakened by caller
             ND.SWITCH := True;  --  give up control
@@ -305,7 +305,7 @@ package body HAC.PCode.Interpreter.Tasking is
     begin
       if ND.S (Curr_TCB.T).R > 0.0 then
         Curr_TCB.TS := Delayed;  --  set task state to delayed
-        ND.SYSCLOCK := GetClock;    --  update System Clock
+        ND.SYSCLOCK := Ada.Calendar.Clock;    --  update System Clock
         Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (ND.S (Curr_TCB.T).R);
         --  set wakeup time
         ND.SWITCH := True;          --  give up control
@@ -510,7 +510,7 @@ package body HAC.PCode.Interpreter.Tasking is
   --  $I sched.pas
   --  This file contains the different scheduling strategies
   begin
-    ND.SYSCLOCK := GetClock;
+    ND.SYSCLOCK := Clock;
     if ND.Snap then
       ShowTime;
     end if;
@@ -534,7 +534,7 @@ package body HAC.PCode.Interpreter.Tasking is
         loop --  Call Main Scheduler
           --  Schedule(Scheduler,CurTask, PS);
           ND.PS := Running;  --  !! Should call the task scheduler instead !!
-          ND.SYSCLOCK := GetClock;
+          ND.SYSCLOCK := Clock;
           if ND.Snap then
             ShowTime;
           end if;

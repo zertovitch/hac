@@ -13,9 +13,10 @@
 
 with HAC_Pack;
 
-with Ada.Numerics.Generic_Elementary_Functions;
-with Ada.Strings.Unbounded;
-with Ada.Text_IO;
+with Ada.Calendar,
+     Ada.Numerics.Generic_Elementary_Functions,
+     Ada.Strings.Unbounded,
+     Ada.Text_IO;
 
 package HAC.Defs is
 
@@ -29,6 +30,8 @@ package HAC.Defs is
   type HAC_Float is digits HAC_Pack.Real'Digits;
   HAC_Float_Name : constant String := "REAL";
   function HAC_Image (F : HAC_Float) return String;
+
+  function HAC_Image (T : Ada.Calendar.Time) return String;
 
   --  Max & Min Exponents. IEEE Double Precision.
   --  TBD: find the attribute, applied on HAC_Float, that matches this value.
@@ -252,6 +255,8 @@ package HAC.Defs is
     Bools,
     Chars,
     VStrings,
+    Times,
+    Durations,
     --
     Text_Files,  --  This one is limited (like Ada's File_Type).
     ------------------------------------

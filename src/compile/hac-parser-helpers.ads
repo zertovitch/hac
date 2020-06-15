@@ -308,6 +308,8 @@ package HAC.Parser.Helpers is
   Ints_Set         : constant Typ_Set := (Ints            => True, others => False);
   Floats_Set       : constant Typ_Set := (Floats          => True, others => False);
   VStrings_Set     : constant Typ_Set := (VStrings        => True, others => False);
+  Times_Set        : constant Typ_Set := (Times           => True, others => False);
+  Durations_Set    : constant Typ_Set := (Durations       => True, others => False);
   Str_Lit_Set      : constant Typ_Set := (String_Literals => True, others => False);
   Txt_Fil_Set      : constant Typ_Set := (Text_Files      => True, others => False);
 

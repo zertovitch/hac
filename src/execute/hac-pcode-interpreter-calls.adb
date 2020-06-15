@@ -75,7 +75,7 @@ package body HAC.PCode.Interpreter.Calls is
             Curr_TCB.TS := TimedRendz;     --  Timed Wait For Rendezvous
             Curr_TCB.R1.I := 1;            --  Init R1 to specify NO timeout
             Curr_TCB.R2.I := H2;           --  Save address of queue for purge
-            ND.SYSCLOCK := GetClock; --  update System Clock
+            ND.SYSCLOCK := Clock;          --  update System Clock
             Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (F1);
           end if;
           ND.SWITCH := True;       --  give up control

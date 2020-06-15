@@ -283,7 +283,8 @@ package HAC.PCode is
     --
     SF_Image_Ints,
     SF_Image_Floats,            --  "Nice" image
-    SF_Image_Attribute_Floats,  --  Image attribute "as is"
+    SF_Image_Attribute_Floats,  --  Image attribute "as is" from Ada
+    SF_Image_Times,
     SF_Integer_Value,
     SF_Float_Value,
     --

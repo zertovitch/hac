@@ -36,6 +36,7 @@ project HAC_Exm is
      "strings_demo.adb",
      "three_lakes_s.adb",
      "test1.adb",
+     "timing.adb",
      --
      --  2) * GNAT OK
      --     * HAC KO (feature not yet supported)

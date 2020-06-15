@@ -41,6 +41,16 @@ package body HAC.PCode.Interpreter.In_Defs is
     return (Special => Defs.Floats, I => 0, R => R);
   end;
 
+  function GR_Time (T : Ada.Calendar.Time) return General_Register is
+  begin
+    return (Special => Defs.Times, I => 0, Tim => T);
+  end;
+
+  function GR_Duration (D : Duration) return General_Register is
+  begin
+    return (Special => Defs.Durations, I => 0, Dur => D);
+  end;
+
   function GR_VString (S : String) return General_Register is
   begin
     return (Special => Defs.VStrings, I => 0, V => Defs.To_VString (S));

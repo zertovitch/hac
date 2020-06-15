@@ -582,7 +582,7 @@ package body HAC.Parser is
         InSymbol;
         if CD.Sy = Semicolon then
           Skip (CD, Semicolon, err_missing_expression_for_delay);
-        else                  -- calculate delay value
+        else
           Expression (CD, Level, Semicolon_Set, Y);
           if Y.TYP /= Floats then
             Error (CD, err_wrong_type_in_DELAY);

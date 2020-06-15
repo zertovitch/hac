@@ -228,6 +228,7 @@ package body HAC.PCode.Interpreter.Operators is
         when SF_Image_Ints             => Top_Item := GR_VString (HAC_Image (Top_Item.I));
         when SF_Image_Floats           => Top_Item := GR_VString (HAC_Image (Top_Item.R));
         when SF_Image_Attribute_Floats => Top_Item := GR_VString (HAC_Float'Image (Top_Item.R));
+        when SF_Image_Times            => Top_Item := GR_VString (HAC_Image (Top_Item.Tim));
         --
         when SF_Integer_Value => Top_Item.I := HAC_Integer'Value (Defs.To_String (Top_Item.V));
         when SF_Float_Value =>
@@ -248,8 +249,7 @@ package body HAC.PCode.Interpreter.Operators is
           Push (ND);
           case SF_Niladic (Code) is
             when SF_Clock =>
-              --  CLOCK function. Return time of units of seconds.
-              ND.S (Curr_TCB.T).R := Defs.HAC_Float (GetClock - ND.Start_Time);
+              ND.S (Curr_TCB.T) := GR_Time (Ada.Calendar.Clock);
             when SF_Random_Float =>
               ND.S (Curr_TCB.T).R := Defs.HAC_Float (Random (ND.Gen));
             when SF_Argument_Count | SF_Directory_Separator | SF_Get_Needs_Skip_Line =>

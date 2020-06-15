@@ -252,6 +252,8 @@ package body HAC.Compiler is
       Enter_Typ ("File_Type",      Text_Files, 0, 0);  --  2020.05.17
       Enter_Typ ("Natural",        Ints, 0, HAC_Integer'Last);
       Enter_Typ ("Positive",       Ints, 1, HAC_Integer'Last);
+      Enter_Typ ("Time",           Times, 0, 0);
+      Enter_Typ ("Duration",       Durations, 0, 0);
       --
       --  Standard functions
       --
@@ -272,7 +274,7 @@ package body HAC.Compiler is
       Enter_Std_Funct ("End_Of_Line",         Bools,  SF_EOLN);
       Enter_Std_Funct ("Rand",                Ints,   SF_Random_Int);
       Enter_Std_Funct ("Rnd",                 Floats, SF_Random_Float);
-      Enter_Std_Funct ("CLOCK",               Floats, SF_Clock);
+      Enter_Std_Funct ("Clock",               Times,  SF_Clock);
       --
       Enter_Std_Funct ("Element",             Chars,    SF_Element);
       Enter_Std_Funct ("Length",              Ints,     SF_Length);

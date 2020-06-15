@@ -50,6 +50,8 @@ package HAC.PCode.Interpreter.In_Defs is
     case Special is  --  This part is variant to save place.
       when Defs.Floats     => R   : Defs.HAC_Float;
       when Defs.VStrings   => V   : Defs.VString;
+      when Defs.Times      => Tim : Ada.Calendar.Time;
+      when Defs.Durations  => Dur : Duration;
       when Defs.Text_Files => Txt : File_Ptr := Abstract_Console;
       when others          => null;
     end case;
@@ -61,6 +63,8 @@ package HAC.PCode.Interpreter.In_Defs is
      Txt     => Abstract_Console);
 
   function GR_Real (R : Defs.HAC_Float) return General_Register;
+  function GR_Time (T : Ada.Calendar.Time) return General_Register;
+  function GR_Duration (D : Duration) return General_Register;
 
   function GR_VString (S : String) return General_Register;
   function GR_VString (V : Defs.VString) return General_Register;
@@ -103,8 +107,6 @@ package HAC.PCode.Interpreter.In_Defs is
   end record;
 
   type Entry_Queue is array (1 .. Defs.EntryMax) of EHeader;
-
-  function GetClock return Time renames Clock;
 
   package File_Vectors is new Ada.Containers.Vectors (Positive, File_Ptr);
 

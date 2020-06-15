@@ -166,14 +166,16 @@ package body HAC.Parser.Helpers is
     case T is
       when NOTYP           => return "(undefined type)";
       when Ints            => return "integer type";
-      when Chars           => return "character type";
-      when Bools           => return "boolean type";
+      when Chars           => return "Character type";        -- "the" Character type
+      when Bools           => return "Boolean type";          -- "the" Boolean type
       when Floats          => return "floating-point type";
       when Arrays          => return "array type";
       when Records         => return "record type";
       when Enums           => return "enumeration type";
       when String_Literals => return "fixed-size string type";
       when VStrings        => return "variable-size string type";
+      when Times           => return "Time type";                   --  "the" Time type
+      when Durations       => return "Duration type";               --  "the" Duration type
       when Text_Files      => return "text file type";
     end case;
   end Nice_Image;

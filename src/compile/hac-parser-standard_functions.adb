@@ -48,10 +48,11 @@ package body HAC.Parser.Standard_Functions is
         when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
           Expected (1) := Discrete_Typ;
         when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
-             SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan |
-             SF_Image_Ints
+             SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
           =>
           Expected (1) := Numeric_Typ_Set;
+        when SF_Image_Ints =>
+          Expected (1) := Numeric_Typ_Set or Times_Set;
         when SF_Image_Attribute_Floats =>
           Expected (1) := Floats_Set;
         when SF_Random_Int | SF_Argument =>
@@ -140,9 +141,11 @@ package body HAC.Parser.Standard_Functions is
             Emit1 (CD, k_Integer_to_Float, 0);
           end if;
         when SF_Image_Ints =>
-          if Actual (1).TYP = Floats then
-            Code_Adjusted := SF_Image_Floats;
-          end if;
+          case Actual (1).TYP is
+            when Floats => Code_Adjusted := SF_Image_Floats;
+            when Times  => Code_Adjusted := SF_Image_Times;
+            when others => null;
+          end case;
         when SF_To_Lower_Char =>               --  To_Lower (Item : Character) return Character;
           Return_Typ := Actual (1);
           if Actual (1).TYP = VStrings then    --  To_Lower (Item : VString) return VString;

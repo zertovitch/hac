@@ -15,11 +15,12 @@
 --  Another purpose of this specification is to document
 --  the standard types and subprograms in HAC.
 
-with Ada.Characters.Handling;
-with Ada.Command_Line;
-with Ada.Environment_Variables;
-with Ada.Strings.Unbounded;
-with Ada.Text_IO;
+with Ada.Calendar,
+     Ada.Characters.Handling,
+     Ada.Command_Line,
+     Ada.Environment_Variables,
+     Ada.Strings.Unbounded,
+     Ada.Text_IO;
 
 pragma Warnings ("H");  --  Disable warning: declaration of "=" hides predefined operator.
 
@@ -273,6 +274,11 @@ package HAC_Pack is
   function End_Of_Line (File : File_Type) return Boolean renames Ada.Text_IO.End_Of_Line;
   function End_Of_File (File : File_Type) return Boolean renames Ada.Text_IO.End_Of_File;
 
+  --  Time
+
+  subtype Time is Ada.Calendar.Time;
+  function Clock return Time renames Ada.Calendar.Clock;
+
   --  Misc.
 
   type Semaphore is new Integer; -- private;
@@ -281,7 +287,7 @@ package HAC_Pack is
   procedure  Wait      (S : Semaphore);
   procedure  Signal    (S : Semaphore);
 
-  --  Misc.
+  --  System
 
   function Argument_Count return Natural renames Ada.Command_Line.Argument_Count;
   function Argument (Number : Positive) return VString;
@@ -309,6 +315,8 @@ package HAC_Pack is
   function HAC_Generic_Image (I : Abstract_Integer) return String;
 
   function HAC_Image (F : Real) return String;
+
+  function HAC_Image (T : Ada.Calendar.Time) return String;
 
 private
 
