@@ -112,8 +112,12 @@ package HAC.PCode.Interpreter.In_Defs is
 
   type Task_Control_Blocks is array (TRange) of Task_Control_Block;
 
+  Single_Task : constant := -1;
+
+  subtype Scheduler_Type is Integer range Single_Task .. 6;
+
   --  Objects of type Interpreter_Data contains data that may be useful
-  --  to be kept post-mortem or in a snapshot to "outside", or
+  --  to be kept post-mortem, or in a snapshot toward the "outside", or
   --  passed to the scheduler.
 
   type Interpreter_Data is record
@@ -133,6 +137,7 @@ package HAC.PCode.Interpreter.In_Defs is
     SYSCLOCK    : Time;      --  (ms after 00:00:00 Jan 1, current year)
     TIMER       : Time;      --  set to end of current task's time slice
     Gen         : Ada.Numerics.Float_Random.Generator;
+    Scheduler   : Scheduler_Type := Single_Task;
   end record;
 
   procedure Allocate_Text_File (

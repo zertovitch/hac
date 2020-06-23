@@ -584,8 +584,13 @@ package body HAC.Parser is
           Skip (CD, Semicolon, err_missing_expression_for_delay);
         else
           Expression (CD, Level, Semicolon_Set, Y);
-          if Y.TYP /= Floats then
+          if Y.TYP /= Floats and Y.TYP /= Durations then
             Error (CD, err_wrong_type_in_DELAY);
+          end if;
+          if Y.TYP = Floats then
+            --  Hack: for expressions like 2.0 * 3600.0 we don't
+            --  know in advance it's not a Duration.
+            Emit_Std_Funct (CD, SF_Float_to_Duration);
           end if;
         end if;
         Emit (CD, k_Delay);

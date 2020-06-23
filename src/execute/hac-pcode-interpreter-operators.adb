@@ -108,6 +108,8 @@ package body HAC.PCode.Interpreter.Operators is
           Top_Item.I := Integer (Top_Item.R);
         when SF_Trunc_Float_to_Int =>
           Top_Item.I := Integer (Defs.HAC_Float'Floor (Top_Item.R));
+        when SF_Float_to_Duration =>
+          Top_Item := GR_Duration (Duration (Top_Item.R));
         when SF_Sin =>    Top_Item.R := Sin (Top_Item.R);
         when SF_Cos =>    Top_Item.R := Cos (Top_Item.R);
         when SF_Exp =>    Top_Item.R := Exp (Top_Item.R);

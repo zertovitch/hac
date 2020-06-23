@@ -138,7 +138,7 @@ package body HAC.Parser.Standard_Functions is
           =>
           if Ints_Set (Actual (1).TYP) then
             Forbid_Type_Coercion (CD, Found => Actual (1), Expected => (Floats, 0));
-            Emit1 (CD, k_Integer_to_Float, 0);
+            Emit1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda
           end if;
         when SF_Image_Ints =>
           case Actual (1).TYP is

@@ -301,13 +301,12 @@ package body HAC.PCode.Interpreter.Tasking is
     end Do_Set_Task_Priority_Inheritance;
 
     procedure Do_Delay is
-      use type Defs.HAC_Float, Ada.Calendar.Time;
+      use type Ada.Calendar.Time;
     begin
-      if ND.S (Curr_TCB.T).R > 0.0 then
+      if ND.S (Curr_TCB.T).Dur > 0.0 then
         Curr_TCB.TS := Delayed;  --  set task state to delayed
         ND.SYSCLOCK := Ada.Calendar.Clock;    --  update System Clock
-        Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (ND.S (Curr_TCB.T).R);
-        --  set wakeup time
+        Curr_TCB.WAKETIME := ND.SYSCLOCK + ND.S (Curr_TCB.T).Dur;  --  set wakeup time
         ND.SWITCH := True;          --  give up control
       end if;
       Pop (ND);
@@ -367,6 +366,7 @@ package body HAC.PCode.Interpreter.Tasking is
       Main_TCB.Pcontrol.INHERIT := False ;
       Main_TCB.LASTRUN := ND.Start_Time ;
       Main_TCB.Exception_Info.Currently_Raised := (No_Exception, 0);
+      Main_TCB.WAKETIME := ND.Start_Time;  --  Added 2020-06-23 for Single_Task
     end;
   end Init_main_task;
 
@@ -484,8 +484,9 @@ package body HAC.PCode.Interpreter.Tasking is
     for t in 0 .. CD.Tasks_Definitions_Count loop
       if (ND.TCB (t).TS = Delayed or
           ND.TCB (t).TS = TimedRendz or
-          ND.TCB (t).TS = TimedWait) and
-         ND.SYSCLOCK >= ND.TCB (t).WAKETIME
+          ND.TCB (t).TS = TimedWait)
+        and
+          ND.SYSCLOCK >= ND.TCB (t).WAKETIME
       then
         if ND.TCB (t).TS = TimedRendz then
           ND.TCB (t).R1.I := 0; --  timeout on rendezvous
@@ -531,18 +532,24 @@ package body HAC.PCode.Interpreter.Tasking is
             --  SWITCH PROCCESS
           end if;
         end if;
-        loop --  Call Main Scheduler
-          --  Schedule(Scheduler,CurTask, PS);
-          ND.PS := Running;  --  !! Should call the task scheduler instead !!
-          ND.SYSCLOCK := Clock;
-          if ND.Snap then
-            ShowTime;
+        if ND.Scheduler = Single_Task then
+          if ND.TCB (ND.CurTask).WAKETIME > ND.SYSCLOCK then
+            delay ND.TCB (ND.CurTask).WAKETIME - ND.SYSCLOCK;
           end if;
-          if ND.Snap then
-            SnapShot;
-          end if;
-          exit when ND.PS /= WAIT;
-        end loop;
+        else
+          loop --  Call Main Scheduler
+            --  Schedule(Scheduler,CurTask, PS);  --  sched.pas
+            ND.PS := Running;  --  !! Should call the task scheduler instead !!
+            ND.SYSCLOCK := Clock;
+            if ND.Snap then
+              ShowTime;
+            end if;
+            if ND.Snap then
+              SnapShot;
+            end if;
+            exit when ND.PS /= WAIT;
+          end loop;
+        end if;
         --
         if ND.PS = DEADLOCK or ND.PS = FIN then
           return;

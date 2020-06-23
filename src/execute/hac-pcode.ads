@@ -238,6 +238,7 @@ package HAC.PCode is
     --  Numerical functions
     SF_Round_Float_to_Int,
     SF_Trunc_Float_to_Int,
+    SF_Float_to_Duration,
     SF_Sin,
     SF_Cos,
     SF_Exp,

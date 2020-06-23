@@ -284,6 +284,11 @@ package body HAC_Pack is
     return +Real'Image(F);
   end Image_Attribute;
 
+  function Image (T : Ada.Calendar.Time) return VString is
+  begin
+    return +HAC_Image (T);
+  end;
+
   function Integer_Value (V: VString) return Integer is
   begin
     return Integer'Value (To_String (V));
