@@ -227,10 +227,21 @@ package body HAC.PCode.Interpreter.Operators is
         when SF_Trim_Right => Top_Item.V := Trim (Top_Item.V, Right);
         when SF_Trim_Both  => Top_Item.V := Trim (Top_Item.V, Both);
         --
+        when SF_Time_Subtract =>
+          Pop (ND);
+          ND.S (Curr_TCB.T) := GR_Duration (ND.S (Curr_TCB.T).Tim - ND.S (Curr_TCB.T + 1).Tim);
+        when SF_Duration_Subtract =>
+          Pop (ND);
+          ND.S (Curr_TCB.T).Dur := ND.S (Curr_TCB.T).Dur - ND.S (Curr_TCB.T + 1).Dur;
+        when SF_Duration_Add =>
+          Pop (ND);
+          ND.S (Curr_TCB.T).Dur := ND.S (Curr_TCB.T).Dur + ND.S (Curr_TCB.T + 1).Dur;
+        --
         when SF_Image_Ints             => Top_Item := GR_VString (HAC_Image (Top_Item.I));
         when SF_Image_Floats           => Top_Item := GR_VString (HAC_Image (Top_Item.R));
         when SF_Image_Attribute_Floats => Top_Item := GR_VString (HAC_Float'Image (Top_Item.R));
         when SF_Image_Times            => Top_Item := GR_VString (HAC_Image (Top_Item.Tim));
+        when SF_Image_Durations        => Top_Item := GR_VString (Duration'Image (Top_Item.Dur));
         --
         when SF_Integer_Value => Top_Item.I := HAC_Integer'Value (Defs.To_String (Top_Item.V));
         when SF_Float_Value =>

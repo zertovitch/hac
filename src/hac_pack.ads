@@ -142,6 +142,7 @@ package HAC_Pack is
   function Image (F : Real) return VString;            --  "nice" image of F
   function Image_Attribute (F : Real) return VString;  --  returns +Real'Image(F) "as is"
   function Image (T : Ada.Calendar.Time) return VString;
+  function Image (D : Duration) return VString;
   function Integer_Value (V: VString) return Integer;
   function Float_Value (V: VString) return Real;
 
@@ -279,12 +280,10 @@ package HAC_Pack is
 
   subtype Time is Ada.Calendar.Time;
   function Clock return Time renames Ada.Calendar.Clock;
+  function "-" (Left : Time; Right : Time) return Duration renames Ada.Calendar."-";
 
-  --  Misc.
-
+  --  Semaphore stuff (from SmallAda)
   type Semaphore is new Integer; -- private;
-
-  --  Semaphore Procedures
   procedure  Wait      (S : Semaphore);
   procedure  Signal    (S : Semaphore);
 

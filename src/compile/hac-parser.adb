@@ -150,7 +150,8 @@ package body HAC.Parser is
         Error (CD, err_cannot_modify_constant_or_in_parameter);
       end if;
       Expression (CD, Level, Semicolon_Set, Y);
-      if X.TYP = Y.TYP then
+      --
+      if X.TYP = Y.TYP and X.TYP /= NOTYP then
         if X.TYP in Standard_Typ then
           Emit (CD, k_Store);
         elsif X.Ref /= Y.Ref then
@@ -171,7 +172,11 @@ package body HAC.Parser is
         end if;
       elsif X.TYP = Floats and Y.TYP = Ints then
         Forbid_Type_Coercion (CD, Found => Y, Expected => X);
-        Emit1 (CD, k_Integer_to_Float, 0);
+        Emit1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda. Emit's
+        Emit (CD, k_Store);                 --  not needed: compilation error.
+      elsif X.TYP = Durations and Y.TYP = Floats then
+        --  Duration hack (see Delay_Statement for full explanation).
+        Emit_Std_Funct (CD, SF_Float_to_Duration);
         Emit (CD, k_Store);
       elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
         Emit1 (CD, k_String_Literal_Assignment, CD.Arrays_Table (X.Ref).Array_Size);
@@ -588,8 +593,9 @@ package body HAC.Parser is
             Error (CD, err_wrong_type_in_DELAY);
           end if;
           if Y.TYP = Floats then
-            --  Hack: for expressions like 2.0 * 3600.0 we don't
-            --  know in advance it's not a Duration.
+            --  Duration hack: for expressions like 2.0 * 3600.0, we don't
+            --  know in advance it's not a Duration. Check with a "full
+            --  Ada" compiler the type conformity of the expression.
             Emit_Std_Funct (CD, SF_Float_to_Duration);
           end if;
         end if;

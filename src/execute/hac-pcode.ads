@@ -282,10 +282,15 @@ package HAC.PCode is
     SF_Starts_With,
     SF_Ends_With,
     --
+    SF_Time_Subtract,    --  T2 - T1 -> Duration
+    SF_Duration_Add,
+    SF_Duration_Subtract,
+    --
     SF_Image_Ints,
     SF_Image_Floats,            --  "Nice" image
     SF_Image_Attribute_Floats,  --  Image attribute "as is" from Ada
     SF_Image_Times,
+    SF_Image_Durations,
     SF_Integer_Value,
     SF_Float_Value,
     --

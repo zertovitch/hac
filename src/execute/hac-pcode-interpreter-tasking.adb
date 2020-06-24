@@ -532,24 +532,18 @@ package body HAC.PCode.Interpreter.Tasking is
             --  SWITCH PROCCESS
           end if;
         end if;
-        if ND.Scheduler = Single_Task then
-          if ND.TCB (ND.CurTask).WAKETIME > ND.SYSCLOCK then
-            delay ND.TCB (ND.CurTask).WAKETIME - ND.SYSCLOCK;
+        loop --  Call Main Scheduler
+          --  Schedule(Scheduler,CurTask, PS);  --  sched.pas
+          ND.PS := Running;  --  !! Should call the task scheduler instead !!
+          ND.SYSCLOCK := Clock;
+          if ND.Snap then
+            ShowTime;
           end if;
-        else
-          loop --  Call Main Scheduler
-            --  Schedule(Scheduler,CurTask, PS);  --  sched.pas
-            ND.PS := Running;  --  !! Should call the task scheduler instead !!
-            ND.SYSCLOCK := Clock;
-            if ND.Snap then
-              ShowTime;
-            end if;
-            if ND.Snap then
-              SnapShot;
-            end if;
-            exit when ND.PS /= WAIT;
-          end loop;
-        end if;
+          if ND.Snap then
+            SnapShot;
+          end if;
+          exit when ND.PS /= WAIT;
+        end loop;
         --
         if ND.PS = DEADLOCK or ND.PS = FIN then
           return;

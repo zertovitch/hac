@@ -289,6 +289,11 @@ package body HAC_Pack is
     return +HAC_Image (T);
   end;
 
+  function Image (D : Duration) return VString is
+  begin
+    return +Duration'Image (D);
+  end;
+
   function Integer_Value (V: VString) return Integer is
   begin
     return Integer'Value (To_String (V));

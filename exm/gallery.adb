@@ -59,6 +59,7 @@ procedure Gallery is
     --  The following demos write files.
     Launch_HAX (+"file_copy.adb");
     Launch_HAX (+"three_lakes_s.adb");
+    Launch_HAX (+"timing.adb");
   end Launch_Demos;
 
 begin

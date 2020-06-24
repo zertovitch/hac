@@ -52,7 +52,7 @@ package body HAC.Parser.Standard_Functions is
           =>
           Expected (1) := Numeric_Typ_Set;
         when SF_Image_Ints =>
-          Expected (1) := Numeric_Typ_Set or Times_Set;
+          Expected (1) := Numeric_Typ_Set or Times_Set or Durations_Set;
         when SF_Image_Attribute_Floats =>
           Expected (1) := Floats_Set;
         when SF_Random_Int | SF_Argument =>
@@ -142,8 +142,9 @@ package body HAC.Parser.Standard_Functions is
           end if;
         when SF_Image_Ints =>
           case Actual (1).TYP is
-            when Floats => Code_Adjusted := SF_Image_Floats;
-            when Times  => Code_Adjusted := SF_Image_Times;
+            when Floats    => Code_Adjusted := SF_Image_Floats;
+            when Times     => Code_Adjusted := SF_Image_Times;
+            when Durations => Code_Adjusted := SF_Image_Durations;
             when others => null;
           end case;
         when SF_To_Lower_Char =>               --  To_Lower (Item : Character) return Character;

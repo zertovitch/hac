@@ -397,21 +397,50 @@ package body HAC.PCode.Interpreter is
         null;  --  HAC exception has been already raised (see Name_Error for an example).
     end Execute_Current_Instruction_with_Exception;
 
-    User_Abort : Boolean;
+    procedure Single_Task_Delays is
+      User_Aborted : Boolean;
+      use Ada.Calendar, Tasking;
+      wake : constant Time := ND.TCB (ND.CurTask).WAKETIME;
+    begin
+      ND.SYSCLOCK := Clock;
+      if wake > ND.SYSCLOCK then
+        while wake - ND.SYSCLOCK > TSlice loop
+          Feedback (
+            Stack_Current => ND.TCB (ND.CurTask).T,
+            Stack_Total   => ND.S'Last,
+            Wall_Clock    => ND.SYSCLOCK,
+            User_Abort    => User_Aborted
+          );
+          if User_Aborted then
+            Raise_Standard (VME_User_Abort, "");
+          end if;
+          delay TSlice;
+          ND.SYSCLOCK := Clock;
+        end loop;
+        delay Duration'Max (0.0, wake - ND.SYSCLOCK);
+      end if;
+      ND.SWITCH := False;
+    end Single_Task_Delays;
+
+    User_Aborted : Boolean;
 
   begin  --  Interpret
     Start_Interpreter;
     --
     Running_State:
     loop  --  until Processor state is not Running or Exception_Raised
-      Tasking.Scheduling (CD, ND);
+      if ND.Scheduler = Single_Task then
+        Single_Task_Delays;
+      else
+        Tasking.Scheduling (CD, ND);
+      end if;
       Feedback (
         Stack_Current => ND.TCB (ND.CurTask).T,
         Stack_Total   => ND.S'Last,
         Wall_Clock    => ND.SYSCLOCK,
-        User_Abort    => User_Abort
+        User_Abort    => User_Aborted
       );
-      if User_Abort then
+      if User_Aborted then
         Raise_Standard (VME_User_Abort, "");
       end if;
       exit when ND.PS = DEADLOCK or ND.PS = FIN;

@@ -445,6 +445,25 @@ package body HAC.Parser.Expressions is
                 else
                   Forbid_Type_Coercion (CD, Adding_OP, X, Y);
                 end if;
+              elsif X.TYP = Times and Y.TYP = Times and Adding_OP = Minus then
+                Emit_Std_Funct (CD, SF_Time_Subtract);  --  T2 - T1
+                X.TYP := Durations;
+              elsif X.TYP = Durations then
+                if Y.TYP = Floats then
+                  --  Duration hack for "X + 1.234" (see Delay_Statement
+                  --  for full explanation).
+                  Emit_Std_Funct (CD, SF_Float_to_Duration);
+                  Y.TYP := Durations;  --  Now X and Y have the type Duration.
+                end if;
+                if Y.TYP = Durations then
+                  if Adding_OP = Plus then
+                    Emit_Std_Funct (CD, SF_Duration_Add);
+                  else
+                    Emit_Std_Funct (CD, SF_Duration_Subtract);
+                  end if;
+                else
+                  Issue_Undefined_Operator_Error (Adding_OP, X, Y);
+                end if;
               else
                 Issue_Undefined_Operator_Error (Adding_OP, X, Y);
               end if;
