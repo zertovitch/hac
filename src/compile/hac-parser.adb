@@ -355,7 +355,7 @@ package body HAC.Parser is
             Id_To    => T1
           );
         end if;
-        Test_Semicolon (CD, FSys);
+        Test_Semicolon_in_Declaration (CD, FSys);
       end Single_Var_Declaration;
     begin
       while CD.Sy = IDent loop

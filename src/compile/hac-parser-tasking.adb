@@ -89,7 +89,7 @@ package body HAC.Parser.Tasking is
         else
           Skip (CD, Semicolon, err_incorrect_block_name);
         end if;
-        Test_Semicolon (CD, FSys);
+        Test_Semicolon_in_Declaration (CD, FSys);
       end if;
     end if;
     pragma Assert (Level = Initial_Level);

@@ -63,7 +63,7 @@ package HAC.Parser.Helpers is
     N             : Compile_Error;
     stop_on_error : Boolean:= False);
 
-  procedure Test_Semicolon (CD : in out Compiler_Data; FSys : Symset);
+  procedure Test_Semicolon_in_Declaration (CD : in out Compiler_Data; FSys : Symset);
 
   procedure Test_END_Symbol (CD : in out Compiler_Data);
 

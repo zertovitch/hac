@@ -60,6 +60,7 @@ procedure Gallery is
     Launch_HAX (+"file_copy.adb");
     Launch_HAX (+"three_lakes_s.adb");
     Launch_HAX (+"timing.adb");
+    Launch_HAX (+"bwt.adb");
   end Launch_Demos;
 
 begin

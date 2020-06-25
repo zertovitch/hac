@@ -18,6 +18,7 @@ project HAC_Exm is
      --
      "ackermann.adb",
      "arguments.adb",
+     "bwt.adb",
      "console_io.adb",
      "days_1901.adb",
      "echo.adb",
@@ -41,7 +42,6 @@ project HAC_Exm is
      --  2) * GNAT OK
      --     * HAC KO (feature not yet supported)
      --  
-     "bwt.adb",
      "overloading.adb",
      --
      --  3) * GNAT OK

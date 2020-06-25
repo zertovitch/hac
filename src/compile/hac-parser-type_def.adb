@@ -116,7 +116,7 @@ package body HAC.Parser.Type_Def is
       );
     end;
     --
-    Test_Semicolon (CD, FSys_NTD);
+    Test_Semicolon_in_Declaration (CD, FSys_NTD);
   end Type_Declaration;
 
   procedure Type_Definition (

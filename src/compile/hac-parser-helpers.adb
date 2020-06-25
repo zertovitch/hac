@@ -109,13 +109,13 @@ package body HAC.Parser.Helpers is
   end Test;
 
   After_semicolon : constant Symset :=
-    (IDent | TYPE_Symbol | TASK_Symbol => True, others => False) +
+    (IDent | SUBTYPE_Symbol | TYPE_Symbol | TASK_Symbol => True, others => False) +
     Block_Begin_Symbol;
 
   Comma_or_colon : constant Symset :=
     Symset'(Comma | Colon => True, others => False);
 
-  procedure Test_Semicolon (CD : in out Compiler_Data; FSys : Symset) is
+  procedure Test_Semicolon_in_Declaration (CD : in out Compiler_Data; FSys : Symset) is
   begin
     if CD.Sy = Semicolon then
       InSymbol (CD);
@@ -127,7 +127,7 @@ package body HAC.Parser.Helpers is
       end if;
     end if;
     Test (CD, After_semicolon, FSys, err_incorrectly_used_symbol);
-  end Test_Semicolon;
+  end Test_Semicolon_in_Declaration;
 
   procedure Test_END_Symbol (CD : in out Compiler_Data) is
   begin
