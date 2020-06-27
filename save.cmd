@@ -36,3 +36,5 @@ set files=%files% %examples% %tests%
 
 zipada -ep2 %root%/hac-%nice_date%-        %files%
 REM zipada -ed3 %root%/hac-%nice_date%-DEFLATE %files%
+
+cd %root%

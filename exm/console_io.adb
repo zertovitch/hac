@@ -1,6 +1,10 @@
+--  Demo of Get / Get_Immediate / Get_Line / Skip_Line / Put / Put_Line / New_Line
+--  on the console. No file, unless using: "hax console_io.adb <in_file.txt >out_file.txt"
+
 with HAC_Pack;  use HAC_Pack;
 
 procedure Console_IO is
+
   procedure Test_Get is
     C1, C2 : Character;
     I1, I2 : Integer;
@@ -45,11 +49,13 @@ procedure Console_IO is
     Put ("Type whatever you want, then Return.");
     Get_Line (V);
     Put_Line ("Congrats, you just typed: [" & V & ']');
-  end;
+  end Test_Get;
+
 begin
   Put_Line ("Do we have a real console/terminal ? ");
   if Get_Needs_Skip_Line then
     Put_Line ("Yes! Ada.Text_IO can get multiple inputs from the same line.");
+    Put_Line ("Skip_Line (a ""Return"" keypress) is needed after one or more Get");
   else
     Put_Line ("No! Perhaps this program is run from LEA ?...");
   end if;
