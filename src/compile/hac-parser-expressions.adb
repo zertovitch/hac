@@ -2,6 +2,7 @@ with HAC.Compiler.PCode_Emit;
 with HAC.Parser.Calls;                  use HAC.Parser.Calls;
 with HAC.Parser.Helpers;                use HAC.Parser.Helpers;
 with HAC.Parser.Standard_Functions;
+with HAC.Parser.Type_Conversion;
 with HAC.PCode;                         use HAC.PCode;
 with HAC.Scanner;                       use HAC.Scanner;
 with HAC.UErrors;                       use HAC.UErrors;
@@ -129,45 +130,6 @@ package body HAC.Parser.Expressions is
       procedure Term (FSys_Term : Symset; X : out Exact_Typ) is
 
         procedure Factor (FSys_Fact : Symset; X : out Exact_Typ) is
-
-          procedure Type_Conversion is  --  Ada RM 4.6
-            kind    :          Type_Conversion_Kind := Unknown;
-            Type_Id : constant String               := To_String (CD.Id);
-          begin
-            Need (CD, LParent, err_missing_an_opening_parenthesis);
-            if Type_Id = HAC_Float_Name then
-              kind := To_Float;
-            elsif Type_Id = HAC_Integer_Name then
-              kind := To_Integer;
-            end if;
-            Expression (CD, Level, FSys_Fact + RParent, X);
-            case kind is
-              when To_Float =>
-                case X.TYP is
-                  when Floats =>
-                    null;  --  !!  Emit warning: "already float"
-                  when Ints =>
-                    Emit1 (CD, k_Integer_to_Float, 0);
-                  when others =>
-                    Argument_Type_Not_Supported (CD);
-                end case;
-                X.TYP := Floats;
-              when To_Integer =>
-                case X.TYP is
-                  when Floats =>  --  Rounding to closest integer (Ada RM 4.6 (33)).
-                    Emit_Std_Funct (CD, SF_Round_Float_to_Int);
-                  when Ints =>
-                    null;  --  !!  Emit warning: "already integer"
-                  when others =>
-                    Argument_Type_Not_Supported (CD);
-                end case;
-                X.TYP := Ints;
-              when Unknown =>
-                Error (CD, err_type_conversion_not_supported, "no support for target type " & Type_Id);
-            end case;
-            Need (CD, RParent, err_closing_parenthesis_missing);
-          end Type_Conversion;
-
           F   : Opcode;
           err : Compile_Error;
           Ident_Index : Integer;
@@ -233,7 +195,7 @@ package body HAC.Parser.Expressions is
                       end if;
                       --
                     when TypeMark =>
-                      Type_Conversion;
+                      Type_Conversion (CD, Level, FSys_Fact, X);
                       --
                     when Prozedure =>
                       Error (CD, err_expected_constant_function_variable_or_subtype);

@@ -239,6 +239,7 @@ package HAC.PCode is
     SF_Round_Float_to_Int,
     SF_Trunc_Float_to_Int,
     SF_Float_to_Duration,
+    SF_Duration_to_Float,
     SF_Sin,
     SF_Cos,
     SF_Exp,
