@@ -1,12 +1,12 @@
---  ***  This HAC demo is a version of the Three_Lakes
---  ***  program in MathPaqs. The program is scaled down for
---  ***  meeting HAC v.0.072 syntax subset.
---  ***  We mark the downscaling with "!" in comments.
---  ***
---  ***  See "three_lakes.adb" @
---  ***    https://mathpaqs.sourceforge.io/ or
---  ***    https://github.com/zertovitch/mathpaqs .
-
+--    ***  This HAC demo is a version of the Three_Lakes
+--    ***  program in MathPaqs. The program is scaled down for
+--    ***  meeting HAC v.0.072 syntax subset.
+--    ***  We mark the downscaling with "!" in comments.
+--    ***
+--    ***  For the original verion in full Ada, see "three_lakes.adb" @
+--    ***    https://mathpaqs.sourceforge.io/ or
+--    ***    https://github.com/zertovitch/mathpaqs .
+----------------------------------------------------------------------------
 --  This program solves a vectorial ordinary differential equation
 --  (or a system of ordinary differential equations).
 --
@@ -42,7 +42,7 @@ procedure Three_Lakes_S is
 
   type Lake_Vector is array (Lake) of Real;
 
-  --  ! Full Ada: programmable operators.
+  --  ! Full Ada: programmable operators (*, +, ...).
 
   --  ! function "*" (l : Real; v : Lake_Vector) return Lake_Vector is
   --  !   r : Lake_Vector;

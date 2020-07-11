@@ -20,6 +20,7 @@ procedure Type_Conversion is
 
   i, j : Integer;
   x, y : Real;
+  d, e : Duration;
 begin
   i := 1234;
   x := 1234.0;
@@ -44,5 +45,15 @@ begin
   end if;
   if j /= 5 then
     Put_Line ("Compiler bug [B]");
+  end if;
+  --
+  --  Duration <-> Real
+  --
+  d := 0.01;
+  e := Duration (0.2 * 5.0);
+  delay d;
+  x := Real (d);
+  if x * 100.0 /= Real (e) then
+    Put_Line ("Compiler bug [C]");
   end if;
 end;

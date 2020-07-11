@@ -20,6 +20,7 @@ project HAC_Exm is
      "arguments.adb",
      "bwt.adb",
      "console_io.adb",
+     "covid_19_s.adb",
      "days_1901.adb",
      "echo.adb",
      "einmaleins.adb",

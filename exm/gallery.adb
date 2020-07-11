@@ -56,11 +56,12 @@ procedure Gallery is
     Launch_HAX (+"days_1901.adb");
     Launch_HAX (+"shell.adb");
     Launch_HAX (+"file_read.adb");
+    Launch_HAX (+"timing.adb");
+    Launch_HAX (+"bwt.adb");
     --  The following demos write files.
     Launch_HAX (+"file_copy.adb");
     Launch_HAX (+"three_lakes_s.adb");
-    Launch_HAX (+"timing.adb");
-    Launch_HAX (+"bwt.adb");
+    Launch_HAX (+"covid_19_s.adb");
   end Launch_Demos;
 
 begin
