@@ -4,13 +4,11 @@ with HAC.Compiler,
 
 with Show_License;
 
-with Ada.Calendar;                      use Ada.Calendar;
-with Ada.Command_Line;                  use Ada.Command_Line;
-with Ada.Streams.Stream_IO;             use Ada.Streams.Stream_IO;
-with Ada.Strings.Unbounded;             use Ada.Strings.Unbounded;
-with Ada.Text_IO;                       use Ada.Text_IO;
-
-with GNAT.Traceback.Symbolic, Ada.Exceptions;
+with Ada.Calendar,
+     Ada.Command_Line,
+     Ada.Exceptions,
+     Ada.Strings.Unbounded,
+     Ada.Text_IO.Text_Streams;
 
 procedure HAX is
 
@@ -19,10 +17,15 @@ procedure HAX is
   version_info : constant String :=
     "Compiler version: " & HAC.version & " dated " & HAC.reference & '.';
 
+  use Ada.Strings.Unbounded;
+
   asm_dump_file_name : Unbounded_String;
   cmp_dump_file_name : Unbounded_String;
 
   procedure Compile_and_interpret_file (Ada_file_name: String; arg_pos : Positive) is
+    use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter,
+        Ada.Calendar, Ada.Text_IO;
+    --
     procedure Show_Line_Information (
       File_Name   : String;   --  Example: hac-pcode-interpreter.adb
       Block_Name  : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
@@ -38,11 +41,9 @@ procedure HAX is
       );
     end Show_Line_Information;
     --
-    use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter;
-    --
     procedure CIO_Trace_Back is new Show_Trace_Back (Show_Line_Information);
     --
-    f : Ada.Streams.Stream_IO.File_Type;
+    f : File_Type;
     t1, t2 : Time;
     HAC_margin_1 : constant String := "*******[ HAX ]*******   ";
     HAC_margin_2 : constant String := ". . . .[ HAX ]. . . .   ";
@@ -63,7 +64,24 @@ procedure HAX is
         Put_Line (HAC_margin_2 & "Compiling from file: " & Ada_file_name);
     end case;
     Open (f, In_File, Ada_file_name);
-    Set_Source_Stream (CD, Stream(f), Ada_file_name);
+    --
+    --  Skip an eventual "shebang", e.g.: #!/usr/bin/env hax
+    --  The Ada source begins from next line.
+    --
+    if not End_Of_File (f) then
+      declare
+        possible_shebang : constant String := Get_Line (f);
+      begin
+        if possible_shebang'Length > 1
+          and then possible_shebang (possible_shebang'First .. possible_shebang'First + 1) = "#!"
+        then
+          null;  --  Just ignore the first line.
+        else
+          Reset (f);
+        end if;
+      end;
+    end if;
+    Set_Source_Stream (CD, Text_Streams.Stream (f), Ada_file_name);
     t1 := Clock;
     Compile (
       CD,
@@ -115,7 +133,7 @@ procedure HAX is
         Current_Error,
         Ada.Exceptions.Exception_Message (E)
       );
-    when Ada.Streams.Stream_IO.Name_Error =>
+    when Name_Error =>
       Put_Line (
         Current_Error,
         HAC_margin_3 &
@@ -124,6 +142,7 @@ procedure HAX is
   end Compile_and_interpret_file;
 
   procedure Help is
+    use Ada.Text_IO;
   begin
     Put_Line (Current_Error, "HAX: command-line compilation and execution for HAC (HAC Ada Compiler)");
     Put_Line (Current_Error, version_info);
@@ -138,10 +157,12 @@ procedure HAX is
     Put_Line (Current_Error, "         -d     : dump compiler information");
     New_Line (Current_Error);
     Put_Line (Current_Error, caveat);
+    Put_Line (Current_Error, "Note: HAX accept source files with shebangs, e.g.: #!/usr/bin/env hax");
     Show_License (Current_Error, "hac.ads");
   end Help;
 
   no_haxing : Boolean := True;
+  use Ada.Command_Line;
 
 begin
   for i in 1 .. Argument_Count loop
@@ -164,21 +185,10 @@ begin
   if no_haxing then
     Help;
     if verbosity > 1 then
-      Put_Line ("Size of a HAC VM memory unit:" &
+      Ada.Text_IO.Put_Line ("Size of a HAC VM memory unit:" &
         Integer'Image (HAC.PCode.Interpreter.In_Defs.Data_Type'Size / 8) &
         " bytes"
       );
     end if;
   end if;
-exception
-  when E: others =>
-    New_Line (Current_Error);
-    Put_Line (Current_Error,
-              "--------------------[ Unhandled exception ]-----------------");
-    Put_Line (Current_Error, " > Name of exception . . . . .: " &
-              Ada.Exceptions.Exception_Name (E) );
-    Put_Line (Current_Error, " > Message for exception . . .: " &
-              Ada.Exceptions.Exception_Message (E) );
-    Put_Line (Current_Error, " > Trace-back of call stack: " );
-    Put_Line (Current_Error, GNAT.Traceback.Symbolic.Symbolic_Traceback (E) );
 end HAX;
