@@ -29,6 +29,7 @@ project HAC_Exm is
      "gallery.adb",
      "file_copy.adb",
      "file_read.adb",
+     "fill_drive.adb",
      "mandelbrot.adb",
      "maze_gen.adb",
      "merge_sort.adb",

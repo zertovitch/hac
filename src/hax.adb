@@ -157,7 +157,7 @@ procedure HAX is
     Put_Line (Current_Error, "         -d     : dump compiler information");
     New_Line (Current_Error);
     Put_Line (Current_Error, caveat);
-    Put_Line (Current_Error, "Note: HAX accept source files with shebangs, e.g.: #!/usr/bin/env hax");
+    Put_Line (Current_Error, "Note: HAX accepts source files with shebang's, e.g.: #!/usr/bin/hax");
     Show_License (Current_Error, "hac.ads");
   end Help;
 
