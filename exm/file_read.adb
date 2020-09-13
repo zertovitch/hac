@@ -1,3 +1,6 @@
+--  This demo reads a text file (itself) and displays
+--  its contents on the console.
+
 with HAC_Pack;  use HAC_Pack;
 
 procedure File_Read is

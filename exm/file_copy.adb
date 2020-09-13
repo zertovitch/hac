@@ -1,3 +1,8 @@
+--  This demo reads a text file (itself) and writes
+--  its contents in another text file.
+--  NB: for copying a file (of any kind) with a single command,
+--  you can use Copy_File.
+
 with HAC_Pack;  use HAC_Pack;
 
 procedure File_Copy is
