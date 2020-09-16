@@ -108,7 +108,7 @@ procedure Maze_Gen is
       Checked_Wall (Next_D) := True;  --  Neighbour is either visited or invalid.
       --
       All_Checked := True;
-      for D in North .. East loop
+      for D in Direction loop
         All_Checked := All_Checked and Checked_Wall (D);
       end loop;
       --  Neighbours in all directions are either visited
