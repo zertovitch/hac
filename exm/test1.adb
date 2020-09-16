@@ -2,10 +2,10 @@ with HAC_Pack;  use HAC_Pack;
 
 procedure Test1 is
 
-  --This is the initial test program for the Small-Ada Compiler
-  --   Small-Ada is a restircted subset of the full Ada Language
+  --   This is the initial test program for the Small-Ada Compiler
+  --   Small-Ada is a restricted subset of the full Ada Language
   --   The Small-Ada compiler was derived from the Co-Pascal
-  --       compiler which was in turn was derived from Pascal-S
+  --       compiler which in turn was derived from Pascal-S
 
   --Declarations
 

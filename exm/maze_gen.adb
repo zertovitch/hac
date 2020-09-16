@@ -7,8 +7,7 @@ procedure Maze_Gen is
 
   type Direction is (North, South, West, East);
 
-  type Cell_Walls is array (North .. East) of Boolean;
-  --  ! Full Ada: better with "array (Direction) ..."
+  type Cell_Walls is array (Direction) of Boolean;
 
   type Cells is record
     Walls   : Cell_Walls;
@@ -81,10 +80,10 @@ procedure Maze_Gen is
     Next_P          : Point;
     Next_D          : Direction;
     Valid_Direction : Boolean;
-    Checked_Wall    : array (North .. East) of Boolean;
+    Checked_Wall    : array (Direction) of Boolean;
     All_Checked     : Boolean;
   begin
-    for D in North .. East loop  --  ! Full Ada ":= (others => False)"
+    for D in Direction loop  --  ! Full Ada ":= (others => False)"
       Checked_Wall (D) := False;
     end loop;
     --  Mark as visited:
@@ -122,7 +121,7 @@ procedure Maze_Gen is
   procedure Initialize (Maze : in out Maze_Type) is
     All_Walls : Cell_Walls;
   begin
-    for D in North .. East loop
+    for D in Direction loop
       All_Walls (D) := True;
     end loop;
     --  ! Full Ada: initialized record.
@@ -144,9 +143,9 @@ procedure Maze_Gen is
   end Initialize;
 
   procedure Put_Grid (Item : Maze_Type) is
-    H_Bar : array (False .. True) of VString;
-    V_Bar : array (False .. True) of Character;
-    S_Cell : array (False .. True) of VString;
+    H_Bar : array (Boolean) of VString;
+    V_Bar : array (Boolean) of Character;
+    S_Cell : array (Boolean) of VString;
     Line : VString;
   begin
     H_Bar (False) := +"   +";
