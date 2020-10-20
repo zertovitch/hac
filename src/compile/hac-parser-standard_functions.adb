@@ -71,6 +71,8 @@ package body HAC.Parser.Standard_Functions is
         when SF_Index | SF_Starts_With | SF_Ends_With =>
           --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
           Expected (1 .. 2) := (VStrings_Set, VStrings_or_Str_Lit_Set);
+        when SF_Year .. SF_Seconds =>
+          Expected (1) := Times_Set;
         when SF_Get_Env | SF_Shell_Execute =>
           --  Get_Env (+"PATH")  _or_  Get_Env ("PATH")
           Expected (1) := VStrings_or_Str_Lit_Set;

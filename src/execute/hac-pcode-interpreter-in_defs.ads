@@ -1,3 +1,15 @@
+-------------------------------------------------------------------------------------
+--
+--  HAC - HAC Ada Compiler
+--
+--  A compiler in Ada for an Ada subset
+--
+--  Copyright, license, etc. : see top package.
+--
+-------------------------------------------------------------------------------------
+--
+--  In_Defs: Interpreter Definitions
+
 with HAC.Co_Defs;
 
 with Ada.Calendar;                      use Ada.Calendar;

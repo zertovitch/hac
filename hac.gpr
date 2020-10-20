@@ -12,7 +12,7 @@ project Hac is
    type Build_Mode_Type is ("Debug", "Fast");
    Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
 
-   for Main use ("hax.adb", "hax_mini.adb", "hax_multi.adb");
+   for Main use ("hax.adb", "hax_mini.adb", "hax_multi.adb", "save.adb");
 
    case Build_Mode is
       when "Debug" =>
@@ -21,7 +21,7 @@ project Hac is
          for Object_Dir use "obj/fast";
    end case;
 
-   for Source_Dirs use ("src", "src/compile", "src/execute");
+   for Source_Dirs use (".", "src", "src/compile", "src/execute");
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";  --  Flips by default the "-p" switch
 

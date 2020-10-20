@@ -2,18 +2,19 @@
 -------------------------------------
 --
 --  This is the package containing all specifications of types and support
---  routines for HAC. So far all HAC programs must have "with" and "use"
---  of this package.
+--  routines for HAC in its default operating mode.
+--  So far, all HAC programs must have "with" and "use" of this package.
+--
 --  Note: this requirement is kept only for early stages of HAC.
 --  At some point HAC_Pack won't be required anymore, but it is
 --  still useful anyway for small script-like programs.
 --
---  The package HAC_Pack is compilable by a real Ada compiler
+--  The package HAC_Pack is compilable by a full Ada compiler
 --  like GNAT, so the HAC programs can be run on both HAC and
 --  a "real" Ada system.
 --
 --  Another purpose of this specification is to document
---  the standard types and subprograms in HAC.
+--  the standard types and subprograms available in HAC.
 
 with Ada.Calendar,
      Ada.Characters.Handling,
@@ -276,11 +277,19 @@ package HAC_Pack is
   function End_Of_Line (File : File_Type) return Boolean renames Ada.Text_IO.End_Of_Line;
   function End_Of_File (File : File_Type) return Boolean renames Ada.Text_IO.End_Of_File;
 
-  --  Time
+  ------------
+  --  Time  --
+  ------------
 
   subtype Time is Ada.Calendar.Time;
   function Clock return Time renames Ada.Calendar.Clock;
   function "-" (Left : Time; Right : Time) return Duration renames Ada.Calendar."-";
+  --  The following functions are slightly different (no subtypes) from
+  --  Ada.Calendar's but GNAT accepts the renaming. Is it correct?
+  function Year    (Date : Time) return Integer renames Ada.Calendar.Year;
+  function Month   (Date : Time) return Integer renames Ada.Calendar.Month;
+  function Day     (Date : Time) return Integer renames Ada.Calendar.Day;
+  function Seconds (Date : Time) return Duration renames Ada.Calendar.Seconds;
 
   --  Semaphore stuff (from SmallAda)
   type Semaphore is new Integer; -- private;

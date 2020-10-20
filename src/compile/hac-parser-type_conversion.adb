@@ -23,7 +23,9 @@ begin
   elsif Type_Id = "DURATION" then
     kind := To_Duration;
   end if;
+  --
   Expressions.Expression (CD, Level, FSys + RParent, X);
+  --
   case kind is
     when To_Float =>
       case X.TYP is
@@ -42,6 +44,8 @@ begin
       case X.TYP is
         when Floats =>  --  Rounding to closest integer (Ada RM 4.6 (33)).
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Round_Float_to_Int);
+        when Durations =>
+          Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Duration_to_Int);
         when Ints =>
           null;  --  !!  Emit warning: "already integer"
         when others =>
@@ -53,6 +57,8 @@ begin
       case X.TYP is
         when Floats =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Float_to_Duration);
+        when Ints =>
+          Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Int_to_Duration);
         when Durations =>
           null;  --  !!  Emit warning: "already duration"
         when others =>

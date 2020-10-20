@@ -292,6 +292,11 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Starts_With",         Bools,    SF_Starts_With);
       Enter_Std_Funct ("Ends_With",           Bools,    SF_Ends_With);
       --
+      Enter_Std_Funct ("Year",                Ints,      SF_Year);
+      Enter_Std_Funct ("Month",               Ints,      SF_Month);
+      Enter_Std_Funct ("Day",                 Ints,      SF_Day);
+      Enter_Std_Funct ("Seconds",             Durations, SF_Seconds);
+      --
       Enter_Std_Funct ("Image",               VStrings, SF_Image_Ints);
       Enter_Std_Funct ("Image_Attribute",     VStrings, SF_Image_Attribute_Floats);
       Enter_Std_Funct ("Integer_Value",       Ints,     SF_Integer_Value);

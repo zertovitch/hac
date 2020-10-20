@@ -8,12 +8,13 @@
 --
 -------------------------------------------------------------------------------------
 --
+--  Co_Defs: Compiler Definitions
 
 with HAC.Defs, HAC.PCode;
 
 with Ada.Streams, Ada.Text_IO;
 
-package HAC.Co_Defs is  --  Compiler definitions
+package HAC.Co_Defs is
   --  NB: cannot be a child package of Compiler because of Parser, Scanner, ...
 
   use HAC.Defs;

@@ -112,6 +112,10 @@ package body HAC.PCode.Interpreter.Operators is
           Top_Item := GR_Duration (Duration (Top_Item.R));
         when SF_Duration_to_Float =>
           Top_Item := GR_Real (Defs.HAC_Float (Top_Item.Dur));
+        when SF_Int_to_Duration =>
+          Top_Item := GR_Duration (Duration (Top_Item.I));
+        when SF_Duration_to_Int =>
+          Top_Item.I := Integer (Top_Item.Dur);
         when SF_Sin =>    Top_Item.R := Sin (Top_Item.R);
         when SF_Cos =>    Top_Item.R := Cos (Top_Item.R);
         when SF_Exp =>    Top_Item.R := Exp (Top_Item.R);
@@ -213,6 +217,14 @@ package body HAC.PCode.Interpreter.Operators is
           --  [T] := Ends_With ([T], [T+1]) :
           ND.S (Curr_TCB.T).I :=
             Boolean'Pos (HAC_Pack.Ends_With (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).V));
+        when SF_Year =>
+          ND.S (Curr_TCB.T).I := Ada.Calendar.Year (ND.S (Curr_TCB.T).Tim);
+        when SF_Month =>
+          ND.S (Curr_TCB.T).I := Ada.Calendar.Month (ND.S (Curr_TCB.T).Tim);
+        when SF_Day =>
+          ND.S (Curr_TCB.T).I := Ada.Calendar.Day (ND.S (Curr_TCB.T).Tim);
+        when SF_Seconds =>
+          ND.S (Curr_TCB.T) := GR_Duration (Ada.Calendar.Seconds (ND.S (Curr_TCB.T).Tim));
         when SF_Int_Times_Char =>
           Pop (ND);
           if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range; end if;

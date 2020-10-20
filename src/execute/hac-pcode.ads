@@ -8,7 +8,6 @@
 --
 -------------------------------------------------------------------------------------
 --
-
 --  This package defines the PCode Virtual Machine.
 
 with HAC.Defs;
@@ -240,6 +239,8 @@ package HAC.PCode is
     SF_Trunc_Float_to_Int,
     SF_Float_to_Duration,
     SF_Duration_to_Float,
+    SF_Int_to_Duration,
+    SF_Duration_to_Int,
     SF_Sin,
     SF_Cos,
     SF_Exp,
@@ -286,6 +287,10 @@ package HAC.PCode is
     SF_Time_Subtract,    --  T2 - T1 -> Duration
     SF_Duration_Add,
     SF_Duration_Subtract,
+    SF_Year,
+    SF_Month,
+    SF_Day,
+    SF_Seconds,
     --
     SF_Image_Ints,
     SF_Image_Floats,            --  "Nice" image
