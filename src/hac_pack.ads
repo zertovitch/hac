@@ -19,6 +19,7 @@
 with Ada.Calendar,
      Ada.Characters.Handling,
      Ada.Command_Line,
+     Ada.Directories,
      Ada.Environment_Variables,
      Ada.Strings.Unbounded,
      Ada.Text_IO;
@@ -308,6 +309,11 @@ package HAC_Pack is
   procedure Set_Env (Name : VString; Value : String);
   procedure Set_Env (Name : String;  Value : VString);
   procedure Set_Env (Name : VString; Value : VString);
+
+  function Current_Directory return VString;
+
+  procedure Set_Directory (Directory : String) renames Ada.Directories.Set_Directory;
+  procedure Set_Directory (Directory : VString);
 
   function Shell_Execute (Command : String) return Integer;
   function Shell_Execute (Command : VString) return Integer;

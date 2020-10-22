@@ -32,7 +32,7 @@ Assuming you have the GNAT (*) compiler installed, do the
 following from a command line interpreter (please replace
 '\' by '/' on Unix-like platforms):
 
-gnatmake -p -P hac
+gnatmake -P hac
 cd exm
 ..\hax gallery.adb
 
@@ -66,6 +66,7 @@ Key files in the main directory
    hac.txt        this file
    hac.gpr        project file for building HAC with GNAT
    hac_work.xls   workbook containing, notably, a bug list and a to-do list
+   save.adb       backup script, works both with HAC and GNAT!
 
 Some design points
 ==================

@@ -169,6 +169,8 @@ package body HAC.Parser.Standard_Functions is
           if Actual (1).TYP = String_Literals then
             Emit_Std_Funct (CD, SF_Literal_to_VString);
           end if;
+        when SF_Niladic =>
+          null;  --  No arguments, nothing to adjust
         when others =>
           null;  --  Nothing to adjust regarding parameter types.
       end case;

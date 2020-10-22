@@ -8,6 +8,7 @@ with HAC.PCode.Interpreter.Calls,
 with HAC_Pack;
 
 with Ada.Command_Line,
+     Ada.Directories,
      Ada.Environment_Variables,
      Ada.IO_Exceptions;
 
@@ -75,6 +76,9 @@ package body HAC.PCode.Interpreter is
         when SF_Directory_Separator =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := Character'Pos (System_Calls.Directory_Separator);
+        when SF_Current_Directory =>
+          Push;  --  Niladic function, needs to push a new item (their own result).
+          ND.S (Curr_TCB.T) := GR_VString (Ada.Directories.Current_Directory);
         when SF_Get_Needs_Skip_Line =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := Boolean'Pos (Console.Get_Needs_Skip_Line);
@@ -227,6 +231,7 @@ package body HAC.PCode.Interpreter is
     procedure Do_File_IO is
       Code : constant SP_Code := SP_Code'Val (ND.IR.X);
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
+      use Defs.VStrings_Pkg;
     begin
       case Code is
         when SP_Open =>
@@ -234,24 +239,27 @@ package body HAC.PCode.Interpreter is
           Ada.Text_IO.Open (
             ND.S (Curr_TCB.T + 1).Txt.all,
             Ada.Text_IO.In_File,
-            Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T + 2).V)
+            To_String (ND.S (Curr_TCB.T + 2).V)
           );
         when SP_Create =>
           Pop (2);
           Ada.Text_IO.Create (
             ND.S (Curr_TCB.T + 1).Txt.all,
             Ada.Text_IO.Out_File,
-            Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T + 2).V)
+            To_String (ND.S (Curr_TCB.T + 2).V)
           );
         when SP_Close =>
           Ada.Text_IO.Close (ND.S (Curr_TCB.T).Txt.all);
           Pop;
         when SP_Set_Env =>
           Ada.Environment_Variables.Set (
-            Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T - 1).V),
-            Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T).V)
+            To_String (ND.S (Curr_TCB.T - 1).V),
+            To_String (ND.S (Curr_TCB.T).V)
           );
           Pop (2);
+        when SP_Set_Directory =>
+          Ada.Directories.Set_Directory (To_String (ND.S (Curr_TCB.T).V));
+          Pop;
         when SP_Push_Abstract_Console =>
           Push;
           ND.S (Curr_TCB.T) := GR_Abstract_Console;
@@ -276,18 +284,18 @@ package body HAC.PCode.Interpreter is
             Ada.Text_IO.Skip_Line (ND.S (Curr_TCB.T).Txt.all);
           end if;
           Pop;
-        when others =>
+        when SP_Wait | SP_Signal | SP_Priority | SP_InheritP | SP_Quantum =>
           null;
       end case;
       ND.SWITCH := True;  --  give up control when doing I/O
     exception
       when Ada.Text_IO.Name_Error =>
         Raise_Standard (VME_Name_Error,
-          "File not found: " & Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T + 2).V));
+          "File not found: " & To_String (ND.S (Curr_TCB.T + 2).V));
         raise VM_Raised_Exception;
       when Ada.Text_IO.Use_Error =>
         Raise_Standard (VME_Use_Error,
-          "Cannot access file: " & Defs.VStrings_Pkg.To_String (ND.S (Curr_TCB.T + 2).V));
+          "Cannot access file: " & To_String (ND.S (Curr_TCB.T + 2).V));
         raise VM_Raised_Exception;
     end Do_File_IO;
 

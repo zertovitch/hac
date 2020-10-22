@@ -286,8 +286,24 @@ package body HAC.Parser.Standard_Procedures is
         File_I_O_Call (Code);
         Need (CD, RParent, err_closing_parenthesis_missing);
 
+      when SP_Set_Directory =>
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Expression (CD, Level, RParent_Set, X);  --  We push the arguments in the stack.
+        if VStrings_or_Str_Lit_Set (X.TYP) then
+          if X.TYP = String_Literals then
+            Emit_Std_Funct (CD, SF_Literal_to_VString);
+          end if;
+        else
+          Type_Mismatch (
+            CD, err_parameter_types_do_not_match,
+            Found    => X,
+            Expected => VStrings_or_Str_Lit_Set
+          );
+        end if;
+        File_I_O_Call (Code);
+        Need (CD, RParent, err_closing_parenthesis_missing);
       when SP_Push_Abstract_Console =>
-        null;  --  Used by Get, Put, ... without file parameter.
+        null;  --  Internal: used by Get, Put, etc. without file parameter.
       when SP_Get_F | SP_Get_Line_F |
            SP_Put_F | SP_Put_Line_F =>
         null;  --  "Fronted" by SP_Get, SP_Get_Line,... Used by VM.

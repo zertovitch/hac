@@ -284,6 +284,8 @@ package HAC.PCode is
     SF_Starts_With,
     SF_Ends_With,
     --
+    --  Ada.Calendar-like functions
+    --
     SF_Time_Subtract,    --  T2 - T1 -> Duration
     SF_Duration_Add,
     SF_Duration_Subtract,
@@ -304,12 +306,13 @@ package HAC.PCode is
     SF_Get_Env,
     SF_Shell_Execute,
     --
-    --  Niladic functions.
+    --  Niladic functions (the have no arguments).
     --
     SF_Clock,
     SF_Random_Float,
     SF_Argument_Count,
     SF_Directory_Separator,
+    SF_Current_Directory,
     SF_Get_Needs_Skip_Line  --  Informs whether Get from console needs Skip_Line
   );
 
@@ -346,7 +349,14 @@ package HAC.PCode is
     SP_Quantum,
     SP_Priority,
     SP_InheritP,
-    SP_Set_Env
+    --
+    --  Ada.Environment_Variables-like procedures
+    --
+    SP_Set_Env,
+    --
+    --  Ada.Directories-like procedures
+    --
+    SP_Set_Directory
   );
 
 end HAC.PCode;

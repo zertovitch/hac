@@ -30,13 +30,14 @@ procedure All_Silent_Tests is
         return;
       end if;   
       Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
-      Shell (+"gprbuild -p -P .." & Directory_Separator & "hac", True);
+      Shell (+"gprbuild -P .." & Directory_Separator & "hac", True);
     end Build_HAX;
 
   begin
-    Put_Line( "    ___________      _________________________________________________");
-    Put_Line( "   / *  HAC  * \    /  ""Silent tests"": when there is zero output      \");
-    Put_Line( "   \__Testing__/    \__and no compilation error, then it's all fine.__/");
+    Put_Line( "    ___________      ____________________________________________________________");
+    Put_Line( "   / *  HAC  * \    /  ""Silent tests"": when there is zero output, no compilation \");
+    Put_Line( "   |  Testing  |    |   error and no run-time error, then it's all fine.         |");
+    Put_Line( "   \___________/    \____________________________________________________________/");
     New_Line;
     Build_HAX;  --  Redundant if this program is itself run through HAX.
     --

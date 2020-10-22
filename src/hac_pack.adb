@@ -123,7 +123,6 @@ package body HAC_Pack is
     )
       return String
     is
-      use Calendar;
       subtype Sec_int is Long_Integer; -- must contain 86_400
       s : constant Sec_int:= Sec_int( Calendar.Seconds(T) );
       m : constant Sec_int:= s / 60;
@@ -545,6 +544,16 @@ package body HAC_Pack is
   procedure Set_Env (Name : VString; Value : VString) is
   begin
     Set_Env (To_String (Name), To_String (Value));
+  end;
+
+  function Current_Directory return VString is
+  begin
+    return +Ada.Directories.Current_Directory;
+  end;
+
+  procedure Set_Directory (Directory : VString) is
+  begin
+    Set_Directory (To_String (Directory));
   end;
 
   function HAC_Generic_Image (I : Abstract_Integer) return String is

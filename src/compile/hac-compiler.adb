@@ -292,6 +292,8 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Starts_With",         Bools,    SF_Starts_With);
       Enter_Std_Funct ("Ends_With",           Bools,    SF_Ends_With);
       --
+      --  Ada.Calendar-like functions
+      --
       Enter_Std_Funct ("Year",                Ints,      SF_Year);
       Enter_Std_Funct ("Month",               Ints,      SF_Month);
       Enter_Std_Funct ("Day",                 Ints,      SF_Day);
@@ -308,27 +310,39 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Shell_Execute",       Ints,     SF_Shell_Execute);
       Enter_Std_Funct ("Directory_Separator", Chars,    SF_Directory_Separator);
       --
+      --  Ada.Directories-like functions
+      --
+      Enter_Std_Funct ("Current_Directory ",  VStrings, SF_Current_Directory);
+      --
       Enter_Std_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
       --
-      Enter_Std_Proc ("Get",           SP_Get);
-      Enter_Std_Proc ("Get_Immediate", SP_Get_Immediate);
-      Enter_Std_Proc ("Get_Line",      SP_Get_Line);
-      Enter_Std_Proc ("Skip_Line",     SP_Skip_Line);
-      Enter_Std_Proc ("Put",           SP_Put);
-      Enter_Std_Proc ("Put_Line",      SP_Put_Line);
-      Enter_Std_Proc ("New_Line",      SP_New_Line);
-      Enter_Std_Proc ("Wait",          SP_Wait);
-      Enter_Std_Proc ("Signal",        SP_Signal);
+      Enter_Std_Proc ("Get",            SP_Get);
+      Enter_Std_Proc ("Get_Immediate",  SP_Get_Immediate);
+      Enter_Std_Proc ("Get_Line",       SP_Get_Line);
+      Enter_Std_Proc ("Skip_Line",      SP_Skip_Line);
+      Enter_Std_Proc ("Put",            SP_Put);
+      Enter_Std_Proc ("Put_Line",       SP_Put_Line);
+      Enter_Std_Proc ("New_Line",       SP_New_Line);
+      Enter_Std_Proc ("Wait",           SP_Wait);
+      Enter_Std_Proc ("Signal",         SP_Signal);
       --
-      Enter_Std_Proc ("Open",          SP_Open);
-      Enter_Std_Proc ("Create",        SP_Create);
-      Enter_Std_Proc ("Close",         SP_Close);
+      --  Ada.Text_IO-like procedures
       --
-      Enter_Std_Proc ("Quantum",       SP_Quantum);
-      Enter_Std_Proc ("Priority",      SP_Priority);
-      Enter_Std_Proc ("InheritP",      SP_InheritP);
+      Enter_Std_Proc ("Open",           SP_Open);
+      Enter_Std_Proc ("Create",         SP_Create);
+      Enter_Std_Proc ("Close",          SP_Close);
       --
-      Enter_Std_Proc ("Set_Env",       SP_Set_Env);
+      Enter_Std_Proc ("Quantum",        SP_Quantum);
+      Enter_Std_Proc ("Priority",       SP_Priority);
+      Enter_Std_Proc ("InheritP",       SP_InheritP);
+      --
+      --  Ada.Environment_Variables-like procedures
+      --
+      Enter_Std_Proc ("Set_Env",        SP_Set_Env);
+      --
+      --  Ada.Directories-like procedures
+      --
+      Enter_Std_Proc ("Set_Directory ", SP_Set_Directory);
       --
       --  Enter Main.
       --
