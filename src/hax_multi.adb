@@ -28,7 +28,7 @@ procedure HAX_Multi is
 
       package Current_IO_Console is new
         Console_Traits
-          ( Ada.Text_IO.End_Of_File,
+           (Ada.Text_IO.End_Of_File,
             Ada.Text_IO.End_Of_Line,
             Current_IO_Get_Needs_Skip_Line,
             HAC.Defs.IIO.Get,
@@ -43,15 +43,15 @@ procedure HAX_Multi is
             No_Put,  --  Ada.Text_IO.Put
             Ada.Text_IO.Put,
             No_New_Line  --  Ada.Text_IO.New_Line
-          );
+           );
 
       package Custom_System_Calls is new
         System_Calls_Traits
-          ( Ada.Command_Line.Argument_Count,
+           (Ada.Command_Line.Argument_Count,
             Ada.Command_Line.Argument,
             HAC_Pack.Shell_Execute,
             HAC_Pack.Directory_Separator
-          );
+           );
 
       use Ada.Calendar, Ada.Numerics.Float_Random, Ada.Streams.Stream_IO;
 
@@ -79,7 +79,7 @@ procedure HAX_Multi is
 
       procedure Interpret_for_Multi is new
         Interpret
-          ( Multi_Feedback,
+           (Multi_Feedback,
             Current_IO_Console,
             Custom_System_Calls
           );
@@ -93,11 +93,11 @@ procedure HAX_Multi is
       accept Start (id : Positive) do
         task_id := id;
       end Start;
-      tick:= Clock;
+      tick := Clock;
       Reset (gen);
       --
       Open (f, In_File, Ada_file_name);
-      Set_Source_Stream (CD, Stream(f), Ada_file_name);
+      Set_Source_Stream (CD, Stream (f), Ada_file_name);
       Compile (CD);
       Close (f);
       --

@@ -31,7 +31,7 @@ package body HAC.Parser is
         Type_Def, UErrors;
     --
     Level : Nesting_level := Initial_Level;
-    procedure InSymbol is begin Scanner.InSymbol (CD); end;
+    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
     Dx      : Integer;  -- data allocation Index
     MaxDX   : Integer;
@@ -366,7 +366,7 @@ package body HAC.Parser is
     ------------------------------------------------------------------
     --------------------------------------------Proc_Func_Declaration-
     procedure Proc_Func_Declaration is
-      IsFun: constant Boolean := CD.Sy = FUNCTION_Symbol;
+      IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
     begin
       InSymbol;
       if CD.Sy /= IDent then
@@ -404,7 +404,7 @@ package body HAC.Parser is
         end if;
         nxtSym := Sentinal + Statement_Begin_Symbol;
         loop
-          Statement (nxtSym); --MRC,was: UNTIL (Sy IN Sentinal);
+          Statement (nxtSym); -- MRC,was: UNTIL (Sy IN Sentinal);
           exit when Sentinal (CD.Sy) or CD.Err_Count > 0;
         end loop;
       end Multi_Statement;
@@ -753,7 +753,7 @@ package body HAC.Parser is
           Previous_Last := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
           CD.Id_Count := CD.Id_Count + 1;
           CD.IdTab (CD.Id_Count) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
-             (  Name           => CD.Id,
+               (Name           => CD.Id,
                 Name_with_case => CD.Id_with_case,
                 Link           => Previous_Last,
                 Obj            => Variable,
@@ -765,7 +765,7 @@ package body HAC.Parser is
                 Adr_or_Sz      => Dx,
                 Discrete_First => 0,
                 Discrete_Last  => 0
-             );
+               );
           CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx  := CD.Id_Count;
           Dx := Dx + 1;
           if Dx > MaxDX then
@@ -827,7 +827,7 @@ package body HAC.Parser is
             end if;       -- LC-1 must be OP=3, update Display
             patch (1) := CD.LC;  --  Need to patch in JMPC address later
             Emit1 (CD, k_Conditional_Jump, dummy_address);  --  JMPC, address patched in after ELSE
-                                      --or OR
+                                      --  or OR
             if CD.Sy = Semicolon then
               InSymbol;
             else
@@ -869,7 +869,7 @@ package body HAC.Parser is
               else
                 Select_Error (err_expecting_DELAY);
               end if;
-            -- end Sy = OrSy
+            --  end Sy = OrSy
             else              -- Sy = ELSE_Symbol, ===============> Conditional Entry Call
               CD.ObjCode (patch (0)).X     := Conditional_Entry_Call;
               CD.ObjCode (patch (0) + 1).Y := Conditional_Entry_Call;
@@ -894,7 +894,7 @@ package body HAC.Parser is
         end Qualified_Entry_Call;
 
         procedure Selective_Wait is         -- Kurtz <===================
-          -- Jay, this Buds for you !!
+          --  Jay, this Buds for you !!
           JSD, Alt_Patch      : Fixed_Size_Patch_Table;
           ISD, IAlt, StartSel : Integer;
           SelectDone          : Boolean;
@@ -910,7 +910,7 @@ package body HAC.Parser is
                 return;
               end if;
               if CD.Sy = LParent then      -- should be modified
-                -- To check no. and
+                --  To check no. and
                 while not (CD.Sy = DO_Symbol or CD.Sy = RParent) loop
                   InSymbol;
                 end loop;
@@ -932,7 +932,7 @@ package body HAC.Parser is
             Emit2 (CD, k_Selective_Wait, 2, I);          --  Retain Entry Index
             Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
             Emit2 (CD, k_Selective_Wait, 3, CD.LC);  --  ACCEPT IF Ready ELSE Skip To LC
-            -- CONDITIONAL ACCEPT MUST BE ATOMIC
+            --  CONDITIONAL ACCEPT MUST BE ATOMIC
             if CD.Sy = DO_Symbol then
               if Level = Nesting_Level_Max then
                 Fatal (LEVELS);  --  Exception is raised there.
@@ -989,7 +989,7 @@ package body HAC.Parser is
                 Multi_Statement (ELSE_END_OR);
                 Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);          --  patch JMP ADDRESS AT EndSy
-              -- end WHEN_Symbol
+              --  end WHEN_Symbol
 
               when ACCEPT_Symbol =>
                 Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
@@ -1066,13 +1066,13 @@ package body HAC.Parser is
         elsif CD.Sy = IDent then  --  Task Entry objectName.
           Qualified_Entry_Call;
           InSymbol;
-          -- Timed or Conditional Entry Call (?)
+          --  Timed or Conditional Entry Call (?)
         else
           Select_Error (err_expecting_accept_when_or_entry_id);
         end if;
       end Select_Statement;
 
-      procedure Block_Statement (block_name: Alfa) is  --  RM: 5.6
+      procedure Block_Statement (block_name : Alfa) is  --  RM: 5.6
       begin
         Error (
           CD, err_not_yet_implemented,
@@ -1082,14 +1082,14 @@ package body HAC.Parser is
         --
         Block (CD, FSys_St, Is_a_function, True, Level + 1, CD.Id_Count, block_name, block_name);  --  !! up/low case
         --
-        -- !! to check:
-        -- !! * stack management of variables when entering / quitting the block
-        -- !! * object code and nesting... works on some cases at least (test.adb) !...
-        -- !! Perhaps keep same level but have local declarations as for the
+        --  !! to check:
+        --  !! * stack management of variables when entering / quitting the block
+        --  !! * object code and nesting... works on some cases at least (test.adb) !...
+        --  !! Perhaps keep same level but have local declarations as for the
         --    variable in a FOR_Statement.
-        -- !! Either both FOR and Block statements forget their definitions, or there
+        --  !! Either both FOR and Block statements forget their definitions, or there
         --    is perhaps a problem with the stack (DX).
-        -- !! Local bodies of subprograms surely mess the object code.
+        --  !! Local bodies of subprograms surely mess the object code.
       end Block_Statement;
 
       procedure Named_Statement is
@@ -1351,7 +1351,7 @@ package body HAC.Parser is
       case CD.Sy is
         when DECLARE_Symbol => InSymbol;
         when BEGIN_Symbol   => null;
-        when others         => raise Internal_error with "Unexpected " & KeyWSymbol'Image(CD.Sy);
+        when others         => raise Internal_error with "Unexpected " & KeyWSymbol'Image (CD.Sy);
       end case;
     elsif CD.Sy = IS_Symbol then  --  The "IS" in "procedure ABC (param : T_Type) IS"
       InSymbol;

@@ -14,14 +14,14 @@ with Ada.Command_Line,
 
 package body HAC.PCode.Interpreter is
 
-  procedure Interpret (CD: Compiler_Data; Unhandled : out Exception_Propagation_Data)
+  procedure Interpret (CD : Compiler_Data; Unhandled : out Exception_Propagation_Data)
   is
     use In_Defs;
     ND : Interpreter_Data;
     H3 : Defs.HAC_Integer;  --  Internal integer register
 
-    procedure Pop (Amount : Positive := 1) is  begin Pop (ND, Amount); end;
-    procedure Push (Amount : Positive := 1) is begin Push (ND, Amount); end;
+    procedure Pop (Amount : Positive := 1) is  begin Pop (ND, Amount); end Pop;
+    procedure Push (Amount : Positive := 1) is begin Push (ND, Amount); end Push;
 
     procedure Start_Interpreter is
     begin
@@ -35,7 +35,7 @@ package body HAC.PCode.Interpreter is
       HAC.PCode.Interpreter.Tasking.Init_other_tasks (CD, ND);
     end Start_Interpreter;
 
-    procedure Raise_Standard (SE: Exception_Type; Msg : String := "") is
+    procedure Raise_Standard (SE : Exception_Type; Msg : String := "") is
       EI : Exception_Propagation_Data renames ND.TCB (ND.CurTask).Exception_Info;
     begin
       EI.Currently_Raised  := (SE, 0);
@@ -155,7 +155,7 @@ package body HAC.PCode.Interpreter is
       Item     : General_Register renames     ND.S (Curr_TCB.T - 3);
       Format_1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 2).I;
       Format_2 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
-      Format_3 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T    ).I;
+      Format_3 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
       --  Valid parameters used: see def_param in HAC.Parser.Standard_Procedures.
       use Defs;
     begin
@@ -265,7 +265,7 @@ package body HAC.PCode.Interpreter is
           ND.S (Curr_TCB.T) := GR_Abstract_Console;
         when SP_Get | SP_Get_Immediate | SP_Get_Line | SP_Get_F | SP_Get_Line_F =>
           Do_Text_Read (Code);
-        when SP_Put |SP_Put_Line | SP_Put_F | SP_Put_Line_F =>
+        when SP_Put | SP_Put_Line | SP_Put_F | SP_Put_Line_F =>
           Do_Write_Formatted (Code);
         when SP_New_Line =>
           if ND.S (Curr_TCB.T).Txt = Abstract_Console then
@@ -435,7 +435,7 @@ package body HAC.PCode.Interpreter is
   begin  --  Interpret
     Start_Interpreter;
     --
-    Running_State:
+    Running_State :
     loop  --  until Processor state is not Running or Exception_Raised
       if ND.Scheduler = Single_Task then
         Single_Task_Delays;
@@ -451,13 +451,13 @@ package body HAC.PCode.Interpreter is
       if User_Aborted then
         Raise_Standard (VME_User_Abort, "");
       end if;
-      exit when ND.PS = DEADLOCK or ND.PS = FIN;
+      exit Running_State when ND.PS = DEADLOCK or ND.PS = FIN;
       --
       Fetch_Instruction;
       --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED (removed)
       Execute_Current_Instruction_with_Exception;
       --
-      exit when ND.PS not in Running_or_in_Exception;
+      exit Running_State when ND.PS not in Running_or_in_Exception;
     end loop Running_State;
     --
     if ND.PS not in Exception_Raised .. FIN then
@@ -504,16 +504,16 @@ package body HAC.PCode.Interpreter is
     function Shifted_Argument_Count return Natural is
     begin
       return Ada.Command_Line.Argument_Count - Argument_Shift;
-    end;
+    end Shifted_Argument_Count;
 
     function Shifted_Argument (Number : Positive) return String is
     begin
       return Ada.Command_Line.Argument (Number + Argument_Shift);
-    end;
+    end Shifted_Argument;
 
     package Current_IO_Console is new
       Console_Traits
-        ( Ada.Text_IO.End_Of_File,
+         (Ada.Text_IO.End_Of_File,
           Ada.Text_IO.End_Of_Line,
           Current_IO_Get_Needs_Skip_Line,
           Defs.IIO.Get,
@@ -528,28 +528,28 @@ package body HAC.PCode.Interpreter is
           Ada.Text_IO.Put,
           Ada.Text_IO.Put,
           Ada.Text_IO.New_Line
-        );
+         );
 
     package Custom_System_Calls is new
       System_Calls_Traits
-        ( Shifted_Argument_Count,
+         (Shifted_Argument_Count,
           Shifted_Argument,
           HAC_Pack.Shell_Execute,
           HAC_Pack.Directory_Separator
-        );
+         );
 
     procedure Interpret_on_Current_IO_Instance is new
       Interpret
-        ( No_Feedback,
+         (No_Feedback,
           Current_IO_Console,
           Custom_System_Calls
-        );
+         );
 
   begin
     Interpret_on_Current_IO_Instance (CD_CIO, Unhandled);
   end Interpret_on_Current_IO;
 
-  function Image (E: Exception_Propagation_Data) return String is
+  function Image (E : Exception_Propagation_Data) return String is
   begin
     case E.Currently_Raised.Ex_Typ is
       when No_Exception         => return "";
@@ -565,17 +565,17 @@ package body HAC.PCode.Interpreter is
     end case;
   end Image;
 
-  function Message (E: Exception_Propagation_Data) return String is
+  function Message (E : Exception_Propagation_Data) return String is
   begin
     return Defs.To_String (E.Exception_Message);
   end Message;
 
-  function Is_Exception_Raised (E: Exception_Propagation_Data) return Boolean is
+  function Is_Exception_Raised (E : Exception_Propagation_Data) return Boolean is
   begin
     return E.Currently_Raised.Ex_Typ /= No_Exception;
   end Is_Exception_Raised;
 
-  procedure Show_Trace_Back (E: Exception_Propagation_Data) is
+  procedure Show_Trace_Back (E : Exception_Propagation_Data) is
   begin
     for STL of E.ST_Message loop
       Show_Line_Information (

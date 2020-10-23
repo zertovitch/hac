@@ -54,7 +54,7 @@ package body HAC.Parser.Enter_Def is
     else      --  Enter identifier in table IdTab
       CD.Id_Count            := CD.Id_Count + 1;
       CD.IdTab (CD.Id_Count) :=
-       (  Name           => Id,
+         (Name           => Id,
           Name_with_case => Id_with_case,
           Link           => L,
           Obj            => K,
@@ -66,7 +66,7 @@ package body HAC.Parser.Enter_Def is
           Adr_or_Sz      => 0,
           Discrete_First => 0,
           Discrete_Last  => 0
-      );
+         );
       --  Update start of identifier chain:
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
     end if;

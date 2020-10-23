@@ -1,6 +1,6 @@
 with HAC.UErrors; use HAC.UErrors;
--- with Sequential_IO;
--- with Text_IO;
+--  with Sequential_IO;
+--  with Text_IO;
 
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
@@ -47,22 +47,22 @@ package body HAC.PCode is
   --    package OAIO is new Sequential_IO(SMAObject);
   --    use OAIO;
 
-  -- ** The next three functions are almost identical.
+  --  ** The next three functions are almost identical.
   --
-  -- * Emit   store an object code for an instruction with no
-  -- *      arguments,
-  -- * Emit1  store an object code for an instruction with one
-  -- *      argument (Y), and
-  -- * Emit2  store an object code for an instruction with two
-  -- *      arguments.
-  -- *
-  -- * Originally it was implemented as three procedures.
-  -- *
-  -- * Emit and Emit1 call Emit2 with 0 for unused arguments
-  -- *
-  -- * Manuel *
+  --  * Emit   store an object code for an instruction with no
+  --  *      arguments,
+  --  * Emit1  store an object code for an instruction with one
+  --  *      argument (Y), and
+  --  * Emit2  store an object code for an instruction with two
+  --  *      arguments.
+  --  *
+  --  * Originally it was implemented as three procedures.
+  --  *
+  --  * Emit and Emit1 call Emit2 with 0 for unused arguments
+  --  *
+  --  * Manuel *
 
-  function For_END (for_BEGIN: Opcode) return Opcode is
+  function For_END (for_BEGIN : Opcode) return Opcode is
   begin
     case for_BEGIN is
       when k_FOR_Forward_Begin => return k_FOR_Forward_End;
@@ -174,10 +174,10 @@ package body HAC.PCode is
     SP_C : SP_Code;
     Old_Y1, Old_Y2, Old_Y3, Old_Y4 : Operand_2_Type := 0;
     --
-    function Padded_Opcode (o: Opcode) return String is
+    function Padded_Opcode (o : Opcode) return String is
       s : String (1 .. Opcode'Width);
     begin
-      Opcode_IO.Put(s, o);
+      Opcode_IO.Put (s, o);
       return s;
     end Padded_Opcode;
     use Defs;

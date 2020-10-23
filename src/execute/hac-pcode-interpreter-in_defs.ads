@@ -178,6 +178,6 @@ package HAC.PCode.Interpreter.In_Defs is
 
   --  Post Mortem Dump of the task stack causing the exception
   --
-  procedure Post_Mortem_Dump (CD: Compiler_Data; ND: In_Defs.Interpreter_Data);
+  procedure Post_Mortem_Dump (CD : Compiler_Data; ND : In_Defs.Interpreter_Data);
 
 end HAC.PCode.Interpreter.In_Defs;

@@ -22,7 +22,7 @@ procedure HAX is
   asm_dump_file_name : Unbounded_String;
   cmp_dump_file_name : Unbounded_String;
 
-  procedure Compile_and_interpret_file (Ada_file_name: String; arg_pos : Positive) is
+  procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
     use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter,
         Ada.Calendar, Ada.Text_IO;
     --
@@ -93,7 +93,7 @@ procedure HAX is
     if verbosity >= 2 then
       Put_Line (
         HAC_margin_2 & "Compilation finished in " &
-        (Duration'Image(t2-t1)) &
+        (Duration'Image (t2 - t1)) &
         " seconds."
       );
     end if;
@@ -114,7 +114,7 @@ procedure HAX is
         else
           Put_Line (
             HAC_margin_3 & "VM interpreter done after " &
-            (Duration'Image(t2-t1)) & " seconds."
+            (Duration'Image (t2 - t1)) & " seconds."
           );
           Put_Line (
             HAC_margin_3 & "Execution of " & Ada_file_name & " completed.");
@@ -128,7 +128,7 @@ procedure HAX is
       end if;
     end if;
   exception
-    when E: Abnormal_Termination =>
+    when E : Abnormal_Termination =>
       Put_Line (
         Current_Error,
         Ada.Exceptions.Exception_Message (E)

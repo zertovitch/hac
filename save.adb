@@ -20,7 +20,7 @@ procedure Save is
     function Two_Digits (x : Integer) return VString is
     begin
       if x < 10 then
-        return "0" & Image(x);
+        return "0" & Image (x);
       else
         return Image (x);
       end if;

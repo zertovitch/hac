@@ -1,1 +1,1 @@
-gprbuild -p -P hac -XBuild_Mode=Fast
+gprbuild -P hac -XHAC_Build_Mode=Fast

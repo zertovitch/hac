@@ -32,7 +32,7 @@ package body HAC.Parser.Type_Def is
     --  Was: Constant in the Pascal compiler.
     X, Sign : Integer;
     signed : Boolean := False;
-    procedure InSymbol is begin Scanner.InSymbol (CD); end;
+    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
   begin
     C.TP := Type_Undefined;
     C.I  := 0;
@@ -95,7 +95,7 @@ package body HAC.Parser.Type_Def is
   )
   is
     T1 : Integer;
-    procedure InSymbol is begin Scanner.InSymbol (CD); end;
+    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
   begin
     InSymbol;  --  Consume TYPE or SUBTYPE symbol.
     Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
@@ -130,7 +130,7 @@ package body HAC.Parser.Type_Def is
   )
   is
     Level : Nesting_level := Initial_Level;
-    procedure InSymbol is begin Scanner.InSymbol (CD); end;
+    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
     --
     --  constrained_array_definition 3.6 (5)
     --

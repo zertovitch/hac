@@ -13,7 +13,7 @@ with HAC.UErrors;
 
 package body HAC.Compiler.PCode_Emit is
 
-  function Compiler_Data_to_Debug_Info (CD: Compiler_Data) return Debug_Info is
+  function Compiler_Data_to_Debug_Info (CD : Compiler_Data) return Debug_Info is
   begin
     return (Line_Number   => CD.Line_Count,
             Full_Block_Id => CD.Full_Block_Id,
@@ -57,7 +57,7 @@ package body HAC.Compiler.PCode_Emit is
   is
   begin
     Emit1 (CD, k_Standard_Functions, SF_Code'Pos (Code));
-  end;
+  end Emit_Std_Funct;
 
   procedure Emit_Comparison_Instruction (
     CD        : in out Compiler_Data;

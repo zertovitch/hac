@@ -41,12 +41,12 @@ package body HAC.Defs is
     return To_String (a) = s;
   end Equal;
 
-  function To_String (a: Alfa) return String is
+  function To_String (a : Alfa) return String is
   begin
     return Trim (a, Right);
   end To_String;
 
-  function To_Alfa (s: String) return Alfa is
+  function To_Alfa (s : String) return Alfa is
   begin
     if s'Length > Alfa'Length then
       raise Constraint_Error;

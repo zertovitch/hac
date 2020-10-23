@@ -5,7 +5,7 @@ with Ada.Text_IO;
 
 package body HAC.UErrors is
 
-  function Error_String (code: HAC.Defs.Compile_Error; hint: String:= "") return String is
+  function Error_String (code : HAC.Defs.Compile_Error; hint : String := "") return String is
   begin
     case code is
       when err_undefined_identifier =>
@@ -281,7 +281,7 @@ package body HAC.UErrors is
     --
     procedure Show_to_comp_dump (
        srcNumber, charStart, charEnd, objNumber : Integer;
-       hint_for_dump: String
+       hint_for_dump : String
     )
     is
     begin
@@ -312,12 +312,12 @@ package body HAC.UErrors is
     CD.Errs (code) := True;
     CD.Err_Count := CD.Err_Count + 1;
     if CD.error_pipe = null then
-      Put_Line(
+      Put_Line (
         Current_Error,
         --  !! Ada "file" name here
-        Trim(Integer'Image(CD.Line_Count),Left) & ':' &
-        Trim(Integer'Image(CD.syStart),Left) & '-' &
-        Trim(Integer'Image(CD.syEnd),Left) & ": " &
+        Trim (Integer'Image (CD.Line_Count), Left) & ':' &
+        Trim (Integer'Image (CD.syStart), Left) & '-' &
+        Trim (Integer'Image (CD.syEnd), Left) & ": " &
         Error_String (code, hint)
       );
     else
@@ -354,7 +354,7 @@ package body HAC.UErrors is
 
   ----------------------------------------------------------------------------
 
-  procedure Fatal (N: Table_OverFlow_Error; Current_Error_Output : Boolean := False) is
+  procedure Fatal (N : Table_OverFlow_Error; Current_Error_Output : Boolean := False) is
     use Ada.Text_IO;
   begin
     if Current_Error_Output then
@@ -403,12 +403,12 @@ package body HAC.UErrors is
     for K in CD.Errs'Range loop
       if CD.Errs (K) then
         if CD.comp_dump_requested then
-          Put_Line (Compile_Error'Image(K) & ":  " & Error_String (K, ""));
-          -- Should be Error_hint(K,n) !!
+          Put_Line (Compile_Error'Image (K) & ":  " & Error_String (K, ""));
+          --  Should be Error_hint(K,n) !!
         end if;
         if CD.listing_requested then
-          Put_Line (CD.listing, Compile_Error'Image(K) & "  " & Error_String (K, ""));
-          -- Should be Error_hint(K,n) !!
+          Put_Line (CD.listing, Compile_Error'Image (K) & "  " & Error_String (K, ""));
+          --  Should be Error_hint(K,n) !!
         end if;
       end if;
     end loop;

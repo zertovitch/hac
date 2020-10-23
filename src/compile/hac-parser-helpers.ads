@@ -61,13 +61,13 @@ package HAC.Parser.Helpers is
     CD            : in out Compiler_Data;
     S1, S2        : Symset;
     N             : Compile_Error;
-    stop_on_error : Boolean:= False);
+    stop_on_error : Boolean := False);
 
   procedure Test_Semicolon_in_Declaration (CD : in out Compiler_Data; FSys : Symset);
 
   procedure Test_END_Symbol (CD : in out Compiler_Data);
 
-  procedure Check_Boolean (CD : in out Compiler_Data; T: Typen);
+  procedure Check_Boolean (CD : in out Compiler_Data; T : Typen);
 
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data);
 
@@ -266,20 +266,20 @@ package HAC.Parser.Helpers is
     (LBrack | LParent | Period => True, others => False);
 
   Statement_Begin_Symbol : constant Symset :=
-   (IDent         |
-    BEGIN_Symbol  |
-    DECLARE_Symbol|
-    IF_Symbol     |
-    WHILE_Symbol  |
-    LOOP_Symbol   |
-    FOR_Symbol    |
-    CASE_Symbol   |
-    EXIT_Symbol   |
-    NULL_Symbol   |
-    RETURN_Symbol |
-    SELECT_Symbol |
-    ACCEPT_Symbol |
-    DELAY_Symbol  => True,
+   (IDent          |
+    BEGIN_Symbol   |
+    DECLARE_Symbol |
+    IF_Symbol      |
+    WHILE_Symbol   |
+    LOOP_Symbol    |
+    FOR_Symbol     |
+    CASE_Symbol    |
+    EXIT_Symbol    |
+    NULL_Symbol    |
+    RETURN_Symbol  |
+    SELECT_Symbol  |
+    ACCEPT_Symbol  |
+    DELAY_Symbol   => True,
     others => False);
 
   Symbols_after_Subprogram_Identifier : constant Symset :=

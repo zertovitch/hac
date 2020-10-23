@@ -38,7 +38,7 @@ package body HAC.Scanner is
   c128 : constant Character := Character'Val (128);
 
   CharacterTypes : constant array (Character) of CHTP :=
-    (   'A' .. 'Z' => Letter,
+       ('A' .. 'Z' => Letter,
         'a' .. 'z' => LowCase,
         '0' .. '9' => Number,
         '#' |
@@ -73,10 +73,10 @@ package body HAC.Scanner is
     sy : KeyWSymbol;
   end record;
 
-  type AdaKeyW_List is array(Positive range <>) of AdaKeyW_Pair;
+  type AdaKeyW_List is array (Positive range <>) of AdaKeyW_Pair;
 
-  AdaKeyW : constant AdaKeyW_List:=
-      ( ("ABORT       ", ABORT_Symbol),
+  AdaKeyW : constant AdaKeyW_List :=
+       (("ABORT       ", ABORT_Symbol),
         ("ABSTRACT    ", ABSTRACT_Symbol),     -- [added in] Ada 95
         ("ABS         ",  USy),                -- !! SmallAda has a built-in function (wrong)
         ("ACCEPT      ", ACCEPT_Symbol),
@@ -183,9 +183,9 @@ package body HAC.Scanner is
         end if;
       end loop;
       Last := idx;
-      -- if qDebug then
-      --   Put_Line("[::]" & InpLine(InpLine'First..Last));
-      -- end if;
+      --  if qDebug then
+      --    Put_Line("[::]" & InpLine(InpLine'First..Last));
+      --  end if;
     exception
       when Ada.Text_IO.End_Error =>
         if idx >= InpLine'First then
@@ -222,7 +222,7 @@ package body HAC.Scanner is
 
       CD.CC := CD.CC + 1;
       CD.CH := CD.InpLine (CD.CC);
-      -- Manuel : Change tabs for spaces
+      --  Manuel : Change tabs for spaces
       if Character'Pos (CD.CH) = 9 then
         CD.CH := ' '; -- IdTab for space
       end if;
@@ -247,7 +247,7 @@ package body HAC.Scanner is
         else
           Error (
             CD, err_negative_exponent_for_integer_literal,
-            Integer'Image(CD.INum) & ".0e- ..."
+            Integer'Image (CD.INum) & ".0e- ..."
           );
         end if;
       end if;
@@ -428,9 +428,9 @@ package body HAC.Scanner is
 
   begin  --  InSymbol
 
-    Big_loop:
+    Big_loop :
     loop
-      Small_loop:
+      Small_loop :
       loop
         while CD.CH = ' ' loop
           NextCh;
@@ -477,7 +477,7 @@ package body HAC.Scanner is
             exit when CD.CH /= '_'
                      and then special_or_illegal (CharacterTypes (CD.CH));
           end loop;
-          if K > 0 and then CD.Id (K) ='_' then
+          if K > 0 and then CD.Id (K) = '_' then
             Error (CD, err_identifier_cannot_end_with_underline, To_String (CD.Id), stop => True);
           end if;
           --
@@ -696,10 +696,10 @@ package body HAC.Scanner is
       for i in 1 .. CD.CC - 2 loop
         Put (CD.comp_dump, '.');
       end loop;
-      Put_Line (CD.comp_dump,"^");
+      Put_Line (CD.comp_dump, "^");
       Put (CD.comp_dump,
-        '[' & Integer'Image(CD.Line_Count) & ':' &
-              Integer'Image(CD.CC) & ":] " &
+        '[' & Integer'Image (CD.Line_Count) & ':' &
+              Integer'Image (CD.CC) & ":] " &
         KeyWSymbol'Image (CD.Sy)
       );
       case CD.Sy is

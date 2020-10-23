@@ -23,10 +23,10 @@ package HAC.PCode.Interpreter is
 
   type Exception_Propagation_Data is private;
 
-  function Is_Exception_Raised (E: Exception_Propagation_Data) return Boolean;
+  function Is_Exception_Raised (E : Exception_Propagation_Data) return Boolean;
 
-  function Image (E: Exception_Propagation_Data) return String;
-  function Message (E: Exception_Propagation_Data) return String;
+  function Image (E : Exception_Propagation_Data) return String;
+  function Message (E : Exception_Propagation_Data) return String;
 
   generic
     with procedure Show_Line_Information (
@@ -34,7 +34,7 @@ package HAC.PCode.Interpreter is
       Block_Name  : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
       Line_Number : Positive
     );
-  procedure Show_Trace_Back (E: Exception_Propagation_Data);
+  procedure Show_Trace_Back (E : Exception_Propagation_Data);
 
   ------------------------------------------------------------------------------
   --  Here, we provide a ready-to-use, "standard" instantiation of the        --
@@ -70,10 +70,10 @@ package HAC.PCode.Interpreter is
     with function Get_Needs_Skip_Line return Boolean;
     --  ^ True  for a real console with Ada.Text_IO (line buffer);
     --    False for input boxes (like in LEA) or other kind of immediate input.
-    with procedure Get (I: out Integer; Width : Ada.Text_IO.Field := 0);
-    with procedure Get (F: out HAC.Defs.HAC_Float; Width : Ada.Text_IO.Field := 0);
-    with procedure Get (C: out Character);
-    with procedure Get_Immediate (C: out Character);
+    with procedure Get (I : out Integer; Width : Ada.Text_IO.Field := 0);
+    with procedure Get (F : out HAC.Defs.HAC_Float; Width : Ada.Text_IO.Field := 0);
+    with procedure Get (C : out Character);
+    with procedure Get_Immediate (C : out Character);
     with function Get_Line return String;
     with procedure Skip_Line (Spacing : Ada.Text_IO.Positive_Count := 1);
     --
@@ -91,11 +91,11 @@ package HAC.PCode.Interpreter is
       B     : in Boolean;
       Width : Ada.Text_IO.Field    := HAC.Defs.BIO.Default_Width;
       Set   : Ada.Text_IO.Type_Set := HAC.Defs.BIO.Default_Setting);
-    with procedure Put (C: in Character);
-    with procedure Put (S: in String);
+    with procedure Put (C : in Character);
+    with procedure Put (S : in String);
     with procedure New_Line (Spacing : Ada.Text_IO.Positive_Count := 1);
   package Console_Traits is
-  end;
+  end Console_Traits;
 
   generic
     --  Function profiles for Argument* are from Ada.Command_Line (RM A.15).
@@ -105,7 +105,7 @@ package HAC.PCode.Interpreter is
     with function Shell_Execute (Command : String) return Integer;
     with function Directory_Separator return Character;
   package System_Calls_Traits is
-  end;
+  end System_Calls_Traits;
 
   generic
     with procedure Feedback (
@@ -116,7 +116,7 @@ package HAC.PCode.Interpreter is
     with package Console is new Console_Traits (<>);
     with package System_Calls is new System_Calls_Traits (<>);
     --
-  procedure Interpret (CD: Compiler_Data; Unhandled : out Exception_Propagation_Data);
+  procedure Interpret (CD : Compiler_Data; Unhandled : out Exception_Propagation_Data);
 
   Abnormal_Termination : exception;
 

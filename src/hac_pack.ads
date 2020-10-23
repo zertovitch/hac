@@ -37,43 +37,43 @@ package HAC_Pack is
 
   function   "**" (F1, F2 : Real)  return Real;
 
-  -- Square Root
+  --  Square Root
   function   Sqrt (I : Integer) return Real;
-  function   Sqrt (F : Real   ) return Real;
+  function   Sqrt (F : Real)    return Real;
 
-  -- Integer to Character
-  function   Chr       (I : Integer   ) return Character;
+  --  Integer to Character
+  function   Chr       (I : Integer)   return Character;
 
-  -- Character to Integer
+  --  Character to Integer
   function   Ord       (C : Character) return Integer;
 
-  -- Next Character
+  --  Next Character
   function   Succ      (C : Character) return Character;
 
-  -- Previous Character
+  --  Previous Character
   function   Pred      (C : Character) return Character;
 
-  -- Round to an Integer
-  function   Round     (F : Real     ) return Integer;
+  --  Round to an Integer
+  function   Round     (F : Real)      return Integer;
 
-  -- Truncate
-  function   Trunc     (F : Real     ) return Integer;
+  --  Truncate
+  function   Trunc     (F : Real)      return Integer;
 
-  -- Trigonometric Functions     w/ arguments in radians
-  function   Sin       (F : Real     ) return Real;
-  function   Cos       (F : Real     ) return Real;
-  function   Arctan    (F : Real     ) return Real;
+  --  Trigonometric Functions     w/ arguments in radians
+  function   Sin       (F : Real)      return Real;
+  function   Cos       (F : Real)      return Real;
+  function   Arctan    (F : Real)      return Real;
 
-  -- Exponential Functions
-  function   Log       (F : Real     ) return Real;
-  function   Exp       (F : Real     ) return Real;
+  --  Exponential Functions
+  function   Log       (F : Real)      return Real;
+  function   Exp       (F : Real)      return Real;
 
-  -- Random number in the real range [0, I+1[ , truncated to lowest integer.
-  -- For example, Rand (10) returns equiprobable integer values
-  -- between 0 and 10 (so, there are 11 possible values).
+  --  Random number in the real range [0, I+1[ , truncated to lowest integer.
+  --  For example, Rand (10) returns equiprobable integer values
+  --  between 0 and 10 (so, there are 11 possible values).
   function Rand (I : Integer) return Integer;
 
-  -- Random number from 0 to 1, uniform.
+  --  Random number from 0 to 1, uniform.
   function Rnd return Real;
 
   package IIO is new Ada.Text_IO.Integer_IO (Integer);
@@ -145,8 +145,8 @@ package HAC_Pack is
   function Image_Attribute (F : Real) return VString;  --  returns +Real'Image(F) "as is"
   function Image (T : Ada.Calendar.Time) return VString;
   function Image (D : Duration) return VString;
-  function Integer_Value (V: VString) return Integer;
-  function Float_Value (V: VString) return Real;
+  function Integer_Value (V : VString) return Integer;
+  function Float_Value (V : VString) return Real;
 
   -------------------------
   --  Text Input/Output  --
@@ -162,16 +162,16 @@ package HAC_Pack is
 
   --  Get
   procedure Get (C : out Character) renames Ada.Text_IO.Get;
-  procedure Get (I : out Integer  );
-  procedure Get (F : out Real     );
+  procedure Get (I : out Integer);
+  procedure Get (F : out Real);
 
   procedure Get_Immediate (C : out Character) renames Ada.Text_IO.Get_Immediate;
 
   --  Get and then move file pointer to next line (Skip_Line)
   procedure Get_Line (C : out Character);
-  procedure Get_Line (I : out Integer  );
-  procedure Get_Line (F : out Real     );
-  procedure Get_Line (V : out VString  );  --  Gets the line till its end.
+  procedure Get_Line (I : out Integer);
+  procedure Get_Line (F : out Real);
+  procedure Get_Line (V : out VString);  --  Gets the line till its end.
 
   procedure Skip_Line;
 
@@ -185,9 +185,9 @@ package HAC_Pack is
                   Aft   : Integer := RIO.Default_Aft;
                   Expo  : Integer := RIO.Default_Exp);
   procedure  Put (B     : Boolean;
-                  Width : Ada.Text_IO.Field       := BIO.Default_Width );
-  procedure  Put (S    :  String   );
-  procedure  Put (V    :  VString  );
+                  Width : Ada.Text_IO.Field       := BIO.Default_Width);
+  procedure  Put (S    :  String);
+  procedure  Put (V    :  VString);
 
   --  Put and then New_Line (for S: it is the same as Ada.Text_IO.Put_Line)
   procedure  Put_Line (C     : Character);
@@ -200,8 +200,8 @@ package HAC_Pack is
                        Expo : Integer := RIO.Default_Exp);
   procedure  Put_Line (B     : Boolean;
                        Width : Ada.Text_IO.Field := BIO.Default_Width);
-  procedure  Put_Line (S    : String   );
-  procedure  Put_Line (V    : VString  );
+  procedure  Put_Line (S    : String);
+  procedure  Put_Line (V    : VString);
 
   procedure  New_Line;
 
@@ -225,14 +225,14 @@ package HAC_Pack is
 
   --  Get
   procedure Get (File : File_Type; C : out Character) renames Ada.Text_IO.Get;
-  procedure Get (File : File_Type; I : out Integer  );
-  procedure Get (File : File_Type; F : out Real     );
+  procedure Get (File : File_Type; I : out Integer);
+  procedure Get (File : File_Type; F : out Real);
 
   --  Get and then move file pointer to next line (Skip_Line)
   procedure Get_Line (File : File_Type; C : out Character);
-  procedure Get_Line (File : File_Type; I : out Integer  );
-  procedure Get_Line (File : File_Type; F : out Real     );
-  procedure Get_Line (File : File_Type; V : out VString  );  --  Gets the line till its end.
+  procedure Get_Line (File : File_Type; I : out Integer);
+  procedure Get_Line (File : File_Type; F : out Real);
+  procedure Get_Line (File : File_Type; V : out VString);     --  Gets the line till its end.
 
   procedure Skip_Line (File : File_Type);
 
@@ -249,7 +249,7 @@ package HAC_Pack is
                   Expo  : Integer := RIO.Default_Exp);
   procedure  Put (File  : File_Type;
                   B     : Boolean;
-                  Width : Ada.Text_IO.Field       := BIO.Default_Width );
+                  Width : Ada.Text_IO.Field       := BIO.Default_Width);
   procedure  Put (File : File_Type;
                   S    : String);
   procedure  Put (File : File_Type;
@@ -335,6 +335,6 @@ package HAC_Pack is
 
 private
 
-  -- type       SEMAPHORE is new INTEGER;
+  --  type       SEMAPHORE is new INTEGER;
 
 end HAC_Pack;

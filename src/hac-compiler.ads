@@ -34,13 +34,13 @@ package HAC.Compiler is
     file_name :        String  --  Can be a virtual name (editor title, zip entry)
   );
 
-  function Get_Current_Source_Name (CD: Compiler_Data) return String;
+  function Get_Current_Source_Name (CD : Compiler_Data) return String;
 
   procedure Set_Error_Pipe (
     CD   : in out Compiler_Data;
     pipe :        Smart_error_pipe
   );
 
-  function Unit_Compilation_Successful (CD: Compiler_Data) return Boolean;
+  function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean;
 
 end HAC.Compiler;

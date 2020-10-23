@@ -22,7 +22,7 @@ package body HAC.Compiler is
     CD.source_file_name := To_VString (file_name);
   end Set_Source_Stream;
 
-  function Get_Current_Source_Name (CD: Compiler_Data) return String is
+  function Get_Current_Source_Name (CD : Compiler_Data) return String is
   begin
     return Defs.To_String (CD.source_file_name);
   end Get_Current_Source_Name;
@@ -79,7 +79,7 @@ package body HAC.Compiler is
     procedure Show_Padded (n : String; t : Positive) is
     begin
       Put (CD.comp_dump, "  " & n & Integer'Max (0, t - n'Length) * ' ');
-    end;
+    end Show_Padded;
   begin
     New_Line (CD.comp_dump);
     Put_Line (CD.comp_dump,
@@ -217,20 +217,20 @@ package body HAC.Compiler is
           Discrete_Last  => Last);
       end Enter_Std;
 
-      procedure Enter_Typ (Name: String; T: Typen; First, Last: HAC_Integer) is
+      procedure Enter_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
       begin
         Enter_Std (Name, TypeMark, T, 1, First, Last);
-      end;
+      end Enter_Typ;
 
-      procedure Enter_Std_Funct (Name: String; T: Typen; Code: SF_Code) is
+      procedure Enter_Std_Funct (Name : String; T : Typen; Code : SF_Code) is
       begin
         Enter_Std (Name, Funktion, T, SF_Code'Pos (Code));
-      end;
+      end Enter_Std_Funct;
 
-      procedure Enter_Std_Proc (Name: String; Code: SP_Code) is
+      procedure Enter_Std_Proc (Name : String; Code : SP_Code) is
       begin
         Enter_Std (Name, Prozedure, NOTYP, SP_Code'Pos (Code));
-      end;
+      end Enter_Std_Proc;
 
     begin
       Enter_Std ("",               Variable,        NOTYP, 0);
@@ -354,7 +354,7 @@ package body HAC.Compiler is
     asm_dump : File_Type;
     map_file : File_Type;
 
-    procedure InSymbol is begin InSymbol (CD); end;
+    procedure InSymbol is begin InSymbol (CD); end InSymbol;
 
   begin  --  Compile
     Init (CD);
@@ -516,7 +516,7 @@ package body HAC.Compiler is
       null;  --  Just too many errors...
   end Compile;
 
-  function Unit_Compilation_Successful (CD: Compiler_Data) return Boolean is
+  function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean is
   begin
     return CD.Err_Count = 0;
   end Unit_Compilation_Successful;

@@ -88,12 +88,12 @@ package body HAC.Parser.Calls is
   )
   is
     --****************************************************************
-    -- Generate ObjCode for subprogram or Task Entry Call
-    -- CallType specifies type of Call
-    --   = 0 then standard subprogram Call,       CallSTDP
-    --   = 1 then standard Task Entry Call,       CallSTDE
-    --   = 2 then timed Task Entry Call,          CallTMDE
-    --   = 3 then conditional Task Entry Call,    CallCNDE
+    --  Generate ObjCode for subprogram or Task Entry Call
+    --  CallType specifies type of Call
+    --    = 0 then standard subprogram Call,       CallSTDP
+    --    = 1 then standard Task Entry Call,       CallSTDE
+    --    = 2 then timed Task Entry Call,          CallTMDE
+    --    = 3 then conditional Task Entry Call,    CallCNDE
     --****************************************************************
     Last_Param, CP : Integer;
     Found, Expected : Exact_Typ;

@@ -3,7 +3,7 @@ with Ada.Numerics.Float_Random;
 
 package body HAC.PCode.Interpreter.Tasking is
 
-  function Any_Task_Delayed (CD : Compiler_Data; ND: Interpreter_Data) return Boolean is
+  function Any_Task_Delayed (CD : Compiler_Data; ND : Interpreter_Data) return Boolean is
     task_delayed : Boolean := False;
   begin
     for t in TRange'First .. CD.Tasks_Definitions_Count loop
@@ -29,7 +29,7 @@ package body HAC.PCode.Interpreter.Tasking is
     return e;
   end EIndex;
 
-  function First_Caller (CD : Compiler_Data; ND: in out Interpreter_Data; Entry_Index : Integer) return Integer is
+  function First_Caller (CD : Compiler_Data; ND : in out Interpreter_Data; Entry_Index : Integer) return Integer is
     ix, val : Integer;
   begin
     ix := EIndex (CD, Entry_Index);
@@ -61,7 +61,7 @@ package body HAC.PCode.Interpreter.Tasking is
     E_Q_Header.Last := enode_var;
   end Queue;
 
-  procedure Do_Tasking_Operation (CD : Compiler_Data; ND: in out Interpreter_Data) is
+  procedure Do_Tasking_Operation (CD : Compiler_Data; ND : in out Interpreter_Data) is
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     IR : Order renames ND.IR;
 
@@ -84,9 +84,9 @@ package body HAC.PCode.Interpreter.Tasking is
         --  or put self to sleep
         Curr_TCB.SUSPEND := H1;
         Curr_TCB.TS      := WaitRendzv;      --  status is waiting for
-        --rendezvous
+        --  rendezvous
         Curr_TCB.PC      := Curr_TCB.PC - 1;          --  do this
-        --step again when awakened
+        --  step again when awakened
 
       end if;
       ND.SWITCH := True;
@@ -340,75 +340,75 @@ package body HAC.PCode.Interpreter.Tasking is
     end case;
   end Do_Tasking_Operation;
 
-  procedure Init_main_task (CD : Compiler_Data; ND: in out Interpreter_Data) is
+  procedure Init_main_task (CD : Compiler_Data; ND : in out Interpreter_Data) is
     use Ada.Numerics.Float_Random;
   begin
     Reset (ND.Gen);  --  initialize pseudo-random number generator
     --  After compiled, just begin exec
     --  Initialize run-time stack
-    ND.S (1).I := 0 ;
-    ND.S (2).I := 0 ;
-    ND.S (3).I := -1 ;
-    ND.S (4).I := CD.Tasks_Definitions_Table (0) ;
+    ND.S (1).I := 0;
+    ND.S (2).I := 0;
+    ND.S (3).I := -1;
+    ND.S (4).I := CD.Tasks_Definitions_Table (0);
     declare
       Main_TCB : Task_Control_Block renames ND.TCB (0);
     begin
-      Main_TCB.PC := CD.IdTab (CD.Tasks_Definitions_Table (0)).Adr_or_Sz ; --  first pcode instruction
-      Main_TCB.T := CD.Blocks_Table (1).VSize - 1 ; -- was CD.Blocks_Table (2)
-      Main_TCB.B := 0 ;
-      Main_TCB.TS := Ready ;
-      Main_TCB.InRendzv := NilTask ;
-      Main_TCB.DISPLAY (1) := 0 ;
-      Main_TCB.STACKSIZE := Defs.StMax - (CD.Tasks_Definitions_Count * Defs.STKINCR) ;
-      Main_TCB.SUSPEND := 0 ;
+      Main_TCB.PC := CD.IdTab (CD.Tasks_Definitions_Table (0)).Adr_or_Sz; --  first pcode instruction
+      Main_TCB.T := CD.Blocks_Table (1).VSize - 1; -- was CD.Blocks_Table (2)
+      Main_TCB.B := 0;
+      Main_TCB.TS := Ready;
+      Main_TCB.InRendzv := NilTask;
+      Main_TCB.DISPLAY (1) := 0;
+      Main_TCB.STACKSIZE := Defs.StMax - (CD.Tasks_Definitions_Count * Defs.STKINCR);
+      Main_TCB.SUSPEND := 0;
       Main_TCB.QUANTUM := TSlice;
-      Main_TCB.Pcontrol.UPRI := 0 ;
-      Main_TCB.Pcontrol.INHERIT := False ;
-      Main_TCB.LASTRUN := ND.Start_Time ;
+      Main_TCB.Pcontrol.UPRI := 0;
+      Main_TCB.Pcontrol.INHERIT := False;
+      Main_TCB.LASTRUN := ND.Start_Time;
       Main_TCB.Exception_Info.Currently_Raised := (No_Exception, 0);
       Main_TCB.WAKETIME := ND.Start_Time;  --  Added 2020-06-23 for Single_Task
     end;
   end Init_main_task;
 
-  procedure Init_other_tasks (CD : Compiler_Data; ND: in out Interpreter_Data) is
+  procedure Init_other_tasks (CD : Compiler_Data; ND : in out Interpreter_Data) is
     H1 : Defs.HAC_Integer;
   begin
     for Task_To_Init in 1 .. CD.Tasks_Definitions_Count loop
       declare
         Curr_TCB : Task_Control_Block renames ND.TCB (Task_To_Init);
       begin
-        H1 := CD.Tasks_Definitions_Table (Task_To_Init) ;
-        Curr_TCB.PC := CD.IdTab (H1).Adr_or_Sz ;
-        Curr_TCB.B := ND.TCB (Task_To_Init - 1).STACKSIZE + 1 ;
-        Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).Block_Ref).VSize - 1 ;
-        ND.S (Curr_TCB.B + 1).I := 0 ;
-        ND.S (Curr_TCB.B + 2).I := 0 ;
-        ND.S (Curr_TCB.B + 3).I := -1 ;
-        ND.S (Curr_TCB.B + 4).I := H1 ;
-        Curr_TCB.DISPLAY (1) := 0 ;
-        Curr_TCB.DISPLAY (2) := Curr_TCB.B ;
-        Curr_TCB.STACKSIZE := Curr_TCB.B + Defs.STKINCR - 1 ;
-        Curr_TCB.SUSPEND := 0 ;
-        Curr_TCB.TS := Ready ;
-        Curr_TCB.InRendzv := NilTask ;
+        H1 := CD.Tasks_Definitions_Table (Task_To_Init);
+        Curr_TCB.PC := CD.IdTab (H1).Adr_or_Sz;
+        Curr_TCB.B := ND.TCB (Task_To_Init - 1).STACKSIZE + 1;
+        Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).Block_Ref).VSize - 1;
+        ND.S (Curr_TCB.B + 1).I := 0;
+        ND.S (Curr_TCB.B + 2).I := 0;
+        ND.S (Curr_TCB.B + 3).I := -1;
+        ND.S (Curr_TCB.B + 4).I := H1;
+        Curr_TCB.DISPLAY (1) := 0;
+        Curr_TCB.DISPLAY (2) := Curr_TCB.B;
+        Curr_TCB.STACKSIZE := Curr_TCB.B + Defs.STKINCR - 1;
+        Curr_TCB.SUSPEND := 0;
+        Curr_TCB.TS := Ready;
+        Curr_TCB.InRendzv := NilTask;
         Curr_TCB.QUANTUM := TSlice;
-        Curr_TCB.Pcontrol.UPRI := 0 ;
-        Curr_TCB.Pcontrol.INHERIT := False ;
-        Curr_TCB.LASTRUN := ND.Start_Time ;
+        Curr_TCB.Pcontrol.UPRI := 0;
+        Curr_TCB.Pcontrol.INHERIT := False;
+        Curr_TCB.LASTRUN := ND.Start_Time;
         Curr_TCB.Exception_Info.Currently_Raised := (No_Exception, 0);
       end;
     end loop;
     --  Initially no queued entry calls
     for E_Idx in 1 .. CD.Entries_Count loop
-      ND.EList (E_Idx).Task_Index := CD.IdTab (CD.Entries_Table (E_Idx)).Adr_or_Sz ;  --  Task index
-      ND.EList (E_Idx).First := null ;
-      ND.EList (E_Idx).Last  := null ;
+      ND.EList (E_Idx).Task_Index := CD.IdTab (CD.Entries_Table (E_Idx)).Adr_or_Sz;  --  Task index
+      ND.EList (E_Idx).First := null;
+      ND.EList (E_Idx).Last  := null;
     end loop;
-    ND.TActive := CD.Tasks_Definitions_Count ;  --  All tasks are active initially
-    ND.CurTask := 0 ;  --  IT WAS -1 ?
-    ND.SWITCH := True ;
+    ND.TActive := CD.Tasks_Definitions_Count;  --  All tasks are active initially
+    ND.CurTask := 0;  --  IT WAS -1 ?
+    ND.SWITCH := True;
     ND.TIMER := ND.Start_Time; -- was 0.0
-    ND.PS := Running ;
+    ND.PS := Running;
   end Init_other_tasks;
 
   procedure ShowQ (
@@ -453,7 +453,7 @@ package body HAC.PCode.Interpreter.Tasking is
       p  := ND.EList (ix).First;
       while p /= null loop
         if p.Task_Index = t then
-          if ND.EList (ix).First =ND. EList (ix).Last then
+          if ND.EList (ix).First = ND. EList (ix).Last then
             ND.EList (ix).First := null;
             ND.EList (ix).Last  := null;
           else
@@ -505,7 +505,7 @@ package body HAC.PCode.Interpreter.Tasking is
   procedure ShowTime is null;
   procedure SnapShot is null;
 
-  procedure Scheduling (CD : Compiler_Data; ND: in out Interpreter_Data) is
+  procedure Scheduling (CD : Compiler_Data; ND : in out Interpreter_Data) is
     Result_Tasks_to_wake : Boolean;
     use Ada.Calendar;
   --  $I sched.pas
@@ -549,7 +549,7 @@ package body HAC.PCode.Interpreter.Tasking is
           return;
         end if;
         --
-        ND.TIMER:= ND.SYSCLOCK + ND.TCB (ND.CurTask).QUANTUM;
+        ND.TIMER := ND.SYSCLOCK + ND.TCB (ND.CurTask).QUANTUM;
         ND.TCB (ND.CurTask).TS := Running;
         ND.SWITCH := False;
         if ND.Snap then

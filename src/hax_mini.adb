@@ -10,7 +10,7 @@ procedure HAX_Mini is
 
   use Ada.Text_IO;
 
-  procedure Compile_and_interpret_file (Ada_file_name: String) is
+  procedure Compile_and_interpret_file (Ada_file_name : String) is
     use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter;
     use Ada.Streams.Stream_IO;
     --
@@ -19,7 +19,7 @@ procedure HAX_Mini is
     unhandled : Exception_Propagation_Data;
   begin
     Open (f, In_File, Ada_file_name);
-    Set_Source_Stream (CD, Stream(f), Ada_file_name);
+    Set_Source_Stream (CD, Stream (f), Ada_file_name);
     Compile (CD);
     Close (f);
     --

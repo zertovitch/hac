@@ -8,7 +8,7 @@ package body HAC.Parser.Standard_Functions is
   use Compiler.PCode_Emit, Defs, Expressions, Helpers, PCode, Scanner;
 
   SF_Args : constant array (SF_Code) of Natural :=
-    ( SF_Niladic            => 0,
+     (SF_Niladic            => 0,
       SF_Element |
       SF_Head | SF_Tail |
       SF_Starts_With |
@@ -18,7 +18,7 @@ package body HAC.Parser.Standard_Functions is
       SF_Int_Times_VStr     => 2,
       SF_Slice              => 3,
       others                => 1
-    );
+     );
 
   procedure Standard_Function (
     CD          : in out Compiler_Data;
@@ -65,7 +65,7 @@ package body HAC.Parser.Standard_Functions is
           =>
           Expected (1) := VStrings_Set;
         when SF_Slice =>
-          Expected (1 .. 3):= (VStrings_Set, Ints_Set, Ints_Set);
+          Expected (1 .. 3) := (VStrings_Set, Ints_Set, Ints_Set);
         when SF_To_Lower_Char | SF_To_Upper_Char =>
           Expected (1) := VStrings_or_Chars_Set;
         when SF_Index | SF_Starts_With | SF_Ends_With =>

@@ -19,7 +19,7 @@ package body HAC.PCode.Interpreter.Calls is
       else
         Curr_TCB.T := Curr_TCB.T + 5;          --  Make room for fixed area
         ND.S (Curr_TCB.T - 1).I := VSize - 1;
-        ND.S (Curr_TCB.T    ).I := IR.Y;       --  CD.IdTab index of called procedure/entry
+        ND.S (Curr_TCB.T).I     := IR.Y;       --  CD.IdTab index of called procedure/entry
       end if;
     end Do_Mark_Stack;
 

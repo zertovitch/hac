@@ -40,12 +40,12 @@ package HAC.UErrors is
      ENTRIES,
      PATCHING);
 
-  procedure Fatal (N: Table_OverFlow_Error; Current_Error_Output : Boolean := False);
+  procedure Fatal (N : Table_OverFlow_Error; Current_Error_Output : Boolean := False);
 
-  Internal_error: exception;
-  Failure_1_0: exception;
-  Compilation_abandoned: exception;
+  Internal_error : exception;
+  Failure_1_0 : exception;
+  Compilation_abandoned : exception;
 
-  function Error_String (code: HAC.Defs.Compile_Error; hint: String:= "") return String;
+  function Error_String (code : HAC.Defs.Compile_Error; hint : String := "") return String;
 
 end HAC.UErrors;

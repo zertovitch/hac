@@ -29,12 +29,12 @@ package body HAC.Parser.Standard_Procedures is
     procedure File_I_O_Call (FIO_Code : SP_Code; Param : Operand_2_Type := 0) is
     begin
       Emit2 (CD, k_File_I_O, SP_Code'Pos (FIO_Code), Param);
-    end;
+    end File_I_O_Call;
     --
     procedure Set_Abstract_Console is
     begin
       File_I_O_Call (SP_Push_Abstract_Console);
-    end;
+    end Set_Abstract_Console;
     --
     procedure Parse_Gets (Code : PCode.SP_Code) is
       --  Parse Get & Co including an eventual File parameter

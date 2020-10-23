@@ -57,8 +57,8 @@ package body HAC.Parser.Helpers is
     end loop;
 
     InSymbol (CD);    -- Manuel:  If this InSymbol call is
-    -- omitted, the system will get in an
-    -- infinite loop on the statement:
+    --  omitted, the system will get in an
+    --  infinite loop on the statement:
     --  put_lin("Typo is on purpose");
 
     if StopMe then
@@ -81,7 +81,7 @@ package body HAC.Parser.Helpers is
     CD            : in out Compiler_Data;
     S1, S2        : Symset;
     N             : Compile_Error;
-    stop_on_error : Boolean:= False)
+    stop_on_error : Boolean := False)
   is
     use VStrings_Pkg;
   begin
@@ -138,7 +138,7 @@ package body HAC.Parser.Helpers is
     end if;
   end Test_END_Symbol;
 
-  procedure Check_Boolean (CD : in out Compiler_Data; T: Typen) is
+  procedure Check_Boolean (CD : in out Compiler_Data; T : Typen) is
   begin
     --  NB: T = NOTYP was admitted in SmallAda.
     if T /= Bools then
@@ -161,7 +161,7 @@ package body HAC.Parser.Helpers is
     Error (CD, err_type_conversion_not_supported, "argument type not supported");
   end Argument_Type_Not_Supported;
 
-  function Nice_Image (T: Typen) return String is
+  function Nice_Image (T : Typen) return String is
   begin
     case T is
       when NOTYP           => return "(undefined type)";
@@ -185,7 +185,7 @@ package body HAC.Parser.Helpers is
     return To_String (CD.IdTab (E_Ref).Name_with_case);
   end Enum_Name;
 
-  function Nice_Exact_Image (CD : Compiler_Data; xT: Exact_Typ) return String is
+  function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ) return String is
   begin
     if xT.TYP = Enums then
       return Nice_Image (xT.TYP) & " (" & Enum_Name (CD, xT.Ref) & ')';
@@ -259,7 +259,7 @@ package body HAC.Parser.Helpers is
       when Ampersand_Symbol => return '&';
       when others           => return '?';
     end case;
-  end;
+  end Op_Hint;
 
   procedure Operator_Undefined (
     CD          : in out Compiler_Data;
@@ -316,7 +316,7 @@ package body HAC.Parser.Helpers is
       stop => True);
   end Forbid_Type_Coercion;
 
-  function Singleton (s: KeyWSymbol) return Symset is
+  function Singleton (s : KeyWSymbol) return Symset is
     res : Symset := Empty_Symset;
   begin
     res (s) := True;

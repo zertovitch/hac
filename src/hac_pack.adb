@@ -7,31 +7,31 @@ with Interfaces.C;
 package body HAC_Pack is
   use Ada.Characters.Handling, VStr_Pkg;
 
-  package REF is new Ada.Numerics.Generic_Elementary_Functions(Real);
+  package REF is new Ada.Numerics.Generic_Elementary_Functions (Real);
 
   function "**" (F1, F2 : Real) return Real is
   begin
     return REF."**" (F1, F2);
-  end;
+  end "**";
 
   function Sqrt (I : Integer) return Real is
   begin
-    return REF.Sqrt(Real(I));
+    return REF.Sqrt (Real (I));
   end Sqrt;
 
   function Sqrt (F : Real) return Real is
   begin
-    return REF.Sqrt(F);
+    return REF.Sqrt (F);
   end Sqrt;
 
   function Chr (I : Integer) return Character is
   begin
-    return Character'Val(I);
+    return Character'Val (I);
   end Chr;
 
   function Ord (C : Character) return Integer is
   begin
-    return Character'Pos(C);
+    return Character'Pos (C);
   end Ord;
 
   function Succ (C : Character) return Character is
@@ -46,45 +46,45 @@ package body HAC_Pack is
 
   function Round (F : Real) return Integer is
   begin
-    return Integer(F);
+    return Integer (F);
   end Round;
 
   function Trunc (F : Real) return Integer is
   begin
-    return Integer(Real'Floor(F));
+    return Integer (Real'Floor (F));
   end Trunc;
 
   function Sin (F : Real) return Real is
   begin
-    return REF.Sin(F);
+    return REF.Sin (F);
   end Sin;
 
   function Cos (F : Real) return Real is
   begin
-    return REF.Cos(F);
+    return REF.Cos (F);
   end Cos;
 
   function Arctan (F : Real) return Real is
   begin
-    return REF.Arctan(F);
+    return REF.Arctan (F);
   end Arctan;
 
   function Log (F : Real) return Real is
   begin
-    return REF.Log(F);
+    return REF.Log (F);
   end Log;
 
   function Exp (F : Real) return Real is
   begin
-    return REF.Exp(F);
+    return REF.Exp (F);
   end Exp;
 
   function Rand (I : Integer) return Integer is
   begin
-    return Trunc (Rnd * Real(I + 1));
+    return Trunc (Rnd * Real (I + 1));
   end Rand;
 
-  gen: Generator;
+  gen : Generator;
 
   function Rnd return Real is
   begin
@@ -116,28 +116,28 @@ package body HAC_Pack is
     --
     --   with Text_IO,Time_display;procedure Test is begin Text_IO.Put(Time_display);end;
     --
-    function Time_display(
-      T        : Calendar.Time:= Calendar.Clock;
-      Seconds  : Boolean      := True;
-      Intra_day: Boolean      := True
+    function Time_display (
+      T        : Calendar.Time := Calendar.Clock;
+      Seconds  : Boolean       := True;
+      Intra_day : Boolean      := True
     )
       return String
     is
       subtype Sec_int is Long_Integer; -- must contain 86_400
-      s : constant Sec_int:= Sec_int( Calendar.Seconds(T) );
-      m : constant Sec_int:= s / 60;
-      -- + 100: trick for obtaining 0x
-      sY : constant String:= Integer'Image( Year(T));
-      sM : constant String:= Integer'Image( Month(T) + 100);
-      sD : constant String:= Integer'Image(  Day(T)  + 100);
-      shr: constant String:= Sec_int'Image( m  /  60 + 100);
-      smn: constant String:= Sec_int'Image( m mod 60 + 100);
-      ssc: constant String:= Sec_int'Image( s mod 60 + 100);
+      s : constant Sec_int := Sec_int (Calendar.Seconds (T));
+      m : constant Sec_int := s / 60;
+      --  + 100: trick for obtaining 0x
+      sY : constant String := Integer'Image (Year (T));
+      sM : constant String := Integer'Image (Month (T) + 100);
+      sD : constant String := Integer'Image (Day (T)  + 100);
+      shr : constant String := Sec_int'Image (m  /  60 + 100);
+      smn : constant String := Sec_int'Image (m mod 60 + 100);
+      ssc : constant String := Sec_int'Image (s mod 60 + 100);
       --
       function Optional_seconds return String is
       begin
         if Seconds then
-          return ':' & ssc( ssc'Last-1 .. ssc'Last );
+          return ':' & ssc (ssc'Last - 1 .. ssc'Last);
         else
           return "";
         end if;
@@ -148,8 +148,8 @@ package body HAC_Pack is
         if Intra_day then
           return
             "  " &
-            shr( shr'Last-1 .. shr'Last ) & ':' &
-            smn( smn'Last-1 .. smn'Last ) & Optional_seconds;
+            shr (shr'Last - 1 .. shr'Last) & ':' &
+            smn (smn'Last - 1 .. smn'Last) & Optional_seconds;
         else
           return "";
         end if;
@@ -157,14 +157,14 @@ package body HAC_Pack is
 
     begin
       return
-        sY( sY'Last-3 .. sY'Last ) & '/' &  -- not Year 10'000 compliant.
-        sM( sM'Last-1 .. sM'Last ) & '/' &
-        sD( sD'Last-1 .. sD'Last ) &
+        sY (sY'Last - 3 .. sY'Last) & '/' &  -- not Year 10'000 compliant.
+        sM (sM'Last - 1 .. sM'Last) & '/' &
+        sD (sD'Last - 1 .. sD'Last) &
         Optional_intra_day;
     end Time_display;
   begin
     return Time_display (T);
-  end;
+  end HAC_Image;
 
   function Slice (Source : VString; From : Positive; To : Natural) return VString
   is
@@ -175,32 +175,32 @@ package body HAC_Pack is
   function "&" (I : Integer; V : VString) return VString is
   begin
     return HAC_Image (I) & V;
-  end;
+  end "&";
 
   function "&" (V : VString; I : Integer) return VString is
   begin
     return V & HAC_Image (I);
-  end;
+  end "&";
 
   function "&" (R : Real; V : VString) return VString is
   begin
     return HAC_Image (R) & V;
-  end;
+  end "&";
 
   function "&" (V : VString; R : Real) return VString is
   begin
     return V & HAC_Image (R);
-  end;
+  end "&";
 
   function To_Lower (Item : VString) return VString is
   begin
     return +To_Lower (To_String (Item));
-  end;
+  end To_Lower;
 
   function To_Upper (Item : VString) return VString is
   begin
     return +To_Upper (To_String (Item));
-  end;
+  end To_Upper;
 
   function Head (Source : VString; Count : Natural) return VString is
   begin
@@ -254,17 +254,17 @@ package body HAC_Pack is
   function Trim_Left  (Source : VString) return VString is
   begin
     return Trim (Source, Left);
-  end;
+  end Trim_Left;
 
   function Trim_Right (Source : VString) return VString is
   begin
     return Trim (Source, Right);
-  end;
+  end Trim_Right;
 
   function Trim_Both  (Source : VString) return VString is
   begin
     return Trim (Source, Both);
-  end;
+  end Trim_Both;
 
   function Image (I : Integer) return VString is
     function HAC_Image_for_Integer is
@@ -280,25 +280,25 @@ package body HAC_Pack is
 
   function Image_Attribute (F : Real) return VString is
   begin
-    return +Real'Image(F);
+    return +Real'Image (F);
   end Image_Attribute;
 
   function Image (T : Ada.Calendar.Time) return VString is
   begin
     return +HAC_Image (T);
-  end;
+  end Image;
 
   function Image (D : Duration) return VString is
   begin
     return +Duration'Image (D);
-  end;
+  end Image;
 
-  function Integer_Value (V: VString) return Integer is
+  function Integer_Value (V : VString) return Integer is
   begin
     return Integer'Value (To_String (V));
   end Integer_Value;
 
-  function Float_Value (V: VString) return Real is
+  function Float_Value (V : VString) return Real is
   begin
     return Real'Value (To_String (V));
   end Float_Value;
@@ -310,7 +310,7 @@ package body HAC_Pack is
   end Open;
 
   procedure Open (File : in out File_Type; Name : VString) is
-    begin Open (File, To_String (Name)); end;
+    begin Open (File, To_String (Name)); end Open;
 
   procedure Create (File : in out File_Type; Name : String) is
     use Ada.Text_IO;
@@ -319,48 +319,48 @@ package body HAC_Pack is
   end Create;
 
   procedure Create (File : in out File_Type; Name : VString) is
-    begin Create (File, To_String (Name)); end;
+    begin Create (File, To_String (Name)); end Create;
 
    ---------
    -- GET --
    ---------
 
-  procedure Get (I : out Integer) is begin IIO.Get (I); end;
-  procedure Get (File : File_Type; I : out Integer) is begin IIO.Get (File, I); end;
+  procedure Get (I : out Integer) is begin IIO.Get (I); end Get;
+  procedure Get (File : File_Type; I : out Integer) is begin IIO.Get (File, I); end Get;
 
-  procedure Get (F : out Real) is begin RIO.Get (F); end;
-  procedure Get (File : File_Type; F : out Real) is begin RIO.Get (File, F); end;
+  procedure Get (F : out Real) is begin RIO.Get (F); end Get;
+  procedure Get (File : File_Type; F : out Real) is begin RIO.Get (File, F); end Get;
 
    --------------
    -- GET_LINE --
    --------------
 
-  procedure Get_Line (C : out Character) is begin Get (C); Skip_Line; end;
+  procedure Get_Line (C : out Character) is begin Get (C); Skip_Line; end Get_Line;
   procedure Get_Line (File : File_Type; C : out Character) is
-    begin Get (File, C); Skip_Line (File); end;
+    begin Get (File, C); Skip_Line (File); end Get_Line;
 
-  procedure Get_Line (I : out Integer) is begin Get (I); Skip_Line; end;
+  procedure Get_Line (I : out Integer) is begin Get (I); Skip_Line; end Get_Line;
   procedure Get_Line (File : File_Type; I : out Integer) is
-    begin Get (File, I); Skip_Line (File); end;
+    begin Get (File, I); Skip_Line (File); end Get_Line;
 
-  procedure Get_Line (F : out Real) is begin Get (F); Skip_Line; end;
+  procedure Get_Line (F : out Real) is begin Get (F); Skip_Line; end Get_Line;
   procedure Get_Line (File : File_Type; F : out Real) is
-    begin Get (File, F); Skip_Line (File); end;
+    begin Get (File, F); Skip_Line (File); end Get_Line;
 
-  procedure Get_Line (V : out VString) is begin V := +Ada.Text_IO.Get_Line; end;
+  procedure Get_Line (V : out VString) is begin V := +Ada.Text_IO.Get_Line; end Get_Line;
   procedure Get_Line (File : File_Type; V : out VString) is
-    begin V := +Ada.Text_IO.Get_Line (File); end;
+    begin V := +Ada.Text_IO.Get_Line (File); end Get_Line;
 
   --  Ada.Text_IO's Skip_Line is called without the optional parameter, Spacing.
-  procedure Skip_Line is begin Ada.Text_IO.Skip_Line; end;
-  procedure Skip_Line (File : File_Type) is begin Ada.Text_IO.Skip_Line (File); end;
+  procedure Skip_Line is begin Ada.Text_IO.Skip_Line; end Skip_Line;
+  procedure Skip_Line (File : File_Type) is begin Ada.Text_IO.Skip_Line (File); end Skip_Line;
 
   ---------
   -- PUT --
   ---------
 
-  procedure Put (C : in  Character) is begin Ada.Text_IO.Put (C); end;
-  procedure Put (File : File_Type; C : in  Character) is begin Ada.Text_IO.Put (File, C); end;
+  procedure Put (C : in  Character) is begin Ada.Text_IO.Put (C); end Put;
+  procedure Put (File : File_Type; C : in  Character) is begin Ada.Text_IO.Put (File, C); end Put;
 
   procedure  Put (I     : in  Integer;
                   Width : Ada.Text_IO.Field       := IIO.Default_Width;
@@ -399,7 +399,7 @@ package body HAC_Pack is
   end Put;
 
   procedure Put (B     : in  Boolean;
-                 Width : Ada.Text_IO.Field := BIO.Default_Width )
+                 Width : Ada.Text_IO.Field := BIO.Default_Width)
   is
   begin
     BIO.Put (B, Width);
@@ -407,25 +407,25 @@ package body HAC_Pack is
 
   procedure  Put (File : File_Type;
                   B     : in  Boolean;
-                  Width : Ada.Text_IO.Field       := BIO.Default_Width )
+                  Width : Ada.Text_IO.Field       := BIO.Default_Width)
   is
   begin
     BIO.Put (File, B, Width);
   end Put;
 
-  procedure Put (S : in String) is begin Ada.Text_IO.Put (S); end;
-  procedure Put (File : File_Type; S : in String) is begin Ada.Text_IO.Put (File, S); end;
+  procedure Put (S : in String) is begin Ada.Text_IO.Put (S); end Put;
+  procedure Put (File : File_Type; S : in String) is begin Ada.Text_IO.Put (File, S); end Put;
 
-  procedure Put (V : in VString) is begin Put (To_String (V)); end;
-  procedure Put (File : File_Type; V : in VString) is begin Put (File, To_String (V)); end;
+  procedure Put (V : in VString) is begin Put (To_String (V)); end Put;
+  procedure Put (File : File_Type; V : in VString) is begin Put (File, To_String (V)); end Put;
 
    --------------
    -- PUT_LINE --
    --------------
 
-  procedure Put_Line (C : Character) is begin Put(C); New_Line; end;
+  procedure Put_Line (C : Character) is begin Put (C); New_Line; end Put_Line;
   procedure  Put_Line (File : File_Type; C : in Character) is
-    begin Put(File, C); New_Line (File); end;
+    begin Put (File, C); New_Line (File); end Put_Line;
 
   procedure Put_Line (I     : Integer;
                       Width : Ada.Text_IO.Field       := IIO.Default_Width;
@@ -468,7 +468,7 @@ package body HAC_Pack is
   end Put_Line;
 
   procedure Put_Line (B     : Boolean;
-                      Width : Ada.Text_IO.Field := BIO.Default_Width )
+                      Width : Ada.Text_IO.Field := BIO.Default_Width)
   is
   begin
     Put (B, Width);
@@ -477,21 +477,21 @@ package body HAC_Pack is
 
   procedure Put_Line (File  : File_Type;
                       B     : Boolean;
-                      Width : Ada.Text_IO.Field := BIO.Default_Width )
+                      Width : Ada.Text_IO.Field := BIO.Default_Width)
   is
   begin
     Put (File, B, Width);
     New_Line (File);
   end Put_Line;
 
-  procedure Put_Line (S : String) is begin Ada.Text_IO.Put_Line (S); end;
-  procedure Put_Line (File : File_Type; S : String) is begin Ada.Text_IO.Put_Line (File, S); end;
+  procedure Put_Line (S : String) is begin Ada.Text_IO.Put_Line (S); end Put_Line;
+  procedure Put_Line (File : File_Type; S : String) is begin Ada.Text_IO.Put_Line (File, S); end Put_Line;
 
-  procedure Put_Line (V : VString) is begin Put_Line (To_String (V)); end;
-  procedure Put_Line (File : File_Type; V : VString) is begin Put_Line (File, To_String (V)); end;
+  procedure Put_Line (V : VString) is begin Put_Line (To_String (V)); end Put_Line;
+  procedure Put_Line (File : File_Type; V : VString) is begin Put_Line (File, To_String (V)); end Put_Line;
 
-  procedure New_Line is begin Ada.Text_IO.New_Line; end;
-  procedure New_Line (File : File_Type) is begin Ada.Text_IO.New_Line (File); end;
+  procedure New_Line is begin Ada.Text_IO.New_Line; end New_Line;
+  procedure New_Line (File : File_Type) is begin Ada.Text_IO.New_Line (File); end New_Line;
 
   ----------
   -- WAIT --
@@ -524,37 +524,37 @@ package body HAC_Pack is
     else
       return Null_VString;
     end if;
-  end;
+  end Get_Env;
 
   function Get_Env (Name : VString) return VString is
   begin
     return Get_Env (To_String (Name));
-  end;
+  end Get_Env;
 
   procedure Set_Env (Name : VString; Value : String) is
   begin
     Set_Env (To_String (Name), Value);
-  end;
+  end Set_Env;
 
   procedure Set_Env (Name : String; Value : VString) is
   begin
     Set_Env (Name, To_String (Value));
-  end;
+  end Set_Env;
 
   procedure Set_Env (Name : VString; Value : VString) is
   begin
     Set_Env (To_String (Name), To_String (Value));
-  end;
+  end Set_Env;
 
   function Current_Directory return VString is
   begin
     return +Ada.Directories.Current_Directory;
-  end;
+  end Current_Directory;
 
   procedure Set_Directory (Directory : VString) is
   begin
     Set_Directory (To_String (Directory));
-  end;
+  end Set_Directory;
 
   function HAC_Generic_Image (I : Abstract_Integer) return String is
     Im : constant String := Abstract_Integer'Image (I);
@@ -644,7 +644,7 @@ package body HAC_Pack is
   --  Here is the non-Ada-standard stuff in HAC_Pack.
   package Non_Standard is
     function Sys (Arg : Interfaces.C.char_array) return Integer;
-    pragma Import(C, Sys, "system");
+    pragma Import (C, Sys, "system");
 
     Directory_Separator : constant Character;
     pragma Import (C, Directory_Separator, "__gnat_dir_separator");

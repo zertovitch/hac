@@ -281,12 +281,12 @@ package body HAC.PCode.Interpreter.Operators is
               ND.S (Curr_TCB.T).R := Defs.HAC_Float (Random (ND.Gen));
             when SF_Argument_Count | SF_Directory_Separator |
                  SF_Current_Directory | SF_Get_Needs_Skip_Line =>
-              --  Functions already processed by at an upper
+              --  Functions already processed at an upper
               --  calling level by Do_Standard_Function.
               null;
           end case;
         when SF_EOF | SF_EOLN | SF_Argument | SF_Shell_Execute =>
-          --  Functions already processed by at an upper
+          --  Functions already processed at an upper
           --  calling level by Do_Standard_Function.
           null;
       end case;

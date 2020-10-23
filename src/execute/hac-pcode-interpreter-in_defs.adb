@@ -39,27 +39,27 @@ package body HAC.PCode.Interpreter.In_Defs is
   function GR_Real (R : Defs.HAC_Float) return General_Register is
   begin
     return (Special => Defs.Floats, I => 0, R => R);
-  end;
+  end GR_Real;
 
   function GR_Time (T : Ada.Calendar.Time) return General_Register is
   begin
     return (Special => Defs.Times, I => 0, Tim => T);
-  end;
+  end GR_Time;
 
   function GR_Duration (D : Duration) return General_Register is
   begin
     return (Special => Defs.Durations, I => 0, Dur => D);
-  end;
+  end GR_Duration;
 
   function GR_VString (S : String) return General_Register is
   begin
     return (Special => Defs.VStrings, I => 0, V => Defs.To_VString (S));
-  end;
+  end GR_VString;
 
   function GR_VString (V : Defs.VString) return General_Register is
   begin
     return (Special => Defs.VStrings, I => 0, V => V);
-  end;
+  end GR_VString;
 
   procedure Pop (ND : in out Interpreter_Data; Amount : Positive := 1) is
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
@@ -79,7 +79,7 @@ package body HAC.PCode.Interpreter.In_Defs is
     end if;
   end Push;
 
-  procedure Post_Mortem_Dump (CD: Compiler_Data; ND: In_Defs.Interpreter_Data) is
+  procedure Post_Mortem_Dump (CD : Compiler_Data; ND : In_Defs.Interpreter_Data) is
     use Ada.Text_IO, Defs.IIO, Defs.RIO;
     BLKCNT : Integer;
     H1, H2, H3 : Defs.HAC_Integer;
@@ -113,7 +113,7 @@ package body HAC.PCode.Interpreter.In_Defs is
       end if;
       H2 := CD.Blocks_Table (CD.IdTab (H2).Block_Ref).Last_Id_Idx;
       while H2 /= 0 loop
-        -- [P2Ada]: WITH instruction
+        --  [P2Ada]: WITH instruction
         declare
           P2Ada_Var_7 : IdTabEntry renames CD.IdTab (H2);
           use Defs;

@@ -237,8 +237,8 @@ package HAC.Defs is
   subtype Alfa is String (1 .. Alng);
   Empty_Alfa : constant Alfa := (others => ' ');
   function Equal (a : Alfa; s : String) return Boolean;
-  function To_String (a: Alfa) return String;
-  function To_Alfa (s: String) return Alfa;
+  function To_String (a : Alfa) return String;
+  function To_Alfa (s : String) return Alfa;
 
   --  Data types in HAC. We call them "Typ" (with an Akzent ;-) ) to avoid
   --  confusion with the types of the HAC code itself.
@@ -382,7 +382,7 @@ package HAC.Defs is
     err_expecting_DELAY,
     err_SELECT_missing,
     err_program_incomplete,
-    -- These errors messages are new in HAC and weren't in SmallAda
+    --  These errors messages are new in HAC and weren't in SmallAda
     err_OF_instead_of_IS,
     err_THEN_instead_of_Arrow,
     err_EQUALS_instead_of_BECOMES,

@@ -1,20 +1,25 @@
---  This is a GNAT, GCC or GNAT Programming Studio (GPS) project file
+--  This is a GNAT, GCC or GNAT Studio project file
 --  for the HAC project:
 --
 --      home page:     http://hacadacompiler.sf.net/
 --      project page:  http://sf.net/projects/hacadacompiler/
 --      mirror:        https://github.com/zertovitch/hac
 --
---  Build me with "gprbuild -P hac", or open me with GPS.
+--  Build me with "gprbuild -P hac", or "gnatmake -P hac",
+--  or open me with GNAT Studio.
 --  
-project Hac is
+project HAC is
 
-   type Build_Mode_Type is ("Debug", "Fast");
-   Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
+   type HAC_Build_Mode_Type is
+      ( "Debug",
+        "Fast"
+      );
+
+   HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
 
    for Main use ("hax.adb", "hax_mini.adb", "hax_multi.adb", "save.adb");
 
-   case Build_Mode is
+   case HAC_Build_Mode is
       when "Debug" =>
          for Object_Dir use "obj/debug";
       when "Fast" =>
@@ -40,6 +45,9 @@ project Hac is
      "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
      "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
      "-gnatyx",       --  Style: check x:no extra parens
+     "-gnatye",       --  Style: check e:end/exit labels present
+     "-gnatytc",      --  Style: check t:token separation rules, c:comment format (two spaces)
+     --
      "-g"             --  Generate debugging information
    );
 
@@ -63,7 +71,7 @@ project Hac is
    );
    
    package Compiler is
-      case Build_Mode is
+      case HAC_Build_Mode is
          when "Debug" =>
             for Default_Switches ("ada") use Common_Options & Debug_Options;
          when "Fast" =>
@@ -72,7 +80,7 @@ project Hac is
    end Compiler;
 
    package Binder is
-      case Build_Mode is
+      case HAC_Build_Mode is
          when "Debug" =>
             for Default_Switches ("ada") use ("-E");
          when "Fast" =>
@@ -80,7 +88,7 @@ project Hac is
    end Binder;
 
    package Linker is
-      case Build_Mode is
+      case HAC_Build_Mode is
          when "Debug" =>
             for Default_Switches ("ada") use ("-g");
          when "Fast" =>
@@ -98,4 +106,4 @@ project Hac is
       for Default_Switches ("adacontrol") use ("-f", "test/verif_hac.aru", "-r");
    end Ide;
 
-end Hac;
+end HAC;

@@ -126,7 +126,7 @@ package HAC.PCode is
   subtype Multi_Statement_Opcode  is Opcode range k_CASE_Switch .. k_FOR_Reverse_End;
   subtype Tasking_Opcode          is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
 
-  function For_END (for_BEGIN: Opcode) return Opcode;
+  function For_END (for_BEGIN : Opcode) return Opcode;
 
   type Opcode_Set is array (Opcode) of Boolean;
   OK_for_Exception : constant Opcode_Set :=
@@ -220,8 +220,8 @@ package HAC.PCode is
   );
 
   --  Save and restore an object file
-  procedure SaveOBJ (FileName: String);
-  procedure RestoreOBJ (FileName: String);
+  procedure SaveOBJ (FileName : String);
+  procedure RestoreOBJ (FileName : String);
 
   ------------------------------------
   --  Standard function operations  --
@@ -306,7 +306,7 @@ package HAC.PCode is
     SF_Get_Env,
     SF_Shell_Execute,
     --
-    --  Niladic functions (the have no arguments).
+    --  Niladic functions (they have no arguments).
     --
     SF_Clock,
     SF_Random_Float,
