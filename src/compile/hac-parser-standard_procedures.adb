@@ -262,7 +262,7 @@ package body HAC.Parser.Standard_Procedures is
           end if;
         end if;
         --
-      when SP_Set_Env | SP_Copy_File =>
+      when SP_Set_Env | SP_Copy_File | SP_Rename =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         for arg in 1 .. 2 loop
           Expression (CD, Level, RParent_Set, X);  --  We push the arguments in the stack.

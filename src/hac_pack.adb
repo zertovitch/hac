@@ -576,6 +576,21 @@ package body HAC_Pack is
     Copy_File (To_String (Source_Name), To_String (Target_Name));
   end Copy_File;
 
+  procedure Rename (Old_Name : VString; New_Name : String) is
+  begin
+    Rename (To_String (Old_Name), New_Name);
+  end Rename;
+
+  procedure Rename (Old_Name : String; New_Name : VString) is
+  begin
+    Rename (Old_Name, To_String (New_Name));
+  end Rename;
+
+  procedure Rename (Old_Name : VString; New_Name : VString) is
+  begin
+    Rename (To_String (Old_Name), To_String (New_Name));
+  end Rename;
+
   function HAC_Generic_Image (I : Abstract_Integer) return String is
     Im : constant String := Abstract_Integer'Image (I);
   begin

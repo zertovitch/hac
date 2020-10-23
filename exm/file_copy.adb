@@ -18,5 +18,6 @@ begin
   Close (f1);
   Close (f2);
   --
-  Copy_File ("file_copy.adb", "file_copy_2.txt");  --  Binary copy.
+  Copy_File ("file_copy.adb", "file_copy_bin_$$.txt");   --  Binary copy.
+  Rename ("file_copy_bin_$$.txt", "file_copy_bin.txt");  --  Test renaming.
 end File_Copy;

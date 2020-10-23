@@ -357,7 +357,8 @@ package HAC.PCode is
     --  Ada.Directories-like procedures
     --
     SP_Set_Directory,
-    SP_Copy_File
+    SP_Copy_File,
+    SP_Rename
   );
 
 end HAC.PCode;

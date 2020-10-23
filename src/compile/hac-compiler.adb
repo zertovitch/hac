@@ -344,6 +344,7 @@ package body HAC.Compiler is
       --
       Enter_Std_Proc ("Set_Directory ", SP_Set_Directory);
       Enter_Std_Proc ("Copy_File ",     SP_Copy_File);
+      Enter_Std_Proc ("Rename ",        SP_Rename);
       --
       --  Enter Main.
       --
