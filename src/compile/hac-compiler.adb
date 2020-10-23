@@ -343,6 +343,7 @@ package body HAC.Compiler is
       --  Ada.Directories-like procedures
       --
       Enter_Std_Proc ("Set_Directory ", SP_Set_Directory);
+      Enter_Std_Proc ("Copy_File ",     SP_Copy_File);
       --
       --  Enter Main.
       --

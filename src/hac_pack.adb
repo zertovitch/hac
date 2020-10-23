@@ -556,6 +556,26 @@ package body HAC_Pack is
     Set_Directory (To_String (Directory));
   end Set_Directory;
 
+  procedure Copy_File (Source_Name : String; Target_Name : String) is
+  begin
+    Ada.Directories.Copy_File (Source_Name, Target_Name);  --  Form: default value "".
+  end Copy_File;
+
+  procedure Copy_File (Source_Name : VString; Target_Name : String) is
+  begin
+    Copy_File (To_String (Source_Name), Target_Name);
+  end Copy_File;
+
+  procedure Copy_File (Source_Name : String; Target_Name : VString) is
+  begin
+    Copy_File (Source_Name, To_String (Target_Name));
+  end Copy_File;
+
+  procedure Copy_File (Source_Name : VString; Target_Name : VString) is
+  begin
+    Copy_File (To_String (Source_Name), To_String (Target_Name));
+  end Copy_File;
+
   function HAC_Generic_Image (I : Abstract_Integer) return String is
     Im : constant String := Abstract_Integer'Image (I);
   begin

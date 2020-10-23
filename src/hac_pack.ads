@@ -315,6 +315,11 @@ package HAC_Pack is
   procedure Set_Directory (Directory : String) renames Ada.Directories.Set_Directory;
   procedure Set_Directory (Directory : VString);
 
+  procedure Copy_File (Source_Name : String;  Target_Name : String);
+  procedure Copy_File (Source_Name : VString; Target_Name : String);
+  procedure Copy_File (Source_Name : String;  Target_Name : VString);
+  procedure Copy_File (Source_Name : VString; Target_Name : VString);
+
   function Shell_Execute (Command : String) return Integer;
   function Shell_Execute (Command : VString) return Integer;
 

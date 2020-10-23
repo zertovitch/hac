@@ -1,7 +1,7 @@
 --  This demo reads a text file (itself) and writes
 --  its contents in another text file.
 --  NB: for copying a file (of any kind) with a single command,
---  you can use Copy_File.
+--  you can use Copy_File. See second copy at the end of this demo.
 
 with HAC_Pack;  use HAC_Pack;
 
@@ -17,4 +17,6 @@ begin
   end loop;
   Close (f1);
   Close (f2);
+  --
+  Copy_File ("file_copy.adb", "file_copy_2.txt");  --  Binary copy.
 end File_Copy;

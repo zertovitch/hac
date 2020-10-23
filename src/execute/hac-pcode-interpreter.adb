@@ -260,6 +260,12 @@ package body HAC.PCode.Interpreter is
         when SP_Set_Directory =>
           Ada.Directories.Set_Directory (To_String (ND.S (Curr_TCB.T).V));
           Pop;
+        when SP_Copy_File =>
+          Ada.Directories.Copy_File (
+            To_String (ND.S (Curr_TCB.T - 1).V),
+            To_String (ND.S (Curr_TCB.T).V)
+          );
+          Pop (2);
         when SP_Push_Abstract_Console =>
           Push;
           ND.S (Curr_TCB.T) := GR_Abstract_Console;
@@ -290,12 +296,22 @@ package body HAC.PCode.Interpreter is
       ND.SWITCH := True;  --  give up control when doing I/O
     exception
       when Ada.Text_IO.Name_Error =>
-        Raise_Standard (VME_Name_Error,
-          "File not found: " & To_String (ND.S (Curr_TCB.T + 2).V));
+        case Code is
+          when SP_Open | SP_Create =>
+            Raise_Standard (VME_Name_Error,
+              "File not found: " & To_String (ND.S (Curr_TCB.T + 2).V));
+          when others =>
+            Raise_Standard (VME_Name_Error);
+        end case;
         raise VM_Raised_Exception;
       when Ada.Text_IO.Use_Error =>
-        Raise_Standard (VME_Use_Error,
-          "Cannot access file: " & To_String (ND.S (Curr_TCB.T + 2).V));
+        case Code is
+          when SP_Open | SP_Create =>
+            Raise_Standard (VME_Use_Error,
+              "Cannot access file: " & To_String (ND.S (Curr_TCB.T + 2).V));
+          when others =>
+            Raise_Standard (VME_Use_Error);
+        end case;
         raise VM_Raised_Exception;
     end Do_File_IO;
 
