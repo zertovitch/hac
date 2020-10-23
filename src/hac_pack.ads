@@ -320,6 +320,12 @@ package HAC_Pack is
   procedure Copy_File (Source_Name : String;  Target_Name : VString);
   procedure Copy_File (Source_Name : VString; Target_Name : VString);
 
+  procedure Delete_File (Name : String) renames Ada.Directories.Delete_File;
+  procedure Delete_File (Name : VString);
+
+  function Exists (Name : String) return Boolean renames Ada.Directories.Exists;
+  function Exists (Name : VString) return Boolean;
+
   procedure Rename (Old_Name : String;  New_Name : String) renames Ada.Directories.Rename;
   procedure Rename (Old_Name : VString; New_Name : String);
   procedure Rename (Old_Name : String;  New_Name : VString);

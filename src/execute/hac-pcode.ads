@@ -303,6 +303,7 @@ package HAC.PCode is
     SF_Float_Value,
     --
     SF_Argument,
+    SF_Exists,  --  Ada.Directories-like
     SF_Get_Env,
     SF_Shell_Execute,
     --
@@ -312,7 +313,8 @@ package HAC.PCode is
     SF_Random_Float,
     SF_Argument_Count,
     SF_Directory_Separator,
-    SF_Current_Directory,
+    SF_Current_Directory,  --  Ada.Directories-like
+    --
     SF_Get_Needs_Skip_Line  --  Informs whether Get from console needs Skip_Line
   );
 
@@ -356,9 +358,10 @@ package HAC.PCode is
     --
     --  Ada.Directories-like procedures
     --
-    SP_Set_Directory,
     SP_Copy_File,
-    SP_Rename
+    SP_Delete_File,
+    SP_Rename,
+    SP_Set_Directory
   );
 
 end HAC.PCode;

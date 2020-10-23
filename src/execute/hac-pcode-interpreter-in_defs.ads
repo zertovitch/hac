@@ -10,13 +10,12 @@
 --
 --  In_Defs: Interpreter Definitions
 
-with HAC.Co_Defs;
+with HAC.Co_Defs, HAC.Defs;
 
-with Ada.Calendar;                      use Ada.Calendar;
-with Ada.Containers.Vectors;
-with Ada.Numerics.Float_Random;
-with Ada.Unchecked_Deallocation;
-with HAC.Defs;
+with Ada.Calendar,
+     Ada.Containers.Vectors,
+     Ada.Numerics.Float_Random,
+     Ada.Unchecked_Deallocation;
 
 package HAC.PCode.Interpreter.In_Defs is
 
@@ -91,10 +90,10 @@ package HAC.PCode.Interpreter.In_Defs is
     PC             : Integer;               --  program counter, next pcode
     TS             : Task_State;            --  current task state
     InRendzv       : Integer;               --  task in rendz with or -1
-    WAKETIME       : Time;                  --  end of delay period
+    WAKETIME       : Ada.Calendar.Time;     --  end of delay period
     Pcontrol       : PriCB;                 --  task priority parameter rec.
     QUANTUM        : Duration;              --  time slice
-    LASTRUN        : Time;                  --  time last run end (fairness)
+    LASTRUN        : Ada.Calendar.Time;     --  time last run end (fairness)
     DISPLAY        : Co_Defs.Display_Type;  --  binding
     STACKSIZE      : Integer;               --  stack overflow if exceeded
     SUSPEND        : Integer;               --  id of object suspended on
@@ -139,15 +138,15 @@ package HAC.PCode.Interpreter.In_Defs is
     CurTask     : Integer;                     --  Index of currently executing task
     TCB         : Task_Control_Blocks;
     Files       : File_Vectors.Vector;
-    Snap        : Boolean;   --  Snapshot flag to display scheduler status
-    Nb_Callers  : Integer;   --  AVL  TERMINATE
-    Nb_Complete : Integer;   --  AVL  TERMINATE
+    Snap        : Boolean;            --  Snapshot flag to display scheduler status
+    Nb_Callers  : Integer;            --  AVL  TERMINATE
+    Nb_Complete : Integer;            --  AVL  TERMINATE
     EList       : Entry_Queue;
-    TActive     : TRange;    --  no. of active tasks
-    Start_Time  : Time;
-    SWITCH      : Boolean;   --  invoke scheduler on next cycle flag
-    SYSCLOCK    : Time;      --  (ms after 00:00:00 Jan 1, current year)
-    TIMER       : Time;      --  set to end of current task's time slice
+    TActive     : TRange;             --  no. of active tasks
+    Start_Time  : Ada.Calendar.Time;
+    SWITCH      : Boolean;            --  invoke scheduler on next cycle flag
+    SYSCLOCK    : Ada.Calendar.Time;  --  (ms after 00:00:00 Jan 1, current year)
+    TIMER       : Ada.Calendar.Time;  --  set to end of current task's time slice
     Gen         : Ada.Numerics.Float_Random.Generator;
     Scheduler   : Scheduler_Type := Single_Task;
   end record;

@@ -2,6 +2,7 @@ with HAC_Pack;
 
 with Ada.Calendar,
      Ada.Characters.Handling,
+     Ada.Directories,
      Ada.Environment_Variables,
      Ada.Numerics.Float_Random,
      Ada.Strings;
@@ -271,6 +272,8 @@ package body HAC.PCode.Interpreter.Operators is
               Top_Item.V := Null_VString;
             end if;
           end;
+        when SF_Exists =>
+          Top_Item.I := Boolean'Pos (Ada.Directories.Exists (Defs.To_String (Top_Item.V)));
         when SF_Niladic =>
           --  NILADIC functions need to push a new item (their own result).
           Push (ND);

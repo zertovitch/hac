@@ -257,21 +257,24 @@ package body HAC.PCode.Interpreter is
             To_String (ND.S (Curr_TCB.T).V)
           );
           Pop (2);
-        when SP_Set_Directory =>
-          Ada.Directories.Set_Directory (To_String (ND.S (Curr_TCB.T).V));
-          Pop;
         when SP_Copy_File =>
           Ada.Directories.Copy_File (
             To_String (ND.S (Curr_TCB.T - 1).V),
             To_String (ND.S (Curr_TCB.T).V)
           );
           Pop (2);
+        when SP_Delete_File =>
+          Ada.Directories.Delete_File (To_String (ND.S (Curr_TCB.T).V));
+          Pop;
         when SP_Rename =>
           Ada.Directories.Rename (
             To_String (ND.S (Curr_TCB.T - 1).V),
             To_String (ND.S (Curr_TCB.T).V)
           );
           Pop (2);
+        when SP_Set_Directory =>
+          Ada.Directories.Set_Directory (To_String (ND.S (Curr_TCB.T).V));
+          Pop;
         when SP_Push_Abstract_Console =>
           Push;
           ND.S (Curr_TCB.T) := GR_Abstract_Console;

@@ -312,7 +312,8 @@ package body HAC.Compiler is
       --
       --  Ada.Directories-like functions
       --
-      Enter_Std_Funct ("Current_Directory ",  VStrings, SF_Current_Directory);
+      Enter_Std_Funct ("Current_Directory",   VStrings, SF_Current_Directory);
+      Enter_Std_Funct ("Exists",              Bools,    SF_Exists);
       --
       Enter_Std_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
       --
@@ -342,9 +343,10 @@ package body HAC.Compiler is
       --
       --  Ada.Directories-like procedures
       --
-      Enter_Std_Proc ("Set_Directory ", SP_Set_Directory);
       Enter_Std_Proc ("Copy_File ",     SP_Copy_File);
+      Enter_Std_Proc ("Delete_File ",   SP_Delete_File);
       Enter_Std_Proc ("Rename ",        SP_Rename);
+      Enter_Std_Proc ("Set_Directory ", SP_Set_Directory);
       --
       --  Enter Main.
       --

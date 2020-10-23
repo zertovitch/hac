@@ -576,6 +576,16 @@ package body HAC_Pack is
     Copy_File (To_String (Source_Name), To_String (Target_Name));
   end Copy_File;
 
+  procedure Delete_File (Name : VString) is
+  begin
+    Delete_File (To_String (Name));
+  end Delete_File;
+
+  function Exists (Name : VString) return Boolean is
+  begin
+    return Exists (To_String (Name));
+  end Exists;
+
   procedure Rename (Old_Name : VString; New_Name : String) is
   begin
     Rename (To_String (Old_Name), New_Name);

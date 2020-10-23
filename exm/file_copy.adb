@@ -1,7 +1,8 @@
 --  This demo reads a text file (itself) and writes
 --  its contents in another text file.
+--
 --  NB: for copying a file (of any kind) with a single command,
---  you can use Copy_File. See second copy at the end of this demo.
+--  you can use Copy_File. See binary copy at the end of this demo.
 
 with HAC_Pack;  use HAC_Pack;
 
@@ -18,6 +19,12 @@ begin
   Close (f1);
   Close (f2);
   --
-  Copy_File ("file_copy.adb", "file_copy_bin_$$.txt");   --  Binary copy.
-  Rename ("file_copy_bin_$$.txt", "file_copy_bin.txt");  --  Test renaming.
+  --  Binary copy.
+  --  It's an opportunity to test some Ada.Directories-like subprograms.
+  --
+  Copy_File ("file_copy.adb", "file_copy_bin_$$.txt");
+  if Exists ("file_copy_bin.txt") then
+    Delete_File ("file_copy_bin.txt");
+  end if;
+  Rename ("file_copy_bin_$$.txt", "file_copy_bin.txt");
 end File_Copy;
