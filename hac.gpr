@@ -12,7 +12,8 @@ project HAC is
 
    type HAC_Build_Mode_Type is
       ( "Debug",
-        "Fast"
+        "Fast",
+        "Small"
       );
 
    HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
@@ -20,10 +21,9 @@ project HAC is
    for Main use ("hax.adb", "hax_mini.adb", "hax_multi.adb", "save.adb");
 
    case HAC_Build_Mode is
-      when "Debug" =>
-         for Object_Dir use "obj/debug";
-      when "Fast" =>
-         for Object_Dir use "obj/fast";
+      when "Debug" => for Object_Dir use "obj/debug";
+      when "Fast"  => for Object_Dir use "obj/fast";
+      when "Small" => for Object_Dir use "obj/small";
    end case;
 
    for Source_Dirs use (".", "src", "src/compile", "src/execute");
@@ -46,9 +46,7 @@ project HAC is
      "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
      "-gnatyx",       --  Style: check x:no extra parens
      "-gnatye",       --  Style: check e:end/exit labels present
-     "-gnatytc",      --  Style: check t:token separation rules, c:comment format (two spaces)
-     --
-     "-g"             --  Generate debugging information
+     "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
    );
 
    Debug_Options := (
@@ -58,7 +56,8 @@ project HAC is
      "-fstack-check",
      "-fno-inline",
      --
-     "-gnatec=" & project'Project_Dir & "debug.pra"
+     "-gnatec=" & project'Project_Dir & "debug.pra",
+     "-g"              --  Generate debugging information
    );
 
    Fast_Options := (
@@ -67,39 +66,38 @@ project HAC is
      "-fipa-cp-clone", "-fgcse-after-reload", 
      "-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
      "-ftracer", "-fweb", "-ftree-vectorize",
-     "-frename-registers", "-ffunction-sections"
+     "-frename-registers", "-ffunction-sections",
+     "-g"     
    );
    
    package Compiler is
       case HAC_Build_Mode is
-         when "Debug" =>
-            for Default_Switches ("ada") use Common_Options & Debug_Options;
-         when "Fast" =>
-            for Default_Switches ("ada") use Common_Options & Fast_Options;
+         when "Debug" => for Default_Switches ("ada") use Common_Options & Debug_Options;
+         when "Fast"  => for Default_Switches ("ada") use Common_Options & Fast_Options;
+         when "Small" => for Default_Switches ("ada") use Common_Options & "-Os";
       end case;
    end Compiler;
 
    package Binder is
       case HAC_Build_Mode is
-         when "Debug" =>
-            for Default_Switches ("ada") use ("-E");
-         when "Fast" =>
+         when "Small" =>
+         --  -Es: Store tracebacks in exception occurrences, and enable symbolic tracebacks
+         when others  => for Default_Switches ("ada") use ("-Es");
       end case;
    end Binder;
 
    package Linker is
       case HAC_Build_Mode is
-         when "Debug" =>
-            for Default_Switches ("ada") use ("-g");
-         when "Fast" =>
-            for Default_Switches ("ada") use ("-g", "-Wl,--gc-sections");
+         when "Debug" => for Default_Switches ("ada") use ("-g");
+         when "Fast"  => for Default_Switches ("ada") use ("-g", "-Wl,--gc-sections");
+         when "Small" => for Default_Switches ("ada") use ("-Wl,--gc-sections");
       end case;
    end Linker;
 
    package Builder is
       --   "If -j0 is used, then the maximum number of simultaneous compilation
       --    jobs is the number of core processors on the platform."
-      for Default_Switches ("ada") use ("-g", "-j0");
+      for Default_Switches ("ada") use ("-j0");
    end Builder;
 
    package Ide is

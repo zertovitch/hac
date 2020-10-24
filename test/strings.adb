@@ -90,7 +90,7 @@ begin
   if not Ends_With (+"package",  "age") then Put ("Ooops?"); end if;
   if not Ends_With (+"package", +"age") then Put ("Ooops?"); end if;
   --  The following test is in one answer of
-  --  https://stackoverflow.com/questions/62080743/how-do-you-check-if-string-ends-with-another-string-in-ada  
+  --  https://stackoverflow.com/questions/62080743/how-do-you-check-if-string-ends-with-another-string-in-ada
   Assert (Ends_With (+"John Johnson", "son") = True);
   Assert (Ends_With (+""  , ""  ) = True);
   Assert (Ends_With (+" " , ""  ) = True);

@@ -135,11 +135,11 @@ begin
   Put_Line (4.56789e14 & (+" & Right VString"));
   Put_Line (4.56789e15 & (+" & Right VString"));
   Put_Line (1.79769313486232E+307 & (+" & Right VString"));
-  Put_Line ("Image... " &           Image (4.56789e10));
+  Put_Line ("Image... " &     Image (Real (4.56789e10)));
   Put_Line ("Image..."  & Image_Attribute (4.56789e10));
   Put_Line ("Image... " & Image (456789));
-  Put_Line (Float_Value   (+"456.789e13"));  --  Text_IO display of the Real number
-  Put_Line (Integer_Value (+"456"));         --  Text_IO display of the Integer number
+  Put_Line (Float_Value   (+"456.789e13"));  --  Ada.Text_IO display of the Real number
+  Put_Line (Integer_Value (+"456"));         --  Ada.Text_IO display of the Integer number
   Put (Str3); Put ("! ");
   s1 := +Str3;
   Put_Line (s1 & "!!");

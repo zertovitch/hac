@@ -61,11 +61,15 @@ begin
               root & "/test/future/*.ad*";
 
   files := root & "/src/*.ad* " &
-           root & "/src/compile/*.ad* " & root & "/src/execute/*.ad* " &
+           root & "/src/compile/*.ad* " &
+           root & "/src/execute/*.ad* " &
            root & "/*.gpr " &
            root & "/*.xls " &
            root & "/save.adb " &
-           root & "/build.cmd " & root & "/*.txt " &
+           root & "/build.cmd " &
+           root & "/fast.cmd " &
+           root & "/*.txt " &
+           root & "/doc/*.pdf " &
            root & "/debug.pra " &
            root & "/obj/debug/create_dir.txt " &
            root & "/obj/fast/create_dir.txt";
