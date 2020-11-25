@@ -277,11 +277,12 @@ package body HAC.Compiler is
       Enter_Std_Funct ("Clock",               Times,  SF_Clock);
       --
       Enter_Std_Funct ("Element",             Chars,    SF_Element);
+      Enter_Std_Funct ("Index",               Ints,     SF_Index);
       Enter_Std_Funct ("Length",              Ints,     SF_Length);
       Enter_Std_Funct ("Slice",               VStrings, SF_Slice);
       Enter_Std_Funct ("To_Lower",            Chars,    SF_To_Lower_Char);
       Enter_Std_Funct ("To_Upper",            Chars,    SF_To_Upper_Char);
-      Enter_Std_Funct ("Index",               Ints,     SF_Index);
+      Enter_Std_Funct ("To_VString",          VStrings, SF_Literal_to_VString);
       --
       Enter_Std_Funct ("Trim_Left",           VStrings, SF_Trim_Left);
       Enter_Std_Funct ("Trim_Right",          VStrings, SF_Trim_Right);

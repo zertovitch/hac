@@ -68,6 +68,8 @@ package body HAC.Parser.Standard_Functions is
           Expected (1 .. 3) := (VStrings_Set, Ints_Set, Ints_Set);
         when SF_To_Lower_Char | SF_To_Upper_Char =>
           Expected (1) := VStrings_or_Chars_Set;
+        when SF_Literal_to_VString =>
+          Expected (1) := Str_Lit_Set;
         when SF_Index | SF_Starts_With | SF_Ends_With =>
           --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
           Expected (1 .. 2) := (VStrings_Set, VStrings_or_Str_Lit_Set);

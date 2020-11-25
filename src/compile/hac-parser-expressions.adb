@@ -359,7 +359,7 @@ package body HAC.Parser.Expressions is
         Adding_OP := CD.Sy;
         InSymbol (CD);
         Term (FSys_SE + Plus_Minus, X);
-        if Adding_OP = Plus and then X.TYP = String_Literals then   --  +"Hello"
+        if Adding_OP = Plus and X.TYP = String_Literals then   --  +"Hello"
           Emit_Std_Funct (CD, SF_Literal_to_VString);
           X.TYP := VStrings;
         elsif Adding_OP = Plus and then Is_Char_Array (CD, X) then  --  +S

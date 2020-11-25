@@ -147,9 +147,14 @@ begin
   New_Line;
   Put ("Tails: "); for i in 1 .. 10 loop Put (Tail (+"...Tail", i)); end loop;
   New_Line;
+  Put_Line ("----------- Strings_demo: That's all folks! -----------");
   --
-  --  Quick tests. More tests in:  test/strings.adb
+  --  Quick tests. More systematic tests can be found in:  test/strings.adb
   --
+  if s2 /= To_VString ("Hello") then
+    --  `To_VString ("Hello")` and `+"Hello"` are identical function calls.
+    Put ("Ooops?");
+  end if;
   if s4 /= +"abcdef" then  --  Comparison VString to VString
     Put ("Ooops?");
   end if;
