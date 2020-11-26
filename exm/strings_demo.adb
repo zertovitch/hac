@@ -87,8 +87,10 @@ procedure Strings_demo is
   ZZ : Bi_Vector;
   padded : VString;
   Str3 : constant String (6..8) := "But";
+  v_char : VString;
 begin
-  s2 := +"Hello";             --  Copy from literal
+  s2 := +"Hello";             --  Convert from literal string, copy to s2.
+  v_char := +'.';             --  Convert from Character
   s1 := s2;                   --  Copy VString to VString
   s4 := s1 & s3;              --  Concatenation VString & VString
   Put_Line (5 * (s1 & ' '));  --  Multiplication, and Concatenation with Character
@@ -157,6 +159,10 @@ begin
   end if;
   if +Str3 /= To_VString (Str3) then
     --  `To_VString (s3)` and `+s3` are identical function calls.
+    Put ("Ooops?");
+  end if;
+  if +'x' /= To_VString ('x') then
+    --  `To_VString ('x')` and `+'x'` are identical function calls.
     Put ("Ooops?");
   end if;
   if s4 /= +"abcdef" then  --  Comparison VString to VString

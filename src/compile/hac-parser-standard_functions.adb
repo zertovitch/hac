@@ -70,7 +70,7 @@ package body HAC.Parser.Standard_Functions is
         when SF_To_Lower_Char | SF_To_Upper_Char =>
           Expected (1) := VStrings_or_Chars_Set;
         when SF_Literal_to_VString =>
-          Expected (1) := Fixed_Str_or_Str_Lit_Set;
+          Expected (1) := Chars_or_Strings_Set;
         when SF_Index | SF_Starts_With | SF_Ends_With =>
           --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
           Expected (1 .. 2) := (VStrings_Set, VStrings_or_Str_Lit_Set);
@@ -163,7 +163,7 @@ package body HAC.Parser.Standard_Functions is
             Code_Adjusted := SF_To_Upper_VStr;
           end if;
         when SF_Index | SF_Starts_With | SF_Ends_With =>
-          --  Index (OS, "Windows") becomes Index (OS, +"Windows")
+          --  Index (OS, "Windows")  becomes  Index (OS, +"Windows")
           if Actual (2).TYP = String_Literals then
             Emit_Std_Funct (CD, SF_Literal_to_VString);
           end if;
@@ -173,17 +173,24 @@ package body HAC.Parser.Standard_Functions is
             Emit_Std_Funct (CD, SF_Literal_to_VString);
           end if;
         when SF_Literal_to_VString =>
-          --  Call to To_VString, identical to the unary "+".
+          --  Call to `To_VString`, identical to the unary "+".
           --  See Simple_Expression in Parser.Expressions
-          if Actual (1).TYP = Arrays then
-            if Is_Char_Array (CD, Actual (1)) then
-              --  Address is already pushed; we need to push the string's length.
-              Emit1 (CD, k_Push_Discrete_Literal, CD.Arrays_Table (Actual (1).Ref).Array_Size);
-              Code_Adjusted := SF_String_to_VString;
-            else
-              UErrors.Error (CD, err_expected_char_or_string);
-            end if;
-          end if;
+          case Actual (1).TYP is
+            when String_Literals =>
+              null;  --  This is the default behaviour.
+            when Chars =>
+              Code_Adjusted := SF_Char_to_VString;
+            when Arrays =>
+              if Is_Char_Array (CD, Actual (1)) then
+                --  Address is already pushed; we need to push the string's length.
+                Emit1 (CD, k_Push_Discrete_Literal, CD.Arrays_Table (Actual (1).Ref).Array_Size);
+                Code_Adjusted := SF_String_to_VString;
+              else
+                UErrors.Error (CD, err_expected_char_or_string);
+              end if;
+            when others =>
+              null;  --  Case is filtered out at the Prepare_Accepted_Parameter_Types step.
+          end case;
         when SF_Niladic =>
           null;  --  No arguments, nothing to adjust
         when others =>

@@ -137,6 +137,10 @@ package body HAC.PCode.Interpreter.Operators is
           Len := ND.S (Curr_TCB.T).I;      --  Length of string
           Idx := ND.S (Curr_TCB.T + 1).I;  --  Index to string table
           ND.S (Curr_TCB.T) := GR_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
+        when SF_Char_to_VString =>
+          --  We create a 1-character temporary String: (1 => Character'Val (...)) and
+          --  convert it to a VString
+          ND.S (Curr_TCB.T) := GR_VString (To_VString ((1 => Character'Val (ND.S (Curr_TCB.T).I))));
         when SF_Two_VStrings_Concat =>
           Pop (ND);
           --  [T] := [T] & [T+1] :

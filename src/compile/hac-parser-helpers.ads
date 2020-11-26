@@ -319,6 +319,7 @@ package HAC.Parser.Helpers is
   VStrings_or_Str_Lit_Set  : constant Typ_Set := VStrings_Set or Str_Lit_Set;
   Fixed_Str_or_Str_Lit_Set : constant Typ_Set := Arrays_Set or Str_Lit_Set;
   --  ^ If Arrays, need to call Is_Char_Array to check it's a String.
+  Chars_or_Strings_Set     : constant Typ_Set := Chars_Set or Fixed_Str_or_Str_Lit_Set;
 
   -------------
   --  Misc.  --

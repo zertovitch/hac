@@ -225,7 +225,7 @@ package body HAC.UErrors is
       when err_digit_expected =>
         return "digit expected";
       when err_expected_char_or_string =>
-        return "expected String";  --  TBD: Character or
+        return "expected Character or String";
       when err_cannot_modify_constant_or_in_parameter =>
         return "cannot modify a constant or a ""in"" parameter" & hint;
       when err_case_others_alone_last =>

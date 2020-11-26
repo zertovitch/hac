@@ -253,6 +253,7 @@ package HAC.PCode is
     --  VString functions
     SF_String_to_VString,       --  +S
     SF_Literal_to_VString,      --  +"Hello"
+    SF_Char_to_VString,         --  +'x'
     SF_Two_VStrings_Concat,     --  V1 & V2
     SF_VString_Char_Concat,     --  V & 'x'
     SF_Char_VString_Concat,     --  'x' & V
