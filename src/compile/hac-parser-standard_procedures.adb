@@ -177,7 +177,7 @@ package body HAC.Parser.Standard_Procedures is
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
 
-      when SP_Open | SP_Create | SP_Close =>
+      when SP_Open | SP_Create | SP_Append | SP_Close =>
         if CD.Sy /= LParent then
           Error (CD, err_missing_an_opening_parenthesis);
         else
@@ -194,7 +194,8 @@ package body HAC.Parser.Standard_Procedures is
           --  text files being routed accidentally to the abstract
           --  console (= null) if Create or Open was not called.
           --
-          if Code = SP_Open or Code = SP_Create then
+          if Code = SP_Open or Code = SP_Create or Code = SP_Append then
+            --  Parse file name.
             Need (CD, Comma, err_COMMA_missing);
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
             if not VStrings_or_Str_Lit_Set (X.TYP) then

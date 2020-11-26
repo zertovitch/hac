@@ -131,6 +131,7 @@ private
      VME_End_Error,
      VME_Name_Error,
      VME_Use_Error,
+     VME_Status_Error,
      VME_Storage_Error,
      --
      VME_User_Abort,

@@ -23,7 +23,12 @@ package body HAC.PCode.Interpreter.In_Defs is
     procedure Free is new Ada.Unchecked_Deallocation (Ada.Text_IO.File_Type, File_Ptr);
   begin
     for F of ND.Files loop
-      Free (F);
+      if F /= null then
+        if Ada.Text_IO.Is_Open (F.all) then
+          Ada.Text_IO.Close (F.all);
+        end if;
+        Free (F);
+      end if;
     end loop;
   end Free_Allocated_Contents;
 

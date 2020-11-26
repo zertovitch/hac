@@ -330,8 +330,9 @@ package body HAC.Compiler is
       --
       --  Ada.Text_IO-like procedures
       --
-      Enter_Std_Proc ("Open",           SP_Open);
       Enter_Std_Proc ("Create",         SP_Create);
+      Enter_Std_Proc ("Open",           SP_Open);
+      Enter_Std_Proc ("Append",         SP_Append);
       Enter_Std_Proc ("Close",          SP_Close);
       --
       Enter_Std_Proc ("Quantum",        SP_Quantum);

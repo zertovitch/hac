@@ -241,6 +241,13 @@ package body HAC.PCode.Interpreter is
             Ada.Text_IO.In_File,
             To_String (ND.S (Curr_TCB.T + 2).V)
           );
+        when SP_Append =>
+          Pop (2);
+          Ada.Text_IO.Open (
+            ND.S (Curr_TCB.T + 1).Txt.all,
+            Ada.Text_IO.Append_File,
+            To_String (ND.S (Curr_TCB.T + 2).V)
+          );
         when SP_Create =>
           Pop (2);
           Ada.Text_IO.Create (
@@ -306,16 +313,25 @@ package body HAC.PCode.Interpreter is
     exception
       when Ada.Text_IO.Name_Error =>
         case Code is
-          when SP_Open | SP_Create =>
+          when SP_Open | SP_Create | SP_Append =>
             Raise_Standard (VME_Name_Error,
-              "File not found: " & To_String (ND.S (Curr_TCB.T + 2).V));
+              "File not found, or invalid name: " & To_String (ND.S (Curr_TCB.T + 2).V));
           when others =>
             Raise_Standard (VME_Name_Error);
         end case;
         raise VM_Raised_Exception;
+      when Ada.Text_IO.Status_Error =>
+        case Code is
+          when SP_Open | SP_Create | SP_Append =>
+            Raise_Standard (VME_Status_Error, "File already open");
+          when SP_Close =>
+            Raise_Standard (VME_Status_Error, "File not open");
+          when others =>
+            Raise_Standard (VME_Status_Error);
+        end case;
       when Ada.Text_IO.Use_Error =>
         case Code is
-          when SP_Open | SP_Create =>
+          when SP_Open | SP_Create | SP_Append =>
             Raise_Standard (VME_Use_Error,
               "Cannot access file: " & To_String (ND.S (Curr_TCB.T + 2).V));
           when others =>
@@ -583,6 +599,7 @@ package body HAC.PCode.Interpreter is
       when VME_End_Error        => return "End_Error";
       when VME_Name_Error       => return "Name_Error";
       when VME_Program_Error    => return "Program_Error";
+      when VME_Status_Error     => return "Status_Error";
       when VME_Storage_Error    => return "Storage_Error";
       when VME_Use_Error        => return "Use_Error";
       when VME_User_Abort       => return "User_Abort";

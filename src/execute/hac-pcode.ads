@@ -328,10 +328,13 @@ package HAC.PCode is
   -------------------------------------
 
   type SP_Code is (
+    SP_Create,
+    SP_Open,
+    SP_Append,
     SP_Close,
+    --
     SP_Push_Abstract_Console,
     --
-    SP_Open,
     SP_Get,
     SP_Get_Immediate,
     SP_Get_Line,
@@ -339,7 +342,6 @@ package HAC.PCode is
     SP_Get_Line_F,
     SP_Skip_Line,
     --
-    SP_Create,
     SP_Put,
     SP_Put_Line,
     SP_Put_F,
