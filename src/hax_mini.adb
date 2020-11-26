@@ -24,7 +24,7 @@ procedure HAX_Mini is
     Close (f);
     --
     if Unit_Compilation_Successful (CD) then
-      Interpret_on_Current_IO (CD, 1, unhandled);
+      Interpret_on_Current_IO (CD, 1, Ada_file_name, unhandled);
       if Is_Exception_Raised (unhandled) then
         Put_Line (Current_Error, "HAC VM: raised " & Image (unhandled));
         Put_Line (Current_Error, Message (unhandled));

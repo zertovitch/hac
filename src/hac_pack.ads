@@ -87,6 +87,7 @@ package HAC_Pack is
   subtype VString is VStr_Pkg.Unbounded_String;
   Null_VString : VString renames VStr_Pkg.Null_Unbounded_String;
   function To_VString (S : String) return VString renames VStr_Pkg.To_Unbounded_String;
+  function To_VString (C : Character) return VString;
   package ACH renames Ada.Characters.Handling;
   --
   function Element (Source : VString; Index : Positive) return Character renames VStr_Pkg.Element;
@@ -109,6 +110,7 @@ package HAC_Pack is
   function Trim_Both  (Source : VString) return VString;
   --
   function "+" (S : String) return VString renames To_VString;
+  function "+" (C : Character) return VString renames To_VString;
   --
   function "*" (Num : Natural; Pattern : Character) return VString renames VStr_Pkg."*";
   function "*" (Num : Natural; Pattern : String) return VString;
@@ -301,6 +303,7 @@ package HAC_Pack is
 
   function Argument_Count return Natural renames Ada.Command_Line.Argument_Count;
   function Argument (Number : Positive) return VString;
+  function Command_Name return VString;
 
   function Get_Env (Name : String)  return VString;
   function Get_Env (Name : VString) return VString;

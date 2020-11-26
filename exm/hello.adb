@@ -4,7 +4,7 @@ procedure Hello is
   f : Real := 0.0;
 begin
   Put("Hello");
-  Put_Line(" world!  ...  Spaceman is speaking ...");
+  Put_Line(" world! I am the program file: " & Command_Name);
   Put_Line(
         "          i     i ** 2     2 ** i      2.0 ** i      2.0 ** f");
   Put_Line(

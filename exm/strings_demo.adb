@@ -94,7 +94,7 @@ begin
   s1 := s2;                   --  Copy VString to VString
   s4 := s1 & s3;              --  Concatenation VString & VString
   Put_Line (5 * (s1 & ' '));  --  Multiplication, and Concatenation with Character
-  for i in 1 .. 4 loop Put ('.' & s1); end loop; New_Line;
+  for i in 1 .. 4 loop Put (v_char & s1); end loop; New_Line;
   padded := +"   " & '"' & s1 & """    ";
   New_Line;
   Put_Line ("->" & padded & "<- original");

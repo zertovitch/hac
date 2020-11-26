@@ -49,6 +49,7 @@ procedure HAX_Multi is
         System_Calls_Traits
            (Ada.Command_Line.Argument_Count,
             Ada.Command_Line.Argument,
+            Ada.Command_Line.Command_Name,    --  Wrong but not used anyway in this demo.
             HAC_Pack.Shell_Execute,
             HAC_Pack.Directory_Separator
            );

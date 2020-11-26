@@ -166,6 +166,11 @@ package body HAC_Pack is
     return Time_display (T);
   end HAC_Image;
 
+  function To_VString (C : Character) return VString is
+  begin
+    return To_VString ( (1 => C) );
+  end To_VString;
+
   function Slice (Source : VString; From : Positive; To : Natural) return VString
   is
   begin
@@ -515,6 +520,11 @@ package body HAC_Pack is
   begin
     return +Ada.Command_Line.Argument (Number);
   end Argument;
+
+  function Command_Name return VString is
+  begin
+    return +Ada.Command_Line.Command_Name;
+  end Command_Name;
 
   function Get_Env (Name : String) return VString is
     use Ada.Environment_Variables;

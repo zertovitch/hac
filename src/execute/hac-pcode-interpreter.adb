@@ -73,6 +73,9 @@ package body HAC.PCode.Interpreter is
         when SF_Argument_Count =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := System_Calls.Argument_Count;
+        when SF_Command_Name =>
+          Push;  --  Niladic function, needs to push a new item (their own result).
+          ND.S (Curr_TCB.T) := GR_VString (To_VString (System_Calls.Command_Name));
         when SF_Directory_Separator =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := Character'Pos (System_Calls.Directory_Separator);
@@ -525,9 +528,10 @@ package body HAC.PCode.Interpreter is
   end Current_IO_Get_Needs_Skip_Line;
 
   procedure Interpret_on_Current_IO (
-    CD_CIO         :     Compiler_Data;
-    Argument_Shift :     Natural := 0;    --  Number of arguments to be skipped
-    Unhandled      : out Exception_Propagation_Data
+    CD_CIO           :     Compiler_Data;
+    Argument_Shift   :     Natural := 0;    --  Number of arguments to be skipped
+    Full_Script_Name :     String;
+    Unhandled        : out Exception_Propagation_Data
   )
   is
 
@@ -552,6 +556,11 @@ package body HAC.PCode.Interpreter is
       return Ada.Command_Line.Argument (Number + Argument_Shift);
     end Shifted_Argument;
 
+    function Custom_Command_Name return String is
+    begin
+      return Full_Script_Name;
+    end Custom_Command_Name;
+
     package Current_IO_Console is new
       Console_Traits
          (Ada.Text_IO.End_Of_File,
@@ -575,6 +584,7 @@ package body HAC.PCode.Interpreter is
       System_Calls_Traits
          (Shifted_Argument_Count,
           Shifted_Argument,
+          Custom_Command_Name,
           HAC_Pack.Shell_Execute,
           HAC_Pack.Directory_Separator
          );

@@ -1,5 +1,4 @@
---  This demo reads a text file (itself) and displays
---  its contents on the console.
+--  This demo creates a file in multiple steps, via the Append procedure.
 
 with HAC_Pack;  use HAC_Pack;
 

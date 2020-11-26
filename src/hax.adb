@@ -6,6 +6,7 @@ with Show_License;
 
 with Ada.Calendar,
      Ada.Command_Line,
+     Ada.Directories,
      Ada.Exceptions,
      Ada.Strings.Unbounded,
      Ada.Text_IO.Text_Streams;
@@ -103,7 +104,7 @@ procedure HAX is
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       end if;
       t1 := Clock;
-      Interpret_on_Current_IO (CD, arg_pos, unhandled);
+      Interpret_on_Current_IO (CD, arg_pos, Ada.Directories.Full_Name (Ada_file_name), unhandled);
       t2 := Clock;
       unhandled_found := Is_Exception_Raised (unhandled);
       if verbosity >= 2 then

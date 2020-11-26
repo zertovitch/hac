@@ -43,9 +43,10 @@ package HAC.PCode.Interpreter is
   ------------------------------------------------------------------------------
 
   procedure Interpret_on_Current_IO (
-    CD_CIO         :     Compiler_Data;
-    Argument_Shift :     Natural := 0;    --  Number of arguments to be skipped
-    Unhandled      : out Exception_Propagation_Data
+    CD_CIO           :     Compiler_Data;
+    Argument_Shift   :     Natural := 0;    --  Number of arguments to be skipped
+    Full_Script_Name :     String;
+    Unhandled        : out Exception_Propagation_Data
   );
 
   --  Part of the subprograms useed for the Interpret_on_Current_IO
@@ -101,6 +102,7 @@ package HAC.PCode.Interpreter is
     --  Function profiles for Argument* are from Ada.Command_Line (RM A.15).
     with function Argument_Count return Natural;
     with function Argument (Number : in Positive) return String;
+    with function Command_Name return String;
     --  Shell execution, Directory_Separator, ... are also abstracted.
     with function Shell_Execute (Command : String) return Integer;
     with function Directory_Separator return Character;

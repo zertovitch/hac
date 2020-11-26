@@ -313,6 +313,7 @@ package HAC.PCode is
     SF_Clock,
     SF_Random_Float,
     SF_Argument_Count,
+    SF_Command_Name,
     SF_Directory_Separator,
     SF_Current_Directory,  --  Ada.Directories-like
     --
