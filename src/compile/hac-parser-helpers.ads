@@ -307,15 +307,18 @@ package HAC.Parser.Helpers is
   Chars_Set        : constant Typ_Set := (Chars           => True, others => False);
   Ints_Set         : constant Typ_Set := (Ints            => True, others => False);
   Floats_Set       : constant Typ_Set := (Floats          => True, others => False);
+  Arrays_Set       : constant Typ_Set := (Arrays          => True, others => False);
   VStrings_Set     : constant Typ_Set := (VStrings        => True, others => False);
   Times_Set        : constant Typ_Set := (Times           => True, others => False);
   Durations_Set    : constant Typ_Set := (Durations       => True, others => False);
   Str_Lit_Set      : constant Typ_Set := (String_Literals => True, others => False);
   Txt_Fil_Set      : constant Typ_Set := (Text_Files      => True, others => False);
 
-  PCode_Atomic_Typ        : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set or VStrings_Set;
-  VStrings_or_Chars_Set   : constant Typ_Set := VStrings_Set or Chars_Set;
-  VStrings_or_Str_Lit_Set : constant Typ_Set := VStrings_Set or Str_Lit_Set;
+  PCode_Atomic_Typ         : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set or VStrings_Set;
+  VStrings_or_Chars_Set    : constant Typ_Set := VStrings_Set or Chars_Set;
+  VStrings_or_Str_Lit_Set  : constant Typ_Set := VStrings_Set or Str_Lit_Set;
+  Fixed_Str_or_Str_Lit_Set : constant Typ_Set := Arrays_Set or Str_Lit_Set;
+  --  ^ If Arrays, need to call Is_Char_Array to check it's a String.
 
   -------------
   --  Misc.  --

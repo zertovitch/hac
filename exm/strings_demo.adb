@@ -155,6 +155,10 @@ begin
     --  `To_VString ("Hello")` and `+"Hello"` are identical function calls.
     Put ("Ooops?");
   end if;
+  if +Str3 /= To_VString (Str3) then
+    --  `To_VString (s3)` and `+s3` are identical function calls.
+    Put ("Ooops?");
+  end if;
   if s4 /= +"abcdef" then  --  Comparison VString to VString
     Put ("Ooops?");
   end if;

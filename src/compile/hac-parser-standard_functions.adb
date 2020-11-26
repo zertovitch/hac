@@ -1,7 +1,8 @@
 with HAC.Compiler.PCode_Emit,
      HAC.Parser.Expressions,
      HAC.Parser.Helpers,
-     HAC.Scanner;
+     HAC.Scanner,
+     HAC.UErrors;
 
 package body HAC.Parser.Standard_Functions is
 
@@ -69,7 +70,7 @@ package body HAC.Parser.Standard_Functions is
         when SF_To_Lower_Char | SF_To_Upper_Char =>
           Expected (1) := VStrings_or_Chars_Set;
         when SF_Literal_to_VString =>
-          Expected (1) := Str_Lit_Set;
+          Expected (1) := Fixed_Str_or_Str_Lit_Set;
         when SF_Index | SF_Starts_With | SF_Ends_With =>
           --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
           Expected (1 .. 2) := (VStrings_Set, VStrings_or_Str_Lit_Set);
@@ -127,7 +128,7 @@ package body HAC.Parser.Standard_Functions is
       Emit2 (CD, k_Standard_Functions, Boolean'Pos (file_parameter), SF_Code'Pos (FIF_Code));
     end Parse_File_Information_Function;
     --
-    procedure Adjustments_to_Parameter_Types is
+    procedure Adjustments_to_Parameter_Types is  --  Here is the actual overloading implemented.
     begin
       case Code is
         when SF_Abs_Int =>  --  Abs (NB: in Ada it's an operator, not a function)
@@ -162,14 +163,26 @@ package body HAC.Parser.Standard_Functions is
             Code_Adjusted := SF_To_Upper_VStr;
           end if;
         when SF_Index | SF_Starts_With | SF_Ends_With =>
-          --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
+          --  Index (OS, "Windows") becomes Index (OS, +"Windows")
           if Actual (2).TYP = String_Literals then
             Emit_Std_Funct (CD, SF_Literal_to_VString);
           end if;
         when SF_Exists | SF_Get_Env | SF_Shell_Execute =>
-          --  Get_Env ("PATH")  ->  Get_Env (+"PATH")
+          --  Get_Env ("PATH")  becomes  Get_Env (+"PATH")
           if Actual (1).TYP = String_Literals then
             Emit_Std_Funct (CD, SF_Literal_to_VString);
+          end if;
+        when SF_Literal_to_VString =>
+          --  Call to To_VString, identical to the unary "+".
+          --  See Simple_Expression in Parser.Expressions
+          if Actual (1).TYP = Arrays then
+            if Is_Char_Array (CD, Actual (1)) then
+              --  Address is already pushed; we need to push the string's length.
+              Emit1 (CD, k_Push_Discrete_Literal, CD.Arrays_Table (Actual (1).Ref).Array_Size);
+              Code_Adjusted := SF_String_to_VString;
+            else
+              UErrors.Error (CD, err_expected_char_or_string);
+            end if;
           end if;
         when SF_Niladic =>
           null;  --  No arguments, nothing to adjust

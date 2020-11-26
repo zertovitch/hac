@@ -401,6 +401,7 @@ package HAC.Defs is
     err_operator_not_defined_for_types,          --  2020-04-06
     err_no_null_functions,                       --  2020-04-10
     err_digit_expected,
+    err_expected_char_or_string,
     err_cannot_modify_constant_or_in_parameter,
     err_case_others_alone_last,
     err_END_LOOP_ident_missing,
