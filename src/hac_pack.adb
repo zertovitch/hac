@@ -315,7 +315,7 @@ package body HAC_Pack is
   end Open;
 
   procedure Open (File : in out File_Type; Name : VString) is
-    begin Open (File, To_String (Name)); end Open;
+  begin Open (File, To_String (Name)); end Open;
 
   procedure Create (File : in out File_Type; Name : String) is
     use Ada.Text_IO;
@@ -324,7 +324,18 @@ package body HAC_Pack is
   end Create;
 
   procedure Create (File : in out File_Type; Name : VString) is
-    begin Create (File, To_String (Name)); end Create;
+  begin Create (File, To_String (Name)); end Create;
+
+  procedure Append (File : in out File_Type; Name : String) is
+    use Ada.Text_IO;
+  begin
+    Open (File, Append_File, Name);
+  end Append;
+
+  procedure Append (File : in out File_Type; Name : VString) is
+  begin
+    Append (File, To_String (Name));
+  end Append;
 
    ---------
    -- GET --

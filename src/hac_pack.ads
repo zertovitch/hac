@@ -223,6 +223,9 @@ package HAC_Pack is
   procedure Create (File : in out File_Type; Name : String);   --  Create as Out_File (output).
   procedure Create (File : in out File_Type; Name : VString);  --  Create as Out_File (output).
 
+  procedure Append (File : in out File_Type; Name : String);   --  Open as Append_File.
+  procedure Append (File : in out File_Type; Name : VString);  --  Open as Append_File.
+
   procedure Close (File : in out File_Type) renames Ada.Text_IO.Close;
 
   --  Get
