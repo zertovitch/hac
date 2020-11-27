@@ -168,7 +168,7 @@ package body HAC_Pack is
 
   function To_VString (C : Character) return VString is
   begin
-    return To_VString ( (1 => C) );
+    return To_VString ((1 => C));
   end To_VString;
 
   function Slice (Source : VString; From : Positive; To : Natural) return VString

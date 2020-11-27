@@ -4,7 +4,7 @@
 --
 --  See HAX for the full version of the command-line tool.
 
-with HAC.Compiler, HAC.Co_Defs, HAC.Defs, HAC.PCode.Interpreter;
+with HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.PCode.Interpreter;
 with HAC_Pack;
 with Ada.Calendar, Ada.Command_Line, Ada.Numerics.Float_Random,
      Ada.Streams.Stream_IO, Ada.Text_IO;
@@ -21,7 +21,7 @@ procedure HAX_Multi is
     end HAX_Instance;
 
     task body HAX_Instance is
-      use HAC.Compiler, HAC.Co_Defs, HAC.Defs, HAC.PCode.Interpreter;
+      use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.PCode.Interpreter;
 
       procedure No_Put (Item : Character) is null;
       procedure No_New_Line (Spacing : Positive_Count := 1) is null;
@@ -31,15 +31,15 @@ procedure HAX_Multi is
            (Ada.Text_IO.End_Of_File,
             Ada.Text_IO.End_Of_Line,
             Current_IO_Get_Needs_Skip_Line,
-            HAC.Defs.IIO.Get,
-            HAC.Defs.RIO.Get,
+            HAC_Sys.Defs.IIO.Get,
+            HAC_Sys.Defs.RIO.Get,
             Ada.Text_IO.Get,
             Ada.Text_IO.Get_Immediate,
             Ada.Text_IO.Get_Line,
             Ada.Text_IO.Skip_Line,
-            HAC.Defs.IIO.Put,
-            HAC.Defs.RIO.Put,
-            HAC.Defs.BIO.Put,
+            HAC_Sys.Defs.IIO.Put,
+            HAC_Sys.Defs.RIO.Put,
+            HAC_Sys.Defs.BIO.Put,
             No_Put,  --  Ada.Text_IO.Put
             Ada.Text_IO.Put,
             No_New_Line  --  Ada.Text_IO.New_Line

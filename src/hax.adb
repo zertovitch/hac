@@ -1,6 +1,6 @@
-with HAC.Compiler,
-     HAC.Co_Defs,
-     HAC.PCode.Interpreter.In_Defs;
+with HAC_Sys.Compiler,
+     HAC_Sys.Co_Defs,
+     HAC_Sys.PCode.Interpreter.In_Defs;
 
 with Show_License;
 
@@ -16,7 +16,7 @@ procedure HAX is
   verbosity : Natural := 0;
   caveat       : constant String := "Caution: HAC is not a complete Ada compiler.";
   version_info : constant String :=
-    "Compiler version: " & HAC.version & " dated " & HAC.reference & '.';
+    "Compiler version: " & HAC_Sys.version & " dated " & HAC_Sys.reference & '.';
 
   use Ada.Strings.Unbounded;
 
@@ -24,7 +24,7 @@ procedure HAX is
   cmp_dump_file_name : Unbounded_String;
 
   procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
-    use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter,
+    use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter,
         Ada.Calendar, Ada.Text_IO;
     --
     procedure Show_Line_Information (
@@ -147,7 +147,7 @@ procedure HAX is
   begin
     Put_Line (Current_Error, "HAX: command-line compilation and execution for HAC (HAC Ada Compiler)");
     Put_Line (Current_Error, version_info);
-    Put_Line (Current_Error, "URL: " & HAC.web);
+    Put_Line (Current_Error, "URL: " & HAC_Sys.web);
     New_Line (Current_Error);
     Put_Line (Current_Error, "Usage: hax [options] main.adb [command-line parameters for main]");
     New_Line (Current_Error);
@@ -187,7 +187,7 @@ begin
     Help;
     if verbosity > 1 then
       Ada.Text_IO.Put_Line ("Size of a HAC VM memory unit:" &
-        Integer'Image (HAC.PCode.Interpreter.In_Defs.Data_Type'Size / 8) &
+        Integer'Image (HAC_Sys.PCode.Interpreter.In_Defs.Data_Type'Size / 8) &
         " bytes"
       );
     end if;

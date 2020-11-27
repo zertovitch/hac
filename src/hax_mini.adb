@@ -3,7 +3,7 @@
 --
 --  See HAX for the full version of the command-line tool.
 
-with HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter;
+with HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter;
 with Ada.Command_Line, Ada.Streams.Stream_IO, Ada.Text_IO;
 
 procedure HAX_Mini is
@@ -11,7 +11,7 @@ procedure HAX_Mini is
   use Ada.Text_IO;
 
   procedure Compile_and_interpret_file (Ada_file_name : String) is
-    use HAC.Compiler, HAC.Co_Defs, HAC.PCode.Interpreter;
+    use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter;
     use Ada.Streams.Stream_IO;
     --
     f : Ada.Streams.Stream_IO.File_Type;
