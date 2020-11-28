@@ -1,5 +1,6 @@
 --  Demo of Get / Get_Immediate / Get_Line / Skip_Line / Put / Put_Line / New_Line
---  on the console. No file, unless using: "hax console_io.adb <in_file.txt >out_file.txt"
+--  on the console.
+--  No file involved, unless using:  "hac console_io.adb <in_file.txt >out_file.txt"
 
 with HAC_Pack;  use HAC_Pack;
 

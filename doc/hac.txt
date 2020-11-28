@@ -32,9 +32,9 @@ Assuming you have the GNAT (*) compiler installed, do the
 following from a command line interpreter (please replace
 '\' by '/' on Unix-like platforms):
 
-gnatmake -P hac
-cd exm
-..\hax gallery.adb
+    gnatmake -P hac
+    cd exm
+    ..\hac gallery.adb
 
 Alternatively, on Windows and with mouse only, you can go
 into the "exm" folder and double-click "e.cmd" .
@@ -97,8 +97,8 @@ a correct output). They are listed in the project file hac_exm.gpr
 in the "exm" directory.
 
 You will see that the "Pascal subset" plus tasking is more or less
-supported, so you have things like subprograms (including nested
-and recursive subprograms), expressions, that are working, for instance.
+supported, so you have things like subprograms (including multiple-level
+nested and recursive subprograms), expressions, that are working, for instance.
 
   - You can define your own data types: enumerations, records, arrays
       (and every combination of records and arrays).
@@ -117,7 +117,10 @@ and recursive subprograms), expressions, that are working, for instance.
   - Subprograms names cannot be overloaded, although some *predefined*
       subprograms (including operators) are overloaded many times, like
       "Put", "Get", "+", "&", ...
-  - Task are implemented, but not yet tested.
+  - Programmable modularity (packages or subprograms that you can "with")
+    is not yet implemented.
+  - Generics are not yet implemented.
+  - Tasks are implemented, but not yet tested.
 
 A more systematic testing is done in the "test" directory.
 

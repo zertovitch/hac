@@ -11,7 +11,7 @@ with Ada.Calendar,
      Ada.Strings.Unbounded,
      Ada.Text_IO.Text_Streams;
 
-procedure HAX is
+procedure HAC is
 
   verbosity : Natural := 0;
   caveat       : constant String := "Caution: HAC is not a complete Ada compiler.";
@@ -46,9 +46,9 @@ procedure HAX is
     --
     f : File_Type;
     t1, t2 : Time;
-    HAC_margin_1 : constant String := "*******[ HAX ]*******   ";
-    HAC_margin_2 : constant String := ". . . .[ HAX ]. . . .   ";
-    HAC_margin_3 : constant String := "-------[ HAX ]-------   ";
+    HAC_margin_1 : constant String := "*******[ HAC ]*******   ";
+    HAC_margin_2 : constant String := ". . . .[ HAC ]. . . .   ";
+    HAC_margin_3 : constant String := "-------[ HAC ]-------   ";
     CD : Compiler_Data;
     unhandled : Exception_Propagation_Data;
     unhandled_found : Boolean;
@@ -61,12 +61,12 @@ procedure HAX is
       when others =>
         New_Line;
         Put_Line (HAC_margin_1 & version_info);
-        Put_Line (HAC_margin_1 & caveat & " Type ""hax"" for license.");
+        Put_Line (HAC_margin_1 & caveat & " Type ""hac"" for license.");
         Put_Line (HAC_margin_2 & "Compiling from file: " & Ada_file_name);
     end case;
     Open (f, In_File, Ada_file_name);
     --
-    --  Skip an eventual "shebang", e.g.: #!/usr/bin/env hax
+    --  Skip an eventual "shebang", e.g.: #!/usr/bin/env hac
     --  The Ada source begins from next line.
     --
     if not End_Of_File (f) then
@@ -145,11 +145,11 @@ procedure HAX is
   procedure Help is
     use Ada.Text_IO;
   begin
-    Put_Line (Current_Error, "HAX: command-line compilation and execution for HAC (HAC Ada Compiler)");
+    Put_Line (Current_Error, "HAC: command-line compilation and execution for HAC (HAC Ada Compiler)");
     Put_Line (Current_Error, version_info);
     Put_Line (Current_Error, "URL: " & HAC_Sys.web);
     New_Line (Current_Error);
-    Put_Line (Current_Error, "Usage: hax [options] main.adb [command-line parameters for main]");
+    Put_Line (Current_Error, "Usage: hac [options] main.adb [command-line parameters for main]");
     New_Line (Current_Error);
     Put_Line (Current_Error, "Options: -h     : this help");
     Put_Line (Current_Error, "         -v, v1 : verbose");
@@ -158,11 +158,11 @@ procedure HAX is
     Put_Line (Current_Error, "         -d     : dump compiler information");
     New_Line (Current_Error);
     Put_Line (Current_Error, caveat);
-    Put_Line (Current_Error, "Note: HAX accepts source files with shebang's, e.g.: #!/usr/bin/hax");
+    Put_Line (Current_Error, "Note: HAC accepts source files with shebang's, e.g.: #!/usr/bin/hac");
     Show_License (Current_Error, "hac.ads");
   end Help;
 
-  no_haxing : Boolean := True;
+  no_hac_ing : Boolean := True;
   use Ada.Command_Line;
 
 begin
@@ -179,11 +179,11 @@ begin
       cmp_dump_file_name := To_Unbounded_String ("symbols.lst");
     else
       Compile_and_interpret_file (Argument (i), i);
-      no_haxing := False;
+      no_hac_ing := False;
       exit;  --  The other arguments are for the HAC program.
     end if;
   end loop;
-  if no_haxing then
+  if no_hac_ing then
     Help;
     if verbosity > 1 then
       Ada.Text_IO.Put_Line ("Size of a HAC VM memory unit:" &
@@ -192,4 +192,4 @@ begin
       );
     end if;
   end if;
-end HAX;
+end HAC;

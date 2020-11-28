@@ -1,5 +1,5 @@
---  We launch new instances of hax (possibly from hax too).
---  Usage: hax gallery.adb
+--  We launch new instances of HAC (possibly from HAC itself, too).
+--  Usage: hac gallery.adb
 
 with HAC_Pack;  use HAC_Pack;
 
@@ -16,52 +16,52 @@ procedure Gallery is
       dummy := Shell_Execute (command);
     end Shell;
 
-    procedure Launch_HAX (Ada_file_name : VString) is
+    procedure Launch_HAC (Ada_file_name : VString) is
       dummy : Character;
     begin
       Shell (
-        +".." & Directory_Separator & "hax -v2 " & Ada_file_name,
+        +".." & Directory_Separator & "hac -v2 " & Ada_file_name,
         False
       );
       Put ("--- Press any key to continue in the HAC gallery...");
       Get_Immediate (dummy);
       New_Line;
-    end Launch_HAX;
+    end Launch_HAC;
 
-    procedure Build_HAX is
+    procedure Build_HAC is
     begin
-      if Get_Env("haxbuild") = "done" then
+      if Get_Env("hacbuild") = "done" then
         return;
       end if;
-      Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
+      Put_Line ("(Re-)building HAC, in case the present program isn't run from HAC...");
       Shell (+"gprbuild -p -P .." & Directory_Separator & "hac", True);
-    end Build_HAX;
+    end Build_HAC;
 
   begin
-    Build_HAX;  --  Redundant if this program is itself run through HAX.
+    Build_HAC;  --  Redundant if this program is itself run through HAC.
     --
-    Launch_HAX (+"hello.adb");
-    Launch_HAX (+"maze_gen.adb");
-    Launch_HAX (+"strings_demo.adb");
-    Launch_HAX (+"env.adb");
-    Launch_HAX (+"arguments.adb arg1 arg2 ""arg 3 ..."" arg4");
-    Launch_HAX (+"ackermann.adb");
-    Launch_HAX (+"anti_primes.adb");
-    Launch_HAX (+"doors.adb");
-    Launch_HAX (+"mandelbrot.adb");
-    Launch_HAX (+"test.adb");
-    Launch_HAX (+"test1.adb");
-    Launch_HAX (+"shell_sort.adb");
-    Launch_HAX (+"merge_sort.adb");
-    Launch_HAX (+"days_1901.adb");
-    Launch_HAX (+"shell.adb");
-    Launch_HAX (+"file_read.adb");
-    Launch_HAX (+"timing.adb");
-    Launch_HAX (+"bwt.adb");
+    Launch_HAC (+"hello.adb");
+    Launch_HAC (+"maze_gen.adb");
+    Launch_HAC (+"strings_demo.adb");
+    Launch_HAC (+"env.adb");
+    Launch_HAC (+"arguments.adb arg1 arg2 ""arg 3 ..."" arg4");
+    Launch_HAC (+"ackermann.adb");
+    Launch_HAC (+"anti_primes.adb");
+    Launch_HAC (+"doors.adb");
+    Launch_HAC (+"mandelbrot.adb");
+    Launch_HAC (+"test.adb");
+    Launch_HAC (+"test1.adb");
+    Launch_HAC (+"shell_sort.adb");
+    Launch_HAC (+"merge_sort.adb");
+    Launch_HAC (+"days_1901.adb");
+    Launch_HAC (+"shell.adb");
+    Launch_HAC (+"file_read.adb");
+    Launch_HAC (+"timing.adb");
+    Launch_HAC (+"bwt.adb");
     --  The following demos write files.
-    Launch_HAX (+"file_copy.adb");
-    Launch_HAX (+"three_lakes_s.adb");
-    Launch_HAX (+"covid_19_s.adb");
+    Launch_HAC (+"file_copy.adb");
+    Launch_HAC (+"three_lakes_s.adb");
+    Launch_HAC (+"covid_19_s.adb");
   end Launch_Demos;
 
 begin

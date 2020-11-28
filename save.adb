@@ -1,12 +1,12 @@
 --  Local backup Ada shell script for the HAC project.
 --
---  This script works both with HAC (command: hax save.adb)
+--  This script works both with HAC (command: hac save.adb)
 --  and a full Ada compiler like GNAT, and that on different
 --  Operating Systems: Linux and Windows at least.
 --
---  A "shebang" for Unix/Linux, such as "#!/usr/bin/env hax" can be
+--  A "shebang" for Unix/Linux, such as "#!/usr/bin/env hac" can be
 --  added on the top line of this file.
---  HAX will ignore it, but GNAT won't like it.
+--  HAC will ignore it, but GNAT won't like it.
 
 with HAC_Pack;  use HAC_Pack;
 
@@ -64,11 +64,12 @@ begin
            root & "/src/compile/*.ad* " &
            root & "/src/execute/*.ad* " &
            root & "/*.gpr " &
-           root & "/*.xls " &
            root & "/save.adb " &
            root & "/build.cmd " &
            root & "/fast.cmd " &
            root & "/*.txt " &
+           root & "/doc/*.txt " &
+           root & "/doc/*.xls " &
            root & "/doc/*.pdf " &
            root & "/debug.pra " &
            root & "/obj/debug/create_dir.txt " &

@@ -18,7 +18,7 @@ project HAC is
 
    HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
 
-   for Main use ("hax.adb", "hax_mini.adb", "hax_multi.adb", "save.adb");
+   for Main use ("hac.adb", "hac_mini.adb", "hac_multi.adb");
 
    case HAC_Build_Mode is
       when "Debug" => for Object_Dir use "obj/debug";

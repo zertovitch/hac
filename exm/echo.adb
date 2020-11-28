@@ -1,4 +1,4 @@
---  Example from command-line: hax echo.adb <echo.adb >echo.txt
+--  Example from command-line:  hac echo.adb <echo.adb >echo.txt
 
 with HAC_Pack;  use HAC_Pack;
 

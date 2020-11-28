@@ -39,7 +39,9 @@ package HAC_Sys.PCode.Interpreter is
   ------------------------------------------------------------------------------
   --  Here, we provide a ready-to-use, "standard" instantiation of the        --
   --  interpreter, with Ada.Text_IO, Ada.Command_Line, ..., for the console.  --
-  --  See hax.adb for an example where it is used.                            --
+  --  See hac.adb for an example where the console interface is used.         --
+  --  See the LEA project for an example where it is *not* used, and a more   --
+  --  sophisticated interface is used instead.                                --
   ------------------------------------------------------------------------------
 
   procedure Interpret_on_Current_IO (

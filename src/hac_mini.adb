@@ -1,12 +1,12 @@
---  This is a minimalistic version of HAX, for showing the minimum code required
+--  This is a minimalistic version of HAC, for showing the minimum code required
 --  to run HAC on a given Ada source file and display outputs on Standard_Output.
 --
---  See HAX for the full version of the command-line tool.
+--  See HAC (hac.adb) for the full version of the command-line tool.
 
 with HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter;
 with Ada.Command_Line, Ada.Streams.Stream_IO, Ada.Text_IO;
 
-procedure HAX_Mini is
+procedure HAC_Mini is
 
   use Ada.Text_IO;
 
@@ -36,8 +36,8 @@ procedure HAX_Mini is
 
 begin
   if Argument_Count = 0 then
-    Put_Line (Current_Error, "Usage: hax_mini main.adb");
+    Put_Line (Current_Error, "Usage: hac_mini main.adb");
   else
     Compile_and_interpret_file (Argument (1));
   end if;
-end HAX_Mini;
+end HAC_Mini;

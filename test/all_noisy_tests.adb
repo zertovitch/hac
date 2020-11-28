@@ -1,5 +1,5 @@
---  We launch new instances of hax (possibly from hax too).
---  Usage: hax all_silent_tests.adb
+--  We launch new instances of HAC (possibly from HAC itself, too).
+--  Usage:  hac all_noisy_tests.adb
 
 with HAC_Pack;  use HAC_Pack;
 
@@ -16,22 +16,22 @@ procedure All_Noisy_Tests is
       dummy := Shell_Execute (command);
     end Shell;
 
-    procedure Launch_HAX (Ada_file_name : VString) is
+    procedure Launch_HAC (Ada_file_name : VString) is
     begin
       Shell (
-        +".." & Directory_Separator & "hax -v1 " & Ada_file_name,
+        +".." & Directory_Separator & "hac -v1 " & Ada_file_name,
         False
       );
-    end Launch_HAX;
+    end Launch_HAC;
 
-    procedure Build_HAX is
+    procedure Build_HAC is
     begin
-      if Get_Env("haxbuild") = "done" then
+      if Get_Env("hacbuild") = "done" then
         return;
       end if;   
-      Put_Line ("(Re-)building HAX, in case the present program isn't run from HAX...");
+      Put_Line ("(Re-)building HAC, in case the present program isn't run from HAC...");
       Shell (+"gprbuild -p -P .." & Directory_Separator & "hac", True);
-    end Build_HAX;
+    end Build_HAC;
 
     procedure Pause is
       dummy : Character;
@@ -46,16 +46,16 @@ procedure All_Noisy_Tests is
     Put_Line( "   / *  HAC  * \    /  ""Noisy tests"": a human is    \");
     Put_Line( "   \__Testing__/    \__required to check the output.__/");
     New_Line;
-    Build_HAX;  --  Redundant if this program is itself run through HAX.
+    Build_HAC;  --  Redundant if this program is itself run through HAC.
     --
-    Put_Line( "----> Launching tests (one instance of HAX each)...");
+    Put_Line( "----> Launching tests (one instance of HAC each)...");
     for e in 1 .. 4 loop
-      Launch_HAX (+"exception_0" & e & ".adb");
+      Launch_HAC (+"exception_0" & e & ".adb");
     end loop;
     Pause;
-    Launch_HAX (+"if_then_elsif_else.adb");
+    Launch_HAC (+"if_then_elsif_else.adb");
     Pause;
-    Launch_HAX (+"digitz.adb");
+    Launch_HAC (+"digitz.adb");
     Put_Line ("----> Done.");
   end Launch_Tests;
 

@@ -1,26 +1,26 @@
---  This is a demo of multiple instances of HAX running in parallel.
---  Run as hax_multi >res_multi.csv
---  and open the csv file in your preferred spreadsheet software.
+--  This is a demo of multiple instances of HAC running in parallel.
+--  Run as:   hac_multi >res_multi.csv
+--  and open the CSV file in your preferred spreadsheet software.
 --
---  See HAX for the full version of the command-line tool.
+--  See HAC for the full version of the command-line tool.
 
 with HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.PCode.Interpreter;
 with HAC_Pack;
 with Ada.Calendar, Ada.Command_Line, Ada.Numerics.Float_Random,
      Ada.Streams.Stream_IO, Ada.Text_IO;
 
-procedure HAX_Multi is
+procedure HAC_Multi is
 
   procedure Launch_Tasks is
 
     use Ada.Text_IO;
     sep : constant Character := ';';
 
-    task type HAX_Instance is
+    task type HAC_Instance is
       entry Start (id : Positive);
-    end HAX_Instance;
+    end HAC_Instance;
 
-    task body HAX_Instance is
+    task body HAC_Instance is
       use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.PCode.Interpreter;
 
       procedure No_Put (Item : Character) is null;
@@ -111,18 +111,18 @@ procedure HAX_Multi is
           Put_Line ("D" & sep & " Task" & sep & task_id'Image & sep & " is done.");
         end if;
       end if;
-    end HAX_Instance;
+    end HAC_Instance;
 
-    haxx : array (1 .. 20) of HAX_Instance;
+    hacs : array (1 .. 20) of HAC_Instance;
 
   begin
     Put_Line ("Event" & sep & "  Task #" & sep & "  Message");
-    for T in haxx'Range loop
-      haxx (T).Start (T);
+    for T in hacs'Range loop
+      hacs (T).Start (T);
       delay 0.01;
     end loop;
   end Launch_Tasks;
 
 begin
   Launch_Tasks;
-end HAX_Multi;
+end HAC_Multi;
