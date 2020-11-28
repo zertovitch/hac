@@ -158,8 +158,9 @@ procedure HAC is
     Put_Line (Current_Error, "         -d     : dump compiler information");
     New_Line (Current_Error);
     Put_Line (Current_Error, caveat);
-    Put_Line (Current_Error, "Note: HAC accepts source files with shebang's, e.g.: #!/usr/bin/hac");
-    Show_License (Current_Error, "hac.ads");
+    Put_Line (Current_Error, "Note: HAC (this command-line tool) accepts source files with shebang's,");
+    Put_Line (Current_Error, "      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
+    Show_License (Current_Error, "hac_sys.ads");
   end Help;
 
   no_hac_ing : Boolean := True;

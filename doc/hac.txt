@@ -23,7 +23,7 @@ HAC will most probably never be a complete compiler.
 Warning & legal
 ===============
 There is NO WARRANTY in this software.
-Read copyright notice and license in hac.ads .
+Read copyright notice and license in hac_sys.ads .
 The license is the open-source license MIT.
 
 Getting started
