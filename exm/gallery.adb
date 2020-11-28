@@ -8,12 +8,11 @@ procedure Gallery is
   procedure Launch_Demos is
 
     procedure Shell (command : VString; echo : Boolean) is
-      dummy : Integer;
     begin
       if echo then
         Put_Line ("Executing: [" & command & ']');
       end if;
-      dummy := Shell_Execute (command);
+      Shell_Execute (command);
     end Shell;
 
     procedure Launch_HAC (Ada_file_name : VString) is

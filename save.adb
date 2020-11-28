@@ -44,6 +44,7 @@ procedure Save is
   end Nice_Date;
 
   root, examples, files, tests : VString;
+  zip_res : Integer;
 
 begin
   Put_Line ("Save date: " & Nice_Date (True));
@@ -83,10 +84,8 @@ begin
   --    https://github.com/zertovitch/zip-ada
   --  or from ALIRE (Ada LIbrary REpository) @ https://alire.ada.dev/
   --
-  if Shell_Execute (
-       "zipada -ep2 " & root & "/hac-" & Nice_Date (True) & "- " & files
-     ) = 0
-  then
+  Shell_Execute ("zipada -ep2 " & root & "/hac-" & Nice_Date (True) & "- " & files, zip_res);
+  if zip_res = 0 then
     Put_Line ("Zip archive creation successful");
   else
     Put_Line ("Zip archive creation failed");

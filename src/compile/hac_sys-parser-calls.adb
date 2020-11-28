@@ -48,6 +48,7 @@ package body HAC_Sys.Parser.Calls is
     K : Integer;
     F : Opcode;
   begin
+    Found := Type_Undefined;
     if CD.Sy /= IDent then
       Error (CD, err_identifier_missing);
     else

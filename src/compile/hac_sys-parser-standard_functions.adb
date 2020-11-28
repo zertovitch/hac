@@ -76,7 +76,7 @@ package body HAC_Sys.Parser.Standard_Functions is
           Expected (1 .. 2) := (VStrings_Set, VStrings_or_Str_Lit_Set);
         when SF_Year .. SF_Seconds =>
           Expected (1) := Times_Set;
-        when SF_Exists | SF_Get_Env | SF_Shell_Execute =>
+        when SF_Exists | SF_Get_Env =>
           --  Get_Env (+"PATH")  _or_  Get_Env ("PATH")
           Expected (1) := VStrings_or_Str_Lit_Set;
         when SF_Niladic =>
@@ -167,7 +167,7 @@ package body HAC_Sys.Parser.Standard_Functions is
           if Actual (2).TYP = String_Literals then
             Emit_Std_Funct (CD, SF_Literal_to_VString);
           end if;
-        when SF_Exists | SF_Get_Env | SF_Shell_Execute =>
+        when SF_Exists | SF_Get_Env =>
           --  Get_Env ("PATH")  becomes  Get_Env (+"PATH")
           if Actual (1).TYP = String_Literals then
             Emit_Std_Funct (CD, SF_Literal_to_VString);

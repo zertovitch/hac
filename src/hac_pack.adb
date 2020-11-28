@@ -540,7 +540,7 @@ package body HAC_Pack is
   function Get_Env (Name : String) return VString is
     use Ada.Environment_Variables;
   begin
-    if Exists (Name) then
+    if Ada.Environment_Variables.Exists (Name) then
       return +Value (Name);
     else
       return Null_VString;
@@ -716,15 +716,26 @@ package body HAC_Pack is
     pragma Import (C, Directory_Separator, "__gnat_dir_separator");
   end Non_Standard;
 
-  function Shell_Execute (Command : String) return Integer is
+  procedure Shell_Execute (Command : String; Result : out Integer) is
     --  https://rosettacode.org/wiki/Execute_a_system_command#Ada
   begin
-    return Non_Standard.Sys (Interfaces.C.To_C (Command));
+    Result := Non_Standard.Sys (Interfaces.C.To_C (Command));
   end Shell_Execute;
 
-  function Shell_Execute (Command : VString) return Integer is
+  procedure Shell_Execute (Command : VString; Result : out Integer) is
   begin
-    return Shell_Execute (To_String (Command));
+    Shell_Execute (To_String (Command), Result);
+  end Shell_Execute;
+
+  procedure Shell_Execute (Command : String) is
+    Dummy : Integer;
+  begin
+    Shell_Execute (Command, Dummy);
+  end Shell_Execute;
+
+  procedure Shell_Execute (Command : VString) is
+  begin
+    Shell_Execute (To_String (Command));
   end Shell_Execute;
 
   function Directory_Separator return Character is

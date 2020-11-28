@@ -106,7 +106,7 @@ package HAC_Sys.PCode.Interpreter is
     with function Argument (Number : in Positive) return String;
     with function Command_Name return String;
     --  Shell execution, Directory_Separator, ... are also abstracted.
-    with function Shell_Execute (Command : String) return Integer;
+    with procedure Shell_Execute (Command : String; Result : out Integer);
     with function Directory_Separator return Character;
   package System_Calls_Traits is
   end System_Calls_Traits;

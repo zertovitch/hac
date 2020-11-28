@@ -14,8 +14,12 @@ begin
   Set_Env ("HAC_Rules", "Good Day, Ladies and Gentlemen!");
   --
   case k is
-    when Nixux   => r := Shell_Execute ("echo The env. var. is set... [$HAC_Rules]");
-    when Windoze => r := Shell_Execute ("echo The env. var. is set... [%HAC_Rules%]");
+    when Nixux   => Shell_Execute ("echo The env. var. is set... [$HAC_Rules]", r);
+    when Windoze => Shell_Execute ("echo The env. var. is set... [%HAC_Rules%]", r);
   end case;
   Put_Line (+"Result of command = " & r);
-end;
+  --
+  New_Line;
+  Shell_Execute ("Command_Impossible", r);
+  Put_Line (+"Result of Command_Impossible = " & r);
+end Shell;

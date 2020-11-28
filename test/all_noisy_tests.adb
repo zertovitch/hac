@@ -8,12 +8,11 @@ procedure All_Noisy_Tests is
   procedure Launch_Tests is
 
     procedure Shell (command : VString; echo : Boolean) is
-      dummy : Integer;
     begin
       if echo then
         Put_Line ("Executing: [" & command & ']');
       end if;
-      dummy := Shell_Execute (command);
+      Shell_Execute (command);
     end Shell;
 
     procedure Launch_HAC (Ada_file_name : VString) is
@@ -43,7 +42,7 @@ procedure All_Noisy_Tests is
 
   begin
     Put_Line( "    ___________      _________________________________");
-    Put_Line( "   / *  HAC  * \    /  ""Noisy tests"": a human is    \");
+    Put_Line( "   / *  HAC  * \    /  ""Noisy tests"": a human is      \");
     Put_Line( "   \__Testing__/    \__required to check the output.__/");
     New_Line;
     Build_HAC;  --  Redundant if this program is itself run through HAC.

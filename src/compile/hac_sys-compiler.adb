@@ -309,7 +309,6 @@ package body HAC_Sys.Compiler is
       Enter_Std_Funct ("Argument",            VStrings, SF_Argument);
       Enter_Std_Funct ("Command_Name",        VStrings, SF_Command_Name);
       Enter_Std_Funct ("Get_Env",             VStrings, SF_Get_Env);
-      Enter_Std_Funct ("Shell_Execute",       Ints,     SF_Shell_Execute);
       Enter_Std_Funct ("Directory_Separator", Chars,    SF_Directory_Separator);
       --
       --  Ada.Directories-like functions
@@ -350,6 +349,8 @@ package body HAC_Sys.Compiler is
       Enter_Std_Proc ("Delete_File ",   SP_Delete_File);
       Enter_Std_Proc ("Rename ",        SP_Rename);
       Enter_Std_Proc ("Set_Directory ", SP_Set_Directory);
+      --
+      Enter_Std_Proc ("Shell_Execute",  SP_Shell_Execute_with_Result);
       --
       --  Enter Main.
       --

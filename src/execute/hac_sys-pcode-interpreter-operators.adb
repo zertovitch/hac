@@ -293,7 +293,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
               --  upper calling level by Do_Standard_Function.
               null;
           end case;
-        when SF_EOF | SF_EOLN | SF_Argument | SF_Shell_Execute =>
+        when SF_EOF | SF_EOLN | SF_Argument =>
           --  Those functions have been already processed at an
           --  upper calling level by Do_Standard_Function.
           null;

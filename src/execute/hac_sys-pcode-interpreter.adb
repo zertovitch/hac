@@ -68,8 +68,6 @@ package body HAC_Sys.PCode.Interpreter is
         when SF_Argument =>
           --  The stack top item may change its type here.
           Top_Item := GR_VString (System_Calls.Argument (Top_Item.I));
-        when SF_Shell_Execute =>
-          Top_Item.I := System_Calls.Shell_Execute (To_String (Top_Item.V));
         when SF_Argument_Count =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := System_Calls.Argument_Count;
@@ -309,6 +307,22 @@ package body HAC_Sys.PCode.Interpreter is
             Ada.Text_IO.Skip_Line (ND.S (Curr_TCB.T).Txt.all);
           end if;
           Pop;
+        when SP_Shell_Execute_with_Result =>
+          declare
+            Command        : constant String      := To_String (ND.S (Curr_TCB.T - 1).V);
+            Result_Address : constant Defs.Index  := ND.S (Curr_TCB.T).I;
+          begin
+            System_Calls.Shell_Execute (Command, ND.S (Result_Address).I);
+            Pop (2);
+          end;
+        when SP_Shell_Execute_without_Result =>
+          declare
+            Command : constant String := To_String (ND.S (Curr_TCB.T).V);
+            Dummy   : Integer;
+          begin
+            System_Calls.Shell_Execute (Command, Dummy);
+            Pop;
+          end;
         when SP_Wait | SP_Signal | SP_Priority | SP_InheritP | SP_Quantum =>
           null;
       end case;

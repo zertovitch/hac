@@ -26,6 +26,21 @@ package body HAC_Sys.Parser.Standard_Procedures is
     Code    :        PCode.SP_Code
   )
   is
+    procedure Check_any_String_and_promote_to_VString (X : Exact_Typ) is
+    begin
+      if VStrings_or_Str_Lit_Set (X.TYP) then
+        if X.TYP = String_Literals then
+          Emit_Std_Funct (CD, SF_Literal_to_VString);
+        end if;
+      else
+        Type_Mismatch (
+          CD, err_parameter_types_do_not_match,
+          Found    => X,
+          Expected => VStrings_or_Str_Lit_Set
+        );
+      end if;
+    end Check_any_String_and_promote_to_VString;
+
     procedure File_I_O_Call (FIO_Code : SP_Code; Param : Operand_2_Type := 0) is
     begin
       Emit2 (CD, k_File_I_O, SP_Code'Pos (FIO_Code), Param);
@@ -198,15 +213,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
             --  Parse file name.
             Need (CD, Comma, err_COMMA_missing);
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-            if not VStrings_or_Str_Lit_Set (X.TYP) then
-              Type_Mismatch (CD, err_syntax_error,
-                Found    => X,
-                Expected => VStrings_or_Str_Lit_Set
-              );
-            end if;
-            if X.TYP = String_Literals then
-              Emit_Std_Funct (CD, SF_Literal_to_VString);
-            end if;
+            Check_any_String_and_promote_to_VString (X);
           end if;
           File_I_O_Call (Code);
           Need (CD, RParent, err_closing_parenthesis_missing);
@@ -267,19 +274,11 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         for arg in 1 .. 2 loop
           Expression (CD, Level, Colon_Comma_RParent, X);  --  We push the arguments in the stack.
-          if VStrings_or_Str_Lit_Set (X.TYP) then
-            --  Set_Env ("HAC_Var", "Hello");       <-  2 String_Literals
-            --  Set_Env (+"HAC_Var", +"Hello");     <-  2 VStrings
-            if X.TYP = String_Literals then
-              Emit_Std_Funct (CD, SF_Literal_to_VString);
-            end if;
-          else
-            Type_Mismatch (
-              CD, err_parameter_types_do_not_match,
-              Found    => X,
-              Expected => VStrings_or_Str_Lit_Set
-            );
-          end if;
+          --  Set_Env ( "HAC_Var",  "Hello");     <-  2 String_Literals
+          --  Set_Env (+"HAC_Var", +"Hello");     <-  2 VStrings
+          --  Set_Env (+"HAC_Var",  "Hello");
+          --  Set_Env ( "HAC_Var", +"Hello");
+          Check_any_String_and_promote_to_VString (X);
           if arg < 2 then
             Need (CD, Comma, err_COMMA_missing);
           end if;
@@ -290,19 +289,26 @@ package body HAC_Sys.Parser.Standard_Procedures is
       when SP_Delete_File | SP_Set_Directory =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expression (CD, Level, RParent_Set, X);  --  We push the argument in the stack.
-        if VStrings_or_Str_Lit_Set (X.TYP) then
-          if X.TYP = String_Literals then
-            Emit_Std_Funct (CD, SF_Literal_to_VString);
-          end if;
-        else
-          Type_Mismatch (
-            CD, err_parameter_types_do_not_match,
-            Found    => X,
-            Expected => VStrings_or_Str_Lit_Set
-          );
-        end if;
+        Check_any_String_and_promote_to_VString (X);
         File_I_O_Call (Code);
         Need (CD, RParent, err_closing_parenthesis_missing);
+
+      when SP_Shell_Execute =>
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Expression (CD, Level, Comma_RParent, X);  --  We push the argument in the stack.
+        Check_any_String_and_promote_to_VString (X);
+        if CD.Sy = Comma then
+          InSymbol (CD);
+          Push_by_Reference_Parameter (CD, Level, RParent_Set, X);
+          if X.TYP /= Ints then
+            Skip (CD, Semicolon, err_parameter_must_be_Integer);
+          end if;
+          File_I_O_Call (SP_Shell_Execute_with_Result);       --  Shell_Execute (cmd, result);
+        else
+          File_I_O_Call (SP_Shell_Execute_without_Result);    --  Shell_Execute (cmd);
+        end if;
+        Need (CD, RParent, err_closing_parenthesis_missing);
+
       when SP_Push_Abstract_Console =>
         null;  --  Internal: used by Get, Put, etc. without file parameter.
       when SP_Get_F | SP_Get_Line_F |

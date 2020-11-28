@@ -308,6 +308,7 @@ package HAC_Pack is
   function Argument (Number : Positive) return VString;
   function Command_Name return VString;
 
+  --  Get_Env. If env. var. Name is not set, returns an empty string.
   function Get_Env (Name : String)  return VString;
   function Get_Env (Name : VString) return VString;
 
@@ -337,8 +338,12 @@ package HAC_Pack is
   procedure Rename (Old_Name : String;  New_Name : VString);
   procedure Rename (Old_Name : VString; New_Name : VString);
 
-  function Shell_Execute (Command : String) return Integer;
-  function Shell_Execute (Command : VString) return Integer;
+  procedure Shell_Execute (Command : String; Result : out Integer);
+  procedure Shell_Execute (Command : VString; Result : out Integer);
+
+  --  In this version, the result value is discarded:
+  procedure Shell_Execute (Command : String);
+  procedure Shell_Execute (Command : VString);
 
   function Directory_Separator return Character;
 

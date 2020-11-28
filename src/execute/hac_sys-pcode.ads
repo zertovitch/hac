@@ -306,7 +306,6 @@ package HAC_Sys.PCode is
     SF_Argument,
     SF_Exists,  --  Ada.Directories-like
     SF_Get_Env,
-    SF_Shell_Execute,
     --
     --  Niladic functions (they have no arguments).
     --
@@ -365,7 +364,15 @@ package HAC_Sys.PCode is
     SP_Copy_File,
     SP_Delete_File,
     SP_Rename,
-    SP_Set_Directory
+    SP_Set_Directory,
+    --
+    --  Other system procedures
+    --
+    SP_Shell_Execute_without_Result,
+    SP_Shell_Execute_with_Result
   );
+
+  subtype SP_Shell_Execute is SP_Code
+    range SP_Shell_Execute_without_Result .. SP_Shell_Execute_with_Result;
 
 end HAC_Sys.PCode;
