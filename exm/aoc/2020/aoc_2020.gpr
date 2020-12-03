@@ -4,18 +4,19 @@ project AoC_2020 is
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";
 
-   type GID_Build_Mode_Type is
+   type AoC_Build_Mode_Type is
       ("Debug",
        "Fast" 
       );
-   GID_Build_Mode : GID_Build_Mode_Type := external ("GID_Build_Mode", "Debug");
+   AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
    for Main use (
+     "aoc_2020_03.adb",
      "aoc_2020_02_a.adb",
      "aoc_2020_02_b.adb"
    );
    
-   case GID_Build_Mode is
+   case AoC_Build_Mode is
       when "Debug" =>
          for Object_Dir use "obj_debug";
       when "Fast" =>
@@ -47,7 +48,7 @@ project AoC_2020 is
    );
 
    package Compiler is
-      case GID_Build_Mode is
+      case AoC_Build_Mode is
          when "Debug" =>
             for Default_Switches ("ada") use Common_Options & Debug_Options & 
             (
@@ -64,7 +65,7 @@ project AoC_2020 is
    end Compiler;
 
    package Linker is
-      case GID_Build_Mode is
+      case AoC_Build_Mode is
          when "Debug" =>
             for Default_Switches ("ada") use ("-g");
          when "Fast" =>

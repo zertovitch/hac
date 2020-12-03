@@ -18,7 +18,6 @@ package body HAC_Sys.PCode.Interpreter is
   is
     use In_Defs;
     ND : Interpreter_Data;
-    H3 : Defs.HAC_Integer;  --  Internal integer register
 
     procedure Pop (Amount : Positive := 1) is  begin Pop (ND, Amount); end Pop;
     procedure Push (Amount : Positive := 1) is begin Push (ND, Amount); end Push;
@@ -67,10 +66,10 @@ package body HAC_Sys.PCode.Interpreter is
           end if;
         when SF_Argument =>
           --  The stack top item may change its type here.
-          Top_Item := GR_VString (System_Calls.Argument (Top_Item.I));
+          Top_Item := GR_VString (System_Calls.Argument (Integer (Top_Item.I)));
         when SF_Argument_Count =>
           Push;  --  Niladic function, needs to push a new item (their own result).
-          ND.S (Curr_TCB.T).I := System_Calls.Argument_Count;
+          ND.S (Curr_TCB.T).I := HAC_Integer (System_Calls.Argument_Count);
         when SF_Command_Name =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T) := GR_VString (To_VString (System_Calls.Command_Name));
@@ -92,7 +91,7 @@ package body HAC_Sys.PCode.Interpreter is
       CH : Character;
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       use Defs;
-      Out_Param : Index renames ND.S (Curr_TCB.T).I;
+      Out_Param : constant Index := Index (ND.S (Curr_TCB.T).I);
       Typ : constant Typen := Typen'Val (ND.IR.Y);
       Immediate : constant Boolean := Code = SP_Get_Immediate;
       FP : File_Ptr;
@@ -153,24 +152,24 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Do_Write_Formatted (Code : SP_Code) is
       Curr_TCB : Task_Control_Block renames   ND.TCB (ND.CurTask);
       FP       : File_Ptr;
-      Item     : General_Register renames     ND.S (Curr_TCB.T - 3);
-      Format_1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 2).I;
-      Format_2 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
-      Format_3 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
+      Item     : General_Register renames ND.S (Curr_TCB.T - 3);
+      Format_1 : constant      Integer := Integer (ND.S (Curr_TCB.T - 2).I);
+      Format_2 : constant      Integer := Integer (ND.S (Curr_TCB.T - 1).I);
+      Format_3 : constant      Integer := Integer (ND.S (Curr_TCB.T).I);
       --  Valid parameters used: see def_param in HAC.Parser.Standard_Procedures.
-      use Defs;
+      use Defs, Ada.Text_IO;
     begin
       if Code in SP_Put .. SP_Put_Line then
         case Typen'Val (ND.IR.Y) is
-          when Ints            => Console.Put (Item.I, Format_1, Format_2);
-          when Floats          => Console.Put (Item.R, Format_1, Format_2, Format_3);
-          when Bools           => Console.Put (Boolean'Val (Item.I), Format_1);
+          when Ints            => Console.Put (Item.I, Field (Format_1), Number_Base (Format_2));
+          when Floats          => Console.Put (Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
+          when Bools           => Console.Put (Boolean'Val (Item.I), Field (Format_1));
           when Chars           => Console.Put (Character'Val (Item.I));
           when VStrings        => Console.Put (To_String (Item.V));
           when String_Literals => Console.Put (
-              CD.Strings_Constants_Table (Format_1 .. Format_1 + Item.I - 1)
+              CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
-          when Arrays          => Console.Put (Get_String_from_Stack (ND, Item.I, Format_1));
+          when Arrays          => Console.Put (Get_String_from_Stack (ND, Integer (Item.I), Format_1));
           when others =>
             null;
         end case;
@@ -181,16 +180,16 @@ package body HAC_Sys.PCode.Interpreter is
       else
         FP := ND.S (Curr_TCB.T - 4).Txt;
         case Typen'Val (ND.IR.Y) is
-          when Ints            => IIO.Put         (FP.all, Item.I, Format_1, Format_2);
-          when Floats          => RIO.Put         (FP.all, Item.R, Format_1, Format_2, Format_3);
-          when Bools           => BIO.Put         (FP.all, Boolean'Val (Item.I), Format_1);
+          when Ints            => IIO.Put         (FP.all, Item.I, Field (Format_1), Number_Base (Format_2));
+          when Floats          => RIO.Put         (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
+          when Bools           => BIO.Put         (FP.all, Boolean'Val (Item.I), Field (Format_1));
           when Chars           => Ada.Text_IO.Put (FP.all, Character'Val (Item.I));
           when VStrings        => Ada.Text_IO.Put (FP.all, To_String (Item.V));
           when String_Literals => Ada.Text_IO.Put (FP.all,
-              CD.Strings_Constants_Table (Format_1 .. Format_1 + Item.I - 1)
+              CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
           when Arrays          => Ada.Text_IO.Put (FP.all,
-              Get_String_from_Stack (ND, Item.I, Format_1));
+              Get_String_from_Stack (ND, Integer (Item.I), Format_1));
           when others =>
             null;
         end case;
@@ -205,7 +204,7 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Do_Code_for_Automatic_Initialization is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       use Defs;
-      Var_Addr : constant HAC_Integer := ND.S (Curr_TCB.T).I;
+      Var_Addr : constant Index := Index (ND.S (Curr_TCB.T).I);
     begin
       case Typen'Val (ND.IR.Y) is
         when VStrings   => ND.S (Var_Addr) := GR_VString (Null_VString);
@@ -221,11 +220,12 @@ package body HAC_Sys.PCode.Interpreter is
       Low_Level  : constant Nesting_level := Nesting_level (ND.IR.X);  --  Called.
       High_Level : constant Nesting_level := Nesting_level (ND.IR.Y);  --  Caller.
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
+      H3 : Defs.Index;
     begin
       H3 := Curr_TCB.B;
       for L in reverse Low_Level + 1 .. High_Level loop
         Curr_TCB.DISPLAY (L) := H3;
-        H3 := ND.S (H3 + 2).I;
+        H3 := Defs.Index (ND.S (H3 + 2).I);
       end loop;
     end Do_Update_Display_Vector;
 
@@ -310,9 +310,11 @@ package body HAC_Sys.PCode.Interpreter is
         when SP_Shell_Execute_with_Result =>
           declare
             Command        : constant String      := To_String (ND.S (Curr_TCB.T - 1).V);
-            Result_Address : constant Defs.Index  := ND.S (Curr_TCB.T).I;
+            Result         :          Integer;
+            Result_Address : constant Defs.Index  := Defs.Index (ND.S (Curr_TCB.T).I);
           begin
-            System_Calls.Shell_Execute (Command, ND.S (Result_Address).I);
+            System_Calls.Shell_Execute (Command, Result);
+            ND.S (Result_Address).I := Defs.HAC_Integer (Result);
             Pop (2);
           end;
         when SP_Shell_Execute_without_Result =>
@@ -382,38 +384,40 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Execute_Current_Instruction is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       IR : Order renames ND.IR;
+      use Defs;
+      use type HAC_Integer;
       --
       procedure Do_Atomic_Data_Push_Operation is
       begin
         Push;
         case Atomic_Data_Push_Opcode (ND.IR.F) is
           when k_Push_Address =>           --  Push "v'Access" of variable v
-            ND.S (Curr_TCB.T).I := Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y;
+            ND.S (Curr_TCB.T).I := HAC_Integer (Curr_TCB.DISPLAY (Nesting_level (IR.X))) + IR.Y;
           when k_Push_Value =>             --  Push variable v's value.
-            ND.S (Curr_TCB.T) := ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y);
+            ND.S (Curr_TCB.T) := ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + Index (IR.Y));
           when k_Push_Indirect_Value =>    --  Push "v.all" (v is an access).
-            ND.S (Curr_TCB.T) := ND.S (ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + IR.Y).I);
+            ND.S (Curr_TCB.T) := ND.S (Index (ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + Index (IR.Y)).I));
           when k_Push_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
             ND.S (Curr_TCB.T).I := IR.Y;
           when k_Push_Float_Literal =>
             ND.S (Curr_TCB.T) := (
               Special => Defs.Floats,
               I       => 0,
-              R       => CD.Float_Constants_Table (IR.Y)
+              R       => CD.Float_Constants_Table (Integer (IR.Y))
             );
         end case;
       end Do_Atomic_Data_Push_Operation;
       --
     begin
       case ND.IR.F is
-        when k_Jump => Curr_TCB.PC := IR.Y;
+        when k_Jump => Curr_TCB.PC := Index (IR.Y);
         when k_Conditional_Jump =>
           if ND.S (Curr_TCB.T).I = 0 then  --  if False, then ...
-            Curr_TCB.PC := IR.Y;           --  ... Jump.
+            Curr_TCB.PC := Index (IR.Y);   --  ... Jump.
           end if;
           Pop;
         when k_Store =>  --  [T-1].all := [T]
-          ND.S (ND.S (Curr_TCB.T - 1).I) := ND.S (Curr_TCB.T);
+          ND.S (Index (ND.S (Curr_TCB.T - 1).I)) := ND.S (Curr_TCB.T);
           Pop (2);
         --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;

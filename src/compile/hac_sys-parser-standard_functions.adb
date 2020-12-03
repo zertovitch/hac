@@ -183,7 +183,7 @@ package body HAC_Sys.Parser.Standard_Functions is
             when Arrays =>
               if Is_Char_Array (CD, Actual (1)) then
                 --  Address is already pushed; we need to push the string's length.
-                Emit1 (CD, k_Push_Discrete_Literal, CD.Arrays_Table (Actual (1).Ref).Array_Size);
+                Emit1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.Arrays_Table (Actual (1).Ref).Array_Size));
                 Code_Adjusted := SF_String_to_VString;
               else
                 UErrors.Error (CD, err_expected_char_or_string);

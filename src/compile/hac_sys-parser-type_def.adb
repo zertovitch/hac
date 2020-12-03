@@ -30,7 +30,9 @@ package body HAC_Sys.Parser.Type_Def is
     --  Additionally this compiler does on-the-fly declarations for static values:
     --  bounds in ranges (FOR, ARRAY), and values in CASE statements.
     --  Was: Constant in the Pascal compiler.
-    X, Sign : Integer;
+    X : Integer;
+    Sign : HAC_Integer;
+    use type HAC_Integer;
     signed : Boolean := False;
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
   begin
@@ -65,7 +67,7 @@ package body HAC_Sys.Parser.Type_Def is
             if C.TP.TYP = Floats then
               C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr_or_Sz);
             else
-              C.I := Sign * CD.IdTab (X).Adr_or_Sz;
+              C.I := Sign * HAC_Integer (CD.IdTab (X).Adr_or_Sz);
               if signed and then C.TP.TYP not in Numeric_Typ then
                 Error (CD, err_numeric_constant_expected);
               end if;
@@ -148,7 +150,7 @@ package body HAC_Sys.Parser.Type_Def is
       use Ranges;
     begin
       Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
-      Enter_Array (CD, Lower_Bound.TP, Lower_Bound.I, Higher_Bound.I);
+      Enter_Array (CD, Lower_Bound.TP, Integer (Lower_Bound.I), Integer (Higher_Bound.I));
       Arr_Tab_Ref := CD.Arrays_Count;
       if String_Constrained_Subtype then
         --  We define String (L .. H) exactly as an "array (L .. H) of Character".
@@ -168,7 +170,7 @@ package body HAC_Sys.Parser.Type_Def is
           Element_Exact_Typ, Element_Size, Dummy_First, Dummy_Last
         );
       end if;
-      Arr_Size := (Higher_Bound.I - Lower_Bound.I + 1) * Element_Size;
+      Arr_Size := (Integer (Higher_Bound.I) - Integer (Lower_Bound.I) + 1) * Element_Size;
       declare
         New_A : ATabEntry renames CD.Arrays_Table (Arr_Tab_Ref);
       begin
@@ -202,7 +204,7 @@ package body HAC_Sys.Parser.Type_Def is
       end loop;
       Size  := 1;
       First := 0;
-      Last  := enum_count - 1;
+      Last  := HAC_Integer (enum_count - 1);
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Enumeration_Typ;
 

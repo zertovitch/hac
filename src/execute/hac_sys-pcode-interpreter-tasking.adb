@@ -67,9 +67,9 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
 
    procedure Do_Accept_Rendezvous is
       --  Hathorn, Cramer
-      H1, H2, H3 : Defs.HAC_Integer;
+      H1, H2, H3 : Integer;
     begin
-      H1 := IR.Y;                         --  entry pointer
+      H1 := Integer (IR.Y);                         --  entry pointer
       H2 := First_Caller (CD, ND, H1);     --  first waiting task
       H3 := Integer (CD.IdTab (H1).LEV);  --  level of accepting entry
       if H2 >= 0 then
@@ -115,10 +115,10 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
         return val;
       end Remove_First;
       --
-      H1, H2 : Defs.HAC_Integer;
+      H1, H2 : Integer;
     begin
       Curr_TCB.InRendzv := NilTask;  --  indicate rendezvous has ended
-      H1 := ND.IR.Y;                   --  entry pointer
+      H1 := Integer (ND.IR.Y);       --  entry pointer
       H2 := Remove_First (H1);       --  waiting task pointer
       if H2 >= 0 then
         --  wake up waiting task
@@ -130,7 +130,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
 
     procedure Do_Selective_Wait is
       use type Defs.HAC_Float, Ada.Calendar.Time;
-      H1, H2, H3 : Defs.HAC_Integer;
+      H1, H2, H3 : Integer;
     begin
       case IR.X is
         when 1 => --  Start Selective Wait seq.
@@ -141,9 +141,9 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
           Curr_TCB.R3.I := IR.Y;
 
         when 3 => --  Accept if its still on queue
-          H1 := Curr_TCB.R3.I;
+          H1 := Integer (Curr_TCB.R3.I);
           H2 := First_Caller (CD, ND, H1);    --  first waiting task
-          H3 := Defs.HAC_Integer (CD.IdTab (H1).LEV);     --  level of accepting entry
+          H3 := Integer (CD.IdTab (H1).LEV);     --  level of accepting entry
           if H2 >= 0 then
             Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := ND.TCB (H2).B;
               --  address callers parms
@@ -152,7 +152,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
               ND.TCB (H2).TS := WaitRendzv;      --  if it was on
             end if;
           else
-            Curr_TCB.PC := IR.Y; --  Jump to patched in address
+            Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump to patched in address
           end if;
           ND.SWITCH := True;
 
@@ -177,7 +177,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
             Curr_TCB.TS       := TimedWait;
             ND.SYSCLOCK       := Ada.Calendar.Clock;
             Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (Curr_TCB.R2.R);
-            Curr_TCB.PC       := IR.Y; --  Do SELECT again when awakened by caller
+            Curr_TCB.PC       := Defs.Index (IR.Y);  --  Do SELECT again when awakened by caller
             ND.SWITCH := True;  --  give up control
           end if;
           --  AVL -- TERMINATE
@@ -230,9 +230,10 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     end Do_Selective_Wait;
 
     procedure Do_Signal_Semaphore is
-      H1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
-      H2, H3 : Defs.HAC_Integer;
+      H1 : constant Integer := Integer (ND.S (Curr_TCB.T).I);
+      H2, H3 : Integer;
       use Ada.Numerics.Float_Random;
+      use type Defs.HAC_Integer;
     begin
       Pop (ND);
       H2 := CD.Tasks_Definitions_Count + 1;
@@ -253,7 +254,8 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     end Do_Signal_Semaphore;
 
     procedure Do_Wait_Semaphore is
-      H1 : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
+      H1 : constant Integer := Integer (ND.S (Curr_TCB.T).I);
+      use type Defs.HAC_Integer;
     begin
       Pop (ND);
       if ND.S (H1).I > 0 then
@@ -280,6 +282,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     end Do_Set_Quantum_Task;
 
     procedure Do_Set_Task_Priority is
+      use type Defs.HAC_Integer;
     begin
       --  Cramer
       if ND.S (Curr_TCB.T).I > Defs.PriMax then
@@ -288,11 +291,12 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       if ND.S (Curr_TCB.T).I < 0 then
         ND.S (Curr_TCB.T).I := 0;
       end if;
-      Curr_TCB.Pcontrol.UPRI := ND.S (Curr_TCB.T).I;
+      Curr_TCB.Pcontrol.UPRI := Integer (ND.S (Curr_TCB.T).I);
       Pop (ND);
     end Do_Set_Task_Priority;
 
     procedure Do_Set_Task_Priority_Inheritance is
+      use type Defs.HAC_Integer;
     begin
       --  Cramer
       Curr_TCB.Pcontrol.INHERIT := ND.S (Curr_TCB.T).I /= 0;
@@ -342,6 +346,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
 
   procedure Init_main_task (CD : Compiler_Data; ND : in out Interpreter_Data) is
     use Ada.Numerics.Float_Random;
+    use type Defs.HAC_Integer;
   begin
     Reset (ND.Gen);  --  initialize pseudo-random number generator
     --  After compiled, just begin exec
@@ -349,7 +354,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     ND.S (1).I := 0;
     ND.S (2).I := 0;
     ND.S (3).I := -1;
-    ND.S (4).I := CD.Tasks_Definitions_Table (0);
+    ND.S (4).I := Defs.HAC_Integer (CD.Tasks_Definitions_Table (0));
     declare
       Main_TCB : Task_Control_Block renames ND.TCB (0);
     begin
@@ -371,7 +376,8 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
   end Init_main_task;
 
   procedure Init_other_tasks (CD : Compiler_Data; ND : in out Interpreter_Data) is
-    H1 : Defs.HAC_Integer;
+    H1 : Integer;
+    use type Defs.HAC_Integer;
   begin
     for Task_To_Init in 1 .. CD.Tasks_Definitions_Count loop
       declare
@@ -384,7 +390,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
         ND.S (Curr_TCB.B + 1).I := 0;
         ND.S (Curr_TCB.B + 2).I := 0;
         ND.S (Curr_TCB.B + 3).I := -1;
-        ND.S (Curr_TCB.B + 4).I := H1;
+        ND.S (Curr_TCB.B + 4).I := Defs.HAC_Integer (H1);
         Curr_TCB.DISPLAY (1) := 0;
         Curr_TCB.DISPLAY (2) := Curr_TCB.B;
         Curr_TCB.STACKSIZE := Curr_TCB.B + Defs.STKINCR - 1;
@@ -422,7 +428,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     use Defs, Ada.Text_IO;
   begin
     Put ("Dumping q for entry " & To_String (CD.IdTab (Entry_Index).Name) & " entry index=");
-    IIO.Put (ix);
+    IIO.Put (HAC_Integer (ix));
     New_Line;
     if p = null then
       Put ("*** EMPTY ***");
@@ -490,10 +496,10 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       then
         if ND.TCB (t).TS = TimedRendz then
           ND.TCB (t).R1.I := 0; --  timeout on rendezvous
-          Purge (ND.TCB (t).R2.I, t);  --  remove from callee's q
+          Purge (Integer (ND.TCB (t).R2.I), t);  --  remove from callee's q
         end if;
         if ND.TCB (t).TS = TimedWait then
-          ND.TCB (t).PC := ND.TCB (t).R1.I; --  t.out on accept
+          ND.TCB (t).PC := Defs.Index (ND.TCB (t).R1.I); --  t.out on accept
         end if;
         ND.TCB (t).TS := Ready;
         count := count + 1;

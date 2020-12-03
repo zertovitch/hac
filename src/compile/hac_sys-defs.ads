@@ -18,9 +18,11 @@ with Ada.Calendar,
      Ada.Strings.Unbounded,
      Ada.Text_IO;
 
+with Interfaces;
+
 package HAC_Sys.Defs is
 
-  subtype HAC_Integer is Integer;  --  !! TBD: set it to a 64-bit signed.
+  subtype HAC_Integer is Interfaces.Integer_64;
   HAC_Integer_Name : constant String := "INTEGER";
   function HAC_Image is new HAC_Pack.HAC_Generic_Image (Abstract_Integer => HAC_Integer);
 

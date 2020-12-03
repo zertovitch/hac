@@ -211,8 +211,8 @@ package HAC_Sys.Co_Defs is
   Universe : constant VString := To_VString ("[-- The Universe --]");
 
   type CASE_Label_Value is record
-    Val       : Integer;  --  value of a choice in a CASE statement
-    LC        : Integer;  --  instruction address
+    Val       : HAC_Integer;  --  value of a choice in a CASE statement
+    LC        : Index;        --  instruction address
     Is_others : Boolean;
   end record;
 

@@ -628,7 +628,7 @@ package body HAC_Pack is
     if I < 0 then
       return Im;
     else
-      return Im (Im'First + 1 .. Im'Last);
+      return Im (Im'First + 1 .. Im'Last);  --  Remove the leading ' '.
     end if;
   end HAC_Generic_Image;
 

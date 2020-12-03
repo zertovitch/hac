@@ -85,9 +85,9 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   type Stack_Type is array (1 .. Defs.StMax) of Data_Type;
 
   type Task_Control_Block is record
-    T              : Integer;               --  index of current top of stack
-    B              : Integer;               --  index of current base of stack
-    PC             : Integer;               --  program counter, next pcode
+    T              : Defs.Index;            --  index of current top of stack
+    B              : Defs.Index;            --  index of current base of stack
+    PC             : Defs.Index;            --  program counter, next pcode
     TS             : Task_State;            --  current task state
     InRendzv       : Integer;               --  task in rendz with or -1
     WAKETIME       : Ada.Calendar.Time;     --  end of delay period
@@ -95,7 +95,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     QUANTUM        : Duration;              --  time slice
     LASTRUN        : Ada.Calendar.Time;     --  time last run end (fairness)
     DISPLAY        : Co_Defs.Display_Type;  --  binding
-    STACKSIZE      : Integer;               --  stack overflow if exceeded
+    STACKSIZE      : Defs.Index;            --  stack overflow if exceeded
     SUSPEND        : Integer;               --  id of object suspended on
     R1, R2, R3     : General_Register;
     Exception_Info : Exception_Propagation_Data;
@@ -161,7 +161,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   );
 
   --  We have an "array of Character" (cf Is_Char_Array) on the stack
-  function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Defs.HAC_Integer) return String;
+  function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Integer) return String;
 
   procedure Pop (ND : in out Interpreter_Data; Amount : Positive := 1);
   procedure Push (ND : in out Interpreter_Data; Amount : Positive := 1);

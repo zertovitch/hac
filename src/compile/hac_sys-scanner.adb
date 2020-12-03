@@ -203,7 +203,7 @@ package body HAC_Sys.Scanner is
         end if;
         CD.Line_Count := CD.Line_Count + 1;
         if CD.listing_requested then
-          HAC_Sys.Defs.IIO.Put (CD.listing, CD.Line_Count, 4);
+          HAC_Sys.Defs.IIO.Put (CD.listing, HAC_Integer (CD.Line_Count), 4);
           Put (CD.listing, "  ");
           --  Put (Listing, LC, 5);
           --  Put (Listing, "  ");
@@ -247,7 +247,7 @@ package body HAC_Sys.Scanner is
         else
           Error (
             CD, err_negative_exponent_for_integer_literal,
-            Integer'Image (CD.INum) & ".0e- ..."
+            HAC_Integer'Image (CD.INum) & ".0e- ..."
           );
         end if;
       end if;
@@ -332,7 +332,7 @@ package body HAC_Sys.Scanner is
       end if;
       declare
         complete_string : constant String :=
-          Integer'Image (CD.INum) & '#' & s (s'First .. l);
+          HAC_Integer'Image (CD.INum) & '#' & s (s'First .. l);
       begin
         if has_point then
           CD.Sy   := FloatCon;
@@ -359,6 +359,7 @@ package body HAC_Sys.Scanner is
           end if;
         end if;
       end Skip_eventual_underscore;
+      use type HAC_Integer;
     begin
       K       := 0;
       CD.INum := 0;
@@ -579,7 +580,7 @@ package body HAC_Sys.Scanner is
             end if;
           end loop;
           CD.Sy    := StrCon;
-          CD.INum  := CD.Strings_Table_Top;
+          CD.INum  := HAC_Integer (CD.Strings_Table_Top);
           CD.SLeng := K;
           CD.Strings_Table_Top := CD.Strings_Table_Top + K;
           --  TBD: we could compress this information by searching already existing strings
@@ -626,7 +627,7 @@ package body HAC_Sys.Scanner is
           else
             Error (CD, err_character_delimeter_used_for_string);
             CD.Sy    := StrCon;
-            CD.INum  := CD.Strings_Table_Top;
+            CD.INum  := HAC_Integer (CD.Strings_Table_Top);
             CD.SLeng := K;
             CD.Strings_Table_Top := CD.Strings_Table_Top + K;
           end if;
@@ -706,12 +707,12 @@ package body HAC_Sys.Scanner is
         when IDent =>
           Put (CD.comp_dump, ": " & To_String (CD.Id));
         when IntCon =>
-          Put (CD.comp_dump, ": " & Integer'Image (CD.INum));
+          Put (CD.comp_dump, ": " & HAC_Integer'Image (CD.INum));
         when FloatCon =>
           Put (CD.comp_dump, ": " & HAC_Float'Image (CD.RNum));
         when StrCon =>
           Put (CD.comp_dump, ": """);
-          for i in CD.INum .. CD.INum + CD.SLeng - 1 loop
+          for i in Integer (CD.INum) .. Integer (CD.INum) + CD.SLeng - 1 loop
             Put (CD.comp_dump, CD.Strings_Constants_Table (i));
           end loop;
           Put (CD.comp_dump, '"');

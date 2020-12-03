@@ -121,10 +121,12 @@ package body HAC_Sys.PCode is
 
   procedure Patch_Addresses (OC : in out Object_Code_Table) is
     LC0 : Integer := OC'First;
+    use Defs;
+    use type HAC_Integer;
   begin
     while LC0 < OC'Last loop
       if OC (LC0).F in Jump_Opcode and then OC (LC0).Y = dummy_address then
-        OC (LC0).Y := OC'Last;
+        OC (LC0).Y := HAC_Integer (OC'Last);
       end if;
       LC0 := LC0 + 1;
     end loop;
@@ -138,7 +140,7 @@ package body HAC_Sys.PCode is
   is
   begin
     for Instruction_Address of PT (PT'First .. Top) loop
-      OC (Instruction_Address).Y := OC'Last;
+      OC (Integer (Instruction_Address)).Y := Operand_2_Type (OC'Last);
     end loop;
     Top := 0;
   end Patch_Addresses;
@@ -155,7 +157,7 @@ package body HAC_Sys.PCode is
     else
       Fatal (PATCHING);
     end if;
-    PT (Top) := LC;
+    PT (Top) := Operand_2_Type (LC);
   end Feed_Patch_Table;
 
   procedure Dump (
@@ -181,6 +183,7 @@ package body HAC_Sys.PCode is
       return s;
     end Padded_Opcode;
     use Defs;
+    use type Operand_2_Type;
   begin
     Put_Line
       (Text, "Position   : Opcode " & (Opcode'Width - 7) * ' ' &
@@ -198,14 +201,14 @@ package body HAC_Sys.PCode is
       Put (Text, "  " & Defs.To_String (OC (i).D.Full_Block_Id));
       case OC (i).F is  --  Extra information
         when k_Push_Float_Literal =>
-          Put (Text, "; " & HAC_Image (Flt_Const (OC (i).Y)));
+          Put (Text, "; " & HAC_Image (Flt_Const (Integer (OC (i).Y))));
         when k_Variable_Initialization =>
           Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
         when k_Standard_Functions =>
           SF_C := SF_Code'Val (OC (i).Y);
           Put (Text, "; " & SF_Code'Image (SF_C));
           if SF_C = SF_Literal_to_VString then
-            Put (Text, "; """ & Str_Const (Old_Y1 .. Old_Y1 + Old_Y2 - 1) & '"');
+            Put (Text, "; """ & Str_Const (Integer (Old_Y1) .. Integer (Old_Y1 + Old_Y2 - 1)) & '"');
           end if;
         when k_File_I_O =>
           SP_C := SP_Code'Val (OC (i).X);
@@ -215,7 +218,7 @@ package body HAC_Sys.PCode is
               Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
             when SP_Put .. SP_Put_Line =>
               if Defs.Typen'Val (OC (i).Y) = Defs.String_Literals then
-                Put (Text, "; """ & Str_Const (Old_Y3 .. Old_Y3 + Old_Y4 - 1) & '"');
+                Put (Text, "; """ & Str_Const (Integer (Old_Y3) .. Integer (Old_Y3 + Old_Y4 - 1)) & '"');
               end if;
             when others =>
               null;

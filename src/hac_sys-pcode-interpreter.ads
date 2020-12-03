@@ -73,8 +73,8 @@ package HAC_Sys.PCode.Interpreter is
     with function Get_Needs_Skip_Line return Boolean;
     --  ^ True  for a real console with Ada.Text_IO (line buffer);
     --    False for input boxes (like in LEA) or other kind of immediate input.
-    with procedure Get (I : out Integer; Width : Ada.Text_IO.Field := 0);
-    with procedure Get (F : out HAC_Sys.Defs.HAC_Float; Width : Ada.Text_IO.Field := 0);
+    with procedure Get (I : out HAC_Sys.Defs.HAC_Integer; Width : Ada.Text_IO.Field := 0);
+    with procedure Get (F : out HAC_Sys.Defs.HAC_Float;   Width : Ada.Text_IO.Field := 0);
     with procedure Get (C : out Character);
     with procedure Get_Immediate (C : out Character);
     with function Get_Line return String;

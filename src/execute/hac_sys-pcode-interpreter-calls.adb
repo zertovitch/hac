@@ -7,24 +7,28 @@ package body HAC_Sys.PCode.Interpreter.Calls is
   procedure Do_Calling_Operation (CD : Compiler_Data; ND : in out Interpreter_Data) is
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     IR : Order renames ND.IR;
-    H1, H2, H3, H4, H5 : Defs.HAC_Integer;  --  Internal integer registers
-    F1     : Defs.HAC_Float;                --  Internal float registers
+    use Defs;
+    use type HAC_Integer;
 
     procedure Do_Mark_Stack is
       VSize : constant Integer :=
-        Integer (CD.Blocks_Table (CD.IdTab (IR.Y).Block_Ref).VSize);
+        Integer (CD.Blocks_Table (CD.IdTab (Integer (IR.Y)).Block_Ref).VSize);
     begin
       if Curr_TCB.T + VSize > Curr_TCB.STACKSIZE then
         raise VM_Stack_Overflow;
       else
         Curr_TCB.T := Curr_TCB.T + 5;          --  Make room for fixed area
-        ND.S (Curr_TCB.T - 1).I := VSize - 1;
+        ND.S (Curr_TCB.T - 1).I := HAC_Integer (VSize - 1);
         ND.S (Curr_TCB.T).I     := IR.Y;       --  CD.IdTab index of called procedure/entry
       end if;
     end Do_Mark_Stack;
 
     procedure Do_Call is
       use Ada.Calendar;
+      F1 : HAC_Float;    --  Internal float registers
+      H1, H2, H4 : Index;
+      H3 : Nesting_level;
+      H5 : Integer;
     begin
       --  procedure and task entry CALL
       --  Cramer
@@ -33,14 +37,14 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         F1 := ND.S (Curr_TCB.T).R;  --  Pop delay time
         Pop (ND);
       end if;
-      H1 := Curr_TCB.T - IR.Y;     --  base of activation record
-      H2 := ND.S (H1 + 4).I;          --  CD.IdTab index of called procedure/entry
-      H3 := Integer (CD.IdTab (H2).LEV);
-      Curr_TCB.DISPLAY (Nesting_level (H3 + 1)) := H1;
-      ND.S (H1 + 1).I := Curr_TCB.PC;  --  return address
-      H4 := ND.S (H1 + 3).I + H1;  --  new top of stack
-      ND.S (H1 + 2).I := Curr_TCB.DISPLAY (Nesting_level (H3));  --  static link
-      ND.S (H1 + 3).I := Curr_TCB.B;  --  dynamic link
+      H1 := Curr_TCB.T - Integer (IR.Y);     --  base of activation record
+      H2 := Index (ND.S (H1 + 4).I);         --  CD.IdTab index of called procedure/entry
+      H3 := CD.IdTab (Integer (H2)).LEV;
+      Curr_TCB.DISPLAY (H3 + 1) := Integer (H1);
+      ND.S (H1 + 1).I := HAC_Integer (Curr_TCB.PC);  --  return address
+      H4 := Index (ND.S (H1 + 3).I) + H1;  --  new top of stack
+      ND.S (H1 + 2).I := HAC_Integer (Curr_TCB.DISPLAY (H3));  --  static link
+      ND.S (H1 + 3).I := HAC_Integer (Curr_TCB.B);             --  dynamic link
       Curr_TCB.B := H1;
       Curr_TCB.T := H4;
       case IR.X is  --  Call type
@@ -72,10 +76,10 @@ package body HAC_Sys.PCode.Interpreter.Calls is
             ND.TCB (H5).TS := Ready;       --  wake accepting task
             ND.TCB (H5).SUSPEND := 0;
           else
-            Curr_TCB.TS := TimedRendz;     --  Timed Wait For Rendezvous
-            Curr_TCB.R1.I := 1;            --  Init R1 to specify NO timeout
-            Curr_TCB.R2.I := H2;           --  Save address of queue for purge
-            ND.SYSCLOCK := Clock;          --  update System Clock
+            Curr_TCB.TS := TimedRendz;          --  Timed Wait For Rendezvous
+            Curr_TCB.R1.I := 1;                 --  Init R1 to specify NO timeout
+            Curr_TCB.R2.I := HAC_Integer (H2);  --  Save address of queue for purge
+            ND.SYSCLOCK := Clock;               --  update System Clock
             Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (F1);
           end if;
           ND.SWITCH := True;       --  give up control
@@ -107,10 +111,10 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       --  Cramer
       Curr_TCB.T := Curr_TCB.B - 1;
       if IR.Y = Defs.Standard_Procedure_Call then
-        Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;  --  Standard proc call return
+        Curr_TCB.PC := Integer (ND.S (Curr_TCB.B + 1).I);  --  Standard proc call return
       end if;
       if Curr_TCB.PC /= 0 then
-        Curr_TCB.B := ND.S (Curr_TCB.B + 3).I;
+        Curr_TCB.B := Integer (ND.S (Curr_TCB.B + 3).I);
         if IR.Y = Defs.Timed_Entry_Call or IR.Y = Defs.Conditional_Entry_Call then
           if IR.Y = Defs.Timed_Entry_Call and Curr_TCB.R1.I = 0 then
             Push (ND);
@@ -130,8 +134,8 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     procedure Do_Exit_Function is
     begin
       Curr_TCB.T  := Curr_TCB.B;
-      Curr_TCB.PC := ND.S (Curr_TCB.B + 1).I;
-      Curr_TCB.B  := ND.S (Curr_TCB.B + 3).I;
+      Curr_TCB.PC := Integer (ND.S (Curr_TCB.B + 1).I);
+      Curr_TCB.B  := Integer (ND.S (Curr_TCB.B + 3).I);
       if IR.Y = Defs.End_Function_without_Return and then ND.PS /= Exception_Raised then
         raise VM_Function_End_without_Return;
       end if;

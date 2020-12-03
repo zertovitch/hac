@@ -133,7 +133,7 @@ package body HAC_Sys.Parser is
       else
         F := k_Push_Value;
       end if;
-      Emit2 (CD, F, CD.IdTab (I).LEV, CD.IdTab (I).Adr_or_Sz);
+      Emit2 (CD, F, CD.IdTab (I).LEV, Operand_2_Type (CD.IdTab (I).Adr_or_Sz));
       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
         Selector (CD, Level, Becomes_EQL + FSys, X);
       end if;
@@ -159,9 +159,9 @@ package body HAC_Sys.Parser is
         else
           case X.TYP is
             when Arrays =>
-              Emit1 (CD, k_Copy_Block, CD.Arrays_Table (X.Ref).Array_Size);
+              Emit1 (CD, k_Copy_Block, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
             when Records =>
-              Emit1 (CD, k_Copy_Block, CD.Blocks_Table (X.Ref).VSize);
+              Emit1 (CD, k_Copy_Block, Operand_2_Type (CD.Blocks_Table (X.Ref).VSize));
             when Enums =>
               --  Behaves like a "Standard_Typ".
               --  We have checked that X.Ref = Y.Ref (same actual type).
@@ -179,7 +179,7 @@ package body HAC_Sys.Parser is
         Emit_Std_Funct (CD, SF_Float_to_Duration);
         Emit (CD, k_Store);
       elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
-        Emit1 (CD, k_String_Literal_Assignment, CD.Arrays_Table (X.Ref).Array_Size);
+        Emit1 (CD, k_String_Literal_Assignment, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
       elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
         Error (CD, err_string_to_vstring_assignment);
       elsif X.TYP = NOTYP then
@@ -223,9 +223,9 @@ package body HAC_Sys.Parser is
             --  In the example:  "a := c"  and  "b := c".
             for Var_Id in Id_From .. Id_To - 1 loop
               Emit2 (CD, k_Push_Address, Operand_1_Type (CD.IdTab (Var_Id).LEV),
-                                                         CD.IdTab (Var_Id).Adr_or_Sz);
+                                         Operand_2_Type (CD.IdTab (Var_Id).Adr_or_Sz));
               Emit2 (CD, k_Push_Value, Operand_1_Type (CD.IdTab (Id_To).LEV),
-                                                       CD.IdTab (Id_To).Adr_or_Sz);
+                                       Operand_2_Type (CD.IdTab (Id_To).Adr_or_Sz));
               Emit (CD, k_Store);
               --  !! O-o... can't work for composite types (arrays or records) !!
             end loop;
@@ -235,7 +235,7 @@ package body HAC_Sys.Parser is
                 Var : IdTabEntry renames CD.IdTab (Var_Id);
               begin
                 if Auto_Init_Typ (Var.xTyp.TYP) then
-                  Emit2 (CD, k_Push_Address, Operand_1_Type (Var.LEV), Var.Adr_or_Sz);
+                  Emit2 (CD, k_Push_Address, Operand_1_Type (Var.LEV), Operand_2_Type (Var.Adr_or_Sz));
                   Emit1 (CD, k_Variable_Initialization, Typen'Pos (Var.xTyp.TYP));
                 end if;
                 --  !!  TBD: Must handle composite types (arrays or records) too...
@@ -324,11 +324,11 @@ package body HAC_Sys.Parser is
                   when Floats =>
                     Enter_or_find_Float (CD, C.R, r.Adr_or_Sz);
                   when Ints =>
-                    r.Adr_or_Sz := C.I;
+                    r.Adr_or_Sz := Integer (C.I);
                   when others =>
                     Error (CD, err_numeric_constant_expected);
                     --  "boo : constant := True;" or "x: constant := 'a';" are wrong in Ada.
-                    r.Adr_or_Sz := C.I;
+                    r.Adr_or_Sz := Integer (C.I);
                 end case;
               else  --  A variable or a typed constant
                 r.xTyp      := xTyp;
@@ -435,7 +435,7 @@ package body HAC_Sys.Parser is
         end if;
         InSymbol;
         Accept_Call;
-        Emit1 (CD, k_Accept_Rendezvous, I_Entry);
+        Emit1 (CD, k_Accept_Rendezvous, Operand_2_Type (I_Entry));
         if CD.Sy = DO_Symbol then
           if Level = Nesting_Level_Max then
             Fatal (LEVELS);  --  Exception is raised there.
@@ -453,7 +453,7 @@ package body HAC_Sys.Parser is
           end if;
           Level := Level - 1;
         end if;
-        Emit1 (CD, k_End_Rendezvous, I_Entry);
+        Emit1 (CD, k_End_Rendezvous, Operand_2_Type (I_Entry));
       end Accept_Statement;
 
       procedure Exit_Statement is
@@ -465,7 +465,7 @@ package body HAC_Sys.Parser is
         if CD.Sy = WHEN_Symbol then  --  Conditional Exit
           InSymbol;
           Boolean_Expression (CD, Level, Semicolon_Set, X);
-          Emit1 (CD, k_Conditional_Jump, CD.LC + 2);  --  Conditional jump around Exit
+          Emit1 (CD, k_Conditional_Jump, Operand_2_Type (CD.LC + 2));  --  Conditional jump around Exit
         end if;
         Emit1 (CD, k_Jump, dummy_address);  --  Unconditional jump with dummy address to be patched
       end Exit_Statement;
@@ -485,7 +485,7 @@ package body HAC_Sys.Parser is
         while CD.Sy = ELSIF_Symbol loop  --  Added Hathorn
           InSymbol;
           Emit1 (CD, k_Jump, dummy_address);  --  Unconditional jump with dummy address to be patched
-          CD.ObjCode (LC1).Y := CD.LC;        --  Patch the previous conditional jump
+          CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);       --  Patch the previous conditional jump
           Boolean_Expression (CD, Level, FSys_St + DO_THEN, X);
           LC1 := CD.LC;
           Emit (CD, k_Conditional_Jump);
@@ -496,10 +496,10 @@ package body HAC_Sys.Parser is
         if CD.Sy = ELSE_Symbol then
           InSymbol;
           Emit1 (CD, k_Jump, dummy_address);  --  Jump to "END IF" - dummy address to be patched.
-          CD.ObjCode (LC1).Y := CD.LC;
+          CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
           Multi_Statement (END_Set);  --  Statements after "ELSE".
         else
-          CD.ObjCode (LC1).Y := CD.LC;
+          CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
         end if;
         Need (CD, END_Symbol, err_END_missing);         --  END (IF)
         Need (CD, IF_Symbol,  err_missing_closing_IF);  --  (END) IF
@@ -516,7 +516,7 @@ package body HAC_Sys.Parser is
           Skip (CD, Statement_Begin_Symbol, err_missing_closing_IF);
         end if;
         Multi_Statement (END_Set);
-        Emit1 (CD, FCT_Loop_End, B);
+        Emit1 (CD, FCT_Loop_End, Operand_2_Type (B));
         Need (CD, END_Symbol,  err_END_missing);           --  END (LOOP)
         Need (CD, LOOP_Symbol, err_closing_LOOP_missing);  --  (END) LOOP
         --  Go back and patch the dummy addresses generated by Exit statements.
@@ -612,6 +612,7 @@ package body HAC_Sys.Parser is
         procedure CASE_Label is
           Lab : Constant_Rec;
           K   : Integer;
+          use type HAC_Integer;
         begin
           Number_Declaration_or_Enum_Item (CD, Level, FSys_St + Alt_Finger_THEN, Lab);
           if Lab.TP /= X then
@@ -704,7 +705,7 @@ package body HAC_Sys.Parser is
           exit when CD.Sy /= WHEN_Symbol;
         end loop;
 
-        CD.ObjCode (LC1).Y := CD.LC;
+        CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
         --  Set correct address for k_CASE_Switch above.
         --  This is the address of the following bunch of
         --  (k_CASE_Choice_Data, k_CASE_Match_Jump) pairs.
@@ -714,13 +715,13 @@ package body HAC_Sys.Parser is
           else
             Emit2 (CD, k_CASE_Choice_Data, Case_when_something, CaseTab (K).Val);
           end if;
-          Emit1 (CD, k_CASE_Match_Jump, CaseTab (K).LC);
+          Emit1 (CD, k_CASE_Match_Jump, Operand_2_Type (CaseTab (K).LC));
         end loop;
         --  This is for having the interpreter exiting the k_CASE_Choice_Data loop.
         Emit (CD, k_CASE_No_Choice_Found);
         --
         for K in 1 .. J loop
-          CD.ObjCode (ExitTab (K)).Y := CD.LC;  --  Patch k_Jump addresses to after "END CASE;".
+          CD.ObjCode (ExitTab (K)).Y := Operand_2_Type (CD.LC);  --  Patch k_Jump addresses to after "END CASE;".
         end loop;
         Need (CD, END_Symbol,  err_END_missing);           --  END (CASE)
         Need (CD, CASE_Symbol, err_missing_closing_CASE);  --  (END) CASE
@@ -736,7 +737,7 @@ package body HAC_Sys.Parser is
         LC_Cond_Jump := CD.LC;
         Emit (CD, k_Conditional_Jump);
         LOOP_Statement (k_Jump, LC_Cond_Eval);
-        CD.ObjCode (LC_Cond_Jump).Y := CD.LC;
+        CD.ObjCode (LC_Cond_Jump).Y := Operand_2_Type (CD.LC);
       end WHILE_Statement;
 
       procedure FOR_Statement is  --  RM 5.5 (9)
@@ -776,7 +777,7 @@ package body HAC_Sys.Parser is
           Skip (CD, Fail_after_FOR + FSys_St, err_identifier_missing);
         end if;
         --
-        Emit2 (CD, k_Push_Address, CD.IdTab (CD.Id_Count).LEV, CD.IdTab (CD.Id_Count).Adr_or_Sz);
+        Emit2 (CD, k_Push_Address, CD.IdTab (CD.Id_Count).LEV, Operand_2_Type (CD.IdTab (CD.Id_Count).Adr_or_Sz));
         InSymbol;
         FOR_Begin := k_FOR_Forward_Begin;
         if CD.Sy = IN_Symbol then         --       "IN"  in  "for i in reverse 1 .. 10 loop"
@@ -795,7 +796,7 @@ package body HAC_Sys.Parser is
         LC_FOR_Begin := CD.LC;
         Emit (CD, FOR_Begin);
         LOOP_Statement (For_END (FOR_Begin), CD.LC);
-        CD.ObjCode (LC_FOR_Begin).Y := CD.LC;  --  Address of the code just after the loop's end.
+        CD.ObjCode (LC_FOR_Begin).Y := Operand_2_Type (CD.LC);  --  Address of the code just after the loop's end.
         --  Forget the iterator variable:
         CD.Id_Count := CD.Id_Count - 1;
         CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := Previous_Last;
@@ -851,7 +852,7 @@ package body HAC_Sys.Parser is
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
                   else        --  end of timed Entry select ObjCode, do patching
-                    CD.ObjCode (patch (1)).Y  := CD.LC;  --  if Entry not made, Skip rest
+                    CD.ObjCode (patch (1)).Y := Operand_2_Type (CD.LC);  --  if Entry not made, Skip rest
                     J                      := patch (3) - patch (2) + 1;
                     IStart                 := patch (0);
                     IEnd                   := CD.LC - 1;
@@ -878,8 +879,8 @@ package body HAC_Sys.Parser is
               patch (3) := CD.LC;
               InSymbol;
               Multi_Statement (END_Set);
-              CD.ObjCode (patch (1)).Y  := patch (3);
-              CD.ObjCode (patch (2)).Y  := CD.LC;
+              CD.ObjCode (patch (1)).Y  := Operand_2_Type (patch (3));
+              CD.ObjCode (patch (2)).Y  := Operand_2_Type (CD.LC);
             end if;
             if CD.Sy /= END_Symbol then
               Select_Error (err_END_missing);
@@ -929,9 +930,9 @@ package body HAC_Sys.Parser is
             end if;
             InSymbol;
             Accept_Call_2;
-            Emit2 (CD, k_Selective_Wait, 2, I);          --  Retain Entry Index
+            Emit2 (CD, k_Selective_Wait, 2, Operand_2_Type (I));      --  Retain Entry Index
             Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
-            Emit2 (CD, k_Selective_Wait, 3, CD.LC);  --  ACCEPT IF Ready ELSE Skip To LC
+            Emit2 (CD, k_Selective_Wait, 3, Operand_2_Type (CD.LC));  --  ACCEPT IF Ready ELSE Skip To LC
             --  CONDITIONAL ACCEPT MUST BE ATOMIC
             if CD.Sy = DO_Symbol then
               if Level = Nesting_Level_Max then
@@ -950,7 +951,7 @@ package body HAC_Sys.Parser is
               Level := Level - 1;
               InSymbol;
             end if;
-            Emit1 (CD, k_End_Rendezvous, I);
+            Emit1 (CD, k_End_Rendezvous, Operand_2_Type (I));
           end Accept_Statement_2;
 
         begin  --  Selective_Wait ===============================> Kurtz
@@ -976,7 +977,7 @@ package body HAC_Sys.Parser is
                   Emit (CD, k_Conditional_Jump);
                   InSymbol;
                   Expression (CD, Level, FSys_St + Semicolon, Y);
-                  Emit2 (CD, k_Selective_Wait, 4, CD.LC + 2);  --  Update delay time
+                  Emit2 (CD, k_Selective_Wait, 4, Operand_2_Type (CD.LC + 2));  --  Update delay time
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
                   end if;
@@ -1017,7 +1018,7 @@ package body HAC_Sys.Parser is
                   Skip (CD, Semicolon, err_missing_expression_for_delay);
                 else          -- calculate return value
                   Expression (CD, Level, Semicolon_Set, Y);
-                  Emit2 (CD, k_Selective_Wait, 4, CD.LC + 2);  --  Update delay time
+                  Emit2 (CD, k_Selective_Wait, 4, Operand_2_Type (CD.LC + 2));  --  Update delay time
                   if Y.TYP /= Floats then
                     Select_Error (err_wrong_type_in_DELAY);
                   end if;
@@ -1045,9 +1046,9 @@ package body HAC_Sys.Parser is
                 SelectDone := True;
                 Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
                 if do_terminate then
-                  Emit2 (CD, k_Selective_Wait, 5, StartSel);
+                  Emit2 (CD, k_Selective_Wait, 5, Operand_2_Type (StartSel));
                 else
-                  Emit2 (CD, k_Selective_Wait, 6, StartSel);
+                  Emit2 (CD, k_Selective_Wait, 6, Operand_2_Type (StartSel));
                 end if;   -- Suspend
                 Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), JSD, ISD);
 

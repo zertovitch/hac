@@ -32,11 +32,11 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     end loop;
   end Free_Allocated_Contents;
 
-  function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Defs.HAC_Integer) return String is
-    Res : String (1 .. Integer (Size));
+  function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Integer) return String is
+    Res : String (1 .. Size);
   begin
     for i in Res'Range loop
-      Res (i) := Character'Val (ND.S (Idx + Defs.HAC_Integer (i) - 1).I);
+      Res (i) := Character'Val (ND.S (Idx + i - 1).I);
     end loop;
     return Res;
   end Get_String_from_Stack;
@@ -87,7 +87,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
   procedure Post_Mortem_Dump (CD : Compiler_Data; ND : In_Defs.Interpreter_Data) is
     use Ada.Text_IO, Defs.IIO, Defs.RIO;
     BLKCNT : Integer;
-    H1, H2, H3 : Defs.HAC_Integer;
+    H1, H2, H3 : Integer;
     --  !! Should use a file for dump !!
   begin
     New_Line;
@@ -107,7 +107,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
       if BLKCNT = 0 then
         H1 := 0;
       end if;
-      H2 := ND.S (H1 + 4).I;  --  index into HAC.Data.IdTab for this process
+      H2 := Integer (ND.S (H1 + 4).I);  --  index into HAC.Data.IdTab for this process
       if H1 /= 0 then
         Put (Defs.To_String (CD.IdTab (H2).Name));
         Put (" CALLED AT");
@@ -128,7 +128,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
               if P2Ada_Var_7.Normal then
                 H3 := H1 + P2Ada_Var_7.Adr_or_Sz;
               else
-                H3 := ND.S (H1 + P2Ada_Var_7.Adr_or_Sz).I;
+                H3 := Integer (ND.S (H1 + P2Ada_Var_7.Adr_or_Sz).I);
               end if;
               Put ("  " & To_String (P2Ada_Var_7.Name) & " = ");
               case P2Ada_Var_7.xTyp.TYP is
@@ -153,7 +153,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
         end; -- [P2Ada]: end of WITH
 
       end loop;
-      H1 := ND.S (H1 + 3).I;
+      H1 := Integer (ND.S (H1 + 3).I);
       exit when H1 < 0;
     end loop;
   end Post_Mortem_Dump;
