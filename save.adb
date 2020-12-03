@@ -55,12 +55,12 @@ begin
   Set_Directory ("..");
 
   examples := root & "/exm/*.ad* "  & root & "/exm/*.gpr  " &
-              root & "/exm/e.cmd "  & root & "/exm/not_working/*.ad*" &
-              root & "/exm/aoc/2020/aoc*";
+              root & "/exm/e.cmd "  & root & "/exm/not_working/*.ad* " &
+              root & "/exm/aoc/2020/aoc* ";
 
   tests    := root & "/test/*.ad* " & root & "/test/*.gpr " &
               root & "/test/t.cmd " & root & "/test/*.aru " &
-              root & "/test/future/*.ad*";
+              root & "/test/future/*.ad* ";
 
   files := root & "/src/*.ad* " &
            root & "/src/compile/*.ad* " &
@@ -75,7 +75,7 @@ begin
            root & "/doc/*.pdf " &
            root & "/debug.pra " &
            root & "/obj/debug/create_dir.txt " &
-           root & "/obj/fast/create_dir.txt";
+           root & "/obj/fast/create_dir.txt ";
 
   files := files & ' ' & examples & ' ' & tests;
 
