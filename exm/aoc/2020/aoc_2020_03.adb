@@ -1,7 +1,8 @@
 --  Solution to Advent of Code 2020, Day 3
 ------------------------------------------
 --
---  Count trees (#) at integer locations, on line through a map.
+--  Count trees (#) at integer locations, on a straight line
+--  going through a map.
 --  The line has a given rational slope.
 --
 --  https://adventofcode.com/2020/day/3
@@ -20,9 +21,8 @@ procedure AoC_2020_03 is
   --  jtot1 : constant := 10;
   --
   map : array (1 .. itot, 0 .. jtot1) of Character;
-  f : File_Type;
   --
-  --  Count trees on a trajectory with a rational slope (x / y).
+  --  Count trees on a trajectory with a rational slope (y / x).
   --
   function Check (y, x : Positive) return Positive is
     trees : Natural := 0;
@@ -34,19 +34,19 @@ procedure AoC_2020_03 is
         trees := trees + 1;
       end if;
       jj := (jj + x) mod jtot;  --  Map is periodic horizontally.
-      ii := ii + y;
+      ii :=  ii + y;
       exit when ii > itot;
     end loop;
     return trees;
   end Check;
   --
+  f : File_Type;
 begin
   Open (f, n);
   for i in 1 .. itot loop
     for j in 0 .. jtot1 loop
       Get (f, map (i, j));
     end loop;
-    if i < itot then Skip_Line (f); end if;
   end loop;
   Close (f);
   --

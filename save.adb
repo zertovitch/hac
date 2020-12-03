@@ -55,7 +55,8 @@ begin
   Set_Directory ("..");
 
   examples := root & "/exm/*.ad* "  & root & "/exm/*.gpr  " &
-              root & "/exm/e.cmd "  & root & "/exm/not_working/*.ad*";
+              root & "/exm/e.cmd "  & root & "/exm/not_working/*.ad*" &
+              root & "/exm/aoc/2020/aoc*";
 
   tests    := root & "/test/*.ad* " & root & "/test/*.gpr " &
               root & "/test/t.cmd " & root & "/test/*.aru " &
