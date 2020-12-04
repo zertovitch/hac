@@ -4,6 +4,9 @@ procedure Shell is
   type OS_Kind is (Nixux, Windoze);
   k : OS_Kind;
   r : Integer;
+  f : File_Type;
+  ln : constant VString := +"output.lst";
+  line : VString;
 begin
   if Index (Get_Env ("OS"), "Windows") > 0 then
     k := Windoze;
@@ -17,9 +20,15 @@ begin
     when Nixux   => Shell_Execute ("echo The env. var. is set... [$HAC_Rules]", r);
     when Windoze => Shell_Execute ("echo The env. var. is set... [%HAC_Rules%]", r);
   end case;
-  Put_Line (+"Result of command = " & r);
+  Put_Line (+"Result of echo command = " & r);
   --
-  New_Line;
+  Shell_Execute (+"echo Testing I/O pipe>" & ln, r);
+  Put_Line (+"Result of echo command = " & r);
+  Open (f, ln);
+  Get_Line (f, line);
+  Close (f);
+  Put_Line (+"--> Contents of file " & ln & " are: [" & line & ']');
+  --
   Shell_Execute ("Command_Impossible", r);
   Put_Line (+"Result of Command_Impossible = " & r);
 end Shell;

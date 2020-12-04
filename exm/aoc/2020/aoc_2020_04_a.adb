@@ -28,6 +28,8 @@ begin
     if Index (s, "hgt:") > 0 then cats := cats + 1; end if;
     if cats = 7 then
       total := total + 1;
+      --  Prevent incrementing total if there "cid:" or
+      --  garbage until next blank line:
       cats := 0;
     end if;
   end loop;

@@ -4,11 +4,12 @@
 --
 --  HAC 0.08 version.
 --
---  HAC 0.08 nice to have's:
+--  HAC 0.08 "nice to have"'s detected in this exercise:
 --    *   exception handling to catch invalid values...
---    *   "x [not] in a .. b"
---    *   removal of needless () with correct boolean priority.
---    *   Index with From parameter
+--    *   "x [not] in a .. b".
+--    *   with correct boolean operator priority, removal of needless ().
+--    *   Index with From parameter.
+--    *   "and then", "or else"
 --
 --  https://adventofcode.com/2020/day/04
 --
@@ -81,7 +82,7 @@ begin
       then
         cats := cats + 1;
       end if;
-      if (cat = "pid") and (Length (tok) = 9) and (Val (tok) > 0) then cats := cats + 1; end if;
+      if (cat = "pid") and (Length (tok) = 9) and (Val (tok) >= 0) then cats := cats + 1; end if;
       if (cat = "ecl") and
         ((tok = "amb") or (tok = "blu") or (tok = "brn") or (tok = "gry") or
          (tok = "grn") or (tok = "hzl") or (tok = "oth"))
@@ -100,6 +101,7 @@ begin
     end loop;
     if cats = 7 then
       total := total + 1;
+      --  Prevent incrementing total if there "cid:" or garbage until next blank line:
       cats := 0;
     end if;
   end loop;

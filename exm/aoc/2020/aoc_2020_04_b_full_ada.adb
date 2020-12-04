@@ -11,8 +11,6 @@ with Interfaces;
 
 procedure AoC_2020_04_b_Full_Ada is
   use Ada.Characters.Handling, Ada.Strings.Fixed, Ada.Text_IO, Interfaces;
-  f : File_Type;
-  cats, cat_idx, total : Integer := 0;
   --
   function Val (s : String) return Integer_64 is
   begin
@@ -23,11 +21,9 @@ procedure AoC_2020_04_b_Full_Ada is
   --
   type Cat is (byr, iyr, eyr, hgt, hcl, ecl, pid);
   ok : Boolean;
-  --
-  year_min : constant array (byr .. eyr) of Integer_64 := (1920, 2010, 2020);
-  year_max : constant array (byr .. eyr) of Integer_64 := (2002, 2020, 2030);
-  tok_begin : Integer;
-  tok_end : Integer;
+  f : File_Type;
+  cats, cat_idx, total : Integer := 0;
+  tok_begin, tok_end : Integer;
 begin
   Open (f, In_File, "aoc_2020_04.txt");
   while not End_Of_File (f) loop
@@ -51,18 +47,22 @@ begin
             tok : String renames s (tok_begin .. tok_end);
           begin
             case c is
-              when byr .. eyr => ok := Val (tok) in year_min (c) .. year_max (c);
-              when hcl        => ok := Val ("16" & tok & '#') > 0;
-              when pid        => ok := tok'Length = 9 and then Val (tok) > 0;
+              when byr => ok := Val (tok) in 1920 .. 2002;
+              when iyr => ok := Val (tok) in 2010 .. 2020;
+              when eyr => ok := Val (tok) in 2020 .. 2030;
+              when hcl => ok := Val ("16" & tok & '#') > 0;
+              when pid => ok := tok'Length = 9 and then Val (tok) > 0;
               when ecl =>
                 ok :=
                   tok = "amb" or else tok = "blu" or else tok = "brn" or else
                   tok = "gry" or else tok = "grn" or else tok = "hzl" or else tok = "oth";
               when hgt =>
                 ok :=
-                    ((Val (s (tok_begin .. tok_end - 2)) in 150 .. 193 and then s (tok_end - 1 .. tok_end) = "cm")
+                    ((Val (s (tok_begin .. tok_end - 2)) in 150 .. 193
+                                 and then s (tok_end - 1 .. tok_end) = "cm")
                       or else
-                     (Val (s (tok_begin .. tok_end - 2)) in 59 .. 76 and then s (tok_end - 1 .. tok_end) = "in")
+                     (Val (s (tok_begin .. tok_end - 2)) in 59 .. 76
+                                 and then s (tok_end - 1 .. tok_end) = "in")
                     );
             end case;
           end;
@@ -71,6 +71,7 @@ begin
       end loop;
       if cats = 7 then
         total := total + 1;
+        --  Prevent incrementing total if there "cid:" or garbage until next blank line:
         cats := 0;
       end if;
     end;
