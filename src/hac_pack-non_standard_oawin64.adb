@@ -1,5 +1,7 @@
 --  ObjectAda64 for Windows version.
 
+separate (HAC_Pack)
+
 package body Non_Standard is
 
   procedure Sys (Command : String; Result : out Integer) is

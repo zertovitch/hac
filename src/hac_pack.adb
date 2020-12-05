@@ -2,8 +2,6 @@ with Ada.Numerics.Float_Random,
      Ada.Numerics.Generic_Elementary_Functions,
      Ada.Strings.Fixed;
 
-with Non_Standard;
-
 package body HAC_Pack is
 
   use Ada.Characters.Handling, VStr_Pkg;
@@ -707,6 +705,16 @@ package body HAC_Pack is
       --  Number too large, we fall back to show the version with exponent.
       return Image_with_exponent;
   end HAC_Image;
+
+  package Non_Standard is
+
+    procedure Sys (Command : String; Result : out Integer);
+
+    function Directory_Separator return Character;
+
+  end Non_Standard;
+
+  package body Non_Standard is separate;
 
   procedure Shell_Execute (Command : String; Result : out Integer) is
     --  https://rosettacode.org/wiki/Execute_a_system_command#Ada
