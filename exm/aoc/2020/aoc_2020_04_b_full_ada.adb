@@ -52,10 +52,8 @@ begin
               when eyr => ok := Val (tok) in 2020 .. 2030;
               when hcl => ok := Val ("16" & tok & '#') > 0;
               when pid => ok := tok'Length = 9 and then Val (tok) > 0;
-              when ecl =>
-                ok :=
-                  tok = "amb" or else tok = "blu" or else tok = "brn" or else
-                  tok = "gry" or else tok = "grn" or else tok = "hzl" or else tok = "oth";
+              when ecl => ok := Index ("amb blu brn gry grn hzl oth", tok) > 0;
+                                --  ^ Idea: Maxim Reznik, replaces checking each value
               when hgt =>
                 ok :=
                     ((Val (s (tok_begin .. tok_end - 2)) in 150 .. 193
@@ -71,11 +69,12 @@ begin
       end loop;
       if cats = 7 then
         total := total + 1;
-        --  Prevent incrementing total if there "cid:" or garbage until next blank line:
+        --  Prevent incrementing total if there is garbage
+        --  or a "cid:" until next blank line:
         cats := 0;
       end if;
     end;
   end loop;
-  Put_Line (Integer'Image (total));
   Close (f);
+  Put_Line (Integer'Image (total));
 end AoC_2020_04_b_Full_Ada;

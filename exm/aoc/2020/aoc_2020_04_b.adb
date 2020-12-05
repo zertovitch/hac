@@ -5,11 +5,12 @@
 --  HAC 0.08 version.
 --
 --  HAC 0.08 "nice to have"'s detected in this exercise:
---    *   exception handling to catch invalid values...
---    *   "x [not] in a .. b".
---    *   with correct boolean operator priority, removal of needless ().
---    *   Index with From parameter.
+--    *   exception handling to catch invalid values
+--    *   "x [not] in a .. b"
+--    *   with correct boolean operator priority, removal of needless ()
+--    *   Index with From parameter
 --    *   "and then", "or else"
+--    *   'Image attribute for enumerated types
 --
 --  https://adventofcode.com/2020/day/04
 --
@@ -83,9 +84,8 @@ begin
         cats := cats + 1;
       end if;
       if (cat = "pid") and (Length (tok) = 9) and (Val (tok) >= 0) then cats := cats + 1; end if;
-      if (cat = "ecl") and
-        ((tok = "amb") or (tok = "blu") or (tok = "brn") or (tok = "gry") or
-         (tok = "grn") or (tok = "hzl") or (tok = "oth"))
+      if (cat = "ecl") and (Index (+"amb blu brn gry grn hzl oth", tok) > 0)
+                            --  ^ Idea: Maxim Reznik, replaces checking each value
       then
         cats := cats + 1;
       end if;
@@ -101,7 +101,8 @@ begin
     end loop;
     if cats = 7 then
       total := total + 1;
-      --  Prevent incrementing total if there "cid:" or garbage until next blank line:
+      --  Prevent incrementing total if there is garbage
+      --  or a "cid:" until next blank line:
       cats := 0;
     end if;
   end loop;

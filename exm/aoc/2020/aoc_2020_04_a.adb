@@ -12,8 +12,6 @@ procedure AoC_2020_04_a is
   cats, total : Integer := 0;
 begin
   Open (f, "aoc_2020_04.txt");
-  cats := 0;
-  total := 0;
   while not End_Of_File (f) loop
     Get_Line (f, s);
     if s = "" then
@@ -28,8 +26,8 @@ begin
     if Index (s, "hgt:") > 0 then cats := cats + 1; end if;
     if cats = 7 then
       total := total + 1;
-      --  Prevent incrementing total if there "cid:" or
-      --  garbage until next blank line:
+      --  Prevent incrementing total if there is garbage
+      --  or a "cid:" until next blank line:
       cats := 0;
     end if;
   end loop;
