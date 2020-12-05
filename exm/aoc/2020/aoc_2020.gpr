@@ -6,11 +6,13 @@ project AoC_2020 is
 
    type AoC_Build_Mode_Type is
       ("Debug",
-       "Fast" 
+       "Fast",
+       "Style_Checks" 
       );
    AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
    for Main use (
+     "aoc_2020_05.adb",
      "aoc_2020_04_a.adb",
      "aoc_2020_04_b.adb",
      "aoc_2020_04_b_full_ada.adb",
@@ -20,7 +22,7 @@ project AoC_2020 is
    );
    
    case AoC_Build_Mode is
-      when "Debug" =>
+      when "Debug" | "Style_Checks" =>
          for Object_Dir use "obj_debug";
       when "Fast" =>
          for Object_Dir use "obj_fast";
@@ -53,6 +55,8 @@ project AoC_2020 is
    package Compiler is
       case AoC_Build_Mode is
          when "Debug" =>
+            for Default_Switches ("ada") use Common_Options & Debug_Options ;
+         when "Style_Checks" => 
             for Default_Switches ("ada") use Common_Options & Debug_Options & 
             (
               "-gnatyaknpr",  --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
@@ -60,7 +64,7 @@ project AoC_2020 is
               "-gnatyO",      --  Style: check that overriding subprograms are explicitly marked as such.
               "-gnatyx",      --  Style: check x:no extra parens
               "-gnatye",      --  Style: check e:end/exit labels present
-              "-gnatytc"      --  Style: check t:token separation rules, c:comment format (two spaces)
+              "-gnatyc"       --  Style: check c:comment format (two spaces)
             );
          when "Fast" =>
             for Default_Switches ("ada") use Common_Options & Fast_Options & ("-gnatpn", "-ffunction-sections");
@@ -69,7 +73,7 @@ project AoC_2020 is
 
    package Linker is
       case AoC_Build_Mode is
-         when "Debug" =>
+         when "Debug" | "Style_Checks" =>
             for Default_Switches ("ada") use ("-g");
          when "Fast" =>
             for Default_Switches ("ada") use ("-g", "-s", "-Wl,--gc-sections");
