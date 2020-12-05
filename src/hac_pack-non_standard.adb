@@ -2,9 +2,7 @@
 
 with Interfaces.C;
 
-separate (HAC_Pack)
-
-package body Non_Standard is
+separate (HAC_Pack) package body Non_Standard is
 
   function GNAT_Sys (Arg : Interfaces.C.char_array) return Integer;
   pragma Import (C, GNAT_Sys, "system");
