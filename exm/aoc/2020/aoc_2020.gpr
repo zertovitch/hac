@@ -64,7 +64,7 @@ project AoC_2020 is
               "-gnatyO",      --  Style: check that overriding subprograms are explicitly marked as such.
               "-gnatyx",      --  Style: check x:no extra parens
               "-gnatye",      --  Style: check e:end/exit labels present
-              "-gnatyc"       --  Style: check c:comment format (two spaces)
+              "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
             );
          when "Fast" =>
             for Default_Switches ("ada") use Common_Options & Fast_Options & ("-gnatpn", "-ffunction-sections");

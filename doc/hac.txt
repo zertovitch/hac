@@ -63,10 +63,14 @@ Directories
 
 Key files in the main directory
 ===============================
-   hac.txt        this file
-   hac.gpr        project file for building HAC with GNAT
-   hac_work.xls   workbook containing, notably, a bug list and a to-do list
-   save.adb       backup script, works both with HAC and GNAT!
+   hac.gpr             project file for building HAC with GNAT
+   hac_objectada.prj   project file for building HAC with ObjectAda64
+   save.adb            backup script, works with both HAC and GNAT!
+
+Documentation
+=============
+   hac.txt       this file
+   hac_work.xls  workbook containing, notably, a bug list and a to-do list
 
 Some design points
 ==================

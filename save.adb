@@ -66,6 +66,7 @@ begin
            root & "/src/compile/*.ad* " &
            root & "/src/execute/*.ad* " &
            root & "/*.gpr " &
+           root & "/*.prj " &
            root & "/save.adb " &
            root & "/build.cmd " &
            root & "/fast.cmd " &

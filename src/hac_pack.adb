@@ -1,10 +1,11 @@
-with Ada.Numerics.Float_Random;         use Ada.Numerics.Float_Random;
-with Ada.Numerics.Generic_Elementary_Functions;
-with Ada.Strings.Fixed; use Ada.Strings;
+with Ada.Numerics.Float_Random,
+     Ada.Numerics.Generic_Elementary_Functions,
+     Ada.Strings.Fixed;
 
-with Interfaces.C;
+with Non_Standard;
 
 package body HAC_Pack is
+
   use Ada.Characters.Handling, VStr_Pkg;
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions (Real);
@@ -84,11 +85,11 @@ package body HAC_Pack is
     return Trunc (Rnd * Real (I + 1));
   end Rand;
 
-  gen : Generator;
+  gen : Ada.Numerics.Float_Random.Generator;
 
   function Rnd return Real is
   begin
-    return Real (Random (gen));
+    return Real (Ada.Numerics.Float_Random.Random (gen));
   end Rnd;
 
   function HAC_Image (I : Integer) return String is
@@ -258,17 +259,17 @@ package body HAC_Pack is
 
   function Trim_Left  (Source : VString) return VString is
   begin
-    return Trim (Source, Left);
+    return Trim (Source, Ada.Strings.Left);
   end Trim_Left;
 
   function Trim_Right (Source : VString) return VString is
   begin
-    return Trim (Source, Right);
+    return Trim (Source, Ada.Strings.Right);
   end Trim_Right;
 
   function Trim_Both  (Source : VString) return VString is
   begin
-    return Trim (Source, Both);
+    return Trim (Source, Ada.Strings.Both);
   end Trim_Both;
 
   function Image (I : Integer) return VString is
@@ -707,19 +708,10 @@ package body HAC_Pack is
       return Image_with_exponent;
   end HAC_Image;
 
-  --  Here is the non-Ada-standard stuff in HAC_Pack.
-  package Non_Standard is
-    function Sys (Arg : Interfaces.C.char_array) return Integer;
-    pragma Import (C, Sys, "system");
-
-    Directory_Separator : constant Character;
-    pragma Import (C, Directory_Separator, "__gnat_dir_separator");
-  end Non_Standard;
-
   procedure Shell_Execute (Command : String; Result : out Integer) is
     --  https://rosettacode.org/wiki/Execute_a_system_command#Ada
   begin
-    Result := Non_Standard.Sys (Interfaces.C.To_C (Command));
+    Non_Standard.Sys (Command, Result);
   end Shell_Execute;
 
   procedure Shell_Execute (Command : VString; Result : out Integer) is
@@ -744,5 +736,5 @@ package body HAC_Pack is
   end Directory_Separator;
 
 begin
-  Reset (gen);  --  Randomize.
+  Ada.Numerics.Float_Random.Reset (gen);  --  Randomize.
 end HAC_Pack;
