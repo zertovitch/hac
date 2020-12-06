@@ -113,8 +113,8 @@ package body HAC_Sys.Parser.Ranges is
       --  All right, we have parsed, e.g., "Boolean".
       --  Since we are in a dynamic context, we need to push
       --  the bounds on the stack (E.g., "False .. True").
-      Emit1 (CD, k_Push_Discrete_Literal, Lower_Bound_Static.I);
-      Emit1 (CD, k_Push_Discrete_Literal, Higher_Bound_Static.I);
+      Emit_1 (CD, k_Push_Discrete_Literal, Lower_Bound_Static.I);
+      Emit_1 (CD, k_Push_Discrete_Literal, Higher_Bound_Static.I);
       Range_Typ := Lower_Bound_Static.TP;
       return;
     end if;

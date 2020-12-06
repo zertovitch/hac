@@ -71,35 +71,7 @@ package body HAC_Sys.PCode is
     end case;
   end For_END;
 
-  ----------------------------------------------------------------Emit----
-
-  procedure Emit (
-    OC   : in out Object_Code_Table;
-    LC   : in out Integer;
-    D    :        Debug_Info;
-    FCT  :        Opcode)
-  is
-  begin
-    Emit2 (OC, LC, D, FCT, 0, 0);    --  Order's X, Y are not used
-  end Emit;
-
-  ---------------------------------------------------------------Emit1----
-
-  procedure Emit1 (
-    OC   : in out Object_Code_Table;
-    LC   : in out Integer;
-    D    :        Debug_Info;
-    FCT  :        Opcode;
-    B    :        Operand_2_Type
-  )
-  is
-  begin
-    Emit2 (OC, LC, D, FCT, 0, B);    --  Order's X is not used
-  end Emit1;
-
-  ---------------------------------------------------------------Emit2----
-
-  procedure Emit2 (
+  procedure Emit_Instruction (
     OC   : in out Object_Code_Table;
     LC   : in out Integer;
     D    :        Debug_Info;
@@ -110,14 +82,14 @@ package body HAC_Sys.PCode is
   is
   begin
     if LC = OC'Last then
-      Fatal (OBJECTS);
+      Fatal (Object_Code);
     end if;
     OC (LC).F := FCT;
     OC (LC).X := a;
     OC (LC).Y := B;
     OC (LC).D := D;
     LC        := LC + 1;
-  end Emit2;
+  end Emit_Instruction;
 
   procedure Patch_Addresses (OC : in out Object_Code_Table) is
     LC0 : Integer := OC'First;

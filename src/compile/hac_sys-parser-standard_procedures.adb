@@ -43,7 +43,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
     procedure File_I_O_Call (FIO_Code : SP_Code; Param : Operand_2_Type := 0) is
     begin
-      Emit2 (CD, k_File_I_O, SP_Code'Pos (FIO_Code), Param);
+      Emit_2 (CD, k_File_I_O, SP_Code'Pos (FIO_Code), Param);
     end File_I_O_Call;
     --
     procedure Set_Abstract_Console is
@@ -105,7 +105,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         null;  --  Good, Put[_Line] can do it all "as is"!
       elsif Is_Char_Array (CD, Item_Typ) then
         --  Address is already pushed; we need to push the string's length.
-        Emit1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.Arrays_Table (Item_Typ.Ref).Array_Size));
+        Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.Arrays_Table (Item_Typ.Ref).Array_Size));
       else
         Error (CD, err_illegal_parameters_to_Put);
       end if;
@@ -139,7 +139,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         --  In order to have a fixed number of parameters in all cases,
         --  we push also the "invalid" ones. See Do_Write_Formatted
         --  to have an idea on how everybody is retrieved from the stack.
-        Emit1 (CD, k_Push_Discrete_Literal, Operand_2_Type (def_param (Item_Typ.TYP, Param)));
+        Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (def_param (Item_Typ.TYP, Param)));
       end loop;
       if with_file then
         if Code = SP_Put_Line then

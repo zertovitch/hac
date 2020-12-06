@@ -32,7 +32,7 @@ begin
         when Floats =>
           null;  --  !!  Emit warning: "already float"
         when Ints =>
-          Compiler.PCode_Emit.Emit1 (CD, k_Integer_to_Float, 0);
+          Compiler.PCode_Emit.Emit_1 (CD, k_Integer_to_Float, 0);
         when Durations =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Duration_to_Float);
         when others =>

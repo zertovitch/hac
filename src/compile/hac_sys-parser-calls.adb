@@ -26,13 +26,13 @@ package body HAC_Sys.Parser.Calls is
       if X.Ref /= Expected.Ref then
         Type_Mismatch (CD, err_parameter_types_do_not_match, X, Expected);
       elsif X.TYP = Arrays then
-        Emit1 (CD, k_Load_Block, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
+        Emit_1 (CD, k_Load_Block, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
       elsif X.TYP = Records then
-        Emit1 (CD, k_Load_Block, Operand_2_Type (CD.Blocks_Table (X.Ref).VSize));
+        Emit_1 (CD, k_Load_Block, Operand_2_Type (CD.Blocks_Table (X.Ref).VSize));
       end if;
     elsif X.TYP = Ints and Expected.TYP = Floats then
       Forbid_Type_Coercion (CD, X, Expected);
-      Emit1 (CD, k_Integer_to_Float, 0);  --  Left as a "souvenir" of SmallAda...
+      Emit_1 (CD, k_Integer_to_Float, 0);  --  Left as a "souvenir" of SmallAda...
     elsif X.TYP /= NOTYP then
       Type_Mismatch (CD, err_parameter_types_do_not_match, X, Expected);
     end if;
@@ -70,7 +70,7 @@ package body HAC_Sys.Parser.Calls is
         else
           F := k_Push_Value;    --  Push "(v.all)'Access", that is, v (v is an access type).
         end if;
-        Emit2 (CD, F, CD.IdTab (K).LEV, Operand_2_Type (CD.IdTab (K).Adr_or_Sz));
+        Emit_2 (CD, F, CD.IdTab (K).LEV, Operand_2_Type (CD.IdTab (K).Adr_or_Sz));
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
           Selector (CD, Level, FSys + Colon_Comma_RParent, Found);
         end if;
@@ -99,7 +99,7 @@ package body HAC_Sys.Parser.Calls is
     Last_Param, CP : Integer;
     Found, Expected : Exact_Typ;
   begin
-    Emit1 (CD, k_Mark_Stack, Operand_2_Type (I));
+    Emit_1 (CD, k_Mark_Stack, Operand_2_Type (I));
     Last_Param := CD.Blocks_Table (CD.IdTab (I).Block_Ref).Last_Param_Id_Idx;
     CP    := I;
     if CD.Sy = LParent then  --  Actual parameter list
@@ -136,13 +136,13 @@ package body HAC_Sys.Parser.Calls is
       Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
     end if;
     --
-    Emit2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (I).Block_Ref).PSize - 1));
+    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (I).Block_Ref).PSize - 1));
     if CallType /= Standard_Procedure_Call then  --  Some for of entry call
-      Emit1 (CD, k_Exit_Call, Operand_2_Type (CallType));  --  Return from Entry Call
+      Emit_1 (CD, k_Exit_Call, Operand_2_Type (CallType));  --  Return from Entry Call
     end if;
     --
     if CD.IdTab (I).LEV < Level then
-      Emit2 (CD, k_Update_Display_Vector, CD.IdTab (I).LEV, Operand_2_Type (Level));
+      Emit_2 (CD, k_Update_Display_Vector, CD.IdTab (I).LEV, Operand_2_Type (Level));
     end if;
   end Subprogram_or_Entry_Call;
 

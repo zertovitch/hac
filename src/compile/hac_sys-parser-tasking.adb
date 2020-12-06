@@ -32,7 +32,7 @@ package body HAC_Sys.Parser.Tasking is
       CD.Blocks_Table (CD.IdTab (I).Block_Ref).SrcFrom := saveLineCount;  --  (* Manuel *)
       InSymbol;
       Block (CD, FSys, False, False, Level + 1, I, TaskID, TaskID);  --  !! up/low case
-      Emit1 (CD, k_Exit_Call, Standard_Procedure_Call);
+      Emit_1 (CD, k_Exit_Call, Standard_Procedure_Call);
     else                         --  Task Specification
       if CD.Sy = IDent then
         TaskID := CD.Id;

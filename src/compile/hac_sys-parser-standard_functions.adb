@@ -125,7 +125,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         --  Niladic End_Of_File, End_Of_Line without parameter.
         file_parameter := False;
       end if;
-      Emit2 (CD, k_Standard_Functions, Boolean'Pos (file_parameter), SF_Code'Pos (FIF_Code));
+      Emit_2 (CD, k_Standard_Functions, Boolean'Pos (file_parameter), SF_Code'Pos (FIF_Code));
     end Parse_File_Information_Function;
     --
     procedure Adjustments_to_Parameter_Types is  --  Here is the actual overloading implemented.
@@ -143,7 +143,7 @@ package body HAC_Sys.Parser.Standard_Functions is
           =>
           if Ints_Set (Actual (1).TYP) then
             Forbid_Type_Coercion (CD, Found => Actual (1), Expected => (Floats, 0));
-            Emit1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda
+            Emit_1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda
           end if;
         when SF_Image_Ints =>
           case Actual (1).TYP is
@@ -183,7 +183,7 @@ package body HAC_Sys.Parser.Standard_Functions is
             when Arrays =>
               if Is_Char_Array (CD, Actual (1)) then
                 --  Address is already pushed; we need to push the string's length.
-                Emit1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.Arrays_Table (Actual (1).Ref).Array_Size));
+                Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.Arrays_Table (Actual (1).Ref).Array_Size));
                 Code_Adjusted := SF_String_to_VString;
               else
                 UErrors.Error (CD, err_expected_char_or_string);

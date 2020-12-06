@@ -33,7 +33,7 @@ package HAC_Sys.UErrors is
      FLOAT_CONSTANTS,
      ARRAYS,
      LEVELS,
-     OBJECTS,
+     Object_Code,
      Case_Labels,
      STRING_CONSTANTS,
      TASKS,

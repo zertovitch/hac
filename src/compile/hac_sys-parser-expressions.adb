@@ -37,7 +37,7 @@ package body HAC_Sys.Parser.Expressions is
         V            := CD.IdTab (Field_Id).xTyp;
         Field_Offset := CD.IdTab (Field_Id).Adr_or_Sz;
         if Field_Offset /= 0 then
-          Emit1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
+          Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
         end if;
       else
         Error (CD, err_var_with_field_selector_must_be_record);
@@ -63,9 +63,9 @@ package body HAC_Sys.Parser.Expressions is
                 Expected => ATE.Index_xTyp
               );
             elsif ATE.Element_Size = 1 then
-              Emit1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
+              Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
             else
-              Emit1 (CD, k_Array_Index, Operand_2_Type (ATI));
+              Emit_1 (CD, k_Array_Index, Operand_2_Type (ATI));
             end if;
             V := ATE.Element_xTyp;
           end;
@@ -138,8 +138,8 @@ package body HAC_Sys.Parser.Expressions is
           Test (CD, Factor_Begin_Symbol + StrCon, FSys_Fact, err_factor_unexpected_symbol);
           if CD.Sy = StrCon then
             X.TYP := String_Literals;
-            Emit1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.SLeng));  --  String Literal Length
-            Emit1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.INum));   --  Index To String IdTab
+            Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.SLeng));  --  String Literal Length
+            Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.INum));   --  Index To String IdTab
             InSymbol (CD);
           end if;
           while Factor_Begin_Symbol (CD.Sy) loop  --  !!  Why a loop here ?... Why StrCon excluded ?
@@ -156,10 +156,10 @@ package body HAC_Sys.Parser.Expressions is
                       X := r.xTyp;
                       if X.TYP = Floats then
                         --  Address is an index in the float constants table.
-                        Emit1 (CD, k_Push_Float_Literal, Operand_2_Type (r.Adr_or_Sz));
+                        Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.Adr_or_Sz));
                       else
                         --  Here the address is actually the immediate (discrete) value.
-                        Emit1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.Adr_or_Sz));
+                        Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.Adr_or_Sz));
                       end if;
                       --
                     when Variable =>
@@ -170,7 +170,7 @@ package body HAC_Sys.Parser.Expressions is
                         else
                           F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                         end if;
-                        Emit2 (CD, F, r.LEV, Operand_2_Type (r.Adr_or_Sz));
+                        Emit_2 (CD, F, r.LEV, Operand_2_Type (r.Adr_or_Sz));
                         Selector (CD, Level, FSys_Fact, X);
                         if Standard_or_Enum_Typ (X.TYP) then
                           --  We are at a leaf point of composite type selection,
@@ -191,7 +191,7 @@ package body HAC_Sys.Parser.Expressions is
                         else
                           F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                         end if;
-                        Emit2 (CD, F, r.LEV, Operand_2_Type (r.Adr_or_Sz));
+                        Emit_2 (CD, F, r.LEV, Operand_2_Type (r.Adr_or_Sz));
                       end if;
                       --
                     when TypeMark =>
@@ -221,7 +221,7 @@ package body HAC_Sys.Parser.Expressions is
                     RNum_Index : Natural;
                   begin
                     Enter_or_find_Float (CD, CD.RNum, RNum_Index);
-                    Emit1 (CD, k_Push_Float_Literal, Operand_2_Type (RNum_Index));
+                    Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (RNum_Index));
                   end;
                 else
                   if CD.Sy = CharCon then
@@ -229,7 +229,7 @@ package body HAC_Sys.Parser.Expressions is
                   else
                     X.TYP := Ints;
                   end if;
-                  Emit1 (CD, k_Push_Discrete_Literal, CD.INum);
+                  Emit_1 (CD, k_Push_Discrete_Literal, CD.INum);
                 end if;
                 X.Ref := 0;
                 InSymbol (CD);
@@ -309,12 +309,12 @@ package body HAC_Sys.Parser.Expressions is
                 else
                   if X.TYP = Ints then
                     Forbid_Type_Coercion (CD, Mult_OP, X, Y);
-                    Emit1 (CD, k_Integer_to_Float, 1);  --  NB: this assumed Y.TYP was Floats!
+                    Emit_1 (CD, k_Integer_to_Float, 1);  --  NB: this assumed Y.TYP was Floats!
                     X.TYP := Floats;
                   end if;
                   if Y.TYP = Ints then
                     Forbid_Type_Coercion (CD, Mult_OP, X, Y);
-                    Emit1 (CD, k_Integer_to_Float, 0);  --  NB: this assumed Y.TYP was Floats!
+                    Emit_1 (CD, k_Integer_to_Float, 0);  --  NB: this assumed Y.TYP was Floats!
                     Y.TYP := Floats;
                   end if;
                   Error (CD, err_illegal_type_for_arithmetic_expression);
@@ -367,7 +367,7 @@ package body HAC_Sys.Parser.Expressions is
           X.TYP := VStrings;
         elsif Adding_OP = Plus and then Is_Char_Array (CD, X) then  --  +S
           --  Address is already pushed; we need to push the string's length.
-          Emit1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
+          Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
           Emit_Std_Funct (CD, SF_String_to_VString);
           X.TYP := VStrings;
         elsif X.TYP not in Numeric_Typ then
@@ -491,11 +491,11 @@ package body HAC_Sys.Parser.Expressions is
       if X.TYP = Ints and Y.TYP = Floats then
         Forbid_Type_Coercion (CD, Rel_OP, X, Y);
         X.TYP := Floats;
-        Emit1 (CD, k_Integer_to_Float, 1);
+        Emit_1 (CD, k_Integer_to_Float, 1);
       elsif X.TYP = Floats and Y.TYP = Ints then
         Forbid_Type_Coercion (CD, Rel_OP, X, Y);
         Y.TYP := Floats;
-        Emit1 (CD, k_Integer_to_Float, 0);
+        Emit_1 (CD, k_Integer_to_Float, 0);
       elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
         Issue_Comparison_Type_Mismatch_Error;
       elsif X.TYP = VStrings and Y.TYP = String_Literals then

@@ -20,13 +20,13 @@ package HAC_Sys.Compiler.PCode_Emit is
     FCT  :        Opcode
   );
 
-  procedure Emit1 (
+  procedure Emit_1 (
     CD   : in out Compiler_Data;
     FCT  :        Opcode;
     B    :        Operand_2_Type
   );
 
-  procedure Emit2 (
+  procedure Emit_2 (
     CD   : in out Compiler_Data;
     FCT  :        Opcode;
     a    :        Operand_1_Type;

@@ -26,20 +26,20 @@ package body HAC_Sys.Compiler.PCode_Emit is
   )
   is
   begin
-    PCode.Emit (CD.ObjCode, CD.LC, Compiler_Data_to_Debug_Info (CD), FCT);
+    Emit_2 (CD, FCT, 0, 0);
   end Emit;
 
-  procedure Emit1 (
+  procedure Emit_1 (
     CD   : in out Compiler_Data;
     FCT  :        Opcode;
     B    :        Operand_2_Type
   )
   is
   begin
-    PCode.Emit1 (CD.ObjCode, CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, B);
-  end Emit1;
+    Emit_2 (CD, FCT, 0, B);
+  end Emit_1;
 
-  procedure Emit2 (
+  procedure Emit_2 (
     CD   : in out Compiler_Data;
     FCT  :        Opcode;
     a    :        Operand_1_Type;
@@ -47,8 +47,14 @@ package body HAC_Sys.Compiler.PCode_Emit is
   )
   is
   begin
-    PCode.Emit2 (CD.ObjCode, CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, a, B);
-  end Emit2;
+    PCode.Emit_Instruction (
+      CD.ObjCode (CD.ObjCode'First .. CD.CMax),
+      --  ^ We don't pass the full object code table (CD.ObjCode)
+      --    but the part before variable initialization code,
+      --    for preventing overwriting existing initialization code.
+      CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, a, B
+    );
+  end Emit_2;
 
   procedure Emit_Std_Funct (
     CD   : in out Compiler_Data;
@@ -56,7 +62,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
   )
   is
   begin
-    Emit1 (CD, k_Standard_Functions, SF_Code'Pos (Code));
+    Emit_1 (CD, k_Standard_Functions, SF_Code'Pos (Code));
   end Emit_Std_Funct;
 
   procedure Emit_Comparison_Instruction (

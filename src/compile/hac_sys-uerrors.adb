@@ -362,16 +362,11 @@ package body HAC_Sys.UErrors is
     if Current_Error_Output then
       Put (Current_Error, "The Compiler TABLE for: *");
       case N is
-        when FLOAT_CONSTANTS =>
-          Put (Current_Error, "FLOAT Constants");
-        when OBJECTS =>
-          Put (Current_Error, "OBJECT ObjCode");
-        when STRING_CONSTANTS =>
-          Put (Current_Error, "Strings Constants");
-        when PATCHING =>
-          Put ("ObjCode PATCHING");
-        when others =>
-          Put (Current_Error, Table_OverFlow_Error'Image (N));
+        when FLOAT_CONSTANTS  => Put (Current_Error, "Float Constants");
+        when STRING_CONSTANTS => Put (Current_Error, "Strings Constants");
+        when Object_Code          => Put (Current_Error, "Object Code");
+        when PATCHING         => Put (Current_Error, "ObjCode PATCHING");
+        when others           => Put (Current_Error, Table_OverFlow_Error'Image (N));
       end case;
       Put_Line (Current_Error, "* is too SMALL");
       New_Line (Current_Error);
