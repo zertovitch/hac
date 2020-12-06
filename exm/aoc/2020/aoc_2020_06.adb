@@ -10,11 +10,12 @@
 --
 --  HAC 0.08 "nice to have"'s detected in this exercise:
 --
---    *     ` subtype ... range ... ` like: `subtype Ans is Character range 'a' .. 'z';`
+--    *     ` subtype ... range ... ` like: `subtype Answer_Range is Character range 'a' .. 'z';`
 --    *     ` clear := (others => False); `
 --    *     ` rg := rg and r ` for arrays of Boolean (i.e., sets)
 --    *     ` aaa : constant Character := 'a';` compiled as a "Pascal" constant (like a number)
 --                                              and not as a read-only variable
+--    *     in HAC_Pack: Index (s, c) where c is a Character
 --
 with HAC_Pack;  use HAC_Pack;
 

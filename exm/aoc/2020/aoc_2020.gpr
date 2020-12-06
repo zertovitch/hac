@@ -13,6 +13,7 @@ project AoC_2020 is
 
    for Main use (
      "aoc_2020_06_full_ada.adb",
+     "aoc_2020_06_full_ada_using_hac_pack.adb",
      "aoc_2020_05.adb",
      "aoc_2020_04_a.adb",
      "aoc_2020_04_b.adb",
