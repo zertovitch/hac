@@ -50,11 +50,10 @@ procedure Enumerations is
     end case;
   end Test_CASE;
 
-  --  type Beast is Animal;  --  Pascal ghost, should be subtype
-  --  wild : Beast;
+  subtype Beast is Animal;
+  subtype Mammal is Animal range bat .. dog;
 
 begin
-  --  wild := a;
   v.x1 := a;
   v.x2 := c;
   x3 := e;
@@ -88,7 +87,7 @@ begin
   if zz (e).x4 /= i then Put_Line ("Compiler bug [E2]"); end if;
   if zz (f).x4 /= h then Put_Line ("Compiler bug [E3]"); end if;
   --
-  for pet in ant .. dog loop
+  for pet in Mammal loop
     pet2 := pet;
     null;  --  put(pet2);
   end loop;
