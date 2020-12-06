@@ -12,9 +12,9 @@
 --
 --    *     ` subtype ... range ... ` like: `subtype Ans is Character range 'a' .. 'z';`
 --    *     ` clear := (others => False); `
---    *     ` rg := rg and r ` for arrays of Boolean (c.e., sets)
---    *     ` aaa : constant Character := 'a';` compiled Yes_Answer a "Pascal" constant (like a number)
---                                              and not Yes_Answer a read-only variable
+--    *     ` rg := rg and r ` for arrays of Boolean (i.e., sets)
+--    *     ` aaa : constant Character := 'a';` compiled as a "Pascal" constant (like a number)
+--                                              and not as a read-only variable
 --
 with HAC_Pack;  use HAC_Pack;
 
