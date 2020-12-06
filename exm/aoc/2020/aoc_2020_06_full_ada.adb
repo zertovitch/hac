@@ -11,15 +11,14 @@ with HAC_Pack;  use HAC_Pack;
 procedure AoC_2020_06_Full_Ada is
   total : Integer;
   new_group : Boolean;
-  subtype Ans is Character range 'a' .. 'z';
-  type AS is array (Ans) of Boolean;
-  r, rg, clear : AS;
+  subtype Answer_Range is Character range 'a' .. 'z';
+  type Yes_Answer is array (Answer_Range) of Boolean;
+  r, rg : Yes_Answer;
   --
   procedure Collect_Group_Total is
     g : Natural := 0;
   begin
-    for i in Ans loop if rg (i) then g := g + 1; end if; end loop;
-    rg := clear;
+    for c in Answer_Range loop if rg (c) then g := g + 1; end if; end loop;
     total := total + g;
     new_group := True;
   end Collect_Group_Total;
@@ -27,11 +26,8 @@ procedure AoC_2020_06_Full_Ada is
   f : File_Type;
   s : VString;
 begin
-  clear := (others => False);
   for part in 1 .. 2 loop
     Open (f, "aoc_2020_06.txt");
-    r := clear;
-    rg := clear;
     total := 0;
     new_group := True;
     while not End_Of_File (f) loop
@@ -39,11 +35,8 @@ begin
       if s = "" then
         Collect_Group_Total;
       else
-        r := clear;
-        for i in Ans loop
-          if Index (s, +i) > 0 then
-            r (i) := True;
-          end if;
+        for c in Answer_Range loop
+          r (c) := Index (s, +c) > 0;
         end loop;
         if new_group then
           rg := r;
