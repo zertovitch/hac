@@ -2,6 +2,10 @@
 -----------------------------------------------------
 --  Passport Processing
 --
+--  https://adventofcode.com/2020/day/04
+--
+-------------------------------------------------------------------------
+--
 --  HAC 0.08 version.
 --
 --  HAC 0.08 "nice to have"'s detected in this exercise:
@@ -11,8 +15,6 @@
 --    *   Index with From parameter
 --    *   "and then", "or else"
 --    *   'Image attribute for enumerated types
---
---  https://adventofcode.com/2020/day/04
 --
 with HAC_Pack;  use HAC_Pack;
 

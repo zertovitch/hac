@@ -12,6 +12,7 @@ project AoC_2020 is
    AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
    for Main use (
+     "aoc_2020_06_full_ada.adb",
      "aoc_2020_05.adb",
      "aoc_2020_04_a.adb",
      "aoc_2020_04_b.adb",
@@ -64,7 +65,7 @@ project AoC_2020 is
               "-gnatyO",      --  Style: check that overriding subprograms are explicitly marked as such.
               "-gnatyx",      --  Style: check x:no extra parens
               "-gnatye",      --  Style: check e:end/exit labels present
-              "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
+              "-gnatytc"      --  Style: check t:token separation rules, c:comment format (two spaces)
             );
          when "Fast" =>
             for Default_Switches ("ada") use Common_Options & Fast_Options & ("-gnatpn", "-ffunction-sections");
