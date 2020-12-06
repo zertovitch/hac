@@ -6,11 +6,10 @@
 --
 -------------------------------------------------------------------------
 --
---  HAC 0.08 version.
+--  HAC 0.081 version.
 --
---  HAC 0.08 "nice to have"'s detected in this exercise:
+--  HAC 0.081 "nice to have"'s detected in this exercise:
 --
---    *     ` subtype ... range ... ` like: `subtype Answer_Range is Character range Answer_Range;`
 --    *     ` clear := (others => False); `
 --    *     ` rg := rg and r ` for arrays of Boolean (i.e., sets)
 --    *     ` aaa : constant Character := 'a';`
@@ -22,8 +21,7 @@ with HAC_Pack;  use HAC_Pack;
 procedure AoC_2020_06 is
   total : Integer;
   new_group : Boolean;
-  subtype Answer_Range is Character;
-  --  !!  subtype Answer_Range is Character range 'a' .. 'z' (the program works without it because of well-formed data)
+  subtype Answer_Range is Character range 'a' .. 'z';
   type Yes_Answer is array (Answer_Range) of Boolean;
   r, rg : Yes_Answer;
   --

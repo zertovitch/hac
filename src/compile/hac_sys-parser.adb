@@ -308,7 +308,7 @@ package body HAC_Sys.Parser is
           --  Numeric constant: we parse the number here ("k : constant := 123.0").
           if CD.Sy = Becomes then
             InSymbol;
-            Number_Declaration_or_Enum_Item (CD, Level, Comma_IDent_Semicolon + FSys, C);
+            Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, Comma_IDent_Semicolon + FSys, C);
           else
             Error (CD, err_BECOMES_missing);
           end if;
@@ -620,7 +620,7 @@ package body HAC_Sys.Parser is
           K   : Integer;
           use type HAC_Integer;
         begin
-          Number_Declaration_or_Enum_Item (CD, Level, FSys_St + Alt_Finger_THEN, Lab);
+          Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, FSys_St + Alt_Finger_THEN, Lab);
           if Lab.TP /= X then
             Type_Mismatch (
               CD, err_case_label_not_same_type_as_case_clause,

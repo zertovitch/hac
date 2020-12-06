@@ -2,10 +2,10 @@ with HAC_Sys.Defs;
 
 private package HAC_Sys.Parser.Ranges is
 
-  --  This package has two variants (Static_Range, Dynamic_Range) of
+  --  This package has two families (Static_Range, Dynamic_Range) of
   --  discrete_subtype_definition RM 3.6 (6). In a distant future we could
-  --  have a variant of Dynamic_Range which detects that the bounds are static
-  --  and optimizes the code accordingly.
+  --  have a variant of Dynamic_Range which detects that the bounds are
+  --  actually static and optimizes the code accordingly.
 
   --      which is either:
   --        a subtype_indication 3.2.2 (3) : name [constraint]
@@ -17,10 +17,10 @@ private package HAC_Sys.Parser.Ranges is
   --        or
   --          range_attribute_reference 4.1.4 (4): A'Range[(2)]
 
-  ------------------
-  -- Static_Range --
-  ------------------
-  --
+  ---------------------
+  --  Static ranges  --
+  ---------------------
+
   --  A range with static bounds is parsed.
   --  The bounds are known at compile-time.
   --  At least, HAC is expecting the bounds to be static...
@@ -41,6 +41,27 @@ private package HAC_Sys.Parser.Ranges is
   --  CF answer by Niklas Holsti to
   --    "Q: discrete_subtype_definition: static only cases?"
   --    on comp.lang.ada, 2020-06-07.
+
+  ---------------------------
+  -- Explicit_Static_Range --
+  ---------------------------
+  --
+  --  `1 .. 3`
+  --
+  procedure Explicit_Static_Range (
+    CD             : in out Compiler_Data;
+    Level          : in     PCode.Nesting_level;
+    FSys           : in     Defs.Symset;
+    Specific_Error : in     Defs.Compile_Error;
+    Lower_Bound    :    out Constant_Rec;
+    Higher_Bound   :    out Constant_Rec
+  );
+
+  ------------------
+  -- Static_Range --
+  ------------------
+  --
+  --  So far: either `1 .. 3` (that is, Explicit_Static_Range) or `Character`.
   --
   procedure Static_Range (
     CD             : in out Compiler_Data;

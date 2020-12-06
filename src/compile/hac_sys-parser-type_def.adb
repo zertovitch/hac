@@ -19,7 +19,7 @@ package body HAC_Sys.Parser.Type_Def is
 
   use Enter_Def, Helpers, PCode, UErrors;
 
-  procedure Number_Declaration_or_Enum_Item (
+  procedure Number_Declaration_or_Enum_Item_or_Literal_Char (
     CD      : in out Compiler_Data;
     Level   : in     PCode.Nesting_level;
     FSys_ND : in     Symset;
@@ -88,7 +88,7 @@ package body HAC_Sys.Parser.Type_Def is
       end if;
     end if;
     Test (CD, FSys_ND, Empty_Symset, err_incorrectly_used_symbol);
-  end Number_Declaration_or_Enum_Item;
+  end Number_Declaration_or_Enum_Item_or_Literal_Char;
 
   procedure Type_Declaration (
     CD       : in out Compiler_Data;
@@ -266,27 +266,46 @@ package body HAC_Sys.Parser.Type_Def is
       Array_Typ (xTP.Ref, Size, String_Constrained_Subtype => True);
     end String_Sub_Typ;
 
+    --  Here we are sitting on `Character` in `subtype My_Chars is Character` [range 'a' .. 'z']
+    --
     procedure Sub_Typ is
       Ident_Index : constant Integer := Locate_Identifier (CD, CD.Id, Level);
+      Low, High : Constant_Rec;
     begin
-      if Ident_Index /= No_Id then
-        declare
-          Id_T : IdTabEntry renames CD.IdTab (Ident_Index);
-        begin
-          if Id_T.Obj = TypeMark then
-            xTP   := Id_T.xTyp;
-            Size  := Id_T.Adr_or_Sz;
-            First := Id_T.Discrete_First;
-            Last  := Id_T.Discrete_Last;
-            if xTP.TYP = NOTYP then
-              Error (CD, err_undefined_type);
-            end if;
-          else
-            Error (CD, err_missing_a_type_identifier);
-          end if;
-        end;
+      if Ident_Index = No_Id then
+        return;  --  Error already issued due to undefined identifier
       end if;
+      declare
+        Id_T : IdTabEntry renames CD.IdTab (Ident_Index);
+      begin
+        if Id_T.Obj = TypeMark then
+          xTP   := Id_T.xTyp;
+          Size  := Id_T.Adr_or_Sz;
+          First := Id_T.Discrete_First;
+          Last  := Id_T.Discrete_Last;
+          if xTP.TYP = NOTYP then
+            Error (CD, err_undefined_type);
+          end if;
+        else
+          Error (CD, err_missing_a_type_identifier);
+        end if;
+      end;
       InSymbol;
+      if CD.Sy = RANGE_Keyword_Symbol then
+        --  Here comes the optional `  range 'a' .. 'z'  ` constraint.
+        InSymbol;
+        Ranges.Explicit_Static_Range (CD, Level, FSys_TD, err_range_constraint_error, Low, High);
+        if Low.TP /= xTP then
+          Error (CD, err_range_constraint_error, "type of bounds don't match with the parent type");
+        elsif Low.I not in First .. Last then
+          Error (CD, err_range_constraint_error, "lower bound is out of parent type's range");
+        elsif High.I not in First .. Last then
+          Error (CD, err_range_constraint_error, "higher bound is out of parent type's range");
+        else
+          First := Low.I;
+          Last  := High.I;
+        end if;
+      end if;
     end Sub_Typ;
 
   begin

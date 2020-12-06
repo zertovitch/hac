@@ -42,6 +42,39 @@ package body HAC_Sys.Parser.Ranges is
     end if;
   end Static_Subtype_Indication;
 
+  ---------------------------
+  -- Explicit_Static_Range --
+  ---------------------------
+
+  procedure Explicit_Static_Range (
+    CD             : in out Compiler_Data;
+    Level          : in     PCode.Nesting_level;
+    FSys           : in     Defs.Symset;
+    Specific_Error : in     Defs.Compile_Error;
+    Lower_Bound    :    out Constant_Rec;
+    Higher_Bound   :    out Constant_Rec
+  )
+  is
+    use Defs, Helpers, Type_Def, UErrors;
+  begin
+    Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, OF_RANGE_Double_Dot_RParent + FSys, Lower_Bound);
+    --
+    if Lower_Bound.TP.TYP = Floats then
+      Error (CD, Specific_Error, "a float type is not expected here");
+      Lower_Bound.TP := (Ints, 0);
+      Lower_Bound.I  := 0;
+    end if;
+    --
+    Need (CD, Range_Double_Dot_Symbol, err_expecting_double_dot);  --  " .. "
+    --
+    Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, Comma_OF_RParent + FSys, Higher_Bound);
+    --
+    if Higher_Bound.TP /= Lower_Bound.TP then
+      Error (CD, Specific_Error, "types in range bounds do not match");
+      Higher_Bound.I := Lower_Bound.I;
+    end if;
+  end Explicit_Static_Range;
+
   ------------------
   -- Static_Range --
   ------------------
@@ -58,7 +91,7 @@ package body HAC_Sys.Parser.Ranges is
     --  The variant "Low .. High" was initially
     --  in HAC.Parser <= 0.07 for array bounds.
     Is_SI_Found : Boolean;
-    use Defs, Helpers, Type_Def, UErrors;
+    use Defs;
   begin
     Static_Subtype_Indication (CD, Level, Lower_Bound, Higher_Bound, Is_SI_Found);
     if Is_SI_Found then
@@ -69,22 +102,7 @@ package body HAC_Sys.Parser.Ranges is
     --
     --  We try an explicit static range, like: "1 .. N" (N declared number) or "red .. blue".
     --
-    Number_Declaration_or_Enum_Item (CD, Level, OF_RANGE_Double_Dot_RParent + FSys, Lower_Bound);
-    --
-    if Lower_Bound.TP.TYP = Floats then
-      Error (CD, Specific_Error, "a float type is not expected here");
-      Lower_Bound.TP := (Ints, 0);
-      Lower_Bound.I  := 0;
-    end if;
-    --
-    Need (CD, Range_Double_Dot_Symbol, err_expecting_double_dot);  --  " .. "
-    --
-    Number_Declaration_or_Enum_Item (CD, Level, Comma_OF_RParent + FSys, Higher_Bound);
-    --
-    if Higher_Bound.TP /= Lower_Bound.TP then
-      Error (CD, Specific_Error, "types in range bounds do not match");
-      Higher_Bound.I := Lower_Bound.I;
-    end if;
+    Explicit_Static_Range (CD, Level, FSys, Specific_Error, Lower_Bound, Higher_Bound);
   end Static_Range;
 
   -------------------

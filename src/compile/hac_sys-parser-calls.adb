@@ -55,7 +55,7 @@ package body HAC_Sys.Parser.Calls is
       K := Locate_Identifier (CD, CD.Id, Level);
       InSymbol (CD);
       if K = No_Id then
-        null;  --  Error already issued due to missing identifier
+        null;  --  Error already issued due to undefined identifier
       elsif CD.IdTab (K).Obj /= Variable then
         Error (CD, err_variable_missing);
       elsif CD.IdTab (K).Read_only then

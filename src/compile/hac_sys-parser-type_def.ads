@@ -16,9 +16,9 @@ private package HAC_Sys.Parser.Type_Def is  --  Package around type definitions.
   use Defs;
 
   ------------------------------------------------------------------
-  ----------------------------------Number_Declaration_or_Enum_Item-
+  ------------------Number_Declaration_or_Enum_Item_or_Literal_Char-
   --
-  procedure Number_Declaration_or_Enum_Item (
+  procedure Number_Declaration_or_Enum_Item_or_Literal_Char (
     CD      : in out Compiler_Data;
     Level   : in     PCode.Nesting_level;
     FSys_ND : in     Symset;

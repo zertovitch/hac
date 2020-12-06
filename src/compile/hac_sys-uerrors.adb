@@ -239,6 +239,8 @@ package body HAC_Sys.UErrors is
       when err_string_to_vstring_assignment =>
         return "fixed string assigned to a variable string;" &
                " put a ""+"" in front of the fixed string";
+      when err_range_constraint_error =>
+        return "error in range constraint: " & hint;
     end case;
   end Error_String;
 
