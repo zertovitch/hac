@@ -12,6 +12,9 @@ project AoC_2020 is
    AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
    for Main use (
+     "aoc_2020_07.adb",
+     "aoc_2020_07_full_ada.adb",
+     "aoc_2020_07_full_ada_vectors_2x.adb",
      "aoc_2020_06.adb",
      "aoc_2020_06_full_ada.adb",
      "aoc_2020_06_full_ada_using_hac_pack.adb",
@@ -34,7 +37,7 @@ project AoC_2020 is
    Common_Options := (
      "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
-     "-gnatwcijkmopruvz.c.n.p.t.w.x",  --  Warnings switches (run "gnatmake" for full list)
+     "-gnatwcijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
      "-gnatf",  --  Full errors. Verbose details, all undefined references
      "-gnatq",  --  Don't quit, try semantics, even if parse errors
      "-gnatQ"   --  Don't quit, write ali/tree file even if compile errors
