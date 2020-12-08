@@ -56,6 +56,8 @@ package body HAC_Sys.Parser.Standard_Procedures is
       Found : Exact_Typ;
       with_file : Boolean;
       Code_2 : PCode.SP_Code := Code;
+      String_Length_Encoding : Operand_2_Type := 0;
+      use type Operand_2_Type;
     begin
       Need (CD, LParent, err_missing_an_opening_parenthesis);
       Push_by_Reference_Parameter (CD, Level, FSys, Found);
@@ -69,7 +71,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       --  has been pushed by reference now.
       if Found.TYP = NOTYP then
         null;  --  Error(s) already appeared in the parsing.
-      elsif Found.TYP in Standard_Typ and then Found.TYP /= Bools then
+      elsif Text_IO_Get_Item_Set (Found.TYP) then
         if with_file then
           if Code = SP_Get_Line then
             Code_2 := SP_Get_Line_F;
@@ -77,7 +79,15 @@ package body HAC_Sys.Parser.Standard_Procedures is
             Code_2 := SP_Get_F;
           end if;
         end if;
-        File_I_O_Call (Code_2, Typen'Pos (Found.TYP));
+        if Found.TYP = Arrays then  --  We have a fixed-sized String here.
+          if Is_Char_Array (CD, Found) then
+            String_Length_Encoding := (2 ** Typen'Size) *
+              Operand_2_Type (CD.Arrays_Table (Found.Ref).Array_Size);
+          else
+            Error (CD, err_illegal_parameters_to_Get);
+          end if;
+        end if;
+        File_I_O_Call (Code_2, Typen'Pos (Found.TYP) + String_Length_Encoding);
       else
         Error (CD, err_illegal_parameters_to_Get);
       end if;

@@ -36,6 +36,7 @@ following from a command line interpreter (please replace
     cd exm
     ..\hac gallery.adb
 
+If `gnatmake` doesn't work, try `gprbuild`.
 Alternatively, on Windows and with mouse only, you can go
 into the "exm" folder and double-click "e.cmd" .
 

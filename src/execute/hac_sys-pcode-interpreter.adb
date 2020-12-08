@@ -92,10 +92,13 @@ package body HAC_Sys.PCode.Interpreter is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       use Defs;
       Out_Param : constant Index := Index (ND.S (Curr_TCB.T).I);
-      Typ : constant Typen := Typen'Val (ND.IR.Y);
+      Typ : Typen;
       Immediate : constant Boolean := Code = SP_Get_Immediate;
       FP : File_Ptr;
+      String_Length_Decoding : Operand_2_Type;
+      use type Operand_2_Type;
     begin
+      Typ := Typen'Val (ND.IR.Y mod (2 ** Typen'Size));
       if Code in SP_Get .. SP_Get_Line then
         --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
         case Typ is
@@ -111,6 +114,13 @@ package body HAC_Sys.PCode.Interpreter is
               Console.Get (CH);
             end if;
             ND.S (Out_Param).I := Character'Pos (CH);
+          when Arrays =>
+            --  We have a String, with a given length.
+            String_Length_Decoding := ND.IR.Y / (2 ** Typen'Size);
+            for i in 1 .. Index (String_Length_Decoding) loop
+              Console.Get (CH);
+              ND.S (Out_Param + i - 1).I := Character'Pos (CH);
+            end loop;
           when others =>
             null;
         end case;
@@ -133,6 +143,13 @@ package body HAC_Sys.PCode.Interpreter is
               ND.S (Out_Param).I := Character'Pos (CH);
             when VStrings =>
               ND.S (Out_Param) := GR_VString (Ada.Text_IO.Get_Line (FP.all));
+            when Arrays =>
+              --  We have a String, with a given length.
+              String_Length_Decoding := ND.IR.Y / (2 ** Typen'Size);
+              for i in 1 .. Index (String_Length_Decoding) loop
+                Ada.Text_IO.Get (FP.all, CH);
+                ND.S (Out_Param + i - 1).I := Character'Pos (CH);
+              end loop;
             when others =>
               null;
           end case;

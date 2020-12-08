@@ -304,6 +304,7 @@ package HAC_Sys.Parser.Helpers is
   ------------------
 
   Numeric_Typ_Set  : constant Typ_Set := (Numeric_Typ     => True, others => False);
+  Bools_Set        : constant Typ_Set := (Bools           => True, others => False);
   Chars_Set        : constant Typ_Set := (Chars           => True, others => False);
   Ints_Set         : constant Typ_Set := (Ints            => True, others => False);
   Floats_Set       : constant Typ_Set := (Floats          => True, others => False);
@@ -320,6 +321,8 @@ package HAC_Sys.Parser.Helpers is
   Fixed_Str_or_Str_Lit_Set : constant Typ_Set := Arrays_Set or Str_Lit_Set;
   --  ^ If Arrays, need to call Is_Char_Array to check it's a String.
   Chars_or_Strings_Set     : constant Typ_Set := Chars_Set or Fixed_Str_or_Str_Lit_Set;
+  Standard_Set             : constant Typ_Set := (Standard_Typ => True, others => False);
+  Text_IO_Get_Item_Set     : constant Typ_Set := (Standard_Set and not Bools_Set) or Arrays_Set;
 
   -------------
   --  Misc.  --

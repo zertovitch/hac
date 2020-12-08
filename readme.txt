@@ -16,6 +16,7 @@ preferred command-line interpreter:
   cd exm
   ../hac gallery.adb
 
-(for Windows, '\' are meant in place of '/')
+(if `gnatmake` doesn't work, try `gprbuild`;
+ for Windows, '\' is meant in place of '/')
 
 Enjoy!

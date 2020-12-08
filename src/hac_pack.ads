@@ -164,6 +164,7 @@ package HAC_Pack is
 
   --  Get
   procedure Get (C : out Character) renames Ada.Text_IO.Get;
+  procedure Get (S : out String)    renames Ada.Text_IO.Get;
   procedure Get (I : out Integer);
   procedure Get (F : out Real);
 
@@ -230,6 +231,7 @@ package HAC_Pack is
 
   --  Get
   procedure Get (File : File_Type; C : out Character) renames Ada.Text_IO.Get;
+  procedure Get (File : File_Type; S : out String)    renames Ada.Text_IO.Get;
   procedure Get (File : File_Type; I : out Integer);
   procedure Get (File : File_Type; F : out Real);
 

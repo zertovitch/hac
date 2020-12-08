@@ -91,7 +91,6 @@ package body HAC_Sys.Parser.Ranges is
     --  The variant "Low .. High" was initially
     --  in HAC.Parser <= 0.07 for array bounds.
     Is_SI_Found : Boolean;
-    use Defs;
   begin
     Static_Subtype_Indication (CD, Level, Lower_Bound, Higher_Bound, Is_SI_Found);
     if Is_SI_Found then
