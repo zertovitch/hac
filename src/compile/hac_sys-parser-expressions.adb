@@ -206,7 +206,7 @@ package body HAC_Sys.Parser.Expressions is
                         Standard_Functions.Standard_Function
                           (CD, Level, FSys_Fact, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
                       else
-                        Subprogram_or_Entry_Call (CD, Level, FSys_Fact, Ident_Index, Standard_Procedure_Call);
+                        Subprogram_or_Entry_Call (CD, Level, FSys_Fact, Ident_Index, Normal_Procedure_Call);
                       end if;
                       --
                     when others =>

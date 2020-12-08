@@ -355,7 +355,7 @@ package body HAC_Sys.Compiler is
       --  Enter Main.
       --
       Enter_Std (To_String (CD.Main_Program_ID),  Prozedure, NOTYP, 0);
-      CD.Main_Id_Index := CD.Id_Count;
+      CD.Main_Proc_Id_Index := CD.Id_Count;
     end Enter_Standard_Functions_and_Main;
 
     use Ada.Text_IO, HAC_Sys.Parser.Helpers;

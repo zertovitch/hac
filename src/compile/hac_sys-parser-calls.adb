@@ -137,7 +137,7 @@ package body HAC_Sys.Parser.Calls is
     end if;
     --
     Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (I).Block_Ref).PSize - 1));
-    if CallType /= Standard_Procedure_Call then  --  Some for of entry call
+    if CallType /= Normal_Procedure_Call then  --  Some for of entry call
       Emit_1 (CD, k_Exit_Call, Operand_2_Type (CallType));  --  Return from Entry Call
     end if;
     --

@@ -394,7 +394,7 @@ package body HAC_Sys.Parser is
       if IsFun then
         Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
       else
-        Emit_1 (CD, k_Exit_Call, Standard_Procedure_Call);
+        Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
       end if;
     end Proc_Func_Declaration;
 
@@ -581,9 +581,9 @@ package body HAC_Sys.Parser is
           end if;       -- !! but... this is legal in Ada !!
         end if;
         if Is_a_function then
-          Emit_1 (CD, k_Exit_Function, Standard_Procedure_Call);
+          Emit_1 (CD, k_Exit_Function, Normal_Procedure_Call);
         else
-          Emit_1 (CD, k_Exit_Call, Standard_Procedure_Call);
+          Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
         end if;
       end RETURN_Statement;
 
@@ -1169,14 +1169,16 @@ package body HAC_Sys.Parser is
                   Error (CD, err_illegal_statement_start_symbol, "function name",
                          stop => True);
                 when aTask =>
-                  Entry_Call (CD, Level, FSys_St, I_Statement, Standard_Entry_Call);
+                  Entry_Call (CD, Level, FSys_St, I_Statement, Normal_Entry_Call);
                 when Prozedure =>
-                  if CD.IdTab (I_Statement).LEV = 0 and then I_Statement /= CD.Main_Id_Index then
+                  if CD.IdTab (I_Statement).LEV = 0
+                    and then I_Statement /= CD.Main_Proc_Id_Index
+                  then
                     --  We have a procedure name from HAC_Pack.
                     Standard_Procedures.Standard_Procedure
                       (CD, Level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
                   else
-                    Subprogram_or_Entry_Call (CD, Level, FSys_St, I_Statement, Standard_Procedure_Call);
+                    Subprogram_or_Entry_Call (CD, Level, FSys_St, I_Statement, Normal_Procedure_Call);
                   end if;
                 when Label =>
                   Error (CD, err_duplicate_label, To_String (CD.Id));

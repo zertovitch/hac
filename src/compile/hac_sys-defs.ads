@@ -68,10 +68,10 @@ package HAC_Sys.Defs is
   Case_when_something : constant := +1;
   Case_when_others    : constant := -1;
 
-  Standard_Procedure_Call : constant := 0;
-  Standard_Entry_Call     : constant := 1;
-  Timed_Entry_Call        : constant := 2;
-  Conditional_Entry_Call  : constant := 3;
+  Normal_Procedure_Call  : constant := 0;
+  Normal_Entry_Call      : constant := 1;
+  Timed_Entry_Call       : constant := 2;
+  Conditional_Entry_Call : constant := 3;
 
   OrdMinChar : constant := 0;             --  Ord of First Char
   OrdMaxChar : constant := 255;           --  Ord of last Char

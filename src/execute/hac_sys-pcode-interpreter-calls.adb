@@ -48,10 +48,10 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       Curr_TCB.B := H1;
       Curr_TCB.T := H4;
       case IR.X is  --  Call type
-        when Defs.Standard_Procedure_Call =>
+        when Defs.Normal_Procedure_Call =>
           Curr_TCB.PC := CD.IdTab (H2).Adr_or_Sz;
 
-        when Defs.Standard_Entry_Call =>
+        when Defs.Normal_Entry_Call =>
           Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
           Curr_TCB.TS := WaitRendzv;
           H5          := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
@@ -110,7 +110,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       --  EXIT entry call or procedure call
       --  Cramer
       Curr_TCB.T := Curr_TCB.B - 1;
-      if IR.Y = Defs.Standard_Procedure_Call then
+      if IR.Y = Defs.Normal_Procedure_Call then
         Curr_TCB.PC := Integer (ND.S (Curr_TCB.B + 1).I);  --  Standard proc call return
       end if;
       if Curr_TCB.PC /= 0 then
