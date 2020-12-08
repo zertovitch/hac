@@ -1171,7 +1171,8 @@ package body HAC_Sys.Parser is
                 when aTask =>
                   Entry_Call (CD, Level, FSys_St, I_Statement, Standard_Entry_Call);
                 when Prozedure =>
-                  if CD.IdTab (I_Statement).LEV = 0 then
+                  if CD.IdTab (I_Statement).LEV = 0 and then I_Statement /= CD.Main_Id_Index then
+                    --  We have a procedure name from HAC_Pack.
                     Standard_Procedures.Standard_Procedure
                       (CD, Level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
                   else

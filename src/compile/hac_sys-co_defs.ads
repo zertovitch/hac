@@ -158,7 +158,7 @@ package HAC_Sys.Co_Defs is
     --  Source code information and scanner data
     compiler_stream  : Source_Stream_Access;
     source_file_name : VString;  --  Indicative (error messages)
-    --
+    --  Parsing
     Line_Count       : Natural;            --  Source line counter, used for listing
     InpLine          : Source_Line_String;
     CH               : Character;          --  Previous Character read from source program
@@ -186,6 +186,7 @@ package HAC_Sys.Co_Defs is
     Entries_Count           : Natural;
     Float_Constants_Count   : Natural;
     Id_Count                : Natural;
+    Main_Id_Index           : Natural;
     Strings_Table_Top       : Natural;
     Tasks_Definitions_Count : Natural;
     --  Object code
