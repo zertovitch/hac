@@ -751,6 +751,12 @@ package body HAC_Sys.Parser is
         LC_FOR_Begin,
         Previous_Last : Integer;
       begin
+        --
+        --  Pushed on the stack:
+        --     - address of the temporary variable
+        --     - lower bound value
+        --     - upper bound value
+        --
         InSymbol;  --  Consume FOR symbol.
         if CD.Sy = IDent then
           if CD.Id_Count = Id_Table_Max then

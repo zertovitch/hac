@@ -3,7 +3,6 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
   procedure Do_Multi_Statement_Operation (CD : Compiler_Data; ND : in out Interpreter_Data) is
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     IR : Order renames ND.IR;
-    H1 : Defs.HAC_Integer;  --  Internal integer registers
     use type Defs.HAC_Integer;
 
     procedure Do_CASE_Switch_1 is
@@ -37,50 +36,58 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
     end Do_CASE_Switch_1;
 
     procedure Do_FOR_Forward_Begin is  --  Start of a FOR loop, forward direction
+      FOR_Param_Addr : constant Defs.Index       := Defs.Index (ND.S (Curr_TCB.T - 2).I);
+      Lower_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
+      Upper_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
     begin
-      H1 := ND.S (Curr_TCB.T - 1).I;
-      if H1 <= ND.S (Curr_TCB.T).I then
-        ND.S (Defs.Index (ND.S (Curr_TCB.T - 2).I)).I := H1;
-      else
-        Curr_TCB.T  := Curr_TCB.T - 3;
+      if Lower_Bound <= Upper_Bound then
+        ND.S (FOR_Param_Addr).I := Lower_Bound;
+      else  --  Empty range -> we don't enter the loop at all.
         Curr_TCB.PC := Defs.Index (IR.Y);
+        Pop (ND, 3);  --  Destack FOR parameter and bounds
       end if;
     end Do_FOR_Forward_Begin;
 
     procedure Do_FOR_Forward_End is  --  End of a FOR loop, forward direction
-      H2 : Defs.Index;  --  Address of the FOR parameter ("the variable").
+      FOR_Param_Addr : constant Defs.Index       := Defs.Index (ND.S (Curr_TCB.T - 2).I);
+      Upper_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
+      Next_Value : Defs.HAC_Integer;
     begin
-      H2 := Defs.Index (ND.S (Curr_TCB.T - 2).I);
-      H1 := ND.S (H2).I + 1;
-      if H1 <= ND.S (Curr_TCB.T).I then
-        ND.S (H2).I := H1;
-        Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump to loop's begin
+      Next_Value := ND.S (FOR_Param_Addr).I + 1;  --  !! Overflow check before here
+      if Next_Value <= Upper_Bound then
+        ND.S (FOR_Param_Addr).I := Next_Value;
+        Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump back to loop's begin
       else
-        Pop (ND, 3);  --  Leave loop
+        --  Leave loop (just go to next instruction), and destack FOR parameter and bounds
+        Pop (ND, 3);
       end if;
     end Do_FOR_Forward_End;
 
     procedure Do_FOR_Reverse_Begin is  --  Start of a FOR loop, reverse direction
+      FOR_Param_Addr : constant Defs.Index       := Defs.Index (ND.S (Curr_TCB.T - 2).I);
+      Lower_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
+      Upper_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
     begin
-      H1 := ND.S (Curr_TCB.T).I;
-      if H1 >= ND.S (Curr_TCB.T - 1).I then
-        ND.S (Defs.Index (ND.S (Curr_TCB.T - 2).I)).I := H1;
-      else
+      if Lower_Bound <= Upper_Bound then
+        ND.S (FOR_Param_Addr).I := Upper_Bound;
+      else  --  Empty range -> we don't enter the loop at all.
         Curr_TCB.PC := Defs.Index (IR.Y);
-        Curr_TCB.T  := Curr_TCB.T - 3;
+        Pop (ND, 3);  --  Destack FOR parameter and bounds
       end if;
     end Do_FOR_Reverse_Begin;
 
     procedure Do_FOR_Reverse_End is  --  End of a FOR loop, reverse direction
-      H2 : Defs.Index;  --  Address of the FOR parameter ("the variable").
+      FOR_Param_Addr : constant Defs.Index       := Defs.Index (ND.S (Curr_TCB.T - 2).I);
+      Lower_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
+      Next_Value : Defs.HAC_Integer;
     begin
-      H2 := Defs.Index (ND.S (Curr_TCB.T - 2).I);
-      H1 := ND.S (H2).I - 1;
-      if H1 >= ND.S (Curr_TCB.T - 1).I then
-        ND.S (H2).I := H1;
-        Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump to loop's begin
+      Next_Value := ND.S (FOR_Param_Addr).I - 1;  --  !! Overflow check before here
+      if Next_Value >= Lower_Bound then
+        ND.S (FOR_Param_Addr).I := Next_Value;
+        Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump back to loop's begin
       else
-        Pop (ND, 3);  --  Leave loop
+        --  Leave loop (just go to next instruction), and destack FOR parameter and bounds
+        Pop (ND, 3);
       end if;
     end Do_FOR_Reverse_End;
 
