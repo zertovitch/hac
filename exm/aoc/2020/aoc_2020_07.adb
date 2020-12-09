@@ -286,16 +286,25 @@ procedure AoC_2020_07 is
   end Get_Rules;
   --
   shiny_gold : Colour;
+  test_mode : constant Boolean := Argument_Count >= 2;
 begin
   Init_Img;
   shiny_gold.cq := shiny;
   shiny_gold.bc := gold;
   Get_Rules;
-  Put_Line (+"Rules: " & rules_count);
-  Put_Line (+"Part 1: all possible direct or indirect containers of shiny gold: " &
-              Containing_Bags (shiny_gold));
-  Put_Line (+"Part 2: all bags contained by shiny gold: " &
-              Contained_Bags (shiny_gold));
+  if test_mode then
+    if (Containing_Bags (shiny_gold) /= Integer_Value (Argument (1))) or
+       (Contained_Bags (shiny_gold) /= Integer_Value (Argument (2)))
+    then
+      Put ("*** Test FAILS ***");
+    end if;
+  else
+    Put_Line (+"Rules about bag contents: " & rules_count);
+    Put_Line (+"Part 1: all possible direct or indirect containers of shiny gold: " &
+                Containing_Bags (shiny_gold));
+    Put_Line (+"Part 2: all bags contained by shiny gold: " &
+                Contained_Bags (shiny_gold));
+  end if;
   --  Rules: 594
   --  Part 1: all possible direct or indirect containers of shiny gold: 169
   --  Part 2: all bags contained by shiny gold: 82372

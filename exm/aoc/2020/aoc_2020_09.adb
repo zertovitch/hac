@@ -7,16 +7,16 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_09 is
-  contig_max, last_data, n, min, max, x, t, res_no_pair : Integer;
+  contig_max, last_data, n, min, max,
+  x, t, res_no_pair, weakness : Integer;
   f : File_Type;
-  mem_size : constant := 25;
   mem_max  : constant := 24;
   subtype Mem_Range is Integer range 0 .. mem_max;
   mem : array (Mem_Range) of Integer;
   ok, found : Boolean;
+  test_mode : constant Boolean := Argument_Count >= 2;
 begin
   for part in 1 .. 2 loop
-    Put (+"Part: " & part);
     Open (f, "aoc_2020_09.txt");
     for i in Mem_Range loop
       Get (f, mem (i));
@@ -37,7 +37,6 @@ begin
         end loop;
         if not ok then
           res_no_pair := last_data;
-          Put_Line (+" ->  Not a sum of a pair: " & res_no_pair);  --  138879426
           exit;
         end if;
       else
@@ -46,16 +45,16 @@ begin
         for j in n .. contig_max loop
           for k in j + 1 .. contig_max loop
             t := 0;
-            min := mem (j mod mem_size);
+            min := mem (j mod (mem_max + 1));
             max := min;
             for i in j .. k loop
-              x := mem (i mod mem_size);
+              x := mem (i mod (mem_max + 1));
               t := t + x;
               if min > x then min := x; end if;
               if max < x then max := x; end if;
             end loop;
             if t = res_no_pair then
-              Put_Line (+" ->  Encryption weakness: " & (min + max));  --  23761694
+              weakness := min + max;
               found := True;
               exit;
             end if;
@@ -65,8 +64,18 @@ begin
         exit when found;
       end if;
       mem (n) := last_data;
-      n := (n + 1) mod mem_size;
+      n := (n + 1) mod (mem_max + 1);
     end loop;
     Close (f);
   end loop;
+  if test_mode then
+    if (res_no_pair /= Integer_Value (Argument (1))) or
+       (weakness /= Integer_Value (Argument (2)))
+    then
+      Put ("*** Test FAILS ***");
+    end if;
+  else
+    Put_Line (+"Part 1:  Not a sum of a pair: " & res_no_pair);  --  138879426
+    Put_Line (+"Part 2:  Encryption weakness: " & weakness);     --  23761694
+  end if;
 end AoC_2020_09;

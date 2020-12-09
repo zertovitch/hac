@@ -1,5 +1,7 @@
 --  Solution to Advent of Code 2020, Day 2, part 1.
 ---------------------------------------------------
+--  Password Philosophy
+--
 --  Each line gives the password policy and then the password.
 --  The password policy indicates the lowest and highest number of times
 --  a given letter must appear for the password to be valid.
@@ -17,19 +19,20 @@ with HAC_Pack;  use HAC_Pack;
 procedure AoC_2020_02_a is
   s : VString;
   f : File_Type;
-  c, sep : Character;
+  c, sep1, sep2, sep3, sep4 : Character;
   i, n, valid, min, max : Integer;
+  test_mode : constant Boolean := Argument_Count > 0;
 begin
   Open (f, "aoc_2020_02.txt");
   valid := 0;
   while not End_Of_File (f) loop
     Get (f, min);
-    Get (f, sep);
+    Get (f, sep1);
     Get (f, max);
-    Get (f, sep);
+    Get (f, sep2);
     Get (f, c);
-    Get (f, sep);
-    Get (f, sep);
+    Get (f, sep3);
+    Get (f, sep4);
     Get_Line (f, s);
     i := 1;
     n := 0;
@@ -39,11 +42,17 @@ begin
     end loop;
     if (n >= min) and (n <= max) then
       valid := valid + 1;
-    else
+    elsif not test_mode then
       Put_Line (+"Invalid: " & min & ',' & max &
                 ',' & c & "  -->  " & n & "  |----|  " & s);
     end if;
   end loop;
-  Put_Line (+"Valid passwords (a): " & valid);
   Close (f);
+  if test_mode then
+    if valid /= Integer_Value (Argument (1)) then
+      Put ("*** Test FAILS ***");
+    end if;
+  else
+    Put_Line (+"Valid passwords (a): " & valid);
+  end if;
 end AoC_2020_02_a;

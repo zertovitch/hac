@@ -164,7 +164,7 @@ procedure AoC_2020_07_full_Ada_Vectors_2x is
   --
 begin
   Get_Rules;
-  Put_Line ("Rules:" & rules.Length'Image);
+  Put_Line ("Rules about bag contents:" & rules.Length'Image);
   Put_Line ("Part 1: all possible direct or indirect containers of shiny gold:" &
               Containing_Bags ((shiny, gold))'Image);
   Put_Line ("Part 2: all bags contained by shiny gold:" &

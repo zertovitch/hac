@@ -15,10 +15,14 @@ procedure All_Silent_Tests is
       Shell_Execute (command);
     end Shell;
 
-    procedure Launch_HAC (Ada_file_name : VString) is
+    procedure Launch_HAC (Ada_file_name : VString; ups : Positive) is
+      up_dir: VString;
     begin
+      for i in 1 .. ups loop
+        up_dir := up_dir & ".." & Directory_Separator;
+      end loop;
       Shell (
-        +".." & Directory_Separator & "hac -v1 " & Ada_file_name,
+        up_dir & "hac -v1 " & Ada_file_name,
         False
       );
     end Launch_HAC;
@@ -41,18 +45,35 @@ procedure All_Silent_Tests is
     Build_HAC;  --  Redundant if this program is itself run through HAC.
     --
     Put_Line( "----> Launching tests (one instance of HAC each)...");
-    Launch_HAC (+"case_statement.adb");
-    Launch_HAC (+"constants.adb");
-    Launch_HAC (+"declarations.adb");
-    Launch_HAC (+"enumerations.adb");
-    Launch_HAC (+"floats.adb");
-    Launch_HAC (+"integers.adb");
-    Launch_HAC (+"loops.adb");
-    Launch_HAC (+"recursion.adb");
-    Launch_HAC (+"sorting_tests.adb");
-    Launch_HAC (+"strings.adb");
-    Launch_HAC (+"type_conversion.adb");
-    Launch_HAC (+"var_init.adb");
+    Launch_HAC (+"case_statement.adb", 1);
+    Launch_HAC (+"constants.adb", 1);
+    Launch_HAC (+"declarations.adb", 1);
+    Launch_HAC (+"enumerations.adb", 1);
+    Launch_HAC (+"floats.adb", 1);
+    Launch_HAC (+"integers.adb", 1);
+    Launch_HAC (+"loops.adb", 1);
+    Launch_HAC (+"recursion.adb", 1);
+    Launch_HAC (+"sorting_tests.adb", 1);
+    Launch_HAC (+"strings.adb", 1);
+    Launch_HAC (+"type_conversion.adb", 1);
+    Launch_HAC (+"var_init.adb", 1);
+    --
+    --  Advent of Code 2020
+    Set_Directory (+".." & Directory_Separator &
+                   "exm" & Directory_Separator &
+                   "aoc" & Directory_Separator &
+                   "2020");
+    Launch_HAC (+"aoc_2020_02_a.adb 607",                3);  --  Password Philosophy
+    Launch_HAC (+"aoc_2020_02_b.adb 321",                3);  --  Password Philosophy
+    Launch_HAC (+"aoc_2020_03.adb   218 3847183340",     3);  --  Toboggan Trajectory
+    Launch_HAC (+"aoc_2020_04_a.adb 228",                3);  --  Passport Processing
+    Launch_HAC (+"aoc_2020_04_b.adb 175",                3);  --  Passport Processing
+    Launch_HAC (+"aoc_2020_04_b.adb 175",                3);  --  Passport Processing
+    Launch_HAC (+"aoc_2020_05.adb   835",                3);  --  Binary Boarding
+    Launch_HAC (+"aoc_2020_06.adb   6532 3427",          3);  --  Custom Customs
+    Launch_HAC (+"aoc_2020_07.adb   169 82372",          3);  --  Handy Haversacks
+    Launch_HAC (+"aoc_2020_08.adb   1394 1626",          3);  --  Handheld Halting
+    Launch_HAC (+"aoc_2020_09.adb   138879426 23761694", 3);  --  Encoding Error
     Put_Line ("----> Done.");
   end Launch_Tests;
 

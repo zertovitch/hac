@@ -35,6 +35,7 @@ procedure AoC_2020_06 is
   --
   f : File_Type;
   s : VString;
+  test_mode : constant Boolean := Argument_Count >= 2;
 begin
   for part in 1 .. 2 loop
     Open (f, "aoc_2020_06.txt");
@@ -59,7 +60,13 @@ begin
       end if;
     end loop;
     Collect_Group_Total;
-    Put_Line (+"Part " & part & "  " & total);
+    if test_mode then
+      if total /= Integer_Value (Argument (part)) then
+        Put ("*** Test FAILS ***");
+      end if;
+    else
+      Put_Line (+"Part " & part & ".  Total custom answers: " & total);
+    end if;
     Close (f);
   end loop;
 end AoC_2020_06;

@@ -1,6 +1,5 @@
 --  Solution to Advent of Code 2020, Day 5
 -------------------------------------------
---
 --  Binary Boarding
 --
 --  https://adventofcode.com/2020/day/5
@@ -8,13 +7,13 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_05 is
-  n : constant VString := +"aoc_2020_05.txt";
   f : File_Type;
   x : Character;
   max, id, r, c, b : Integer;
+  test_mode : constant Boolean := Argument_Count >= 1;
 begin
   max := 0;
-  Open (f, n);
+  Open (f, "aoc_2020_05.txt");
   while not End_Of_File (f) loop
     r := 0;
     b := 64;
@@ -36,10 +35,15 @@ begin
     end loop;
     id := r * 8 + c;
     if id > max then max := id; end if;
-    Put_Line (id);
     exit when End_Of_File (f);
     Skip_Line (f);
   end loop;
   Close (f);
-  Put_Line (+"Max = " & max);
+  if test_mode then
+    if max /= Integer_Value (Argument (1)) then
+      Put ("*** Test FAILS ***");
+    end if;
+  else
+    Put_Line (+"Maximum seat Id in the plane = " & max);
+  end if;
 end AoC_2020_05;

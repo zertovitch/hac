@@ -22,11 +22,10 @@ procedure AoC_2020_08 is
   oper : array (Machine_Code_Range) of Integer;
   last : Natural := 0;
   --
-  procedure Run (verbose : Boolean) is
+  procedure Run (result : out Integer; ok : out Boolean) is
     seen : array (Machine_Code_Range) of Boolean;
     a : Integer := 0;
     c : Integer := 1;
-    ok : Boolean;
   begin
     --
     for x in 1 .. last loop
@@ -42,12 +41,7 @@ procedure AoC_2020_08 is
       exit when seen (c);
     end loop;
     ok := c > last;
-    if verbose or ok then
-      Put (+"Accumulator = " & a & ";  ");
-      if ok then Put_Line ("correct exit!");
-            else Put_Line ("infinite loop.");
-      end if;
-    end if;
+    result := a;
   end Run;
   --
   procedure Swap (c : Integer) is
@@ -59,10 +53,19 @@ procedure AoC_2020_08 is
     end case;
   end Swap;
   --
+  function Exit_Diagnostic (x : Boolean) return VString is
+  begin
+    if x then return +"correct exit!";
+         else return +"infinite loop";
+    end if;
+  end Exit_Diagnostic;
+  --
   asm : String (1 .. 3);
   i : Instr;
-  v : Integer;
+  v, a1, a2 : Integer;
   f : File_Type;
+  done_1, done_2 : Boolean;
+  test_mode : constant Boolean := Argument_Count >= 2;
 begin
   Open (f, "aoc_2020_08.txt");
   while not End_Of_File (f) loop
@@ -76,15 +79,27 @@ begin
     oper (last) := v;
   end loop;
   Close (f);
-  Put_Line (+"Instructions: " & last);
+  if not test_mode then Put_Line (+"Instructions: " & last); end if;
   --
-  Run (True);
+  Run (a1, done_1);
   --
   --  Try fixing the machine code:
   --
   for c in 1 .. last loop
     Swap (c);
-    Run (False);
+    Run (a2, done_2);
+    exit when done_2;
     Swap (c);
   end loop;
+  --
+  if test_mode then
+    if (a1 /= Integer_Value (Argument (1))) or
+       (a2 /= Integer_Value (Argument (2)))
+    then
+      Put ("*** Test FAILS ***");
+    end if;
+  else
+    Put_Line (+"Accumulator = " & a1 & ";  " & Exit_Diagnostic (done_1));
+    Put_Line (+"Accumulator = " & a2 & ";  " & Exit_Diagnostic (done_2));
+  end if;
 end AoC_2020_08;

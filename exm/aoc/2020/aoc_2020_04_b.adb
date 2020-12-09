@@ -56,6 +56,7 @@ procedure AoC_2020_04_b is
   cats, total : Integer := 0;
   cat_idx, tok_begin, tok_end, nb : Integer;
   s, tok, cat, un : VString;
+  test_mode : constant Boolean := Argument_Count >= 1;
 begin
   Open (f, "aoc_2020_04.txt");
   while not End_Of_File (f) loop
@@ -109,5 +110,11 @@ begin
     end if;
   end loop;
   Close (f);
-  Put_Line (total);
+  if test_mode then
+    if total /= Integer_Value (Argument (1)) then
+      Put ("*** Test FAILS ***");
+    end if;
+  else
+    Put_Line (total);
+  end if;
 end AoC_2020_04_b;
