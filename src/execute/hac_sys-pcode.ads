@@ -162,13 +162,22 @@ package HAC_Sys.PCode is
 
   type Object_Code_Table is array (Natural range <>) of Order;
 
-  dummy_address : constant := -1;
   --  For jumps forward in the code towards an ELSE, ELSIF, END IF, END LOOP, ...
   --  When the code is emited, the address is still unknown.
   --  When the address is known, jump addresses are patched.
 
+  --  Patching using dummy addresses.
+  --  For loops, this technique can be used only for exiting
+  --  the current loop.
+
+  dummy_address_if   : constant := -1;
+  dummy_address_loop : constant := -2;
+
   --  Patch to OC'Last all addresses of Jump_Opcode's which are equal to dummy_address.
-  procedure Patch_Addresses (OC : in out Object_Code_Table);
+  procedure Patch_Addresses (
+    OC            : in out Object_Code_Table;
+    dummy_address :        Operand_2_Type
+  );
 
   --  Mechanism for patching instructions at selected addresses.
   type Patch_Table is array (Positive range <>) of Operand_2_Type;

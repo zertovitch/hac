@@ -91,7 +91,11 @@ package body HAC_Sys.PCode is
     LC        := LC + 1;
   end Emit_Instruction;
 
-  procedure Patch_Addresses (OC : in out Object_Code_Table) is
+  procedure Patch_Addresses (
+    OC            : in out Object_Code_Table;
+    dummy_address :        Operand_2_Type
+  )
+  is
     LC0 : Integer := OC'First;
     use Defs;
     use type HAC_Integer;
