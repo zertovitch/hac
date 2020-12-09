@@ -39,10 +39,12 @@ package HAC_Sys.PCode is
     k_CASE_Choice_Data,
     k_CASE_Match_Jump,
     k_CASE_No_Choice_Found,
+    --
     k_FOR_Forward_Begin,
     k_FOR_Forward_End,
     k_FOR_Reverse_Begin,
     k_FOR_Reverse_End,
+    k_FOR_Release_Stack_After_End,
     --
     k_Array_Index_Element_Size_1,
     k_Array_Index,
@@ -123,7 +125,7 @@ package HAC_Sys.PCode is
   subtype CASE_Data_Opcode        is Opcode range k_CASE_Choice_Data .. k_CASE_No_Choice_Found;
   subtype Composite_Data_Opcode   is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
   subtype Jump_Opcode             is Opcode range k_Jump .. k_Conditional_Jump;
-  subtype Multi_Statement_Opcode  is Opcode range k_CASE_Switch .. k_FOR_Reverse_End;
+  subtype Multi_Statement_Opcode  is Opcode range k_CASE_Switch .. k_FOR_Release_Stack_After_End;
   subtype Tasking_Opcode          is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
 
   function For_END (for_BEGIN : Opcode) return Opcode;

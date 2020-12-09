@@ -195,6 +195,8 @@ package body HAC_Sys.PCode is
             when others =>
               null;
           end case;
+        when k_FOR_Release_Stack_After_End =>
+          Put (Text, "; after END LOOP of a FOR loop");
         when others =>
           null;
       end case;

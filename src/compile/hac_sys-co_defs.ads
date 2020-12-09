@@ -186,7 +186,7 @@ package HAC_Sys.Co_Defs is
     Entries_Count           : Natural;
     Float_Constants_Count   : Natural;
     Id_Count                : Natural;
-    Main_Proc_Id_Index           : Natural;
+    Main_Proc_Id_Index      : Natural;
     Strings_Table_Top       : Natural;
     Tasks_Definitions_Count : Natural;
     --  Object code

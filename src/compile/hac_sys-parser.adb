@@ -753,7 +753,7 @@ package body HAC_Sys.Parser is
       begin
         --
         --  Pushed on the stack:
-        --     - address of the temporary variable
+        --     - address of the loop parameter (a temporary iterator variable)
         --     - lower bound value
         --     - upper bound value
         --
@@ -809,10 +809,12 @@ package body HAC_Sys.Parser is
         Emit (CD, FOR_Begin);
         LOOP_Statement (For_END (FOR_Begin), CD.LC);
         CD.ObjCode (LC_FOR_Begin).Y := Operand_2_Type (CD.LC);  --  Address of the code just after the loop's end.
-        --  Forget the iterator variable:
+        --  Forget the loop parameter (the "iterator variable"):
         CD.Id_Count := CD.Id_Count - 1;
         CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := Previous_Last;
         Dx := Dx - 1;
+        --  The VM must also de-stack the 3 data pushed on the stack for the FOR loop:
+        Emit (CD, k_FOR_Release_Stack_After_End);
       end FOR_Statement;
 
       procedure Select_Statement is
