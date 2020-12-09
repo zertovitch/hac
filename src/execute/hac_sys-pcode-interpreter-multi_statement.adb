@@ -44,7 +44,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
         --  We can start the loop with the first value
         ND.S (FOR_Param_Addr).I := Lower_Bound;
       else
-        --  Empty range -> we don't enter the loop at all -> Jump after loop end.
+        --  Empty range -> we don't enter the loop at all -> Jump after loop's end.
         Curr_TCB.PC := Defs.Index (IR.Y);
       end if;
     end Do_FOR_Forward_Begin;
@@ -59,7 +59,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
         ND.S (FOR_Param_Addr).I := Next_Value;
         Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump back to loop's begin
       else
-        null;  --  Leave loop (just go to next instruction: k_FOR_Pop_After_End)
+        null;  --  Leave loop (just go to next instruction: k_FOR_Release_Stack_After_End)
       end if;
     end Do_FOR_Forward_End;
 
@@ -72,7 +72,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
         --  We can start the loop with the first value
         ND.S (FOR_Param_Addr).I := Upper_Bound;
       else
-        --  Empty range -> we don't enter the loop at all -> Jump after loop end.
+        --  Empty range -> we don't enter the loop at all -> Jump after loop's end.
         Curr_TCB.PC := Defs.Index (IR.Y);
       end if;
     end Do_FOR_Reverse_Begin;
@@ -87,7 +87,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
         ND.S (FOR_Param_Addr).I := Next_Value;
         Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump back to loop's begin
       else
-        null;  --  Leave loop (just go to next instruction: k_FOR_Pop_After_End)
+        null;  --  Leave loop (just go to next instruction: k_FOR_Release_Stack_After_End)
       end if;
     end Do_FOR_Reverse_End;
 
@@ -99,7 +99,8 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
       when k_FOR_Forward_End    => Do_FOR_Forward_End;
       when k_FOR_Reverse_Begin  => Do_FOR_Reverse_Begin;
       when k_FOR_Reverse_End    => Do_FOR_Reverse_End;
-      when k_FOR_Release_Stack_After_End  => Pop (ND, 3);  --  Destack FOR parameter and bounds
+      when k_FOR_Release_Stack_After_End  =>
+        Pop (ND, 3);  --  Destack parameter and bounds that are used by the FOR loop.
     end case;
   end Do_Multi_Statement_Operation;
 
