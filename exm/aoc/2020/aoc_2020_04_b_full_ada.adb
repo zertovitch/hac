@@ -76,5 +76,5 @@ begin
     end;
   end loop;
   Close (f);
-  Put_Line (Integer'Image (total));
+  Put_Line ("Valid passports (criteria #2):" & Integer'Image (total));
 end AoC_2020_04_b_Full_Ada;

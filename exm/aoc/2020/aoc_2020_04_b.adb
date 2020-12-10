@@ -115,6 +115,6 @@ begin
       Put ("*** Test FAILS ***");
     end if;
   else
-    Put_Line (total);
+    Put_Line (+"Valid passports (criteria #2): " & total);
   end if;
 end AoC_2020_04_b;

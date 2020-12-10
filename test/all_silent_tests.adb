@@ -63,17 +63,18 @@ procedure All_Silent_Tests is
                    "exm" & Directory_Separator &
                    "aoc" & Directory_Separator &
                    "2020");
-    Launch_HAC (+"aoc_2020_02_a.adb 607",                3);  --  Password Philosophy
-    Launch_HAC (+"aoc_2020_02_b.adb 321",                3);  --  Password Philosophy
-    Launch_HAC (+"aoc_2020_03.adb   218 3847183340",     3);  --  Toboggan Trajectory
-    Launch_HAC (+"aoc_2020_04_a.adb 228",                3);  --  Passport Processing
-    Launch_HAC (+"aoc_2020_04_b.adb 175",                3);  --  Passport Processing
-    Launch_HAC (+"aoc_2020_04_b.adb 175",                3);  --  Passport Processing
-    Launch_HAC (+"aoc_2020_05.adb   835",                3);  --  Binary Boarding
-    Launch_HAC (+"aoc_2020_06.adb   6532 3427",          3);  --  Custom Customs
-    Launch_HAC (+"aoc_2020_07.adb   169 82372",          3);  --  Handy Haversacks
-    Launch_HAC (+"aoc_2020_08.adb   1394 1626",          3);  --  Handheld Halting
-    Launch_HAC (+"aoc_2020_09.adb   138879426 23761694", 3);  --  Encoding Error
+    Launch_HAC (+"aoc_2020_02_a.adb 607",                 3);  --  Password Philosophy
+    Launch_HAC (+"aoc_2020_02_b.adb 321",                 3);  --  Password Philosophy
+    Launch_HAC (+"aoc_2020_03.adb   218 3847183340",      3);  --  Toboggan Trajectory
+    Launch_HAC (+"aoc_2020_04_a.adb 228",                 3);  --  Passport Processing
+    Launch_HAC (+"aoc_2020_04_b.adb 175",                 3);  --  Passport Processing
+    Launch_HAC (+"aoc_2020_04_b.adb 175",                 3);  --  Passport Processing
+    Launch_HAC (+"aoc_2020_05.adb   835",                 3);  --  Binary Boarding
+    Launch_HAC (+"aoc_2020_06.adb   6532 3427",           3);  --  Custom Customs
+    Launch_HAC (+"aoc_2020_07.adb   169 82372",           3);  --  Handy Haversacks
+    Launch_HAC (+"aoc_2020_08.adb   1394 1626",           3);  --  Handheld Halting
+    Launch_HAC (+"aoc_2020_09.adb   138879426 23761694",  3);  --  Encoding Error
+    Launch_HAC (+"aoc_2020_10.adb   2277 37024595836928", 3);  --  Adapter Array
     Put_Line ("----> Done.");
   end Launch_Tests;
 

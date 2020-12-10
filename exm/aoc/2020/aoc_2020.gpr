@@ -12,6 +12,8 @@ project AoC_2020 is
    AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
    for Main use (
+     "aoc_2020_10.adb",
+     "aoc_2020_10_full_ada.adb",
      "aoc_2020_09.adb",
      "aoc_2020_08.adb",
      "aoc_2020_07.adb",
