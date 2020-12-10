@@ -10,6 +10,7 @@ procedure Var_Init is
   begin
     if (a - 666 /= d) or (b / 7 /= e) or (c + f /= 888) then
       Put_Line ("Compiler bug [Atomic_Explicit]");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
     a := 3;
     b := 4;
@@ -24,6 +25,7 @@ procedure Var_Init is
     a := a & b & "abc" & c;
     if a /= "abc" then
       Put_Line ("Compiler bug [Atomic_Implicit]");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
     b := +"gruik";
     c := +"grrrr";

@@ -319,6 +319,15 @@ package body HAC_Sys.Parser.Standard_Procedures is
         end if;
         Need (CD, RParent, err_closing_parenthesis_missing);
 
+      when SP_Set_Exit_Status =>
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Expression (CD, Level, Comma_RParent, X);  --  We push the argument in the stack.
+        if X.TYP /= Ints then
+          Skip (CD, Semicolon, err_parameter_must_be_Integer);
+        end if;
+        File_I_O_Call (SP_Set_Exit_Status);
+        Need (CD, RParent, err_closing_parenthesis_missing);
+
       when SP_Push_Abstract_Console =>
         null;  --  Internal: used by Get, Put, etc. without file parameter.
       when SP_Get_F | SP_Get_Line_F |

@@ -363,6 +363,7 @@ package HAC_Sys.PCode is
     SP_Delete_File,
     SP_Rename,
     SP_Set_Directory,
+    SP_Set_Exit_Status,
     --
     --  Other system procedures
     --

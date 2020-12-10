@@ -32,6 +32,7 @@ procedure Constants is
   begin
     if (y.a /= 12) or (y.b /= 34) then
       Put_Line ("Compiler bug [12_34]");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
     --  x.a := 666;  --  must be rejected (cannot modify "in" parameter)
     --  y.a := 666;  --  must be rejected (cannot modify constant)
@@ -48,16 +49,20 @@ begin
   r1 := 123000.0;
   if pi + minus_pi /= 0.0 then
     Put_Line ("Compiler bug [Pi - (Minus_PI)]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   if (r2 * 1000.0 /= r1) or (r3 - 333.0 /= r2) then  --  !! With correct priority for "or" we could remove the ()
     Put_Line ("Compiler bug [123]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   if n1 + n2 - 17.0 /= n3 then
     Put_Line ("Compiler bug [num const]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   r2 := 7.0;
   if Integer (r2) /= i1 then
     Put_Line ("Compiler bug [i1 = 7]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   --  s3.a := 4;  --  must be rejected (cannot modify constant)
   --  i1 := 6;    --  must be rejected (cannot modify constant)

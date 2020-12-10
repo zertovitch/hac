@@ -54,7 +54,7 @@ begin
            Trees (2, 1)
             /= Integer_Value (Argument (2)))
     then
-      Put ("*** Test FAILS ***");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+" a) Trees met with slope 1/3: " & Trees (1, 3));

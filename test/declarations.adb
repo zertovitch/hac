@@ -26,6 +26,7 @@ begin
   b.y := 4;
   if a.x + a.y - b.x * b.y /= 000 then
     Put_Line ("Compiler bug [A]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   Not_Yet_Done (123);
 end Declarations;

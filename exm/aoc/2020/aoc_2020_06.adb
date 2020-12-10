@@ -62,10 +62,10 @@ begin
     Collect_Group_Total;
     if test_mode then
       if total /= Integer_Value (Argument (part)) then
-        Put ("*** Test FAILS ***");
+        Set_Exit_Status (1);  --  Compiler test failed.
       end if;
     else
-      Put_Line (+"Part " & part & ".  Total custom answers: " & total);
+      Put_Line (+"Part " & part & ".  Total customs answers: " & total);
     end if;
     Close (f);
   end loop;

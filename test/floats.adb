@@ -14,6 +14,7 @@ procedure Floats is
       x2 := Log (Exp (x1));
       if abs (x2 - x1) > 0.0 then
         Put_Line ("Compiler bug [Exp_Log]");
+        Set_Exit_Status (1);  --  Compiler test failed.
       end if;
     end loop;
   end Test_Exp_Log;
@@ -32,6 +33,7 @@ procedure Floats is
         t := s / c;
         if abs (Arctan (t) - x) > 1.0e-15 then
           Put_Line ("Compiler bug [Trigo]");
+          Set_Exit_Status (1);  --  Compiler test failed.
         end if;
       end if;
     end loop;
@@ -76,6 +78,7 @@ procedure Floats is
                Image_Attribute (y) & ", " &
                Image_Attribute (x - y) & ", " &
                Image_Attribute (tol) & "]  ");
+        Set_Exit_Status (1);  --  Compiler test failed.
       end if;
       return eq;
     end Almost_equal;
@@ -291,6 +294,7 @@ procedure Floats is
       end loop;
       if abs (x (Neuchatel) - 429.06377) > 0.0002 then
         Put_Line ("Compiler bug [Three_Lakes_S]");
+        Set_Exit_Status (1);  --  Compiler test failed.
       end if;
     end Simulation;
 
@@ -306,14 +310,17 @@ begin
   v.x3 := 6.0;
   if x3 /= 5.0 then
     Put_Line ("Compiler bug [A]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   x1 := v.x1;
   if x1 /= 1.0 then
     Put_Line ("Compiler bug [B]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   x3 := v.x2;
   if x3 /= 3.0 then
     Put_Line ("Compiler bug [C]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   ww (1).x3:= 3.4_5_6_7_8_9;
   ww (5).x3:= ww (1).x3;
@@ -322,10 +329,12 @@ begin
   v.x2 := 2.0;
   if abs (ww (5).x3 - (2.345_678 + 1.111111)) > 0.000_000_1 then
     Put_Line ("Compiler bug [D]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   x2 := neg_float_value;
   if -x2 /= 5.07 then
     Put_Line ("Compiler bug [E]");  --  Former HAC bug: unary minus was ineffective for floats
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   --
   Test_Exp_Log;

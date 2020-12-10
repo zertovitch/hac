@@ -342,6 +342,9 @@ package body HAC_Sys.PCode.Interpreter is
             System_Calls.Shell_Execute (Command, Dummy);
             Pop;
           end;
+        when SP_Set_Exit_Status =>
+          HAC_Pack.Set_Exit_Status (Integer (ND.S (Curr_TCB.T).I));
+          Pop;
         when SP_Wait | SP_Signal | SP_Priority | SP_InheritP | SP_Quantum =>
           null;
       end case;

@@ -50,12 +50,14 @@ procedure Recursion is
       for M in 0 .. M_Max loop
         if B (M, N) /= Ackermann (M, N) then
           Put_Line ("Compiler bug [Array]");
+          Set_Exit_Status (1);  --  Compiler test failed.
         end if;
       end loop;
     end loop;
     --
     if Noise_1 + Noise_2 /= Noise_3 then
       Put_Line ("Compiler bug [Stack]");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   end Ackarray;
 
@@ -113,6 +115,7 @@ procedure Recursion is
       for L in 1 .. Max_L loop
         if Add_1_and_shift (0, L) /= 2 ** L - 1 then
           Put_Line ("Compiler bug [Nesting_Test_F]");
+          Set_Exit_Status (1);  --  Compiler test failed.
         end if;
       end loop;
     end Nesting_Test_F;
@@ -125,9 +128,11 @@ procedure Recursion is
 begin
   if Fibonacci (22) /= 17_711 then
     Put_Line ("Compiler bug [Fibonacci]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   if Ackermann (3, 4) /= 125 then
     Put_Line ("Compiler bug [Ackermann]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   Ackarray;
   Nesting_Tests;

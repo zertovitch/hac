@@ -44,6 +44,7 @@ procedure Enumerations is
       when dog =>
         if a /= dog then
           Put_Line ("Compiler bug [CASE]");
+          Set_Exit_Status (1);  --  Compiler test failed.
         end if;
       when others =>
         null;
@@ -60,14 +61,17 @@ begin
   v.x3 := f;
   if x3 /= e then
     Put_Line ("Compiler bug [A]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   x1 := v.x1;
   if x1 /= a then
     Put_Line ("Compiler bug [B]");  --  Former HAC bug with selectors for enums
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   x3 := v.x3;
   if x3 /= f then
     Put_Line ("Compiler bug [C]");  --  Former HAC bug with selectors for enums
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   ww (1).x3:= e;
   ww (5).x3:= ww (1).x3;
@@ -81,11 +85,21 @@ begin
   v.x2 := b;
   if ww (5).x3 /= e then
     Put_Line ("Compiler bug [D]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   --
-  if zz (d).x4 /= j then Put_Line ("Compiler bug [E1]"); end if;
-  if zz (e).x4 /= i then Put_Line ("Compiler bug [E2]"); end if;
-  if zz (f).x4 /= h then Put_Line ("Compiler bug [E3]"); end if;
+  if zz (d).x4 /= j then
+    Put_Line ("Compiler bug [E1]");
+    Set_Exit_Status (1);  --  Compiler test failed.
+  end if;
+  if zz (e).x4 /= i then
+    Put_Line ("Compiler bug [E2]");
+    Set_Exit_Status (1);  --  Compiler test failed.
+  end if;
+  if zz (f).x4 /= h then
+    Put_Line ("Compiler bug [E3]");
+    Set_Exit_Status (1);  --  Compiler test failed.
+  end if;
   --
   for pet in Mammal loop
     pet2 := pet;

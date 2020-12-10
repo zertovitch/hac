@@ -72,7 +72,7 @@ begin
     if (res_no_pair /= Integer_Value (Argument (1))) or
        (weakness /= Integer_Value (Argument (2)))
     then
-      Put ("*** Test FAILS ***");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Part 1:  Not a sum of a pair: " & res_no_pair);  --  138879426

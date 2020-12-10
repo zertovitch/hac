@@ -7,33 +7,46 @@ procedure All_Silent_Tests is
 
   procedure Launch_Tests is
 
-    procedure Shell (command : VString; echo : Boolean) is
+    procedure Shell (command : VString; echo : Boolean; success : out Boolean) is
+      r : Integer;
     begin
       if echo then
         Put_Line ("Executing: [" & command & ']');
       end if;
-      Shell_Execute (command);
+      Shell_Execute (command, r);
+      success := r = 0;
+      if r /= 0 then
+        Put_Line ("*** Command: [" & command & "] FAILED ***.");
+      end if;
     end Shell;
+
+    failures : Natural := 0;
 
     procedure Launch_HAC (Ada_file_name : VString; ups : Positive) is
       up_dir: VString;
+      success : Boolean;
     begin
       for i in 1 .. ups loop
         up_dir := up_dir & ".." & Directory_Separator;
       end loop;
       Shell (
         up_dir & "hac -v1 " & Ada_file_name,
-        False
+        False,
+        success
       );
+      if not success then
+        failures := failures + 1;
+      end if;
     end Launch_HAC;
 
     procedure Build_HAC is
+      success : Boolean;
     begin
       if Get_Env("hacbuild") = "done" then
         return;
       end if;   
       Put_Line ("(Re-)building HAC, in case the present program isn't run from HAC...");
-      Shell (+"gprbuild -P .." & Directory_Separator & "hac", True);
+      Shell (+"gprbuild -P .." & Directory_Separator & "hac", True, success);
     end Build_HAC;
 
   begin
@@ -68,7 +81,6 @@ procedure All_Silent_Tests is
     Launch_HAC (+"aoc_2020_03.adb   218 3847183340",      3);  --  Toboggan Trajectory
     Launch_HAC (+"aoc_2020_04_a.adb 228",                 3);  --  Passport Processing
     Launch_HAC (+"aoc_2020_04_b.adb 175",                 3);  --  Passport Processing
-    Launch_HAC (+"aoc_2020_04_b.adb 175",                 3);  --  Passport Processing
     Launch_HAC (+"aoc_2020_05.adb   835",                 3);  --  Binary Boarding
     Launch_HAC (+"aoc_2020_06.adb   6532 3427",           3);  --  Custom Customs
     Launch_HAC (+"aoc_2020_07.adb   169 82372",           3);  --  Handy Haversacks
@@ -76,6 +88,11 @@ procedure All_Silent_Tests is
     Launch_HAC (+"aoc_2020_09.adb   138879426 23761694",  3);  --  Encoding Error
     Launch_HAC (+"aoc_2020_10.adb   2277 37024595836928", 3);  --  Adapter Array
     Put_Line ("----> Done.");
+    if failures = 0 then
+      Put_Line ("All tests passed.");
+    else
+      Put_Line (+"*** Failed tests: " & failures & " ***");
+    end if;
   end Launch_Tests;
 
 begin

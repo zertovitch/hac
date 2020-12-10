@@ -111,7 +111,7 @@ begin
     if (puzzle_1 /= Integer_Value (Argument (1))) or
        (puzzle_2 /= Integer_Value (Argument (2)))
     then
-      Put ("*** Test FAILS ***");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"top=" & top);

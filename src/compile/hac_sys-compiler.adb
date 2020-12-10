@@ -350,7 +350,8 @@ package body HAC_Sys.Compiler is
       Enter_Std_Proc ("Rename ",        SP_Rename);
       Enter_Std_Proc ("Set_Directory ", SP_Set_Directory);
       --
-      Enter_Std_Proc ("Shell_Execute",  SP_Shell_Execute_with_Result);
+      Enter_Std_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
+      Enter_Std_Proc ("Set_Exit_Status", SP_Set_Exit_Status);
       --
       --  Enter Main.
       --

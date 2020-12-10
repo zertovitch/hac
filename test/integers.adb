@@ -26,7 +26,7 @@ procedure Integers is
   v : R;
 
   procedure Test_Patching is
-    --  -1 is the value of dummy_address for patching EXIT jumps...
+    --  -1 is the value of dummy_address for patching IF jumps...
     patch_trap : constant := -1;
     pt : Integer;
   begin
@@ -34,6 +34,7 @@ procedure Integers is
       pt := patch_trap;
       if -pt /= 1 then
         Put (pt); Put_Line ("  Compiler bug [Patch]");
+        Set_Exit_Status (1);  --  Compiler test failed.
       end if;
     end loop;
   end Test_Patching;
@@ -45,14 +46,17 @@ begin
   v.x3 := 6;
   if x3 /= 5 then
     Put_Line ("Compiler bug [A]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   x1 := v.x1;
   if x1 /= 1 then
     Put_Line ("Compiler bug [B]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   x3 := v.x3;
   if x3 /= 6 then
     Put_Line ("Compiler bug [C]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   --
   for i in 1 .. 10 loop
@@ -61,11 +65,13 @@ begin
     v.x3 := Fibonacci (i + 2);
     if not (v.x1 - v.x3 + v.x2 = 0) then
       Put_Line ("Compiler bug [D]");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   end loop;
   --
   if 12_000 /= 12e003 then
     Put_Line ("Compiler bug [E]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   --
   Test_Patching;

@@ -304,11 +304,12 @@ package HAC_Pack is
   procedure  Wait      (S : Semaphore);
   procedure  Signal    (S : Semaphore);
 
-  --  System
+  --  System (items similar to items in Ada.Directories, Ada.Environment_Variables)
 
   function Argument_Count return Natural renames Ada.Command_Line.Argument_Count;
   function Argument (Number : Positive) return VString;
   function Command_Name return VString;
+  procedure Set_Exit_Status (Code : in Integer);
 
   --  Get_Env. If env. var. Name is not set, returns an empty string.
   function Get_Env (Name : String)  return VString;

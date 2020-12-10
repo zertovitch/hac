@@ -10,10 +10,12 @@ procedure Case_Statement is
       when 1 | -1 =>
         if abs (i) /= 1 then
           Put_Line ("Compiler bug [Int, A]");
+          Set_Exit_Status (1);  --  Compiler test failed.
         end if;
       when -7 =>
         if i + 7 /= 0 then
           Put_Line ("Compiler bug [Int, B]");
+          Set_Exit_Status (1);  --  Compiler test failed.
         end if;
       when others => null;
       --  !! When "OTHERS" omitted: HAC compiles but the VM enters a Case_Check_Error state.
@@ -32,6 +34,7 @@ procedure Case_Statement is
       when 'a' | 'A' =>
         if (c /= 'a') and (c /= 'A') then
           Put(c); Put_Line ("  Compiler bug [Char, A]");
+          Set_Exit_Status (1);  --  Compiler test failed.
         end if;
         vowel_occurences := vowel_occurences + 1;
       when 'b' | 'B' =>
@@ -50,6 +53,7 @@ begin
   end loop;
   if not after_int_case then
     Put_Line ("Compiler bug [Int, Z]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   --
   for c in big_A .. 'z' loop
@@ -57,5 +61,6 @@ begin
   end loop;
   if vowel_occurences /= 3 then
     Put_Line ("Compiler bug [Char, Z]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
 end Case_Statement;

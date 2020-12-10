@@ -296,7 +296,7 @@ begin
     if (Containing_Bags (shiny_gold) /= Integer_Value (Argument (1))) or
        (Contained_Bags (shiny_gold) /= Integer_Value (Argument (2)))
     then
-      Put ("*** Test FAILS ***");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Rules about bag contents: " & rules_count);

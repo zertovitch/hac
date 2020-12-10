@@ -42,9 +42,11 @@ begin
   --
   if y /= 3.0 then
     Put_Line ("Compiler bug [A]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   if j /= 5 then
     Put_Line ("Compiler bug [B]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
   --
   --  Duration <-> Real
@@ -55,5 +57,6 @@ begin
   x := Real (d);
   if x * 100.0 /= Real (e) then
     Put_Line ("Compiler bug [C]");
+    Set_Exit_Status (1);  --  Compiler test failed.
   end if;
 end;

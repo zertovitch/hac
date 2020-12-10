@@ -96,7 +96,7 @@ begin
     if (a1 /= Integer_Value (Argument (1))) or
        (a2 /= Integer_Value (Argument (2)))
     then
-      Put ("*** Test FAILS ***");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Accumulator = " & a1 & ";  " & Exit_Diagnostic (done_1));

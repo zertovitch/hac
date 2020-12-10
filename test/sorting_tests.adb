@@ -68,6 +68,7 @@ procedure Sorting_Tests is
     for k in 1 .. 26 loop
       if v (k) /= expected_result (k) then
         Put_Line ("Wrong result in Merge Sort");
+        Set_Exit_Status (1);  --  Compiler test failed.
       end if;
     end loop;
   end Merge;
@@ -113,6 +114,7 @@ procedure Sorting_Tests is
     for k in 1..26 loop
       if b (k) /= expected_result (k) then
         Put_Line ("Wrong result in Shell Sort");
+        Set_Exit_Status (1);  --  Compiler test failed.
       end if;
     end loop;
   end Shell;

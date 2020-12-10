@@ -9,6 +9,7 @@ begin
     exit when i = 5;
     if i >= 5 then
       Put_Line ("Compiler bug [A (missed exit]");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   end loop Ident_For;
   --
@@ -16,6 +17,7 @@ begin
     exit when i = 5;
     if i <= 5 then
       Put_Line ("Compiler bug [B (missed exit]");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   end loop;
   --

@@ -536,6 +536,11 @@ package body HAC_Pack is
     return +Ada.Command_Line.Command_Name;
   end Command_Name;
 
+  procedure Set_Exit_Status (Code : in Integer) is
+  begin
+    Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Exit_Status (Code));
+  end Set_Exit_Status;
+
   function Get_Env (Name : String) return VString is
     use Ada.Environment_Variables;
   begin

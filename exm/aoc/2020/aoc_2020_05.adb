@@ -41,7 +41,7 @@ begin
   Close (f);
   if test_mode then
     if max /= Integer_Value (Argument (1)) then
-      Put ("*** Test FAILS ***");
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Maximum seat Id in the plane = " & max);
