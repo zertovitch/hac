@@ -7,7 +7,6 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_10 is
-  f : File_Type;
   subtype Jolt is Natural;  --  Full Ada: type Jolt is new Natural;
   Max_Adapters : constant := 1000;
   j : array (1 .. Max_Adapters) of Jolt;
@@ -69,17 +68,15 @@ procedure AoC_2020_10 is
     --
     function Count (from : Jolt) return Natural is
       sum : Natural := 0;
-      rated : Jolt;
     begin
       if from = jmax then
         return 1;
       end if;
       for step in 1 .. 3 loop
         for i in 1 .. top loop
-          rated := j (i);
-          if rated = from + step then
+          if j (i) = from + step then
             if cache (i) = 0 then
-              cache (i) := Count (rated);
+              cache (i) := Count (j (i));
             end if;
             sum := sum + cache (i);
           end if;
@@ -96,6 +93,7 @@ procedure AoC_2020_10 is
   --
   puzzle_1 : Jolt;
   puzzle_2 : Natural;
+  f : File_Type;
 begin
   Open (f, "aoc_2020_10.txt");
   while not End_Of_File (f) loop
