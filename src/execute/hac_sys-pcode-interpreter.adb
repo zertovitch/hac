@@ -132,28 +132,34 @@ package body HAC_Sys.PCode.Interpreter is
         FP := ND.S (Curr_TCB.T - 1).Txt;
         if Ada.Text_IO.End_Of_File (FP.all) then
           raise VM_End_Error;
-        else
-          case Typ is
-            when Ints =>
-              Defs.IIO.Get (FP.all, ND.S (Out_Param).I);
-            when Floats =>
-              Defs.RIO.Get (FP.all, ND.S (Out_Param).R);
-            when Chars =>
-              Ada.Text_IO.Get (FP.all, CH);
-              ND.S (Out_Param).I := Character'Pos (CH);
-            when VStrings =>
-              ND.S (Out_Param) := GR_VString (Ada.Text_IO.Get_Line (FP.all));
-            when Arrays =>
-              --  We have a String, with a given length.
-              String_Length_Decoding := ND.IR.Y / (2 ** Typen'Size);
-              for i in 1 .. Index (String_Length_Decoding) loop
-                Ada.Text_IO.Get (FP.all, CH);
-                ND.S (Out_Param + i - 1).I := Character'Pos (CH);
-              end loop;
-            when others =>
-              null;
-          end case;
         end if;
+        case Typ is
+          when Ints =>
+            Defs.IIO.Get (FP.all, ND.S (Out_Param).I);
+          when Floats =>
+            Defs.RIO.Get (FP.all, ND.S (Out_Param).R);
+          when Chars =>
+            Ada.Text_IO.Get (FP.all, CH);
+            ND.S (Out_Param).I := Character'Pos (CH);
+          when VStrings =>
+            ND.S (Out_Param) := GR_VString (Ada.Text_IO.Get_Line (FP.all));
+          when Arrays =>
+            --  We have a String, with a given length.
+            String_Length_Decoding := ND.IR.Y / (2 ** Typen'Size);
+            for i in 1 .. Index (String_Length_Decoding) loop
+              --  A.10.7 (15): "Determines the length of the given string and
+              --  attempts that number of Get operations for successive
+              --  characters of the string (in particular, no operation
+              --  is performed if the string is null)."
+              if Ada.Text_IO.End_Of_File (FP.all) then
+                raise VM_End_Error;
+              end if;
+              Ada.Text_IO.Get (FP.all, CH);
+              ND.S (Out_Param + i - 1).I := Character'Pos (CH);
+            end loop;
+          when others =>
+            null;
+        end case;
         if Code = SP_Get_Line_F and Typ /= VStrings then
           Ada.Text_IO.Skip_Line (FP.all);
         end if;

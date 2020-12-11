@@ -10,7 +10,7 @@
 --
 --  NB: when run from HAC with the full-size data ("aoc_2020_11.txt"),
 --      the HAC virtual machine shows its capacity of slowing down your computer ;-) .
---      Better use your preferred Ada compiler...
+--      For performance, better use your preferred full Ada compiler...
 --
 --  HAC 0.083 "nice to have"'s detected in this exercise:
 --

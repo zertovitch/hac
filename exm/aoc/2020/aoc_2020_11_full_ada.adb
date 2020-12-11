@@ -8,7 +8,7 @@ with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_11_full_Ada is
 
-  procedure Solve (w, h : Positive; name : VString) is
+  procedure Solve (w, h : Positive; file_name : String) is
     --
     type Map_Type is array (1 .. h, 1 .. w) of Character;
     --
@@ -113,8 +113,8 @@ procedure AoC_2020_11_full_Ada is
     verbose : constant Boolean := False;
     part : Positive := 1;
   begin
-    Put_Line (name);
-    Open (f, name);
+    Put_Line (file_name);
+    Open (f, file_name);
     for i in 1 .. h loop
       for j in 1 .. w loop
         Get (f, map_start (i, j));
@@ -140,6 +140,6 @@ procedure AoC_2020_11_full_Ada is
   end Solve;
   --
 begin
-  Solve (10, 10, +"aoc_2020_11_mini.txt");
-  Solve (93, 98, +"aoc_2020_11.txt");
+  Solve (10, 10, "aoc_2020_11_mini.txt");
+  Solve (93, 98, "aoc_2020_11.txt");
 end AoC_2020_11_full_Ada;
