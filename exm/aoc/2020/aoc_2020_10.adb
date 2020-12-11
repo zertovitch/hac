@@ -7,12 +7,14 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_10 is
-  subtype Jolt is Natural;  --  Full Ada: type Jolt is new Natural;
+  subtype Jolt is Natural;
+  --  ^ Full Ada: it's better to define an incompatible
+  --    type for Jolts:  `  type Jolt is new Natural;  `.
   Max_Adapters : constant := 1000;
   j : array (1 .. Max_Adapters) of Jolt;
   top : Natural := 0;
   jmax : Jolt := 0;
-  test_mode : constant Boolean := Argument_Count >= 2;
+  verbose : constant Boolean := False;
   --
   procedure Search (result : out Integer) is
     c : Jolt := 0;
@@ -42,7 +44,7 @@ procedure AoC_2020_10 is
               if step = 3 then diff_3 := diff_3 + 1; end if;
               seen (i) := True;
               found := True;
-              if not test_mode then
+              if verbose then
                 Put_Line (
                   +"current " & c &
                    "  step " & step &
@@ -91,6 +93,7 @@ procedure AoC_2020_10 is
     result := Count (0);
   end Count;
   --
+  compiler_test_mode : constant Boolean := Argument_Count >= 2;
   puzzle_1 : Jolt;
   puzzle_2 : Natural;
   f : File_Type;
@@ -107,16 +110,16 @@ begin
   --
   Search (puzzle_1);
   Count (puzzle_2);
-  if test_mode then
+  if compiler_test_mode then
     if (puzzle_1 /= Integer_Value (Argument (1))) or
        (puzzle_2 /= Integer_Value (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"top=" & top);
-    Put_Line (+"max jolts=" & jmax);
-    Put_Line (+"Result of puzzle 1: " & puzzle_1);
-    Put_Line (+"Result of puzzle 2: " & puzzle_2);
+    Put_Line (+"Number of adapters: " & top);
+    Put_Line (+"Max jolts: " & jmax);
+    Put_Line (+"Result of puzzle 1 (diff_1 * diff_3 when using all adapters): " & puzzle_1);
+    Put_Line (+"Result of puzzle 2 (number of ways adapters can be arranged): " & puzzle_2);
   end if;
 end AoC_2020_10;

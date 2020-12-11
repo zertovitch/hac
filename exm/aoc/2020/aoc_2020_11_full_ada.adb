@@ -24,13 +24,14 @@ procedure AoC_2020_11_full_Ada is
     is
       function Count_Visible_Occupied (i, j : Positive) return Natural is
         occ : Natural := 0;
+        --
         procedure Scan_Direction (di, dj : Integer) is
           ii : Integer := i + di;
           jj : Integer := j + dj;
         begin
           loop
-            exit when (ii < 1) or (ii > h);
-            exit when (jj < 1) or (jj > w);
+            exit when ii < 1 or else ii > h;
+            exit when jj < 1 or else jj > w;
             case current_map (ii, jj) is
               when occupied => occ := occ + 1; exit;
               when empty    => exit;
@@ -43,7 +44,7 @@ procedure AoC_2020_11_full_Ada is
       begin
         for di in -1 .. 1 loop
           for dj in -1 .. 1 loop
-            if (di /= 0) or (dj /= 0) then
+            if di /= 0 or else dj /= 0 then
               Scan_Direction (di, dj);
             end if;
           end loop;

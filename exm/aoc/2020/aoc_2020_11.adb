@@ -6,10 +6,15 @@
 --
 -------------------------------------------------------------------------
 --
---  HAC 0.081 version.
+--  HAC 0.083 version.
 --
---  HAC 0.081 "nice to have"'s detected in this exercise:
+--  NB: when run from HAC with the full-size data ("aoc_2020_11.txt"),
+--      the HAC virtual machine shows its capacity of slowing down your computer ;-) .
+--      Better use your preferred Ada compiler...
 --
+--  HAC 0.083 "nice to have"'s detected in this exercise:
+--
+--    *     with correct boolean operator priority, removal of needless ()
 --    *     ` aaa : constant Character := 'a';`
 --                       HAC should detect an expression as a static (compile-time-known) value
 --
@@ -21,8 +26,8 @@ procedure AoC_2020_11 is
   --
   type Map_Type is array (1 .. h, 1 .. w) of Character;
   --
-  empty    : constant Character := 'L';
-  occupied : constant Character := '#';
+  empty    : constant Character := 'L';  --  Not used. See remarks above.
+  occupied : constant Character := '#';  --  Not used. See remarks above.
   --
   procedure Move (
     current_map : in     Map_Type;
@@ -33,6 +38,7 @@ procedure AoC_2020_11 is
   is
     function Count_Visible_Occupied (i, j : Positive) return Natural is
       occ : Natural := 0;
+      --
       procedure Scan_Direction (di, dj : Integer) is
         ii : Integer := i + di;
         jj : Integer := j + dj;
@@ -41,9 +47,9 @@ procedure AoC_2020_11 is
           exit when (ii < 1) or (ii > h);
           exit when (jj < 1) or (jj > w);
           case current_map (ii, jj) is
-            when '#' => occ := occ + 1; exit;
+            when '#'    => occ := occ + 1; exit;
             when 'L'    => exit;
-            when others   => exit when simple_rule;
+            when others => exit when simple_rule;
           end case;
           ii := ii + di;
           jj := jj + dj;
