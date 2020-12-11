@@ -20,7 +20,7 @@ procedure All_Silent_Tests is
       end if;
     end Shell;
 
-    failures : Natural := 0;
+    successes, failures : Natural := 0;
 
     procedure Launch_HAC (Ada_file_name : VString; ups : Positive) is
       up_dir: VString;
@@ -34,7 +34,9 @@ procedure All_Silent_Tests is
         False,
         success
       );
-      if not success then
+      if success then
+        successes := successes + 1;
+      else
         failures := failures + 1;
       end if;
     end Launch_HAC;
@@ -87,12 +89,16 @@ procedure All_Silent_Tests is
     Launch_HAC (+"aoc_2020_08.adb   1394 1626",           3);  --  Handheld Halting
     Launch_HAC (+"aoc_2020_09.adb   138879426 23761694",  3);  --  Encoding Error
     Launch_HAC (+"aoc_2020_10.adb   2277 37024595836928", 3);  --  Adapter Array
+    Launch_HAC (+"aoc_2020_11.adb   37 26",               3);  --  Seating System
     Put_Line ("----> Done.");
     if failures = 0 then
       Put_Line ("All tests passed.");
     else
-      Put_Line (+"*** Failed tests: " & failures & " ***");
+      Put_Line (+"*** There are FAILED tests ***");
     end if;
+    Put_Line ("Summary:");
+    Put_Line (+"         " & successes & " successes");
+    Put_Line (+"         " & failures & " failures");
   end Launch_Tests;
 
 begin

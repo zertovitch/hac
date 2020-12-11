@@ -61,7 +61,7 @@ procedure AoC_2020_08 is
   end Exit_Diagnostic;
   --
   asm : String (1 .. 3);
-  i : Instr;
+  i : Instr := nop;
   v, a1, a2 : Integer;
   f : File_Type;
   done_1, done_2 : Boolean;

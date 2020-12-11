@@ -25,7 +25,7 @@ procedure HAC is
 
   procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
     use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter,
-        Ada.Calendar, Ada.Text_IO;
+        Ada.Calendar, Ada.Command_Line, Ada.Text_IO;
     --
     procedure Show_Line_Information (
       File_Name   : String;   --  Example: hac-pcode-interpreter.adb
@@ -126,7 +126,10 @@ procedure HAC is
         Put_Line (Current_Error, Message (unhandled));
         Put_Line (Current_Error, "Trace-back locations:");
         CIO_Trace_Back (unhandled);
+        Set_Exit_Status (Failure);
       end if;
+    else
+      Set_Exit_Status (Failure);
     end if;
   exception
     when E : Abnormal_Termination =>
@@ -134,12 +137,14 @@ procedure HAC is
         Current_Error,
         Ada.Exceptions.Exception_Message (E)
       );
+      Set_Exit_Status (Failure);
     when Name_Error =>
       Put_Line (
         Current_Error,
         HAC_margin_3 &
         "Error: file """ & Ada_file_name &
         """ not found (perhaps in exm or test subdirectory ?)");
+      Set_Exit_Status (Failure);
   end Compile_and_interpret_file;
 
   procedure Help is

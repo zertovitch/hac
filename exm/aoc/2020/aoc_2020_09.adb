@@ -8,7 +8,8 @@ with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_09 is
   contig_max, last_data, n, min, max,
-  x, t, res_no_pair, weakness : Integer;
+  x, t : Integer;
+  res_no_pair, weakness : Integer := 0;
   f : File_Type;
   mem_max  : constant := 24;
   subtype Mem_Range is Integer range 0 .. mem_max;
