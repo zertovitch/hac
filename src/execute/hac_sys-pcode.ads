@@ -249,7 +249,7 @@ package HAC_Sys.PCode is
     SF_EOLN,
     SF_Random_Int,
     --  VString functions
-    SF_String_to_VString,       --  +S
+    SF_String_to_VString,       --  +S        (S is a fixed-size string)
     SF_Literal_to_VString,      --  +"Hello"
     SF_Char_to_VString,         --  +'x'
     SF_Two_VStrings_Concat,     --  V1 & V2

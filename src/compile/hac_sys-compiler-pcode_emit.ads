@@ -34,8 +34,9 @@ package HAC_Sys.Compiler.PCode_Emit is
   );
 
   procedure Emit_Std_Funct (
-    CD   : in out Compiler_Data;
-    Code :        SF_Code
+    CD    : in out Compiler_Data;
+    Code  :        SF_Code;
+    Extra :        Operand_1_Type := 0
   );
 
   procedure Emit_Comparison_Instruction (

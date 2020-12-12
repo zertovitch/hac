@@ -366,9 +366,10 @@ package body HAC_Sys.Parser.Expressions is
           Emit_Std_Funct (CD, SF_Char_to_VString);
           X.TYP := VStrings;
         elsif Adding_OP = Plus and then Is_Char_Array (CD, X) then  --  +S
-          --  Address is already pushed; we need to push the string's length.
-          Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
-          Emit_Std_Funct (CD, SF_String_to_VString);
+          Emit_Std_Funct (CD,
+            SF_String_to_VString,
+            Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
+          );
           X.TYP := VStrings;
         elsif X.TYP not in Numeric_Typ then
           Error (CD, err_illegal_type_for_arithmetic_expression);
@@ -498,11 +499,11 @@ package body HAC_Sys.Parser.Expressions is
         Emit_1 (CD, k_Integer_to_Float, 0);
       elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
         Issue_Comparison_Type_Mismatch_Error;
-      elsif X.TYP = VStrings and Y.TYP = String_Literals then
+      elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  V = "Hello", V < "World", etc.
         --  Y is on top of the stack, we turn it into a VString.
         --  If this becomes a perfomance issue we could consider an opcode for (VStr op Lit_Str).
-        Emit_Std_Funct (CD, SF_Literal_to_VString);
-        Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
+        Emit_Std_Funct (CD, SF_Literal_to_VString);  --  Now we have e.g. V < +"World".
+        Emit_Comparison_Instruction (CD, Rel_OP, VStrings);  --  Emit "<" (X, Y) between VStrings.
       elsif X.TYP = Y.TYP then
         if PCode_Atomic_Typ (X.TYP) then
           Emit_Comparison_Instruction (CD, Rel_OP, X.TYP);

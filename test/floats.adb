@@ -12,7 +12,7 @@ procedure Floats is
     for i in 0 .. steps loop
       x1 := Real (i) * scale * (1.0 / Real (steps));
       x2 := Log (Exp (x1));
-      if abs (x2 - x1) > 0.0 then
+      if abs (x2 - x1) > 1.0e-15 then
         Put_Line ("Compiler bug [Exp_Log]");
         Set_Exit_Status (1);  --  Compiler test failed.
       end if;

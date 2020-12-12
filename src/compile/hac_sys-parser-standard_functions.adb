@@ -35,6 +35,7 @@ package body HAC_Sys.Parser.Standard_Functions is
     Expected : array (1 .. Max_Args) of Typ_Set;    --  Expected type of the function's arguments
     Actual   : array (1 .. Max_Args) of Exact_Typ;  --  Actual type from argument expression
     Code_Adjusted : SF_Code := Code;
+    Extra : Operand_1_Type := 0;
     X : Exact_Typ;
     --
     procedure Prepare_Accepted_Parameter_Types is
@@ -173,7 +174,7 @@ package body HAC_Sys.Parser.Standard_Functions is
             Emit_Std_Funct (CD, SF_Literal_to_VString);
           end if;
         when SF_Literal_to_VString =>
-          --  Call to `To_VString`, identical to the unary "+".
+          --  Call to the `To_VString` function, identical to the unary "+".
           --  See Simple_Expression in Parser.Expressions
           case Actual (1).TYP is
             when String_Literals =>
@@ -182,8 +183,7 @@ package body HAC_Sys.Parser.Standard_Functions is
               Code_Adjusted := SF_Char_to_VString;
             when Arrays =>
               if Is_Char_Array (CD, Actual (1)) then
-                --  Address is already pushed; we need to push the string's length.
-                Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.Arrays_Table (Actual (1).Ref).Array_Size));
+                Extra := Operand_1_Type (CD.Arrays_Table (Actual (1).Ref).Array_Size);
                 Code_Adjusted := SF_String_to_VString;
               else
                 UErrors.Error (CD, err_expected_char_or_string);
@@ -211,7 +211,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         Parse_Arguments;
       end if;
       Adjustments_to_Parameter_Types;
-      Emit_Std_Funct (CD, Code_Adjusted);
+      Emit_Std_Funct (CD, Code_Adjusted, Extra);
       if Args > 0 then
         Need (CD, RParent, err_closing_parenthesis_missing);
       end if;

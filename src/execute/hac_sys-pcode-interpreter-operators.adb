@@ -128,12 +128,11 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           temp := Defs.HAC_Float (Random (ND.Gen)) *
                   Defs.HAC_Float ((Top_Item.I + 1));
           Top_Item.I := HAC_Integer (Defs.HAC_Float'Floor (temp));
-        when SF_String_to_VString =>   --  Unary "+"
-          Pop (ND);
+        when SF_String_to_VString =>   --  Unary "+", equivalent to the call To_VString (S)
           Idx := Integer (ND.S (Curr_TCB.T).I);      --  Index in the stack
-          Len := Integer (ND.S (Curr_TCB.T + 1).I);  --  Length of string
+          Len := Integer (ND.IR.X);                  --  Length of string
           ND.S (Curr_TCB.T) := GR_VString (Get_String_from_Stack (ND, Idx, Len));
-        when SF_Literal_to_VString =>  --  Unary "+"
+        when SF_Literal_to_VString =>  --  Unary "+", equivalent to the call To_VString ("abc")
           Pop (ND);
           Len := Integer (ND.S (Curr_TCB.T).I);      --  Length of string
           Idx := Integer (ND.S (Curr_TCB.T + 1).I);  --  Index to string table
