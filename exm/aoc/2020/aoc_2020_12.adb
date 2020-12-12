@@ -7,7 +7,7 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_12 is
-  pi : constant := 3.1415926535897932;
+  pi : constant := 3.1415926535897932384;
   --
   function D2R (a : Real) return Real is
   begin
@@ -25,7 +25,7 @@ procedure AoC_2020_12 is
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   c : Character;
   i, res : Integer;
-  wx, wy, a, x, y, d : Real;
+  wx, wy, a, x, y, d, res_r : Real;
   f : File_Type;
 begin
   for part in 1 .. 2 loop
@@ -68,7 +68,8 @@ begin
       end if;
     end loop;
     Close (f);
-    res := Integer (abs (x) + abs (y));
+    res_r := abs (x) + abs (y);
+    res := Integer (res_r);
     if compiler_test_mode then
       if res /= Integer_Value (Argument (part)) then
         Set_Exit_Status (1);  --  Compiler test failed.
@@ -77,7 +78,7 @@ begin
       Put_Line (
         +"Part " & part &
         ": Manhattan distance of the ship to (0,0): " &
-        res);
+        res & "  (" & res_r & ')');
     end if;
   end loop;
 end AoC_2020_12;

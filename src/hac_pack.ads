@@ -32,7 +32,7 @@ package HAC_Pack is
   --  Floating-point numeric type: Real  --
   -----------------------------------------
 
-  type Real is digits 15;
+  type Real is digits 18;
   package RIO is new Ada.Text_IO.Float_IO (Real);
 
   function   "**" (F1, F2 : Real)  return Real;

@@ -30,8 +30,8 @@ procedure AoC_2020_11_full_Ada is
           jj : Integer := j + dj;
         begin
           loop
-            exit when ii < 1 or else ii > h;
-            exit when jj < 1 or else jj > w;
+            exit when ii not in 1 .. h;
+            exit when jj not in 1 .. w;
             case current_map (ii, jj) is
               when occupied => occ := occ + 1; exit;
               when empty    => exit;
@@ -41,6 +41,7 @@ procedure AoC_2020_11_full_Ada is
             jj := jj + dj;
           end loop;
         end Scan_Direction;
+        --
       begin
         for di in -1 .. 1 loop
           for dj in -1 .. 1 loop

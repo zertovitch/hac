@@ -15,6 +15,7 @@
 --  HAC 0.083 "nice to have"'s detected in this exercise:
 --
 --    *     with correct boolean operator priority, removal of needless ()
+--    *     ` x [not] in some_range `  as in  ` exit when ii not in 1 .. h; `
 --    *     ` aaa : constant Character := 'a';`
 --                       HAC should detect an expression as a static (compile-time-known) value
 --
