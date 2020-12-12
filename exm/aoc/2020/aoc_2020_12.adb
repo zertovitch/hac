@@ -7,7 +7,7 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_12 is
-  pi : constant := 3.14159265358979323846264338327950288419716939937510582097;
+  pi : constant := 3.1415926535897932;
   --
   function D2R (a : Real) return Real is
   begin
@@ -21,10 +21,11 @@ procedure AoC_2020_12 is
     y  := Sin (a) * x + Cos (a) * y;
     x  := nx;
   end Rotate;
+  --
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   c : Character;
   i, res : Integer;
-  wx, wy, a, x, y, d : Real := 0.0;
+  wx, wy, a, x, y, d : Real;
   f : File_Type;
 begin
   for part in 1 .. 2 loop
@@ -46,7 +47,9 @@ begin
           when 'W' => x := x - d;
           when 'L' => a := a + D2R (d);
           when 'R' => a := a - D2R (d);
-          when 'F' => x := x + d * Cos (a); y := y + d * Sin (a);
+          when 'F' =>
+             x := x + d * Cos (a);
+             y := y + d * Sin (a);
           when others => null;
         end case;
       else

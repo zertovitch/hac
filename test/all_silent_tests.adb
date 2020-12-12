@@ -23,14 +23,10 @@ procedure All_Silent_Tests is
     successes, failures : Natural := 0;
 
     procedure Launch_HAC (Ada_file_name : VString; ups : Positive) is
-      up_dir: VString;
       success : Boolean;
     begin
-      for i in 1 .. ups loop
-        up_dir := up_dir & ".." & Directory_Separator;
-      end loop;
       Shell (
-        up_dir & "hac -v1 " & Ada_file_name,
+        ups * (+".." & Directory_Separator) & "hac -v1 " & Ada_file_name,
         False,
         success
       );
