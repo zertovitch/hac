@@ -539,9 +539,6 @@ package body HAC_Sys.Parser is
           Type_Mismatch (CD, err_type_of_return_statement_doesnt_match, Found => Y, Expected => X);
         end Issue_Type_Mismatch_Error;
       begin
-        if Block_ID = CD.Main_Program_ID then
-          Emit (CD, k_Halt_Interpreter);
-        end if;
         Block_Idx := Locate_Identifier (CD, Block_ID, Level);
         InSymbol;
         if CD.Sy = Semicolon then
@@ -584,6 +581,8 @@ package body HAC_Sys.Parser is
         end if;
         if Is_a_function then
           Emit_1 (CD, k_Exit_Function, Normal_Procedure_Call);
+        elsif Level <= 1 then
+          Emit (CD, k_Halt_Interpreter);
         else
           Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
         end if;
@@ -1422,11 +1421,13 @@ package body HAC_Sys.Parser is
       return;
     end if;
     --
-    if Block_ID /= CD.Main_Program_ID and not Is_a_block_statement then
+    if Level <= 1 or Is_a_block_statement then
+      null;
+    else
       InSymbol;  --  Consume ';' symbol after END [Subprogram_Id].
       --
       --  Now we have either another declaration,
-      --  or BEGIN or, if it's a package, END.
+      --  or BEGIN or, if it's a package, END  .
       Test (
         CD, FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
         Empty_Symset,
