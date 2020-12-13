@@ -109,8 +109,6 @@ package body HAC_Sys.UErrors is
         return "parameter must be of type Integer";
       when err_expected_constant_function_variable_or_subtype =>
         return "expected a constant, function, variable or subtype name";
-      when err_illegal_return_statement_from_main =>
-        return "ILLEGAL RETURN STATEMENT FROM MAIN";
       when err_types_of_assignment_must_match =>
         return "types must match in an assignment: " & hint;
       when err_case_label_not_same_type_as_case_clause =>

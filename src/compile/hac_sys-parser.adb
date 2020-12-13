@@ -540,7 +540,7 @@ package body HAC_Sys.Parser is
         end Issue_Type_Mismatch_Error;
       begin
         if Block_ID = CD.Main_Program_ID then
-          Error (CD, err_illegal_return_statement_from_main); -- !! but... this is legal in Ada !!
+          Emit (CD, k_Halt_Interpreter);
         end if;
         Block_Idx := Locate_Identifier (CD, Block_ID, Level);
         InSymbol;
@@ -577,8 +577,10 @@ package body HAC_Sys.Parser is
               Issue_Type_Mismatch_Error;
             end if;
           else
-            Error (CD, err_illegal_return_statement_from_main);
-          end if;       -- !! but... this is legal in Ada !!
+            raise Program_Error with
+              "`return x` from main, should have been caught earlier: " &
+              "err_procedures_cannot_return_a_value.";
+          end if;
         end if;
         if Is_a_function then
           Emit_1 (CD, k_Exit_Function, Normal_Procedure_Call);

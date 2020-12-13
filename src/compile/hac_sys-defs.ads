@@ -347,7 +347,6 @@ package HAC_Sys.Defs is
     err_parameter_must_be_of_type_Float,
     err_parameter_must_be_Integer,
     err_expected_constant_function_variable_or_subtype,
-    err_illegal_return_statement_from_main,
     err_types_of_assignment_must_match,
     err_case_label_not_same_type_as_case_clause,
     err_duplicate_case_choice_value,

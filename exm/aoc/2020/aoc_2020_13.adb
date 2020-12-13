@@ -83,7 +83,7 @@ procedure AoC_2020_13 is
       GCD_and_Bezout (prod / freq (k), freq (k), sk, tk, gcd);
       if gcd > 1 then
         Put_Line ("Not coprime, Chinese remainder theorem cannot be used.");
-        --  return;
+        return;
       end if;
       sum := sum + (freq (k) - k + 1) * sk * (prod / freq (k));
     end if;
