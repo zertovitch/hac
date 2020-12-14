@@ -4,6 +4,8 @@
 --
 --  https://adventofcode.com/2020/day/11
 --
+--  Full Ada version.
+--
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_11_full_Ada is
