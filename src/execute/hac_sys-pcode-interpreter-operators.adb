@@ -69,6 +69,8 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         if Y.I = 0 then raise VM_Division_by_0; else X.I := X.I / Y.I; end if;
       when k_MOD_Integer      =>
         if Y.I = 0 then raise VM_Division_by_0; else X.I := X.I mod Y.I; end if;
+      when k_REM_Integer      =>
+        if Y.I = 0 then raise VM_Division_by_0; else X.I := X.I rem Y.I; end if;
       when k_Power_Integer    => X.I := X.I ** Natural (Y.I);
       --
       when k_ADD_Float           => X.R := X.R + Y.R;

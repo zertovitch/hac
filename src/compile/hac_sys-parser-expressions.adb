@@ -327,9 +327,13 @@ package body HAC_Sys.Parser.Expressions is
                   Error (CD, err_resulting_type_should_be_Boolean);
                   X.TYP := NOTYP;
                 end if;
-              when MOD_Symbol =>
+              when MOD_Symbol | REM_Symbol =>
                 if X.TYP = Ints and Y.TYP = Ints then
-                  Emit (CD, k_MOD_Integer);
+                  if Mult_OP = MOD_Symbol then
+                    Emit (CD, k_MOD_Integer);
+                  else
+                    Emit (CD, k_REM_Integer);
+                  end if;
                 else
                   Error (CD, err_mod_requires_integer_arguments);
                   X.TYP := NOTYP;

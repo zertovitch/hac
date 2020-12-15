@@ -90,6 +90,7 @@ package HAC_Sys.PCode is
     k_MULT_Integer,
     k_DIV_Integer,
     k_MOD_Integer,
+    k_REM_Integer,
     k_Power_Integer,                    --  2018-03-18 : 3 ** 6
     --
     k_ADD_Float,
