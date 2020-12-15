@@ -6,30 +6,40 @@
 --
 --  Full Ada version.
 --
-with Ada.Containers.Hashed_Maps, Ada.Text_IO, Ada.Integer_Text_IO;
+with Ada.Calendar, Ada.Containers.Hashed_Maps, Ada.Text_IO, Ada.Integer_Text_IO;
 
 procedure AoC_2020_15_full_Ada is
 
   type Preamble is array (Positive range <>) of Natural;
   --
   procedure Play (pre : Preamble) is
-    use Ada.Text_IO, Ada.Integer_Text_IO;
+    use Ada.Calendar, Ada.Text_IO, Ada.Integer_Text_IO;
 
-    function No_Hash (key : in Natural) return Ada.Containers.Hash_Type
+    function Identity_Hash (key : in Natural) return Ada.Containers.Hash_Type
     is (Ada.Containers.Hash_Type (key));
+
+    function Simple_Hash (key : in Natural) return Ada.Containers.Hash_Type
+    is
+      use Ada.Containers;
+    begin
+      return 2654435761 * Hash_Type (key);
+    end Simple_Hash;
+    pragma Unreferenced (Simple_Hash);
 
     package Addr_Map_Pkg is new
       Ada.Containers.Hashed_Maps (
         Natural,   --  Key is the number spoken
         Positive,  --  Element is the turn (the index in a simple array)
-        No_Hash,
+        Identity_Hash,
         "=");
 
     mem : Addr_Map_Pkg.Map;
     start : constant Positive := pre'Last + 1;
     stop : constant := 30_000_000;
     prev, hold : Natural;
+    T1, T2 : Time;
   begin
+    T1 := Clock;
     for i in 1 .. pre'Last - 1 loop
       mem.Include (pre (i), i);
     end loop;
@@ -47,6 +57,8 @@ procedure AoC_2020_15_full_Ada is
       mem.Include (prev, i - 1);
       prev := hold;
     end loop;
+    T2 := Clock;
+    Put_Line ("----   Computation time: " & Duration'Image (T2 - T1));
     New_Line;
   end Play;
 
