@@ -76,7 +76,7 @@ procedure AoC_2020_13 is
     Put_Line (+"First bus for you : ID " & idmin);
   end if;
   answer_1 := (dmin - earliest) * idmin;
-  --  Chinese remainder theorem (the frequencies are
+  --  Chinese remainder theorem (the frequencies are assumed to be coprime)
   sum := 0;
   for k in 2 .. n loop
     if freq (k) > 0 then

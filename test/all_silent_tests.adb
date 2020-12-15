@@ -88,6 +88,7 @@ procedure All_Silent_Tests is
     Launch_HAC (+"aoc_2020_11.adb   37 26",               3);  --  Seating System
     Launch_HAC (+"aoc_2020_12.adb   1631 58606",          3);  --  Rain Risk
     Launch_HAC (+"aoc_2020_13.adb   222 408270049879073", 3);  --  Shuttle Search
+    Launch_HAC (+"aoc_2020_15.adb   249",                 3);  --  Rambunctious Recitation
     Put_Line ("----> Done.");
     if failures = 0 then
       Put_Line ("All tests passed.");
