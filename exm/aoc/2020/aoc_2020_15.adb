@@ -4,51 +4,54 @@
 --
 --  https://adventofcode.com/2020/day/15
 --
---  Part 1 only. For both parts, see AoC_2020_15_full_Ada.
+--  Part 1 only.
+--  If we increase HAC's stack a bit, we can do both parts.
 --
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_15 is
-  compiler_test_mode : constant Boolean := Argument_Count >= 8;
-  last : constant := 2020;
   type Preamble is array (1 .. 6) of Natural;
   --
   procedure Play (pre : Preamble; start : Positive; puzzle_id : Positive) is
-    mem : array (1 .. last) of Integer;
-    --
-    function Is_new (i, n : Natural) return Boolean is
-    begin
-      for j in 1 .. i - 2 loop
-        if mem (j) = n then return False; end if;
-      end loop;
-      return True;
-    end Is_new;
-    --
-    function Age (i, n : Natural) return Natural is
-    begin
-      for j in reverse 1 .. i - 2 loop
-        if mem (j) = n then return (i - 1) - j; end if;
-      end loop;
-      return 0;
-    end Age;
+    compiler_test_mode : constant Boolean := Argument_Count >= 8;
+    stop : constant := 2020;
+    --  We memorize turn of spoken number (if any), indexed by spoken number.
+    mem : array (0 .. stop) of Natural;
+    not_seen : constant := 0;
+    prev, curr : Natural;
+    T1, T2 : Time;
   begin
-    for i in 1 .. start - 1 loop
-      mem (i) := pre (i);
+    T1 := Clock;
+    for i in 0 .. stop loop
+      mem (i) := not_seen;
     end loop;
-    for i in start .. last loop
-      if Is_new (i, mem (i - 1)) then
-        mem (i) := 0;
+    for i in 1 .. start - 2 loop
+      mem (pre (i)) := i;
+    end loop;
+    prev := pre (start - 1);
+    for i in start .. stop loop
+      if mem (prev) = not_seen then
+        curr := 0;
       else
-        mem (i) := Age (i, mem (i - 1));
+        curr := (i - 1) - mem (prev);  --  "Age"
       end if;
+      if compiler_test_mode then
+        if i = 2020 then
+          if curr /= Integer_Value (Argument (puzzle_id)) then
+            Set_Exit_Status (1);  --  Compiler test failed.
+          end if;
+        end if;
+      else
+        if (i = 2020) or (i = stop) then
+          Put (i); Put (" : "); Put (curr, 0); New_Line;
+        end if;
+      end if;
+      mem (prev) := i - 1;
+      prev := curr;
     end loop;
-    if compiler_test_mode then
-      if mem (last) /= Integer_Value (Argument (puzzle_id)) then
-        Set_Exit_Status (1);  --  Compiler test failed.
-      end if;
-    else
-      Put_Line (+"Last number is " & mem (last));
-    end if;
+    T2 := Clock;
+    Put_Line (+"----   Computation time: " & Image (T2 - T1));
+    New_Line;
   end Play;
   --
   example : array (1 .. 7) of Preamble;

@@ -4,45 +4,62 @@
 --
 --  https://adventofcode.com/2020/day/15
 --
---  Full Ada version.
---  Total run time: 0.42 seconds (i5-9400 @ 2.9 GHz).
+--  Full Ada version with hashed maps.
+--  Total run time: 2.46 seconds (i5-9400 @ 2.9 GHz).
 --
-with Ada.Calendar, Ada.Text_IO, Ada.Integer_Text_IO;
+--  *But* actually, in this context, a hashed map is overkill
+--  since the keys (the numbers) are in the range [0 .. stop] ...
+--
+with Ada.Calendar, Ada.Containers.Hashed_Maps, Ada.Text_IO, Ada.Integer_Text_IO;
 
-procedure AoC_2020_15_full_Ada is
+procedure AoC_2020_15_full_Ada_hashed_Maps is
 
   type Preamble is array (Positive range <>) of Natural;
   --
   procedure Play (pre : Preamble) is
     use Ada.Calendar, Ada.Text_IO, Ada.Integer_Text_IO;
+
+    function Identity_Hash (key : in Natural) return Ada.Containers.Hash_Type
+    is (Ada.Containers.Hash_Type (key))
+    with Inline;
+
+    function Simple_Hash (key : in Natural) return Ada.Containers.Hash_Type
+    with Inline
+    is
+      use Ada.Containers;
+    begin
+      return 2654435761 * Hash_Type (key);
+    end Simple_Hash;
+    pragma Unreferenced (Simple_Hash);
+
+    package Number_Map_Pkg is new
+      Ada.Containers.Hashed_Maps (
+        Natural,   --  Key is the number spoken
+        Positive,  --  Element is the turn (the index in a simple array)
+        Identity_Hash,
+        "=");
+
+    mem : Number_Map_Pkg.Map;
     stop : constant := 30_000_000;
-    --  We memorize turn of spoken number (if any), indexed by spoken number.
-    type Big_Mem is array (0 .. stop) of Natural;
-    type P is access Big_Mem;
-    mem : constant P := new Big_Mem;  --  Heap allocation in case of small default stack size...
-    not_seen : constant := 0;
     prev, curr : Natural;
     T1, T2 : Time;
   begin
     T1 := Clock;
-    for m of mem.all loop
-      m := not_seen;
-    end loop;
     for i in 1 .. pre'Last - 1 loop
-      mem (pre (i)) := i;
+      mem.Include (pre (i), i);
     end loop;
     prev := pre (pre'Last);
     --
     for i in pre'Last + 1 .. stop loop
-      if mem (prev) = not_seen then
-        curr := 0;
+      if mem.Contains (prev) then
+        curr := (i - 1) - mem.Element (prev);  --  "Age"
       else
-        curr := (i - 1) - mem (prev);  --  "Age"
+        curr := 0;
       end if;
-      if i = 2020 or  i = stop then
+      if i = 2020 or else i = stop then
         Put (i); Put (" : "); Put (curr, 0); New_Line;
       end if;
-      mem (prev) := i - 1;
+      mem.Include (prev, i - 1);
       prev := curr;
     end loop;
     T2 := Clock;
@@ -62,4 +79,4 @@ begin
   --  The "real" puzzle:
   Play ((15, 12, 0, 14, 3, 1));
   --  ^ 2020th number is 249; 30m-th number is 41687
-end AoC_2020_15_full_Ada;
+end AoC_2020_15_full_Ada_hashed_Maps;
