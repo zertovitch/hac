@@ -29,12 +29,10 @@ project AoC_2020 is
      "aoc_2020_06_full_ada.adb",
      "aoc_2020_06_full_ada_using_hac_pack.adb",
      "aoc_2020_05.adb",
-     "aoc_2020_04_a.adb",
-     "aoc_2020_04_b.adb",
+     "aoc_2020_04.adb",
      "aoc_2020_04_b_full_ada.adb",
      "aoc_2020_03.adb",
-     "aoc_2020_02_a.adb",
-     "aoc_2020_02_b.adb"
+     "aoc_2020_02.adb"
    );
    
    case AoC_Build_Mode is

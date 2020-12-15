@@ -33,7 +33,8 @@ procedure AoC_2020_13 is
     the_gcd := ta (3);
   end GCD_and_Bezout;
 
-  answer_1, answer_2, d, dmin, earliest, idmin, prod, sk, tk, sum, gcd, n : Integer;
+  answer_1, answer_2, d, earliest, prod, sk, tk, sum, gcd, n : Integer;
+  dmin, idmin : Integer := 0;
   f : File_Type;
   freq : array (1 .. 1000) of Integer;
   sep : Character;

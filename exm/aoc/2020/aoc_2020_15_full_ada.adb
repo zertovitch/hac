@@ -4,39 +4,62 @@
 --
 --  https://adventofcode.com/2020/day/15
 --
+--  Full Ada version.
+--
 with Ada.Containers.Hashed_Maps, Ada.Text_IO, Ada.Integer_Text_IO;
 
 procedure AoC_2020_15_full_Ada is
 
-  function No_Hash (key : in Natural) return Ada.Containers.Hash_Type
-  is (Ada.Containers.Hash_Type (key));
-
-  package Addr_Map_Pkg is new
-    Ada.Containers.Hashed_Maps (Natural, Positive, No_Hash, "=");
-
-  mem : Addr_Map_Pkg.Map;
-  start : constant := 7;
-  last  : constant := 30000000;
-  prev, hold : Natural;
-  use Ada.Text_IO, Ada.Integer_Text_IO;
-begin
-  mem.Include (15, 1);
-  mem.Include (12, 2);
-  mem.Include  (0, 3);
-  mem.Include (14, 4);
-  mem.Include  (3, 5);
-  prev       := 1;
+  type Preamble is array (Positive range <>) of Natural;
   --
-  for i in start .. last loop
-    if mem.Contains (prev) then
-      hold := (i - 1) - mem.Element (prev);
-    else
-      hold := 0;
-    end if;
-    if i = 2020 or else i = last then
-      Put (i); Put (" : "); Put (hold, 0); New_Line;
-    end if;
-    mem.Include (prev, i - 1);
-    prev := hold;
-  end loop;
+  procedure Play (pre : Preamble) is
+    use Ada.Text_IO, Ada.Integer_Text_IO;
+
+    function No_Hash (key : in Natural) return Ada.Containers.Hash_Type
+    is (Ada.Containers.Hash_Type (key));
+
+    package Addr_Map_Pkg is new
+      Ada.Containers.Hashed_Maps (
+        Natural,   --  Key is the number spoken
+        Positive,  --  Element is the turn (the index in a simple array)
+        No_Hash,
+        "=");
+
+    mem : Addr_Map_Pkg.Map;
+    start : constant Positive := pre'Last + 1;
+    stop : constant := 30_000_000;
+    prev, hold : Natural;
+  begin
+    for i in 1 .. pre'Last - 1 loop
+      mem.Include (pre (i), i);
+    end loop;
+    prev := pre (pre'Last);
+    --
+    for i in start .. stop loop
+      if mem.Contains (prev) then
+        hold := (i - 1) - mem.Element (prev);  --  "Age"
+      else
+        hold := 0;
+      end if;
+      if i = 2020 or else i = stop then
+        Put (i); Put (" : "); Put (hold, 0); New_Line;
+      end if;
+      mem.Include (prev, i - 1);
+      prev := hold;
+    end loop;
+    New_Line;
+  end Play;
+
+begin
+  --  Examples shown on https://adventofcode.com/2020/day/15 :
+  Play ((0, 3, 6));  --  2020th number is 436;  30m-th number is 175594
+  Play ((1, 3, 2));  --  2020th number is 1;    30m-th number is 2578
+  Play ((2, 1, 3));  --  2020th number is 10;   30m-th number is 3544142
+  Play ((1, 2, 3));  --  2020th number is 27;   30m-th number is 261214
+  Play ((2, 3, 1));  --  2020th number is 78;   30m-th number is 6895259
+  Play ((3, 2, 1));  --  2020th number is 438;  30m-th number is 18
+  Play ((3, 1, 2));  --  2020th number is 1836; 30m-th number is 362
+  --  The "real" puzzle:
+  Play ((15, 12, 0, 14, 3, 1));
+  --  ^ 2020th number is 249; 30m-th number is 41687
 end AoC_2020_15_full_Ada;

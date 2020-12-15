@@ -24,6 +24,8 @@ with Ada.Calendar,
      Ada.Strings.Unbounded,
      Ada.Text_IO;
 
+with System;
+
 pragma Warnings ("H");  --  Disable warning: declaration of "=" hides predefined operator.
 
 package HAC_Pack is
@@ -32,7 +34,7 @@ package HAC_Pack is
   --  Floating-point numeric type: Real  --
   -----------------------------------------
 
-  type Real is digits 18;
+  type Real is digits System.Max_Digits;
   package RIO is new Ada.Text_IO.Float_IO (Real);
 
   function   "**" (F1, F2 : Real)  return Real;
