@@ -66,7 +66,15 @@ package body HAC_Sys.PCode.Interpreter is
           end if;
         when SF_Argument =>
           --  The stack top item may change its type here.
-          Top_Item := GR_VString (System_Calls.Argument (Integer (Top_Item.I)));
+          declare
+            arg_i : constant Integer := Integer (Top_Item.I);
+          begin
+            if arg_i not in 1 .. System_Calls.Argument_Count then
+              Raise_Standard (VME_Constraint_Error, "Argument number not in 1 .. Argument_Count");
+              raise VM_Raised_Exception;
+            end if;
+            Top_Item := GR_VString (System_Calls.Argument (arg_i));
+          end;
         when SF_Argument_Count =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := HAC_Integer (System_Calls.Argument_Count);
