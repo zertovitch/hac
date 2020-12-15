@@ -4,6 +4,8 @@
 --
 --  https://adventofcode.com/2020/day/15
 --
+--  Part 1 only. For both parts, see AoC_2020_15_full_Ada.
+--
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_15 is

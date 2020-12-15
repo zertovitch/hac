@@ -16,9 +16,11 @@ procedure AoC_2020_15_full_Ada is
     use Ada.Calendar, Ada.Text_IO, Ada.Integer_Text_IO;
 
     function Identity_Hash (key : in Natural) return Ada.Containers.Hash_Type
-    is (Ada.Containers.Hash_Type (key));
+    is (Ada.Containers.Hash_Type (key))
+    with Inline;
 
     function Simple_Hash (key : in Natural) return Ada.Containers.Hash_Type
+    with Inline
     is
       use Ada.Containers;
     begin
@@ -36,7 +38,7 @@ procedure AoC_2020_15_full_Ada is
     mem : Addr_Map_Pkg.Map;
     start : constant Positive := pre'Last + 1;
     stop : constant := 30_000_000;
-    prev, hold : Natural;
+    prev, curr : Natural;
     T1, T2 : Time;
   begin
     T1 := Clock;
@@ -47,15 +49,15 @@ procedure AoC_2020_15_full_Ada is
     --
     for i in start .. stop loop
       if mem.Contains (prev) then
-        hold := (i - 1) - mem.Element (prev);  --  "Age"
+        curr := (i - 1) - mem.Element (prev);  --  "Age"
       else
-        hold := 0;
+        curr := 0;
       end if;
       if i = 2020 or else i = stop then
-        Put (i); Put (" : "); Put (hold, 0); New_Line;
+        Put (i); Put (" : "); Put (curr, 0); New_Line;
       end if;
       mem.Include (prev, i - 1);
-      prev := hold;
+      prev := curr;
     end loop;
     T2 := Clock;
     Put_Line ("----   Computation time: " & Duration'Image (T2 - T1));
