@@ -27,8 +27,8 @@ procedure AoC_2020_11 is
   --
   type Map_Type is array (1 .. h, 1 .. w) of Character;
   --
-  empty    : constant Character := 'L';  --  Not used. See remarks above.
-  occupied : constant Character := '#';  --  Not used. See remarks above.
+  --  empty    : constant Character := 'L';  --  Not used. See remarks above.
+  --  occupied : constant Character := '#';  --  Not used. See remarks above.
   --
   procedure Move (
     current_map : in     Map_Type;

@@ -14,7 +14,7 @@
 --
 --    *     ` x [not] in some_range `  as in  ` value in val_11 (c) .. val_12 (c)) `
 --    *     ` Skip_Line (f, 3) `  (multiple skips)
---    *     ` okc := (others => (others => True)); `
+--    *     ` cc_match := (others => (others => True)); `
 --
 with HAC_Pack;  use HAC_Pack;
 
@@ -33,11 +33,11 @@ procedure AoC_2020_16 is
   ticket, my_ticket : array (Column_Range) of Integer;
   --
   or_str : String (1 .. 4);  --  " or ";
-  err : Natural := 0;
   ok, possible_row, single_match_only : Boolean;
-  okc : array (Column_Range, Criteria_Range) of Boolean;
+  cc_match : array (Column_Range, Criteria_Range) of Boolean;
   unlinked : array (Column_Range) of Boolean;
   cc, matching : Integer;
+  err : Natural := 0;
   prod : Integer;  --  Need Integer_64 here on Ada's with 32-bit Integer.
   c, sep1, sep2, sep3 : Character;
   f : File_Type;
@@ -82,7 +82,7 @@ begin
   for col in Column_Range loop
     unlinked (col) := True;
     for crit in Criteria_Range loop
-      okc (col, crit) := True;
+      cc_match (col, crit) := True;
     end loop;
   end loop;
   --
@@ -116,7 +116,7 @@ begin
         for crit in Criteria_Range loop
           if not Is_Valid (ticket (col), crit) then
             --  This column is invalid for this criterium:
-            okc (col, crit) := False;
+            cc_match (col, crit) := False;
           end if;
         end loop;
       end loop;
@@ -136,7 +136,7 @@ begin
       if unlinked (col) then
         cc := 0;
         for crit in Criteria_Range loop
-          if okc (col, crit) then
+          if cc_match (col, crit) then
             cc := cc + 1;
             matching := crit;
             if cc > 1 then
@@ -155,7 +155,7 @@ begin
           for other_col in Column_Range loop
             if other_col /= col then
               --  Cancel the matching criterium for other columns.
-              okc (other_col, matching) := False;
+              cc_match (other_col, matching) := False;
             end if;
           end loop;
         end if;
@@ -176,7 +176,7 @@ begin
     end if;
     for col in Column_Range loop
       --  Find THE matching criterium.
-      if okc (col, crit) then
+      if cc_match (col, crit) then
         if verbose > 0 then
           Put (" column: "); Put (col, 0);
         end if;

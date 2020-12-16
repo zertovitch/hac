@@ -13,7 +13,8 @@
 --    *     ` clear := (others => False); `
 --    *     ` rg := rg and r ` for arrays of Boolean (i.e., sets)
 --    *     ` aaa : constant Character := 'a';`
---                       HAC should detect an expression as a static (compile-time-known) value
+--                       HAC should detect an expression as a
+--                       static (compile-time-known) value
 --    *     in HAC_Pack: Index (s, c) where c is a Character
 --
 with HAC_Pack;  use HAC_Pack;
@@ -42,8 +43,10 @@ begin
     total := 0;
     new_group := True;
     while not End_Of_File (f) loop
+      --  Collect answers from every group on the plane.
       Get_Line (f, s);
       if s = "" then
+        --  Blank line: group separator.
         Collect_Group_Total;
       else
         for c in Answer_Range loop
@@ -53,8 +56,10 @@ begin
           rg := r;
           new_group := False;
         elsif part = 1 then
+          --  Count the number of questions to which anyone answered "yes"
           for c in Answer_Range loop rg (c) := rg (c) or r (c); end loop;
         else
+          --  Count the number of questions to which *everyone* answered "yes"
           for c in Answer_Range loop rg (c) := rg (c) and r (c); end loop;
         end if;
       end if;

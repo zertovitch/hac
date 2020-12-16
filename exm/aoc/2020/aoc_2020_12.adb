@@ -41,6 +41,7 @@ begin
       d := Real (i);
       if part = 1 then
         case c is
+          --  Move the ship directly.
           when 'N' => y := y + d;
           when 'S' => y := y - d;
           when 'E' => x := x + d;
@@ -54,6 +55,7 @@ begin
         end case;
       else
         case c is
+          --  Move a waypoint which is relative to the ship's position.
           when 'N' => wy := wy + d;
           when 'S' => wy := wy - d;
           when 'E' => wx := wx + d;
@@ -61,6 +63,7 @@ begin
           when 'L' => Rotate (wx, wy, +D2R (d));
           when 'R' => Rotate (wx, wy, -D2R (d));
           when 'F' =>
+             --  Move the ship forward to the waypoint.
              x := x + d * wx;
              y := y + d * wy;
           when others => null;

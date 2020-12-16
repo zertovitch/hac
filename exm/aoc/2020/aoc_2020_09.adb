@@ -14,7 +14,7 @@ procedure AoC_2020_09 is
   mem_max  : constant := 24;
   subtype Mem_Range is Integer range 0 .. mem_max;
   mem : array (Mem_Range) of Integer;
-  ok, found : Boolean;
+  found : Boolean;
   test_mode : constant Boolean := Argument_Count >= 2;
 begin
   for part in 1 .. 2 loop
@@ -25,23 +25,26 @@ begin
     n := 0;
     while not End_Of_File (f) loop
       Get (f, last_data);
+      found := False;
       if part = 1 then
-        ok := False;
+        --  Find a pair of numbers in the recent data whose
+        --  sum is the number read just now (last_data).
         for j in Mem_Range loop
           for k in j + 1 .. mem_max loop
             if last_data = mem (j) + mem (k) then
-              ok := True;
+              found := True;
               exit;
             end if;
           end loop;
-          exit when ok;
+          exit when found;
         end loop;
-        if not ok then
+        if not found then
           res_no_pair := last_data;
           exit;
         end if;
       else
-        found := False;
+        --  Find a contiguous set of at least two numbers in the list
+        --  which sum to the invalid number from part 1.
         contig_max := n + mem_max;
         for j in n .. contig_max loop
           for k in j + 1 .. contig_max loop

@@ -46,9 +46,9 @@ procedure AoC_2020_13 is
   Get (f, earliest);
   n := 0;
   loop
-    n:= n + 1;
+    n := n + 1;
     Get (f, freq (n));
-    exit when End_of_File (f);
+    exit when End_Of_File (f);
     Get (f, sep);
   end loop;
   Close (f);

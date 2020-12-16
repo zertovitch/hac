@@ -4,6 +4,11 @@
 --
 --  https://adventofcode.com/2020/day/5
 --
+--  Binary space partition in the plane for
+--  locating seats.
+--    F means "front", B means "back",
+--    L means "left", and R means "right".
+--
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_05 is
