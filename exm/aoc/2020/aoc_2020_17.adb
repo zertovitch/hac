@@ -7,10 +7,12 @@
 --  NB: Was able to recycle parts from another "Game of Life"
 --      puzzle: Seating System (Day 11).
 --
---  Run time with GNAT, AoC_Build_Mode = "Fast" (-O3 -gnatpn):
+--  Run time with GNAT (use the aoc_2020.gpr project file,
+--          AoC_Build_Mode = "Fast", or compile with
+--          gnatmake -O3 -gnatpn -I../../../src aoc_2020_17):
 --    *  0.18 seconds on a i5-9400 @ 2.9 GHz
 --
---  Run time with HAC (Virtual MAchine + no compilation optimization:
+--  Run time with HAC (Virtual Machine + no compilation optimization:
 --          we expect a big slowdown with this problem (many nested loops):
 --    *  (too many) seconds, on a i5-9400 @ 2.9 GHz
 --
