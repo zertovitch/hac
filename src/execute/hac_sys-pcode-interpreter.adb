@@ -24,6 +24,7 @@ package body HAC_Sys.PCode.Interpreter is
 
     procedure Start_Interpreter is
     begin
+      ND.S := new Stack_Type;
       ND.PS := Running;
       ND.Start_Time := Ada.Calendar.Clock;
       ND.Snap     := False;

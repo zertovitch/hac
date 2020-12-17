@@ -84,6 +84,8 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
 
   type Stack_Type is array (1 .. Defs.StMax) of Data_Type;
 
+  type Stack_Type_Access is access Stack_Type;
+
   type Task_Control_Block is record
     T              : Defs.Index;            --  index of current top of stack
     B              : Defs.Index;            --  index of current base of stack
@@ -132,7 +134,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   --  passed to the scheduler.
 
   type Interpreter_Data is record
-    S           : Stack_Type;
+    S           : Stack_Type_Access;
     PS          : Processor_State;             --  Processor status register
     IR          : Order;                       --  Instruction register
     CurTask     : Integer;                     --  Index of currently executing task

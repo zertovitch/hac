@@ -21,6 +21,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
   )
   is
     procedure Free is new Ada.Unchecked_Deallocation (Ada.Text_IO.File_Type, File_Ptr);
+    procedure Free is new Ada.Unchecked_Deallocation (Stack_Type, Stack_Type_Access);
   begin
     for F of ND.Files loop
       if F /= null then
@@ -30,6 +31,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
         Free (F);
       end if;
     end loop;
+    Free (ND.S);
   end Free_Allocated_Contents;
 
   function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Integer) return String is
