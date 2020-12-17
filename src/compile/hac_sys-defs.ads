@@ -81,7 +81,7 @@ package HAC_Sys.Defs is
   TaskMax    : constant := 12;            --  Max # of concurrent tasks
 
   Wind_Size    : constant := TaskMax + 2;    --  SnapShot window size
-  Id_Table_Max : constant := 200;            --  Size of identifier table
+  Id_Table_Max : constant := 10_000;         --  Size of identifier table
   XMax         : constant Integer := MaxINT;
 
   Patch_Max : constant := 100;
