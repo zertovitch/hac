@@ -1,6 +1,14 @@
+--  This is a GNAT, GCC or GNAT Studio project file
+--  for the Advent of Code 2020 examples.
+--  Some work with both HAC and "full Ada" compilers,
+--  some (titled *_full_ada.adb) work only with "full Ada".
+--  
 project AoC_2020 is
 
-   for Source_Dirs use (".", "../../../src");
+   for Source_Dirs use (
+     ".",
+     "../../../src"   --  GNAT's access to the HAC_Pack package.
+   );
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";
 
@@ -12,6 +20,7 @@ project AoC_2020 is
    AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
    for Main use (
+     "aoc_2020_18_full_ada.adb",
      "aoc_2020_17.adb",
      "aoc_2020_16.adb",
      "aoc_2020_15.adb",
