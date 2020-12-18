@@ -149,9 +149,6 @@ package body HAC_Sys.UErrors is
         return "missing the finger ""=>""";
       when err_missing_closing_CASE =>
         return "missing closing ""case""";
-      when err_character_delimeter_used_for_string =>
-        return "character delimeter used for string; " &
-               "strings are delimited by double quote character";
       when err_Ada_reserved_word =>
         return "Ada reserved word; not supported";
       when err_functions_must_return_a_value =>
@@ -205,7 +202,7 @@ package body HAC_Sys.UErrors is
       when err_unexpected_end_of_text =>
         return "unexpected end of text";
       when err_not_yet_implemented =>
-        return "construct not yet correctly implemented or supported by HAC";
+        return "construct not yet correctly implemented or supported by HAC: " & hint;
       when err_type_conversion_not_supported =>
         return "this type conversion is not supported: " & hint;
       when err_numeric_type_coercion =>

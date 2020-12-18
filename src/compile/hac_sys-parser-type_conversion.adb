@@ -5,22 +5,22 @@ with HAC_Sys.PCode;                         use HAC_Sys.PCode;
 with HAC_Sys.UErrors;                       use HAC_Sys.UErrors;
 
 procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
-  CD    : in out Compiler_Data;
-  Level :        PCode.Nesting_level;
-  FSys  :        Defs.Symset;
-  X     :    out Exact_Typ
+  CD      : in out Compiler_Data;
+  Level   :        PCode.Nesting_level;
+  FSys    :        Defs.Symset;
+  Type_ID :        String;
+  X       :    out Exact_Typ
 )
 is
   use Defs;
-  kind    :          Type_Conversion_Kind := Unknown;
-  Type_Id : constant String               := To_String (CD.Id);
+  type Type_Conversion_Kind is (To_Float, To_Integer, To_Duration, Unknown);
+  kind : Type_Conversion_Kind := Unknown;
 begin
-  Need (CD, LParent, err_missing_an_opening_parenthesis);
-  if Type_Id = HAC_Float_Name then
+  if Type_ID = HAC_Float_Name then
     kind := To_Float;
-  elsif Type_Id = HAC_Integer_Name then
+  elsif Type_ID = HAC_Integer_Name then
     kind := To_Integer;
-  elsif Type_Id = "DURATION" then
+  elsif Type_ID = "DURATION" then
     kind := To_Duration;
   end if;
   --
@@ -66,7 +66,7 @@ begin
       end case;
       X.TYP := Durations;
     when Unknown =>
-      Error (CD, err_type_conversion_not_supported, "no support for target type " & Type_Id);
+      Error (CD, err_type_conversion_not_supported, "no support for target type " & Type_ID);
   end case;
   Need (CD, RParent, err_closing_parenthesis_missing);
 end HAC_Sys.Parser.Type_Conversion;

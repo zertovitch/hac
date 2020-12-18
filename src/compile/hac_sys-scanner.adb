@@ -425,6 +425,53 @@ package body HAC_Sys.Scanner is
       end case;
     end Scan_Number;
 
+    procedure Scan_Apostrophe_or_Character is
+      C1, C2 : Character;
+    begin
+      --  We scan a little bit further: 2 characters. Possible legal cases:
+      --      *  1 'c'      : character
+      --      *  2 '''      : character
+      --      *  3 'Image   : attribute (hope that no-one invents a 1-letter attribute)
+      --      *  4 '(...)   : qualified expression
+      --      *  5 '(       : (end of a line after last non-blank) start of a qualified expression
+      --  NB: all legal cases but the last have two characters
+      --      on the same line after the first '
+      --  Blatantly illegal cases:
+      --      *  6 ''x      where x is not an '
+      --      *  7 ''       (end of a line after last non-blank)
+      --      *  8 'c       (end of a line after last non-blank)  c is neither '' nor (
+      --      *  9 '        (end of a line after last non-blank)
+      --
+      if CD.CC = CD.LL then  --  Case (9) above
+        Error (CD, err_character_zero_chars, stop => True);
+      end if;
+      NextCh;
+      C1 := CD.CH;
+      if CD.CC = CD.LL then  --  Cases (5), (7), (8)
+        if C1 = '(' then        --  Case (5)
+          CD.Sy := Apostrophe;
+          return;
+        else                    --  Case (7), (8)
+          Error (CD, err_character_zero_chars, stop => True);
+        end if;
+      end if;
+      --  We peek the next character without moving.
+      --  Possible since CD.CC < CD.LL .
+      C2 := CD.InpLine (CD.CC + 1);
+      if C1 = ''' and C2 /= ''' then  --  Case (6)
+        Error (CD, err_character_zero_chars, stop => True);
+      end if;
+      --  Until now, case (5) to (9) are treated.
+      if C2 = ''' then  --  Cases (1), (2)
+        CD.Sy := CharCon;
+        CD.INum := Character'Pos (C1);
+        NextCh;
+        NextCh;
+      else  --  Cases (3), (4)
+        CD.Sy := Apostrophe;
+      end if;
+    end Scan_Apostrophe_or_Character;
+
     exit_big_loop : Boolean;
 
   begin  --  InSymbol
@@ -588,49 +635,7 @@ package body HAC_Sys.Scanner is
           --       package in the Zip-Ada project.
 
         when ''' =>
-          --  Character literal (code reused from Pascal string literal, hence a loop)
-          --  !! We will need to reprogram that for attributes or qualified expressions.
-          K := 0;
-          loop
-            NextCh;
-            if CD.CH = ''' then
-              NextCh;
-              if CD.CH /= ''' then  --  The ''x case
-                exit;
-              end if;
-            end if;
-            if CD.Strings_Table_Top + K = SMax then
-              Fatal (STRING_CONSTANTS);
-            end if;
-            CD.Strings_Constants_Table (CD.Strings_Table_Top + K) := CD.CH;
-            K := K + 1;
-            if CD.CH = ''' and K = 1 then  --  The ''' case
-              NextCh;
-              exit;
-            end if;
-            if CD.CC = 1 then
-              K := 0;  --  END OF InpLine
-              exit;
-            else
-              null;  --  Continue
-            end if;
-          end loop;
-          --
-          if K = 1 then  --  Correct, we have a "string" of length 1.
-            CD.Sy := CharCon;
-            CD.INum  := Character'Pos (CD.Strings_Constants_Table (CD.Strings_Table_Top));
-            --  CD.Strings_Table_Top is NOT incremented.
-          elsif K = 0 then
-            Error (CD, err_character_zero_chars);
-            CD.Sy := CharCon;
-            CD.INum  := 0;
-          else
-            Error (CD, err_character_delimeter_used_for_string);
-            CD.Sy    := StrCon;
-            CD.INum  := HAC_Integer (CD.Strings_Table_Top);
-            CD.SLeng := K;
-            CD.Strings_Table_Top := CD.Strings_Table_Top + K;
-          end if;
+          Scan_Apostrophe_or_Character;
 
         when '-' =>
           NextCh;

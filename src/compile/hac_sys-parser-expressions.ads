@@ -30,4 +30,14 @@ private package HAC_Sys.Parser.Expressions is
     V     : in out Exact_Typ
   );
 
+  --  Conversion, like ` Integer (123.456) ` or
+  --  attribute, like  ` Integer'Image (123) `.
+  --
+  procedure Subtype_Prefixed_Expression (
+    CD    : in out Compiler_Data;
+    Level : in     PCode.Nesting_level;
+    FSys  : in     Defs.Symset;
+    X     :    out Exact_Typ
+  );
+
 end HAC_Sys.Parser.Expressions;

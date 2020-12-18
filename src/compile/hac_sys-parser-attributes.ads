@@ -4,7 +4,8 @@ private package HAC_Sys.Parser.Attributes is
 
   use Defs;
 
-  --  Scalar subtype attributes.
+  --  Scalar subtype attributes. Ada RM 3.5 (10).
+  --
   --  The subtype name has just been parsed and determined to
   --  be corresponding to subtype S. The symbol "'" has been parsed too.
   --  In output, the type of the returned value is set in X.
@@ -14,11 +15,11 @@ private package HAC_Sys.Parser.Attributes is
   --    parameter "(Flag)", return a X = (String_Literals, 0) internal type.
 
   procedure Scalar_Subtype_Attribute (
-    S     : in     Exact_Typ;
-    CD    : in out Compiler_Data;
-    Level :        PCode.Nesting_level;
-    FSys  :        Symset;
-    X     :    out Exact_Typ
+    CD      : in out Compiler_Data;
+    Level   :        PCode.Nesting_level;
+    FSys    :        Defs.Symset;
+    Type_ID :        String;
+    X       :    out Exact_Typ
   );
 
 end HAC_Sys.Parser.Attributes;

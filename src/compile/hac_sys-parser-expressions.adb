@@ -1,4 +1,5 @@
 with HAC_Sys.Compiler.PCode_Emit;
+with HAC_Sys.Parser.Attributes;
 with HAC_Sys.Parser.Calls;                  use HAC_Sys.Parser.Calls;
 with HAC_Sys.Parser.Helpers;                use HAC_Sys.Parser.Helpers;
 with HAC_Sys.Parser.Standard_Functions;
@@ -195,7 +196,7 @@ package body HAC_Sys.Parser.Expressions is
                       end if;
                       --
                     when TypeMark =>
-                      Type_Conversion (CD, Level, FSys_Fact, X);
+                      Subtype_Prefixed_Expression (CD, Level, FSys_Fact, X);
                       --
                     when Prozedure =>
                       Error (CD, err_expected_constant_function_variable_or_subtype);
@@ -536,5 +537,23 @@ package body HAC_Sys.Parser.Expressions is
     Expression (CD, Level, FSys, X);
     Check_Boolean (CD, X.TYP);
   end Boolean_Expression;
+
+  procedure Subtype_Prefixed_Expression (
+    CD    : in out Compiler_Data;
+    Level : in     PCode.Nesting_level;
+    FSys  : in     Defs.Symset;
+    X     :    out Exact_Typ
+  )
+  is
+    Type_ID : constant String := To_String (CD.Id);
+    Mem_Sy : constant KeyWSymbol := CD.Sy;
+  begin
+    InSymbol (CD);
+    case Mem_Sy is
+      when LParent    => Type_Conversion (CD, Level, FSys, Type_ID, X);
+      when Apostrophe => Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Type_ID, X);
+      when others => Error (CD, err_syntax_error, "expected ""'"" or ""("" here", True);
+    end case;
+  end Subtype_Prefixed_Expression;
 
 end HAC_Sys.Parser.Expressions;

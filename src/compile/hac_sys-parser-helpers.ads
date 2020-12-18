@@ -71,8 +71,6 @@ package HAC_Sys.Parser.Helpers is
 
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data);
 
-  type Type_Conversion_Kind is (To_Float, To_Integer, To_Duration, Unknown);
-
   procedure Argument_Type_Not_Supported (CD : in out Compiler_Data);
 
   procedure Type_Mismatch (
