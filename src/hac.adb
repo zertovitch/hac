@@ -52,6 +52,7 @@ procedure HAC is
     CD : Compiler_Data;
     unhandled : Exception_Propagation_Data;
     unhandled_found : Boolean;
+    shebang_offset : Natural := 0;
   begin
     case verbosity is
       when 0 =>
@@ -73,16 +74,16 @@ procedure HAC is
       declare
         possible_shebang : constant String := Get_Line (f);
       begin
-        if possible_shebang'Length > 1
+        if possible_shebang'Length >= 2
           and then possible_shebang (possible_shebang'First .. possible_shebang'First + 1) = "#!"
         then
-          null;  --  Just ignore the first line.
+          shebang_offset := 1;  --  Ignore the first line, but count it.
         else
           Reset (f);
         end if;
       end;
     end if;
-    Set_Source_Stream (CD, Text_Streams.Stream (f), Ada_file_name);
+    Set_Source_Stream (CD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     t1 := Clock;
     Compile (
       CD,

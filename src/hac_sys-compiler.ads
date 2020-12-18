@@ -29,9 +29,10 @@ package HAC_Sys.Compiler is
 
   --  Set current source stream (file, editor data, zipped file,...)
   procedure Set_Source_Stream (
-    CD        : in out Compiler_Data;
-    s         : access Ada.Streams.Root_Stream_Type'Class;
-    file_name :        String  --  Can be a virtual name (editor title, zip entry)
+    CD         : in out Compiler_Data;
+    s          : access Ada.Streams.Root_Stream_Type'Class;
+    file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
+    start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
   );
 
   function Get_Current_Source_Name (CD : Compiler_Data) return String;

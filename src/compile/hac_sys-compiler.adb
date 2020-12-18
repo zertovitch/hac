@@ -12,14 +12,16 @@ package body HAC_Sys.Compiler is
   use VStrings_Pkg;
 
   procedure Set_Source_Stream (
-    CD        : in out Compiler_Data;
-    s         : access Ada.Streams.Root_Stream_Type'Class;
-    file_name :        String  --  Can be a virtual name (editor title, zip entry)
+    CD         : in out Compiler_Data;
+    s          : access Ada.Streams.Root_Stream_Type'Class;
+    file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
+    start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
   )
   is
   begin
-    CD.compiler_stream := Source_Stream_Access (s);
+    CD.compiler_stream  := Source_Stream_Access (s);
     CD.source_file_name := To_VString (file_name);
+    CD.Line_Count       := start_line;
   end Set_Source_Stream;
 
   function Get_Current_Source_Name (CD : Compiler_Data) return String is
@@ -65,7 +67,6 @@ package body HAC_Sys.Compiler is
     CD.LL := 0;
     CD.syStart := 1;
     CD.syEnd   := 1;
-    CD.Line_Count := 0;
     --
     CD.Err_Count := 0;
     CD.Errs      := error_free;
