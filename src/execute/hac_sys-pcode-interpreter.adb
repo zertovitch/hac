@@ -10,6 +10,7 @@ with HAC_Pack;
 with Ada.Command_Line,
      Ada.Directories,
      Ada.Environment_Variables,
+     Ada.Exceptions,
      Ada.IO_Exceptions;
 
 package body HAC_Sys.PCode.Interpreter is
@@ -374,14 +375,15 @@ package body HAC_Sys.PCode.Interpreter is
             Raise_Standard (VME_Name_Error);
         end case;
         raise VM_Raised_Exception;
-      when Ada.Text_IO.Status_Error =>
+      when E : Ada.Text_IO.Status_Error =>
         case Code is
           when SP_Open | SP_Create | SP_Append =>
             Raise_Standard (VME_Status_Error, "File already open");
           when SP_Close =>
             Raise_Standard (VME_Status_Error, "File not open");
           when others =>
-            Raise_Standard (VME_Status_Error);
+            Raise_Standard (VME_Status_Error, "File not open? [" &
+              Ada.Exceptions.Exception_Message (E) & ']');
         end case;
       when Ada.Text_IO.Use_Error =>
         case Code is
