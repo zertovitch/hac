@@ -15,7 +15,9 @@ package body HAC_Sys.Parser.Attributes is
     X       :    out Exact_Typ
   )
   is
+  pragma Unreferenced (Level, FSys, Type_ID, X);
     attr : Attribute;
+    pragma Unreferenced (attr);
     attr_ID : constant String := To_String (CD.Id);
     use HAC_Sys.UErrors;
   begin

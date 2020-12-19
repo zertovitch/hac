@@ -7,6 +7,12 @@ procedure Shell is
   f : File_Type;
   ln : constant VString := +"output.lst";
   line : VString;
+  --
+  procedure Produce_Errors (command: VString) is
+  begin
+    Shell_Execute (command, r);
+    Put_Line (+"Result of " & command & " = " & r);
+  end;
 begin
   if Index (Get_Env ("OS"), "Windows") > 0 then
     k := Windoze;
@@ -29,6 +35,6 @@ begin
   Close (f);
   Put_Line (+"--> Contents of file " & ln & " are: [" & line & ']');
   --
-  Shell_Execute ("Command_Impossible", r);
-  Put_Line (+"Result of Command_Impossible = " & r);
+  Produce_Errors (+"Command_Impossible");
+  Produce_Errors (+"exit 666");
 end Shell;

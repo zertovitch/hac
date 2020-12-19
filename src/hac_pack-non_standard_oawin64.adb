@@ -7,7 +7,7 @@ with Interfaces.C;
 
 separate (HAC_Pack) package body Non_Standard is
 
-  function MS_Sys (Arg : Interfaces.C.char_array) return Integer;
+  function MS_Sys (Arg : Interfaces.C.char_array) return Interfaces.C.int;
   pragma Import (C, MS_Sys, "system");
 
   --  You may (or not) need to add the following search path to the OA .prj project:
@@ -26,7 +26,7 @@ separate (HAC_Pack) package body Non_Standard is
     --  p_cmd_nul : p_Char := cmd_nul'Access;
     --  function Convert is new Ada.Unchecked_Conversion (p_Char, Win32.PCSTR);
   begin
-    Result := MS_Sys (Interfaces.C.To_C (Command));
+    Result := Integer (MS_Sys (Interfaces.C.To_C (Command)));
     --  Result := Integer (Win32.Crt.Process.System (Convert (p_cmd_nul)));
   end Sys;
   

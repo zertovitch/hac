@@ -88,9 +88,9 @@ project HAC is
 
    package Linker is
       case HAC_Build_Mode is
-         when "Debug" => for Default_Switches ("ada") use ("-g");
-         when "Fast"  => for Default_Switches ("ada") use ("-g", "-Wl,--gc-sections");
-         when "Small" => for Default_Switches ("ada") use ("-Wl,--gc-sections");
+         when "Debug" => for Default_Switches ("ada") use ("-static", "-g");
+         when "Fast"  => for Default_Switches ("ada") use ("-static", "-g", "-Wl,--gc-sections");
+         when "Small" => for Default_Switches ("ada") use ("-static", "-Wl,--gc-sections");
       end case;
    end Linker;
 
