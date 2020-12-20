@@ -52,14 +52,14 @@ package HAC_Sys.Defs is
 
   MaxINT     : constant Integer := Integer'Last - 1;
 
-  Alng                  : constant := 40;    --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
-  AMax                  : constant := 30;    --  Size OF ARRAY-TABLE
-  BMax                  : constant := 25;    --  Size OF Block-TABLE
+  Alng                  : constant := 40;      --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
+  AMax                  : constant := 30;      --  Size OF ARRAY-TABLE
+  BMax                  : constant := 25;      --  Size OF Block-TABLE
   Float_Const_Table_Max : constant := 200;
-  Cases_Max             : constant := 30;    --  Max number of cases in a CASE statement
-  CDMax                 : constant := 2500;  --  Size OF ObjCode
-  EntryMax              : constant := 30;    --  Maximum Number of Entry Statements
-  FMax                  : constant := 20;    --  Maximum Number of files for I/O
+  Cases_Max             : constant := 30;      --  Max number of cases in a CASE statement
+  CDMax                 : constant := 5_000;   --  Size OF ObjCode
+  EntryMax              : constant := 30;      --  Maximum Number of Entry Statements
+  FMax                  : constant := 20;      --  Maximum Number of files for I/O
   KMax                  : constant := HAC_Float'Digits;
   Nesting_Level_Max     : constant := 20;
 
