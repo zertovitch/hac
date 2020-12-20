@@ -89,6 +89,7 @@ procedure All_Silent_Tests is
     Launch_HAC (+"aoc_2020_15.adb 436 1 10 27 78 438 1836 249", 3);  --  Rambunctious Recitation
     Launch_HAC (+"aoc_2020_16.adb 23954 453459307723",          3);  --  Ticket Translation
     Launch_HAC (+"aoc_2020_17.adb 207",                         3);  --  Conway Cubes
+    Launch_HAC (+"aoc_2020_20.adb 83775126454273",              3);  --  Jurassic Jigsaw
     Put_Line ("----> Done.");
     if failures = 0 then
       Put_Line ("All tests passed.");
