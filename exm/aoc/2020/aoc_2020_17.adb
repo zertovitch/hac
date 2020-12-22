@@ -179,6 +179,7 @@ begin
         Set_Exit_Status (1);  --  Compiler test failed.
       end if;
       exit when not dim_4;
+      --  ^ This is for HAC & compiler testing: we skip part 2, takes too long .
     else
       if dim_4 then
         Put ("Part 2, 4");

@@ -146,7 +146,9 @@ procedure AoC_2020_21_full_Ada is
         if not done (a) then
           if verbose then
             Put ("   " & a'Image & " can only be in ingredients: ");
-            Count (i_for_a (a), total, i, True);
+          end if;
+          Count (i_for_a (a), total, i, verbose);
+          if verbose then
             New_Line;
           end if;
           if total = 1 then
@@ -172,7 +174,7 @@ procedure AoC_2020_21_full_Ada is
     total_1 := 0;
     for f in 1 .. foods loop
       for i in Ingredient loop
-        if scrap (f).ingr (i) then  --  unassociated ingredient.
+        if scrap (f).ingr (i) then  --  Unassociated ingredient.
           total_1 := total_1 + 1;
         end if;
       end loop;

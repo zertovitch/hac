@@ -90,6 +90,7 @@ procedure All_Silent_Tests is
     Launch_HAC (+"aoc_2020_16.adb 23954 453459307723",          3);  --  Ticket Translation
     Launch_HAC (+"aoc_2020_17.adb 207",                         3);  --  Conway Cubes
     Launch_HAC (+"aoc_2020_20.adb 83775126454273",              3);  --  Jurassic Jigsaw
+    Launch_HAC (+"aoc_2020_22.adb 31957",                       3);  --  Crab Combat
     Put_Line ("----> Done.");
     if failures = 0 then
       Put_Line ("All tests passed.");

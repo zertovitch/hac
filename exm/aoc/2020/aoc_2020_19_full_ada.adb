@@ -37,41 +37,45 @@ procedure AoC_2020_19_full_Ada is
   function Is_Valid (s : String) return Boolean is
     --
     --  We verify the string (s) against the rules (list),
-    --  in a LISP-esque fashion.
+    --  in a LISP-esque fashion ( https://en.wikipedia.org/wiki/CAR_and_CDR ).
     --  The nice thing in this problem is the tail recursion
     --  on the string AND on the rule list.
     --
     function Verify (s : String; list : Rule_Index_List) return Boolean is
-      tail_rule_list : Rule_Index_List renames list (list'First + 1 .. list'Last);
-    begin
-      if list'Length = 0 then
-        --  OK if the string is empty as well.
-        return s'Length = 0;
-      end if;
-      if s'Length = 0 then
-        return False;  --  String is too short, there are rules left.
-      end if;
-      declare
-        r1 : Rule_Type renames rule (list (list'First));
+      --
+      function Verify_First_Rule return Boolean is
+        rule_1 : Rule_Type renames rule (list (list'First));
+        tail_rule_list : Rule_Index_List renames list (list'First + 1 .. list'Last);
       begin
-        if r1.is_terminal then
+        if rule_1.is_terminal then
           return
-              s (s'First) = r1.leaf
+              s (s'First) = rule_1.leaf
             and then
               --  Test the rest of the string against the other rules.
               Verify (s (s'First + 1 .. s'Last), tail_rule_list);
-        elsif r1.alt = 0 then
+        elsif rule_1.alt = 0 then
           --  Test the sub-rules, appended with the tail of the rules, and
           --  verify all that on the local string.
-          return Verify (s, r1.sub (1 .. r1.max) & tail_rule_list);
+          return Verify (s, rule_1.sub (1 .. rule_1.max) & tail_rule_list);
         else
           --  Test separately both subrule lists:
           return
-            Verify (s, r1.sub (1 .. r1.alt - 1)  & tail_rule_list)
+            Verify (s, rule_1.sub (1 .. rule_1.alt - 1) & tail_rule_list)
                or else
-            Verify (s, r1.sub (r1.alt .. r1.max) & tail_rule_list);
+            Verify (s, rule_1.sub (rule_1.alt .. rule_1.max) & tail_rule_list);
         end if;
-      end;
+      end Verify_First_Rule;
+      --
+    begin
+      if list'Length = 0 then
+        --  Rule list is empty. OK if the string is empty as well.
+        return s'Length = 0;
+      end if;
+      if s'Length = 0 then
+        --  String is too short: there are unprocessed rules.
+        return False;
+      end if;
+      return Verify_First_Rule;
     end Verify;
     --
     --  Test rule 0 (and all the rest...):
@@ -168,7 +172,7 @@ begin
     end loop;
     Close (f);
     Put_Line (total);
-    --  Validated by AoC: 226
-    --  Validated by AoC: 355
+    --  Part 1: Validated by AoC: 226
+    --  Part 2: Validated by AoC: 355
   end loop;
 end AoC_2020_19_full_Ada;
