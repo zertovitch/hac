@@ -177,8 +177,11 @@ package body HAC_Sys.PCode.Interpreter is
       end if;
       ND.SWITCH := True;  --  give up control when doing I/O
     exception
-      when Ada.IO_Exceptions.Data_Error =>
-        Raise_Standard (VME_Data_Error);
+      when E : Constraint_Error =>
+        Raise_Standard (VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
+        raise VM_Raised_Exception;
+      when E : Ada.IO_Exceptions.Data_Error =>
+        Raise_Standard (VME_Data_Error, Ada.Exceptions.Exception_Message (E));
         raise VM_Raised_Exception;
     end Do_Text_Read;
 
