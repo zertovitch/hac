@@ -34,19 +34,20 @@ procedure AoC_2020_22_full_Ada is
   )
   is
     --
-    procedure Get_Top (a, b : in out Deck) is  --  a gets from b
-      top_a, top_b : Positive;
+    procedure Move_Top_Cards (winner, loser : in out Deck) is
+      top_card_winner, top_card_loser : Positive;
     begin
-      top_a := a.card (a.top);
-      top_b := b.card (b.top);
-      b.top := b.top - 1;
-      a.top := a.top + 1;
-      for i in reverse 3 .. a.top loop
-        a.card (i) := a.card (i - 2);
+      top_card_winner := winner.card (winner.top);
+      top_card_loser  := loser.card (loser.top);
+      loser.top := loser.top - 1;
+      winner.top := winner.top + 1;
+      for i in reverse 3 .. winner.top loop
+        winner.card (i) := winner.card (i - 2);
       end loop;
-      a.card (1) := top_b;
-      a.card (2) := top_a;
-    end Get_Top;
+      winner.card (1) := top_card_loser;
+      winner.card (2) := top_card_winner;
+    end Move_Top_Cards;
+    --
     sub : Deck_Pair;
     top_card : array (1 .. 2) of Positive;
     round_win : Positive;
@@ -55,8 +56,24 @@ procedure AoC_2020_22_full_Ada is
     type p_Game_Mem is access Game_Mem;
     procedure Free is new Ada.Unchecked_Deallocation (Game_Mem, p_Game_Mem);
     mem : p_Game_Mem := new Game_Mem;
+    --
+    function Equal (g, h : Deck_Pair) return Boolean is
+    begin
+      for player in 1 .. 2 loop
+        if g (player).top /= h (player).top then
+          return False;
+        end if;
+        for i in 1 .. g (player).top loop
+          if g (player).card (i) /= h (player).card (i) then
+            return False;
+          end if;
+        end loop;
+      end loop;
+      return True;
+    end Equal;
+    --
   begin
-    if (verbosity > 1) and (recursion_level > 6) then
+    if verbosity > 1 and recursion_level > 6 then
       Put_Line (+"level=" & recursion_level);
     end if;
     loop
@@ -67,7 +84,9 @@ procedure AoC_2020_22_full_Ada is
       --
       if is_recursive then
         for i in 1 .. round - 1 loop
-          if mem (i) = g then
+          if Equal (mem (i), g) then
+            --  NB: the test `mem (i) = g` happens to work but is incorrect
+            --      (compares cards above top)
             winner := 1;
             Free (mem);
             return;
@@ -81,8 +100,8 @@ procedure AoC_2020_22_full_Ada is
         top_card (p) := g (p).card (g (p).top);
       end loop;
       if is_recursive and
-         (g (1).top - 1 >= top_card (1)) and
-         (g (2).top - 1 >= top_card (2))
+         g (1).top - 1 >= top_card (1) and
+         g (2).top - 1 >= top_card (2)
       then
         --  Copy parts of the decks for the sub-game:
         for p in 1 .. 2 loop
@@ -98,11 +117,11 @@ procedure AoC_2020_22_full_Ada is
         round_win := 2;
       end if;
       if round_win = 1 then
-        Get_Top (g (1), g (2));
+        Move_Top_Cards (g (1), g (2));
       else
-        Get_Top (g (2), g (1));
+        Move_Top_Cards (g (2), g (1));
       end if;
-      exit when (g (1).top = 0) or (g (2).top = 0);
+      exit when g (1).top = 0 or g (2).top = 0;
     end loop;
     if g (1).top > 0 then
       winner := 1;

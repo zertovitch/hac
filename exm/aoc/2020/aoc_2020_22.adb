@@ -34,19 +34,20 @@ procedure AoC_2020_22 is
   )
   is
     --
-    procedure Get_Top (a, b : in out Deck) is  --  a gets from b
-      top_a, top_b : Positive;
+    procedure Move_Top_Cards (winner, loser : in out Deck) is
+      top_card_winner, top_card_loser : Positive;
     begin
-      top_a := a.card (a.top);
-      top_b := b.card (b.top);
-      b.top := b.top - 1;
-      a.top := a.top + 1;
-      for i in reverse 3 .. a.top loop
-        a.card (i) := a.card (i - 2);
+      top_card_winner := winner.card (winner.top);
+      top_card_loser  := loser.card (loser.top);
+      loser.top := loser.top - 1;
+      winner.top := winner.top + 1;
+      for i in reverse 3 .. winner.top loop
+        winner.card (i) := winner.card (i - 2);
       end loop;
-      a.card (1) := top_b;
-      a.card (2) := top_a;
-    end Get_Top;
+      winner.card (1) := top_card_loser;
+      winner.card (2) := top_card_winner;
+    end Move_Top_Cards;
+    --
     sub : Deck_Pair;
     top_card : array (1 .. 2) of Positive;
     round_win : Positive;
@@ -56,8 +57,6 @@ procedure AoC_2020_22 is
     --  But the needed stack for HAC would be huge and would slow down the
     --  initialization part of the interpreter.
     mem : Game_Mem;
-    --
-    --  Simulate for HAC 0.083 the "=" operator...
     --
     function Equal (g, h : Deck_Pair) return Boolean is
     begin
@@ -73,6 +72,7 @@ procedure AoC_2020_22 is
       end loop;
       return True;
     end Equal;
+    --
   begin
     if (verbosity > 1) and (recursion_level > 6) then
       Put_Line (+"level=" & recursion_level);
@@ -85,7 +85,7 @@ procedure AoC_2020_22 is
       --
       if is_recursive then
         for i in 1 .. round - 1 loop
-          if Equal (mem (i), g) then  --  Full Ada: just  ` mem (i) = g ` ...
+          if Equal (mem (i), g) then
             winner := 1;
             return;
           end if;
@@ -115,9 +115,9 @@ procedure AoC_2020_22 is
         round_win := 2;
       end if;
       if round_win = 1 then
-        Get_Top (g (1), g (2));
+        Move_Top_Cards (g (1), g (2));
       else
-        Get_Top (g (2), g (1));
+        Move_Top_Cards (g (2), g (1));
       end if;
       exit when (g (1).top = 0) or (g (2).top = 0);
     end loop;
