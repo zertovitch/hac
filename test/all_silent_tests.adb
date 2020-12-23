@@ -48,10 +48,10 @@ procedure All_Silent_Tests is
     end Build_HAC;
 
   begin
-    Put_Line( "    ___________      ____________________________________________________________");
-    Put_Line( "   / *  HAC  * \    /  ""Silent tests"": when there is zero output, no compilation \");
-    Put_Line( "   |  Testing  |    |   error and no run-time error, then it's all fine.         |");
-    Put_Line( "   \___________/    \____________________________________________________________/");
+    Put_Line( "    ___________      _____________________________________________________________________");
+    Put_Line( "   / *  HAC  * \    /  ""Silent tests"": when there is zero output, no compilation error,   \");
+    Put_Line( "   |  Testing  |    |  no run-time error, and 0 failure, then the test suite is all fine. |");
+    Put_Line( "   \___________/    \_____________________________________________________________________/");
     New_Line;
     Build_HAC;  --  Redundant if this program is itself run through HAC.
     --
@@ -91,6 +91,7 @@ procedure All_Silent_Tests is
     Launch_HAC (+"aoc_2020_17.adb 207",                         3);  --  Conway Cubes
     Launch_HAC (+"aoc_2020_20.adb 83775126454273",              3);  --  Jurassic Jigsaw
     Launch_HAC (+"aoc_2020_22.adb 31957",                       3);  --  Crab Combat
+    Launch_HAC (+"aoc_2020_23.adb 67384529 49576328",           3);  --  Crab Cups
     Put_Line ("----> Done.");
     if failures = 0 then
       Put_Line ("All tests passed.");

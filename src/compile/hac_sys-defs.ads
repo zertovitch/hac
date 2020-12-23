@@ -44,10 +44,11 @@ package HAC_Sys.Defs is
   --  Global constants  --
   ------------------------
 
-  StMax   : constant := 1_000_000;    --  Maximum Stack Size
+  StMax   : constant := 4_000_000;    --  Maximum Stack Size
   STKINCR : constant :=     2_000;    --  Stack Increment allocated per Task
 
-  Header : constant String := "HAC - Hacker's Ada Compiler";
+  Header : constant String := "HAC - HAC Ada Compiler";
+  --  Alternative name: Hackers' Ada Compiler
   --  Was: "Small-Ada  Macintosh Ver 1.1  Nov 1989  George Washington University"
 
   MaxINT     : constant Integer := Integer'Last - 1;
