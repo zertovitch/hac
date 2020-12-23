@@ -8,7 +8,7 @@
 --  We redefine which one is the next.
 --
 --  Total run time for both parts, example & input:
---      0.78 second (GNAT AoC_Build_Mode_Type = "Fast", i5-9400 @ 2.9 GHz).
+--      0.58 second (GNAT AoC_Build_Mode_Type = "Fast", i5-9400 @ 2.9 GHz).
 --    324.75 seconds (HAC, fastest build, same machine...).
 
 with HAC_Pack;  use HAC_Pack;
@@ -108,10 +108,10 @@ procedure AoC_2020_23 is
       else
         dest_index := dest_label;
       end if;
-      dest_next_index := c (dest_index).next;
       --  The crab places the cups it just picked up so that they are
       --  immediately clockwise of the destination cup. They keep the
       --  same order as when they were picked up.
+      dest_next_index := c (dest_index).next;
       c (dest_index).next := pick_index;
       c (last_pick_index).next := dest_next_index;
       --
@@ -137,8 +137,9 @@ procedure AoC_2020_23 is
           Put (", ");
           cursor := c (cursor).next;
           Put (c (cursor).label, 0);
-          Put (" ");
-          res := 0;   --  could be the product if we prove it's 64 bit like HAC.
+          res := 0;
+          --  ^ We could put there the product if we
+          --    could prove Integer is 64 bit like with HAC.
           exit;
         end if;
       end loop;
@@ -146,39 +147,39 @@ procedure AoC_2020_23 is
     return res;
   end Play;
 
-  e, i : Cup_Array;
-  dummy : Integer;
+  exm, inp : Cup_Array;
+  res : Integer;
 
 begin
   --  example 389125467
   --  input   523764819
   --
-  --  With full Ada we can write  ` e := (3,8,9,1,2,5,4,6,7); `
+  --  With full Ada we can write  ` exm := (3,8,9,1,2,5,4,6,7); `
   --
-  e (1) := 3;
-  e (2) := 8;
-  e (3) := 9;
-  e (4) := 1;
-  e (5) := 2;
-  e (6) := 5;
-  e (7) := 4;
-  e (8) := 6;
-  e (9) := 7;
+  exm (1) := 3;
+  exm (2) := 8;
+  exm (3) := 9;
+  exm (4) := 1;
+  exm (5) := 2;
+  exm (6) := 5;
+  exm (7) := 4;
+  exm (8) := 6;
+  exm (9) := 7;
   --
-  i (1) := 5;
-  i (2) := 2;
-  i (3) := 3;
-  i (4) := 7;
-  i (5) := 6;
-  i (6) := 4;
-  i (7) := 8;
-  i (8) := 1;
-  i (9) := 9;
+  inp (1) := 5;
+  inp (2) := 2;
+  inp (3) := 3;
+  inp (4) := 7;
+  inp (5) := 6;
+  inp (6) := 4;
+  inp (7) := 8;
+  inp (8) := 1;
+  inp (9) := 9;
   --
   for part in 1 .. 2 loop
     if compiler_test_mode then
-      if (Play (e, part) /= Integer_Value (Argument (1))) or
-         (Play (i, part) /= Integer_Value (Argument (2)))
+      if (Play (exm, part) /= Integer_Value (Argument (1))) or
+         (Play (inp, part) /= Integer_Value (Argument (2)))
       then
         Set_Exit_Status (1);  --  Compiler test failed.
       end if;
@@ -187,12 +188,14 @@ begin
     else
       Put_Line (+"Part: " & part);
       Put ("  From example : ");
-      Put (Play (e, part), 0);
+      res := Play (exm, part);
+      if res > 0 then Put (res, 0); end if;
       New_Line;
       --  Part 1: from AoC site:    67384529
       --  Part 2: from AoC site:    149245887792
       Put ("  From input   : ");
-      Put (Play (i, part), 0);
+      res := Play (inp, part);
+      if res > 0 then Put (res, 0); end if;
       New_Line;
       --  Part 1: validated by AoC: 49576328
       --  Part 2: validated by AoC: 511780369955

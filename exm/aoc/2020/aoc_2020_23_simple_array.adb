@@ -12,8 +12,8 @@
 --  169 minutes (almost 3 hours) with
 --  GNAT, AoC_Build_Mode_Type = "Fast", i5-9400 @ 2.9 GHz.
 --
---  The linked list version takes 0.78 second on the same configuration.
---  Then, the linked list version is 13,000 times faster!
+--  The linked list version takes 0.58 second on the same configuration.
+--  Then, the linked list version is more than 17,000 times faster!
 
 with HAC_Pack;  use HAC_Pack;
 
@@ -26,8 +26,7 @@ procedure AoC_2020_23_Simple_Array is
   procedure Play (c_init : Cup_Array; part : Positive) is
     big_max : constant := 1_000_000;
     subtype Big_Cup_Range is Positive range 1 .. big_max;
-    type Big_Cup_Array is array (Big_Cup_Range) of Big_Cup_Range;
-    c : Big_Cup_Array;
+    c : array (Big_Cup_Range) of Big_Cup_Range;
     c_cur : Big_Cup_Range;
     pick : array (1 .. 3) of Big_Cup_Range;
     dest, gap : Integer;
@@ -120,40 +119,40 @@ procedure AoC_2020_23_Simple_Array is
     New_Line;
   end Play;
 
-  e, i : Cup_Array;
+  exm, inp : Cup_Array;
 
 begin
   --  example 389125467
   --  input   523764819
   --
-  --  With full Ada we can write  ` e := (3,8,9,1,2,5,4,6,7); `
+  --  With full Ada we can write  ` exm := (3,8,9,1,2,5,4,6,7); `
   --
-  e (1) := 3;
-  e (2) := 8;
-  e (3) := 9;
-  e (4) := 1;
-  e (5) := 2;
-  e (6) := 5;
-  e (7) := 4;
-  e (8) := 6;
-  e (9) := 7;
+  exm (1) := 3;
+  exm (2) := 8;
+  exm (3) := 9;
+  exm (4) := 1;
+  exm (5) := 2;
+  exm (6) := 5;
+  exm (7) := 4;
+  exm (8) := 6;
+  exm (9) := 7;
   --
-  i (1) := 5;
-  i (2) := 2;
-  i (3) := 3;
-  i (4) := 7;
-  i (5) := 6;
-  i (6) := 4;
-  i (7) := 8;
-  i (8) := 1;
-  i (9) := 9;
+  inp (1) := 5;
+  inp (2) := 2;
+  inp (3) := 3;
+  inp (4) := 7;
+  inp (5) := 6;
+  inp (6) := 4;
+  inp (7) := 8;
+  inp (8) := 1;
+  inp (9) := 9;
   --
   for part in 1 .. 2 loop
     Put_Line (+"Part: " & part);
-    Put ("  From example : "); Play (e, part);
+    Put ("  From example : "); Play (exm, part);
     --  Part 1: from AoC site:    67384529
     --  Part 2: from AoC site:    149245887792
-    Put ("  From input   : "); Play (i, part);
+    Put ("  From input   : "); Play (inp, part);
     --  Part 1: validated by AoC: 49576328
     --  Part 2: validated by AoC: 511780369955
   end loop;
