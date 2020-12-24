@@ -38,8 +38,8 @@ procedure AoC_2020_23 is
     current_index, cursor,
     pick_index, last_pick_index, after_pick_index,
     dest_index, dest_next_index : Big_Cup_Range := 1;
-    --  ^ Initialization is just to remove a
-    --    warning from the ObjectAda compiler.
+    --  ^ Initialization is just for removing a
+    --    warning issued by the ObjectAda compiler.
     dest_label : Integer;
     found : Boolean;
     part_max, rounds : Positive;

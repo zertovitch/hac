@@ -92,6 +92,7 @@ procedure All_Silent_Tests is
     Launch_HAC (+"aoc_2020_20.adb 83775126454273",              3);  --  Jurassic Jigsaw
     Launch_HAC (+"aoc_2020_22.adb 31957",                       3);  --  Crab Combat
     Launch_HAC (+"aoc_2020_23.adb 67384529 49576328",           3);  --  Crab Cups
+    Launch_HAC (+"aoc_2020_24.adb 341 332",                     3);  --  Lobby Layout
     Put_Line ("----> Done.");
     if failures = 0 then
       Put_Line ("All tests passed.");
