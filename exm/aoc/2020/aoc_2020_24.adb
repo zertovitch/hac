@@ -1,7 +1,13 @@
---  Solution to Advent of Code 2020, Day $$
+--  Solution to Advent of Code 2020, Day 24
 -------------------------------------------
+--  Lobby Layout
 --
---  https://adventofcode.com/2020/day/$$
+--  https://adventofcode.com/2020/day/24
+--
+--
+--  HAC 0.083 "nice to have"'s detected in this exercise:
+--
+--    *     with correct boolean operator priority, removal of needless ()
 --
 with HAC_Pack;  use HAC_Pack;
 
@@ -23,6 +29,25 @@ procedure AoC_2020_24 is
   type Position is record x, y : Integer; end record;
 
   move : array (Direction) of Position;
+
+  --        (0, 1)    (1, 1)
+  --           nw      ne
+  --             \    /
+  --  (-1, 0) w--(0, 0)--e (1, 0)
+  --             /    \
+  --           sw      se
+  --       (-1,-1)    (0,-1)
+
+  --  Full Ada: we define `move` in a single expression:
+
+  --  move : constant array (Direction) of Position :=
+  --          (
+  --                nw =>  (0,  1),    ne =>  (1,  1),
+  --
+  --              w => (-1,  0),             e => (1,  0),
+  --
+  --                sw => (-1, -1),    se =>  (0, -1)
+  --          );
 
   max : constant := 70;
   subtype Tile_Range is Integer range -max .. max;
@@ -102,15 +127,8 @@ procedure AoC_2020_24 is
   end Count;
 
   procedure Init_Move is
+  --  This way of doing initialization is needed for HAC.
   begin
-    --        (0, 1)    (1, 1)
-    --           nw      ne
-    --             \    /
-    --  (-1, 0) w--(0, 0)--e (1, 0)
-    --             /    \
-    --           sw      se
-    --       (-1,-1)    (0,-1)
-
     move (e).x :=  1;
     move (e).y :=  0;
     move (se).x :=  0;
@@ -123,15 +141,6 @@ procedure AoC_2020_24 is
     move (nw).y :=  1;
     move (ne).x :=  1;
     move (ne).y :=  1;
-
-    --  Full Ada: we can write the preceding statements in a single expression:
-    --  move := (
-    --                nw =>  (0,  1),    ne =>  (1,  1),
-    --
-    --              w => (-1,  0),             e => (1,  0),
-    --
-    --                sw => (-1, -1),    se =>  (0, -1)
-    --          );
   end Init_Move;
 
   procedure Read_Data (m : out Map_Type) is
