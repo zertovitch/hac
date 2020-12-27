@@ -40,7 +40,7 @@ procedure AoC_2020_08 is
       end case;
       exit when seen (c);
     end loop;
-    ok := c > last;
+    ok := c > last;  --  Went past the last instruction: program terminated.
     result := a;
   end Run;
   --
@@ -56,7 +56,7 @@ procedure AoC_2020_08 is
   function Exit_Diagnostic (x : Boolean) return VString is
   begin
     if x then return +"correct exit!";
-         else return +"infinite loop";
+         else return +"infinite loop detected.";
     end if;
   end Exit_Diagnostic;
   --
@@ -83,7 +83,7 @@ begin
   --
   Run (a1, done_1);
   --
-  --  Try fixing the machine code:
+  --  Try fixing the machine code by swapping "nop" and "jmp" instructions:
   --
   for c in 1 .. last loop
     Swap (c);
@@ -93,13 +93,15 @@ begin
   end loop;
   --
   if test_mode then
-    if (a1 /= Integer_Value (Argument (1))) or
-       (a2 /= Integer_Value (Argument (2)))
+    if a1 /= Integer_Value (Argument (1)) or
+       a2 /= Integer_Value (Argument (2))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Accumulator = " & a1 & ";  " & Exit_Diagnostic (done_1));
     Put_Line (+"Accumulator = " & a2 & ";  " & Exit_Diagnostic (done_2));
+    --  Part 1: validated by AoC: 1394
+    --  Part 2: validated by AoC: 1626
   end if;
 end AoC_2020_08;

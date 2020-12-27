@@ -14,7 +14,6 @@
 --
 --  HAC 0.083 "nice to have"'s detected in this exercise:
 --
---    *     with correct boolean operator priority, removal of needless ()
 --    *     ` x [not] in some_range `  as in  ` exit when ii not in 1 .. h; `
 --    *     ` aaa : constant Character := 'a';`
 --                       HAC should detect an expression as a static (compile-time-known) value
@@ -45,8 +44,8 @@ procedure AoC_2020_11 is
         jj : Integer := j + dj;
       begin
         loop
-          exit when (ii < 1) or (ii > h);
-          exit when (jj < 1) or (jj > w);
+          exit when ii < 1 or ii > h;
+          exit when jj < 1 or jj > w;
           case current_map (ii, jj) is
             when '#'    => occ := occ + 1; exit;
             when 'L'    => exit;
@@ -59,7 +58,7 @@ procedure AoC_2020_11 is
     begin
       for di in -1 .. 1 loop
         for dj in -1 .. 1 loop
-          if (di /= 0) or (dj /= 0) then
+          if di /= 0 or dj /= 0 then
             Scan_Direction (di, dj);
           end if;
         end loop;
@@ -157,4 +156,6 @@ begin
     end if;
     part := part + 1;
   end loop;
+  --  Part 1: Example: 37. Input (aoc_2020_11.txt): validated by AoC: 2386
+  --  Part 2: Example: 26. Input (aoc_2020_11.txt): validated by AoC: 2091
 end AoC_2020_11;

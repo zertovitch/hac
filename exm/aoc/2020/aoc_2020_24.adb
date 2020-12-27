@@ -4,11 +4,6 @@
 --
 --  https://adventofcode.com/2020/day/24
 --
---
---  HAC 0.083 "nice to have"'s detected in this exercise:
---
---    *     with correct boolean operator priority, removal of needless ()
---
 with HAC_Pack;  use HAC_Pack;
 
 procedure AoC_2020_24 is
@@ -62,8 +57,8 @@ procedure AoC_2020_24 is
         yy : constant Integer := y + dy;
       begin
         loop
-          exit when (xx < -max) or (xx > max);
-          exit when (yy < -max) or (yy > max);
+          exit when xx < -max or xx > max;
+          exit when yy < -max or yy > max;
           case current_map (xx, yy) is
             when black  => occ := occ + 1; exit;
             when white  => exit;
@@ -88,7 +83,7 @@ procedure AoC_2020_24 is
         count := Count_Black (x, y);
         case current_map (x, y) is
           when black =>
-            if (count = 0) or (count > 2) then
+            if count = 0 or count > 2 then
               new_map (x, y) := white;
             end if;
           when white =>
@@ -167,7 +162,7 @@ procedure AoC_2020_24 is
       i := 1;
       while i <= Length (s) loop
         c := Element (s, i);
-        if (c = 'n') or (c = 's') then
+        if c = 'n' or c = 's' then
           i := i + 1;
           c2 := Element (s, i);
         end if;
@@ -226,8 +221,8 @@ begin
   count_2 := Count (paving (state));
   --
   if compiler_test_mode then
-    if (count_1 /= Integer_Value (Argument (1))) or
-       (count_2 /= Integer_Value (Argument (2)))
+    if count_1 /= Integer_Value (Argument (1)) or
+       count_2 /= Integer_Value (Argument (2))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;

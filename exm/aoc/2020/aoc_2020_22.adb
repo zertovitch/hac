@@ -6,7 +6,6 @@
 --
 --  HAC 0.083 "nice to have"'s detected in this exercise:
 --
---    *     with correct boolean operator priority, removal of needless ()
 --    *     comparison (equality operators) "=", "/=" of composite types (arrays and records)
 
 with HAC_Pack;  use HAC_Pack;
@@ -79,7 +78,7 @@ procedure AoC_2020_22 is
     end Equal;
     --
   begin
-    if (verbosity > 1) and (recursion_level > 6) then
+    if verbosity > 1 and recursion_level > 6 then
       Put_Line (+"level=" & recursion_level);
     end if;
     loop
@@ -103,8 +102,8 @@ procedure AoC_2020_22 is
         top_card (p) := g (p).card (g (p).top);
       end loop;
       if is_recursive and
-         (g (1).top - 1 >= top_card (1)) and
-         (g (2).top - 1 >= top_card (2))
+         g (1).top - 1 >= top_card (1) and
+         g (2).top - 1 >= top_card (2)
       then
         --  Copy parts of the decks for the sub-game.
         --
@@ -129,7 +128,7 @@ procedure AoC_2020_22 is
       else
         Move_Top_Cards (g (2), g (1));
       end if;
-      exit when (g (1).top = 0) or (g (2).top = 0);
+      exit when g (1).top = 0 or g (2).top = 0;
     end loop;
     if g (1).top > 0 then
       winner := 1;
@@ -206,6 +205,6 @@ begin
     exit when not is_recursive;
     --  ^ This is for HAC: we skip part 2 (see remarks around Game_Mem).
   end loop;
-  --  Part 1: Validated by AoC: 31957
-  --  Part 2: Validated by AoC: 33212
+  --  Part 1: validated by AoC: 31957
+  --  Part 2: validated by AoC: 33212
 end AoC_2020_22;

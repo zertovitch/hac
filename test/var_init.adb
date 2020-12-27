@@ -8,7 +8,7 @@ procedure Var_Init is
     a, b, c : Integer := 777;
     d, e, f : constant Integer := 111;
   begin
-    if (a - 666 /= d) or (b / 7 /= e) or (c + f /= 888) then
+    if a - 666 /= d or b / 7 /= e or c + f /= 888 then
       Put_Line ("Compiler bug [Atomic_Explicit]");
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;

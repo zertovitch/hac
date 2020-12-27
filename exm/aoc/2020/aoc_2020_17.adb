@@ -20,8 +20,6 @@
 --
 --    *     ` x [not] in some_range `  as in  ` ii not in R `
 --    *     ` map (0) := (others => (others =>  (others => (others => False)); `
---    *     with correct boolean operator priority, removal of needless ()
---             as in  ` (di /= 0) or (dj /= 0) or (dk /= 0) or (dl /= 0) `
 --
 with HAC_Pack;  use HAC_Pack;
 
@@ -50,10 +48,10 @@ procedure AoC_2020_17 is
         ll : constant Integer := l + dl;
       begin
         loop
-          exit when (ii < min) or (ii > max);  --  Full Ada: ` ii not in R `
-          exit when (jj < min) or (jj > max);
-          exit when (kk < min) or (kk > max);
-          exit when (ll < min) or (ll > max);
+          exit when ii < min or ii > max;  --  Full Ada: ` ii not in R `
+          exit when jj < min or jj > max;
+          exit when kk < min or kk > max;
+          exit when ll < min or ll > max;
           case current_map (ii, jj, kk, ll) is
             when Active   => occ := occ + 1; exit;
             when Inactive => exit;
@@ -66,7 +64,7 @@ procedure AoC_2020_17 is
         for dj in -1 .. 1 loop
           for dk in -1 .. 1 loop
             for dl in -dl_max .. dl_max loop
-              if (di /= 0) or (dj /= 0) or (dk /= 0) or (dl /= 0) then
+              if di /= 0 or dj /= 0 or dk /= 0 or dl /= 0 then
                 Scan_Direction (di, dj, dk, dl);
               end if;
             end loop;
@@ -91,7 +89,7 @@ procedure AoC_2020_17 is
             occ := Count_Visible_Occupied (i, j, k, l);
             case current_map (i, j, k, l) is
               when Active =>
-                if (occ < 2) or (occ > 3) then
+                if occ < 2 or occ > 3 then
                   new_map (i, j, k, l) := Inactive;
                 end if;
               when Inactive =>

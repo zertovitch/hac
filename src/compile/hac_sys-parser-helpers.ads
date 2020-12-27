@@ -239,11 +239,6 @@ package HAC_Sys.Parser.Helpers is
     NOT_Symbol => True,
     others => False);
 
-  FactorZ : constant Symset :=
-    (Times | Divide | MOD_Symbol | REM_Symbol | AND_Symbol => True,
-     Power => True,  --  !! The ** operator has a higher precedence level 4.4 (6)
-     others => False);
-
   Fail_after_FOR : constant Symset :=
     (IN_Symbol               |
      Range_Double_Dot_Symbol |
@@ -282,11 +277,6 @@ package HAC_Sys.Parser.Helpers is
 
   Symbols_after_Subprogram_Identifier : constant Symset :=
     (LParent | RETURN_Symbol | IS_Symbol | Semicolon => True,
-     others => False);
-
-  Binary_Adding_Operators : constant Symset :=  --  RM 4.5 (4)
-    (Plus | Minus | Ampersand_Symbol => True,
-     OR_Symbol | XOR_Symbol => True,  --  Wrong level !!
      others => False);
 
   Type_Begin_Symbol : constant Symset :=

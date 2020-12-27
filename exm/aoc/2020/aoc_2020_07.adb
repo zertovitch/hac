@@ -10,7 +10,6 @@
 --
 --    *     I/O with enums, at least 'Image and 'Value.
 --    *     "=" for composite types ( ` rules (ri).contains (cti).col = c  `)
---    *     with correct boolean operator priority, removal of needless ()
 --
 with HAC_Pack;  use HAC_Pack;
 
@@ -97,7 +96,7 @@ procedure AoC_2020_07 is
   begin
     loop
       Get (f, c);
-      exit when (c < 'a') or (c > 'z');
+      exit when c < 'a' or c > 'z';
       s := s & c;
     end loop;
     for x in Colour_Qualifier loop
@@ -115,7 +114,7 @@ procedure AoC_2020_07 is
   begin
     loop
       Get (f, c);
-      exit when (c < 'a') or (c > 'z');
+      exit when c < 'a' or c > 'z';
       s := s & c;
     end loop;
     for x in Base_Colour loop
@@ -136,7 +135,7 @@ procedure AoC_2020_07 is
       Get (f, c);
     end loop;
     loop
-      exit when (c < '0') or (c > '9');
+      exit when c < '0' or c > '9';
       n := n * 10 + Ord (c) - Ord ('0');
       Get (f, c);
     end loop;
@@ -178,7 +177,7 @@ procedure AoC_2020_07 is
 
   function Equal (c1, c2 : Colour) return Boolean is
   begin
-    return (c1.cq = c2.cq) and (c1.bc = c2.bc);
+    return c1.cq = c2.cq and c1.bc = c2.bc;
   end Equal;
 
   function Containing_Bags (c : Colour) return Natural is
@@ -189,6 +188,7 @@ procedure AoC_2020_07 is
       for ri in 1 .. rules_count loop
         for cti in 1 .. rules (ri).num_contain loop
           if Equal (rules (ri).contains (cti).col, c) then
+            --  Colour c is contained in bag described by rule #ri.
             is_top := False;
             rules (ri).can_contain := True;
             if details then
@@ -272,7 +272,7 @@ procedure AoC_2020_07 is
         new_rule.contains (new_rule.num_contain) := new_spec;
         loop
           Get (f, sep);
-          exit when (sep = ',') or (sep = '.');
+          exit when sep = ',' or sep = '.';
         end loop;
         exit when End_Of_Line (f);
       end loop;

@@ -42,7 +42,7 @@ procedure AoC_2020_15 is
           end if;
         end if;
       else
-        if (i = 2020) or (i = stop) then
+        if i = 2020 or i = stop then
           Put (i); Put (" : "); Put (curr, 0); New_Line;
         end if;
       end if;

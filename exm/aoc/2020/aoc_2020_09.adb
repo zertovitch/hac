@@ -73,8 +73,8 @@ begin
     Close (f);
   end loop;
   if test_mode then
-    if (res_no_pair /= Integer_Value (Argument (1))) or
-       (weakness /= Integer_Value (Argument (2)))
+    if res_no_pair /= Integer_Value (Argument (1)) or
+       weakness /= Integer_Value (Argument (2))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;

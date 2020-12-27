@@ -5,7 +5,7 @@
 --  https://adventofcode.com/2020/day/16
 --
 --  Run-time with HAC:
---    *  1.08  seconds for a Celeron N3350 @ 1.1 GHz
+--    *  1.08  seconds for a Celeron N3350 @ max 1.1 GHz
 --    *  0.35  seconds for a i5-9400 @ 2.9 GHz
 --  Run-time with GNAT, AoC_Build_Mode = "Fast":
 --    *  0.009 seconds for a i5-9400 @ 2.9 GHz
@@ -25,8 +25,8 @@ procedure AoC_2020_16 is
   --
   function Is_Valid (value : Integer; c : Criteria_Range) return Boolean is
   begin
-    return ((value >= val_11 (c)) and (value <= val_12 (c))) or
-           ((value >= val_21 (c)) and (value <= val_22 (c)));
+    return (value >= val_11 (c) and value <= val_12 (c)) or
+           (value >= val_21 (c) and value <= val_22 (c));
   end Is_Valid;
   --  In this problem we have as many columns as criteria:
   subtype Column_Range is Criteria_Range;
@@ -189,8 +189,8 @@ begin
     exit when crit = 6;
   end loop;
   if compiler_test_mode then
-    if (err /= Integer_Value (Argument (1))) or
-       (prod /= Integer_Value (Argument (2)))
+    if err /= Integer_Value (Argument (1)) or
+       prod /= Integer_Value (Argument (2))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;

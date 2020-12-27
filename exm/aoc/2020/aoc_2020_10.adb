@@ -78,6 +78,9 @@ procedure AoC_2020_10 is
         for i in 1 .. top loop
           if j (i) = from + step then
             if cache (i) = 0 then
+              --  We compute only once the number of combinations
+              --  for a given joltage level. Without cache, the
+              --  computation would take an insane amount of time.
               cache (i) := Count (j (i));
             end if;
             sum := sum + cache (i);
@@ -111,8 +114,8 @@ begin
   Search (puzzle_1);
   Count (puzzle_2);
   if compiler_test_mode then
-    if (puzzle_1 /= Integer_Value (Argument (1))) or
-       (puzzle_2 /= Integer_Value (Argument (2)))
+    if puzzle_1 /= Integer_Value (Argument (1)) or
+       puzzle_2 /= Integer_Value (Argument (2))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
@@ -121,5 +124,7 @@ begin
     Put_Line (+"Max jolts: " & jmax);
     Put_Line (+"Result of puzzle 1 (diff_1 * diff_3 when using all adapters): " & puzzle_1);
     Put_Line (+"Result of puzzle 2 (number of ways adapters can be arranged): " & puzzle_2);
+    --  Part 1: validated by AoC: 2277
+    --  Part 2: validated by AoC: 37024595836928
   end if;
 end AoC_2020_10;

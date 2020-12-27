@@ -54,11 +54,11 @@ begin
         if part = 1 then
           if c = Element (s, i) then n := n + 1; end if;
         else
-          if (c = Element (s, i)) and ((i = arg1) or (i = arg2)) then n := n + 1; end if;
+          if c = Element (s, i) and (i = arg1 or i = arg2) then n := n + 1; end if;
         end if;
         i := i + 1;
       end loop;
-      if ((part = 1) and (n >= arg1) and (n <= arg2)) or ((part = 2) and (n = 1)) then
+      if (part = 1 and n >= arg1 and n <= arg2) or (part = 2 and n = 1) then
         valid := valid + 1;
       elsif verbose then
         Put_Line (+"Invalid: " & arg1 & ',' & arg2 &
@@ -74,4 +74,6 @@ begin
       Put_Line (+"Valid passwords (part " & part & "): " & valid);
     end if;
   end loop;
+  --  Part 1: validated by AoC: 607
+  --  Part 2: validated by AoC: 321
 end AoC_2020_02;

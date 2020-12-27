@@ -33,7 +33,7 @@ procedure AoC_2020_20 is
       Get (f, c);
     end loop;
     loop
-      exit when (c < '0') or (c > '9');
+      exit when c < '0' or c > '9';
       n := n * 10 + Ord (c) - Ord ('0');
       Get (f, c);
     end loop;
@@ -107,10 +107,10 @@ procedure AoC_2020_20 is
   function Is_Corner (n : Positive) return Boolean is
   begin
     return
-      ((edge_count (side_code (left, n))  = 1) and (edge_count (side_code (up, n))   = 1)) or
-      ((edge_count (side_code (right, n)) = 1) and (edge_count (side_code (up, n))   = 1)) or
-      ((edge_count (side_code (left, n))  = 1) and (edge_count (side_code (down, n)) = 1)) or
-      ((edge_count (side_code (right, n)) = 1) and (edge_count (side_code (down, n)) = 1));
+      (edge_count (side_code (left, n))  = 1 and edge_count (side_code (up, n))   = 1) or
+      (edge_count (side_code (right, n)) = 1 and edge_count (side_code (up, n))   = 1) or
+      (edge_count (side_code (left, n))  = 1 and edge_count (side_code (down, n)) = 1) or
+      (edge_count (side_code (right, n)) = 1 and edge_count (side_code (down, n)) = 1);
   end Is_Corner;
   --
   function Spot_Corners return Positive is
@@ -128,8 +128,7 @@ begin
   Read_Data;
   Count_Edges;
   if compiler_test_mode then
-    if Spot_Corners /= Integer_Value (Argument (1))
-    then
+    if Spot_Corners /= Integer_Value (Argument (1)) then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else

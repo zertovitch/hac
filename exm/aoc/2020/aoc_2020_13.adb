@@ -93,13 +93,15 @@ procedure AoC_2020_13 is
   answer_2 := sum;
   --
   if compiler_test_mode then
-    if (answer_1 /= Integer_Value (Argument (1))) or
-       (answer_2 /= Integer_Value (Argument (2)))
+    if answer_1 /= Integer_Value (Argument (1)) or
+       answer_2 /= Integer_Value (Argument (2))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Part 1: first bus for you (encoded answer): " & answer_1);
     Put_Line (+"Part 2: earliest timestamp for first bus in correct sequence: " & answer_2);
+    --  Part 1: validated by AoC: 222
+    --  Part 2: validated by AoC: 408270049879073
   end if;
 end AoC_2020_13;

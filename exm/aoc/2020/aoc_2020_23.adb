@@ -122,7 +122,7 @@ procedure AoC_2020_23 is
       for i in 1 .. max loop
         if c (i).label = 1 then
           cursor := i;
-          for j in 1 .. max - 1 loop
+          for count in 1 .. max - 1 loop
             cursor := c (cursor).next;
             res := 10 * res + c (cursor).label;
           end loop;
@@ -178,27 +178,32 @@ begin
   --
   for part in 1 .. 2 loop
     if compiler_test_mode then
-      if (Play (exm, part) /= Integer_Value (Argument (1))) or
-         (Play (inp, part) /= Integer_Value (Argument (2)))
+      if Play (exm, part) /= Integer_Value (Argument (1)) or
+         Play (inp, part) /= Integer_Value (Argument (2))
       then
         Set_Exit_Status (1);  --  Compiler test failed.
       end if;
       exit;
       --  ^ This is for HAC & compiler testing: we skip part 2, takes too long.
     else
-      Put_Line (+"Part: " & part);
+      Put (+"Part: " & part & ": labels on the ");
+      if part = 1 then
+        Put_Line ("cups after cup 1");
+      else
+        Put_Line ("two cups that will end up immediately clockwise of cup 1");
+      end if;
       Put ("  From example : ");
       res := Play (exm, part);
       if res > 0 then Put (res, 0); end if;
       New_Line;
       --  Part 1: from AoC site:    67384529
-      --  Part 2: from AoC site:    149245887792
+      --  Part 2: from AoC site:    149245887792 = 934001 * 159792
       Put ("  From input   : ");
       res := Play (inp, part);
       if res > 0 then Put (res, 0); end if;
       New_Line;
       --  Part 1: validated by AoC: 49576328
-      --  Part 2: validated by AoC: 511780369955
+      --  Part 2: validated by AoC: 511780369955 = 760147 * 673265	
     end if;
   end loop;
 end AoC_2020_23;
