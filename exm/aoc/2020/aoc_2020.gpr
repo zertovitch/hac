@@ -76,8 +76,7 @@ project AoC_2020 is
      "-O3",
      "-funroll-loops", "-fpeel-loops", "-funswitch-loops",
      "-ftracer", "-fweb", "-frename-registers",
-     "-ftree-vectorize", "-fipa-cp-clone", "-fgcse-after-reload",
-     "-mfpmath=sse", "-msse3"
+     "-ftree-vectorize", "-fipa-cp-clone", "-fgcse-after-reload"
    );
 
    Debug_Options  := (

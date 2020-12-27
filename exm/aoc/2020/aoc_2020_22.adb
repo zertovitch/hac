@@ -33,7 +33,9 @@ procedure AoC_2020_22 is
     recursion_level : in     Positive  --  For information only
   )
   is
-    --
+    --  "The winner keeps both cards, placing them on the bottom
+    --   of their own deck so that the winner's card is above
+    --   the other card."
     procedure Move_Top_Cards (winner, loser : in out Deck) is
       top_card_winner, top_card_loser : Positive;
     begin
@@ -53,9 +55,12 @@ procedure AoC_2020_22 is
     round_win : Positive;
     round : Natural := 0;
     type Game_Mem is array (1 .. 1000) of Deck_Pair;
-    --  100_000 is needed for the "real" data.
-    --  But the needed stack for HAC would be huge and would slow down the
-    --  initialization part of the interpreter.
+    --  A size 100_000 is needed for the "real" data, otherwise
+    --  we would not be able to memorize enough the past decks.
+    --  But the needed stack for HAC would be huge and would
+    --  slow down the initialization part of the interpreter.
+    --  Better to switch to "full Ada" at this point.
+    --  See AoC_2020_22_full_Ada (file: aoc_2020_22_full_ada.adb).
     mem : Game_Mem;
     --
     function Equal (g, h : Deck_Pair) return Boolean is
@@ -101,7 +106,12 @@ procedure AoC_2020_22 is
          (g (1).top - 1 >= top_card (1)) and
          (g (2).top - 1 >= top_card (2))
       then
-        --  Copy parts of the decks for the sub-game:
+        --  Copy parts of the decks for the sub-game.
+        --
+        --  "To play a sub-game of Recursive Combat, each player creates
+        --   a new deck by making a copy of the next cards in their deck
+        --   (the quantity of cards copied is equal to the number on the
+        --   card they drew to trigger the sub-game)."
         for p in 1 .. 2 loop
           for i in 1 .. top_card (p) loop
             sub (p).card (i) := g (p).card (g (p).top - 1 + i - top_card (p));

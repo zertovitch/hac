@@ -5,8 +5,16 @@
 --  https://adventofcode.com/2020/day/22
 --
 --  Full Ada version
+--
+--  Run-time with GNAT, AoC_Build_Mode = "Fast":
+--    *  4.45  seconds for a i5-9400 @ 2.9 GHz using a heap-allocated
+--               fixed (100,000) size array for memorizing the previous decks
+--    *  1.25  seconds for a i5-9400 @ 2.9 GHz using a vector
+--    *  0.36  seconds for a i5-9400 @ 2.9 GHz using a hashed set
 
-with Ada.Unchecked_Deallocation;
+with Ada.Containers.Hashed_Sets,
+     Ada.Containers.Vectors;
+
 with HAC_Pack;
 
 procedure AoC_2020_22_full_Ada is
@@ -33,7 +41,9 @@ procedure AoC_2020_22_full_Ada is
     recursion_level : in     Positive  --  For information only
   )
   is
-    --
+    --  "The winner keeps both cards, placing them on the bottom
+    --   of their own deck so that the winner's card is above
+    --   the other card."
     procedure Move_Top_Cards (winner, loser : in out Deck) is
       top_card_winner, top_card_loser : Positive;
     begin
@@ -52,12 +62,10 @@ procedure AoC_2020_22_full_Ada is
     top_card : array (1 .. 2) of Positive;
     round_win : Positive;
     round : Natural := 0;
-    type Game_Mem is array (1 .. 100_000) of Deck_Pair;
-    type p_Game_Mem is access Game_Mem;
-    procedure Free is new Ada.Unchecked_Deallocation (Game_Mem, p_Game_Mem);
-    mem : p_Game_Mem := new Game_Mem;
     --
-    function Equal (g, h : Deck_Pair) return Boolean is
+    function Equal (g, h : Deck_Pair) return Boolean
+    with Inline
+    is
     begin
       for player in 1 .. 2 loop
         if g (player).top /= h (player).top then
@@ -72,26 +80,61 @@ procedure AoC_2020_22_full_Ada is
       return True;
     end Equal;
     --
+    function Hash (g : Deck_Pair) return Ada.Containers.Hash_Type
+    with Inline
+    is
+      use Ada.Containers;
+      knuth : constant := 2654435761;
+      res : Hash_Type := 1;
+    begin
+      for player in 1 .. 2 loop
+        res := knuth * res + Hash_Type (g (player).top);
+        for i in 1 .. g (player).top loop
+          res := knuth * res + Hash_Type (g (player).card (i));
+        end loop;
+      end loop;
+      return res;
+    end Hash;
+    --
+    --  We benchmark Vectors (linear search) vs. Hashed_Sets.
+    --
+    type Memory_Type is (use_vectors, use_sets);
+    mem_type_choice : constant Memory_Type := use_sets;
+    --
+    package Game_Mem_Vectors is new Ada.Containers.Vectors (Positive, Deck_Pair);
+    mem_vec : Game_Mem_Vectors.Vector;
+    --
+    package Game_Mem_Sets is new Ada.Containers.Hashed_Sets (Deck_Pair, Hash, Equal, Equal);
+    mem_set : Game_Mem_Sets.Set;
+    --
   begin
     if verbosity > 1 and recursion_level > 6 then
       Put_Line (+"level=" & recursion_level);
     end if;
     loop
       round := round + 1;
-      mem (round) := g;
       --
       --  Recursion breaker (first rule of Recursive Combat).
       --
       if is_recursive then
-        for i in 1 .. round - 1 loop
-          if Equal (mem (i), g) then
-            --  NB: the test `mem (i) = g` happens to work but is incorrect
-            --      (compares cards above top)
-            winner := 1;
-            Free (mem);
-            return;
-          end if;
-        end loop;
+        case mem_type_choice is
+          when use_vectors =>
+            for mem of mem_vec loop
+              if Equal (mem, g) then
+                --  NB: the test `mem (i) = g` happens to work but is incorrect
+                --      (compares cards above top)
+                winner := 1;
+                return;
+              end if;
+            end loop;
+            mem_vec.Append (g);
+          when use_sets =>
+            if mem_set.Contains (g) then
+              winner := 1;
+              return;
+            end if;
+            mem_set.Include (g);
+        end case;
       end if;
       --
       --  Draw cards.
@@ -103,7 +146,12 @@ procedure AoC_2020_22_full_Ada is
          g (1).top - 1 >= top_card (1) and
          g (2).top - 1 >= top_card (2)
       then
-        --  Copy parts of the decks for the sub-game:
+        --  Copy parts of the decks for the sub-game.
+        --
+        --  "To play a sub-game of Recursive Combat, each player creates
+        --   a new deck by making a copy of the next cards in their deck
+        --   (the quantity of cards copied is equal to the number on the
+        --   card they drew to trigger the sub-game)."
         for p in 1 .. 2 loop
           for i in 1 .. top_card (p) loop
             sub (p).card (i) := g (p).card (g (p).top - 1 + i - top_card (p));
@@ -128,7 +176,6 @@ procedure AoC_2020_22_full_Ada is
     else
       winner := 2;
     end if;
-    Free (mem);
   end Play;
   --
   procedure Show (a : Deck) is

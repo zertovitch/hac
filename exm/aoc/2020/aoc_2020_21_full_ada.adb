@@ -6,8 +6,9 @@
 --
 --  Full Ada version.
 --
---  Once the 'Image attribute is in the HAC sytax we can
---  adapt the program easily for running through HAC.
+--  Main obstacles for using HAC:
+--    - lack of 'Value (or at least 'Image) attribute
+--    - lack of logical operators on arrays of Boolean
 --
 with HAC_Pack;  use HAC_Pack;
 
@@ -61,42 +62,6 @@ procedure AoC_2020_21_full_Ada is
   food_list : Food_List_Type;
 
   verbose : constant Boolean := True;
-
-  procedure Read_Data is
-    f : File_Type;
-    s, s1, s2, key : VString;
-    i, paren : Integer;
-  begin
-    Open (f, name);
-    while not End_Of_File (f) loop
-      foods := foods + 1;
-      food_list (foods).ingr := (others => False);
-      food_list (foods).allr := (others => False);
-      Get_Line (f, s);
-      paren := Index (s, "(contains ");
-      s1 := Slice (s, 1, paren - 1);
-      s2 := Slice (s, paren + 10, Length (s));
-      loop
-        i := Index (s1, " ");
-        exit when i = 0;
-        key := Slice (s1, 1, i - 1);
-        food_list (foods).ingr (Ingredient'Value (VStr_Pkg.To_String (key))) := True;
-        s1 := Slice (s1, i + 1, Length (s1));
-      end loop;
-      loop
-        i := Index (s2, ", ");
-        exit when i = 0;
-        key := Slice (s2, 1, i - 1);
-        food_list (foods).allr (Allergen'Value (VStr_Pkg.To_String (key))) := True;
-        s2 := Slice (s2, i + 2, Length (s2));
-      end loop;
-      key := Slice (s2, 1, Length (s2) - 1);
-      food_list (foods).allr (Allergen'Value (VStr_Pkg.To_String (key))) := True;
-    end loop;
-    Close (f);
-  end Read_Data;
-
-  --
 
   generic
     type Enum is (<>);
@@ -180,6 +145,40 @@ procedure AoC_2020_21_full_Ada is
       end loop;
     end loop;
   end Find_Allergens_Ingredients;
+
+  procedure Read_Data is
+    f : File_Type;
+    s, s1, s2, key : VString;
+    i, paren : Integer;
+  begin
+    Open (f, name);
+    while not End_Of_File (f) loop
+      foods := foods + 1;
+      food_list (foods).ingr := (others => False);
+      food_list (foods).allr := (others => False);
+      Get_Line (f, s);
+      paren := Index (s, "(contains ");
+      s1 := Slice (s, 1, paren - 1);
+      s2 := Slice (s, paren + 10, Length (s));
+      loop
+        i := Index (s1, " ");
+        exit when i = 0;
+        key := Slice (s1, 1, i - 1);
+        food_list (foods).ingr (Ingredient'Value (VStr_Pkg.To_String (key))) := True;
+        s1 := Slice (s1, i + 1, Length (s1));
+      end loop;
+      loop
+        i := Index (s2, ", ");
+        exit when i = 0;
+        key := Slice (s2, 1, i - 1);
+        food_list (foods).allr (Allergen'Value (VStr_Pkg.To_String (key))) := True;
+        s2 := Slice (s2, i + 2, Length (s2));
+      end loop;
+      key := Slice (s2, 1, Length (s2) - 1);
+      food_list (foods).allr (Allergen'Value (VStr_Pkg.To_String (key))) := True;
+    end loop;
+    Close (f);
+  end Read_Data;
 
   total_n : Natural;
 
