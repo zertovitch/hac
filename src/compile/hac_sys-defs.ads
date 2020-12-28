@@ -132,6 +132,7 @@ package HAC_Sys.Defs is
     Ampersand_Symbol,
     --                  Ada keywords
     ABORT_Symbol,
+    ABS_Symbol,
     ABSTRACT_Symbol,
     ACCEPT_Symbol,
     ACCESS_Symbol,

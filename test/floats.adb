@@ -29,7 +29,7 @@ procedure Floats is
       x := Real (i) * scale * (1.0 / Real (steps));
       s := Sin (x);
       c := Cos (x);
-      if abs (c) > 0.0 then
+      if abs c > 0.0 then
         t := s / c;
         if abs (Arctan (t) - x) > 1.0e-15 then
           Put_Line ("Compiler bug [Trigo]");
@@ -65,8 +65,8 @@ procedure Floats is
       eq : Boolean;
     begin
       z := abs (x - y);
-      ax := abs (x);
-      ay := abs (y);
+      ax := abs x;
+      ay := abs y;
       ma := ax;
       if ay < ma then ma := ay; end if;
       --  ma is the minimum of absolute values of x and y.

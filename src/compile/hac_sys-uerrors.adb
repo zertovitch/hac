@@ -116,7 +116,7 @@ package body HAC_Sys.UErrors is
       when err_duplicate_case_choice_value =>
         return "duplicate choice value in ""case"" instruction";
       when err_argument_to_std_function_of_wrong_type =>
-        return "wrong type of argument to standard function: " & hint;
+        return "wrong type of argument to operator or standard function: " & hint;
       when err_stack_size =>
         return "the program requires too much storage";
       when err_illegal_symbol_for_a_number_declaration =>

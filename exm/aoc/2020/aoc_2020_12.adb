@@ -71,7 +71,7 @@ begin
       end if;
     end loop;
     Close (f);
-    res_r := abs (x) + abs (y);
+    res_r := abs x + abs y;
     res := Integer (res_r);
     if compiler_test_mode then
       if res /= Integer_Value (Argument (part)) then
@@ -84,4 +84,6 @@ begin
         res & "  (" & res_r & ')');
     end if;
   end loop;
+  --  Part 1: validated by AoC: 1631
+  --  Part 2: validated by AoC: 58606
 end AoC_2020_12;

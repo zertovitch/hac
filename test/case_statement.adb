@@ -8,7 +8,7 @@ procedure Case_Statement is
   begin
     case (2*(i + 1)) / 2 - 1 is
       when 1 | -1 =>
-        if abs (i) /= 1 then
+        if abs i /= 1 then
           Put_Line ("Compiler bug [Int, A]");
           Set_Exit_Status (1);  --  Compiler test failed.
         end if;

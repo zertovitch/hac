@@ -77,8 +77,8 @@ package body HAC_Sys.Scanner is
 
   AdaKeyW : constant AdaKeyW_List :=
        (("ABORT       ", ABORT_Symbol),
+        ("ABS         ", ABS_Symbol),
         ("ABSTRACT    ", ABSTRACT_Symbol),     -- [added in] Ada 95
-        ("ABS         ",  USy),                -- !! SmallAda has a built-in function (wrong)
         ("ACCEPT      ", ACCEPT_Symbol),
         ("ACCESS      ", ACCESS_Symbol),
         ("ALIASED     ", ALIASED_Symbol),      -- Ada 95

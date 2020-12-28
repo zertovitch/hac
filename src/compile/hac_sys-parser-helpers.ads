@@ -246,9 +246,6 @@ package HAC_Sys.Parser.Helpers is
      END_Symbol              => True,
      others => False);
 
-  Comparison_Operator_Set : constant Symset :=
-    (Comparison_Operator => True, others => False);
-
   Plus_Minus : constant Symset :=
     (Plus | Minus => True, others => False);
 

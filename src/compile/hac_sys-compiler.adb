@@ -258,7 +258,6 @@ package body HAC_Sys.Compiler is
       --
       --  Standard functions
       --
-      Enter_Std_Funct ("abs",                 Floats, SF_Abs_Int);  --  abs is an Ada keyword...
       Enter_Std_Funct ("Chr",                 Chars,  SF_T_Val);    --  S'Val : RM 3.5.5 (5)
       Enter_Std_Funct ("Ord",                 Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)
       Enter_Std_Funct ("Succ",                Chars,  SF_T_Succ);   --  S'Succ : RM 3.5 (22)

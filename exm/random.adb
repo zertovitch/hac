@@ -27,11 +27,11 @@ procedure Random is
     in_disc : Integer := 0;
   begin
     for it in 1 .. iterations loop
-      if (Rnd ** 2) + (Rnd ** 2) <= 1.0 then
+      if Rnd ** 2 + Rnd ** 2 <= 1.0 then
         in_disc := in_disc + 1;
       end if;
     end loop;
-    Put ("Estimation of pi: ");
+    Put ("Monte-Carlo estimation of pi: ");
     Put_Line (4.0 * Real (in_disc) / Real (iterations));
   end Continuous;
   
@@ -39,8 +39,7 @@ procedure Random is
   
 begin
   for dec in 3 .. 6 loop
-    Put("=======");
-    Put_Line (dec);
+    Put_Line( +"======= Iterations: 10 ** " & dec );
     it := 10 ** dec;
     Discrete (it);
     Continuous (it);
