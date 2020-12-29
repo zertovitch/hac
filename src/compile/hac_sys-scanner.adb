@@ -17,8 +17,6 @@ package body HAC_Sys.Scanner is
     ')'    => RParent,
     '['    => LBrack,
     ']'    => RBrack,
-    '='    => EQL,
-    '"'    => NEQ,    -- ?!
     ','    => Comma,
     ';'    => Semicolon,
     '&'    => Ampersand_Symbol,

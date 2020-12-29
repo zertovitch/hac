@@ -39,9 +39,9 @@ package body HAC_Sys.UErrors is
       when err_expecting_double_dot =>
         return "expecting double dot symbol: ""..""";
       when err_semicolon_missing =>
-        return "missing a semicolon "";""";
-      when err_extra_semicolon_ignored =>
-        return "extra "";"" ignored";
+        return "missing a semicolon: "";""";
+      when err_duplicate_semicolon =>
+        return "duplicate semicolon: "";""";
       when err_bad_result_type_for_a_function =>
         return "bad result type for a function";
       when err_type_of_return_statement_doesnt_match =>
@@ -270,6 +270,7 @@ package body HAC_Sys.UErrors is
       err_END_LOOP_ident_missing      => (insert,        +"[Error() puts identifier]"),
       err_END_LOOP_ident_wrong        => (replace_token, +"[Error() puts identifier]"),
       err_EQUALS_instead_of_BECOMES   => (replace_token, +":="),
+      err_duplicate_semicolon     => (replace_token, +""),
       others                          => nothing_to_repair
     );
 

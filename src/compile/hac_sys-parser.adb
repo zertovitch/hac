@@ -1227,6 +1227,7 @@ package body HAC_Sys.Parser is
         end case;
         --
         Need (CD, Semicolon, err_semicolon_missing);
+        Ignore_Extra_Semicolons (CD);
       end if;  --  CD.Sy in Statement_Begin_Symbol
       --
       Test (CD, FSys_St - Semicolon, Semicolon_Set, err_incorrectly_used_symbol);

@@ -13,7 +13,7 @@ with HAC_Sys.Scanner, HAC_Sys.UErrors;
 
 package body HAC_Sys.Parser.Helpers is
 
-  use HAC_Sys.Scanner, HAC_Sys.UErrors;
+  use Scanner, UErrors;
 
   procedure Need (
     CD      : in out Compiler_Data;
@@ -26,7 +26,7 @@ package body HAC_Sys.Parser.Helpers is
     if CD.Sy = S then
       InSymbol (CD);
     else
-      Error (CD, E);
+      Error (CD, E, stop => Forgive = Dummy_Symbol);
       if CD.Sy = Forgive then
         InSymbol (CD);
       end if;
@@ -149,7 +149,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data) is
   begin
     if CD.Sy = Semicolon then
-      Error (CD, err_extra_semicolon_ignored);
+      Error (CD, err_duplicate_semicolon, stop => True);
       while CD.Sy = Semicolon loop
         InSymbol (CD);
       end loop;
