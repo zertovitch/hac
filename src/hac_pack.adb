@@ -385,54 +385,15 @@ package body HAC_Pack is
   -- PUT --
   ---------
 
-  procedure Put (C : in  Character) is begin Ada.Text_IO.Put (C); end Put;
-  procedure Put (File : File_Type; C : in  Character) is begin Ada.Text_IO.Put (File, C); end Put;
-
-  procedure  Put (I     : in  Integer;
-                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
-                  Base  : Ada.Text_IO.Number_Base := IIO.Default_Base)
-  is
-  begin
-    IIO.Put (I, Width, Base);
-  end Put;
-
-  procedure  Put (File  : File_Type;
-                  I     : in  Integer;
-                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
-                  Base  : Ada.Text_IO.Number_Base := IIO.Default_Base)
-  is
-  begin
-    IIO.Put (File, I, Width, Base);
-  end Put;
-
-  procedure  Put (F    : in  Real;
-                  Fore : Integer := RIO.Default_Fore;
-                  Aft  : Integer := RIO.Default_Aft;
-                  Expo : Integer := RIO.Default_Exp)
-  is
-  begin
-    RIO.Put (F, Fore, Aft, Expo);
-  end Put;
-
-  procedure  Put (File : File_Type;
-                  F     : in  Real;
-                  Fore  : Integer := RIO.Default_Fore;
-                  Aft   : Integer := RIO.Default_Aft;
-                  Expo  : Integer := RIO.Default_Exp)
-  is
-  begin
-    RIO.Put (File, F, Fore, Aft, Expo);
-  end Put;
-
-  procedure Put (B     : in  Boolean;
+  procedure Put (B     : Boolean;
                  Width : Ada.Text_IO.Field := BIO.Default_Width)
   is
   begin
     BIO.Put (B, Width);
   end Put;
 
-  procedure  Put (File : File_Type;
-                  B     : in  Boolean;
+  procedure  Put (File  : File_Type;
+                  B     : Boolean;
                   Width : Ada.Text_IO.Field       := BIO.Default_Width)
   is
   begin

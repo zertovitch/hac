@@ -185,14 +185,14 @@ package HAC_Pack is
     renames Ada.Text_IO.Skip_Line;
 
   --  Put
-  procedure Put (C     : Character);
+  procedure Put (C     : Character) renames Ada.Text_IO.Put;
   procedure Put (I     : Integer;
                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
-                 Base  : Ada.Text_IO.Number_Base := IIO.Default_Base);
+                 Base  : Ada.Text_IO.Number_Base := IIO.Default_Base) renames IIO.Put;
   procedure Put (F     : Real;
                  Fore  : Integer := RIO.Default_Fore;
                  Aft   : Integer := RIO.Default_Aft;
-                 Expo  : Integer := RIO.Default_Exp);
+                 Expo  : Integer := RIO.Default_Exp) renames RIO.Put;
   procedure Put (B     : Boolean;
                  Width : Ada.Text_IO.Field       := BIO.Default_Width);
   procedure Put (S     : String) renames Ada.Text_IO.Put;
@@ -252,16 +252,16 @@ package HAC_Pack is
     renames Ada.Text_IO.Skip_Line;
 
   --  Put
-  procedure Put (File  : File_Type; C : Character);
+  procedure Put (File  : File_Type; C : Character) renames Ada.Text_IO.Put;
   procedure Put (File  : File_Type;
                  I     : Integer;
                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
-                 Base  : Ada.Text_IO.Number_Base := IIO.Default_Base);
+                 Base  : Ada.Text_IO.Number_Base := IIO.Default_Base) renames IIO.Put;
   procedure Put (File  : File_Type;
                  F     : Real;
                  Fore  : Integer := RIO.Default_Fore;
                  Aft   : Integer := RIO.Default_Aft;
-                 Expo  : Integer := RIO.Default_Exp);
+                 Expo  : Integer := RIO.Default_Exp) renames RIO.Put;
   procedure Put (File  : File_Type;
                  B     : Boolean;
                  Width : Ada.Text_IO.Field       := BIO.Default_Width);
