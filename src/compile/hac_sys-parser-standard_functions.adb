@@ -73,8 +73,8 @@ package body HAC_Sys.Parser.Standard_Functions is
         when SF_Literal_to_VString =>
           Expected (1) := Chars_or_Strings_Set;
         when SF_Index | SF_Starts_With | SF_Ends_With =>
-          --  Index (OS, +"Windows")  _or_  Index (OS, "Windows")
-          Expected (1 .. 2) := (VStrings_Set, VStrings_or_Str_Lit_Set);
+          --  Index (OS, +"Windows"), Index (OS, "Windows") or Index (OS, 'W')
+          Expected (1 .. 2) := (VStrings_Set, VStrings_Chars_or_Str_Lit_Set);
         when SF_Year .. SF_Seconds =>
           Expected (1) := Times_Set;
         when SF_Exists | SF_Get_Env =>
@@ -164,10 +164,16 @@ package body HAC_Sys.Parser.Standard_Functions is
             Code_Adjusted := SF_To_Upper_VStr;
           end if;
         when SF_Index | SF_Starts_With | SF_Ends_With =>
-          --  Index (OS, "Windows")  becomes  Index (OS, +"Windows")
-          if Actual (2).TYP = String_Literals then
-            Emit_Std_Funct (CD, SF_Literal_to_VString);
-          end if;
+          case Actual (2).TYP is
+            when Chars =>
+              --  `Index (OS, 'W')`  becomes  `Index (OS, +'W')`
+              Emit_Std_Funct (CD, SF_Char_to_VString);
+            when String_Literals =>
+              --  `Index (OS, "Windows")`  becomes  `Index (OS, +"Windows")`
+              Emit_Std_Funct (CD, SF_Literal_to_VString);
+            when others =>
+              null;
+          end case;
         when SF_Exists | SF_Get_Env =>
           --  Get_Env ("PATH")  becomes  Get_Env (+"PATH")
           if Actual (1).TYP = String_Literals then

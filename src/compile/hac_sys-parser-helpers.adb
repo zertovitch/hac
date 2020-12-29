@@ -172,8 +172,8 @@ package body HAC_Sys.Parser.Helpers is
       when Arrays          => return "array type";
       when Records         => return "record type";
       when Enums           => return "enumeration type";
-      when String_Literals => return "fixed-size string type";
-      when VStrings        => return "variable-size string type";
+      when String_Literals => return "String type";
+      when VStrings        => return "VString type";
       when Times           => return "Time type";                   --  "the" Time type
       when Durations       => return "Duration type";               --  "the" Duration type
       when Text_Files      => return "text file type";
@@ -244,7 +244,8 @@ package body HAC_Sys.Parser.Helpers is
     Error (
       CD, Err,
       "found: "      & Nice_Exact_Image (CD, Found) &
-      ", expected: " & Types_List (Expected)
+      ", expected: " & Types_List (Expected),
+      stop => True
     );
   end Type_Mismatch;
 

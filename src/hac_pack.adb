@@ -216,6 +216,11 @@ package body HAC_Pack is
     return VStr_Pkg.Tail (Source, Count);  --  We use the default padding: ' '.
   end Tail;
 
+  function Starts_With (Item : VString; Pattern : Character) return Boolean is
+  begin
+    return 1 <= Length (Item) and then Element (Item, 1) = Pattern;
+  end Starts_With;
+
   function Starts_With (Item : VString; Pattern : String) return Boolean is
   begin
     return Pattern'Length <= Length (Item)
@@ -228,6 +233,11 @@ package body HAC_Pack is
              and then VStr_Pkg.Head (Item, Length (Pattern)) = Pattern;
   end Starts_With;
 
+  function Ends_With (Item : VString; Pattern : Character) return Boolean is
+  begin
+    return 1 <= Length (Item) and then Element (Item, Length (Item)) = Pattern;
+  end Ends_With;
+
   function Ends_With (Item : VString; Pattern : String) return Boolean is
   begin
     return Pattern'Length <= Length (Item)
@@ -239,6 +249,11 @@ package body HAC_Pack is
     return Length (Pattern) <= Length (Item)
              and then VStr_Pkg.Tail (Item, Length (Pattern)) = Pattern;
   end Ends_With;
+
+  function Index (Source : VString; Pattern : Character) return Natural is
+  begin
+    return VStr_Pkg.Index (Source, (1 => Pattern));
+  end Index;
 
   function Index (Source : VString; Pattern : String) return Natural is
   begin

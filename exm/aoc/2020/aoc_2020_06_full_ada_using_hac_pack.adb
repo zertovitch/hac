@@ -36,7 +36,7 @@ begin
         Collect_Group_Total;
       else
         for c in Answer_Range loop
-          r (c) := Index (s, +c) > 0;
+          r (c) := Index (s, c) > 0;
         end loop;
         if new_group then
           rg := r;
@@ -49,7 +49,9 @@ begin
       end if;
     end loop;
     Collect_Group_Total;
-    Put_Line (+"Part " & part & "  " & total);
+    Put_Line (+"Part " & part & ".  Total customs answers: " & total);
+    --  Part 1: officially validated by AoC: 6532
+    --  Part 2: officially validated by AoC: 3427
     Close (f);
   end loop;
 end AoC_2020_06_Full_Ada_using_HAC_Pack;

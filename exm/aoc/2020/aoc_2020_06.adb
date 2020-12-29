@@ -6,16 +6,15 @@
 --
 -------------------------------------------------------------------------
 --
---  HAC 0.081 version.
+--  HAC 0.084 version.
 --
---  HAC 0.081 "nice to have"'s detected in this exercise:
+--  HAC 0.084 "nice to have"'s detected in this exercise:
 --
 --    *     ` clear := (others => False); `
 --    *     ` rg := rg and r ` for arrays of Boolean (i.e., sets)
 --    *     ` aaa : constant Character := 'a';`
 --                       HAC should detect an expression as a
 --                       static (compile-time-known) value
---    *     in HAC_Pack: Index (s, c) where c is a Character
 --
 with HAC_Pack;  use HAC_Pack;
 
@@ -50,7 +49,7 @@ begin
         Collect_Group_Total;
       else
         for c in Answer_Range loop
-          r (c) := Index (s, +c) > 0;
+          r (c) := Index (s, c) > 0;
         end loop;
         if new_group then
           rg := r;
@@ -71,6 +70,8 @@ begin
       end if;
     else
       Put_Line (+"Part " & part & ".  Total customs answers: " & total);
+      --  Part 1: officially validated by AoC: 6532
+      --  Part 2: officially validated by AoC: 3427
     end if;
     Close (f);
   end loop;
