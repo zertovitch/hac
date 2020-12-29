@@ -203,7 +203,7 @@ begin
       if res > 0 then Put (res, 0); end if;
       New_Line;
       --  Part 1: validated by AoC: 49576328
-      --  Part 2: validated by AoC: 511780369955 = 760147 * 673265	
+      --  Part 2: validated by AoC: 511780369955 = 760147 * 673265
     end if;
   end loop;
 end AoC_2020_23;

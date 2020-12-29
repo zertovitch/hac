@@ -6,15 +6,14 @@
 --
 -------------------------------------------------------------------------
 --
---  HAC 0.083 version.
+--  HAC 0.084 version.
 --
 --  NB: when run from HAC with the full-size data ("aoc_2020_11.txt"),
 --      the HAC virtual machine shows its capacity of slowing down your computer ;-) .
 --      For performance, better use your preferred full Ada compiler...
 --
---  HAC 0.083 "nice to have"'s detected in this exercise:
+--  HAC 0.084 "nice to have"'s detected in this exercise:
 --
---    *     ` x [not] in some_range `  as in  ` exit when ii not in 1 .. h; `
 --    *     ` aaa : constant Character := 'a';`
 --                       HAC should detect an expression as a static (compile-time-known) value
 --
@@ -44,8 +43,8 @@ procedure AoC_2020_11 is
         jj : Integer := j + dj;
       begin
         loop
-          exit when ii < 1 or ii > h;
-          exit when jj < 1 or jj > w;
+          exit when ii not in 1 .. h;
+          exit when jj not in 1 .. w;
           case current_map (ii, jj) is
             when '#'    => occ := occ + 1; exit;
             when 'L'    => exit;

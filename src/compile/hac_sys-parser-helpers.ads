@@ -230,13 +230,12 @@ package HAC_Sys.Parser.Helpers is
      FUNCTION_Symbol  => True,
      others => False);
 
-  Factor_Begin_Symbol : constant Symset :=
+  Primary_Begin_Symbol : constant Symset :=
    (IntCon     |
     FloatCon   |
     CharCon    |
     IDent      |
-    LParent    |
-    NOT_Symbol => True,
+    LParent    => True,
     others => False);
 
   Fail_after_FOR : constant Symset :=

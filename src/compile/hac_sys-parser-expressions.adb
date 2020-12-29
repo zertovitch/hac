@@ -1,17 +1,17 @@
 with HAC_Sys.Compiler.PCode_Emit;
 with HAC_Sys.Parser.Attributes;
-with HAC_Sys.Parser.Calls;                  use HAC_Sys.Parser.Calls;
-with HAC_Sys.Parser.Helpers;                use HAC_Sys.Parser.Helpers;
+with HAC_Sys.Parser.Calls;
+with HAC_Sys.Parser.Helpers;
+with HAC_Sys.Parser.Ranges;
 with HAC_Sys.Parser.Standard_Functions;
 with HAC_Sys.Parser.Type_Conversion;
-with HAC_Sys.PCode;                         use HAC_Sys.PCode;
-with HAC_Sys.Scanner;                       use HAC_Sys.Scanner;
-with HAC_Sys.UErrors;                       use HAC_Sys.UErrors;
-with HAC_Sys.Compiler;
+with HAC_Sys.PCode;
+with HAC_Sys.Scanner;
+with HAC_Sys.UErrors;
 
 package body HAC_Sys.Parser.Expressions is
 
-  use Compiler.PCode_Emit;
+  use Compiler.PCode_Emit, Helpers, PCode, Scanner, UErrors;
 
   ------------------------------------------------------------------
   ---------------------------------------------------------Selector-
@@ -116,7 +116,7 @@ package body HAC_Sys.Parser.Expressions is
     (AND_Symbol | OR_Symbol | XOR_Symbol => True,
      others => False);
 
-  relational_operator : constant Symset :=          --  RM 4.5 (2)
+  relational_operator : constant Symset :=          --  RM 4.5 (3)
     (Comparison_Operator => True, others => False);
 
   binary_adding_operator : constant Symset :=       --  RM 4.5 (4)
@@ -157,16 +157,16 @@ package body HAC_Sys.Parser.Expressions is
               F   : Opcode;
               err : Compile_Error;
               Ident_Index : Integer;
-            begin  --  Factor
+            begin
               X := Type_Undefined;
-              Test (CD, Factor_Begin_Symbol + StrCon, FSys_Prim, err_factor_unexpected_symbol);
+              Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_factor_unexpected_symbol);
               if CD.Sy = StrCon then
                 X.TYP := String_Literals;
                 Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.SLeng));  --  String Literal Length
                 Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.INum));   --  Index To String IdTab
                 InSymbol (CD);
               end if;
-              while Factor_Begin_Symbol (CD.Sy) loop  --  !!  Why a loop here ?... Why StrCon excluded ?
+              while Primary_Begin_Symbol (CD.Sy) loop  --  !!  Why a loop here ?... Why StrCon excluded ?
                 case CD.Sy is
                   when IDent =>
                     Ident_Index := Locate_Identifier (CD, CD.Id, Level, stop_on_error => True);
@@ -230,7 +230,8 @@ package body HAC_Sys.Parser.Expressions is
                             Standard_Functions.Standard_Function
                               (CD, Level, FSys_Prim, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
                           else
-                            Subprogram_or_Entry_Call (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
+                            Calls.Subprogram_or_Entry_Call
+                              (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
                           end if;
                           --
                         when others =>
@@ -272,7 +273,7 @@ package body HAC_Sys.Parser.Expressions is
                 else
                   err := err_incorrectly_used_symbol;
                 end if;
-                Test (CD, FSys_Prim, Factor_Begin_Symbol, err);
+                Test (CD, FSys_Prim, Primary_Begin_Symbol, err);
               end loop;
             end Primary;
 
@@ -514,49 +515,78 @@ package body HAC_Sys.Parser.Expressions is
         end loop;
       end Simple_Expression;
 
-      Rel_OP : KeyWSymbol;
-      Y      : Exact_Typ;
+      Y : Exact_Typ;
 
       procedure Issue_Comparison_Type_Mismatch_Error is
       begin
         Type_Mismatch (CD, err_incompatible_types_for_comparison, Found => Y, Expected => X);
       end Issue_Comparison_Type_Mismatch_Error;
 
+      Rel_OP : KeyWSymbol;
+      Not_In : Boolean;
+
     begin  --  Relation
-      Simple_Expression (FSys_Rel + relational_operator, X);
-      --
-      --  We collect here an eventual comparison: a {= b}
-      --
-      if relational_operator (CD.Sy) then
-        Rel_OP := CD.Sy;
-        InSymbol (CD);
-        Simple_Expression (FSys_Rel, Y);
-        if X.TYP = Ints and Y.TYP = Floats then
-          Forbid_Type_Coercion (CD, Rel_OP, X, Y);
-          X.TYP := Floats;
-          Emit_1 (CD, k_Integer_to_Float, 1);
-        elsif X.TYP = Floats and Y.TYP = Ints then
-          Forbid_Type_Coercion (CD, Rel_OP, X, Y);
-          Y.TYP := Floats;
-          Emit_1 (CD, k_Integer_to_Float, 0);
-        elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
-          Issue_Comparison_Type_Mismatch_Error;
-        elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  V = "Hello", V < "World", etc.
-          --  Y is on top of the stack, we turn it into a VString.
-          --  If this becomes a perfomance issue we could consider an opcode for (VStr op Lit_Str).
-          Emit_Std_Funct (CD, SF_Literal_to_VString);  --  Now we have e.g. V < +"World".
-          Emit_Comparison_Instruction (CD, Rel_OP, VStrings);  --  Emit "<" (X, Y) between VStrings.
-        elsif X.TYP = Y.TYP then
-          if PCode_Atomic_Typ (X.TYP) then
-            Emit_Comparison_Instruction (CD, Rel_OP, X.TYP);
+      Simple_Expression (FSys_Rel + relational_operator + IN_Symbol + NOT_Symbol, X);
+      case CD.Sy is
+        when Comparison_Operator =>
+          --
+          --  We collect here a comparison (relational) operator, e.g.: x < y
+          --
+          Rel_OP := CD.Sy;
+          InSymbol (CD);
+          Simple_Expression (FSys_Rel, Y);
+          if X.TYP = Ints and Y.TYP = Floats then
+            Forbid_Type_Coercion (CD, Rel_OP, X, Y);
+            X.TYP := Floats;
+            Emit_1 (CD, k_Integer_to_Float, 1);
+          elsif X.TYP = Floats and Y.TYP = Ints then
+            Forbid_Type_Coercion (CD, Rel_OP, X, Y);
+            Y.TYP := Floats;
+            Emit_1 (CD, k_Integer_to_Float, 0);
+          elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
+            Issue_Comparison_Type_Mismatch_Error;
+          elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  V = "Hello", V < "World", etc.
+            --  Y is on top of the stack, we turn it into a VString.
+            --  If this becomes a perfomance issue we could consider an opcode for (VStr op Lit_Str).
+            Emit_Std_Funct (CD, SF_Literal_to_VString);  --  Now we have e.g. V < +"World".
+            Emit_Comparison_Instruction (CD, Rel_OP, VStrings);  --  Emit "<" (X, Y) between VStrings.
+          elsif X.TYP = Y.TYP then
+            if PCode_Atomic_Typ (X.TYP) then
+              Emit_Comparison_Instruction (CD, Rel_OP, X.TYP);
+            else
+              Issue_Undefined_Operator_Error (Rel_OP, X, Y);
+            end if;
           else
-            Issue_Undefined_Operator_Error (Rel_OP, X, Y);
+            Issue_Comparison_Type_Mismatch_Error;
           end if;
-        else
-          Issue_Comparison_Type_Mismatch_Error;
-        end if;
-        X.TYP := Bools;  --  The result of the comparison is always Boolean.
-      end if;
+          X.TYP := Bools;  --  The result of the comparison is always Boolean.
+        when IN_Symbol | NOT_Symbol =>
+          --
+          --  We collect here a membership test, e.g.: x [not] in a .. b
+          --
+          Not_In := CD.Sy = NOT_Symbol;
+          InSymbol (CD);
+          if Not_In then
+            Need (CD, IN_Symbol, err_syntax_error);
+          end if;
+          if CD.Err_Count = 0 then
+            Ranges.Dynamic_Range (CD, Level, FSys_Rel, err_discrete_type_expected, Y);
+            if X /= Y then
+              Type_Mismatch (CD, err_membership_test_type_mismatch, Found => Y, Expected => X);
+              --  The RM 4.5.2 (2) seems to accept any types for X and Y. The test would be False
+              --  if types were incompatible. However, in that situation, GNAT says
+              --  "incompatible types", ObjectAda says "LRM:8.6(28), Inappropriate operands
+              --  for "IN" operation".
+            end if;
+            Emit_Std_Funct (CD, SF_in_discrete_Interval);
+            if Not_In then
+              Emit (CD, k_NOT_Boolean);
+            end if;
+            X.TYP := Bools;  --  The result of the membership test is always Boolean.
+          end if;
+        when others =>
+          null;
+      end case;
       --
       if X.TYP = NOTYP and then CD.Err_Count = 0 then
         raise Internal_error with "Typeless expression, but no compilation error";

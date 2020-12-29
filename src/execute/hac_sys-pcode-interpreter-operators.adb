@@ -108,6 +108,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           null;
         when SF_T_Succ => Top_Item.I := Top_Item.I + 1;  --  S'Succ : RM 3.5 (22)
         when SF_T_Pred => Top_Item.I := Top_Item.I - 1;  --  S'Pred : RM 3.5 (25)
+        when SF_in_discrete_Interval =>
+          --  SF_in_discrete_Interval (x, a, b) is equivalent to: `x in a .. b`
+          Pop (ND, 2);
+          --  [T] := [T] in [T+1] .. [T+2]
+          ND.S (Curr_TCB.T).I :=
+            Boolean'Pos (
+              ND.S (Curr_TCB.T).I in ND.S (Curr_TCB.T + 1).I .. ND.S (Curr_TCB.T + 2).I
+            );
         when SF_Round_Float_to_Int =>
           Top_Item.I := HAC_Integer (Top_Item.R);
         when SF_Trunc_Float_to_Int =>

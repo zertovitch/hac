@@ -16,9 +16,8 @@
 --          we expect a big slowdown with this problem (many nested loops):
 --    *  (too many) seconds, on a i5-9400 @ 2.9 GHz
 --
---  HAC 0.083 "nice to have"'s detected in this exercise:
+--  HAC 0.084 "nice to have"'s detected in this exercise:
 --
---    *     ` x [not] in some_range `  as in  ` ii not in R `
 --    *     ` map (0) := (others => (others =>  (others => (others => False)); `
 --
 with HAC_Pack;  use HAC_Pack;
@@ -48,10 +47,10 @@ procedure AoC_2020_17 is
         ll : constant Integer := l + dl;
       begin
         loop
-          exit when ii < min or ii > max;  --  Full Ada: ` ii not in R `
-          exit when jj < min or jj > max;
-          exit when kk < min or kk > max;
-          exit when ll < min or ll > max;
+          exit when ii not in R;
+          exit when jj not in R;
+          exit when kk not in R;
+          exit when ll not in R;
           case current_map (ii, jj, kk, ll) is
             when Active   => occ := occ + 1; exit;
             when Inactive => exit;

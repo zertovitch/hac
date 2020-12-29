@@ -10,9 +10,8 @@
 --  Run-time with GNAT, AoC_Build_Mode = "Fast":
 --    *  0.009 seconds for a i5-9400 @ 2.9 GHz
 --
---  HAC 0.083 "nice to have"'s detected in this exercise:
+--  HAC 0.084 "nice to have"'s detected in this exercise:
 --
---    *     ` x [not] in some_range `  as in  ` value in val_11 (c) .. val_12 (c)) `
 --    *     ` Skip_Line (f, 3) `  (multiple skips)
 --    *     ` cc_match := (others => (others => True)); `
 --
@@ -25,8 +24,8 @@ procedure AoC_2020_16 is
   --
   function Is_Valid (value : Integer; c : Criteria_Range) return Boolean is
   begin
-    return (value >= val_11 (c) and value <= val_12 (c)) or
-           (value >= val_21 (c) and value <= val_22 (c));
+    return (value in val_11 (c) .. val_12 (c)) or
+           (value in val_21 (c) .. val_22 (c));
   end Is_Valid;
   --  In this problem we have as many columns as criteria:
   subtype Column_Range is Criteria_Range;

@@ -233,6 +233,7 @@ package HAC_Sys.PCode is
     SF_T_Pos,                   --  S'Pos  : RM 3.5.5 (2)
     SF_T_Succ,                  --  S'Succ : RM 3.5 (22)
     SF_T_Pred,                  --  S'Pred : RM 3.5 (25)
+    SF_in_discrete_Interval,
     --  Numerical functions
     SF_Round_Float_to_Int,
     SF_Trunc_Float_to_Int,

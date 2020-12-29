@@ -57,8 +57,8 @@ procedure AoC_2020_24 is
         yy : constant Integer := y + dy;
       begin
         loop
-          exit when xx < -max or xx > max;
-          exit when yy < -max or yy > max;
+          exit when xx not in Tile_Range;
+          exit when yy not in Tile_Range;
           case current_map (xx, yy) is
             when black  => occ := occ + 1; exit;
             when white  => exit;

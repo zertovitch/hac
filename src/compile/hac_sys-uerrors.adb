@@ -236,6 +236,10 @@ package body HAC_Sys.UErrors is
                " put a ""+"" in front of the fixed string";
       when err_range_constraint_error =>
         return "error in range constraint: " & hint;
+      when err_discrete_type_expected =>
+        return "discrete type expected";
+      when err_membership_test_type_mismatch =>
+        return "incompatible types: " & hint;
     end case;
   end Error_String;
 

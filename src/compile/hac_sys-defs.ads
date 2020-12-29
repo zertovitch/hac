@@ -411,7 +411,9 @@ package HAC_Sys.Defs is
     err_END_LOOP_ident_wrong,
     err_syntax_error,                            --  A classic one. "Too long to explain more..."
     err_string_to_vstring_assignment,
-    err_range_constraint_error
+    err_range_constraint_error,
+    err_discrete_type_expected,
+    err_membership_test_type_mismatch
   );
 
   type Error_set is array (Compile_Error) of Boolean;

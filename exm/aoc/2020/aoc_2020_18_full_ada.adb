@@ -39,4 +39,3 @@ begin
     --  Validated by AoC: 545115449981968
   end loop;
 end AoC_2020_18_full_Ada;
-

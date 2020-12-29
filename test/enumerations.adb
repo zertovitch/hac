@@ -52,6 +52,7 @@ procedure Enumerations is
   end Test_CASE;
 
   subtype Beast is Animal;
+  subtype Insect is Animal range ant .. ant;
   subtype Mammal is Animal range bat .. dog;
 
 begin
@@ -103,7 +104,12 @@ begin
   --
   for pet in Mammal loop
     pet2 := pet;
-    null;  --  put(pet2);
+    if pet2 in Insect then
+      Put("Compiler bug membership 1");
+    end if;
+    if pet2 not in Mammal then
+      Put("Compiler bug membership 2");
+    end if;
   end loop;
   --
   Test_CASE;

@@ -6,11 +6,10 @@
 --
 -------------------------------------------------------------------------
 --
---  HAC 0.08 version.
+--  HAC 0.084 version.
 --
---  HAC 0.08 "nice to have"'s detected in this exercise:
+--  HAC 0.084 "nice to have"'s detected in this exercise:
 --    *   exception handling to catch invalid values
---    *   "x [not] in a .. b"
 --    *   Index with From parameter
 --    *   "and then", "or else"
 --    *   'Image attribute for enumerated types
@@ -27,7 +26,7 @@ procedure AoC_2020_04 is
     end if;
     for i in 1 .. Length (s) loop
       c := Element (s, i);
-      if not ((c >= '0' and c <= '9') or (hexa and c >= 'a' and c <= 'f'))
+      if not ((c in '0' .. '9') or (hexa and c in 'a' .. 'f'))
       then
         return -1;
       end if;
@@ -85,9 +84,9 @@ begin
           end if;
           tok := Slice (s, tok_begin, tok_end);
           cat := Slice (s, cat_idx - 3, cat_idx - 1);
-          if cat = "byr" and Val (tok) >= 1920 and Val (tok) <= 2002 then cats := cats + 1; end if;
-          if cat = "iyr" and Val (tok) >= 2010 and Val (tok) <= 2020 then cats := cats + 1; end if;
-          if cat = "eyr" and Val (tok) >= 2020 and Val (tok) <= 2030 then cats := cats + 1; end if;
+          if cat = "byr" and Val (tok) in 1920 .. 2002 then cats := cats + 1; end if;
+          if cat = "iyr" and Val (tok) in 2010 .. 2020 then cats := cats + 1; end if;
+          if cat = "eyr" and Val (tok) in 2020 .. 2030 then cats := cats + 1; end if;
           if cat = "hcl" and Element (s, tok_begin) = '#'
                          and Val_Hexa (Slice (s, tok_begin + 1, tok_end)) > 0
           then
@@ -102,8 +101,8 @@ begin
           if cat = "hgt" then
             nb := Val (Slice (s, tok_begin, tok_end - 2));
             un := Slice (s, tok_end - 1, tok_end);
-            if (nb >= 150 and nb <= 193 and un = "cm") or
-               (nb >= 59  and nb <= 76  and un = "in")
+            if (un = "cm" and nb in 150 .. 193) or
+               (un = "in" and nb in 59 .. 76)
             then
               cats := cats + 1;
             end if;
@@ -124,6 +123,8 @@ begin
       end if;
     else
       Put_Line (+"Valid passports (criteria set #" & criteria & "): " & total);
+      --  Part 1: validated by AoC: 228
+      --  Part 2: validated by AoC: 175
     end if;
   end loop;
 end AoC_2020_04;
