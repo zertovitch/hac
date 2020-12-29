@@ -567,7 +567,7 @@ package body HAC_Sys.Parser.Expressions is
           Not_In := CD.Sy = NOT_Symbol;
           InSymbol (CD);
           if Not_In then
-            Need (CD, IN_Symbol, err_syntax_error);
+            Need (CD, IN_Symbol, err_IN_missing);
           end if;
           if CD.Err_Count = 0 then
             Ranges.Dynamic_Range (CD, Level, FSys_Rel, err_discrete_type_expected, Y);

@@ -793,19 +793,15 @@ package body HAC_Sys.Parser is
         Emit_2 (CD, k_Push_Address, CD.IdTab (CD.Id_Count).LEV, Operand_2_Type (CD.IdTab (CD.Id_Count).Adr_or_Sz));
         InSymbol;
         FOR_Begin := k_FOR_Forward_Begin;
-        if CD.Sy = IN_Symbol then         --       "IN"  in  "for i in reverse 1 .. 10 loop"
+        Need (CD, IN_Symbol, err_IN_missing);  --       "IN"  in  "for i in reverse 1 .. 10 loop"
+        if CD.Sy = REVERSE_Symbol then         --  "REVERSE"  in  "for i in reverse 1 .. 10 loop"
+          FOR_Begin := k_FOR_Reverse_Begin;
           InSymbol;
-          if CD.Sy = REVERSE_Symbol then  --  "REVERSE"  in  "for i in reverse 1 .. 10 loop"
-            FOR_Begin := k_FOR_Reverse_Begin;
-            InSymbol;
-          end if;
-          Ranges.Dynamic_Range (CD, Level, FSys_St,
-            err_control_variable_of_the_wrong_type,
-            CD.IdTab (CD.Id_Count).xTyp  --  Set the type of "C" in "for C in Red .. Blue loop"
-          );
-        else
-          Skip (CD, FSys_St + LOOP_Symbol, err_IN_missing);
         end if;
+        Ranges.Dynamic_Range (CD, Level, FSys_St,
+          err_control_variable_of_the_wrong_type,
+          CD.IdTab (CD.Id_Count).xTyp  --  Set the type of "C" in "for C in Red .. Blue loop"
+        );
         LC_FOR_Begin := CD.LC;
         Emit (CD, FOR_Begin);
         LOOP_Statement (For_END (FOR_Begin), CD.LC);
