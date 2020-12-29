@@ -148,8 +148,10 @@ begin
   Put ("Heads: "); for i in 1 .. 10 loop Put (Head (+"Head...", i)); end loop;
   New_Line;
   Put ("Tails: "); for i in 1 .. 10 loop Put (Tail (+"...Tail", i)); end loop;
-  New_Line;
-  Put_Line ("----------- Strings_demo: That's all folks! -----------");
+  New_Line (2);
+  Put_Line ("----------- Strings_demo: That's all folks, the show is over! -----------");
+  New_Line (3);
+  Put_Line ('.');
   --
   --  Quick tests. More systematic tests can be found in:  test/strings.adb
   --
@@ -177,12 +179,20 @@ begin
   if Index (s4, +"cd") /= 3 then
     Put ("Ooops?");
   end if;
+  if Index (s4, "cd") /= 3 then
+    Put ("Ooops?");
+  end if;
+  if Index (s4, 'c') /= 3 then
+    Put ("Ooops?");
+  end if;
   --
+  if Starts_With (+"package", 'q')     then Put ("Ooops?"); end if;
   if Starts_With (+"package",  "proc") then Put ("Ooops?"); end if;
   if Starts_With (+"package", +"proc") then Put ("Ooops?"); end if;
   if not Starts_With (+"package",  "pack") then Put ("Ooops?"); end if;
   if not Starts_With (+"package", +"pack") then Put ("Ooops?"); end if;
   --
+  if Ends_With (+"package", 'f')     then Put ("Ooops?"); end if;
   if Ends_With (+"package",  "proc") then Put ("Ooops?"); end if;
   if Ends_With (+"package", +"proc") then Put ("Ooops?"); end if;
   if not Ends_With (+"package",  "age") then Put ("Ooops?"); end if;

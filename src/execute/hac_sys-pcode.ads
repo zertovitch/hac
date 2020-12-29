@@ -29,6 +29,7 @@ package HAC_Sys.PCode is
     k_Variable_Initialization,
     k_Update_Display_Vector,
     k_Store,
+    k_Swap,
     --
     k_Standard_Functions,
     --

@@ -12,7 +12,6 @@
 --
 --  HAC 0.084 "nice to have"'s detected in this exercise:
 --
---    *     ` Skip_Line (f, 3) `  (multiple skips)
 --    *     ` cc_match := (others => (others => True)); `
 --
 with HAC_Pack;  use HAC_Pack;
@@ -63,7 +62,7 @@ begin
       New_Line;
     end if;
   end loop;
-  for i in 1 .. 3 loop Skip_Line (f); end loop;
+  Skip_Line (f, 3);
   --
   --  Read my ticket.
   --
@@ -75,7 +74,7 @@ begin
       Put (my_ticket (col), 0); Put (' ');
     end if;
   end loop;
-  for i in 1 .. 3 loop Skip_Line (f); end loop;
+  Skip_Line (f, 3);
   if verbose > 0 then New_Line; end if;
   --
   for col in Column_Range loop

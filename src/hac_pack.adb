@@ -381,10 +381,6 @@ package body HAC_Pack is
   procedure Get_Line (File : File_Type; V : out VString) is
     begin V := +Ada.Text_IO.Get_Line (File); end Get_Line;
 
-  --  Ada.Text_IO's Skip_Line is called without the optional parameter, Spacing.
-  procedure Skip_Line is begin Ada.Text_IO.Skip_Line; end Skip_Line;
-  procedure Skip_Line (File : File_Type) is begin Ada.Text_IO.Skip_Line (File); end Skip_Line;
-
   ---------
   -- PUT --
   ---------
@@ -442,9 +438,6 @@ package body HAC_Pack is
   begin
     BIO.Put (File, B, Width);
   end Put;
-
-  procedure Put (S : in String) is begin Ada.Text_IO.Put (S); end Put;
-  procedure Put (File : File_Type; S : in String) is begin Ada.Text_IO.Put (File, S); end Put;
 
   procedure Put (V : in VString) is begin Put (To_String (V)); end Put;
   procedure Put (File : File_Type; V : in VString) is begin Put (File, To_String (V)); end Put;
@@ -514,14 +507,8 @@ package body HAC_Pack is
     New_Line (File);
   end Put_Line;
 
-  procedure Put_Line (S : String) is begin Ada.Text_IO.Put_Line (S); end Put_Line;
-  procedure Put_Line (File : File_Type; S : String) is begin Ada.Text_IO.Put_Line (File, S); end Put_Line;
-
   procedure Put_Line (V : VString) is begin Put_Line (To_String (V)); end Put_Line;
   procedure Put_Line (File : File_Type; V : VString) is begin Put_Line (File, To_String (V)); end Put_Line;
-
-  procedure New_Line is begin Ada.Text_IO.New_Line; end New_Line;
-  procedure New_Line (File : File_Type) is begin Ada.Text_IO.New_Line (File); end New_Line;
 
   ----------
   -- WAIT --

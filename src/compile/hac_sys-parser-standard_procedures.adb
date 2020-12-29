@@ -162,7 +162,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Puts;
     --
-    X : Exact_Typ;
+    X, Y : Exact_Typ;
   begin
     case Code is
       when SP_Get | SP_Get_Immediate | SP_Get_Line =>
@@ -172,15 +172,33 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Parse_Puts (Code);
 
       when SP_New_Line | SP_Skip_Line =>
-        if CD.Sy = LParent then  --  "New_Line (File);"
+        if CD.Sy = LParent then
           InSymbol (CD);
           Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-          if X.TYP /= Text_Files then
-            Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
-          end if;
+          case X.TYP is
+            when Text_Files =>
+              if CD.Sy = Comma then
+                --  "New_Line (File, Spacing);"
+                InSymbol (CD);
+                Expression (CD, Level, FSys + RParent, Y);
+                if Y.TYP /= Ints then
+                  Type_Mismatch (CD, err_syntax_error, Found => Y, Expected => Ints_Set);
+                end if;
+              else
+                --  "New_Line (File);"
+                Emit_1 (CD, k_Push_Discrete_Literal, 1);  --  Push default value, Spacing := 1
+              end if;
+            when Ints =>
+              --  "New_Line (Spacing);"
+              Set_Abstract_Console;
+              Emit (CD, k_Swap);  --  File (the console) has to be before Spacing on the stack.
+            when others =>
+              Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set or Ints_Set);
+          end case;
           Need (CD, RParent, err_closing_parenthesis_missing);
         else  --  "New_Line;"
           Set_Abstract_Console;
+          Emit_1 (CD, k_Push_Discrete_Literal, 1);  --  Push default value, Spacing := 1
         end if;
         File_I_O_Call (Code);
 

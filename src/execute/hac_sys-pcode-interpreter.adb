@@ -269,6 +269,7 @@ package body HAC_Sys.PCode.Interpreter is
       Code : constant SP_Code := SP_Code'Val (ND.IR.X);
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       use Defs.VStrings_Pkg;
+      Lines : Ada.Text_IO.Positive_Count;
     begin
       case Code is
         when SP_Open =>
@@ -327,22 +328,24 @@ package body HAC_Sys.PCode.Interpreter is
         when SP_Put | SP_Put_Line | SP_Put_F | SP_Put_Line_F =>
           Do_Write_Formatted (Code);
         when SP_New_Line =>
-          if ND.S (Curr_TCB.T).Txt = Abstract_Console then
-            Console.New_Line;
+          Lines := Ada.Text_IO.Positive_Count (ND.S (Curr_TCB.T).I);
+          if ND.S (Curr_TCB.T - 1).Txt = Abstract_Console then
+            Console.New_Line (Lines);
           else
-            Ada.Text_IO.New_Line (ND.S (Curr_TCB.T).Txt.all);
+            Ada.Text_IO.New_Line (ND.S (Curr_TCB.T - 1).Txt.all, Lines);
           end if;
-          Pop;
+          Pop (2);
         when SP_Skip_Line =>
-          if ND.S (Curr_TCB.T).Txt = Abstract_Console then
+          Lines := Ada.Text_IO.Positive_Count (ND.S (Curr_TCB.T).I);
+          if ND.S (Curr_TCB.T - 1).Txt = Abstract_Console then
             --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
-            Console.Skip_Line;
-          elsif Ada.Text_IO.End_Of_File (ND.S (Curr_TCB.T).Txt.all) then
+            Console.Skip_Line (Lines);
+          elsif Ada.Text_IO.End_Of_File (ND.S (Curr_TCB.T - 1).Txt.all) then
             raise VM_End_Error;
           else
-            Ada.Text_IO.Skip_Line (ND.S (Curr_TCB.T).Txt.all);
+            Ada.Text_IO.Skip_Line (ND.S (Curr_TCB.T - 1).Txt.all, Lines);
           end if;
-          Pop;
+          Pop (2);
         when SP_Shell_Execute_with_Result =>
           declare
             Command        : constant String      := To_String (ND.S (Curr_TCB.T - 1).V);
@@ -448,6 +451,13 @@ package body HAC_Sys.PCode.Interpreter is
         end case;
       end Do_Atomic_Data_Push_Operation;
       --
+      procedure Do_Swap is
+        temp : constant General_Register := ND.S (Curr_TCB.T);
+      begin
+        ND.S (Curr_TCB.T)     := ND.S (Curr_TCB.T - 1);
+        ND.S (Curr_TCB.T - 1) := temp;
+      end Do_Swap;
+      --
     begin
       case ND.IR.F is
         when k_Jump => Curr_TCB.PC := Index (IR.Y);
@@ -459,6 +469,7 @@ package body HAC_Sys.PCode.Interpreter is
         when k_Store =>  --  [T-1].all := [T]
           ND.S (Index (ND.S (Curr_TCB.T - 1).I)) := ND.S (Curr_TCB.T);
           Pop (2);
+        when k_Swap => Do_Swap;
         --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
         when k_Update_Display_Vector   => Do_Update_Display_Vector;
