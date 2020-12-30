@@ -531,4 +531,14 @@ package body HAC_Sys.Compiler is
     return CD.Err_Count = 0;
   end Unit_Compilation_Successful;
 
+  function Unit_Object_Code_Size (CD : Compiler_Data) return Natural is
+  begin
+    return CD.LC;
+  end Unit_Object_Code_Size;
+
+  function Maximum_Object_Code_Size return Natural is
+  begin
+    return Defs.CDMax;
+  end Maximum_Object_Code_Size;
+
 end HAC_Sys.Compiler;

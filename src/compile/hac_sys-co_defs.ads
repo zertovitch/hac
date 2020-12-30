@@ -12,7 +12,7 @@
 
 with HAC_Sys.Defs, HAC_Sys.PCode;
 
-with Ada.Streams, Ada.Text_IO;
+with Ada.Finalization, Ada.Streams, Ada.Text_IO;
 
 package HAC_Sys.Co_Defs is
   --  NB: cannot be a child package of Compiler because of Parser, Scanner, ...
@@ -136,7 +136,7 @@ package HAC_Sys.Co_Defs is
   --  Compiler tables  --
   -----------------------
 
-  subtype Fixed_Size_Object_Code_Table is HAC_Sys.PCode.Object_Code_Table (0 .. CDMax);
+  type Object_Code_Table_Access is access HAC_Sys.PCode.Object_Code_Table;
 
   type    Arrays_Table_Type            is array (1 .. AMax)                  of ATabEntry;
   type    Blocks_Table_Type            is array (0 .. BMax)                  of BTabEntry;
@@ -154,7 +154,7 @@ package HAC_Sys.Co_Defs is
   --  Compiler_Data  --
   ---------------------
 
-  type Compiler_Data is record
+  type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
     --  Source code information and scanner data
     compiler_stream  : Source_Stream_Access;
     source_file_name : VString;  --  Indicative (error messages)
@@ -190,7 +190,7 @@ package HAC_Sys.Co_Defs is
     Strings_Table_Top       : Natural;
     Tasks_Definitions_Count : Natural;
     --  Object code
-    ObjCode                 : Fixed_Size_Object_Code_Table;
+    ObjCode                 : Object_Code_Table_Access := new HAC_Sys.PCode.Object_Code_Table (0 .. CDMax);
     LC                      : Integer;  --  Location counter in the Object_Code_Table
     CMax                    : Integer;  --  Top of available ObjCode table;
                                         --  CMax + 1 .. CDMax: variable initialization code
@@ -208,6 +208,8 @@ package HAC_Sys.Co_Defs is
     Errs       : Error_set;
     error_pipe : Smart_error_pipe := null;
   end record;
+
+  overriding procedure Finalize (CD : in out Compiler_Data);
 
   Universe : constant VString := To_VString ("[-- The Universe --]");
 

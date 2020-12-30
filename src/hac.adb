@@ -103,6 +103,9 @@ procedure HAC is
     --
     if Unit_Compilation_Successful (CD) then
       if verbosity >= 2 then
+        Put_Line (HAC_margin_2 & "Unit object code size:" & Unit_Object_Code_Size (CD)'Image &
+                  " of" & Maximum_Object_Code_Size'Image &
+                  " Virtual Machine instructions.");
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       end if;
       t1 := Clock;

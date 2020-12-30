@@ -43,5 +43,7 @@ package HAC_Sys.Compiler is
   );
 
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean;
+  function Unit_Object_Code_Size (CD : Compiler_Data) return Natural;
+  function Maximum_Object_Code_Size return Natural;
 
 end HAC_Sys.Compiler;
