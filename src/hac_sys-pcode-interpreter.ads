@@ -48,7 +48,9 @@ package HAC_Sys.PCode.Interpreter is
     CD_CIO           :     Compiler_Data;
     Argument_Shift   :     Natural := 0;    --  Number of arguments to be skipped
     Full_Script_Name :     String;
-    Unhandled        : out Exception_Propagation_Data
+    Unhandled        : out Exception_Propagation_Data;
+    Max_Stack_Usage  : out Natural;
+    Stack_Size       : out Positive
   );
 
   --  Part of the subprograms useed for the Interpret_on_Current_IO
@@ -124,8 +126,6 @@ package HAC_Sys.PCode.Interpreter is
 
   Abnormal_Termination : exception;
 
-private
-
   type Exception_Type is
     (No_Exception,
      --  Ada classics:
@@ -141,6 +141,8 @@ private
      VME_User_Abort,
      VME_Custom
     );
+
+private
 
   subtype Exception_Detail is Integer;
   --  Currently a placeholder (this is for the VME_Custom choice)

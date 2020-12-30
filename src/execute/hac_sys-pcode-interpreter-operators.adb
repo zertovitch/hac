@@ -1,9 +1,12 @@
+with HAC_Sys.PCode.Interpreter.Exceptions;
+
 with HAC_Pack;
 
 with Ada.Calendar,
      Ada.Characters.Handling,
      Ada.Directories,
      Ada.Environment_Variables,
+     Ada.Exceptions,
      Ada.Numerics.Float_Random,
      Ada.Strings;
 
@@ -91,6 +94,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       C : Character;
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
       use Defs, Defs.VStrings_Pkg, Defs.REF,
+          Exceptions,
           Ada.Calendar, Ada.Characters.Handling,
           Ada.Numerics.Float_Random, Ada.Strings;
       use type Defs.HAC_Integer;
@@ -274,9 +278,22 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         when SF_Image_Times            => Top_Item := GR_VString (HAC_Image (Top_Item.Tim));
         when SF_Image_Durations        => Top_Item := GR_VString (Duration'Image (Top_Item.Dur));
         --
-        when SF_Integer_Value => Top_Item.I := HAC_Integer'Value (Defs.To_String (Top_Item.V));
+        when SF_Integer_Value =>
+          begin
+            Top_Item.I := HAC_Integer'Value (Defs.To_String (Top_Item.V));
+          exception
+            when E : Constraint_Error =>
+              Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
+              raise VM_Raised_Exception;
+          end;
         when SF_Float_Value =>
-          Top_Item := GR_Real (HAC_Float'Value (Defs.To_String (Top_Item.V)));
+          begin
+            Top_Item := GR_Real (HAC_Float'Value (Defs.To_String (Top_Item.V)));
+          exception
+            when E : Constraint_Error =>
+              Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
+              raise VM_Raised_Exception;
+          end;
         when SF_Get_Env =>
           declare
             use Ada.Environment_Variables;

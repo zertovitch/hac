@@ -1,5 +1,6 @@
 with HAC_Sys.PCode.Interpreter.Calls,
      HAC_Sys.PCode.Interpreter.Composite_Data,
+     HAC_Sys.PCode.Interpreter.Exceptions,
      HAC_Sys.PCode.Interpreter.In_Defs,
      HAC_Sys.PCode.Interpreter.Multi_Statement,
      HAC_Sys.PCode.Interpreter.Operators,
@@ -17,7 +18,7 @@ package body HAC_Sys.PCode.Interpreter is
 
   procedure Interpret (CD : Compiler_Data; Unhandled : out Exception_Propagation_Data)
   is
-    use In_Defs;
+    use In_Defs, Exceptions;
     ND : Interpreter_Data;
 
     procedure Pop (Amount : Positive := 1) is  begin Pop (ND, Amount); end Pop;
@@ -35,14 +36,6 @@ package body HAC_Sys.PCode.Interpreter is
       HAC_Sys.PCode.Interpreter.Tasking.Init_main_task (CD, ND);
       HAC_Sys.PCode.Interpreter.Tasking.Init_other_tasks (CD, ND);
     end Start_Interpreter;
-
-    procedure Raise_Standard (SE : Exception_Type; Msg : String := "") is
-      EI : Exception_Propagation_Data renames ND.TCB (ND.CurTask).Exception_Info;
-    begin
-      EI.Currently_Raised  := (SE, 0);
-      EI.Exception_Message := Defs.To_VString (Msg);
-      ND.PS := Exception_Raised;
-    end Raise_Standard;
 
     procedure Do_Standard_Function is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
@@ -72,7 +65,7 @@ package body HAC_Sys.PCode.Interpreter is
             arg_i : constant Integer := Integer (Top_Item.I);
           begin
             if arg_i not in 1 .. System_Calls.Argument_Count then
-              Raise_Standard (VME_Constraint_Error, "Argument number not in 1 .. Argument_Count");
+              Raise_Standard (ND, VME_Constraint_Error, "Argument number not in 1 .. Argument_Count");
               raise VM_Raised_Exception;
             end if;
             Top_Item := GR_VString (System_Calls.Argument (arg_i));
@@ -178,10 +171,10 @@ package body HAC_Sys.PCode.Interpreter is
       ND.SWITCH := True;  --  give up control when doing I/O
     exception
       when E : Constraint_Error =>
-        Raise_Standard (VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
+        Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
         raise VM_Raised_Exception;
       when E : Ada.IO_Exceptions.Data_Error =>
-        Raise_Standard (VME_Data_Error, Ada.Exceptions.Exception_Message (E));
+        Raise_Standard (ND, VME_Data_Error, Ada.Exceptions.Exception_Message (E));
         raise VM_Raised_Exception;
     end Do_Text_Read;
 
@@ -375,29 +368,29 @@ package body HAC_Sys.PCode.Interpreter is
       when Ada.Text_IO.Name_Error =>
         case Code is
           when SP_Open | SP_Create | SP_Append =>
-            Raise_Standard (VME_Name_Error,
+            Raise_Standard (ND, VME_Name_Error,
               "File not found, or invalid name: " & To_String (ND.S (Curr_TCB.T + 2).V));
           when others =>
-            Raise_Standard (VME_Name_Error);
+            Raise_Standard (ND, VME_Name_Error);
         end case;
         raise VM_Raised_Exception;
       when E : Ada.Text_IO.Status_Error =>
         case Code is
           when SP_Open | SP_Create | SP_Append =>
-            Raise_Standard (VME_Status_Error, "File already open");
+            Raise_Standard (ND, VME_Status_Error, "File already open");
           when SP_Close =>
-            Raise_Standard (VME_Status_Error, "File not open");
+            Raise_Standard (ND, VME_Status_Error, "File not open");
           when others =>
-            Raise_Standard (VME_Status_Error, "File not open? [" &
+            Raise_Standard (ND, VME_Status_Error, "File not open? [" &
               Ada.Exceptions.Exception_Message (E) & ']');
         end case;
       when Ada.Text_IO.Use_Error =>
         case Code is
           when SP_Open | SP_Create | SP_Append =>
-            Raise_Standard (VME_Use_Error,
+            Raise_Standard (ND, VME_Use_Error,
               "Cannot access file: " & To_String (ND.S (Curr_TCB.T + 2).V));
           when others =>
-            Raise_Standard (VME_Use_Error);
+            Raise_Standard (ND, VME_Use_Error);
         end case;
         raise VM_Raised_Exception;
     end Do_File_IO;
@@ -501,19 +494,19 @@ package body HAC_Sys.PCode.Interpreter is
       end if;
     exception
       when VM_Case_Check_Error =>
-        Raise_Standard (VME_Program_Error, "CASE Statement doesn't cover all cases");
+        Raise_Standard (ND, VME_Program_Error, "CASE Statement doesn't cover all cases");
       when VM_Division_by_0 =>
-        Raise_Standard (VME_Constraint_Error, "Division by 0");
+        Raise_Standard (ND, VME_Constraint_Error, "Division by 0");
       when VM_End_Error =>
-        Raise_Standard (VME_End_Error, "");
+        Raise_Standard (ND, VME_End_Error, "");
       when VM_Function_End_without_Return =>
-        Raise_Standard (VME_Program_Error, "Function's end reached without ""return"" statement");
+        Raise_Standard (ND, VME_Program_Error, "Function's end reached without ""return"" statement");
       when VM_Out_of_Range  =>
-        Raise_Standard (VME_Constraint_Error, "Out of range");
+        Raise_Standard (ND, VME_Constraint_Error, "Out of range");
       when VM_Stack_Overflow  =>
-        Raise_Standard (VME_Storage_Error, "Stack overflow");
+        Raise_Standard (ND, VME_Storage_Error, "Stack overflow");
       when VM_Stack_Underflow =>
-        Raise_Standard (VME_Storage_Error, "Stack underflow");
+        Raise_Standard (ND, VME_Storage_Error, "Stack underflow");
       when VM_Raised_Exception =>
         null;  --  HAC exception has been already raised (see Name_Error for an example).
     end Execute_Current_Instruction_with_Exception;
@@ -533,7 +526,7 @@ package body HAC_Sys.PCode.Interpreter is
             User_Abort    => User_Aborted
           );
           if User_Aborted then
-            Raise_Standard (VME_User_Abort, "");
+            Raise_Standard (ND, VME_User_Abort, "");
           end if;
           delay TSlice;
           ND.SYSCLOCK := Clock;
@@ -562,7 +555,7 @@ package body HAC_Sys.PCode.Interpreter is
         User_Abort    => User_Aborted
       );
       if User_Aborted then
-        Raise_Standard (VME_User_Abort, "");
+        Raise_Standard (ND, VME_User_Abort, "");
       end if;
       exit Running_State when ND.PS = DEADLOCK or ND.PS = FIN;
       --
@@ -600,7 +593,9 @@ package body HAC_Sys.PCode.Interpreter is
     CD_CIO           :     Compiler_Data;
     Argument_Shift   :     Natural := 0;    --  Number of arguments to be skipped
     Full_Script_Name :     String;
-    Unhandled        : out Exception_Propagation_Data
+    Unhandled        : out Exception_Propagation_Data;
+    Max_Stack_Usage  : out Natural;
+    Stack_Size       : out Positive
   )
   is
 
@@ -610,8 +605,9 @@ package body HAC_Sys.PCode.Interpreter is
       User_Abort                 :    out Boolean
     )
     is
-    pragma Unreferenced (Stack_Current, Stack_Total, Wall_Clock);
+    pragma Unreferenced (Stack_Total, Wall_Clock);
     begin
+      Max_Stack_Usage := Integer'Max (Max_Stack_Usage, Stack_Current);
       User_Abort := False;  --  Ctrl-C will make it - in a less polite way...
     end No_Feedback;
 
@@ -666,6 +662,8 @@ package body HAC_Sys.PCode.Interpreter is
          );
 
   begin
+    Stack_Size := In_Defs.Stack_Type'Last;
+    Max_Stack_Usage := 0;
     Interpret_on_Current_IO_Instance (CD_CIO, Unhandled);
   end Interpret_on_Current_IO;
 

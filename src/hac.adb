@@ -53,6 +53,7 @@ procedure HAC is
     unhandled : Exception_Propagation_Data;
     unhandled_found : Boolean;
     shebang_offset : Natural := 0;
+    stack_max, stack_total : Natural;
   begin
     case verbosity is
       when 0 =>
@@ -105,7 +106,13 @@ procedure HAC is
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       end if;
       t1 := Clock;
-      Interpret_on_Current_IO (CD, arg_pos, Ada.Directories.Full_Name (Ada_file_name), unhandled);
+      Interpret_on_Current_IO (
+        CD,
+        arg_pos,
+        Ada.Directories.Full_Name (Ada_file_name),
+        unhandled,
+        stack_max, stack_total
+      );
       t2 := Clock;
       unhandled_found := Is_Exception_Raised (unhandled);
       if verbosity >= 2 then
@@ -120,6 +127,9 @@ procedure HAC is
           );
           Put_Line (
             HAC_margin_3 & "Execution of " & Ada_file_name & " completed.");
+          Put_Line (
+            HAC_margin_3 & "Maximum stack usage:" & stack_max'Image & " of" &
+            stack_total'Image & " units, around" & Integer'Image (100 * stack_max / stack_total) & "%.");
         end if;
       end if;
       if unhandled_found then

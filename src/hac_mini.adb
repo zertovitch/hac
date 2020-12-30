@@ -17,6 +17,7 @@ procedure HAC_Mini is
     f : Ada.Streams.Stream_IO.File_Type;
     CD : Compiler_Data;
     unhandled : Exception_Propagation_Data;
+    stack_max, stack_total : Natural;
   begin
     Open (f, In_File, Ada_file_name);
     Set_Source_Stream (CD, Stream (f), Ada_file_name);
@@ -24,7 +25,7 @@ procedure HAC_Mini is
     Close (f);
     --
     if Unit_Compilation_Successful (CD) then
-      Interpret_on_Current_IO (CD, 1, Ada_file_name, unhandled);
+      Interpret_on_Current_IO (CD, 1, Ada_file_name, unhandled, stack_max, stack_total);
       if Is_Exception_Raised (unhandled) then
         Put_Line (Current_Error, "HAC VM: raised " & Image (unhandled));
         Put_Line (Current_Error, Message (unhandled));
