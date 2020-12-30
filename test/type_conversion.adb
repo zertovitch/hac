@@ -21,6 +21,8 @@ procedure Type_Conversion is
   i, j : Integer;
   x, y : Real;
   d, e : Duration;
+  oa_duration_delta : constant := 0.00006103515625;
+  --  OA Win 32 & 64: type Duration is delta 2.0**(-14) range -131072.0..+131072.0-2.0**(-14);
 begin
   i := 1234;
   x := 1234.0;
@@ -55,8 +57,10 @@ begin
   e := Duration (0.2 * 5.0);
   delay d;
   x := Real (d);
-  if x * 100.0 /= Real (e) then
+  if abs (x * 100.0 - Real (e)) > 100.0 * oa_duration_delta then
     Put_Line ("Compiler bug [C]");
+    Put_Line (+"100 * x = " & 100.0 * x);
+    Put_Line (+"e = " & Image (e));
     Set_Exit_Status (1);  --  Compiler test failed.
   end if;
-end;
+end Type_Conversion;
