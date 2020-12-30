@@ -250,6 +250,10 @@ package body HAC_Pack is
              and then VStr_Pkg.Tail (Item, Length (Pattern)) = Pattern;
   end Ends_With;
 
+  -------------
+  --  Index  --
+  -------------
+
   function Index (Source : VString; Pattern : Character) return Natural is
   begin
     return VStr_Pkg.Index (Source, (1 => Pattern));
@@ -264,6 +268,25 @@ package body HAC_Pack is
   begin
     return VStr_Pkg.Index (Source, To_String (Pattern));
   end Index;
+
+  ----------------------
+  --  Index_Backward  --
+  ----------------------
+
+  function Index_Backward (Source : VString; Pattern : Character) return Natural is
+  begin
+    return VStr_Pkg.Index (Source, (1 => Pattern), Ada.Strings.Backward);
+  end Index_Backward;
+
+  function Index_Backward (Source : VString; Pattern : String) return Natural is
+  begin
+    return VStr_Pkg.Index (Source, Pattern, Ada.Strings.Backward);
+  end Index_Backward;
+
+  function Index_Backward (Source : VString; Pattern : VString) return Natural is
+  begin
+    return VStr_Pkg.Index (Source, To_String (Pattern), Ada.Strings.Backward);
+  end Index_Backward;
 
   function "*" (Num : Natural; Pattern : String) return VString is
   begin

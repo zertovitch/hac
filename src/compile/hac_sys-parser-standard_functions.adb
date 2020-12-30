@@ -15,6 +15,7 @@ package body HAC_Sys.Parser.Standard_Functions is
       SF_Starts_With |
       SF_Ends_With |
       SF_Index |
+      SF_Index_Backward |
       SF_Int_Times_Char |
       SF_Int_Times_VStr     => 2,
       SF_Slice              => 3,
@@ -72,7 +73,7 @@ package body HAC_Sys.Parser.Standard_Functions is
           Expected (1) := VStrings_or_Chars_Set;
         when SF_Literal_to_VString =>
           Expected (1) := Chars_or_Strings_Set;
-        when SF_Index | SF_Starts_With | SF_Ends_With =>
+        when SF_Index | SF_Index_Backward | SF_Starts_With | SF_Ends_With =>
           --  Index (OS, +"Windows"), Index (OS, "Windows") or Index (OS, 'W')
           Expected (1 .. 2) := (VStrings_Set, VStrings_Chars_or_Str_Lit_Set);
         when SF_Year .. SF_Seconds =>
@@ -163,7 +164,7 @@ package body HAC_Sys.Parser.Standard_Functions is
           if Actual (1).TYP = VStrings then    --  To_Upper (Item : VString) return VString;
             Code_Adjusted := SF_To_Upper_VStr;
           end if;
-        when SF_Index | SF_Starts_With | SF_Ends_With =>
+        when SF_Index | SF_Index_Backward | SF_Starts_With | SF_Ends_With =>
           case Actual (2).TYP is
             when Chars =>
               --  `Index (OS, 'W')`  becomes  `Index (OS, +'W')`

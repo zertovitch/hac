@@ -3,7 +3,7 @@ with HAC_Pack;  use HAC_Pack;
 procedure Strings is
   procedure Failure (Msg: VString) is
   begin
-    Put_Line (Msg);    
+    Put_Line (+"Failure in test: " & Msg);    
     Set_Exit_Status (1);  --  Compiler test failed.
   end;
   --
@@ -11,7 +11,7 @@ procedure Strings is
   begin
     if not Check then Failure (+"Assert fails"); end if;
   end;
-  s1, s2, s3, s4 : VString;
+  s1, s2, s3, s4, s4_s4 : VString;
   Planck   : constant := 6.62607015e-34;
   Pi       : constant := 3.141592653;
   Avogadro : constant := 6.02214076e023;
@@ -49,41 +49,49 @@ begin
     Failure (+"Compiler bug - HAC_Image for HAC_Float :" & Planck);
     Put_Line (Planck);
   end if;
-  if not (+"A" < +"B")   then Failure (+"Compiler bug [VString < VString]"); end if;
-  if not (+"AA" > +"A")  then Failure (+"Compiler bug [VString > VString]"); end if;
+  if not (+"A" < +"B")   then Failure (+"VString < VString"); end if;
+  if not (+"AA" > +"A")  then Failure (+"VString > VString"); end if;
   --
-  if not (+"A" <= +"B")  then Failure (+"Compiler bug [VString <= VString]"); end if;
-  if not (+"AA" >= +"A") then Failure (+"Compiler bug [VString >= VString]"); end if;
-  if not (+"A" <= +"A")  then Failure (+"Compiler bug [VString <= VString]"); end if;
-  if not (+"A" >= +"A")  then Failure (+"Compiler bug [VString >= VString]"); end if;
+  if not (+"A" <= +"B")  then Failure (+"VString <= VString"); end if;
+  if not (+"AA" >= +"A") then Failure (+"VString >= VString"); end if;
+  if not (+"A" <= +"A")  then Failure (+"VString <= VString"); end if;
+  if not (+"A" >= +"A")  then Failure (+"VString >= VString"); end if;
   --
-  if To_Lower (+"X") /= +"x" then Failure (+"Compiler bug [To_Lower VString]"); end if;
-  if To_Lower ( 'X') /=  'x' then Failure (+"Compiler bug [To_Lower Char]");    end if;
-  if To_Upper (+"x") /= +"X" then Failure (+"Compiler bug [To_Upper VString]"); end if;
-  if To_Upper ( 'x') /=  'X' then Failure (+"Compiler bug [To_Upper Char]");    end if;
+  if To_Lower (+"X") /= +"x" then Failure (+"To_Lower VString"); end if;
+  if To_Lower ( 'X') /=  'x' then Failure (+"To_Lower Char");    end if;
+  if To_Upper (+"x") /= +"X" then Failure (+"To_Upper VString"); end if;
+  if To_Upper ( 'x') /=  'X' then Failure (+"To_Upper Char");    end if;
   --
-  if Index (s4, +"cat") /= 0 then Failure (+"Compiler bug [Index 1]");    end if;
-  if Index (s4, +"cde") /= 3 then Failure (+"Compiler bug [Index 2]");    end if;
-  if Index (s4,  "cat") /= 0 then Failure (+"Compiler bug [Index 3]");    end if;
-  if Index (s4,  "cde") /= 3 then Failure (+"Compiler bug [Index 4]");    end if;
+  if Index (s4, +"cat") /= 0 then Failure (+"Index 1");    end if;
+  if Index (s4, +"cde") /= 3 then Failure (+"Index 2");    end if;
+  if Index (s4,  "cat") /= 0 then Failure (+"Index 3");    end if;
+  if Index (s4,  "cde") /= 3 then Failure (+"Index 4");    end if;
   --
-  if  0 * 'x' /= +""                       then Failure (+"Compiler bug [* 1]"); end if;
-  if 10 * 'x' /= +"xxxxxxxxxx"             then Failure (+"Compiler bug [* 2]"); end if;
-  if  0 * (+"Fritz") /= +""                then Failure (+"Compiler bug [* 3]"); end if;
-  if  3 * (+"Fritz") /= +"FritzFritzFritz" then Failure (+"Compiler bug [* 4]"); end if;
+  s4_s4 := s4 & s4;  --  abcdefabcdef
+  if Index_Backward (s4_s4, +"cd") /= 9 or
+     Index_Backward (s4_s4,  "cd") /= 9 or
+     Index_Backward (s4_s4,  'c')  /= 9
+  then
+    Failure (+"Index_Backward");
+  end if;
+  --
+  if  0 * 'x' /= +""                       then Failure (+"""*"", #1"); end if;
+  if 10 * 'x' /= +"xxxxxxxxxx"             then Failure (+"""*"", #2"); end if;
+  if  0 * (+"Fritz") /= +""                then Failure (+"""*"", #3"); end if;
+  if  3 * (+"Fritz") /= +"FritzFritzFritz" then Failure (+"""*"", #4"); end if;
   --
   for i in -5 .. 5 loop
-    if Integer_Value (Image (i)) /= i then Failure (+"Compiler bug [Im/Val I]"); end if;
+    if Integer_Value (Image (i)) /= i then Failure (+"Im/Val I"); end if;
     r := Real (i);
-    if Float_Value (Image (r)) /= r then Failure (+"Compiler bug [Im/Val R 1]"); end if;
+    if Float_Value (Image (r)) /= r then Failure (+"Im/Val R 1"); end if;
     r := Real (i) * 1.0e20;
-    if Float_Value (Image (r)) /= r then Failure (+"Compiler bug [Im/Val R 2]"); end if;
+    if Float_Value (Image (r)) /= r then Failure (+"Im/Val R 2"); end if;
     --  put_line (image(r));
   end loop;
   --
   fs1 := "def";
   if +fs1 /= Slice (s4, 4, 6) then
-    Failure (+"Compiler bug [Fixed String to VString]");
+    Failure (+"Fixed String to VString");
   end if;
   --
   if Starts_With (+"package",  "proc") then Failure (+"Starts_With"); end if;

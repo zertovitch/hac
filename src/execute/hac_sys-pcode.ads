@@ -274,6 +274,7 @@ package HAC_Sys.PCode is
     SF_To_Lower_VStr,
     SF_To_Upper_VStr,
     SF_Index,
+    SF_Index_Backward,
     SF_Int_Times_Char,
     SF_Int_Times_VStr,
     --

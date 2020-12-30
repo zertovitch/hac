@@ -100,12 +100,15 @@ package HAC_Pack is
   function Index (Source : VString; Pattern : Character) return Natural;
   function Index (Source : VString; Pattern : String) return Natural;
   function Index (Source : VString; Pattern : VString) return Natural;
+  function Index_Backward (Source : VString; Pattern : Character) return Natural;
+  function Index_Backward (Source : VString; Pattern : String) return Natural;
+  function Index_Backward (Source : VString; Pattern : VString) return Natural;
   function Length (Source : VString) return Natural renames VStr_Pkg.Length;
   function Slice (Source : VString; From : Positive; To : Natural) return VString;
-  function Tail (Source : VString; Count : Natural) return VString;
   function Starts_With (Item : VString; Pattern : Character) return Boolean;
   function Starts_With (Item : VString; Pattern : String) return Boolean;
   function Starts_With (Item : VString; Pattern : VString) return Boolean;
+  function Tail (Source : VString; Count : Natural) return VString;
   function To_Lower (Item : Character) return Character renames ACH.To_Lower;  --  RM A.3.2 (6)
   function To_Upper (Item : Character) return Character renames ACH.To_Upper;  --  RM A.3.2 (6)
   function To_Lower (Item : VString) return VString;

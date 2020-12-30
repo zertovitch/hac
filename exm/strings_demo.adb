@@ -1,7 +1,7 @@
 with HAC_Pack;  use HAC_Pack;
 
 procedure Strings_demo is
-  s1, s2, s4 : VString;
+  s1, s2, s4, s4_s4 : VString;
   --
   n : constant := 10;
   type Str_Vector is array (1 .. n) of VString;
@@ -176,14 +176,15 @@ begin
   if Length (s4) /= 6 then
     Put ("Ooops?");
   end if;
-  if Index (s4, +"cd") /= 3 then
-    Put ("Ooops?");
+  s4_s4 := s4 & s4;  --  abcdefabcdef
+  if Index (s4_s4, +"cd") /= 3 or Index (s4_s4, "cd") /= 3 or Index (s4_s4, 'c') /= 3 then
+    Put ("[Index] Ooops?");
   end if;
-  if Index (s4, "cd") /= 3 then
-    Put ("Ooops?");
-  end if;
-  if Index (s4, 'c') /= 3 then
-    Put ("Ooops?");
+  if Index_Backward (s4_s4, +"cd") /= 9 or
+     Index_Backward (s4_s4,  "cd") /= 9 or
+     Index_Backward (s4_s4,  'c')  /= 9
+  then
+    Put ("[Index_Backward] Ooops?");
   end if;
   --
   if Starts_With (+"package", 'q')     then Put ("Ooops?"); end if;

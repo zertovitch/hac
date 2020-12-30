@@ -278,6 +278,7 @@ package body HAC_Sys.Compiler is
       --
       Enter_Std_Funct ("Element",             Chars,    SF_Element);
       Enter_Std_Funct ("Index",               Ints,     SF_Index);
+      Enter_Std_Funct ("Index_Backward",      Ints,     SF_Index_Backward);
       Enter_Std_Funct ("Length",              Ints,     SF_Length);
       Enter_Std_Funct ("Slice",               VStrings, SF_Slice);
       Enter_Std_Funct ("To_Lower",            Chars,    SF_To_Lower_Char);

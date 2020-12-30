@@ -216,7 +216,21 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           --  [T] := Index ([T], [T+1]) :
           ND.S (Curr_TCB.T).I :=
             HAC_Integer (
-              VStrings_Pkg.Index (ND.S (Curr_TCB.T).V, Defs.To_String (ND.S (Curr_TCB.T + 1).V))
+              VStrings_Pkg.Index (
+                ND.S (Curr_TCB.T).V,
+                Defs.To_String (ND.S (Curr_TCB.T + 1).V)
+              )
+            );
+        when SF_Index_Backward =>
+          Pop (ND);
+          --  [T] := Index ([T], [T+1]) :
+          ND.S (Curr_TCB.T).I :=
+            HAC_Integer (
+              VStrings_Pkg.Index (
+                ND.S (Curr_TCB.T).V,
+                Defs.To_String (ND.S (Curr_TCB.T + 1).V),
+                Backward
+              )
             );
         when SF_Head =>
           Pop (ND);
