@@ -6,7 +6,7 @@
 --
 --  Full Ada version, using the HAC_Pack package.
 --
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_06_Full_Ada_using_HAC_Pack is
   total : Integer;

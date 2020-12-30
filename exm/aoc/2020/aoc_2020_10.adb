@@ -4,23 +4,28 @@
 --
 --  https://adventofcode.com/2020/day/10
 --
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_10 is
+
   subtype Jolt is Natural;
   --  ^ Full Ada: it's better to define an incompatible
   --    type for Jolts:  `  type Jolt is new Natural;  `.
   Max_Adapters : constant := 1000;
-  j : array (1 .. Max_Adapters) of Jolt;
+
+  subtype Adapter_Range is Integer range 1 .. Max_Adapters;
+
+  j : array (Adapter_Range) of Jolt;
+
   top : Natural := 0;
   jmax : Jolt := 0;
   verbose : constant Boolean := False;
-  --
+
   procedure Search (result : out Integer) is
     c : Jolt := 0;
     found : Boolean;
     diff_1, diff_3 : Natural := 0;
-    seen : array (1 .. Max_Adapters) of Boolean;
+    seen : array (Adapter_Range) of Boolean;
     --
     function Check return Boolean is
       ok : Boolean := True;
@@ -64,9 +69,9 @@ procedure AoC_2020_10 is
     diff_3 := diff_3 + 1;  --  3 jolts from the last adapter to the device.
     result := diff_1 * diff_3;
   end Search;
-  --
+
   procedure Count (result : out Integer) is
-    cache : array (1 .. Max_Adapters) of Natural;
+    cache : array (Adapter_Range) of Natural;
     --
     function Count (from : Jolt) return Natural is
       sum : Natural := 0;
@@ -95,7 +100,7 @@ procedure AoC_2020_10 is
     end loop;
     result := Count (0);
   end Count;
-  --
+
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   puzzle_1 : Jolt;
   puzzle_2 : Natural;

@@ -4,7 +4,7 @@
 --
 --  https://adventofcode.com/2020/day/24
 --
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_24 is
 

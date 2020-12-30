@@ -14,7 +14,7 @@
 --    *   "and then", "or else"
 --    *   'Image attribute for enumerated types
 --
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_04 is
   --

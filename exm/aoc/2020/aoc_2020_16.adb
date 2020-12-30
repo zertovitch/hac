@@ -14,7 +14,7 @@
 --
 --    *     ` cc_match := (others => (others => True)); `
 --
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_16 is
   criteria : constant := 20;

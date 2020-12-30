@@ -11,10 +11,9 @@
 --      0.58 second (GNAT AoC_Build_Mode_Type = "Fast", i5-9400 @ 2.9 GHz).
 --    324.75 seconds (HAC, fastest build, same machine...).
 
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_23 is
-  compiler_test_mode : constant Boolean := Argument_Count >= 2;
 
   max : constant := 9;
   subtype Cup_Range is Positive range 1 .. max;
@@ -149,6 +148,8 @@ procedure AoC_2020_23 is
 
   exm, inp : Cup_Array;
   res : Integer;
+
+  compiler_test_mode : constant Boolean := Argument_Count >= 2;
 
 begin
   --  example 389125467

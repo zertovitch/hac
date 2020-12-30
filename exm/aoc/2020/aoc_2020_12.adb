@@ -4,7 +4,7 @@
 --
 --  https://adventofcode.com/2020/day/12
 --
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_12 is
   pi : constant := 3.1415926535897932384;

@@ -15,7 +15,7 @@
 --  The linked list version takes 0.58 second on the same configuration.
 --  Then, the linked list version is more than 17,000 times faster!
 
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_23_Simple_Array is
 

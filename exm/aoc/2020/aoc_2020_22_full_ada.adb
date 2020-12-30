@@ -15,7 +15,7 @@
 with Ada.Containers.Hashed_Sets,
      Ada.Containers.Vectors;
 
-with HAC_Pack;
+with HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_22_full_Ada is
 

@@ -13,7 +13,7 @@
 --    *     String-to-literal comparison
 --             as in `  if asm = "acc" then i := acc; end if;  `
 --
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_08 is
   subtype Machine_Code_Range is Positive range 1 .. 1000;

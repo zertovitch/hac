@@ -20,23 +20,6 @@ procedure All_Silent_Tests is
       end if;
     end Shell;
 
-    successes, failures : Natural := 0;
-
-    procedure Launch_HAC (Ada_file_name : VString; ups : Positive) is
-      success : Boolean;
-    begin
-      Shell (
-        ups * (+".." & Directory_Separator) & "hac -v1 " & Ada_file_name,
-        False,
-        success
-      );
-      if success then
-        successes := successes + 1;
-      else
-        failures := failures + 1;
-      end if;
-    end Launch_HAC;
-
     procedure Build_HAC is
       success : Boolean;
     begin
@@ -47,6 +30,44 @@ procedure All_Silent_Tests is
       Shell (+"gprbuild -P .." & Directory_Separator & "hac", True, success);
     end Build_HAC;
 
+    successes, failures : Natural := 0;
+
+    procedure Launch_HAC (Ada_file_name, args : VString; ups : Positive) is
+      success : Boolean;
+    begin
+      Shell (
+        ups * (+".." & Directory_Separator) & "hac " & Ada_file_name & ' ' & args,
+        False,
+        success
+      );
+      if success then
+        successes := successes + 1;
+      else
+        failures := failures + 1;
+      end if;
+    end Launch_HAC;
+
+    procedure Normal_Test (Ada_file_name : VString) is
+    begin
+      Put_Line (+"      " & Ada_file_name);
+      Launch_HAC (Ada_file_name, +"", 1);
+    end Normal_Test;
+
+    --  Advent of Code
+
+    subtype Day_Code is VString;  --  !!  Should be ok for "&": String (1..2);
+
+    procedure Launch_AoC (Year : Positive; Day : Day_Code; Solutions : VString) is
+    begin
+      Put (Day & ' ');
+      Launch_HAC (+"aoc_" & Year & '_' & Day & ".adb ", Solutions, 3);
+    end Launch_AoC;
+
+    procedure Launch_AoC_2020 (Day : Day_Code; Solutions : VString) is
+    begin
+      Launch_AoC (2020, Day, Solutions);
+    end Launch_AoC_2020;
+
   begin
     Put_Line( "    ___________      _____________________________________________________________________");
     Put_Line( "   / *  HAC  * \    /  ""Silent tests"": when there is zero output, no compilation error,   \");
@@ -55,44 +76,49 @@ procedure All_Silent_Tests is
     New_Line;
     Build_HAC;  --  Redundant if this program is itself run through HAC.
     --
-    Put_Line( "----> Launching tests (one instance of HAC each)...");
-    Launch_HAC (+"case_statement.adb", 1);
-    Launch_HAC (+"constants.adb", 1);
-    Launch_HAC (+"declarations.adb", 1);
-    Launch_HAC (+"enumerations.adb", 1);
-    Launch_HAC (+"floats.adb", 1);
-    Launch_HAC (+"integers.adb", 1);
-    Launch_HAC (+"loops.adb", 1);
-    Launch_HAC (+"recursion.adb", 1);
-    Launch_HAC (+"sorting_tests.adb", 1);
-    Launch_HAC (+"strings.adb", 1);
-    Launch_HAC (+"type_conversion.adb", 1);
-    Launch_HAC (+"var_init.adb", 1);
+    Put_Line( "----> Launching tests.");
+    Put_Line( "  One instance of HAC is called each time, with compilation and execution...");
+    Put_Line( +"    Normal tests in " & Current_Directory & ':');
+    Normal_Test (+"case_statement.adb");
+    Normal_Test (+"constants.adb");
+    Normal_Test (+"declarations.adb");
+    Normal_Test (+"enumerations.adb");
+    Normal_Test (+"floats.adb");
+    Normal_Test (+"integers.adb");
+    Normal_Test (+"loops.adb");
+    Normal_Test (+"recursion.adb");
+    Normal_Test (+"sorting_tests.adb");
+    Normal_Test (+"strings.adb");
+    Normal_Test (+"type_conversion.adb");
+    Normal_Test (+"var_init.adb");
     --
-    --  Advent of Code 2020
     Set_Directory (+".." & Directory_Separator &
                    "exm" & Directory_Separator &
                    "aoc" & Directory_Separator &
                    "2020");
-    Launch_HAC (+"aoc_2020_02.adb 607 321",                     3);  --  Password Philosophy
-    Launch_HAC (+"aoc_2020_03.adb 218 3847183340",              3);  --  Toboggan Trajectory
-    Launch_HAC (+"aoc_2020_04.adb 228 175",                     3);  --  Passport Processing
-    Launch_HAC (+"aoc_2020_05.adb 835",                         3);  --  Binary Boarding
-    Launch_HAC (+"aoc_2020_06.adb 6532 3427",                   3);  --  Custom Customs
-    Launch_HAC (+"aoc_2020_07.adb 169 82372",                   3);  --  Handy Haversacks
-    Launch_HAC (+"aoc_2020_08.adb 1394 1626",                   3);  --  Handheld Halting
-    Launch_HAC (+"aoc_2020_09.adb 138879426 23761694",          3);  --  Encoding Error
-    Launch_HAC (+"aoc_2020_10.adb 2277 37024595836928",         3);  --  Adapter Array
-    Launch_HAC (+"aoc_2020_11.adb 37 26",                       3);  --  Seating System
-    Launch_HAC (+"aoc_2020_12.adb 1631 58606",                  3);  --  Rain Risk
-    Launch_HAC (+"aoc_2020_13.adb 222 408270049879073",         3);  --  Shuttle Search
-    Launch_HAC (+"aoc_2020_15.adb 436 1 10 27 78 438 1836 249", 3);  --  Rambunctious Recitation
-    Launch_HAC (+"aoc_2020_16.adb 23954 453459307723",          3);  --  Ticket Translation
-    Launch_HAC (+"aoc_2020_17.adb 207",                         3);  --  Conway Cubes
-    Launch_HAC (+"aoc_2020_20.adb 83775126454273",              3);  --  Jurassic Jigsaw
-    Launch_HAC (+"aoc_2020_22.adb 31957",                       3);  --  Crab Combat
-    Launch_HAC (+"aoc_2020_23.adb 67384529 49576328",           3);  --  Crab Cups
-    Launch_HAC (+"aoc_2020_24.adb 341 332",                     3);  --  Lobby Layout
+    Put_Line ("    Advent of Code 2020 in " & Current_Directory & ':');
+    Put ("      ");
+    Launch_AoC_2020 (+"02", +"607 321"                    );  --  Password Philosophy
+    Launch_AoC_2020 (+"03", +"218 3847183340"             );  --  Toboggan Trajectory
+    Launch_AoC_2020 (+"04", +"228 175"                    );  --  Passport Processing
+    Launch_AoC_2020 (+"05", +"835"                        );  --  Binary Boarding
+    Launch_AoC_2020 (+"06", +"6532 3427"                  );  --  Custom Customs
+    Launch_AoC_2020 (+"07", +"169 82372"                  );  --  Handy Haversacks
+    Launch_AoC_2020 (+"08", +"1394 1626"                  );  --  Handheld Halting
+    Launch_AoC_2020 (+"09", +"138879426 23761694"         );  --  Encoding Error
+    Launch_AoC_2020 (+"10", +"2277 37024595836928"        );  --  Adapter Array
+    Launch_AoC_2020 (+"11", +"37 26"                      );  --  Seating System
+    Launch_AoC_2020 (+"12", +"1631 58606"                 );  --  Rain Risk
+    Launch_AoC_2020 (+"13", +"222 408270049879073"        );  --  Shuttle Search
+    Launch_AoC_2020 (+"15", +"436 1 10 27 78 438 1836 249");  --  Rambunctious Recitation
+    Launch_AoC_2020 (+"16", +"23954 453459307723"         );  --  Ticket Translation
+    Launch_AoC_2020 (+"17", +"207"                        );  --  Conway Cubes
+    Launch_AoC_2020 (+"20", +"83775126454273"             );  --  Jurassic Jigsaw
+    Launch_AoC_2020 (+"22", +"31957"                      );  --  Crab Combat
+    Launch_AoC_2020 (+"23", +"67384529 49576328"          );  --  Crab Cups
+    Launch_AoC_2020 (+"24", +"341 332"                    );  --  Lobby Layout
+    --
+    New_Line;
     Put_Line ("----> Done.");
     if failures = 0 then
       Put_Line ("All tests passed.");

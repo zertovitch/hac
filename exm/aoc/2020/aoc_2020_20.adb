@@ -6,7 +6,7 @@
 --
 --  Part 1 only
 --
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_20 is
   size : constant := 144;
