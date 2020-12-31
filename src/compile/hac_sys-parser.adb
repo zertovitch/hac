@@ -72,6 +72,9 @@ package body HAC_Sys.Parser is
             X := Locate_Identifier (CD, CD.Id, Level);
             InSymbol;
             if X = CD.String_Id_Index then
+              --  We could pass string literals as "in" parameter
+              --  if we replaced String_Literals by a record wrapping
+              --  the string length and the index into the string table.
               Error (CD, err_string_not_supported_as_parameter, stop => True);
             elsif X /= No_Id then
               if CD.IdTab (X).Obj = TypeMark then
@@ -121,8 +124,9 @@ package body HAC_Sys.Parser is
     ------------------------------------------------------------------
     -------------------------------------------------------Assignment-
     procedure Assignment (I : Integer; Check_read_only : Boolean) is
-      X, Y : Exact_Typ;
-      F    : Opcode;
+      X, Y  : Exact_Typ;
+      F     : Opcode;
+      X_Len : Natural;
       procedure Issue_Type_Mismatch_Error is
       begin
         Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
@@ -181,7 +185,16 @@ package body HAC_Sys.Parser is
         Emit_Std_Funct (CD, SF_Float_to_Duration);
         Emit (CD, k_Store);
       elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
-        Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
+        X_Len := CD.Arrays_Table (X.Ref).Array_Size;
+        if X_Len /= CD.SLeng then
+          Error (CD, err_string_lengths_do_not_match,
+            "variable has length" & X_Len'Image &
+            ", literal has length" & CD.SLeng'Image,
+            stop => True
+          );
+        else
+          Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (X_Len));
+        end if;
       elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
         Error (CD, err_string_to_vstring_assignment);
       elsif X.TYP = NOTYP then

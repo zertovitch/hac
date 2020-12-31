@@ -68,10 +68,10 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
         H1 := H1 + 1;
         H2 := H2 + 1;
       end loop;
-      --  Padding (!! this will be removed)
+      --  Padding (does not happen, since lengths are checked at compile-time)
       H5 := Index (ND.S (Curr_TCB.T - 2).I) + H3;  --  H5 = H1 + H3
       while H1 < H5 loop
-        --  fill with blanks if req'd
+        --  Fill with blanks if req'd
         ND.S (H1).I := Character'Pos (' ');
         H1 := H1 + 1;
       end loop;

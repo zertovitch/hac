@@ -414,7 +414,8 @@ package HAC_Sys.Defs is
     err_range_constraint_error,
     err_discrete_type_expected,
     err_membership_test_type_mismatch,
-    err_string_not_supported_as_parameter
+    err_string_not_supported_as_parameter,
+    err_string_lengths_do_not_match
   );
 
   type Error_set is array (Compile_Error) of Boolean;

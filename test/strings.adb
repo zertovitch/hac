@@ -3,7 +3,7 @@ with HAC_Pack;  use HAC_Pack;
 procedure Strings is
   procedure Failure (Msg: VString) is
   begin
-    Put_Line (+"Failure in test: " & Msg);    
+    Put_Line (+"Failure in test: " & Msg);
     Set_Exit_Status (1);  --  Compiler test failed.
   end;
   --
