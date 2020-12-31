@@ -16,7 +16,7 @@ procedure Strings is
   Pi       : constant := 3.141592653;
   Avogadro : constant := 6.02214076e023;
   r : Real;
-  fs1 : String (4 .. 6);
+  fs_1 : String (4 .. 6);
 begin
   s4 := +"abc" & 'd' & "ef";
   if s4 /= +"abcdef" then
@@ -89,10 +89,10 @@ begin
     --  put_line (image(r));
   end loop;
   --
-  fs1 := "def";
-  if +fs1 /= Slice (s4, 4, 6) then
-    Failure (+"Fixed String to VString");
-  end if;
+  fs_1 := "def";
+  if +fs_1 /= Slice (s4, 4, 6)    then Failure (+"Fixed String to VString"); end if;
+  if +"abc" & fs_1 /= +"abcdef"   then Failure (+"VString & String"); end if;
+  if fs_1 & (+"ghi") /= +"defghi" then Failure (+"String & VString"); end if;
   --
   if Starts_With (+"package",  "proc") then Failure (+"Starts_With"); end if;
   if Starts_With (+"package", +"proc") then Failure (+"Starts_With"); end if;

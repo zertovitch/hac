@@ -478,31 +478,46 @@ package body HAC_Sys.Parser.Expressions is
                 end if;
               when Ampersand_Symbol =>
                 --  Concatenation. RM References: Unbounded_String.
-                if X.TYP = VStrings and Y.TYP = VStrings then            --  v & v     RM A.4.5 (15)
+                if X.TYP = VStrings and Y.TYP = VStrings then               --  v & v    A.4.5 (15)
                   Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-                elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  v & "x"   RM A.4.5 (16)
+                elsif X.TYP = VStrings and Y.TYP = String_Literals then     --  v & "x"  A.4.5 (16)
                   --  Y is on top of the stack, we turn it into a VString.
                   --  If this becomes a perfomance issue we could consider
-                  --  an opcode for (VStr op Lit_Str).
+                  --  adding a Standard Function (SF_Code) for (VStr op Lit_Str).
                   Emit_Std_Funct (CD, SF_Literal_to_VString);
                   --  Now we concatenate both VStrings.
                   Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-                elsif X.TYP = String_Literals and Y.TYP = VStrings then  --  "x" & v   RM A.4.5 (17)
+                elsif X.TYP = String_Literals and Y.TYP = VStrings then     --  "x" & v  A.4.5 (17)
                   Emit_Std_Funct (CD, SF_LStr_VString_Concat);
                   X.TYP := VStrings;
-                elsif X.TYP = VStrings and Y.TYP = Chars then            --  v & 'x'   RM A.4.5 (18)
+                elsif X.TYP = VStrings and then Is_Char_Array (CD, Y) then  --  v & s    A.4.5 (16)
+                  Emit_Std_Funct (CD,
+                    SF_String_to_VString,
+                    Operand_1_Type (CD.Arrays_Table (Y.Ref).Array_Size)
+                  );
+                  Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+                elsif Is_Char_Array (CD, X) and then Y.TYP = VStrings then  --  s & v    A.4.5 (17)
+                  Emit (CD, k_Swap);   --  v, then s on the stack
+                  Emit_Std_Funct (CD,  --  s -> +s
+                    SF_String_to_VString,
+                    Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
+                  );
+                  Emit (CD, k_Swap);   --  +s, then v on the stack
+                  Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+                  X.TYP := VStrings;
+                elsif X.TYP = VStrings and Y.TYP = Chars then               --  v & 'x'  A.4.5 (18)
                   Emit_Std_Funct (CD, SF_VString_Char_Concat);
-                elsif X.TYP = Chars and Y.TYP = VStrings then            --  'x' & v   RM A.4.5 (19)
+                elsif X.TYP = Chars and Y.TYP = VStrings then               --  'x' & v  A.4.5 (19)
                   Emit_Std_Funct (CD, SF_Char_VString_Concat);
                   X.TYP := VStrings;
-                elsif X.TYP = VStrings and Y.TYP = Ints then             --  v & 123
+                elsif X.TYP = VStrings and Y.TYP = Ints then                --  v & 123
                   Emit_Std_Funct (CD, SF_VString_Int_Concat);
-                elsif X.TYP = Ints and Y.TYP = VStrings then             --  123 & v
+                elsif X.TYP = Ints and Y.TYP = VStrings then                --  123 & v
                   Emit_Std_Funct (CD, SF_Int_VString_Concat);
                   X.TYP := VStrings;
-                elsif X.TYP = VStrings and Y.TYP = Floats then           --  v & 3.14159
+                elsif X.TYP = VStrings and Y.TYP = Floats then              --  v & 3.14159
                   Emit_Std_Funct (CD, SF_VString_Float_Concat);
-                elsif X.TYP = Floats and Y.TYP = VStrings then           --  3.14159 & v
+                elsif X.TYP = Floats and Y.TYP = VStrings then              --  3.14159 & v
                   Emit_Std_Funct (CD, SF_Float_VString_Concat);
                   X.TYP := VStrings;
                 else
