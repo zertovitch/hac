@@ -565,6 +565,17 @@ package body HAC_Sys.Parser.Expressions is
             --  If this becomes a perfomance issue we could consider an opcode for (VStr op Lit_Str).
             Emit_Std_Funct (CD, SF_Literal_to_VString);  --  Now we have e.g. V < +"World".
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);  --  Emit "<" (X, Y) between VStrings.
+          elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then  --  S = "Hello", etc.
+            --  We needs convert the literal before anything else, since
+            --  it takes two elements on the stack.
+            Emit_Std_Funct (CD, SF_Literal_to_VString);
+            Emit (CD, k_Swap);
+            Emit_Std_Funct (CD,
+              SF_String_to_VString,
+              Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
+            );
+            Emit (CD, k_Swap);
+            Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
           elsif X.TYP = Y.TYP then
             if PCode_Atomic_Typ (X.TYP) then
               Emit_Comparison_Instruction (CD, Rel_OP, X.TYP);

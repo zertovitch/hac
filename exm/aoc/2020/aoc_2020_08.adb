@@ -4,14 +4,12 @@
 --
 --  https://adventofcode.com/2020/day/8
 --
---  HAC 0.082 version.
+--  HAC 0.085 version.
 --
---  HAC 0.082 "nice to have"'s detected in this exercise:
+--  HAC 0.085 "nice to have"'s detected in this exercise:
 --
 --    *     I/O with enums, at least 'Image
 --    *     `  seen := (others => False);  `
---    *     String-to-literal comparison
---             as in `  if asm = "acc" then i := acc; end if;  `
 --
 with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
@@ -70,9 +68,9 @@ begin
   Open (f, "aoc_2020_08.txt");
   while not End_Of_File (f) loop
     Get (f, asm);
-    if +asm = "acc" then i := acc; end if;
-    if +asm = "jmp" then i := jmp; end if;
-    if +asm = "nop" then i := nop; end if;
+    if asm = "acc" then i := acc; end if;
+    if asm = "jmp" then i := jmp; end if;
+    if asm = "nop" then i := nop; end if;
     Get (f, v);
     last := last + 1;
     code (last) := i;
