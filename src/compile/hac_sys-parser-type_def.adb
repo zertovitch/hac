@@ -258,7 +258,7 @@ package body HAC_Sys.Parser.Type_Def is
 
     procedure String_Sub_Typ is
       --  Prototype of constraining an array type: String -> String (1 .. 26)
-      --  !! Need to implement general constraints...
+      --  We need to implement general constraints one day...
     begin
       InSymbol;
       Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
@@ -266,10 +266,11 @@ package body HAC_Sys.Parser.Type_Def is
       Array_Typ (xTP.Ref, Size, String_Constrained_Subtype => True);
     end String_Sub_Typ;
 
+    Ident_Index : Integer;
+
     --  Here we are sitting on `Character` in `subtype My_Chars is Character` [range 'a' .. 'z']
     --
     procedure Sub_Typ is
-      Ident_Index : constant Integer := Locate_Identifier (CD, CD.Id, Level);
       Low, High : Constant_Rec;
     begin
       if Ident_Index = No_Id then
@@ -317,7 +318,8 @@ package body HAC_Sys.Parser.Type_Def is
     if Type_Begin_Symbol (CD.Sy) then
       case CD.Sy is
         when IDent =>
-          if Equal (CD.Id, "STRING") then
+          Ident_Index := Locate_Identifier (CD, CD.Id, Level);
+          if Ident_Index = CD.String_Id_Index then
             String_Sub_Typ;
           else
             Sub_Typ;

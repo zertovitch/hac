@@ -243,11 +243,14 @@ package body HAC_Sys.Compiler is
       Enter_Typ ("Character",      Chars, 0, 255);
       Enter_Typ ("Boolean",        Bools, 0, 1);
       Enter_Typ (HAC_Integer_Name, Ints, HAC_Integer'First, HAC_Integer'Last);
-      Enter_Typ ("String",         String_Literals, 0, 0);
-      --  String_Literals is used only for string literals like "abcd".
-      --  The "STRING" type identifier is treated separately in the TYP parser
+      --
+      --  The "String" type identifier is treated separately in the Type_Definition parser
       --  and returns a constrained array of Character.
-      --  Here we just reserve the "STRING" identifier at level 0.
+      --  Here we just reserve the "String" identifier at level 0, with a bogus base type,
+      --  String_Literals, which is actually used only for string literals like "abcd".
+      Enter_Typ ("String",         String_Literals, 0, 0);
+      CD.String_Id_Index := CD.Id_Count;
+      --
       Enter_Typ ("SEMAPHORE",      Ints, 0, 0);
       Enter_Typ ("VString",        VStrings, 0, 0);    --  2020.05.02
       Enter_Typ ("File_Type",      Text_Files, 0, 0);  --  2020.05.17

@@ -71,7 +71,9 @@ package body HAC_Sys.Parser is
           else
             X := Locate_Identifier (CD, CD.Id, Level);
             InSymbol;
-            if X /= No_Id then
+            if X = CD.String_Id_Index then
+              Error (CD, err_string_not_supported_as_parameter, stop => True);
+            elsif X /= No_Id then
               if CD.IdTab (X).Obj = TypeMark then
                 xTP := CD.IdTab (X).xTyp;
                 if ValParam then
@@ -1177,6 +1179,7 @@ package body HAC_Sys.Parser is
                   Entry_Call (CD, Level, FSys_St, I_Statement, Normal_Entry_Call);
                 when Prozedure =>
                   if CD.IdTab (I_Statement).LEV = 0
+                    --  We could have to deal with a recursive call to the main procedure...
                     and then I_Statement /= CD.Main_Proc_Id_Index
                   then
                     --  We have a procedure name from HAC_Pack.

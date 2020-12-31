@@ -240,6 +240,9 @@ package body HAC_Sys.UErrors is
         return "discrete type expected";
       when err_membership_test_type_mismatch =>
         return "incompatible types: " & hint;
+      when err_string_not_supported_as_parameter =>
+        return "String not supported as parameter" &
+          " - define a constrained ""subtype S2 is String (1..2)"" or use a VString";
     end case;
   end Error_String;
 
