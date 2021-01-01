@@ -54,11 +54,13 @@ begin
   root := +"hac";
   Set_Directory ("..");
 
-  examples := root & "/exm/*.ad* "  & root & "/exm/*.gpr  " &
+  examples := root & "/exm/*.ad* "  &
+              root & "/exm/*.gpr  " & root & "/exm/*.prj  " &
               root & "/exm/e.cmd "  & root & "/exm/not_working/*.ad* " &
               root & "/exm/aoc/2020/aoc* ";
 
-  tests    := root & "/test/*.ad* " & root & "/test/*.gpr " &
+  tests    := root & "/test/*.ad* " &
+              root & "/test/*.gpr " & root & "/test/*.prj " &
               root & "/test/t.cmd " & root & "/test/*.aru " &
               root & "/test/future/*.ad* ";
 
@@ -75,6 +77,7 @@ begin
            root & "/doc/*.xls " &
            root & "/doc/*.pdf " &
            root & "/debug.pra " &
+           root & "/obj/hac_icon* " &
            root & "/obj/debug/create_dir.txt " &
            root & "/obj/fast/create_dir.txt ";
 
