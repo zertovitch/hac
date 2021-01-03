@@ -177,14 +177,30 @@ begin
     Put ("Ooops?");
   end if;
   s4_s4 := s4 & s4;  --  abcdefabcdef
-  if Index (s4_s4, +"cd") /= 3 or Index (s4_s4, "cd") /= 3 or Index (s4_s4, 'c') /= 3 then
+                     --  123456789012
+  if Index (s4_s4, +"cd") /= 3 or
+     Index (s4_s4,  "cd") /= 3 or
+     Index (s4_s4,  'c')  /= 3
+  then
     Put ("[Index] Ooops?");
+  end if;
+  if Index (s4_s4, +"cd", 4) /= 9 or
+     Index (s4_s4,  "cd", 4) /= 9 or
+     Index (s4_s4,  'c', 4)  /= 9
+  then
+    Put ("[Index, From] Ooops?");
   end if;
   if Index_Backward (s4_s4, +"cd") /= 9 or
      Index_Backward (s4_s4,  "cd") /= 9 or
      Index_Backward (s4_s4,  'c')  /= 9
   then
     Put ("[Index_Backward] Ooops?");
+  end if;
+  if Index_Backward (s4_s4, +"cd", 8) /= 3 or
+     Index_Backward (s4_s4,  "cd", 8) /= 3 or
+     Index_Backward (s4_s4,  'c', 8)  /= 3
+  then
+    Put ("[Index_Backward, From] Ooops?");
   end if;
   --
   if Starts_With (+"package", 'q')     then Put ("Ooops?"); end if;

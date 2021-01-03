@@ -11,7 +11,7 @@ procedure Existence is
         Put (" does not exist ");
       end if;
       Put_Line (+"as " & As);
-    end Tell;      
+    end Tell;
   begin
     Tell (Exists (Name), +"anything in the file system");
     Tell (Directory_Exists (Name), +"a directory");

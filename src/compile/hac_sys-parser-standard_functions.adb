@@ -14,10 +14,10 @@ package body HAC_Sys.Parser.Standard_Functions is
       SF_Head | SF_Tail |
       SF_Starts_With |
       SF_Ends_With |
-      SF_Index |
-      SF_Index_Backward |
       SF_Int_Times_Char |
       SF_Int_Times_VStr     => 2,
+      SF_Index |
+      SF_Index_Backward |
       SF_Slice              => 3,
       others                => 1
      );
@@ -32,7 +32,7 @@ package body HAC_Sys.Parser.Standard_Functions is
   )
   is
     Max_Args : constant := 3;
-    Args : constant Natural := SF_Args (Code);
+    Args : Natural := SF_Args (Code);
     Expected : array (1 .. Max_Args) of Typ_Set;    --  Expected type of the function's arguments
     Actual   : array (1 .. Max_Args) of Exact_Typ;  --  Actual type from argument expression
     Code_Adjusted : SF_Code := Code;
@@ -73,8 +73,10 @@ package body HAC_Sys.Parser.Standard_Functions is
           Expected (1) := VStrings_or_Chars_Set;
         when SF_Literal_to_VString =>
           Expected (1) := Chars_or_Strings_Set;
-        when SF_Index | SF_Index_Backward | SF_Starts_With | SF_Ends_With =>
+        when SF_Index | SF_Index_Backward =>
           --  Index (OS, +"Windows"), Index (OS, "Windows") or Index (OS, 'W')
+          Expected (1 .. 3) := (VStrings_Set, VStrings_Chars_or_Str_Lit_Set, Ints_Set);
+        when SF_Starts_With | SF_Ends_With =>
           Expected (1 .. 2) := (VStrings_Set, VStrings_Chars_or_Str_Lit_Set);
         when SF_Year .. SF_Seconds =>
           Expected (1) := Times_Set;
@@ -107,7 +109,13 @@ package body HAC_Sys.Parser.Standard_Functions is
             Expected => Expected (a)
           );
         end if;
-        if a < Args then
+        if (Code = SF_Index or Code = SF_Index_Backward)
+           and then a = 2
+           and then CD.Sy = RParent
+        then
+          Args := 2;  --  Alright: Index, Index_Backard without From.
+          exit;
+        elsif a < Args then
           Need (CD, Comma, err_COMMA_missing);
         end if;
       end loop;
@@ -167,16 +175,28 @@ package body HAC_Sys.Parser.Standard_Functions is
             Code_Adjusted := SF_To_Upper_VStr;
           end if;
         when SF_Index | SF_Index_Backward | SF_Starts_With | SF_Ends_With =>
+          if (Code = SF_Index or Code = SF_Index_Backward) and Args = 2 then
+            Emit_1 (CD, k_Push_Discrete_Literal, 0);  --  We push a non-positive value for `From`.
+          end if;
+          if Code = SF_Index or Code = SF_Index_Backward then
+            Emit (CD, k_Pop_to_Temp);
+            --  `From` is now removed from the stack. `Pattern` is at the top.
+          end if;
           case Actual (2).TYP is
             when Chars =>
               --  `Index (OS, 'W')`  becomes  `Index (OS, +'W')`
               Emit_Std_Funct (CD, SF_Char_to_VString);
             when String_Literals =>
               --  `Index (OS, "Windows")`  becomes  `Index (OS, +"Windows")`
+              --  NB: a String_Literal takes 2 positions on the stack, a VString only one.
               Emit_Std_Funct (CD, SF_Literal_to_VString);
             when others =>
               null;
           end case;
+          if Code = SF_Index or Code = SF_Index_Backward then
+            Emit (CD, k_Push_Temp);
+            --  `From` is now back at the stack top.
+          end if;
         when SF_Directory_Exists | SF_Exists | SF_File_Exists | SF_Get_Env =>
           --  Get_Env ("PATH")  becomes  Get_Env (+"PATH")
           if Actual (1).TYP = String_Literals then

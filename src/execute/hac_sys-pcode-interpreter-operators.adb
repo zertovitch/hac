@@ -98,6 +98,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           Ada.Calendar, Ada.Characters.Handling,
           Ada.Numerics.Float_Random, Ada.Strings;
       use type Defs.HAC_Integer;
+      Going : Direction;
     begin
       case Code is
         when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
@@ -211,27 +212,36 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           Top_Item.V := To_VString (To_Lower (Defs.To_String (Top_Item.V)));
         when SF_To_Upper_VStr =>
           Top_Item.V := To_VString (To_Upper (Defs.To_String (Top_Item.V)));
-        when SF_Index =>
-          Pop (ND);
-          --  [T] := Index ([T], [T+1]) :
-          ND.S (Curr_TCB.T).I :=
-            HAC_Integer (
-              VStrings_Pkg.Index (
-                ND.S (Curr_TCB.T).V,
-                Defs.To_String (ND.S (Curr_TCB.T + 1).V)
-              )
-            );
-        when SF_Index_Backward =>
-          Pop (ND);
-          --  [T] := Index ([T], [T+1]) :
-          ND.S (Curr_TCB.T).I :=
-            HAC_Integer (
-              VStrings_Pkg.Index (
-                ND.S (Curr_TCB.T).V,
-                Defs.To_String (ND.S (Curr_TCB.T + 1).V),
-                Backward
-              )
-            );
+        when SF_Index | SF_Index_Backward =>
+          if Code = SF_Index then
+            Going := Forward;
+          else
+            Going := Backward;
+          end if;
+          Pop (ND, 2);
+          From := Integer (ND.S (Curr_TCB.T + 2).I);
+          if From >= 1 then
+            --  [T] := Index (Source: [T], Pattern: [T+1], From: [T+2], Going) :
+            ND.S (Curr_TCB.T).I :=
+              HAC_Integer (
+                VStrings_Pkg.Index (
+                  ND.S (Curr_TCB.T).V,
+                  Defs.To_String (ND.S (Curr_TCB.T + 1).V),
+                  From,
+                  Going
+                )
+              );
+          else
+            --  [T] := Index (Source: [T], Pattern: [T+1], Going) :
+            ND.S (Curr_TCB.T).I :=
+              HAC_Integer (
+                VStrings_Pkg.Index (
+                  ND.S (Curr_TCB.T).V,
+                  Defs.To_String (ND.S (Curr_TCB.T + 1).V),
+                  Going
+                )
+              );
+          end if;
         when SF_Head =>
           Pop (ND);
           --  [T] := Head ([T], [T+1]) :

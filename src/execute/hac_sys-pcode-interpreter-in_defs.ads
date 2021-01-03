@@ -100,6 +100,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     STACKSIZE      : Defs.Index;            --  stack overflow if exceeded
     SUSPEND        : Integer;               --  id of object suspended on
     R1, R2, R3     : General_Register;
+    R_Temp         : General_Register;
     Exception_Info : Exception_Propagation_Data;
   end record;
 

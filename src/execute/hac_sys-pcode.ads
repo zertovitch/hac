@@ -29,7 +29,9 @@ package HAC_Sys.PCode is
     k_Variable_Initialization,
     k_Update_Display_Vector,
     k_Store,
-    k_Swap,
+    k_Swap,         --  Swap the two items at the top of the stack.
+    k_Pop_to_Temp,  --  Pop top item to a temp register.
+    k_Push_Temp,    --  Push temp register on the stack.
     --
     k_Standard_Functions,
     --

@@ -68,11 +68,30 @@ begin
   if Index (s4,  "cde") /= 3 then Failure (+"Index 4");    end if;
   --
   s4_s4 := s4 & s4;  --  abcdefabcdef
+                     --  123456789012
+  if Index (s4_s4, +"cd") /= 3 or
+     Index (s4_s4,  "cd") /= 3 or
+     Index (s4_s4,  'c')  /= 3
+  then
+    Failure (+"Index");
+  end if;
+  if Index (s4_s4, +"cd", 4) /= 9 or
+     Index (s4_s4,  "cd", 4) /= 9 or
+     Index (s4_s4,  'c', 4)  /= 9
+  then
+    Failure (+"Index, From");
+  end if;
   if Index_Backward (s4_s4, +"cd") /= 9 or
      Index_Backward (s4_s4,  "cd") /= 9 or
      Index_Backward (s4_s4,  'c')  /= 9
   then
     Failure (+"Index_Backward");
+  end if;
+  if Index_Backward (s4_s4, +"cd", 8) /= 3 or
+     Index_Backward (s4_s4,  "cd", 8) /= 3 or
+     Index_Backward (s4_s4,  'c', 8)  /= 3
+  then
+    Failure (+"Index_Backward, From");
   end if;
   --
   if  0 * 'x' /= +""                       then Failure (+"""*"", #1"); end if;

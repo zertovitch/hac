@@ -27,6 +27,7 @@ project HAC_Exm is
      "echo.adb",
      "einmaleins.adb",
      "env.adb",
+     "existence.adb",
      "hello.adb",
      "gallery.adb",
      "file_append.adb",

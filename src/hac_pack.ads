@@ -98,12 +98,21 @@ package HAC_Pack is
   function Ends_With (Item : VString; Pattern : String) return Boolean;
   function Ends_With (Item : VString; Pattern : VString) return Boolean;
   function Head (Source : VString; Count : Natural) return VString;
+  --
   function Index (Source : VString; Pattern : Character) return Natural;
   function Index (Source : VString; Pattern : String) return Natural;
   function Index (Source : VString; Pattern : VString) return Natural;
+  function Index (Source : VString; Pattern : Character; From : Positive) return Natural;
+  function Index (Source : VString; Pattern : String; From : Positive) return Natural;
+  function Index (Source : VString; Pattern : VString; From : Positive) return Natural;
+  --
   function Index_Backward (Source : VString; Pattern : Character) return Natural;
   function Index_Backward (Source : VString; Pattern : String) return Natural;
   function Index_Backward (Source : VString; Pattern : VString) return Natural;
+  function Index_Backward (Source : VString; Pattern : Character; From : Positive) return Natural;
+  function Index_Backward (Source : VString; Pattern : String; From : Positive) return Natural;
+  function Index_Backward (Source : VString; Pattern : VString; From : Positive) return Natural;
+  --
   function Length (Source : VString) return Natural renames VStr_Pkg.Length;
   function Slice (Source : VString; From : Positive; To : Natural) return VString;
   function Starts_With (Item : VString; Pattern : Character) return Boolean;

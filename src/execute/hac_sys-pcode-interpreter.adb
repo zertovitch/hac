@@ -463,6 +463,12 @@ package body HAC_Sys.PCode.Interpreter is
           ND.S (Index (ND.S (Curr_TCB.T - 1).I)) := ND.S (Curr_TCB.T);
           Pop (2);
         when k_Swap => Do_Swap;
+        when k_Pop_to_Temp =>
+          Curr_TCB.R_Temp := ND.S (Curr_TCB.T);
+          Pop;
+        when k_Push_Temp =>
+          Push;
+          ND.S (Curr_TCB.T) := Curr_TCB.R_Temp;
         --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
         when k_Update_Display_Vector   => Do_Update_Display_Vector;
