@@ -13,7 +13,7 @@ procedure Days_1901 is
   --  So, with 1901, we skip that issue anyway...
   --
   function Days_since_1901 (y, m, d : Integer) return Integer is
-    function Is_leap (y: Integer) return Boolean is
+    function Is_leap (y : Integer) return Boolean is
     begin
       if y mod 4 = 0 then
         if y mod 100 = 0 then

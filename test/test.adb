@@ -1,4 +1,6 @@
 --  This is a fuzzy test for HAC, the HAC Ada compiler.
+--
+--  Historically, the first program to run after "hello world".
 
 with HAC_Pack;  use HAC_Pack;
 
@@ -63,13 +65,6 @@ procedure Test is
   -- s: String(1..5);
   -- ms: My_String;
   --
-  procedure My_Put(s: String) is -- ; first, last: Integer
-    -- !! need array attributes !!
-  begin
-    --for i in first .. last loop
-    null; -- Put(s(i));
-    --end loop;
-  end;
   --
 
   -----------------------------------------------
@@ -249,9 +244,9 @@ begin
   Do_1_param_in_out(x_glob);
   case x_glob is
     when 123 =>
-      My_Put("123 (wrong)");
+      Put("123 (wrong)");
     when 456 =>
-      My_Put("456 (wrong)");
+      Put("456 (wrong)");
     when 777 =>
       Put("777 (correct)");
     when others =>

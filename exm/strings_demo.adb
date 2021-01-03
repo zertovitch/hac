@@ -12,7 +12,7 @@ procedure Strings_demo is
   procedure A_to_B (BV : in out Bi_Vector) is
   begin
     BV.B := BV.A;
-  end;
+  end A_to_B;
   --
   procedure Reverso (SV : in out Str_Vector) is
     SV2 : Str_Vector;
@@ -36,12 +36,12 @@ procedure Strings_demo is
     row : VString;
   begin
     for i in reverse 1 .. l loop
-      Put_Line (Slice (v, 1, i) );
+      Put_Line (Slice (v, 1, i));
     end loop;
     --
     for i in 1 .. l loop
       Put ((i - 1) * ' ');
-      Put_Line (Slice (v, i, l) );
+      Put_Line (Slice (v, i, l));
     end loop;
     --
     for i in 1 .. l loop
@@ -49,7 +49,7 @@ procedure Strings_demo is
       for j in 1 .. l loop
         if i = j then
           c := Element (v, i);
-        elsif abs (i-j) = 1 then
+        elsif abs (i - j) = 1 then
           c := ' ';
         else
           c := '_';
@@ -86,7 +86,7 @@ procedure Strings_demo is
   s3 : constant VString := +" world";
   ZZ : Bi_Vector;
   padded : VString;
-  Str3 : constant String (6..8) := "But";
+  Str3 : constant String (6 .. 8) := "But";
   v_char : VString;
 begin
   s2 := +"Hello";             --  Convert from literal string, copy to s2.

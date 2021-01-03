@@ -19,7 +19,7 @@ procedure Timing is
       ", Minutes = " & Day_Mins mod 60 &
       ", Seconds = " & Day_Secs mod 60
       );
-    Put_Line("Waiting 3 seconds...");
+    Put_Line ("Waiting 3 seconds...");
     delay 1.0 + 4.0 * 0.5;  --  HAC interpreter can be interrupted during the "delay" statement.
     T2 := Clock;
     Put_Line (Image (T2));
@@ -28,8 +28,8 @@ procedure Timing is
     D := D + 1.0;
     D := D - 2.0 * 0.5;
     Put_Line (Image (D));
-  end;
+  end Simple;
 
 begin
   Simple;
-end;
+end Timing;

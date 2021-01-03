@@ -10,6 +10,7 @@ procedure File_Copy is
   s : VString;
   f1, f2 : File_Type;
 begin
+  Put_Line ("Line-by-line text copy");
   Open (f1, "file_copy.adb");
   Create (f2, "file_copy.txt");
   while not End_Of_File (f1) loop
@@ -19,7 +20,7 @@ begin
   Close (f1);
   Close (f2);
   --
-  --  Binary copy.
+  Put_Line ("Binary copy");
   --  It's an opportunity to test some Ada.Directories-like subprograms.
   --
   Copy_File ("file_copy.adb", "file_copy_bin_$$.txt");

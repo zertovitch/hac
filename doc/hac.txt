@@ -1,80 +1,87 @@
 HAC - HAC Ada Compiler
 ======================
 
-HAC is perhaps the first open-source (albeit very partial) Ada
-compiler (and virtual machine interpreter) fully programmed in Ada itself.
-Note: HAC was not written from scratch, but is based on a renovation of
-SmallAda, a system developped around 1990 and abandoned since then.
+  HAC is perhaps the first open-source (albeit very partial) Ada
+  compiler (and virtual machine interpreter) fully programmed in Ada itself.
+  Note: HAC was not written from scratch, but is based on a renovation of
+  SmallAda, a system developped around 1990 and abandoned since then.
 
 Objectives
 ==========
-  - Fun!
-  - Have a simple, quick Ada compiler and execution tool.
-  - Be useful for small Ada sandboxed prototypes.
-  - Produce the smallest Hello-world executable!
-  - Have a tool for script-like jobs (avoid long
-      programming-compiling-binding-linking-running cycles).
-  - Stay compatible (HAC programs can be compiled
-      and run by other Ada compilers, currently through
-      compatibility package HAC_Pack).
 
-HAC will most probably never be a complete compiler.
+    - Fun!
+    - Have a simple, quick Ada compiler and execution tool.
+    - Be useful for small Ada sandboxed prototypes.
+    - Produce the smallest Hello-world executable!
+    - Have a tool for script-like jobs (avoid long
+        programming-compiling-binding-linking-running cycles).
+    - Stay compatible (HAC programs can be compiled
+        and run by other Ada compilers, currently through
+        compatibility package HAC_Pack).
+
+  HAC will most probably never be a complete compiler.
 
 Warning & legal
 ===============
-There is NO WARRANTY in this software.
-Read copyright notice and license in hac_sys.ads .
-The license is the open-source license MIT.
+
+  There is NO WARRANTY in this software.
+  Read copyright notice and license in hac_sys.ads .
+  The license is the open-source license MIT.
 
 Getting started
 ===============
-Assuming you have the GNAT (*) compiler installed, do the
-following from a command line interpreter (please replace
-'\' by '/' on Unix-like platforms):
 
-    gnatmake -P hac
-    cd exm
-    ..\hac gallery.adb
+  Assuming you have the GNAT (*) compiler installed, do the
+  following from a command line interpreter (please replace
+  '\' by '/' on Unix-like platforms):
 
-If `gnatmake` doesn't work, try `gprbuild`.
-Alternatively, on Windows and with mouse only, you can go
-into the "exm" folder and double-click "e.cmd" .
+      gnatmake -P hac
+      cd exm
+      ..\hac gallery.adb
 
-The program "gallery.adb" will run a bunch of demos that
-are located in the "exm" directory.
-You can test HAC on any other example of course (the "*.adb"
-files in the "exm" and "test" directories).
-As a bonus, you can build some examples with GNAT to compare the output.
-You can do it easily with the hac_exm.gpr project file.
-Since hac_exm.gpr is a text file, you can see there the progress
-(or the lack thereof) in the pieces of Ada code that are really
-working with HAC. See the "Limitations" section below as well.
-___
-(*) On Debian-based Linuxes like Ubuntu, GNAT is part of the standard
-packages. For other systems, you can get GNAT from AdaCore's Web site:
-https://www.adacore.com/community or from other sites providing GCC
-(the GNU Compiler Collection) with Ada support.
-Check http://www.getadanow.com/ for instance.
+  If `gnatmake` doesn't work, try `gprbuild`.
+  Alternatively, on Windows and with mouse only, you can go
+  into the "exm" folder and double-click "e.cmd" .
+
+  The program "gallery.adb" will run a bunch of demos that
+  are located in the "exm" directory.
+  You can test HAC on any other example of course (the "*.adb"
+  files in the "exm" and "test" directories).
+  As a bonus, you can build some examples with GNAT to compare the output.
+  You can do it easily with the hac_exm.gpr project file.
+  Since hac_exm.gpr is a text file, you can see there the progress
+  (or the lack thereof) in the pieces of Ada code that are really
+  working with HAC. See the "Limitations" section below as well.
+  ___
+  (*) On Debian-based Linuxes like Ubuntu, GNAT is part of the standard
+  packages. For other systems, you can get GNAT from AdaCore's Web site:
+  https://www.adacore.com/community or from other sites providing GCC
+  (the GNU Compiler Collection) with Ada support.
+  Check http://www.getadanow.com/ for instance.
 
 Directories
 ===========
+
    src      sources of HAC, plus the compatibility package HAC_Pack
    exm      examples
-   test     testing
+   test     testing (notably, the all_silent_tests.adb test suite)
 
 Key files in the main directory
 ===============================
+
    hac.gpr             project file for building HAC with GNAT
-   hac_objectada.prj   project file for building HAC with ObjectAda64
+   hac_objectada.prj   equivalent project file with ObjectAda64 for Windows
    save.adb            backup script, works with both HAC and GNAT!
 
 Documentation
 =============
+
    hac.txt       this file
    hac_work.xls  workbook containing, notably, a bug list and a to-do list
 
 Some design points
 ==================
+
   - HAC reads Ada sources from any stream. In addition to files, it is able
       to read from a Zip archive (plan is to have sets with many sources
       like libraries in Zip files, for instance), from an internet stream,
@@ -89,49 +96,58 @@ Some design points
 
 To-do list
 ==========
-The to-do list is located in the spreadsheet "To do", within the
-workbook "hac_work.xls".
+
+  The to-do list is located in the spreadsheet "To do", within the
+  workbook "hac_work.xls".
 
 Language subset
 ===============
-HAC supports a very small subset of the Ada language. On the other hand,
-Ada is very large, so even a small subset could already fit your needs.
-There is a short (and growing) list of small programs that are
-working (in the meaning: the compilation succeeds and the execution gives
-a correct output). They are listed in the project file hac_exm.gpr
-in the "exm" directory.
 
-You will see that the "Pascal subset" plus tasking is more or less
-supported, so you have things like subprograms (including multiple-level
-nested and recursive subprograms), expressions, that are working, for instance.
+  HAC supports a very small subset of the Ada language. On the other hand,
+  Ada is very large, so even a small subset could already fit your needs.
+  There is a growing list of programs that are working (in the meaning:
+  the compilation succeeds and the execution gives a correct output).
+  They are located in the "exm" directory and subdirectories (except
+  the "not_working" one), as well as in the "test" subdirectory.
 
-  - You can define your own data types: enumerations, records, arrays
-      (and every combination of records and arrays).
-  - Only constrained types are supported (unconstrained types are Ada-only
-      types and not in the "Pascal subset" anyway).
-  - The "String" type (unconstrained) is implemented in a very limited
-      way. So far you can only define variables (or types, record fields)
-      with it, like:
-        Digitz : constant String (1..10) := "0123456789";
-      ... and output them with Put, Put_Line.
-      For general string manipulation, the most practical way with
-      the current versions of HAC is to use the VString variable-length
-      string type.
-  - There are no pointers (access types) and nor heap allocation,
-      but you will be surprised how far you can go without pointers!
-  - Subprograms names cannot be overloaded, although some *predefined*
-      subprograms (including operators) are overloaded many times, like
-      "Put", "Get", "+", "&", ...
-  - Programmable modularity (packages or subprograms that you can "with")
-    is not yet implemented.
-  - Generics are not yet implemented.
-  - Tasks are implemented, but not yet tested.
+  You will see that the "Pascal subset" plus tasking is more or less
+  supported, so you have things like subprograms (including multiple-level
+  nested and recursive subprograms), expressions, that are working,
+  for instance.
 
-A more systematic testing is done in the "test" directory.
+    - You can define your own data types: enumerations, records, arrays
+        (and every combination of records and arrays).
+    - Only constrained types are supported (unconstrained types are
+        Ada-only types and not in the "Pascal subset" anyway).
+    - The "String" type (unconstrained) is implemented in a very limited
+        way. So far you can only define fixed-sized constants, variables,
+        types, record fields with it, like:
+          Digitz : constant String (1..10) := "0123456789";
+        ... output them with Put, Put_Line, do comparisons and
+        concatenations with expressions of the VString variable-length
+        string type.
+        For general string manipulation, the most practical way with
+        the current versions of HAC is to use the VString's.
+    - There are no pointers (access types) and nor heap allocation,
+        but you will be surprised how far you can go without pointers!
+    - Subprograms names cannot be overloaded, although some *predefined*
+        subprograms, including operators, of the Standard or the HAC_Pack
+        package, are overloaded many times, like
+        "Put", "Get", "+", "&", ...
+    - Programmable modularity (packages or subprograms that you can "with")
+        is not yet implemented.
+    - Generics are not yet implemented.
+    - Tasks are implemented, but not working yet.
+
+  A more systematic testing is done in the "test" directory, via
+  the all_silent_tests.adb test suite.
 
 Thanks
 ======
+
   - The authors of SmallAda (list below) for making their work open-source.
+  - Stéphane Rivière, for extensive testing, contributions, suggestions,
+        remarks, feedbacks.
   - J-P. Rosen for the free AdaControl tool (
         https://www.adalog.fr/en/adacontrol.html ,
         https://sourceforge.net/projects/adacontrol/ ) which was very
@@ -169,8 +185,8 @@ History of HAC
   Author of CoPascal (derived from Niklaus Wirth's Pascal-S)
     1986 Charles Schoening
 
-You can find the SmallAda sources and examples in the "archeology" folder.
-The Turbo Pascal sources files are smaller than the Mac Pascal ones,
-probably because of the memory constraints of the 16-bit DOS system.
-So the Turbo Pascal sources are especially cryptic and sparsely commented,
-full with magic numbers and 1-letter variables, many of them global - ouch!
+  You can find the SmallAda sources and examples in the "archeology" folder.
+  The Turbo Pascal sources files are smaller than the Mac Pascal ones,
+  probably because of the memory constraints of the 16-bit DOS system.
+  So the Turbo Pascal sources are especially cryptic and sparsely commented,
+  full with magic numbers and 1-letter variables, many of them global - ouch!

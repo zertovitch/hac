@@ -12,53 +12,53 @@ with HAC_Pack; use HAC_Pack;
 
 procedure BWT is
 
-  n: constant := 9;
+  n : constant := 9;
 
-  subtype Row is String (1..n);
+  subtype Row is String (1 .. n);
 
-  type Table is array(1..n) of Row;
+  type Table is array (1 .. n) of Row;
 
-  procedure Shell_Sort(b : in out Table) is
+  procedure Shell_Sort (b : in out Table) is
     i, j, step : Integer;
-    step_size : array(1..4) of Integer;
+    step_size : array (1 .. 4) of Integer;
     stop : Boolean;
     temp : Row;
   begin
-    -- 'steps' contains decreasing increments for each
-    -- pass. The last pass has increment 1.
-    step_size(4) := 1;
-    for pass in reverse 1..3 loop
-      step_size(pass):= 2*step_size(pass+1);
+    --  'steps' contains decreasing increments for each
+    --  pass. The last pass has increment 1.
+    step_size (4) := 1;
+    for pass in reverse 1 .. 3 loop
+      step_size (pass) := 2 * step_size (pass + 1);
     end loop;
-    for pass in 1..4 loop
-      step := step_size(pass);
-      -- Do a straight insertion sort with 'step' as
-      -- an increment instead of 1.
-      i:= step + 1;
+    for pass in 1 .. 4 loop
+      step := step_size (pass);
+      --  Do a straight insertion sort with 'step' as
+      --  an increment instead of 1.
+      i := step + 1;
       while i <= n loop
-        temp := b(i);
-        j:= i;
-        stop:= False;
-        while (j > step) and not stop loop
+        temp := b (i);
+        j := i;
+        stop := False;
+        while j > step and not stop loop
           j := j - step;
-          if +b(j) > +temp then
+          if +b (j) > +temp then
             --  !! HAC: so far we need unary "+" for converting to VString.
             --  TBD in HAC: ">" for array-of-discrete comparisons (RM 4.5.2 (26)).
-            b(j+step):= b(j);
+            b (j + step) := b (j);
           else
-            b(j+step):= temp;
-            stop:= True;
+            b (j + step) := temp;
+            stop := True;
           end if;
         end loop;
         if not stop then
-          b(1):= temp;
+          b (1) := temp;
         end if;
         i := i + step;
       end loop;
     end loop; -- for pass in 1..npass
   end Shell_Sort;
 
-  procedure Show (m : Table; message: VString; original : Natural) is
+  procedure Show (m : Table; message : VString; original : Natural) is
   begin
     Put_Line ("---- BWT Table: " & message & " ----");
     for i in 1 .. n loop
@@ -70,15 +70,15 @@ procedure BWT is
       Put (i, 4);
       Put (' ');
       for j in 1 .. n loop
-        Put (m(i)(j));
+        Put (m (i)(j));
       end loop;
       New_Line;
     end loop;
-  end;
+  end Show;
 
   s, t, u : Row;
   m : Table;
-  index: Positive;
+  index : Positive;
   line : VString;
 
 begin
@@ -88,21 +88,21 @@ begin
   line := +"Barbapapa";
   --
   for i in 1 .. n loop
-    s(i) := Element (line, i);
+    s (i) := Element (line, i);
   end loop;
   New_Line;
   --  Fill the matrix
   for i in 1 .. n loop
     for j in 1 .. n loop
-      m(i)(j) := Element (line, (1 + (j-1 + i-1) mod n));
+      m (i)(j) := Element (line, (1 + (j - 1 + i - 1) mod n));
     end loop;
   end loop;
   --
   Show (m, +"unsorted (rotations)", 1);
   Shell_Sort (m);
   for i in 1 .. n loop
-    t(i) := m(i)(n);
-    if +m(i) = +s then
+    t (i) := m (i)(n);
+    if +m (i) = +s then
       --  !! HAC : without VString (remove the "+"): why does the "=" comparison find incompatible types?
       index := i;  --  Found row with the message with 0 rotation.
     end if;
@@ -117,15 +117,15 @@ begin
   --  De-transform
   for i in 1 .. n loop
     for j in 1 .. n loop
-      m(i)(j) := ' ';
+      m (i)(j) := ' ';
     end loop;
   end loop;
-  Shift_Insert_Sort:
+  Shift_Insert_Sort :
   for iter in 1 .. n loop
     --  Shift columns right
     for i in 1 .. n loop
       for j in reverse 2 .. n loop
-        m(i)(j) := m(i)(j-1);
+        m (i)(j) := m (i)(j - 1);
       end loop;
     end loop;
     --  Insert transformed string t as first column (again and again).
@@ -137,7 +137,7 @@ begin
     --  We have then the list of all triplets. And so on.
     --
     for i in 1 .. n loop
-      m(i)(1) := t(i);
+      m (i)(1) := t (i);
     end loop;
     Show (m, +"insert #" & iter, 0);
     Shell_Sort (m);
@@ -156,4 +156,4 @@ begin
   --
   Put_Line (n * '-');
   Put_Line (u);
-end;
+end BWT;

@@ -16,4 +16,4 @@ begin
   end if;
   --
   Put (x); Put (y); Put ("  ="); Put (x * y);
-end;
+end Einmaleins;

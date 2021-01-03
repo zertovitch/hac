@@ -1,9 +1,13 @@
 --  https://rosettacode.org/wiki/Anti-primes#Ada
+--
+--  The anti-primes (or highly composite numbers, sequence A002182 in
+--  the OEIS) are the natural numbers with more factors than any
+--  smaller than itself.
 
 with HAC_Pack; use HAC_Pack;
 
 procedure Anti_Primes is
- 
+
   function Count_Divisors (n : Integer) return Integer is
     count : Integer := 1;
   begin
@@ -14,15 +18,15 @@ procedure Anti_Primes is
     end loop;
     return count;
   end Count_Divisors;
- 
-  stop : constant := 10;
- 
+
+  stop : constant := 15;
+
   results, div_count : array (1 .. stop) of Integer;
- 
+
   procedure Search is
     candidate    : Integer := 1;
     divisors     : Integer;
-    max_divisors : Integer := 0;   
+    max_divisors : Integer := 0;
   begin
     for i in 1 .. stop loop
       loop
@@ -39,15 +43,13 @@ procedure Anti_Primes is
   end Search;
 
 begin
+  Put_Line (+"The first " & stop & " anti-primes are:");
   Search;
   --
-  Put_Line ("The first anti-primes are:");
   for i in 1 .. stop loop
-    Put (results (i));
-    Put(" has");
-    Put (div_count (i));
-    Put(" divisors.");
-    New_Line;
+    Put (results (i), 5);
+    Put (" has");
+    Put (div_count (i), 3);
+    Put_Line (" divisors.");
   end loop;
-  New_Line;
 end Anti_Primes;

@@ -29,7 +29,7 @@ procedure Gallery is
 
     procedure Build_HAC is
     begin
-      if Get_Env("hacbuild") = "done" then
+      if Get_Env ("hacbuild") = "done" then
         return;
       end if;
       Put_Line ("(Re-)building HAC, in case the present program isn't run from HAC...");
@@ -48,8 +48,6 @@ procedure Gallery is
     Launch_HAC (+"anti_primes.adb");
     Launch_HAC (+"doors.adb");
     Launch_HAC (+"mandelbrot.adb");
-    Launch_HAC (+"test.adb");
-    Launch_HAC (+"test1.adb");
     Launch_HAC (+"shell_sort.adb");
     Launch_HAC (+"merge_sort.adb");
     Launch_HAC (+"days_1901.adb");

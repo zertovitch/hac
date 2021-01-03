@@ -149,7 +149,7 @@ procedure Maze_Gen is
     Line : VString;
   begin
     H_Bar (False) := +"   +";
-    H_Bar (True ) := +"---+";
+    H_Bar (True)  := +"---+";
     V_Bar (False) := ' ';
     V_Bar (True)  := '|';
     S_Cell (False) := +"   ";

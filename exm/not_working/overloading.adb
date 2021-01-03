@@ -6,12 +6,12 @@ procedure Overloading is
 
   function A (i: Integer) return Integer is
   begin
-    return i;
+    return i + 1;
   end A;
 
-  function A (f: Float) return Integer is
+  function A (r: Real) return Integer is
   begin
-    return Integer (f);
+    return Integer (r) + 2;
   end A;
 
 begin

@@ -18,10 +18,12 @@ project HAC_Exm is
      --
      "ackermann.adb",
      "arguments.adb",
+     "anti_primes.adb",
      "bwt.adb",
      "console_io.adb",
      "covid_19_s.adb",
      "days_1901.adb",
+     "doors.adb",
      "echo.adb",
      "einmaleins.adb",
      "env.adb",
@@ -39,13 +41,12 @@ project HAC_Exm is
      "shell.adb",
      "strings_demo.adb",
      "three_lakes_s.adb",
-     "test1.adb",
      "timing.adb",
      --
      --  2) * GNAT OK
      --     * HAC KO (feature not yet supported)
      --  
-     "overloading.adb",
+     "overloading.adb"
      --
      --  3) * GNAT OK
      --     * HAC KO (crash)
@@ -54,7 +55,6 @@ project HAC_Exm is
      --     * HAC KO (compiles instead of outputting a compilation error; likely a Pascal-ism)
      --     See places with "!!" in the parser code.
      --  
-     "test.adb"
      --
      --  5) Code wrong, incomplete, HAC showing wrong output, or whatever - to be sorted...
      --
@@ -76,7 +76,7 @@ project HAC_Exm is
          for Object_Dir use "../obj/fast";
    end case;
 
-   for Source_Dirs use (".", "../src");
+   for Source_Dirs use (".", "../src", "not_working");
    for Exec_Dir use ".";
 
    package Pretty_Printer is
@@ -93,6 +93,9 @@ project HAC_Exm is
               "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
               "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
               "-gnatyx"        --  Style: check x:no extra parens
+              --  ,
+              --  "-gnatye",       --  Style: check e:end/exit labels present
+              --  "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
             );
          when "Fast" =>
             for Default_Switches ("ada") use (

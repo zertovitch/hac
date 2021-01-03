@@ -36,7 +36,7 @@ procedure Console_IO is
     end if;
     Get (I1); Get (I2);
     if Get_Needs_Skip_Line then Skip_Line; end if;
-    Put_Line (+"You have typed the numbers [" & I1 & "] [" & Image(I2) & "]");
+    Put_Line (+"You have typed the numbers [" & I1 & "] [" & Image (I2) & "]");
     --
     if Get_Needs_Skip_Line then
       Put ("Type 2 floats, then Return.");
@@ -45,7 +45,7 @@ procedure Console_IO is
     end if;
     Get (R1); Get (R2);
     if Get_Needs_Skip_Line then Skip_Line; end if;
-    Put_Line (+"You have typed the numbers [" & R1 & "] [" & Image(R2) & "]");
+    Put_Line (+"You have typed the numbers [" & R1 & "] [" & Image (R2) & "]");
     --
     Put ("Type whatever you want, then Return.");
     Get_Line (V);

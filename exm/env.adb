@@ -18,4 +18,4 @@ begin
     "Important message from the environment variables: " &
     Get_Env ("HAC_Rules")
   );
-end;
+end Env;

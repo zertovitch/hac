@@ -4,7 +4,7 @@ procedure Merge_Sort is
 
   procedure Merge is
 
-   subtype Vector is String (1..26);
+   subtype Vector is String (1 .. 26);
    v                : Vector;
    temp_array       : Vector;
    max              : Integer;
@@ -13,11 +13,11 @@ procedure Merge_Sort is
    left, top_left   : Integer;
    right, top_right : Integer;
 
-   c2 : String (1..3);
+   c2 : String (1 .. 3);
 
   begin
     v := "ZYXWVUTSRQPONMLKJIHGFEDCBA";
-    c2:= " rl";
+    c2 := " rl";
     max := 26;
     Put_Line ("Merge Sort");
     New_Line;
@@ -29,9 +29,9 @@ procedure Merge_Sort is
     cur_length := 1;
     while cur_length < max loop  --  New phase
       temp_array := v;
-      for k in 1..26 loop
-        Put(temp_array(k));
-        Put(c2(1));
+      for k in 1 .. 26 loop
+        Put (temp_array (k));
+        Put (c2 (1));
       end loop;
       New_Line;
       left := 1;
@@ -48,32 +48,32 @@ procedure Merge_Sort is
         end if;
         --  Merge subarrays
         --  Go until one subarray runs out
-        while (left < top_left) and (right < top_right) loop
-          if temp_array(left) <= temp_array(right) then
-            v(m)  := temp_array(left);
-            Put(v(m));
-            Put(c2(2));
+        while left < top_left and right < top_right loop
+          if temp_array (left) <= temp_array (right) then
+            v (m)  := temp_array (left);
+            Put (v (m));
+            Put (c2 (2));
             left  := left + 1;
           else
-            v(m)  := temp_array(right);
-            Put(v(m));
-            Put(c2(3));
+            v (m)  := temp_array (right);
+            Put (v (m));
+            Put (c2 (3));
             right := right + 1;
           end if;
           m := m + 1;
         end loop;
-        -- Now "copy tail" of whichever subarray remains
+        --  Now "copy tail" of whichever subarray remains
         while left < top_left loop
-          v(m) := temp_array(left);
-          Put(v(m));
-          Put(c2(2));
+          v (m) := temp_array (left);
+          Put (v (m));
+          Put (c2 (2));
           m    := m + 1;
           left := left + 1;
         end loop;
         while right < top_right loop
-          v(m)  := temp_array(right);
-          Put(v(m));
-          Put(c2(3));
+          v (m)  := temp_array (right);
+          Put (v (m));
+          Put (c2 (3));
           right := right + 1;
           m     := m + 1;
         end loop;

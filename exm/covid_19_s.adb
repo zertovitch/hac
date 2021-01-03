@@ -227,6 +227,9 @@ procedure COVID_19_S is
   end Simulation;
 
 begin
+  Put_Line ("COVID_19_S Simulation");
+  Put_Line ("  -  SEIR prediction model. ");
+  Put_Line ("Output in : covid*.csv");
   for s in Scenario loop
     Simulation (s);
   end loop;

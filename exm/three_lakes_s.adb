@@ -212,9 +212,10 @@ procedure Three_Lakes_S is
   sim_output : constant VString := +"3_lakes_s.csv";
 
 begin
-  Put_Line("Three_Lakes_S Simulation.");
-  Put_Line("Output in: " & sim_output);
+  Put_Line ("Three_Lakes_S Simulation");
+  Put_Line ("  -  predicting the levels of 3 interconnected lakes.");
+  Put_Line ("Output in : " & sim_output);
   Init_Sensitivity;
   Simulation (sim_output);
-  Put_Line("Done");
+  Put_Line ("Done");
 end Three_Lakes_S;

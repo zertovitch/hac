@@ -8,11 +8,11 @@ procedure Shell is
   ln : constant VString := +"output.lst";
   line : VString;
   --
-  procedure Produce_Errors (command: VString) is
+  procedure Produce_Errors (command : VString) is
   begin
     Shell_Execute (command, r);
     Put_Line (+"Result of " & command & " = " & r);
-  end;
+  end Produce_Errors;
 begin
   if Index (Get_Env ("OS"), "Windows") > 0 then
     k := Windoze;

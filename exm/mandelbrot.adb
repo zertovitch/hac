@@ -12,7 +12,7 @@ procedure Mandelbrot is
   --  function Sqr (c: Complex) return Complex is
   --  !! functions with non-standard return types not yet available for HAC.
 
-  procedure Sqr (c: in out Complex) is
+  procedure Sqr (c : in out Complex) is
     res : Complex;
   begin
     res.Re := c.Re ** 2 - c.Im ** 2;
@@ -21,7 +21,7 @@ procedure Mandelbrot is
   end Sqr;
 
   --  !!  Programmable operators (like "+") are not yet available for HAC.
-  procedure Add (c: in out Complex; added : Complex) is
+  procedure Add (c : in out Complex; added : Complex) is
   begin
     c.Re := c.Re + added.Re;
     c.Im := c.Im + added.Im;
@@ -30,11 +30,11 @@ procedure Mandelbrot is
   function Square_Modulus (c : Complex) return Real is
   begin
     return c.Re ** 2 + c.Im ** 2;
-  end;
+  end Square_Modulus;
 
   --
 
-  function Mandelbrot_Iterate (z0: Complex; max_iter: Integer) return Integer is
+  function Mandelbrot_Iterate (z0 : Complex; max_iter : Integer) return Integer is
     z : Complex;
   begin
     z.Re := 0.0;

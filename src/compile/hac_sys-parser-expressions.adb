@@ -560,14 +560,15 @@ package body HAC_Sys.Parser.Expressions is
             Emit_1 (CD, k_Integer_to_Float, 0);
           elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
             Issue_Comparison_Type_Mismatch_Error;
-          elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  V = "Hello", V < "World", etc.
+          elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  E.g., X < "World"
             --  Y is on top of the stack, we turn it into a VString.
-            --  If this becomes a perfomance issue we could consider an opcode for (VStr op Lit_Str).
-            Emit_Std_Funct (CD, SF_Literal_to_VString);  --  Now we have e.g. V < +"World".
-            Emit_Comparison_Instruction (CD, Rel_OP, VStrings);  --  Emit "<" (X, Y) between VStrings.
-          elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then  --  S = "Hello", etc.
-            --  We needs convert the literal before anything else, since
-            --  it takes two elements on the stack.
+            --  If this becomes a perfomance issue we could consider
+            --  a new Standard Function (SF_Code) for (VStr op Lit_Str).
+            Emit_Std_Funct (CD, SF_Literal_to_VString);            --  Now we have X < +"World".
+            Emit_Comparison_Instruction (CD, Rel_OP, VStrings);    --  Emit "<" (X, +Y).
+          elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
+            --  We needs convert the literal before anything else,
+            --  since it takes two elements on the stack.
             Emit_Std_Funct (CD, SF_Literal_to_VString);
             Emit (CD, k_Swap);
             Emit_Std_Funct (CD,
