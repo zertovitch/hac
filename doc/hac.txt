@@ -120,8 +120,8 @@ Language subset
     - Only constrained types are supported (unconstrained types are
         Ada-only types and not in the "Pascal subset" anyway).
     - The "String" type (unconstrained) is implemented in a very limited
-        way. So far you can only define fixed-sized constants, variables,
-        types, record fields with it, like:
+        way. So far you can only define fixed-sized constants,
+        variables, types, record fields with it, like:
           Digitz : constant String (1..10) := "0123456789";
         ... output them with Put, Put_Line, do comparisons and
         concatenations with expressions of the VString variable-length
@@ -131,15 +131,18 @@ Language subset
     - There are no pointers (access types) and nor heap allocation,
         but you will be surprised how far you can go without pointers!
     - Subprograms names cannot be overloaded, although some *predefined*
-        subprograms, including operators, of the Standard or the HAC_Pack
-        package, are overloaded many times, like
+        subprograms, including operators, of the Standard or the
+        HAC_Pack package, are overloaded many times, like
         "Put", "Get", "+", "&", ...
-    - Programmable modularity (packages or subprograms that you can "with")
-        is not yet implemented.
+    - Programmable modularity (packages or subprograms that you
+        can "with") is not yet implemented.
     - Generics are not yet implemented.
     - Tasks are implemented, but not working yet.
+    - Small parts of the standard Ada library are available through
+        the HAC_Pack package. You can see the currently available
+        items in the specification, src/hac_pack.ads .
 
-  A more systematic testing is done in the "test" directory, via
+  A systematic testing is done in the "test" directory, via
   the all_silent_tests.adb test suite.
 
 Thanks
