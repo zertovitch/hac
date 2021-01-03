@@ -4,6 +4,9 @@
 --
 --  https://adventofcode.com/2020/day/12
 --
+--  Compute destination of a ship following navigation
+--  instructions (interpreted in two different ways).
+--
 with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_12 is

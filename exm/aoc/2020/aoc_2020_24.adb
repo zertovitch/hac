@@ -4,6 +4,11 @@
 --
 --  https://adventofcode.com/2020/day/24
 --
+--  NB: Was able to recycle parts from another "Game of Life"
+--      puzzle: Seating System (Day 11).
+--      As an hommage to John Conway, there are three
+--      "Game of Life" puzzles: Day 11, 17, 24.
+--
 with HAC_Pack;  use HAC_Pack;  --  in ../../../src
 
 procedure AoC_2020_24 is

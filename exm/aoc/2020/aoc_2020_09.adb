@@ -79,7 +79,9 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1:  Not a sum of a pair: " & res_no_pair);  --  138879426
-    Put_Line (+"Part 2:  Encryption weakness: " & weakness);     --  23761694
+    Put_Line (+"Part 1:  Not a sum of a pair: " & res_no_pair);
+    Put_Line (+"Part 2:  Encryption weakness: " & weakness);
+    --  Part 1: officially validated by AoC: 138879426
+    --  Part 2: officially validated by AoC: 23761694
   end if;
 end AoC_2020_09;

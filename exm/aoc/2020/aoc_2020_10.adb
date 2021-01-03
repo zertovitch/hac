@@ -27,14 +27,15 @@ procedure AoC_2020_10 is
     diff_1, diff_3 : Natural := 0;
     seen : array (Adapter_Range) of Boolean;
     --
-    function Check return Boolean is
+    function Check_all_used return Boolean is
       ok : Boolean := True;
     begin
       for i in 1 .. top loop
         ok := ok and seen (i);
       end loop;
       return ok;
-    end Check;
+    end Check_all_used;
+    --
   begin
     for i in 1 .. top loop
       seen (i) := False;
@@ -65,12 +66,14 @@ procedure AoC_2020_10 is
         exit when found;
       end loop;
     end loop;
-    if not Check then Put_Line ("Nooo"); end if;
+    if not Check_all_used then
+      Put_Line ("Nooo - some adapters are not used!");
+    end if;
     diff_3 := diff_3 + 1;  --  3 jolts from the last adapter to the device.
     result := diff_1 * diff_3;
   end Search;
 
-  procedure Count (result : out Integer) is
+  procedure Count_Possibilities (result : out Integer) is
     cache : array (Adapter_Range) of Natural;
     --
     function Count (from : Jolt) return Natural is
@@ -99,7 +102,7 @@ procedure AoC_2020_10 is
       cache (i) := 0;
     end loop;
     result := Count (0);
-  end Count;
+  end Count_Possibilities;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   puzzle_1 : Jolt;
@@ -117,7 +120,7 @@ begin
   Close (f);
   --
   Search (puzzle_1);
-  Count (puzzle_2);
+  Count_Possibilities (puzzle_2);
   if compiler_test_mode then
     if puzzle_1 /= Integer_Value (Argument (1)) or
        puzzle_2 /= Integer_Value (Argument (2))
