@@ -306,7 +306,11 @@ package HAC_Sys.PCode is
     SF_Float_Value,
     --
     SF_Argument,
-    SF_Exists,  --  Ada.Directories-like
+    --  Ada.Directories-like
+    SF_Directory_Exists,
+    SF_Exists,
+    SF_File_Exists,
+    --  Ada.Environment_Variables-like
     SF_Get_Env,
     --
     --  Niladic functions (they have no arguments).

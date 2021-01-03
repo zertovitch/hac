@@ -1,8 +1,8 @@
 --  HAC_Pack - HAC Compatibility pack
 -------------------------------------
 --
---  This is the package containing all specifications of types and support
---  routines for HAC in its default operating mode.
+--  This is the package containing all specifications of types
+--  and support routines for HAC in its default operating mode.
 --  So far, all HAC programs must have "with" and "use" of this package.
 --
 --  Note: this requirement is kept only for early stages of HAC.
@@ -26,7 +26,8 @@ with Ada.Calendar,
 
 with System;
 
-pragma Warnings ("H");  --  Disable warning: declaration of "=" hides predefined operator.
+--  Disable warning: declaration of "=" hides predefined operator.
+pragma Warnings ("H");
 
 package HAC_Pack is
 
@@ -349,6 +350,10 @@ package HAC_Pack is
 
   function Exists (Name : String) return Boolean renames Ada.Directories.Exists;
   function Exists (Name : VString) return Boolean;
+  function Directory_Exists (Name : String) return Boolean;
+  function Directory_Exists (Name : VString) return Boolean;
+  function File_Exists (Name : String) return Boolean;
+  function File_Exists (Name : VString) return Boolean;
 
   procedure Rename (Old_Name : String;  New_Name : String) renames Ada.Directories.Rename;
   procedure Rename (Old_Name : VString; New_Name : String);

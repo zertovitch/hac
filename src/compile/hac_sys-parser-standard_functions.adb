@@ -78,7 +78,7 @@ package body HAC_Sys.Parser.Standard_Functions is
           Expected (1 .. 2) := (VStrings_Set, VStrings_Chars_or_Str_Lit_Set);
         when SF_Year .. SF_Seconds =>
           Expected (1) := Times_Set;
-        when SF_Exists | SF_Get_Env =>
+        when SF_Directory_Exists | SF_Exists | SF_File_Exists | SF_Get_Env =>
           --  Get_Env (+"PATH")  _or_  Get_Env ("PATH")
           Expected (1) := VStrings_or_Str_Lit_Set;
         when SF_Niladic =>
@@ -93,10 +93,12 @@ package body HAC_Sys.Parser.Standard_Functions is
     end Prepare_Accepted_Parameter_Types;
     --
     procedure Parse_Arguments is
+      TYP_of_arg : Typen;
     begin
       for a in 1 .. Args loop
         Expression (CD, Level, FSys + RParent + Comma, Actual (a));
-        if Expected (a) (Actual (a).TYP) then
+        TYP_of_arg := Actual (a).TYP;
+        if Expected (a) (TYP_of_arg) then
           null;  --  All right so far: argument type is in the admitted set of types.
         elsif Actual (a).TYP /= NOTYP then
           Type_Mismatch (
@@ -175,7 +177,7 @@ package body HAC_Sys.Parser.Standard_Functions is
             when others =>
               null;
           end case;
-        when SF_Exists | SF_Get_Env =>
+        when SF_Directory_Exists | SF_Exists | SF_File_Exists | SF_Get_Env =>
           --  Get_Env ("PATH")  becomes  Get_Env (+"PATH")
           if Actual (1).TYP = String_Literals then
             Emit_Std_Funct (CD, SF_Literal_to_VString);

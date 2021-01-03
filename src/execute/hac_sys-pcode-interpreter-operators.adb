@@ -319,8 +319,19 @@ package body HAC_Sys.PCode.Interpreter.Operators is
               Top_Item.V := Null_VString;
             end if;
           end;
-        when SF_Exists =>
-          Top_Item.I := Boolean'Pos (Ada.Directories.Exists (Defs.To_String (Top_Item.V)));
+        when SF_Directory_Exists | SF_Exists | SF_File_Exists =>
+          declare
+            Name : constant String := Defs.To_String (Top_Item.V);
+            use Ada.Directories;
+          begin
+            Top_Item.I := Boolean'Pos (
+              Exists (Name) and then
+                (Code = SF_Exists
+                 or else (Code = SF_Directory_Exists and then Kind (Name) = Directory)
+                 or else (Code = SF_File_Exists and then Kind (Name) = Ordinary_File)
+                )
+              );
+          end;
         when SF_Niladic =>
           --  NILADIC functions need to push a new item (their own result).
           Push (ND);

@@ -597,6 +597,28 @@ package body HAC_Pack is
     return Exists (To_String (Name));
   end Exists;
 
+  function Directory_Exists (Name : String) return Boolean is
+    use Ada.Directories;
+  begin
+    return Exists (Name) and then Kind (Name) = Directory;
+  end Directory_Exists;
+
+  function Directory_Exists (Name : VString) return Boolean is
+  begin
+    return Directory_Exists (To_String (Name));
+  end Directory_Exists;
+
+  function File_Exists (Name : String) return Boolean is
+    use Ada.Directories;
+  begin
+    return Exists (Name) and then Kind (Name) = Ordinary_File;
+  end File_Exists;
+
+  function File_Exists (Name : VString) return Boolean is
+  begin
+    return File_Exists (To_String (Name));
+  end File_Exists;
+
   procedure Rename (Old_Name : VString; New_Name : String) is
   begin
     Rename (To_String (Old_Name), New_Name);

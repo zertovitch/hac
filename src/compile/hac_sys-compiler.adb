@@ -318,7 +318,9 @@ package body HAC_Sys.Compiler is
       --  Ada.Directories-like functions
       --
       Enter_Std_Funct ("Current_Directory",   VStrings, SF_Current_Directory);
+      Enter_Std_Funct ("Directory_Exists",    Bools,    SF_Directory_Exists);
       Enter_Std_Funct ("Exists",              Bools,    SF_Exists);
+      Enter_Std_Funct ("File_Exists",         Bools,    SF_File_Exists);
       --
       Enter_Std_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
       --

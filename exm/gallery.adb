@@ -53,6 +53,7 @@ procedure Gallery is
     Launch_HAC (+"days_1901.adb");
     Launch_HAC (+"shell.adb");
     Launch_HAC (+"file_read.adb");
+    Launch_HAC (+"existence.adb");
     Launch_HAC (+"timing.adb");
     Launch_HAC (+"bwt.adb");
     --  The following demos write files.
