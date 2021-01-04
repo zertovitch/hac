@@ -1,11 +1,14 @@
-with HAC_Sys.Compiler.PCode_Emit;
-with HAC_Sys.UErrors;                       use HAC_Sys.UErrors;
-with HAC_Sys.Parser;                        use HAC_Sys.Parser;
-with HAC_Sys.Parser.Helpers;
-with HAC_Sys.PCode;
-with HAC_Sys.Scanner;                       use HAC_Sys.Scanner;
+with HAC_Sys.Compiler.Library,
+     HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Parser.Helpers,
+     HAC_Sys.PCode,
+     HAC_Sys.Scanner,
+     HAC_Sys.UErrors;
 
-with Ada.Integer_Text_IO, Ada.Characters.Handling, Ada.Strings.Fixed, Ada.Text_IO;
+with Ada.Characters.Handling,
+     Ada.Integer_Text_IO,
+     Ada.Strings.Fixed,
+     Ada.Text_IO;
 
 package body HAC_Sys.Compiler is
 
@@ -366,12 +369,12 @@ package body HAC_Sys.Compiler is
       CD.Main_Proc_Id_Index := CD.Id_Count;
     end Enter_Standard_Functions_and_Main;
 
-    use Ada.Text_IO, HAC_Sys.Parser.Helpers;
+    use Ada.Text_IO, Parser.Helpers, UErrors;
 
     asm_dump : File_Type;
     map_file : File_Type;
 
-    procedure InSymbol is begin InSymbol (CD); end InSymbol;
+    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
   begin  --  Compile
     Init (CD);
@@ -457,9 +460,11 @@ package body HAC_Sys.Compiler is
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  { Task Table Entry }
 
     --  Start Compiling
-    Block (CD, Block_Begin_Symbol + Statement_Begin_Symbol,
-           False, False, 1, CD.Id_Count,
-           CD.IdTab (CD.Id_Count).Name, CD.Main_Program_ID_with_case);
+    Parser.Block (
+      CD, Block_Begin_Symbol + Statement_Begin_Symbol,
+      False, False, 1, CD.Id_Count,
+      CD.IdTab (CD.Id_Count).Name, CD.Main_Program_ID_with_case
+    );
     --  Main procedure is parsed.
     PCode_Emit.Emit (CD, k_Halt_Interpreter);
 
