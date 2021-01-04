@@ -56,7 +56,7 @@ package body HAC_Sys.Parser.Calls is
       InSymbol (CD);
       if K = No_Id then
         null;  --  Error already issued due to undefined identifier
-      elsif CD.IdTab (K).Obj /= Variable then
+      elsif CD.IdTab (K).Entity /= Variable then
         Error (CD, err_variable_missing);
       elsif CD.IdTab (K).Read_only then
         Error (

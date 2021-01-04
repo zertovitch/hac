@@ -16,7 +16,10 @@ with Ada.Command_Line,
 
 package body HAC_Sys.PCode.Interpreter is
 
-  procedure Interpret (CD : Compiler_Data; Unhandled : out Exception_Propagation_Data)
+  procedure Interpret (
+    CD        : in     Compiler_Data;    --  Everything is compiled and ready to run
+    Unhandled :    out Exception_Propagation_Data
+  )
   is
     use In_Defs, Exceptions;
     ND : Interpreter_Data;
@@ -596,12 +599,12 @@ package body HAC_Sys.PCode.Interpreter is
   end Current_IO_Get_Needs_Skip_Line;
 
   procedure Interpret_on_Current_IO (
-    CD_CIO           :     Compiler_Data;
-    Argument_Shift   :     Natural := 0;    --  Number of arguments to be skipped
-    Full_Script_Name :     String;
-    Unhandled        : out Exception_Propagation_Data;
-    Max_Stack_Usage  : out Natural;
-    Stack_Size       : out Positive
+    CD_CIO           : in     Compiler_Data;  --  Everything is compiled and ready to run
+    Argument_Shift   : in     Natural := 0;   --  Number of arguments to be skipped
+    Full_Script_Name : in     String;         --  This is for Command_Name
+    Unhandled        :    out Exception_Propagation_Data;
+    Max_Stack_Usage  :    out Natural;
+    Stack_Size       :    out Positive
   )
   is
 

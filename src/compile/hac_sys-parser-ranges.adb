@@ -30,7 +30,7 @@ package body HAC_Sys.Parser.Ranges is
       declare
         Id_T : IdTabEntry renames CD.IdTab (Idx);
       begin
-        if Id_T.Obj = TypeMark and then Discrete_Typ (Id_T.xTyp.TYP) then
+        if Id_T.Entity = TypeMark and then Discrete_Typ (Id_T.xTyp.TYP) then
           Low.TP  := Id_T.xTyp;
           Low.I   := Id_T.Discrete_First;
           High.TP := Id_T.xTyp;

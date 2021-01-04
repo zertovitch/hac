@@ -214,6 +214,7 @@ package HAC_Sys.Defs is
   ---------------------
 
   type Symset is array (KeyWSymbol) of Boolean;
+  --  The "+" and "-" reproduce the Pascal set operators.
   function "+" (a, b : Symset) return Symset;
   function "+" (a : Symset; b : KeyWSymbol) return Symset;
   function "-" (a, b : Symset) return Symset;

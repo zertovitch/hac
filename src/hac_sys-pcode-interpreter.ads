@@ -45,12 +45,12 @@ package HAC_Sys.PCode.Interpreter is
   ------------------------------------------------------------------------------
 
   procedure Interpret_on_Current_IO (
-    CD_CIO           :     Compiler_Data;
-    Argument_Shift   :     Natural := 0;    --  Number of arguments to be skipped
-    Full_Script_Name :     String;
-    Unhandled        : out Exception_Propagation_Data;
-    Max_Stack_Usage  : out Natural;
-    Stack_Size       : out Positive
+    CD_CIO           : in     Compiler_Data;  --  Everything is compiled and ready to run
+    Argument_Shift   : in     Natural := 0;   --  Number of arguments to be skipped
+    Full_Script_Name : in     String;         --  This is for Command_Name
+    Unhandled        :    out Exception_Propagation_Data;
+    Max_Stack_Usage  :    out Natural;
+    Stack_Size       :    out Positive
   );
 
   --  Part of the subprograms useed for the Interpret_on_Current_IO
@@ -122,7 +122,10 @@ package HAC_Sys.PCode.Interpreter is
     with package Console is new Console_Traits (<>);
     with package System_Calls is new System_Calls_Traits (<>);
     --
-  procedure Interpret (CD : Compiler_Data; Unhandled : out Exception_Propagation_Data);
+  procedure Interpret (
+    CD        : in     Compiler_Data;    --  Everything is compiled and ready to run
+    Unhandled :    out Exception_Propagation_Data
+  );
 
   Abnormal_Termination : exception;
 

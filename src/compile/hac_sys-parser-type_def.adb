@@ -60,7 +60,7 @@ package body HAC_Sys.Parser.Type_Def is
         --  ... or, we have an enumeration item.
         X := Locate_Identifier (CD, CD.Id, Level);
         if X /= 0 then
-          if CD.IdTab (X).Obj /= Declared_Number_or_Enum_Item then
+          if CD.IdTab (X).Entity /= Declared_Number_or_Enum_Item then
             Error (CD, err_illegal_constant_or_constant_identifier);
           else
             C.TP := CD.IdTab (X).xTyp;
@@ -279,7 +279,7 @@ package body HAC_Sys.Parser.Type_Def is
       declare
         Id_T : IdTabEntry renames CD.IdTab (Ident_Index);
       begin
-        if Id_T.Obj = TypeMark then
+        if Id_T.Entity = TypeMark then
           xTP   := Id_T.xTyp;
           Size  := Id_T.Adr_or_Sz;
           First := Id_T.Discrete_First;

@@ -21,7 +21,7 @@ package HAC_Sys.Compiler is
   --
   procedure Compile (
     CD                 : in out Compiler_Data;
-    asm_dump_file_name :        String  := "";  --  Assembler oputput of compiled object code
+    asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
     listing_file_name  :        String  := "";  --  Listing of source code with details
     var_map_file_name  :        String  := ""   --  Output of variables (map)

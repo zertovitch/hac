@@ -175,7 +175,7 @@ package body HAC_Sys.Parser.Expressions is
                     declare
                       r : IdTabEntry renames CD.IdTab (Ident_Index);
                     begin
-                      case r.Obj is
+                      case r.Entity is
                         when Declared_Number_or_Enum_Item =>
                           X := r.xTyp;
                           if X.TYP = Floats then

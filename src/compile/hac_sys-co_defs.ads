@@ -75,7 +75,7 @@ package HAC_Sys.Co_Defs is
     SrcTo             : Positive;     --   and goes until here    (* Manuel *)
   end record;
 
-  type aObject is
+  type Entity_Kind is  --  RM 3.1
   (
       --  Declared number: untyped constant, like
       --  "pi : constant := 3.1415927"; (RM 3.3.2).
@@ -101,10 +101,10 @@ package HAC_Sys.Co_Defs is
     Name           : Alfa;          --  identifier name in ALL CAPS
     Name_with_case : Alfa;          --  identifier name with original casing
     Link           : Index;
-    Obj            : aObject;       --  One of:
+    Entity         : Entity_Kind;   --  One of:
                                     --    Declared_Number, Variable, TypeMark,
                                     --    Prozedure, Funktion, aTask, aEntry
-    Read_only      : Boolean;       --  If Obj = Variable and Read_only = True,
+    Read_only      : Boolean;       --  If Entity = Variable and Read_only = True,
                                     --    it's a typed constant.
     xTyp           : Exact_Typ;     --  Type identification
     Block_Ref      : Index;         --  Was: Ref (that was used also for what is now xTyp.Ref,
@@ -112,11 +112,11 @@ package HAC_Sys.Co_Defs is
     Normal         : Boolean;       --  value param?
     LEV            : PCode.Nesting_level;
     Adr_or_Sz      : Integer;
-    Discrete_First : HAC_Integer;   --  If Obj = TypeMark, T'First
-    Discrete_Last  : HAC_Integer;   --  If Obj = TypeMark, T'Last
+    Discrete_First : HAC_Integer;   --  If Entity = TypeMark, T'First
+    Discrete_Last  : HAC_Integer;   --  If Entity = TypeMark, T'Last
   end record;
 
-  --  Obj                           Meaning of Adr_or_Sz
+  --  Entity                        Meaning of Adr_or_Sz
   --  -------------------------------------------------------------------------------
   --  Declared_Number_or_Enum_Item  Value (number), position (enumerated type)
   --  Variable                      Relative position in the stack.

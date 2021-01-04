@@ -77,7 +77,7 @@ package body HAC_Sys.Parser is
               --  the string length and the index into the string table.
               Error (CD, err_string_not_supported_as_parameter, stop => True);
             elsif X /= No_Id then
-              if CD.IdTab (X).Obj = TypeMark then
+              if CD.IdTab (X).Entity = TypeMark then
                 xTP := CD.IdTab (X).xTyp;
                 if ValParam then
                   Sz := CD.IdTab (X).Adr_or_Sz;
@@ -132,7 +132,7 @@ package body HAC_Sys.Parser is
         Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
       end Issue_Type_Mismatch_Error;
     begin
-      pragma Assert (CD.IdTab (I).Obj = Variable);
+      pragma Assert (CD.IdTab (I).Entity = Variable);
       X := CD.IdTab (I).xTyp;
       if CD.IdTab (I).Normal then
         F := k_Push_Address;
@@ -339,7 +339,7 @@ package body HAC_Sys.Parser is
             begin
               r.Read_only := is_constant;
               if is_untyped_constant then
-                r.Obj := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
+                r.Entity := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
                 r.xTyp := C.TP;
                 case C.TP.TYP is
                   when Floats =>
@@ -451,7 +451,7 @@ package body HAC_Sys.Parser is
       begin  --  Accept_Statement
         InSymbol;
         I_Entry := Locate_Identifier (CD, CD.Id, Level);
-        if CD.IdTab (I_Entry).Obj /= aEntry then
+        if CD.IdTab (I_Entry).Entity /= aEntry then
           Error (CD, err_use_Small_Sp);
         end if;
         InSymbol;
@@ -785,7 +785,7 @@ package body HAC_Sys.Parser is
                (Name           => CD.Id,
                 Name_with_case => CD.Id_with_case,
                 Link           => Previous_Last,
-                Obj            => Variable,
+                Entity         => Variable,
                 Read_only      => True,
                 xTyp           => Type_Undefined,
                 Block_Ref      => 0,
@@ -844,7 +844,7 @@ package body HAC_Sys.Parser is
           Y                  : Exact_Typ;
         begin
           I := Locate_Identifier (CD, CD.Id, Level);
-          if CD.IdTab (I).Obj = aTask then
+          if CD.IdTab (I).Entity = aTask then
             InSymbol;
             Entry_Call (CD, Level, FSys_St, I, -1);
             if CD.ObjCode (CD.LC - 2).F = k_Call then  --  Need to patch CallType later
@@ -951,7 +951,7 @@ package body HAC_Sys.Parser is
           begin         -- Accept_Statment_2
             InSymbol;
             I := Locate_Identifier (CD, CD.Id, Level);
-            if CD.IdTab (I).Obj /= aEntry then
+            if CD.IdTab (I).Entity /= aEntry then
               Select_Error (err_use_Small_Sp);
             end if;
             InSymbol;
@@ -1177,7 +1177,7 @@ package body HAC_Sys.Parser is
               --  New identifier: must be an identifier for a named Block_Statement or loop.
               Named_Statement;
             else
-              case CD.IdTab (I_Statement).Obj is
+              case CD.IdTab (I_Statement).Entity is
                 when Variable =>
                   Assignment (I_Statement, Check_read_only => True);
                 when Declared_Number_or_Enum_Item =>
@@ -1314,7 +1314,7 @@ package body HAC_Sys.Parser is
           I_Res_Type := Locate_Identifier (CD, CD.Id, Level);
           InSymbol;
           if I_Res_Type /= 0 then
-            if CD.IdTab (I_Res_Type).Obj /= TypeMark then
+            if CD.IdTab (I_Res_Type).Entity /= TypeMark then
               Error (CD, err_missing_a_type_identifier, stop => True);
             elsif Standard_or_Enum_Typ (CD.IdTab (I_Res_Type).xTyp.TYP) then
               CD.IdTab (Prt).xTyp := CD.IdTab (I_Res_Type).xTyp;

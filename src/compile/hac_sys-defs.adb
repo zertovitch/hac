@@ -3,12 +3,8 @@ with Ada.Strings.Fixed;
 package body HAC_Sys.Defs is
 
   function "+" (a, b : Symset) return Symset is
-    c : Symset;
   begin
-    for i in a'Range loop
-      c (i) := a (i) or b (i);
-    end loop;
-    return c;
+    return a or b;
   end "+";
 
   function "+" (a : Symset; b : KeyWSymbol) return Symset is
@@ -19,12 +15,8 @@ package body HAC_Sys.Defs is
   end "+";
 
   function "-" (a, b : Symset) return Symset is
-    c : Symset;
   begin
-    for i in a'Range loop
-      c (i) := a (i) and not b (i);
-    end loop;
-    return c;
+    return a and not b;
   end "-";
 
   function "-" (a : Symset; b : KeyWSymbol) return Symset is

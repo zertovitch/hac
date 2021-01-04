@@ -88,7 +88,7 @@ package body HAC_Sys.Compiler is
        "TYP              Ref  Norm Lvl  Adr"
     );
     Put_Line (CD.comp_dump,
-       (Alng + aObject'Width + Typen'Width + Boolean'Width + 29) * '-'
+       (Alng + Entity_Kind'Width + Typen'Width + Boolean'Width + 29) * '-'
     );
     --  We list all definitions, starting
     --  from Main (last Id of the "zero block" / standard).
@@ -100,7 +100,7 @@ package body HAC_Sys.Compiler is
         Put (CD.comp_dump, I, 4);
         Show_Padded (To_String (r.Name_with_case), Alng);
         Put (CD.comp_dump, r.Link, 4);
-        Show_Padded (aObject'Image (r.Obj), aObject'Width);
+        Show_Padded (Entity_Kind'Image (r.Entity), Entity_Kind'Width);
         Show_Padded (Typen'Image (r.xTyp.TYP), Typen'Width);
         Put (CD.comp_dump, r.xTyp.Ref, 5);
         Show_Padded (Boolean'Image (r.Normal), Boolean'Width);
@@ -180,7 +180,7 @@ package body HAC_Sys.Compiler is
 
   procedure Compile (
     CD                 : in out Compiler_Data;
-    asm_dump_file_name :        String  := "";  --  Assembler oputput of compiled object code
+    asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
     listing_file_name  :        String  := "";  --  Listing of source code with details
     var_map_file_name  :        String  := ""   --  Output of variables (map)
@@ -191,37 +191,37 @@ package body HAC_Sys.Compiler is
     procedure Enter_Standard_Functions_and_Main is
 
       procedure Enter_Std
-       (X0    : String;
-        X1    : aObject;
-        X2    : Typen;
-        Size  : Integer;
-        First : HAC_Integer := 0;
-        Last  : HAC_Integer := 0)
+       (Ident          : String;
+        New_Entity     : Entity_Kind;
+        Base_Type      : Typen;
+        Size           : Integer;
+        Discrete_First : HAC_Integer := 0;
+        Discrete_Last  : HAC_Integer := 0)
       is
-        X0A  : constant Alfa := To_Alfa (X0);
-        X0AU : constant Alfa := To_Alfa (Ada.Characters.Handling.To_Upper (X0));
+        Alfa_Ident       : constant Alfa := To_Alfa (Ident);
+        Alfa_Ident_Upper : constant Alfa := To_Alfa (Ada.Characters.Handling.To_Upper (Ident));
       begin
         CD.Id_Count            := CD.Id_Count + 1;  --  Enter standard identifier
         CD.IdTab (CD.Id_Count) :=
          (
-          Name           => X0AU,
-          Name_with_case => X0A,
+          Name           => Alfa_Ident_Upper,
+          Name_with_case => Alfa_Ident,
           Link           => CD.Id_Count - 1,
-          Obj            => X1,
+          Entity         => New_Entity,
           Read_only      => True,
-          xTyp           => (TYP => X2, Ref => 0),
+          xTyp           => (TYP => Base_Type, Ref => 0),
           Block_Ref      => 0,
           Normal         => True,
           LEV            => 0,
           Adr_or_Sz      => Size,
-          Discrete_First => First,
-          Discrete_Last  => Last);
+          Discrete_First => Discrete_First,
+          Discrete_Last  => Discrete_Last);
       end Enter_Std;
 
-      procedure Enter_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
+      procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
       begin
         Enter_Std (Name, TypeMark, T, 1, First, Last);
-      end Enter_Typ;
+      end Enter_Std_Typ;
 
       procedure Enter_Std_Funct (Name : String; T : Typen; Code : SF_Code) is
       begin
@@ -239,25 +239,25 @@ package body HAC_Sys.Compiler is
       Enter_Std ("False",          Declared_Number_or_Enum_Item, Bools, 0);
       Enter_Std ("True",           Declared_Number_or_Enum_Item, Bools, 1);
       --
-      Enter_Typ (HAC_Float_Name,   Floats, 0, 0);
-      Enter_Typ ("Character",      Chars, 0, 255);
-      Enter_Typ ("Boolean",        Bools, 0, 1);
-      Enter_Typ (HAC_Integer_Name, Ints, HAC_Integer'First, HAC_Integer'Last);
+      Enter_Std_Typ (HAC_Float_Name,   Floats, 0, 0);
+      Enter_Std_Typ ("Character",      Chars, 0, 255);
+      Enter_Std_Typ ("Boolean",        Bools, 0, 1);
+      Enter_Std_Typ (HAC_Integer_Name, Ints, HAC_Integer'First, HAC_Integer'Last);
       --
       --  The "String" type identifier is treated separately in the Type_Definition parser
       --  and returns a constrained array of Character.
       --  Here we just reserve the "String" identifier at level 0, with a bogus base type,
       --  String_Literals, which is actually used only for string literals like "abcd".
-      Enter_Typ ("String",         String_Literals, 0, 0);
+      Enter_Std_Typ ("String",         String_Literals, 0, 0);
       CD.String_Id_Index := CD.Id_Count;
       --
-      Enter_Typ ("SEMAPHORE",      Ints, 0, 0);
-      Enter_Typ ("VString",        VStrings, 0, 0);    --  2020.05.02
-      Enter_Typ ("File_Type",      Text_Files, 0, 0);  --  2020.05.17
-      Enter_Typ ("Natural",        Ints, 0, HAC_Integer'Last);
-      Enter_Typ ("Positive",       Ints, 1, HAC_Integer'Last);
-      Enter_Typ ("Time",           Times, 0, 0);
-      Enter_Typ ("Duration",       Durations, 0, 0);
+      Enter_Std_Typ ("SEMAPHORE",      Ints, 0, 0);
+      Enter_Std_Typ ("VString",        VStrings, 0, 0);    --  2020.05.02
+      Enter_Std_Typ ("File_Type",      Text_Files, 0, 0);  --  2020.05.17
+      Enter_Std_Typ ("Natural",        Ints, 0, HAC_Integer'Last);
+      Enter_Std_Typ ("Positive",       Ints, 1, HAC_Integer'Last);
+      Enter_Std_Typ ("Time",           Times, 0, 0);
+      Enter_Std_Typ ("Duration",       Durations, 0, 0);
       --
       --  Standard functions
       --
@@ -324,6 +324,12 @@ package body HAC_Sys.Compiler is
       --
       Enter_Std_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
       --
+      --  Ada.Text_IO-like procedures
+      --
+      Enter_Std_Proc ("Create",         SP_Create);
+      Enter_Std_Proc ("Open",           SP_Open);
+      Enter_Std_Proc ("Append",         SP_Append);
+      Enter_Std_Proc ("Close",          SP_Close);
       Enter_Std_Proc ("Get",            SP_Get);
       Enter_Std_Proc ("Get_Immediate",  SP_Get_Immediate);
       Enter_Std_Proc ("Get_Line",       SP_Get_Line);
@@ -331,19 +337,6 @@ package body HAC_Sys.Compiler is
       Enter_Std_Proc ("Put",            SP_Put);
       Enter_Std_Proc ("Put_Line",       SP_Put_Line);
       Enter_Std_Proc ("New_Line",       SP_New_Line);
-      Enter_Std_Proc ("Wait",           SP_Wait);
-      Enter_Std_Proc ("Signal",         SP_Signal);
-      --
-      --  Ada.Text_IO-like procedures
-      --
-      Enter_Std_Proc ("Create",         SP_Create);
-      Enter_Std_Proc ("Open",           SP_Open);
-      Enter_Std_Proc ("Append",         SP_Append);
-      Enter_Std_Proc ("Close",          SP_Close);
-      --
-      Enter_Std_Proc ("Quantum",        SP_Quantum);
-      Enter_Std_Proc ("Priority",       SP_Priority);
-      Enter_Std_Proc ("InheritP",       SP_InheritP);
       --
       --  Ada.Environment_Variables-like procedures
       --
@@ -358,6 +351,14 @@ package body HAC_Sys.Compiler is
       --
       Enter_Std_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
       Enter_Std_Proc ("Set_Exit_Status", SP_Set_Exit_Status);
+      --
+      --  Tasking related (from SmallAda)
+      --
+      Enter_Std_Proc ("Wait",           SP_Wait);
+      Enter_Std_Proc ("Signal",         SP_Signal);
+      Enter_Std_Proc ("Quantum",        SP_Quantum);
+      Enter_Std_Proc ("Priority",       SP_Priority);
+      Enter_Std_Proc ("InheritP",       SP_InheritP);
       --
       --  Enter Main.
       --
@@ -495,7 +496,7 @@ package body HAC_Sys.Compiler is
       Put_Line (map_file, "------------------------");
       New_Line (map_file);
       for Tx in CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count loop
-        if CD.IdTab (Tx).Obj = Variable then
+        if CD.IdTab (Tx).Entity = Variable then
           if CD.IdTab (Tx).xTyp.TYP /= NOTYP then
             Ada.Integer_Text_IO.Put (map_file, CD.IdTab (Tx).Adr_or_Sz, 4);
             Put (map_file, To_String (CD.IdTab (Tx).Name) & "   ");

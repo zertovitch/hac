@@ -24,7 +24,7 @@ private package HAC_Sys.Parser.Enter_Def is  --  Package around entering definit
     CD               : in out Compiler_Data;
     Level            :        PCode.Nesting_level;
     Id, Id_with_case :        Defs.Alfa;
-    K                :        aObject
+    K                :        Entity_Kind
   );
 
   procedure Enter_Array (

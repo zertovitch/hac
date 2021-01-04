@@ -34,7 +34,7 @@ package body HAC_Sys.Parser.Enter_Def is
     CD               : in out Compiler_Data;
     Level            :        PCode.Nesting_level;
     Id, Id_with_case :        Defs.Alfa;
-    K                :        aObject
+    K                :        Entity_Kind
   )
   is
     J, L : Integer;
@@ -57,7 +57,7 @@ package body HAC_Sys.Parser.Enter_Def is
          (Name           => Id,
           Name_with_case => Id_with_case,
           Link           => L,
-          Obj            => K,
+          Entity         => K,
           Read_only      => False,
           xTyp           => Type_Undefined,
           Block_Ref      => 0,
