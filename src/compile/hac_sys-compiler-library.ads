@@ -11,14 +11,24 @@
 
 package HAC_Sys.Compiler.Library is
 
-  ------------------------
-  --  Predifined units  --
-  ------------------------
+  ----------------------
+  --  Built-in units  --
+  ----------------------
 
-  procedure With_Standard;  --  Just a skeleton
-  procedure Use_Standard;   --  Just a skeleton
+  procedure Enter_Built_In (
+    CD             : in out Compiler_Data;
+    Ident          : in     String;
+    New_Entity     : in     Entity_Kind;
+    Base_Type      : in     Typen;
+    Size           : in     Integer;
+    Discrete_First : in     HAC_Integer := 0;
+    Discrete_Last  : in     HAC_Integer := 0
+  );
 
-  procedure With_HAC_Pack;  --  Just a skeleton
-  procedure Use_HAC_Pack;   --  Just a skeleton
+  --  NB: later we will split Enter_* into a With_* and a Use_*.
+
+  procedure Enter_Standard (CD : in out Compiler_Data);
+
+  procedure Enter_HAC_Pack (CD : in out Compiler_Data);
 
 end HAC_Sys.Compiler.Library;
