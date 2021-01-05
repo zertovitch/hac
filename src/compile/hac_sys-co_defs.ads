@@ -12,7 +12,11 @@
 
 with HAC_Sys.Defs, HAC_Sys.PCode;
 
-with Ada.Finalization, Ada.Streams, Ada.Text_IO;
+with Ada.Containers.Hashed_Maps,
+     Ada.Finalization,
+     Ada.Streams,
+     Ada.Strings.Unbounded.Hash,
+     Ada.Text_IO;
 
 package HAC_Sys.Co_Defs is
   --  NB: cannot be a child package of Compiler because of Parser, Scanner, ...
@@ -150,12 +154,34 @@ package HAC_Sys.Co_Defs is
 
   type Source_Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
 
+  type Compilation_Status is (
+    Void,
+    Spec_Only,      --  Only specification has been processed so far.
+    Live_Compiled   --  Unit (spec & body) is compiled in the main object code.
+    --  In a future version we can choose to compile units into files.
+  );
+
+  type Unit_Kind is (Package_Unit, Procedure_Unit, Function_Unit);
+
+  type Library_Unit is record
+    Status     : Compilation_Status;
+    Needs_Body : Boolean;
+    Kind       : Unit_Kind;
+    Withed     : Boolean;  --  Is this unit "with-ed" in current compilation
+  end record;
+
+  package Library_Name_Mapping is new Ada.Containers.Hashed_Maps
+     (Key_Type        => VString,  --  Full unit name, like "Ada.Strings.Fixed"
+      Element_Type    => Library_Unit,
+      Hash            => Ada.Strings.Unbounded.Hash,
+      Equivalent_Keys => Ada.Strings.Unbounded."=");
+
   ---------------------
   --  Compiler_Data  --
   ---------------------
 
   type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
-    --  Source code information and scanner data
+    --  Current source code information and scanner data
     compiler_stream  : Source_Stream_Access;
     source_file_name : VString;  --  Indicative (error messages)
     --  Parsing
@@ -208,6 +234,8 @@ package HAC_Sys.Co_Defs is
     Err_Count  : Natural;
     Errs       : Error_set;
     error_pipe : Smart_error_pipe := null;
+    --
+    lib_map : Library_Name_Mapping.Map;
   end record;
 
   overriding procedure Finalize (CD : in out Compiler_Data);

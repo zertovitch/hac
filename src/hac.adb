@@ -86,7 +86,7 @@ procedure HAC is
     end if;
     Set_Source_Stream (CD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     t1 := Clock;
-    Compile (
+    Compile_Main (
       CD,
       To_String (asm_dump_file_name),
       To_String (cmp_dump_file_name)

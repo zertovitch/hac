@@ -19,7 +19,7 @@ package HAC_Sys.Compiler is
 
   --  Main compilation procedure.
   --
-  procedure Compile (
+  procedure Compile_Main (
     CD                 : in out Compiler_Data;
     asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump

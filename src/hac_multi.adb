@@ -99,7 +99,7 @@ procedure HAC_Multi is
       --
       Open (f, In_File, Ada_file_name);
       Set_Source_Stream (CD, Stream (f), Ada_file_name);
-      Compile (CD);
+      Compile_Main (CD);
       Close (f);
       --
       if Unit_Compilation_Successful (CD) then

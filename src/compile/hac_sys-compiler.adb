@@ -72,6 +72,8 @@ package body HAC_Sys.Compiler is
     --
     CD.Err_Count := 0;
     CD.Errs      := error_free;
+    --
+    CD.lib_map.Clear;
   end Init;
 
   --  Print_Tables is for debugging purposes.
@@ -180,7 +182,7 @@ package body HAC_Sys.Compiler is
 
   ---------------------------------------------------------------------------
 
-  procedure Compile (
+  procedure Compile_Main (
     CD                 : in out Compiler_Data;
     asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
@@ -358,7 +360,7 @@ package body HAC_Sys.Compiler is
       Error (CD, err_unexpected_end_of_text);
     when Compilation_abandoned =>
       null;  --  Just too many errors...
-  end Compile;
+  end Compile_Main;
 
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean is
   begin
