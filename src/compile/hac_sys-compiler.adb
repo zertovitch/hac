@@ -1,6 +1,7 @@
 with HAC_Sys.Compiler.Library,
      HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Helpers,
+     HAC_Sys.Parser.Modularity,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
@@ -214,7 +215,7 @@ package body HAC_Sys.Compiler is
     Library.Apply_WITH_Standard (CD);
     Library.Apply_USE_Clause (CD, Library.Library_Level, "Standard");
 
-    Parser.Context_Clause (CD);  --  Parse the "with"'s and "use"'s.
+    Parser.Modularity.Context_Clause (CD);  --  Parse the "with"'s and "use"'s.
 
     if CD.comp_dump_requested then
       Put_Line (CD.comp_dump, "Compiler: check for main procedure");
