@@ -17,7 +17,7 @@ package HAC_Sys.Compiler.Library is
 
   procedure Enter_Built_In (
     CD             : in out Compiler_Data;
-    Ident          : in     String;
+    Full_Ident     : in     String;  --  "Main", "Standard.False", ...
     New_Entity     : in     Entity_Kind;
     Base_Type      : in     Typen;
     Size           : in     Integer;

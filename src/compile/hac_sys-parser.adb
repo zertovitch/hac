@@ -291,7 +291,7 @@ package body HAC_Sys.Parser is
         T1 := CD.Id_Count;
         --
         if CD.Sy = IDent then
-          I_dummy := Locate_Identifier (CD, CD.Id, Level, stop_on_error => True);
+          I_dummy := Locate_Identifier (CD, CD.Id, Level, Stop_on_Error => True);
         end if;
         Test (CD, Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_Set, err_incorrectly_used_symbol);
         --

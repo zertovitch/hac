@@ -97,7 +97,7 @@ package body HAC_Sys.Compiler is
     --  We list all definitions, starting
     --  from Main (last Id of the "zero block" / standard).
     --
-    for I in CD.Blocks_Table (0).Last_Id_Idx .. CD.Id_Count loop
+    for I in 1 .. CD.Id_Count loop
       declare
         r : IdTabEntry renames CD.IdTab (I);
       begin
@@ -266,6 +266,8 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: main procedure is " & To_String (CD.Main_Program_ID));
     end if;
 
+    CD.Display (0) := 0;  --  Added 7-Dec-2009
+
     Library.Enter_Standard (CD);
     Library.Enter_HAC_Pack (CD);
     Library.Enter_Built_In (CD, To_String (CD.Main_Program_ID), Prozedure, NOTYP, 0);
@@ -279,7 +281,6 @@ package body HAC_Sys.Compiler is
       VSize             => 0,
       SrcFrom           => CD.Line_Count,
       SrcTo             => CD.Line_Count);
-    CD.Display (0) := 0;  --  Added 7-Dec-2009
 
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  { Task Table Entry }
 

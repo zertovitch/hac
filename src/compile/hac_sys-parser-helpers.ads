@@ -325,7 +325,9 @@ package HAC_Sys.Parser.Helpers is
     Id            : Alfa;
     Level         : HAC_Sys.PCode.Nesting_level;
     No_Id_Fail    : Boolean := True;
-    stop_on_error : Boolean := False) return Natural;
+    Stop_on_Error : Boolean := False
+  )
+  return Natural;
 
   ------------------------------------------------------------------
   ----------------------------------------------Enter_or_find_Float-

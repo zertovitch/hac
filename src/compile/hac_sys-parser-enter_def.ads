@@ -11,7 +11,7 @@
 
 with HAC_Sys.Defs, HAC_Sys.PCode;
 
-private package HAC_Sys.Parser.Enter_Def is  --  Package around entering definitions.
+package HAC_Sys.Parser.Enter_Def is  --  Package around entering definitions.
 
   use Defs;
 

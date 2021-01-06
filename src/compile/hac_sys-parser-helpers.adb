@@ -336,7 +336,9 @@ package body HAC_Sys.Parser.Helpers is
     Id            :        Alfa;
     Level         :        HAC_Sys.PCode.Nesting_level;
     No_Id_Fail    :        Boolean := True;
-    stop_on_error :        Boolean := False) return Natural
+    Stop_on_Error :        Boolean := False
+  )
+  return Natural
   is
     use HAC_Sys.PCode;
     L : Operand_1_Type;
@@ -353,8 +355,12 @@ package body HAC_Sys.Parser.Helpers is
       exit when L < 0 or J /= No_Id;
     end loop;
     if J = No_Id and No_Id_Fail then
-      Error (CD, err_undefined_identifier, stop => stop_on_error);
+      Error (CD, err_undefined_identifier, stop => Stop_on_Error);
     end if;
+    --  Name aliasing resolution (brought by a use clause)
+    while J /= No_Id and then CD.IdTab (J).Entity = Alias loop
+      J := CD.IdTab (J).Adr_or_Sz;  --  E.g. True -> Standard.True
+    end loop;
     return J;
   end Locate_Identifier;
 

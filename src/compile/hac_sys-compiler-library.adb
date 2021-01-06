@@ -9,7 +9,10 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.PCode;
+with HAC_Sys.Parser.Enter_Def,
+     HAC_Sys.Parser.Helpers,
+     HAC_Sys.PCode,
+     HAC_Sys.UErrors;
 
 with Ada.Characters.Handling;
 
@@ -43,7 +46,7 @@ package body HAC_Sys.Compiler.Library is
 
   procedure Enter_Built_In (
     CD             : in out Compiler_Data;
-    Ident          : in     String;
+    Full_Ident     : in     String;  --  "Main", "Standard.False", ...
     New_Entity     : in     Entity_Kind;
     Base_Type      : in     Typen;
     Size           : in     Integer;
@@ -52,8 +55,8 @@ package body HAC_Sys.Compiler.Library is
   )
   is
     use Ada.Characters.Handling;
-    Alfa_Ident       : constant Alfa := To_Alfa (Ident);
-    Alfa_Ident_Upper : constant Alfa := To_Alfa (To_Upper (Ident));
+    Alfa_Ident       : constant Alfa := To_Alfa (Full_Ident);
+    Alfa_Ident_Upper : constant Alfa := To_Alfa (To_Upper (Full_Ident));
   begin
     CD.Id_Count            := CD.Id_Count + 1;  --  Enter standard identifier
     CD.IdTab (CD.Id_Count) :=
@@ -69,24 +72,71 @@ package body HAC_Sys.Compiler.Library is
       LEV            => 0,
       Adr_or_Sz      => Size,
       Discrete_First => Discrete_First,
-      Discrete_Last  => Discrete_Last);
+      Discrete_Last  => Discrete_Last
+    );
+    CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
   end Enter_Built_In;
+
+  procedure Apply_Use (
+    CD       : in out Compiler_Data;
+    Level    : in     HAC_Sys.PCode.Nesting_level;
+    Pkg_Name : in     String
+  )
+  is
+    use Ada.Characters.Handling, Parser.Enter_Def, Parser.Helpers, PCode, UErrors;
+    Pkg_UName : constant String := To_Upper (Pkg_Name);
+    Pkg_UName_Dot : constant String := Pkg_UName & '.';
+    Pkg_Idx : constant Natural := Locate_Identifier (CD, To_Alfa (Pkg_UName), Level, Stop_on_Error => True);
+    Pkg_Lvl : HAC_Sys.PCode.Nesting_level;
+    Id_Last : Natural;
+  begin
+    pragma Assert (Pkg_Idx /= No_Id);
+    if CD.IdTab (Pkg_Idx).Entity /= Paquetage then
+      Error (CD, err_syntax_error, "Package name expected", True);
+    end if;
+    Pkg_Lvl := CD.IdTab (Pkg_Idx).LEV;
+    Id_Last := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
+    for i in 1 .. Id_Last loop
+      if CD.IdTab (i).LEV = Pkg_Lvl then
+        declare
+          Full_UName : constant String := To_String (CD.IdTab (i).Name);
+          Full_Name  : String (Full_UName'Range);
+          Start : Positive;
+        begin
+          if Full_UName'Length > Pkg_UName_Dot'Length
+            and then Full_UName (Full_UName'First .. Full_UName'First - 1 + Pkg_UName_Dot'Length) =
+                     Pkg_UName_Dot
+          then
+            --  We have spotted, e.g., "Standard.False" with the matching prefix "Standard."
+            Start := Full_UName'First + Pkg_UName_Dot'Length;
+            Full_Name := To_String (CD.IdTab (i).Name_with_case);
+            Enter (CD, Level,
+              To_Alfa (Full_UName (Start .. Full_UName'Last)),
+              To_Alfa (Full_Name (Start .. Full_Name'Last)),
+              Alias
+            );
+            CD.IdTab (CD.Id_Count).Adr_or_Sz := i;  --  i = Aliased entity's index.
+          end if;
+        end;
+      end if;
+    end loop;
+  end Apply_Use;
 
   procedure Enter_Standard (CD : in out Compiler_Data) is
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Built_In (CD, Name, TypeMark, T, 1, First, Last);
+      Enter_Built_In (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
     Is_New : Boolean;
   begin
     Register_Unit (CD, "Standard", Package_Unit, Is_New);
     --
     if Is_New then
-      --  !! To do: enter entities prefixed, then have an implicit "use" clause.
-      Enter_Built_In (CD, "",          Variable,        NOTYP, 0);
+      Enter_Built_In (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
       --
-      Enter_Built_In (CD, "False",     Declared_Number_or_Enum_Item, Bools, 0);
-      Enter_Built_In (CD, "True",      Declared_Number_or_Enum_Item, Bools, 1);
+      Enter_Built_In (CD, "Standard", Paquetage, NOTYP, 0);
+      Enter_Built_In (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
+      Enter_Built_In (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
       --
       Enter_Std_Typ (HAC_Float_Name,   Floats, 0, 0);
       Enter_Std_Typ ("Character",      Chars, 0, 255);
@@ -106,6 +156,8 @@ package body HAC_Sys.Compiler.Library is
       Enter_Std_Typ ("Positive",       Ints, 1, HAC_Integer'Last);
       Enter_Std_Typ ("Time",           Times, 0, 0);
       Enter_Std_Typ ("Duration",       Durations, 0, 0);
+      --
+      Apply_Use (CD, 0, "Standard");
     end if;
   end Enter_Standard;
 
@@ -114,17 +166,17 @@ package body HAC_Sys.Compiler.Library is
 
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Built_In (CD, Name, TypeMark, T, 1, First, Last);
+      Enter_Built_In (CD, "HAC_Pack." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
 
     procedure Enter_Std_Funct (Name : String; T : Typen; Code : SF_Code) is
     begin
-      Enter_Built_In (CD, Name, Funktion, T, SF_Code'Pos (Code));
+      Enter_Built_In (CD, "HAC_Pack." & Name, Funktion, T, SF_Code'Pos (Code));
     end Enter_Std_Funct;
 
     procedure Enter_Std_Proc (Name : String; Code : SP_Code) is
     begin
-      Enter_Built_In (CD, Name, Prozedure, NOTYP, SP_Code'Pos (Code));
+      Enter_Built_In (CD, "HAC_Pack." & Name, Prozedure, NOTYP, SP_Code'Pos (Code));
     end Enter_Std_Proc;
 
     Is_New : Boolean;
@@ -132,8 +184,7 @@ package body HAC_Sys.Compiler.Library is
     Register_Unit (CD, "HAC_Pack", Package_Unit, Is_New);
     --
     if Is_New then
-      --  !! To do: enter entities prefixed, then the "use HAC_Pack"
-      --     clause will open visibility.
+      Enter_Built_In (CD, "HAC_Pack", Paquetage, NOTYP, 0);
       Enter_Std_Typ ("Semaphore", Ints, 0, 0);
       --
       --  Standard functions
@@ -236,6 +287,8 @@ package body HAC_Sys.Compiler.Library is
       Enter_Std_Proc ("Quantum",        SP_Quantum);
       Enter_Std_Proc ("Priority",       SP_Priority);
       Enter_Std_Proc ("InheritP",       SP_InheritP);
+      --
+      Apply_Use (CD, 0, "Hac_Pack");  --  !! This will be done on the real "use" clause.
     end if;
   end Enter_HAC_Pack;
 

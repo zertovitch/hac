@@ -88,13 +88,15 @@ package HAC_Sys.Co_Defs is
       Variable,
       TypeMark,
       --
+      Paquetage,
       Prozedure,
       Funktion,
       --
       aTask,
       aEntry,
       --
-      Label
+      Label,
+      Alias   --  Short name of another entity ("use" clause).
   );
 
   ------------------------------------------------------------------------
@@ -133,6 +135,7 @@ package HAC_Sys.Co_Defs is
   --  aTask                         ?
   --  aEntry                        ?
   --  Label                         ?
+  --  Alias                         Index into the Identifier table of the aliased entity.
 
   subtype Source_Line_String is String (1 .. 1000);
 
