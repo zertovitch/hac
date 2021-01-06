@@ -1185,22 +1185,16 @@ package body HAC_Sys.Parser is
                          stop => True);
                 when TypeMark =>
                   Error (CD, err_illegal_statement_start_symbol, "type name", stop => True);
-                when Funktion =>
+                when Funktion | Funktion_Intrinsic =>
                   Error (CD, err_illegal_statement_start_symbol, "function name",
                          stop => True);
                 when aTask =>
                   Entry_Call (CD, Level, FSys_St, I_Statement, Normal_Entry_Call);
                 when Prozedure =>
-                  if CD.IdTab (I_Statement).LEV = 0
-                    --  We could have to deal with a recursive call to the main procedure...
-                    and then I_Statement /= CD.Main_Proc_Id_Index
-                  then
-                    --  We have a procedure name from HAC_Pack.
-                    Standard_Procedures.Standard_Procedure
-                      (CD, Level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
-                  else
-                    Subprogram_or_Entry_Call (CD, Level, FSys_St, I_Statement, Normal_Procedure_Call);
-                  end if;
+                  Subprogram_or_Entry_Call (CD, Level, FSys_St, I_Statement, Normal_Procedure_Call);
+                when Prozedure_Intrinsic =>
+                  Standard_Procedures.Standard_Procedure
+                    (CD, Level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
                 when Label =>
                   Error (CD, err_duplicate_label, To_String (CD.Id));
                   Test (CD, Colon_Set, FSys_St, err_colon_missing);

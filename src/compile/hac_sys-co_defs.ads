@@ -90,7 +90,9 @@ package HAC_Sys.Co_Defs is
       --
       Paquetage,
       Prozedure,
+      Prozedure_Intrinsic,
       Funktion,
+      Funktion_Intrinsic,
       --
       aTask,
       aEntry,
@@ -128,10 +130,10 @@ package HAC_Sys.Co_Defs is
   --  Variable                      Relative position in the stack.
   --  TypeMark                      Size (in PCode stack items) of an object
   --                                    of the declared type.
-  --  Prozedure                     Index into the Object Code table,
-  --                                    or Level 0 Standard Procedure code
-  --  Funktion                      Index into the Object Code table,
-  --                                    or Level 0 Standard Function code (SF_Code)
+  --  Prozedure                     Index into the Object Code table.
+  --  Prozedure_Intrinsic           Standard Procedure code (SP_Code).
+  --  Funktion                      Index into the Object Code table.
+  --  Funktion_Intrinsic            Standard Function code (SF_Code).
   --  aTask                         ?
   --  aEntry                        ?
   --  Label                         ?

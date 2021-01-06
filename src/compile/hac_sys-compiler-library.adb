@@ -171,12 +171,12 @@ package body HAC_Sys.Compiler.Library is
 
     procedure Enter_Std_Funct (Name : String; T : Typen; Code : SF_Code) is
     begin
-      Enter_Built_In (CD, "HAC_Pack." & Name, Funktion, T, SF_Code'Pos (Code));
+      Enter_Built_In (CD, "HAC_Pack." & Name, Funktion_Intrinsic, T, SF_Code'Pos (Code));
     end Enter_Std_Funct;
 
     procedure Enter_Std_Proc (Name : String; Code : SP_Code) is
     begin
-      Enter_Built_In (CD, "HAC_Pack." & Name, Prozedure, NOTYP, SP_Code'Pos (Code));
+      Enter_Built_In (CD, "HAC_Pack." & Name, Prozedure_Intrinsic, NOTYP, SP_Code'Pos (Code));
     end Enter_Std_Proc;
 
     Is_New : Boolean;

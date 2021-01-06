@@ -220,20 +220,15 @@ package body HAC_Sys.Parser.Expressions is
                           --
                         when TypeMark =>
                           Subtype_Prefixed_Expression (CD, Level, FSys_Prim, X);
-                          --
-                        when Prozedure =>
+                        when Prozedure | Prozedure_Intrinsic =>
                           Error (CD, err_expected_constant_function_variable_or_subtype);
-                          --
                         when Funktion =>
                           X := r.xTyp;
-                          if r.LEV = 0 then
-                            Standard_Functions.Standard_Function
-                              (CD, Level, FSys_Prim, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
-                          else
-                            Calls.Subprogram_or_Entry_Call
-                              (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
-                          end if;
-                          --
+                          Calls.Subprogram_or_Entry_Call
+                            (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
+                        when Funktion_Intrinsic =>
+                          Standard_Functions.Standard_Function
+                            (CD, Level, FSys_Prim, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
                         when others =>
                           null;
                       end case;

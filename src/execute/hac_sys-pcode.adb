@@ -183,9 +183,6 @@ package body HAC_Sys.PCode is
         when k_Standard_Functions =>
           SF_C := SF_Code'Val (OC (i).Y);
           Put (Text, "; " & SF_Code'Image (SF_C));
-          if SF_C = SF_Literal_to_VString then
-            Put (Text, "; """ & Str_Const (Integer (Old_Y1) .. Integer (Old_Y1 + Old_Y2 - 1)) & '"');
-          end if;
         when k_File_I_O =>
           SP_C := SP_Code'Val (OC (i).X);
           Put (Text, "; " & SP_Code'Image (SP_C));
