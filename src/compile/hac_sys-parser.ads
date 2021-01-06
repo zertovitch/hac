@@ -31,4 +31,9 @@ package HAC_Sys.Parser is
   --  When Is_a_block_statement = True, the current symbol Sy must be either
   --  DECLARE_symbol or BEGIN_symbol
 
+  --  Context clause: the bunch of "with" and "use" before a unit (a main program or a package)
+  --  10.1.2
+  --
+  procedure Context_Clause (CD : in out Compiler_Data);
+
 end HAC_Sys.Parser;

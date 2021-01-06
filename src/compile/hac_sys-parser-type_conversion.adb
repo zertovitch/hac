@@ -16,9 +16,9 @@ is
   type Type_Conversion_Kind is (To_Float, To_Integer, To_Duration, Unknown);
   kind : Type_Conversion_Kind := Unknown;
 begin
-  if Type_ID = HAC_Float_Name then
+  if Type_ID = HAC_Float_Name_Upper then
     kind := To_Float;
-  elsif Type_ID = HAC_Integer_Name then
+  elsif Type_ID = HAC_Integer_Name_Upper then
     kind := To_Integer;
   elsif Type_ID = "DURATION" then
     kind := To_Duration;

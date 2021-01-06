@@ -9,7 +9,11 @@
 -------------------------------------------------------------------------------------
 --
 
+with HAC_Sys.PCode;
+
 package HAC_Sys.Compiler.Library is
+
+  Library_Level : constant := 0;
 
   ----------------------
   --  Built-in units  --
@@ -25,10 +29,14 @@ package HAC_Sys.Compiler.Library is
     Discrete_Last  : in     HAC_Integer := 0
   );
 
-  --  NB: later we will split Enter_* into a With_* and a Use_*.
+  procedure Apply_USE_Clause (
+    CD       : in out Compiler_Data;
+    Level    : in     HAC_Sys.PCode.Nesting_level;
+    Pkg_Name : in     String
+  );
 
-  procedure Enter_Standard (CD : in out Compiler_Data);
+  procedure Apply_WITH_Standard (CD : in out Compiler_Data);
 
-  procedure Enter_HAC_Pack (CD : in out Compiler_Data);
+  procedure Apply_WITH_HAC_Pack (CD : in out Compiler_Data);
 
 end HAC_Sys.Compiler.Library;

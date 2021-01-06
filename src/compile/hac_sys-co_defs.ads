@@ -231,8 +231,8 @@ package HAC_Sys.Co_Defs is
     Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
     Main_Program_ID_with_case : Alfa := Empty_Alfa;
     --
-    listing_requested   : Boolean;
-    comp_dump_requested : Boolean;
+    listing_requested   : Boolean := False;
+    comp_dump_requested : Boolean := False;
     listing   : Ada.Text_IO.File_Type;
     comp_dump : Ada.Text_IO.File_Type;
     --

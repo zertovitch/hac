@@ -69,11 +69,13 @@ package body HAC_Sys.Compiler is
     CD.LL := 0;
     CD.syStart := 1;
     CD.syEnd   := 1;
+    Scanner.InSymbol (CD);
     --
     CD.Err_Count := 0;
     CD.Errs      := error_free;
     --
     CD.lib_map.Clear;
+    CD.Display (0) := 0;  --  Added 7-Dec-2009
   end Init;
 
   --  Print_Tables is for debugging purposes.
@@ -195,8 +197,6 @@ package body HAC_Sys.Compiler is
     asm_dump : File_Type;
     map_file : File_Type;
 
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
-
   begin  --  Compile
     Init (CD);
 
@@ -205,60 +205,31 @@ package body HAC_Sys.Compiler is
       Create (CD.listing, Name => listing_file_name);
       Put_Line (CD.listing, Header);
     end if;
-
     CD.comp_dump_requested := cmp_dump_file_name /= "";
     if CD.comp_dump_requested then
       Create (CD.comp_dump, Name => cmp_dump_file_name);
-      Put_Line (CD.comp_dump, "Compiler: check for program heading");
+      Put_Line (CD.comp_dump, "Compiler: check for main's context clause");
     end if;
 
-    InSymbol;
-    if CD.Sy /= WITH_Symbol then  --  WITH HAC_PACK;
-      Error (CD, err_WITH_Small_Sp, "", stop => True);
-    else
-      InSymbol;
-      if CD.Sy /= IDent or not Equal (CD.Id, "HAC_PACK") then
-        Error (CD, err_WITH_Small_Sp, "", stop => True);
-      else
-        InSymbol;
-        if CD.Sy /= Semicolon then
-          Error (CD, err_semicolon_missing, "");
-        else
-          InSymbol;
-        end if;
-      end if;
-    end if;
+    Library.Apply_WITH_Standard (CD);
+    Library.Apply_USE_Clause (CD, Library.Library_Level, "Standard");
 
-    if CD.Sy /= USE_Symbol then
-      Error (CD, err_use_Small_Sp, "");  --  USE HAC_PACK;
-    else
-      InSymbol;
-      if CD.Sy /= IDent or not Equal (CD.Id, "HAC_PACK") then
-        Error (CD, err_use_Small_Sp, "");
-      else
-        InSymbol;
-        if CD.Sy /= Semicolon then
-          Error (CD, err_semicolon_missing, "");
-        else
-          InSymbol;
-        end if;
-      end if;
-    end if;
+    Parser.Context_Clause (CD);  --  Parse the "with"'s and "use"'s.
 
     if CD.comp_dump_requested then
       Put_Line (CD.comp_dump, "Compiler: check for main procedure");
     end if;
 
     if CD.Sy /= PROCEDURE_Symbol then
-      Error (CD, err_missing_a_procedure_declaration, ""); -- PROCEDURE Name IS
+      Error (CD, err_missing_a_procedure_declaration, "");  --  PROCEDURE Name IS
     else
-      InSymbol;
+      Scanner.InSymbol (CD);
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing);
       else
         CD.Main_Program_ID           := CD.Id;
         CD.Main_Program_ID_with_case := CD.Id_with_case;
-        InSymbol;
+        Scanner.InSymbol (CD);
       end if;
     end if;
 
@@ -266,10 +237,6 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: main procedure is " & To_String (CD.Main_Program_ID));
     end if;
 
-    CD.Display (0) := 0;  --  Added 7-Dec-2009
-
-    Library.Enter_Standard (CD);
-    Library.Enter_HAC_Pack (CD);
     Library.Enter_Built_In (CD, To_String (CD.Main_Program_ID), Prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
 

@@ -11,7 +11,6 @@
 
 with HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Helpers,
-     HAC_Sys.PCode,
      HAC_Sys.UErrors;
 
 with Ada.Characters.Handling;
@@ -77,7 +76,7 @@ package body HAC_Sys.Compiler.Library is
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
   end Enter_Built_In;
 
-  procedure Apply_Use (
+  procedure Apply_USE_Clause (
     CD       : in out Compiler_Data;
     Level    : in     HAC_Sys.PCode.Nesting_level;
     Pkg_Name : in     String
@@ -120,9 +119,9 @@ package body HAC_Sys.Compiler.Library is
         end;
       end if;
     end loop;
-  end Apply_Use;
+  end Apply_USE_Clause;
 
-  procedure Enter_Standard (CD : in out Compiler_Data) is
+  procedure Apply_WITH_Standard (CD : in out Compiler_Data) is
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
       Enter_Built_In (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
@@ -156,12 +155,10 @@ package body HAC_Sys.Compiler.Library is
       Enter_Std_Typ ("Positive",       Ints, 1, HAC_Integer'Last);
       Enter_Std_Typ ("Time",           Times, 0, 0);
       Enter_Std_Typ ("Duration",       Durations, 0, 0);
-      --
-      Apply_Use (CD, 0, "Standard");
     end if;
-  end Enter_Standard;
+  end Apply_WITH_Standard;
 
-  procedure Enter_HAC_Pack (CD : in out Compiler_Data) is
+  procedure Apply_WITH_HAC_Pack (CD : in out Compiler_Data) is
     use PCode;
 
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
@@ -181,10 +178,11 @@ package body HAC_Sys.Compiler.Library is
 
     Is_New : Boolean;
   begin
-    Register_Unit (CD, "HAC_Pack", Package_Unit, Is_New);
+    Register_Unit (CD, HAC_Pack_Name, Package_Unit, Is_New);
     --
     if Is_New then
-      Enter_Built_In (CD, "HAC_Pack", Paquetage, NOTYP, 0);
+      Enter_Built_In (CD, HAC_Pack_Name, Paquetage, NOTYP, 0);
+      --
       Enter_Std_Typ ("Semaphore", Ints, 0, 0);
       --
       --  Standard functions
@@ -287,9 +285,7 @@ package body HAC_Sys.Compiler.Library is
       Enter_Std_Proc ("Quantum",        SP_Quantum);
       Enter_Std_Proc ("Priority",       SP_Priority);
       Enter_Std_Proc ("InheritP",       SP_InheritP);
-      --
-      Apply_Use (CD, 0, "Hac_Pack");  --  !! This will be done on the real "use" clause.
     end if;
-  end Enter_HAC_Pack;
+  end Apply_WITH_HAC_Pack;
 
 end HAC_Sys.Compiler.Library;

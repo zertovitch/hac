@@ -14,6 +14,7 @@
 with HAC_Pack;
 
 with Ada.Calendar,
+     Ada.Characters.Handling,
      Ada.Numerics.Generic_Elementary_Functions,
      Ada.Strings.Unbounded,
      Ada.Text_IO;
@@ -22,15 +23,20 @@ with Interfaces;
 
 package HAC_Sys.Defs is
 
+  HAC_Pack_Name       : constant String := "HAC_Pack";
+  HAC_Pack_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Pack_Name);
+
   subtype HAC_Integer is Interfaces.Integer_64;
-  HAC_Integer_Name : constant String := "INTEGER";
+  HAC_Integer_Name       : constant String := "Integer";
+  HAC_Integer_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Integer_Name);
   function HAC_Image is new HAC_Pack.HAC_Generic_Image (Abstract_Integer => HAC_Integer);
 
   --  HAC's default floating-point type is double-precision
   --  and is called "Real" in HAC's HAC_Pack package.
   --
   type HAC_Float is digits HAC_Pack.Real'Digits;
-  HAC_Float_Name : constant String := "REAL";
+  HAC_Float_Name       : constant String := "Real";
+  HAC_Float_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Float_Name);
   function HAC_Image (F : HAC_Float) return String;
 
   function HAC_Image (T : Ada.Calendar.Time) return String;
