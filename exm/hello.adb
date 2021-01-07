@@ -1,6 +1,7 @@
-with HAC_Pack; use HAC_Pack;
+with HAC_Pack;
 
 procedure Hello is
+  use HAC_Pack;
   f : Real := 0.0;
 begin
   Put ("Hello");

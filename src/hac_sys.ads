@@ -44,8 +44,8 @@ package HAC_Sys is
   -- Information about this package - e.g. for an "about" box --
   --------------------------------------------------------------
 
-  version   : constant String := "0.085";
-  reference : constant String := "03-Jan-2021";
+  version   : constant String := "0.086";
+  reference : constant String := "07-Jan-2021";
   --  Hopefully the latest version is at one of those URLs:
   web       : constant String := "https://hacadacompiler.sourceforge.io/";
   web2      : constant String := "https://github.com/zertovitch/hac";

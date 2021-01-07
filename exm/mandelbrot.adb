@@ -1,6 +1,7 @@
-with HAC_Pack;  use HAC_Pack;
+with HAC_Pack;
 
 procedure Mandelbrot is
+  use HAC_Pack;
 
   --  NB: there is a complete Complex package in the Ada library:
   --  Ada.Numerics.Generic_Complex_Types.

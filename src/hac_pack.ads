@@ -314,6 +314,7 @@ package HAC_Pack is
   ------------
 
   subtype Time is Ada.Calendar.Time;
+
   function Clock return Time renames Ada.Calendar.Clock;
   function "-" (Left : Time; Right : Time) return Duration renames Ada.Calendar."-";
   --  The following functions are slightly different (no subtypes) from

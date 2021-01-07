@@ -133,6 +133,7 @@ package body HAC_Sys.Compiler.Library is
       Enter_Built_In (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
       --
       Enter_Built_In (CD, "Standard", Paquetage, NOTYP, 0);
+      --
       Enter_Built_In (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
       Enter_Built_In (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
       --
@@ -148,31 +149,28 @@ package body HAC_Sys.Compiler.Library is
       Enter_Std_Typ ("String",         String_Literals, 0, 0);
       CD.String_Id_Index := CD.Id_Count;
       --
-      Enter_Std_Typ ("VString",        VStrings, 0, 0);    --  2020.05.02
-      Enter_Std_Typ ("File_Type",      Text_Files, 0, 0);  --  2020.05.17
-      Enter_Std_Typ ("Natural",        Ints, 0, HAC_Integer'Last);
-      Enter_Std_Typ ("Positive",       Ints, 1, HAC_Integer'Last);
-      Enter_Std_Typ ("Time",           Times, 0, 0);
-      Enter_Std_Typ ("Duration",       Durations, 0, 0);
+      Enter_Std_Typ ("Natural",  Ints, 0, HAC_Integer'Last);
+      Enter_Std_Typ ("Positive", Ints, 1, HAC_Integer'Last);
+      Enter_Std_Typ ("Duration", Durations, 0, 0);
     end if;
   end Apply_WITH_Standard;
 
   procedure Apply_WITH_HAC_Pack (CD : in out Compiler_Data) is
 
-    procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
+    procedure Enter_HAC_Pack_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Built_In (CD, "HAC_Pack." & Name, TypeMark, T, 1, First, Last);
-    end Enter_Std_Typ;
+      Enter_Built_In (CD, HAC_Pack_Name & '.' & Name, TypeMark, T, 1, First, Last);
+    end Enter_HAC_Pack_Typ;
 
-    procedure Enter_Std_Funct (Name : String; T : Typen; Code : PCode.SF_Code) is
+    procedure Enter_HAC_Pack_Funct (Name : String; T : Typen; Code : PCode.SF_Code) is
     begin
-      Enter_Built_In (CD, "HAC_Pack." & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
-    end Enter_Std_Funct;
+      Enter_Built_In (CD, HAC_Pack_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
+    end Enter_HAC_Pack_Funct;
 
-    procedure Enter_Std_Proc (Name : String; Code : PCode.SP_Code) is
+    procedure Enter_HAC_Pack_Proc (Name : String; Code : PCode.SP_Code) is
     begin
-      Enter_Built_In (CD, "HAC_Pack." & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
-    end Enter_Std_Proc;
+      Enter_Built_In (CD, HAC_Pack_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
+    end Enter_HAC_Pack_Proc;
 
     Is_New : Boolean;
     use PCode;
@@ -182,108 +180,111 @@ package body HAC_Sys.Compiler.Library is
     if Is_New then
       Enter_Built_In (CD, HAC_Pack_Name, Paquetage, NOTYP, 0);
       --
-      Enter_Std_Typ ("Semaphore", Ints, 0, 0);
+      Enter_HAC_Pack_Typ ("File_Type", Text_Files, 0, 0);  --  2020.05.17
+      Enter_HAC_Pack_Typ ("Semaphore", Ints, 0, 0);
+      Enter_HAC_Pack_Typ ("Time",      Times, 0, 0);
+      Enter_HAC_Pack_Typ ("VString",   VStrings, 0, 0);    --  2020.05.02
       --
       --  Standard functions
       --
-      Enter_Std_Funct ("Chr",                 Chars,  SF_T_Val);    --  S'Val : RM 3.5.5 (5)
-      Enter_Std_Funct ("Ord",                 Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)
-      Enter_Std_Funct ("Succ",                Chars,  SF_T_Succ);   --  S'Succ : RM 3.5 (22)
-      Enter_Std_Funct ("Pred",                Chars,  SF_T_Pred);   --  S'Pred : RM 3.5 (25)
-      Enter_Std_Funct ("Round",               Ints,   SF_Round_Float_to_Int);
-      Enter_Std_Funct ("Trunc",               Ints,   SF_Trunc_Float_to_Int);
-      Enter_Std_Funct ("Sin",                 Floats, SF_Sin);
-      Enter_Std_Funct ("Cos",                 Floats, SF_Cos);
-      Enter_Std_Funct ("Exp",                 Floats, SF_Exp);
-      Enter_Std_Funct ("Log",                 Floats, SF_Log);
-      Enter_Std_Funct ("Sqrt",                Floats, SF_Sqrt);
-      Enter_Std_Funct ("Arctan",              Floats, SF_Arctan);
-      Enter_Std_Funct ("End_Of_File",         Bools,  SF_EOF);
-      Enter_Std_Funct ("End_Of_Line",         Bools,  SF_EOLN);
-      Enter_Std_Funct ("Rand",                Ints,   SF_Random_Int);
-      Enter_Std_Funct ("Rnd",                 Floats, SF_Random_Float);
-      Enter_Std_Funct ("Clock",               Times,  SF_Clock);
+      Enter_HAC_Pack_Funct ("Chr",                 Chars,  SF_T_Val);    --  S'Val : RM 3.5.5 (5)
+      Enter_HAC_Pack_Funct ("Ord",                 Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)
+      Enter_HAC_Pack_Funct ("Succ",                Chars,  SF_T_Succ);   --  S'Succ : RM 3.5 (22)
+      Enter_HAC_Pack_Funct ("Pred",                Chars,  SF_T_Pred);   --  S'Pred : RM 3.5 (25)
+      Enter_HAC_Pack_Funct ("Round",               Ints,   SF_Round_Float_to_Int);
+      Enter_HAC_Pack_Funct ("Trunc",               Ints,   SF_Trunc_Float_to_Int);
+      Enter_HAC_Pack_Funct ("Sin",                 Floats, SF_Sin);
+      Enter_HAC_Pack_Funct ("Cos",                 Floats, SF_Cos);
+      Enter_HAC_Pack_Funct ("Exp",                 Floats, SF_Exp);
+      Enter_HAC_Pack_Funct ("Log",                 Floats, SF_Log);
+      Enter_HAC_Pack_Funct ("Sqrt",                Floats, SF_Sqrt);
+      Enter_HAC_Pack_Funct ("Arctan",              Floats, SF_Arctan);
+      Enter_HAC_Pack_Funct ("End_Of_File",         Bools,  SF_EOF);
+      Enter_HAC_Pack_Funct ("End_Of_Line",         Bools,  SF_EOLN);
+      Enter_HAC_Pack_Funct ("Rand",                Ints,   SF_Random_Int);
+      Enter_HAC_Pack_Funct ("Rnd",                 Floats, SF_Random_Float);
+      Enter_HAC_Pack_Funct ("Clock",               Times,  SF_Clock);
       --
-      Enter_Std_Funct ("Element",             Chars,    SF_Element);
-      Enter_Std_Funct ("Index",               Ints,     SF_Index);
-      Enter_Std_Funct ("Index_Backward",      Ints,     SF_Index_Backward);
-      Enter_Std_Funct ("Length",              Ints,     SF_Length);
-      Enter_Std_Funct ("Slice",               VStrings, SF_Slice);
-      Enter_Std_Funct ("To_Lower",            Chars,    SF_To_Lower_Char);
-      Enter_Std_Funct ("To_Upper",            Chars,    SF_To_Upper_Char);
-      Enter_Std_Funct ("To_VString",          VStrings, SF_Literal_to_VString);
+      Enter_HAC_Pack_Funct ("Element",             Chars,    SF_Element);
+      Enter_HAC_Pack_Funct ("Index",               Ints,     SF_Index);
+      Enter_HAC_Pack_Funct ("Index_Backward",      Ints,     SF_Index_Backward);
+      Enter_HAC_Pack_Funct ("Length",              Ints,     SF_Length);
+      Enter_HAC_Pack_Funct ("Slice",               VStrings, SF_Slice);
+      Enter_HAC_Pack_Funct ("To_Lower",            Chars,    SF_To_Lower_Char);
+      Enter_HAC_Pack_Funct ("To_Upper",            Chars,    SF_To_Upper_Char);
+      Enter_HAC_Pack_Funct ("To_VString",          VStrings, SF_Literal_to_VString);
       --
-      Enter_Std_Funct ("Trim_Left",           VStrings, SF_Trim_Left);
-      Enter_Std_Funct ("Trim_Right",          VStrings, SF_Trim_Right);
-      Enter_Std_Funct ("Trim_Both",           VStrings, SF_Trim_Both);
+      Enter_HAC_Pack_Funct ("Trim_Left",           VStrings, SF_Trim_Left);
+      Enter_HAC_Pack_Funct ("Trim_Right",          VStrings, SF_Trim_Right);
+      Enter_HAC_Pack_Funct ("Trim_Both",           VStrings, SF_Trim_Both);
       --
-      Enter_Std_Funct ("Head",                VStrings, SF_Head);
-      Enter_Std_Funct ("Tail",                VStrings, SF_Tail);
-      Enter_Std_Funct ("Starts_With",         Bools,    SF_Starts_With);
-      Enter_Std_Funct ("Ends_With",           Bools,    SF_Ends_With);
+      Enter_HAC_Pack_Funct ("Head",                VStrings, SF_Head);
+      Enter_HAC_Pack_Funct ("Tail",                VStrings, SF_Tail);
+      Enter_HAC_Pack_Funct ("Starts_With",         Bools,    SF_Starts_With);
+      Enter_HAC_Pack_Funct ("Ends_With",           Bools,    SF_Ends_With);
       --
       --  Ada.Calendar-like functions
       --
-      Enter_Std_Funct ("Year",                Ints,      SF_Year);
-      Enter_Std_Funct ("Month",               Ints,      SF_Month);
-      Enter_Std_Funct ("Day",                 Ints,      SF_Day);
-      Enter_Std_Funct ("Seconds",             Durations, SF_Seconds);
+      Enter_HAC_Pack_Funct ("Year",                Ints,      SF_Year);
+      Enter_HAC_Pack_Funct ("Month",               Ints,      SF_Month);
+      Enter_HAC_Pack_Funct ("Day",                 Ints,      SF_Day);
+      Enter_HAC_Pack_Funct ("Seconds",             Durations, SF_Seconds);
       --
-      Enter_Std_Funct ("Image",               VStrings, SF_Image_Ints);
-      Enter_Std_Funct ("Image_Attribute",     VStrings, SF_Image_Attribute_Floats);
-      Enter_Std_Funct ("Integer_Value",       Ints,     SF_Integer_Value);
-      Enter_Std_Funct ("Float_Value",         Floats,   SF_Float_Value);
+      Enter_HAC_Pack_Funct ("Image",               VStrings, SF_Image_Ints);
+      Enter_HAC_Pack_Funct ("Image_Attribute",     VStrings, SF_Image_Attribute_Floats);
+      Enter_HAC_Pack_Funct ("Integer_Value",       Ints,     SF_Integer_Value);
+      Enter_HAC_Pack_Funct ("Float_Value",         Floats,   SF_Float_Value);
       --
-      Enter_Std_Funct ("Argument_Count",      Ints,     SF_Argument_Count);
-      Enter_Std_Funct ("Argument",            VStrings, SF_Argument);
-      Enter_Std_Funct ("Command_Name",        VStrings, SF_Command_Name);
-      Enter_Std_Funct ("Get_Env",             VStrings, SF_Get_Env);
-      Enter_Std_Funct ("Directory_Separator", Chars,    SF_Directory_Separator);
+      Enter_HAC_Pack_Funct ("Argument_Count",      Ints,     SF_Argument_Count);
+      Enter_HAC_Pack_Funct ("Argument",            VStrings, SF_Argument);
+      Enter_HAC_Pack_Funct ("Command_Name",        VStrings, SF_Command_Name);
+      Enter_HAC_Pack_Funct ("Get_Env",             VStrings, SF_Get_Env);
+      Enter_HAC_Pack_Funct ("Directory_Separator", Chars,    SF_Directory_Separator);
       --
       --  Ada.Directories-like functions
       --
-      Enter_Std_Funct ("Current_Directory",   VStrings, SF_Current_Directory);
-      Enter_Std_Funct ("Directory_Exists",    Bools,    SF_Directory_Exists);
-      Enter_Std_Funct ("Exists",              Bools,    SF_Exists);
-      Enter_Std_Funct ("File_Exists",         Bools,    SF_File_Exists);
+      Enter_HAC_Pack_Funct ("Current_Directory",   VStrings, SF_Current_Directory);
+      Enter_HAC_Pack_Funct ("Directory_Exists",    Bools,    SF_Directory_Exists);
+      Enter_HAC_Pack_Funct ("Exists",              Bools,    SF_Exists);
+      Enter_HAC_Pack_Funct ("File_Exists",         Bools,    SF_File_Exists);
       --
-      Enter_Std_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
+      Enter_HAC_Pack_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
       --
       --  Ada.Text_IO-like procedures
       --
-      Enter_Std_Proc ("Create",         SP_Create);
-      Enter_Std_Proc ("Open",           SP_Open);
-      Enter_Std_Proc ("Append",         SP_Append);
-      Enter_Std_Proc ("Close",          SP_Close);
-      Enter_Std_Proc ("Get",            SP_Get);
-      Enter_Std_Proc ("Get_Immediate",  SP_Get_Immediate);
-      Enter_Std_Proc ("Get_Line",       SP_Get_Line);
-      Enter_Std_Proc ("Skip_Line",      SP_Skip_Line);
-      Enter_Std_Proc ("Put",            SP_Put);
-      Enter_Std_Proc ("Put_Line",       SP_Put_Line);
-      Enter_Std_Proc ("New_Line",       SP_New_Line);
+      Enter_HAC_Pack_Proc ("Create",         SP_Create);
+      Enter_HAC_Pack_Proc ("Open",           SP_Open);
+      Enter_HAC_Pack_Proc ("Append",         SP_Append);
+      Enter_HAC_Pack_Proc ("Close",          SP_Close);
+      Enter_HAC_Pack_Proc ("Get",            SP_Get);
+      Enter_HAC_Pack_Proc ("Get_Immediate",  SP_Get_Immediate);
+      Enter_HAC_Pack_Proc ("Get_Line",       SP_Get_Line);
+      Enter_HAC_Pack_Proc ("Skip_Line",      SP_Skip_Line);
+      Enter_HAC_Pack_Proc ("Put",            SP_Put);
+      Enter_HAC_Pack_Proc ("Put_Line",       SP_Put_Line);
+      Enter_HAC_Pack_Proc ("New_Line",       SP_New_Line);
       --
       --  Ada.Environment_Variables-like procedures
       --
-      Enter_Std_Proc ("Set_Env",        SP_Set_Env);
+      Enter_HAC_Pack_Proc ("Set_Env",        SP_Set_Env);
       --
       --  Ada.Directories-like procedures
       --
-      Enter_Std_Proc ("Copy_File ",     SP_Copy_File);
-      Enter_Std_Proc ("Delete_File ",   SP_Delete_File);
-      Enter_Std_Proc ("Rename ",        SP_Rename);
-      Enter_Std_Proc ("Set_Directory ", SP_Set_Directory);
+      Enter_HAC_Pack_Proc ("Copy_File ",     SP_Copy_File);
+      Enter_HAC_Pack_Proc ("Delete_File ",   SP_Delete_File);
+      Enter_HAC_Pack_Proc ("Rename ",        SP_Rename);
+      Enter_HAC_Pack_Proc ("Set_Directory ", SP_Set_Directory);
       --
-      Enter_Std_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
-      Enter_Std_Proc ("Set_Exit_Status", SP_Set_Exit_Status);
+      Enter_HAC_Pack_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
+      Enter_HAC_Pack_Proc ("Set_Exit_Status", SP_Set_Exit_Status);
       --
       --  Tasking related (from SmallAda)
       --
-      Enter_Std_Proc ("Wait",           SP_Wait);
-      Enter_Std_Proc ("Signal",         SP_Signal);
-      Enter_Std_Proc ("Quantum",        SP_Quantum);
-      Enter_Std_Proc ("Priority",       SP_Priority);
-      Enter_Std_Proc ("InheritP",       SP_InheritP);
+      Enter_HAC_Pack_Proc ("Wait",           SP_Wait);
+      Enter_HAC_Pack_Proc ("Signal",         SP_Signal);
+      Enter_HAC_Pack_Proc ("Quantum",        SP_Quantum);
+      Enter_HAC_Pack_Proc ("Priority",       SP_Priority);
+      Enter_HAC_Pack_Proc ("InheritP",       SP_InheritP);
     end if;
   end Apply_WITH_HAC_Pack;
 
