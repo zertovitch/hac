@@ -33,6 +33,11 @@ package body HAC_Sys.Defs is
     return To_String (a) = s;
   end Equal;
 
+  function Initial (a : Alfa) return Character is
+  begin
+    return a (a'First);
+  end Initial;
+
   function To_String (a : Alfa) return String is
   begin
     return Trim (a, Right);
@@ -41,7 +46,8 @@ package body HAC_Sys.Defs is
   function To_Alfa (s : String) return Alfa is
   begin
     if s'Length > Alfa'Length then
-      raise Constraint_Error;
+      raise Constraint_Error
+        with "Alfa length capacity exceeded (" & s & ')';
     else
       return s & (Alfa'Length - s'Length) * ' ';
     end if;

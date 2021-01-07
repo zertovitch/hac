@@ -149,22 +149,7 @@ package body HAC_Sys.Scanner is
         ("XOR         ", XOR_Symbol)
        );
 
-  procedure InSymbol (CD : in out Compiler_Data) is
-    I, J, K, e : Integer;
-    theLine    : Source_Line_String;
-
-    function UpCase (c : Character) return Character is
-    begin
-      if c in 'a' .. 'z' then
-        return Character'Val
-                (Character'Pos (c) -
-                 Character'Pos ('a') +
-                 Character'Pos ('A'));
-      else
-        return c;
-      end if;
-    end UpCase;
-
+  procedure NextCh (CD : in out Compiler_Data) is  --  Read Next Char; process line end
     procedure c_Get_Next_Line (InpLine : out String; Last : out Natural) is
       idx : Integer := InpLine'First - 1;
       c   : Character;
@@ -193,54 +178,75 @@ package body HAC_Sys.Scanner is
         end if;
     end c_Get_Next_Line;
 
-    procedure NextCh is  --  Read Next Char; process line end
+    theLine    : Source_Line_String;
+  begin
+    if CD.CC = CD.LL then
+      if CD.listing_requested then
+        New_Line (CD.listing);
+      end if;
+      CD.Line_Count := CD.Line_Count + 1;
+      if CD.listing_requested then
+        HAC_Sys.Defs.IIO.Put (CD.listing, HAC_Integer (CD.Line_Count), 4);
+        Put (CD.listing, "  ");
+        --  Put (Listing, LC, 5);
+        --  Put (Listing, "  ");
+      end if;
+      CD.LL := 0;
+      CD.CC := 0;
+      c_Get_Next_Line (theLine, CD.LL);
+      CD.InpLine (1 .. CD.LL + 1) := theLine (1 .. CD.LL) & ' ';
+      CD.LL := CD.LL + 1;
+
+      if CD.listing_requested then
+        New_Line (CD.listing);
+        Put_Line (CD.listing, CD.InpLine);
+      end if;
+    end if;
+
+    CD.CC := CD.CC + 1;
+    CD.CH := CD.InpLine (CD.CC);
+    --  Manuel : Change tabs for spaces
+    if Character'Pos (CD.CH) = 9 then
+      CD.CH := ' '; -- IdTab for space
+    end if;
+    if Character'Pos (CD.CH) < Character'Pos (' ') then
+      Error (CD, err_control_character);
+    end if;
+  end NextCh;
+
+  procedure Skip_Blanks (CD : in out Compiler_Data) is
+  begin
+    while CD.CH = ' ' loop
+      NextCh (CD);
+    end loop;
+  end Skip_Blanks;
+
+  procedure InSymbol (CD : in out Compiler_Data) is
+    I, J, K, e : Integer;
+
+    function UpCase (c : Character) return Character is
     begin
-      if CD.CC = CD.LL then
-        if CD.listing_requested then
-          New_Line (CD.listing);
-        end if;
-        CD.Line_Count := CD.Line_Count + 1;
-        if CD.listing_requested then
-          HAC_Sys.Defs.IIO.Put (CD.listing, HAC_Integer (CD.Line_Count), 4);
-          Put (CD.listing, "  ");
-          --  Put (Listing, LC, 5);
-          --  Put (Listing, "  ");
-        end if;
-        CD.LL := 0;
-        CD.CC := 0;
-        c_Get_Next_Line (theLine, CD.LL);
-        CD.InpLine (1 .. CD.LL + 1) := theLine (1 .. CD.LL) & ' ';
-        CD.LL := CD.LL + 1;
-
-        if CD.listing_requested then
-          New_Line (CD.listing);
-          Put_Line (CD.listing, CD.InpLine);
-        end if;
+      if c in 'a' .. 'z' then
+        return Character'Val
+                (Character'Pos (c) -
+                 Character'Pos ('a') +
+                 Character'Pos ('A'));
+      else
+        return c;
       end if;
-
-      CD.CC := CD.CC + 1;
-      CD.CH := CD.InpLine (CD.CC);
-      --  Manuel : Change tabs for spaces
-      if Character'Pos (CD.CH) = 9 then
-        CD.CH := ' '; -- IdTab for space
-      end if;
-      if Character'Pos (CD.CH) < Character'Pos (' ') then
-        Error (CD, err_control_character);
-      end if;
-
-    end NextCh;
+    end UpCase;
 
     procedure Read_Scale (allow_minus : Boolean) is
       S, Sign : Integer;
     begin
-      NextCh;
+      NextCh (CD);
       Sign := 1;
       S    := 0;
       if CD.CH = '+' then
-        NextCh;
+        NextCh (CD);
       elsif CD.CH = '-' then
         if allow_minus then
-          NextCh;
+          NextCh (CD);
           Sign := -1;
         else
           Error (
@@ -254,7 +260,7 @@ package body HAC_Sys.Scanner is
       else
         loop
           S := 10 * S + Character'Pos (CD.CH) - Character'Pos ('0');
-          NextCh;
+          NextCh (CD);
           exit when CD.CH not in '0' .. '9';
         end loop;
       end if;
@@ -306,13 +312,13 @@ package body HAC_Sys.Scanner is
     begin
       --  Number has been read until the first '#'.
       loop
-        NextCh;
+        NextCh (CD);
         l := l + 1;
         s (l) := CD.CH;
         exit when CD.CH = '#';  --  Second '#'.
         has_point := has_point or CD.CH = '.';
       end loop;
-      NextCh;
+      NextCh (CD);
       if CD.CH = 'E' or CD.CH = 'e' then
         --  Exponent. Special case because of eventual '+' or '-' which
         --  are not operators (e.g. 8#123#e+5 vs. 8#123#+5, = 8#123# + 5)...
@@ -320,12 +326,12 @@ package body HAC_Sys.Scanner is
         for c in 1 .. 2 loop
           l := l + 1;
           s (l) := CD.CH;  --  We concatenate "e+", "e-", "e5".
-          NextCh;
+          NextCh (CD);
         end loop;
         while CD.CH in '0' .. '9' loop
           l := l + 1;
           s (l) := CD.CH;  --  We concatenate the rest of the exponent.
-          NextCh;
+          NextCh (CD);
         end loop;
       end if;
       declare
@@ -349,7 +355,7 @@ package body HAC_Sys.Scanner is
       procedure Skip_eventual_underscore is
       begin
         if CD.CH = '_' then
-          NextCh;
+          NextCh (CD);
           if CD.CH = '_' then
             Error (CD, err_double_underline_not_permitted, stop => True);
           elsif CharacterTypes (CD.CH) /= Number then
@@ -366,7 +372,7 @@ package body HAC_Sys.Scanner is
       loop
         CD.INum := CD.INum * 10 + Character'Pos (CD.CH) - Character'Pos ('0');
         K := K + 1;
-        NextCh;
+        NextCh (CD);
         Skip_eventual_underscore;
         exit when CharacterTypes (CD.CH) /= Number;
       end loop;
@@ -384,7 +390,7 @@ package body HAC_Sys.Scanner is
       case CD.CH is
         when '.' =>
           --  Floating-point number 123.456.
-          NextCh;
+          NextCh (CD);
           if CD.CH = '.' then  --  Double dot.
             CD.CH := c128;
           else
@@ -396,7 +402,7 @@ package body HAC_Sys.Scanner is
               e := e - 1;
               CD.RNum := 10.0 * CD.RNum +
                       HAC_Float (Character'Pos (CD.CH) - Character'Pos ('0'));
-              NextCh;
+              NextCh (CD);
               Skip_eventual_underscore;
             end loop;
             if e = 0 then
@@ -443,7 +449,7 @@ package body HAC_Sys.Scanner is
       if CD.CC = CD.LL then  --  Case (9) above
         Error (CD, err_character_zero_chars, stop => True);
       end if;
-      NextCh;
+      NextCh (CD);
       C1 := CD.CH;
       if CD.CC = CD.LL then  --  Cases (5), (7), (8)
         if C1 = '(' then        --  Case (5)
@@ -463,8 +469,8 @@ package body HAC_Sys.Scanner is
       if C2 = ''' then  --  Cases (1), (2)
         CD.Sy := CharCon;
         CD.INum := Character'Pos (C1);
-        NextCh;
-        NextCh;
+        NextCh (CD);
+        NextCh (CD);
       else  --  Cases (3), (4)
         CD.Sy := Apostrophe;
       end if;
@@ -478,9 +484,7 @@ package body HAC_Sys.Scanner is
     loop
       Small_loop :
       loop
-        while CD.CH = ' ' loop
-          NextCh;
-        end loop;
+        Skip_Blanks (CD);
 
         CD.syStart := CD.CC - 1;
         if CharacterTypes (CD.CH) = Illegal then
@@ -495,7 +499,7 @@ package body HAC_Sys.Scanner is
              (CD.listing,
               " Char is => " & Integer'Image (Character'Pos (CD.CH)));
           end if;
-          NextCh;
+          NextCh (CD);
         else
           exit Small_loop;
         end if;
@@ -519,7 +523,7 @@ package body HAC_Sys.Scanner is
             else
               Error (CD, err_identifier_too_long, To_String (CD.Id));
             end if;
-            NextCh;
+            NextCh (CD);
             exit when CD.CH /= '_'
                      and then special_or_illegal (CharacterTypes (CD.CH));
           end loop;
@@ -554,60 +558,60 @@ package body HAC_Sys.Scanner is
           Scan_Number;
 
         when ':' =>
-          NextCh;
+          NextCh (CD);
           if CD.CH = '=' then
             CD.Sy := Becomes;
-            NextCh;
+            NextCh (CD);
           else
             CD.Sy := Colon;
           end if;
 
         when '<' =>
-          NextCh;
+          NextCh (CD);
           if CD.CH = '=' then
             CD.Sy := LEQ;
-            NextCh;
+            NextCh (CD);
           else
             CD.Sy := LSS;
           end if;
 
         when '>' =>
-          NextCh;
+          NextCh (CD);
           if CD.CH = '=' then
             CD.Sy := GEQ;
-            NextCh;
+            NextCh (CD);
           else
             CD.Sy := GTR;
           end if;
 
         when '/' =>
-          NextCh;
+          NextCh (CD);
           if CD.CH = '=' then
             CD.Sy := NEQ;
-            NextCh;
+            NextCh (CD);
           else
             CD.Sy := Divide;
           end if;
 
         when '.' =>
-          NextCh;
+          NextCh (CD);
           if CD.CH = '.' then
             CD.Sy := Range_Double_Dot_Symbol;
-            NextCh;
+            NextCh (CD);
           else
             CD.Sy := Period;
           end if;
 
         when c128 =>  --  Hathorn
           CD.Sy := Range_Double_Dot_Symbol;
-          NextCh;
+          NextCh (CD);
 
         when '"' =>
           K := 0;
           loop
-            NextCh;
+            NextCh (CD);
             if CD.CH = '"' then
-              NextCh;
+              NextCh (CD);
               if CD.CH /= '"' then  --  The ""x case
                 exit;
               end if;
@@ -636,41 +640,41 @@ package body HAC_Sys.Scanner is
           Scan_Apostrophe_or_Character;
 
         when '-' =>
-          NextCh;
+          NextCh (CD);
           if CD.CH /= '-' then
             CD.Sy := Minus;
           else  --  comment
             CD.CC := CD.LL;  --  ignore rest of input line
-            NextCh;
+            NextCh (CD);
             exit_big_loop := False;
           end if;
 
         when '=' =>
-          NextCh;
+          NextCh (CD);
           if CD.CH /= '>' then
             CD.Sy := EQL;
           else
             CD.Sy := Finger;
-            NextCh;
+            NextCh (CD);
           end if;
 
         when '{' =>  --  Special non documented comment !! O_o: remove that !!
           while CD.CH /= '}' loop
-            NextCh;
+            NextCh (CD);
           end loop;
-          NextCh;
+          NextCh (CD);
           exit_big_loop := False;
 
         when '|' =>
           CD.Sy := Alt;
-          NextCh;
+          NextCh (CD);
 
         when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
           CD.Sy := Special_Symbols (CD.CH);
-          NextCh;
+          NextCh (CD);
           if CD.Sy = Times and then CD.CH = '*' then  --  Get the "**" operator symbol
             CD.Sy := Power;
-            NextCh;
+            NextCh (CD);
           end if;
 
         when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' | '#' =>
@@ -681,7 +685,7 @@ package body HAC_Sys.Scanner is
           if CD.listing_requested then
             Put_Line (CD.listing,   " [ $!@\^_?%# ]");
           end if;
-          NextCh;
+          NextCh (CD);
           exit_big_loop := False;
 
         when Character'Val (0) .. ' ' =>

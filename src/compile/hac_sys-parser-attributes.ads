@@ -16,7 +16,7 @@ private package HAC_Sys.Parser.Attributes is
 
   procedure Scalar_Subtype_Attribute (
     CD      : in out Compiler_Data;
-    Level   :        PCode.Nesting_level;
+    Level   :        Defs.Nesting_level;
     FSys    :        Defs.Symset;
     Type_ID :        String;
     X       :    out Exact_Typ

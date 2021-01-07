@@ -10,7 +10,7 @@
 --
 
 with HAC_Sys.Parser.Enter_Def,
-     HAC_Sys.Parser.Helpers,
+     HAC_Sys.PCode,
      HAC_Sys.UErrors;
 
 with Ada.Characters.Handling;
@@ -78,46 +78,45 @@ package body HAC_Sys.Compiler.Library is
 
   procedure Apply_USE_Clause (
     CD       : in out Compiler_Data;
-    Level    : in     HAC_Sys.PCode.Nesting_level;
-    Pkg_Name : in     String
+    Level    : in     Nesting_level;
+    Pkg_Idx  : in     Natural
   )
   is
-    use Ada.Characters.Handling, Parser.Enter_Def, Parser.Helpers, PCode, UErrors;
-    Pkg_UName : constant String := To_Upper (Pkg_Name);
+    use Parser.Enter_Def, UErrors;
+    Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).Name);
     Pkg_UName_Dot : constant String := Pkg_UName & '.';
-    Pkg_Idx : constant Natural := Locate_Identifier (CD, To_Alfa (Pkg_UName), Level, Stop_on_Error => True);
-    Pkg_Lvl : HAC_Sys.PCode.Nesting_level;
-    Id_Last : Natural;
+    Pkg_Initial   : constant Character := Pkg_UName (Pkg_UName'First);
   begin
     pragma Assert (Pkg_Idx /= No_Id);
     if CD.IdTab (Pkg_Idx).Entity /= Paquetage then
       Error (CD, err_syntax_error, "Package name expected", True);
     end if;
-    Pkg_Lvl := CD.IdTab (Pkg_Idx).LEV;
-    Id_Last := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
-    for i in 1 .. Id_Last loop
-      if CD.IdTab (i).LEV = Pkg_Lvl then
-        declare
-          Full_UName : constant String := To_String (CD.IdTab (i).Name);
-          Full_Name  : String (Full_UName'Range);
-          Start : Positive;
-        begin
-          if Full_UName'Length > Pkg_UName_Dot'Length
-            and then Full_UName (Full_UName'First .. Full_UName'First - 1 + Pkg_UName_Dot'Length) =
-                     Pkg_UName_Dot
-          then
-            --  We have spotted, e.g., "Standard.False" with the matching prefix "Standard."
-            Start := Full_UName'First + Pkg_UName_Dot'Length;
-            Full_Name := To_String (CD.IdTab (i).Name_with_case);
-            Enter (CD, Level,
-              To_Alfa (Full_UName (Start .. Full_UName'Last)),
-              To_Alfa (Full_Name (Start .. Full_Name'Last)),
-              Alias
-            );
-            CD.IdTab (CD.Id_Count).Adr_or_Sz := i;  --  i = Aliased entity's index.
-          end if;
-        end;
-      end if;
+    --  The specification begins immediately after the package name.
+    for i in Pkg_Idx + 1 .. CD.Id_Count loop
+      exit when Initial (CD.IdTab (i).Name) /= Pkg_Initial;
+      declare
+        Full_UName : constant String := To_String (CD.IdTab (i).Name);
+        Full_Name  : String (Full_UName'Range);
+        Start : Positive;
+      begin
+        if Full_UName'Length > Pkg_UName_Dot'Length
+          and then Full_UName (Full_UName'First .. Full_UName'First - 1 + Pkg_UName_Dot'Length) =
+                   Pkg_UName_Dot
+        then
+          --  We have spotted, e.g., "STANDARD.FALSE" with the matching prefix "STANDARD."
+          Start := Full_UName'First + Pkg_UName_Dot'Length;
+          Full_Name := To_String (CD.IdTab (i).Name_with_case);
+          --  Here we enter, e.g. the "FALSE", "False" pair.
+          Enter (CD, Level,
+            To_Alfa (Full_UName (Start .. Full_UName'Last)),
+            To_Alfa (Full_Name (Start .. Full_Name'Last)),
+            Alias
+          );
+          CD.IdTab (CD.Id_Count).Adr_or_Sz := i;  --  i = Aliased entity's index.
+        else
+          exit;  --  We have left the public part of the specification.
+        end if;
+      end;
     end loop;
   end Apply_USE_Clause;
 
@@ -159,24 +158,24 @@ package body HAC_Sys.Compiler.Library is
   end Apply_WITH_Standard;
 
   procedure Apply_WITH_HAC_Pack (CD : in out Compiler_Data) is
-    use PCode;
 
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
       Enter_Built_In (CD, "HAC_Pack." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
 
-    procedure Enter_Std_Funct (Name : String; T : Typen; Code : SF_Code) is
+    procedure Enter_Std_Funct (Name : String; T : Typen; Code : PCode.SF_Code) is
     begin
-      Enter_Built_In (CD, "HAC_Pack." & Name, Funktion_Intrinsic, T, SF_Code'Pos (Code));
+      Enter_Built_In (CD, "HAC_Pack." & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
     end Enter_Std_Funct;
 
-    procedure Enter_Std_Proc (Name : String; Code : SP_Code) is
+    procedure Enter_Std_Proc (Name : String; Code : PCode.SP_Code) is
     begin
-      Enter_Built_In (CD, "HAC_Pack." & Name, Prozedure_Intrinsic, NOTYP, SP_Code'Pos (Code));
+      Enter_Built_In (CD, "HAC_Pack." & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
     end Enter_Std_Proc;
 
     Is_New : Boolean;
+    use PCode;
   begin
     Register_Unit (CD, HAC_Pack_Name, Package_Unit, Is_New);
     --

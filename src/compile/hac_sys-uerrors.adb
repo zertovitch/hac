@@ -155,10 +155,6 @@ package body HAC_Sys.UErrors is
         return "functions must return a value";
       when err_procedures_cannot_return_a_value =>
         return "procedures cannot return a value (use functions instead)";
-      when err_WITH_Small_Sp =>
-        return "must specify ""with hac_pack;"" here";
-      when err_use_Small_Sp =>
-        return "must specify ""use hac_pack;"" here";
       when err_missing_an_entry =>
         return "expecting an entry";
       when err_missing_expression_for_delay =>
@@ -254,8 +250,6 @@ package body HAC_Sys.UErrors is
 
   repair_table : constant array (Compile_Error) of Repair_kit :=
     (
-      err_WITH_Small_Sp               => (insert_line,   +"with HAC_Pack;  use HAC_Pack;"),
-      err_use_Small_Sp                => (insert,        +"use HAC_Pack; "),
       err_missing_a_procedure_declaration
                                       => (insert,        +"procedure "),
       err_colon_missing               => (insert,        +": "),
@@ -407,7 +401,7 @@ package body HAC_Sys.UErrors is
     for K in CD.Errs'Range loop
       if CD.Errs (K) then
         if CD.comp_dump_requested then
-          Put_Line (Compile_Error'Image (K) & ":  " & Error_String (K, ""));
+          Put_Line (CD.comp_dump, Compile_Error'Image (K) & ":  " & Error_String (K, ""));
           --  Should be Error_hint(K,n) !!
         end if;
         if CD.listing_requested then

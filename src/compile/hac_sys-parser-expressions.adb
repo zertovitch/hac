@@ -17,8 +17,8 @@ package body HAC_Sys.Parser.Expressions is
   ---------------------------------------------------------Selector-
   procedure Selector (
     CD    : in out Compiler_Data;
-    Level :        PCode.Nesting_level;
-    FSys  :        Symset;
+    Level :        Defs.Nesting_level;
+    FSys  :        Defs.Symset;
     V     : in out Exact_Typ
   )
   is
@@ -135,8 +135,8 @@ package body HAC_Sys.Parser.Expressions is
   -------------------------------------------------------Expression-
   procedure Expression (
     CD    : in out Compiler_Data;
-    Level :        PCode.Nesting_level;
-    FSys  :        Symset;
+    Level :        Defs.Nesting_level;
+    FSys  :        Defs.Symset;
     X     :    out Exact_Typ
   )
   is
@@ -194,7 +194,7 @@ package body HAC_Sys.Parser.Expressions is
                             else
                               F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                             end if;
-                            Emit_2 (CD, F, r.LEV, Operand_2_Type (r.Adr_or_Sz));
+                            Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
                             Selector (CD, Level, FSys_Prim, X);
                             if Standard_or_Enum_Typ (X.TYP) then
                               --  We are at a leaf point of composite type selection,
@@ -215,7 +215,7 @@ package body HAC_Sys.Parser.Expressions is
                             else
                               F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                             end if;
-                            Emit_2 (CD, F, r.LEV, Operand_2_Type (r.Adr_or_Sz));
+                            Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
                           end if;
                           --
                         when TypeMark =>
@@ -644,8 +644,8 @@ package body HAC_Sys.Parser.Expressions is
 
   procedure Boolean_Expression (
     CD    : in out Compiler_Data;
-    Level :        PCode.Nesting_level;
-    FSys  :        Symset;
+    Level :        Defs.Nesting_level;
+    FSys  :        Defs.Symset;
     X     :    out Exact_Typ
   )
   is
@@ -656,7 +656,7 @@ package body HAC_Sys.Parser.Expressions is
 
   procedure Subtype_Prefixed_Expression (
     CD    : in out Compiler_Data;
-    Level : in     PCode.Nesting_level;
+    Level : in     Defs.Nesting_level;
     FSys  : in     Defs.Symset;
     X     :    out Exact_Typ
   )

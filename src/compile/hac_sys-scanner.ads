@@ -19,4 +19,6 @@ package HAC_Sys.Scanner is
 
   procedure InSymbol (CD : in out Compiler_Data);
 
+  procedure Skip_Blanks (CD : in out Compiler_Data);
+
 end HAC_Sys.Scanner;

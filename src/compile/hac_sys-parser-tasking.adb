@@ -15,7 +15,7 @@ package body HAC_Sys.Parser.Tasking is
   procedure Task_Declaration (
     CD            : in out Compiler_Data;
     FSys          :        Defs.Symset;
-    Initial_Level :        Nesting_level
+    Initial_Level :        Defs.Nesting_level
   )
   is
     Level : Nesting_level := Initial_Level;

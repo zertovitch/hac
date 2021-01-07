@@ -9,8 +9,6 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.PCode;
-
 package HAC_Sys.Compiler.Library is
 
   Library_Level : constant := 0;
@@ -31,8 +29,8 @@ package HAC_Sys.Compiler.Library is
 
   procedure Apply_USE_Clause (
     CD       : in out Compiler_Data;
-    Level    : in     HAC_Sys.PCode.Nesting_level;
-    Pkg_Name : in     String
+    Level    : in     Nesting_level;
+    Pkg_Idx  : in     Natural
   );
 
   procedure Apply_WITH_Standard (CD : in out Compiler_Data);

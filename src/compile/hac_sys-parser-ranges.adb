@@ -2,6 +2,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Type_Def,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
+     HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
 
@@ -13,7 +14,7 @@ package body HAC_Sys.Parser.Ranges is
   --
   procedure Static_Subtype_Indication (  --  RM 3.2.2
     CD        : in out Compiler_Data;
-    Level     : in     PCode.Nesting_level;
+    Level     : in     Defs.Nesting_level;
     Low, High :    out Constant_Rec;
     Found     :    out Boolean
   )
@@ -48,7 +49,7 @@ package body HAC_Sys.Parser.Ranges is
 
   procedure Explicit_Static_Range (
     CD             : in out Compiler_Data;
-    Level          : in     PCode.Nesting_level;
+    Level          : in     Defs.Nesting_level;
     FSys           : in     Defs.Symset;
     Specific_Error : in     Defs.Compile_Error;
     Lower_Bound    :    out Constant_Rec;
@@ -81,7 +82,7 @@ package body HAC_Sys.Parser.Ranges is
 
   procedure Static_Range (
     CD             : in out Compiler_Data;
-    Level          : in     PCode.Nesting_level;
+    Level          : in     Defs.Nesting_level;
     FSys           : in     Defs.Symset;
     Specific_Error : in     Defs.Compile_Error;
     Lower_Bound    :    out Constant_Rec;
@@ -110,7 +111,7 @@ package body HAC_Sys.Parser.Ranges is
 
   procedure Dynamic_Range (
     CD                 : in out Compiler_Data;
-    Level              : in     PCode.Nesting_level;
+    Level              : in     Defs.Nesting_level;
     FSys               : in     Defs.Symset;
     Non_Discrete_Error : in     Defs.Compile_Error;
     Range_Typ          :    out Exact_Typ

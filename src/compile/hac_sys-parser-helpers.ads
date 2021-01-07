@@ -108,8 +108,6 @@ package HAC_Sys.Parser.Helpers is
     Found, Expected :        Exact_Typ
   );
 
-  No_Id : constant := 0;
-
   ------------------------------------
   --  Symbol sets used for parsing  --
   ------------------------------------
@@ -221,12 +219,17 @@ package HAC_Sys.Parser.Helpers is
     IDent     => True,
     others => False);
 
-  Declaration_Symbol : constant Symset :=
+  Declaration_X_Subprogram_Symbol : constant Symset :=
     (IDent            |
      SUBTYPE_Symbol   |
      TYPE_Symbol      |
      TASK_Symbol      |
-     PROCEDURE_Symbol |
+     USE_Symbol       => True,
+     others => False);
+
+  Declaration_Symbol : constant Symset :=
+    Declaration_X_Subprogram_Symbol +
+    (PROCEDURE_Symbol |
      FUNCTION_Symbol  => True,
      others => False);
 
@@ -320,12 +323,18 @@ package HAC_Sys.Parser.Helpers is
 
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-
+  --
+  --   - Aliases are resolved (True -> Standard.True).
+  --   - Parsing continues on each "package_name.": e.g. on "Pkg.",
+  --       parser will parse "Pkg.Child_Pkg.Sub_pkg.Var.X" until the
+  --       non-package entity: "Var".
+  --
   function Locate_Identifier (
-    CD            : in out Compiler_Data;
-    Id            : Alfa;
-    Level         : HAC_Sys.PCode.Nesting_level;
-    No_Id_Fail    : Boolean := True;
-    Stop_on_Error : Boolean := False
+    CD              : in out Compiler_Data;
+    Id              : in     Alfa;
+    Level           : in     Defs.Nesting_level;
+    Fail_when_No_Id : in     Boolean := True;
+    Stop_on_Error   : in     Boolean := False
   )
   return Natural;
 

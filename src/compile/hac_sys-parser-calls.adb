@@ -1,7 +1,6 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
-     HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
 
@@ -11,7 +10,7 @@ package body HAC_Sys.Parser.Calls is
 
   procedure Push_and_Check_by_Value_Parameter (
     CD       : in out Compiler_Data;
-    Level    :        HAC_Sys.PCode.Nesting_level;
+    Level    :        Nesting_level;
     FSys     :        Symset;
     Expected :        Exact_Typ
   )
@@ -40,7 +39,7 @@ package body HAC_Sys.Parser.Calls is
 
   procedure Push_by_Reference_Parameter (
     CD       : in out Compiler_Data;
-    Level    :        HAC_Sys.PCode.Nesting_level;
+    Level    :        Nesting_level;
     FSys     :        Symset;
     Found    :    out Exact_Typ  --  Funny note: Found is itself pushed by reference...
   )
@@ -70,7 +69,10 @@ package body HAC_Sys.Parser.Calls is
         else
           F := k_Push_Value;    --  Push "(v.all)'Access", that is, v (v is an access type).
         end if;
-        Emit_2 (CD, F, CD.IdTab (K).LEV, Operand_2_Type (CD.IdTab (K).Adr_or_Sz));
+        Emit_2 (CD, F,
+          Operand_1_Type (CD.IdTab (K).LEV),
+          Operand_2_Type (CD.IdTab (K).Adr_or_Sz)
+        );
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
           Selector (CD, Level, FSys + Colon_Comma_RParent, Found);
         end if;
@@ -82,10 +84,10 @@ package body HAC_Sys.Parser.Calls is
   -----------------------------------------Subprogram_or_Entry_Call-
   procedure Subprogram_or_Entry_Call (
     CD          : in out Compiler_Data;
-    Level       :        HAC_Sys.PCode.Nesting_level;
+    Level       :        Nesting_level;
     FSys        :        Symset;
     I           :        Integer;
-    CallType    :        HAC_Sys.PCode.Operand_1_Type
+    CallType    :        PCode.Operand_1_Type
   )
   is
     --****************************************************************
@@ -142,7 +144,11 @@ package body HAC_Sys.Parser.Calls is
     end if;
     --
     if CD.IdTab (I).LEV < Level then
-      Emit_2 (CD, k_Update_Display_Vector, CD.IdTab (I).LEV, Operand_2_Type (Level));
+      Emit_2 (CD,
+        k_Update_Display_Vector,
+        Operand_1_Type (CD.IdTab (I).LEV),
+        Operand_2_Type (Level)
+      );
     end if;
   end Subprogram_or_Entry_Call;
 
@@ -153,7 +159,7 @@ package body HAC_Sys.Parser.Calls is
     Level       :        Nesting_level;
     FSys        :        Symset;
     I           :        Integer;
-    CallType    :        HAC_Sys.PCode.Operand_1_Type
+    CallType    :        PCode.Operand_1_Type
   )
   is -- Hathorn
     Addr, J : Integer;

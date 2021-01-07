@@ -68,7 +68,9 @@ package HAC_Sys.Defs is
   EntryMax              : constant := 30;      --  Maximum Number of Entry Statements
   FMax                  : constant := 20;      --  Maximum Number of files for I/O
   KMax                  : constant := HAC_Float'Digits;
+
   Nesting_Level_Max     : constant := 20;
+  type Nesting_level is range 0 .. Nesting_Level_Max;
 
   End_Function_without_Return : constant := -1;
 
@@ -242,13 +244,14 @@ package HAC_Sys.Defs is
   -----------------
 
   --  Alfa is a space-padded string
-     --  !! Consider replacing by VString.
+     --  !! Consider replacing by VString or a bounded-length string.
      --     First step for a smooth transition:
      --       type Alfa is array (1 .. Alng) of Character;
      --     detects all type incompatibilities except: slice = literal expressions.
   subtype Alfa is String (1 .. Alng);
   Empty_Alfa : constant Alfa := (others => ' ');
   function Equal (a : Alfa; s : String) return Boolean;
+  function Initial (a : Alfa) return Character;
   function To_String (a : Alfa) return String;
   function To_Alfa (s : String) return Alfa;
 
@@ -380,8 +383,6 @@ package HAC_Sys.Defs is
     err_Ada_reserved_word,
     err_functions_must_return_a_value,
     err_procedures_cannot_return_a_value,
-    err_WITH_Small_Sp,
-    err_use_Small_Sp,
     err_missing_an_entry,
     err_missing_expression_for_delay,
     err_wrong_type_in_DELAY,

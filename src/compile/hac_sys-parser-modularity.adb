@@ -20,12 +20,12 @@ package body HAC_Sys.Parser.Modularity is
       end if;
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
-      Parser.Helpers.Need (CD, Comma, err_syntax_error);
+      Helpers.Need (CD, Comma, err_syntax_error);
     end loop;
     InSymbol (CD);  --  Consume the ';'.
   end With_Clause;
 
-  procedure Use_Clause (CD : in out Compiler_Data; Level : PCode.Nesting_level) is  --  8.4 (2)
+  procedure Use_Clause (CD : in out Compiler_Data; Level : Defs.Nesting_level) is  --  8.4 (2)
     use Compiler.Library, Defs, Scanner, UErrors;
   begin
     InSymbol (CD);  --  Consume "use".
@@ -33,10 +33,10 @@ package body HAC_Sys.Parser.Modularity is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, stop => True);
       end if;
-      Apply_USE_Clause (CD, Level, To_String (CD.Id_with_case));
+      Apply_USE_Clause (CD, Level, Helpers.Locate_Identifier (CD, To_Alfa (CD.Id), Level));
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
-      Parser.Helpers.Need (CD, Comma, err_syntax_error);
+      Helpers.Need (CD, Comma, err_syntax_error);
     end loop;
     InSymbol (CD);  --  Consume the ';'.
   end Use_Clause;

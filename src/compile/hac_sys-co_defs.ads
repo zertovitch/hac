@@ -118,7 +118,7 @@ package HAC_Sys.Co_Defs is
     Block_Ref      : Index;         --  Was: Ref (that was used also for what is now xTyp.Ref,
                                     --       which caused a mixup for functions' return types!)
     Normal         : Boolean;       --  value param?
-    LEV            : PCode.Nesting_level;
+    LEV            : Nesting_level;
     Adr_or_Sz      : Integer;
     Discrete_First : HAC_Integer;   --  If Entity = TypeMark, T'First
     Discrete_Last  : HAC_Integer;   --  If Entity = TypeMark, T'Last
@@ -147,15 +147,17 @@ package HAC_Sys.Co_Defs is
 
   type Object_Code_Table_Access is access HAC_Sys.PCode.Object_Code_Table;
 
-  type    Arrays_Table_Type            is array (1 .. AMax)                  of ATabEntry;
-  type    Blocks_Table_Type            is array (0 .. BMax)                  of BTabEntry;
-  type    Display_Type                 is array (PCode.Nesting_level)        of Integer;
-  type    Entries_Table_Type           is array (0 .. EntryMax)              of Index;
-  type    Identifier_Table_Type        is array (0 .. Id_Table_Max)          of IdTabEntry;
+  type    Arrays_Table_Type            is array (1 .. AMax)         of ATabEntry;
+  type    Blocks_Table_Type            is array (0 .. BMax)         of BTabEntry;
+  type    Display_Type                 is array (Nesting_level)     of Integer;
+  type    Entries_Table_Type           is array (0 .. EntryMax)     of Index;
+  type    Identifier_Table_Type        is array (0 .. Id_Table_Max) of IdTabEntry;
   subtype Strings_Constants_Table_Type is String (1 .. SMax);
-  type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)               of Index;
+  type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)      of Index;
 
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
+
+  No_Id : constant := 0;
 
   type Source_Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
 
@@ -172,14 +174,13 @@ package HAC_Sys.Co_Defs is
     Status     : Compilation_Status;
     Needs_Body : Boolean;
     Kind       : Unit_Kind;
-    Withed     : Boolean;  --  Is this unit "with-ed" in current compilation
   end record;
 
   package Library_Name_Mapping is new Ada.Containers.Hashed_Maps
-     (Key_Type        => VString,  --  Full unit name, like "Ada.Strings.Fixed"
-      Element_Type    => Library_Unit,
-      Hash            => Ada.Strings.Unbounded.Hash,
-      Equivalent_Keys => Ada.Strings.Unbounded."=");
+    (Key_Type        => VString,  --  Full unit name, like "Ada.Strings.Fixed"
+     Element_Type    => Library_Unit,
+     Hash            => Ada.Strings.Unbounded.Hash,
+     Equivalent_Keys => Ada.Strings.Unbounded."=");
 
   ---------------------
   --  Compiler_Data  --

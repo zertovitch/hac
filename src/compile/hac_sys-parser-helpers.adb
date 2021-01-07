@@ -109,7 +109,7 @@ package body HAC_Sys.Parser.Helpers is
   end Test;
 
   After_semicolon : constant Symset :=
-    (IDent | SUBTYPE_Symbol | TYPE_Symbol | TASK_Symbol => True, others => False) +
+    Declaration_X_Subprogram_Symbol +
     Block_Begin_Symbol;
 
   Comma_or_colon : constant Symset :=
@@ -332,17 +332,17 @@ package body HAC_Sys.Parser.Helpers is
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-
   function Locate_Identifier (
-    CD            : in out Compiler_Data;
-    Id            :        Alfa;
-    Level         :        HAC_Sys.PCode.Nesting_level;
-    No_Id_Fail    :        Boolean := True;
-    Stop_on_Error :        Boolean := False
+    CD              : in out Compiler_Data;
+    Id              : in     Alfa;
+    Level           : in     Defs.Nesting_level;
+    Fail_when_No_Id : in     Boolean := True;
+    Stop_on_Error   : in     Boolean := False
   )
   return Natural
   is
-    use HAC_Sys.PCode;
-    L : Operand_1_Type;
+    L : Defs.Nesting_level'Base;
     J : Integer;
+    ID_Copy : Alfa;
   begin
     L                     := Level;
     CD.IdTab (No_Id).Name := Id;  --  Sentinel
@@ -354,13 +354,39 @@ package body HAC_Sys.Parser.Helpers is
       L := L - 1;  --  Decrease nesting level.
       exit when L < 0 or J /= No_Id;
     end loop;
-    if J = No_Id and No_Id_Fail then
-      Error (CD, err_undefined_identifier, stop => Stop_on_Error);
+    if J = No_Id then
+      if Fail_when_No_Id then
+        Error (CD, err_undefined_identifier, stop => Stop_on_Error);  --  Exception raise here.
+      else
+        return J;
+      end if;
     end if;
-    --  Name aliasing resolution (brought by a use clause)
-    while J /= No_Id and then CD.IdTab (J).Entity = Alias loop
+    --  Name aliasing resolution (brought by a use clause
+    --  or a simple renames clause).
+    while CD.IdTab (J).Entity = Alias loop
       J := CD.IdTab (J).Adr_or_Sz;  --  E.g. True -> Standard.True
     end loop;
+    --  Prefixed package resolution.
+    if CD.IdTab (J).Entity = Paquetage then
+      Skip_Blanks (CD);
+      if CD.CH = '.' then  --  We sneak a look at the next symbol.
+        ID_Copy := Id;
+        --  Here some parsing: entity is a package and there is a dot waiting.
+        InSymbol (CD);  --  Consume prefix package identifier.
+        Need (CD, Period, err_syntax_error);  --  Accept "Pkg.", reject "Pkg.."
+        if CD.Sy = IDent then
+          return Locate_Identifier (
+            CD,
+            To_Alfa (To_String (ID_Copy) & '.' & To_String (CD.Id)),
+            Level,
+            Fail_when_No_Id,
+            Stop_on_Error
+          );
+        else
+          Error (CD, err_identifier_missing, stop => Stop_on_Error);
+        end if;
+      end if;
+    end if;
     return J;
   end Locate_Identifier;
 

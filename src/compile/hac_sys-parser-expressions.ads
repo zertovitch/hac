@@ -11,22 +11,22 @@ private package HAC_Sys.Parser.Expressions is
 
   procedure Boolean_Expression (
     CD    : in out Compiler_Data;
-    Level :        PCode.Nesting_level;
-    FSys  :        Symset;
+    Level :        Defs.Nesting_level;
+    FSys  :        Defs.Symset;
     X     :    out Exact_Typ
   );
 
   procedure Expression (
     CD    : in out Compiler_Data;
-    Level :        PCode.Nesting_level;
-    FSys  :        Symset;
+    Level :        Defs.Nesting_level;
+    FSys  :        Defs.Symset;
     X     :    out Exact_Typ
   );
 
   procedure Selector (
     CD    : in out Compiler_Data;
-    Level :        PCode.Nesting_level;
-    FSys  :        Symset;
+    Level :        Defs.Nesting_level;
+    FSys  :        Defs.Symset;
     V     : in out Exact_Typ
   );
 
@@ -35,7 +35,7 @@ private package HAC_Sys.Parser.Expressions is
   --
   procedure Subtype_Prefixed_Expression (
     CD    : in out Compiler_Data;
-    Level : in     PCode.Nesting_level;
+    Level : in     Defs.Nesting_level;
     FSys  : in     Defs.Symset;
     X     :    out Exact_Typ
   );

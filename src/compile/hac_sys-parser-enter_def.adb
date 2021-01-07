@@ -1,10 +1,9 @@
-with HAC_Sys.Parser.Helpers,
-     HAC_Sys.Scanner,
+with HAC_Sys.Scanner,
      HAC_Sys.UErrors;
 
 package body HAC_Sys.Parser.Enter_Def is
 
-  use Helpers, UErrors;
+  use UErrors;
 
   ------------------------------------------------------------------
   ------------------------------------------------------Enter_Block-
@@ -32,7 +31,7 @@ package body HAC_Sys.Parser.Enter_Def is
   ------------------------------------------------------------Enter-
   procedure Enter (
     CD               : in out Compiler_Data;
-    Level            :        PCode.Nesting_level;
+    Level            :        Defs.Nesting_level;
     Id, Id_with_case :        Defs.Alfa;
     K                :        Entity_Kind
   )
@@ -50,7 +49,7 @@ package body HAC_Sys.Parser.Enter_Def is
     end loop;
     --  Follow the chain of identifiers for current Level.
     if J /= No_Id then
-      Error (CD, err_duplicate_identifier, To_String (Id));
+      Error (CD, err_duplicate_identifier, To_String (Id), stop => True);
     else      --  Enter identifier in table IdTab
       CD.Id_Count            := CD.Id_Count + 1;
       CD.IdTab (CD.Id_Count) :=
@@ -112,7 +111,7 @@ package body HAC_Sys.Parser.Enter_Def is
 
   procedure Enter_Variables (
     CD    : in out Compiler_Data;
-    Level :        PCode.Nesting_level
+    Level :        Defs.Nesting_level
   )
   is
     procedure Enter_Variable is

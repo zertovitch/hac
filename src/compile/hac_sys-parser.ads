@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.PCode;
+with HAC_Sys.Co_Defs, HAC_Sys.Defs;
 
 package HAC_Sys.Parser is
 
@@ -20,7 +20,7 @@ package HAC_Sys.Parser is
     FSys                 :        Defs.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  RM: 5.6 Block Statements
-    Initial_Level        :        PCode.Nesting_level;
+    Initial_Level        :        Defs.Nesting_level;
     Prt                  :        Integer;
     Block_ID             :        Defs.Alfa;  --  Name of this block (if any)
     Block_ID_with_case   :        Defs.Alfa
@@ -30,10 +30,5 @@ package HAC_Sys.Parser is
   --  True will be passed for both Is_a_function and Is_a_block_statement.
   --  When Is_a_block_statement = True, the current symbol Sy must be either
   --  DECLARE_symbol or BEGIN_symbol
-
-  --  Context clause: the bunch of "with" and "use" before a unit (a main program or a package)
-  --  10.1.2
-  --
-  procedure Context_Clause (CD : in out Compiler_Data);
 
 end HAC_Sys.Parser;

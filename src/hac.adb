@@ -194,9 +194,9 @@ begin
     elsif Argument (i) = "-v2" then
       verbosity := 2;
     elsif Argument (i) = "-a" then
-      asm_dump_file_name := To_Unbounded_String ("dump.pca");  --  PCA = PCode Assembler
+      asm_dump_file_name := To_Unbounded_String ("asm_dump.pca");  --  PCA = PCode Assembler
     elsif Argument (i) = "-d" then
-      cmp_dump_file_name := To_Unbounded_String ("symbols.lst");
+      cmp_dump_file_name := To_Unbounded_String ("compiler_dump.lst");
     else
       Compile_and_interpret_file (Argument (i), i);
       no_hac_ing := False;

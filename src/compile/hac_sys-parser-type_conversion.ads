@@ -7,7 +7,7 @@ with HAC_Sys.Defs;
 
 procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
   CD      : in out Compiler_Data;
-  Level   :        PCode.Nesting_level;
+  Level   :        Defs.Nesting_level;
   FSys    :        Defs.Symset;
   Type_ID :        String;
   X       :    out Exact_Typ

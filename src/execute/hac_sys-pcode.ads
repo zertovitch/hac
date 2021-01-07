@@ -139,7 +139,6 @@ package HAC_Sys.PCode is
     (k_Exit_Call .. k_Exit_Function | k_Halt_Interpreter => True, others => False);
 
   type Operand_1_Type is new Integer;  --  Mostly used to pass nesting levels
-  subtype Nesting_level is Operand_1_Type range 0 .. HAC_Sys.Defs.Nesting_Level_Max;
 
   --  Type for operand 2 (Y) is large enough for containing
   --  addresses, plus signed integer values *in* HAC programs.

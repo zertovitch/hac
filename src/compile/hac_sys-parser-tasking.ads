@@ -8,7 +8,7 @@ private package HAC_Sys.Parser.Tasking is
   procedure Task_Declaration (
     CD            : in out Compiler_Data;
     FSys          :        Defs.Symset;
-    Initial_Level :        PCode.Nesting_level
+    Initial_Level :        Defs.Nesting_level
   );
 
 end HAC_Sys.Parser.Tasking;

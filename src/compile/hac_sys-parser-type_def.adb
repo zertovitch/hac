@@ -17,12 +17,12 @@ with HAC_Sys.Parser.Enter_Def,
 
 package body HAC_Sys.Parser.Type_Def is
 
-  use Enter_Def, Helpers, PCode, UErrors;
+  use Enter_Def, Helpers, UErrors;
 
   procedure Number_Declaration_or_Enum_Item_or_Literal_Char (
     CD      : in out Compiler_Data;
-    Level   : in     PCode.Nesting_level;
-    FSys_ND : in     Symset;
+    Level   : in     Defs.Nesting_level;
+    FSys_ND : in     Defs.Symset;
     C       :    out Constant_Rec
   )
   is
@@ -92,8 +92,8 @@ package body HAC_Sys.Parser.Type_Def is
 
   procedure Type_Declaration (
     CD       : in out Compiler_Data;
-    Level    : in     PCode.Nesting_level;
-    FSys_NTD : in     Symset
+    Level    : in     Defs.Nesting_level;
+    FSys_NTD : in     Defs.Symset
   )
   is
     T1 : Integer;
@@ -123,8 +123,8 @@ package body HAC_Sys.Parser.Type_Def is
 
   procedure Type_Definition (
     CD            : in out Compiler_Data;
-    Initial_Level : in     PCode.Nesting_level;
-    FSys_TD       : in     Symset;
+    Initial_Level : in     Defs.Nesting_level;
+    FSys_TD       : in     Defs.Symset;
     xTP           :    out Exact_Typ;
     Size          :    out Integer;
     First         :    out HAC_Integer;  --  T'First value if discrete

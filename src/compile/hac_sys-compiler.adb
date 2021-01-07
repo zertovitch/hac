@@ -198,6 +198,20 @@ package body HAC_Sys.Compiler is
     asm_dump : File_Type;
     map_file : File_Type;
 
+    procedure Dump_Asm is
+    begin
+      if asm_dump_file_name /= "" then
+        Create (asm_dump, Out_File, asm_dump_file_name);
+        Dump (
+          CD.ObjCode (CD.ObjCode'First .. CD.LC - 1),  --  Dump only compiled part.
+          CD.Strings_Constants_Table,
+          CD.Float_Constants_Table,
+          asm_dump
+        );
+        Close (asm_dump);
+      end if;
+    end Dump_Asm;
+
   begin  --  Compile
     Init (CD);
 
@@ -213,7 +227,10 @@ package body HAC_Sys.Compiler is
     end if;
 
     Library.Apply_WITH_Standard (CD);
-    Library.Apply_USE_Clause (CD, Library.Library_Level, "Standard");
+    Library.Apply_USE_Clause (
+      CD, Library.Library_Level,
+      Locate_Identifier (CD, To_Alfa ("STANDARD"), 0)
+    );
 
     Parser.Modularity.Context_Clause (CD);  --  Parse the "with"'s and "use"'s.
 
@@ -255,8 +272,10 @@ package body HAC_Sys.Compiler is
     --  Start Compiling
     Parser.Block (
       CD, Block_Begin_Symbol + Statement_Begin_Symbol,
-      False, False, 1, CD.Id_Count,
-      CD.IdTab (CD.Id_Count).Name, CD.Main_Program_ID_with_case
+      False, False, 1,
+      CD.Id_Count,
+      CD.IdTab (CD.Id_Count).Name,
+      CD.Main_Program_ID_with_case
     );
     --  Main procedure is parsed.
     PCode_Emit.Emit (CD, k_Halt_Interpreter);
@@ -279,14 +298,16 @@ package body HAC_Sys.Compiler is
       Close (CD.listing);
     end if;
 
+    if CD.Errs /= error_free then
+      Compilation_Errors_Summary (CD);
+    end if;
+
     if CD.comp_dump_requested then
       Print_Tables (CD);
       Close (CD.comp_dump);
     end if;
 
-    if CD.Errs /= error_free then
-      Compilation_Errors_Summary (CD);
-    elsif var_map_file_name /= "" then
+    if var_map_file_name /= "" then
       Create (map_file, Out_File, var_map_file_name);
       Put_Line (map_file, "  -* Symbol Table *-");
       New_Line (map_file);
@@ -313,22 +334,19 @@ package body HAC_Sys.Compiler is
       Close (map_file);
     end if;
 
-    if asm_dump_file_name /= "" then
-      Create (asm_dump, Out_File, asm_dump_file_name);
-      Dump (
-        CD.ObjCode (CD.ObjCode'First .. CD.LC - 1),  --  Dump only compiled part.
-        CD.Strings_Constants_Table,
-        CD.Float_Constants_Table,
-        asm_dump
-      );
-      Close (asm_dump);
-    end if;
+    Dump_Asm;
 
   exception
     when End_Error =>
       Error (CD, err_unexpected_end_of_text);
     when Compilation_abandoned =>
-      null;  --  Just too many errors...
+      --  Just too many errors...
+      Compilation_Errors_Summary (CD);
+      if CD.comp_dump_requested then
+        Print_Tables (CD);
+        Close (CD.comp_dump);
+      end if;
+      Dump_Asm;
   end Compile_Main;
 
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean is

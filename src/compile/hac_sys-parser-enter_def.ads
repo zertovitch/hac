@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Defs, HAC_Sys.PCode;
+with HAC_Sys.Defs;
 
 package HAC_Sys.Parser.Enter_Def is  --  Package around entering definitions.
 
@@ -22,7 +22,7 @@ package HAC_Sys.Parser.Enter_Def is  --  Package around entering definitions.
 
   procedure Enter (
     CD               : in out Compiler_Data;
-    Level            :        PCode.Nesting_level;
+    Level            :        Defs.Nesting_level;
     Id, Id_with_case :        Defs.Alfa;
     K                :        Entity_Kind
   );
@@ -30,12 +30,12 @@ package HAC_Sys.Parser.Enter_Def is  --  Package around entering definitions.
   procedure Enter_Array (
     CD       : in out Compiler_Data;
     Index_TP :        Exact_Typ;
-    L, H     : Integer
+    L, H     :        Integer
   );
 
   procedure Enter_Variables (
     CD    : in out Compiler_Data;
-    Level :        PCode.Nesting_level
+    Level :        Defs.Nesting_level
   );
 
 end HAC_Sys.Parser.Enter_Def;

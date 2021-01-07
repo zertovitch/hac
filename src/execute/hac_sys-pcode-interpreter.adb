@@ -247,6 +247,7 @@ package body HAC_Sys.PCode.Interpreter is
     end Do_Code_for_Automatic_Initialization;
 
     procedure Do_Update_Display_Vector is
+      use Defs;
       --  Emitted at the end of Subprogram_or_Entry_Call, when the
       --  called subprogram's nesting level is *lower* than the caller's.
       Low_Level  : constant Nesting_level := Nesting_level (ND.IR.X);  --  Called.

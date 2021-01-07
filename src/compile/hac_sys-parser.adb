@@ -1,13 +1,14 @@
-with HAC_Sys.Compiler.Library,
-     HAC_Sys.Compiler.PCode_Emit,
+with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Calls,
      HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
+     HAC_Sys.Parser.Modularity,
      HAC_Sys.Parser.Ranges,
      HAC_Sys.Parser.Standard_Procedures,
      HAC_Sys.Parser.Tasking,
      HAC_Sys.Parser.Type_Def,
+     HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
 
@@ -21,7 +22,7 @@ package body HAC_Sys.Parser is
     FSys                 :        Defs.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  5.6 Block Statements
-    Initial_Level        :        PCode.Nesting_level;
+    Initial_Level        :        Defs.Nesting_level;
     Prt                  :        Integer;
     Block_ID             :        Defs.Alfa;  --  Name of this block (if any)
     Block_ID_with_case   :        Defs.Alfa
@@ -140,7 +141,7 @@ package body HAC_Sys.Parser is
       else
         F := k_Push_Value;
       end if;
-      Emit_2 (CD, F, CD.IdTab (I).LEV, Operand_2_Type (CD.IdTab (I).Adr_or_Sz));
+      Emit_2 (CD, F, Operand_1_Type (CD.IdTab (I).LEV), Operand_2_Type (CD.IdTab (I).Adr_or_Sz));
       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
         Selector (CD, Level, Becomes_EQL + FSys, X);
       end if;
@@ -453,7 +454,7 @@ package body HAC_Sys.Parser is
         InSymbol;
         I_Entry := Locate_Identifier (CD, CD.Id, Level);
         if CD.IdTab (I_Entry).Entity /= aEntry then
-          Error (CD, err_use_Small_Sp);
+          Error (CD, err_syntax_error, ": an entry name is expected here");
         end if;
         InSymbol;
         Accept_Call;
@@ -573,7 +574,7 @@ package body HAC_Sys.Parser is
             else
               F := k_Push_Value;
             end if;
-            Emit_2 (CD, F, CD.IdTab (Block_Idx).LEV + 1, 0);
+            Emit_2 (CD, F, Operand_1_Type (CD.IdTab (Block_Idx).LEV + 1), 0);
             --
             Expression (CD, Level, Semicolon_Set, Y);
             if X.TYP = Y.TYP then
@@ -806,7 +807,10 @@ package body HAC_Sys.Parser is
           Skip (CD, Fail_after_FOR + FSys_St, err_identifier_missing);
         end if;
         --
-        Emit_2 (CD, k_Push_Address, CD.IdTab (CD.Id_Count).LEV, Operand_2_Type (CD.IdTab (CD.Id_Count).Adr_or_Sz));
+        Emit_2 (CD, k_Push_Address,
+          Operand_1_Type (CD.IdTab (CD.Id_Count).LEV),
+          Operand_2_Type (CD.IdTab (CD.Id_Count).Adr_or_Sz)
+        );
         InSymbol;
         FOR_Begin := k_FOR_Forward_Begin;
         Need (CD, IN_Symbol, err_IN_missing);  --       "IN"  in  "for i in reverse 1 .. 10 loop"
@@ -953,7 +957,7 @@ package body HAC_Sys.Parser is
             InSymbol;
             I := Locate_Identifier (CD, CD.Id, Level);
             if CD.IdTab (I).Entity /= aEntry then
-              Select_Error (err_use_Small_Sp);
+              Select_Error (err_syntax_error);
             end if;
             InSymbol;
             Accept_Call_2;
@@ -1172,7 +1176,7 @@ package body HAC_Sys.Parser is
       if Statement_Begin_Symbol (CD.Sy) then
         case CD.Sy is
           when IDent =>
-            I_Statement := Locate_Identifier (CD, CD.Id, Level, No_Id_Fail => False);
+            I_Statement := Locate_Identifier (CD, CD.Id, Level, Fail_when_No_Id => False);
             InSymbol;
             if I_Statement = No_Id then
               --  New identifier: must be an identifier for a named Block_Statement or loop.
@@ -1249,15 +1253,14 @@ package body HAC_Sys.Parser is
           err_incorrectly_used_symbol,
           stop_on_error => True  --  Exception is raised there if there is an error.
         );
-        if CD.Sy = IDent then
-          Var_Declaration;
-        end if;
-        if CD.Sy = TYPE_Symbol or CD.Sy = SUBTYPE_Symbol then
-          Type_Declaration (CD, Level, FSys);
-        end if;
-        if CD.Sy = TASK_Symbol then
-          Tasking.Task_Declaration (CD, FSys, Level);
-        end if;
+        case CD.Sy is
+          when IDent          => Var_Declaration;
+          when TYPE_Symbol |
+               SUBTYPE_Symbol => Type_Declaration (CD, Level, FSys);
+          when TASK_Symbol    => Tasking.Task_Declaration (CD, FSys, Level);
+          when USE_Symbol     => Modularity.Use_Clause (CD, Level);
+          when others => null;
+        end case;
         CD.Blocks_Table (PRB).VSize := Dx;
         --  ^ TBD: check if this is still correct for declarations that appear
         --    after subprograms !!
@@ -1447,51 +1450,5 @@ package body HAC_Sys.Parser is
       pragma Assert (Level = Initial_Level);
     end if;
   end Block;
-
-  procedure With_Clause (CD : in out Compiler_Data) is  --  10.1.2 (4)
-    use Compiler.Library, Defs, Scanner, UErrors;
-  begin
-    InSymbol (CD);  --  Consume "with".
-    loop
-      if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing, stop => True);
-      end if;
-      if To_String (CD.Id) = HAC_Pack_Name_Upper then
-        Apply_WITH_HAC_Pack (CD);
-      else
-        Error (CD, err_syntax_error, "Custom units not yet supported", True);
-      end if;
-      InSymbol (CD);  --  Consume the identifier.
-      exit when CD.Sy = Semicolon;
-    end loop;
-    InSymbol (CD);  --  Consume the ';'.
-  end With_Clause;
-
-  procedure Use_Clause (CD : in out Compiler_Data; Level : PCode.Nesting_level) is  --  8.4 (2)
-    use Compiler.Library, Defs, Scanner, UErrors;
-  begin
-    InSymbol (CD);  --  Consume "use".
-    loop
-      if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing, stop => True);
-      end if;
-      Apply_USE_Clause (CD, Level, To_String (CD.Id_with_case));
-      InSymbol (CD);  --  Consume the identifier.
-      exit when CD.Sy = Semicolon;
-    end loop;
-    InSymbol (CD);  --  Consume the ';'.
-  end Use_Clause;
-
-  procedure Context_Clause (CD : in out Compiler_Data) is
-    use Compiler.Library, Defs;
-  begin
-    loop
-      case CD.Sy is
-        when WITH_Symbol => With_Clause (CD);
-        when USE_Symbol  => Use_Clause (CD, Library_Level);
-        when others => exit;
-      end case;
-    end loop;
-  end Context_Clause;
 
 end HAC_Sys.Parser;
