@@ -4,7 +4,7 @@
 --     below (even without DECLARE) seems to corrupt the stack.
 --  See comments @ procedure Block_statement in HAC.Parser.
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Roland_01 is
   a:integer:= 1234;

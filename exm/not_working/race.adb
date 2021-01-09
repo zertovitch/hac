@@ -1,4 +1,5 @@
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
+
 procedure RACE is
 ------------------------------------------------------------------------------
 -- Sort race demonstration program for THE AVL PARALLEL MONITORING           -

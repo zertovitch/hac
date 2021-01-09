@@ -1,4 +1,5 @@
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
+
 procedure PGM0 is
    TASK TELLER IS
       ENTRY MAKE_DEP(CUST_ID : INTEGER;

@@ -7,7 +7,7 @@ project AoC_2020 is
 
    for Source_Dirs use (
      ".",
-     "../../../src"   --  GNAT's access to the HAC_Pack package.
+     "../../../src"   --  GNAT's access to the HAL package.
    );
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";

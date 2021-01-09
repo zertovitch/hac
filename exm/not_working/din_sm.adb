@@ -1,5 +1,5 @@
-with  HAC_Pack;
-use  HAC_Pack;
+with HAL; use HAL;
+
 procedure Din_SM is
     task SCREEN is
       entry SEIZE;

@@ -1,4 +1,3 @@
---  with HAC_Pack;  use HAC_Pack;
 procedure exit_nested_loops is
 begin
   L: for x in 1 .. 10 loop

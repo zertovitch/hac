@@ -1,5 +1,5 @@
-with HAC_Pack; use HAC_Pack;  -- CS159-10 Instructor: Arthur Vargas Lopes
-                              -- Fall 1990
+with HAL; use HAL;   -- CS159-10 Instructor: Arthur Vargas Lopes
+                     -- Fall 1990
 procedure newrace is
 task SCREEN is
         entry WAITME;

@@ -1,5 +1,5 @@
-with  HAC_Pack;
-use  HAC_Pack;
+with HAL; use HAL;
+
 procedure dinersmo is
 
     SCREEN: SEMAPHORE := 1;

@@ -1,4 +1,4 @@
-WITH HAC_Pack; USE HAC_Pack;
+with HAL; use HAL;
 
 PROCEDURE PGM2 IS
 
