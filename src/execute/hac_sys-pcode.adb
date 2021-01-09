@@ -174,10 +174,10 @@ package body HAC_Sys.PCode is
       Operand2_IO.Put (Text, OC (i).Y);
       Put (Text, "; ");
       Code_Pos_IO.Put (Text, OC (i).D.Line_Number);
-      Put (Text, "  " & Defs.To_String (OC (i).D.Full_Block_Id));
+      Put (Text, "  " & HAL.VStr_Pkg.To_String (OC (i).D.Full_Block_Id));
       case OC (i).F is  --  Extra information
         when k_Push_Float_Literal =>
-          Put (Text, "; " & HAC_Image (Flt_Const (Integer (OC (i).Y))));
+          Put (Text, "; " & HAL.HAC_Image (Flt_Const (Integer (OC (i).Y))));
         when k_Variable_Initialization =>
           Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
         when k_Standard_Functions =>

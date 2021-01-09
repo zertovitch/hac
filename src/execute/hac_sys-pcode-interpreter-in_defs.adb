@@ -60,10 +60,10 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
 
   function GR_VString (S : String) return General_Register is
   begin
-    return (Special => Defs.VStrings, I => 0, V => Defs.To_VString (S));
+    return (Special => Defs.VStrings, I => 0, V => HAL.To_VString (S));
   end GR_VString;
 
-  function GR_VString (V : Defs.VString) return General_Register is
+  function GR_VString (V : HAL.VString) return General_Register is
   begin
     return (Special => Defs.VStrings, I => 0, V => V);
   end GR_VString;

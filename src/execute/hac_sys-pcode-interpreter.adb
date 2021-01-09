@@ -78,7 +78,7 @@ package body HAC_Sys.PCode.Interpreter is
           ND.S (Curr_TCB.T).I := HAC_Integer (System_Calls.Argument_Count);
         when SF_Command_Name =>
           Push;  --  Niladic function, needs to push a new item (their own result).
-          ND.S (Curr_TCB.T) := GR_VString (To_VString (System_Calls.Command_Name));
+          ND.S (Curr_TCB.T) := GR_VString (HAL.To_VString (System_Calls.Command_Name));
         when SF_Directory_Separator =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := Character'Pos (System_Calls.Directory_Separator);
@@ -197,7 +197,7 @@ package body HAC_Sys.PCode.Interpreter is
           when Floats          => Console.Put (Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
           when Bools           => Console.Put (Boolean'Val (Item.I), Field (Format_1));
           when Chars           => Console.Put (Character'Val (Item.I));
-          when VStrings        => Console.Put (To_String (Item.V));
+          when VStrings        => Console.Put (HAL.VStr_Pkg.To_String (Item.V));
           when String_Literals => Console.Put (
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
@@ -216,7 +216,7 @@ package body HAC_Sys.PCode.Interpreter is
           when Floats          => RIO.Put         (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
           when Bools           => BIO.Put         (FP.all, Boolean'Val (Item.I), Field (Format_1));
           when Chars           => Ada.Text_IO.Put (FP.all, Character'Val (Item.I));
-          when VStrings        => Ada.Text_IO.Put (FP.all, To_String (Item.V));
+          when VStrings        => Ada.Text_IO.Put (FP.all, HAL.VStr_Pkg.To_String (Item.V));
           when String_Literals => Ada.Text_IO.Put (FP.all,
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
@@ -239,7 +239,7 @@ package body HAC_Sys.PCode.Interpreter is
       Var_Addr : constant Index := Index (ND.S (Curr_TCB.T).I);
     begin
       case Typen'Val (ND.IR.Y) is
-        when VStrings   => ND.S (Var_Addr) := GR_VString (Null_VString);
+        when VStrings   => ND.S (Var_Addr) := GR_VString (HAL.Null_VString);
         when Text_Files => Allocate_Text_File (ND, ND.S (Var_Addr));
         when others     => null;
       end case;
@@ -265,7 +265,7 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Do_File_IO is
       Code : constant SP_Code := SP_Code'Val (ND.IR.X);
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-      use Defs.VStrings_Pkg;
+      use HAL.VStr_Pkg;
       Lines : Ada.Text_IO.Positive_Count;
     begin
       case Code is
@@ -402,7 +402,7 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Add_Stack_Trace_Line (Offset : Natural) is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       D : Debug_Info renames CD.ObjCode (Curr_TCB.PC - Offset).D;
-      use Defs.VStrings_Pkg;
+      use HAL.VStr_Pkg;
     begin
       if D.Full_Block_Id /= Universe then
         ND.TCB (ND.CurTask).Exception_Info.ST_Message.Append (D);
@@ -696,7 +696,7 @@ package body HAC_Sys.PCode.Interpreter is
 
   function Message (E : Exception_Propagation_Data) return String is
   begin
-    return Defs.To_String (E.Exception_Message);
+    return HAL.VStr_Pkg.To_String (E.Exception_Message);
   end Message;
 
   function Is_Exception_Raised (E : Exception_Propagation_Data) return Boolean is
@@ -708,8 +708,8 @@ package body HAC_Sys.PCode.Interpreter is
   begin
     for STL of E.ST_Message loop
       Show_Line_Information (
-        Defs.To_String (STL.File_Name),
-        Defs.To_String (STL.Full_Block_Id),
+        HAL.VStr_Pkg.To_String (STL.File_Name),
+        HAL.VStr_Pkg.To_String (STL.Full_Block_Id),
         STL.Line_Number
       );
     end loop;

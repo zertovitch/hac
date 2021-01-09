@@ -29,7 +29,7 @@ procedure HAC_Multi is
     end HAC_Instance;
 
     task body HAC_Instance is
-      use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.PCode.Interpreter;
+      use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter;
 
       procedure No_Put (Item : Character) is null;
       procedure No_New_Line (Spacing : Positive_Count := 1) is null;

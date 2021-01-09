@@ -12,6 +12,8 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
 
+with HAL;
+
 package body HAC_Sys.Parser is
 
   ------------------------------------------------------------------
@@ -1328,15 +1330,15 @@ package body HAC_Sys.Parser is
       end if;
     end Function_Result_Profile;
 
-    Restore_Block_ID : constant VString := CD.Full_Block_Id;
-    use VStrings_Pkg;
+    Restore_Block_ID : constant HAL.VString := CD.Full_Block_Id;
+    use HAL;
 
   begin  --  Block
     if CD.Err_Count > 0 then
       return;
     end if;
     if CD.Full_Block_Id = Universe then
-      CD.Full_Block_Id := To_VString (To_String (Block_ID_with_case));
+      CD.Full_Block_Id := HAL.To_VString (To_String (Block_ID_with_case));
     else
       CD.Full_Block_Id := CD.Full_Block_Id & '.' & To_String (Block_ID_with_case);
     end if;

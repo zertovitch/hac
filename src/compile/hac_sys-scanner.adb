@@ -270,6 +270,7 @@ package body HAC_Sys.Scanner is
     procedure Adjust_Scale is
       S    : Integer;
       D, T : HAC_Float;
+      use type HAC_Float;
     begin
       if K + e > EMax then
         Error (
@@ -363,7 +364,7 @@ package body HAC_Sys.Scanner is
           end if;
         end if;
       end Skip_eventual_underscore;
-      use type HAC_Integer;
+      use type HAC_Float, HAC_Integer;
     begin
       K       := 0;
       CD.INum := 0;

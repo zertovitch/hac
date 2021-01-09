@@ -13,9 +13,7 @@
 
 with HAL;
 
-with Ada.Calendar,
-     Ada.Characters.Handling,
-     Ada.Numerics.Generic_Elementary_Functions,
+with Ada.Characters.Handling,
      Ada.Strings.Unbounded,
      Ada.Text_IO;
 
@@ -38,12 +36,9 @@ package HAC_Sys.Defs is
   --  floating-point type expressions.
   --  On top of that a universal float would be probably needed.
   --
-  type HAC_Float is digits HAL.Real'Digits;
+  subtype HAC_Float is HAL.Real;
   HAC_Float_Name       : constant String := "Real";
   HAC_Float_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Float_Name);
-  function HAC_Image (F : HAC_Float) return String;
-
-  function HAC_Image (T : Ada.Calendar.Time) return String;
 
   --  Max & Min Exponents. IEEE Double Precision.
   --  TBD: find the attribute, applied on HAC_Float, that matches this value.
@@ -232,16 +227,6 @@ package HAC_Sys.Defs is
   function "-" (a, b : Symset) return Symset;
   function "-" (a : Symset; b : KeyWSymbol) return Symset;
   Empty_Symset : constant Symset := (others => False);
-
-  -------------------------------
-  --  Variable-length strings  --
-  -------------------------------
-
-  package VStrings_Pkg renames Ada.Strings.Unbounded;  --  Could use XStrings instead.
-  subtype VString is VStrings_Pkg.Unbounded_String;
-  function To_VString (S : String) return VString renames VStrings_Pkg.To_Unbounded_String;
-  function To_String (V : VString) return String renames VStrings_Pkg.To_String;
-  Null_VString : VString renames VStrings_Pkg.Null_Unbounded_String;
 
   -----------------
   -- Identifiers --
@@ -454,10 +439,10 @@ package HAC_Sys.Defs is
     repair    : Repair_kit     --  Can error be automatically repaired; if so, how ?
   );
 
-  package IIO is new Ada.Text_IO.Integer_IO (HAC_Sys.Defs.HAC_Integer);
-  package RIO is new Ada.Text_IO.Float_IO (HAC_Sys.Defs.HAC_Float);
+  package IIO is new Ada.Text_IO.Integer_IO (HAC_Integer);
+  package RIO is new Ada.Text_IO.Float_IO (HAC_Float);
   package BIO is new Ada.Text_IO.Enumeration_IO (Boolean);
 
-  package REF is new Ada.Numerics.Generic_Elementary_Functions (Defs.HAC_Float);
+  --  package REF is new Ada.Numerics.Generic_Elementary_Functions (HAC_Float);
 
 end HAC_Sys.Defs;

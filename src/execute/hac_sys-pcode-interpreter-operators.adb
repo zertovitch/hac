@@ -3,7 +3,6 @@ with HAC_Sys.PCode.Interpreter.Exceptions;
 with HAL;
 
 with Ada.Calendar,
-     Ada.Characters.Handling,
      Ada.Directories,
      Ada.Environment_Variables,
      Ada.Exceptions,
@@ -35,7 +34,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
     X : General_Register renames ND.S (Curr_TCB_Top - 1);  --  X = [T-1]
     Y : General_Register renames ND.S (Curr_TCB_Top);      --  Y = [T]
-    use Defs.VStrings_Pkg, Defs.REF;
+    use HAL.VStr_Pkg;
     use type Defs.HAC_Float, Defs.HAC_Integer;
   begin
     --  We do  [T] <- ([T-1] operator [T])  and pop later.
@@ -93,11 +92,10 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       Idx, Len, From, To : Integer;
       C : Character;
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
-      use Defs, Defs.VStrings_Pkg, Defs.REF,
-          Exceptions,
-          Ada.Calendar, Ada.Characters.Handling,
-          Ada.Numerics.Float_Random, Ada.Strings;
-      use type Defs.HAC_Integer;
+      use Defs, Exceptions;
+      use Ada.Numerics.Float_Random,
+          Ada.Strings;
+      use type Defs.HAC_Float, Defs.HAC_Integer, HAL.Time, HAL.VString;
       Going : Direction;
     begin
       case Code is
@@ -133,12 +131,12 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           Top_Item := GR_Duration (Duration (Top_Item.I));
         when SF_Duration_to_Int =>
           Top_Item.I := HAC_Integer (Top_Item.Dur);
-        when SF_Sin =>    Top_Item.R := Sin (Top_Item.R);
-        when SF_Cos =>    Top_Item.R := Cos (Top_Item.R);
-        when SF_Exp =>    Top_Item.R := Exp (Top_Item.R);
-        when SF_Log =>    Top_Item.R := Log (Top_Item.R);
-        when SF_Sqrt =>   Top_Item.R := Sqrt (Top_Item.R);
-        when SF_Arctan => Top_Item.R := Arctan (Top_Item.R);
+        when SF_Sin =>    Top_Item.R := HAL.Sin (Top_Item.R);
+        when SF_Cos =>    Top_Item.R := HAL.Cos (Top_Item.R);
+        when SF_Exp =>    Top_Item.R := HAL.Exp (Top_Item.R);
+        when SF_Log =>    Top_Item.R := HAL.Log (Top_Item.R);
+        when SF_Sqrt =>   Top_Item.R := HAL.Sqrt (Top_Item.R);
+        when SF_Arctan => Top_Item.R := HAL.Arctan (Top_Item.R);
         when SF_Random_Int =>
           temp := Defs.HAC_Float (Random (ND.Gen)) *
                   Defs.HAC_Float ((Top_Item.I + 1));
@@ -155,7 +153,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         when SF_Char_to_VString =>
           --  We create a 1-character temporary String: (1 => Character'Val (...)) and
           --  convert it to a VString
-          ND.S (Curr_TCB.T) := GR_VString (To_VString ((1 => Character'Val (ND.S (Curr_TCB.T).I))));
+          ND.S (Curr_TCB.T) := GR_VString (HAL.To_VString ((1 => Character'Val (ND.S (Curr_TCB.T).I))));
         when SF_Two_VStrings_Concat =>
           Pop (ND);
           --  [T] := [T] & [T+1] :
@@ -176,25 +174,25 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             GR_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1) & ND.S (Curr_TCB.T + 2).V);
         when SF_VString_Int_Concat =>
           Pop (ND);
-          ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & To_VString (HAC_Image (ND.S (Curr_TCB.T + 1).I));
+          ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & HAL.To_VString (HAC_Image (ND.S (Curr_TCB.T + 1).I));
         when SF_Int_VString_Concat =>
           Pop (ND);
           ND.S (Curr_TCB.T) := GR_VString ((HAC_Image (ND.S (Curr_TCB.T).I)) & ND.S (Curr_TCB.T + 1).V);
         when SF_VString_Float_Concat =>
           Pop (ND);
-          ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & To_VString (HAC_Image (ND.S (Curr_TCB.T + 1).R));
+          ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & HAL.To_VString (HAL.HAC_Image (ND.S (Curr_TCB.T + 1).R));
         when SF_Float_VString_Concat =>
           Pop (ND);
           ND.S (Curr_TCB.T) :=
-            GR_VString (To_VString (HAC_Image (ND.S (Curr_TCB.T).R)) & ND.S (Curr_TCB.T + 1).V);
+            GR_VString (HAL.To_VString (HAL.HAC_Image (ND.S (Curr_TCB.T).R)) & ND.S (Curr_TCB.T + 1).V);
         when SF_Element =>
           Pop (ND);
           --  [T] := Element ([T], [T+1]) :
-          C := Element (ND.S (Curr_TCB.T).V, Integer (ND.S (Curr_TCB.T + 1).I));
+          C := HAL.Element (ND.S (Curr_TCB.T).V, Integer (ND.S (Curr_TCB.T + 1).I));
           ND.S (Curr_TCB.T).I := Character'Pos (C);
         when SF_Length =>
           --  [T] := Length ([T]) :
-          Len := Length (Top_Item.V);
+          Len := HAL.Length (Top_Item.V);
           --  !! Here: bound checking !!
           Top_Item.I := HAC_Integer (Len);
         when SF_Slice =>
@@ -203,15 +201,15 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           To   := Integer (ND.S (Curr_TCB.T + 2).I);
           --  !! Here: bound checking !!
           --  [T] := Slice ([T], [T+1], [T+2]) :
-          ND.S (Curr_TCB.T).V := To_VString (Slice (ND.S (Curr_TCB.T).V, From, To));
+          ND.S (Curr_TCB.T).V := HAL.To_VString (HAL.VStr_Pkg.Slice (ND.S (Curr_TCB.T).V, From, To));
         when SF_To_Lower_Char =>
-          Top_Item.I := Character'Pos (To_Lower (Character'Val (Top_Item.I)));
+          Top_Item.I := Character'Pos (HAL.To_Lower (Character'Val (Top_Item.I)));
         when SF_To_Upper_Char =>
-          Top_Item.I := Character'Pos (To_Upper (Character'Val (Top_Item.I)));
+          Top_Item.I := Character'Pos (HAL.To_Upper (Character'Val (Top_Item.I)));
         when SF_To_Lower_VStr =>
-          Top_Item.V := To_VString (To_Lower (Defs.To_String (Top_Item.V)));
+          Top_Item.V := HAL.To_VString (HAL.ACH.To_Lower (HAL.VStr_Pkg.To_String (Top_Item.V)));
         when SF_To_Upper_VStr =>
-          Top_Item.V := To_VString (To_Upper (Defs.To_String (Top_Item.V)));
+          Top_Item.V := HAL.To_VString (HAL.ACH.To_Upper (HAL.VStr_Pkg.To_String (Top_Item.V)));
         when SF_Index | SF_Index_Backward =>
           if Code = SF_Index then
             Going := Forward;
@@ -224,9 +222,9 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             --  [T] := Index (Source: [T], Pattern: [T+1], From: [T+2], Going) :
             ND.S (Curr_TCB.T).I :=
               HAC_Integer (
-                VStrings_Pkg.Index (
+                HAL.VStr_Pkg.Index (
                   ND.S (Curr_TCB.T).V,
-                  Defs.To_String (ND.S (Curr_TCB.T + 1).V),
+                  HAL.VStr_Pkg.To_String (ND.S (Curr_TCB.T + 1).V),
                   From,
                   Going
                 )
@@ -235,9 +233,9 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             --  [T] := Index (Source: [T], Pattern: [T+1], Going) :
             ND.S (Curr_TCB.T).I :=
               HAC_Integer (
-                VStrings_Pkg.Index (
+                HAL.VStr_Pkg.Index (
                   ND.S (Curr_TCB.T).V,
-                  Defs.To_String (ND.S (Curr_TCB.T + 1).V),
+                  HAL.VStr_Pkg.To_String (ND.S (Curr_TCB.T + 1).V),
                   Going
                 )
               );
@@ -246,12 +244,12 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           Pop (ND);
           --  [T] := Head ([T], [T+1]) :
           ND.S (Curr_TCB.T).V :=
-            VStrings_Pkg.Head (ND.S (Curr_TCB.T).V, Natural (ND.S (Curr_TCB.T + 1).I));
+            HAL.VStr_Pkg.Head (ND.S (Curr_TCB.T).V, Natural (ND.S (Curr_TCB.T + 1).I));
         when SF_Tail =>
           Pop (ND);
           --  [T] := Tail ([T], [T+1]) :
           ND.S (Curr_TCB.T).V :=
-            VStrings_Pkg.Tail (ND.S (Curr_TCB.T).V, Natural (ND.S (Curr_TCB.T + 1).I));
+            HAL.VStr_Pkg.Tail (ND.S (Curr_TCB.T).V, Natural (ND.S (Curr_TCB.T + 1).I));
         when SF_Starts_With =>
           Pop (ND);
           --  [T] := Starts_With ([T], [T+1]) :
@@ -282,9 +280,9 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           --  [T] := [T] * [T+1] :
           ND.S (Curr_TCB.T) :=
             GR_VString (Natural (ND.S (Curr_TCB.T).I) * ND.S (Curr_TCB.T + 1).V);
-        when SF_Trim_Left  => Top_Item.V := Trim (Top_Item.V, Left);
-        when SF_Trim_Right => Top_Item.V := Trim (Top_Item.V, Right);
-        when SF_Trim_Both  => Top_Item.V := Trim (Top_Item.V, Both);
+        when SF_Trim_Left  => Top_Item.V := HAL.VStr_Pkg.Trim (Top_Item.V, Left);
+        when SF_Trim_Right => Top_Item.V := HAL.VStr_Pkg.Trim (Top_Item.V, Right);
+        when SF_Trim_Both  => Top_Item.V := HAL.VStr_Pkg.Trim (Top_Item.V, Both);
         --
         when SF_Time_Subtract =>
           Pop (ND);
@@ -297,14 +295,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           ND.S (Curr_TCB.T).Dur := ND.S (Curr_TCB.T).Dur + ND.S (Curr_TCB.T + 1).Dur;
         --
         when SF_Image_Ints             => Top_Item := GR_VString (HAC_Image (Top_Item.I));
-        when SF_Image_Floats           => Top_Item := GR_VString (HAC_Image (Top_Item.R));
+        when SF_Image_Floats           => Top_Item := GR_VString (HAL.HAC_Image (Top_Item.R));
         when SF_Image_Attribute_Floats => Top_Item := GR_VString (HAC_Float'Image (Top_Item.R));
-        when SF_Image_Times            => Top_Item := GR_VString (HAC_Image (Top_Item.Tim));
+        when SF_Image_Times            => Top_Item := GR_VString (HAL.HAC_Image (Top_Item.Tim));
         when SF_Image_Durations        => Top_Item := GR_VString (Duration'Image (Top_Item.Dur));
         --
         when SF_Integer_Value =>
           begin
-            Top_Item.I := HAC_Integer'Value (Defs.To_String (Top_Item.V));
+            Top_Item.I := HAC_Integer'Value (HAL.VStr_Pkg.To_String (Top_Item.V));
           exception
             when E : Constraint_Error =>
               Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
@@ -312,7 +310,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           end;
         when SF_Float_Value =>
           begin
-            Top_Item := GR_Real (HAC_Float'Value (Defs.To_String (Top_Item.V)));
+            Top_Item := GR_Real (HAC_Float'Value (HAL.VStr_Pkg.To_String (Top_Item.V)));
           exception
             when E : Constraint_Error =>
               Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
@@ -320,18 +318,18 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           end;
         when SF_Get_Env =>
           declare
+            Name : constant String := HAL.VStr_Pkg.To_String (Top_Item.V);
             use Ada.Environment_Variables;
-            Name : constant String := Defs.To_String (Top_Item.V);
           begin
             if Exists (Name) then
-              Top_Item.V := To_VString (Value (Name));
+              Top_Item.V := HAL.To_VString (Value (Name));
             else
-              Top_Item.V := Null_VString;
+              Top_Item.V := HAL.Null_VString;
             end if;
           end;
         when SF_Directory_Exists | SF_Exists | SF_File_Exists =>
           declare
-            Name : constant String := Defs.To_String (Top_Item.V);
+            Name : constant String := HAL.VStr_Pkg.To_String (Top_Item.V);
             use Ada.Directories;
           begin
             Top_Item.I := Boolean'Pos (

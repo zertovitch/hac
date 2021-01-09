@@ -248,7 +248,7 @@ package body HAC_Sys.UErrors is
 
   ----------------------------------------------------------------------------
 
-  function "+" (S : String) return VString renames To_VString;
+  function "+" (S : String) return HAL.VString renames HAL."+";
 
   repair_table : constant array (Compile_Error) of Repair_kit :=
     (
@@ -310,8 +310,8 @@ package body HAC_Sys.UErrors is
     end Show_to_comp_dump;
     --
     updated_repair_kit : Repair_kit := repair_table (code);
-    ub_hint : constant VString := To_VString (hint);
-    use VStrings_Pkg;
+    ub_hint : constant HAL.VString := HAL.To_VString (hint);
+    use HAL.VStr_Pkg;
   begin
     Show_to_comp_dump (CD.Line_Count, CD.syStart, CD.syEnd, -1, hint);
     CD.Errs (code) := True;

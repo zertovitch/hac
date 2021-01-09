@@ -12,6 +12,8 @@
 
 with HAC_Sys.Defs;
 
+with HAL;
+
 with Ada.Text_IO;  --  Only used for file descriptors
 
 package HAC_Sys.PCode is
@@ -149,9 +151,9 @@ package HAC_Sys.PCode is
     --  Line number in the source code.
     Line_Number   : Positive;
     --  Current block's path (if any). Example: hac-pcode-interpreter.adb.
-    Full_Block_Id : Defs.VString;
+    Full_Block_Id : HAL.VString;
     --  Source code file name.         Example: HAC.PCode.Interpreter.Do_Write_Formatted.
-    File_Name     : Defs.VString;
+    File_Name     : HAL.VString;
   end record;
 
   --  PCode instruction record (stores a compiled PCode instruction)

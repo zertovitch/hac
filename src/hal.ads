@@ -84,7 +84,7 @@ package HAL is
   --  Variable-size string type: VString  --
   ------------------------------------------
 
-  package VStr_Pkg renames Ada.Strings.Unbounded;
+  package VStr_Pkg renames Ada.Strings.Unbounded;  --  Could use XStrings instead.
   subtype VString is VStr_Pkg.Unbounded_String;
   Null_VString : VString renames VStr_Pkg.Null_Unbounded_String;
   function To_VString (S : String) return VString renames VStr_Pkg.To_Unbounded_String;

@@ -6,13 +6,13 @@ with HAC_Sys.Compiler.Library,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
 
+with HAL;
+
 with Ada.Integer_Text_IO,
      Ada.Strings.Fixed,
      Ada.Text_IO;
 
 package body HAC_Sys.Compiler is
-
-  use VStrings_Pkg;
 
   procedure Set_Source_Stream (
     CD         : in out Compiler_Data;
@@ -23,13 +23,13 @@ package body HAC_Sys.Compiler is
   is
   begin
     CD.compiler_stream  := Source_Stream_Access (s);
-    CD.source_file_name := To_VString (file_name);
+    CD.source_file_name := HAL.To_VString (file_name);
     CD.Line_Count       := start_line;
   end Set_Source_Stream;
 
   function Get_Current_Source_Name (CD : Compiler_Data) return String is
   begin
-    return Defs.To_String (CD.source_file_name);
+    return HAL.VStr_Pkg.To_String (CD.source_file_name);
   end Get_Current_Source_Name;
 
   procedure Set_Error_Pipe (

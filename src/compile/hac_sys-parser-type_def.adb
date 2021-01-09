@@ -32,7 +32,7 @@ package body HAC_Sys.Parser.Type_Def is
     --  Was: Constant in the Pascal compiler.
     X : Integer;
     Sign : HAC_Integer;
-    use type HAC_Integer;
+    use type HAC_Float, HAC_Integer;
     signed : Boolean := False;
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
   begin

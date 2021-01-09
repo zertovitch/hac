@@ -161,7 +161,7 @@ private
   type Exception_Propagation_Data is record
     Currently_Raised  : Exception_Identity;
     ST_Message        : Stack_Trace_Message;
-    Exception_Message : Defs.VString;
+    Exception_Message : HAL.VString;
   end record;
 
 end HAC_Sys.PCode.Interpreter;

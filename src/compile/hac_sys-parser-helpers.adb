@@ -9,7 +9,10 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Scanner, HAC_Sys.UErrors;
+with HAC_Sys.Scanner,
+     HAC_Sys.UErrors;
+
+with HAL;
 
 package body HAC_Sys.Parser.Helpers is
 
@@ -83,7 +86,7 @@ package body HAC_Sys.Parser.Helpers is
     N             : Compile_Error;
     stop_on_error : Boolean := False)
   is
-    use VStrings_Pkg;
+    use HAL;
   begin
     if not S1 (CD.Sy) then
       declare
@@ -101,9 +104,9 @@ package body HAC_Sys.Parser.Helpers is
         end loop;
         hint := "Found: " & KeyWSymbol'Image (CD.Sy) & "; expected: " & hint;
         if stop_on_error then
-          Error (CD, N, stop => True, hint => Defs.To_String (hint));
+          Error (CD, N, stop => True, hint => HAL.VStr_Pkg.To_String (hint));
         end if;
-        Skip (CD, S1 + S2, N, Defs.To_String (hint));
+        Skip (CD, S1 + S2, N, HAL.VStr_Pkg.To_String (hint));
       end;
     end if;
   end Test;
@@ -225,7 +228,7 @@ package body HAC_Sys.Parser.Helpers is
   )
   is
     function Types_List (TS : Typ_Set) return String is
-      use VStrings_Pkg;
+      use HAL;
       hint  : VString;
       first : Boolean := True;
     begin
@@ -238,7 +241,7 @@ package body HAC_Sys.Parser.Helpers is
           hint := hint & Nice_Image (s);
         end if;
       end loop;
-      return Defs.To_String (hint);
+      return HAL.VStr_Pkg.To_String (hint);
     end Types_List;
   begin
     Error (
@@ -398,6 +401,7 @@ package body HAC_Sys.Parser.Helpers is
     RNum_Index :    out Natural
   )
   is
+    use type HAC_Float;
   begin
     if CD.Float_Constants_Count = Float_Const_Table_Max - 1 then
       Fatal (FLOAT_CONSTANTS);  --  Exception is raised there.

@@ -13,6 +13,8 @@ with HAC_Sys.Parser.Enter_Def,
      HAC_Sys.PCode,
      HAC_Sys.UErrors;
 
+with HAL;
+
 with Ada.Characters.Handling;
 
 package body HAC_Sys.Compiler.Library is
@@ -25,7 +27,7 @@ package body HAC_Sys.Compiler.Library is
   )
   is
     use Library_Name_Mapping;
-    VFN : constant VString := To_VString (Full_Name);
+    VFN : constant HAL.VString := HAL.To_VString (Full_Name);
   begin
     Is_New := CD.lib_map.Find (VFN) = No_Element;
     if Is_New then

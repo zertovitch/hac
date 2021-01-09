@@ -10,7 +10,10 @@
 --
 --  Co_Defs: Compiler Definitions
 
-with HAC_Sys.Defs, HAC_Sys.PCode;
+with HAC_Sys.Defs,
+     HAC_Sys.PCode;
+
+with HAL;
 
 with Ada.Containers.Hashed_Maps,
      Ada.Finalization,
@@ -177,7 +180,7 @@ package HAC_Sys.Co_Defs is
   end record;
 
   package Library_Name_Mapping is new Ada.Containers.Hashed_Maps
-    (Key_Type        => VString,  --  Full unit name, like "Ada.Strings.Fixed"
+    (Key_Type        => HAL.VString,  --  Full unit name, like "Ada.Strings.Fixed"
      Element_Type    => Library_Unit,
      Hash            => Ada.Strings.Unbounded.Hash,
      Equivalent_Keys => Ada.Strings.Unbounded."=");
@@ -189,7 +192,7 @@ package HAC_Sys.Co_Defs is
   type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
     --  Current source code information and scanner data
     compiler_stream  : Source_Stream_Access;
-    source_file_name : VString;  --  Indicative (error messages)
+    source_file_name : HAL.VString;  --  Indicative (error messages)
     --  Parsing
     Line_Count       : Natural;            --  Source line counter, used for listing
     InpLine          : Source_Line_String;
@@ -228,7 +231,7 @@ package HAC_Sys.Co_Defs is
     CMax                    : Integer;  --  Top of available ObjCode table;
                                         --  CMax + 1 .. CDMax: variable initialization code
     --  Information about source code
-    Full_Block_Id             : VString;             --  Full block's Id (P1.P2.F3.P4)
+    Full_Block_Id             : HAL.VString;         --  Full block's Id (P1.P2.F3.P4)
     Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
     Main_Program_ID_with_case : Alfa := Empty_Alfa;
     --
@@ -246,7 +249,7 @@ package HAC_Sys.Co_Defs is
 
   overriding procedure Finalize (CD : in out Compiler_Data);
 
-  Universe : constant VString := To_VString ("[-- The Universe --]");
+  Universe : constant HAL.VString := HAL.To_VString ("[-- The Universe --]");
 
   type CASE_Label_Value is record
     Val       : HAC_Integer;  --  value of a choice in a CASE statement

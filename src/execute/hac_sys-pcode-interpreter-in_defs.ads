@@ -60,7 +60,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     I : Defs.HAC_Integer;
     case Special is  --  This part is variant to save place.
       when Defs.Floats     => R   : Defs.HAC_Float;
-      when Defs.VStrings   => V   : Defs.VString;
+      when Defs.VStrings   => V   : HAL.VString;
       when Defs.Times      => Tim : Ada.Calendar.Time;
       when Defs.Durations  => Dur : Duration;
       when Defs.Text_Files => Txt : File_Ptr := Abstract_Console;
@@ -78,7 +78,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   function GR_Duration (D : Duration) return General_Register;
 
   function GR_VString (S : String) return General_Register;
-  function GR_VString (V : Defs.VString) return General_Register;
+  function GR_VString (V : HAL.VString) return General_Register;
 
   subtype Data_Type is General_Register;
 

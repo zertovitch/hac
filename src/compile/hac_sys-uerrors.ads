@@ -11,12 +11,14 @@
 with HAC_Sys.Co_Defs,
      HAC_Sys.Defs;
 
+with HAL;
+
 package HAC_Sys.UErrors is
 
   has_new_line : constant array (Defs.Repair_kind) of Boolean :=
     (Defs.insert_line => True, others => False);
 
-  nothing_to_repair : constant Defs.Repair_kit := (Defs.none, Defs.Null_VString);
+  nothing_to_repair : constant Defs.Repair_kit := (Defs.none, HAL.Null_VString);
 
   procedure Error (
     CD   : in out Co_Defs.Compiler_Data;
