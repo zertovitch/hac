@@ -5,7 +5,9 @@ with Ada.Text_IO;
 
 package body HAC_Sys.UErrors is
 
-  function Error_String (code : HAC_Sys.Defs.Compile_Error; hint : String := "") return String is
+  use Defs;
+
+  function Error_String (code : Defs.Compile_Error; hint : String := "") return String is
   begin
     case code is
       when err_undefined_identifier =>
@@ -274,8 +276,8 @@ package body HAC_Sys.UErrors is
     );
 
   procedure Error (
-    CD   : in out Compiler_Data;
-    code :        Compile_Error;
+    CD   : in out Co_Defs.Compiler_Data;
+    code :        Defs.Compile_Error;
     hint :        String      := "";
     stop :        Boolean     := False
   )
@@ -292,7 +294,7 @@ package body HAC_Sys.UErrors is
         Put_Line
          (CD.comp_dump,
           " Error code = " &
-          Compile_Error'Image (code) &
+          Defs.Compile_Error'Image (code) &
           " (" &
           Error_String (code, hint_for_dump) &
           ") " &
@@ -387,7 +389,7 @@ package body HAC_Sys.UErrors is
 
   ----------------------------------------------------------------------------
 
-  procedure Compilation_Errors_Summary (CD : Compiler_Data) is
+  procedure Compilation_Errors_Summary (CD : Co_Defs.Compiler_Data) is
     use Ada.Text_IO;
   begin
     if CD.comp_dump_requested then
@@ -401,11 +403,11 @@ package body HAC_Sys.UErrors is
     for K in CD.Errs'Range loop
       if CD.Errs (K) then
         if CD.comp_dump_requested then
-          Put_Line (CD.comp_dump, Compile_Error'Image (K) & ":  " & Error_String (K, ""));
+          Put_Line (CD.comp_dump, Defs.Compile_Error'Image (K) & ":  " & Error_String (K, ""));
           --  Should be Error_hint(K,n) !!
         end if;
         if CD.listing_requested then
-          Put_Line (CD.listing, Compile_Error'Image (K) & "  " & Error_String (K, ""));
+          Put_Line (CD.listing, Defs.Compile_Error'Image (K) & "  " & Error_String (K, ""));
           --  Should be Error_hint(K,n) !!
         end if;
       end if;

@@ -7,7 +7,7 @@ with HAC_Sys.Compiler.PCode_Emit,
 
 package body HAC_Sys.Parser.Standard_Procedures is
 
-  use Calls, Compiler.PCode_Emit, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
+  use Calls, Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
 
   type Def_param_type is array (Typen, 1 .. 3) of Integer;
 
@@ -20,7 +20,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
      others  =>  (others => invalid));
 
   procedure Standard_Procedure (
-    CD      : in out Compiler_Data;
+    CD      : in out Co_Defs.Compiler_Data;
     Level   :        Defs.Nesting_level;
     FSys    :        Defs.Symset;
     Code    :        PCode.SP_Code

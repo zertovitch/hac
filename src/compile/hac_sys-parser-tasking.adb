@@ -7,13 +7,13 @@ with HAC_Sys.Compiler.PCode_Emit,
 
 package body HAC_Sys.Parser.Tasking is
 
-  use Compiler, Compiler.PCode_Emit, Defs, Enter_Def, Helpers, PCode, UErrors;
+  use Compiler, Compiler.PCode_Emit, Co_Defs, Defs, Enter_Def, Helpers, PCode, UErrors;
 
   ------------------------------------------------------------------
   -------------------------------------------------Task_Declaration-
   --  Hathorn
   procedure Task_Declaration (
-    CD            : in out Compiler_Data;
+    CD            : in out Co_Defs.Compiler_Data;
     FSys          :        Defs.Symset;
     Initial_Level :        Defs.Nesting_level
   )

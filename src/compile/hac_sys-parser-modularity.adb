@@ -5,6 +5,8 @@ with HAC_Sys.Compiler.Library,
 
 package body HAC_Sys.Parser.Modularity is
 
+  use Co_Defs;
+
   procedure With_Clause (CD : in out Compiler_Data) is  --  10.1.2 (4)
     use Compiler.Library, Defs, Scanner, UErrors;
   begin
@@ -25,7 +27,7 @@ package body HAC_Sys.Parser.Modularity is
     InSymbol (CD);  --  Consume the ';'.
   end With_Clause;
 
-  procedure Use_Clause (CD : in out Compiler_Data; Level : Defs.Nesting_level) is  --  8.4 (2)
+  procedure Use_Clause (CD : in out Co_Defs.Compiler_Data; Level : Defs.Nesting_level) is  --  8.4 (2)
     use Compiler.Library, Defs, Scanner, UErrors;
   begin
     InSymbol (CD);  --  Consume "use".
@@ -41,7 +43,7 @@ package body HAC_Sys.Parser.Modularity is
     InSymbol (CD);  --  Consume the ';'.
   end Use_Clause;
 
-  procedure Context_Clause (CD : in out Compiler_Data) is
+  procedure Context_Clause (CD : in out Co_Defs.Compiler_Data) is
     use Compiler.Library, Defs;
   begin
     loop

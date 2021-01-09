@@ -13,10 +13,8 @@ with HAC_Sys.Co_Defs, HAC_Sys.Defs;
 
 package HAC_Sys.Parser is
 
-  use Co_Defs;
-
   procedure Block (
-    CD                   : in out Compiler_Data;
+    CD                   : in out Co_Defs.Compiler_Data;
     FSys                 :        Defs.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  RM: 5.6 Block Statements

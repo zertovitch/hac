@@ -17,13 +17,13 @@ with HAC_Sys.Parser.Enter_Def,
 
 package body HAC_Sys.Parser.Type_Def is
 
-  use Enter_Def, Helpers, UErrors;
+  use Co_Defs, Defs, Enter_Def, Helpers, UErrors;
 
   procedure Number_Declaration_or_Enum_Item_or_Literal_Char (
-    CD      : in out Compiler_Data;
+    CD      : in out Co_Defs.Compiler_Data;
     Level   : in     Defs.Nesting_level;
     FSys_ND : in     Defs.Symset;
-    C       :    out Constant_Rec
+    C       :    out Co_Defs.Constant_Rec
   )
   is
     --  This covers number declarations (RM 3.3.2) and enumeration items (RM 3.5.1).
@@ -91,7 +91,7 @@ package body HAC_Sys.Parser.Type_Def is
   end Number_Declaration_or_Enum_Item_or_Literal_Char;
 
   procedure Type_Declaration (
-    CD       : in out Compiler_Data;
+    CD       : in out Co_Defs.Compiler_Data;
     Level    : in     Defs.Nesting_level;
     FSys_NTD : in     Defs.Symset
   )

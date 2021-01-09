@@ -6,13 +6,13 @@ with HAC_Sys.Compiler.PCode_Emit,
 
 package body HAC_Sys.Parser.Calls is
 
-  use Compiler.PCode_Emit, Expressions, Helpers, PCode, Scanner, UErrors;
+  use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
 
   procedure Push_and_Check_by_Value_Parameter (
-    CD       : in out Compiler_Data;
-    Level    :        Nesting_level;
-    FSys     :        Symset;
-    Expected :        Exact_Typ
+    CD       : in out Co_Defs.Compiler_Data;
+    Level    :        Defs.Nesting_level;
+    FSys     :        Defs.Symset;
+    Expected :        Co_Defs.Exact_Typ
   )
   is
     X : Exact_Typ;
@@ -38,10 +38,10 @@ package body HAC_Sys.Parser.Calls is
   end Push_and_Check_by_Value_Parameter;
 
   procedure Push_by_Reference_Parameter (
-    CD       : in out Compiler_Data;
-    Level    :        Nesting_level;
-    FSys     :        Symset;
-    Found    :    out Exact_Typ  --  Funny note: Found is itself pushed by reference...
+    CD       : in out Co_Defs.Compiler_Data;
+    Level    :        Defs.Nesting_level;
+    FSys     :        Defs.Symset;
+    Found    :    out Co_Defs.Exact_Typ  --  Funny note: Found is itself pushed by reference...
   )
   is
     K : Integer;
@@ -83,9 +83,9 @@ package body HAC_Sys.Parser.Calls is
   ------------------------------------------------------------------
   -----------------------------------------Subprogram_or_Entry_Call-
   procedure Subprogram_or_Entry_Call (
-    CD          : in out Compiler_Data;
-    Level       :        Nesting_level;
-    FSys        :        Symset;
+    CD          : in out Co_Defs.Compiler_Data;
+    Level       :        Defs.Nesting_level;
+    FSys        :        Defs.Symset;
     I           :        Integer;
     CallType    :        PCode.Operand_1_Type
   )
@@ -155,9 +155,9 @@ package body HAC_Sys.Parser.Calls is
   ------------------------------------------------------------------
   -------------------------------------------------------Entry_Call-
   procedure Entry_Call (
-    CD          : in out Compiler_Data;
-    Level       :        Nesting_level;
-    FSys        :        Symset;
+    CD          : in out Co_Defs.Compiler_Data;
+    Level       :        Defs.Nesting_level;
+    FSys        :        Defs.Symset;
     I           :        Integer;
     CallType    :        PCode.Operand_1_Type
   )

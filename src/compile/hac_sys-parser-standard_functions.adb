@@ -23,14 +23,15 @@ package body HAC_Sys.Parser.Standard_Functions is
      );
 
   procedure Standard_Function (
-    CD          : in out Compiler_Data;
+    CD          : in out Co_Defs.Compiler_Data;
     Level       :        Defs.Nesting_level;
     FSys        :        Defs.Symset;
     Ident_Index :        Integer;
     Code        :        PCode.SF_Code;
-    Return_Typ  :    out Exact_Typ
+    Return_Typ  :    out Co_Defs.Exact_Typ
   )
   is
+    use Co_Defs;
     Max_Args : constant := 3;
     Args : Natural := SF_Args (Code);
     Expected : array (1 .. Max_Args) of Typ_Set;    --  Expected type of the function's arguments

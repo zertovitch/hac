@@ -13,14 +13,14 @@ package body HAC_Sys.Parser.Ranges is
   --  In that case, we return the range red .. blue.
   --
   procedure Static_Subtype_Indication (  --  RM 3.2.2
-    CD        : in out Compiler_Data;
+    CD        : in out Co_Defs.Compiler_Data;
     Level     : in     Defs.Nesting_level;
-    Low, High :    out Constant_Rec;
+    Low, High :    out Co_Defs.Constant_Rec;
     Found     :    out Boolean
   )
   is
     Idx : Integer;
-    use Defs, Helpers, Scanner;
+    use Co_Defs, Defs, Helpers, Scanner;
   begin
     Found := False;
     if CD.Sy /= IDent then
@@ -48,15 +48,15 @@ package body HAC_Sys.Parser.Ranges is
   ---------------------------
 
   procedure Explicit_Static_Range (
-    CD             : in out Compiler_Data;
+    CD             : in out Co_Defs.Compiler_Data;
     Level          : in     Defs.Nesting_level;
     FSys           : in     Defs.Symset;
     Specific_Error : in     Defs.Compile_Error;
-    Lower_Bound    :    out Constant_Rec;
-    Higher_Bound   :    out Constant_Rec
+    Lower_Bound    :    out Co_Defs.Constant_Rec;
+    Higher_Bound   :    out Co_Defs.Constant_Rec
   )
   is
-    use Defs, Helpers, Type_Def, UErrors;
+    use Co_Defs, Defs, Helpers, Type_Def, UErrors;
   begin
     Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, OF_RANGE_Double_Dot_RParent + FSys, Lower_Bound);
     --
@@ -81,12 +81,12 @@ package body HAC_Sys.Parser.Ranges is
   ------------------
 
   procedure Static_Range (
-    CD             : in out Compiler_Data;
+    CD             : in out Co_Defs.Compiler_Data;
     Level          : in     Defs.Nesting_level;
     FSys           : in     Defs.Symset;
     Specific_Error : in     Defs.Compile_Error;
-    Lower_Bound    :    out Constant_Rec;
-    Higher_Bound   :    out Constant_Rec
+    Lower_Bound    :    out Co_Defs.Constant_Rec;
+    Higher_Bound   :    out Co_Defs.Constant_Rec
   )
   is
     --  The variant "Low .. High" was initially
@@ -110,13 +110,14 @@ package body HAC_Sys.Parser.Ranges is
   -------------------
 
   procedure Dynamic_Range (
-    CD                 : in out Compiler_Data;
+    CD                 : in out Co_Defs.Compiler_Data;
     Level              : in     Defs.Nesting_level;
     FSys               : in     Defs.Symset;
     Non_Discrete_Error : in     Defs.Compile_Error;
-    Range_Typ          :    out Exact_Typ
+    Range_Typ          :    out Co_Defs.Exact_Typ
   )
   is
+    use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
     --  The variant "Low_Expr .. High_Expr" was initially
     --  in HAC.Parser <= 0.07 for FOR statements.
     Lower_Bound : Exact_Typ;
@@ -124,7 +125,6 @@ package body HAC_Sys.Parser.Ranges is
     Lower_Bound_Static  : Constant_Rec;
     Higher_Bound_Static : Constant_Rec;
     Is_SI_Found : Boolean;
-    use Compiler.PCode_Emit, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
   begin
     Static_Subtype_Indication (CD, Level, Lower_Bound_Static, Higher_Bound_Static, Is_SI_Found);
     if Is_SI_Found then

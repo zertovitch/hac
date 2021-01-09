@@ -18,7 +18,7 @@ package body HAC_Sys.Parser is
   ------------------------------------------------------------Block-
 
   procedure Block (
-    CD                   : in out Compiler_Data;
+    CD                   : in out Co_Defs.Compiler_Data;
     FSys                 :        Defs.Symset;
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  5.6 Block Statements
@@ -28,7 +28,7 @@ package body HAC_Sys.Parser is
     Block_ID_with_case   :        Defs.Alfa
   )
   is
-    use Calls, Compiler, Defs, Enter_Def,
+    use Calls, Co_Defs, Compiler, Defs, Enter_Def,
         Expressions, Helpers, PCode, Compiler.PCode_Emit,
         Type_Def, UErrors;
     --

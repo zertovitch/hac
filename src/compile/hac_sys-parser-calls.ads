@@ -1,36 +1,33 @@
-with HAC_Sys.Defs,
-     HAC_Sys.PCode;
+with HAC_Sys.PCode;
 
 private package HAC_Sys.Parser.Calls is
 
-  use Defs;
-
   procedure Push_and_Check_by_Value_Parameter (
-    CD       : in out Compiler_Data;
-    Level    :        Nesting_level;
-    FSys     :        Symset;
-    Expected :        Exact_Typ
+    CD       : in out Co_Defs.Compiler_Data;
+    Level    :        Defs.Nesting_level;
+    FSys     :        Defs.Symset;
+    Expected :        Co_Defs.Exact_Typ
   );
 
   procedure Push_by_Reference_Parameter (
-    CD       : in out Compiler_Data;
-    Level    :        Nesting_level;
-    FSys     :        Symset;
-    Found    :    out Exact_Typ
+    CD       : in out Co_Defs.Compiler_Data;
+    Level    :        Defs.Nesting_level;
+    FSys     :        Defs.Symset;
+    Found    :    out Co_Defs.Exact_Typ
   );
 
   procedure Entry_Call (
-    CD          : in out Compiler_Data;
-    Level       :        Nesting_level;
-    FSys        :        Symset;
+    CD          : in out Co_Defs.Compiler_Data;
+    Level       :        Defs.Nesting_level;
+    FSys        :        Defs.Symset;
     I           :        Integer;
     CallType    :        PCode.Operand_1_Type
   );
 
   procedure Subprogram_or_Entry_Call (
-    CD          : in out Compiler_Data;
-    Level       :        Nesting_level;
-    FSys        :        Symset;
+    CD          : in out Co_Defs.Compiler_Data;
+    Level       :        Defs.Nesting_level;
+    FSys        :        Defs.Symset;
     I           :        Integer;
     CallType    :        PCode.Operand_1_Type
   );

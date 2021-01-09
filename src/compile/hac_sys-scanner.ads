@@ -13,12 +13,10 @@ with HAC_Sys.Co_Defs;
 
 package HAC_Sys.Scanner is
 
-  use Co_Defs;
-
   --  Source code scanning for the compiler
 
-  procedure InSymbol (CD : in out Compiler_Data);
+  procedure InSymbol (CD : in out Co_Defs.Compiler_Data);
 
-  procedure Skip_Blanks (CD : in out Compiler_Data);
+  procedure Skip_Blanks (CD : in out Co_Defs.Compiler_Data);
 
 end HAC_Sys.Scanner;

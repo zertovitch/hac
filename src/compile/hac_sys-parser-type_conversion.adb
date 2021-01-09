@@ -5,11 +5,11 @@ with HAC_Sys.PCode;                         use HAC_Sys.PCode;
 with HAC_Sys.UErrors;                       use HAC_Sys.UErrors;
 
 procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
-  CD      : in out Compiler_Data;
+  CD      : in out Co_Defs.Compiler_Data;
   Level   :        Defs.Nesting_level;
   FSys    :        Defs.Symset;
   Type_ID :        String;
-  X       :    out Exact_Typ
+  X       :    out Co_Defs.Exact_Typ
 )
 is
   use Defs;

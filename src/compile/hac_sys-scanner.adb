@@ -4,7 +4,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 package body HAC_Sys.Scanner is
 
-  use Defs, UErrors;
+  use Co_Defs, Defs, UErrors;
 
   type SSTBzz is array (Character'(' ') .. ']') of KeyWSymbol;
 

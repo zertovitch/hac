@@ -11,15 +11,15 @@ with HAC_Sys.UErrors;
 
 package body HAC_Sys.Parser.Expressions is
 
-  use Compiler.PCode_Emit, Helpers, PCode, Scanner, UErrors;
+  use Compiler.PCode_Emit, Co_Defs, Defs, Helpers, PCode, Scanner, UErrors;
 
   ------------------------------------------------------------------
   ---------------------------------------------------------Selector-
   procedure Selector (
-    CD    : in out Compiler_Data;
+    CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    V     : in out Exact_Typ
+    V     : in out Co_Defs.Exact_Typ
   )
   is
     --
@@ -134,10 +134,10 @@ package body HAC_Sys.Parser.Expressions is
   ------------------------------------------------------------------
   -------------------------------------------------------Expression-
   procedure Expression (
-    CD    : in out Compiler_Data;
+    CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    X     :    out Exact_Typ
+    X     :    out Co_Defs.Exact_Typ
   )
   is
     procedure Issue_Undefined_Operator_Error (Undef_OP : KeyWSymbol; X, Y : Exact_Typ) is
@@ -643,10 +643,10 @@ package body HAC_Sys.Parser.Expressions is
   end Expression;
 
   procedure Boolean_Expression (
-    CD    : in out Compiler_Data;
+    CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    X     :    out Exact_Typ
+    X     :    out Co_Defs.Exact_Typ
   )
   is
   begin
@@ -655,10 +655,10 @@ package body HAC_Sys.Parser.Expressions is
   end Boolean_Expression;
 
   procedure Subtype_Prefixed_Expression (
-    CD    : in out Compiler_Data;
+    CD    : in out Co_Defs.Compiler_Data;
     Level : in     Defs.Nesting_level;
     FSys  : in     Defs.Symset;
-    X     :    out Exact_Typ
+    X     :    out Co_Defs.Exact_Typ
   )
   is
     Type_ID : constant String := To_String (CD.Id);

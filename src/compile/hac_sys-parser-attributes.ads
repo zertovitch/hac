@@ -1,8 +1,4 @@
-with HAC_Sys.Defs;
-
 private package HAC_Sys.Parser.Attributes is
-
-  use Defs;
 
   --  Scalar subtype attributes. Ada RM 3.5 (10).
   --
@@ -15,11 +11,11 @@ private package HAC_Sys.Parser.Attributes is
   --    parameter "(Flag)", return a X = (String_Literals, 0) internal type.
 
   procedure Scalar_Subtype_Attribute (
-    CD      : in out Compiler_Data;
+    CD      : in out Co_Defs.Compiler_Data;
     Level   :        Defs.Nesting_level;
     FSys    :        Defs.Symset;
     Type_ID :        String;
-    X       :    out Exact_Typ
+    X       :    out Co_Defs.Exact_Typ
   );
 
 end HAC_Sys.Parser.Attributes;

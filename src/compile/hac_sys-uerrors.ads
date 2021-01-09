@@ -8,24 +8,24 @@
 --
 -------------------------------------------------------------------------------------
 
-with HAC_Sys.Co_Defs, HAC_Sys.Defs;
+with HAC_Sys.Co_Defs,
+     HAC_Sys.Defs;
 
 package HAC_Sys.UErrors is
 
-  use Co_Defs, Defs;
+  has_new_line : constant array (Defs.Repair_kind) of Boolean :=
+    (Defs.insert_line => True, others => False);
 
-  has_new_line : constant array (Repair_kind) of Boolean := (insert_line => True, others => False);
-
-  nothing_to_repair : constant Repair_kit := (none, Null_VString);
+  nothing_to_repair : constant Defs.Repair_kit := (Defs.none, Defs.Null_VString);
 
   procedure Error (
-    CD   : in out Compiler_Data;
-    code :        Compile_Error;
+    CD   : in out Co_Defs.Compiler_Data;
+    code :        Defs.Compile_Error;
     hint :        String      := "";
     stop :        Boolean     := False
   );
 
-  procedure Compilation_Errors_Summary (CD : Compiler_Data);
+  procedure Compilation_Errors_Summary (CD : Co_Defs.Compiler_Data);
 
   type Table_OverFlow_Error is
     (IDENTIFIERS,
@@ -46,6 +46,6 @@ package HAC_Sys.UErrors is
   Failure_1_0 : exception;
   Compilation_abandoned : exception;
 
-  function Error_String (code : HAC_Sys.Defs.Compile_Error; hint : String := "") return String;
+  function Error_String (code : Defs.Compile_Error; hint : String := "") return String;
 
 end HAC_Sys.UErrors;

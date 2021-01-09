@@ -6,12 +6,12 @@ private package HAC_Sys.Parser.Standard_Functions is
   --  Ada.Text_IO etc. will be implemented, as well as overloading.
 
   procedure Standard_Function (
-    CD          : in out Compiler_Data;
+    CD          : in out Co_Defs.Compiler_Data;
     Level       :        Defs.Nesting_level;
     FSys        :        Defs.Symset;
     Ident_Index :        Integer;
     Code        :        PCode.SF_Code;
-    Return_Typ  :    out Exact_Typ
+    Return_Typ  :    out Co_Defs.Exact_Typ
   );
 
 end HAC_Sys.Parser.Standard_Functions;

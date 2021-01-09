@@ -3,12 +3,12 @@ with HAC_Sys.Scanner,
 
 package body HAC_Sys.Parser.Enter_Def is
 
-  use UErrors;
+  use Co_Defs, Defs, UErrors;
 
   ------------------------------------------------------------------
   ------------------------------------------------------Enter_Block-
   procedure Enter_Block (
-    CD    : in out Compiler_Data;
+    CD    : in out Co_Defs.Compiler_Data;
     Tptr  :        Integer
   )
   is
@@ -30,7 +30,7 @@ package body HAC_Sys.Parser.Enter_Def is
   ------------------------------------------------------------------
   ------------------------------------------------------------Enter-
   procedure Enter (
-    CD               : in out Compiler_Data;
+    CD               : in out Co_Defs.Compiler_Data;
     Level            :        Defs.Nesting_level;
     Id, Id_with_case :        Defs.Alfa;
     K                :        Entity_Kind
@@ -75,8 +75,8 @@ package body HAC_Sys.Parser.Enter_Def is
   -------------------------------------------------------EnterArray-
 
   procedure Enter_Array (
-    CD       : in out Compiler_Data;
-    Index_TP :        Exact_Typ;
+    CD       : in out Co_Defs.Compiler_Data;
+    Index_TP :        Co_Defs.Exact_Typ;
     L, H     :        Integer
   )
   is
@@ -110,7 +110,7 @@ package body HAC_Sys.Parser.Enter_Def is
   --------------------------------------------------Enter_Variables-
 
   procedure Enter_Variables (
-    CD    : in out Compiler_Data;
+    CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level
   )
   is
