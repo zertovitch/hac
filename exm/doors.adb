@@ -9,7 +9,7 @@
 --  The third time, visit every 3rd door (door #3, #6, #9, ...), etc,
 --    until you only visit the 100th door.
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Doors is
   type Door_State is (Closed, Open);

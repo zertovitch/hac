@@ -49,7 +49,7 @@ project AoC_2020 is
      "aoc_2020_07_full_ada_vectors_2x.adb",
      "aoc_2020_06.adb",
      "aoc_2020_06_full_ada.adb",
-     "aoc_2020_06_full_ada_using_hac_pack.adb",
+     "aoc_2020_06_full_ada_using_hal.adb",
      "aoc_2020_05.adb",
      "aoc_2020_04.adb",
      "aoc_2020_04_b_full_ada.adb",

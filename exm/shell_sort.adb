@@ -1,4 +1,4 @@
-with HAC_Pack; use HAC_Pack;  -- CS159-10 - FAll/1990 - ARthur Vargas Lopes
+with HAL; use HAL;  -- CS159-10 - FAll/1990 - ARthur Vargas Lopes
 
 procedure Shell_Sort is
 

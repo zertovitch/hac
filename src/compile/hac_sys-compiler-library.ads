@@ -35,6 +35,6 @@ package HAC_Sys.Compiler.Library is
 
   procedure Apply_WITH_Standard (CD : in out Compiler_Data);
 
-  procedure Apply_WITH_HAC_Pack (CD : in out Compiler_Data);
+  procedure Apply_WITH_HAL (CD : in out Compiler_Data);
 
 end HAC_Sys.Compiler.Library;

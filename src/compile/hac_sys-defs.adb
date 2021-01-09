@@ -56,17 +56,17 @@ package body HAC_Sys.Defs is
   function HAC_Image (F : HAC_Float) return String is
   begin
     --  We want to be sure to have the same output from HAC's VM
-    --  and from a program compiled on a "full Ada", using HAC_Pack.
-    --  So we use HAC_Pack ourselves.
-    return HAC_Pack.HAC_Image (HAC_Pack.Real (F));
+    --  and from a program compiled on a "full Ada", using HAL.
+    --  So we use HAL ourselves.
+    return HAL.HAC_Image (HAL.Real (F));
   end HAC_Image;
 
   function HAC_Image (T : Ada.Calendar.Time) return String is
   begin
     --  We want to be sure to have the same output from HAC's VM
-    --  and from a program compiled on a "full Ada", using HAC_Pack.
-    --  So we use HAC_Pack ourselves.
-    return HAC_Pack.HAC_Image (T);
+    --  and from a program compiled on a "full Ada", using HAL.
+    --  So we use HAL ourselves.
+    return HAL.HAC_Image (T);
   end HAC_Image;
 
 end HAC_Sys.Defs;

@@ -2,7 +2,7 @@
 --  on the console.
 --  No file involved, unless using:  "hac console_io.adb <in_file.txt >out_file.txt"
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Console_IO is
 

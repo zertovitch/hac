@@ -26,7 +26,7 @@
 --  1-3 b: cdefg     is invalid : neither position 1 nor position 3 contains 'b'.
 --  2-9 c: ccccccccc is invalid : both position 2 and position 9 contain 'c'.
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_02 is
   s : VString;

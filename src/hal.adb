@@ -2,7 +2,7 @@ with Ada.Numerics.Float_Random,
      Ada.Numerics.Generic_Elementary_Functions,
      Ada.Strings.Fixed;
 
-package body HAC_Pack is
+package body HAL is
 
   use Ada.Characters.Handling, VStr_Pkg;
 
@@ -340,7 +340,7 @@ package body HAC_Pack is
 
   function Image (I : Integer) return VString is
     function HAC_Image_for_Integer is
-      new HAC_Pack.HAC_Generic_Image (Abstract_Integer => Integer);
+      new HAL.HAC_Generic_Image (Abstract_Integer => Integer);
   begin
     return +HAC_Image_for_Integer (I);
   end Image;
@@ -788,4 +788,4 @@ package body HAC_Pack is
 
 begin
   Ada.Numerics.Float_Random.Reset (gen);  --  Randomize.
-end HAC_Pack;
+end HAL;

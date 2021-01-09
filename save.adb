@@ -8,9 +8,11 @@
 --  added on the top line of this file.
 --  HAC will ignore it, but GNAT won't like it.
 
-with HAC_Pack;  use HAC_Pack;
+with HAL;
 
 procedure Save is
+
+  use HAL;
 
   function Nice_Date (with_intraday : Boolean) return VString is
     t1 : constant Time := Clock;

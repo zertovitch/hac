@@ -1,6 +1,6 @@
 with HAC_Sys.PCode.Interpreter.Exceptions;
 
-with HAC_Pack;
+with HAL;
 
 with Ada.Calendar,
      Ada.Characters.Handling,
@@ -256,12 +256,12 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           Pop (ND);
           --  [T] := Starts_With ([T], [T+1]) :
           ND.S (Curr_TCB.T).I :=
-            Boolean'Pos (HAC_Pack.Starts_With (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).V));
+            Boolean'Pos (HAL.Starts_With (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).V));
         when SF_Ends_With =>
           Pop (ND);
           --  [T] := Ends_With ([T], [T+1]) :
           ND.S (Curr_TCB.T).I :=
-            Boolean'Pos (HAC_Pack.Ends_With (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).V));
+            Boolean'Pos (HAL.Ends_With (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).V));
         when SF_Year =>
           ND.S (Curr_TCB.T).I := HAC_Integer (Ada.Calendar.Year (ND.S (Curr_TCB.T).Tim));
         when SF_Month =>

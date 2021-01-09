@@ -9,7 +9,7 @@
 --      As an hommage to John Conway, there are three
 --      "Game of Life" puzzles: Day 11, 17, 24.
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_24 is
 

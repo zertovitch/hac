@@ -11,7 +11,7 @@
 --    *     I/O with enums, at least 'Image
 --    *     `  seen := (others => False);  `
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_08 is
   subtype Machine_Code_Range is Positive range 1 .. 1000;

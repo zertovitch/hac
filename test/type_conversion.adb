@@ -2,7 +2,7 @@
 --
 --  4.6 Type Conversions
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Type_Conversion is
 

@@ -20,7 +20,7 @@
 --
 --    *     ` map (0) := (others => (others =>  (others => (others => False)); `
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_17 is
   --

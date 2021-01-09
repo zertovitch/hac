@@ -34,7 +34,7 @@
 --    - no flights: L_{W,I}, L_{W,C}, ... = 0
 --    - zoonotic force = 0.
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure COVID_19_S is
 

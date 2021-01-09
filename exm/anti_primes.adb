@@ -4,7 +4,7 @@
 --  the OEIS) are the natural numbers with more factors than any
 --  smaller than itself.
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Anti_Primes is
 

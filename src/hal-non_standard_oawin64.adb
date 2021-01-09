@@ -5,7 +5,7 @@
 
 with Interfaces.C;
 
-separate (HAC_Pack) package body Non_Standard is
+separate (HAL) package body Non_Standard is
 
   function MS_Sys (Arg : Interfaces.C.char_array) return Interfaces.C.int;
   pragma Import (C, MS_Sys, "system");

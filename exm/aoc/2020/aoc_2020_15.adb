@@ -7,7 +7,7 @@
 --  Part 1 only.
 --  If we increase HAC's stack a bit, we can do both parts.
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_15 is
   type Preamble is array (1 .. 6) of Natural;

@@ -1,7 +1,6 @@
-with HAC_Pack;
+with HAL; use HAL;
 
 procedure Hello is
-  use HAC_Pack;
   f : Real := 0.0;
 begin
   Put ("Hello");

@@ -8,7 +8,7 @@
 --
 --  https://adventofcode.com/2020/day/3
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_03 is
   i_max : constant := 323;  --  1-based

@@ -1,7 +1,7 @@
 --  We check numerical recursive functions (and also a bit the
 --  correctness of array operations, and nested subprograms too).
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Recursion is
 

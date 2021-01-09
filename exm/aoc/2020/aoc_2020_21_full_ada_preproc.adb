@@ -5,10 +5,10 @@
 --
 with Ada.Containers.Ordered_Maps, Ada.Text_IO;
 
-with HAC_Pack;  --  in ../../../src
+with HAL;  --  in ../../../src
 
 procedure AoC_2020_21_full_Ada_Preproc is
-  use HAC_Pack;
+  use HAL;
 
   package Name_Mapping is new Ada.Containers.Ordered_Maps (VString, VString);
 

@@ -1,8 +1,9 @@
 --  This is a fuzzy test for HAC, the HAC Ada compiler.
 --
---  Historically, the first program to run after "hello world".
+--  Historically, this was the first program to
+--  run with HAC after "hello world".
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Test is
   --

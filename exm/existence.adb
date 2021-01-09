@@ -1,4 +1,4 @@
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Existence is
   procedure Check (Name : VString) is

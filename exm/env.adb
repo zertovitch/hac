@@ -1,6 +1,6 @@
 --  System's Environment Variables: Set & Get.
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Env is
   path, path_v : VString;

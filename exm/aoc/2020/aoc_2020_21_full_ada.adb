@@ -10,7 +10,7 @@
 --    - lack of 'Value (or at least 'Image) attribute
 --    - lack of logical operators on arrays of Boolean
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_21_full_Ada is
 

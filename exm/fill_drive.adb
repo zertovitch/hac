@@ -3,7 +3,7 @@
 --  prevent recovery of those file contents, but you would still like to
 --  keep other files (so, you avoid a new formatting or wipeout of the drive).
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Fill_Drive is
   f : File_Type;

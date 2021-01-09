@@ -1,6 +1,6 @@
 --  Example from command-line:  hac echo.adb <echo.adb >echo.txt
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Echo is
   s : VString;

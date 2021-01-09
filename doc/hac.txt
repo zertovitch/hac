@@ -17,7 +17,7 @@ Objectives
         programming-compiling-binding-linking-running cycles).
     - Stay compatible (HAC programs can be compiled
         and run by other Ada compilers, currently through
-        compatibility package HAC_Pack).
+        the compatibility package HAL).
 
   HAC will most probably never be a complete compiler.
 
@@ -62,7 +62,7 @@ Getting started
 Directories
 ===========
 
-   src      sources of HAC, plus the compatibility package HAC_Pack
+   src      sources of HAC, plus the compatibility package HAL
    exm      examples
    test     testing (notably, the all_silent_tests.adb test suite)
 
@@ -132,15 +132,15 @@ Language subset
         but you will be surprised how far you can go without pointers!
     - Subprograms names cannot be overloaded, although some *predefined*
         subprograms, including operators, of the Standard or the
-        HAC_Pack package, are overloaded many times, like
+        HAL package, are overloaded many times, like
         "Put", "Get", "+", "&", ...
     - Programmable modularity (packages or subprograms that you
         can "with") is not yet implemented.
     - Generics are not yet implemented.
     - Tasks are implemented, but not working yet.
     - Small parts of the standard Ada library are available through
-        the HAC_Pack package. You can see the currently available
-        items in the specification, src/hac_pack.ads .
+        the HAL package. You can see the currently available
+        items in the specification, src/hal.ads .
 
   A systematic testing is done in the "test" directory, via
   the all_silent_tests.adb test suite.

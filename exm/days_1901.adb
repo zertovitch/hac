@@ -4,7 +4,7 @@
 --  [2]: http://l-e-a.sf.net/
 --  [3]: http://excel-writer.sf.net/
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Days_1901 is
 

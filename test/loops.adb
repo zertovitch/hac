@@ -1,6 +1,6 @@
 --  Output should be empty if the compiler is correct.
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Loops is
 begin

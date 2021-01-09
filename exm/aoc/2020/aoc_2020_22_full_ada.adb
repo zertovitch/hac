@@ -15,7 +15,7 @@
 with Ada.Containers.Hashed_Sets,
      Ada.Containers.Vectors;
 
-with HAC_Pack;  --  in ../../../src
+with HAL;  --  in ../../../src
 
 procedure AoC_2020_22_full_Ada is
 
@@ -32,7 +32,7 @@ procedure AoC_2020_22_full_Ada is
 
   verbosity : constant := 0;
 
-  use HAC_Pack;
+  use HAL;
 
   procedure Play (
     g               : in out Deck_Pair;

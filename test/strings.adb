@@ -1,4 +1,4 @@
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Strings is
   procedure Failure (Msg: VString) is

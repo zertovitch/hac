@@ -4,7 +4,7 @@
 --  NB: for copying a file (of any kind) with a single command,
 --  you can use Copy_File. See binary copy at the end of this demo.
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure File_Copy is
   s : VString;

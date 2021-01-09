@@ -6,7 +6,7 @@ with HAC_Sys.PCode.Interpreter.Calls,
      HAC_Sys.PCode.Interpreter.Operators,
      HAC_Sys.PCode.Interpreter.Tasking;
 
-with HAC_Pack;
+with HAL;
 
 with Ada.Command_Line,
      Ada.Directories,
@@ -362,7 +362,7 @@ package body HAC_Sys.PCode.Interpreter is
             Pop;
           end;
         when SP_Set_Exit_Status =>
-          HAC_Pack.Set_Exit_Status (Integer (ND.S (Curr_TCB.T).I));
+          HAL.Set_Exit_Status (Integer (ND.S (Curr_TCB.T).I));
           Pop;
         when SP_Wait | SP_Signal | SP_Priority | SP_InheritP | SP_Quantum =>
           null;
@@ -660,8 +660,8 @@ package body HAC_Sys.PCode.Interpreter is
          (Shifted_Argument_Count,
           Shifted_Argument,
           Custom_Command_Name,
-          HAC_Pack.Shell_Execute,
-          HAC_Pack.Directory_Separator
+          HAL.Shell_Execute,
+          HAL.Directory_Separator
          );
 
     procedure Interpret_on_Current_IO_Instance is new

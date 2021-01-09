@@ -2,7 +2,7 @@
 --  The order of the declarations is a bit random, it is on purpose.
 --  Especially we want to detect eventual memory corruption (buggy compilers).
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Constants is
 

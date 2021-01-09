@@ -5,9 +5,7 @@ with HAC_Sys.Compiler.Library,
 
 package body HAC_Sys.Parser.Modularity is
 
-  use Co_Defs;
-
-  procedure With_Clause (CD : in out Compiler_Data) is  --  10.1.2 (4)
+  procedure With_Clause (CD : in out Co_Defs.Compiler_Data) is  --  10.1.2 (4)
     use Compiler.Library, Defs, Scanner, UErrors;
   begin
     InSymbol (CD);  --  Consume "with".
@@ -15,10 +13,12 @@ package body HAC_Sys.Parser.Modularity is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, stop => True);
       end if;
-      if To_String (CD.Id) = HAC_Pack_Name_Upper then
-        Apply_WITH_HAC_Pack (CD);
+      if To_String (CD.Id) = HAL_Name then
+        Apply_WITH_HAL (CD);
+      elsif To_String (CD.Id) = "HAC_PACK" then
+        Error (CD, err_syntax_error, ": the new name of HAC_Pack is " & HAL_Name, True);
       else
-        Error (CD, err_syntax_error, "Custom units not yet supported", True);
+        Error (CD, err_syntax_error, ": custom units not yet supported", True);
       end if;
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;

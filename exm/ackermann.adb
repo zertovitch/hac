@@ -1,7 +1,7 @@
 --  https://en.wikipedia.org/wiki/Ackermann_function
 --  https://rosettacode.org/wiki/Ackermann_function#Ada
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Ackermann is
 

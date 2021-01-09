@@ -16,7 +16,7 @@
 --                       HAC should detect an expression as a
 --                       static (compile-time-known) value
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_06 is
   total : Integer;

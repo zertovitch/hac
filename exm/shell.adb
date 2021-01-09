@@ -1,4 +1,4 @@
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Shell is
   type OS_Kind is (Nixux, Windoze);

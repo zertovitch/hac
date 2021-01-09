@@ -1,4 +1,4 @@
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Strings_demo is
   s1, s2, s4, s4_s4 : VString;

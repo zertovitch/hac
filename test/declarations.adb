@@ -2,7 +2,7 @@
 --  In Pascal it is: constants, types, variables, subprograms.
 --  SmallAda (and early versions of HAC) has some remnants of Pascal and funny other bugs...
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Declarations is
 

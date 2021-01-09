@@ -1,4 +1,4 @@
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Digitz is
   --  Check accuracy of decimal image without exponent ("E...")

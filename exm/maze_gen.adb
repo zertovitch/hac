@@ -1,7 +1,7 @@
 --  Special version (for HAC) of
 --  http://rosettacode.org/wiki/Maze_generation#Ada
 
-with HAC_Pack;
+with HAL;
 
 procedure Maze_Gen is
 
@@ -91,7 +91,7 @@ procedure Maze_Gen is
     loop
       --  Use random direction:
       loop
-        Next_D := Val (HAC_Pack.Rand (3));
+        Next_D := Val (HAL.Rand (3));
         exit when not Checked_Wall (Next_D);  --  At least one wall is unchecked.
       end loop;
       Next_P := P;
@@ -120,7 +120,7 @@ procedure Maze_Gen is
 
   procedure Initialize (Maze : in out Maze_Type) is
     All_Walls : Cell_Walls;
-    use HAC_Pack;
+    use HAL;
   begin
     for D in Direction loop
       All_Walls (D) := True;
@@ -144,7 +144,7 @@ procedure Maze_Gen is
   end Initialize;
 
   procedure Put_Grid (Item : Maze_Type) is
-    use HAC_Pack;
+    use HAL;
     H_Bar : array (Boolean) of VString;
     V_Bar : array (Boolean) of Character;
     S_Cell : array (Boolean) of VString;

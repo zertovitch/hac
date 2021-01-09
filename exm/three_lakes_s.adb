@@ -26,7 +26,7 @@
 --    https://gautiersblog.blogspot.com/2020/05/the-three-lakes-problem.html
 --
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 --  ! with Ada.Text_IO,
 --  !      Ada.Integer_Text_IO,
 --  !      Ada.Numerics.Generic_Elementary_Functions;

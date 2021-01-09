@@ -1,21 +1,19 @@
---  HAC_Pack - HAC Compatibility pack
--------------------------------------
+--  HAL - HAC Ada Library
+-------------------------
 --
---  This is the package containing all specifications of types
---  and support routines for HAC in its default operating mode.
---  So far, all HAC programs must have "with" and "use" of this package.
+--  The HAL package and possible children contains all definitions
+--  that are useful for HAC in its default operating mode.
 --
---  Note: this requirement is kept only for early stages of HAC.
---  At some point HAC_Pack won't be required anymore, but it is
---  still useful anyway for small script-like programs.
+--  HAL is compilable by a full Ada compiler like GNAT or ObjectAda,
+--  so the HAC programs can be run on both HAC and a full Ada system.
 --
---  The package HAC_Pack is compilable by a full Ada compiler
---  like GNAT, so the HAC programs can be run on both HAC and
---  a "real" Ada system.
+--  Another purpose of this specification is to have a document,
+--  automatically verified by full Ada systems, of the standard types
+--  and subprograms available in HAC.
 --
---  Another purpose of this specification is to document
---  the standard types and subprograms available in HAC.
-
+--  Furthermore, some items of HAL are used in the HAC virtual machine.
+--  See occurrences of "HAL" in HAC.PCode.Interpreter's body.
+--
 with Ada.Calendar,
      Ada.Characters.Handling,
      Ada.Command_Line,
@@ -26,10 +24,10 @@ with Ada.Calendar,
 
 with System;
 
---  Disable warning: declaration of "=" hides predefined operator.
+--  Disable GNAT warning: declaration of "=" hides predefined operator.
 pragma Warnings ("H");
 
-package HAC_Pack is
+package HAL is
 
   -----------------------------------------
   --  Floating-point numeric type: Real  --
@@ -382,7 +380,7 @@ package HAC_Pack is
   --  This is public, but directly used by the HAC system itself only
   --  (HAC programs cannot return String's).
   --  That way, we avoid code duplication or incompatibilities between
-  --  HAC_Pack (as compatibility package) and the HAC run-tim system itself.
+  --  HAL (as compatibility package) and the HAC run-time system itself.
 
   generic
     type Abstract_Integer is range <>;
@@ -396,4 +394,4 @@ private
 
   --  type       SEMAPHORE is new INTEGER;
 
-end HAC_Pack;
+end HAL;

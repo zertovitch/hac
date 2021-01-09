@@ -1,6 +1,6 @@
 --  Pseudo-Random Generation: Rand (discrete) and Rnd (continuous)
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Random is
 

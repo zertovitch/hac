@@ -8,7 +8,7 @@
 --
 --  See "!!" for improvements to be done in HAC.
 --
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure BWT is
 

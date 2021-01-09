@@ -1,6 +1,6 @@
 --  https://stackoverflow.com/questions/61719343/storing-and-using-strings-of-varying-length-ada
 
-with HAC_Pack;  use HAC_Pack;
+with HAL; use HAL;
 
 procedure Names_in_Boxes is
 

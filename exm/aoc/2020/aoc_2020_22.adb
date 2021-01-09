@@ -8,7 +8,7 @@
 --
 --    *     comparison (equality operators) "=", "/=" of composite types (arrays and records)
 
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_22 is
 

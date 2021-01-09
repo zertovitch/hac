@@ -4,10 +4,18 @@
 --
 --  See HAC for the full version of the command-line tool.
 
-with HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.PCode.Interpreter;
-with HAC_Pack;
-with Ada.Calendar, Ada.Command_Line, Ada.Numerics.Float_Random,
-     Ada.Streams.Stream_IO, Ada.Text_IO;
+with HAC_Sys.Compiler,
+     HAC_Sys.Co_Defs,
+     HAC_Sys.Defs,
+     HAC_Sys.PCode.Interpreter;
+
+with HAL;
+
+with Ada.Calendar,
+     Ada.Command_Line,
+     Ada.Numerics.Float_Random,
+     Ada.Streams.Stream_IO,
+     Ada.Text_IO;
 
 procedure HAC_Multi is
 
@@ -50,8 +58,8 @@ procedure HAC_Multi is
            (Ada.Command_Line.Argument_Count,
             Ada.Command_Line.Argument,
             Ada.Command_Line.Command_Name,    --  Wrong but not used anyway in this demo.
-            HAC_Pack.Shell_Execute,
-            HAC_Pack.Directory_Separator
+            HAL.Shell_Execute,
+            HAL.Directory_Separator
            );
 
       use Ada.Calendar, Ada.Numerics.Float_Random, Ada.Streams.Stream_IO;

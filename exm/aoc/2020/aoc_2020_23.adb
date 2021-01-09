@@ -11,7 +11,7 @@
 --      0.58 second (GNAT AoC_Build_Mode_Type = "Fast", i5-9400 @ 2.9 GHz).
 --    324.75 seconds (HAC, fastest build, same machine...).
 
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_23 is
 

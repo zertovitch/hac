@@ -1,4 +1,7 @@
-with HAC_Pack;  use HAC_Pack;
+--  We demonstrate a trace-back occurring on a non-trivial call
+--  structure (recursion).
+
+with HAL;
 
 procedure Exception_04 is
 
@@ -15,7 +18,7 @@ procedure Exception_04 is
           if Level > 1 then
             return Add_n_shift (N * 2, Level - 1);  --  <-  Trace-back should show this line
           else
-            a (4) := 5;       --  <-  Boom: out-of-range
+            a (4) := 5;       --  <-  *** Boom! *** : 4 is out-of-range
           end if;
           return N;
         end;
@@ -25,7 +28,7 @@ procedure Exception_04 is
     begin
       for L in reverse 1 .. Max_L loop
         if Add_n_shift (0, L) /= 2 ** L - 1 then    --  <-  Trace-back should show this line
-          Put_Line ("Compiler bug [NTF]");
+          null;
         end if;
       end loop;
     end NTF;
@@ -36,10 +39,10 @@ procedure Exception_04 is
 
   procedure P1 is null;
 
-  dummy : Real;
+  dummy : Integer;
 begin
-  dummy := 1.234;
+  dummy := 1234;
   Nest;        --  <-  Trace-back should show this line
-  dummy := 4.321;
+  dummy := 4321;
   P1;                   --  <-  No executed due to previously raised exception.
 end;

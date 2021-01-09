@@ -4,11 +4,11 @@
 --
 --  https://adventofcode.com/2020/day/6
 --
---  Full Ada version, using the HAC_Pack package.
+--  Full Ada version, using the HAL package.
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
-procedure AoC_2020_06_Full_Ada_using_HAC_Pack is
+procedure AoC_2020_06_Full_Ada_using_HAL is
   total : Integer;
   new_group : Boolean;
   subtype Answer_Range is Character range 'a' .. 'z';
@@ -54,4 +54,4 @@ begin
     --  Part 2: officially validated by AoC: 3427
     Close (f);
   end loop;
-end AoC_2020_06_Full_Ada_using_HAC_Pack;
+end AoC_2020_06_Full_Ada_using_HAL;

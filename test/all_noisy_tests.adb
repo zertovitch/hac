@@ -1,9 +1,11 @@
 --  We launch new instances of HAC (possibly from HAC itself, too).
 --  Usage:  hac all_noisy_tests.adb
 
-with HAC_Pack;  use HAC_Pack;
+with HAL;
 
 procedure All_Noisy_Tests is
+
+  use HAL;
 
   procedure Launch_Tests is
 

@@ -11,7 +11,7 @@
 --  This package contains constants and types for the
 --  compiler and the p-code interpreter.
 
-with HAC_Pack;
+with HAL;
 
 with Ada.Calendar,
      Ada.Characters.Handling,
@@ -23,18 +23,22 @@ with Interfaces;
 
 package HAC_Sys.Defs is
 
-  HAC_Pack_Name       : constant String := "HAC_Pack";
-  HAC_Pack_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Pack_Name);
+  HAL_Name : constant String := "HAL";  --  Stands for:  HAC Ada Library.
 
   subtype HAC_Integer is Interfaces.Integer_64;
   HAC_Integer_Name       : constant String := "Integer";
   HAC_Integer_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Integer_Name);
-  function HAC_Image is new HAC_Pack.HAC_Generic_Image (Abstract_Integer => HAC_Integer);
+  function HAC_Image is new HAL.HAC_Generic_Image (Abstract_Integer => HAC_Integer);
 
   --  HAC's default floating-point type is double-precision
-  --  and is called "Real" in HAC's HAC_Pack package.
+  --  and is called "Real" in HAC's HAL package.
+  --  There is *no* Float in HAC's Standard package.
+  --  Float is commonly assumed to be single-precision -> no practical use and would
+  --  complicate the parsing in HAC by having multiple possible
+  --  floating-point type expressions.
+  --  On top of that a universal float would be probably needed.
   --
-  type HAC_Float is digits HAC_Pack.Real'Digits;
+  type HAC_Float is digits HAL.Real'Digits;
   HAC_Float_Name       : constant String := "Real";
   HAC_Float_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Float_Name);
   function HAC_Image (F : HAC_Float) return String;

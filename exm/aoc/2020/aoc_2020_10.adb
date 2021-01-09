@@ -4,7 +4,7 @@
 --
 --  https://adventofcode.com/2020/day/10
 --
-with HAC_Pack;  use HAC_Pack;  --  in ../../../src
+with HAL; use HAL;  --  in ../../../src
 
 procedure AoC_2020_10 is
 

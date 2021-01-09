@@ -1,7 +1,7 @@
 --  Silent versions of merge_sort.adb and shell_sort.adb.
 --  We check the result. No output <=> compiler is correct.
 
-with HAC_Pack; use HAC_Pack;
+with HAL; use HAL;
 
 procedure Sorting_Tests is
 
