@@ -17,16 +17,16 @@ with HAL;
 
 with Ada.Characters.Handling;
 
-package body HAC_Sys.Compiler.Library is
+package body HAC_Sys.Librarian is
 
   procedure Register_Unit (
-    CD        : in out Compiler_Data;
+    CD        : in out Co_Defs.Compiler_Data;
     Full_Name : in     String;
-    Kind      : in     Unit_Kind;
+    Kind      : in     Co_Defs.Unit_Kind;
     Is_New    :    out Boolean
   )
   is
-    use Library_Name_Mapping;
+    use Co_Defs, Co_Defs.Library_Name_Mapping;
     VFN : constant HAL.VString := HAL.To_VString (Full_Name);
   begin
     Is_New := CD.lib_map.Find (VFN) = No_Element;
@@ -46,16 +46,16 @@ package body HAC_Sys.Compiler.Library is
   ----------------------
 
   procedure Enter_Built_In (
-    CD             : in out Compiler_Data;
+    CD             : in out Co_Defs.Compiler_Data;
     Full_Ident     : in     String;  --  "Main", "Standard.False", ...
-    New_Entity     : in     Entity_Kind;
-    Base_Type      : in     Typen;
+    New_Entity     : in     Co_Defs.Entity_Kind;
+    Base_Type      : in     Defs.Typen;
     Size           : in     Integer;
-    Discrete_First : in     HAC_Integer := 0;
-    Discrete_Last  : in     HAC_Integer := 0
+    Discrete_First : in     Defs.HAC_Integer := 0;
+    Discrete_Last  : in     Defs.HAC_Integer := 0
   )
   is
-    use Ada.Characters.Handling;
+    use Ada.Characters.Handling, Defs;
     Alfa_Ident       : constant Alfa := To_Alfa (Full_Ident);
     Alfa_Ident_Upper : constant Alfa := To_Alfa (To_Upper (Full_Ident));
   begin
@@ -79,12 +79,12 @@ package body HAC_Sys.Compiler.Library is
   end Enter_Built_In;
 
   procedure Apply_USE_Clause (
-    CD       : in out Compiler_Data;
-    Level    : in     Nesting_level;
+    CD       : in out Co_Defs.Compiler_Data;
+    Level    : in     Defs.Nesting_level;
     Pkg_Idx  : in     Natural
   )
   is
-    use Parser.Enter_Def, UErrors;
+    use Co_Defs, Defs, Parser.Enter_Def, UErrors;
     Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).Name);
     Pkg_UName_Dot : constant String := Pkg_UName & '.';
     Pkg_Initial   : constant Character := Pkg_UName (Pkg_UName'First);
@@ -122,7 +122,8 @@ package body HAC_Sys.Compiler.Library is
     end loop;
   end Apply_USE_Clause;
 
-  procedure Apply_WITH_Standard (CD : in out Compiler_Data) is
+  procedure Apply_WITH_Standard (CD : in out Co_Defs.Compiler_Data) is
+    use Co_Defs, Defs;
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
       Enter_Built_In (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
@@ -157,7 +158,8 @@ package body HAC_Sys.Compiler.Library is
     end if;
   end Apply_WITH_Standard;
 
-  procedure Apply_WITH_HAL (CD : in out Compiler_Data) is
+  procedure Apply_WITH_HAL (CD : in out Co_Defs.Compiler_Data) is
+    use Co_Defs, Defs;
 
     procedure Enter_HAL_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
@@ -290,4 +292,4 @@ package body HAC_Sys.Compiler.Library is
     end if;
   end Apply_WITH_HAL;
 
-end HAC_Sys.Compiler.Library;
+end HAC_Sys.Librarian;

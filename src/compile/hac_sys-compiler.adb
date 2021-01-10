@@ -1,4 +1,4 @@
-with HAC_Sys.Compiler.Library,
+with HAC_Sys.Librarian,
      HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Modularity,
@@ -226,9 +226,9 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: check for main's context clause");
     end if;
 
-    Library.Apply_WITH_Standard (CD);
-    Library.Apply_USE_Clause (
-      CD, Library.Library_Level,
+    Librarian.Apply_WITH_Standard (CD);
+    Librarian.Apply_USE_Clause (
+      CD, Librarian.Library_Level,
       Locate_Identifier (CD, To_Alfa ("STANDARD"), 0)
     );
 
@@ -255,7 +255,7 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: main procedure is " & To_String (CD.Main_Program_ID));
     end if;
 
-    Library.Enter_Built_In (CD, To_String (CD.Main_Program_ID), Prozedure, NOTYP, 0);
+    Librarian.Enter_Built_In (CD, To_String (CD.Main_Program_ID), Prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
 
     CD.Blocks_Table (0) :=  --  Block Table Entry for Standard [was Main, 1]

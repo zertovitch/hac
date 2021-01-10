@@ -1,4 +1,4 @@
-with HAC_Sys.Compiler.Library,
+with HAC_Sys.Librarian,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
@@ -6,7 +6,7 @@ with HAC_Sys.Compiler.Library,
 package body HAC_Sys.Parser.Modularity is
 
   procedure With_Clause (CD : in out Co_Defs.Compiler_Data) is  --  10.1.2 (4)
-    use Compiler.Library, Defs, Scanner, UErrors;
+    use Librarian, Defs, Scanner, UErrors;
   begin
     InSymbol (CD);  --  Consume "with".
     loop
@@ -18,6 +18,9 @@ package body HAC_Sys.Parser.Modularity is
       elsif To_String (CD.Id) = "HAC_PACK" then
         Error (CD, err_syntax_error, ": the new name of HAC_Pack is " & HAL_Name, True);
       else
+        --  !!  TBD: ask the librarian for adding the specs (eventually
+        --           the librarian needs to compile the unit, so we'll see
+        --           this place many times recursively).
         Error (CD, err_syntax_error, ": custom units not yet supported", True);
       end if;
       InSymbol (CD);  --  Consume the identifier.
@@ -28,7 +31,7 @@ package body HAC_Sys.Parser.Modularity is
   end With_Clause;
 
   procedure Use_Clause (CD : in out Co_Defs.Compiler_Data; Level : Defs.Nesting_level) is  --  8.4 (2)
-    use Compiler.Library, Defs, Scanner, UErrors;
+    use Librarian, Defs, Scanner, UErrors;
   begin
     InSymbol (CD);  --  Consume "use".
     loop
@@ -44,7 +47,7 @@ package body HAC_Sys.Parser.Modularity is
   end Use_Clause;
 
   procedure Context_Clause (CD : in out Co_Defs.Compiler_Data) is
-    use Compiler.Library, Defs;
+    use Librarian, Defs;
   begin
     loop
       case CD.Sy is
