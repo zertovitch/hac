@@ -1,4 +1,5 @@
-with HAC_Sys.Librarian,
+with HAC_Sys.Li_Defs,
+     HAC_Sys.Librarian,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
@@ -47,7 +48,7 @@ package body HAC_Sys.Parser.Modularity is
   end Use_Clause;
 
   procedure Context_Clause (CD : in out Co_Defs.Compiler_Data) is
-    use Librarian, Defs;
+    use Defs, Li_Defs;
   begin
     loop
       case CD.Sy is

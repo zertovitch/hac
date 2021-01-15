@@ -20,26 +20,34 @@ with Ada.Characters.Handling;
 package body HAC_Sys.Librarian is
 
   procedure Register_Unit (
-    CD        : in out Co_Defs.Compiler_Data;
+    LD        : in out Li_Defs.Library_Data;
     Full_Name : in     String;
-    Kind      : in     Co_Defs.Unit_Kind;
+    Kind      : in     Li_Defs.Unit_Kind;
     Is_New    :    out Boolean
   )
   is
-    use Co_Defs, Co_Defs.Library_Name_Mapping;
+    use Li_Defs, Li_Defs.Library_Name_Mapping;
     VFN : constant HAL.VString := HAL.To_VString (Full_Name);
   begin
-    Is_New := CD.lib_map.Find (VFN) = No_Element;
+    Is_New := LD.Map.Find (VFN) = No_Element;
     if Is_New then
       declare
         New_Unit : Library_Unit;
       begin
         New_Unit.Status := Void;
         New_Unit.Kind   := Kind;
-        CD.lib_map.Insert (VFN, New_Unit);
+        LD.Library.Append (New_Unit);
+        LD.Map.Insert (VFN, LD.Library.Last_Index);
       end;
     end if;
   end Register_Unit;
+
+  procedure Register_Built_In (LD : in out Li_Defs.Library_Data) is
+    Is_New : Boolean;
+  begin
+    Register_Unit (LD, "Standard", Li_Defs.Package_Unit, Is_New);
+    Register_Unit (LD, Defs.HAL_Name, Li_Defs.Package_Unit, Is_New);
+  end Register_Built_In;
 
   ----------------------
   --  Built-in units  --
@@ -128,11 +136,7 @@ package body HAC_Sys.Librarian is
     begin
       Enter_Built_In (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
-    Is_New : Boolean;
   begin
-    Register_Unit (CD, "Standard", Package_Unit, Is_New);
-    --
-    if Is_New then
       Enter_Built_In (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
       --
       Enter_Built_In (CD, "Standard", Paquetage, NOTYP, 0);
@@ -155,7 +159,6 @@ package body HAC_Sys.Librarian is
       Enter_Std_Typ ("Natural",  Ints, 0, HAC_Integer'Last);
       Enter_Std_Typ ("Positive", Ints, 1, HAC_Integer'Last);
       Enter_Std_Typ ("Duration", Durations, 0, 0);
-    end if;
   end Apply_WITH_Standard;
 
   procedure Apply_WITH_HAL (CD : in out Co_Defs.Compiler_Data) is
@@ -176,12 +179,8 @@ package body HAC_Sys.Librarian is
       Enter_Built_In (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
     end Enter_HAL_Proc;
 
-    Is_New : Boolean;
     use PCode;
   begin
-    Register_Unit (CD, HAL_Name, Package_Unit, Is_New);
-    --
-    if Is_New then
       Enter_Built_In (CD, HAL_Name, Paquetage, NOTYP, 0);
       --
       Enter_HAL_Typ ("File_Type", Text_Files, 0, 0);  --  2020.05.17
@@ -289,7 +288,6 @@ package body HAC_Sys.Librarian is
       Enter_HAL_Proc ("Quantum",        SP_Quantum);
       Enter_HAL_Proc ("Priority",       SP_Priority);
       Enter_HAL_Proc ("InheritP",       SP_InheritP);
-    end if;
   end Apply_WITH_HAL;
 
 end HAC_Sys.Librarian;

@@ -9,23 +9,17 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Co_Defs, HAC_Sys.Defs;
+with HAC_Sys.Co_Defs,
+     HAC_Sys.Defs,
+     HAC_Sys.Li_Defs;
 
 package HAC_Sys.Librarian is
-
-  Library_Level : constant := 0;
-
-  type Build_Mode is
-    (All_in_Memory
-        --  ^ Full compilation around main unit is done in memory.
-        --  Object code is shared, but ther is one ID table per unit.
-     --  Use_Files
-     --    --  ^ Use .hau files (some stored in .zip files)
-    );
 
   ----------------------
   --  Built-in units  --
   ----------------------
+
+  procedure Register_Built_In (LD : in out Li_Defs.Library_Data);
 
   procedure Enter_Built_In (
     CD             : in out Co_Defs.Compiler_Data;

@@ -34,7 +34,7 @@ project HAC is
       for Default_Switches ("ada") use ("-i2");
    end Pretty_Printer;
 
-   Common_Options := (
+   Common_Compiler_Options := (
      "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
      "-gnatwcijkmopruvz.c.p.t.w.x",  --  Warnings switches (run "gnatmake" for full list)
@@ -72,17 +72,19 @@ project HAC is
    
    package Compiler is
       case HAC_Build_Mode is
-         when "Debug" => for Default_Switches ("ada") use Common_Options & Debug_Options;
-         when "Fast"  => for Default_Switches ("ada") use Common_Options & Fast_Options;
-         when "Small" => for Default_Switches ("ada") use Common_Options & "-Os";
+         when "Debug" => for Default_Switches ("ada") use Common_Compiler_Options & Debug_Options;
+         when "Fast"  => for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options;
+         when "Small" => for Default_Switches ("ada") use Common_Compiler_Options & "-Os";
       end case;
    end Compiler;
 
+   Common_Binder_Options := ("-static");
+
    package Binder is
       case HAC_Build_Mode is
-         when "Small" =>
+         when "Small" => for Default_Switches ("ada") use Common_Binder_Options;
          --  -Es: Store tracebacks in exception occurrences, and enable symbolic tracebacks
-         when others  => for Default_Switches ("ada") use ("-static", "-Es");
+         when others  => for Default_Switches ("ada") use Common_Binder_Options & ("-Es");
       end case;
    end Binder;
 

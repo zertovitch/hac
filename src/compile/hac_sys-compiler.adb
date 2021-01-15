@@ -1,4 +1,5 @@
-with HAC_Sys.Librarian,
+with HAC_Sys.Li_Defs,
+     HAC_Sys.Librarian,
      HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Modularity,
@@ -75,7 +76,6 @@ package body HAC_Sys.Compiler is
     CD.Err_Count := 0;
     CD.Errs      := error_free;
     --
-    CD.lib_map.Clear;
     CD.Display (0) := 0;  --  Added 7-Dec-2009
   end Init;
 
@@ -228,7 +228,7 @@ package body HAC_Sys.Compiler is
 
     Librarian.Apply_WITH_Standard (CD);
     Librarian.Apply_USE_Clause (
-      CD, Librarian.Library_Level,
+      CD, Li_Defs.Library_Level,
       Locate_Identifier (CD, To_Alfa ("STANDARD"), 0)
     );
 
