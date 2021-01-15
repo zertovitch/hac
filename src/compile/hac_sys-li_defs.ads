@@ -39,6 +39,7 @@ package HAC_Sys.Li_Defs is
 
   type Library_Unit is record
     Kind       : Unit_Kind;
+    Full_Name  : HAL.VString;  --  Full unit name, like "Ada.Strings.Fixed"
     Status     : Compilation_Status;
     Needs_Body : Boolean;
   end record;
@@ -46,7 +47,7 @@ package HAC_Sys.Li_Defs is
   package Library_Unit_Vectors is new Ada.Containers.Vectors (Positive, Library_Unit);
 
   package Library_Name_Mapping is new Ada.Containers.Hashed_Maps
-    (Key_Type        => HAL.VString,  --  Full unit name, like "Ada.Strings.Fixed"
+    (Key_Type        => HAL.VString,  --  Upper case of full unit name
      Element_Type    => Positive,     --  Index in the library
      Hash            => Ada.Strings.Unbounded.Hash,
      Equivalent_Keys => Ada.Strings.Unbounded."=");
