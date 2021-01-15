@@ -86,8 +86,8 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     end if;
   end Push;
 
-  procedure Post_Mortem_Dump (CD : Compiler_Data; ND : In_Defs.Interpreter_Data) is
-    use Ada.Text_IO, Defs.IIO, Defs.RIO;
+  procedure Post_Mortem_Dump (CD : Co_Defs.Compiler_Data; ND : In_Defs.Interpreter_Data) is
+    use Ada.Text_IO, Co_Defs, Defs.IIO, Defs.RIO;
     BLKCNT : Integer;
     H1, H2, H3 : Integer;
     --  !! Should use a file for dump !!

@@ -1,4 +1,5 @@
-with HAC_Sys.PCode.Interpreter.Calls,
+with HAC_Sys.Co_Defs,
+     HAC_Sys.PCode.Interpreter.Calls,
      HAC_Sys.PCode.Interpreter.Composite_Data,
      HAC_Sys.PCode.Interpreter.Exceptions,
      HAC_Sys.PCode.Interpreter.In_Defs,
@@ -17,12 +18,14 @@ with Ada.Command_Line,
 package body HAC_Sys.PCode.Interpreter is
 
   procedure Interpret (
-    CD        : in     Compiler_Data;    --  Everything is compiled and ready to run
+    BD        : in     Builder.Build_Data;  --  Everything is compiled and ready to run
     Unhandled :    out Exception_Propagation_Data
   )
   is
-    use In_Defs, Exceptions;
-    ND : Interpreter_Data;
+    ND : In_Defs.Interpreter_Data;
+    CD : Co_Defs.Compiler_Data renames BD.Main_CD;
+
+    use Co_Defs, In_Defs, Exceptions;
 
     procedure Pop (Amount : Positive := 1) is  begin Pop (ND, Amount); end Pop;
     procedure Push (Amount : Positive := 1) is begin Push (ND, Amount); end Push;
@@ -36,8 +39,8 @@ package body HAC_Sys.PCode.Interpreter is
       ND.SWITCH   := False;           --  invoke scheduler on next cycle flag
       ND.SYSCLOCK := ND.Start_Time;
       ND.TIMER    := ND.SYSCLOCK;     --  set to end of current task's time slice
-      HAC_Sys.PCode.Interpreter.Tasking.Init_main_task (CD, ND);
-      HAC_Sys.PCode.Interpreter.Tasking.Init_other_tasks (CD, ND);
+      HAC_Sys.PCode.Interpreter.Tasking.Init_main_task (BD.Main_CD, ND);
+      HAC_Sys.PCode.Interpreter.Tasking.Init_other_tasks (BD.Main_CD, ND);
     end Start_Interpreter;
 
     procedure Do_Standard_Function is
@@ -600,7 +603,7 @@ package body HAC_Sys.PCode.Interpreter is
   end Current_IO_Get_Needs_Skip_Line;
 
   procedure Interpret_on_Current_IO (
-    CD_CIO           : in     Compiler_Data;  --  Everything is compiled and ready to run
+    BD_CIO           : in     Builder.Build_Data;  --  Everything is compiled and ready to run
     Argument_Shift   : in     Natural := 0;   --  Number of arguments to be skipped
     Full_Script_Name : in     String;         --  This is for Command_Name
     Unhandled        :    out Exception_Propagation_Data;
@@ -674,7 +677,7 @@ package body HAC_Sys.PCode.Interpreter is
   begin
     Stack_Size := In_Defs.Stack_Type'Last;
     Max_Stack_Usage := 0;
-    Interpret_on_Current_IO_Instance (CD_CIO, Unhandled);
+    Interpret_on_Current_IO_Instance (BD_CIO, Unhandled);
   end Interpret_on_Current_IO;
 
   function Image (E : Exception_Propagation_Data) return String is

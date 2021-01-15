@@ -4,8 +4,7 @@
 --
 --  See HAC for the full version of the command-line tool.
 
-with HAC_Sys.Compiler,
-     HAC_Sys.Co_Defs,
+with HAC_Sys.Builder,
      HAC_Sys.Defs,
      HAC_Sys.PCode.Interpreter;
 
@@ -29,7 +28,7 @@ procedure HAC_Multi is
     end HAC_Instance;
 
     task body HAC_Instance is
-      use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter;
+      use HAC_Sys.Builder, HAC_Sys.PCode.Interpreter;
 
       procedure No_Put (Item : Character) is null;
       procedure No_New_Line (Spacing : Positive_Count := 1) is null;
@@ -96,7 +95,7 @@ procedure HAC_Multi is
       Ada_file_name : constant String := "exm/mandelbrot.adb";
       --
       f : Ada.Streams.Stream_IO.File_Type;
-      CD : Compiler_Data;
+      BD : Build_Data;
       unhandled : Exception_Propagation_Data;
     begin
       accept Start (id : Positive) do
@@ -106,13 +105,13 @@ procedure HAC_Multi is
       Reset (gen);
       --
       Open (f, In_File, Ada_file_name);
-      Set_Source_Stream (CD, Stream (f), Ada_file_name);
-      Compile_Main (CD);
+      Set_Main_Source_Stream (BD, Stream (f), Ada_file_name);
+      Build_Main (BD);
       Close (f);
       --
-      if Unit_Compilation_Successful (CD) then
+      if Build_Successful (BD) then
         Put_Line ("S" & sep & " Task" & sep & task_id'Image & sep & " successful compilation. Running the VM.");
-        Interpret_for_Multi (CD, unhandled);
+        Interpret_for_Multi (BD, unhandled);
         if Image (unhandled) = "User_Abort" then
           Put_Line ("A2" & sep & " Task" & sep & task_id'Image & sep & " got ""User_Abort"" exception from HAC VM.");
         else

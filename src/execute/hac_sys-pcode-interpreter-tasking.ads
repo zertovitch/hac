@@ -1,7 +1,8 @@
-with HAC_Sys.PCode.Interpreter.In_Defs;
+with HAC_Sys.Co_Defs,
+     HAC_Sys.PCode.Interpreter.In_Defs;
 
 package HAC_Sys.PCode.Interpreter.Tasking is
-  use In_Defs;
+  use Co_Defs, In_Defs;
 
   -----------------------
   --  VM Instructions  --

@@ -9,13 +9,12 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Co_Defs, HAC_Sys.Defs;
+with HAC_Sys.Builder,
+     HAC_Sys.Defs;
 
 with Ada.Calendar, Ada.Containers.Vectors, Ada.Text_IO;
 
 package HAC_Sys.PCode.Interpreter is
-
-  use Co_Defs;
 
   ------------------
   --  Exceptions  --
@@ -45,9 +44,9 @@ package HAC_Sys.PCode.Interpreter is
   ------------------------------------------------------------------------------
 
   procedure Interpret_on_Current_IO (
-    CD_CIO           : in     Compiler_Data;  --  Everything is compiled and ready to run
-    Argument_Shift   : in     Natural := 0;   --  Number of arguments to be skipped
-    Full_Script_Name : in     String;         --  This is for Command_Name
+    BD_CIO           : in     Builder.Build_Data;  --  Everything is compiled and ready to run
+    Argument_Shift   : in     Natural := 0;        --  Number of arguments to be skipped
+    Full_Script_Name : in     String;              --  This is for Command_Name
     Unhandled        :    out Exception_Propagation_Data;
     Max_Stack_Usage  :    out Natural;
     Stack_Size       :    out Positive
@@ -123,7 +122,7 @@ package HAC_Sys.PCode.Interpreter is
     with package System_Calls is new System_Calls_Traits (<>);
     --
   procedure Interpret (
-    CD        : in     Compiler_Data;    --  Everything is compiled and ready to run
+    BD        : in     Builder.Build_Data;  --  Everything is compiled and ready to run
     Unhandled :    out Exception_Propagation_Data
   );
 

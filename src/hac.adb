@@ -1,5 +1,4 @@
-with HAC_Sys.Compiler,
-     HAC_Sys.Co_Defs,
+with HAC_Sys.Builder,
      HAC_Sys.PCode.Interpreter.In_Defs;
 
 with Show_License;
@@ -24,8 +23,9 @@ procedure HAC is
   cmp_dump_file_name : Unbounded_String;
 
   procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
-    use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter,
-        Ada.Calendar, Ada.Command_Line, Ada.Text_IO;
+    use HAC_Sys.Builder,
+        HAC_Sys.PCode.Interpreter;
+    use Ada.Calendar, Ada.Command_Line, Ada.Text_IO;
     --
     procedure Show_Line_Information (
       File_Name   : String;   --  Example: hac-pcode-interpreter.adb
@@ -49,7 +49,7 @@ procedure HAC is
     HAC_margin_1 : constant String := "*******[ HAC ]*******   ";
     HAC_margin_2 : constant String := ". . . .[ HAC ]. . . .   ";
     HAC_margin_3 : constant String := "-------[ HAC ]-------   ";
-    CD : Compiler_Data;
+    BD : Build_Data;
     unhandled : Exception_Propagation_Data;
     unhandled_found : Boolean;
     shebang_offset : Natural := 0;
@@ -84,33 +84,30 @@ procedure HAC is
         end if;
       end;
     end if;
-    Set_Source_Stream (CD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
+    Set_Diagnostic_File_Names (BD, To_String (asm_dump_file_name), To_String (cmp_dump_file_name));
+    Set_Main_Source_Stream (BD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     t1 := Clock;
-    Compile_Main (
-      CD,
-      To_String (asm_dump_file_name),
-      To_String (cmp_dump_file_name)
-    );
+    Build_Main (BD);
     t2 := Clock;
     Close (f);
     if verbosity >= 2 then
       Put_Line (
-        HAC_margin_2 & "Compilation finished in " &
+        HAC_margin_2 & "Build finished in " &
         (Duration'Image (t2 - t1)) &
         " seconds."
       );
     end if;
     --
-    if Unit_Compilation_Successful (CD) then
+    if Build_Successful (BD) then
       if verbosity >= 2 then
-        Put_Line (HAC_margin_2 & "Unit object code size:" & Unit_Object_Code_Size (CD)'Image &
+        Put_Line (HAC_margin_2 & "Object code size:" & Object_Code_Size (BD)'Image &
                   " of" & Maximum_Object_Code_Size'Image &
                   " Virtual Machine instructions.");
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       end if;
       t1 := Clock;
       Interpret_on_Current_IO (
-        CD,
+        BD,
         arg_pos,
         Ada.Directories.Full_Name (Ada_file_name),
         unhandled,

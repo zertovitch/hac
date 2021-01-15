@@ -3,7 +3,7 @@
 --
 --  See HAC (hac.adb) for the full version of the command-line tool.
 
-with HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter;
+with HAC_Sys.Builder, HAC_Sys.PCode.Interpreter;
 with Ada.Command_Line, Ada.Streams.Stream_IO, Ada.Text_IO;
 
 procedure HAC_Mini is
@@ -11,21 +11,21 @@ procedure HAC_Mini is
   use Ada.Text_IO;
 
   procedure Compile_and_interpret_file (Ada_file_name : String) is
-    use HAC_Sys.Compiler, HAC_Sys.Co_Defs, HAC_Sys.PCode.Interpreter;
+    use HAC_Sys.Builder, HAC_Sys.PCode.Interpreter;
     use Ada.Streams.Stream_IO;
     --
     f : Ada.Streams.Stream_IO.File_Type;
-    CD : Compiler_Data;
+    BD : Build_Data;
     unhandled : Exception_Propagation_Data;
     stack_max, stack_total : Natural;
   begin
     Open (f, In_File, Ada_file_name);
-    Set_Source_Stream (CD, Stream (f), Ada_file_name);
-    Compile_Main (CD);
+    Set_Main_Source_Stream (BD, Stream (f), Ada_file_name);
+    Build_Main (BD);
     Close (f);
     --
-    if Unit_Compilation_Successful (CD) then
-      Interpret_on_Current_IO (CD, 1, Ada_file_name, unhandled, stack_max, stack_total);
+    if Build_Successful (BD) then
+      Interpret_on_Current_IO (BD, 1, Ada_file_name, unhandled, stack_max, stack_total);
       if Is_Exception_Raised (unhandled) then
         Put_Line (Current_Error, "HAC VM: raised " & Image (unhandled));
         Put_Line (Current_Error, Message (unhandled));

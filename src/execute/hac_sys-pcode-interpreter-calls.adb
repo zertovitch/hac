@@ -4,10 +4,14 @@ with Ada.Calendar;
 
 package body HAC_Sys.PCode.Interpreter.Calls is
 
-  procedure Do_Calling_Operation (CD : Compiler_Data; ND : in out Interpreter_Data) is
+  procedure Do_Calling_Operation (
+    CD :        Co_Defs.Compiler_Data;
+    ND : in out In_Defs.Interpreter_Data
+  )
+  is
+    use Defs, In_Defs;
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     IR : Order renames ND.IR;
-    use Defs;
     use type HAC_Integer;
 
     procedure Do_Mark_Stack is
