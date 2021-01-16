@@ -1373,9 +1373,14 @@ package body HAC_Sys.Parser is
       Function_Result_Profile;
     end if;
     --
-    if CD.Sy = Semicolon then  --  end of specification part
+    if CD.Sy = Semicolon then
+      --  End of subprogram specification part ("forward", not yet available
+      --  since ';' is blocked as symbol). Body declared later.
+      --  Example:
+      --  procedure A; procedure B is begin ... A ... end; procedure A is ... B ... end;
       CD.Blocks_Table (PRB).VSize := Dx;
-      CD.IdTab (Prt).Adr_or_Sz    := -1;    -- address of body TBD
+      CD.IdTab (Prt).Adr_or_Sz    := -1;
+      --  Address of body TBD (or, we could have an indirect call mechanism).
       return;
     end if;
     --

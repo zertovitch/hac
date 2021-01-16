@@ -30,8 +30,8 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     procedure Do_Call is
       use Ada.Calendar;
       F1 : HAC_Float;    --  Internal float registers
-      H1, H2, H4 : Index;
-      H3 : Nesting_level;
+      H1, H2, New_Stack_Top : Index;
+      Called_Level : Nesting_level;
       H5 : Integer;
     begin
       --  procedure and task entry CALL
@@ -43,14 +43,14 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       end if;
       H1 := Curr_TCB.T - Integer (IR.Y);     --  base of activation record
       H2 := Index (ND.S (H1 + 4).I);         --  CD.IdTab index of called procedure/entry
-      H3 := CD.IdTab (Integer (H2)).LEV;
-      Curr_TCB.DISPLAY (H3 + 1) := Integer (H1);
-      ND.S (H1 + 1).I := HAC_Integer (Curr_TCB.PC);  --  return address
-      H4 := Index (ND.S (H1 + 3).I) + H1;  --  new top of stack
-      ND.S (H1 + 2).I := HAC_Integer (Curr_TCB.DISPLAY (H3));  --  static link
-      ND.S (H1 + 3).I := HAC_Integer (Curr_TCB.B);             --  dynamic link
+      Called_Level := CD.IdTab (H2).LEV;
+      Curr_TCB.DISPLAY (Called_Level + 1) := H1;
+      New_Stack_Top   := Index (ND.S (H1 + 3).I) + H1;
+      ND.S (H1 + 1).I := HAC_Integer (Curr_TCB.PC);                      --  return address
+      ND.S (H1 + 2).I := HAC_Integer (Curr_TCB.DISPLAY (Called_Level));  --  static link
+      ND.S (H1 + 3).I := HAC_Integer (Curr_TCB.B);                       --  dynamic link
       Curr_TCB.B := H1;
-      Curr_TCB.T := H4;
+      Curr_TCB.T := New_Stack_Top;
       case IR.X is  --  Call type
         when Defs.Normal_Procedure_Call =>
           Curr_TCB.PC := CD.IdTab (H2).Adr_or_Sz;
