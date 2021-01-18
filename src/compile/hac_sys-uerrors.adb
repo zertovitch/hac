@@ -239,10 +239,12 @@ package body HAC_Sys.UErrors is
       when err_membership_test_type_mismatch =>
         return "incompatible types: " & hint;
       when err_string_not_supported_as_parameter =>
-        return "String not supported as parameter" &
+        return "string not supported as parameter" &
           " - define a constrained ""subtype S2 is String (1..2)"" or use a VString";
       when err_string_lengths_do_not_match =>
-        return "Fixed-size string lengths do not match: " & hint;
+        return "fixed-size string lengths do not match: " & hint;
+      when err_library_error =>
+        return "library error: " & hint;
     end case;
   end Error_String;
 

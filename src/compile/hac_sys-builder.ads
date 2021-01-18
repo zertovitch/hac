@@ -10,6 +10,7 @@
 --
 
 with HAC_Sys.Co_Defs,
+     HAC_Sys.Defs,
      HAC_Sys.Li_Defs;
 
 with HAL;
@@ -46,6 +47,11 @@ package HAC_Sys.Builder is
     s          : access Ada.Streams.Root_Stream_Type'Class;
     file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
     start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
+  );
+
+  procedure Set_Error_Pipe (
+    BD   : in out Build_Data;
+    pipe :        Defs.Smart_error_pipe
   );
 
   function Build_Successful (BD : Build_Data) return Boolean;

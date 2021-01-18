@@ -45,4 +45,14 @@ package HAC_Sys.Librarian is
   --
   procedure Apply_WITH_HAL (CD : in out Co_Defs.Compiler_Data);
 
+  --------------------
+  --  Custom units  --
+  --------------------
+
+  procedure Apply_WITH (
+    CD         : in out Co_Defs.Compiler_Data;
+    LD         : in out Li_Defs.Library_Data;
+    Upper_Name : in     String
+  );
+
 end HAC_Sys.Librarian;

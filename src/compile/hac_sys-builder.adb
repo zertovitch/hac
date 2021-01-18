@@ -1,5 +1,4 @@
 with HAC_Sys.Compiler,
-     HAC_Sys.Defs,
      HAC_Sys.Librarian;
 
 package body HAC_Sys.Builder is
@@ -10,6 +9,7 @@ package body HAC_Sys.Builder is
     Librarian.Register_Built_In (BD.LD);
     Compiler.Compile_Main (
       BD.Main_CD,
+      BD.LD,
       To_String (BD.asm_dump_file_name),
       To_String (BD.cmp_dump_file_name),
       To_String (BD.listing_file_name),
@@ -44,6 +44,16 @@ package body HAC_Sys.Builder is
   begin
     Compiler.Set_Source_Stream (BD.Main_CD, s, file_name, start_line);
   end Set_Main_Source_Stream;
+
+  procedure Set_Error_Pipe (
+    BD   : in out Build_Data;
+    pipe :        Defs.Smart_error_pipe
+  )
+  is
+  begin
+    Compiler.Set_Error_Pipe (BD.Main_CD, pipe);
+    --  ^ NB: Further unit compilations should propagate this.
+  end Set_Error_Pipe;
 
   function Build_Successful (BD : Build_Data) return Boolean is
   begin

@@ -292,4 +292,80 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Proc ("InheritP",       SP_InheritP);
   end Apply_WITH_HAL;
 
+  function GNAT_Naming (Unit_Name : String) return String is
+    result : String := Ada.Characters.Handling.To_Lower (Unit_Name);
+  begin
+    for c of result loop
+      if c = '.' then
+        c := '-';
+      end if;
+    end loop;
+    return result;
+  end GNAT_Naming;
+
+  --  Search for "physical" file corresponding to unit name
+  --  First a spec, then a body.
+  --  If nothing found, return empty string.
+  --
+  function Find_Unit_File_Name (
+    Unit_Name : String
+    --  TBD:
+    --  search path for single source files;
+    --  search path for zipped files (.har, like .jar ...)
+  )
+  return String
+  is
+    GNAT_prefix : constant String := GNAT_Naming (Unit_Name);
+    spec_fn : constant String := GNAT_prefix & ".ads";
+    body_fn : constant String := GNAT_prefix & ".adb";
+  begin
+    if HAL.Exists (spec_fn) then
+      return spec_fn;
+    elsif HAL.Exists (body_fn) then
+      return body_fn;
+    else
+      return "";
+    end if;
+  end Find_Unit_File_Name;
+
+  procedure Apply_WITH (
+    CD         : in out Co_Defs.Compiler_Data;
+    LD         : in out Li_Defs.Library_Data;
+    Upper_Name : in     String
+  )
+  is
+    use Defs, UErrors;
+  begin
+    if LD.Map.Contains (HAL.To_VString (Upper_Name)) then
+      null;  --  !!
+    else
+      declare
+        fn : constant String := Find_Unit_File_Name (Upper_Name);
+      begin
+        if fn = "" then
+          Error (
+            CD,
+            err_library_error,
+            ": file " & GNAT_Naming (Upper_Name) & ".ad* not found",
+            True
+          );
+        elsif fn (fn'Last) = 's' then
+          Error (
+            CD,
+            err_library_error,
+            "Specification files not yet supported (" & fn & ')',
+            True
+          );
+        else
+          Error (
+            CD,
+            err_library_error,
+            "Coming soon in HAC: compilation of WITH-ed subprogram bodies (" & fn & ')',
+            True
+          );
+        end if;
+      end;
+    end if;
+  end Apply_WITH;
+
 end HAC_Sys.Librarian;

@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Co_Defs, HAC_Sys.Defs;
+with HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.Li_Defs;
 
 with Ada.Streams;
 
@@ -20,7 +20,8 @@ package HAC_Sys.Compiler is
   --  Main compilation procedure.
   --
   procedure Compile_Main (
-    CD                 : in out Compiler_Data;
+    CD                 : in out Co_Defs.Compiler_Data;
+    LD                 : in out Li_Defs.Library_Data;
     asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
     listing_file_name  :        String  := "";  --  Listing of source code with details

@@ -1,5 +1,4 @@
-with HAC_Sys.Li_Defs,
-     HAC_Sys.Librarian,
+with HAC_Sys.Librarian,
      HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Modularity,
@@ -186,7 +185,8 @@ package body HAC_Sys.Compiler is
   ---------------------------------------------------------------------------
 
   procedure Compile_Main (
-    CD                 : in out Compiler_Data;
+    CD                 : in out Co_Defs.Compiler_Data;
+    LD                 : in out Li_Defs.Library_Data;
     asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
     listing_file_name  :        String  := "";  --  Listing of source code with details
@@ -232,7 +232,7 @@ package body HAC_Sys.Compiler is
       Locate_Identifier (CD, To_Alfa ("STANDARD"), 0)
     );
 
-    Parser.Modularity.Context_Clause (CD);  --  Parse the "with"'s and "use"'s.
+    Parser.Modularity.Context_Clause (CD, LD);  --  Parse the "with"'s and "use"'s.
 
     if CD.comp_dump_requested then
       Put_Line (CD.comp_dump, "Compiler: check for main procedure");
