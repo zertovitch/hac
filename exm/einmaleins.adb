@@ -15,5 +15,5 @@ begin
     y := y * 10;
   end if;
   --
-  Put (x); Put (y); Put ("  ="); Put (x * y);
+  Put (x, 0); Put (" * "); Put (y, 0); Put (" = "); Put (x * y, 0);
 end Einmaleins;
