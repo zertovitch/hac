@@ -4,8 +4,6 @@ with Ada.Numerics.Float_Random,
 
 package body HAL is
 
-  use Ada.Characters.Handling, VStr_Pkg;
-
   package REF is new Ada.Numerics.Generic_Elementary_Functions (Real);
 
   function "**" (F1, F2 : Real) return Real is
@@ -198,12 +196,12 @@ package body HAL is
 
   function To_Lower (Item : VString) return VString is
   begin
-    return +To_Lower (To_String (Item));
+    return +Ada.Characters.Handling.To_Lower (VStr_Pkg.To_String (Item));
   end To_Lower;
 
   function To_Upper (Item : VString) return VString is
   begin
-    return +To_Upper (To_String (Item));
+    return +Ada.Characters.Handling.To_Upper (VStr_Pkg.To_String (Item));
   end To_Upper;
 
   function Head (Source : VString; Count : Natural) return VString is
@@ -216,6 +214,50 @@ package body HAL is
     return VStr_Pkg.Tail (Source, Count);  --  We use the default padding: ' '.
   end Tail;
 
+  function Tail_After_Match (Source : VString; Pattern : Character) return VString is
+  begin
+    return Tail_After_Match (Source, (1 => Pattern));
+  end Tail_After_Match;
+
+  function Tail_After_Match (Source : VString; Pattern : String) return VString is
+  begin
+    return Tail_After_Match (Source, +Pattern);
+  end Tail_After_Match;
+
+  function Tail_After_Match (Source : VString; Pattern : VString) return VString is
+    ------------------------------------------------------------------------------
+    --  Description : Extract a substring from Source starting after the Pattern,
+    --                to the end
+    --  Arguments   : String to scan and Search pattern
+    --  Return      : A substring from the character after the first Pattern
+    --                found backward to the String's end
+    --  Author      : Stéphane Rivière, 2021
+    --  Examples :
+    --
+    --  Tail_After_Match (+"/etc/genesix/gnx-startup",
+    --    +"/")) returns gnx-startup
+    --    +"ix")) returns /gnx-startup
+    --    +"gene")) returns six/gnx-startup
+    --    +"etc/genesix/gnx-startu")) returns p
+    --    +"/etc/genesix/gnx-startu")) returns p
+    --    +"/etc/genesix/gnx-startup")) returns empty string
+    --    +"/etc/genesix/gnx-startupp")) returns empty string
+    ------------------------------------------------------------------------------
+    Result : VString := +"";
+    Source_Length : constant Natural := Length (Source);
+    Pattern_Length : constant Natural := Length (Pattern);
+  begin
+    for I in reverse 1 .. Source_Length loop
+      if I <= (Source_Length - Pattern_Length) then
+        if Slice (Source, I, I + Pattern_Length - 1) = Pattern then
+          Result := Slice (Source, I + Pattern_Length, Source_Length);
+          exit;
+        end if;
+      end if;
+    end loop;
+    return Result;
+  end Tail_After_Match;
+
   function Starts_With (Item : VString; Pattern : Character) return Boolean is
   begin
     return 1 <= Length (Item) and then Element (Item, 1) = Pattern;
@@ -224,7 +266,7 @@ package body HAL is
   function Starts_With (Item : VString; Pattern : String) return Boolean is
   begin
     return Pattern'Length <= Length (Item)
-             and then To_String (VStr_Pkg.Head (Item, Pattern'Length)) = Pattern;
+             and then VStr_Pkg.To_String (VStr_Pkg.Head (Item, Pattern'Length)) = Pattern;
   end Starts_With;
 
   function Starts_With (Item : VString; Pattern : VString) return Boolean is
@@ -241,7 +283,7 @@ package body HAL is
   function Ends_With (Item : VString; Pattern : String) return Boolean is
   begin
     return Pattern'Length <= Length (Item)
-             and then To_String (VStr_Pkg.Tail (Item, Pattern'Length)) = Pattern;
+             and then VStr_Pkg.To_String (VStr_Pkg.Tail (Item, Pattern'Length)) = Pattern;
   end Ends_With;
 
   function Ends_With (Item : VString; Pattern : VString) return Boolean is
@@ -266,7 +308,7 @@ package body HAL is
 
   function Index (Source : VString; Pattern : VString) return Natural is
   begin
-    return VStr_Pkg.Index (Source, To_String (Pattern));
+    return VStr_Pkg.Index (Source, VStr_Pkg.To_String (Pattern));
   end Index;
 
   function Index (Source : VString; Pattern : Character; From : Positive) return Natural is
@@ -281,7 +323,7 @@ package body HAL is
 
   function Index (Source : VString; Pattern : VString; From : Positive) return Natural is
   begin
-    return VStr_Pkg.Index (Source, To_String (Pattern), From);
+    return VStr_Pkg.Index (Source, VStr_Pkg.To_String (Pattern), From);
   end Index;
 
   ----------------------
@@ -300,7 +342,7 @@ package body HAL is
 
   function Index_Backward (Source : VString; Pattern : VString) return Natural is
   begin
-    return VStr_Pkg.Index (Source, To_String (Pattern), Ada.Strings.Backward);
+    return VStr_Pkg.Index (Source, VStr_Pkg.To_String (Pattern), Ada.Strings.Backward);
   end Index_Backward;
 
   function Index_Backward (Source : VString; Pattern : Character; From : Positive) return Natural is
@@ -315,7 +357,7 @@ package body HAL is
 
   function Index_Backward (Source : VString; Pattern : VString; From : Positive) return Natural is
   begin
-    return VStr_Pkg.Index (Source, To_String (Pattern), From, Ada.Strings.Backward);
+    return VStr_Pkg.Index (Source, VStr_Pkg.To_String (Pattern), From, Ada.Strings.Backward);
   end Index_Backward;
 
   function "*" (Num : Natural; Pattern : String) return VString is
@@ -325,17 +367,17 @@ package body HAL is
 
   function Trim_Left  (Source : VString) return VString is
   begin
-    return Trim (Source, Ada.Strings.Left);
+    return VStr_Pkg.Trim (Source, Ada.Strings.Left);
   end Trim_Left;
 
   function Trim_Right (Source : VString) return VString is
   begin
-    return Trim (Source, Ada.Strings.Right);
+    return VStr_Pkg.Trim (Source, Ada.Strings.Right);
   end Trim_Right;
 
   function Trim_Both  (Source : VString) return VString is
   begin
-    return Trim (Source, Ada.Strings.Both);
+    return VStr_Pkg.Trim (Source, Ada.Strings.Both);
   end Trim_Both;
 
   function Image (I : Integer) return VString is
@@ -367,12 +409,12 @@ package body HAL is
 
   function Integer_Value (V : VString) return Integer is
   begin
-    return Integer'Value (To_String (V));
+    return Integer'Value (VStr_Pkg.To_String (V));
   end Integer_Value;
 
   function Float_Value (V : VString) return Real is
   begin
-    return Real'Value (To_String (V));
+    return Real'Value (VStr_Pkg.To_String (V));
   end Float_Value;
 
   procedure Open (File : in out File_Type; Name : String) is
@@ -382,7 +424,7 @@ package body HAL is
   end Open;
 
   procedure Open (File : in out File_Type; Name : VString) is
-  begin Open (File, To_String (Name)); end Open;
+  begin Open (File, VStr_Pkg.To_String (Name)); end Open;
 
   procedure Create (File : in out File_Type; Name : String) is
     use Ada.Text_IO;
@@ -391,7 +433,7 @@ package body HAL is
   end Create;
 
   procedure Create (File : in out File_Type; Name : VString) is
-  begin Create (File, To_String (Name)); end Create;
+  begin Create (File, VStr_Pkg.To_String (Name)); end Create;
 
   procedure Append (File : in out File_Type; Name : String) is
     use Ada.Text_IO;
@@ -401,7 +443,7 @@ package body HAL is
 
   procedure Append (File : in out File_Type; Name : VString) is
   begin
-    Append (File, To_String (Name));
+    Append (File, VStr_Pkg.To_String (Name));
   end Append;
 
    ---------
@@ -453,8 +495,8 @@ package body HAL is
     BIO.Put (File, B, Width);
   end Put;
 
-  procedure Put (V : in VString) is begin Put (To_String (V)); end Put;
-  procedure Put (File : File_Type; V : in VString) is begin Put (File, To_String (V)); end Put;
+  procedure Put (V : in VString) is begin Put (VStr_Pkg.To_String (V)); end Put;
+  procedure Put (File : File_Type; V : in VString) is begin Put (File, VStr_Pkg.To_String (V)); end Put;
 
    --------------
    -- PUT_LINE --
@@ -521,8 +563,8 @@ package body HAL is
     New_Line (File);
   end Put_Line;
 
-  procedure Put_Line (V : VString) is begin Put_Line (To_String (V)); end Put_Line;
-  procedure Put_Line (File : File_Type; V : VString) is begin Put_Line (File, To_String (V)); end Put_Line;
+  procedure Put_Line (V : VString) is begin Put_Line (VStr_Pkg.To_String (V)); end Put_Line;
+  procedure Put_Line (File : File_Type; V : VString) is begin Put_Line (File, VStr_Pkg.To_String (V)); end Put_Line;
 
   ----------
   -- WAIT --
@@ -569,22 +611,22 @@ package body HAL is
 
   function Get_Env (Name : VString) return VString is
   begin
-    return Get_Env (To_String (Name));
+    return Get_Env (VStr_Pkg.To_String (Name));
   end Get_Env;
 
   procedure Set_Env (Name : VString; Value : String) is
   begin
-    Set_Env (To_String (Name), Value);
+    Set_Env (VStr_Pkg.To_String (Name), Value);
   end Set_Env;
 
   procedure Set_Env (Name : String; Value : VString) is
   begin
-    Set_Env (Name, To_String (Value));
+    Set_Env (Name, VStr_Pkg.To_String (Value));
   end Set_Env;
 
   procedure Set_Env (Name : VString; Value : VString) is
   begin
-    Set_Env (To_String (Name), To_String (Value));
+    Set_Env (VStr_Pkg.To_String (Name), VStr_Pkg.To_String (Value));
   end Set_Env;
 
   function Current_Directory return VString is
@@ -594,7 +636,7 @@ package body HAL is
 
   procedure Set_Directory (Directory : VString) is
   begin
-    Set_Directory (To_String (Directory));
+    Set_Directory (VStr_Pkg.To_String (Directory));
   end Set_Directory;
 
   procedure Copy_File (Source_Name : String; Target_Name : String) is
@@ -604,27 +646,27 @@ package body HAL is
 
   procedure Copy_File (Source_Name : VString; Target_Name : String) is
   begin
-    Copy_File (To_String (Source_Name), Target_Name);
+    Copy_File (VStr_Pkg.To_String (Source_Name), Target_Name);
   end Copy_File;
 
   procedure Copy_File (Source_Name : String; Target_Name : VString) is
   begin
-    Copy_File (Source_Name, To_String (Target_Name));
+    Copy_File (Source_Name, VStr_Pkg.To_String (Target_Name));
   end Copy_File;
 
   procedure Copy_File (Source_Name : VString; Target_Name : VString) is
   begin
-    Copy_File (To_String (Source_Name), To_String (Target_Name));
+    Copy_File (VStr_Pkg.To_String (Source_Name), VStr_Pkg.To_String (Target_Name));
   end Copy_File;
 
   procedure Delete_File (Name : VString) is
   begin
-    Delete_File (To_String (Name));
+    Delete_File (VStr_Pkg.To_String (Name));
   end Delete_File;
 
   function Exists (Name : VString) return Boolean is
   begin
-    return Exists (To_String (Name));
+    return Exists (VStr_Pkg.To_String (Name));
   end Exists;
 
   function Directory_Exists (Name : String) return Boolean is
@@ -635,7 +677,7 @@ package body HAL is
 
   function Directory_Exists (Name : VString) return Boolean is
   begin
-    return Directory_Exists (To_String (Name));
+    return Directory_Exists (VStr_Pkg.To_String (Name));
   end Directory_Exists;
 
   function File_Exists (Name : String) return Boolean is
@@ -646,22 +688,22 @@ package body HAL is
 
   function File_Exists (Name : VString) return Boolean is
   begin
-    return File_Exists (To_String (Name));
+    return File_Exists (VStr_Pkg.To_String (Name));
   end File_Exists;
 
   procedure Rename (Old_Name : VString; New_Name : String) is
   begin
-    Rename (To_String (Old_Name), New_Name);
+    Rename (VStr_Pkg.To_String (Old_Name), New_Name);
   end Rename;
 
   procedure Rename (Old_Name : String; New_Name : VString) is
   begin
-    Rename (Old_Name, To_String (New_Name));
+    Rename (Old_Name, VStr_Pkg.To_String (New_Name));
   end Rename;
 
   procedure Rename (Old_Name : VString; New_Name : VString) is
   begin
-    Rename (To_String (Old_Name), To_String (New_Name));
+    Rename (VStr_Pkg.To_String (Old_Name), VStr_Pkg.To_String (New_Name));
   end Rename;
 
   function HAC_Generic_Image (I : Abstract_Integer) return String is
@@ -767,7 +809,7 @@ package body HAL is
 
   procedure Shell_Execute (Command : VString; Result : out Integer) is
   begin
-    Shell_Execute (To_String (Command), Result);
+    Shell_Execute (VStr_Pkg.To_String (Command), Result);
   end Shell_Execute;
 
   procedure Shell_Execute (Command : String) is
@@ -778,7 +820,7 @@ package body HAL is
 
   procedure Shell_Execute (Command : VString) is
   begin
-    Shell_Execute (To_String (Command));
+    Shell_Execute (VStr_Pkg.To_String (Command));
   end Shell_Execute;
 
   function Directory_Separator return Character is

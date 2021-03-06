@@ -287,6 +287,7 @@ package HAC_Sys.PCode is
     --
     SF_Head,
     SF_Tail,
+    SF_Tail_After_Match,
     SF_Starts_With,
     SF_Ends_With,
     --
@@ -331,6 +332,8 @@ package HAC_Sys.PCode is
   subtype SF_Niladic is SF_Code range SF_Clock .. SF_Get_Needs_Skip_Line;
 
   subtype SF_File_Information is SF_Code range SF_EOF .. SF_EOLN;
+
+  subtype SF_Index_Any_Direction is SF_Code range SF_Index .. SF_Index_Backward;
 
   -------------------------------------
   --  Standard procedure operations  --

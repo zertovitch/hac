@@ -117,6 +117,9 @@ package HAL is
   function Starts_With (Item : VString; Pattern : String) return Boolean;
   function Starts_With (Item : VString; Pattern : VString) return Boolean;
   function Tail (Source : VString; Count : Natural) return VString;
+  function Tail_After_Match (Source : VString; Pattern : Character) return VString;
+  function Tail_After_Match (Source : VString; Pattern : String) return VString;
+  function Tail_After_Match (Source : VString; Pattern : VString) return VString;
   function To_Lower (Item : Character) return Character renames ACH.To_Lower;  --  RM A.3.2 (6)
   function To_Upper (Item : Character) return Character renames ACH.To_Upper;  --  RM A.3.2 (6)
   function To_Lower (Item : VString) return VString;

@@ -12,6 +12,7 @@ package body HAC_Sys.Parser.Standard_Functions is
      (SF_Niladic            => 0,
       SF_Element |
       SF_Head | SF_Tail |
+      SF_Tail_After_Match |
       SF_Starts_With |
       SF_Ends_With |
       SF_Int_Times_Char |
@@ -77,7 +78,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         when SF_Index | SF_Index_Backward =>
           --  Index (OS, +"Windows"), Index (OS, "Windows") or Index (OS, 'W')
           Expected (1 .. 3) := (VStrings_Set, VStrings_Chars_or_Str_Lit_Set, Ints_Set);
-        when SF_Starts_With | SF_Ends_With =>
+        when SF_Starts_With | SF_Ends_With | SF_Tail_After_Match =>
           Expected (1 .. 2) := (VStrings_Set, VStrings_Chars_or_Str_Lit_Set);
         when SF_Year .. SF_Seconds =>
           Expected (1) := Times_Set;
@@ -175,15 +176,17 @@ package body HAC_Sys.Parser.Standard_Functions is
           if Actual (1).TYP = VStrings then    --  To_Upper (Item : VString) return VString;
             Code_Adjusted := SF_To_Upper_VStr;
           end if;
-        when SF_Index | SF_Index_Backward | SF_Starts_With | SF_Ends_With =>
-          if (Code = SF_Index or Code = SF_Index_Backward) and Args = 2 then
-            Emit_1 (CD, k_Push_Discrete_Literal, 0);  --  We push a non-positive value for `From`.
-          end if;
-          if Code = SF_Index or Code = SF_Index_Backward then
+        when SF_Index | SF_Index_Backward |
+             SF_Starts_With | SF_Ends_With |
+             SF_Tail_After_Match =>
+          if Code in SF_Index_Any_Direction then
+            if Args = 2 then
+              Emit_1 (CD, k_Push_Discrete_Literal, 0);  --  We push a non-positive value for `From`.
+            end if;
             Emit (CD, k_Pop_to_Temp);
             --  `From` is now removed from the stack. `Pattern` is at the top.
           end if;
-          case Actual (2).TYP is
+          case Actual (2).TYP is  --  Second parameter can be a Character, a String, or a VString.
             when Chars =>
               --  `Index (OS, 'W')`  becomes  `Index (OS, +'W')`
               Emit_Std_Funct (CD, SF_Char_to_VString);
@@ -194,7 +197,7 @@ package body HAC_Sys.Parser.Standard_Functions is
             when others =>
               null;
           end case;
-          if Code = SF_Index or Code = SF_Index_Backward then
+          if Code in SF_Index_Any_Direction then
             Emit (CD, k_Push_Temp);
             --  `From` is now back at the stack top.
           end if;

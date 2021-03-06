@@ -225,6 +225,7 @@ package body HAC_Sys.Librarian is
     --
     Enter_HAL_Funct ("Head",                VStrings, SF_Head);
     Enter_HAL_Funct ("Tail",                VStrings, SF_Tail);
+    Enter_HAL_Funct ("Tail_After_Match",    VStrings, SF_Tail_After_Match);
     Enter_HAL_Funct ("Starts_With",         Bools,    SF_Starts_With);
     Enter_HAL_Funct ("Ends_With",           Bools,    SF_Ends_With);
     --
