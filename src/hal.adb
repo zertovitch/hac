@@ -170,10 +170,10 @@ package body HAL is
     return To_VString ((1 => C));
   end To_VString;
 
-  function Slice (Source : VString; From : Positive; To : Natural) return VString
+  function Slice (Source : VString; Low : Positive; High : Natural) return VString
   is
   begin
-    return +VStr_Pkg.Slice (Source, From, To);
+    return +VStr_Pkg.Slice (Source, Low, High);
   end Slice;
 
   function "&" (I : Integer; V : VString) return VString is

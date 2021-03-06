@@ -112,7 +112,7 @@ package HAL is
   function Index_Backward (Source : VString; Pattern : VString; From : Positive) return Natural;
   --
   function Length (Source : VString) return Natural renames VStr_Pkg.Length;
-  function Slice (Source : VString; From : Positive; To : Natural) return VString;
+  function Slice (Source : VString; Low : Positive; High : Natural) return VString;
   function Starts_With (Item : VString; Pattern : Character) return Boolean;
   function Starts_With (Item : VString; Pattern : String) return Boolean;
   function Starts_With (Item : VString; Pattern : VString) return Boolean;

@@ -193,13 +193,32 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         when SF_Length =>
           --  [T] := Length ([T]) :
           Len := HAL.Length (Top_Item.V);
-          --  !! Here: bound checking !!
           Top_Item.I := HAC_Integer (Len);
         when SF_Slice =>
           Pop (ND, 2);
           From := Integer (ND.S (Curr_TCB.T + 1).I);
           To   := Integer (ND.S (Curr_TCB.T + 2).I);
-          --  !! Here: bound checking !!
+          if From < 1 then
+            Raise_Standard (ND, VME_Constraint_Error, "Slice: ""Low"" is not positive:" &
+              Integer'Image (From));
+            raise VM_Raised_Exception;
+          end if;
+          if To < 0 then
+            Raise_Standard (ND, VME_Constraint_Error, "Slice: ""High"" is negative: " &
+              Integer'Image (To));
+            raise VM_Raised_Exception;
+          end if;
+          Len := HAL.Length (ND.S (Curr_TCB.T).V);
+          if From > Len + 1 then
+            Raise_Standard (ND, VME_Constraint_Error, "Slice: ""Low"" is larger than Length + 1:" &
+              Integer'Image (From) & ", see RM A 4.4 (101)");
+            raise VM_Raised_Exception;
+          end if;
+          if To > Len then
+            Raise_Standard (ND, VME_Constraint_Error, "Slice: ""High"" is larger than Length:" &
+              Integer'Image (To) & ", see RM A 4.4 (101)");
+            raise VM_Raised_Exception;
+          end if;
           --  [T] := Slice ([T], [T+1], [T+2]) :
           ND.S (Curr_TCB.T).V := HAL.To_VString (HAL.VStr_Pkg.Slice (ND.S (Curr_TCB.T).V, From, To));
         when SF_To_Lower_Char =>
