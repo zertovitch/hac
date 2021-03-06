@@ -200,24 +200,20 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           To   := Integer (ND.S (Curr_TCB.T + 2).I);
           if From < 1 then
             Raise_Standard (ND, VME_Constraint_Error, "Slice: ""Low"" is not positive:" &
-              Integer'Image (From));
-            raise VM_Raised_Exception;
+              Integer'Image (From), True);
           end if;
           if To < 0 then
             Raise_Standard (ND, VME_Constraint_Error, "Slice: ""High"" is negative: " &
-              Integer'Image (To));
-            raise VM_Raised_Exception;
+              Integer'Image (To), True);
           end if;
           Len := HAL.Length (ND.S (Curr_TCB.T).V);
           if From > Len + 1 then
             Raise_Standard (ND, VME_Constraint_Error, "Slice: ""Low"" is larger than Length + 1:" &
-              Integer'Image (From) & ", see RM A 4.4 (101)");
-            raise VM_Raised_Exception;
+              Integer'Image (From) & ", see RM A 4.4 (101)", True);
           end if;
           if To > Len then
             Raise_Standard (ND, VME_Constraint_Error, "Slice: ""High"" is larger than Length:" &
-              Integer'Image (To) & ", see RM A 4.4 (101)");
-            raise VM_Raised_Exception;
+              Integer'Image (To) & ", see RM A 4.4 (101)", True);
           end if;
           --  [T] := Slice ([T], [T+1], [T+2]) :
           ND.S (Curr_TCB.T).V := HAL.To_VString (HAL.VStr_Pkg.Slice (ND.S (Curr_TCB.T).V, From, To));
@@ -324,16 +320,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             Top_Item.I := HAC_Integer'Value (HAL.VStr_Pkg.To_String (Top_Item.V));
           exception
             when E : Constraint_Error =>
-              Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
-              raise VM_Raised_Exception;
+              Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E), True);
           end;
         when SF_Float_Value =>
           begin
             Top_Item := GR_Real (HAC_Float'Value (HAL.VStr_Pkg.To_String (Top_Item.V)));
           exception
             when E : Constraint_Error =>
-              Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
-              raise VM_Raised_Exception;
+              Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E), True);
           end;
         when SF_Get_Env =>
           declare

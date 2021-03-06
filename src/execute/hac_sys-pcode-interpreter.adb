@@ -71,8 +71,8 @@ package body HAC_Sys.PCode.Interpreter is
             arg_i : constant Integer := Integer (Top_Item.I);
           begin
             if arg_i not in 1 .. System_Calls.Argument_Count then
-              Raise_Standard (ND, VME_Constraint_Error, "Argument number not in 1 .. Argument_Count");
-              raise VM_Raised_Exception;
+              Raise_Standard (ND, VME_Constraint_Error,
+                "Argument number not in 1 .. Argument_Count", True);
             end if;
             Top_Item := GR_VString (System_Calls.Argument (arg_i));
           end;
@@ -177,11 +177,9 @@ package body HAC_Sys.PCode.Interpreter is
       ND.SWITCH := True;  --  give up control when doing I/O
     exception
       when E : Constraint_Error =>
-        Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E));
-        raise VM_Raised_Exception;
+        Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E), True);
       when E : Ada.IO_Exceptions.Data_Error =>
-        Raise_Standard (ND, VME_Data_Error, Ada.Exceptions.Exception_Message (E));
-        raise VM_Raised_Exception;
+        Raise_Standard (ND, VME_Data_Error, Ada.Exceptions.Exception_Message (E), True);
     end Do_Text_Read;
 
     procedure Do_Write_Formatted (Code : SP_Code) is
@@ -376,30 +374,28 @@ package body HAC_Sys.PCode.Interpreter is
         case Code is
           when SP_Open | SP_Create | SP_Append =>
             Raise_Standard (ND, VME_Name_Error,
-              "File not found, or invalid name: " & To_String (ND.S (Curr_TCB.T + 2).V));
+              "File not found, or invalid name: " & To_String (ND.S (Curr_TCB.T + 2).V), True);
           when others =>
-            Raise_Standard (ND, VME_Name_Error);
+            Raise_Standard (ND, VME_Name_Error, Stop_Instruction => True);
         end case;
-        raise VM_Raised_Exception;
       when E : Ada.Text_IO.Status_Error =>
         case Code is
           when SP_Open | SP_Create | SP_Append =>
-            Raise_Standard (ND, VME_Status_Error, "File already open");
+            Raise_Standard (ND, VME_Status_Error, "File already open", True);
           when SP_Close =>
-            Raise_Standard (ND, VME_Status_Error, "File not open");
+            Raise_Standard (ND, VME_Status_Error, "File not open", True);
           when others =>
             Raise_Standard (ND, VME_Status_Error, "File not open? [" &
-              Ada.Exceptions.Exception_Message (E) & ']');
+              Ada.Exceptions.Exception_Message (E) & ']', True);
         end case;
       when Ada.Text_IO.Use_Error =>
         case Code is
           when SP_Open | SP_Create | SP_Append =>
             Raise_Standard (ND, VME_Use_Error,
-              "Cannot access file: " & To_String (ND.S (Curr_TCB.T + 2).V));
+              "Cannot access file: " & To_String (ND.S (Curr_TCB.T + 2).V), True);
           when others =>
-            Raise_Standard (ND, VME_Use_Error);
+            Raise_Standard (ND, VME_Use_Error, Stop_Instruction => True);
         end case;
-        raise VM_Raised_Exception;
     end Do_File_IO;
 
     procedure Add_Stack_Trace_Line (Offset : Natural) is
