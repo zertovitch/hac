@@ -285,7 +285,6 @@ package body HAC_Sys.Parser is
         is_constant, is_typed,
         is_untyped_constant       : Boolean;
         C                         : Constant_Rec;
-        I_dummy                   : Integer;
         Dummy_First               : HAC_Integer;
         Dummy_Last                : HAC_Integer;
       begin
@@ -294,9 +293,6 @@ package body HAC_Sys.Parser is
         Need (CD, Colon, err_colon_missing);  --  ':'   in   "x, y : Integer;"
         T1 := CD.Id_Count;
         --
-        if CD.Sy = IDent then
-          I_dummy := Locate_Identifier (CD, CD.Id, Level);
-        end if;
         Test (CD, Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_Set, err_incorrectly_used_symbol);
         --
         is_constant := False;
