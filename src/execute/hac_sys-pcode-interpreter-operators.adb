@@ -199,21 +199,21 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           From := Integer (ND.S (Curr_TCB.T + 1).I);
           To   := Integer (ND.S (Curr_TCB.T + 2).I);
           if From < 1 then
-            Raise_Standard (ND, VME_Constraint_Error, "Slice: ""Low"" is not positive:" &
+            Raise_Standard (ND, VME_Constraint_Error, "Slice: Low is not positive:" &
               Integer'Image (From), True);
           end if;
           if To < 0 then
-            Raise_Standard (ND, VME_Constraint_Error, "Slice: ""High"" is negative: " &
+            Raise_Standard (ND, VME_Constraint_Error, "Slice: High is negative: " &
               Integer'Image (To), True);
           end if;
           Len := HAL.Length (ND.S (Curr_TCB.T).V);
           if From > Len + 1 then
-            Raise_Standard (ND, VME_Constraint_Error, "Slice: ""Low"" is larger than Length + 1:" &
-              Integer'Image (From) & ", see RM A 4.4 (101)", True);
+            Raise_Standard (ND, VME_Index_Error,
+              "Slice: Low is larger than Length (Source) + 1. See RM A.4.4 (101)", True);
           end if;
           if To > Len then
-            Raise_Standard (ND, VME_Constraint_Error, "Slice: ""High"" is larger than Length:" &
-              Integer'Image (To) & ", see RM A 4.4 (101)", True);
+            Raise_Standard (ND, VME_Index_Error,
+              "Slice: High is larger than Length (Source). See RM A.4.4 (101)", True);
           end if;
           --  [T] := Slice ([T], [T+1], [T+2]) :
           ND.S (Curr_TCB.T).V := HAL.To_VString (HAL.VStr_Pkg.Slice (ND.S (Curr_TCB.T).V, From, To));

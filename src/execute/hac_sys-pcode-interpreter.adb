@@ -9,7 +9,8 @@ with HAC_Sys.Co_Defs,
 
 with HAL;
 
-with Ada.Command_Line,
+with Ada.Characters.Handling,
+     Ada.Command_Line,
      Ada.Directories,
      Ada.Environment_Variables,
      Ada.Exceptions,
@@ -677,19 +678,19 @@ package body HAC_Sys.PCode.Interpreter is
   end Interpret_on_Current_IO;
 
   function Image (E : Exception_Propagation_Data) return String is
+    Img : constant String := Exception_Type'Image (E.Currently_Raised.Ex_Typ);
   begin
     case E.Currently_Raised.Ex_Typ is
-      when No_Exception         => return "";
-      when VME_Constraint_Error => return "Constraint_Error";
-      when VME_Data_Error       => return "Data_Error";
-      when VME_End_Error        => return "End_Error";
-      when VME_Name_Error       => return "Name_Error";
-      when VME_Program_Error    => return "Program_Error";
-      when VME_Status_Error     => return "Status_Error";
-      when VME_Storage_Error    => return "Storage_Error";
-      when VME_Use_Error        => return "Use_Error";
-      when VME_User_Abort       => return "User_Abort";
-      when VME_Custom           => return "(custom)";  --  needs to use details
+      when No_Exception =>
+        return "";
+      when VME_User_Abort =>
+        return "User_Abort";
+      when VME_Custom =>
+        return "(custom)";  --  needs to use details
+      when Ada_Error_Exception_Type =>
+        return Img (Img'First + 4) &
+          Ada.Characters.Handling.To_Lower (Img (Img'First + 5 .. Img'Last - 6)) &
+          "_Error";
     end case;
   end Image;
 

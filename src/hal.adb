@@ -232,14 +232,15 @@ package body HAL is
     --  Return      : A substring from the character after the first Pattern
     --                found backward to the String's end
     --  Author      : Stéphane Rivière, 2021
+    --
     --  Examples :
     --
     --  Tail_After_Match (+"/etc/genesix/gnx-startup",
-    --    +"/")) returns gnx-startup
-    --    +"ix")) returns /gnx-startup
-    --    +"gene")) returns six/gnx-startup
-    --    +"etc/genesix/gnx-startu")) returns p
-    --    +"/etc/genesix/gnx-startu")) returns p
+    --    +"/")) returns "gnx-startup"
+    --    +"ix")) returns "/gnx-startup"
+    --    +"gene")) returns "six/gnx-startup"
+    --    +"etc/genesix/gnx-startu")) returns "p"
+    --    +"/etc/genesix/gnx-startu")) returns "p"
     --    +"/etc/genesix/gnx-startup")) returns empty string
     --    +"/etc/genesix/gnx-startupp")) returns empty string
     ------------------------------------------------------------------------------
@@ -248,7 +249,7 @@ package body HAL is
     Pattern_Length : constant Natural := Length (Pattern);
   begin
     for I in reverse 1 .. Source_Length loop
-      if I <= (Source_Length - Pattern_Length) then
+      if I <= Source_Length - Pattern_Length then
         if Slice (Source, I, I + Pattern_Length - 1) = Pattern then
           Result := Slice (Source, I + Pattern_Length, Source_Length);
           exit;

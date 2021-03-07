@@ -133,16 +133,19 @@ package HAC_Sys.PCode.Interpreter is
      --  Ada classics:
      VME_Constraint_Error,
      VME_Data_Error,
-     VME_Program_Error,
      VME_End_Error,
+     VME_Index_Error,
      VME_Name_Error,
-     VME_Use_Error,
+     VME_Program_Error,
      VME_Status_Error,
      VME_Storage_Error,
+     VME_Use_Error,
      --
      VME_User_Abort,
      VME_Custom
     );
+
+  subtype Ada_Error_Exception_Type is Exception_Type range VME_Constraint_Error .. VME_Use_Error;
 
 private
 
