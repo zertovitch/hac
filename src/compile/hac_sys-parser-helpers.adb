@@ -338,8 +338,7 @@ package body HAC_Sys.Parser.Helpers is
     CD              : in out Compiler_Data;
     Id              : in     Alfa;
     Level           : in     Defs.Nesting_level;
-    Fail_when_No_Id : in     Boolean := True;
-    Stop_on_Error   : in     Boolean := False
+    Fail_when_No_Id : in     Boolean := True
   )
   return Natural
   is
@@ -359,7 +358,7 @@ package body HAC_Sys.Parser.Helpers is
     end loop;
     if J = No_Id then
       if Fail_when_No_Id then
-        Error (CD, err_undefined_identifier, stop => Stop_on_Error);  --  Exception raise here.
+        Error (CD, err_undefined_identifier, stop => True);  --  Exception raised here.
       else
         return J;
       end if;
@@ -382,11 +381,10 @@ package body HAC_Sys.Parser.Helpers is
             CD,
             To_Alfa (To_String (ID_Copy) & '.' & To_String (CD.Id)),
             Level,
-            Fail_when_No_Id,
-            Stop_on_Error
+            Fail_when_No_Id
           );
         else
-          Error (CD, err_identifier_missing, stop => Stop_on_Error);
+          Error (CD, err_identifier_missing, stop => True);
         end if;
       end if;
     end if;

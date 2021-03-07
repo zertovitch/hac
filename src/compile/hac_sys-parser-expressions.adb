@@ -169,7 +169,7 @@ package body HAC_Sys.Parser.Expressions is
               while Primary_Begin_Symbol (CD.Sy) loop  --  !!  Why a loop here ?... Why StrCon excluded ?
                 case CD.Sy is
                   when IDent =>
-                    Ident_Index := Locate_Identifier (CD, CD.Id, Level, Stop_on_Error => True);
+                    Ident_Index := Locate_Identifier (CD, CD.Id, Level);
                     InSymbol (CD);
                     exit when Ident_Index = No_Id;  --  Id not found, error already issued by Locate_Identifier
                     declare

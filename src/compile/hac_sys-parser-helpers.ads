@@ -331,8 +331,7 @@ package HAC_Sys.Parser.Helpers is
     CD              : in out Compiler_Data;
     Id              : in     Alfa;
     Level           : in     Defs.Nesting_level;
-    Fail_when_No_Id : in     Boolean := True;
-    Stop_on_Error   : in     Boolean := False
+    Fail_when_No_Id : in     Boolean := True
   )
   return Natural;
 
