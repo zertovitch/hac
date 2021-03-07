@@ -358,7 +358,7 @@ package body HAC_Sys.Parser.Helpers is
     end loop;
     if J = No_Id then
       if Fail_when_No_Id then
-        Error (CD, err_undefined_identifier, stop => True);  --  Exception raised here.
+        Error (CD, err_undefined_identifier, To_String (Id), True);  --  Exception raised here.
       else
         return J;
       end if;

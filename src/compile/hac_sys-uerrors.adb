@@ -11,7 +11,11 @@ package body HAC_Sys.UErrors is
   begin
     case code is
       when err_undefined_identifier =>
-        return "undefined identifier";
+        if hint = "" then
+          return "undefined identifier";
+        else
+          return "undefined identifier: " & hint;
+        end if;
       when err_duplicate_identifier =>
         return "multiple definition of an identifier";
       when err_identifier_missing =>

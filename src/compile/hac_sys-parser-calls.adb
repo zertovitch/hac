@@ -178,7 +178,7 @@ package body HAC_Sys.Parser.Calls is
         end loop;
         --
         if J = 0 then
-          Error (CD, err_undefined_identifier);
+          Error (CD, err_undefined_identifier, To_String (CD.Id_with_case));
         end if;
         --
         Addr := J;

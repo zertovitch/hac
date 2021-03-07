@@ -33,7 +33,7 @@ package body HAC_Sys.Parser.Expressions is
           Field_Id := CD.IdTab (Field_Id).Link;
         end loop;
         if Field_Id = No_Id then
-          Error (CD, err_undefined_identifier, stop => True);
+          Error (CD, err_undefined_identifier, To_String (CD.Id_with_case), True);
         end if;
         V            := CD.IdTab (Field_Id).xTyp;
         Field_Offset := CD.IdTab (Field_Id).Adr_or_Sz;
