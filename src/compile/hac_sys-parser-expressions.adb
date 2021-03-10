@@ -155,121 +155,109 @@ package body HAC_Sys.Parser.Expressions is
 
             procedure Primary (FSys_Prim : Symset; X : out Exact_Typ) is    --  RM 4.4 (7)
               F   : Opcode;
-              err : Compile_Error;
               Ident_Index : Integer;
             begin
               X := Type_Undefined;
               Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_factor_unexpected_symbol);
-              if CD.Sy = StrCon then
-                X.TYP := String_Literals;
-                Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.SLeng));  --  String Literal Length
-                Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.INum));   --  Index To String IdTab
-                InSymbol (CD);
-              end if;
-              while Primary_Begin_Symbol (CD.Sy) loop  --  !!  Why a loop here ?... Why StrCon excluded ?
-                case CD.Sy is
-                  when IDent =>
-                    Ident_Index := Locate_Identifier (CD, CD.Id, Level);
-                    InSymbol (CD);
-                    exit when Ident_Index = No_Id;  --  Id not found, error already issued by Locate_Identifier
-                    declare
-                      r : IdTabEntry renames CD.IdTab (Ident_Index);
-                    begin
-                      case r.Entity is
-                        when Declared_Number_or_Enum_Item =>
-                          X := r.xTyp;
-                          if X.TYP = Floats then
-                            --  Address is an index in the float constants table.
-                            Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.Adr_or_Sz));
+              case CD.Sy is
+                when StrCon =>
+                  X.TYP := String_Literals;
+                  Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.SLeng));  --  String Literal Length
+                  Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.INum));   --  Index To String IdTab
+                  InSymbol (CD);
+                when IDent =>
+                  Ident_Index := Locate_Identifier (CD, CD.Id, Level);
+                  InSymbol (CD);
+                  declare
+                    r : IdTabEntry renames CD.IdTab (Ident_Index);
+                  begin
+                    case r.Entity is
+                      when Declared_Number_or_Enum_Item =>
+                        X := r.xTyp;
+                        if X.TYP = Floats then
+                          --  Address is an index in the float constants table.
+                          Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.Adr_or_Sz));
+                        else
+                          --  Here the address is actually the immediate (discrete) value.
+                          Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.Adr_or_Sz));
+                        end if;
+                        --
+                      when Variable =>
+                        X := r.xTyp;
+                        if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
+                          if r.Normal then
+                            F := k_Push_Address;  --  Composite: push "v'Access".
                           else
-                            --  Here the address is actually the immediate (discrete) value.
-                            Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.Adr_or_Sz));
+                            F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                           end if;
-                          --
-                        when Variable =>
-                          X := r.xTyp;
-                          if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
+                          Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
+                          Selector (CD, Level, FSys_Prim, X);
+                          if Standard_or_Enum_Typ (X.TYP) then
+                            --  We are at a leaf point of composite type selection,
+                            --  so the stack top is expected to contain a value, not
+                            --  an address (for an expression).
+                            Emit (CD, k_Dereference);
+                          end if;
+                        else
+                          --  No selector.
+                          if Standard_or_Enum_Typ (X.TYP) then
                             if r.Normal then
-                              F := k_Push_Address;  --  Composite: push "v'Access".
+                              F := k_Push_Value;           --  Push variable v's value.
                             else
-                              F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
+                              F := k_Push_Indirect_Value;  --  Push "v.all" (v is an access).
                             end if;
-                            Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
-                            Selector (CD, Level, FSys_Prim, X);
-                            if Standard_or_Enum_Typ (X.TYP) then
-                              --  We are at a leaf point of composite type selection,
-                              --  so the stack top is expected to contain a value, not
-                              --  an address (for an expression).
-                              Emit (CD, k_Dereference);
-                            end if;
+                          elsif r.Normal then
+                            F := k_Push_Address;  --  Composite: push "v'Access".
                           else
-                            --  No selector.
-                            if Standard_or_Enum_Typ (X.TYP) then
-                              if r.Normal then
-                                F := k_Push_Value;           --  Push variable v's value.
-                              else
-                                F := k_Push_Indirect_Value;  --  Push "v.all" (v is an access).
-                              end if;
-                            elsif r.Normal then
-                              F := k_Push_Address;  --  Composite: push "v'Access".
-                            else
-                              F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
-                            end if;
-                            Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
+                            F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                           end if;
-                          --
-                        when TypeMark =>
-                          Subtype_Prefixed_Expression (CD, Level, FSys_Prim, X);
-                        when Prozedure | Prozedure_Intrinsic =>
-                          Error (CD, err_expected_constant_function_variable_or_subtype);
-                        when Funktion =>
-                          X := r.xTyp;
-                          Calls.Subprogram_or_Entry_Call
-                            (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
-                        when Funktion_Intrinsic =>
-                          Standard_Functions.Standard_Function
-                            (CD, Level, FSys_Prim, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
-                        when others =>
-                          null;
-                      end case;
+                          Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
+                        end if;
+                        --
+                      when TypeMark =>
+                        Subtype_Prefixed_Expression (CD, Level, FSys_Prim, X);
+                      when Prozedure | Prozedure_Intrinsic =>
+                        Error (CD, err_expected_constant_function_variable_or_subtype);
+                      when Funktion =>
+                        X := r.xTyp;
+                        Calls.Subprogram_or_Entry_Call
+                          (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
+                      when Funktion_Intrinsic =>
+                        Standard_Functions.Standard_Function
+                          (CD, Level, FSys_Prim, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
+                      when others =>
+                        null;
+                    end case;
+                  end;
+                  --
+                when CharCon | IntCon | FloatCon =>
+                  if CD.Sy = FloatCon then
+                    X.TYP := Floats;
+                    declare
+                      RNum_Index : Natural;
+                    begin
+                      Enter_or_find_Float (CD, CD.RNum, RNum_Index);
+                      Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (RNum_Index));
                     end;
-                    --
-                  when CharCon | IntCon | FloatCon =>
-                    if CD.Sy = FloatCon then
-                      X.TYP := Floats;
-                      declare
-                        RNum_Index : Natural;
-                      begin
-                        Enter_or_find_Float (CD, CD.RNum, RNum_Index);
-                        Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (RNum_Index));
-                      end;
+                  else
+                    if CD.Sy = CharCon then
+                      X.TYP := Chars;
                     else
-                      if CD.Sy = CharCon then
-                        X.TYP := Chars;
-                      else
-                        X.TYP := Ints;
-                      end if;
-                      Emit_1 (CD, k_Push_Discrete_Literal, CD.INum);
+                      X.TYP := Ints;
                     end if;
-                    X.Ref := 0;
-                    InSymbol (CD);
-                    --
-                  when LParent =>    --  (
-                    InSymbol (CD);
-                    Expression (CD, Level, FSys_Prim + RParent, X);
-                    Need (CD, RParent, err_closing_parenthesis_missing);
-                    --
-                  when others =>
-                    null;
-                end case;
-                --
-                if FSys_Prim = Semicolon_Set then
-                  err := err_semicolon_missing;
-                else
-                  err := err_incorrectly_used_symbol;
-                end if;
-                Test (CD, FSys_Prim, Primary_Begin_Symbol, err);
-              end loop;
+                    Emit_1 (CD, k_Push_Discrete_Literal, CD.INum);
+                  end if;
+                  X.Ref := 0;
+                  InSymbol (CD);
+                  --
+                when LParent =>    --  (
+                  InSymbol (CD);
+                  Expression (CD, Level, FSys_Prim + RParent, X);
+                  Need (CD, RParent, err_closing_parenthesis_missing);
+                  --
+                when others =>
+                  null;
+              end case;
             end Primary;
 
             Y : Exact_Typ;
