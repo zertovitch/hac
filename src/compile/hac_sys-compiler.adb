@@ -68,12 +68,11 @@ package body HAC_Sys.Compiler is
     CD.CH := ' ';
     CD.CC := 0;
     CD.LL := 0;
-    CD.syStart := 1;
-    CD.syEnd   := 1;
-    Scanner.InSymbol (CD);
-    --
+    CD.syStart   := 1;
+    CD.syEnd     := 1;
     CD.Err_Count := 0;
     CD.Errs      := error_free;
+    Scanner.InSymbol (CD);
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009
   end Init;
