@@ -158,6 +158,9 @@ procedure HAC is
       Set_Exit_Status (Failure);
   end Compile_and_interpret_file;
 
+  assembler_output_name : constant String := "asm_dump.pca";       --  PCA = PCode Assembler
+  compiler_dump_name    : constant String := "compiler_dump.lst";
+
   procedure Help is
     use Ada.Text_IO;
   begin
@@ -170,8 +173,8 @@ procedure HAC is
     Put_Line (Current_Error, "Options: -h     : this help");
     Put_Line (Current_Error, "         -v, v1 : verbose");
     Put_Line (Current_Error, "         -v2    : very verbose");
-    Put_Line (Current_Error, "         -a     : assembler output");
-    Put_Line (Current_Error, "         -d     : dump compiler information");
+    Put_Line (Current_Error, "         -a     : assembler output in " & assembler_output_name);
+    Put_Line (Current_Error, "         -d     : dump compiler information in " & compiler_dump_name);
     New_Line (Current_Error);
     Put_Line (Current_Error, caveat);
     Put_Line (Current_Error, "Note: HAC (this command-line tool) accepts source files with shebang's,");
@@ -191,9 +194,9 @@ begin
     elsif Argument (i) = "-v2" then
       verbosity := 2;
     elsif Argument (i) = "-a" then
-      asm_dump_file_name := To_Unbounded_String ("asm_dump.pca");  --  PCA = PCode Assembler
+      asm_dump_file_name := To_Unbounded_String (assembler_output_name);
     elsif Argument (i) = "-d" then
-      cmp_dump_file_name := To_Unbounded_String ("compiler_dump.lst");
+      cmp_dump_file_name := To_Unbounded_String (compiler_dump_name);
     else
       Compile_and_interpret_file (Argument (i), i);
       no_hac_ing := False;

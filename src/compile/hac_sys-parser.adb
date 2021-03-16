@@ -1291,7 +1291,7 @@ package body HAC_Sys.Parser is
         Error (CD, err_statement_expected);
       end if;
       loop
-        Statement (FSys + END_Symbol);
+        Statement (Statement_Begin_Symbol + END_Symbol);
         exit when CD.Sy = END_Symbol or CD.Err_Count > 0;
       end loop;
     end Statements_List;
