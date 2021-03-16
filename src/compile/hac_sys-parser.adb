@@ -413,22 +413,23 @@ package body HAC_Sys.Parser is
       end if;
     end Proc_Func_Declaration;
 
-    ------------------------------------------------------------------
-    --------------------------------------------------------Statement--
-    procedure Statement (FSys_St : Symset) is
+    procedure Statement (FSys_St : Symset);  --  Ada RM 5.1 (3)
 
-      procedure Multi_Statement (Sentinal : Symset) is   -- Hathorn
-        nxtSym : Symset;
-      begin
-        if Sentinal (CD.Sy) then -- GdM 15-Aug-2014: there should be at least one statement.
-          Error (CD, err_statement_expected);
-        end if;
-        nxtSym := Sentinal + Statement_Begin_Symbol;
-        loop
-          Statement (nxtSym); -- MRC,was: UNTIL (Sy IN Sentinal);
-          exit when Sentinal (CD.Sy) or CD.Err_Count > 0;
-        end loop;
-      end Multi_Statement;
+    procedure Sequence_of_Statements (Sentinel : Symset) is  --  Ada RM 5.1 (2)
+      statement_or_sentinel : constant Symset := Statement_Begin_Symbol or Sentinel;
+    begin
+      if Sentinel (CD.Sy) then -- GdM 15-Aug-2014: there should be at least one statement.
+        Error (CD, err_statement_expected, stop => True);
+      end if;
+      loop
+        Statement (statement_or_sentinel);
+        exit when Sentinel (CD.Sy) or CD.Err_Count > 0;
+      end loop;
+    end Sequence_of_Statements;
+
+    ------------------------------------------------------------------
+    --------------------------------------Statement - Ada RM 5.1 (3)--
+    procedure Statement (FSys_St : Symset) is
 
       procedure Accept_Statement is            -- Hathorn
 
@@ -464,7 +465,7 @@ package body HAC_Sys.Parser is
           Level              := Level + 1;
           CD.Display (Level) := CD.IdTab (I_Entry).Block_Ref;
           InSymbol;
-          Multi_Statement (END_Set);
+          Sequence_of_Statements (END_Set);
           Test_END_Symbol (CD);
           if CD.Sy = IDent then
             if CD.Id /= CD.IdTab (I_Entry).Name then
@@ -500,7 +501,7 @@ package body HAC_Sys.Parser is
         LC1 := CD.LC;
         Emit (CD, k_Conditional_Jump);
         Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
-        Multi_Statement (ELSE_ELSIF_END);
+        Sequence_of_Statements (ELSE_ELSIF_END);
         LC0 := CD.LC;
         --
         while CD.Sy = ELSIF_Symbol loop  --  Added Hathorn
@@ -511,14 +512,14 @@ package body HAC_Sys.Parser is
           LC1 := CD.LC;
           Emit (CD, k_Conditional_Jump);
           Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
-          Multi_Statement (ELSE_ELSIF_END);  --  Statements after "ELSIF .. THEN".
+          Sequence_of_Statements (ELSE_ELSIF_END);  --  Statements after "ELSIF .. THEN".
         end loop;
         --
         if CD.Sy = ELSE_Symbol then
           InSymbol;
           Emit_1 (CD, k_Jump, dummy_address_if);  --  Jump to "END IF" - dummy address to be patched.
           CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
-          Multi_Statement (END_Set);  --  Statements after "ELSE".
+          Sequence_of_Statements (END_Set);  --  Statements after "ELSE".
         else
           CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
         end if;
@@ -536,7 +537,7 @@ package body HAC_Sys.Parser is
         else
           Skip (CD, Statement_Begin_Symbol, err_missing_closing_IF);
         end if;
-        Multi_Statement (END_Set);
+        Sequence_of_Statements (END_Set);
         Emit_1 (CD, FCT_Loop_End, Operand_2_Type (B));
         Need (CD, END_Symbol,  err_END_missing);           --  END (LOOP)
         Need (CD, LOOP_Symbol, err_closing_LOOP_missing);  --  (END) LOOP
@@ -694,7 +695,7 @@ package body HAC_Sys.Parser is
           else
             Need (CD, Finger, err_FINGER_missing);
           end if;
-          Multi_Statement (END_WHEN);
+          Sequence_of_Statements (END_WHEN);
           J := J + 1;
           ExitTab (J) := CD.LC;
           Emit (CD, k_Jump);
@@ -864,7 +865,7 @@ package body HAC_Sys.Parser is
               Skip (CD, Semicolon, err_semicolon_missing);
             end if;
             if not (CD.Sy = OR_Symbol or else CD.Sy = ELSE_Symbol) then
-              Multi_Statement (ELSE_OR);
+              Sequence_of_Statements (ELSE_OR);
             end if;
             if CD.Sy = OR_Symbol then  --  =====================> Timed Entry Call
               CD.ObjCode (patch (0)).X     := Timed_Entry_Call;
@@ -907,7 +908,7 @@ package body HAC_Sys.Parser is
               Emit_1 (CD, k_Jump, dummy_address_if);  -- JMP, address patched in after END SELECT
               patch (3) := CD.LC;
               InSymbol;
-              Multi_Statement (END_Set);
+              Sequence_of_Statements (END_Set);
               CD.ObjCode (patch (1)).Y  := Operand_2_Type (patch (3));
               CD.ObjCode (patch (2)).Y  := Operand_2_Type (CD.LC);
             end if;
@@ -970,7 +971,7 @@ package body HAC_Sys.Parser is
               Level              := Level + 1;
               CD.Display (Level) := CD.IdTab (I).Block_Ref;
               InSymbol;
-              Multi_Statement (END_Set);
+              Sequence_of_Statements (END_Set);
               Test_END_Symbol (CD);
               if CD.Sy = IDent then
                 if CD.Id /= CD.IdTab (I).Name then
@@ -1016,7 +1017,7 @@ package body HAC_Sys.Parser is
                   Select_Error (err_missing_a_procedure_declaration);
                 end if;
                 InSymbol;
-                Multi_Statement (ELSE_END_OR);
+                Sequence_of_Statements (ELSE_END_OR);
                 Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);          --  patch JMP ADDRESS AT EndSy
               --  end WHEN_Symbol
@@ -1025,7 +1026,7 @@ package body HAC_Sys.Parser is
                 Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
                 Accept_Statement_2;
                 InSymbol;
-                Multi_Statement (ELSE_END_OR);
+                Sequence_of_Statements (ELSE_END_OR);
                 Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);
 
@@ -1035,7 +1036,7 @@ package body HAC_Sys.Parser is
               when ELSE_Symbol =>
                 Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
                 InSymbol;
-                Multi_Statement (END_Set);
+                Sequence_of_Statements (END_Set);
                 Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);
 
@@ -1055,7 +1056,7 @@ package body HAC_Sys.Parser is
                   Emit (CD, k_Jump);
                 end if;
                 InSymbol;
-                Multi_Statement (ELSE_END_OR);
+                Sequence_of_Statements (ELSE_END_OR);
                 Feed_Patch_Table (JSD, ISD, CD.LC);
                 Emit (CD, k_Jump);
 
@@ -1285,17 +1286,6 @@ package body HAC_Sys.Parser is
       CD.CMax := CD.CMax + ICode;  --  Restore CMax to the initial max (=CDMax)
     end Statements_Part_Setup;
 
-    procedure Statements_List is
-    begin
-      if CD.Sy = END_Symbol then  --  GdM 15-Aug-2014: there should be at least one statement.
-        Error (CD, err_statement_expected);
-      end if;
-      loop
-        Statement (Statement_Begin_Symbol + END_Symbol);
-        exit when CD.Sy = END_Symbol or CD.Err_Count > 0;
-      end loop;
-    end Statements_List;
-
     procedure Statements_Part_Closing is
     begin
       CD.Blocks_Table (PRB).SrcTo := CD.Line_Count;
@@ -1408,7 +1398,7 @@ package body HAC_Sys.Parser is
       Declarative_Part;
       InSymbol;  --  Consume BEGIN symbol.
       Statements_Part_Setup;
-      Statements_List;
+      Sequence_of_Statements (END_Set);
       Statements_Part_Closing;
       --
       if CD.Sy = END_Symbol then
