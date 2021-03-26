@@ -25,14 +25,14 @@ package HAC_Sys.Li_Defs is
         --  ^ Full compilation around main unit is done in memory.
         --  Object code is shared, but ther is one ID table per unit.
      --  Use_Library_Files
-     --    --  ^ Use .hal files (some stored in .zip files)
+     --    --  ^ Use .hal files (some stored in .zip files) which are
+     --    --    downloaded to the compilation tables if available
+     --    --    or compilaed, then uploaded, if not yet available.
     );
 
   type Compilation_Status is (
-    Void,
-    Spec_Only,      --  Only specification has been processed so far.
-    Live_Compiled   --  Unit (spec & body) is compiled in the main object code.
-    --  In a future version we can choose to compile units into files.
+    Done,
+    Body_Postponed
   );
 
   type Unit_Kind is (Package_Unit, Procedure_Unit, Function_Unit);

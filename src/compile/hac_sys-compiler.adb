@@ -211,7 +211,7 @@ package body HAC_Sys.Compiler is
       end if;
     end Dump_Asm;
 
-  begin  --  Compile
+  begin  --  Compile_Main
     Init (CD);
 
     CD.listing_requested := listing_file_name /= "";
@@ -225,17 +225,8 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: check for main's context clause");
     end if;
 
-    Librarian.Apply_WITH_Standard (CD);
-    Librarian.Apply_USE_Clause (
-      CD, Li_Defs.Library_Level,
-      Locate_Identifier (CD, To_Alfa ("STANDARD"), 0)
-    );
-
-    Parser.Modularity.Context_Clause (CD, LD);  --  Parse the "with"'s and "use"'s.
-
-    if CD.comp_dump_requested then
-      Put_Line (CD.comp_dump, "Compiler: check for main procedure");
-    end if;
+    Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
+    Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s.
 
     if CD.Sy /= PROCEDURE_Symbol then
       Error (CD, err_missing_a_procedure_declaration, "");  --  PROCEDURE Name IS
@@ -254,7 +245,7 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: main procedure is " & To_String (CD.Main_Program_ID));
     end if;
 
-    Librarian.Enter_Built_In (CD, To_String (CD.Main_Program_ID), Prozedure, NOTYP, 0);
+    Librarian.Enter_Built_In_Def (CD, To_String (CD.Main_Program_ID), Prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
 
     CD.Blocks_Table (0) :=  --  Block Table Entry for Standard [was Main, 1]

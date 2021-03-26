@@ -1,12 +1,10 @@
-with HAC_Sys.Compiler,
-     HAC_Sys.Librarian;
+with HAC_Sys.Compiler;
 
 package body HAC_Sys.Builder is
 
   procedure Build_Main (BD : in out Build_Data) is
     use HAL.VStr_Pkg;
   begin
-    Librarian.Register_Built_In (BD.LD);
     Compiler.Compile_Main (
       BD.Main_CD,
       BD.LD,

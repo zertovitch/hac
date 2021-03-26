@@ -17,24 +17,7 @@ package body HAC_Sys.Parser.Modularity is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, stop => True);
       end if;
-      declare
-        unit_name_upper : constant String := To_String (CD.Id);
-      begin
-        if unit_name_upper = "STANDARD" then
-          null;  --  Standard is always WITH-ed by default.
-        elsif unit_name_upper = HAL_Name then
-          Librarian.Apply_WITH_HAL (CD);
-        elsif unit_name_upper = "HAC_PACK" then
-          Error (
-            CD,
-            err_library_error,
-            "the new name of HAC_Pack is " & HAL_Name,
-            True
-          );
-        else
-          Librarian.Apply_WITH (CD, LD, unit_name_upper);
-        end if;
-      end;
+      Librarian.Apply_WITH (CD, LD, To_String (CD.Id));
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
       Helpers.Need (CD, Comma, err_syntax_error);

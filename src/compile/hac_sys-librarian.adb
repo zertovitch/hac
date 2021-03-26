@@ -10,6 +10,7 @@
 --
 
 with HAC_Sys.Parser.Enter_Def,
+     HAC_Sys.Parser.Helpers,
      HAC_Sys.PCode,
      HAC_Sys.UErrors;
 
@@ -37,25 +38,14 @@ package body HAC_Sys.Librarian is
       begin
         New_Unit.Kind      := Kind;
         New_Unit.Full_Name := VFN;
-        New_Unit.Status    := Void;
+        New_Unit.Status    := Done;
         LD.Library.Append (New_Unit);
         LD.Map.Insert (UVFN, LD.Library.Last_Index);
       end;
     end if;
   end Register_Unit;
 
-  procedure Register_Built_In (LD : in out Li_Defs.Library_Data) is
-    Is_New : Boolean;
-  begin
-    Register_Unit (LD, "Standard", Li_Defs.Package_Unit, Is_New);
-    Register_Unit (LD, Defs.HAL_Name, Li_Defs.Package_Unit, Is_New);
-  end Register_Built_In;
-
-  ----------------------
-  --  Built-in units  --
-  ----------------------
-
-  procedure Enter_Built_In (
+  procedure Enter_Built_In_Def (
     CD             : in out Co_Defs.Compiler_Data;
     Full_Ident     : in     String;  --  "Main", "Standard.False", ...
     New_Entity     : in     Co_Defs.Entity_Kind;
@@ -86,12 +76,12 @@ package body HAC_Sys.Librarian is
       Discrete_Last  => Discrete_Last
     );
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
-  end Enter_Built_In;
+  end Enter_Built_In_Def;
 
   procedure Apply_USE_Clause (
     CD       : in out Co_Defs.Compiler_Data;
     Level    : in     Defs.Nesting_level;
-    Pkg_Idx  : in     Natural
+    Pkg_Idx  : in     Natural  --  Index in the identifier table
   )
   is
     use Co_Defs, Defs, Parser.Enter_Def, UErrors;
@@ -132,19 +122,33 @@ package body HAC_Sys.Librarian is
     end loop;
   end Apply_USE_Clause;
 
-  procedure Apply_WITH_Standard (CD : in out Co_Defs.Compiler_Data) is
+  ---------------------------------------------
+  --  Enter "manually" the Standard package  --
+  ---------------------------------------------
+
+  procedure Apply_WITH_Standard (
+    CD         : in out Co_Defs.Compiler_Data;
+    LD         : in out Li_Defs.Library_Data
+  )
+  is
     use Co_Defs, Defs;
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Built_In (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
+      Enter_Built_In_Def (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
+    Is_New : Boolean;
   begin
-    Enter_Built_In (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
+    Register_Unit (LD, "Standard", Li_Defs.Package_Unit, Is_New);
+    if not Is_New then
+      raise Program_Error with "This case should be handled by Apply_WITH";
+    end if;
     --
-    Enter_Built_In (CD, "Standard", Paquetage, NOTYP, 0);
+    Enter_Built_In_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
-    Enter_Built_In (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
-    Enter_Built_In (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
+    Enter_Built_In_Def (CD, "Standard", Paquetage, NOTYP, 0);
+    --
+    Enter_Built_In_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
+    Enter_Built_In_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
     --
     Enter_Std_Typ (HAC_Float_Name,   Floats, 0, 0);
     Enter_Std_Typ ("Character",      Chars, 0, 255);
@@ -163,27 +167,40 @@ package body HAC_Sys.Librarian is
     Enter_Std_Typ ("Duration", Durations, 0, 0);
   end Apply_WITH_Standard;
 
-  procedure Apply_WITH_HAL (CD : in out Co_Defs.Compiler_Data) is
-    use Co_Defs, Defs;
+  ----------------------------------------
+  --  Enter "manually" the HAL package  --
+  ----------------------------------------
+
+  procedure Apply_WITH_HAL (
+    CD         : in out Co_Defs.Compiler_Data;
+    LD         : in out Li_Defs.Library_Data
+  )
+  is
+    use Co_Defs, Defs, PCode;
 
     procedure Enter_HAL_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Built_In (CD, HAL_Name & '.' & Name, TypeMark, T, 1, First, Last);
+      Enter_Built_In_Def (CD, HAL_Name & '.' & Name, TypeMark, T, 1, First, Last);
     end Enter_HAL_Typ;
 
     procedure Enter_HAL_Funct (Name : String; T : Typen; Code : PCode.SF_Code) is
     begin
-      Enter_Built_In (CD, HAL_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
+      Enter_Built_In_Def (CD, HAL_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
     end Enter_HAL_Funct;
 
     procedure Enter_HAL_Proc (Name : String; Code : PCode.SP_Code) is
     begin
-      Enter_Built_In (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
+      Enter_Built_In_Def (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
     end Enter_HAL_Proc;
 
-    use PCode;
+    Is_New : Boolean;
   begin
-    Enter_Built_In (CD, HAL_Name, Paquetage, NOTYP, 0);
+    Register_Unit (LD, Defs.HAL_Name, Li_Defs.Package_Unit, Is_New);
+    if not Is_New then
+      raise Program_Error with "This case should be handled by Apply_WITH";
+    end if;
+    --
+    Enter_Built_In_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
     --
     Enter_HAL_Typ ("File_Type", Text_Files, 0, 0);  --  2020.05.17
     Enter_HAL_Typ ("Semaphore", Ints, 0, 0);
@@ -329,6 +346,45 @@ package body HAC_Sys.Librarian is
     end if;
   end Find_Unit_File_Name;
 
+  procedure Apply_Custom_WITH (
+    CD         : in out Co_Defs.Compiler_Data;
+    LD         : in out Li_Defs.Library_Data;
+    Upper_Name : in     String
+  )
+  is
+    fn : constant String := Find_Unit_File_Name (Upper_Name);
+    Is_New : Boolean;
+    use Defs, UErrors;
+  begin
+    Register_Unit (LD, Defs.HAL_Name, Li_Defs.Package_Unit, Is_New);
+    if not Is_New then
+      raise Program_Error with "This case should be handled by Apply_WITH";
+    end if;
+    --
+    if fn = "" then
+      Error (
+        CD,
+        err_library_error,
+        ": file " & GNAT_Naming (Upper_Name) & ".ad* not found",
+        True
+      );
+    elsif fn (fn'Last) = 's' then
+      Error (
+        CD,
+        err_library_error,
+        "Specification files not yet supported (" & fn & ')',
+        True
+      );
+    else
+      Error (
+        CD,
+        err_library_error,
+        "Coming soon in HAC: compilation of WITH-ed subprogram bodies (" & fn & ')',
+        True
+      );
+    end if;
+  end Apply_Custom_WITH;
+
   procedure Apply_WITH (
     CD         : in out Co_Defs.Compiler_Data;
     LD         : in out Li_Defs.Library_Data;
@@ -339,34 +395,37 @@ package body HAC_Sys.Librarian is
   begin
     if LD.Map.Contains (HAL.To_VString (Upper_Name)) then
       null;  --  !!
+      --  !! Definition is already in CD (compilation of another unit),
+      --     we just need to reactivate it !!
+      --
+      --  This path includes the duplicate WITH case (not nice but correct).
+    elsif Upper_Name = "STANDARD" then
+      Apply_WITH_Standard (CD, LD);
+    elsif Upper_Name = HAL_Name then
+      Apply_WITH_HAL (CD, LD);
+    elsif Upper_Name = "HAC_PACK" then
+      Error (
+        CD,
+        err_library_error,
+        "the new name of HAC_Pack is " & HAL_Name,
+        True
+      );
     else
-      declare
-        fn : constant String := Find_Unit_File_Name (Upper_Name);
-      begin
-        if fn = "" then
-          Error (
-            CD,
-            err_library_error,
-            ": file " & GNAT_Naming (Upper_Name) & ".ad* not found",
-            True
-          );
-        elsif fn (fn'Last) = 's' then
-          Error (
-            CD,
-            err_library_error,
-            "Specification files not yet supported (" & fn & ')',
-            True
-          );
-        else
-          Error (
-            CD,
-            err_library_error,
-            "Coming soon in HAC: compilation of WITH-ed subprogram bodies (" & fn & ')',
-            True
-          );
-        end if;
-      end;
+      Apply_Custom_WITH (CD, LD, Upper_Name);
     end if;
   end Apply_WITH;
+
+  procedure Apply_WITH_USE_Standard (
+    CD         : in out Co_Defs.Compiler_Data;
+    LD         : in out Li_Defs.Library_Data
+  )
+  is
+  begin
+    Apply_WITH (CD, LD, "STANDARD");
+    Apply_USE_Clause (
+      CD, Li_Defs.Library_Level,
+      Parser.Helpers.Locate_Identifier (CD, Defs.To_Alfa ("STANDARD"), 0)
+    );
+  end Apply_WITH_USE_Standard;
 
 end HAC_Sys.Librarian;
