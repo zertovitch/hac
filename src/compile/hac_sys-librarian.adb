@@ -9,7 +9,8 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Parser.Enter_Def,
+with HAC_Sys.Compiler,
+     HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.PCode,
      HAC_Sys.UErrors;
@@ -353,35 +354,23 @@ package body HAC_Sys.Librarian is
   )
   is
     fn : constant String := Find_Unit_File_Name (Upper_Name);
-    Is_New : Boolean;
+    kind : Li_Defs.Unit_Kind;
+    is_new : Boolean;
     use Defs, UErrors;
   begin
-    Register_Unit (LD, Defs.HAL_Name, Li_Defs.Package_Unit, Is_New);
-    if not Is_New then
-      raise Program_Error with "This case should be handled by Apply_WITH";
-    end if;
-    --
     if fn = "" then
       Error (
         CD,
         err_library_error,
-        ": file " & GNAT_Naming (Upper_Name) & ".ad* not found",
-        True
-      );
-    elsif fn (fn'Last) = 's' then
-      Error (
-        CD,
-        err_library_error,
-        "Specification files not yet supported (" & fn & ')',
+        ": no file found matching the name " & GNAT_Naming (Upper_Name) & ".ad*",
         True
       );
     else
-      Error (
-        CD,
-        err_library_error,
-        "Coming soon in HAC: compilation of WITH-ed subprogram bodies (" & fn & ')',
-        True
-      );
+      Compiler.Compile_Unit (CD, LD, Upper_Name, fn, fn (fn'Last) = 's', kind);
+    end if;
+    Register_Unit (LD, Defs.HAL_Name, kind, is_new);
+    if not is_new then
+      raise Program_Error with "This case should be handled by Apply_WITH";
     end if;
   end Apply_Custom_WITH;
 

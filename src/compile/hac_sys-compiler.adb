@@ -339,6 +339,37 @@ package body HAC_Sys.Compiler is
       Dump_Asm;
   end Compile_Main;
 
+  procedure Compile_Unit (
+    CD                 : in out Co_Defs.Compiler_Data;
+    LD                 : in out Li_Defs.Library_Data;
+    upper_name         :        String;
+    file_name          :        String;
+    as_specification   :        Boolean;
+    kind               :    out Li_Defs.Unit_Kind  --  The unit kind is discovered by parsing.
+  )
+  is
+    use UErrors;
+  begin
+    --
+    --  !! WIP here !!
+    --
+    if as_specification then
+      Error (
+        CD,
+        err_library_error,
+        "Specification files not yet supported (" & file_name & ')',
+        True
+      );
+    else
+      Error (
+        CD,
+        err_library_error,
+        "Coming soon in HAC: compilation of WITH-ed subprogram bodies (" & file_name & ')',
+        True
+      );
+    end if;
+  end Compile_Unit;
+
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean is
   begin
     return CD.Err_Count = 0;

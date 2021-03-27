@@ -21,14 +21,16 @@ package HAC_Sys.Li_Defs is
   Library_Level : constant := 0;
 
   type Build_Mode is
-    (All_in_Memory
+    (Read_HCU_Files
         --  ^ Full compilation around main unit is done in memory.
-        --  Object code is shared, but ther is one ID table per unit.
-     --  Use_Library_Files
-     --    --  ^ Use .hal files (some stored in .zip files) which are
-     --    --    downloaded to the compilation tables if available
-     --    --    or compilaed, then uploaded, if not yet available.
+        --    If available and { up-to-date or no source file present },
+        --    .hcu files are downloaded to the compilation tables.
+     --  Write_HCU_Files
+     --    --    If a .hcu file not yet available or out-of-date,
+     --    --    the source is compiled and the .hcu file is (re)written.
     );
+
+  --  HAC Compiled Unit files have the .hcu extension. Some may be stored in .zip library files.
 
   type Compilation_Status is (
     Done,

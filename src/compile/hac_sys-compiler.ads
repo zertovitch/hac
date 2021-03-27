@@ -28,6 +28,18 @@ package HAC_Sys.Compiler is
     var_map_file_name  :        String  := ""   --  Output of variables (map)
   );
 
+  --  Compile unit not yet in the library.
+  --  Registration into the library is done after, by the librarian.
+  --
+  procedure Compile_Unit (
+    CD                 : in out Co_Defs.Compiler_Data;
+    LD                 : in out Li_Defs.Library_Data;
+    upper_name         :        String;
+    file_name          :        String;
+    as_specification   :        Boolean;
+    kind               :    out Li_Defs.Unit_Kind  --  The unit kind is discovered by parsing.
+  );
+
   --  Set current source stream (file, editor data, zipped file,...)
   procedure Set_Source_Stream (
     CD         : in out Compiler_Data;
