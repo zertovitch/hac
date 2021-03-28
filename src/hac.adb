@@ -1,4 +1,5 @@
 with HAC_Sys.Builder,
+     HAC_Sys.Compiler,
      HAC_Sys.PCode.Interpreter.In_Defs;
 
 with Show_License;
@@ -52,7 +53,7 @@ procedure HAC is
     BD : Build_Data;
     unhandled : Exception_Propagation_Data;
     unhandled_found : Boolean;
-    shebang_offset : Natural := 0;
+    shebang_offset : Natural;
     stack_max, stack_total : Natural;
   begin
     case verbosity is
@@ -67,23 +68,7 @@ procedure HAC is
         Put_Line (HAC_margin_2 & "Compiling from file: " & Ada_file_name);
     end case;
     Open (f, In_File, Ada_file_name);
-    --
-    --  Skip an eventual "shebang", e.g.: #!/usr/bin/env hac
-    --  The Ada source begins from next line.
-    --
-    if not End_Of_File (f) then
-      declare
-        possible_shebang : constant String := Get_Line (f);
-      begin
-        if possible_shebang'Length >= 2
-          and then possible_shebang (possible_shebang'First .. possible_shebang'First + 1) = "#!"
-        then
-          shebang_offset := 1;  --  Ignore the first line, but count it.
-        else
-          Reset (f);
-        end if;
-      end;
-    end if;
+    HAC_Sys.Compiler.Skip_Shebang (f, shebang_offset);
     Set_Diagnostic_File_Names (BD, To_String (asm_dump_file_name), To_String (cmp_dump_file_name));
     Set_Main_Source_Stream (BD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     t1 := Clock;

@@ -19,7 +19,7 @@ package body HAC_Sys.Parser.Tasking is
   )
   is
     Level : Nesting_level := Initial_Level;
-    saveLineCount : constant Integer := CD.SD.line_count;  --  Source line where Task appeared
+    saveLineCount : constant Integer := CD.CUD.line_count;  --  Source line where Task appeared
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
     I, T0  : Integer;
     TaskID : Alfa;

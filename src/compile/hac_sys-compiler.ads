@@ -11,7 +11,7 @@
 
 with HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.Li_Defs;
 
-with Ada.Streams;
+with Ada.Streams, Ada.Text_IO;
 
 package HAC_Sys.Compiler is
 
@@ -42,13 +42,18 @@ package HAC_Sys.Compiler is
 
   --  Set current source stream (file, editor data, zipped file,...)
   procedure Set_Source_Stream (
-    SD         : in out Co_Defs.Source_Data;
+    SD         : in out Co_Defs.Current_Unit_Data;
     s          : access Ada.Streams.Root_Stream_Type'Class;
     file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
     start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
   );
 
-  function Get_Current_Source_Name (SD : Source_Data) return String;
+  function Get_Current_Source_Name (SD : Co_Defs.Current_Unit_Data) return String;
+
+  --  Skip an eventual "shebang", e.g.: #!/usr/bin/env hac
+  --  The Ada source begins from next line.
+  --
+  procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural);
 
   procedure Set_Error_Pipe (
     CD   : in out Compiler_Data;

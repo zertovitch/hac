@@ -1288,7 +1288,7 @@ package body HAC_Sys.Parser is
 
     procedure Statements_Part_Closing is
     begin
-      CD.Blocks_Table (PRB).SrcTo := CD.SD.line_count;
+      CD.Blocks_Table (PRB).SrcTo := CD.CUD.line_count;
     end Statements_Part_Closing;
 
     procedure Function_Result_Profile is

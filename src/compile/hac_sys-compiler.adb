@@ -10,12 +10,12 @@ with HAL;
 
 with Ada.Integer_Text_IO,
      Ada.Strings.Fixed,
-     Ada.Text_IO;
+     Ada.Text_IO.Text_Streams;
 
 package body HAC_Sys.Compiler is
 
   procedure Set_Source_Stream (
-    SD         : in out Co_Defs.Source_Data;
+    SD         : in out Co_Defs.Current_Unit_Data;
     s          : access Ada.Streams.Root_Stream_Type'Class;
     file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
     start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
@@ -27,7 +27,7 @@ package body HAC_Sys.Compiler is
     SD.line_count       := start_line;
   end Set_Source_Stream;
 
-  function Get_Current_Source_Name (SD : Source_Data) return String is
+  function Get_Current_Source_Name (SD : Current_Unit_Data) return String is
   begin
     return HAL.VStr_Pkg.To_String (SD.source_file_name);
   end Get_Current_Source_Name;
@@ -40,6 +40,13 @@ package body HAC_Sys.Compiler is
   begin
     CD.error_pipe := pipe;
   end Set_Error_Pipe;
+
+  procedure Init (SD : out Current_Unit_Data) is
+  begin
+    SD.c := ' ';
+    SD.CC := 0;
+    SD.LL := 0;
+  end Init;
 
   procedure Init (CD : out Compiler_Data) is
   begin
@@ -65,9 +72,7 @@ package body HAC_Sys.Compiler is
     --
     --  Scanner data
     --
-    CD.CH := ' ';
-    CD.CC := 0;
-    CD.LL := 0;
+    Init (CD.CUD);
     CD.syStart   := 1;
     CD.syEnd     := 1;
     CD.Err_Count := 0;
@@ -254,8 +259,8 @@ package body HAC_Sys.Compiler is
       Last_Param_Id_Idx => 1,
       PSize             => 0,
       VSize             => 0,
-      SrcFrom           => CD.SD.line_count,
-      SrcTo             => CD.SD.line_count);
+      SrcFrom           => CD.CUD.line_count,
+      SrcTo             => CD.CUD.line_count);
 
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  { Task Table Entry }
 
@@ -282,7 +287,7 @@ package body HAC_Sys.Compiler is
     if CD.Blocks_Table (1).VSize > StMax - (STKINCR * CD.Tasks_Definitions_Count) then
       Error (CD, err_stack_size, "");
     end if;
-    CD.Blocks_Table (1).SrcTo := CD.SD.line_count;
+    CD.Blocks_Table (1).SrcTo := CD.CUD.line_count;
 
     if CD.listing_requested then
       Close (CD.listing);
@@ -339,6 +344,29 @@ package body HAC_Sys.Compiler is
       Dump_Asm;
   end Compile_Main;
 
+  procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural) is
+    use Ada.Text_IO;
+  begin
+    shebang_offset := 0;
+    if not End_Of_File (f) then
+      declare
+        possible_shebang : constant String := Get_Line (f);
+      begin
+        if possible_shebang'Length >= 2
+          and then possible_shebang (possible_shebang'First .. possible_shebang'First + 1) = "#!"
+        then
+          shebang_offset := 1;  --  Ignore the first line, but count it.
+        else
+          Reset (f);
+        end if;
+      end;
+    end if;
+  end Skip_Shebang;
+
+  --
+  --  !! WIP here !!
+  --
+
   procedure Compile_Unit (
     CD                 : in out Co_Defs.Compiler_Data;
     LD                 : in out Li_Defs.Library_Data;
@@ -348,11 +376,16 @@ package body HAC_Sys.Compiler is
     kind               :    out Li_Defs.Unit_Kind  --  The unit kind is discovered by parsing.
   )
   is
-    use UErrors;
+    use Ada.Text_IO, UErrors;
+    --  Save state of unit currently parsed (within a WITH clause).
+    mem : Current_Unit_Data := CD.CUD;
+    src : File_Type;
+    shebang_offset : Natural;
   begin
-    --
-    --  !! WIP here !!
-    --
+    Open (src, In_File, file_name);
+    Skip_Shebang (src, shebang_offset);
+    Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
+    Init (CD.CUD);  --  Reset scanner data (line counter etc.) and 0-level visible declarations
     if as_specification then
       Error (
         CD,
@@ -368,6 +401,8 @@ package body HAC_Sys.Compiler is
         True
       );
     end if;
+    Close (src);
+    CD.CUD := mem;
   end Compile_Unit;
 
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean is

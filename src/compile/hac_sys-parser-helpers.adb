@@ -371,7 +371,7 @@ package body HAC_Sys.Parser.Helpers is
     --  Prefixed package resolution.
     if CD.IdTab (J).Entity = Paquetage then
       Skip_Blanks (CD);
-      if CD.CH = '.' then  --  We sneak a look at the next symbol.
+      if CD.CUD.c = '.' then  --  We sneak a look at the next symbol.
         ID_Copy := Id;
         --  Here some parsing: entity is a package and there is a dot waiting.
         InSymbol (CD);  --  Consume prefix package identifier.

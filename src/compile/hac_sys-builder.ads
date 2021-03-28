@@ -20,7 +20,7 @@ with Ada.Streams;
 package HAC_Sys.Builder is
 
   type Build_Data is record
-    Main_CD            : Co_Defs.Compiler_Data;
+    CD                 : Co_Defs.Compiler_Data;
     LD                 : Li_Defs.Library_Data;
     asm_dump_file_name : HAL.VString;  --  Assembler output of compiled object code
     cmp_dump_file_name : HAL.VString;  --  Compiler dump

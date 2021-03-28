@@ -24,7 +24,7 @@ package body HAC_Sys.PCode.Interpreter is
   )
   is
     ND : In_Defs.Interpreter_Data;
-    CD : Co_Defs.Compiler_Data renames BD.Main_CD;
+    CD : Co_Defs.Compiler_Data renames BD.CD;
 
     use Co_Defs, In_Defs, Exceptions;
 
@@ -40,8 +40,8 @@ package body HAC_Sys.PCode.Interpreter is
       ND.SWITCH   := False;           --  invoke scheduler on next cycle flag
       ND.SYSCLOCK := ND.Start_Time;
       ND.TIMER    := ND.SYSCLOCK;     --  set to end of current task's time slice
-      HAC_Sys.PCode.Interpreter.Tasking.Init_main_task (BD.Main_CD, ND);
-      HAC_Sys.PCode.Interpreter.Tasking.Init_other_tasks (BD.Main_CD, ND);
+      HAC_Sys.PCode.Interpreter.Tasking.Init_main_task (BD.CD, ND);
+      HAC_Sys.PCode.Interpreter.Tasking.Init_other_tasks (BD.CD, ND);
     end Start_Interpreter;
 
     procedure Do_Standard_Function is

@@ -6,7 +6,7 @@ package body HAC_Sys.Builder is
     use HAL.VStr_Pkg;
   begin
     Compiler.Compile_Main (
-      BD.Main_CD,
+      BD.CD,
       BD.LD,
       To_String (BD.asm_dump_file_name),
       To_String (BD.cmp_dump_file_name),
@@ -40,7 +40,7 @@ package body HAC_Sys.Builder is
   )
   is
   begin
-    Compiler.Set_Source_Stream (BD.Main_CD.SD, s, file_name, start_line);
+    Compiler.Set_Source_Stream (BD.CD.CUD, s, file_name, start_line);
   end Set_Main_Source_Stream;
 
   procedure Set_Error_Pipe (
@@ -49,19 +49,19 @@ package body HAC_Sys.Builder is
   )
   is
   begin
-    Compiler.Set_Error_Pipe (BD.Main_CD, pipe);
+    Compiler.Set_Error_Pipe (BD.CD, pipe);
     --  ^ NB: Further unit compilations should propagate this.
   end Set_Error_Pipe;
 
   function Build_Successful (BD : Build_Data) return Boolean is
   begin
-    return Compiler.Unit_Compilation_Successful (BD.Main_CD);
+    return Compiler.Unit_Compilation_Successful (BD.CD);
     --  !!  ... plus other compilations, plus link
   end Build_Successful;
 
   function Object_Code_Size (BD : Build_Data) return Natural is
   begin
-    return Compiler.Unit_Object_Code_Size (BD.Main_CD);
+    return Compiler.Unit_Object_Code_Size (BD.CD);
     --  Whatever the build mode, the entire object code lands into Main_CD's object code.
   end Object_Code_Size;
 
