@@ -250,11 +250,11 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: main procedure is " & To_String (CD.Main_Program_ID));
     end if;
 
-    Librarian.Enter_Built_In_Def (CD, To_String (CD.Main_Program_ID), Prozedure, NOTYP, 0);
+    Librarian.Enter_Built_In_Def (CD, To_String (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
 
-    CD.Blocks_Table (0) :=  --  Block Table Entry for Standard [was Main, 1]
-     (Id                => To_Alfa ("-- Standard Definitions (The Universe)"),
+    CD.Blocks_Table (0) :=  --  Block Table Entry for stuff before Main (proabley useless)
+     (Id                => To_Alfa ("--  Definitions before Main"),
       Last_Id_Idx       => CD.Id_Count,
       Last_Param_Id_Idx => 1,
       PSize             => 0,

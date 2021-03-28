@@ -25,9 +25,9 @@ package body HAC_Sys.Parser is
     Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  5.6 Block Statements
     Initial_Level        :        Defs.Nesting_level;
-    Prt                  :        Integer;
-    Block_ID             :        Defs.Alfa;  --  Name of this block (if any)
-    Block_ID_with_case   :        Defs.Alfa
+    Block_Id_Index       :        Integer;
+    Block_Id             :        Defs.Alfa;      --  Name of this block (if any)
+    Block_Id_with_case   :        Defs.Alfa
   )
   is
     use Calls, Co_Defs, Compiler, Defs, Enter_Def,
@@ -398,9 +398,9 @@ package body HAC_Sys.Parser is
         Id_subprog_with_case : constant Alfa := CD.Id_with_case;
       begin
         if IsFun then
-          Enter (CD, Level, CD.Id, CD.Id_with_case, Funktion);
+          Enter (CD, Level, CD.Id, Id_subprog_with_case, Funktion);
         else
-          Enter (CD, Level, CD.Id, CD.Id_with_case, Prozedure);
+          Enter (CD, Level, CD.Id, Id_subprog_with_case, Prozedure);
         end if;
         InSymbol;
         Block (CD, FSys, IsFun, False, Level + 1, CD.Id_Count,
@@ -549,13 +549,11 @@ package body HAC_Sys.Parser is
         --  Generate a procedure or function return Statement, calculate return value if req'D.
         X, Y : Exact_Typ;
         F : Opcode;
-        Block_Idx : Integer;
         procedure Issue_Type_Mismatch_Error is
         begin
           Type_Mismatch (CD, err_type_of_return_statement_doesnt_match, Found => Y, Expected => X);
         end Issue_Type_Mismatch_Error;
       begin
-        Block_Idx := Locate_Identifier (CD, Block_ID, Level);
         InSymbol;
         if CD.Sy = Semicolon then
           if Is_a_function then
@@ -566,14 +564,14 @@ package body HAC_Sys.Parser is
             Error (CD, err_procedures_cannot_return_a_value, stop => True);
           end if;
           --  Calculate return value (destination: X; expression: Y).
-          if CD.IdTab (Block_Idx).Block_Ref = CD.Display (Level) then
-            X := CD.IdTab (Block_Idx).xTyp;
-            if CD.IdTab (Block_Idx).Normal then
+          if CD.IdTab (Block_Id_Index).Block_Ref = CD.Display (Level) then
+            X := CD.IdTab (Block_Id_Index).xTyp;
+            if CD.IdTab (Block_Id_Index).Normal then
               F := k_Push_Address;
             else
               F := k_Push_Value;
             end if;
-            Emit_2 (CD, F, Operand_1_Type (CD.IdTab (Block_Idx).LEV + 1), 0);
+            Emit_2 (CD, F, Operand_1_Type (CD.IdTab (Block_Id_Index).LEV + 1), 0);
             --
             Expression (CD, Level, Semicolon_Set, Y);
             if X.TYP = Y.TYP then
@@ -591,7 +589,7 @@ package body HAC_Sys.Parser is
             end if;
           else
             raise Program_Error with
-              "`return x` from main, should have been caught earlier: " &
+              "`return x` from main; issue should have been caught earlier: " &
               "err_procedures_cannot_return_a_value.";
           end if;
         end if;
@@ -1274,8 +1272,8 @@ package body HAC_Sys.Parser is
     procedure Statements_Part_Setup is
       Init_Code_Idx : Integer;
     begin
-      MaxDX                    := Dx;
-      CD.IdTab (Prt).Adr_or_Sz := CD.LC;
+      MaxDX := Dx;
+      CD.IdTab (Block_Id_Index).Adr_or_Sz := CD.LC;
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
       Init_Code_Idx := CD.CMax + ICode;
       while Init_Code_Idx > CD.CMax loop
@@ -1303,7 +1301,7 @@ package body HAC_Sys.Parser is
             if CD.IdTab (I_Res_Type).Entity /= TypeMark then
               Error (CD, err_missing_a_type_identifier, stop => True);
             elsif Standard_or_Enum_Typ (CD.IdTab (I_Res_Type).xTyp.TYP) then
-              CD.IdTab (Prt).xTyp := CD.IdTab (I_Res_Type).xTyp;
+              CD.IdTab (Block_Id_Index).xTyp := CD.IdTab (I_Res_Type).xTyp;
             else
               Error (CD, err_bad_result_type_for_a_function, stop => True);
             end if;
@@ -1324,9 +1322,9 @@ package body HAC_Sys.Parser is
       return;
     end if;
     if CD.Full_Block_Id = Universe then
-      CD.Full_Block_Id := HAL.To_VString (To_String (Block_ID_with_case));
+      CD.Full_Block_Id := HAL.To_VString (To_String (Block_Id_with_case));
     else
-      CD.Full_Block_Id := CD.Full_Block_Id & '.' & To_String (Block_ID_with_case);
+      CD.Full_Block_Id := CD.Full_Block_Id & '.' & To_String (Block_Id_with_case);
     end if;
     Dx    := 5;
     ICode := 0;
@@ -1335,15 +1333,15 @@ package body HAC_Sys.Parser is
     else
       Test (CD, Symbols_after_Subprogram_Identifier, FSys, err_incorrectly_used_symbol);
     end if;
-    if CD.IdTab (Prt).Block_Ref > 0 then
-      PRB := CD.IdTab (Prt).Block_Ref;
+    if CD.IdTab (Block_Id_Index).Block_Ref > 0 then
+      PRB := CD.IdTab (Block_Id_Index).Block_Ref;
     else
-      Enter_Block (CD, Prt);
-      PRB                      := CD.Blocks_Count;
-      CD.IdTab (Prt).Block_Ref := PRB;
+      Enter_Block (CD, Block_Id_Index);
+      PRB := CD.Blocks_Count;
+      CD.IdTab (Block_Id_Index).Block_Ref := PRB;
     end if;
     CD.Display (Level) := PRB;
-    CD.IdTab (Prt).xTyp := Type_Undefined;
+    CD.IdTab (Block_Id_Index).xTyp := Type_Undefined;
     if CD.Sy = LParent and Level > 1 then
       Formal_Parameter_List;
     end if;
@@ -1365,7 +1363,7 @@ package body HAC_Sys.Parser is
       --  Example:
       --  procedure A; procedure B is begin ... A ... end; procedure A is ... B ... end;
       CD.Blocks_Table (PRB).VSize := Dx;
-      CD.IdTab (Prt).Adr_or_Sz    := -1;
+      CD.IdTab (Block_Id_Index).Adr_or_Sz := -1;
       --  Address of body TBD (or, we could have an indirect call mechanism).
       return;
     end if;
@@ -1411,12 +1409,12 @@ package body HAC_Sys.Parser is
       end if;
       --
       if CD.Sy = IDent then  --  Verify that the name after "end" matches the unit name.
-        if CD.Id /= Block_ID then
-          Error (CD, err_incorrect_block_name, hint => To_String (Block_ID_with_case));
+        if CD.Id /= Block_Id then
+          Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
         end if;
         InSymbol;
-      elsif Is_a_block_statement and Block_ID /= Empty_Alfa then  --  "end [label]" is required
-        Error (CD, err_incorrect_block_name, hint => To_String (Block_ID_with_case));
+      elsif Is_a_block_statement and Block_Id /= Empty_Alfa then  --  "end [label]" is required
+        Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
       end if;
     end if;
     --

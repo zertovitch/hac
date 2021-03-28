@@ -7,12 +7,20 @@ with HAL; use HAL;
 procedure Declarations is
 
   Called_Mimi_Me : Boolean := False;
+  Called_Micro_Me : Boolean := False;
 
   procedure Declarations is
+    procedure Declarations is
+    begin
+      Called_Micro_Me := True;
+      return;
+      Put ("Noooo wayyyy (inner level 2)");
+    end;
   begin
+    Declarations;
     Called_Mimi_Me := True;
     return;  --  SmallAda & HAC < rev. 331: sees CD.Main_Program_ID and triggers "ILLEGAL RETURN STATEMENT FROM MAIN" !...
-    Put ("Noooo wayyyy");
+    Put ("Noooo wayyyy (inner level 1)");
     Set_Exit_Status (1);  --  Compiler test failed.
   end
   ;  --  SmallAda & HAC < rev. 332: sees CD.Main_Program_ID and triggers "Incorrectly used symbol" !...
@@ -41,11 +49,11 @@ begin
   end if;
   Not_Yet_Done (123);
   Declarations;  --  Subprogram with the same name.
-  if not Called_Mimi_Me then
+  if not (Called_Mimi_Me and Called_Micro_Me) then
     Set_Exit_Status (1);  --  Compiler test failed.
     return;  --  HAC >= rev. 331: return from main emits a k_Halt_Interpreter
   end if;
   return;  --  HAC >= rev. 331: return from main emits a k_Halt_Interpreter
-  Put ("Noooo wayyyy");
+  Put ("Noooo wayyyy (inner level 0)");
   Set_Exit_Status (1);  --  Compiler test failed.
 end Declarations;
