@@ -171,8 +171,8 @@ package HAL is
 
   -------------------------
   --  Text Input/Output  --
+  --  1) Console I/O     --
   -------------------------
-  --  1) Console I/O
 
   --  We have a real console/terminal input where several
   --  inputs can be made on the same line, followed by a
@@ -234,19 +234,19 @@ package HAL is
 
   -------------------------
   --  Text Input/Output  --
+  --  2) File I/O        --
   -------------------------
-  --  2) File I/O
 
   subtype File_Type is Ada.Text_IO.File_Type;
 
-  procedure Open (File : in out File_Type; Name : String);   --  Open as In_File (input).
-  procedure Open (File : in out File_Type; Name : VString);  --  Open as In_File (input).
+  procedure Open (File : in out File_Type; Name : String);   --  Open file as input.
+  procedure Open (File : in out File_Type; Name : VString);  --  Open file as input.
 
-  procedure Create (File : in out File_Type; Name : String);   --  Create as Out_File (output).
-  procedure Create (File : in out File_Type; Name : VString);  --  Create as Out_File (output).
+  procedure Create (File : in out File_Type; Name : String);   --  Create file as output.
+  procedure Create (File : in out File_Type; Name : VString);  --  Create file as output.
 
-  procedure Append (File : in out File_Type; Name : String);   --  Open as Append_File.
-  procedure Append (File : in out File_Type; Name : VString);  --  Open as Append_File.
+  procedure Append (File : in out File_Type; Name : String);   --  Append to existing file (output).
+  procedure Append (File : in out File_Type; Name : VString);  --  Append to existing file (output).
 
   procedure Close (File : in out File_Type) renames Ada.Text_IO.Close;
 
