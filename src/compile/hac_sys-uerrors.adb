@@ -319,14 +319,14 @@ package body HAC_Sys.UErrors is
     ub_hint : constant HAL.VString := HAL.To_VString (hint);
     use HAL.VStr_Pkg;
   begin
-    Show_to_comp_dump (CD.Line_Count, CD.syStart, CD.syEnd, -1, hint);
+    Show_to_comp_dump (CD.SD.line_count, CD.syStart, CD.syEnd, -1, hint);
     CD.Errs (code) := True;
     CD.Err_Count := CD.Err_Count + 1;
     if CD.error_pipe = null then
       Put_Line (
         Current_Error,
         --  !! Ada "file" name here
-        Trim (Integer'Image (CD.Line_Count), Left) & ':' &
+        Trim (Integer'Image (CD.SD.line_count), Left) & ':' &
         Trim (Integer'Image (CD.syStart), Left) & '-' &
         Trim (Integer'Image (CD.syEnd), Left) & ": " &
         Error_String (code, hint)
@@ -348,8 +348,8 @@ package body HAC_Sys.UErrors is
       end case;
       CD.error_pipe (
         message   => Error_String (code, hint),
-        file_name => Compiler.Get_Current_Source_Name (CD),
-        line      => CD.Line_Count,
+        file_name => Compiler.Get_Current_Source_Name (CD.SD),
+        line      => CD.SD.line_count,
         column_a  => CD.syStart,
         column_z  => CD.syEnd,
         kind      => error,

@@ -155,7 +155,7 @@ package body HAC_Sys.Scanner is
       c   : Character;
     begin
       loop
-        Character'Read (CD.compiler_stream, c);
+        Character'Read (CD.SD.compiler_stream, c);
         --  !! NB: if HAC ever happens to consume large input files,
         --         the one-character-at-a-time stream input could become
         --         a performance bottleneck.  --> buffered input (cf Zip-Ada)
@@ -184,9 +184,9 @@ package body HAC_Sys.Scanner is
       if CD.listing_requested then
         New_Line (CD.listing);
       end if;
-      CD.Line_Count := CD.Line_Count + 1;
+      CD.SD.line_count := CD.SD.line_count + 1;
       if CD.listing_requested then
-        HAC_Sys.Defs.IIO.Put (CD.listing, HAC_Integer (CD.Line_Count), 4);
+        HAC_Sys.Defs.IIO.Put (CD.listing, HAC_Integer (CD.SD.line_count), 4);
         Put (CD.listing, "  ");
         --  Put (Listing, LC, 5);
         --  Put (Listing, "  ");
@@ -707,7 +707,7 @@ package body HAC_Sys.Scanner is
       end loop;
       Put_Line (CD.comp_dump, "^");
       Put (CD.comp_dump,
-        '[' & Integer'Image (CD.Line_Count) & ':' &
+        '[' & Integer'Image (CD.SD.Line_Count) & ':' &
               Integer'Image (CD.CC) & ":] " &
         KeyWSymbol'Image (CD.Sy)
       );

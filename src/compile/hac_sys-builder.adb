@@ -40,7 +40,7 @@ package body HAC_Sys.Builder is
   )
   is
   begin
-    Compiler.Set_Source_Stream (BD.Main_CD, s, file_name, start_line);
+    Compiler.Set_Source_Stream (BD.Main_CD.SD, s, file_name, start_line);
   end Set_Main_Source_Stream;
 
   procedure Set_Error_Pipe (

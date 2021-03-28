@@ -162,16 +162,21 @@ package HAC_Sys.Co_Defs is
 
   type Source_Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
 
+  type Source_Data is record
+    --  Current source code information and scanner data
+    compiler_stream  : Source_Stream_Access;
+    source_file_name : HAL.VString;  --  Indicative (error messages)
+    --  Parsing
+    line_count       : Natural;            --  Source line counter, used for listing
+  end record;
+
   ---------------------
   --  Compiler_Data  --
   ---------------------
 
   type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
-    --  Current source code information and scanner data
-    compiler_stream  : Source_Stream_Access;
-    source_file_name : HAL.VString;  --  Indicative (error messages)
+    SD : Source_Data;
     --  Parsing
-    Line_Count       : Natural;            --  Source line counter, used for listing
     InpLine          : Source_Line_String;
     CH               : Character;          --  Previous Character read from source program
     CC               : Integer;            --  Character counter (=column in current line)

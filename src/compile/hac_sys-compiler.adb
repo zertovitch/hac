@@ -15,21 +15,21 @@ with Ada.Integer_Text_IO,
 package body HAC_Sys.Compiler is
 
   procedure Set_Source_Stream (
-    CD         : in out Compiler_Data;
+    SD         : in out Co_Defs.Source_Data;
     s          : access Ada.Streams.Root_Stream_Type'Class;
     file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
     start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
   )
   is
   begin
-    CD.compiler_stream  := Source_Stream_Access (s);
-    CD.source_file_name := HAL.To_VString (file_name);
-    CD.Line_Count       := start_line;
+    SD.compiler_stream  := Source_Stream_Access (s);
+    SD.source_file_name := HAL.To_VString (file_name);
+    SD.line_count       := start_line;
   end Set_Source_Stream;
 
-  function Get_Current_Source_Name (CD : Compiler_Data) return String is
+  function Get_Current_Source_Name (SD : Source_Data) return String is
   begin
-    return HAL.VStr_Pkg.To_String (CD.source_file_name);
+    return HAL.VStr_Pkg.To_String (SD.source_file_name);
   end Get_Current_Source_Name;
 
   procedure Set_Error_Pipe (
@@ -254,8 +254,8 @@ package body HAC_Sys.Compiler is
       Last_Param_Id_Idx => 1,
       PSize             => 0,
       VSize             => 0,
-      SrcFrom           => CD.Line_Count,
-      SrcTo             => CD.Line_Count);
+      SrcFrom           => CD.SD.line_count,
+      SrcTo             => CD.SD.line_count);
 
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  { Task Table Entry }
 
@@ -282,7 +282,7 @@ package body HAC_Sys.Compiler is
     if CD.Blocks_Table (1).VSize > StMax - (STKINCR * CD.Tasks_Definitions_Count) then
       Error (CD, err_stack_size, "");
     end if;
-    CD.Blocks_Table (1).SrcTo := CD.Line_Count;  --(* Manuel : terminate source *)
+    CD.Blocks_Table (1).SrcTo := CD.SD.line_count;
 
     if CD.listing_requested then
       Close (CD.listing);

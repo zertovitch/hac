@@ -23,7 +23,7 @@ package body HAC_Sys.Parser.Enter_Def is
       New_B.Id                := CD.IdTab (Tptr).Name;
       New_B.Last_Id_Idx       := 0;
       New_B.Last_Param_Id_Idx := 0;
-      New_B.SrcFrom           := CD.Line_Count;
+      New_B.SrcFrom           := CD.SD.Line_Count;
     end;
   end Enter_Block;
 
