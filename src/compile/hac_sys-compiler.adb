@@ -380,20 +380,22 @@ package body HAC_Sys.Compiler is
     mem : constant Current_Unit_Data := CD.CUD;
     src : File_Type;
     shebang_offset : Natural;
-    Unid_Id_with_case : Alfa;
+    Unit_Id_with_case : Alfa;
   begin
     Open (src, In_File, file_name);
     Skip_Shebang (src, shebang_offset);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
     Init (CD.CUD);  --  Reset scanner data (line counter etc.) and 0-level visible declarations
+
     --
-    --  !!Parts of the following are the same to Compile_Main. !!TBD: make the code common.
+    --  !!Parts of the following are the same as Compile_Main.
+    --  !!TBD: make the code common.
     --
 
     --
-    --  We define Standard (or activate if this isnot the first unit compiled).
+    --  We define Standard, or activate if this is not the first unit compiled.
     --
---    Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
+    --  !!  Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
 
     Scanner.InSymbol (CD);
     Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s.
@@ -420,17 +422,18 @@ package body HAC_Sys.Compiler is
     if To_String (CD.Id) /= upper_name then
       Error (CD, err_syntax_error, ": unit name """ & upper_name & """ expected in this file", True);
     end if;
-    Unid_Id_with_case := CD.Id_with_case;
+    Unit_Id_with_case := CD.Id_with_case;
     case kind is
       when Procedure_Unit =>
-        Librarian.Enter_Built_In_Def (CD, To_String (Unid_Id_with_case), Prozedure, NOTYP, 0);
+        Librarian.Enter_Built_In_Def (CD, To_String (Unit_Id_with_case), Prozedure, NOTYP, 0);
       when Function_Unit =>
         --  !!  return type to be fixed  !!
-        Librarian.Enter_Built_In_Def (CD, To_String (Unid_Id_with_case), Funktion, NOTYP, 0);
+        Librarian.Enter_Built_In_Def (CD, To_String (Unit_Id_with_case), Funktion, NOTYP, 0);
       when Package_Unit =>
         null;  --  !! TBD
     end case;
     Scanner.InSymbol (CD);
+    --  Here the symbol should be: ";", "IS", "(", "RETURN" for a parameterless function.
     --
     if as_specification then
       Error (
@@ -441,13 +444,15 @@ package body HAC_Sys.Compiler is
       );
     else
       case kind is
-        when Subprogran_Unit =>
+        when Subprogram_Unit =>
           Parser.Block (
             CD, Block_Begin_Symbol + Statement_Begin_Symbol,
-            False, False, 1,
+            kind = Function_Unit,
+            False,
+            1,
             CD.Id_Count,
             CD.IdTab (CD.Id_Count).Name,
-            Unid_Id_with_case
+            Unit_Id_with_case
           );
           if kind = Function_Unit then
             PCode_Emit.Emit_1 (CD, k_Exit_Function, End_Function_without_Return);

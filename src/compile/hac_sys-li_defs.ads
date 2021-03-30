@@ -39,7 +39,7 @@ package HAC_Sys.Li_Defs is
 
   type Unit_Kind is (Package_Unit, Procedure_Unit, Function_Unit);
 
-  subtype Subprogran_Unit is Unit_Kind range Procedure_Unit .. Function_Unit;
+  subtype Subprogram_Unit is Unit_Kind range Procedure_Unit .. Function_Unit;
 
   type Library_Unit is record
     Kind       : Unit_Kind;

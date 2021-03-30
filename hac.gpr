@@ -88,11 +88,13 @@ project HAC is
       end case;
    end Binder;
 
+   Common_Linker_Options := ("-static");
+
    package Linker is
       case HAC_Build_Mode is
-         when "Debug" => for Default_Switches ("ada") use ("-g");
-         when "Fast"  => for Default_Switches ("ada") use ("-g", "-Wl,--gc-sections");
-         when "Small" => for Default_Switches ("ada") use (      "-Wl,--gc-sections");
+         when "Debug" => for Default_Switches ("ada") use Common_Linker_Options & ("-g");
+         when "Fast"  => for Default_Switches ("ada") use Common_Linker_Options & ("-g", "-Wl,--gc-sections");
+         when "Small" => for Default_Switches ("ada") use Common_Linker_Options & (      "-Wl,--gc-sections");
       end case;
    end Linker;
 
