@@ -163,8 +163,8 @@ package body HAC_Sys.PCode is
   begin
     Put_Line
       (Text, "Position   : Opcode " & (Opcode'Width - 7) * ' ' &
-             "Lvl X " &
-             "Addr/Val Y" &
+             "Level/X        " &
+             "Addr/Val/Y" &
              ";      Approx. source location; Extra information");
     Put_Line (Text, 90 * '-');
     for i in OC'Range loop

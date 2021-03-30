@@ -122,7 +122,7 @@ package body HAC_Sys.Compiler is
 
     New_Line (CD.comp_dump);
     Put_Line (CD.comp_dump, " Tasks       Block#");
-    for I in 0 .. CD.Tasks_Definitions_Count loop
+    for I in 1 .. CD.Tasks_Definitions_Count loop
       Put (CD.comp_dump, I, 4);
       Put (CD.comp_dump, ' ');
       Put (CD.comp_dump, To_String (CD.IdTab (CD.Tasks_Definitions_Table (I)).Name) & "  ");
@@ -149,8 +149,7 @@ package body HAC_Sys.Compiler is
     end if;
 
     Put_Line (CD.comp_dump, " Blocks" & Alng * ' ' & "  Last_ID LPar PSze Vsze");
-    --  There is a hidden block #0, "the Universe", with Standard
-    for I in 0 .. CD.Blocks_Count loop
+    for I in 1 .. CD.Blocks_Count loop
       declare
         r : BTabEntry renames CD.Blocks_Table (I);
       begin
@@ -253,7 +252,7 @@ package body HAC_Sys.Compiler is
     Librarian.Enter_Built_In_Def (CD, To_String (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
 
-    CD.Blocks_Table (0) :=  --  Block Table Entry for stuff before Main (proabley useless)
+    CD.Blocks_Table (0) :=  --  Block Table Entry for stuff before Main (probably useless)
      (Id                => To_Alfa ("--  Definitions before Main"),
       Last_Id_Idx       => CD.Id_Count,
       Last_Param_Id_Idx => 1,
@@ -262,7 +261,7 @@ package body HAC_Sys.Compiler is
       SrcFrom           => CD.CUD.line_count,
       SrcTo             => CD.CUD.line_count);
 
-    CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  { Task Table Entry }
+    CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  Task Table Entry for main task.
 
     --  Start Compiling
     Parser.Block (
@@ -364,7 +363,7 @@ package body HAC_Sys.Compiler is
   end Skip_Shebang;
 
   --
-  --  !! WIP here !!
+  --  !! Massive W.I.P. here !!
   --
 
   procedure Compile_Unit (
@@ -376,30 +375,88 @@ package body HAC_Sys.Compiler is
     kind               :    out Li_Defs.Unit_Kind  --  The unit kind is discovered by parsing.
   )
   is
-    use Ada.Text_IO, UErrors;
+    use Ada.Text_IO, UErrors, Li_Defs, Parser.Helpers, PCode;
     --  Save state of unit currently parsed (within a WITH clause).
-    mem : Current_Unit_Data := CD.CUD;
+    mem : constant Current_Unit_Data := CD.CUD;
     src : File_Type;
     shebang_offset : Natural;
+    Unid_Id_with_case : Alfa;
   begin
     Open (src, In_File, file_name);
     Skip_Shebang (src, shebang_offset);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
     Init (CD.CUD);  --  Reset scanner data (line counter etc.) and 0-level visible declarations
+    --
+    --  !!Parts of the following are the same to Compile_Main. !!TBD: make the code common.
+    --
+
+    --
+    --  We define Standard (or activate if this isnot the first unit compiled).
+    --
+--    Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
+
+    Scanner.InSymbol (CD);
+    Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s.
+    case CD.Sy is
+      when PACKAGE_Symbol =>
+        kind := Package_Unit;
+        Error (
+          CD,
+          err_library_error,
+          "Packages not yet supported",
+          True
+        );
+      when FUNCTION_Symbol =>
+        kind := Function_Unit;
+      when PROCEDURE_Symbol =>
+        kind := Procedure_Unit;
+      when others =>
+        Error (CD, err_syntax_error, "`package`, `procedure` or `function` expected here", True);
+    end case;
+    Scanner.InSymbol (CD);
+    if CD.Sy /= IDent then
+      Error (CD, err_identifier_missing, stop => True);
+    end if;
+    if To_String (CD.Id) /= upper_name then
+      Error (CD, err_syntax_error, ": unit name """ & upper_name & """ expected in this file", True);
+    end if;
+    Unid_Id_with_case := CD.Id_with_case;
+    case kind is
+      when Procedure_Unit =>
+        Librarian.Enter_Built_In_Def (CD, To_String (Unid_Id_with_case), Prozedure, NOTYP, 0);
+      when Function_Unit =>
+        --  !!  return type to be fixed  !!
+        Librarian.Enter_Built_In_Def (CD, To_String (Unid_Id_with_case), Funktion, NOTYP, 0);
+      when Package_Unit =>
+        null;  --  !! TBD
+    end case;
+    Scanner.InSymbol (CD);
+    --
     if as_specification then
       Error (
         CD,
         err_library_error,
-        "Specification files not yet supported (" & file_name & ')',
+        "Specification units not yet supported (" & file_name & ')',
         True
       );
     else
-      Error (
-        CD,
-        err_library_error,
-        "Coming soon in HAC: compilation of WITH-ed subprogram bodies (" & file_name & ')',
-        True
-      );
+      case kind is
+        when Subprogran_Unit =>
+          Parser.Block (
+            CD, Block_Begin_Symbol + Statement_Begin_Symbol,
+            False, False, 1,
+            CD.Id_Count,
+            CD.IdTab (CD.Id_Count).Name,
+            Unid_Id_with_case
+          );
+          if kind = Function_Unit then
+            PCode_Emit.Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
+          else
+            PCode_Emit.Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+          end if;
+        when Package_Unit =>
+          null;  --  !! TBD
+      end case;
     end if;
     Close (src);
     CD.CUD := mem;

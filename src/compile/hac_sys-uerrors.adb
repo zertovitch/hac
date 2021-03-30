@@ -17,7 +17,7 @@ package body HAC_Sys.UErrors is
           return "undefined identifier: " & hint;
         end if;
       when err_duplicate_identifier =>
-        return "multiple definition of an identifier";
+        return "multiple definition of an identifier: " & hint;
       when err_identifier_missing =>
         return "missing an identifier";
       when err_missing_a_procedure_declaration =>
@@ -28,7 +28,7 @@ package body HAC_Sys.UErrors is
         return "missing a colon "":""";
       when err_colon_missing_for_named_statement =>
         return
-          "undefined identifier;" &
+          "undefined identifier (" & hint & ");" &
           " if a named statement is meant, a colon "":"" would be expected here";
       when err_incorrectly_used_symbol =>
         return "incorrectly used symbol [" & hint & ']';
@@ -325,7 +325,7 @@ package body HAC_Sys.UErrors is
     if CD.error_pipe = null then
       Put_Line (
         Current_Error,
-        --  !! Ada "file" name here
+        To_String (CD.CUD.source_file_name) & ": " &
         Trim (Integer'Image (CD.CUD.line_count), Left) & ':' &
         Trim (Integer'Image (CD.syStart), Left) & '-' &
         Trim (Integer'Image (CD.syEnd), Left) & ": " &

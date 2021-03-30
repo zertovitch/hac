@@ -155,6 +155,7 @@ package HAC_Sys.Co_Defs is
   type    Identifier_Table_Type        is array (0 .. Id_Table_Max) of IdTabEntry;
   subtype Strings_Constants_Table_Type is String (1 .. SMax);
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)      of Index;
+  --      ^ Task #0 is main task.
 
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 

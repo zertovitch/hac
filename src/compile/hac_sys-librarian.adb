@@ -368,9 +368,11 @@ package body HAC_Sys.Librarian is
     else
       Compiler.Compile_Unit (CD, LD, Upper_Name, fn, fn (fn'Last) = 's', kind);
     end if;
-    Register_Unit (LD, Defs.HAL_Name, kind, is_new);
+    Register_Unit (LD, Upper_Name, kind, is_new);
     if not is_new then
-      raise Program_Error with "This case should be handled by Apply_WITH";
+      raise Program_Error with
+        "Duplicate registration for " & Upper_Name &
+        ". This case should be handled by Apply_WITH";
     end if;
   end Apply_Custom_WITH;
 

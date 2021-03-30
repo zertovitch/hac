@@ -1142,10 +1142,9 @@ package body HAC_Sys.Parser is
         --
       begin
         Enter (CD, Level, new_ident_for_statement, CD.Id_with_case, Label);
-        Test (CD, Colon_Set, FSys_St,
-          err_colon_missing_for_named_statement,
-          stop_on_error => True
-        );
+        if CD.Sy /= Colon then
+          Error (CD, err_colon_missing_for_named_statement, To_String (CD.Id_with_case), True);
+        end if;
         InSymbol;  --  Consume ':' symbol.
         case CD.Sy is
           when BEGIN_Symbol | DECLARE_Symbol => -- Named Block_Statement
@@ -1342,7 +1341,7 @@ package body HAC_Sys.Parser is
     end if;
     CD.Display (Level) := PRB;
     CD.IdTab (Block_Id_Index).xTyp := Type_Undefined;
-    if CD.Sy = LParent and Level > 1 then
+    if CD.Sy = LParent then
       Formal_Parameter_List;
     end if;
     --
