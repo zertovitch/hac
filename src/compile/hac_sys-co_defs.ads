@@ -110,9 +110,7 @@ package HAC_Sys.Co_Defs is
     Name           : Alfa;          --  identifier name in ALL CAPS
     Name_with_case : Alfa;          --  identifier name with original casing
     Link           : Index;
-    Entity         : Entity_Kind;   --  One of:
-                                    --    Declared_Number, Variable, TypeMark,
-                                    --    Prozedure, Funktion, aTask, aEntry
+    Entity         : Entity_Kind;
     Read_only      : Boolean;       --  If Entity = Variable and Read_only = True,
                                     --    it's a typed constant.
     xTyp           : Exact_Typ;     --  Type identification

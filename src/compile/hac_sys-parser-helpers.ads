@@ -328,10 +328,11 @@ package HAC_Sys.Parser.Helpers is
   --       non-package entity: "Var".
   --
   function Locate_Identifier (
-    CD              : in out Compiler_Data;
-    Id              : in     Alfa;
-    Level           : in     Defs.Nesting_level;
-    Fail_when_No_Id : in     Boolean := True
+    CD               : in out Compiler_Data;
+    Id               : in     Alfa;
+    Level            : in     Defs.Nesting_level;
+    Fail_when_No_Id  : in     Boolean := True;
+    Alias_Resolution : in     Boolean := True
   )
   return Natural;
 

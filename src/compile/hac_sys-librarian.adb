@@ -89,6 +89,7 @@ package body HAC_Sys.Librarian is
     Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).Name);
     Pkg_UName_Dot : constant String := Pkg_UName & '.';
     Pkg_Initial   : constant Character := Pkg_UName (Pkg_UName'First);
+    Id_Alias : Natural;
   begin
     pragma Assert (Pkg_Idx /= No_Id);
     if CD.IdTab (Pkg_Idx).Entity /= Paquetage then
@@ -96,6 +97,7 @@ package body HAC_Sys.Librarian is
     end if;
     --  The specification begins immediately after the package name.
     for i in Pkg_Idx + 1 .. CD.Id_Count loop
+      --  Quick exit if the first character doesn't match the package's first letter:
       exit when Initial (CD.IdTab (i).Name) /= Pkg_Initial;
       declare
         Full_UName : constant String := To_String (CD.IdTab (i).Name);
@@ -109,13 +111,34 @@ package body HAC_Sys.Librarian is
           --  We have spotted, e.g., "STANDARD.FALSE" with the matching prefix "STANDARD."
           Start := Full_UName'First + Pkg_UName_Dot'Length;
           Full_Name := To_String (CD.IdTab (i).Name_with_case);
-          --  Here we enter, e.g. the "FALSE", "False" pair.
-          Enter (CD, Level,
-            To_Alfa (Full_UName (Start .. Full_UName'Last)),
-            To_Alfa (Full_Name (Start .. Full_Name'Last)),
-            Alias
-          );
-          CD.IdTab (CD.Id_Count).Adr_or_Sz := i;  --  i = Aliased entity's index.
+          declare
+            Short_Id : constant Alfa := To_Alfa (Full_UName (Start .. Full_UName'Last));
+          begin
+            --  Check if there is already this identifier.
+            Id_Alias := Parser.Helpers.Locate_Identifier (CD, Short_Id, Level, False, False);
+            if Id_Alias = No_Id then
+              --  Here we enter, e.g. the "FALSE", "False" pair.
+              Enter (CD, Level,
+                Short_Id,
+                To_Alfa (Full_Name (Start .. Full_Name'Last)),
+                Alias
+              );
+              CD.IdTab (CD.Id_Count).Adr_or_Sz := i;  --  i = Aliased entity's index.
+            else
+              if CD.IdTab (Id_Alias).Entity = Alias
+                and then CD.IdTab (Id_Alias).Adr_or_Sz = i
+              then
+                --  We have already the "FROM Pkg IMPORT Short_Id" (Modula-2/Python style)
+                --  that we would like to enter as new definition.
+                if Level = 0 then
+                  null;  --  !! reactivate definition if needed
+                  --  HAL.PUT_LINE ("Duplicate USE L0 " & Full_Name (Start .. Full_Name'Last));
+                else
+                  null;  --  Just a duplicate "use" (we could emit a warning for that).
+                end if;
+              end if;
+            end if;
+          end;
         else
           exit;  --  We have left the public part of the specification.
         end if;

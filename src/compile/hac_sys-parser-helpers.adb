@@ -335,10 +335,11 @@ package body HAC_Sys.Parser.Helpers is
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-
   function Locate_Identifier (
-    CD              : in out Compiler_Data;
-    Id              : in     Alfa;
-    Level           : in     Defs.Nesting_level;
-    Fail_when_No_Id : in     Boolean := True
+    CD               : in out Compiler_Data;
+    Id               : in     Alfa;
+    Level            : in     Defs.Nesting_level;
+    Fail_when_No_Id  : in     Boolean := True;
+    Alias_Resolution : in     Boolean := True
   )
   return Natural
   is
@@ -365,7 +366,7 @@ package body HAC_Sys.Parser.Helpers is
     end if;
     --  Name aliasing resolution (brought by a use clause
     --  or a simple renames clause).
-    while CD.IdTab (J).Entity = Alias loop
+    while Alias_Resolution and CD.IdTab (J).Entity = Alias loop
       J := CD.IdTab (J).Adr_or_Sz;  --  E.g. True -> Standard.True
     end loop;
     --  Prefixed package resolution.
