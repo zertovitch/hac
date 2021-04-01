@@ -44,9 +44,10 @@ package body HAC_Sys.Librarian is
         LD.Map.Insert (UVFN, LD.Library.Last_Index);
       end;
     end if;
+    --  HAL.PUT_LINE ("Registering: " & Full_Name);
   end Register_Unit;
 
-  procedure Enter_Built_In_Def (
+  procedure Enter_Zero_Level_Def (
     CD             : in out Co_Defs.Compiler_Data;
     Full_Ident     : in     String;  --  "Main", "Standard.False", ...
     New_Entity     : in     Co_Defs.Entity_Kind;
@@ -59,13 +60,18 @@ package body HAC_Sys.Librarian is
     use Ada.Characters.Handling, Defs;
     Alfa_Ident       : constant Alfa := To_Alfa (Full_Ident);
     Alfa_Ident_Upper : constant Alfa := To_Alfa (To_Upper (Full_Ident));
+    last : Index := CD.Id_Count;
   begin
-    CD.Id_Count            := CD.Id_Count + 1;  --  Enter standard identifier
+    CD.Id_Count := CD.Id_Count + 1;
+    --  Find the last zero-level definition:
+    while last > 0 and then CD.IdTab (last).LEV > 0 loop
+      last := last - 1;
+    end loop;
     CD.IdTab (CD.Id_Count) :=
      (
       Name           => Alfa_Ident_Upper,
       Name_with_case => Alfa_Ident,
-      Link           => CD.Id_Count - 1,
+      Link           => last,
       Entity         => New_Entity,
       Read_only      => True,
       xTyp           => (TYP => Base_Type, Ref => 0),
@@ -77,7 +83,8 @@ package body HAC_Sys.Librarian is
       Discrete_Last  => Discrete_Last
     );
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
-  end Enter_Built_In_Def;
+    CD.CUD.level_0_def.Include (Alfa_Ident_Upper);
+  end Enter_Zero_Level_Def;
 
   procedure Apply_USE_Clause (
     CD       : in out Co_Defs.Compiler_Data;
@@ -108,14 +115,17 @@ package body HAC_Sys.Librarian is
           and then Full_UName (Full_UName'First .. Full_UName'First - 1 + Pkg_UName_Dot'Length) =
                    Pkg_UName_Dot
         then
-          --  We have spotted, e.g., "STANDARD.FALSE" with the matching prefix "STANDARD."
+          --  We have spotted an item with the correct prefix.
+          --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
+          --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
           Start := Full_UName'First + Pkg_UName_Dot'Length;
           Full_Name := To_String (CD.IdTab (i).Name_with_case);
           declare
-            Short_Id : constant Alfa := To_Alfa (Full_UName (Start .. Full_UName'Last));
+            Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
+            Short_Id     : constant Alfa := To_Alfa (Short_Id_str);
           begin
-            --  Check if there is already this identifier.
-            Id_Alias := Parser.Helpers.Locate_Identifier (CD, Short_Id, Level, False, False);
+            --  Check if there is already this identifier, even as a level 0 invisible definition
+            Id_Alias := Parser.Helpers.Locate_Identifier (CD, Short_Id, Level, False, False, False);
             if Id_Alias = No_Id then
               --  Here we enter, e.g. the "FALSE", "False" pair.
               Enter (CD, Level,
@@ -128,13 +138,18 @@ package body HAC_Sys.Librarian is
               if CD.IdTab (Id_Alias).Entity = Alias
                 and then CD.IdTab (Id_Alias).Adr_or_Sz = i
               then
-                --  We have already the "FROM Pkg IMPORT Short_Id" (Modula-2/Python style)
-                --  that we would like to enter as new definition.
-                if Level = 0 then
-                  null;  --  !! reactivate definition if needed
-                  --  HAL.PUT_LINE ("Duplicate USE L0 " & Full_Name (Start .. Full_Name'Last));
-                else
+                --  We have already the "FROM Pkg IMPORT Short_Id" (as it would be
+                --  in Modula-2/Python style) that we would like to enter as new definition.
+                if Level > 0 then
                   null;  --  Just a duplicate "use" (we could emit a warning for that).
+                else
+                  if CD.CUD.level_0_def.Contains (Short_Id) then
+                    null;  --  Just a duplicate "use" (we could emit a warning for that).
+                  else
+                    --  Activate definition at zero level (context clause).
+                    CD.CUD.level_0_def.Include (Short_Id);
+                    --  HAL.PUT_LINE ("Activate USEd item: " & Short_Id_str);
+                  end if;
                 end if;
               end if;
             end if;
@@ -158,7 +173,7 @@ package body HAC_Sys.Librarian is
     use Co_Defs, Defs;
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Built_In_Def (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
+      Enter_Zero_Level_Def (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
     Is_New : Boolean;
   begin
@@ -167,12 +182,12 @@ package body HAC_Sys.Librarian is
       raise Program_Error with "This case should be handled by Apply_WITH";
     end if;
     --
-    Enter_Built_In_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
+    Enter_Zero_Level_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
-    Enter_Built_In_Def (CD, "Standard", Paquetage, NOTYP, 0);
+    Enter_Zero_Level_Def (CD, "Standard", Paquetage, NOTYP, 0);
     --
-    Enter_Built_In_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
-    Enter_Built_In_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
+    Enter_Zero_Level_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
+    Enter_Zero_Level_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
     --
     Enter_Std_Typ (HAC_Float_Name,   Floats, 0, 0);
     Enter_Std_Typ ("Character",      Chars, 0, 255);
@@ -204,17 +219,17 @@ package body HAC_Sys.Librarian is
 
     procedure Enter_HAL_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Built_In_Def (CD, HAL_Name & '.' & Name, TypeMark, T, 1, First, Last);
+      Enter_Zero_Level_Def (CD, HAL_Name & '.' & Name, TypeMark, T, 1, First, Last);
     end Enter_HAL_Typ;
 
     procedure Enter_HAL_Funct (Name : String; T : Typen; Code : PCode.SF_Code) is
     begin
-      Enter_Built_In_Def (CD, HAL_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
+      Enter_Zero_Level_Def (CD, HAL_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
     end Enter_HAL_Funct;
 
     procedure Enter_HAL_Proc (Name : String; Code : PCode.SP_Code) is
     begin
-      Enter_Built_In_Def (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
+      Enter_Zero_Level_Def (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
     end Enter_HAL_Proc;
 
     Is_New : Boolean;
@@ -224,7 +239,7 @@ package body HAC_Sys.Librarian is
       raise Program_Error with "This case should be handled by Apply_WITH";
     end if;
     --
-    Enter_Built_In_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
+    Enter_Zero_Level_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
     --
     Enter_HAL_Typ ("File_Type", Text_Files, 0, 0);  --  2020.05.17
     Enter_HAL_Typ ("Semaphore", Ints, 0, 0);
@@ -391,13 +406,53 @@ package body HAC_Sys.Librarian is
     else
       Compiler.Compile_Unit (CD, LD, Upper_Name, fn, fn (fn'Last) = 's', kind);
     end if;
+    --
+    --  Add new unit name to the library catalogue
+    --
     Register_Unit (LD, Upper_Name, kind, is_new);
     if not is_new then
       raise Program_Error with
-        "Duplicate registration for " & Upper_Name &
+        "Duplicate registration for unit " & Upper_Name &
         ". This case should be handled by Apply_WITH";
     end if;
+    --
+    --  Activate unit declaration, must be visible to the WITH-ing unit.
+    --
+    CD.CUD.level_0_def.Include (To_Alfa (Upper_Name));
   end Apply_Custom_WITH;
+
+  procedure Activate_Unit (CD : in out Co_Defs.Compiler_Data; Upper_Name : in String) is
+    use Co_Defs, Defs;
+    unit_idx : Natural;
+    upper_name_alfa : constant Alfa := To_Alfa (Upper_Name);
+    unit_initial : constant Character := Upper_Name (Upper_Name'First);
+    unit_uname_dot : constant String := Upper_Name & '.';
+  begin
+    CD.CUD.level_0_def.Include (upper_name_alfa);
+    --  HAL.PUT_LINE ("WITH: Activating " & Upper_Name);
+    unit_idx := Parser.Helpers.Locate_Identifier (CD, upper_name_alfa, 0);
+    --  Only packages specifications need to have their items made visible.
+    if CD.IdTab (unit_idx).Entity /= Paquetage then
+      return;
+    end if;
+    for i in unit_idx + 1 .. CD.Id_Count loop
+      --  Quick exit if the first character doesn't match the unit's first letter:
+      exit when Initial (CD.IdTab (i).Name) /= unit_initial;
+      declare
+        full_upper_name : constant String := To_String (CD.IdTab (i).Name);
+      begin
+        if full_upper_name'Length > unit_uname_dot'Length
+          and then full_upper_name (full_upper_name'First .. full_upper_name'First - 1 + unit_uname_dot'Length) =
+                   unit_uname_dot
+        then
+          --  We have a Pkg.Item to activate
+          CD.CUD.level_0_def.Include (CD.IdTab (i).Name);
+        else
+          exit;
+        end if;
+      end;
+    end loop;
+  end Activate_Unit;
 
   procedure Apply_WITH (
     CD         : in out Co_Defs.Compiler_Data;
@@ -408,11 +463,10 @@ package body HAC_Sys.Librarian is
     use Defs, UErrors;
   begin
     if LD.Map.Contains (HAL.To_VString (Upper_Name)) then
-      null;  --  !!
-      --  !! Definition is already in CD (compilation of another unit),
-      --     we just need to reactivate it !!
-      --
-      --  This path includes the duplicate WITH case (not nice but correct).
+      --  Definition is already somewhere in CD (from the compilation
+      --  of another unit), we just need to reactivate it.
+      --  This situation includes the duplicate WITH case (not nice but correct).
+      Activate_Unit (CD, Upper_Name);
     elsif Upper_Name = "STANDARD" then
       Apply_WITH_Standard (CD, LD);
     elsif Upper_Name = HAL_Name then

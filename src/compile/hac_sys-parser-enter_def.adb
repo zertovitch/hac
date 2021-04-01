@@ -68,6 +68,9 @@ package body HAC_Sys.Parser.Enter_Def is
          );
       --  Update start of identifier chain:
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
+      if Level = 0 then
+        CD.CUD.level_0_def.Include (Id);
+      end if;
     end if;
   end Enter;
 

@@ -332,7 +332,8 @@ package HAC_Sys.Parser.Helpers is
     Id               : in     Alfa;
     Level            : in     Defs.Nesting_level;
     Fail_when_No_Id  : in     Boolean := True;
-    Alias_Resolution : in     Boolean := True
+    Alias_Resolution : in     Boolean := True;
+    Level_0_Match    : in     Boolean := True
   )
   return Natural;
 

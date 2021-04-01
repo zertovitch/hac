@@ -37,7 +37,7 @@ package HAC_Sys.Librarian is
     LD         : in out Li_Defs.Library_Data
   );
 
-  procedure Enter_Built_In_Def (
+  procedure Enter_Zero_Level_Def (
     CD             : in out Co_Defs.Compiler_Data;
     Full_Ident     : in     String;  --  "Main", "Standard.False", ...
     New_Entity     : in     Co_Defs.Entity_Kind;

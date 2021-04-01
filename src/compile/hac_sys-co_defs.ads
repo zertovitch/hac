@@ -15,8 +15,10 @@ with HAC_Sys.Defs,
 
 with HAL;
 
-with Ada.Finalization,
+with Ada.Containers.Hashed_Sets,
+     Ada.Finalization,
      Ada.Streams,
+     Ada.Strings.Fixed.Hash,
      Ada.Text_IO;
 
 package HAC_Sys.Co_Defs is
@@ -161,6 +163,8 @@ package HAC_Sys.Co_Defs is
 
   type Source_Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
 
+  package Id_Set is new Ada.Containers.Hashed_Sets (Alfa, Ada.Strings.Fixed.Hash, "=");
+
   type Current_Unit_Data is record
     --  Current source code information and scanner data
     compiler_stream  : Source_Stream_Access;
@@ -171,6 +175,8 @@ package HAC_Sys.Co_Defs is
     c                : Character;           --  Character read from source program
     CC               : Integer;             --  Character counter (=column in current line)
     LL               : Natural;             --  Length of current line
+    --  Level 0 definitions visible to currently compiled unit:
+    level_0_def      : Id_Set.Set;
   end record;
 
   ---------------------

@@ -165,7 +165,9 @@ package body HAC_Sys.Compiler is
 
     New_Line (CD.comp_dump);
 
-    if CD.Arrays_Count > 0 then
+    if CD.Arrays_Count = 0 then
+      Put_Line (CD.comp_dump, " Arrays: none");
+    else
       Put_Line (CD.comp_dump, " Arrays    Xtyp Etyp Eref  Low High ELSZ Size");
       for I in 1 .. CD.Arrays_Count loop
         declare
@@ -183,6 +185,13 @@ package body HAC_Sys.Compiler is
         end;
       end loop;
     end if;
+
+    New_Line (CD.comp_dump);
+    Put_Line (CD.comp_dump, " Level 0 visible identifiers (unordered list):");
+    for l0 of CD.CUD.level_0_def loop
+      Put_Line (CD.comp_dump, "    " & To_String (l0));
+    end loop;
+
   end Print_Tables;
 
   ---------------------------------------------------------------------------
@@ -249,7 +258,7 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: main procedure is " & To_String (CD.Main_Program_ID));
     end if;
 
-    Librarian.Enter_Built_In_Def (CD, To_String (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
+    Librarian.Enter_Zero_Level_Def (CD, To_String (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
 
     CD.Blocks_Table (0) :=  --  Block Table Entry for stuff before Main (probably useless)
@@ -386,6 +395,7 @@ package body HAC_Sys.Compiler is
     Skip_Shebang (src, shebang_offset);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
     Init (CD.CUD);  --  Reset scanner data (line counter etc.) and 0-level visible declarations
+    --  HAL.PUT_LINE("Compiling unit " & upper_name);
 
     --
     --  !!Parts of the following are the same as Compile_Main.
@@ -395,7 +405,8 @@ package body HAC_Sys.Compiler is
     --
     --  We define Standard, or activate if this is not the first unit compiled.
     --
-    --  !!  Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
+    Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
+    --  HAL.PUT_LINE("Unit " & upper_name & " sees and uses Standard");
 
     Scanner.InSymbol (CD);
     Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s.
@@ -425,10 +436,10 @@ package body HAC_Sys.Compiler is
     Unit_Id_with_case := CD.Id_with_case;
     case kind is
       when Procedure_Unit =>
-        Librarian.Enter_Built_In_Def (CD, To_String (Unit_Id_with_case), Prozedure, NOTYP, 0);
+        Librarian.Enter_Zero_Level_Def (CD, To_String (Unit_Id_with_case), Prozedure, NOTYP, 0);
       when Function_Unit =>
         --  !!  return type to be fixed  !!
-        Librarian.Enter_Built_In_Def (CD, To_String (Unit_Id_with_case), Funktion, NOTYP, 0);
+        Librarian.Enter_Zero_Level_Def (CD, To_String (Unit_Id_with_case), Funktion, NOTYP, 0);
       when Package_Unit =>
         null;  --  !! TBD
     end case;
@@ -464,6 +475,7 @@ package body HAC_Sys.Compiler is
       end case;
     end if;
     Close (src);
+    --  HAL.PUT_LINE("Compilation of unit " & upper_name & " done");
     CD.CUD := mem;
   end Compile_Unit;
 

@@ -1,8 +1,6 @@
-with HAC_Sys.UErrors; use HAC_Sys.UErrors;
---  with Sequential_IO;
---  with Text_IO;
+with HAC_Sys.UErrors;
 
-with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Strings.Fixed;
 
 package body HAC_Sys.PCode is
 
@@ -82,7 +80,7 @@ package body HAC_Sys.PCode is
   is
   begin
     if LC = OC'Last then
-      Fatal (Object_Code);
+      UErrors.Fatal (UErrors.Object_Code);
     end if;
     OC (LC).F := FCT;
     OC (LC).X := a;
@@ -131,7 +129,7 @@ package body HAC_Sys.PCode is
     if Top < PT'Last then
       Top := Top + 1;
     else
-      Fatal (PATCHING);
+      UErrors.Fatal (UErrors.PATCHING);
     end if;
     PT (Top) := Operand_2_Type (LC);
   end Feed_Patch_Table;
@@ -143,7 +141,7 @@ package body HAC_Sys.PCode is
     Text      : Ada.Text_IO.File_Type
   )
   is
-    use Ada.Text_IO;
+    use Ada.Strings.Fixed, Ada.Text_IO;
     package Opcode_IO   is new Enumeration_IO (Opcode);
     package Code_Pos_IO is new Integer_IO (Natural);
     package Operand1_IO is new Integer_IO (Operand_1_Type);
@@ -198,6 +196,8 @@ package body HAC_Sys.PCode is
           end case;
         when k_FOR_Release_Stack_After_End =>
           Put (Text, "; after END LOOP of a FOR loop");
+        when k_Mark_Stack =>
+          Put (Text, "; Mark stack for calling " & OC (i).Y'Image);
         when others =>
           null;
       end case;
