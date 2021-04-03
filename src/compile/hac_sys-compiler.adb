@@ -94,11 +94,12 @@ package body HAC_Sys.Compiler is
   begin
     New_Line (CD.comp_dump);
     Put_Line (CD.comp_dump,
-       " Identifiers" & (Alng - 6) * ' ' & "Link  Object                        " &
-       "TYP              Ref  Norm Lvl  Adr"
+       " Identifiers" & (Alng - 6) * ' ' &
+       "Link  Object                        " &
+       "TYP              Ref  Norm Lvl  Adr Blck"
     );
     Put_Line (CD.comp_dump,
-       (Alng + Entity_Kind'Width + Typen'Width + Boolean'Width + 29) * '-'
+       (Alng + Entity_Kind'Width + Typen'Width + Boolean'Width + 34) * '-'
     );
     --  We list all definitions, starting
     --  from Main (last Id of the "zero block" / standard).
@@ -116,6 +117,11 @@ package body HAC_Sys.Compiler is
         Show_Padded (Boolean'Image (r.Normal), Boolean'Width);
         Put (CD.comp_dump, Integer (r.LEV), 3);
         Put (CD.comp_dump, r.Adr_or_Sz, 5);
+        if r.Block_Ref > 0 then
+          Put (CD.comp_dump, r.Block_Ref, 5);
+        else
+          Put (CD.comp_dump, "     ");
+        end if;
         New_Line (CD.comp_dump);
       end;
     end loop;

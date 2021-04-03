@@ -86,7 +86,7 @@ package body HAC_Sys.Parser.Calls is
     CD          : in out Co_Defs.Compiler_Data;
     Level       :        Defs.Nesting_level;
     FSys        :        Defs.Symset;
-    I           :        Integer;
+    Ident_Index :        Integer;
     CallType    :        PCode.Operand_1_Type
   )
   is
@@ -101,9 +101,9 @@ package body HAC_Sys.Parser.Calls is
     Last_Param, CP : Integer;
     Found, Expected : Exact_Typ;
   begin
-    Emit_1 (CD, k_Mark_Stack, Operand_2_Type (I));
-    Last_Param := CD.Blocks_Table (CD.IdTab (I).Block_Ref).Last_Param_Id_Idx;
-    CP    := I;
+    Emit_1 (CD, k_Mark_Stack, Operand_2_Type (Ident_Index));
+    Last_Param := CD.Blocks_Table (CD.IdTab (Ident_Index).Block_Ref).Last_Param_Id_Idx;
+    CP := Ident_Index;
     if CD.Sy = LParent then  --  Actual parameter list
       loop
         InSymbol (CD);
@@ -138,15 +138,15 @@ package body HAC_Sys.Parser.Calls is
       Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
     end if;
     --
-    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (I).Block_Ref).PSize - 1));
+    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (Ident_Index).Block_Ref).PSize - 1));
     if CallType /= Normal_Procedure_Call then  --  Some for of entry call
       Emit_1 (CD, k_Exit_Call, Operand_2_Type (CallType));  --  Return from Entry Call
     end if;
     --
-    if CD.IdTab (I).LEV < Level then
+    if CD.IdTab (Ident_Index).LEV < Level then
       Emit_2 (CD,
         k_Update_Display_Vector,
-        Operand_1_Type (CD.IdTab (I).LEV),
+        Operand_1_Type (CD.IdTab (Ident_Index).LEV),
         Operand_2_Type (Level)
       );
     end if;

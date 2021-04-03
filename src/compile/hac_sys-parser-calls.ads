@@ -28,7 +28,7 @@ private package HAC_Sys.Parser.Calls is
     CD          : in out Co_Defs.Compiler_Data;
     Level       :        Defs.Nesting_level;
     FSys        :        Defs.Symset;
-    I           :        Integer;
+    Ident_Index :        Integer;
     CallType    :        PCode.Operand_1_Type
   );
 
