@@ -385,42 +385,6 @@ package body HAC_Sys.Librarian is
     end if;
   end Find_Unit_File_Name;
 
-  procedure Apply_Custom_WITH (
-    CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Li_Defs.Library_Data;
-    Upper_Name : in     String
-  )
-  is
-    fn : constant String := Find_Unit_File_Name (Upper_Name);
-    kind : Li_Defs.Unit_Kind;
-    is_new : Boolean;
-    use Defs, UErrors;
-  begin
-    if fn = "" then
-      Error (
-        CD,
-        err_library_error,
-        ": no file found matching the name " & GNAT_Naming (Upper_Name) & ".ad*",
-        True
-      );
-    else
-      Compiler.Compile_Unit (CD, LD, Upper_Name, fn, fn (fn'Last) = 's', kind);
-    end if;
-    --
-    --  Add new unit name to the library catalogue
-    --
-    Register_Unit (LD, Upper_Name, kind, is_new);
-    if not is_new then
-      raise Program_Error with
-        "Duplicate registration for unit " & Upper_Name &
-        ". This case should be handled by Apply_WITH";
-    end if;
-    --
-    --  Activate unit declaration, must be visible to the WITH-ing unit.
-    --
-    CD.CUD.level_0_def.Include (To_Alfa (Upper_Name));
-  end Apply_Custom_WITH;
-
   procedure Activate_Unit (CD : in out Co_Defs.Compiler_Data; Upper_Name : in String) is
     use Co_Defs, Defs;
     unit_idx : Natural;
@@ -454,6 +418,43 @@ package body HAC_Sys.Librarian is
     end loop;
   end Activate_Unit;
 
+  procedure Apply_Custom_WITH (
+    CD         : in out Co_Defs.Compiler_Data;
+    LD         : in out Li_Defs.Library_Data;
+    Upper_Name : in     String
+  )
+  is
+    fn : constant String := Find_Unit_File_Name (Upper_Name);
+    kind : Li_Defs.Unit_Kind;
+    is_new : Boolean;
+    use Defs, UErrors;
+  begin
+    if fn = "" then
+      Error (
+        CD,
+        err_library_error,
+        ": no file found matching the name " & GNAT_Naming (Upper_Name) & ".ad*",
+        True
+      );
+    else
+      Compiler.Compile_Unit (CD, LD, Upper_Name, fn, fn (fn'Last) = 's', kind);
+    end if;
+    --
+    --  Add new unit name to the library catalogue
+    --
+    Register_Unit (LD, Upper_Name, kind, is_new);
+    if not is_new then
+      raise Program_Error with
+        "Duplicate registration for unit " & Upper_Name &
+        ". This case should be handled by Apply_WITH";
+    end if;
+    --
+    --  Activate unit declaration for the first time.
+    --  It must be visible to the WITH-ing unit.
+    --
+    Activate_Unit (CD, Upper_Name);
+  end Apply_Custom_WITH;
+
   procedure Apply_WITH (
     CD         : in out Co_Defs.Compiler_Data;
     LD         : in out Li_Defs.Library_Data;
@@ -466,6 +467,7 @@ package body HAC_Sys.Librarian is
       --  Definition is already somewhere in CD (from the compilation
       --  of another unit), we just need to reactivate it.
       --  This situation includes the duplicate WITH case (not nice but correct).
+      --  Packages Standard and HAL are also reactivated on second WITH (implicitly for Standard).
       Activate_Unit (CD, Upper_Name);
     elsif Upper_Name = "STANDARD" then
       Apply_WITH_Standard (CD, LD);

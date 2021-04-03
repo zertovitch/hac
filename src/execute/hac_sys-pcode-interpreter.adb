@@ -412,16 +412,25 @@ package body HAC_Sys.PCode.Interpreter is
       use type HAC_Integer;
       --
       procedure Do_Atomic_Data_Push_Operation is
+        Base, Address_of_Variable : Index;
       begin
         Push;
+        if ND.IR.F in k_Push_Address .. k_Push_Indirect_Value then
+          Base                := Curr_TCB.DISPLAY (Nesting_level (IR.X));
+          Address_of_Variable := Base + Index (IR.Y);
+        end if;
         case Atomic_Data_Push_Opcode (ND.IR.F) is
-          when k_Push_Address =>           --  Push "v'Access" of variable v
-            ND.S (Curr_TCB.T).I := HAC_Integer (Curr_TCB.DISPLAY (Nesting_level (IR.X))) + IR.Y;
-          when k_Push_Value =>             --  Push variable v's value.
-            ND.S (Curr_TCB.T) := ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + Index (IR.Y));
-          when k_Push_Indirect_Value =>    --  Push "v.all" (v is an access).
-            ND.S (Curr_TCB.T) := ND.S (Index (ND.S (Curr_TCB.DISPLAY (Nesting_level (IR.X)) + Index (IR.Y)).I));
-          when k_Push_Discrete_Literal =>  --  Literal: discrete value (Integer, Character, Boolean, Enum)
+          when k_Push_Address =>
+            --  Push "v'Access" of variable v
+            ND.S (Curr_TCB.T).I := HAC_Integer (Address_of_Variable);
+          when k_Push_Value =>
+            --  Push variable v's value.
+            ND.S (Curr_TCB.T) := ND.S (Address_of_Variable);
+          when k_Push_Indirect_Value =>
+            --  Push "v.all" (v is an access).
+            ND.S (Curr_TCB.T) := ND.S (Index (ND.S (Address_of_Variable).I));
+          when k_Push_Discrete_Literal =>
+            --  Literal: discrete value (Integer, Character, Boolean, Enum)
             ND.S (Curr_TCB.T).I := IR.Y;
           when k_Push_Float_Literal =>
             ND.S (Curr_TCB.T) := (

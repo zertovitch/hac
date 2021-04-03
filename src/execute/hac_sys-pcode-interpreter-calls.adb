@@ -163,21 +163,27 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       High_Level : constant Nesting_level := Nesting_level (ND.IR.Y);  --  Caller.
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       New_Base : Defs.Index := Curr_TCB.B;
-      Stored_Display_Index : Defs.Index;
+      Address_Base_Lower_Level : Defs.Index;
       New_Base_Value : HAC_Integer;
+      L : Nesting_level := High_Level;
     begin
-      for L in reverse Low_Level + 1 .. High_Level loop
+      pragma Assert (Low_Level < High_Level);
+      loop
+        --  At this point: L is always >= 1 since L > Low_Level >= 0.
         Curr_TCB.DISPLAY (L) := New_Base;
-        exit when L = Low_Level + 1;
-        Stored_Display_Index := New_Base + 2;
-        if Stored_Display_Index not in ND.S'Range then
+        L := L - 1;
+        exit when L = Low_Level;
+        Address_Base_Lower_Level := New_Base + 2;  --  Written by Do_Call.
+        if Address_Base_Lower_Level not in ND.S'Range then
           raise Constraint_Error with
-            "Stored_Display_Index = " & Stored_Display_Index'Image &
+            "Address_Base_Lower_Level = " & Address_Base_Lower_Level'Image &
             " out of stack range";
         end if;
-        New_Base_Value := ND.S (Stored_Display_Index).I;
-        if New_Base_Value not in 1 .. HAC_Integer (MaxINT) then
-          raise Constraint_Error with "Invalid New_Base_Value = " & New_Base_Value'Image;
+        New_Base_Value := ND.S (Address_Base_Lower_Level).I;
+        if New_Base_Value not in 0 .. HAC_Integer (MaxINT) then
+          raise Constraint_Error with
+            "Invalid New_Base_Value =" & New_Base_Value'Image &
+            " found on stack @ index" & Address_Base_Lower_Level'Image;
         end if;
         New_Base := Defs.Index (New_Base_Value);
       end loop;

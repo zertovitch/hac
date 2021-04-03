@@ -354,16 +354,17 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     ND.S (1).I := 0;
     ND.S (2).I := 0;
     ND.S (3).I := -1;
-    ND.S (4).I := Defs.HAC_Integer (CD.Tasks_Definitions_Table (0));
+    ND.S (4).I := Defs.HAC_Integer (CD.Main_Proc_Id_Index);
     declare
       Main_TCB : Task_Control_Block renames ND.TCB (0);
     begin
-      Main_TCB.PC := CD.IdTab (CD.Tasks_Definitions_Table (0)).Adr_or_Sz; --  first pcode instruction
-      Main_TCB.T := CD.Blocks_Table (1).VSize - 1; -- was CD.Blocks_Table (2)
+      Main_TCB.PC := CD.IdTab (CD.Main_Proc_Id_Index).Adr_or_Sz; --  first pcode instruction
+      Main_TCB.T := CD.Blocks_Table (CD.IdTab (CD.Main_Proc_Id_Index).Block_Ref).VSize - 1;
       Main_TCB.B := 0;
       Main_TCB.TS := Ready;
       Main_TCB.InRendzv := NilTask;
-      Main_TCB.DISPLAY (1) := 0;
+      Main_TCB.DISPLAY (0) := 0;  --  Added for modularity (0-level calls), in 2021
+      Main_TCB.DISPLAY (1) := 0;  --  In Pascal-S.
       Main_TCB.STACKSIZE := Defs.StMax - (CD.Tasks_Definitions_Count * Defs.STKINCR);
       Main_TCB.SUSPEND := 0;
       Main_TCB.QUANTUM := TSlice;

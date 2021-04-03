@@ -198,6 +198,11 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "    " & To_String (l0));
     end loop;
 
+    Put_Line (CD.comp_dump, " Information about Main procedure:");
+    New_Line (CD.comp_dump);
+    Put_Line (CD.comp_dump, "   Name    : " & To_String (CD.Main_Program_ID_with_case));
+    Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).Block_Ref'Image);
+
   end Print_Tables;
 
   ---------------------------------------------------------------------------
@@ -266,6 +271,7 @@ package body HAC_Sys.Compiler is
 
     Librarian.Enter_Zero_Level_Def (CD, To_String (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
+    CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  Task Table Entry for main task.
 
     CD.Blocks_Table (0) :=  --  Block Table Entry for stuff before Main (probably useless)
      (Id                => To_Alfa ("--  Definitions before Main"),
@@ -276,9 +282,7 @@ package body HAC_Sys.Compiler is
       SrcFrom           => CD.CUD.line_count,
       SrcTo             => CD.CUD.line_count);
 
-    CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  Task Table Entry for main task.
-
-    --  Start Compiling
+    --  Start Compiling of Main
     Parser.Block (
       CD, Block_Begin_Symbol + Statement_Begin_Symbol,
       False, False, 1,
@@ -378,7 +382,7 @@ package body HAC_Sys.Compiler is
   end Skip_Shebang;
 
   --
-  --  !! Massive W.I.P. here !!
+  --  !! Massively "W.I.P." state here !!
   --
 
   procedure Compile_Unit (
@@ -404,11 +408,6 @@ package body HAC_Sys.Compiler is
     --  HAL.PUT_LINE("Compiling unit " & upper_name);
 
     --
-    --  !!Parts of the following are the same as Compile_Main.
-    --  !!TBD: make the code common.
-    --
-
-    --
     --  We define Standard, or activate if this is not the first unit compiled.
     --
     Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
@@ -422,7 +421,7 @@ package body HAC_Sys.Compiler is
         Error (
           CD,
           err_library_error,
-          "Packages not yet supported",
+          "Packages are not yet supported",
           True
         );
       when FUNCTION_Symbol =>

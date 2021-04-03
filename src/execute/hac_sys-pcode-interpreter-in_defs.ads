@@ -96,8 +96,9 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     Pcontrol       : PriCB;                 --  task priority parameter rec.
     QUANTUM        : Duration;              --  time slice
     LASTRUN        : Ada.Calendar.Time;     --  time last run end (fairness)
-    DISPLAY        : Co_Defs.Display_Type;  --  binding
-    STACKSIZE      : Defs.Index;            --  stack overflow if exceeded
+    DISPLAY        : Co_Defs.Display_Type;  --  Stack base index per nesting level,
+                                            --      used for addressing variables.
+    STACKSIZE      : Defs.Index;            --  Stack overflow is raised if exceeded.
     SUSPEND        : Integer;               --  id of object suspended on
     R1, R2, R3     : General_Register;
     R_Temp         : General_Register;
