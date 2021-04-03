@@ -30,74 +30,75 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     procedure Do_Call is
       use Ada.Calendar;
       F1 : HAC_Float;    --  Internal float registers
-      H1, H2, New_Stack_Top : Index;
+      Activation_Record_Base, Ident_Index_of_Called, New_Stack_Top : Index;
       Called_Level : Nesting_level;
-      H5 : Integer;
+      Task_Entered : Integer;
     begin
-      --  procedure and task entry CALL
-      --  Cramer
+      --  Procedure and task entry CALL  --  Cramer
       if IR.X = Defs.Timed_Entry_Call then
         --  Timed entry call
         F1 := ND.S (Curr_TCB.T).R;  --  Pop delay time
         Pop (ND);
       end if;
-      H1 := Curr_TCB.T - Integer (IR.Y);     --  base of activation record
-      H2 := Index (ND.S (H1 + 4).I);         --  CD.IdTab index of called procedure/entry
-      Called_Level := CD.IdTab (H2).LEV;
-      Curr_TCB.DISPLAY (Called_Level + 1) := H1;
-      New_Stack_Top   := Index (ND.S (H1 + 3).I) + H1;
-      ND.S (H1 + 1).I := HAC_Integer (Curr_TCB.PC);                      --  return address
-      ND.S (H1 + 2).I := HAC_Integer (Curr_TCB.DISPLAY (Called_Level));  --  static link
-      ND.S (H1 + 3).I := HAC_Integer (Curr_TCB.B);                       --  dynamic link
-      Curr_TCB.B := H1;
+      Activation_Record_Base := Curr_TCB.T - Integer (IR.Y);
+      Ident_Index_of_Called := Index (ND.S (Activation_Record_Base + 4).I);
+      Called_Level := CD.IdTab (Ident_Index_of_Called).LEV;
+      Curr_TCB.DISPLAY (Called_Level + 1) := Activation_Record_Base;
+      New_Stack_Top := Index (ND.S (Activation_Record_Base + 3).I) + Activation_Record_Base;
+      --
+      ND.S (Activation_Record_Base + 1).I := HAC_Integer (Curr_TCB.PC);                      --  return address
+      ND.S (Activation_Record_Base + 2).I := HAC_Integer (Curr_TCB.DISPLAY (Called_Level));  --  static link
+      ND.S (Activation_Record_Base + 3).I := HAC_Integer (Curr_TCB.B);                       --  dynamic link
+      --
+      Curr_TCB.B := Activation_Record_Base;
       Curr_TCB.T := New_Stack_Top;
       case IR.X is  --  Call type
         when Defs.Normal_Procedure_Call =>
-          Curr_TCB.PC := CD.IdTab (H2).Adr_or_Sz;
+          Curr_TCB.PC := CD.IdTab (Ident_Index_of_Called).Adr_or_Sz;  --  Jump to subprogram start.
 
         when Defs.Normal_Entry_Call =>
-          Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
-          Curr_TCB.TS := WaitRendzv;
-          H5          := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
-          if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
-             (ND.TCB (H5).TS = TimedWait)
+          Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
+          Curr_TCB.TS  := WaitRendzv;
+          Task_Entered := CD.IdTab (Ident_Index_of_Called).Adr_or_Sz;  --  Task being entered
+          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
+             (ND.TCB (Task_Entered).TS = TimedWait)
           then
             --  wake accepting task if necessary
-            ND.TCB (H5).TS      := Ready;
-            ND.TCB (H5).SUSPEND := 0;
+            ND.TCB (Task_Entered).TS      := Ready;
+            ND.TCB (Task_Entered).SUSPEND := 0;
           end if;
           ND.SWITCH := True;                 --  give up control
 
         when Defs.Timed_Entry_Call =>
-          Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
-          H5 := CD.IdTab (H2).Adr_or_Sz;  --  Task being entered
+          Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
+          Task_Entered := CD.IdTab (Ident_Index_of_Called).Adr_or_Sz;  --  Task being entered
           --
-          if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
-             (ND.TCB (H5).TS = TimedWait)
+          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
+             (ND.TCB (Task_Entered).TS = TimedWait)
           then
             --  wake accepting task if necessary
             Curr_TCB.TS := WaitRendzv;     --  suspend self
-            ND.TCB (H5).TS := Ready;       --  wake accepting task
-            ND.TCB (H5).SUSPEND := 0;
+            ND.TCB (Task_Entered).TS := Ready;       --  wake accepting task
+            ND.TCB (Task_Entered).SUSPEND := 0;
           else
             Curr_TCB.TS := TimedRendz;          --  Timed Wait For Rendezvous
             Curr_TCB.R1.I := 1;                 --  Init R1 to specify NO timeout
-            Curr_TCB.R2.I := HAC_Integer (H2);  --  Save address of queue for purge
+            Curr_TCB.R2.I := HAC_Integer (Ident_Index_of_Called);  --  Save address of queue for purge
             ND.SYSCLOCK := Clock;               --  update System Clock
             Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (F1);
           end if;
           ND.SWITCH := True;       --  give up control
 
         when Defs.Conditional_Entry_Call =>
-          H5 := CD.IdTab (H2).Adr_or_Sz;              --  Task being entered
-          if ((ND.TCB (H5).TS = WaitRendzv) and (ND.TCB (H5).SUSPEND = H2)) or
-             (ND.TCB (H5).TS = TimedWait)
+          Task_Entered := CD.IdTab (Ident_Index_of_Called).Adr_or_Sz;              --  Task being entered
+          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
+             (ND.TCB (Task_Entered).TS = TimedWait)
           then
-            Tasking.Queue (CD, ND, H2, ND.CurTask);  --  put self on entry queue
+            Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
             Curr_TCB.R1.I := 1;        --  Indicate entry successful
             Curr_TCB.TS := WaitRendzv;
-            ND.TCB (H5).TS      := Ready;  --  wake accepting task if required
-            ND.TCB (H5).SUSPEND := 0;
+            ND.TCB (Task_Entered).TS      := Ready;  --  wake accepting task if required
+            ND.TCB (Task_Entered).SUSPEND := 0;
             ND.SWITCH              := True;   --  give up control
           else
             --  can't wait, forget about entry call
@@ -112,7 +113,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     procedure Do_Exit_Call is
     --  EXIT entry call or procedure call  --  Cramer
     begin
-      --  Set back stack top:
+      --  Set back stack top as before call:
       Curr_TCB.T := Curr_TCB.B - 1;
       if IR.Y = Defs.Normal_Procedure_Call then
         --  Set back program counter to position of Call:
@@ -123,6 +124,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         Curr_TCB.TS := Completed;
         ND.SWITCH   := True;
       else
+        --  Set back base of caller:
         Curr_TCB.B := Integer (ND.S (Curr_TCB.B + 3).I);
         if IR.Y = Defs.Timed_Entry_Call or IR.Y = Defs.Conditional_Entry_Call then
           if IR.Y = Defs.Timed_Entry_Call and Curr_TCB.R1.I = 0 then
@@ -138,9 +140,13 @@ package body HAC_Sys.PCode.Interpreter.Calls is
 
     procedure Do_Exit_Function is
     begin
+      --  Set back stack top as before call, plus 1 item (the return value):
       Curr_TCB.T  := Curr_TCB.B;
+      --  Set back program counter to position of Call:
       Curr_TCB.PC := Integer (ND.S (Curr_TCB.B + 1).I);
+      --  Set back base of caller:
       Curr_TCB.B  := Integer (ND.S (Curr_TCB.B + 3).I);
+      --
       if IR.Y = Defs.End_Function_without_Return and then ND.PS /= Exception_Raised then
         raise VM_Function_End_without_Return;
       end if;
