@@ -248,26 +248,6 @@ package body HAC_Sys.PCode.Interpreter is
       Pop;
     end Do_Code_for_Automatic_Initialization;
 
-    procedure Do_Update_Display_Vector is
-      use Defs;
-      --  Emitted at the end of Subprogram_or_Entry_Call, when the
-      --  called subprogram's nesting level is *lower* than the
-      --  caller's block level. This includes the case where P and Q are
-      --  defined at the same level L: when Q calls P, Q's block level
-      --  is L + 1, so it's calling P of level L and the update is
-      --  needed after the call.
-      Low_Level  : constant Nesting_level := Nesting_level (ND.IR.X);  --  Called.
-      High_Level : constant Nesting_level := Nesting_level (ND.IR.Y);  --  Caller.
-      Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-      H3 : Defs.Index;
-    begin
-      H3 := Curr_TCB.B;
-      for L in reverse Low_Level + 1 .. High_Level loop
-        Curr_TCB.DISPLAY (L) := H3;
-        H3 := Defs.Index (ND.S (H3 + 2).I);
-      end loop;
-    end Do_Update_Display_Vector;
-
     procedure Do_File_IO is
       Code : constant SP_Code := SP_Code'Val (ND.IR.X);
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
@@ -479,7 +459,6 @@ package body HAC_Sys.PCode.Interpreter is
           ND.S (Curr_TCB.T) := Curr_TCB.R_Temp;
         --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
-        when k_Update_Display_Vector   => Do_Update_Display_Vector;
         when k_File_I_O                => Do_File_IO;
         when k_Standard_Functions      => Do_Standard_Function;
         --

@@ -29,7 +29,6 @@ package HAC_Sys.PCode is
     k_Push_Float_Literal,
     --
     k_Variable_Initialization,
-    k_Update_Display_Vector,
     k_Store,
     k_Swap,         --  Swap the two items at the top of the stack.
     k_Pop_to_Temp,  --  Pop top item to a temp register.
@@ -62,6 +61,7 @@ package HAC_Sys.PCode is
     k_Call,                             --  Procedure and task entry Call
     k_Exit_Call,
     k_Exit_Function,
+    k_Update_Display_Vector,
     --
     k_Integer_to_Float,                 --  The reverse conversion is done by a k_Standard_Functions
     k_Dereference,
@@ -127,7 +127,7 @@ package HAC_Sys.PCode is
   subtype Binary_Operator_Opcode is Opcode range k_EQL_Integer .. k_XOR_Boolean;
   --
   subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Literal;
-  subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Exit_Function;
+  subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Update_Display_Vector;
   subtype CASE_Data_Opcode        is Opcode range k_CASE_Choice_Data .. k_CASE_No_Choice_Found;
   subtype Composite_Data_Opcode   is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
   subtype Jump_Opcode             is Opcode range k_Jump .. k_Conditional_Jump;

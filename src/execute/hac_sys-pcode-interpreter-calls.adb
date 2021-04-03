@@ -152,12 +152,44 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       end if;
     end Do_Exit_Function;
 
+    procedure Do_Update_Display_Vector is
+      --  Emitted at the end of Subprogram_or_Entry_Call, when the
+      --  called subprogram's nesting level is *lower* than the
+      --  caller's block level. This includes the case where P and Q are
+      --  defined at the same level L: when Q calls P, Q's block level
+      --  is L + 1, so it's calling P of level L and the update is
+      --  needed after the call.
+      Low_Level  : constant Nesting_level := Nesting_level (ND.IR.X);  --  Called.
+      High_Level : constant Nesting_level := Nesting_level (ND.IR.Y);  --  Caller.
+      Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
+      New_Base : Defs.Index := Curr_TCB.B;
+      Stored_Display_Index : Defs.Index;
+      New_Base_Value : HAC_Integer;
+    begin
+      for L in reverse Low_Level + 1 .. High_Level loop
+        Curr_TCB.DISPLAY (L) := New_Base;
+        exit when L = Low_Level + 1;
+        Stored_Display_Index := New_Base + 2;
+        if Stored_Display_Index not in ND.S'Range then
+          raise Constraint_Error with
+            "Stored_Display_Index = " & Stored_Display_Index'Image &
+            " out of stack range";
+        end if;
+        New_Base_Value := ND.S (Stored_Display_Index).I;
+        if New_Base_Value not in 1 .. HAC_Integer (MaxINT) then
+          raise Constraint_Error with "Invalid New_Base_Value = " & New_Base_Value'Image;
+        end if;
+        New_Base := Defs.Index (New_Base_Value);
+      end loop;
+    end Do_Update_Display_Vector;
+
   begin
     case Calling_Opcode (ND.IR.F) is
-      when k_Mark_Stack    => Do_Mark_Stack;
-      when k_Call          => Do_Call;
-      when k_Exit_Call     => Do_Exit_Call;
-      when k_Exit_Function => Do_Exit_Function;
+      when k_Mark_Stack            => Do_Mark_Stack;
+      when k_Call                  => Do_Call;
+      when k_Exit_Call             => Do_Exit_Call;
+      when k_Exit_Function         => Do_Exit_Function;
+      when k_Update_Display_Vector => Do_Update_Display_Vector;
     end case;
   end Do_Calling_Operation;
 
