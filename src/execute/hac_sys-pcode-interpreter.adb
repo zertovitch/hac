@@ -251,7 +251,11 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Do_Update_Display_Vector is
       use Defs;
       --  Emitted at the end of Subprogram_or_Entry_Call, when the
-      --  called subprogram's nesting level is *lower* than the caller's.
+      --  called subprogram's nesting level is *lower* than the
+      --  caller's block level. This includes the case where P and Q are
+      --  defined at the same level L: when Q calls P, Q's block level
+      --  is L + 1, so it's calling P of level L and the update is
+      --  needed after the call.
       Low_Level  : constant Nesting_level := Nesting_level (ND.IR.X);  --  Called.
       High_Level : constant Nesting_level := Nesting_level (ND.IR.Y);  --  Caller.
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);

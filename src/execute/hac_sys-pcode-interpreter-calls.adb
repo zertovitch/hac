@@ -110,14 +110,19 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     end Do_Call;
 
     procedure Do_Exit_Call is
+    --  EXIT entry call or procedure call  --  Cramer
     begin
-      --  EXIT entry call or procedure call
-      --  Cramer
+      --  Set back stack top:
       Curr_TCB.T := Curr_TCB.B - 1;
       if IR.Y = Defs.Normal_Procedure_Call then
-        Curr_TCB.PC := Integer (ND.S (Curr_TCB.B + 1).I);  --  Standard proc call return
+        --  Set back program counter to position of Call:
+        Curr_TCB.PC := Integer (ND.S (Curr_TCB.B + 1).I);  --  Normal proc call return
       end if;
-      if Curr_TCB.PC /= 0 then
+      if Curr_TCB.PC = 0 then
+        ND.TActive  := ND.TActive - 1;
+        Curr_TCB.TS := Completed;
+        ND.SWITCH   := True;
+      else
         Curr_TCB.B := Integer (ND.S (Curr_TCB.B + 3).I);
         if IR.Y = Defs.Timed_Entry_Call or IR.Y = Defs.Conditional_Entry_Call then
           if IR.Y = Defs.Timed_Entry_Call and Curr_TCB.R1.I = 0 then
@@ -128,10 +133,6 @@ package body HAC_Sys.PCode.Interpreter.Calls is
           --  returns (32).  Push entry call
           ND.S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
         end if;
-      else
-        ND.TActive  := ND.TActive - 1;
-        Curr_TCB.TS := Completed;
-        ND.SWITCH   := True;
       end if;
     end Do_Exit_Call;
 

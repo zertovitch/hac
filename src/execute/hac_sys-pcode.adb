@@ -168,12 +168,19 @@ package body HAC_Sys.PCode is
     for i in OC'Range loop
       Code_Pos_IO.Put (Text, i);
       Put (Text, ": " & Padded_Opcode (OC (i).F));
-      Operand1_IO.Put (Text, OC (i).X, 5);
+      case OC (i).F is  --  Omit showing X for some 1-operand instructions
+        when k_Exit_Call | k_Exit_Function |
+          k_Mark_Stack | k_Push_Discrete_Literal
+        =>
+          Put (Text, "     ");
+        when others =>
+          Operand1_IO.Put (Text, OC (i).X, 5);
+      end case;
       Operand2_IO.Put (Text, OC (i).Y);
       Put (Text, "; ");
       Code_Pos_IO.Put (Text, OC (i).D.Line_Number);
       Put (Text, "  " & HAL.VStr_Pkg.To_String (OC (i).D.Full_Block_Id));
-      case OC (i).F is  --  Extra information
+      case OC (i).F is  --  Show extra information
         when k_Push_Float_Literal =>
           Put (Text, "; " & HAL.HAC_Image (Flt_Const (Integer (OC (i).Y))));
         when k_Variable_Initialization =>
@@ -197,7 +204,12 @@ package body HAC_Sys.PCode is
         when k_FOR_Release_Stack_After_End =>
           Put (Text, "; after END LOOP of a FOR loop");
         when k_Mark_Stack =>
-          Put (Text, "; Mark stack for calling " & OC (i).Y'Image);
+          Put (Text, "; Mark stack for calling" & OC (i).Y'Image);
+        when k_Call =>
+          Put (Text, "; Call with PSize =" & Operand_2_Type'Image (OC (i).Y + 1));
+        when k_Update_Display_Vector =>
+          Put (Text, "; Update: low level (called) =" & OC (i).X'Image &
+                     ", high level (caller) =" & OC (i).Y'Image);
         when others =>
           null;
       end case;
