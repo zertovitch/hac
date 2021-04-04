@@ -27,6 +27,22 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       end if;
     end Do_Mark_Stack;
 
+    trace_display : constant Boolean := False;
+
+    procedure Show_Display (D : Co_Defs.Display_Type; L_Max : Nesting_level; T : String) is
+      use HAL;
+    begin
+      if trace_display then
+        New_Line;
+        Put_Line ("Level   Stack base of variables  --  " & T);
+        for i in 0 .. L_Max loop
+          Put (Integer (i), 5);
+          Put (D (i));
+          New_Line;
+        end loop;
+      end if;
+    end Show_Display;
+
     procedure Do_Call is
       use Ada.Calendar;
       F1 : HAC_Float;    --  Internal float registers
@@ -43,7 +59,9 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       Activation_Record_Base := Curr_TCB.T - Integer (IR.Y);
       Ident_Index_of_Called := Index (ND.S (Activation_Record_Base + 4).I);
       Called_Level := CD.IdTab (Ident_Index_of_Called).LEV;
+      Show_Display (Curr_TCB.DISPLAY, Called_Level, "before call");
       Curr_TCB.DISPLAY (Called_Level + 1) := Activation_Record_Base;
+      Show_Display (Curr_TCB.DISPLAY, Called_Level + 1, "on call");
       New_Stack_Top := Index (ND.S (Activation_Record_Base + 3).I) + Activation_Record_Base;
       --
       ND.S (Activation_Record_Base + 1).I := HAC_Integer (Curr_TCB.PC);                      --  return address
@@ -163,6 +181,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       High_Level : constant Nesting_level := Nesting_level (ND.IR.Y);  --  Caller.
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       New_Base : Defs.Index := Curr_TCB.B;
+      --  ^ initial value: stack base of caller (dynamic link) after call exit.
       Address_Base_Lower_Level : Defs.Index;
       New_Base_Value : HAC_Integer;
       L : Nesting_level := High_Level;
@@ -187,6 +206,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         end if;
         New_Base := Defs.Index (New_Base_Value);
       end loop;
+      Show_Display (Curr_TCB.DISPLAY, High_Level, "after Update_Display_Vector");
     end Do_Update_Display_Vector;
 
   begin
