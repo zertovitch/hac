@@ -138,7 +138,10 @@ package body HAC_Sys.Librarian is
     if CD.IdTab (Pkg_Idx).Entity /= Paquetage then
       Error (CD, err_syntax_error, "Package name expected", True);
     end if;
-    --  The specification begins immediately after the package name.
+    --  The package specification's definitions begins immediately after the
+    --  package's identifier.
+    --  E.g. HAL: PAQUETAGE; HAL.File_Type: TYPEMARK; ...
+    --
     for i in Pkg_Idx + 1 .. CD.Id_Count loop
       --  Quick exit if the first character doesn't match the package's first letter:
       exit when Initial (CD.IdTab (i).Name) /= Pkg_Initial;
@@ -161,6 +164,8 @@ package body HAC_Sys.Librarian is
             Short_Id     : constant Alfa := To_Alfa (Short_Id_str);
           begin
             --  Check if there is already this identifier, even as a level 0 invisible definition
+            --  If not, we do a "FROM Pkg IMPORT Short_Id" (as it would be in Modula-2/Python
+            --  style).
             Id_Alias := Parser.Helpers.Locate_Identifier (
               CD               => CD,
               Id               => Short_Id,
@@ -169,7 +174,7 @@ package body HAC_Sys.Librarian is
               Alias_Resolution => False,
               Level_0_Match    => False  --  We search any matching name, including at level 0.
             );
-            if Id_Alias = No_Id then
+            if Id_Alias = No_Id or else CD.IdTab (Id_Alias).LEV < Level then
               --  Here we enter, e.g. the "FALSE", "False" pair.
               Enter (CD, Level,
                 Short_Id,
@@ -178,11 +183,11 @@ package body HAC_Sys.Librarian is
               );
               CD.IdTab (CD.Id_Count).Adr_or_Sz := i;  --  i = Aliased entity's index.
             else
+              --  Here we have found an identical and
+              --  visible identifier at the same level.
               if CD.IdTab (Id_Alias).Entity = Alias
                 and then CD.IdTab (Id_Alias).Adr_or_Sz = i
               then
-                --  We have already the "FROM Pkg IMPORT Short_Id" (as it would be
-                --  in Modula-2/Python style) that we would like to enter as new definition.
                 if Level > 0 then
                   null;  --  Just a duplicate "use" (we could emit a warning for that).
                 else
@@ -198,7 +203,7 @@ package body HAC_Sys.Librarian is
             end if;
           end;
         else
-          exit;  --  We have left the public part of the specification.
+          exit;  --  We have left the public part of the package specification.
         end if;
       end;
     end loop;
