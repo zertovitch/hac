@@ -8,7 +8,8 @@ with HAC_Sys.Librarian,
 
 with HAL;
 
-with Ada.Integer_Text_IO,
+with Ada.Exceptions,
+     Ada.Integer_Text_IO,
      Ada.Strings.Fixed,
      Ada.Text_IO.Text_Streams;
 
@@ -216,7 +217,7 @@ package body HAC_Sys.Compiler is
     var_map_file_name  :        String  := ""   --  Output of variables (map)
   )
   is
-    use Ada.Text_IO, Parser.Helpers, PCode, UErrors;
+    use Ada.Exceptions, Ada.Text_IO, Parser.Helpers, PCode, UErrors;
 
     asm_dump : File_Type;
     map_file : File_Type;
@@ -360,6 +361,11 @@ package body HAC_Sys.Compiler is
         Close (CD.comp_dump);
       end if;
       Dump_Asm;
+    when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
+      Error (CD,
+        err_library_error,
+        "Circular unit dependency (""->"" means ""depends on""): " & Exception_Message (E)
+      );
   end Compile_Main;
 
   procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural) is

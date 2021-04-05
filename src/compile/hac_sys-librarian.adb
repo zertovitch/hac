@@ -17,35 +17,71 @@ with HAC_Sys.Compiler,
 
 with HAL;
 
-with Ada.Characters.Handling;
+with Ada.Characters.Handling,
+     Ada.Exceptions;
 
 package body HAC_Sys.Librarian is
+
+  ---------------------------------------------
+  --  Introduce a new unit into the library  --
+  ---------------------------------------------
 
   procedure Register_Unit (
     LD        : in out Li_Defs.Library_Data;
     Full_Name : in     String;  --  Full unit name, like "Ada.Strings.Fixed"
     Kind      : in     Li_Defs.Unit_Kind;
-    Is_New    :    out Boolean
+    Status    : in     Li_Defs.Compilation_Status := Li_Defs.Done
   )
   is
     use Li_Defs, Li_Defs.Library_Name_Mapping;
     VFN  : constant HAL.VString := HAL.To_VString (Full_Name);
     UVFN : constant HAL.VString := HAL.To_Upper (VFN);
+    is_new : Boolean;
   begin
-    Is_New := LD.Map.Find (UVFN) = No_Element;
-    if Is_New then
+    is_new := LD.Map.Find (UVFN) = No_Element;
+    if is_new then
       declare
         New_Unit : Library_Unit;
       begin
         New_Unit.Kind      := Kind;
         New_Unit.Full_Name := VFN;
-        New_Unit.Status    := Done;
+        New_Unit.Status    := Status;
         LD.Library.Append (New_Unit);
         LD.Map.Insert (UVFN, LD.Library.Last_Index);
       end;
+    else
+      raise Program_Error with
+        "Duplicate registration for unit " & Full_Name &
+        ". This case should be handled by Apply_WITH";
     end if;
     --  HAL.PUT_LINE ("Registering: " & Full_Name);
   end Register_Unit;
+
+  procedure Change_Unit_Details (
+    LD         : in out Li_Defs.Library_Data;
+    Full_Name  : in     String;  --  Full unit name, like "Ada.Strings.Fixed"
+    New_Kind   : in     Li_Defs.Unit_Kind;
+    New_Status : in     Li_Defs.Compilation_Status
+  )
+  is
+    use Li_Defs, Li_Defs.Library_Name_Mapping;
+    VFN  : constant HAL.VString := HAL.To_VString (Full_Name);
+    UVFN : constant HAL.VString := HAL.To_Upper (VFN);
+    c : Cursor;
+    book_nr : Positive;
+    changed_book : Library_Unit;
+  begin
+    c := LD.Map.Find (UVFN);
+    if c = No_Element then
+      raise Program_Error with "Change_Unit_Status called on non-registered unit";
+    else
+      book_nr := Element (c);
+      changed_book := LD.Library.Element (book_nr);
+      changed_book.Status := New_Status;
+      changed_book.Kind   := New_Kind;
+      LD.Library.Replace_Element (book_nr, changed_book);
+    end if;
+  end Change_Unit_Details;
 
   procedure Enter_Zero_Level_Def (
     CD             : in out Co_Defs.Compiler_Data;
@@ -125,7 +161,14 @@ package body HAC_Sys.Librarian is
             Short_Id     : constant Alfa := To_Alfa (Short_Id_str);
           begin
             --  Check if there is already this identifier, even as a level 0 invisible definition
-            Id_Alias := Parser.Helpers.Locate_Identifier (CD, Short_Id, Level, False, False, False);
+            Id_Alias := Parser.Helpers.Locate_Identifier (
+              CD               => CD,
+              Id               => Short_Id,
+              Level            => Level,
+              Fail_when_No_Id  => False,
+              Alias_Resolution => False,
+              Level_0_Match    => False  --  We search any matching name, including at level 0.
+            );
             if Id_Alias = No_Id then
               --  Here we enter, e.g. the "FALSE", "False" pair.
               Enter (CD, Level,
@@ -146,7 +189,7 @@ package body HAC_Sys.Librarian is
                   if CD.CUD.level_0_def.Contains (Short_Id) then
                     null;  --  Just a duplicate "use" (we could emit a warning for that).
                   else
-                    --  Activate definition at zero level (context clause).
+                    --  Re-activate definition at zero level (context clause).
                     CD.CUD.level_0_def.Include (Short_Id);
                     --  HAL.PUT_LINE ("Activate USEd item: " & Short_Id_str);
                   end if;
@@ -165,7 +208,7 @@ package body HAC_Sys.Librarian is
   --  Enter "manually" the Standard package  --
   ---------------------------------------------
 
-  procedure Apply_WITH_Standard (
+  procedure Define_and_Register_Standard (
     CD         : in out Co_Defs.Compiler_Data;
     LD         : in out Li_Defs.Library_Data
   )
@@ -175,12 +218,8 @@ package body HAC_Sys.Librarian is
     begin
       Enter_Zero_Level_Def (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
-    Is_New : Boolean;
   begin
-    Register_Unit (LD, "Standard", Li_Defs.Package_Unit, Is_New);
-    if not Is_New then
-      raise Program_Error with "This case should be handled by Apply_WITH";
-    end if;
+    Register_Unit (LD, "Standard", Li_Defs.Package_Unit);
     --
     Enter_Zero_Level_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
@@ -204,13 +243,13 @@ package body HAC_Sys.Librarian is
     Enter_Std_Typ ("Natural",  Ints, 0, HAC_Integer'Last);
     Enter_Std_Typ ("Positive", Ints, 1, HAC_Integer'Last);
     Enter_Std_Typ ("Duration", Durations, 0, 0);
-  end Apply_WITH_Standard;
+  end Define_and_Register_Standard;
 
   ----------------------------------------
   --  Enter "manually" the HAL package  --
   ----------------------------------------
 
-  procedure Apply_WITH_HAL (
+  procedure Define_and_Register_HAL (
     CD         : in out Co_Defs.Compiler_Data;
     LD         : in out Li_Defs.Library_Data
   )
@@ -232,12 +271,8 @@ package body HAC_Sys.Librarian is
       Enter_Zero_Level_Def (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
     end Enter_HAL_Proc;
 
-    Is_New : Boolean;
   begin
-    Register_Unit (LD, Defs.HAL_Name, Li_Defs.Package_Unit, Is_New);
-    if not Is_New then
-      raise Program_Error with "This case should be handled by Apply_WITH";
-    end if;
+    Register_Unit (LD, Defs.HAL_Name, Li_Defs.Package_Unit);
     --
     Enter_Zero_Level_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
     --
@@ -347,7 +382,7 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Proc ("Quantum",        SP_Quantum);
     Enter_HAL_Proc ("Priority",       SP_Priority);
     Enter_HAL_Proc ("InheritP",       SP_InheritP);
-  end Apply_WITH_HAL;
+  end Define_and_Register_HAL;
 
   function GNAT_Naming (Unit_Name : String) return String is
     result : String := Ada.Characters.Handling.To_Lower (Unit_Name);
@@ -425,10 +460,15 @@ package body HAC_Sys.Librarian is
   )
   is
     fn : constant String := Find_Unit_File_Name (Upper_Name);
-    kind : Li_Defs.Unit_Kind;
-    is_new : Boolean;
-    use Defs, UErrors;
+    use Defs, Li_Defs, UErrors;
+    kind : Li_Defs.Unit_Kind := Package_Unit;
+    --  ^ Temporary value, file may contain another kind of unit.
   begin
+    --
+    --  Add new unit name to the library catalogue
+    --
+    Register_Unit (LD, Upper_Name, kind, Status => In_Progress);
+    --
     if fn = "" then
       Error (
         CD,
@@ -440,16 +480,9 @@ package body HAC_Sys.Librarian is
       Compiler.Compile_Unit (CD, LD, Upper_Name, fn, fn (fn'Last) = 's', kind);
     end if;
     --
-    --  Add new unit name to the library catalogue
+    Change_Unit_Details (LD, Upper_Name, kind, New_Status => Done);
     --
-    Register_Unit (LD, Upper_Name, kind, is_new);
-    if not is_new then
-      raise Program_Error with
-        "Duplicate registration for unit " & Upper_Name &
-        ". This case should be handled by Apply_WITH";
-    end if;
-    --
-    --  Activate unit declaration for the first time.
+    --  Activate unit 0-level declaration for the first time.
     --  It must be visible to the WITH-ing unit.
     --
     Activate_Unit (CD, Upper_Name);
@@ -461,18 +494,22 @@ package body HAC_Sys.Librarian is
     Upper_Name : in     String
   )
   is
-    use Defs, UErrors;
+    use Ada.Exceptions, Defs, HAL, Li_Defs, UErrors;
+    UVN : constant VString := To_VString (Upper_Name);
   begin
-    if LD.Map.Contains (HAL.To_VString (Upper_Name)) then
+    if LD.Map.Contains (UVN) then
       --  Definition is already somewhere in CD (from the compilation
       --  of another unit), we just need to reactivate it.
       --  This situation includes the duplicate WITH case (not nice but correct).
       --  Packages Standard and HAL are also reactivated on second WITH (implicitly for Standard).
+      if LD.Library.Element (LD.Map.Element (UVN)).Status = In_Progress then
+        raise Circular_Unit_Dependency with Upper_Name;
+      end if;
       Activate_Unit (CD, Upper_Name);
     elsif Upper_Name = "STANDARD" then
-      Apply_WITH_Standard (CD, LD);
+      Define_and_Register_Standard (CD, LD);
     elsif Upper_Name = HAL_Name then
-      Apply_WITH_HAL (CD, LD);
+      Define_and_Register_HAL (CD, LD);
     elsif Upper_Name = "HAC_PACK" then
       Error (
         CD,
@@ -481,7 +518,12 @@ package body HAC_Sys.Librarian is
         True
       );
     else
-      Apply_Custom_WITH (CD, LD, Upper_Name);
+      begin
+        Apply_Custom_WITH (CD, LD, Upper_Name);
+      exception
+        when E : Circular_Unit_Dependency =>
+          raise Circular_Unit_Dependency with Upper_Name & " -> " & Exception_Message (E);
+      end;
     end if;
   end Apply_WITH;
 

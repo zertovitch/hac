@@ -350,19 +350,21 @@ package body HAC_Sys.Parser.Helpers is
   begin
     L                     := Level;
     CD.IdTab (No_Id).Name := Id;  --  Sentinel
+    --  Scan all Id's on level L down to 0:
     loop
       J := CD.Blocks_Table (CD.Display (L)).Last_Id_Idx;
+      --  Scan all Id's on level L:
       while CD.IdTab (J).Name /= Id
-        --  Id is matching, but it is a level 0 definition from a previous unit's compilation
-        --  which was not yet reactivated.
-        --  In that case, we skip the matching Id, except if it is the sentinel.
-        or else (L = 0
-                   and then Level_0_Match
-                   and then J /= No_Id  --  No sentinel
-                   and then not CD.CUD.level_0_def.Contains (Id)  --  Invisible
-                 )
+        or else
+            --  Id is matching, but it is a level 0 definition from a previous unit's compilation
+            --  which was not yet reactivated.
+            --  In that case, we skip the matching Id, except if it is the sentinel.
+            (L = 0
+              and then Level_0_Match
+              and then J /= No_Id                            --  Not the sentinel.
+              and then not CD.CUD.level_0_def.Contains (Id)  --  Invisible 0-level definition.
+            )
       loop
-        --  Scan all Id's on level L.
         J := CD.IdTab (J).Link;
       end loop;
       L := L - 1;  --  Decrease nesting level.

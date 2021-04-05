@@ -33,8 +33,9 @@ package HAC_Sys.Li_Defs is
   --  HAC Compiled Unit files have the .hcu extension. Some may be stored in .zip library files.
 
   type Compilation_Status is (
-    Done,
-    Body_Postponed
+    In_Progress,     --  Specification or body-only is in progress.
+    Body_Postponed,  --  Specification done, body will be done later.
+    Done
   );
 
   type Unit_Kind is (Package_Unit, Procedure_Unit, Function_Unit);
