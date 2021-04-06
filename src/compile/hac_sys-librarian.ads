@@ -61,4 +61,11 @@ package HAC_Sys.Librarian is
 
   Circular_Unit_Dependency : exception;
 
+  procedure Register_Unit (
+    LD        : in out Li_Defs.Library_Data;
+    Full_Name : in     String;  --  Full unit name, like "Ada.Strings.Fixed"
+    Kind      : in     Li_Defs.Unit_Kind;
+    Status    : in     Li_Defs.Compilation_Status := Li_Defs.Done
+  );
+
 end HAC_Sys.Librarian;

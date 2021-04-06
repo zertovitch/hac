@@ -22,6 +22,7 @@ package HAC_Sys.Builder is
   type Build_Data is record
     CD                 : Co_Defs.Compiler_Data;
     LD                 : Li_Defs.Library_Data;
+    main_name_hint     : HAL.VString;  --  This is used for circular unit dependency detection
     asm_dump_file_name : HAL.VString;  --  Assembler output of compiled object code
     cmp_dump_file_name : HAL.VString;  --  Compiler dump
     listing_file_name  : HAL.VString;  --  Listing of source code with details

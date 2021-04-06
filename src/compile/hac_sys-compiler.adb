@@ -211,6 +211,7 @@ package body HAC_Sys.Compiler is
   procedure Compile_Main (
     CD                 : in out Co_Defs.Compiler_Data;
     LD                 : in out Li_Defs.Library_Data;
+    main_name_hint     :        String;  --  This is used for circular unit dependency detection
     asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
     listing_file_name  :        String  := "";  --  Listing of source code with details
@@ -259,6 +260,8 @@ package body HAC_Sys.Compiler is
       Scanner.InSymbol (CD);
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing);
+      elsif To_String (CD.Id) /= main_name_hint then
+        Error (CD, err_library_error, ": unit name """ & main_name_hint & """ expected in this file", True);
       else
         CD.Main_Program_ID           := CD.Id;
         CD.Main_Program_ID_with_case := CD.Id_with_case;
@@ -364,7 +367,9 @@ package body HAC_Sys.Compiler is
     when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
       Error (CD,
         err_library_error,
-        "Circular unit dependency (""->"" means ""depends on""): " & Exception_Message (E)
+        "Circular unit dependency (""->"" means ""depends on""): " &
+        main_name_hint & " -> " &
+        Exception_Message (E)
       );
   end Compile_Main;
 
@@ -442,7 +447,7 @@ package body HAC_Sys.Compiler is
       Error (CD, err_identifier_missing, stop => True);
     end if;
     if To_String (CD.Id) /= upper_name then
-      Error (CD, err_syntax_error, ": unit name """ & upper_name & """ expected in this file", True);
+      Error (CD, err_library_error, ": unit name """ & upper_name & """ expected in this file", True);
     end if;
     Unit_Id_with_case := CD.Id_with_case;
     case kind is

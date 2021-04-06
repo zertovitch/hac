@@ -1,13 +1,18 @@
-with HAC_Sys.Compiler;
+with HAC_Sys.Compiler,
+     HAC_Sys.Librarian;
+
+with Ada.Characters.Handling;
 
 package body HAC_Sys.Builder is
 
   procedure Build_Main (BD : in out Build_Data) is
-    use HAL.VStr_Pkg;
+    use HAL.VStr_Pkg, Li_Defs;
   begin
+    Librarian.Register_Unit (BD.LD, To_String (BD.main_name_hint), Procedure_Unit, In_Progress);
     Compiler.Compile_Main (
       BD.CD,
       BD.LD,
+      To_String (BD.main_name_hint),
       To_String (BD.asm_dump_file_name),
       To_String (BD.cmp_dump_file_name),
       To_String (BD.listing_file_name),
@@ -39,8 +44,18 @@ package body HAC_Sys.Builder is
     start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
   )
   is
+    main_name_guess : constant String := Ada.Characters.Handling.To_Upper (file_name);
+    dot : Natural := 0;
   begin
     Compiler.Set_Source_Stream (BD.CD.CUD, s, file_name, start_line);
+    --  Guess unit name from file name
+    for i in main_name_guess'Range loop
+      if main_name_guess (i) = '.' then
+        dot := i;
+      end if;
+    end loop;
+    if dot = 0 then dot := main_name_guess'Last + 1; end if;
+    BD.main_name_hint := HAL.To_VString (main_name_guess (main_name_guess'First .. dot - 1));
   end Set_Main_Source_Stream;
 
   procedure Set_Error_Pipe (

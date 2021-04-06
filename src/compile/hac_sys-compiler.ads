@@ -22,6 +22,7 @@ package HAC_Sys.Compiler is
   procedure Compile_Main (
     CD                 : in out Co_Defs.Compiler_Data;
     LD                 : in out Li_Defs.Library_Data;
+    main_name_hint     :        String;  --  This is used for circular unit dependency detection
     asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
     listing_file_name  :        String  := "";  --  Listing of source code with details
