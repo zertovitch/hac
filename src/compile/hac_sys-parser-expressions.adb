@@ -656,7 +656,7 @@ package body HAC_Sys.Parser.Expressions is
     case Mem_Sy is
       when LParent    => Type_Conversion (CD, Level, FSys, Type_ID, X);
       when Apostrophe => Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Type_ID, X);
-      when others => Error (CD, err_syntax_error, "expected ""'"" or ""("" here", True);
+      when others => Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", True);
     end case;
   end Subtype_Prefixed_Expression;
 

@@ -25,7 +25,7 @@ package body HAC_Sys.Parser.Attributes is
     Error (CD, err_not_yet_implemented, "attribute " & attr_ID, True);
   exception
     when Constraint_Error =>
-      Error (CD, err_syntax_error, "unknown attribute: " & attr_ID, True);
+      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, True);
   end Scalar_Subtype_Attribute;
 
 end HAC_Sys.Parser.Attributes;

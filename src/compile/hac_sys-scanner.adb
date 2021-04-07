@@ -624,7 +624,13 @@ package body HAC_Sys.Scanner is
             K := K + 1;
             if CD.CUD.CC = 1 then
               K := 0;  --  END OF InpLine
-              exit;
+              CD.syStart := 1;
+              CD.syEnd   := 1;
+              Error (
+                CD,
+                err_syntax_error,
+                ": missing closing quote on previous line ", stop => True
+              );
             else
               null;  --  Continue
             end if;

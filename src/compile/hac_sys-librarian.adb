@@ -136,7 +136,7 @@ package body HAC_Sys.Librarian is
   begin
     pragma Assert (Pkg_Idx /= No_Id);
     if CD.IdTab (Pkg_Idx).Entity /= Paquetage then
-      Error (CD, err_syntax_error, "Package name expected", True);
+      Error (CD, err_syntax_error, ": package name expected", True);
     end if;
     --  The package specification's definitions begins immediately after the
     --  package's identifier.

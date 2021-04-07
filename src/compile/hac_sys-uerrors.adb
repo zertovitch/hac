@@ -232,7 +232,7 @@ package body HAC_Sys.UErrors is
       when err_END_LOOP_ident_wrong =>
         return "wrong loop identifier: ""end loop " & hint & ";"" expected";
       when err_syntax_error =>
-        return "syntax error " & hint;
+        return "syntax error" & hint;
       when err_string_to_vstring_assignment =>
         return "fixed string assigned to a variable string;" &
                " put a ""+"" in front of the fixed string";

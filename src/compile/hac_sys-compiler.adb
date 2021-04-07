@@ -444,7 +444,7 @@ package body HAC_Sys.Compiler is
         kind := Procedure_Unit;
       when others =>
         kind := Package_Unit;  --  Useless, but this removes an ObjectAda warning.
-        Error (CD, err_syntax_error, "`package`, `procedure` or `function` expected here", True);
+        Error (CD, err_syntax_error, ": `package`, `procedure` or `function` expected here", True);
     end case;
     Scanner.InSymbol (CD);
     if CD.Sy /= IDent then
@@ -458,8 +458,8 @@ package body HAC_Sys.Compiler is
       when Procedure_Unit =>
         Librarian.Enter_Zero_Level_Def (CD, To_String (Unit_Id_with_case), Prozedure, NOTYP, 0);
       when Function_Unit =>
-        --  !!  return type to be fixed  !!
         Librarian.Enter_Zero_Level_Def (CD, To_String (Unit_Id_with_case), Funktion, NOTYP, 0);
+        --  The type of the return value is adjusted by Block.Function_Result_Profile.
       when Package_Unit =>
         null;  --  !! TBD
     end case;
