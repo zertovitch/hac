@@ -56,6 +56,7 @@ procedure Gallery is
     Launch_HAC (+"existence.adb");
     Launch_HAC (+"timing.adb");
     Launch_HAC (+"bwt.adb");
+    Launch_HAC (+"unit_a.adb");
     --  The following demos write files.
     Launch_HAC (+"file_copy.adb");
     Launch_HAC (+"three_lakes_s.adb");
