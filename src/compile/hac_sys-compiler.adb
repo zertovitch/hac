@@ -497,6 +497,12 @@ package body HAC_Sys.Compiler is
     Close (src);
     --  HAL.PUT_LINE("Compilation of unit " & upper_name & " done");
     CD.CUD := mem;
+  exception
+    when others =>
+      if Is_Open (src) then
+        Close (src);
+      end if;
+      raise;
   end Compile_Unit;
 
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean is

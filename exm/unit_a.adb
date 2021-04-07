@@ -25,7 +25,9 @@ begin
   v := 10101;
   a_msg := +"a";
   HAL.Put(+"(a" & a_msg & ">");
-  for i in 1 .. 2 loop Unit_C (+"u", +"U", v); end loop;
+  for i in 1 .. 2 loop
+    Put(Image(Unit_C (+"u", +"U", v)));
+  end loop;
   X;
   Unit_B (v, +"b", +"B");
   X;
