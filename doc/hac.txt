@@ -135,7 +135,8 @@ Language subset
         HAL package, are overloaded many times, like
         "Put", "Get", "+", "&", ...
     - Programmable modularity (packages or subprograms that you
-        can "with") is not yet implemented.
+        can "with") is implemented only for subprograms bodies.
+        See exm/unit_a.adb for an example.
     - Generics are not yet implemented.
     - Tasks are implemented, but not working yet.
     - Small parts of the standard Ada library are available through
@@ -168,7 +169,7 @@ History of HAC
               and other tests work!
     - 2009: A bit further trying to make the translation of SmallAda sources
               succeed (P2Ada was improved on the way, for WITH statements
-              and modularity)...
+              and UCSD/Turbo/Delphi-style modularity)...
     - 1999: Automatic translation of Mac Pascal SmallAda sources
               to Ada, using P2Ada.
     - 1989: SmallAda is derived from CoPascal; works only within two
