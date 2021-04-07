@@ -252,21 +252,24 @@ package body HAC_Sys.Compiler is
     end if;
 
     Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
-    Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s.
+    Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.
 
     if CD.Sy /= PROCEDURE_Symbol then
-      Error (CD, err_missing_a_procedure_declaration, "");  --  PROCEDURE Name IS
-    else
-      Scanner.InSymbol (CD);
-      if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing);
-      elsif To_String (CD.Id) /= main_name_hint then
-        Error (CD, err_library_error, ": unit name """ & main_name_hint & """ expected in this file", True);
-      else
-        CD.Main_Program_ID           := CD.Id;
-        CD.Main_Program_ID_with_case := CD.Id_with_case;
-        Scanner.InSymbol (CD);
-      end if;
+      Error (CD, err_missing_a_procedure_declaration, stop => True);  --  PROCEDURE Name is
+    end if;
+    Scanner.InSymbol (CD);
+    if CD.Sy /= IDent then
+      Error (CD, err_identifier_missing, stop => True);
+    end if;
+    if To_String (CD.Id) /= main_name_hint then
+      Error (CD, err_library_error, ": unit name """ & main_name_hint & """ expected in this file", True);
+    end if;
+    CD.Main_Program_ID           := CD.Id;
+    CD.Main_Program_ID_with_case := CD.Id_with_case;
+    Scanner.InSymbol (CD);
+    if CD.Sy /= IS_Symbol then
+      --  procedure Name IS
+      Error (CD, err_syntax_error, ": main procedure is parameterless", stop => True);
     end if;
 
     if CD.comp_dump_requested then
@@ -425,7 +428,7 @@ package body HAC_Sys.Compiler is
     --  HAL.PUT_LINE("Unit " & upper_name & " sees and uses Standard");
 
     Scanner.InSymbol (CD);
-    Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s.
+    Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.
     case CD.Sy is
       when PACKAGE_Symbol =>
         kind := Package_Unit;

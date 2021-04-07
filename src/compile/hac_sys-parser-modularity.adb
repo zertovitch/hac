@@ -25,7 +25,11 @@ package body HAC_Sys.Parser.Modularity is
     InSymbol (CD);  --  Consume the ';'.
   end With_Clause;
 
-  procedure Use_Clause (CD : in out Co_Defs.Compiler_Data; Level : Defs.Nesting_level) is  --  8.4 (2)
+  procedure Use_Clause (
+    CD    : in out Co_Defs.Compiler_Data;
+    Level :        Defs.Nesting_level
+  )
+  is  --  8.4 (2)
     use Librarian, Defs, Scanner, UErrors;
   begin
     InSymbol (CD);  --  Consume "use".
