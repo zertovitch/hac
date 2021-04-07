@@ -269,7 +269,7 @@ package body HAC_Sys.Compiler is
     Scanner.InSymbol (CD);
     if CD.Sy /= IS_Symbol then
       --  procedure Name IS
-      Error (CD, err_syntax_error, ": main procedure is parameterless", stop => True);
+      Error (CD, err_syntax_error, ": main procedure should be parameterless", stop => True);
     end if;
 
     if CD.comp_dump_requested then
@@ -443,6 +443,7 @@ package body HAC_Sys.Compiler is
       when PROCEDURE_Symbol =>
         kind := Procedure_Unit;
       when others =>
+        kind := Package_Unit;  --  Useless, but this removes an ObjectAda warning.
         Error (CD, err_syntax_error, "`package`, `procedure` or `function` expected here", True);
     end case;
     Scanner.InSymbol (CD);
