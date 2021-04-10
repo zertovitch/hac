@@ -50,9 +50,10 @@ package HAC_Sys.Builder is
     start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
   );
 
-  procedure Set_Error_Pipe (
-    BD   : in out Build_Data;
-    pipe :        Defs.Smart_error_pipe
+  procedure Set_Message_Feedbacks (
+    BD       : in out Build_Data;
+    pipe     :        Defs.Smart_error_pipe;        --  Default (null): messages to Current_Error.
+    progress :        Co_Defs.Compilation_Feedback  --  Default (null): messages to Current_Output.
   );
 
   function Build_Successful (BD : Build_Data) return Boolean;

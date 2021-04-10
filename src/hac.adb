@@ -18,7 +18,21 @@ procedure HAC is
   version_info : constant String :=
     "Compiler version: " & HAC_Sys.version & " dated " & HAC_Sys.reference & '.';
 
+  HAC_margin_1 : constant String := "*******[ HAC ]*******   ";
+  HAC_margin_2 : constant String := ". . . .[ HAC ]. . . .   ";
+  HAC_margin_3 : constant String := "-------[ HAC ]-------   ";
+
   use Ada.Strings.Unbounded;
+
+  procedure Compilation_Feedback (Message : String) is
+    use Ada.Text_IO;
+  begin
+    case verbosity is
+      when 0      => null;
+      when 1      => Put_Line (Message);
+      when others => Put_Line (HAC_margin_2 & Message);
+    end case;
+  end Compilation_Feedback;
 
   asm_dump_file_name : Unbounded_String;
   cmp_dump_file_name : Unbounded_String;
@@ -47,30 +61,22 @@ procedure HAC is
     --
     f : File_Type;
     t1, t2 : Time;
-    HAC_margin_1 : constant String := "*******[ HAC ]*******   ";
-    HAC_margin_2 : constant String := ". . . .[ HAC ]. . . .   ";
-    HAC_margin_3 : constant String := "-------[ HAC ]-------   ";
     BD : Build_Data;
     unhandled : Exception_Propagation_Data;
     unhandled_found : Boolean;
     shebang_offset : Natural;
     stack_max, stack_total : Natural;
   begin
-    case verbosity is
-      when 0 =>
-        null;
-      when 1 =>
-        Put_Line (HAC_margin_2 & "Compiling and running from file: " & Ada_file_name);
-      when others =>
-        New_Line;
-        Put_Line (HAC_margin_1 & version_info);
-        Put_Line (HAC_margin_1 & caveat & " Type ""hac"" for license.");
-        Put_Line (HAC_margin_2 & "Compiling from file: " & Ada_file_name);
-    end case;
+    if verbosity > 1 then
+      New_Line;
+      Put_Line (HAC_margin_1 & version_info);
+      Put_Line (HAC_margin_1 & caveat & " Type ""hac"" for license.");
+    end if;
     Open (f, In_File, Ada_file_name);
     HAC_Sys.Compiler.Skip_Shebang (f, shebang_offset);
     Set_Diagnostic_File_Names (BD, To_String (asm_dump_file_name), To_String (cmp_dump_file_name));
     Set_Main_Source_Stream (BD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
+    Set_Message_Feedbacks (BD, null, Compilation_Feedback'Unrestricted_Access);
     t1 := Clock;
     Build_Main (BD);
     t2 := Clock;

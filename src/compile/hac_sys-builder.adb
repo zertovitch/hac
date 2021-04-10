@@ -71,15 +71,15 @@ package body HAC_Sys.Builder is
     BD.main_name_hint := HAL.To_VString (main_name_guess (last_slash + 1 .. last_dot - 1));
   end Set_Main_Source_Stream;
 
-  procedure Set_Error_Pipe (
-    BD   : in out Build_Data;
-    pipe :        Defs.Smart_error_pipe
+  procedure Set_Message_Feedbacks (
+    BD       : in out Build_Data;
+    pipe     :        Defs.Smart_error_pipe;
+    progress :        Co_Defs.Compilation_Feedback
   )
   is
   begin
-    Compiler.Set_Error_Pipe (BD.CD, pipe);
-    --  ^ NB: Further unit compilations should propagate this.
-  end Set_Error_Pipe;
+    Compiler.Set_Message_Feedbacks (BD.CD, pipe, progress);
+  end Set_Message_Feedbacks;
 
   function Build_Successful (BD : Build_Data) return Boolean is
   begin

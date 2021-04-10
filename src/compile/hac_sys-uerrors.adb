@@ -322,7 +322,7 @@ package body HAC_Sys.UErrors is
     Show_to_comp_dump (CD.CUD.line_count, CD.syStart, CD.syEnd, -1, hint);
     CD.Errs (code) := True;
     CD.Err_Count := CD.Err_Count + 1;
-    if CD.error_pipe = null then
+    if CD.Error_Pipe = null then
       Put_Line (
         Current_Error,
         To_String (CD.CUD.source_file_name) & ": " &
@@ -346,7 +346,7 @@ package body HAC_Sys.UErrors is
         when others =>
           null;
       end case;
-      CD.error_pipe (
+      CD.Error_Pipe (
         message   => Error_String (code, hint),
         file_name => Compiler.Get_Current_Source_Name (CD.CUD),
         line      => CD.CUD.line_count,

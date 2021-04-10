@@ -13,8 +13,10 @@ procedure Console_IO is
     V : VString;
   begin
     if Get_Needs_Skip_Line then
+      --  Console mode (via the "hac" command, or when compiled with a "full Ada" compiler).
       Put ("Type 2 characters, then Return.");
     else
+      --  GUI mode, like from the LEA editor.
       Put_Line ("Type 2 characters - one each time!");
     end if;
     Get (C1); Get (C2);

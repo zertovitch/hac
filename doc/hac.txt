@@ -162,6 +162,9 @@ Thanks
 History of HAC
 ==============
 
+    - Now:  HAC is being made more and more usable for real applications,
+              with Ada compatibility, modularity, a library with I/O,
+              system subprograms,...
     - 2020: Presentation at FOSDEM's Ada Developer Room:
               https://fosdem.org/2020/schedule/event/ada_hac/ .
               Starting a bit more serious testing and code cleanup.
@@ -177,7 +180,9 @@ History of HAC
               two similar source sets in two Pascal dialects (Mac Pascal,
               Turbo Pascal).
     - 1986: CoPascal (Schoening).
-    - 1970: Pascal-S (Wirth).
+    - 1975: Pascal-S (Wirth)
+              Reference: PASCAL-S, a subset and its implementation
+              https://doi.org/10.3929/ethz-a-000147073
 
   Authors of SmallAda (in Pascal):
     1990 Manuel A. Perez               Macintosh version

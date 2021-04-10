@@ -33,14 +33,16 @@ package body HAC_Sys.Compiler is
     return HAL.VStr_Pkg.To_String (SD.source_file_name);
   end Get_Current_Source_Name;
 
-  procedure Set_Error_Pipe (
-    CD   : in out Compiler_Data;
-    pipe :        Smart_error_pipe
+  procedure Set_Message_Feedbacks (
+    CD       : in out Compiler_Data;
+    pipe     :        Defs.Smart_error_pipe;
+    progress :        Co_Defs.Compilation_Feedback
   )
   is
   begin
-    CD.error_pipe := pipe;
-  end Set_Error_Pipe;
+    CD.Error_Pipe := pipe;
+    CD.Progress   := progress;
+  end Set_Message_Feedbacks;
 
   procedure Init (SD : out Current_Unit_Data) is
   begin
@@ -238,6 +240,12 @@ package body HAC_Sys.Compiler is
     end Dump_Asm;
 
   begin  --  Compile_Main
+    if CD.Progress = null then
+      Put_Line ("Compiling MAIN " & HAL.VStr_Pkg.To_String (CD.CUD.source_file_name));
+    else
+      CD.Progress ("Compiling " & HAL.VStr_Pkg.To_String (CD.CUD.source_file_name));
+    end if;
+
     Init (CD);
 
     CD.listing_requested := listing_file_name /= "";
@@ -415,6 +423,12 @@ package body HAC_Sys.Compiler is
     shebang_offset : Natural;
     Unit_Id_with_case : Alfa;
   begin
+    if CD.Progress = null then
+      Put_Line ("Compiling UNIT " & file_name);
+    else
+      CD.Progress ("Compiling " & file_name);
+    end if;
+
     Open (src, In_File, file_name);
     Skip_Shebang (src, shebang_offset);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);

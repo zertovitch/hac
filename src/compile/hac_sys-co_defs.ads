@@ -179,6 +179,8 @@ package HAC_Sys.Co_Defs is
     level_0_def      : Id_Set.Set;
   end record;
 
+  type Compilation_Feedback is access procedure (Message : String);
+
   ---------------------
   --  Compiler_Data  --
   ---------------------
@@ -229,7 +231,8 @@ package HAC_Sys.Co_Defs is
     --
     Err_Count  : Natural;
     Errs       : Error_set;
-    error_pipe : Smart_error_pipe := null;
+    Error_Pipe : Smart_error_pipe     := null;
+    Progress   : Compilation_Feedback := null;
   end record;
 
   overriding procedure Finalize (CD : in out Compiler_Data);

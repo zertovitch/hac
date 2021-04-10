@@ -56,9 +56,10 @@ package HAC_Sys.Compiler is
   --
   procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural);
 
-  procedure Set_Error_Pipe (
-    CD   : in out Compiler_Data;
-    pipe :        Smart_error_pipe
+  procedure Set_Message_Feedbacks (
+    CD       : in out Compiler_Data;
+    pipe     :        Defs.Smart_error_pipe;        --  Default (null): messages to Current_Error.
+    progress :        Co_Defs.Compilation_Feedback  --  Default (null): messages to Current_Output.
   );
 
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean;
