@@ -149,7 +149,7 @@ package body HAC_Sys.Parser.Ranges is
       Expression (CD, Level, FSys + LOOP_Symbol, Upper_Bound);
       if Upper_Bound /= Lower_Bound then
         Type_Mismatch (
-          CD, err_first_and_last_must_have_matching_types,
+          CD, err_bounds_type_mismatch,
           Found    => Upper_Bound,
           Expected => Lower_Bound
         );

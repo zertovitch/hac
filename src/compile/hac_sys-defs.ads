@@ -321,7 +321,7 @@ package HAC_Sys.Defs is
     err_illegal_statement_start_symbol,
     err_expecting_a_boolean_expression,
     err_control_variable_of_the_wrong_type,
-    err_first_and_last_must_have_matching_types,
+    err_bounds_type_mismatch,
     err_IS_missing,
     err_number_too_large,
     err_illegal_character_in_number,

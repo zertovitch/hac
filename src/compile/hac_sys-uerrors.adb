@@ -58,8 +58,8 @@ package body HAC_Sys.UErrors is
         return "expecting a Boolean expression";
       when err_control_variable_of_the_wrong_type =>
         return "control variable of the wrong type: must be discrete";
-      when err_first_and_last_must_have_matching_types =>
-        return "first and last must have matching types";
+      when err_bounds_type_mismatch =>
+        return "bounds in range must be of the same type";
       when err_IS_missing =>
         return "missing ""is""";
       when err_number_too_large =>
