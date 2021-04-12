@@ -11,13 +11,15 @@
 
 with HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.Li_Defs;
 
-with Ada.Streams, Ada.Text_IO;
-
 package HAC_Sys.Compiler is
 
   use HAC_Sys.Co_Defs, HAC_Sys.Defs;
 
   --  Main compilation procedure.
+  --  The source code stream (CD.CUD.compiler_stream) is already
+  --  available via Set_Source_Stream.
+  --  If the stream stems from a file, the file must be already open and won't be closed.
+  --  Compile_Main takes care of all other needed compilations around main as well.
   --
   procedure Compile_Main (
     CD                 : in out Co_Defs.Compiler_Data;
@@ -30,6 +32,8 @@ package HAC_Sys.Compiler is
   );
 
   --  Compile unit not yet in the library.
+  --  Unit's source code is compiled from a file (name: file_name)
+  --  with the GNAT naming convention.
   --  Registration into the library is done after, by the librarian.
   --
   procedure Compile_Unit (
@@ -38,23 +42,8 @@ package HAC_Sys.Compiler is
     upper_name         :        String;
     file_name          :        String;
     as_specification   :        Boolean;
-    kind               :    out Li_Defs.Unit_Kind  --  The unit kind is discovered by parsing.
+    kind               :    out Li_Defs.Unit_Kind  --  The unit kind is discovered during parsing.
   );
-
-  --  Set current source stream (file, editor data, zipped file,...)
-  procedure Set_Source_Stream (
-    SD         : in out Co_Defs.Current_Unit_Data;
-    s          : access Ada.Streams.Root_Stream_Type'Class;
-    file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
-    start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
-  );
-
-  function Get_Current_Source_Name (SD : Co_Defs.Current_Unit_Data) return String;
-
-  --  Skip an eventual "shebang", e.g.: #!/usr/bin/env hac
-  --  The Ada source begins from next line.
-  --
-  procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural);
 
   procedure Set_Message_Feedbacks (
     CD       : in out Compiler_Data;

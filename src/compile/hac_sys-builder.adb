@@ -54,7 +54,7 @@ package body HAC_Sys.Builder is
     main_name_guess : constant String := Ada.Characters.Handling.To_Upper (file_name);
     last_slash, last_dot : Natural := 0;
   begin
-    Compiler.Set_Source_Stream (BD.CD.CUD, s, file_name, start_line);
+    Co_Defs.Set_Source_Stream (BD.CD.CUD, s, file_name, start_line);
     --  Guess unit name from file name
     for i in main_name_guess'Range loop
       case main_name_guess (i) is
@@ -97,5 +97,24 @@ package body HAC_Sys.Builder is
   begin
     return Defs.CDMax;
   end Maximum_Object_Code_Size;
+
+  procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural) is
+    use Ada.Text_IO;
+  begin
+    shebang_offset := 0;
+    if not End_Of_File (f) then
+      declare
+        possible_shebang : constant String := Get_Line (f);
+      begin
+        if possible_shebang'Length >= 2
+          and then possible_shebang (possible_shebang'First .. possible_shebang'First + 1) = "#!"
+        then
+          shebang_offset := 1;  --  Ignore the first line, but count it.
+        else
+          Reset (f);
+        end if;
+      end;
+    end if;
+  end Skip_Shebang;
 
 end HAC_Sys.Builder;

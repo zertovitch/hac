@@ -1,5 +1,6 @@
-with HAC_Sys.Librarian,
+with HAC_Sys.Builder,
      HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Librarian,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Modularity,
      HAC_Sys.PCode,
@@ -14,24 +15,6 @@ with Ada.Exceptions,
      Ada.Text_IO.Text_Streams;
 
 package body HAC_Sys.Compiler is
-
-  procedure Set_Source_Stream (
-    SD         : in out Co_Defs.Current_Unit_Data;
-    s          : access Ada.Streams.Root_Stream_Type'Class;
-    file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
-    start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
-  )
-  is
-  begin
-    SD.compiler_stream  := Source_Stream_Access (s);
-    SD.source_file_name := HAL.To_VString (file_name);
-    SD.line_count       := start_line;
-  end Set_Source_Stream;
-
-  function Get_Current_Source_Name (SD : Current_Unit_Data) return String is
-  begin
-    return HAL.VStr_Pkg.To_String (SD.source_file_name);
-  end Get_Current_Source_Name;
 
   procedure Set_Message_Feedbacks (
     CD       : in out Compiler_Data;
@@ -384,25 +367,6 @@ package body HAC_Sys.Compiler is
       );
   end Compile_Main;
 
-  procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural) is
-    use Ada.Text_IO;
-  begin
-    shebang_offset := 0;
-    if not End_Of_File (f) then
-      declare
-        possible_shebang : constant String := Get_Line (f);
-      begin
-        if possible_shebang'Length >= 2
-          and then possible_shebang (possible_shebang'First .. possible_shebang'First + 1) = "#!"
-        then
-          shebang_offset := 1;  --  Ignore the first line, but count it.
-        else
-          Reset (f);
-        end if;
-      end;
-    end if;
-  end Skip_Shebang;
-
   --
   --  !! Massively "W.I.P." state here !!
   --
@@ -430,7 +394,7 @@ package body HAC_Sys.Compiler is
     end if;
 
     Open (src, In_File, file_name);
-    Skip_Shebang (src, shebang_offset);
+    Builder.Skip_Shebang (src, shebang_offset);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
     Init (CD.CUD);  --  Reset scanner data (line counter etc.) and 0-level visible declarations
     --  HAL.PUT_LINE("Compiling unit " & upper_name);

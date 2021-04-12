@@ -1,5 +1,3 @@
-with HAC_Sys.Compiler;
-
 with Ada.Strings.Fixed;                 use Ada.Strings, Ada.Strings.Fixed;
 with Ada.Text_IO;
 
@@ -348,7 +346,7 @@ package body HAC_Sys.UErrors is
       end case;
       CD.Error_Pipe (
         message   => Error_String (code, hint),
-        file_name => Compiler.Get_Current_Source_Name (CD.CUD),
+        file_name => Co_Defs.Get_Source_Name (CD.CUD),
         line      => CD.CUD.line_count,
         column_a  => CD.syStart,
         column_z  => CD.syEnd,

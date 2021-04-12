@@ -8,6 +8,8 @@
 --
 -------------------------------------------------------------------------------------
 --
+--  Builder: *the* entry point for building an executable (possibly for the p-code
+--  virtual machine) from Ada sources (a main procedure and eventual depending units).
 
 with HAC_Sys.Co_Defs,
      HAC_Sys.Defs,
@@ -15,7 +17,7 @@ with HAC_Sys.Co_Defs,
 
 with HAL;
 
-with Ada.Streams;
+with Ada.Streams, Ada.Text_IO;
 
 package HAC_Sys.Builder is
 
@@ -29,8 +31,11 @@ package HAC_Sys.Builder is
     var_map_file_name  : HAL.VString;  --  Output of variables (map)
   end record;
 
-  --  Main build procedure.
-  --  Takes care of all needed compilations around main.
+  --  Build the main procedure.
+  --  The main procedure's source code stream is already
+  --  available via Set_Main_Source_Stream.
+  --  If the stream stems from a file, the file must be already open and won't be closed.
+  --  Build_Main takes care of all other needed compilations around main as well.
   --
   procedure Build_Main (BD : in out Build_Data);
 
@@ -59,5 +64,14 @@ package HAC_Sys.Builder is
   function Build_Successful (BD : Build_Data) return Boolean;
   function Object_Code_Size (BD : Build_Data) return Natural;
   function Maximum_Object_Code_Size return Natural;
+
+  -------------------------
+  --  Various utilities  --
+  -------------------------
+
+  --  Skip an eventual "shebang", e.g.: #!/usr/bin/env hac, in a text file.
+  --  The Ada source begins from next line.
+  --
+  procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural);
 
 end HAC_Sys.Builder;

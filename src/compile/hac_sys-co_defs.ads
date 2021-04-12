@@ -179,6 +179,16 @@ package HAC_Sys.Co_Defs is
     level_0_def      : Id_Set.Set;
   end record;
 
+  --  Set current source stream (file, editor data, zipped file,...)
+  procedure Set_Source_Stream (
+    SD         : in out Current_Unit_Data;
+    s          : access Ada.Streams.Root_Stream_Type'Class;
+    file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
+    start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
+  );
+
+  function Get_Source_Name (SD : Current_Unit_Data) return String;
+
   type Compilation_Feedback is access procedure (Message : String);
 
   ---------------------

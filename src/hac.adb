@@ -1,5 +1,4 @@
 with HAC_Sys.Builder,
-     HAC_Sys.Compiler,
      HAC_Sys.PCode.Interpreter.In_Defs;
 
 with Show_License;
@@ -73,7 +72,7 @@ procedure HAC is
       Put_Line (HAC_margin_1 & caveat & " Type ""hac"" for license.");
     end if;
     Open (f, In_File, Ada_file_name);
-    HAC_Sys.Compiler.Skip_Shebang (f, shebang_offset);
+    Skip_Shebang (f, shebang_offset);
     Set_Diagnostic_File_Names (BD, To_String (asm_dump_file_name), To_String (cmp_dump_file_name));
     Set_Main_Source_Stream (BD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     Set_Message_Feedbacks (BD, null, Compilation_Feedback'Unrestricted_Access);
