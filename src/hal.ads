@@ -371,12 +371,22 @@ package HAL is
   procedure Rename (Old_Name : String;  New_Name : VString);
   procedure Rename (Old_Name : VString; New_Name : VString);
 
+  ---------------------
+  --  Shell_Execute  --
+  ---------------------
+
   procedure Shell_Execute (Command : String; Result : out Integer);
   procedure Shell_Execute (Command : VString; Result : out Integer);
 
   --  In this version, the result value is discarded:
   procedure Shell_Execute (Command : String);
   procedure Shell_Execute (Command : VString);
+
+  --  The four above, but with piping of standard output into a VString:
+  procedure Shell_Execute (Command : String; Result : out Integer; Output : out VString);
+  procedure Shell_Execute (Command : VString; Result : out Integer; Output : out VString);
+  procedure Shell_Execute (Command : String; Output : out VString);
+  procedure Shell_Execute (Command : VString; Output : out VString);
 
   function Directory_Separator return Character;
 
