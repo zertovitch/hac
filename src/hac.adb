@@ -75,7 +75,7 @@ procedure HAC is
     Skip_Shebang (f, shebang_offset);
     Set_Diagnostic_File_Names (BD, To_String (asm_dump_file_name), To_String (cmp_dump_file_name));
     Set_Main_Source_Stream (BD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
-    Set_Message_Feedbacks (BD, null, Compilation_Feedback'Unrestricted_Access);
+    Set_Message_Feedbacks (BD, null, Unrestricted (Compilation_Feedback'Address));
     t1 := Clock;
     Build_Main (BD);
     t2 := Clock;

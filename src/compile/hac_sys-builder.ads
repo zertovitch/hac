@@ -17,7 +17,10 @@ with HAC_Sys.Co_Defs,
 
 with HAL;
 
-with Ada.Streams, Ada.Text_IO;
+with Ada.Streams, Ada.Text_IO,
+     Ada.Unchecked_Conversion;
+
+with System;
 
 package HAC_Sys.Builder is
 
@@ -60,6 +63,10 @@ package HAC_Sys.Builder is
     pipe     :        Defs.Smart_error_pipe;        --  Default (null): messages to Current_Error.
     progress :        Co_Defs.Compilation_Feedback  --  Default (null): messages to Current_Output.
   );
+
+  --  Emulate GNAT's Unrestricted_Access attribute
+  function Unrestricted is
+    new Ada.Unchecked_Conversion (System.Address, Co_Defs.Compilation_Feedback);
 
   function Build_Successful (BD : Build_Data) return Boolean;
   function Object_Code_Size (BD : Build_Data) return Natural;
