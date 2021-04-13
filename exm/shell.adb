@@ -6,25 +6,37 @@ procedure Shell is
   r : Integer;
   f : File_Type;
   --
-  procedure Pipe_Test (variant : Positive) is
+  procedure Pipe_Test (with_result, with_output : Boolean) is
     line : VString;
     ln : constant VString := +"output.lst";
     secret_command : constant VString :=
-      +"echo This is the super-secret message for testing I/O pipe";
+      +"echo This is the ultra-secret message for testing I/O pipe";
+    piped_secret_command : constant VString := secret_command & '>' & ln;
   begin
-    Put_Line (+"Testing outward pipe (command>file), variant " & variant & ".");
-    case variant is
-      when 1      =>
-        Shell_Execute (secret_command & '>' & ln, r);
-        Open (f, ln);
-        Get_Line (f, line);
-        Close (f);
-        Put_Line (+"--> Contents of file " & ln & " are: [" & line & ']');
-      when others =>
-        --  !!wip!! Shell_Execute (secret_command, r, line);
-        Put_Line (+"--> Contents of temp output file are: [" & line & ']');
-    end case;
-    if r /= 0 then
+    Put ("Testing outward pipe (command>file). With result parameter: ");
+    Put (with_result);
+    Put (". With output parameter: ");
+    Put (with_output);
+    Put_Line (".");
+    if with_output then
+      if with_result then
+        Shell_Execute (secret_command, r, line);
+      else
+        Shell_Execute (secret_command, line);
+      end if;
+      Put_Line (+"  --> Contents of temp output file are: [" & line & ']');
+    else
+      if with_result then
+        Shell_Execute (piped_secret_command, r);
+      else
+        Shell_Execute (piped_secret_command);
+      end if;
+      Open (f, ln);
+      Get_Line (f, line);
+      Close (f);
+      Put_Line (+"  --> Contents of file " & ln & " are: [" & line & ']');
+    end if;
+    if with_result and r /= 0 then
       Put_Line (+"Result of echo command is not 0: " & r);
     end if;
     New_Line;
@@ -53,8 +65,11 @@ begin
     Put_Line (+"Result of echo command is not 0: " & r);
   end if;
   --
-  Pipe_Test (1);
-  --  !!wip!! Pipe_Test (2);
+  for w_res in Boolean loop
+    for w_out in Boolean loop
+      Pipe_Test (w_res, w_out);
+    end loop;
+  end loop;
   Produce_Errors (+"Command_Impossible");
   Produce_Errors (+"exit 666");
 end Shell;

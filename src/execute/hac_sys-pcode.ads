@@ -384,7 +384,7 @@ package HAC_Sys.PCode is
     SP_Shell_Execute_without_Result,  --  Result: no,  Output no
     SP_Shell_Execute_with_Result,     --  Result: yes, Output no
     SP_Shell_Execute_Output,          --  Result: no,  Output yes
-    SP_Shell_Execute_Result_Output   --  Result: yes, Output yes
+    SP_Shell_Execute_Result_Output    --  Result: yes, Output yes
   );
 
   subtype SP_Shell_Execute is SP_Code

@@ -339,17 +339,35 @@ package body HAC_Sys.PCode.Interpreter is
           end;
         when SP_Shell_Execute_with_Result =>
           declare
-            Command        : constant String      := To_String (ND.S (Curr_TCB.T - 1).V);
-            Result_Address : constant Defs.Index  := Defs.Index (ND.S (Curr_TCB.T).I);
+            Command        : constant String     := To_String (ND.S (Curr_TCB.T - 1).V);
+            Result_Address : constant Defs.Index := Defs.Index (ND.S (Curr_TCB.T).I);
           begin
             System_Calls.Shell_Execute (Command, Shell_Exec_Result);
             ND.S (Result_Address).I := Defs.HAC_Integer (Shell_Exec_Result);
             Pop (2);
           end;
         when SP_Shell_Execute_Output =>
-          NULL;
+          declare
+            Command           : constant String     := To_String (ND.S (Curr_TCB.T - 1).V);
+            Output_Address    : constant Defs.Index := Defs.Index (ND.S (Curr_TCB.T).I);
+            Shell_Exec_Output : HAL.VString;
+          begin
+            System_Calls.Shell_Execute_Output (Command, Shell_Exec_Result, Shell_Exec_Output);
+            ND.S (Output_Address) := GR_VString (Shell_Exec_Output);
+            Pop (2);
+          end;
         when SP_Shell_Execute_Result_Output =>
-          NULL;
+          declare
+            Command           : constant String     := To_String (ND.S (Curr_TCB.T - 2).V);
+            Result_Address    : constant Defs.Index := Defs.Index (ND.S (Curr_TCB.T - 1).I);
+            Output_Address    : constant Defs.Index := Defs.Index (ND.S (Curr_TCB.T).I);
+            Shell_Exec_Output : HAL.VString;
+          begin
+            System_Calls.Shell_Execute_Output (Command, Shell_Exec_Result, Shell_Exec_Output);
+            ND.S (Result_Address).I := Defs.HAC_Integer (Shell_Exec_Result);
+            ND.S (Output_Address)   := GR_VString (Shell_Exec_Output);
+            Pop (3);
+          end;
         when SP_Set_Exit_Status =>
           HAL.Set_Exit_Status (Integer (ND.S (Curr_TCB.T).I));
           Pop;

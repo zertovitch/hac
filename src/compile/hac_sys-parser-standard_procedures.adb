@@ -162,7 +162,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Puts;
     --
-    X, Y : Exact_Typ;
+    X, Y, Z : Exact_Typ;
   begin
     case Code is
       when SP_Get | SP_Get_Immediate | SP_Get_Line =>
@@ -325,15 +325,35 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expression (CD, Level, Comma_RParent, X);  --  We push the argument in the stack.
         Check_any_String_and_promote_to_VString (X);
+        --  ` Shell_Execute (cmd `  has been parsed at this point.
         if CD.Sy = Comma then
           InSymbol (CD);
-          Push_by_Reference_Parameter (CD, Level, RParent_Set, X);
-          if X.TYP /= Ints then
-            Skip (CD, Semicolon, err_parameter_must_be_Integer);
-          end if;
-          File_I_O_Call (SP_Shell_Execute_with_Result);       --  Shell_Execute (cmd, result);
+          Push_by_Reference_Parameter (CD, Level, RParent_Set, Y);
+          case Y.TYP is
+            when VStrings =>
+              --  Shell_Execute (cmd, output);
+              File_I_O_Call (SP_Shell_Execute_Output);
+            when Ints =>
+              if CD.Sy = Comma then
+                InSymbol (CD);
+                Push_by_Reference_Parameter (CD, Level, RParent_Set, Z);
+                --  Shell_Execute (cmd, result, output);
+                File_I_O_Call (SP_Shell_Execute_Result_Output);
+                if Z.TYP /= VStrings then
+                  Type_Mismatch (CD, err_parameter_types_do_not_match,
+                    Found => Z, Expected => VStrings_Set);
+                end if;
+              else
+                --  Shell_Execute (cmd, result);
+                File_I_O_Call (SP_Shell_Execute_with_Result);
+              end if;
+            when others =>
+              Type_Mismatch (CD, err_parameter_types_do_not_match,
+                Found => Y, Expected => VStrings_Set or Ints_Set);
+          end case;
         else
-          File_I_O_Call (SP_Shell_Execute_without_Result);    --  Shell_Execute (cmd);
+          --  Shell_Execute (cmd);
+          File_I_O_Call (SP_Shell_Execute_without_Result);
         end if;
         Need (CD, RParent, err_closing_parenthesis_missing);
 
