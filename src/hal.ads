@@ -239,14 +239,17 @@ package HAL is
 
   subtype File_Type is Ada.Text_IO.File_Type;
 
-  procedure Open (File : in out File_Type; Name : String);   --  Open file as input.
-  procedure Open (File : in out File_Type; Name : VString);  --  Open file as input.
+  --  Open file as input
+  procedure Open (File : in out File_Type; Name : String);
+  procedure Open (File : in out File_Type; Name : VString);
 
-  procedure Create (File : in out File_Type; Name : String);   --  Create file as output.
-  procedure Create (File : in out File_Type; Name : VString);  --  Create file as output.
+  --  Create file as output. If Name = "", it creates a temporary file.
+  procedure Create (File : in out File_Type; Name : String);
+  procedure Create (File : in out File_Type; Name : VString);
 
-  procedure Append (File : in out File_Type; Name : String);   --  Append to existing file (output).
-  procedure Append (File : in out File_Type; Name : VString);  --  Append to existing file (output).
+  --  Append to existing file (output).
+  procedure Append (File : in out File_Type; Name : String);
+  procedure Append (File : in out File_Type; Name : VString);
 
   procedure Close (File : in out File_Type) renames Ada.Text_IO.Close;
 

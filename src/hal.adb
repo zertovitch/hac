@@ -827,18 +827,17 @@ package body HAL is
   --  Versions with outward piping:
 
   procedure Shell_Execute (Command : String; Result : out Integer; Output : out VString) is
-    use Ada.Text_IO;
     temp_1, temp_2 : File_Type;
   begin
-    Create (temp_1, Out_File);
+    Create (temp_1, "");
     declare
-      temp_name_2 : constant String := Name (temp_1) & "_shell_exec.tmp";
+      temp_name_2 : constant String := Ada.Text_IO.Name (temp_1) & "_shell_exec.tmp";
     begin
       Non_Standard.Sys (Command & '>' & temp_name_2, Result);
       if Exists (temp_name_2) then
         Open (temp_2, temp_name_2);
         Get_Line (temp_2, Output);
-        Delete (temp_2);
+        Ada.Text_IO.Delete (temp_2);
       else
         Output := Null_VString;
       end if;

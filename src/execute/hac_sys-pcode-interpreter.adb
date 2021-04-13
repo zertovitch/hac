@@ -253,6 +253,7 @@ package body HAC_Sys.PCode.Interpreter is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       use HAL.VStr_Pkg;
       Lines : Ada.Text_IO.Positive_Count;
+      Shell_Exec_Result : Integer;
     begin
       case Code is
         when SP_Open =>
@@ -329,24 +330,26 @@ package body HAC_Sys.PCode.Interpreter is
             Ada.Text_IO.Skip_Line (ND.S (Curr_TCB.T - 1).Txt.all, Lines);
           end if;
           Pop (2);
-        when SP_Shell_Execute_with_Result =>
-          declare
-            Command        : constant String      := To_String (ND.S (Curr_TCB.T - 1).V);
-            Result         :          Integer;
-            Result_Address : constant Defs.Index  := Defs.Index (ND.S (Curr_TCB.T).I);
-          begin
-            System_Calls.Shell_Execute (Command, Result);
-            ND.S (Result_Address).I := Defs.HAC_Integer (Result);
-            Pop (2);
-          end;
         when SP_Shell_Execute_without_Result =>
           declare
             Command : constant String := To_String (ND.S (Curr_TCB.T).V);
-            Dummy   : Integer;
           begin
-            System_Calls.Shell_Execute (Command, Dummy);
+            System_Calls.Shell_Execute (Command, Shell_Exec_Result);
             Pop;
           end;
+        when SP_Shell_Execute_with_Result =>
+          declare
+            Command        : constant String      := To_String (ND.S (Curr_TCB.T - 1).V);
+            Result_Address : constant Defs.Index  := Defs.Index (ND.S (Curr_TCB.T).I);
+          begin
+            System_Calls.Shell_Execute (Command, Shell_Exec_Result);
+            ND.S (Result_Address).I := Defs.HAC_Integer (Shell_Exec_Result);
+            Pop (2);
+          end;
+        when SP_Shell_Execute_Output =>
+          NULL;
+        when SP_Shell_Execute_Result_Output =>
+          NULL;
         when SP_Set_Exit_Status =>
           HAL.Set_Exit_Status (Integer (ND.S (Curr_TCB.T).I));
           Pop;
@@ -653,6 +656,7 @@ package body HAC_Sys.PCode.Interpreter is
           Shifted_Argument,
           Custom_Command_Name,
           HAL.Shell_Execute,
+          HAL.Shell_Execute,  --  This profile has an Output parameter.
           HAL.Directory_Separator
          );
 

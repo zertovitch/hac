@@ -10,7 +10,7 @@ procedure Shell is
     line : VString;
     ln : constant VString := +"output.lst";
     secret_command : constant VString :=
-      +"cmd /C echo This is the super-secret message for testing I/O pipe";
+      +"echo This is the super-secret message for testing I/O pipe";
   begin
     Put_Line (+"Testing outward pipe (command>file), variant " & variant & ".");
     case variant is

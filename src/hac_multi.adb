@@ -58,6 +58,7 @@ procedure HAC_Multi is
             Ada.Command_Line.Argument,
             Ada.Command_Line.Command_Name,    --  Wrong but not used anyway in this demo.
             HAL.Shell_Execute,
+            HAL.Shell_Execute,                --  This profile has an Output parameter.
             HAL.Directory_Separator
            );
 
