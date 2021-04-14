@@ -53,7 +53,10 @@ procedure Shell is
       +"Result of command """ & command &
       """ should be not 0. Returned value is: " & r
     );
-    Put_Line (+"  For Linux: exit code is: " & r / 256 mod 256);  --  WEXITSTATUS
+    if k = Nixux then
+      --  WEXITSTATUS
+      Put_Line (+"  POSIX: filtered exit code is: " & r / 256 mod 256);
+    end if;
     New_Line;
   end Produce_Errors;
 begin
