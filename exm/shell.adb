@@ -7,34 +7,38 @@ procedure Shell is
   f : File_Type;
   --
   procedure Pipe_Test (with_result, with_output : Boolean) is
-    line : VString;
-    ln : constant VString := +"output.lst";
+    line, contents : VString;
+    out_name : constant VString := +"output.lst";
     secret_command : constant VString :=
       +"echo This is the ultra-secret message for testing I/O pipe";
-    piped_secret_command : constant VString := secret_command & '>' & ln;
+    piped_secret_command : constant VString := secret_command & '>' & out_name;
   begin
-    Put ("Testing outward pipe (command>file). With result parameter: ");
+    Put ("Testing outward pipe (command>something). With result parameter: ");
     Put (with_result);
     Put (". With output parameter: ");
     Put (with_output);
     Put_Line (".");
     if with_output then
       if with_result then
-        Shell_Execute (secret_command, r, line);
+        Shell_Execute (secret_command, r, contents);
       else
-        Shell_Execute (secret_command, line);
+        Shell_Execute (secret_command, contents);
       end if;
-      Put_Line (+"  --> Contents of temp output file are: [" & line & ']');
+      Put_Line (+"  --> Contents output VString are: [" & contents & ']');
     else
       if with_result then
         Shell_Execute (piped_secret_command, r);
       else
         Shell_Execute (piped_secret_command);
       end if;
-      Open (f, ln);
-      Get_Line (f, line);
+      Put (+"  --> Contents of file " & out_name & " are: [");
+      Open (f, out_name);
+      while not End_Of_File (f) loop
+        Get_Line (f, line);
+        Put_Line (line);
+      end loop;
       Close (f);
-      Put_Line (+"  --> Contents of file " & ln & " are: [" & line & ']');
+      Put_Line (']');
     end if;
     if with_result and r /= 0 then
       Put_Line (+"Result of echo command is not 0: " & r);
@@ -45,7 +49,11 @@ procedure Shell is
   procedure Produce_Errors (command : VString) is
   begin
     Shell_Execute (command, r);
-    Put_Line (+"Result of command """ & command & """ should be not 0, it is: " & r);
+    Put_Line (
+      +"Result of command """ & command &
+      """ should be not 0. Returned value is: " & r
+    );
+    Put_Line (+"  For Linux: exit code is: " & r / 256 mod 256);  --  WEXITSTATUS
     New_Line;
   end Produce_Errors;
 begin
@@ -71,5 +79,5 @@ begin
     end loop;
   end loop;
   Produce_Errors (+"Command_Impossible");
-  Produce_Errors (+"exit 666");
+  Produce_Errors (+"exit 123");
 end Shell;

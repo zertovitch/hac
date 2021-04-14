@@ -1,5 +1,6 @@
 with Ada.Numerics.Float_Random,
      Ada.Numerics.Generic_Elementary_Functions,
+     Ada.Streams.Stream_IO,
      Ada.Strings.Fixed;
 
 package body HAL is
@@ -827,22 +828,33 @@ package body HAL is
   --  Versions with outward piping:
 
   procedure Shell_Execute (Command : String; Result : out Integer; Output : out VString) is
-    temp_1, temp_2 : File_Type;
+    package SIO renames Ada.Streams.Stream_IO;
+    temp_1, temp_2 : SIO.File_Type;
   begin
-    Create (temp_1, "");
+    SIO.Create (temp_1, SIO.Out_File, "");
     declare
-      temp_name_2 : constant String := Ada.Text_IO.Name (temp_1) & "_shell_exec.tmp";
+      temp_name_2 : constant String := SIO.Name (temp_1) & "_shell_exec.tmp";
     begin
       Non_Standard.Sys (Command & '>' & temp_name_2, Result);
       if Exists (temp_name_2) then
-        Open (temp_2, temp_name_2);
-        Get_Line (temp_2, Output);
-        Ada.Text_IO.Delete (temp_2);
+        SIO.Open (temp_2, SIO.In_File, temp_name_2);
+        declare
+          size : constant SIO.Count := SIO.Size (temp_2);
+          buffer : String (1 .. Natural (size));
+        begin
+          if SIO.">" (size, 0) then
+            String'Read (SIO.Stream (temp_2), buffer);
+            Output := To_VString (buffer);
+          else
+            Output := Null_VString;
+          end if;
+        end;
+        SIO.Delete (temp_2);
       else
         Output := Null_VString;
       end if;
     end;
-    Close (temp_1);
+    SIO.Close (temp_1);
   end Shell_Execute;
 
   procedure Shell_Execute (Command : VString; Result : out Integer; Output : out VString) is
