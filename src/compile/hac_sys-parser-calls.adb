@@ -48,9 +48,7 @@ package body HAC_Sys.Parser.Calls is
     F : Opcode;
   begin
     Found := Type_Undefined;
-    if CD.Sy /= IDent then
-      Error (CD, err_identifier_missing);
-    else
+    if CD.Sy = IDent then
       K := Locate_Identifier (CD, CD.Id, Level);
       InSymbol (CD);
       if K = No_Id then
@@ -77,6 +75,8 @@ package body HAC_Sys.Parser.Calls is
           Selector (CD, Level, FSys + Colon_Comma_RParent, Found);
         end if;
       end if;
+    else
+      Error (CD, err_identifier_missing);
     end if;
   end Push_by_Reference_Parameter;
 
@@ -164,13 +164,9 @@ package body HAC_Sys.Parser.Calls is
   is -- Hathorn
     Addr, J : Integer;
   begin
-    if CD.Sy /= Period then
-      Skip (CD, Semicolon, err_incorrectly_used_symbol);
-    else
+    if CD.Sy = Period then
       InSymbol (CD);                  --  Task Entry Selector
-      if CD.Sy /= IDent then
-        Skip (CD, Semicolon, err_identifier_missing);
-      else
+      if CD.Sy = IDent then
         J := CD.Blocks_Table (CD.IdTab (I).Block_Ref).Last_Id_Idx;
         CD.IdTab (0).Name := CD.Id;
         while CD.IdTab (J).Name /= CD.Id loop
@@ -184,7 +180,11 @@ package body HAC_Sys.Parser.Calls is
         Addr := J;
         InSymbol (CD);
         Subprogram_or_Entry_Call (CD, Level, FSys, Addr, CallType);
+      else
+        Skip (CD, Semicolon, err_identifier_missing);
       end if;
+    else
+      Skip (CD, Semicolon, err_incorrectly_used_symbol);
     end if;
   end Entry_Call;
 

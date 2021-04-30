@@ -37,23 +37,19 @@ package body HAC_Sys.Librarian is
     VFN  : constant HAL.VString := HAL.To_VString (Full_Name);
     UVFN : constant HAL.VString := HAL.To_Upper (VFN);
     is_new : Boolean;
+    New_Unit : Library_Unit;
   begin
     is_new := LD.Map.Find (UVFN) = No_Element;
-    if is_new then
-      declare
-        New_Unit : Library_Unit;
-      begin
-        New_Unit.Kind      := Kind;
-        New_Unit.Full_Name := VFN;
-        New_Unit.Status    := Status;
-        LD.Library.Append (New_Unit);
-        LD.Map.Insert (UVFN, LD.Library.Last_Index);
-      end;
-    else
+    if not is_new then
       raise Program_Error with
         "Duplicate registration for unit " & Full_Name &
         ". This case should be handled by Apply_WITH";
     end if;
+    New_Unit.Kind      := Kind;
+    New_Unit.Full_Name := VFN;
+    New_Unit.Status    := Status;
+    LD.Library.Append (New_Unit);
+    LD.Map.Insert (UVFN, LD.Library.Last_Index);
     --  HAL.PUT_LINE ("Registering: " & Full_Name);
   end Register_Unit;
 
@@ -74,13 +70,12 @@ package body HAC_Sys.Librarian is
     c := LD.Map.Find (UVFN);
     if c = No_Element then
       raise Program_Error with "Change_Unit_Status called on non-registered unit";
-    else
-      book_nr := Element (c);
-      changed_book := LD.Library.Element (book_nr);
-      changed_book.Status := New_Status;
-      changed_book.Kind   := New_Kind;
-      LD.Library.Replace_Element (book_nr, changed_book);
     end if;
+    book_nr := Element (c);
+    changed_book := LD.Library.Element (book_nr);
+    changed_book.Status := New_Status;
+    changed_book.Kind   := New_Kind;
+    LD.Library.Replace_Element (book_nr, changed_book);
   end Change_Unit_Details;
 
   procedure Enter_Zero_Level_Def (
@@ -150,61 +145,59 @@ package body HAC_Sys.Librarian is
         Full_Name  : String (Full_UName'Range);
         Start : Positive;
       begin
-        if Full_UName'Length > Pkg_UName_Dot'Length
-          and then Full_UName (Full_UName'First .. Full_UName'First - 1 + Pkg_UName_Dot'Length) =
-                   Pkg_UName_Dot
-        then
-          --  We have spotted an item with the correct prefix.
-          --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
-          --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
-          Start := Full_UName'First + Pkg_UName_Dot'Length;
-          Full_Name := To_String (CD.IdTab (i).Name_with_case);
-          declare
-            Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
-            Short_Id     : constant Alfa := To_Alfa (Short_Id_str);
-          begin
-            --  Check if there is already this identifier, even as a level 0 invisible definition
-            --  If not, we do a "FROM Pkg IMPORT Short_Id" (as it would be in Modula-2/Python
-            --  style).
-            Id_Alias := Parser.Helpers.Locate_Identifier (
-              CD               => CD,
-              Id               => Short_Id,
-              Level            => Level,
-              Fail_when_No_Id  => False,
-              Alias_Resolution => False,
-              Level_0_Match    => False  --  We search any matching name, including at level 0.
+        exit when
+          --  We have left the public part of the package specification.
+          Full_UName'Length <= Pkg_UName_Dot'Length
+          or else Full_UName (Full_UName'First .. Full_UName'First - 1 + Pkg_UName_Dot'Length) /=
+                   Pkg_UName_Dot;
+        --  We have spotted an item with the correct prefix.
+        --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
+        --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
+        Start := Full_UName'First + Pkg_UName_Dot'Length;
+        Full_Name := To_String (CD.IdTab (i).Name_with_case);
+        declare
+          Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
+          Short_Id     : constant Alfa := To_Alfa (Short_Id_str);
+        begin
+          --  Check if there is already this identifier, even as a level 0 invisible definition
+          --  If not, we do a "FROM Pkg IMPORT Short_Id" (as it would be in Modula-2/Python
+          --  style).
+          Id_Alias := Parser.Helpers.Locate_Identifier (
+            CD               => CD,
+            Id               => Short_Id,
+            Level            => Level,
+            Fail_when_No_Id  => False,
+            Alias_Resolution => False,
+            Level_0_Match    => False  --  We search any matching name, including at level 0.
+          );
+          if Id_Alias = No_Id or else CD.IdTab (Id_Alias).LEV < Level then
+            --  Here we enter, e.g. the "FALSE", "False" pair.
+            Enter (CD, Level,
+              Short_Id,
+              To_Alfa (Full_Name (Start .. Full_Name'Last)),
+              Alias
             );
-            if Id_Alias = No_Id or else CD.IdTab (Id_Alias).LEV < Level then
-              --  Here we enter, e.g. the "FALSE", "False" pair.
-              Enter (CD, Level,
-                Short_Id,
-                To_Alfa (Full_Name (Start .. Full_Name'Last)),
-                Alias
-              );
-              CD.IdTab (CD.Id_Count).Adr_or_Sz := i;  --  i = Aliased entity's index.
-            else
-              --  Here we have found an identical and
-              --  visible identifier at the same level.
-              if CD.IdTab (Id_Alias).Entity = Alias
-                and then CD.IdTab (Id_Alias).Adr_or_Sz = i
-              then
-                if Level > 0 then
+            CD.IdTab (CD.Id_Count).Adr_or_Sz := i;  --  i = Aliased entity's index.
+          else
+            --  Here we have found an identical and
+            --  visible identifier at the same level.
+            if CD.IdTab (Id_Alias).Entity = Alias
+              and then CD.IdTab (Id_Alias).Adr_or_Sz = i
+            then
+              if Level > 0 then
+                null;  --  Just a duplicate "use" (we could emit a warning for that).
+              else
+                if CD.CUD.level_0_def.Contains (Short_Id) then
                   null;  --  Just a duplicate "use" (we could emit a warning for that).
                 else
-                  if CD.CUD.level_0_def.Contains (Short_Id) then
-                    null;  --  Just a duplicate "use" (we could emit a warning for that).
-                  else
-                    --  Re-activate definition at zero level (context clause).
-                    CD.CUD.level_0_def.Include (Short_Id);
-                    --  HAL.PUT_LINE ("Activate USEd item: " & Short_Id_str);
-                  end if;
+                  --  Re-activate definition at zero level (context clause).
+                  CD.CUD.level_0_def.Include (Short_Id);
+                  --  HAL.PUT_LINE ("Activate USEd item: " & Short_Id_str);
                 end if;
               end if;
             end if;
-          end;
-        else
-          exit;  --  We have left the public part of the package specification.
-        end if;
+          end if;
+        end;
       end;
     end loop;
   end Apply_USE_Clause;
@@ -432,6 +425,7 @@ package body HAC_Sys.Librarian is
     unit_initial : constant Character := Upper_Name (Upper_Name'First);
     unit_uname_dot : constant String := Upper_Name & '.';
   begin
+    --  Activate the unit itself:
     CD.CUD.level_0_def.Include (upper_name_alfa);
     --  HAL.PUT_LINE ("WITH: Activating " & Upper_Name);
     unit_idx := Parser.Helpers.Locate_Identifier (CD, upper_name_alfa, 0);
@@ -439,21 +433,17 @@ package body HAC_Sys.Librarian is
     if CD.IdTab (unit_idx).Entity /= Paquetage then
       return;
     end if;
-    for i in unit_idx + 1 .. CD.Id_Count loop
+    for Pkg_Id of CD.IdTab (unit_idx + 1 .. CD.Id_Count) loop
       --  Quick exit if the first character doesn't match the unit's first letter:
-      exit when Initial (CD.IdTab (i).Name) /= unit_initial;
+      exit when Initial (Pkg_Id.Name) /= unit_initial;
       declare
-        full_upper_name : constant String := To_String (CD.IdTab (i).Name);
+        full_upper_name : constant String := To_String (Pkg_Id.Name);
       begin
-        if full_upper_name'Length > unit_uname_dot'Length
-          and then full_upper_name (full_upper_name'First .. full_upper_name'First - 1 + unit_uname_dot'Length) =
-                   unit_uname_dot
-        then
-          --  We have a Pkg.Item to activate
-          CD.CUD.level_0_def.Include (CD.IdTab (i).Name);
-        else
-          exit;
-        end if;
+        exit when full_upper_name'Length <= unit_uname_dot'Length
+          or else full_upper_name (full_upper_name'First .. full_upper_name'First - 1 + unit_uname_dot'Length) /=
+                   unit_uname_dot;
+        --  We have a Pkg.Item to activate
+        CD.CUD.level_0_def.Include (Pkg_Id.Name);
       end;
     end loop;
   end Activate_Unit;

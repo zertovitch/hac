@@ -20,11 +20,10 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     begin
       if Curr_TCB.T + VSize > Curr_TCB.STACKSIZE then
         raise VM_Stack_Overflow;
-      else
-        Curr_TCB.T := Curr_TCB.T + 5;          --  Make room for fixed area
-        ND.S (Curr_TCB.T - 1).I := HAC_Integer (VSize - 1);
-        ND.S (Curr_TCB.T).I     := IR.Y;       --  CD.IdTab index of called procedure/entry
       end if;
+      Curr_TCB.T := Curr_TCB.T + 5;          --  Make room for fixed area
+      ND.S (Curr_TCB.T - 1).I := HAC_Integer (VSize - 1);
+      ND.S (Curr_TCB.T).I     := IR.Y;       --  CD.IdTab index of called procedure/entry
     end Do_Mark_Stack;
 
     trace_display : constant Boolean := False;

@@ -753,9 +753,9 @@ package body HAL is
     function Count_Nonzero_Digits (any : String) return Natural is
       n : Natural := 0;
     begin
-      for i in any'Range loop
-        exit when any (i) = 'E';  --  Ignore exponent part.
-        if any (i) in '1' .. '9' then
+      for c of any loop
+        exit when c = 'E';  --  Ignore exponent part.
+        if c in '1' .. '9' then
           n := n + 1;
         end if;
       end loop;

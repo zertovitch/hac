@@ -27,13 +27,12 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       H2 := Index (IR.Y) + Curr_TCB.T;    --  Stack top after pushing block
       if H2 > Curr_TCB.STACKSIZE then
         raise VM_Stack_Overflow;
-      else
-        while Curr_TCB.T < H2 loop
-          Curr_TCB.T := Curr_TCB.T + 1;
-          ND.S (Curr_TCB.T) := ND.S (H1);
-          H1 := H1 + 1;
-        end loop;
       end if;
+      while Curr_TCB.T < H2 loop
+        Curr_TCB.T := Curr_TCB.T + 1;
+        ND.S (Curr_TCB.T) := ND.S (H1);
+        H1 := H1 + 1;
+      end loop;
     end Do_Load_Block;
 
     procedure Do_Copy_Block is

@@ -48,9 +48,8 @@ package body HAC_Sys.Defs is
     if s'Length > Alfa'Length then
       raise Constraint_Error
         with "Alfa length capacity exceeded (" & s & ')';
-    else
-      return s & (Alfa'Length - s'Length) * ' ';
     end if;
+    return s & (Alfa'Length - s'Length) * ' ';
   end To_Alfa;
 
 end HAC_Sys.Defs;

@@ -94,15 +94,13 @@ package body HAC_Sys.PCode is
     dummy_address :        Operand_2_Type
   )
   is
-    LC0 : Integer := OC'First;
     use Defs;
     use type HAC_Integer;
   begin
-    while LC0 < OC'Last loop
-      if OC (LC0).F in Jump_Opcode and then OC (LC0).Y = dummy_address then
-        OC (LC0).Y := HAC_Integer (OC'Last);
+    for Op of OC (OC'First .. OC'Last - 1) loop
+      if Op.F in Jump_Opcode and then Op.Y = dummy_address then
+        Op.Y := HAC_Integer (OC'Last);
       end if;
-      LC0 := LC0 + 1;
     end loop;
   end Patch_Addresses;
 

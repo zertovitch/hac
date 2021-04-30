@@ -371,11 +371,10 @@ package body HAC_Sys.Parser.Helpers is
       exit when L < 0 or J /= No_Id;
     end loop;
     if J = No_Id then
-      if Fail_when_No_Id then
-        Error (CD, err_undefined_identifier, To_String (Id), True);  --  Exception raised here.
-      else
-        return J;
+      if not Fail_when_No_Id then
+        return No_Id;
       end if;
+      Error (CD, err_undefined_identifier, To_String (Id), True);  --  Exception raised here.
     end if;
     --  Name aliasing resolution (brought by a use clause
     --  or a simple renames clause).
@@ -397,9 +396,8 @@ package body HAC_Sys.Parser.Helpers is
             Level,
             Fail_when_No_Id
           );
-        else
-          Error (CD, err_identifier_missing, stop => True);
         end if;
+        Error (CD, err_identifier_missing, stop => True);
       end if;
     end if;
     return J;

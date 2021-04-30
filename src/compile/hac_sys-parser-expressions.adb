@@ -267,21 +267,20 @@ package body HAC_Sys.Parser.Expressions is
               when ABS_Symbol =>
                 InSymbol (CD);
                 Primary (FSys_Fact, X);
-                if X.TYP = Ints then
-                  Emit_Std_Funct (CD, SF_Abs_Int);
-                elsif X.TYP = Floats then
-                  Emit_Std_Funct (CD, SF_Abs_Float);
-                elsif X.TYP /= NOTYP then
-                  Error (CD, err_argument_to_std_function_of_wrong_type);
-                end if;
+                case X.TYP is
+                  when Ints   => Emit_Std_Funct (CD, SF_Abs_Int);
+                  when Floats => Emit_Std_Funct (CD, SF_Abs_Float);
+                  when NOTYP  => null;  --  Another error before.
+                  when others => Error (CD, err_argument_to_std_function_of_wrong_type);
+                end case;
               when NOT_Symbol =>
                 InSymbol (CD);
                 Primary (FSys_Fact, X);
-                if X.TYP = Bools then
-                  Emit (CD, k_NOT_Boolean);
-                elsif X.TYP /= NOTYP then
-                  Error (CD, err_resulting_type_should_be_Boolean);
-                end if;
+                case X.TYP is
+                  when Bools => Emit (CD, k_NOT_Boolean);
+                  when NOTYP  => null;  --  Another error before.
+                  when others => Error (CD, err_resulting_type_should_be_Boolean);
+                end case;
               when others =>
                 Primary (FSys_Fact + highest_precedence_operator, X);
                 if CD.Sy = Power then

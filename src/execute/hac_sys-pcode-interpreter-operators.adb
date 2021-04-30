@@ -68,11 +68,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when k_SUBTRACT_Integer => X.I := X.I - Y.I;
       when k_MULT_Integer     => X.I := X.I * Y.I;
       when k_DIV_Integer      =>
-        if Y.I = 0 then raise VM_Division_by_0; else X.I := X.I / Y.I; end if;
+        if Y.I = 0 then raise VM_Division_by_0 with "(/)"; end if;
+        X.I := X.I / Y.I;
       when k_MOD_Integer      =>
-        if Y.I = 0 then raise VM_Division_by_0; else X.I := X.I mod Y.I; end if;
+        if Y.I = 0 then raise VM_Division_by_0 with "(mod)"; end if;
+        X.I := X.I mod Y.I;
       when k_REM_Integer      =>
-        if Y.I = 0 then raise VM_Division_by_0; else X.I := X.I rem Y.I; end if;
+        if Y.I = 0 then raise VM_Division_by_0 with "(rem)"; end if;
+        X.I := X.I rem Y.I;
       when k_Power_Integer    => X.I := X.I ** Natural (Y.I);
       --
       when k_ADD_Float           => X.R := X.R + Y.R;
@@ -290,13 +293,13 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           ND.S (Curr_TCB.T) := GR_Duration (Ada.Calendar.Seconds (ND.S (Curr_TCB.T).Tim));
         when SF_Int_Times_Char =>
           Pop (ND);
-          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range; end if;
+          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range with "negative value"; end if;
           --  [T] := [T] * [T+1] :
           ND.S (Curr_TCB.T) :=
             GR_VString (Natural (ND.S (Curr_TCB.T).I) * Character'Val (ND.S (Curr_TCB.T + 1).I));
         when SF_Int_Times_VStr =>
           Pop (ND);
-          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range; end if;
+          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range with "negative value"; end if;
           --  [T] := [T] * [T+1] :
           ND.S (Curr_TCB.T) :=
             GR_VString (Natural (ND.S (Curr_TCB.T).I) * ND.S (Curr_TCB.T + 1).V);

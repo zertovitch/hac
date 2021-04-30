@@ -48,9 +48,8 @@ package body HAC_Sys.Parser.Enter_Def is
       J := CD.IdTab (J).Link;
     end loop;
     --  Follow the chain of identifiers for current Level.
-    if J /= No_Id then
-      Error (CD, err_duplicate_identifier, To_String (Id), stop => True);
-    else      --  Enter identifier in table IdTab
+    if J = No_Id then
+      --  Enter identifier in table IdTab
       CD.Id_Count            := CD.Id_Count + 1;
       CD.IdTab (CD.Id_Count) :=
          (Name           => Id,
@@ -71,6 +70,8 @@ package body HAC_Sys.Parser.Enter_Def is
       if Level = 0 then
         CD.CUD.level_0_def.Include (Id);
       end if;
+    else
+      Error (CD, err_duplicate_identifier, To_String (Id), stop => True);
     end if;
   end Enter;
 

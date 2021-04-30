@@ -60,9 +60,7 @@ package body HAC_Sys.Parser.Type_Def is
         --  ... or, we have an enumeration item.
         X := Locate_Identifier (CD, CD.Id, Level);
         if X /= 0 then
-          if CD.IdTab (X).Entity /= Declared_Number_or_Enum_Item then
-            Error (CD, err_illegal_constant_or_constant_identifier);
-          else
+          if CD.IdTab (X).Entity = Declared_Number_or_Enum_Item then
             C.TP := CD.IdTab (X).xTyp;
             if C.TP.TYP = Floats then
               C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr_or_Sz);
@@ -72,6 +70,8 @@ package body HAC_Sys.Parser.Type_Def is
                 Error (CD, err_numeric_constant_expected);
               end if;
             end if;
+          else
+            Error (CD, err_illegal_constant_or_constant_identifier);
           end if;
         end if;  --  X /= 0
         InSymbol;
@@ -225,9 +225,8 @@ package body HAC_Sys.Parser.Type_Def is
       Offset             := 0;
       --
       loop
-        if CD.Sy /= IDent then
-          Error (CD, err_identifier_missing, stop => True);
-        else  --  RM 3.8 Component declaration
+        if CD.Sy = IDent then
+          --  RM 3.8 Component declaration
           T0 := CD.Id_Count;
           Enter_Variables (CD, Level);
           Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
@@ -242,6 +241,8 @@ package body HAC_Sys.Parser.Type_Def is
             CD.IdTab (T0).Adr_or_Sz := Offset;
             Offset                  := Offset + Field_Size;
           end loop;
+        else
+          Error (CD, err_identifier_missing, stop => True);
         end if;
         Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
         Ignore_Extra_Semicolons (CD);

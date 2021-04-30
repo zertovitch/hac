@@ -325,18 +325,18 @@ package body HAC_Sys.Compiler is
       Put_Line (map_file, "  LOC  Name       scope");
       Put_Line (map_file, "------------------------");
       New_Line (map_file);
-      for Tx in CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count loop
-        if CD.IdTab (Tx).Entity = Variable then
-          if CD.IdTab (Tx).xTyp.TYP /= NOTYP then
-            Ada.Integer_Text_IO.Put (map_file, CD.IdTab (Tx).Adr_or_Sz, 4);
-            Put (map_file, To_String (CD.IdTab (Tx).Name) & "   ");
+      for Blk of CD.IdTab (CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count) loop
+        if Blk.Entity = Variable then
+          if Blk.xTyp.TYP /= NOTYP then
+            Ada.Integer_Text_IO.Put (map_file, Blk.Adr_or_Sz, 4);
+            Put (map_file, To_String (Blk.Name) & "   ");
           end if;
-          if CD.IdTab (Tx).LEV = 1 then
+          if Blk.LEV = 1 then
             Put (map_file, " Global(");
           else
             Put (map_file, " Local (");
           end if;
-          Put (map_file, Nesting_level'Image (CD.IdTab (Tx).LEV));
+          Put (map_file, Nesting_level'Image (Blk.LEV));
           Put (map_file, ')');
           New_Line (map_file);
         end if;

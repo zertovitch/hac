@@ -110,13 +110,13 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
         H1 := 0;
       end if;
       H2 := Integer (ND.S (H1 + 4).I);  --  index into HAC.Data.IdTab for this process
-      if H1 /= 0 then
+      if H1 = 0 then
+        Put_Line ("Task Variables");
+      else
         Put (Defs.To_String (CD.IdTab (H2).Name));
         Put (" CALLED AT");
         Put (ND.S (H1 + 1).I, 5);
         New_Line;
-      else
-        Put_Line ("Task Variables");
       end if;
       H2 := CD.Blocks_Table (CD.IdTab (H2).Block_Ref).Last_Id_Idx;
       while H2 /= 0 loop
