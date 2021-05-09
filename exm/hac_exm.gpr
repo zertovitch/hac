@@ -39,6 +39,7 @@ project HAC_Exm is
      "merge_sort.adb",
      "names_in_boxes.adb",
      "random.adb",
+     "series.adb",
      "shell_sort.adb",
      "shell.adb",
      "strings_demo.adb",
