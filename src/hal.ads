@@ -71,7 +71,7 @@ package HAL is
 
   --  Random number in the real range [0, I+1[ , truncated to lowest integer.
   --  For example, Rand (10) returns equiprobable integer values
-  --  between 0 and 10 (so, there are 11 possible values).
+  --  from 0 to 10 (so, there are 11 possible values).
   function Rand (I : Integer) return Integer;
 
   --  Random number from 0 to 1, uniform.

@@ -78,8 +78,13 @@ package body HAL is
   end Exp;
 
   function Rand (I : Integer) return Integer is
+    res : Integer;
   begin
-    return Trunc (Rnd * Real (I + 1));
+    loop
+      res := Trunc (Rnd * Real (I + 1));
+      exit when res < I + 1;  --  In extremely rare cases we have res = I + 1.
+    end loop;
+    return res;
   end Rand;
 
   gen : Ada.Numerics.Float_Random.Generator;

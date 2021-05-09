@@ -38,6 +38,7 @@ project HAC_Exm is
      "maze_gen.adb",
      "merge_sort.adb",
      "names_in_boxes.adb",
+     "random.adb",
      "shell_sort.adb",
      "shell.adb",
      "strings_demo.adb",

@@ -92,6 +92,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       Top_Item : General_Register renames ND.S (Curr_TCB.T);
       temp : Defs.HAC_Float;
+      temp_I : Defs.HAC_Integer;
       Idx, Len, From, To : Integer;
       C : Character;
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
@@ -141,9 +142,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         when SF_Sqrt =>   Top_Item.R := HAL.Sqrt (Top_Item.R);
         when SF_Arctan => Top_Item.R := HAL.Arctan (Top_Item.R);
         when SF_Random_Int =>
-          temp := Defs.HAC_Float (Random (ND.Gen)) *
-                  Defs.HAC_Float ((Top_Item.I + 1));
-          Top_Item.I := HAC_Integer (Defs.HAC_Float'Floor (temp));
+          loop
+            temp := Defs.HAC_Float (Random (ND.Gen)) *
+                    Defs.HAC_Float ((Top_Item.I + 1));
+            temp_I := HAC_Integer (Defs.HAC_Float'Floor (temp));
+            exit when temp_I < Top_Item.I + 1;
+            --  ^ In extremely rare cases we have = Top_Item.I + 1.
+          end loop;
+          Top_Item.I := temp_I;
         when SF_String_to_VString =>   --  Unary "+", equivalent to the call To_VString (S)
           Idx := Integer (ND.S (Curr_TCB.T).I);      --  Index in the stack
           Len := Integer (ND.IR.X);                  --  Length of string
