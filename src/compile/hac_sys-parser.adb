@@ -139,9 +139,9 @@ package body HAC_Sys.Parser is
       pragma Assert (CD.IdTab (I).Entity = Variable);
       X := CD.IdTab (I).xTyp;
       if CD.IdTab (I).Normal then
-        F := k_Push_Address;
+        F := k_Push_Address;  --  Normal variable, we push its address
       else
-        F := k_Push_Value;
+        F := k_Push_Value;    --  The value is a reference, we want that address.
       end if;
       Emit_2 (CD, F, Operand_1_Type (CD.IdTab (I).LEV), Operand_2_Type (CD.IdTab (I).Adr_or_Sz));
       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
@@ -229,38 +229,53 @@ package body HAC_Sys.Parser is
       --  This procedure processes both Variable and Constant declarations.
       procedure Single_Var_Declaration is
         procedure Initialized_Constant_or_Variable (
-          explicit       : Boolean;
-          Id_From, Id_To : Integer
+          explicit          : Boolean;
+          Id_First, Id_Last : Integer;
+          var_typ           : Exact_Typ
         )
         is
           LC0 : Integer :=  CD.LC;
           LC1 : Integer;
         begin
           --  Create constant or variable initialization ObjCode
+          --  The new variables Id's are in the range Id_First .. Id_Last.
           if explicit then
-            --  The new variables Id's are in the range Id_From .. Id_To.
             --  We do an assignment to the last one.
-            --  Example: for  "a, b, c : Real := F (x);"  we do  "c := F (x)".
-            Assignment (Id_To, Check_read_only => False);
-            --  Id_To has been assigned.
-            --  Now, we copy the value of Id_To to Id_From .. Id_To - 1.
+            --  Example:
+            --     for:            "a, b, c : Real := F (x);"
+            --     we do first:    "c := F (x)".
+            Assignment (Id_Last, Check_read_only => False);
+            --  Id_Last has been assigned.
+            --  Now, we copy the value of Id_Last to Id_First .. Id_Last - 1.
             --  In the above example:  "a := c"  and  "b := c".
-            for Var of CD.IdTab (Id_From .. Id_To - 1) loop
+            for Var of CD.IdTab (Id_First .. Id_Last - 1) loop
               Emit_2 (CD, k_Push_Address, Operand_1_Type (Var.LEV),
-                                         Operand_2_Type (Var.Adr_or_Sz));
-              Emit_2 (CD, k_Push_Value, Operand_1_Type (CD.IdTab (Id_To).LEV),
-                                       Operand_2_Type (CD.IdTab (Id_To).Adr_or_Sz));
-              Emit (CD, k_Store);
-              --  !! O-o... can't work for composite types (arrays or records) !!
+                                          Operand_2_Type (Var.Adr_or_Sz));
+              case var_typ.TYP is
+                when Arrays =>
+                  Emit_2 (CD, k_Push_Address, Operand_1_Type (CD.IdTab (Id_Last).LEV),
+                                              Operand_2_Type (CD.IdTab (Id_Last).Adr_or_Sz));
+                  Emit_1 (CD, k_Copy_Block, Operand_2_Type (CD.Arrays_Table (var_typ.Ref).Array_Size));
+                when Records =>
+                  Emit_2 (CD, k_Push_Address, Operand_1_Type (CD.IdTab (Id_Last).LEV),
+                                              Operand_2_Type (CD.IdTab (Id_Last).Adr_or_Sz));
+                  Emit_1 (CD, k_Copy_Block, Operand_2_Type (CD.Blocks_Table (var_typ.Ref).VSize));
+                when others =>
+                  --  Non-composite type
+                  Emit_2 (CD, k_Push_Value, Operand_1_Type (CD.IdTab (Id_Last).LEV),
+                                            Operand_2_Type (CD.IdTab (Id_Last).Adr_or_Sz));
+                  Emit (CD, k_Store);
+              end case;
             end loop;
           else
             --  Implicit initialization (for instance, VString's and File_Type's).
-            for Var of CD.IdTab (Id_From .. Id_To) loop
+            for Var of CD.IdTab (Id_First .. Id_Last) loop
               if Auto_Init_Typ (Var.xTyp.TYP) then
                 Emit_2 (CD, k_Push_Address, Operand_1_Type (Var.LEV), Operand_2_Type (Var.Adr_or_Sz));
                 Emit_1 (CD, k_Variable_Initialization, Typen'Pos (Var.xTyp.TYP));
               end if;
-              --  !!  TBD: Must handle composite types (arrays or records) too...
+              --  !!  TBD: Must handle composite types (arrays or records) containing
+              --           initialized types, too...
             end loop;
           end if;
           --
@@ -376,8 +391,9 @@ package body HAC_Sys.Parser is
         if not is_untyped_constant then
           Initialized_Constant_or_Variable (
             explicit => CD.Sy = Becomes,
-            Id_From  => T0i + 1,
-            Id_To    => T1
+            Id_First => T0i + 1,
+            Id_Last  => T1,
+            var_typ  => xTyp
           );
         end if;
         Test_Semicolon_in_Declaration (CD, FSys);

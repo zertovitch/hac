@@ -47,20 +47,20 @@ package body HAC_Sys.Parser.Expressions is
     end Record_Field_Selector;
     --
     procedure Array_Coordinates_Selector is
-      Array_Index_Expr : Exact_Typ;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
+      Array_Index_Typ : Exact_Typ;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
     begin
       loop
         InSymbol (CD);  --  Consume '(' or ',' symbol.
-        Expression (CD, Level, FSys + Comma_RParent + RBrack, Array_Index_Expr);
+        Expression (CD, Level, FSys + Comma_RParent + RBrack, Array_Index_Typ);
         if V.TYP = Arrays then
           declare
             ATI : constant Integer := V.Ref;
             ATE : ATabEntry renames CD.Arrays_Table (ATI);
           begin
-            if ATE.Index_xTyp /= Array_Index_Expr then
+            if ATE.Index_xTyp /= Array_Index_Typ then
               Type_Mismatch (
                 CD, err_illegal_array_subscript,
-                Found    => Array_Index_Expr,
+                Found    => Array_Index_Typ,
                 Expected => ATE.Index_xTyp
               );
             elsif ATE.Element_Size = 1 then

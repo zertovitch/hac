@@ -35,26 +35,23 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
     end Do_Load_Block;
 
     procedure Do_Copy_Block is
-      H1, H2, H3 : Index;
+      --  [T-1].all (0 .. IR.Y - 1) := [T].all (0 .. IR.Y - 1)
+      Dst_Addr, Src_Addr, Last : Index;
     begin
-      H1 := Index (ND.S (Curr_TCB.T - 1).I);   --  Destination address
-      H2 := Index (ND.S (Curr_TCB.T).I);       --  Source address
-      H3 := H1 + Index (IR.Y);                 --  IR.Y = block length
-      while H1 < H3 loop
-        ND.S (H1) := ND.S (H2);
-        H1     := H1 + 1;
-        H2     := H2 + 1;
-      end loop;
+      Dst_Addr := Index (ND.S (Curr_TCB.T - 1).I);
+      Src_Addr := Index (ND.S (Curr_TCB.T).I);
+      Last := Index (IR.Y) - 1;
+      ND.S (Dst_Addr .. Dst_Addr + Last) := ND.S (Src_Addr .. Src_Addr + Last);
       Pop (ND, 2);
     end Do_Copy_Block;
 
     procedure Do_String_Literal_Assignment is
       H1, H2, H3, H4, H5 : Index;
     begin
-      H1 := Index (ND.S (Curr_TCB.T - 2).I);  --  address of array
-      H2 := Index (ND.S (Curr_TCB.T).I);      --  index to string table
-      H3 := Index (IR.Y);                     --  size of array
-      H4 := Index (ND.S (Curr_TCB.T - 1).I);  --  length of string
+      H1 := Index (ND.S (Curr_TCB.T - 2).I);  --  Address of array
+      H2 := Index (ND.S (Curr_TCB.T).I);      --  Index to string table
+      H3 := Index (IR.Y);                     --  Size of array
+      H4 := Index (ND.S (Curr_TCB.T - 1).I);  --  Length of string
       if H3 < H4 then
         H5 := H1 + H3;    --  H5 is H1 + min of H3, H4
       else
