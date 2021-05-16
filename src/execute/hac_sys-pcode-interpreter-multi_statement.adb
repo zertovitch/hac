@@ -8,6 +8,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
     procedure Do_CASE_Switch_1 is
       Value : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
       H2 : Integer;
+      use type Defs.Nesting_level;
     begin
       Pop (ND);
       H2 := Integer (IR.Y);

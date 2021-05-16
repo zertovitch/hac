@@ -129,7 +129,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     end Do_End_Rendezvous;
 
     procedure Do_Selective_Wait is
-      use type Defs.HAC_Float, Ada.Calendar.Time;
+      use type Defs.HAC_Float, Defs.Nesting_level, Ada.Calendar.Time;
       H1, H2, H3 : Integer;
     begin
       case IR.X is

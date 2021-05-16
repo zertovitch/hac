@@ -227,78 +227,86 @@ package body HAC_Sys.Parser is
     --------------------------------------------------Var_Declaration-
     procedure Var_Declaration is
       --  This procedure processes both Variable and Constant declarations.
-      procedure Single_Var_Declaration is
-        procedure Initialized_Constant_or_Variable (
-          explicit          : Boolean;
-          Id_First, Id_Last : Integer;
-          var_typ           : Exact_Typ
-        )
-        is
-          LC0 : Integer :=  CD.LC;
-          LC1 : Integer;
-        begin
-          --  Create constant or variable initialization ObjCode
-          --  The new variables Id's are in the range Id_First .. Id_Last.
-          if explicit then
-            --  We do an assignment to the last one.
-            --  Example:
-            --     for:            "a, b, c : Real := F (x);"
-            --     we do first:    "c := F (x)".
-            Assignment (Id_Last, Check_read_only => False);
-            --  Id_Last has been assigned.
-            --  Now, we copy the value of Id_Last to Id_First .. Id_Last - 1.
-            --  In the above example:  "a := c"  and  "b := c".
-            for Var of CD.IdTab (Id_First .. Id_Last - 1) loop
-              Emit_2 (CD, k_Push_Address, Operand_1_Type (Var.LEV),
-                                          Operand_2_Type (Var.Adr_or_Sz));
-              case var_typ.TYP is
+      procedure Initialized_Constant_or_Variable (
+        explicit          : Boolean;
+        id_first, id_last : Integer;
+        var_typ           : Exact_Typ
+      )
+      is
+        LC0 : Integer :=  CD.LC;
+        LC1 : Integer;
+      begin
+        --  Create constant or variable initialization ObjCode
+        --  The new variables Id's are in the range id_first .. id_last.
+        if explicit then
+          --  We do an assignment to the last one.
+          --  Example:
+          --     for:            "a, b, c : Real := F (x);"
+          --     we do first:    "c := F (x)".
+          Assignment (id_last, Check_read_only => False);
+          --  Id_Last has been assigned.
+          --  Now, we copy the value of id_last to id_first .. id_last - 1.
+          --  In the above example:  "a := c"  and  "b := c".
+          for Var of CD.IdTab (id_first .. id_last - 1) loop
+            --  Push destination address:
+            Emit_2 (CD, k_Push_Address, Var.LEV, Operand_2_Type (Var.Adr_or_Sz));
+            if var_typ.TYP in Composite_Typ then
+              --  Push source address:
+              Emit_2 (CD, k_Push_Address, CD.IdTab (id_last).LEV,
+                Operand_2_Type (CD.IdTab (id_last).Adr_or_Sz)
+              );
+              case Composite_Typ (var_typ.TYP) is
                 when Arrays =>
-                  Emit_2 (CD, k_Push_Address, Operand_1_Type (CD.IdTab (Id_Last).LEV),
-                                              Operand_2_Type (CD.IdTab (Id_Last).Adr_or_Sz));
-                  Emit_1 (CD, k_Copy_Block, Operand_2_Type (CD.Arrays_Table (var_typ.Ref).Array_Size));
+                  Emit_1 (CD, k_Copy_Block,
+                    Operand_2_Type (CD.Arrays_Table (var_typ.Ref).Array_Size)
+                  );
                 when Records =>
-                  Emit_2 (CD, k_Push_Address, Operand_1_Type (CD.IdTab (Id_Last).LEV),
-                                              Operand_2_Type (CD.IdTab (Id_Last).Adr_or_Sz));
-                  Emit_1 (CD, k_Copy_Block, Operand_2_Type (CD.Blocks_Table (var_typ.Ref).VSize));
-                when others =>
-                  --  Non-composite type
-                  Emit_2 (CD, k_Push_Value, Operand_1_Type (CD.IdTab (Id_Last).LEV),
-                                            Operand_2_Type (CD.IdTab (Id_Last).Adr_or_Sz));
-                  Emit (CD, k_Store);
+                  Emit_1 (CD, k_Copy_Block,
+                    Operand_2_Type (CD.Blocks_Table (var_typ.Ref).VSize)
+                  );
               end case;
-            end loop;
-          else
-            --  Implicit initialization (for instance, VString's and File_Type's).
-            for Var of CD.IdTab (Id_First .. Id_Last) loop
-              if Auto_Init_Typ (Var.xTyp.TYP) then
-                Emit_2 (CD, k_Push_Address, Operand_1_Type (Var.LEV), Operand_2_Type (Var.Adr_or_Sz));
-                Emit_1 (CD, k_Variable_Initialization, Typen'Pos (Var.xTyp.TYP));
-              end if;
-              --  !!  TBD: Must handle composite types (arrays or records) containing
-              --           initialized types, too...
-            end loop;
-          end if;
-          --
-          LC1 := CD.LC;
-          --  Reset ObjCode pointer as if ObjCode had not been generated
-          CD.LC := LC0;
-          --  Copy ObjCode to end of ObjCode table in reverse order.
-          --
-          --  This buffering is needed for having the initialization code placed
-          --  right after the "BEGIN" of current block (see Statements_Part_Setup).
-          --  Nested subprograms have their own code and their eventual own
-          --  initialization code coming before in the object code table.
-          ICode := ICode + (LC1 - LC0);  --  Size of initialization ObjCode
-          if LC0 + ICode >= CD.CMax - ICode then
-            Fatal (Object_Code);  --  Collision during the copy (loop below). Garbage guaranteed.
-          end if;
-          while LC0 < LC1 loop
-            CD.ObjCode (CD.CMax) := CD.ObjCode (LC0);
-            CD.CMax              := CD.CMax - 1;
-            LC0                  := LC0 + 1;
+            else
+              --  Non-composite type. We copy the value.
+              Emit_2 (CD, k_Push_Value,
+                CD.IdTab (id_last).LEV,
+                Operand_2_Type (CD.IdTab (id_last).Adr_or_Sz)
+              );
+              Emit (CD, k_Store);
+            end if;
           end loop;
-        end Initialized_Constant_or_Variable;
+        else
+          --  Implicit initialization (for instance, VString's and File_Type's).
+          for Var of CD.IdTab (id_first .. id_last) loop
+            if Auto_Init_Typ (Var.xTyp.TYP) then
+              Emit_2 (CD, k_Push_Address, Var.LEV, Operand_2_Type (Var.Adr_or_Sz));
+              Emit_1 (CD, k_Variable_Initialization, Typen'Pos (Var.xTyp.TYP));
+            end if;
+            --  !!  TBD: Must handle composite types (arrays or records) containing
+            --           initialized types, too...
+          end loop;
+        end if;
         --
+        LC1 := CD.LC;
+        --  Reset ObjCode pointer as if ObjCode had not been generated
+        CD.LC := LC0;
+        --  Copy ObjCode to end of ObjCode table in reverse order.
+        --
+        --  This buffering is needed for having the initialization code placed
+        --  right after the "BEGIN" of current block (see Statements_Part_Setup).
+        --  Nested subprograms have their own code and their eventual own
+        --  initialization code coming before in the object code table.
+        ICode := ICode + (LC1 - LC0);  --  Size of initialization ObjCode
+        if LC0 + ICode >= CD.CMax - ICode then
+          Fatal (Object_Code);  --  Collision during the copy (loop below). Garbage guaranteed.
+        end if;
+        while LC0 < LC1 loop
+          CD.ObjCode (CD.CMax) := CD.ObjCode (LC0);
+          CD.CMax              := CD.CMax - 1;
+          LC0                  := LC0 + 1;
+        end loop;
+      end Initialized_Constant_or_Variable;
+      --
+      procedure Single_Var_Declaration is
         T0, T1, Sz, T0i           : Integer;
         xTyp                      : Exact_Typ;
         is_constant, is_typed,
@@ -391,8 +399,8 @@ package body HAC_Sys.Parser is
         if not is_untyped_constant then
           Initialized_Constant_or_Variable (
             explicit => CD.Sy = Becomes,
-            Id_First => T0i + 1,
-            Id_Last  => T1,
+            id_first => T0i + 1,
+            id_last  => T1,
             var_typ  => xTyp
           );
         end if;

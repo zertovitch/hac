@@ -140,7 +140,7 @@ package HAC_Sys.PCode is
   OK_for_Exception : constant Opcode_Set :=
     (k_Exit_Call .. k_Exit_Function | k_Halt_Interpreter => True, others => False);
 
-  type Operand_1_Type is new Integer;  --  Mostly used to pass nesting levels
+  subtype Operand_1_Type is Defs.Nesting_level'Base;  --  Mostly used to pass nesting levels
 
   --  Type for operand 2 (Y) is large enough for containing
   --  addresses, plus signed integer values *in* HAC programs.
