@@ -126,7 +126,7 @@ package body HAC_Sys.Parser is
     end Formal_Parameter_List;
 
     ------------------------------------------------------------------
-    -------------------------------------------------------Assignment-
+    -----------------------------------------Assignment:   X := Y   --
     procedure Assignment (I : Integer; Check_read_only : Boolean) is
       X, Y  : Exact_Typ;
       F     : Opcode;
@@ -145,8 +145,11 @@ package body HAC_Sys.Parser is
       end if;
       Emit_2 (CD, F, Operand_1_Type (CD.IdTab (I).LEV), Operand_2_Type (CD.IdTab (I).Adr_or_Sz));
       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
+        --  Resolve composite types' selectors (arrays and records).
         Selector (CD, Level, Becomes_EQL + FSys, X);
+        --  Now, X denotes the leaf type (which can be composite as well).
       end if;
+      --  Parse the ":=" of "X := Y;"
       case CD.Sy is
         when Becomes =>
           InSymbol;
@@ -263,10 +266,13 @@ package body HAC_Sys.Parser is
           --
           LC1 := CD.LC;
           --  Reset ObjCode pointer as if ObjCode had not been generated
-          --  !!  Why is the whole double moving needed ?...
-          --      The only possible usefulness if to preserve CD.LC for some reason.
           CD.LC := LC0;
-          --  Copy ObjCode to end of ObjCode table in reverse order
+          --  Copy ObjCode to end of ObjCode table in reverse order.
+          --
+          --  This buffering is needed for having the initialization code placed
+          --  right after the "BEGIN" of current block (see Statements_Part_Setup).
+          --  Nested subprograms have their own code and their eventual own
+          --  initialization code coming before in the object code table.
           ICode := ICode + (LC1 - LC0);  --  Size of initialization ObjCode
           if LC0 + ICode >= CD.CMax - ICode then
             Fatal (Object_Code);  --  Collision during the copy (loop below). Garbage guaranteed.
@@ -1275,7 +1281,11 @@ package body HAC_Sys.Parser is
         CD.ObjCode (CD.LC) := CD.ObjCode (Init_Code_Idx);
         CD.LC              := CD.LC + 1;
       end loop;
-      CD.CMax := CD.CMax + ICode;  --  Restore CMax to the initial max (=CDMax)
+      --  Restore CMax to the initial max.
+      --  At nesting level 0, it will be CDMax.
+      --  For higher levels, it will be CDMax minus the sum of
+      --  current values of ICode for all lower levels.
+      CD.CMax := CD.CMax + ICode;
     end Statements_Part_Setup;
 
     procedure Statements_Part_Closing is
