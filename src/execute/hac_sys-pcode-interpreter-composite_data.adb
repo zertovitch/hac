@@ -11,12 +11,11 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       ATE : ATabEntry renames CD.Arrays_Table (ATI);
       Idx : constant Index := Index (ND.S (Curr_TCB.T).I);
     begin
-      if Idx in ATE.Low .. ATE.High then
-        Pop (ND);  --  Pull array index, then adjust array element pointer.
-        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer ((Idx - ATE.Low) * Element_Size);
-      else
+      if Idx not in ATE.Low .. ATE.High then
         raise VM_Out_of_Range;
       end if;
+      Pop (ND);  --  Pull array index, then adjust array element pointer.
+      ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer ((Idx - ATE.Low) * Element_Size);
     end Do_Array_Index;
 
     procedure Do_Load_Block is

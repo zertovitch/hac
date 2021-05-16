@@ -221,9 +221,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         end if;
 
       when SP_Open | SP_Create | SP_Append | SP_Close =>
-        if CD.Sy /= LParent then
-          Error (CD, err_missing_an_opening_parenthesis);
-        else
+        if CD.Sy = LParent then
           InSymbol (CD);
           Expression (CD, Level, FSys + Colon_Comma_RParent, X);
           if X.TYP /= Text_Files then
@@ -245,6 +243,8 @@ package body HAC_Sys.Parser.Standard_Procedures is
           end if;
           File_I_O_Call (Code);
           Need (CD, RParent, err_closing_parenthesis_missing);
+        else
+          Error (CD, err_missing_an_opening_parenthesis);
         end if;
 
       when SP_Quantum =>

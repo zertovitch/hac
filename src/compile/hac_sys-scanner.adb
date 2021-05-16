@@ -171,11 +171,10 @@ package body HAC_Sys.Scanner is
       --  end if;
     exception
       when Ada.Text_IO.End_Error =>
-        if idx >= InpLine'First then
-          Last := idx;  --  Avoid trashing a non-empty line ending the stream.
-        else
+        if idx < InpLine'First then
           raise;
         end if;
+        Last := idx;  --  Avoid trashing a non-empty line ending the stream.
     end c_Get_Next_Line;
 
     theLine : Source_Line_String;
@@ -242,19 +241,22 @@ package body HAC_Sys.Scanner is
       NextCh (CD);
       Sign := 1;
       S    := 0;
-      if CD.CUD.c = '+' then
-        NextCh (CD);
-      elsif CD.CUD.c = '-' then
-        if allow_minus then
+      case CD.CUD.c is
+        when '+' =>
           NextCh (CD);
-          Sign := -1;
-        else
-          Error (
-            CD, err_negative_exponent_for_integer_literal,
-            HAC_Integer'Image (CD.INum) & ".0e- ..."
-          );
-        end if;
-      end if;
+        when '-' =>
+          if allow_minus then
+            NextCh (CD);
+            Sign := -1;
+          else
+            Error (
+              CD, err_negative_exponent_for_integer_literal,
+              HAC_Integer'Image (CD.INum) & ".0e- ..."
+            );
+          end if;
+        when others =>
+          null;
+      end case;
       if CD.CUD.c not in '0' .. '9' then
         Error (CD, err_illegal_character_in_number, "; expected digit after 'E'");
       else
@@ -444,7 +446,7 @@ package body HAC_Sys.Scanner is
       --  Blatantly illegal cases:
       --      *  6 ''x      where x is not an '
       --      *  7 ''       (end of a line after last non-blank)
-      --      *  8 'c       (end of a line after last non-blank)  c is neither '' nor (
+      --      *  8 'c       (end of a line after last non-blank)  c being neither '' nor (
       --      *  9 '        (end of a line after last non-blank)
       --
       if CD.CUD.CC = CD.CUD.LL then  --  Case (9) above
@@ -453,12 +455,13 @@ package body HAC_Sys.Scanner is
       NextCh (CD);
       C1 := CD.CUD.c;
       if CD.CUD.CC = CD.CUD.LL then  --  Cases (5), (7), (8)
-        if C1 = '(' then        --  Case (5)
+        if C1 = '(' then
+          --  Case (5)
           CD.Sy := Apostrophe;
           return;
-        else                    --  Case (7), (8)
-          Error (CD, err_character_zero_chars, stop => True);
         end if;
+        --  Case (7), (8)
+        Error (CD, err_character_zero_chars, stop => True);
       end if;
       --  We peek the next character without moving.
       --  Possible since CD.CC < CD.LL .
@@ -488,22 +491,19 @@ package body HAC_Sys.Scanner is
         Skip_Blanks (CD);
 
         CD.syStart := CD.CUD.CC - 1;
-        if CharacterTypes (CD.CUD.c) = Illegal then
-          Error (CD, err_illegal_character);
-          if CD.comp_dump_requested then
-            Put_Line
-             (CD.comp_dump,
-              " Char is => " & Integer'Image (Character'Pos (CD.CUD.c)));
-          end if;
-          if CD.listing_requested then
-            Put_Line
-             (CD.listing,
-              " Char is => " & Integer'Image (Character'Pos (CD.CUD.c)));
-          end if;
-          NextCh (CD);
-        else
-          exit Small_loop;
+        exit Small_loop when CharacterTypes (CD.CUD.c) /= Illegal;
+        Error (CD, err_illegal_character);
+        if CD.comp_dump_requested then
+          Put_Line
+           (CD.comp_dump,
+            " Char is => " & Integer'Image (Character'Pos (CD.CUD.c)));
         end if;
+        if CD.listing_requested then
+          Put_Line
+           (CD.listing,
+            " Char is => " & Integer'Image (Character'Pos (CD.CUD.c)));
+        end if;
+        NextCh (CD);
       end loop Small_loop;
 
       exit_big_loop := True;
@@ -648,21 +648,21 @@ package body HAC_Sys.Scanner is
 
         when '-' =>
           NextCh (CD);
-          if CD.CUD.c /= '-' then
-            CD.Sy := Minus;
-          else  --  comment
-            CD.CUD.CC := CD.CUD.LL;  --  ignore rest of input line
+          if CD.CUD.c = '-' then     --  Comment
+            CD.CUD.CC := CD.CUD.LL;  --  Ignore rest of input line
             NextCh (CD);
             exit_big_loop := False;
+          else
+            CD.Sy := Minus;
           end if;
 
         when '=' =>
           NextCh (CD);
-          if CD.CUD.c /= '>' then
-            CD.Sy := EQL;
-          else
+          if CD.CUD.c = '>' then
             CD.Sy := Finger;
             NextCh (CD);
+          else
+            CD.Sy := EQL;
           end if;
 
         when '{' =>  --  Special non documented comment !! O_o: remove that !!

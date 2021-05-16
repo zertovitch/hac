@@ -55,37 +55,38 @@ package body HAC_Sys.Parser.Type_Def is
         end if;
         InSymbol;
       end if;
-      if CD.Sy = IDent then
-        --  Number defined using another one: "minus_pi : constant := -pi;"
-        --  ... or, we have an enumeration item.
-        X := Locate_Identifier (CD, CD.Id, Level);
-        if X /= 0 then
-          if CD.IdTab (X).Entity = Declared_Number_or_Enum_Item then
-            C.TP := CD.IdTab (X).xTyp;
-            if C.TP.TYP = Floats then
-              C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr_or_Sz);
-            else
-              C.I := Sign * HAC_Integer (CD.IdTab (X).Adr_or_Sz);
-              if signed and then C.TP.TYP not in Numeric_Typ then
-                Error (CD, err_numeric_constant_expected);
+      case CD.Sy is
+        when IDent =>
+          --  Number defined using another one: "minus_pi : constant := -pi;"
+          --  ... or, we have an enumeration item.
+          X := Locate_Identifier (CD, CD.Id, Level);
+          if X /= 0 then
+            if CD.IdTab (X).Entity = Declared_Number_or_Enum_Item then
+              C.TP := CD.IdTab (X).xTyp;
+              if C.TP.TYP = Floats then
+                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr_or_Sz);
+              else
+                C.I := Sign * HAC_Integer (CD.IdTab (X).Adr_or_Sz);
+                if signed and then C.TP.TYP not in Numeric_Typ then
+                  Error (CD, err_numeric_constant_expected);
+                end if;
               end if;
+            else
+              Error (CD, err_illegal_constant_or_constant_identifier);
             end if;
-          else
-            Error (CD, err_illegal_constant_or_constant_identifier);
-          end if;
-        end if;  --  X /= 0
-        InSymbol;
-      elsif CD.Sy = IntCon then
-        C.TP := (Ints, 0);
-        C.I  := Sign * CD.INum;
-        InSymbol;
-      elsif CD.Sy = FloatCon then
-        C.TP := (Floats, 0);
-        C.R  := HAC_Float (Sign) * CD.RNum;
-        InSymbol;
-      else
-        Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
-      end if;
+          end if;  --  X /= 0
+          InSymbol;
+        when IntCon =>
+          C.TP := (Ints, 0);
+          C.I  := Sign * CD.INum;
+          InSymbol;
+        when FloatCon =>
+          C.TP := (Floats, 0);
+          C.R  := HAC_Float (Sign) * CD.RNum;
+          InSymbol;
+        when others =>
+          Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
+      end case;
     end if;
     Test (CD, FSys_ND, Empty_Symset, err_incorrectly_used_symbol);
   end Number_Declaration_or_Enum_Item_or_Literal_Char;

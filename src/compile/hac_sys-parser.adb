@@ -70,9 +70,7 @@ package body HAC_Sys.Parser is
             InSymbol;
             ValParam := False;
           end if;
-          if CD.Sy /= IDent then
-            Error (CD, err_identifier_missing);
-          else
+          if CD.Sy = IDent then
             X := Locate_Identifier (CD, CD.Id, Level);
             InSymbol;
             if X = CD.String_Id_Index then
@@ -92,6 +90,8 @@ package body HAC_Sys.Parser is
                 Error (CD, err_missing_a_type_identifier, stop => True);
               end if;
             end if;  --  X /= No_Id
+          else
+            Error (CD, err_identifier_missing);
           end if;
           Test (CD, Comma_IDent_RParent_Semicolon, FSys, err_semicolon_missing, stop_on_error => True);
           while T0 < CD.Id_Count loop
@@ -147,15 +147,16 @@ package body HAC_Sys.Parser is
       if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
         Selector (CD, Level, Becomes_EQL + FSys, X);
       end if;
-      if CD.Sy = Becomes then
-        InSymbol;
-      elsif CD.Sy = EQL then
-        --  Common mistake by BASIC or C programmers.
-        Error (CD, err_EQUALS_instead_of_BECOMES);
-        InSymbol;
-      else
-        Error (CD, err_BECOMES_missing);
-      end if;
+      case CD.Sy is
+        when Becomes =>
+          InSymbol;
+        when EQL =>
+          --  Common mistake by BASIC or C programmers.
+          Error (CD, err_EQUALS_instead_of_BECOMES);
+          InSymbol;
+        when others =>
+          Error (CD, err_BECOMES_missing);
+      end case;
       if Check_read_only and then CD.IdTab (I).Read_only then
         Error (CD, err_cannot_modify_constant_or_in_parameter);
       end if;
@@ -190,14 +191,14 @@ package body HAC_Sys.Parser is
         Emit (CD, k_Store);
       elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
         X_Len := CD.Arrays_Table (X.Ref).Array_Size;
-        if X_Len /= CD.SLeng then
+        if X_Len = CD.SLeng then
+          Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (X_Len));
+        else
           Error (CD, err_string_lengths_do_not_match,
             "variable has length" & X_Len'Image &
             ", literal has length" & CD.SLeng'Image,
             stop => True
           );
-        else
-          Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (X_Len));
         end if;
       elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
         Error (CD, err_string_to_vstring_assignment);
@@ -238,11 +239,12 @@ package body HAC_Sys.Parser is
             --  We do an assignment to the last one.
             --  Example: for  "a, b, c : Real := F (x);"  we do  "c := F (x)".
             Assignment (Id_To, Check_read_only => False);
-            --  Id_To has been assigned; we copy the value of Id_To to Id_From .. Id_To - 1.
-            --  In the example:  "a := c"  and  "b := c".
-            for Var_Id in Id_From .. Id_To - 1 loop
-              Emit_2 (CD, k_Push_Address, Operand_1_Type (CD.IdTab (Var_Id).LEV),
-                                         Operand_2_Type (CD.IdTab (Var_Id).Adr_or_Sz));
+            --  Id_To has been assigned.
+            --  Now, we copy the value of Id_To to Id_From .. Id_To - 1.
+            --  In the above example:  "a := c"  and  "b := c".
+            for Var of CD.IdTab (Id_From .. Id_To - 1) loop
+              Emit_2 (CD, k_Push_Address, Operand_1_Type (Var.LEV),
+                                         Operand_2_Type (Var.Adr_or_Sz));
               Emit_2 (CD, k_Push_Value, Operand_1_Type (CD.IdTab (Id_To).LEV),
                                        Operand_2_Type (CD.IdTab (Id_To).Adr_or_Sz));
               Emit (CD, k_Store);
@@ -250,16 +252,12 @@ package body HAC_Sys.Parser is
             end loop;
           else
             --  Implicit initialization (for instance, VString's and File_Type's).
-            for Var_Id in Id_From .. Id_To loop
-              declare
-                Var : IdTabEntry renames CD.IdTab (Var_Id);
-              begin
-                if Auto_Init_Typ (Var.xTyp.TYP) then
-                  Emit_2 (CD, k_Push_Address, Operand_1_Type (Var.LEV), Operand_2_Type (Var.Adr_or_Sz));
-                  Emit_1 (CD, k_Variable_Initialization, Typen'Pos (Var.xTyp.TYP));
-                end if;
-                --  !!  TBD: Must handle composite types (arrays or records) too...
-              end;
+            for Var of CD.IdTab (Id_From .. Id_To) loop
+              if Auto_Init_Typ (Var.xTyp.TYP) then
+                Emit_2 (CD, k_Push_Address, Operand_1_Type (Var.LEV), Operand_2_Type (Var.Adr_or_Sz));
+                Emit_1 (CD, k_Variable_Initialization, Typen'Pos (Var.xTyp.TYP));
+              end if;
+              --  !!  TBD: Must handle composite types (arrays or records) too...
             end loop;
           end if;
           --
@@ -564,33 +562,32 @@ package body HAC_Sys.Parser is
             Error (CD, err_procedures_cannot_return_a_value, stop => True);
           end if;
           --  Calculate return value (destination: X; expression: Y).
-          if CD.IdTab (Block_Id_Index).Block_Ref = CD.Display (Level) then
-            X := CD.IdTab (Block_Id_Index).xTyp;
-            if CD.IdTab (Block_Id_Index).Normal then
-              F := k_Push_Address;
-            else
-              F := k_Push_Value;
-            end if;
-            Emit_2 (CD, F, Operand_1_Type (CD.IdTab (Block_Id_Index).LEV + 1), 0);
-            --
-            Expression (CD, Level, Semicolon_Set, Y);
-            if X.TYP = Y.TYP then
-              if (X.TYP in Standard_Typ) or else (X.TYP = Enums and then X = Y) then
-                Emit (CD, k_Store);
-              elsif X.Ref /= Y.Ref then
-                Issue_Type_Mismatch_Error;
-              end if;
-            elsif X.TYP = Floats and Y.TYP = Ints then
-              Forbid_Type_Coercion (CD, Found => Y, Expected => X);
-              Emit_1 (CD, k_Integer_to_Float, 0);
+          if CD.IdTab (Block_Id_Index).Block_Ref /= CD.Display (Level) then
+            raise Program_Error with
+              "Is it `return x` from main? Issue should have been caught earlier: " &
+              "err_procedures_cannot_return_a_value.";
+          end if;
+          X := CD.IdTab (Block_Id_Index).xTyp;
+          if CD.IdTab (Block_Id_Index).Normal then
+            F := k_Push_Address;
+          else
+            F := k_Push_Value;
+          end if;
+          Emit_2 (CD, F, Operand_1_Type (CD.IdTab (Block_Id_Index).LEV + 1), 0);
+          --
+          Expression (CD, Level, Semicolon_Set, Y);
+          if X.TYP = Y.TYP then
+            if (X.TYP in Standard_Typ) or else (X.TYP = Enums and then X = Y) then
               Emit (CD, k_Store);
-            elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
+            elsif X.Ref /= Y.Ref then
               Issue_Type_Mismatch_Error;
             end if;
-          else
-            raise Program_Error with
-              "`return x` from main; issue should have been caught earlier: " &
-              "err_procedures_cannot_return_a_value.";
+          elsif X.TYP = Floats and Y.TYP = Ints then
+            Forbid_Type_Coercion (CD, Found => Y, Expected => X);
+            Emit_1 (CD, k_Integer_to_Float, 0);
+            Emit (CD, k_Store);
+          elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
+            Issue_Type_Mismatch_Error;
           end if;
         end if;
         if Is_a_function then
@@ -709,15 +706,16 @@ package body HAC_Sys.Parser is
         end if;
         LC1 := CD.LC;
         Emit (CD, k_CASE_Switch);
-        if CD.Sy = IS_Symbol then  --  Was OF_Symbol in SmallAda! I.e. "case x OF when 1 => ..."
-          InSymbol;
-        elsif CD.Sy = OF_Symbol then
-          Error (CD, err_OF_instead_of_IS);  --  Common mistake by Pascal programmers
-          InSymbol;
-        else
-          Error (CD, err_IS_missing);
-        end if;
-
+        --  OF_Symbol was expected here in SmallAda! I.e. "case x OF when 1 => ..."
+        case CD.Sy is
+          when IS_Symbol =>
+            InSymbol;
+          when OF_Symbol =>
+            Error (CD, err_OF_instead_of_IS);  --  Common mistake by Pascal programmers
+            InSymbol;
+          when others =>
+            Error (CD, err_IS_missing);
+        end case;
         if CD.Sy /= WHEN_Symbol then
           Error (CD, err_WHEN_missing, stop => True);
         end if;
@@ -1269,16 +1267,13 @@ package body HAC_Sys.Parser is
     end Declarative_Part;
 
     procedure Statements_Part_Setup is
-      Init_Code_Idx : Integer;
     begin
       MaxDX := Dx;
       CD.IdTab (Block_Id_Index).Adr_or_Sz := CD.LC;
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
-      Init_Code_Idx := CD.CMax + ICode;
-      while Init_Code_Idx > CD.CMax loop
+      for Init_Code_Idx in reverse CD.CMax + 1 .. CD.CMax + ICode loop
         CD.ObjCode (CD.LC) := CD.ObjCode (Init_Code_Idx);
         CD.LC              := CD.LC + 1;
-        Init_Code_Idx      := Init_Code_Idx - 1;
       end loop;
       CD.CMax := CD.CMax + ICode;  --  Restore CMax to the initial max (=CDMax)
     end Statements_Part_Setup;
