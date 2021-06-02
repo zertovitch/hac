@@ -222,6 +222,8 @@ package body HAC_Sys.Compiler is
       end if;
     end Dump_Asm;
 
+    full_main_Id : HAL.VString;
+
   begin  --  Compile_Main
     if CD.Progress = null then
       Put_Line ("Compiling MAIN " & HAL.VStr_Pkg.To_String (CD.CUD.source_file_name));
@@ -249,15 +251,27 @@ package body HAC_Sys.Compiler is
       Error (CD, err_missing_a_procedure_declaration, stop => True);  --  PROCEDURE Name is
     end if;
     Scanner.InSymbol (CD);
-    if CD.Sy /= IDent then
-      Error (CD, err_identifier_missing, stop => True);
+    loop
+      if CD.Sy /= IDent then
+        Error (CD, err_identifier_missing, stop => True);
+      end if;
+      full_main_Id := HAL."&" (full_main_Id, To_String (CD.Id_with_case));
+      Scanner.InSymbol (CD);
+      exit when CD.Sy /= Period;
+      --  Here we have a Parent.Child naming.
+      Scanner.InSymbol (CD);
+      --  !! TBD: do the implicit "with Parent;" here.
+      full_main_Id := HAL."&" (full_main_Id, '.');
+    end loop;
+    CD.Main_Program_ID_with_case := To_Alfa (HAL.VStr_Pkg.To_String (full_main_Id));
+    CD.Main_Program_ID           := To_Alfa (HAL.VStr_Pkg.To_String (HAL.To_Upper (full_main_Id)));
+    if To_String (CD.Main_Program_ID) /= main_name_hint then
+      Error (CD, err_library_error,
+        ": unit name """ & main_name_hint & """ expected in this file, found: """ &
+        To_String (CD.Main_Program_ID) & '"',
+        True
+      );
     end if;
-    if To_String (CD.Id) /= main_name_hint then
-      Error (CD, err_library_error, ": unit name """ & main_name_hint & """ expected in this file", True);
-    end if;
-    CD.Main_Program_ID           := CD.Id;
-    CD.Main_Program_ID_with_case := CD.Id_with_case;
-    Scanner.InSymbol (CD);
     if CD.Sy /= IS_Symbol then
       --  procedure Name IS
       Error (CD, err_syntax_error, ": main procedure should be parameterless", stop => True);
@@ -285,7 +299,7 @@ package body HAC_Sys.Compiler is
       CD, Block_Begin_Symbol + Statement_Begin_Symbol,
       False, False, 1,
       CD.Id_Count,
-      CD.IdTab (CD.Id_Count).Name,
+      CD.Main_Program_ID,
       CD.Main_Program_ID_with_case
     );
     --  Main procedure is parsed.

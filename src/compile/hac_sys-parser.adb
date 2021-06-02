@@ -1345,6 +1345,22 @@ package body HAC_Sys.Parser is
     Restore_Block_ID : constant HAL.VString := CD.Full_Block_Id;
     use HAL;
 
+    procedure Check_ident_after_END is
+      full_name : VString;
+    begin
+      pragma Assert (CD.Sy = IDent);
+      loop
+        full_name := full_name & To_String (CD.Id);
+        InSymbol;
+        exit when CD.Sy /= Period;
+        full_name := full_name & '.';
+        InSymbol;
+      end loop;
+      if VStr_Pkg.To_String (full_name) /= To_String (Block_Id) then
+        Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
+      end if;
+    end Check_ident_after_END;
+
   begin  --  Block
     if CD.Err_Count > 0 then
       return;
@@ -1437,11 +1453,9 @@ package body HAC_Sys.Parser is
       end if;
       --
       if CD.Sy = IDent then  --  Verify that the name after "end" matches the unit name.
-        if CD.Id /= Block_Id then
-          Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
-        end if;
-        InSymbol;
-      elsif Is_a_block_statement and Block_Id /= Empty_Alfa then  --  "end [label]" is required
+        Check_ident_after_END;
+      elsif Is_a_block_statement and Block_Id /= Empty_Alfa then
+        --  No identifier after "end", but "end [label]" is required in this case.
         Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
       end if;
     end if;

@@ -51,15 +51,16 @@ package body HAC_Sys.Builder is
     start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
   )
   is
-    main_name_guess : constant String := Ada.Characters.Handling.To_Upper (file_name);
+    main_name_guess : String := Ada.Characters.Handling.To_Upper (file_name);
     last_slash, last_dot : Natural := 0;
   begin
     Co_Defs.Set_Source_Stream (BD.CD.CUD, s, file_name, start_line);
-    --  Guess unit name from file name
+    --  Guess unit name from file name (operation is the reverse of GNAT_Naming in Librarian).
     for i in main_name_guess'Range loop
       case main_name_guess (i) is
         when '.'       => last_dot := i;
         when '/' | '\' => last_slash := i;
+        when '-'       => main_name_guess (i) := '.';  --  Child unit (GNAT naming convention)
         when others    => null;
       end case;
     end loop;

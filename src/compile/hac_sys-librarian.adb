@@ -382,6 +382,9 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Proc ("InheritP",       SP_InheritP);
   end Define_and_Register_HAL;
 
+  --  GNAT_Naming returns the file name that GNAT expects for a unit
+  --  with the name Unit_Name.
+
   function GNAT_Naming (Unit_Name : String) return String is
     result : String := Ada.Characters.Handling.To_Lower (Unit_Name);
   begin
