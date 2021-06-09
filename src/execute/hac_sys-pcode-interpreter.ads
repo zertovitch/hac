@@ -136,6 +136,7 @@ package HAC_Sys.PCode.Interpreter is
      VME_Data_Error,
      VME_End_Error,
      VME_Index_Error,
+     VME_Mode_Error,
      VME_Name_Error,
      VME_Program_Error,
      VME_Status_Error,

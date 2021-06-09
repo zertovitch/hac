@@ -384,6 +384,8 @@ package body HAC_Sys.PCode.Interpreter is
           when others =>
             Raise_Standard (ND, VME_Name_Error, Stop_Instruction => True);
         end case;
+      when E : Ada.Text_IO.Mode_Error =>
+        Raise_Standard (ND, VME_Mode_Error, Ada.Exceptions.Exception_Message (E));
       when E : Ada.Text_IO.Status_Error =>
         case Code is
           when SP_Open | SP_Create | SP_Append =>
@@ -702,6 +704,7 @@ package body HAC_Sys.PCode.Interpreter is
       when VME_Custom =>
         return "(custom)";  --  needs to use details
       when Ada_Error_Exception_Type =>
+        --  Turn the enumerated item identifier, e.g. VME_MODE_ERROR, to "Mode_Error":
         return Img (Img'First + 4) &
           Ada.Characters.Handling.To_Lower (Img (Img'First + 5 .. Img'Last - 6)) &
           "_Error";
