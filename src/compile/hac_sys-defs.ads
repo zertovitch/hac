@@ -60,7 +60,7 @@ package HAC_Sys.Defs is
 
   Alng                  : constant := 40;       --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
   AMax                  : constant := 1000;     --  Size OF ARRAY-TABLE
-  BMax                  : constant := 1000;     --  Size OF Block-TABLE
+  BMax                  : constant := 10000;    --  Size OF Block-TABLE
   Float_Const_Table_Max : constant := 200;
   Cases_Max             : constant := 300;      --  Max number of cases in a CASE statement
   CDMax                 : constant := 100_000;  --  Size OF ObjCode
@@ -85,7 +85,7 @@ package HAC_Sys.Defs is
   OrdMaxChar : constant := 255;           --  Ord of last Char
 
   PriMax     : constant := 100;           --  Maximum Task priority
-  SMax       : constant := 10_000;        --  Size of String table
+  SMax       : constant := 100_000;       --  Size of String table
   TaskMax    : constant := 12;            --  Max # of concurrent tasks
 
   Wind_Size    : constant := TaskMax + 2;    --  SnapShot window size
