@@ -21,7 +21,7 @@ project HAC is
    type HAC_OS_Kind is
       ("Any", "Linux", "MacOSX", "Win32", "Win64");
 
-   HAC_OS : HAC_OS_Kind := external ("HAC_OS_Kind", "Any");
+   HAC_OS : HAC_OS_Kind := external ("HAC_OS", "Any");
 
    for Main use ("hac.adb", "hac_mini.adb", "hac_multi.adb");
 
