@@ -137,8 +137,8 @@ package body HAC_Sys.UErrors is
         return "missing ""begin""";
       when err_END_missing =>
         return "missing ""end""";
-      when err_factor_unexpected_symbol =>
-        return "factor: expecting an id, a constant, ""not"" or ""(""";
+      when err_primary_unexpected_symbol =>
+        return "expected ""("", or: name, number, string, ... (RM 4.4 (7), 4.5(8))";
       when err_RETURN_missing =>
         return "missing ""return""";
       when err_control_character =>

@@ -158,7 +158,7 @@ package body HAC_Sys.Parser.Expressions is
               Ident_Index : Integer;
             begin
               X := Type_Undefined;
-              Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_factor_unexpected_symbol);
+              Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_primary_unexpected_symbol);
               case CD.Sy is
                 when StrCon =>
                   X.TYP := String_Literals;

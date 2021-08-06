@@ -363,7 +363,7 @@ package HAC_Sys.Defs is
     err_closing_LOOP_missing,
     err_BEGIN_missing,
     err_END_missing,
-    err_factor_unexpected_symbol,
+    err_primary_unexpected_symbol,
     err_RETURN_missing,
     err_control_character,
     err_RECORD_missing,
