@@ -18,6 +18,11 @@ project HAC is
 
    HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
 
+   type HAC_OS_Kind is
+      ("Any", "Linux", "MacOSX", "Win32", "Win64");
+
+   HAC_OS : HAC_OS_Kind := external ("HAC_OS_Kind", "Any");
+
    for Main use ("hac.adb", "hac_mini.adb", "hac_multi.adb");
 
    case HAC_Build_Mode is
@@ -79,7 +84,13 @@ project HAC is
       end case;
    end Compiler;
 
-   Common_Binder_Options := ("-static");
+   Common_Binder_Options := ();
+
+   case HAC_OS is
+      when "Linux" =>
+         Common_Binder_Options := Common_Binder_Options & "-static";  --  Ensures a consistent run-time library
+      when others  =>
+   end case;
 
    package Binder is
       case HAC_Build_Mode is
@@ -89,7 +100,13 @@ project HAC is
       end case;
    end Binder;
 
-   Common_Linker_Options := ("-static");
+   Common_Linker_Options := ();
+
+   case HAC_OS is
+      when "Linux" =>
+         Common_Linker_Options := Common_Linker_Options & "-static";  --  Ensures a consistent run-time library
+      when others  =>
+   end case;
 
    package Linker is
       case HAC_Build_Mode is
