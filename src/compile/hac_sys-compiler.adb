@@ -214,7 +214,7 @@ package body HAC_Sys.Compiler is
         Create (asm_dump, Out_File, asm_dump_file_name);
         Dump (
           CD.ObjCode (CD.ObjCode'First .. CD.LC - 1),  --  Dump only compiled part.
-          CD.Strings_Constants_Table,
+          CD.Strings_Constants_Table.all,
           CD.Float_Constants_Table,
           asm_dump
         );

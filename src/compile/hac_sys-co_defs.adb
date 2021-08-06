@@ -22,9 +22,14 @@ package body HAC_Sys.Co_Defs is
 
   overriding procedure Finalize (CD : in out Compiler_Data) is
     procedure Free is
-      new Ada.Unchecked_Deallocation (HAC_Sys.PCode.Object_Code_Table, Object_Code_Table_Access);
+      new Ada.Unchecked_Deallocation
+        (HAC_Sys.PCode.Object_Code_Table, Object_Code_Table_Access);
+    procedure Free is
+      new Ada.Unchecked_Deallocation
+        (Strings_Constants_Table_Type, Strings_Constants_Table_Access);
   begin
     Free (CD.ObjCode);
+    Free (CD.Strings_Constants_Table);
   end Finalize;
 
 end HAC_Sys.Co_Defs;

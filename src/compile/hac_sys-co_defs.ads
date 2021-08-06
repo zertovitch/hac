@@ -146,8 +146,6 @@ package HAC_Sys.Co_Defs is
   --  Compiler tables  --
   -----------------------
 
-  type Object_Code_Table_Access is access HAC_Sys.PCode.Object_Code_Table;
-
   type    Arrays_Table_Type            is array (1 .. AMax)         of ATabEntry;
   type    Blocks_Table_Type            is array (0 .. BMax)         of BTabEntry;
   type    Display_Type                 is array (Nesting_level)     of Integer;
@@ -156,6 +154,9 @@ package HAC_Sys.Co_Defs is
   subtype Strings_Constants_Table_Type is String (1 .. SMax);
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)      of Index;
   --      ^ Task #0 is main task.
+
+  type Object_Code_Table_Access is access HAC_Sys.PCode.Object_Code_Table;
+  type Strings_Constants_Table_Access is access Strings_Constants_Table_Type;
 
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 
@@ -205,14 +206,14 @@ package HAC_Sys.Co_Defs is
     INum             : HAC_Integer;        --  Integer from InSymbol
     RNum             : HAC_Float;          --  FLOAT Number from InSymbol
     SLeng            : Integer;            --  String Length
-    --  Compiler tables
+    --  Compiler tables. Floats and Strings are used by interpreter at run-time.
     Arrays_Table            : Arrays_Table_Type;  --  NB: only static-sized arrays so far.
     Blocks_Table            : Blocks_Table_Type;
     Display                 : Display_Type;
     Entries_Table           : Entries_Table_Type;
-    Float_Constants_Table   : Float_Constants_Table_Type;    --  Used by interpreter at run-time
+    Float_Constants_Table   : Float_Constants_Table_Type;
     IdTab                   : Identifier_Table_Type;
-    Strings_Constants_Table : Strings_Constants_Table_Type;  --  Used by interpreter at run-time
+    Strings_Constants_Table : Strings_Constants_Table_Access := new Strings_Constants_Table_Type;
     Tasks_Definitions_Table : Tasks_Definitions_Table_Type;
     --  Indices to compiler tables
     Arrays_Count            : Natural;
