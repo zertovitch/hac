@@ -10,7 +10,11 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     if R.Special /= Text_Files then
       R := GR_Abstract_Console;
     end if;
-    if R.Txt = null then
+    if R.Txt = null
+      or else Ada.Text_IO.Is_Open (R.Txt.all)
+      --  ^ Uh oh, someone somewhere in the HAC program forgot to close
+      --    a file at the same VM address.
+    then
       R.Txt := new Ada.Text_IO.File_Type;
       ND.Files.Append (R.Txt);
     end if;
@@ -26,6 +30,13 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     for F of ND.Files loop
       if F /= null then
         if Ada.Text_IO.Is_Open (F.all) then
+          --  We close for the distracted programmer
+          --  all files that are still open.
+          --  In that respect, we do more than required by the RM (A.7(6)):
+          --     "The language does not define what happens to external files
+          --      after the completion of the main program and all the library
+          --      tasks (in particular, if corresponding files have
+          --      not been closed)."
           Ada.Text_IO.Close (F.all);
         end if;
         Free (F);
