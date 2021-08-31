@@ -8,7 +8,7 @@
 --
 -------------------------------------------------------------------------------------
 --
---  In_Defs: Interpreter Definitions
+--  In_Defs: Internal Interpreter Definitions
 
 with HAC_Sys.Co_Defs, HAC_Sys.Defs;
 
@@ -161,7 +161,8 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   );
 
   procedure Free_Allocated_Contents (
-    ND : in out Interpreter_Data
+    ND         : in out Interpreter_Data;
+    Open_Files :    out Open_Files_Vectors.Vector
   );
 
   --  We have an "array of Character" (cf Is_Char_Array) on the stack

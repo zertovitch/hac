@@ -21,15 +21,18 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
   end Allocate_Text_File;
 
   procedure Free_Allocated_Contents (
-    ND : in out Interpreter_Data
+    ND         : in out Interpreter_Data;
+    Open_Files :    out Open_Files_Vectors.Vector
   )
   is
     procedure Free is new Ada.Unchecked_Deallocation (Ada.Text_IO.File_Type, File_Ptr);
     procedure Free is new Ada.Unchecked_Deallocation (Stack_Type, Stack_Type_Access);
+    open_file : Open_File_Data;
+    use Ada.Text_IO;
   begin
     for F of ND.Files loop
       if F /= null then
-        if Ada.Text_IO.Is_Open (F.all) then
+        if Is_Open (F.all) then
           --  We close for the distracted programmer
           --  all files that are still open.
           --  In that respect, we do more than required by the RM (A.7(6)):
@@ -37,6 +40,9 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
           --      after the completion of the main program and all the library
           --      tasks (in particular, if corresponding files have
           --      not been closed)."
+          open_file.Name := HAL.To_VString (Name (F.all));
+          open_file.Mode := Mode (F.all);
+          Open_Files.Append (open_file);
           Ada.Text_IO.Close (F.all);
         end if;
         Free (F);

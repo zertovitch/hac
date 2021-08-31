@@ -5,6 +5,7 @@ with Show_License;
 
 with Ada.Calendar,
      Ada.Command_Line,
+     Ada.Containers,
      Ada.Directories,
      Ada.Exceptions,
      Ada.Strings.Unbounded,
@@ -39,7 +40,7 @@ procedure HAC is
   procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
     use HAC_Sys.Builder,
         HAC_Sys.PCode.Interpreter;
-    use Ada.Calendar, Ada.Command_Line, Ada.Text_IO;
+    use Ada.Calendar, Ada.Command_Line, Ada.Containers, Ada.Text_IO;
     --
     procedure Show_Line_Information (
       File_Name   : String;   --  Example: hac-pcode-interpreter.adb
@@ -87,48 +88,60 @@ procedure HAC is
       );
     end if;
     --
-    if Build_Successful (BD) then
-      if verbosity >= 2 then
-        Put_Line (HAC_margin_2 & "Object code size:" & Object_Code_Size (BD)'Image &
-                  " of" & Maximum_Object_Code_Size'Image &
-                  " Virtual Machine instructions.");
-        Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
-      end if;
-      t1 := Clock;
-      Interpret_on_Current_IO (
-        BD,
-        arg_pos,
-        Ada.Directories.Full_Name (Ada_file_name),
-        post_mortem
-      );
-      t2 := Clock;
-      unhandled_found := Is_Exception_Raised (post_mortem.Unhandled);
-      if verbosity >= 2 then
-        if unhandled_found then
-          Put_Line (
-            HAC_margin_3 & "VM interpreter stopped execution of " &
-              Ada_file_name & " due to an unhandled exception.");
-        else
-          Put_Line (
-            HAC_margin_3 & "VM interpreter done after " &
-            (Duration'Image (t2 - t1)) & " seconds."
-          );
-          Put_Line (
-            HAC_margin_3 & "Execution of " & Ada_file_name & " completed.");
-          Put_Line (
-            HAC_margin_3 & "Maximum stack usage:" & post_mortem.Max_Stack_Usage'Image & " of" &
-            post_mortem.Stack_Size'Image & " units, around" & Integer'Image (100 * post_mortem.Max_Stack_Usage / post_mortem.Stack_Size) & "%.");
-        end if;
-      end if;
-      if unhandled_found then
-        Put_Line (Current_Error, "HAC VM: raised " & Image (post_mortem.Unhandled));
-        Put_Line (Current_Error, Message (post_mortem.Unhandled));
-        Put_Line (Current_Error, "Trace-back locations:");
-        CIO_Trace_Back (post_mortem.Unhandled);
-        Set_Exit_Status (Failure);
-      end if;
-    else
+    if not Build_Successful (BD) then
       Set_Exit_Status (Failure);
+      return;
+    end if;
+    if verbosity >= 2 then
+      Put_Line (HAC_margin_2 & "Object code size:" & Object_Code_Size (BD)'Image &
+                " of" & Maximum_Object_Code_Size'Image &
+                " Virtual Machine instructions.");
+      Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
+    end if;
+    t1 := Clock;
+    Interpret_on_Current_IO (
+      BD,
+      arg_pos,
+      Ada.Directories.Full_Name (Ada_file_name),
+      post_mortem
+    );
+    t2 := Clock;
+    unhandled_found := Is_Exception_Raised (post_mortem.Unhandled);
+    if verbosity >= 2 then
+      if unhandled_found then
+        Put_Line (
+          HAC_margin_3 & "VM interpreter stopped execution of " &
+            Ada_file_name & " due to an unhandled exception.");
+      else
+        Put_Line (
+          HAC_margin_3 & "VM interpreter done after " &
+          (Duration'Image (t2 - t1)) & " seconds."
+        );
+      end if;
+    end if;
+    if unhandled_found then
+      Put_Line (Current_Error, "HAC VM: raised " & Image (post_mortem.Unhandled));
+      Put_Line (Current_Error, Message (post_mortem.Unhandled));
+      Put_Line (Current_Error, "Trace-back locations:");
+      CIO_Trace_Back (post_mortem.Unhandled);
+      Set_Exit_Status (Failure);
+    elsif verbosity >= 1 then
+      Put_Line ("Execution of " & Ada_file_name & " completed.");
+    end if;
+    if verbosity >= 2 then
+      Put_Line (
+        "Maximum stack usage:" & post_mortem.Max_Stack_Usage'Image & " of" &
+        post_mortem.Stack_Size'Image & " units, around" &
+        Integer'Image (100 * post_mortem.Max_Stack_Usage / post_mortem.Stack_Size) & "%."
+      );
+    end if;
+    if verbosity >= 1 then
+      if post_mortem.Open_Files.Length > 0 then
+        Put_Line ("List of files that were left open during execution:");
+        for ofd of post_mortem.Open_Files loop
+          Put_Line ("  Name: " & To_String (ofd.Name) & ", mode: " & File_Mode'Image (ofd.Mode));
+        end loop;
+      end if;
     end if;
   exception
     when E : Abnormal_Termination =>

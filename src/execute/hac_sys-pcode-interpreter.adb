@@ -597,7 +597,7 @@ package body HAC_Sys.PCode.Interpreter is
       Post_Mortem_Dump (CD, ND);
     end if;
     --
-    Free_Allocated_Contents (ND);
+    Free_Allocated_Contents (ND, Post_Mortem.Open_Files);
     --
     Post_Mortem.Unhandled  := ND.TCB (ND.CurTask).Exception_Info;
     Post_Mortem.Stack_Size := In_Defs.Stack_Type'Last;

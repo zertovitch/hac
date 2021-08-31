@@ -39,10 +39,18 @@ package HAC_Sys.PCode.Interpreter is
   --  Post Mortem Data  --
   ------------------------
 
+  type Open_File_Data is record
+    Name : HAL.VString;
+    Mode : Ada.Text_IO.File_Mode;
+  end record;
+
+  package Open_Files_Vectors is new Ada.Containers.Vectors (Positive, Open_File_Data);
+
   type Post_Mortem_Data is record
     Unhandled       : Exception_Propagation_Data;
     Max_Stack_Usage : Natural;
     Stack_Size      : Positive;
+    Open_Files      : Open_Files_Vectors.Vector;
   end record;
 
   ------------------------------------------------------------------------------
