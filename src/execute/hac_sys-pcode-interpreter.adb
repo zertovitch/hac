@@ -19,8 +19,8 @@ with Ada.Characters.Handling,
 package body HAC_Sys.PCode.Interpreter is
 
   procedure Interpret (
-    BD        : in     Builder.Build_Data;  --  Everything is compiled and ready to run
-    Unhandled :    out Exception_Propagation_Data
+    BD          : in     Builder.Build_Data;  --  Everything is compiled and ready to run
+    Post_Mortem :    out Post_Mortem_Data
   )
   is
     ND : In_Defs.Interpreter_Data;
@@ -42,6 +42,7 @@ package body HAC_Sys.PCode.Interpreter is
       ND.TIMER    := ND.SYSCLOCK;     --  set to end of current task's time slice
       HAC_Sys.PCode.Interpreter.Tasking.Init_main_task (BD.CD, ND);
       HAC_Sys.PCode.Interpreter.Tasking.Init_other_tasks (BD.CD, ND);
+      Post_Mortem.Max_Stack_Usage := 0;
     end Start_Interpreter;
 
     procedure Do_Standard_Function is
@@ -573,6 +574,7 @@ package body HAC_Sys.PCode.Interpreter is
       else
         Tasking.Scheduling (CD, ND);
       end if;
+      Post_Mortem.Max_Stack_Usage := Integer'Max (Post_Mortem.Max_Stack_Usage, ND.TCB (ND.CurTask).T);
       Feedback (
         Stack_Current => ND.TCB (ND.CurTask).T,
         Stack_Total   => ND.S'Last,
@@ -597,7 +599,8 @@ package body HAC_Sys.PCode.Interpreter is
     --
     Free_Allocated_Contents (ND);
     --
-    Unhandled := ND.TCB (ND.CurTask).Exception_Info;
+    Post_Mortem.Unhandled  := ND.TCB (ND.CurTask).Exception_Info;
+    Post_Mortem.Stack_Size := In_Defs.Stack_Type'Last;
     --  Use Is_Exception_Raised to check whether an exception was
     --  unhandled when leaving the interpreter.
     case ND.PS is
@@ -618,9 +621,7 @@ package body HAC_Sys.PCode.Interpreter is
     BD_CIO           : in     Builder.Build_Data;  --  Everything is compiled and ready to run
     Argument_Shift   : in     Natural := 0;   --  Number of arguments to be skipped
     Full_Script_Name : in     String;         --  This is for Command_Name
-    Unhandled        :    out Exception_Propagation_Data;
-    Max_Stack_Usage  :    out Natural;
-    Stack_Size       :    out Positive
+    Post_Mortem      :    out Post_Mortem_Data
   )
   is
 
@@ -630,9 +631,8 @@ package body HAC_Sys.PCode.Interpreter is
       User_Abort                 :    out Boolean
     )
     is
-    pragma Unreferenced (Stack_Total, Wall_Clock);
+    pragma Unreferenced (Stack_Total, Wall_Clock, Stack_Current);
     begin
-      Max_Stack_Usage := Integer'Max (Max_Stack_Usage, Stack_Current);
       User_Abort := False;  --  Ctrl-C will make it - in a less polite way...
     end No_Feedback;
 
@@ -688,9 +688,7 @@ package body HAC_Sys.PCode.Interpreter is
          );
 
   begin
-    Stack_Size := In_Defs.Stack_Type'Last;
-    Max_Stack_Usage := 0;
-    Interpret_on_Current_IO_Instance (BD_CIO, Unhandled);
+    Interpret_on_Current_IO_Instance (BD_CIO, Post_Mortem);
   end Interpret_on_Current_IO;
 
   function Image (E : Exception_Propagation_Data) return String is

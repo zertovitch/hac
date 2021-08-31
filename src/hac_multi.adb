@@ -97,7 +97,7 @@ procedure HAC_Multi is
       --
       f : Ada.Streams.Stream_IO.File_Type;
       BD : Build_Data;
-      unhandled : Exception_Propagation_Data;
+      post_mortem : Post_Mortem_Data;
     begin
       accept Start (id : Positive) do
         task_id := id;
@@ -112,8 +112,8 @@ procedure HAC_Multi is
       --
       if Build_Successful (BD) then
         Put_Line ("S" & sep & " Task" & sep & task_id'Image & sep & " successful compilation. Running the VM.");
-        Interpret_for_Multi (BD, unhandled);
-        if Image (unhandled) = "User_Abort" then
+        Interpret_for_Multi (BD, post_mortem);
+        if Image (post_mortem.Unhandled) = "User_Abort" then
           Put_Line ("A2" & sep & " Task" & sep & task_id'Image & sep & " got ""User_Abort"" exception from HAC VM.");
         else
           Put_Line ("D" & sep & " Task" & sep & task_id'Image & sep & " is done.");

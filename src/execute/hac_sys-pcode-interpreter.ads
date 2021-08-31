@@ -35,6 +35,16 @@ package HAC_Sys.PCode.Interpreter is
     );
   procedure Show_Trace_Back (E : Exception_Propagation_Data);
 
+  ------------------------
+  --  Post Mortem Data  --
+  ------------------------
+
+  type Post_Mortem_Data is record
+    Unhandled       : Exception_Propagation_Data;
+    Max_Stack_Usage : Natural;
+    Stack_Size      : Positive;
+  end record;
+
   ------------------------------------------------------------------------------
   --  Here, we provide a ready-to-use, "standard" instantiation of the        --
   --  interpreter, with Ada.Text_IO, Ada.Command_Line, ..., for the console.  --
@@ -47,9 +57,7 @@ package HAC_Sys.PCode.Interpreter is
     BD_CIO           : in     Builder.Build_Data;  --  Everything is compiled and ready to run
     Argument_Shift   : in     Natural := 0;        --  Number of arguments to be skipped
     Full_Script_Name : in     String;              --  This is for Command_Name
-    Unhandled        :    out Exception_Propagation_Data;
-    Max_Stack_Usage  :    out Natural;
-    Stack_Size       :    out Positive
+    Post_Mortem      :    out Post_Mortem_Data
   );
 
   --  Part of the subprograms useed for the Interpret_on_Current_IO
@@ -123,8 +131,8 @@ package HAC_Sys.PCode.Interpreter is
     with package System_Calls is new System_Calls_Traits (<>);
     --
   procedure Interpret (
-    BD        : in     Builder.Build_Data;  --  Everything is compiled and ready to run
-    Unhandled :    out Exception_Propagation_Data
+    BD          : in     Builder.Build_Data;  --  Everything is compiled and ready to run
+    Post_Mortem :    out Post_Mortem_Data
   );
 
   Abnormal_Termination : exception;

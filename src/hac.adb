@@ -61,10 +61,9 @@ procedure HAC is
     f : File_Type;
     t1, t2 : Time;
     BD : Build_Data;
-    unhandled : Exception_Propagation_Data;
+    post_mortem : Post_Mortem_Data;
     unhandled_found : Boolean;
     shebang_offset : Natural;
-    stack_max, stack_total : Natural;
   begin
     if verbosity > 1 then
       New_Line;
@@ -100,11 +99,10 @@ procedure HAC is
         BD,
         arg_pos,
         Ada.Directories.Full_Name (Ada_file_name),
-        unhandled,
-        stack_max, stack_total
+        post_mortem
       );
       t2 := Clock;
-      unhandled_found := Is_Exception_Raised (unhandled);
+      unhandled_found := Is_Exception_Raised (post_mortem.Unhandled);
       if verbosity >= 2 then
         if unhandled_found then
           Put_Line (
@@ -118,15 +116,15 @@ procedure HAC is
           Put_Line (
             HAC_margin_3 & "Execution of " & Ada_file_name & " completed.");
           Put_Line (
-            HAC_margin_3 & "Maximum stack usage:" & stack_max'Image & " of" &
-            stack_total'Image & " units, around" & Integer'Image (100 * stack_max / stack_total) & "%.");
+            HAC_margin_3 & "Maximum stack usage:" & post_mortem.Max_Stack_Usage'Image & " of" &
+            post_mortem.Stack_Size'Image & " units, around" & Integer'Image (100 * post_mortem.Max_Stack_Usage / post_mortem.Stack_Size) & "%.");
         end if;
       end if;
       if unhandled_found then
-        Put_Line (Current_Error, "HAC VM: raised " & Image (unhandled));
-        Put_Line (Current_Error, Message (unhandled));
+        Put_Line (Current_Error, "HAC VM: raised " & Image (post_mortem.Unhandled));
+        Put_Line (Current_Error, Message (post_mortem.Unhandled));
         Put_Line (Current_Error, "Trace-back locations:");
-        CIO_Trace_Back (unhandled);
+        CIO_Trace_Back (post_mortem.Unhandled);
         Set_Exit_Status (Failure);
       end if;
     else
