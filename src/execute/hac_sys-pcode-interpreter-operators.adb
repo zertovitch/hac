@@ -105,11 +105,9 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       case Code is
         when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
         when SF_Abs_Float => Top_Item.R := abs (Top_Item.R);
-        when SF_T_Val =>   --  S'Val : RM 3.5.5 (5)
-          if (Top_Item.I < Defs.OrdMinChar) or
-            (Top_Item.I > Defs.OrdMaxChar)  --  !! Character range
-          then
-            raise VM_Out_of_Range;
+        when SF_T_Val =>   --  Ord = Character'Val : RM 3.5.5 (5,7)
+          if Top_Item.I < Defs.OrdMinChar or Top_Item.I > Defs.OrdMaxChar then
+            raise VM_Out_of_Range with ": not in Character's range";
           end if;
         when SF_T_Pos =>   --  S'Pos : RM 3.5.5 (2)
           null;
@@ -299,13 +297,13 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           ND.S (Curr_TCB.T) := GR_Duration (Ada.Calendar.Seconds (ND.S (Curr_TCB.T).Tim));
         when SF_Int_Times_Char =>
           Pop (ND);
-          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range with "negative value"; end if;
+          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range with ": negative value"; end if;
           --  [T] := [T] * [T+1] :
           ND.S (Curr_TCB.T) :=
             GR_VString (Natural (ND.S (Curr_TCB.T).I) * Character'Val (ND.S (Curr_TCB.T + 1).I));
         when SF_Int_Times_VStr =>
           Pop (ND);
-          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range with "negative value"; end if;
+          if ND.S (Curr_TCB.T).I < 0 then raise VM_Out_of_Range with ": negative value"; end if;
           --  [T] := [T] * [T+1] :
           ND.S (Curr_TCB.T) :=
             GR_VString (Natural (ND.S (Curr_TCB.T).I) * ND.S (Curr_TCB.T + 1).V);

@@ -11,8 +11,10 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       ATE : ATabEntry renames CD.Arrays_Table (ATI);
       Idx : constant Index := Index (ND.S (Curr_TCB.T).I);
     begin
-      if Idx not in ATE.Low .. ATE.High then
-        raise VM_Out_of_Range;
+      if Idx < ATE.Low then
+        raise VM_Out_of_Range with ": index below array's lower bound";
+      elsif Idx > ATE.High then
+        raise VM_Out_of_Range with ": index above array's upper bound";
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.
       ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer ((Idx - ATE.Low) * Element_Size);

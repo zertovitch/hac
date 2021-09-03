@@ -511,6 +511,7 @@ package body HAC_Sys.PCode.Interpreter is
     end Execute_Current_Instruction;
 
     procedure Execute_Current_Instruction_with_Exception is
+      use Ada.Exceptions;
     begin
       Execute_Current_Instruction;
       if ND.PS = Exception_Raised then
@@ -527,8 +528,8 @@ package body HAC_Sys.PCode.Interpreter is
         Raise_Standard (ND, VME_End_Error, "");
       when VM_Function_End_without_Return =>
         Raise_Standard (ND, VME_Program_Error, "Function's end reached without ""return"" statement");
-      when VM_Out_of_Range  =>
-        Raise_Standard (ND, VME_Constraint_Error, "Out of range");
+      when E : VM_Out_of_Range  =>
+        Raise_Standard (ND, VME_Constraint_Error, "Out of range" & Exception_Message (E));
       when VM_Stack_Overflow  =>
         Raise_Standard (ND, VME_Storage_Error, "Stack overflow");
       when VM_Stack_Underflow =>
