@@ -8,5 +8,5 @@ private procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
   Level   :        Defs.Nesting_level;
   FSys    :        Defs.Symset;
   Type_ID :        String;
-  X       :    out Co_Defs.Exact_Typ
+  X       : in     Co_Defs.Exact_Typ
 );

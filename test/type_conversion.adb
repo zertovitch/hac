@@ -11,36 +11,23 @@ procedure Type_Conversion is
     return Integer (x);
   end;
 
-  --  *Implicit* numerical type conversion was featured by HAC 0.01, but it's NOT Ada!
-  --
-  --  function Bogus return Real is
-  --  begin
-  --    return 666;
-  --  end;
-
+  subtype Day is Integer range 1 .. 31;
   i, j : Integer;
   x, y : Real;
   d, e : Duration;
   oa_duration_delta : constant := 0.00006103515625;
   --  OA Win 32 & 64: type Duration is delta 2.0**(-14) range -131072.0..+131072.0-2.0**(-14);
+  dd : Day;
 begin
   i := 1234;
-  x := 1234.0;
+  x := Real (i);
+  --  dd := Day (x);  --  <---- This should raise a Constraint_Error (not in range)
   --
-  --  *Implicit* numerical type conversion was featured by HAC 0.01, but it's NOT Ada!
-  --
-  --  j := To_Int (777);
-  --  y := x + i;
-  --  y := x / i;
-  --  y := i / x;
-  --  if 3 = 3.14 then null; end if;
-  --  if 3.14 = 3 then null; end if;
-  --  y := To_Int (x);
-  --
-  i := 1;
-  x := 2.0;
-  y := x + Real (i);       --  <-- Here is the wonderful feature!
-  j := i + To_Int (3.51);  --  <-- Here is the wonderful feature!
+  dd := 1;
+  i := dd;
+  x := 0.0 * x + 2.0;
+  y := x + Real (i);
+  j := i + To_Int (3.51);
   --
   if y /= 3.0 then
     Put_Line ("Compiler bug [A]");

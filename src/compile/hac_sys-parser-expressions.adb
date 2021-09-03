@@ -215,6 +215,7 @@ package body HAC_Sys.Parser.Expressions is
                         end if;
                         --
                       when TypeMark =>
+                        X := r.xTyp;
                         Subtype_Prefixed_Expression (CD, Level, FSys_Prim, X);
                       when Prozedure | Prozedure_Intrinsic =>
                         Error (CD, err_expected_constant_function_variable_or_subtype);
@@ -645,7 +646,7 @@ package body HAC_Sys.Parser.Expressions is
     CD    : in out Co_Defs.Compiler_Data;
     Level : in     Defs.Nesting_level;
     FSys  : in     Defs.Symset;
-    X     :    out Co_Defs.Exact_Typ
+    X     : in out Co_Defs.Exact_Typ
   )
   is
     Type_ID : constant String := To_String (CD.Id);

@@ -33,7 +33,7 @@ private package HAC_Sys.Parser.Expressions is
     CD    : in out Co_Defs.Compiler_Data;
     Level : in     Defs.Nesting_level;
     FSys  : in     Defs.Symset;
-    X     :    out Co_Defs.Exact_Typ
+    X     : in out Co_Defs.Exact_Typ
   );
 
 end HAC_Sys.Parser.Expressions;

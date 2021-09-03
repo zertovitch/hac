@@ -15,7 +15,7 @@ private package HAC_Sys.Parser.Attributes is
     Level   :        Defs.Nesting_level;
     FSys    :        Defs.Symset;
     Type_ID :        String;
-    X       :    out Co_Defs.Exact_Typ
+    X       : in out Co_Defs.Exact_Typ
   );
 
 end HAC_Sys.Parser.Attributes;
