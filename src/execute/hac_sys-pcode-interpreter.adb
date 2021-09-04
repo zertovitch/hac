@@ -14,7 +14,8 @@ with Ada.Characters.Handling,
      Ada.Directories,
      Ada.Environment_Variables,
      Ada.Exceptions,
-     Ada.IO_Exceptions;
+     Ada.IO_Exceptions,
+     Ada.Strings.Fixed;
 
 package body HAC_Sys.PCode.Interpreter is
 
@@ -492,11 +493,21 @@ package body HAC_Sys.PCode.Interpreter is
           ND.S (Curr_TCB.T) := Curr_TCB.R_Temp;
         when k_Check_Lower_bound =>
           if ND.S (Curr_TCB.T).I < IR.Y then
-            raise VM_Out_of_Range with ": value below (sub)type's lower bound";
+            raise VM_Out_of_Range
+              with
+                ": value, " &
+                Ada.Strings.Fixed.Trim (HAC_Integer'Image (ND.S (Curr_TCB.T).I), Ada.Strings.Left) &
+                ", is below (sub)type's lower bound, " &
+                Ada.Strings.Fixed.Trim (HAC_Integer'Image (IR.Y), Ada.Strings.Left);
           end if;
         when k_Check_Upper_bound =>
           if ND.S (Curr_TCB.T).I > IR.Y then
-            raise VM_Out_of_Range with ": value above (sub)type's upper bound";
+            raise VM_Out_of_Range
+              with
+                ": value, " &
+                Ada.Strings.Fixed.Trim (HAC_Integer'Image (ND.S (Curr_TCB.T).I), Ada.Strings.Left) &
+                ", is above (sub)type's upper bound, " &
+                Ada.Strings.Fixed.Trim (HAC_Integer'Image (IR.Y), Ada.Strings.Left);
           end if;
         --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;

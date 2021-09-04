@@ -29,7 +29,7 @@ package HAC_Sys.Co_Defs is
   type Exact_Typ is tagged record  --  NB: was called "Item" in SmallAda.
     TYP  : Typen;
     Ref  : Index;
-    --  If TYP is not a standard type, then (TYP, Ref) does identify the type.
+    --  If TYP is not a standard type, then (TYP, Ref) does identify the base type.
     --  E.g. it can be (Enums, [index of the enumerated type definition]).
     --
     --  Rules:
