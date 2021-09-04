@@ -32,10 +32,10 @@ package body HAC_Sys.Parser.Ranges is
         Id_T : IdTabEntry renames CD.IdTab (Idx);
       begin
         if Id_T.Entity = TypeMark and then Discrete_Typ (Id_T.xTyp.TYP) then
-          Low.TP  := Id_T.xTyp;
-          Low.I   := Id_T.Discrete_First;
-          High.TP := Id_T.xTyp;
-          High.I  := Id_T.Discrete_Last;
+          Low.TP  := Exact_Typ (Id_T.xTyp);
+          Low.I   := Id_T.xTyp.Discrete_First;
+          High.TP := Exact_Typ (Id_T.xTyp);
+          High.I  := Id_T.xTyp.Discrete_Last;
           Found   := True;
           InSymbol (CD);
         end if;

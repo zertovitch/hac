@@ -62,7 +62,7 @@ package body HAC_Sys.Parser.Type_Def is
           X := Locate_Identifier (CD, CD.Id, Level);
           if X /= 0 then
             if CD.IdTab (X).Entity = Declared_Number_or_Enum_Item then
-              C.TP := CD.IdTab (X).xTyp;
+              C.TP := Exact_Typ (CD.IdTab (X).xTyp);
               if C.TP.TYP = Floats then
                 C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr_or_Sz);
               else
@@ -113,9 +113,7 @@ package body HAC_Sys.Parser.Type_Def is
         CD, Level,
         FSys_TD => Comma_IDent_Semicolon + FSys_NTD,
         xTP     => New_T.xTyp,
-        Size    => New_T.Adr_or_Sz,
-        First   => New_T.Discrete_First,
-        Last    => New_T.Discrete_Last
+        Size    => New_T.Adr_or_Sz
       );
     end;
     --
@@ -126,10 +124,8 @@ package body HAC_Sys.Parser.Type_Def is
     CD            : in out Compiler_Data;
     Initial_Level : in     Defs.Nesting_level;
     FSys_TD       : in     Defs.Symset;
-    xTP           :    out Exact_Typ;
-    Size          :    out Integer;
-    First         :    out HAC_Integer;  --  T'First value if discrete
-    Last          :    out HAC_Integer   --  T'Last value if discrete
+    xTP           :    out Exact_Subtyp;
+    Size          :    out Integer
   )
   is
     Level : Nesting_level := Initial_Level;
@@ -142,12 +138,10 @@ package body HAC_Sys.Parser.Type_Def is
       String_Constrained_Subtype :     Boolean
     )
     is
-      Element_Exact_Typ : Exact_Typ;
-      Element_Size      : Integer;
-      Lower_Bound       : Constant_Rec;
-      Higher_Bound      : Constant_Rec;
-      Dummy_First       : HAC_Integer;
-      Dummy_Last        : HAC_Integer;
+      Element_Exact_Subtyp : Exact_Subtyp;
+      Element_Size         : Integer;
+      Lower_Bound          : Constant_Rec;
+      Higher_Bound         : Constant_Rec;
       use Ranges;
     begin
       Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
@@ -155,28 +149,25 @@ package body HAC_Sys.Parser.Type_Def is
       Arr_Tab_Ref := CD.Arrays_Count;
       if String_Constrained_Subtype then
         --  We define String (L .. H) exactly as an "array (L .. H) of Character".
-        Element_Exact_Typ := (TYP => Chars, Ref => 0);
+        Element_Exact_Subtyp := (Chars, 0, 0, 255);
         Element_Size := 1;
         Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
       elsif CD.Sy = Comma then
         --  Multidimensional array is equivalant to:  array (range_1) of array (range_2,...).
         InSymbol;  --  Consume ',' symbol.
-        Element_Exact_Typ.TYP := Arrays;  --  Recursion for next array dimension.
-        Array_Typ (Element_Exact_Typ.Ref, Element_Size, False);
+        Element_Exact_Subtyp.TYP := Arrays;  --  Recursion for next array dimension.
+        Array_Typ (Element_Exact_Subtyp.Ref, Element_Size, False);
       else
         Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
         Need (CD, OF_Symbol, err_missing_OF);         --  "of"  in  "array (...) of Some_Type"
-        Type_Definition (
-          CD, Level, FSys_TD,
-          Element_Exact_Typ, Element_Size, Dummy_First, Dummy_Last
-        );
+        Type_Definition (CD, Level, FSys_TD, Element_Exact_Subtyp, Element_Size);
       end if;
       Arr_Size := (Integer (Higher_Bound.I) - Integer (Lower_Bound.I) + 1) * Element_Size;
       declare
         New_A : ATabEntry renames CD.Arrays_Table (Arr_Tab_Ref);
       begin
         New_A.Array_Size   := Arr_Size;  --  Index_xTyp, Low, High already set by Enter_Array.
-        New_A.Element_xTyp := Element_Exact_Typ;
+        New_A.Element_xTyp := Element_Exact_Subtyp;
         New_A.Element_Size := Element_Size;
       end;
     end Array_Typ;
@@ -184,7 +175,7 @@ package body HAC_Sys.Parser.Type_Def is
     procedure Enumeration_Typ is  --  RM 3.5.1 Enumeration Types
       enum_count : Natural := 0;
     begin
-      xTP := (TYP => Enums, Ref => CD.Id_Count);
+      xTP := (Enums, CD.Id_Count, 0, 0);
       loop
         InSymbol;  --  Consume '(' symbol.
         if CD.Sy = IDent then
@@ -204,20 +195,19 @@ package body HAC_Sys.Parser.Type_Def is
         exit when CD.Sy /= Comma;
       end loop;
       Size  := 1;
-      First := 0;
-      Last  := HAC_Integer (enum_count - 1);
+      xTP.Discrete_Last := HAC_Integer (enum_count - 1);
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Enumeration_Typ;
 
     procedure Record_Typ is
-      Field_Exact_Typ : Exact_Typ;
+      Field_Exact_Subtyp : Exact_Subtyp;
       Field_Size, Offset, T0, T1 : Integer;
       Dummy_First : HAC_Integer;
       Dummy_Last  : HAC_Integer;
     begin
       InSymbol;  --  Consume RECORD symbol.
       Enter_Block (CD, CD.Id_Count);
-      xTP := (TYP => Records, Ref => CD.Blocks_Count);
+      xTP := (Records, CD.Blocks_Count, 0, 0);
       if Level = Nesting_Level_Max then
         Fatal (LEVELS);  --  Exception is raised there.
       end if;
@@ -234,11 +224,11 @@ package body HAC_Sys.Parser.Type_Def is
           T1 := CD.Id_Count;
           Type_Definition (
             CD, Level, FSys_TD + Comma_END_IDent_Semicolon,
-            Field_Exact_Typ, Field_Size, Dummy_First, Dummy_Last
+            Field_Exact_Subtyp, Field_Size
           );
           while T0 < T1 loop
             T0                      := T0 + 1;
-            CD.IdTab (T0).xTyp      := Field_Exact_Typ;
+            CD.IdTab (T0).xTyp      := Field_Exact_Subtyp;
             CD.IdTab (T0).Adr_or_Sz := Offset;
             Offset                  := Offset + Field_Size;
           end loop;
@@ -284,8 +274,6 @@ package body HAC_Sys.Parser.Type_Def is
         if Id_T.Entity = TypeMark then
           xTP   := Id_T.xTyp;
           Size  := Id_T.Adr_or_Sz;
-          First := Id_T.Discrete_First;
-          Last  := Id_T.Discrete_Last;
           if xTP.TYP = NOTYP then
             Error (CD, err_undefined_type);
           end if;
@@ -298,24 +286,22 @@ package body HAC_Sys.Parser.Type_Def is
         --  Here comes the optional `  range 'a' .. 'z'  ` constraint.
         InSymbol;
         Ranges.Explicit_Static_Range (CD, Level, FSys_TD, err_range_constraint_error, Low, High);
-        if Low.TP /= xTP then
+        if Low.TP /= Exact_Typ (xTP) then
           Error (CD, err_range_constraint_error, "type of bounds don't match with the parent type");
-        elsif Low.I not in First .. Last then
+        elsif Low.I not in xTP.Discrete_First .. xTP.Discrete_Last then
           Error (CD, err_range_constraint_error, "lower bound is out of parent type's range");
-        elsif High.I not in First .. Last then
+        elsif High.I not in xTP.Discrete_First .. xTP.Discrete_Last then
           Error (CD, err_range_constraint_error, "higher bound is out of parent type's range");
         else
-          First := Low.I;
-          Last  := High.I;
+          xTP.Discrete_First := Low.I;
+          xTP.Discrete_Last  := High.I;
         end if;
       end if;
     end Sub_Typ;
 
   begin
-    xTP   := Type_Undefined;
+    xTP   := Subtype_Undefined;
     Size  := 0;
-    First := 0;
-    Last  := 0;
     Test (CD, Type_Begin_Symbol, FSys_TD, err_missing_ARRAY_RECORD_or_ident);
     if Type_Begin_Symbol (CD.Sy) then
       case CD.Sy is

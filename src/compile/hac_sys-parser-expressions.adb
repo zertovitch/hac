@@ -19,7 +19,7 @@ package body HAC_Sys.Parser.Expressions is
     CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    V     : in out Co_Defs.Exact_Typ
+    V     : in out Co_Defs.Exact_Subtyp
   )
   is
     --
@@ -170,10 +170,11 @@ package body HAC_Sys.Parser.Expressions is
                   InSymbol (CD);
                   declare
                     r : IdTabEntry renames CD.IdTab (Ident_Index);
+                    X_Sub : Exact_Subtyp;
                   begin
                     case r.Entity is
                       when Declared_Number_or_Enum_Item =>
-                        X := r.xTyp;
+                        X := Exact_Typ (r.xTyp);
                         if X.TYP = Floats then
                           --  Address is an index in the float constants table.
                           Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.Adr_or_Sz));
@@ -183,7 +184,7 @@ package body HAC_Sys.Parser.Expressions is
                         end if;
                         --
                       when Variable =>
-                        X := r.xTyp;
+                        X_Sub := r.xTyp;
                         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                           if r.Normal then
                             F := k_Push_Address;  --  Composite: push "v'Access".
@@ -191,8 +192,8 @@ package body HAC_Sys.Parser.Expressions is
                             F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                           end if;
                           Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
-                          Selector (CD, Level, FSys_Prim, X);
-                          if Standard_or_Enum_Typ (X.TYP) then
+                          Selector (CD, Level, FSys_Prim, X_Sub);
+                          if Standard_or_Enum_Typ (X_Sub.TYP) then
                             --  We are at a leaf point of composite type selection,
                             --  so the stack top is expected to contain a value, not
                             --  an address (for an expression).
@@ -200,7 +201,7 @@ package body HAC_Sys.Parser.Expressions is
                           end if;
                         else
                           --  No selector.
-                          if Standard_or_Enum_Typ (X.TYP) then
+                          if Standard_or_Enum_Typ (X_Sub.TYP) then
                             if r.Normal then
                               F := k_Push_Value;           --  Push variable v's value.
                             else
@@ -213,14 +214,16 @@ package body HAC_Sys.Parser.Expressions is
                           end if;
                           Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
                         end if;
+                        X := Exact_Typ (X_Sub);  --  Discard subtype information.
                         --
                       when TypeMark =>
-                        X := r.xTyp;
-                        Subtype_Prefixed_Expression (CD, Level, FSys_Prim, r, X);
+                        X_Sub := r.xTyp;
+                        Subtype_Prefixed_Expression (CD, Level, FSys_Prim, r, X_Sub);
+                        X := Exact_Typ (X_Sub);  --  Discard subtype information.
                       when Prozedure | Prozedure_Intrinsic =>
                         Error (CD, err_expected_constant_function_variable_or_subtype);
                       when Funktion =>
-                        X := r.xTyp;
+                        X := Exact_Typ (r.xTyp);
                         Calls.Subprogram_or_Entry_Call
                           (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
                       when Funktion_Intrinsic =>
@@ -647,7 +650,7 @@ package body HAC_Sys.Parser.Expressions is
     Level  : in     Defs.Nesting_level;
     FSys   : in     Defs.Symset;
     Typ_ID : in     Co_Defs.IdTabEntry;
-    X      : in out Co_Defs.Exact_Typ
+    X      : in out Co_Defs.Exact_Subtyp
   )
   is
     Mem_Sy : constant KeyWSymbol := CD.Sy;

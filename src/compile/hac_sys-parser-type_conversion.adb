@@ -9,7 +9,7 @@ procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
   Level   :        Defs.Nesting_level;
   FSys    :        Defs.Symset;
   Typ_ID  : in     Co_Defs.IdTabEntry;
-  X       : in     Co_Defs.Exact_Typ
+  X       : in     Co_Defs.Exact_Subtyp
 )
 is
   use Defs;
@@ -55,11 +55,11 @@ begin
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;
-      if Typ_ID.Discrete_First > HAC_Integer'First then
-        Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_bound, Typ_ID.Discrete_First);
+      if X.Discrete_First > HAC_Integer'First then
+        Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_bound, X.Discrete_First);
       end if;
-      if Typ_ID.Discrete_Last < HAC_Integer'Last then
-        Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_bound, Typ_ID.Discrete_Last);
+      if X.Discrete_Last < HAC_Integer'Last then
+        Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_bound, X.Discrete_Last);
       end if;
       --
     when To_Duration =>

@@ -39,10 +39,8 @@ private package HAC_Sys.Parser.Type_Def is  --  Package around type definitions.
     CD            : in out Co_Defs.Compiler_Data;
     Initial_Level : in     Defs.Nesting_level;
     FSys_TD       : in     Defs.Symset;
-    xTP           :    out Co_Defs.Exact_Typ;
-    Size          :    out Integer;
-    First         :    out Defs.HAC_Integer;  --  T'First value if discrete
-    Last          :    out Defs.HAC_Integer   --  T'Last value if discrete
+    xTP           :    out Co_Defs.Exact_Subtyp;
+    Size          :    out Integer
   );
 
 end HAC_Sys.Parser.Type_Def;

@@ -26,17 +26,25 @@ package HAC_Sys.Co_Defs is
 
   use HAC_Sys.Defs;
 
-  type Exact_Typ is record  --  NB: was called "Item" in SmallAda.
+  type Exact_Typ is tagged record  --  NB: was called "Item" in SmallAda.
     TYP  : Typen;
     Ref  : Index;
     --  If TYP is not a standard type, then (TYP, Ref) does identify the type.
     --  E.g. it can be (Enums, [index of the enumerated type definition]).
-    --  If TYP = Records, Ref is an index into the Block_Table;
-    --  if TYP = Arrays,  Ref is an index into the Arrays_Table , or
-    --  if TYP = Enums,   Ref is an index into the Id table (the type's name).
+    --
+    --  Rules:
+    --    If TYP = Records, Ref is an index into the Block_Table;
+    --    if TYP = Arrays,  Ref is an index into the Arrays_Table , or
+    --    if TYP = Enums,   Ref is an index into the Id table (the type's name).
   end record;
 
-  Type_Undefined : constant Exact_Typ := (TYP => NOTYP, Ref => 0);
+  type Exact_Subtyp is new Exact_Typ with record
+    Discrete_First : HAC_Integer;   --  If subtype S is discrete, S'First
+    Discrete_Last  : HAC_Integer;   --  If subtype S is discrete, S'Last
+  end record;
+
+  Subtype_Undefined : constant Exact_Subtyp := (TYP => NOTYP, Ref => 0, others => 0);
+  Type_Undefined : constant Exact_Typ := Exact_Typ (Subtype_Undefined);
 
   -------------------------------------------------------------------------
   ------------------------------------------------------------ATabEntry----
@@ -47,13 +55,14 @@ package HAC_Sys.Co_Defs is
   --
   type ATabEntry is record
     Index_xTyp   : Exact_Typ;  --  C  Type of the index
-    Element_Size : Index;      --  Size of an element
-    Element_xTyp : Exact_Typ;  --  C  Type of the elements of the array.
-                               --        Element_xTYP.Ref is an index to an entry
-                               --        in Arrays_Table if the elements of the array
-                               --        are themselves arrays
-    Array_Size   : Index;      --  C  Total size of the array
     Low, High    : Index;      --  Limits on the array index: array (Low .. High) of Element_TYP
+                               --  ^ !!  Merge Low, High with Index_xTyp, as Exact_Subtyp !!
+    Element_Size : Index;      --  Size of an element
+    Element_xTyp : Exact_Subtyp;  --  C  Subtype of the elements of the array.
+                                  --     If the elements of the array are themselves
+                                  --     arrays, Element_xTYP.Ref is an index to an
+                                  --     entry in Arrays_Table (it's not a special case).
+    Array_Size   : Index;      --  C  Total size of the array
   end record;
 
   -------------------------------------------------------------------------
@@ -115,14 +124,12 @@ package HAC_Sys.Co_Defs is
     Entity         : Entity_Kind;
     Read_only      : Boolean;       --  If Entity = Variable and Read_only = True,
                                     --    it's a typed constant.
-    xTyp           : Exact_Typ;     --  Type identification
+    xTyp           : Exact_Subtyp;  --  Subtype identification
     Block_Ref      : Index;         --  Was: Ref (that was used also for what is now xTyp.Ref,
                                     --       which caused a mixup for functions' return types!)
     Normal         : Boolean;       --  value param?
     LEV            : Nesting_level;
     Adr_or_Sz      : Integer;
-    Discrete_First : HAC_Integer;   --  If Entity = TypeMark, T'First
-    Discrete_Last  : HAC_Integer;   --  If Entity = TypeMark, T'Last
   end record;
 
   --  Entity                        Meaning of Adr_or_Sz

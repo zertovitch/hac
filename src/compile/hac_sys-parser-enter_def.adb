@@ -57,13 +57,11 @@ package body HAC_Sys.Parser.Enter_Def is
           Link           => L,
           Entity         => K,
           Read_only      => False,
-          xTyp           => Type_Undefined,
+          xTyp           => Subtype_Undefined,
           Block_Ref      => 0,
           Normal         => True,
           LEV            => Level,
-          Adr_or_Sz      => 0,
-          Discrete_First => 0,
-          Discrete_Last  => 0
+          Adr_or_Sz      => 0
          );
       --  Update start of identifier chain:
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;

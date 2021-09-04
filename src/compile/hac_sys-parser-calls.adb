@@ -46,6 +46,7 @@ package body HAC_Sys.Parser.Calls is
   is
     K : Integer;
     F : Opcode;
+    found_with_constraint : Exact_Subtyp;
   begin
     Found := Type_Undefined;
     if CD.Sy = IDent then
@@ -61,7 +62,7 @@ package body HAC_Sys.Parser.Calls is
           ": passed to OUT or IN OUT parameter"
         );
       else
-        Found := CD.IdTab (K).xTyp;
+        found_with_constraint := CD.IdTab (K).xTyp;
         if CD.IdTab (K).Normal then
           F := k_Push_Address;  --  Push "v'Access".
         else
@@ -72,8 +73,9 @@ package body HAC_Sys.Parser.Calls is
           Operand_2_Type (CD.IdTab (K).Adr_or_Sz)
         );
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-          Selector (CD, Level, FSys + Colon_Comma_RParent, Found);
+          Selector (CD, Level, FSys + Colon_Comma_RParent, found_with_constraint);
         end if;
+        Found := Exact_Typ (found_with_constraint);
       end if;
     else
       Error (CD, err_identifier_missing);
@@ -111,7 +113,7 @@ package body HAC_Sys.Parser.Calls is
           Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
         else
           CP := CP + 1;
-          Expected := CD.IdTab (CP).xTyp;
+          Expected := Exact_Typ (CD.IdTab (CP).xTyp);
           if CD.IdTab (CP).Normal then
             --------------------------------------------------
             --  Value parameter (IN)                        --

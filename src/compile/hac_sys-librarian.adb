@@ -105,13 +105,14 @@ package body HAC_Sys.Librarian is
       Link           => last,
       Entity         => New_Entity,
       Read_only      => True,
-      xTyp           => (TYP => Base_Type, Ref => 0),
+      xTyp           => (TYP            => Base_Type,
+                         Ref            => 0,
+                         Discrete_First => Discrete_First,
+                         Discrete_Last  => Discrete_Last),
       Block_Ref      => 0,
       Normal         => True,
       LEV            => 0,
-      Adr_or_Sz      => Size,
-      Discrete_First => Discrete_First,
-      Discrete_Last  => Discrete_Last
+      Adr_or_Sz      => Size
     );
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper);

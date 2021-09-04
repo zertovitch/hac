@@ -47,7 +47,7 @@ package body HAC_Sys.Parser is
     procedure Formal_Parameter_List is
       Sz, X, T0 : Integer;
       ValParam  : Boolean;
-      xTP       : Exact_Typ := Type_Undefined;
+      xTP       : Exact_Subtyp := Subtype_Undefined;
     begin
       InSymbol;  --  Consume '(' symbol.
       Sz := 0;
@@ -128,13 +128,15 @@ package body HAC_Sys.Parser is
     ------------------------------------------------------------------
     -----------------------------------------Assignment:   X := Y   --
     procedure Assignment (I : Integer; Check_read_only : Boolean) is
-      X, Y  : Exact_Typ;
+      X     : Exact_Subtyp;
+      Y     : Exact_Typ;
       F     : Opcode;
       X_Len : Natural;
       procedure Issue_Type_Mismatch_Error is
       begin
-        Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
+        Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => Exact_Typ (X));
       end Issue_Type_Mismatch_Error;
+      use type HAC_Integer;
     begin
       pragma Assert (CD.IdTab (I).Entity = Variable);
       X := CD.IdTab (I).xTyp;
@@ -166,6 +168,14 @@ package body HAC_Sys.Parser is
       Expression (CD, Level, Semicolon_Set, Y);
       --
       if X.TYP = Y.TYP and X.TYP /= NOTYP then
+        if Discrete_Typ (X.TYP) then
+          if X.Discrete_First > HAC_Integer'First then
+            Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_bound, X.Discrete_First);
+          end if;
+          if X.Discrete_Last < HAC_Integer'Last then
+            Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_bound, X.Discrete_Last);
+          end if;
+        end if;
         if X.TYP in Standard_Typ then
           Emit (CD, k_Store);
         elsif X.Ref /= Y.Ref then
@@ -185,14 +195,14 @@ package body HAC_Sys.Parser is
           end case;
         end if;
       elsif X.TYP = Floats and Y.TYP = Ints then
-        Forbid_Type_Coercion (CD, Found => Y, Expected => X);
+        Forbid_Type_Coercion (CD, Found => Y, Expected => Exact_Typ (X));
         Emit_1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda. Emit's
         Emit (CD, k_Store);                 --  not needed: compilation error.
       elsif X.TYP = Durations and Y.TYP = Floats then
         --  Duration hack (see Delay_Statement for full explanation).
         Emit_Std_Funct (CD, SF_Float_to_Duration);
         Emit (CD, k_Store);
-      elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
+      elsif Is_Char_Array (CD, Exact_Typ (X)) and Y.TYP = String_Literals then
         X_Len := CD.Arrays_Table (X.Ref).Array_Size;
         if X_Len = CD.SLeng then
           Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (X_Len));
@@ -230,7 +240,7 @@ package body HAC_Sys.Parser is
       procedure Initialized_Constant_or_Variable (
         explicit          : Boolean;
         id_first, id_last : Integer;
-        var_typ           : Exact_Typ
+        var_typ           : Exact_Subtyp
       )
       is
         LC0 : Integer :=  CD.LC;
@@ -308,7 +318,7 @@ package body HAC_Sys.Parser is
       --
       procedure Single_Var_Declaration is
         T0, T1, Sz, T0i           : Integer;
-        xTyp                      : Exact_Typ;
+        xTyp                      : Exact_Subtyp;
         is_constant, is_typed,
         is_untyped_constant       : Boolean;
         C                         : Constant_Rec;
@@ -331,10 +341,7 @@ package body HAC_Sys.Parser is
         is_typed := False;
         if Type_Begin_Symbol (CD.Sy) then  --  Here, a type name or an anonymous type definition
           is_typed := True;
-          Type_Definition (
-            CD, Level, Becomes_Comma_IDent_Semicolon + FSys,
-            xTyp, Sz, Dummy_First, Dummy_Last
-          );
+          Type_Definition (CD, Level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
         end if;
         Test (CD, Becomes_EQL_Semicolon, Empty_Symset, err_incorrectly_used_symbol);
         --
@@ -367,7 +374,7 @@ package body HAC_Sys.Parser is
               r.Read_only := is_constant;
               if is_untyped_constant then
                 r.Entity := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
-                r.xTyp := C.TP;
+                Exact_Typ (r.xTyp) := C.TP;
                 case C.TP.TYP is
                   when Floats =>
                     Enter_or_find_Float (CD, C.R, r.Adr_or_Sz);
@@ -575,11 +582,12 @@ package body HAC_Sys.Parser is
 
       procedure RETURN_Statement is           -- Hathorn
         --  Generate a procedure or function return Statement, calculate return value if req'D.
-        X, Y : Exact_Typ;
+        X : Exact_Subtyp;
+        Y : Exact_Typ;
         F : Opcode;
         procedure Issue_Type_Mismatch_Error is
         begin
-          Type_Mismatch (CD, err_type_of_return_statement_doesnt_match, Found => Y, Expected => X);
+          Type_Mismatch (CD, err_type_of_return_statement_doesnt_match, Found => Y, Expected => Exact_Typ (X));
         end Issue_Type_Mismatch_Error;
       begin
         InSymbol;
@@ -607,13 +615,13 @@ package body HAC_Sys.Parser is
           --
           Expression (CD, Level, Semicolon_Set, Y);
           if X.TYP = Y.TYP then
-            if (X.TYP in Standard_Typ) or else (X.TYP = Enums and then X = Y) then
+            if (X.TYP in Standard_Typ) or else (X.TYP = Enums and then Exact_Typ (X) = Y) then
               Emit (CD, k_Store);
             elsif X.Ref /= Y.Ref then
               Issue_Type_Mismatch_Error;
             end if;
           elsif X.TYP = Floats and Y.TYP = Ints then
-            Forbid_Type_Coercion (CD, Found => Y, Expected => X);
+            Forbid_Type_Coercion (CD, Found => Y, Expected => Exact_Typ (X));
             Emit_1 (CD, k_Integer_to_Float, 0);
             Emit (CD, k_Store);
           elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
@@ -814,13 +822,11 @@ package body HAC_Sys.Parser is
                 Link           => Previous_Last,
                 Entity         => Variable,
                 Read_only      => True,
-                xTyp           => Type_Undefined,
+                xTyp           => Subtype_Undefined,
                 Block_Ref      => 0,
                 Normal         => True,
                 LEV            => Level,
-                Adr_or_Sz      => Dx,
-                Discrete_First => 0,
-                Discrete_Last  => 0
+                Adr_or_Sz      => Dx
                );
           CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx  := CD.Id_Count;
           Dx := Dx + 1;
@@ -845,7 +851,7 @@ package body HAC_Sys.Parser is
         end if;
         Ranges.Dynamic_Range (CD, Level, FSys_St,
           err_control_variable_of_the_wrong_type,
-          CD.IdTab (CD.Id_Count).xTyp  --  Set the type of "C" in "for C in Red .. Blue loop"
+          Exact_Typ (CD.IdTab (CD.Id_Count).xTyp)  --  Set the type of "C" in "for C in Red .. Blue loop"
         );
         LC_FOR_Begin := CD.LC;
         Emit (CD, FOR_Begin);
@@ -1385,7 +1391,7 @@ package body HAC_Sys.Parser is
       CD.IdTab (Block_Id_Index).Block_Ref := PRB;
     end if;
     CD.Display (Level) := PRB;
-    CD.IdTab (Block_Id_Index).xTyp := Type_Undefined;
+    CD.IdTab (Block_Id_Index).xTyp := Subtype_Undefined;
     if CD.Sy = LParent then
       Formal_Parameter_List;
     end if;

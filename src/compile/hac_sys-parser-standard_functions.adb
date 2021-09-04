@@ -232,7 +232,7 @@ package body HAC_Sys.Parser.Standard_Functions is
     end Adjustments_to_Parameter_Types;
     --
   begin
-    Return_Typ := CD.IdTab (Ident_Index).xTyp;
+    Return_Typ := Exact_Typ (CD.IdTab (Ident_Index).xTyp);
     --
     Prepare_Accepted_Parameter_Types;
     --

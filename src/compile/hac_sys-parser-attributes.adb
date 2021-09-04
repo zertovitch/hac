@@ -12,7 +12,7 @@ package body HAC_Sys.Parser.Attributes is
     Level   :        Defs.Nesting_level;
     FSys    :        Defs.Symset;
     Typ_ID  : in     Co_Defs.IdTabEntry;
-    X       : in out Co_Defs.Exact_Typ
+    X       : in out Co_Defs.Exact_Subtyp
   )
   is
   pragma Unreferenced (Level, FSys, Typ_ID, X);
