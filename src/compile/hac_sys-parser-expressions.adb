@@ -216,7 +216,7 @@ package body HAC_Sys.Parser.Expressions is
                         --
                       when TypeMark =>
                         X := r.xTyp;
-                        Subtype_Prefixed_Expression (CD, Level, FSys_Prim, X);
+                        Subtype_Prefixed_Expression (CD, Level, FSys_Prim, r, X);
                       when Prozedure | Prozedure_Intrinsic =>
                         Error (CD, err_expected_constant_function_variable_or_subtype);
                       when Funktion =>
@@ -643,19 +643,19 @@ package body HAC_Sys.Parser.Expressions is
   end Boolean_Expression;
 
   procedure Subtype_Prefixed_Expression (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level : in     Defs.Nesting_level;
-    FSys  : in     Defs.Symset;
-    X     : in out Co_Defs.Exact_Typ
+    CD     : in out Co_Defs.Compiler_Data;
+    Level  : in     Defs.Nesting_level;
+    FSys   : in     Defs.Symset;
+    Typ_ID : in     Co_Defs.IdTabEntry;
+    X      : in out Co_Defs.Exact_Typ
   )
   is
-    Type_ID : constant String := To_String (CD.Id);
     Mem_Sy : constant KeyWSymbol := CD.Sy;
   begin
     InSymbol (CD);
     case Mem_Sy is
-      when LParent    => Type_Conversion (CD, Level, FSys, Type_ID, X);
-      when Apostrophe => Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Type_ID, X);
+      when LParent    => Type_Conversion (CD, Level, FSys, Typ_ID, X);
+      when Apostrophe => Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Typ_ID, X);
       when others => Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", True);
     end case;
   end Subtype_Prefixed_Expression;

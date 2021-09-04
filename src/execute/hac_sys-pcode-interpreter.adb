@@ -490,6 +490,14 @@ package body HAC_Sys.PCode.Interpreter is
         when k_Push_Temp =>
           Push;
           ND.S (Curr_TCB.T) := Curr_TCB.R_Temp;
+        when k_Check_Lower_bound =>
+          if ND.S (Curr_TCB.T).I < IR.Y then
+            raise VM_Out_of_Range with ": value below (sub)type's lower bound";
+          end if;
+        when k_Check_Upper_bound =>
+          if ND.S (Curr_TCB.T).I > IR.Y then
+            raise VM_Out_of_Range with ": value above (sub)type's upper bound";
+          end if;
         --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
         when k_File_I_O                => Do_File_IO;

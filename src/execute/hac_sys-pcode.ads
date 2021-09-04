@@ -33,6 +33,8 @@ package HAC_Sys.PCode is
     k_Swap,         --  Swap the two items at the top of the stack.
     k_Pop_to_Temp,  --  Pop top item to a temp register.
     k_Push_Temp,    --  Push temp register on the stack.
+    k_Check_Lower_bound,
+    k_Check_Upper_bound,
     --
     k_Standard_Functions,
     --
@@ -161,7 +163,7 @@ package HAC_Sys.PCode is
     F : Opcode;          --  Opcode (or instruction field)
     X : Operand_1_Type;  --  Operand 1 is mostly used to point to the static level
     Y : Operand_2_Type;  --  Operand 2 is used to pass addresses and sizes to the
-                         --    instructions or immediate discrete values (k_Literal).
+                         --    instructions, or to pass immediate discrete values (k_Literal).
     D : Debug_Info;
   end record;
 

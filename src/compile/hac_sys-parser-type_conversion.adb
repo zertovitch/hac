@@ -8,11 +8,12 @@ procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
   CD      : in out Co_Defs.Compiler_Data;
   Level   :        Defs.Nesting_level;
   FSys    :        Defs.Symset;
-  Type_ID :        String;
+  Typ_ID  : in     Co_Defs.IdTabEntry;
   X       : in     Co_Defs.Exact_Typ
 )
 is
   use Defs;
+  use type HAC_Integer;
   type Type_Conversion_Kind is (To_Float, To_Integer, To_Duration, Unknown);
   kind : Type_Conversion_Kind;
   T_Expr : Co_Defs.Exact_Typ;
@@ -34,7 +35,7 @@ begin
     when To_Float =>
       case T_Expr.TYP is
         when Floats =>
-          null;  --  !! Check range if any !!
+          null;  --  !! Spot useless conversions !!
         when Ints =>
           Compiler.PCode_Emit.Emit_1 (CD, k_Integer_to_Float, 0);
         when Durations =>
@@ -50,10 +51,16 @@ begin
         when Durations =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Duration_to_Int);
         when Ints =>
-          null;  --  !! Check range if any !!
+          null;  --  !! Spot useless conversions !!
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;
+      if Typ_ID.Discrete_First > HAC_Integer'First then
+        Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_bound, Typ_ID.Discrete_First);
+      end if;
+      if Typ_ID.Discrete_Last < HAC_Integer'Last then
+        Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_bound, Typ_ID.Discrete_Last);
+      end if;
       --
     when To_Duration =>
       case T_Expr.TYP is
@@ -62,12 +69,16 @@ begin
         when Ints =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Int_to_Duration);
         when Durations =>
-          null;  --  !! Check range if any !!
+          null;  --  !! Spot useless conversions !!
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;
     when Unknown =>
-      Error (CD, err_type_conversion_not_supported, "no support for target type " & Type_ID);
+      Error (
+        CD,
+        err_type_conversion_not_supported,
+        "no support for target type " & To_String (Typ_ID.Name_with_case)
+      );
   end case;
   Need (CD, RParent, err_closing_parenthesis_missing);
 end HAC_Sys.Parser.Type_Conversion;
