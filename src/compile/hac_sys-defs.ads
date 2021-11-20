@@ -59,8 +59,8 @@ package HAC_Sys.Defs is
   MaxINT     : constant Integer := Integer'Last - 1;
 
   Alng                  : constant := 40;       --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
-  AMax                  : constant := 1000;     --  Size OF ARRAY-TABLE
-  BMax                  : constant := 10000;    --  Size OF Block-TABLE
+  AMax                  : constant := 1_000;    --  Size OF ARRAY-TABLE
+  BMax                  : constant := 10_000;   --  Size OF Block-TABLE
   Float_Const_Table_Max : constant := 200;
   Cases_Max             : constant := 300;      --  Max number of cases in a CASE statement
   CDMax                 : constant := 100_000;  --  Size OF ObjCode

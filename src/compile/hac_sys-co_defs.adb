@@ -21,15 +21,28 @@ package body HAC_Sys.Co_Defs is
   end Get_Source_Name;
 
   overriding procedure Finalize (CD : in out Compiler_Data) is
-    procedure Free is
+    --
+    --  Dream: a future Ada version instantiates automatically
+    --           Ada.Unchecked_Deallocation...
+    --
+    procedure Unchecked_Free is
+      new Ada.Unchecked_Deallocation
+        (Blocks_Table_Type, Blocks_Table_Access);
+    procedure Unchecked_Free is
+      new Ada.Unchecked_Deallocation
+        (Identifier_Table_Type, Identifier_Table_Access);
+    procedure Unchecked_Free is
       new Ada.Unchecked_Deallocation
         (HAC_Sys.PCode.Object_Code_Table, Object_Code_Table_Access);
-    procedure Free is
+    procedure Unchecked_Free is
       new Ada.Unchecked_Deallocation
         (Strings_Constants_Table_Type, Strings_Constants_Table_Access);
+    --
   begin
-    Free (CD.ObjCode);
-    Free (CD.Strings_Constants_Table);
+    Unchecked_Free (CD.Blocks_Table);
+    Unchecked_Free (CD.IdTab);
+    Unchecked_Free (CD.ObjCode);
+    Unchecked_Free (CD.Strings_Constants_Table);
   end Finalize;
 
 end HAC_Sys.Co_Defs;

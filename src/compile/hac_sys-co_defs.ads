@@ -162,8 +162,10 @@ package HAC_Sys.Co_Defs is
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)      of Index;
   --      ^ Task #0 is main task.
 
-  type Object_Code_Table_Access is access HAC_Sys.PCode.Object_Code_Table;
+  type Blocks_Table_Access            is access Blocks_Table_Type;
+  type Object_Code_Table_Access       is access HAC_Sys.PCode.Object_Code_Table;
   type Strings_Constants_Table_Access is access Strings_Constants_Table_Type;
+  type Identifier_Table_Access        is access Identifier_Table_Type;
 
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 
@@ -215,11 +217,11 @@ package HAC_Sys.Co_Defs is
     SLeng            : Integer;            --  String Length
     --  Compiler tables. Floats and Strings are used by interpreter at run-time.
     Arrays_Table            : Arrays_Table_Type;  --  NB: only static-sized arrays so far.
-    Blocks_Table            : Blocks_Table_Type;
+    Blocks_Table            : Blocks_Table_Access            := new Blocks_Table_Type;
     Display                 : Display_Type;
     Entries_Table           : Entries_Table_Type;
     Float_Constants_Table   : Float_Constants_Table_Type;
-    IdTab                   : Identifier_Table_Type;
+    IdTab                   : Identifier_Table_Access        := new Identifier_Table_Type;
     Strings_Constants_Table : Strings_Constants_Table_Access := new Strings_Constants_Table_Type;
     Tasks_Definitions_Table : Tasks_Definitions_Table_Type;
     --  Indices to compiler tables
