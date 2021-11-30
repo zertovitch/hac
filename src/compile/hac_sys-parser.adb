@@ -1367,7 +1367,13 @@ package body HAC_Sys.Parser is
         end if;
       end loop;
       if VStr_Pkg.To_String (full_name) /= To_String (Block_Id) then
-        Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
+        Error
+          (CD, err_incorrect_block_name,
+           hint => To_String (Block_Id_with_case),
+           previous_symbol => True
+           --  ^ Ideally we would enclose the whole wrong full name, possibly on several lines.
+           --  But it is correct on a single wrong identifier, the most frequent case.
+          );
       end if;
     end Check_ident_after_END;
 

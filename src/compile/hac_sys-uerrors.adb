@@ -254,6 +254,8 @@ package body HAC_Sys.UErrors is
 
   function "+" (S : String) return HAL.VString renames HAL."+";
 
+  --  The "[...]" are replaced by the correct identifier.
+
   repair_table : constant array (Compile_Error) of Repair_kit :=
     (
       err_missing_a_procedure_declaration
@@ -271,22 +273,24 @@ package body HAC_Sys.UErrors is
       err_missing_closing_CASE        => (insert,        +" case"),
       err_missing_closing_IF          => (insert,        +" if"),
       err_closing_parenthesis_missing => (insert,        +")"),
-      err_incorrect_block_name        => (replace_token, +"[Error() puts identifier]"),
-      err_END_LOOP_ident_missing      => (insert,        +"[Error() puts identifier]"),
-      err_END_LOOP_ident_wrong        => (replace_token, +"[Error() puts identifier]"),
+      err_incorrect_block_name        => (replace_token, +"[...]"),
+      err_END_LOOP_ident_missing      => (insert,        +"[...]"),
+      err_END_LOOP_ident_wrong        => (replace_token, +"[...]"),
       err_EQUALS_instead_of_BECOMES   => (replace_token, +":="),
-      err_duplicate_semicolon     => (replace_token, +""),
+      err_duplicate_semicolon         => (replace_token, +""),
       others                          => nothing_to_repair
     );
 
   procedure Error (
-    CD   : in out Co_Defs.Compiler_Data;
-    code :        Defs.Compile_Error;
-    hint :        String      := "";
-    stop :        Boolean     := False
+    CD              : in out Co_Defs.Compiler_Data;
+    code            :        Defs.Compile_Error;
+    hint            :        String      := "";
+    stop            :        Boolean     := False;
+    previous_symbol :        Boolean     := False
   )
   is
     use Ada.Text_IO;
+    line, col_start, col_stop : Integer;
     --
     procedure Show_to_comp_dump (
        srcNumber, charStart, charEnd, objNumber : Integer;
@@ -317,16 +321,25 @@ package body HAC_Sys.UErrors is
     ub_hint : constant HAL.VString := HAL.To_VString (hint);
     use HAL.VStr_Pkg;
   begin
-    Show_to_comp_dump (CD.CUD.line_count, CD.syStart, CD.syEnd, -1, hint);
+    if previous_symbol then
+      line      := CD.prev_sy_line;
+      col_start := CD.prev_sy_start;
+      col_stop  := CD.prev_sy_end;
+    else
+      line      := CD.CUD.line_count;
+      col_start := CD.syStart;
+      col_stop  := CD.syEnd;
+    end if;
+    Show_to_comp_dump (line, col_start, col_stop, -1, hint);
     CD.Errs (code) := True;
     CD.Err_Count := CD.Err_Count + 1;
     if CD.Error_Pipe = null then
       Put_Line (
         Current_Error,
         To_String (CD.CUD.source_file_name) & ": " &
-        Trim (Integer'Image (CD.CUD.line_count), Left) & ':' &
-        Trim (Integer'Image (CD.syStart), Left) & '-' &
-        Trim (Integer'Image (CD.syEnd), Left) & ": " &
+        Trim (Integer'Image (line),      Left) & ':' &
+        Trim (Integer'Image (col_start), Left) & '-' &
+        Trim (Integer'Image (col_stop),  Left) & ": " &
         Error_String (code, hint)
       );
     else
@@ -347,9 +360,9 @@ package body HAC_Sys.UErrors is
       CD.Error_Pipe (
         message   => Error_String (code, hint),
         file_name => Co_Defs.Get_Source_Name (CD.CUD),
-        line      => CD.CUD.line_count,
-        column_a  => CD.syStart,
-        column_z  => CD.syEnd,
+        line      => line,
+        column_a  => col_start,
+        column_z  => col_stop,
         kind      => error,
         repair    => updated_repair_kit
       );

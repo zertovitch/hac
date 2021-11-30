@@ -59,10 +59,13 @@ package body HAC_Sys.Compiler is
     --  Scanner data
     --
     Init (CD.CUD);
-    CD.syStart   := 1;
-    CD.syEnd     := 1;
-    CD.Err_Count := 0;
-    CD.Errs      := error_free;
+    CD.syStart       := 1;
+    CD.syEnd         := 1;
+    CD.prev_sy_start := 1;
+    CD.prev_sy_end   := 1;
+    CD.prev_sy_line  := 0;
+    CD.Err_Count     := 0;
+    CD.Errs          := error_free;
     Scanner.InSymbol (CD);
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009

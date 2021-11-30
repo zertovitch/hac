@@ -21,10 +21,11 @@ package HAC_Sys.UErrors is
   nothing_to_repair : constant Defs.Repair_kit := (Defs.none, HAL.Null_VString);
 
   procedure Error (
-    CD   : in out Co_Defs.Compiler_Data;
-    code :        Defs.Compile_Error;
-    hint :        String      := "";
-    stop :        Boolean     := False
+    CD              : in out Co_Defs.Compiler_Data;
+    code            :        Defs.Compile_Error;
+    hint            :        String      := "";
+    stop            :        Boolean     := False;
+    previous_symbol :        Boolean     := False
   );
 
   procedure Compilation_Errors_Summary (CD : Co_Defs.Compiler_Data);

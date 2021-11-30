@@ -210,6 +210,9 @@ package HAC_Sys.Co_Defs is
     --  Parsing
     Sy               : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
     syStart, syEnd   : Integer;            --  Start and end on line for the symbol in Sy
+    prev_sy_start,
+    prev_sy_end,
+    prev_sy_line     : Integer;
     Id               : Alfa;               --  Identifier from InSymbol
     Id_with_case     : Alfa;               --  Same as Id, but with casing.
     INum             : HAC_Integer;        --  Integer from InSymbol
