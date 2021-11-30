@@ -1353,6 +1353,7 @@ package body HAC_Sys.Parser is
 
     procedure Check_ident_after_END is
       full_name : VString;
+      --  ^ It can be a library unit name, like: "Parent_1.Child_3.Grandchild_5".
     begin
       pragma Assert (CD.Sy = IDent);
       loop
@@ -1361,6 +1362,9 @@ package body HAC_Sys.Parser is
         exit when CD.Sy /= Period;
         full_name := full_name & '.';
         InSymbol;
+        if CD.Sy /= IDent then
+          Error (CD, err_identifier_missing);
+        end if;
       end loop;
       if VStr_Pkg.To_String (full_name) /= To_String (Block_Id) then
         Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
