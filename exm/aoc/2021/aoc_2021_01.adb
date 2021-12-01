@@ -1,4 +1,4 @@
-with HAL;  --  For "full Ada": files hal*.ad* are in ../../../src
+with HAL;  --  For build with "full Ada": files hal*.ad* are in ../../../src
 
 procedure AoC_2021_01 is
   use HAL;
@@ -29,4 +29,6 @@ begin
   Close (f);
   Put_Line (+"Part 1: Depth increases: " & inc_a);
   Put_Line (+"Part 2: Depth increases: " & inc_b);
+  --  Part 1: validated by AoC: 1154
+  --  Part 2: validated by AoC: 1127
 end AoC_2021_01;
