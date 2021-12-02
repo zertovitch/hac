@@ -618,7 +618,7 @@ package body HAC_Sys.Parser.Expressions is
       Emit (CD, k_Push_Duplicate_Top);  --  Duplicate the X value on stack top.
       LC_Cond_Jump := CD.LC;
       Emit (CD, Cond_Jump);  --  NB: conditional jump instruction pops top stack item.
-      Emit (CD, k_Pop);      --  Discard X from stack, top item will be Y.
+      Emit (CD, k_Pop);      --  Discard X value completely from stack. Top item will be Y.
     end Process_Short_Circuit;
 
   begin  --  Expression
@@ -664,8 +664,8 @@ package body HAC_Sys.Parser.Expressions is
       --
       if X.TYP = Bools and Y.TYP = Bools then
         if short_circuit then
-          --  Patch the conditional jump's address with the place
-          --  after the evaluation of Y:
+          --  Patch the address for the conditional jump, with the place
+          --  right after the evaluation of relation Y:
           CD.ObjCode (LC_Cond_Jump).Y := Operand_2_Type (CD.LC);
         else
           case Logical_OP is

@@ -1,8 +1,8 @@
---  Solution to Advent of Code 2020, Day 04
--------------------------------------------
+--  Solution to Advent of Code 2020, Day 4
+------------------------------------------
 --  Passport Processing
 --
---  https://adventofcode.com/2020/day/04
+--  https://adventofcode.com/2020/day/4
 --
 -------------------------------------------------------------------------
 --
