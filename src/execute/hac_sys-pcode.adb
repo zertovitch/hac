@@ -168,13 +168,21 @@ package body HAC_Sys.PCode is
       Put (Text, ": " & Padded_Opcode (OC (i).F));
       case OC (i).F is  --  Omit showing X for some 1-operand instructions
         when k_Exit_Call | k_Exit_Function |
-          k_Mark_Stack | k_Push_Discrete_Literal
+          k_Mark_Stack | k_Push_Discrete_Literal |
+          k_Pop | k_Push_Duplicate_Top |
+          Jump_Opcode
         =>
           Put (Text, "     ");
         when others =>
           Operand1_IO.Put (Text, OC (i).X, 5);
       end case;
-      Operand2_IO.Put (Text, OC (i).Y);
+      case OC (i).F is  --  Omit showing Y for some 0-operand instructions
+        when k_Pop | k_Push_Duplicate_Top
+        =>
+          Put (Text, "                    ");
+        when others =>
+          Operand2_IO.Put (Text, OC (i).Y);
+      end case;
       Put (Text, "; ");
       Code_Pos_IO.Put (Text, OC (i).D.Line_Number);
       Put (Text, "  " & HAL.VStr_Pkg.To_String (OC (i).D.Full_Block_Id));

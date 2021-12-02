@@ -30,6 +30,8 @@ project HAC_Test is
      "sorting_tests.adb",
      "strings.adb",
      "type_conversion.adb",
+     "test.adb",
+     "test1.adb",
      "var_init.adb"
    );
 

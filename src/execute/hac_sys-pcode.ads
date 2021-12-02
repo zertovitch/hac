@@ -27,6 +27,9 @@ package HAC_Sys.PCode is
     k_Push_Indirect_Value,
     k_Push_Discrete_Literal,
     k_Push_Float_Literal,
+    k_Push_Duplicate_Top,
+    --
+    k_Pop,
     --
     k_Variable_Initialization,
     k_Store,

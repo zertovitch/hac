@@ -24,12 +24,12 @@ begin
   while not End_Of_File (f) loop
     Get (f, depth);
     row := row + 1;
-    if row > 1 and depth > depth_p1 then
+    if row > 1 and then depth > depth_p1 then
       inc_a := inc_a + 1;
     end if;
     sum_p1 := sum;
     sum := depth + depth_p1 + depth_p2;
-    if row > 3 and sum > sum_p1 then
+    if row > 3 and then sum > sum_p1 then
       inc_b := inc_b + 1;
     end if;
     depth_p2 := depth_p1;

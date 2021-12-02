@@ -606,26 +606,75 @@ package body HAC_Sys.Parser.Expressions is
       end if;
     end Relation;
 
-    Logical_OP : KeyWSymbol;
-    Y          : Exact_Typ;
+    Logical_OP    : KeyWSymbol;
+    Y             : Exact_Typ;
+    short_circuit : Boolean;
+    LC_Cond_Jump  : Integer;
+
+    procedure Process_Short_Circuit (Cond_Jump : Opcode) is
+    begin
+      InSymbol (CD);
+      short_circuit := True;
+      Emit (CD, k_Push_Duplicate_Top);  --  Duplicate the X value on stack top.
+      LC_Cond_Jump := CD.LC;
+      Emit (CD, Cond_Jump);  --  NB: conditional jump instruction pops top stack item.
+      Emit (CD, k_Pop);      --  Discard X from stack, top item will be Y.
+    end Process_Short_Circuit;
 
   begin  --  Expression
     Relation (FSys + logical_operator, X);
     --
     --  RM 4.4 (2): we collect here eventual relations, connected by
-    --  logical operators: x {and y}.
+    --              logical operators: X {and Y}.
     --
     while logical_operator (CD.Sy) loop
       Logical_OP := CD.Sy;
       InSymbol (CD);
+      --
+      --  Short-circuit forms of AND, OR.
+      --
+      short_circuit := False;
+      if Logical_OP = AND_Symbol and CD.Sy = THEN_Symbol then
+        Process_Short_Circuit (k_Jump_If_Zero);
+        --
+        --    Jump on X = False (i.e. 0). If X = True, then X and Y = Y.
+        --
+        --       X          :    0      0      1      1
+        --                         \      \
+        --       Y          :    0  |   1  |   0      1
+        --                         /      /    |      |
+        --       X and Y    :    0      0      0      1
+        --
+      elsif Logical_OP = OR_Symbol and CD.Sy = ELSE_Symbol then
+        Process_Short_Circuit (k_Jump_If_Non_Zero);
+        --
+        --    Jump on X = True (i.e. 1). If X = False, then X or Y = Y.
+        --
+        --       X          :    0      0      1      1
+        --                                       \      \
+        --       Y          :    0      1      0  |   1  |
+        --                       |      |        /      /
+        --       X or Y     :    0      1      1      1
+        --
+      end if;
+      --
+      --  Right side of the logical operator.
+      --
       Relation (FSys + logical_operator, Y);
+      --
       if X.TYP = Bools and Y.TYP = Bools then
-        case Logical_OP is
-          when AND_Symbol => Emit (CD, k_AND_Boolean);
-          when OR_Symbol  => Emit (CD, k_OR_Boolean);
-          when XOR_Symbol => Emit (CD, k_XOR_Boolean);
-          when others     => null;
-        end case;
+        if short_circuit then
+          --  Patch the conditional jump's address with the place
+          --  after the evaluation of Y:
+          CD.ObjCode (LC_Cond_Jump).Y := Operand_2_Type (CD.LC);
+        else
+          case Logical_OP is
+            when AND_Symbol => Emit (CD, k_AND_Boolean);
+            when OR_Symbol  => Emit (CD, k_OR_Boolean);
+            when XOR_Symbol => Emit (CD, k_XOR_Boolean);
+            when others     => null;
+          end case;
+        end if;
       else
         Error (CD, err_resulting_type_should_be_Boolean);
         X.TYP := NOTYP;

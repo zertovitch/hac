@@ -475,6 +475,11 @@ package body HAC_Sys.PCode.Interpreter is
       --
     begin
       case ND.IR.F is
+        when k_Pop =>
+          Pop;
+        when k_Push_Duplicate_Top =>
+          Push;
+          ND.S (Curr_TCB.T) := ND.S (Curr_TCB.T - 1);  --  [T] := [T-1]
         when k_Jump =>
           Curr_TCB.PC := Index (IR.Y);
         when k_Jump_If_Zero =>

@@ -2,7 +2,7 @@ with HAL; use HAL;
 
 procedure Test1 is
 
-  --   This is the initial test program for the Small-Ada Compiler
+  --   This was the initial test program for the Small-Ada Compiler
   --   Small-Ada is a restricted subset of the full Ada Language
   --   The Small-Ada compiler was derived from the Co-Pascal
   --       compiler which in turn was derived from Pascal-S
@@ -203,39 +203,40 @@ begin
   Comp_10_20 (-6);
   Comp_10_20 (99);
   Comp_10_20 (19);
+  New_Line;
 
-  if not False then Put_Line ("(1/2) NOT is OK"); else Put_Line (
-      "(1/2) NOT is not OK"); end if;
-  if not True  then Put_Line ("(2/2) NOT is not OK"); else Put_Line (
-      "(2/2) NOT is OK"); end if;
+  if not False then Put_Line ("(1/2)  NOT  is OK");     else Put_Line ("(1/2)  NOT  is not OK"); end if;
+  if not True  then Put_Line ("(2/2)  NOT  is not OK"); else Put_Line ("(2/2)  NOT  is OK");     end if;
+  New_Line;
 
-  if False and False then Put_Line ("(1/4) AND is not OK"); else Put_Line (
-      "(1/4) AND is OK"); end if;
-  if True  and False then Put_Line ("(2/4) AND is not OK"); else Put_Line (
-      "(2/4) AND is OK"); end if;
-  if False and True  then Put_Line ("(3/4) AND is not OK"); else Put_Line (
-      "(3/4) AND is OK"); end if;
-  if True  and True  then Put_Line ("(4/4) AND is OK"); else Put_Line (
-      "(4/4) AND is not OK"); end if;
+  if False and False then Put_Line ("(1/4)  AND  is not OK"); else Put_Line ("(1/4)  AND  is OK");     end if;
+  if True  and False then Put_Line ("(2/4)  AND  is not OK"); else Put_Line ("(2/4)  AND  is OK");     end if;
+  if False and True  then Put_Line ("(3/4)  AND  is not OK"); else Put_Line ("(3/4)  AND  is OK");     end if;
+  if True  and True  then Put_Line ("(4/4)  AND  is OK");     else Put_Line ("(4/4)  AND  is not OK"); end if;
+  New_Line;
 
-  if False or False then Put_Line ("(1/4)  OR is not OK"); else Put_Line (
-      "(1/4)  OR is OK"); end if;
-  if True  or False then Put_Line ("(2/4)  OR is OK"); else Put_Line (
-      "(2/4)  OR is not OK"); end if;
-  if False or True  then Put_Line ("(3/4)  OR is OK"); else Put_Line (
-      "(3/4)  OR is not OK"); end if;
-  if True  or True  then Put_Line ("(4/4)  OR is OK"); else Put_Line (
-      "(4/4)  OR is not OK"); end if;
+  if False or False  then Put_Line ("(1/4)  OR   is not OK"); else Put_Line ("(1/4)  OR   is OK");     end if;
+  if True  or False  then Put_Line ("(2/4)  OR   is OK");     else Put_Line ("(2/4)  OR   is not OK"); end if;
+  if False or True   then Put_Line ("(3/4)  OR   is OK");     else Put_Line ("(3/4)  OR   is not OK"); end if;
+  if True  or True   then Put_Line ("(4/4)  OR   is OK");     else Put_Line ("(4/4)  OR   is not OK"); end if;
+  New_Line;
 
-  if False xor False then Put_Line ("(1/4) XOR is not OK"); else Put_Line (
-      "(1/4) XOR is OK"); end if;
-  if True  xor False then Put_Line ("(2/4) XOR is OK"); else Put_Line (
-      "(2/4) XOR is not OK"); end if;
-  if False xor True  then Put_Line ("(3/4) XOR is OK"); else Put_Line (
-      "(3/4) XOR is not OK"); end if;
-  if True  xor True  then Put_Line ("(4/4) XOR is not OK"); else Put_Line (
-      "(4/4) XOR is OK"); end if;
+  if False xor False then Put_Line ("(1/4)  XOR  is not OK"); else Put_Line ("(1/4)  XOR  is OK"); end if;
+  if True  xor False then Put_Line ("(2/4)  XOR  is OK");     else Put_Line ("(2/4)  XOR  is not OK"); end if;
+  if False xor True  then Put_Line ("(3/4)  XOR  is OK");     else Put_Line ("(3/4)  XOR  is not OK"); end if;
+  if True  xor True  then Put_Line ("(4/4)  XOR  is not OK"); else Put_Line ("(4/4)  XOR  is OK"); end if;
+  New_Line;
 
+  if False and then False then Put_Line ("(1/4)  AND THEN  is not OK"); else Put_Line ("(1/4)  AND THEN  is OK");     end if;
+  if True  and then False then Put_Line ("(2/4)  AND THEN  is not OK"); else Put_Line ("(2/4)  AND THEN  is OK");     end if;
+  if False and then True  then Put_Line ("(3/4)  AND THEN  is not OK"); else Put_Line ("(3/4)  AND THEN  is OK");     end if;
+  if True  and then True  then Put_Line ("(4/4)  AND THEN  is OK");     else Put_Line ("(4/4)  AND THEN  is not OK"); end if;
+  New_Line;
+
+  if False or else False  then Put_Line ("(1/4)  OR ELSE   is not OK"); else Put_Line ("(1/4)  OR ELSE   is OK");     end if;
+  if True  or else False  then Put_Line ("(2/4)  OR ELSE   is OK");     else Put_Line ("(2/4)  OR ELSE   is not OK"); end if;
+  if False or else True   then Put_Line ("(3/4)  OR ELSE   is OK");     else Put_Line ("(3/4)  OR ELSE   is not OK"); end if;
+  if True  or else True   then Put_Line ("(4/4)  OR ELSE   is OK");     else Put_Line ("(4/4)  OR ELSE   is not OK"); end if;
   New_Line;
 
   --CASE Check

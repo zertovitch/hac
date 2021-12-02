@@ -11,7 +11,7 @@
 --  HAC 0.084 "nice to have"'s detected in this exercise:
 --    *   exception handling to catch invalid values
 --    *   Index with From parameter
---    *   "and then", "or else"
+--    *   "and then", "or else" (solved in HAC 0.098)
 --    *   'Image attribute for enumerated types
 --
 with HAL; use HAL;  --  in ../../../src
@@ -26,7 +26,7 @@ procedure AoC_2020_04 is
     end if;
     for i in 1 .. Length (s) loop
       c := Element (s, i);
-      if not ((c in '0' .. '9') or (hexa and c in 'a' .. 'f'))
+      if not ((c in '0' .. '9') or else (hexa and then c in 'a' .. 'f'))
       then
         return -1;
       end if;
@@ -84,16 +84,16 @@ begin
           end if;
           tok := Slice (s, tok_begin, tok_end);
           cat := Slice (s, cat_idx - 3, cat_idx - 1);
-          if cat = "byr" and Val (tok) in 1920 .. 2002 then cats := cats + 1; end if;
-          if cat = "iyr" and Val (tok) in 2010 .. 2020 then cats := cats + 1; end if;
-          if cat = "eyr" and Val (tok) in 2020 .. 2030 then cats := cats + 1; end if;
-          if cat = "hcl" and Element (s, tok_begin) = '#'
-                         and Val_Hexa (Slice (s, tok_begin + 1, tok_end)) > 0
+          if cat = "byr" and then Val (tok) in 1920 .. 2002 then cats := cats + 1; end if;
+          if cat = "iyr" and then Val (tok) in 2010 .. 2020 then cats := cats + 1; end if;
+          if cat = "eyr" and then Val (tok) in 2020 .. 2030 then cats := cats + 1; end if;
+          if cat = "hcl" and then Element (s, tok_begin) = '#'
+                         and then Val_Hexa (Slice (s, tok_begin + 1, tok_end)) > 0
           then
             cats := cats + 1;
           end if;
-          if cat = "pid" and Length (tok) = 9 and Val (tok) >= 0 then cats := cats + 1; end if;
-          if cat = "ecl" and Index (+"amb blu brn gry grn hzl oth", tok) > 0
+          if cat = "pid" and then Length (tok) = 9 and then Val (tok) >= 0 then cats := cats + 1; end if;
+          if cat = "ecl" and then Index (+"amb blu brn gry grn hzl oth", tok) > 0
                                 --  ^ Idea: Maxim Reznik, replaces checking each value
           then
             cats := cats + 1;
@@ -101,8 +101,8 @@ begin
           if cat = "hgt" then
             nb := Val (Slice (s, tok_begin, tok_end - 2));
             un := Slice (s, tok_end - 1, tok_end);
-            if (un = "cm" and nb in 150 .. 193) or
-               (un = "in" and nb in 59 .. 76)
+            if (un = "cm" and then nb in 150 .. 193) or else
+               (un = "in" and then nb in 59 .. 76)
             then
               cats := cats + 1;
             end if;
