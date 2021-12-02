@@ -522,7 +522,7 @@ package body HAC_Sys.Parser is
         if CD.Sy = WHEN_Symbol then  --  Conditional Exit
           InSymbol;
           Boolean_Expression (CD, Level, Semicolon_Set, X);
-          Emit_1 (CD, k_Conditional_Jump, Operand_2_Type (CD.LC + 2));  --  Conditional jump around Exit
+          Emit_1 (CD, k_Jump_If_Zero, Operand_2_Type (CD.LC + 2));  --  Conditional jump around Exit
         end if;
         Emit_1 (CD, k_Jump, dummy_address_loop);  --  Unconditional jump with dummy address to be patched
       end Exit_Statement;
@@ -534,7 +534,7 @@ package body HAC_Sys.Parser is
         InSymbol;
         Boolean_Expression (CD, Level, FSys_St + DO_THEN, X);
         LC1 := CD.LC;
-        Emit (CD, k_Conditional_Jump);
+        Emit (CD, k_Jump_If_Zero);
         Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
         Sequence_of_Statements (ELSE_ELSIF_END);
         LC0 := CD.LC;
@@ -545,7 +545,7 @@ package body HAC_Sys.Parser is
           CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);       --  Patch the previous conditional jump
           Boolean_Expression (CD, Level, FSys_St + DO_THEN, X);
           LC1 := CD.LC;
-          Emit (CD, k_Conditional_Jump);
+          Emit (CD, k_Jump_If_Zero);
           Need (CD, THEN_Symbol, err_THEN_missing, Forgive => DO_Symbol);
           Sequence_of_Statements (ELSE_ELSIF_END);  --  Statements after "ELSIF .. THEN".
         end loop;
@@ -792,7 +792,7 @@ package body HAC_Sys.Parser is
         LC_Cond_Eval := CD.LC;
         Boolean_Expression (CD, Level, FSys_St + DO_LOOP, X);
         LC_Cond_Jump := CD.LC;
-        Emit (CD, k_Conditional_Jump);
+        Emit (CD, k_Jump_If_Zero);
         LOOP_Statement (k_Jump, LC_Cond_Eval);
         CD.ObjCode (LC_Cond_Jump).Y := Operand_2_Type (CD.LC);
       end WHILE_Statement;
@@ -889,7 +889,7 @@ package body HAC_Sys.Parser is
               patch (0) := CD.LC - 3;
             end if;       -- LC-1 must be OP=3, update Display
             patch (1) := CD.LC;  --  Need to patch in JMPC address later
-            Emit_1 (CD, k_Conditional_Jump, dummy_address_if);  --  JMPC, address patched in after ELSE
+            Emit_1 (CD, k_Jump_If_Zero, dummy_address_if);  --  JMPC, address patched in after ELSE
                                       --  or OR
             if CD.Sy = Semicolon then
               InSymbol;
@@ -1032,11 +1032,11 @@ package body HAC_Sys.Parser is
                 InSymbol;
                 if CD.Sy = ACCEPT_Symbol then
                   Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
-                  Emit (CD, k_Conditional_Jump);
+                  Emit (CD, k_Jump_If_Zero);
                   Accept_Statement_2;
                 elsif CD.Sy = DELAY_Symbol then
                   Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
-                  Emit (CD, k_Conditional_Jump);
+                  Emit (CD, k_Jump_If_Zero);
                   InSymbol;
                   Expression (CD, Level, FSys_St + Semicolon, Y);
                   Emit_2 (CD, k_Selective_Wait, 4, Operand_2_Type (CD.LC + 2));  --  Update delay time

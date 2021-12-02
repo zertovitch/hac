@@ -475,16 +475,23 @@ package body HAC_Sys.PCode.Interpreter is
       --
     begin
       case ND.IR.F is
-        when k_Jump => Curr_TCB.PC := Index (IR.Y);
-        when k_Conditional_Jump =>
-          if ND.S (Curr_TCB.T).I = 0 then  --  if False, then ...
-            Curr_TCB.PC := Index (IR.Y);   --  ... Jump.
+        when k_Jump =>
+          Curr_TCB.PC := Index (IR.Y);
+        when k_Jump_If_Zero =>
+          if ND.S (Curr_TCB.T).I = 0 then   --  if False, then ...
+            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
+          end if;
+          Pop;
+        when k_Jump_If_Non_Zero =>
+          if ND.S (Curr_TCB.T).I /= 0 then  --  if True, then ...
+            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
           end if;
           Pop;
         when k_Store =>  --  [T-1].all := [T]
           ND.S (Index (ND.S (Curr_TCB.T - 1).I)) := ND.S (Curr_TCB.T);
           Pop (2);
-        when k_Swap => Do_Swap;
+        when k_Swap =>
+          Do_Swap;
         when k_Pop_to_Temp =>
           Curr_TCB.R_Temp := ND.S (Curr_TCB.T);
           Pop;
