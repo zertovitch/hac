@@ -27,7 +27,7 @@ procedure All_Silent_Tests is
     begin
       if Get_Env("hacbuild") = "done" then
         return;
-      end if;   
+      end if;
       Put_Line ("(Re-)building HAC, in case the present program isn't run from HAC...");
       Shell (+"gprbuild -P .." & Directory_Separator & "hac", True, success);
     end Build_HAC;
@@ -57,18 +57,17 @@ procedure All_Silent_Tests is
 
     --  Advent of Code
 
-    subtype Day_Code is VString;  --  !!  Should be ok for "&": String (1..2);
-
-    procedure Launch_AoC (Year : Positive; Day : Day_Code; Solutions : VString) is
+    procedure Launch_AoC (Year, Day, Solutions : VString) is
     begin
+      if Index (Current_Directory, Year) = 0 then
+        New_Line;
+        Set_Directory (+".." & Directory_Separator & Year);
+        Put_Line ("    Advent of Code " & Year & " in " & Current_Directory & ':');
+        Put ("      ");
+      end if;
       Put (Day & ' ');
       Launch_HAC (+"aoc_" & Year & '_' & Day & ".adb ", Solutions, 3);
     end Launch_AoC;
-
-    procedure Launch_AoC_2020 (Day : Day_Code; Solutions : VString) is
-    begin
-      Launch_AoC (2020, Day, Solutions);
-    end Launch_AoC_2020;
 
   begin
     Put_Line( "    ___________      _____________________________________________________________________");
@@ -80,6 +79,7 @@ procedure All_Silent_Tests is
     --
     Put_Line( "----> Launching tests.");
     Put_Line( "  One instance of HAC is called each time, with compilation and execution...");
+    New_Line;
     Put_Line( +"    Normal tests in " & Current_Directory & ':');
     Normal_Test (+"case_statement.adb");
     Normal_Test (+"constants.adb");
@@ -98,30 +98,32 @@ procedure All_Silent_Tests is
     Set_Directory (+".." & Directory_Separator &
                    "exm" & Directory_Separator &
                    "aoc" & Directory_Separator &
-                   "2020");
-    Put_Line ("    Advent of Code 2020 in " & Current_Directory & ':');
-    Put ("      ");
-    Launch_AoC_2020 (+"02", +"607 321"                    );  --  Password Philosophy
-    Launch_AoC_2020 (+"03", +"218 3847183340"             );  --  Toboggan Trajectory
-    Launch_AoC_2020 (+"04", +"228 175"                    );  --  Passport Processing
-    Launch_AoC_2020 (+"05", +"835"                        );  --  Binary Boarding
-    Launch_AoC_2020 (+"06", +"6532 3427"                  );  --  Custom Customs
-    Launch_AoC_2020 (+"07", +"169 82372"                  );  --  Handy Haversacks
-    Launch_AoC_2020 (+"08", +"1394 1626"                  );  --  Handheld Halting
-    Launch_AoC_2020 (+"09", +"138879426 23761694"         );  --  Encoding Error
-    Launch_AoC_2020 (+"10", +"2277 37024595836928"        );  --  Adapter Array
-    Launch_AoC_2020 (+"11", +"37 26"                      );  --  Seating System
-    Launch_AoC_2020 (+"12", +"1631 58606"                 );  --  Rain Risk
-    Launch_AoC_2020 (+"13", +"222 408270049879073"        );  --  Shuttle Search
-    Launch_AoC_2020 (+"15", +"436 1 10 27 78 438 1836 249");  --  Rambunctious Recitation
-    Launch_AoC_2020 (+"16", +"23954 453459307723"         );  --  Ticket Translation
-    Launch_AoC_2020 (+"17", +"207"                        );  --  Conway Cubes
-    Launch_AoC_2020 (+"20", +"83775126454273"             );  --  Jurassic Jigsaw
-    Launch_AoC_2020 (+"22", +"31957"                      );  --  Crab Combat
-    Launch_AoC_2020 (+"23", +"67384529 49576328"          );  --  Crab Cups
-    Launch_AoC_2020 (+"24", +"341 332"                    );  --  Lobby Layout
+                   "2021");  --  <- We put on purpose the wrong starting year.
     --
-    New_Line;
+    Launch_AoC (+"2020", +"02", +"607 321"                    );  --  Password Philosophy
+    Launch_AoC (+"2020", +"03", +"218 3847183340"             );  --  Toboggan Trajectory
+    Launch_AoC (+"2020", +"04", +"228 175"                    );  --  Passport Processing
+    Launch_AoC (+"2020", +"05", +"835"                        );  --  Binary Boarding
+    Launch_AoC (+"2020", +"06", +"6532 3427"                  );  --  Custom Customs
+    Launch_AoC (+"2020", +"07", +"169 82372"                  );  --  Handy Haversacks
+    Launch_AoC (+"2020", +"08", +"1394 1626"                  );  --  Handheld Halting
+    Launch_AoC (+"2020", +"09", +"138879426 23761694"         );  --  Encoding Error
+    Launch_AoC (+"2020", +"10", +"2277 37024595836928"        );  --  Adapter Array
+    Launch_AoC (+"2020", +"11", +"37 26"                      );  --  Seating System
+    Launch_AoC (+"2020", +"12", +"1631 58606"                 );  --  Rain Risk
+    Launch_AoC (+"2020", +"13", +"222 408270049879073"        );  --  Shuttle Search
+    Launch_AoC (+"2020", +"15", +"436 1 10 27 78 438 1836 249");  --  Rambunctious Recitation
+    Launch_AoC (+"2020", +"16", +"23954 453459307723"         );  --  Ticket Translation
+    Launch_AoC (+"2020", +"17", +"207"                        );  --  Conway Cubes
+    Launch_AoC (+"2020", +"20", +"83775126454273"             );  --  Jurassic Jigsaw
+    Launch_AoC (+"2020", +"22", +"31957"                      );  --  Crab Combat
+    Launch_AoC (+"2020", +"23", +"67384529 49576328"          );  --  Crab Cups
+    Launch_AoC (+"2020", +"24", +"341 332"                    );  --  Lobby Layout
+    --
+    Launch_AoC (+"2021", +"01", +"1154 1127"                  );  --  Sonar Sweep
+    Launch_AoC (+"2021", +"02", +"2187380 2086357770"         );  --  Dive!
+    --
+    New_Line (2);
     Put_Line ("----> Done.");
     if failures = 0 then
       Put_Line ("All tests passed.");
