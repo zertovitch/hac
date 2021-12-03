@@ -27,7 +27,6 @@ package HAC_Sys.PCode is
     k_Push_Indirect_Value,
     k_Push_Discrete_Literal,
     k_Push_Float_Literal,
-    k_Push_Duplicate_Top,
     --
     k_Pop,
     --
@@ -42,8 +41,9 @@ package HAC_Sys.PCode is
     k_Standard_Functions,
     --
     k_Jump,
-    k_Jump_If_Zero,                     --  Jump if [T].I = 0
-    k_Jump_If_Non_Zero,                 --  Jump if [T].I /= 0
+    k_Jump_If_Zero_With_Pop,            --  Jump if [T].I = 0, always pop
+    k_Jump_If_Zero_No_Pop,              --  Jump if [T].I = 0, no pop
+    k_Jump_If_Non_Zero_No_Pop,          --  Jump if [T].I /= 0, no pop
     --
     k_CASE_Switch,
     k_CASE_Choice_Data,
@@ -136,7 +136,7 @@ package HAC_Sys.PCode is
   subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Update_Display_Vector;
   subtype CASE_Data_Opcode        is Opcode range k_CASE_Choice_Data .. k_CASE_No_Choice_Found;
   subtype Composite_Data_Opcode   is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
-  subtype Jump_Opcode             is Opcode range k_Jump .. k_Jump_If_Non_Zero;
+  subtype Jump_Opcode             is Opcode range k_Jump .. k_Jump_If_Non_Zero_No_Pop;
   subtype Multi_Statement_Opcode  is Opcode range k_CASE_Switch .. k_FOR_Release_Stack_After_End;
   subtype Tasking_Opcode          is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
 

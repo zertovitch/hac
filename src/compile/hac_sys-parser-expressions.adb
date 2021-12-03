@@ -615,10 +615,9 @@ package body HAC_Sys.Parser.Expressions is
     begin
       InSymbol (CD);
       short_circuit := True;
-      Emit (CD, k_Push_Duplicate_Top);  --  Duplicate the X value on stack top.
       LC_Cond_Jump := CD.LC;
-      Emit (CD, Cond_Jump);  --  NB: conditional jump instruction pops top stack item.
-      Emit (CD, k_Pop);      --  Discard X value completely from stack. Top item will be Y.
+      Emit (CD, Cond_Jump);
+      Emit (CD, k_Pop);      --  Discard X value from stack. Top item will be Y.
     end Process_Short_Circuit;
 
   begin  --  Expression
@@ -635,7 +634,7 @@ package body HAC_Sys.Parser.Expressions is
       --
       short_circuit := False;
       if Logical_OP = AND_Symbol and CD.Sy = THEN_Symbol then
-        Process_Short_Circuit (k_Jump_If_Zero);
+        Process_Short_Circuit (k_Jump_If_Zero_No_Pop);
         --
         --    Jump on X = False (i.e. 0). If X = True, then X and Y = Y.
         --
@@ -646,7 +645,7 @@ package body HAC_Sys.Parser.Expressions is
         --       X and Y    :    0      0      0      1
         --
       elsif Logical_OP = OR_Symbol and CD.Sy = ELSE_Symbol then
-        Process_Short_Circuit (k_Jump_If_Non_Zero);
+        Process_Short_Circuit (k_Jump_If_Non_Zero_No_Pop);
         --
         --    Jump on X = True (i.e. 1). If X = False, then X or Y = Y.
         --

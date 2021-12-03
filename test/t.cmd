@@ -2,7 +2,7 @@
 
 echo (Re-)building HAC
 cd..
-call build
+call build hac
 cd test
 set hacbuild=done
 

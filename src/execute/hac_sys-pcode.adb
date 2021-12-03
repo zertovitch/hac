@@ -169,15 +169,14 @@ package body HAC_Sys.PCode is
       case OC (i).F is  --  Omit showing X for some 1-operand instructions
         when k_Exit_Call | k_Exit_Function |
           k_Mark_Stack | k_Push_Discrete_Literal |
-          k_Pop | k_Push_Duplicate_Top |
-          Jump_Opcode
+          k_Pop | Jump_Opcode
         =>
           Put (Text, "     ");
         when others =>
           Operand1_IO.Put (Text, OC (i).X, 5);
       end case;
       case OC (i).F is  --  Omit showing Y for some 0-operand instructions
-        when k_Pop | k_Push_Duplicate_Top
+        when k_Pop
         =>
           Put (Text, "                    ");
         when others =>

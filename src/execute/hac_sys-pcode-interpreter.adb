@@ -477,21 +477,22 @@ package body HAC_Sys.PCode.Interpreter is
       case ND.IR.F is
         when k_Pop =>
           Pop;
-        when k_Push_Duplicate_Top =>
-          Push;
-          ND.S (Curr_TCB.T) := ND.S (Curr_TCB.T - 1);  --  [T] := [T-1]
         when k_Jump =>
           Curr_TCB.PC := Index (IR.Y);
-        when k_Jump_If_Zero =>
+        when k_Jump_If_Zero_With_Pop =>
+          --  NB: this is the original conditional jump in Pascal-S.
           if ND.S (Curr_TCB.T).I = 0 then   --  if False, then ...
             Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
           end if;
-          Pop;
-        when k_Jump_If_Non_Zero =>
+          Pop;  --  NB: the popping happens regardless of the branch.
+        when k_Jump_If_Zero_No_Pop =>
+          if ND.S (Curr_TCB.T).I = 0 then   --  if False, then ...
+            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
+          end if;
+        when k_Jump_If_Non_Zero_No_Pop =>
           if ND.S (Curr_TCB.T).I /= 0 then  --  if True, then ...
             Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
           end if;
-          Pop;
         when k_Store =>  --  [T-1].all := [T]
           ND.S (Index (ND.S (Curr_TCB.T - 1).I)) := ND.S (Curr_TCB.T);
           Pop (2);
