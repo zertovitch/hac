@@ -7,10 +7,10 @@
 --  Compute destination of a ship following navigation
 --  instructions (interpreted in two different ways).
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
 
 procedure AoC_2020_12 is
-  pi : constant := 3.1415926535897932384;
+  use HAL;
   --
   function D2R (a : Real) return Real is
   begin
