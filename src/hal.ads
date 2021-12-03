@@ -19,6 +19,7 @@ with Ada.Calendar,
      Ada.Command_Line,
      Ada.Directories,
      Ada.Environment_Variables,
+     Ada.Numerics,
      Ada.Strings.Unbounded,
      Ada.Text_IO;
 
@@ -59,6 +60,8 @@ package HAL is
 
   --  Truncate
   function   Trunc     (F : Real)      return Integer;
+
+  Pi : constant := Ada.Numerics.Pi;
 
   --  Trigonometric Functions     w/ arguments in radians
   function   Sin       (F : Real)      return Real;

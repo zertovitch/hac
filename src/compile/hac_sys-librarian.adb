@@ -255,6 +255,15 @@ package body HAC_Sys.Librarian is
   is
     use Co_Defs, Defs, PCode;
 
+    procedure Enter_HAL_Const (Name : String; Value : HAC_Float) is
+      Float_Index : Integer;
+    begin
+      Parser.Helpers.Enter_or_find_Float (CD, Value, Float_Index);
+      Enter_Zero_Level_Def
+        (CD, HAL_Name & '.' & Name,
+         Declared_Number_or_Enum_Item, Floats, Float_Index);
+    end Enter_HAL_Const;
+
     procedure Enter_HAL_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
       Enter_Zero_Level_Def (CD, HAL_Name & '.' & Name, TypeMark, T, 1, First, Last);
@@ -288,12 +297,15 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Funct ("Pred",                Chars,  SF_T_Pred);   --  S'Pred : RM 3.5 (25)
     Enter_HAL_Funct ("Round",               Ints,   SF_Round_Float_to_Int);
     Enter_HAL_Funct ("Trunc",               Ints,   SF_Trunc_Float_to_Int);
+    --
+    Enter_HAL_Const ("Pi",                  HAL.Pi);
     Enter_HAL_Funct ("Sin",                 Floats, SF_Sin);
     Enter_HAL_Funct ("Cos",                 Floats, SF_Cos);
     Enter_HAL_Funct ("Exp",                 Floats, SF_Exp);
     Enter_HAL_Funct ("Log",                 Floats, SF_Log);
     Enter_HAL_Funct ("Sqrt",                Floats, SF_Sqrt);
     Enter_HAL_Funct ("Arctan",              Floats, SF_Arctan);
+    --
     Enter_HAL_Funct ("End_Of_File",         Bools,  SF_EOF);
     Enter_HAL_Funct ("End_Of_Line",         Bools,  SF_EOLN);
     Enter_HAL_Funct ("Rand",                Ints,   SF_Random_Int);
