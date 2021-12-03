@@ -122,6 +122,7 @@ procedure All_Silent_Tests is
     --
     Launch_AoC (+"2021", +"01", +"1154 1127"                  );  --  Sonar Sweep
     Launch_AoC (+"2021", +"02", +"2187380 2086357770"         );  --  Dive!
+    Launch_AoC (+"2021", +"03", +"3549854 3765399"            );  --  Binary Diagnostic
     --
     New_Line (2);
     Put_Line ("----> Done.");
