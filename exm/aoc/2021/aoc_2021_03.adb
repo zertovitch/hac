@@ -14,13 +14,15 @@ procedure AoC_2021_03 is
   --
   input : constant VString := +"aoc_2021_03.txt";
   bits : constant := 12;
-  subtype Bit_Range is Integer range 1 .. bits;
-  stat_ones : array (Bit_Range) of Natural;
+  subtype Bit_Pos_Range is Integer range 1 .. bits;
+  stat_ones : array (Bit_Pos_Range) of Natural;
   type Criterium is (most, least);
   stat_ones_selected_pos : Natural;
+  --
   subtype Bit_Type is Integer range 0 .. 1;
-  type Word is array (Bit_Range) of Bit_Type;
+  type Word is array (Bit_Pos_Range) of Bit_Type;
   keep, bit_value, mem_valid : Word;
+  --
   consider : Boolean;
   rows, gamma, epsilon, res_1, res_2 : Natural;
   gas : array (Criterium) of Natural;
@@ -28,14 +30,14 @@ procedure AoC_2021_03 is
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   verbose : constant Boolean := False;
 begin
-  for pos in Bit_Range loop
+  for pos in Bit_Pos_Range loop
     stat_ones (pos) := 0;
   end loop;
   rows := 0;
   Open (f, input);
   while not End_Of_File (f) loop
     rows := rows + 1;
-    for pos in Bit_Range loop
+    for pos in Bit_Pos_Range loop
       Get (f, c);
       if c = '1' then
         stat_ones (pos) := stat_ones (pos) + 1;
@@ -44,35 +46,37 @@ begin
   end loop;
   Close (f);
   gamma := 0;
-  for pos in Bit_Range loop
+  for pos in Bit_Pos_Range loop
     gamma := gamma * 2;
     if stat_ones (pos) > rows / 2 then
       gamma := gamma + 1;
     end if;
   end loop;
   epsilon := 2 ** bits - 1 - gamma;
-  if verbose then Put_Line (+"Part 1: gamma: " & gamma & "; epsilon: " & epsilon); end if;
+  if verbose then
+    Put_Line (+"Part 1: gamma: " & gamma & "; epsilon: " & epsilon);
+  end if;
   res_1 := gamma * epsilon;
   --
   --  Part Two
   --
   if verbose then Put_Line (+"Part 2:"); end if;
-  for pos in Bit_Range loop
+  for pos in Bit_Pos_Range loop
     keep (pos) := 0;  --  Just to remove a compiler warning.
   end loop;
   for crit in Criterium loop
-    for bit in Bit_Range loop
+    for main_pos in Bit_Pos_Range loop
       stat_ones_selected_pos  := 0;
       rows := 0;
       Open (f, input);
       while not End_Of_File (f) loop
         consider := True;
-        for pos in Bit_Range loop
+        for pos in Bit_Pos_Range loop
           Get (f, c);
           bit_value (pos) := Ord (c) - Ord ('0');
-          if pos < bit then
+          if pos < main_pos then
             consider := consider and keep (pos) = bit_value (pos);
-          elsif pos = bit then
+          elsif pos = main_pos then
             if consider then
               rows := rows + 1;
               if bit_value (pos) = 1 then
@@ -87,38 +91,42 @@ begin
       end loop;
       Close (f);
       if verbose then
-         Put ("Bit "); Put (bit, 2); Put (+"/" & bits & "; rows: "); Put (rows, 5);
+         Put ("Bit pos: "); Put (main_pos, 2); Put (+"/" & bits & "; rows: "); Put (rows, 5);
       end if;
       if rows = 1 then
         keep := mem_valid;
-        if verbose then Put_Line (". Only one row left, stop!"); end if;
+        if verbose then
+          Put_Line (". Only one row left, stop!");
+        end if;
         exit;
       else
         case crit is
           when most =>
             if stat_ones_selected_pos >= rows - stat_ones_selected_pos then
-              keep (bit) := 1;
+              keep (main_pos) := 1;
             else
-              keep (bit) := 0;
+              keep (main_pos) := 0;
             end if;
           when least =>
             if stat_ones_selected_pos >= rows - stat_ones_selected_pos then
-              keep (bit) := 0;
+              keep (main_pos) := 0;
             else
-              keep (bit) := 1;
+              keep (main_pos) := 1;
             end if;
         end case;
-        if verbose then Put (";  ones: "); Put (stat_ones_selected_pos, 5); Put (keep (bit)); New_Line; end if;
+        if verbose then
+          Put (";  ones: "); Put (stat_ones_selected_pos, 5); Put (keep (main_pos)); New_Line;
+        end if;
       end if;
     end loop;
     if verbose then
-      for bit in Bit_Range loop
-        Put (keep (bit), 0);
+      for main_pos in Bit_Pos_Range loop
+        Put (keep (main_pos), 0);
       end loop;
       New_Line;
     end if;
     gas (crit) := 0;
-    for pos in Bit_Range loop
+    for pos in Bit_Pos_Range loop
       gas (crit) := gas (crit) * 2;
       if keep (pos) = 1 then
         gas (crit) := gas (crit) + 1;
