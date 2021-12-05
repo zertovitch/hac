@@ -295,8 +295,12 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Funct ("Ord",                 Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)
     Enter_HAL_Funct ("Succ",                Chars,  SF_T_Succ);   --  S'Succ : RM 3.5 (22)
     Enter_HAL_Funct ("Pred",                Chars,  SF_T_Pred);   --  S'Pred : RM 3.5 (25)
+    --
     Enter_HAL_Funct ("Round",               Ints,   SF_Round_Float_to_Int);
     Enter_HAL_Funct ("Trunc",               Ints,   SF_Trunc_Float_to_Int);
+    --
+    Enter_HAL_Funct ("Min",                 Ints,   SF_Min_Int);  --  Overloaded for float
+    Enter_HAL_Funct ("Max",                 Ints,   SF_Max_Int);  --  Overloaded for float
     --
     Enter_HAL_Const ("Pi",                  HAL.Pi);
     Enter_HAL_Funct ("Sin",                 Floats, SF_Sin);
@@ -306,8 +310,6 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Funct ("Sqrt",                Floats, SF_Sqrt);
     Enter_HAL_Funct ("Arctan",              Floats, SF_Arctan);
     --
-    Enter_HAL_Funct ("End_Of_File",         Bools,  SF_EOF);
-    Enter_HAL_Funct ("End_Of_Line",         Bools,  SF_EOLN);
     Enter_HAL_Funct ("Rand",                Ints,   SF_Random_Int);
     Enter_HAL_Funct ("Rnd",                 Floats, SF_Random_Float);
     Enter_HAL_Funct ("Clock",               Times,  SF_Clock);
@@ -338,16 +340,19 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Funct ("Day",                 Ints,      SF_Day);
     Enter_HAL_Funct ("Seconds",             Durations, SF_Seconds);
     --
+    --  Attribute-like functions
+    --
     Enter_HAL_Funct ("Image",               VStrings, SF_Image_Ints);
     Enter_HAL_Funct ("Image_Attribute",     VStrings, SF_Image_Attribute_Floats);
     Enter_HAL_Funct ("Integer_Value",       Ints,     SF_Integer_Value);
     Enter_HAL_Funct ("Float_Value",         Floats,   SF_Float_Value);
     --
+    --  Ada.Command_Line & Ada.Environment_Variables - like functions
+    --
     Enter_HAL_Funct ("Argument_Count",      Ints,     SF_Argument_Count);
     Enter_HAL_Funct ("Argument",            VStrings, SF_Argument);
     Enter_HAL_Funct ("Command_Name",        VStrings, SF_Command_Name);
     Enter_HAL_Funct ("Get_Env",             VStrings, SF_Get_Env);
-    Enter_HAL_Funct ("Directory_Separator", Chars,    SF_Directory_Separator);
     --
     --  Ada.Directories-like functions
     --
@@ -355,10 +360,12 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Funct ("Directory_Exists",    Bools,    SF_Directory_Exists);
     Enter_HAL_Funct ("Exists",              Bools,    SF_Exists);
     Enter_HAL_Funct ("File_Exists",         Bools,    SF_File_Exists);
+    --  This one is *not* in Ada.Directories:
+    Enter_HAL_Funct ("Directory_Separator", Chars,    SF_Directory_Separator);
     --
     Enter_HAL_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
     --
-    --  Ada.Text_IO-like procedures
+    --  Ada.Text_IO-like subprograms
     --
     Enter_HAL_Proc ("Create",         SP_Create);
     Enter_HAL_Proc ("Open",           SP_Open);
@@ -371,6 +378,8 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Proc ("Put",            SP_Put);
     Enter_HAL_Proc ("Put_Line",       SP_Put_Line);
     Enter_HAL_Proc ("New_Line",       SP_New_Line);
+    Enter_HAL_Funct ("End_Of_File",   Bools, SF_EOF);
+    Enter_HAL_Funct ("End_Of_Line",   Bools, SF_EOLN);
     --
     --  Ada.Environment_Variables-like procedures
     --

@@ -61,6 +61,12 @@ package HAL is
   --  Truncate
   function   Trunc     (F : Real)      return Integer;
 
+  --  Min & Max
+  function   Min       (I, J : Integer)   return Integer renames Integer'Min;
+  function   Max       (I, J : Integer)   return Integer renames Integer'Max;
+  function   Min       (F, G : Real)      return Real renames Real'Min;
+  function   Max       (F, G : Real)      return Real renames Real'Max;
+
   Pi : constant := Ada.Numerics.Pi;
 
   --  Trigonometric Functions     w/ arguments in radians

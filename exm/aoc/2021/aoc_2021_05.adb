@@ -8,7 +8,6 @@
 --  HAC 0.098 "nice to have"'s detected in this exercise:
 --
 --    *     ` hits := (others => (others => 0)); `
---    *     Min, Max in HAL (and also as attributes)
 --
 with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
 
@@ -19,25 +18,6 @@ procedure AoC_2021_05 is
   res : array (1 .. 2) of Integer;
   f : File_Type;
   --
-  function Min (a, b : Integer) return Integer is
-  begin
-    if a < b then
-      return a;
-    else
-      return b;
-    end if;
-  end Min;
-  --
-  function Max (a, b : Integer) return Integer is
-  begin
-    if a > b then
-      return a;
-    else
-      return b;
-    end if;
-  end Max;
-  --
-  --  input : constant VString := +"mini.txt";
   input : constant VString := +"aoc_2021_05.txt";
   subtype X_Range is Integer range 0 .. 1000;
   subtype Y_Range is Integer range 0 .. 1000;
@@ -69,11 +49,11 @@ begin
       case part is
         when 1 =>
           if x1 = x2 then
-            for y in  Min (y1, y2) .. Max (y1, y2) loop
+            for y in Min (y1, y2) .. Max (y1, y2) loop
               hits (x1, y) := hits (x1, y) + 1;
             end loop;
           elsif y1 = y2 then
-            for x in  Min (x1, x2) .. Max (x1, x2) loop
+            for x in Min (x1, x2) .. Max (x1, x2) loop
               hits (x, y1) := hits (x, y1) + 1;
             end loop;
           end if;

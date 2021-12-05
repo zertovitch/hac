@@ -10,6 +10,7 @@ package body HAC_Sys.Parser.Standard_Functions is
 
   SF_Args : constant array (SF_Code) of Natural :=
      (SF_Niladic            => 0,
+      SF_Min_Max_Int |
       SF_Element |
       SF_Head | SF_Tail |
       SF_Tail_After_Match |
@@ -62,6 +63,8 @@ package body HAC_Sys.Parser.Standard_Functions is
           Expected (1) := Floats_Set;
         when SF_Random_Int | SF_Argument =>
           Expected (1) := Ints_Set;
+        when SF_Min_Max_Int =>
+          Expected (1 .. 2) := (Numeric_Typ_Set, Numeric_Typ_Set);
         when SF_Element | SF_Head | SF_Tail =>
           Expected (1 .. 2) := (VStrings_Set, Ints_Set);
         when SF_Length |
@@ -158,6 +161,17 @@ package body HAC_Sys.Parser.Standard_Functions is
           if Ints_Set (Actual (1).TYP) then
             Forbid_Type_Coercion (CD, Found => Actual (1), Expected => (Floats, 0));
             Emit_1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda
+          end if;
+        when SF_Min_Max_Int =>
+          if Actual (1).TYP = Floats then
+            if Code = SF_Min_Int then
+              Code_Adjusted := SF_Min_Float;
+            else
+              Code_Adjusted := SF_Max_Float;
+            end if;
+          end if;
+          if Actual (2).TYP /= Actual (1).TYP then
+            Type_Mismatch (CD, err_parameter_types_do_not_match, Actual (2), Actual (1));
           end if;
         when SF_Image_Ints =>
           case Actual (1).TYP is
