@@ -148,6 +148,22 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             --  ^ In extremely rare cases we have = Top_Item.I + 1.
           end loop;
           Top_Item.I := temp_I;
+        when SF_Min_Int =>
+          Pop (ND);
+          --  [T] := Min ([T], [T+1]) :
+          ND.S (Curr_TCB.T).I := HAC_Integer'Min (ND.S (Curr_TCB.T).I, ND.S (Curr_TCB.T + 1).I);
+        when SF_Max_Int =>
+          Pop (ND);
+          --  [T] := Max ([T], [T+1]) :
+          ND.S (Curr_TCB.T).I := HAC_Integer'Max (ND.S (Curr_TCB.T).I, ND.S (Curr_TCB.T + 1).I);
+        when SF_Min_Float =>
+          Pop (ND);
+          --  [T] := Min ([T], [T+1]) :
+          ND.S (Curr_TCB.T).R := HAC_Float'Min (ND.S (Curr_TCB.T).R, ND.S (Curr_TCB.T + 1).R);
+        when SF_Max_Float =>
+          Pop (ND);
+          --  [T] := Max ([T], [T+1]) :
+          ND.S (Curr_TCB.T).R := HAC_Float'Max (ND.S (Curr_TCB.T).R, ND.S (Curr_TCB.T + 1).R);
         when SF_String_to_VString =>   --  Unary "+", equivalent to the call To_VString (S)
           Idx := Integer (ND.S (Curr_TCB.T).I);      --  Index in the stack
           Len := Integer (ND.IR.X);                  --  Length of string

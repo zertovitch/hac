@@ -260,6 +260,10 @@ package HAC_Sys.PCode is
     SF_EOF,
     SF_EOLN,
     SF_Random_Int,
+    SF_Min_Int,
+    SF_Max_Int,
+    SF_Min_Float,
+    SF_Max_Float,
     --  VString functions
     SF_String_to_VString,       --  +S        (S is a fixed-size string)
     SF_Literal_to_VString,      --  +"Hello"
