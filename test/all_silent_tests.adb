@@ -125,6 +125,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2021", +"03", +"3549854 3765399"            );  --  Binary Diagnostic
     Launch_AoC (+"2021", +"04", +"39984 8468"                 );  --  Giant Squid
     Launch_AoC (+"2021", +"05", +"6225 22116"                 );  --  Hydrothermal Venture
+    Launch_AoC (+"2021", +"06", +"388419 1740449478328"       );  --  Lanternfish
     --
     New_Line (2);
     Put_Line ("----> Done.");
