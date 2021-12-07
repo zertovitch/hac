@@ -48,7 +48,7 @@ begin
       pop (timer_max) := pop_0;    --  New fishes
     end loop;
     result (part) := 0;
-    for j in 0 .. 8 loop
+    for j in Timer_Range loop
       result (part) := result (part) + pop (j);
     end loop;
   end loop;
