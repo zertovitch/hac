@@ -127,6 +127,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2021", +"05", +"6225 22116"                 );  --  Hydrothermal Venture
     Launch_AoC (+"2021", +"06", +"388419 1740449478328"       );  --  Lanternfish
     Launch_AoC (+"2021", +"07", +"340052 92948968"            );  --  The Treachery of Whales
+    Launch_AoC (+"2021", +"08", +"440 1046281"                );  --  Seven Segment Search
     --
     New_Line (2);
     Put_Line ("----> Done.");
