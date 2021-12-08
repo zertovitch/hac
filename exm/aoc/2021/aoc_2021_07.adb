@@ -2,6 +2,13 @@
 ------------------------------------------
 --  The Treachery of Whales
 --
+--  Interesting here: the `fast` mode is running in O(n)
+--      where n is the span of x positions (x_max - x_min + 1).
+--      The `slow` and straightforward way is running in O(n**2):
+--      one outer loop over all positions, one inner loop for
+--      computing the cost of moving all crabs to the position
+--      considered in the outer loop.
+--
 --  https://adventofcode.com/2021/day/7
 --  Copy of questions in: aoc_2021_07_questions.txt
 --
@@ -20,13 +27,13 @@ procedure AoC_2021_07 is
   subtype Position_Range is Integer range x_min_min .. x_max_max;
   type Crab_Population is array (Position_Range) of Natural;
   pop : Crab_Population;
-  xx, x_min, x_max, total,
+  xx, x_min, x_max,
   cost_1, cost, cost_min,
   dist, x_cost_min,
-  s_px, s_x_px, s_x2_px, total_x_px, total_x2_px : Integer;
+  s_px, s_x_px, total, total_x_px, total_x2_px : Integer;
   --
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
-  verbose : constant Boolean := True;
+  verbose : constant Boolean := False;
   fast : constant Boolean := True;
 begin
   for j in Position_Range loop
@@ -62,26 +69,31 @@ begin
     end loop;
   end if;
   --
+  cost_min := 0;  --  Just calm down a warning.
   for part in 1 .. 2 loop
-    cost_min := total * x_max_max ** 2;
     if fast then
-      s_px    := 0;
-      s_x_px  := 0;
-      s_x2_px := 0;
+      s_px   := 0;
+      s_x_px := 0;
     end if;
     for y in x_min .. x_max loop
       --  Compute the cost of moving all crabs to position y.
-      if fast and part = 1 then
-        s_px    := s_px   + pop (y);           --  Partial sum: sum_{x <= y} pop_x
-        s_x_px  := s_x_px + y * pop (y);       --  Partial sum: sum_{x <= y} x * pop_x
-        s_x2_px := s_x2_px + y * y * pop (y);  --  Partial sum: sum_{x <= y} x * x * pop_x
+      if fast then
+        --  Quick computation without inner loop:
+        s_px   := s_px   + pop (y);      --  Partial sum: sum_{x <= y} pop_x
+        s_x_px := s_x_px + y * pop (y);  --  Partial sum: sum_{x <= y} x * pop_x
         --
-        cost := y * (2 * s_px - total) - 2 * s_x_px + total_x_px;
-        --
-        --  To do !!
-        --  Part 2's formula is in the works...
-        --
+        if part = 1 then
+          cost := y * (2 * s_px - total) - 2 * s_x_px + total_x_px;
+        else
+          cost :=      (2 * y *        s_px -
+                        2 *            s_x_px +
+                                       total_x2_px +
+                        (1 - 2 * y)  * total_x_px +
+                        (y ** 2 - y) * total)
+                   / 2;
+        end if;
       else
+        --  Slow, straightforward computation, with inner loop:
         cost := 0;
         for x in x_min .. x_max loop
           dist := abs (x - y);
@@ -93,7 +105,8 @@ begin
           cost := cost + cost_1 * pop (x);
         end loop;
       end if;
-      if cost < cost_min then
+      --  Did we find an optimum ?
+      if y = x_min or cost < cost_min then
         cost_min := cost;
         x_cost_min := y;
       end if;
