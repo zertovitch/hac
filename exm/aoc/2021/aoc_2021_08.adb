@@ -201,7 +201,6 @@ procedure AoC_2021_08 is
     Close (f);
   end Part_2;
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
-  --  verbose : constant Boolean := True;
 begin
   Part_1;
   Part_2;

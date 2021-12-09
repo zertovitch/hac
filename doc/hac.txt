@@ -62,9 +62,10 @@ Getting started
 Directories
 ===========
 
-   src      sources of HAC, plus the compatibility package HAL
-   exm      examples
-   test     testing (notably, the all_silent_tests.adb test suite)
+   src        sources of HAC, plus the compatibility package HAL
+   exm        examples
+   exm/aoc    Advent of Code solutions - also used for regression testing
+   test       testing (notably, the all_silent_tests.adb test suite)
 
 Key files in the main directory
 ===============================
