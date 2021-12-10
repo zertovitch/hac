@@ -22,7 +22,6 @@ The risk level of a low point is 1 plus its height. In the above example, the ri
 
 Find all of the low points on your heightmap. What is the sum of the risk levels of all low points on your heightmap?
 
-Your puzzle answer was 423.
 --- Part Two ---
 
 Next, you need to find the largest basins so you know what areas are most important to avoid.

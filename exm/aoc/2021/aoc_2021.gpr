@@ -17,9 +17,10 @@ project AoC_2021 is
        "Fast",
        "Style_Checks" 
       );
-   AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
+   AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Style_Checks");
 
    for Main use (
+     "aoc_2021_10.adb",
      "aoc_2021_09.adb",
      "aoc_2021_08.adb",
      "aoc_2021_07.adb",

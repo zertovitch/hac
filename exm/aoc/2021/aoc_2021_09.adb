@@ -23,7 +23,8 @@ procedure AoC_2021_09 is
   seen : array (1 .. sx, 1 .. sy) of Boolean;
   size, la1, la2, la3 : Natural := 0;
   --
-  --  Visit returns the size of the basin. Side effect: writes in `seen`.
+  --  `Visit` returns the size of the basin around point (x, y).
+  --  Side effect: it writes in `seen`.
   --
   function Visit (x, y : Integer) return Natural is
   begin
@@ -41,38 +42,39 @@ procedure AoC_2021_09 is
 begin
   Open (f, input);
   for y in 1 .. sy loop
-  for x in 1 .. sx loop
-    Get (f, c);
-    map (x, y) := Ord (c) - Ord ('0');
-    seen (x, y) := False;
-  end loop;
+    for x in 1 .. sx loop
+      Get (f, c);
+      map (x, y) := Ord (c) - Ord ('0');
+      seen (x, y) := False;
+    end loop;
   end loop;
   Close (f);
   r (1) := 0;
-  r (2) := 1;
   for y in 1 .. sy loop
-  for x in 1 .. sx loop
-    if (x = 1  or else map (x - 1, y) > map (x, y)) and then
-       (y = 1  or else map (x, y - 1) > map (x, y)) and then
-       (x = sx or else map (x + 1, y) > map (x, y)) and then
-       (y = sy or else map (x, y + 1) > map (x, y))
-    then
-       r (1) := r (1) + map (x, y) + 1;
-       size :=  Visit (x, y);
-       if size > la1 then
-         la3 := la2;
-         la2 := la1;
-         la1 := size;
-       elsif size > la2 then
-         la3 := la2;
-         la2 := size;
-       elsif size > la3 then
-         la3 := size;
-       end if;
-    end if;
+    for x in 1 .. sx loop
+      if (x = 1  or else map (x - 1, y) > map (x, y)) and then
+         (y = 1  or else map (x, y - 1) > map (x, y)) and then
+         (x = sx or else map (x + 1, y) > map (x, y)) and then
+         (y = sy or else map (x, y + 1) > map (x, y))
+      then
+         --  We have found a low point - a location (x, y) that is
+         --  lower than any of its adjacent locations.
+         r (1) := r (1) + map (x, y) + 1;
+         size := Visit (x, y);
+         if size > la1 then
+           la3 := la2;
+           la2 := la1;
+           la1 := size;
+         elsif size > la2 then
+           la3 := la2;
+           la2 := size;
+         elsif size > la3 then
+           la3 := size;
+         end if;
+      end if;
+    end loop;
   end loop;
-  end loop;
-  r (2) := r (2) * la1 * la2 * la3;
+  r (2) := la1 * la2 * la3;
   if compiler_test_mode then
     if r (1) /= Integer_Value (Argument (1)) or
        r (2) /= Integer_Value (Argument (2))
