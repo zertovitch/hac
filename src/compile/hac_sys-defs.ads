@@ -415,7 +415,8 @@ package HAC_Sys.Defs is
     err_membership_test_type_mismatch,
     err_string_not_supported_as_parameter,
     err_string_lengths_do_not_match,
-    err_library_error
+    err_library_error,
+    err_object_used_before_end_own_declaration  --  2021-12-11
   );
 
   type Error_set is array (Compile_Error) of Boolean;

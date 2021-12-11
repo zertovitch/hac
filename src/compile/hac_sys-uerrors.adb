@@ -247,6 +247,8 @@ package body HAC_Sys.UErrors is
         return "fixed-size string lengths do not match: " & hint;
       when err_library_error =>
         return "library error: " & hint;
+      when err_object_used_before_end_own_declaration =>
+        return ("attempt to use object " & hint & "before end of its own declaration");
     end case;
   end Error_String;
 

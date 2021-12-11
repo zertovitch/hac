@@ -232,6 +232,11 @@ package body HAC_Sys.Parser.Expressions is
                       when others =>
                         null;
                     end case;
+                    if X.TYP = NOTYP and then CD.Err_Count = 0 then
+                      Error
+                        (CD, err_object_used_before_end_own_declaration,
+                         '"' & To_String (r.Name_with_case) & """ ", True);
+                    end if;
                   end;
                   --
                 when CharCon | IntCon | FloatCon =>
@@ -262,6 +267,9 @@ package body HAC_Sys.Parser.Expressions is
                 when others =>
                   null;
               end case;
+              if X.TYP = NOTYP and then CD.Err_Count = 0 then
+                Error (CD, err_object_used_before_end_own_declaration, stop => True);
+              end if;
             end Primary;
 
             Y : Exact_Typ;
@@ -600,10 +608,6 @@ package body HAC_Sys.Parser.Expressions is
         when others =>
           null;
       end case;
-      --
-      if X.TYP = NOTYP and then CD.Err_Count = 0 then
-        raise Internal_error with "Typeless expression, but no compilation error";
-      end if;
     end Relation;
 
     Logical_OP    : KeyWSymbol;
@@ -679,6 +683,9 @@ package body HAC_Sys.Parser.Expressions is
         X.TYP := NOTYP;
       end if;
     end loop;
+    if X.TYP = NOTYP and then CD.Err_Count = 0 then
+      Error (CD, err_object_used_before_end_own_declaration, stop => True);
+    end if;
   end Expression;
 
   procedure Boolean_Expression (

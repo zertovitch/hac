@@ -822,7 +822,7 @@ package body HAC_Sys.Parser is
                 Link           => Previous_Last,
                 Entity         => Variable,
                 Read_only      => True,
-                xTyp           => Subtype_Undefined,
+                xTyp           => Subtype_Undefined,  --  Subtype is determined by the range.
                 Block_Ref      => 0,
                 Normal         => True,
                 LEV            => Level,
