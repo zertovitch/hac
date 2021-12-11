@@ -127,8 +127,9 @@ package body HAC_Sys.Parser.Ranges is
     Is_SI_Found : Boolean;
   begin
     Static_Subtype_Indication (CD, Level, Lower_Bound_Static, Higher_Bound_Static, Is_SI_Found);
+    --
     if Is_SI_Found then
-      --  All right, we have parsed, e.g., "Boolean".
+      --  All right, we have parsed a subtype indication, e.g., "Boolean".
       --  Since we are in a dynamic context, we need to push
       --  the bounds on the stack (E.g., "False .. True").
       Emit_1 (CD, k_Push_Discrete_Literal, Lower_Bound_Static.I);
@@ -138,15 +139,30 @@ package body HAC_Sys.Parser.Ranges is
     end if;
     --
     --  We try an explicit dynamic range, like: "f (z) + j .. n * 2"  or  "1 .. 6".
+    --  See RM 3.5 (3).
     --
-    Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys, Lower_Bound);
+    Simple_Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys, Lower_Bound);
+    --  Why did the Ada standard authors take Simple_Expression
+    --  instead of Expression for the bounds ?
+    --  It's for stopping the parsing on relational and logical operators.
+    --  Consider the following example (in exm/aoc/2021/aoc_2021_11.adb ).
+    --  With Expression for bound, you need brackets for the membership tests:
+    --
+    --      if (xx in 1 .. sx) and then (yy in 1 .. sy) and then map (xx, yy) <= 9 then
+    --
+    --  With Simple_Expression you can write instead the more intuitive:
+    --
+    --      if xx in 1 .. sx and then yy in 1 .. sy and then map (xx, yy) <= 9 then
+    --
     Range_Typ := Lower_Bound;
     if not Discrete_Typ (Lower_Bound.TYP) then
       Error (CD, Non_Discrete_Error);
     end if;
     if CD.Sy = Range_Double_Dot_Symbol then  --  ".."
       InSymbol (CD);
-      Expression (CD, Level, FSys + LOOP_Symbol, Upper_Bound);
+      --
+      Simple_Expression (CD, Level, FSys + LOOP_Symbol, Upper_Bound);
+      --
       if Upper_Bound /= Lower_Bound then
         Type_Mismatch (
           CD, err_bounds_type_mismatch,

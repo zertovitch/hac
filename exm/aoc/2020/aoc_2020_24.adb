@@ -9,7 +9,7 @@
 --      As an hommage to John Conway, there are three
 --      "Game of Life" puzzles: Day 11, 17, 24.
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
 
 procedure AoC_2020_24 is
 
@@ -88,7 +88,7 @@ procedure AoC_2020_24 is
         count := Count_Black (x, y);
         case current_map (x, y) is
           when black =>
-            if count = 0 or count > 2 then
+            if count = 0 or else count > 2 then
               new_map (x, y) := white;
             end if;
           when white =>
@@ -103,12 +103,14 @@ procedure AoC_2020_24 is
   function Is_large_enough (m : Map_Type) return Boolean is
   begin
     for y in Tile_Range loop
-      if m (-max, y) = black then return False; end if;
-      if m (max, y) = black then return False; end if;
+      if m (-max, y) = black or else m (max, y) = black then
+        return False;
+      end if;
     end loop;
     for x in Tile_Range loop
-      if m (x, -max) = black then return False; end if;
-      if m (x, max) = black then return False; end if;
+      if m (x, -max) = black or else m (x, max) = black then
+        return False;
+      end if;
     end loop;
     return True;
   end Is_large_enough;
@@ -142,6 +144,8 @@ procedure AoC_2020_24 is
     move (ne).x :=  1;
     move (ne).y :=  1;
   end Init_Move;
+
+  use HAL;
 
   procedure Read_Data (m : out Map_Type) is
     --  Initializations are just for removing warnings

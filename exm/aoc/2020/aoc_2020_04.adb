@@ -14,9 +14,10 @@
 --    *   "and then", "or else" (solved in HAC 0.098)
 --    *   'Image attribute for enumerated types
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
 
 procedure AoC_2020_04 is
+  use HAL;
   --
   function Val_Num (s : VString; hexa : Boolean) return Integer is
     c : Character;
@@ -26,7 +27,7 @@ procedure AoC_2020_04 is
     end if;
     for i in 1 .. Length (s) loop
       c := Element (s, i);
-      if not ((c in '0' .. '9') or else (hexa and then c in 'a' .. 'f'))
+      if not (c in '0' .. '9' or else (hexa and then c in 'a' .. 'f'))
       then
         return -1;
       end if;

@@ -22,7 +22,7 @@ procedure AoC_2021_11 is
       flashed (x, y) := True;
       for yy in y - 1 .. y + 1 loop
         for xx in x - 1 .. x + 1 loop
-          if (xx in 1 .. sx) and then (yy in 1 .. sy) and then map (xx, yy) <= 9 then
+          if xx in 1 .. sx and then yy in 1 .. sy and then map (xx, yy) <= 9 then
             Increase (xx, yy);
           end if;
         end loop;

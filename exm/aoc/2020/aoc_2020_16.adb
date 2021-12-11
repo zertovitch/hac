@@ -14,18 +14,20 @@
 --
 --    *     ` cc_match := (others => (others => True)); `
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
 
 procedure AoC_2020_16 is
+  use HAL;
   criteria : constant := 20;
   subtype Criteria_Range is Positive range 1 .. criteria;
   val_11, val_12, val_21, val_22 : array (Criteria_Range) of Integer;
   --
   function Is_Valid (value : Integer; c : Criteria_Range) return Boolean is
   begin
-    return (value in val_11 (c) .. val_12 (c)) or
-           (value in val_21 (c) .. val_22 (c));
+    return value in val_11 (c) .. val_12 (c) or else
+           value in val_21 (c) .. val_22 (c);
   end Is_Valid;
+  --
   --  In this problem we have as many columns as criteria:
   subtype Column_Range is Criteria_Range;
   ticket, my_ticket : array (Column_Range) of Integer;

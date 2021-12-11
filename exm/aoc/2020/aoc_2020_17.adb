@@ -20,7 +20,7 @@
 --
 --    *     ` map (0) := (others => (others =>  (others => (others => False)); `
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL; use HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
 
 procedure AoC_2020_17 is
   --
@@ -63,7 +63,7 @@ procedure AoC_2020_17 is
         for dj in -1 .. 1 loop
           for dk in -1 .. 1 loop
             for dl in -dl_max .. dl_max loop
-              if di /= 0 or dj /= 0 or dk /= 0 or dl /= 0 then
+              if di /= 0 or else dj /= 0 or else dk /= 0 or else dl /= 0 then
                 Scan_Direction (di, dj, dk, dl);
               end if;
             end loop;
@@ -88,7 +88,7 @@ procedure AoC_2020_17 is
             occ := Count_Visible_Occupied (i, j, k, l);
             case current_map (i, j, k, l) is
               when Active =>
-                if occ < 2 or occ > 3 then
+                if occ < 2 or else occ > 3 then
                   new_map (i, j, k, l) := Inactive;
                 end if;
               when Inactive =>
@@ -152,7 +152,7 @@ begin
     size := 8;
     low := -size / 2;
     high := low + size - 1;
-    if (low - cycles < min) or (high + cycles > max) then
+    if low - cycles < min or high + cycles > max then
       Put_Line ("Test (hyper)space is too small");
       return;
     end if;

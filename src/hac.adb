@@ -82,8 +82,8 @@ procedure HAC is
     Close (f);
     if verbosity >= 2 then
       Put_Line (
-        HAC_margin_2 & "Build finished in " &
-        (Duration'Image (t2 - t1)) &
+        HAC_margin_2 & "Build finished in" &
+        Duration'Image (t2 - t1) &
         " seconds."
       );
     end if;
@@ -114,8 +114,8 @@ procedure HAC is
             Ada_file_name & " due to an unhandled exception.");
       else
         Put_Line (
-          HAC_margin_3 & "VM interpreter done after " &
-          (Duration'Image (t2 - t1)) & " seconds."
+          HAC_margin_3 & "VM interpreter done after" &
+          Duration'Image (t2 - t1) & " seconds."
         );
       end if;
     end if;
