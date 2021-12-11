@@ -130,6 +130,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2021", +"08", +"440 1046281"                );  --  Seven Segment Search
     Launch_AoC (+"2021", +"09", +"423 1198704"                );  --  Smoke Basin
     Launch_AoC (+"2021", +"10", +"388713 3539961434"          );  --  Syntax Scoring
+    Launch_AoC (+"2021", +"11", +"1679 519"                   );  --  Dumbo Octopus
     --
     New_Line (2);
     Put_Line ("----> Done.");
