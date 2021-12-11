@@ -22,10 +22,10 @@ procedure All_Silent_Tests is
       end if;
     end Shell;
 
-    procedure Build_HAC is
-      success : Boolean;
+    procedure Build_HAC (success : out Boolean) is
     begin
       if Get_Env("hacbuild") = "done" then
+        success := True;
         return;
       end if;
       Put_Line ("(Re-)building HAC, in case the present program isn't run from HAC...");
@@ -69,13 +69,19 @@ procedure All_Silent_Tests is
       Launch_HAC (+"aoc_" & Year & '_' & Day & ".adb ", Solutions, 3);
     end Launch_AoC;
 
+    hac_build_success : Boolean;
+
   begin
     Put_Line( "    ___________      _____________________________________________________________________");
     Put_Line( "   / *  HAC  * \    /  ""Silent tests"": when there is zero output, no compilation error,   \");
     Put_Line( "   |  Testing  |    |  no run-time error, and 0 failure, then the test suite is all fine. |");
     Put_Line( "   \___________/    \_____________________________________________________________________/");
     New_Line;
-    Build_HAC;  --  Redundant if this program is itself run through HAC.
+    Build_HAC (hac_build_success);  --  Redundant if this program is itself run through HAC.
+    if not hac_build_success then
+      Put_Line ("--- HAC build failed (called from all_silent_tests.adb) ---");
+      return;
+    end if;
     --
     Put_Line( "----> Launching tests.");
     Put_Line( "  One instance of HAC is called each time, with compilation and execution...");

@@ -2,11 +2,13 @@
 
 echo (Re-)building HAC
 cd..
+set hacbuild=unknown
 call build hac
+if NOT "%ERRORLEVEL%" == "0" goto hac_build_failed
 cd test
 set hacbuild=done
 
-if "%1"=="" goto gallery
+if "%1"=="" goto regression_tests
 
 rem Try without extension
 if exist %1.adb ..\hac -v2 %1.adb
@@ -16,7 +18,7 @@ rem Try with extension
 ..\hac -v2 %1
 goto fin
 
-:gallery
+:regression_tests
 rem Here HAC will call itself for each test!...
 
 ..\hac -v2 all_silent_tests.adb
@@ -36,5 +38,11 @@ echo ******* Running all tests with GNAT.
 for %%e in (*.exe) do %%e
 
 pause
+goto fin
+
+:hac_build_failed
+echo --- HAC build failed (called from t.cmd) ---
+cd test
 
 :fin
+set hacbuild=unknown
