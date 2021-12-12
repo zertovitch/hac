@@ -113,8 +113,8 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: : " & r (1));
-    Put_Line (+"Part 2: : " & r (2));
+    Put_Line (+"Part 1: invalid closing delimiter points: " & r (1));
+    Put_Line (+"Part 2: autocomplete points: " & r (2));
     --  Part 1: validated by AoC: 388713
     --  Part 2: validated by AoC: 3539961434
   end if;

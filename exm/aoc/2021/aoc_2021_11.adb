@@ -69,10 +69,10 @@ begin
       end loop;
     end loop;
     if step <= 100 then
-       r (1) := r (1) + count;  --  Total flashes in the first 100 steps.
+       r (1) := r (1) + count;
     end if;
     if count = sx * sy then
-      r (2) := step;  --  First step during which all octopuses flash.
+      r (2) := step;
       exit;
     end if;
   end loop;
@@ -83,8 +83,8 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: : " & r (1));
-    Put_Line (+"Part 2: : " & r (2));
+    Put_Line (+"Part 1: Total flashes in the first 100 steps: " & r (1));
+    Put_Line (+"Part 2: First step during which all octopuses flash: " & r (2));
     --  Part 1: validated by AoC: 1679
     --  Part 2: validated by AoC: 519
   end if;

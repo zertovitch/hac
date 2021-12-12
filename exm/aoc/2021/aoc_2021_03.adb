@@ -146,8 +146,8 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Result Part 1: : " & res_1);
-    Put_Line (+"Result Part 2: : " & res_2);
+    Put_Line (+"Result Part 1: " & res_1);
+    Put_Line (+"Result Part 2: " & res_2);
     --  Part 1: validated by AoC: 3549854
     --  Part 2: validated by AoC: 3765399
   end if;

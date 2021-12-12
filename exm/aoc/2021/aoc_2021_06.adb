@@ -60,8 +60,11 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: : " & result (1));
-    Put_Line (+"Part 2: : " & result (2));
+    for part in 1 .. 2 loop
+      Put_Line (
+        +"Part " & part & ": population after " & days (part) &
+        " days: " & result (part));
+    end loop;
     --  Part 1: validated by AoC: 388419
     --  Part 2: validated by AoC: 1740449478328
   end if;

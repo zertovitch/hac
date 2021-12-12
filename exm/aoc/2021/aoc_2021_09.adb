@@ -82,8 +82,8 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: : " & r (1));
-    Put_Line (+"Part 2: : " & r (2));
+    Put_Line (+"Part 1: number of low points: " & r (1));
+    Put_Line (+"Part 2: product of the sizes of the 3 largest basins: " & r (2));
     --  Part 1: validated by AoC: 423
     --  Part 2: validated by AoC: 1198704
   end if;

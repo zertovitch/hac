@@ -124,8 +124,8 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: : " & r (1));
-    Put_Line (+"Part 2: : " & r (2));
+    Put_Line (+"Part 1: sum of linear costs: " & r (1));
+    Put_Line (+"Part 2: sum of quadratic costs: " & r (2));
     --  Part 1: validated by AoC: 340052
     --  Part 2: validated by AoC: 92948968
   end if;

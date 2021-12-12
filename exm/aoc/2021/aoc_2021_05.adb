@@ -94,8 +94,8 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: : " & res (1));
-    Put_Line (+"Part 2: : " & res (2));
+    Put_Line (+"Part 1: crossings of horizontal and vertical lines: " & res (1));
+    Put_Line (+"Part 2: crossings, including diagonals: " & res (2));
     --  Part 1: validated by AoC: 6225
     --  Part 2: validated by AoC: 22116
   end if;

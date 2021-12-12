@@ -9,6 +9,8 @@
 --
 --    *     Comparison (equality operators) "=", "/=" of
 --            composite types (arrays and records)
+--    *     Logical operators on arrays of Boolean
+--
 --
 with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
 
@@ -200,10 +202,12 @@ procedure AoC_2021_08 is
     end loop;
     Close (f);
   end Part_2;
+  --
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
 begin
   Part_1;
   Part_2;
+  --
   if compiler_test_mode then
     if r (1) /= Integer_Value (Argument (1)) or
        r (2) /= Integer_Value (Argument (2))
@@ -211,8 +215,8 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: : " & r (1));
-    Put_Line (+"Part 2: : " & r (2));
+    Put_Line (+"Part 1: number of unique digit display patterns: " & r (1));
+    Put_Line (+"Part 2: sum of decoded display numbers: " & r (2));
     --  Part 1: validated by AoC: 440
     --  Part 2: validated by AoC: 1046281
   end if;
