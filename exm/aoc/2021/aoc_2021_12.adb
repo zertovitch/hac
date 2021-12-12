@@ -83,7 +83,7 @@ procedure AoC_2021_12 is
   --
   function Visit (cave : Dic_Range; joker : Boolean) return Natural is
     result : Natural;  --  Number of paths from this cave reaching the end.
-    procedure Test (from, to : Dic_Range) is
+    procedure Test (to : Dic_Range) is
     begin
       if to = start_idx then
         return;
@@ -98,6 +98,7 @@ procedure AoC_2021_12 is
               result := result + Visit (to, False);
             end if;
           when others =>
+            --  We cannot enter this `to` cave.
             null;
         end case;
       else
@@ -120,9 +121,9 @@ procedure AoC_2021_12 is
       --  there is no segment between two large caves.
       --  Such a situation would lead to infinite recursion.
       if cave = seg (s).from then
-        Test (seg (s).from, seg (s).to);
+        Test (seg (s).to);
       elsif cave = seg (s).to then
-        Test (seg (s).to, seg (s).from);
+        Test (seg (s).from);
       end if;
     end loop;
     seen (cave) := seen (cave) - 1;
