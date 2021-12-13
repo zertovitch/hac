@@ -42,22 +42,25 @@ procedure AoC_2021_12 is
       --  Word not yet in dictionary.
       top := top + 1;
       dic (top) := word;
-      seen (top) := 0;
       small (top) := True;
+      seen (top) := 0;
       for i in 1 .. Length (word) loop
         small (top) := small (top) and then Element (word, i) in 'a' .. 'z';
       end loop;
       pos := top;
     end Check;
-    word : VString;
     --
     input : constant VString := +"aoc_2021_12.txt";
     --
-    c : Character;
-    f : File_Type;
+    c    : Character;
+    word : VString;
+    f    : File_Type;
   begin
     Check (+"start", start_idx);
     Check (+"end", end_idx);
+    small (start_idx) := True;
+    seen (start_idx) := 2;  --  This prevents visiting again the "start" cave.
+    --
     Open (f, input);
     while not End_Of_File (f) loop
       segs := segs + 1;
@@ -85,9 +88,6 @@ procedure AoC_2021_12 is
     result : Natural;  --  Number of paths from this cave reaching the end.
     procedure Test (to : Dic_Range) is
     begin
-      if to = start_idx then
-        return;
-      end if;
       if small (to) then
         case seen (to) is
           when 0 =>

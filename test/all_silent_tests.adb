@@ -138,6 +138,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2021", +"10", +"388713 3539961434"          );  --  Syntax Scoring
     Launch_AoC (+"2021", +"11", +"1679 519"                   );  --  Dumbo Octopus
     Launch_AoC (+"2021", +"12", +"3497 93686"                 );  --  Passage Pathing
+    Launch_AoC (+"2021", +"13", +"602"                        );  --  Transparent Origami
     --
     New_Line (2);
     Put_Line ("----> Done.");
