@@ -72,7 +72,7 @@ package body HAC_Sys.Parser.Type_Def is
                 end if;
               end if;
             else
-              Error (CD, err_illegal_constant_or_constant_identifier);
+              Error (CD, err_illegal_constant_or_constant_identifier, stop => True);
             end if;
           end if;  --  X /= 0
           InSymbol;

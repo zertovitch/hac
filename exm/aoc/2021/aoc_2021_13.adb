@@ -12,19 +12,19 @@ procedure AoC_2021_13 is
   --
   input : constant VString := +"aoc_2021_13.txt";
   --
-  x_max_max : constant := 2000;
-  y_max_max : constant := 1000;
-  subtype X_Range is Integer range 0 .. x_max_max;
-  subtype Y_Range is Integer range 0 .. y_max_max;
-  x_max : X_Range := 0;
-  y_max : Y_Range := 0;
+  x_max : constant := 2000;
+  y_max : constant := 1000;
+  subtype X_Range is Integer range 0 .. x_max;
+  subtype Y_Range is Integer range 0 .. y_max;
+  x_last : X_Range := 0;
+  y_last : Y_Range := 0;
   map : array (X_Range, Y_Range) of Boolean;
   --
   function Count return Natural is
     total : Natural := 0;
   begin
-    for x in 0 .. x_max loop
-      for y in 0 .. y_max loop
+    for x in 0 .. x_last loop
+      for y in 0 .. y_last loop
         if map (x, y) then
           total := total + 1;
         end if;
@@ -35,8 +35,8 @@ procedure AoC_2021_13 is
   --
   procedure Show is
   begin
-    for y in 0 .. y_max loop
-      for x in 0 .. x_max loop
+    for y in 0 .. y_last loop
+      for x in 0 .. x_last loop
         if map (x, y) then
           Put ('#');
         else
@@ -47,9 +47,9 @@ procedure AoC_2021_13 is
     end loop;
   end Show;
   --
-  f_max_max : constant := 20;
-  subtype Fold_Range is Integer range 1 .. f_max_max;
-  f_max : Natural := 0;
+  f_max : constant := 20;
+  subtype Fold_Range is Integer range 1 .. f_max;
+  f_last : Natural := 0;
   type Fold_Instruction_Type is record
     x_axis : Boolean;
     line   : Natural;
@@ -74,8 +74,8 @@ procedure AoC_2021_13 is
       Get (f, sep);
       Get (f, yd);
       map (xd, yd) := True;
-      x_max := Max (x_max, xd);
-      y_max := Max (y_max, yd);
+      x_last := Max (x_last, xd);
+      y_last := Max (y_last, yd);
       if End_Of_Line (f) then
         Skip_Line (f);
       end if;
@@ -83,12 +83,12 @@ procedure AoC_2021_13 is
     end loop;
     --  Folding instructions
     while not End_Of_File (f) loop
-      f_max := f_max + 1;
+      f_last := f_last + 1;
       Get (f, skip);
       Get (f, c);
-      fold_instruction (f_max).x_axis := c = 'x';
+      fold_instruction (f_last).x_axis := c = 'x';
       Get (f, sep);
-      Get (f, fold_instruction (f_max).line);
+      Get (f, fold_instruction (f_last).line);
     end loop;
     Close (f);
   end Read_Data;
@@ -101,20 +101,20 @@ procedure AoC_2021_13 is
       xf := fold_instruction (f).line;
       xe := xf * 2;
       for x in 0 .. xf - 1 loop
-        for y in 0 .. y_max loop
+        for y in 0 .. y_last loop
           map (x, y) := map (x, y) or map (xe - x, y);
         end loop;
       end loop;
-      x_max := xf - 1;
+      x_last := xf - 1;
     else
       yf := fold_instruction (f).line;
       ye := yf * 2;
-      for x in 0 .. x_max loop
+      for x in 0 .. x_last loop
         for y in 0 .. yf - 1 loop
           map (x, y) := map (x, y) or map (x, ye - y);
         end loop;
       end loop;
-      y_max := yf - 1;
+      y_last := yf - 1;
     end if;
   end Fold;
   --
@@ -122,10 +122,11 @@ procedure AoC_2021_13 is
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
 begin
   Read_Data;
-  for f in 1 .. f_max loop
+  for f in 1 .. f_last loop
     Fold (f);
     if f = 1 then
       r (1) := Count;
+      exit when compiler_test_mode;
     end if;
   end loop;
   if compiler_test_mode then
