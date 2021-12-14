@@ -53,9 +53,15 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
 
   function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Integer) return String is
     Res : String (1 .. Size);
+    Number : Defs.HAC_Integer;
   begin
     for i in Res'Range loop
-      Res (i) := Character'Val (ND.S (Idx + i - 1).I);
+      Number := ND.S (Idx + i - 1).I;
+      if Number not in Defs.OrdMinChar .. Defs.OrdMaxChar then
+        raise VM_Out_of_Range
+          with ": invalid data: element not in Character's range";
+      end if;
+      Res (i) := Character'Val (Number);
     end loop;
     return Res;
   end Get_String_from_Stack;

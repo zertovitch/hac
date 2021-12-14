@@ -106,7 +106,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
         when SF_Abs_Float => Top_Item.R := abs (Top_Item.R);
         when SF_T_Val =>   --  Ord = Character'Val : RM 3.5.5 (5,7)
-          if Top_Item.I < Defs.OrdMinChar or Top_Item.I > Defs.OrdMaxChar then
+          if Top_Item.I not in Defs.OrdMinChar .. Defs.OrdMaxChar then
             raise VM_Out_of_Range with ": not in Character's range";
           end if;
         when SF_T_Pos =>   --  S'Pos : RM 3.5.5 (2)
