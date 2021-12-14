@@ -6,19 +6,37 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
     use Defs;
     use type HAC_Integer;
 
-    procedure Do_Array_Index (Element_Size : Index) is
+    generic
+      size_1 : Boolean;
+    procedure Do_Array_Index;
+
+    procedure Do_Array_Index is
       ATI : constant Integer := Integer (IR.Y);
       ATE : ATabEntry renames CD.Arrays_Table (ATI);
       Idx : constant Index := Index (ND.S (Curr_TCB.T).I);
     begin
       if Idx < ATE.Low then
-        raise VM_Out_of_Range with ": index below array's lower bound";
+        raise VM_Out_of_Range
+          with ": index (pos: " & Index'Image (Idx) &
+            ") below lower bound (pos: " &  Index'Image (ATE.Low) & ')';
       elsif Idx > ATE.High then
-        raise VM_Out_of_Range with ": index above array's upper bound";
+        raise VM_Out_of_Range
+          with ": index (pos: " & Index'Image (Idx) &
+            ") above upper bound (pos:" &  Index'Image (ATE.High) & ')';
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.
-      ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer ((Idx - ATE.Low) * Element_Size);
+      if size_1 then
+        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer (Idx - ATE.Low);
+      else
+        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer ((Idx - ATE.Low) * ATE.Element_Size);
+      end if;
     end Do_Array_Index;
+
+    procedure Do_Array_Index_Size_1 is
+      new Do_Array_Index (size_1 => True);
+
+    procedure Do_Array_Index_Any_Size is
+      new Do_Array_Index (size_1 => False);
 
     procedure Do_Load_Block is
       H1, H2 : Index;
@@ -77,8 +95,8 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
 
   begin
     case Composite_Data_Opcode (ND.IR.F) is
-      when k_Array_Index_Element_Size_1 => Do_Array_Index (1);
-      when k_Array_Index                => Do_Array_Index (CD.Arrays_Table (Integer (IR.Y)).Element_Size);
+      when k_Array_Index_Element_Size_1 => Do_Array_Index_Size_1;
+      when k_Array_Index                => Do_Array_Index_Any_Size;
       when k_Record_Field_Offset        => ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
       when k_Load_Block                 => Do_Load_Block;
       when k_Copy_Block                 => Do_Copy_Block;
