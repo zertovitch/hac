@@ -139,6 +139,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2021", +"11", +"1679 519"                   );  --  Dumbo Octopus
     Launch_AoC (+"2021", +"12", +"3497 93686"                 );  --  Passage Pathing
     Launch_AoC (+"2021", +"13", +"602"                        );  --  Transparent Origami
+    Launch_AoC (+"2021", +"14", +"2345 2432786807053"         );  --  Extended Polymerization
     --
     New_Line (2);
     Put_Line ("----> Done.");
