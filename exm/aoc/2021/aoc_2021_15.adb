@@ -12,7 +12,7 @@ procedure AoC_2021_15 is
   sx_max : constant := 500;
   sy_max : constant := 500;
   map : array (1 .. sx_max, 1 .. sy_max) of Natural;
-  --  Cumulative minimal risk from (1, 1) to (x, y)
+  --  Cumulative minimal risk from starting point to (x, y)
   c_risk : array (1 .. sx_max, 1 .. sy_max) of Natural;
   risk_max : constant Integer := 9 * sx_max * sy_max;
   sx, sy : Natural;
@@ -53,9 +53,9 @@ procedure AoC_2021_15 is
       risk_to := risk_from + map (x, y);
       if risk_to < c_risk (x, y) then
         --  Ah-ha, we have found a better way, or perhaps
-        --  the first way, to (x,y).
+        --  the first way, to (x, y).
         c_risk (x, y) := risk_to;
-        --  Since we have an improved risk (x, y), it's worth
+        --  Since we have an reduced risk (x, y), it's worth
         --  continuing the exploration.
         Visit (x - 1, y, risk_to);
         Visit (x + 1, y, risk_to);
@@ -66,19 +66,19 @@ procedure AoC_2021_15 is
   end Visit;
   --
   --  Now enters Dijkstra.
-  --  We use the sorting containers currently available
-  --  to HAC: none (i.e., do it yourself)!
+  --  How many ready-made sorting containers are currently
+  --  available to HAC ? None! I.e., do it yourself!
   --
   procedure Dijkstra (start_x, start_y : Integer) is
     list_length_max : constant := 250_000;  --  sx_max * sy_max;
     type Node is record
       c_risk : Natural;
-      x, y : Positive;
+      x, y   : Positive;
     end record;
     list : array (1 .. list_length_max) of Node;
     current, explored : Natural := 0;  --  0 <= current <= explored
     --
-    --  Same as `Visit` above, but not recursive.
+    --  Similar to the `Visit` above, but not recursive.
     --
     procedure Visit (x, y, risk_from : Integer) is
       risk_to, ins : Integer;
@@ -87,14 +87,20 @@ procedure AoC_2021_15 is
         risk_to := risk_from + map (x, y);
         if risk_to < c_risk (x, y) then
           --  Improvement on cell (x, y).
+          --  This happens only once per (x, y) point in this problem - see below.
           c_risk (x, y) := risk_to;
           --
           --  Insert in a sorted way (slooow on HAC for Part 2).
           --
           ins := explored + 1;
           for i in current + 1 .. explored loop
-            if risk_to < list (i).c_risk  then
-              ins := i;  --  Insert here
+            if risk_to < list (i).c_risk then
+              ins := i;  --  Insert here.
+              --  NB: we might want to remove another node with the same (x, y) and a
+              --  larger risk, but that case never happens in this specific problem!
+              --  Reason: the cost for reaching (x, y) is the same from every
+              --  side (= map (x, y)), and we reach it from (cur_x, cur_y) which is
+              --  already optimal.
               exit;
             end if;
           end loop;
@@ -112,7 +118,7 @@ procedure AoC_2021_15 is
     cur_x, cur_y : Positive;
     risk_cur : Natural;
   begin
-    c_risk (start_x, start_y) := map (start_x, start_y);
+    c_risk (start_x, start_y) := 0;
     cur_x := start_x;
     cur_y := start_y;
     loop
@@ -122,7 +128,7 @@ procedure AoC_2021_15 is
       Visit (cur_x, cur_y - 1, risk_cur);
       Visit (cur_x, cur_y + 1, risk_cur);
       --
-      --  Switch to the next best
+      --  Switch to the next best explored point.
       --
       current := current + 1;
       cur_x := list (current).x;
@@ -163,15 +169,13 @@ begin
     if fast then
       Dijkstra (1, 1);
     else
-      Visit (1, 1, 0);
+      Visit (1, 1, -map (1, 1));
     end if;
-    r (part) := c_risk (sx, sy) - map (1, 1);
-    --                          ^ "the starting position is never
-    --                             entered, so its risk is not counted".
+    r (part) := c_risk (sx, sy);
     exit when compiler_test_mode;
-    --  ^ We do only part 1 on test mode.
-    --    Part 1 & 2 takes 96 seconds on an i7 9700 with HAC, and
-    --    0.04 seconds with GNAT.
+    --  ^ We do only part 1 when in test mode.
+    --    Parts 1 & 2 take 96 seconds on an i7 9700 with HAC,
+    --    and only 0.047 seconds with GNAT.
   end loop;
   --
   if compiler_test_mode then
