@@ -55,7 +55,7 @@ procedure AoC_2021_15 is
         --  Ah-ha, we have found a better way, or perhaps
         --  the first way, to (x, y).
         c_risk (x, y) := risk_to;
-        --  Since we have an reduced risk (x, y), it's worth
+        --  Since we have a reduced risk (x, y), it's worth
         --  continuing the exploration.
         Visit (x - 1, y, risk_to);
         Visit (x + 1, y, risk_to);
@@ -99,8 +99,8 @@ procedure AoC_2021_15 is
               --  NB: we might want to remove another node with the same (x, y) and a
               --  larger risk, but that case never happens in this specific problem!
               --  Reason: the cost for reaching (x, y) is the same from every
-              --  side (= map (x, y)), and we reach it from (cur_x, cur_y) which is
-              --  already optimal.
+              --  side (= map (x, y)), and we reach it from (cur_x, cur_y) which has
+              --  the minimum score or (x, y)'s neighbours.
               exit;
             end if;
           end loop;

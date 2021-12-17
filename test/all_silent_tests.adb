@@ -141,6 +141,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2021", +"13", +"602"                        );  --  Transparent Origami
     Launch_AoC (+"2021", +"14", +"2345 2432786807053"         );  --  Extended Polymerization
     Launch_AoC (+"2021", +"15", +"656"                        );  --  Chiton
+    Launch_AoC (+"2021", +"16", +"927 1725277876501"          );  --  Packet Decoder
     --
     New_Line (2);
     Put_Line ("----> Done.");
