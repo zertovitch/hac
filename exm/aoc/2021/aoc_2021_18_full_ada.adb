@@ -64,7 +64,8 @@ procedure AoC_2021_18_full_Ada is
         return;
       end if;
       if node.is_pair then
-        Solve_Left (node.right);  --  The left exploded number goes rightmost on the left side
+        --  The left exploded number goes rightmost, on the left side:
+        Solve_Left (node.right);    --  Prioritize the right node.
         Solve_Left (node.left);
       elsif add_left > 0 then
         node.number := node.number + add_left;
@@ -78,7 +79,8 @@ procedure AoC_2021_18_full_Ada is
         return;
       end if;
       if node.is_pair then
-        Solve_Right (node.left);  --  The right exploded number goes leftmost on the right side
+        --  The right exploded number goes leftmost, on the right side:
+        Solve_Right (node.left);    --  Prioritize the left node.
         Solve_Right (node.right);
       elsif add_right > 0 then
         node.number := node.number + add_right;
@@ -103,10 +105,14 @@ procedure AoC_2021_18_full_Ada is
         else
           Explode (node.left, level + 1);
           if change then
+            --  There is always a number in the part of the tree
+            --  starting at the sibling node. So, no need to try
+            --  adding the number elsewhere in the tree.
             Solve_Right (node.right);
           else
             Explode (node.right, level + 1);
             if change then
+              --  Same remark as above.
               Solve_Left (node.left);
             end if;
           end if;
@@ -131,6 +137,7 @@ procedure AoC_2021_18_full_Ada is
         change := True;
       end if;
     end Split;
+    --
   begin
     loop
       change := False;
@@ -165,7 +172,8 @@ procedure AoC_2021_18_full_Ada is
     --  "snailfish numbers must always be reduced, and the process
     --     numbers of adding two snailfish numbers can result in
     --     snailfish that need to be reduced."
-    --  This rule avoids nesting levels > 5 at any point.
+    --  This rule avoids nesting levels > 5 at any point, including
+    --  after the next unreduced addition.
     Reduce (a_plus_b);
     return a_plus_b;
   end "+";
@@ -254,9 +262,9 @@ begin
   else
     T1 := Clock;
     Put_Line (+"Done in:" & Image (T1 - T0) & " seconds");
-    Put_Line (+"Part 1: : " & r (1));
-    Put_Line (+"Part 2: : " & r (2));
-    --  Part 1: validated by AoC: .
-    --  Part 2: validated by AoC: .
+    Put_Line (+"Part 1: Magnitude of the sum of all terms                : " & r (1));
+    Put_Line (+"Part 2: Largest magnitude of the sum of any pair of terms: " & r (2));
+    --  Part 1: validated by AoC: 3665.
+    --  Part 2: validated by AoC: 4775.
   end if;
 end AoC_2021_18_full_Ada;
