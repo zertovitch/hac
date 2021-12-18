@@ -158,6 +158,9 @@ package HAL is
   function "&" (R : Real; V : VString) return VString;
   function "&" (V : VString; R : Real) return VString;
   --
+  function "&" (D : Duration; V : VString) return VString;
+  function "&" (V : VString; D : Duration) return VString;
+  --
   function "="  (Left, Right : VString) return Boolean renames VStr_Pkg."=";
   function "<"  (Left, Right : VString) return Boolean renames VStr_Pkg."<";
   function "<=" (Left, Right : VString) return Boolean renames VStr_Pkg."<=";

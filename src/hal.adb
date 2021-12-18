@@ -200,6 +200,16 @@ package body HAL is
     return V & HAC_Image (R);
   end "&";
 
+  function "&" (D : Duration; V : VString) return VString is
+  begin
+    return Image (D) & V;
+  end "&";
+
+  function "&" (V : VString; D : Duration) return VString is
+  begin
+    return V & Image (D);
+  end "&";
+
   function To_Lower (Item : VString) return VString is
   begin
     return +Ada.Characters.Handling.To_Lower (VStr_Pkg.To_String (Item));
@@ -410,8 +420,13 @@ package body HAL is
   end Image;
 
   function Image (D : Duration) return VString is
+    Im : constant String := Duration'Image (D);
   begin
-    return +Duration'Image (D);
+    if D < 0.0 then
+      return +Im;
+    else
+      return +Im (Im'First + 1 .. Im'Last);  --  Remove the leading ' '.
+    end if;
   end Image;
 
   function Integer_Value (V : VString) return Integer is

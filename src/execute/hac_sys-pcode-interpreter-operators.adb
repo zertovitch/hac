@@ -203,11 +203,17 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           ND.S (Curr_TCB.T) := GR_VString ((HAC_Image (ND.S (Curr_TCB.T).I)) & ND.S (Curr_TCB.T + 1).V);
         when SF_VString_Float_Concat =>
           Pop (ND);
-          ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & HAL.To_VString (HAL.HAC_Image (ND.S (Curr_TCB.T + 1).R));
+          ND.S (Curr_TCB.T).V := HAL."&" (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).R);
         when SF_Float_VString_Concat =>
           Pop (ND);
           ND.S (Curr_TCB.T) :=
-            GR_VString (HAL.To_VString (HAL.HAC_Image (ND.S (Curr_TCB.T).R)) & ND.S (Curr_TCB.T + 1).V);
+            GR_VString (HAL."&" (ND.S (Curr_TCB.T).R, ND.S (Curr_TCB.T + 1).V));
+        when SF_VString_Duration_Concat =>
+          Pop (ND);
+          ND.S (Curr_TCB.T).V := HAL."&" (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).Dur);
+        when SF_Duration_VString_Concat =>
+          Pop (ND);
+          ND.S (Curr_TCB.T) := GR_VString (HAL."&" (ND.S (Curr_TCB.T).Dur, ND.S (Curr_TCB.T + 1).V));
         when SF_Element =>
           Pop (ND);
           --  [T] := Element ([T], [T+1]) :

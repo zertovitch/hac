@@ -235,7 +235,6 @@ procedure AoC_2021_18_full_Ada is
   r : array (1 .. 2) of Integer;
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   T0 : constant Time := Clock;
-  T1 : Time;
 begin
   Read_Data;
   --
@@ -260,8 +259,7 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    T1 := Clock;
-    Put_Line (+"Done in:" & Image (T1 - T0) & " seconds");
+    Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: Magnitude of the sum of all terms                : " & r (1));
     Put_Line (+"Part 2: Largest magnitude of the sum of any pair of terms: " & r (2));
     --  Part 1: validated by AoC: 3665.

@@ -51,7 +51,7 @@ procedure AoC_2020_15 is
     end loop;
     T2 := Clock;
     if not compiler_test_mode then
-      Put_Line (+"----   Computation time: " & Image (T2 - T1));
+      Put_Line (+"----   Computation time: " & (T2 - T1));
       New_Line;
     end if;
   end Play;

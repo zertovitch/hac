@@ -159,7 +159,6 @@ procedure AoC_2021_15 is
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
   fast : constant Boolean := True;
   T0 : constant Time := Clock;
-  T1 : Time;
 begin
   Read_Data;
   for part in 1 .. 2 loop
@@ -183,8 +182,7 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    T1 := Clock;
-    Put_Line (+"Done in:" & Image (T1 - T0) & " seconds");
+    Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: total risk on small map: " & r (1));
     Put_Line (+"Part 2: total risk on large map: " & r (2));
     --  Part 1: validated by AoC: 656

@@ -264,19 +264,23 @@ package HAC_Sys.PCode is
     SF_Max_Int,
     SF_Min_Float,
     SF_Max_Float,
-    --  VString functions
-    SF_String_to_VString,       --  +S        (S is a fixed-size string)
-    SF_Literal_to_VString,      --  +"Hello"
-    SF_Char_to_VString,         --  +'x'
-    SF_Two_VStrings_Concat,     --  V1 & V2
-    SF_VString_Char_Concat,     --  V & 'x'
-    SF_Char_VString_Concat,     --  'x' & V
-    SF_LStr_VString_Concat,     --  "Hello " & V
     --
-    SF_VString_Int_Concat,      --  V & 123
-    SF_Int_VString_Concat,      --  123 & V
-    SF_VString_Float_Concat,    --  V & 3.14159
-    SF_Float_VString_Concat,    --  3.14159 & V
+    --  VString functions
+    --
+    SF_String_to_VString,        --  +S        (S is a fixed-size string)
+    SF_Literal_to_VString,       --  +"Hello"
+    SF_Char_to_VString,          --  +'x'
+    SF_Two_VStrings_Concat,      --  V1 & V2
+    SF_VString_Char_Concat,      --  V & 'x'
+    SF_Char_VString_Concat,      --  'x' & V
+    SF_LStr_VString_Concat,      --  "Hello " & V
+    --
+    SF_VString_Int_Concat,       --  V & 123
+    SF_Int_VString_Concat,       --  123 & V
+    SF_VString_Float_Concat,     --  V & 3.14159
+    SF_Float_VString_Concat,     --  3.14159 & V
+    SF_VString_Duration_Concat,  --  V & (Time_1 - Time_0)
+    SF_Duration_VString_Concat,  --  (Time_1 - Time_0) & V
     --
     SF_Element,
     SF_Length,

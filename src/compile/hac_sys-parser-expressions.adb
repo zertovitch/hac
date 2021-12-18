@@ -691,6 +691,11 @@ package body HAC_Sys.Parser.Expressions is
             elsif X.TYP = Floats and Y.TYP = VStrings then              --  3.14159 & v
               Emit_Std_Funct (CD, SF_Float_VString_Concat);
               X.TYP := VStrings;
+            elsif X.TYP = VStrings and Y.TYP = Durations then           --  v & (Time_1 - Time_0)
+              Emit_Std_Funct (CD, SF_VString_Duration_Concat);
+            elsif X.TYP = Durations and Y.TYP = VStrings then           --  (Time_1 - Time_0) & v
+              Emit_Std_Funct (CD, SF_Duration_VString_Concat);
+              X.TYP := VStrings;
             else
               Issue_Undefined_Operator_Error (CD, Adding_OP, X, Y);
             end if;
