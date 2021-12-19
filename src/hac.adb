@@ -122,7 +122,7 @@ procedure HAC is
     if unhandled_found then
       Put_Line (Current_Error, "HAC VM: raised " & Image (post_mortem.Unhandled));
       Put_Line (Current_Error, Message (post_mortem.Unhandled));
-      Put_Line (Current_Error, "Trace-back locations (approximate):");
+      Put_Line (Current_Error, "Trace-back: approximate location");
       CIO_Trace_Back (post_mortem.Unhandled);
       Set_Exit_Status (Failure);
     elsif verbosity >= 1 then
