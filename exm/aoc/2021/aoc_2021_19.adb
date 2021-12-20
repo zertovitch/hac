@@ -13,6 +13,7 @@
 --    *     `EXIT [Label]`
 --    *     Performance: large "in" parameters passed as reference
 --    *     Comparison (equality operators) "=", "/=" of composite types (arrays and records)
+--    *     Detect an expression as a static (compile-time-known) value
 --
 with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
 
