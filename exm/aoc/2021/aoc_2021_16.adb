@@ -5,7 +5,9 @@
 --  https://adventofcode.com/2021/day/16
 --  Copy of questions in: aoc_2021_16_questions.txt
 --
-with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAL;
+--  For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2021.gpr .
 
 procedure AoC_2021_16 is
   use HAL;

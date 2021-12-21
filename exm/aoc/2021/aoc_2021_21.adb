@@ -5,7 +5,9 @@
 --  https://adventofcode.com/2021/day/21
 --  Copy of questions in: aoc_2021_21_questions.txt
 --
-with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAL;
+--  For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2021.gpr .
 
 procedure AoC_2021_21 is
 
@@ -17,7 +19,7 @@ procedure AoC_2021_21 is
 
   subtype Cell_Range is Integer range 0 .. 9;  --  "full Ada": cells - 1
 
-  procedure Play_1 (start_player_1, start_player_2 : Positive) is
+  procedure Play_Part_1 (start_player_1, start_player_2 : Positive) is
     score : array (Player_Range) of Natural;
     start : array (Player_Range) of Cell_Range;
     space, rolls : Natural;
@@ -26,9 +28,9 @@ procedure AoC_2021_21 is
   begin
     score (0) := 0;
     score (1) := 0;
-    start (0) := start_player_1 - 1;  -- start position, 0-based
-    start (1) := start_player_2 - 1;  -- start position, 0-based
-    for round in 1 .. win_score loop  --  worst case for any player: +1 point on each round.
+    start (0) := start_player_1 - 1;  -- Start position, 0-based
+    start (1) := start_player_2 - 1;  -- Start position, 0-based
+    for round in 1 .. win_score loop  --  Worst case for any player: +1 point on each round.
       for playing in Player_Range loop
         space := 1 + (start (playing) + 9 * round ** 2 + (9 * playing - 3) * round) mod cells;
         score (playing) := score (playing) + space;
@@ -41,12 +43,13 @@ procedure AoC_2021_21 is
       end loop;
       exit when done;
     end loop;
-  end Play_1;
+  end Play_Part_1;
 
   subtype Dirac_Dice_Range is Integer range 3 .. 9;
 
   --  Number of combinations of 3 dice rolls for each outcome.
   dice_counts : array (Dirac_Dice_Range) of Positive;
+  --  "full Ada": ` dice_counts ... := (1,3,6,7,6,3,1) `
 
   procedure Init_Dirac is
   begin
@@ -62,7 +65,7 @@ procedure AoC_2021_21 is
   --  Universes wins counts for player 1 and 2.
   type Univs_Pair is array (1 .. 2) of Integer;
 
-  procedure Play_2 (start_player_1, start_player_2 : Positive) is
+  procedure Play_Part_2 (start_player_1, start_player_2 : Positive) is
     win_score : constant := 21;
     subtype Score_Range is Integer range 0 .. win_score;
     --  Memoization of itermediate results depending on possible scores and positions
@@ -88,8 +91,10 @@ procedure AoC_2021_21 is
       end if;
       univs (1) := 0;
       univs (2) := 0;
-      --  Player a rolls the Dirac dices 3 times.
-      --  We go through the possible outcomes:
+      --  Player A rolls the Dirac dices 3 times.
+      --  We go through the possible outcomes, after the 3 draws:
+      --  the parallel universes become only different
+      --  depending on the sum of the 3 draws.
       for dirac_dice_3 in 3 .. 9 loop
         new_pos_A   := (pos_A + dirac_dice_3) mod cells;
         new_score_A := score_A + 1 + new_pos_A;  --  Our positions are 0-based.
@@ -116,6 +121,8 @@ procedure AoC_2021_21 is
     end Winning_Universes;
     res : Univs_Pair;
   begin
+    --  "full Ada": the following could be done in `cache` declaration
+    --  with a (others => (others => (others => (others => not_seen))))
     for s1 in Score_Range loop
       for s2 in Score_Range loop
         for c1 in Cell_Range loop
@@ -128,7 +135,7 @@ procedure AoC_2021_21 is
     --
     Winning_Universes (0, 0, start_player_1 - 1, start_player_2 - 1, res);
     r (2) := HAL.Max (res (1), res (2));
-  end Play_2;
+  end Play_Part_2;
 
   use HAL;
 
@@ -136,8 +143,8 @@ procedure AoC_2021_21 is
   T0 : constant Time := Clock;
 begin
   Init_Dirac;
-  Play_1 (7, 1);
-  Play_2 (7, 1);
+  Play_Part_1 (7, 1);
+  Play_Part_2 (7, 1);
   if compiler_test_mode then
     if r (1) /= Integer_Value (Argument (1)) or
        r (2) /= Integer_Value (Argument (2))

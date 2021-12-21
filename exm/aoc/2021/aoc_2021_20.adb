@@ -12,7 +12,9 @@
 --    *     Detect an expression as a static (compile-time-known) value
 --            ->  Good for arithmetic in number declaration
 --
-with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAL;
+--  For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2021.gpr .
 
 procedure AoC_2021_20 is
   use HAL;
