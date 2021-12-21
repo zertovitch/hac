@@ -5,6 +5,11 @@
 --  https://adventofcode.com/2021/day/21
 --  Copy of questions in: aoc_2021_21_questions.txt
 --
+--  HAC 0.098 "nice to have"'s detected in this exercise:
+--
+--    *     Exiting multiple nested loops
+--    *     aggregates, like ` hits := (others => (others => 0)); `
+--
 with HAL;
 --  For a build with "full Ada": files hal*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
@@ -53,8 +58,8 @@ procedure AoC_2021_21 is
 
   procedure Init_Dirac is
   begin
-    dice_counts (3) := 1;
-    dice_counts (4) := 3;
+    dice_counts (3) := 1;  --  One combination: 1,1,1
+    dice_counts (4) := 3;  --  3 combinations: 1,1,2, 1,2,1, 2,1,1
     dice_counts (5) := 6;
     dice_counts (6) := 7;
     dice_counts (7) := 6;
@@ -68,7 +73,8 @@ procedure AoC_2021_21 is
   procedure Play_Part_2 (start_player_1, start_player_2 : Positive) is
     win_score : constant := 21;
     subtype Score_Range is Integer range 0 .. win_score;
-    --  Memoization of itermediate results depending on possible scores and positions
+    --  Memoization of intermediate results, depending
+    --  on the possible scores and positions:
     cache : array (Score_Range, Score_Range, Cell_Range, Cell_Range) of Univs_Pair;
     not_seen : constant := -1;
     --

@@ -7,6 +7,8 @@
 --  https://adventofcode.com/2021/day/20
 --  Copy of questions in: aoc_2021_20_questions.txt
 --
+--  Note: this programs takes very long on HAC!
+--
 --  HAC 0.098 "nice to have"'s detected in this exercise:
 --
 --    *     Detect an expression as a static (compile-time-known) value
