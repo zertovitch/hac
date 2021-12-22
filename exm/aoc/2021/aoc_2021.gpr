@@ -19,6 +19,7 @@ project AoC_2021 is
    AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
    for Main use (
+     "aoc_2021_22.adb",
      "aoc_2021_21.adb",
      "aoc_2021_20.adb",
      "aoc_2021_19.adb",
