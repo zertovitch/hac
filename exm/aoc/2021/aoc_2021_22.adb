@@ -35,7 +35,8 @@ procedure AoC_2021_22 is
   rule : array (1 .. rules_max) of Rule_Type;
 
   --  Lists of numbers
-  --  NB: of course in "full Ada" we would so it in a much smarter way.
+  --  NB: of course in "full Ada" we would do it in a much
+  --      smarter way, with Vectors & sorting.
   list_length_max : constant := rules_max;
   type List_Array_Type is array (1 .. list_length_max) of Integer;
   type List_Type is record
@@ -66,7 +67,6 @@ procedure AoC_2021_22 is
   coord : array (Dimension_Range) of List_Type;
 
   procedure Read_Data is
-    --  input : constant VString := +"mini.txt";
     input : constant VString := +"aoc_2021_22.txt";
     --
     c, sep : Character;
@@ -131,24 +131,31 @@ procedure AoC_2021_22 is
   procedure Part_2 is
     count : Integer := 0;
     --
-    --  When d <= dim_max we test different cuboid edges.
+    --  When d <= dim_max we test different cuboid vertices,
+    --     for each dimension.
     --  When d = dim_max + 1 we scan the cuboid delimited by
-    --  input_edge_1 (included), input_edge_2 (excluded)
-    --  through the list of rules, and count it when it is `on`.
+    --     opposite vertices input_vertex_1 (included), input_vertex_2
+    --     (excluded) through the list of rules, and count the cuboid's
+    --     volume when it is `on`.
     --
-    procedure Scan (input_edge_1, input_edge_2 : Point; d : Positive) is
-      edge_1, edge_2 : Point;
+    procedure Scan (input_vertex_1, input_vertex_2 : Point; d : Positive) is
+      vertex_1, vertex_2 : Point;
       inside, on : Boolean;
       volume : Integer;
     begin
       if d = dim_max + 1 then
+        --
+        --  Vertice are complete in all dimensions, we can check the cuboid.
         --
         on := False;
         for r in 1 .. rules loop
           inside := True;
           for dd in Dimension_Range loop
             inside := inside and then
-              input_edge_1 (dd) in rule (r).low (dd) .. rule (r).high (dd);
+              --  Vertex 1 (or any point within the cuboid) is sufficient
+              --  for checking the whole cuboid against the rules since
+              --  we know that no rule goes through the cuboid.
+              input_vertex_1 (dd) in rule (r).low (dd) .. rule (r).high (dd);
           end loop;
           if inside then
             on := rule (r).on;
@@ -157,29 +164,29 @@ procedure AoC_2021_22 is
         if on then
           volume := 1;
           for dd in Dimension_Range loop
-            volume := volume * (input_edge_2 (dd) - input_edge_1 (dd));
+            volume := volume * (input_vertex_2 (dd) - input_vertex_1 (dd));
           end loop;
           count := count + volume;
         end if;
       else
         for i in 1 .. coord (d).top loop
-          edge_1 := input_edge_1;
-          edge_2 := input_edge_2;
-          edge_1 (d) := coord (d).val (i);
-          edge_2 (d) := coord (d).val (i) + 1;
-          Scan (edge_1, edge_2, d + 1);
+          vertex_1 := input_vertex_1;
+          vertex_2 := input_vertex_2;
+          vertex_1 (d) := coord (d).val (i);
+          vertex_2 (d) := coord (d).val (i) + 1;
+          Scan (vertex_1, vertex_2, d + 1);
           if i < coord (d).top then
-            edge_1 (d) := coord (d).val (i) + 1;
-            edge_2 (d) := coord (d).val (i + 1);
-            Scan (edge_1, edge_2, d + 1);
+            vertex_1 (d) := coord (d).val (i) + 1;
+            vertex_2 (d) := coord (d).val (i + 1);
+            Scan (vertex_1, vertex_2, d + 1);
           end if;
         end loop;
       end if;
     end Scan;
     --
-    bogus_edge_1, bogus_edge_2 : Point;
+    bogus_vertex_1, bogus_vertex_2 : Point;
   begin
-    Scan (bogus_edge_1, bogus_edge_2, 1);
+    Scan (bogus_vertex_1, bogus_vertex_2, 1);
     r (2) := count;
   end Part_2;
 
