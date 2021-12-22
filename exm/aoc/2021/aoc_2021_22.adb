@@ -169,13 +169,43 @@ procedure AoC_2021_22 is
           count := count + volume;
         end if;
       else
+        --  We construct cuboids such that all the cubes they contain
+        --  are either "on" or "off". The union of all constructed cuboids
+        --  is itself a giant cuboid which contains all cuboids described
+        --  in the "on/off" rules.
+        --
+        --  A little drawing to explain the code below.
+        --    '#' are rule cuboid boundaries.
+        --    '.' are examples of constructed cuboids touching
+        --          no rule boundary.
+        --    '>' and '^' indicate boundaries of a rule (or more).
+        --    '-' and '|' indicate boundaries of the giant cuboid.
+        --
+        --              > --------##############------
+        --                |.. ....#            #     |
+        --              > #############        #######
+        --                #       #...#   on   #     #
+        --              > #       #   #        # off #
+        --                #.. ....#...#        #     #
+        --                #.. ....#...#        #     #
+        --              > #       ####################
+        --              > #  #        #              |
+        --                #..      ...#              |
+        --              > #############---------------
+        --                ^  ^    ^   ^        ^     ^
+        --
         for i in 1 .. coord (d).top loop
           vertex_1 := input_vertex_1;
           vertex_2 := input_vertex_2;
+          --  Check the cuboids, of width 1 in dimension d,
+          --  touching a boundary of a rule (or more).
           vertex_1 (d) := coord (d).val (i);
           vertex_2 (d) := coord (d).val (i) + 1;
           Scan (vertex_1, vertex_2, d + 1);
           if i < coord (d).top then
+            --  Check the cuboids with opposite vertices that
+            --  don't touch any rule cuboid's boundary in
+            --  dimension d.
             vertex_1 (d) := coord (d).val (i) + 1;
             vertex_2 (d) := coord (d).val (i + 1);
             Scan (vertex_1, vertex_2, d + 1);
