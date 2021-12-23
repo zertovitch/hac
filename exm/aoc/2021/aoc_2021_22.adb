@@ -8,6 +8,12 @@
 --  GNAT: - runs in 2081 seconds (fast mode)
 --        - needs to use Integer_64 for counters.
 --
+--  To do: make a HAC variant of a smarter solution, with
+--  applying the "on/off" rules in the outer loop and
+--  (in dimension d) skipping sorted values not within
+--  current rule's range. Inspiration:
+--  https://github.com/mytbk/advent_of_code/blob/main/2021/22/advent_22_2.adb
+--
 --  HAC 0.098 "nice to have"'s detected in this exercise:
 --
 --    *     package Interfaces with at least Integer_64 for
@@ -184,8 +190,8 @@ procedure AoC_2021_22 is
         --              > --------##############------
         --                |.. ....#            #     |
         --              > #############        #######
-        --                #       #...#   on   #     #
-        --              > #       #   #        # off #
+        --                #.. ....#...#   on   #     #
+        --                #.. ....#...#        # off #
         --                #.. ....#...#        #     #
         --                #.. ....#...#        #     #
         --              > #       ####################

@@ -4,6 +4,9 @@
 --
 --  NB: this doesn't compile with HAC, only with a "full Ada" compiler.
 --
+--  To do: make a HAC solution using a heap structure for the
+--  binary tree (idea Maxim Reznik)
+
 --  https://adventofcode.com/2021/day/18
 --  Copy of questions in: aoc_2021_18_questions.txt
 --
