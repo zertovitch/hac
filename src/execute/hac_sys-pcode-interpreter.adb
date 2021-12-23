@@ -384,7 +384,7 @@ package body HAC_Sys.PCode.Interpreter is
             Raise_Standard (ND, VME_Name_Error,
               "File not found, or invalid name: " & To_String (ND.S (Curr_TCB.T + 2).V), True);
           when others =>
-            Raise_Standard (ND, VME_Name_Error, Stop_Instruction => True);
+            Raise_Standard (ND, VME_Name_Error, Stop_Current_Instruction => True);
         end case;
       when E : Ada.Text_IO.Mode_Error =>
         Raise_Standard (ND, VME_Mode_Error, Ada.Exceptions.Exception_Message (E));
@@ -404,7 +404,7 @@ package body HAC_Sys.PCode.Interpreter is
             Raise_Standard (ND, VME_Use_Error,
               "Cannot access file: " & To_String (ND.S (Curr_TCB.T + 2).V), True);
           when others =>
-            Raise_Standard (ND, VME_Use_Error, Stop_Instruction => True);
+            Raise_Standard (ND, VME_Use_Error, Stop_Current_Instruction => True);
         end case;
     end Do_File_IO;
 
@@ -422,6 +422,12 @@ package body HAC_Sys.PCode.Interpreter is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     begin
       if ND.PS = Exception_Raised then
+        --  "Raised" flag is up, we just skip everything
+        --  except a final return and the start of the
+        --  optional exception handler.
+        --  !! To do: add an exception handler NOP instruction.
+        --  !! To do: skip the intermediate return's, otherwise
+        --     the exception handlaer won't be reached.
         while not OK_for_Exception (CD.ObjCode (Curr_TCB.PC).F) loop
           Curr_TCB.PC := Curr_TCB.PC + 1;
         end loop;

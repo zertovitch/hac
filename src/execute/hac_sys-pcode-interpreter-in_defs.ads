@@ -34,11 +34,14 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   subtype Running_or_in_Exception is Processor_State range Running .. Exception_Raised;
 
   type Task_State is (
+    --  SmallAda tasking stuff, not tested yet:
     Completed,
     Delayed,
     Ready,
+    --  HAC is currently tested on this:
     Running,
     Exception_Raised,
+    --  SmallAda tasking stuff, not tested yet:
     Critical,
     WaitRendzv,
     WaitSem,
