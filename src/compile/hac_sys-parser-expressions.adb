@@ -392,11 +392,13 @@ package body HAC_Sys.Parser.Expressions is
                       Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
                     end if;
                     X := Exact_Typ (X_Sub);  --  Discard subtype information.
+                    --  !!  Keep subtype information, could be useful for optimizing out checks  !!
                     --
                   when TypeMark =>
                     X_Sub := r.xTyp;
                     Subtype_Prefixed_Expression (CD, Level, FSys_Prim, r, X_Sub);
                     X := Exact_Typ (X_Sub);  --  Discard subtype information.
+                    --  !!  Keep subtype information, could be useful for optimizing out checks  !!
                   when Prozedure | Prozedure_Intrinsic =>
                     Error (CD, err_expected_constant_function_variable_or_subtype);
                   when Funktion =>
@@ -436,7 +438,9 @@ package body HAC_Sys.Parser.Expressions is
               X.Ref := 0;
               InSymbol (CD);
               --
-            when LParent =>    --  (
+            when LParent =>
+              --  '(' : what is inside the parentheses is an
+              --        expression of the lowest level.
               InSymbol (CD);
               Expression (CD, Level, FSys_Prim + RParent, X);
               Need (CD, RParent, err_closing_parenthesis_missing);
@@ -730,9 +734,12 @@ package body HAC_Sys.Parser.Expressions is
   begin
     InSymbol (CD);
     case Mem_Sy is
-      when LParent    => Type_Conversion (CD, Level, FSys, Typ_ID, X);
-      when Apostrophe => Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Typ_ID, X);
-      when others => Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", True);
+      when LParent    =>  --  S (...)
+        Type_Conversion (CD, Level, FSys, Typ_ID, X);
+      when Apostrophe =>  --  S'First, S'Image, ...
+        Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Typ_ID, X);
+      when others =>
+        Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", True);
     end case;
   end Subtype_Prefixed_Expression;
 

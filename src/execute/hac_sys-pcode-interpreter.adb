@@ -427,7 +427,7 @@ package body HAC_Sys.PCode.Interpreter is
         --  optional exception handler.
         --  !! To do: add an exception handler NOP instruction.
         --  !! To do: skip the intermediate return's, otherwise
-        --     the exception handlaer won't be reached.
+        --     the exception handler won't be reached.
         while not OK_for_Exception (CD.ObjCode (Curr_TCB.PC).F) loop
           Curr_TCB.PC := Curr_TCB.PC + 1;
         end loop;

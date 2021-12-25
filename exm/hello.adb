@@ -1,6 +1,7 @@
-with HAL; use HAL;
+with HAL;
 
 procedure Hello is
+  use HAL;
   f : Real := 0.0;
 begin
   Put ("Hello");

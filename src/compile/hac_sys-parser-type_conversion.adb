@@ -1,8 +1,8 @@
-with HAC_Sys.Compiler.PCode_Emit;
-with HAC_Sys.Parser.Expressions;
-with HAC_Sys.Parser.Helpers;                use HAC_Sys.Parser.Helpers;
-with HAC_Sys.PCode;                         use HAC_Sys.PCode;
-with HAC_Sys.UErrors;                       use HAC_Sys.UErrors;
+with HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Parser.Expressions,
+     HAC_Sys.Parser.Helpers,
+     HAC_Sys.PCode,
+     HAC_Sys.UErrors;
 
 procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
   CD      : in out Co_Defs.Compiler_Data;
@@ -12,7 +12,7 @@ procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
   X       : in     Co_Defs.Exact_Subtyp
 )
 is
-  use Defs;
+  use Defs, Helpers, PCode, UErrors;
   use type HAC_Integer;
   type Type_Conversion_Kind is (To_Float, To_Integer, To_Duration, Unknown);
   kind : Type_Conversion_Kind;
