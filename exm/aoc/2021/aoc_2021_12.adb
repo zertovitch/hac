@@ -5,10 +5,6 @@
 --  https://adventofcode.com/2021/day/12
 --  Copy of questions in: aoc_2021_12_questions.txt
 --
---  HAC 0.098 "nice to have"'s detected in this exercise:
---
---    *     Integer'Last
---
 with HAL;
 --  For a build with "full Ada": files hal*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .

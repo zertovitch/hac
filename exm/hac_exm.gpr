@@ -19,6 +19,7 @@ project HAC_Exm is
      "ackermann.adb",
      "arguments.adb",
      "anti_primes.adb",
+     "attributes.adb",
      "bwt.adb",
      "console_io.adb",
      "covid_19_s.adb",

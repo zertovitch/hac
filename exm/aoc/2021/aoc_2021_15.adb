@@ -16,7 +16,7 @@ procedure AoC_2021_15 is
   map : array (1 .. sx_max, 1 .. sy_max) of Natural;
   --  Cumulative minimal risk from starting point to (x, y)
   c_risk : array (1 .. sx_max, 1 .. sy_max) of Natural;
-  risk_max : constant Integer := 9 * sx_max * sy_max;
+  risk_max : constant Integer := Integer'Last;
   sx, sy : Natural;
   input : constant VString := +"aoc_2021_15.txt";
   --

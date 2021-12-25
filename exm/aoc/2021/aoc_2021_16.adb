@@ -110,7 +110,7 @@ procedure AoC_2021_16 is
             exit when b = b_mem + sub_length;
           end loop;
         else
-           Decode (sub_num, 11);
+          Decode (sub_num, 11);
           for i in 1 .. sub_num loop
             Cumulate (i = 1);
           end loop;

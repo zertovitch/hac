@@ -116,8 +116,8 @@ procedure AoC_2021_14 is
     stat : array (Alpha) of Natural;
     total : Natural := 0;
     aa : Alpha;
-    stat_most_common_element : Natural := 0;
-    stat_least_common_element : Natural;
+    stat_most_common_element  : Natural := 0;
+    stat_least_common_element : Natural := Natural'Last;
   begin
     for a in Alpha loop
       stat (a) := 0;
@@ -145,7 +145,6 @@ procedure AoC_2021_14 is
     if verbose then
       Put_Line (+"  Total: " & total);
     end if;
-    stat_least_common_element := total;
     for a in Alpha loop
       if stat (a) > 0 then
         stat_least_common_element := Min (stat_least_common_element, stat (a));
@@ -182,8 +181,8 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: : " & r (1));
-    Put_Line (+"Part 2: : " & r (2));
+    Put_Line (+"Part 1: count after 10 generations: " & r (1));
+    Put_Line (+"Part 2: count after 40 generations: " & r (2));
     --  Part 1: validated by AoC: 2345
     --  Part 2: validated by AoC: 2432786807053
   end if;
