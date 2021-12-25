@@ -210,6 +210,16 @@ package body HAL is
     return V & Image (D);
   end "&";
 
+  function "&" (B : Boolean; V : VString) return VString is
+  begin
+    return (+Boolean'Image (B)) & V;
+  end "&";
+
+  function "&" (V : VString; B : Boolean) return VString is
+  begin
+    return V & (+Boolean'Image (B));
+  end "&";
+
   function To_Lower (Item : VString) return VString is
   begin
     return +Ada.Characters.Handling.To_Lower (VStr_Pkg.To_String (Item));

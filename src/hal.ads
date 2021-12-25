@@ -161,6 +161,9 @@ package HAL is
   function "&" (D : Duration; V : VString) return VString;
   function "&" (V : VString; D : Duration) return VString;
   --
+  function "&" (B : Boolean; V : VString) return VString;
+  function "&" (V : VString; B : Boolean) return VString;
+  --
   function "="  (Left, Right : VString) return Boolean renames VStr_Pkg."=";
   function "<"  (Left, Right : VString) return Boolean renames VStr_Pkg."<";
   function "<=" (Left, Right : VString) return Boolean renames VStr_Pkg."<=";
@@ -312,7 +315,7 @@ package HAL is
                       Aft   : Integer := RIO.Default_Aft;
                       Expo  : Integer := RIO.Default_Exp);
   procedure Put_Line (File  : File_Type;
-                      B     :  Boolean;
+                      B     : Boolean;
                       Width : Ada.Text_IO.Field := BIO.Default_Width);
   procedure Put_Line (File  : File_Type;
                       S     : String) renames Ada.Text_IO.Put_Line;

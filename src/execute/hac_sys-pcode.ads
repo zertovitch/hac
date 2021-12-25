@@ -272,15 +272,17 @@ package HAC_Sys.PCode is
     SF_Char_to_VString,          --  +'x'
     SF_Two_VStrings_Concat,      --  V1 & V2
     SF_VString_Char_Concat,      --  V & 'x'
-    SF_Char_VString_Concat,      --  'x' & V
-    SF_LStr_VString_Concat,      --  "Hello " & V
+    SF_Char_VString_Concat,      --  'x' & v
+    SF_LStr_VString_Concat,      --  "Hello " & v
     --
-    SF_VString_Int_Concat,       --  V & 123
-    SF_Int_VString_Concat,       --  123 & V
-    SF_VString_Float_Concat,     --  V & 3.14159
-    SF_Float_VString_Concat,     --  3.14159 & V
-    SF_VString_Duration_Concat,  --  V & (Time_1 - Time_0)
-    SF_Duration_VString_Concat,  --  (Time_1 - Time_0) & V
+    SF_VString_Int_Concat,       --  v & 123
+    SF_Int_VString_Concat,       --  123 & v
+    SF_VString_Float_Concat,     --  v & 3.14159
+    SF_Float_VString_Concat,     --  3.14159 & v
+    SF_VString_Duration_Concat,  --  v & (Time_1 - Time_0)
+    SF_Duration_VString_Concat,  --  (Time_1 - Time_0) & v
+    SF_VString_Boolean_Concat,   --  v & is_found
+    SF_Boolean_VString_Concat,   --  is_found & v
     --
     SF_Element,
     SF_Length,

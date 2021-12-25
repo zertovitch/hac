@@ -214,6 +214,12 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         when SF_Duration_VString_Concat =>
           Pop (ND);
           ND.S (Curr_TCB.T) := GR_VString (HAL."&" (ND.S (Curr_TCB.T).Dur, ND.S (Curr_TCB.T + 1).V));
+        when SF_VString_Boolean_Concat =>
+          Pop (ND);
+          ND.S (Curr_TCB.T).V := HAL."&" (ND.S (Curr_TCB.T).V, Boolean'Val (ND.S (Curr_TCB.T + 1).I));
+        when SF_Boolean_VString_Concat =>
+          Pop (ND);
+          ND.S (Curr_TCB.T) := GR_VString (HAL."&" (Boolean'Val (ND.S (Curr_TCB.T).I), ND.S (Curr_TCB.T + 1).V));
         when SF_Element =>
           Pop (ND);
           --  [T] := Element ([T], [T+1]) :
