@@ -311,6 +311,12 @@ package HAC_Sys.Parser.Helpers is
   Standard_Set             : constant Typ_Set := (Standard_Typ => True, others => False);
   Text_IO_Get_Item_Set     : constant Typ_Set := (Standard_Set and not Bools_Set) or Arrays_Set;
 
+  ------------------
+  --  Base types  --
+  ------------------
+
+  Standard_Integer : constant Exact_Subtyp := (Ints, 0, HAC_Integer'First, HAC_Integer'Last);
+
   -------------
   --  Misc.  --
   -------------

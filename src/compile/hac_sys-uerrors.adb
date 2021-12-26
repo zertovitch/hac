@@ -248,7 +248,11 @@ package body HAC_Sys.UErrors is
       when err_library_error =>
         return "library error: " & hint;
       when err_object_used_before_end_own_declaration =>
-        return ("attempt to use object " & hint & "before end of its own declaration");
+        return "attempt to use object " & hint & "before end of its own declaration";
+      when err_attribute_prefix_invalid =>
+        return "invalid prefix for """ & hint & """ attribute";
+      when err_attribute_prefix_must_be_discrete_type =>
+        return "prefix of """ & hint & """ attribute must be discrete type";
     end case;
   end Error_String;
 

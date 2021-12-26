@@ -11,20 +11,22 @@ package body HAC_Sys.Parser.Attributes is
     First,
     Image,
     Last,
+    Pos,
     Pred,
     Succ,
+    Val,
     Value
   );
 
   procedure Scalar_Subtype_Attribute (
-    CD      : in out Co_Defs.Compiler_Data;
-    Level   :        Defs.Nesting_level;
-    FSys    :        Defs.Symset;
-    Typ_ID  : in     Co_Defs.IdTabEntry;
-    X       :    out Co_Defs.Exact_Subtyp
+    CD             : in out Co_Defs.Compiler_Data;
+    Level          : in     Defs.Nesting_level;
+    FSys           : in     Defs.Symset;
+    Typ_ID         : in     Co_Defs.IdTabEntry;
+    Type_of_Result :    out Co_Defs.Exact_Subtyp
   )
   is
-    use Compiler.PCode_Emit, Defs, PCode, UErrors;
+    use Co_Defs, Compiler.PCode_Emit, Defs, PCode, UErrors;
     attr_ID : constant String := To_String (CD.Id);
     attr : constant Attribute := Attribute'Value (attr_ID);
     --
@@ -39,7 +41,7 @@ package body HAC_Sys.Parser.Attributes is
       Emit_1 (CD, k_Push_Discrete_Literal, discrete_value);
     end First_Last_Discrete;
     --
-    procedure First_Last is
+    procedure First_Last is  --  RM 3.5 (12 ,13)
       RNum_Index : Natural;
     begin
       case Typ_ID.xTyp.TYP is
@@ -57,16 +59,16 @@ package body HAC_Sys.Parser.Attributes is
           if Discrete_Typ (Typ_ID.xTyp.TYP) then
             First_Last_Discrete;
           else
-            Error (CD, err_not_yet_implemented, "attribute " & attr_ID & " for this subtype", True);
+            Error (CD, err_attribute_prefix_invalid, attr_ID, True);
           end if;
       end case;
-      X := Typ_ID.xTyp;
+      Type_of_Result := Typ_ID.xTyp;
     end First_Last;
     --
     procedure Pred_Succ_Discrete is
       use type HAC_Integer;
     begin
-      Compiler.PCode_Emit.Emit_1 (CD, k_Push_Discrete_Literal, 1);
+      Emit_1 (CD, k_Push_Discrete_Literal, 1);
       if attr = Pred then
         --  !!  overflow check here if arg = hac_integer'first.
         Emit (CD, k_SUBTRACT_Integer);
@@ -82,39 +84,81 @@ package body HAC_Sys.Parser.Attributes is
       end if;
     end Pred_Succ_Discrete;
     --
-    procedure Pred_Succ is
-      use Co_Defs;
+    procedure Pred_Succ is  --  RM 3.5 (22, 25)
       s_base, type_of_argument : Exact_Typ;
     begin
       Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
       Expressions.Expression (CD, Level, FSys, type_of_argument);
-      --  3.5 (22, 25) : argument is of the base type (S'Base).
+      --  Argument is of the base type (S'Base).
       s_base := Exact_Typ (Typ_ID.xTyp);
       if s_base = type_of_argument then
         case Typ_ID.xTyp.TYP is
           when NOTYP =>
             null;  --  Already in error
+          when Floats =>
+            --  !! To do !!
+            Error (CD, err_not_yet_implemented, "attribute " & attr_ID & " for this subtype", True);
           when others =>
             if Discrete_Typ (Typ_ID.xTyp.TYP) then
               Pred_Succ_Discrete;
             else
-              Error (CD, err_not_yet_implemented, "attribute " & attr_ID & " for this subtype", True);
+              Error (CD, err_attribute_prefix_invalid, attr_ID, True);
             end if;
         end case;
       else
         Helpers.Type_Mismatch (CD, err_parameter_types_do_not_match, type_of_argument, s_base);
       end if;
       Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
-      X := Typ_ID.xTyp;
+      Type_of_Result := Typ_ID.xTyp;
     end Pred_Succ;
+    --
+    procedure Pos is  --  RM 3.5.5 (2)
+      s_base, type_of_argument : Exact_Typ;
+    begin
+      if Discrete_Typ (Typ_ID.xTyp.TYP) then
+        Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Expressions.Expression (CD, Level, FSys, type_of_argument);
+        --  Argument is of the base type (S'Base).
+        s_base := Exact_Typ (Typ_ID.xTyp);
+        if s_base = type_of_argument then
+          --  Just set the desired type, and that's it - no VM instruction!
+          Type_of_Result := Helpers.Standard_Integer;
+        else
+          Helpers.Type_Mismatch (CD, err_parameter_types_do_not_match, type_of_argument, s_base);
+        end if;
+        Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
+      else
+        Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, True);
+      end if;
+    end Pos;
+    --
+    procedure Val is  --  RM 3.5.5 (5)
+      type_of_argument : Exact_Typ;
+    begin
+      if Discrete_Typ (Typ_ID.xTyp.TYP) then
+        Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Expressions.Expression (CD, Level, FSys, type_of_argument);
+        if type_of_argument.TYP = Ints then
+          --  Just set the desired type, and that's it - no VM instruction!
+          Type_of_Result := Typ_ID.xTyp;
+        else
+          Helpers.Type_Mismatch
+            (CD, err_parameter_types_do_not_match,
+             type_of_argument, Exact_Typ (Helpers.Standard_Integer));
+        end if;
+        Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
+      else
+        Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, True);
+      end if;
+    end Val;
     --
   begin
     Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
     case attr is
-      when First | Last =>
-        First_Last;
-      when Pred | Succ =>
-        Pred_Succ;
+      when First | Last => First_Last;
+      when Pred  | Succ => Pred_Succ;
+      when Pos          => Pos;
+      when Val          => Val;
       when others =>
         Error (CD, err_not_yet_implemented, "attribute " & attr_ID, True);
     end case;

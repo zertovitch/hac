@@ -11,11 +11,11 @@ private package HAC_Sys.Parser.Attributes is
   --    parameter "(Flag)", return a X = (String_Literals, 0) internal type.
 
   procedure Scalar_Subtype_Attribute (
-    CD      : in out Co_Defs.Compiler_Data;
-    Level   :        Defs.Nesting_level;
-    FSys    :        Defs.Symset;
-    Typ_ID  : in     Co_Defs.IdTabEntry;
-    X       :    out Co_Defs.Exact_Subtyp
+    CD             : in out Co_Defs.Compiler_Data;
+    Level          : in     Defs.Nesting_level;
+    FSys           : in     Defs.Symset;
+    Typ_ID         : in     Co_Defs.IdTabEntry;
+    Type_of_Result :    out Co_Defs.Exact_Subtyp
   );
 
 end HAC_Sys.Parser.Attributes;
