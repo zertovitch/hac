@@ -40,6 +40,7 @@ procedure Gallery is
     Build_HAC;  --  Redundant if this program is itself run through HAC.
     --
     Launch_HAC (+"hello.adb");
+    Launch_HAC (+"attributes.adb");
     Launch_HAC (+"maze_gen.adb");
     Launch_HAC (+"strings_demo.adb");
     Launch_HAC (+"env.adb");

@@ -227,7 +227,6 @@ package body HAC_Sys.Librarian is
     Enter_Zero_Level_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
     Enter_Zero_Level_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
     --
-    Enter_Std_Typ (HAC_Float_Name,   Floats, 0, 0);
     Enter_Std_Typ ("Character",      Chars, 0, 255);
     Enter_Std_Typ ("Boolean",        Bools, 0, 1);
     Enter_Std_Typ (HAC_Integer_Name, Ints, HAC_Integer'First, HAC_Integer'Last);
@@ -284,10 +283,11 @@ package body HAC_Sys.Librarian is
     --
     Enter_Zero_Level_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
     --
-    Enter_HAL_Typ ("File_Type", Text_Files, 0, 0);  --  2020.05.17
-    Enter_HAL_Typ ("Semaphore", Ints, 0, 0);
-    Enter_HAL_Typ ("Time",      Times, 0, 0);
-    Enter_HAL_Typ ("VString",   VStrings, 0, 0);    --  2020.05.02
+    Enter_HAL_Typ ("File_Type",    Text_Files, 0, 0);  --  2020.05.17
+    Enter_HAL_Typ (HAC_Float_Name, Floats, 0, 0);      --  Moved from Std 2021.12.26
+    Enter_HAL_Typ ("Semaphore",    Ints, 0, 0);
+    Enter_HAL_Typ ("Time",         Times, 0, 0);
+    Enter_HAL_Typ ("VString",      VStrings, 0, 0);    --  2020.05.02
     --
     --  Standard functions
     --
