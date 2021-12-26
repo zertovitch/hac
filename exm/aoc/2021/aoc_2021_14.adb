@@ -116,8 +116,8 @@ procedure AoC_2021_14 is
     stat : array (Alpha) of Natural;
     total : Natural := 0;
     aa : Alpha;
-    stat_most_common_element  : Natural := 0;
-    stat_least_common_element : Natural := Natural'Last;
+    stat_most_common_element  : Natural := Natural'First;  --  "- infinity"
+    stat_least_common_element : Natural := Natural'Last;   --  "+ infinity"
   begin
     for a in Alpha loop
       stat (a) := 0;

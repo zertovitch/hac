@@ -34,4 +34,17 @@ begin
   Put_Line (+"# Real's bounds       : " & Real'First              & " .. " & Real'Last);
   Put_Line (+"  Enum's bounds       : " & VImage (Enum'First)     & " .. " & VImage (Enum'Last));
   Put_Line (+"  Sub_Enum's bounds   : " & VImage (Sub_Enum'First) & " .. " & VImage (Sub_Enum'Last));
+  New_Line;
+  Put_Line ("S'Pred and S'Succ attributes");
+  New_Line;
+  Put_Line (+"* Integer'Succ (100): " & Integer'Succ (100));
+  Put_Line (+"* Integer'Pred (100): " & Integer'Succ (99));
+  Put_Line (+"  Some_Range'Succ (Some_Range'First)  : " & Some_Range'Succ (Some_Range'First));
+  
+  ----------------------------------------------------------------------------------
+  --  If you uncomment any of the following lines you'll get a Constraint_Error:  --
+  ----------------------------------------------------------------------------------
+  
+  --  Put_Line (+"  Some_Range'Succ (Some_Range'Last)  : " & Some_Range'Succ (Some_Range'Last));
+  --  Put_Line (+"  Some_Range'Pred (Some_Range'First) : " & Some_Range'Pred (Some_Range'First));
 end Attributes;
