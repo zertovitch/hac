@@ -436,12 +436,12 @@ package HAC_Sys.Defs is
   type Diagnostic_Kind_Type is (error, warning, note, style);
 
   type Diagnostic_Kit is new Repair_Kit with record
-    diagnostic_kind : Diagnostic_Kind_Type;  --  Error, or warning, or ? ...
-    message         : Unbounded_String;
-    file_name       : Unbounded_String;
-    line            : Natural;
-    column_a        : Natural;       --  Before first selected character, can be 0.
-    column_z        : Natural;
+    diagnostic_kind : Diagnostic_Kind_Type := error;  --  Error, or warning, or ? ...
+    message         : Unbounded_String     := Null_Unbounded_String;
+    file_name       : Unbounded_String     := Null_Unbounded_String;
+    line            : Natural              := 0;
+    column_a        : Natural              := 0;  --  Before first selected character. Can be 0.
+    column_z        : Natural              := 0;
   end record;
 
   type Smart_Error_Pipe is access procedure (diagnostic : Diagnostic_Kit);
