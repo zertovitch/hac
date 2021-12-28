@@ -254,7 +254,7 @@ package HAC_Sys.Co_Defs is
     --
     Err_Count  : Natural;
     Errs       : Error_set;
-    Error_Pipe : Smart_error_pipe     := null;
+    Error_Pipe : Smart_Error_Pipe     := null;
     Progress   : Compilation_Feedback := null;
   end record;
 

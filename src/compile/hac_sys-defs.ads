@@ -424,26 +424,27 @@ package HAC_Sys.Defs is
   type Error_set is array (Compile_Error) of Boolean;
   error_free : constant Error_set := (others => False);
 
-  type Repair_kind is (none, insert, insert_line, replace_token);
-
   use Ada.Strings.Unbounded;
 
-  type Repair_kit is tagged record
-    kind : Repair_kind      := none;
-    text : Unbounded_String := Null_Unbounded_String;
+  type Repair_Kind_Type is (none, insert, insert_line, replace_token);
+
+  type Repair_Kit is tagged record
+    repair_kind       : Repair_Kind_Type := none;
+    insert_or_replace : Unbounded_String := Null_Unbounded_String;
   end record;
 
-  type Message_kind is (error, warning, note, style);
+  type Diagnostic_Kind_Type is (error, warning, note, style);
 
-  type Smart_error_pipe is access procedure (
-    message   : String;
-    file_name : String;
-    line      : Natural;
-    column_a  : Natural;       --  Before first selected character, can be 0.
-    column_z  : Natural;
-    kind      : Message_kind;  --  Error, or warning, or ? ...
-    repair    : Repair_kit     --  Can error be automatically repaired; if so, how ?
-  );
+  type Diagnostic_Kit is new Repair_Kit with record
+    diagnostic_kind : Diagnostic_Kind_Type;  --  Error, or warning, or ? ...
+    message         : Unbounded_String;
+    file_name       : Unbounded_String;
+    line            : Natural;
+    column_a        : Natural;       --  Before first selected character, can be 0.
+    column_z        : Natural;
+  end record;
+
+  type Smart_Error_Pipe is access procedure (diagnostic : Diagnostic_Kit);
 
   package IIO is new Ada.Text_IO.Integer_IO (HAC_Integer);
   package RIO is new Ada.Text_IO.Float_IO (HAC_Float);

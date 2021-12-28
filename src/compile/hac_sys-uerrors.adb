@@ -262,7 +262,7 @@ package body HAC_Sys.UErrors is
 
   --  The "[...]" are replaced by the correct identifier.
 
-  repair_table : constant array (Compile_Error) of Repair_kit :=
+  repair_table : constant array (Compile_Error) of Repair_Kit :=
     (
       err_missing_a_procedure_declaration
                                       => (insert,        +"procedure "),
@@ -323,9 +323,10 @@ package body HAC_Sys.UErrors is
       end if;
     end Show_to_comp_dump;
     --
-    updated_repair_kit : Repair_kit := repair_table (code);
+    updated_repair_kit : Repair_Kit := repair_table (code);
     ub_hint : constant HAL.VString := HAL.To_VString (hint);
     use HAL.VStr_Pkg;
+    diagnostic : Diagnostic_Kit;
   begin
     if previous_symbol then
       line      := CD.prev_sy_line;
@@ -352,26 +353,25 @@ package body HAC_Sys.UErrors is
       case code is
         when err_incorrect_block_name =>
           if hint = "" then
-            updated_repair_kit.kind := none;
+            updated_repair_kit.repair_kind := none;
           else
-            updated_repair_kit.text := ub_hint;
+            updated_repair_kit.insert_or_replace := ub_hint;
           end if;
         when err_END_LOOP_ident_missing =>
-          updated_repair_kit.text := ' ' & ub_hint;
+          updated_repair_kit.insert_or_replace := ' ' & ub_hint;
         when err_END_LOOP_ident_wrong =>
-          updated_repair_kit.text := ub_hint;
+          updated_repair_kit.insert_or_replace := ub_hint;
         when others =>
           null;
       end case;
-      CD.Error_Pipe (
-        message   => Error_String (code, hint),
-        file_name => Co_Defs.Get_Source_Name (CD.CUD),
-        line      => line,
-        column_a  => col_start,
-        column_z  => col_stop,
-        kind      => error,
-        repair    => updated_repair_kit
-      );
+      Repair_Kit (diagnostic) := updated_repair_kit;
+      diagnostic.message   := To_Unbounded_String (Error_String (code, hint));
+      diagnostic.file_name := To_Unbounded_String (Co_Defs.Get_Source_Name (CD.CUD));
+      diagnostic.line      := line;
+      diagnostic.column_a  := col_start;
+      diagnostic.column_z  := col_stop;
+      --
+      CD.Error_Pipe (diagnostic);
     end if;
     --  Uncomment the next line for getting a nice trace-back of 1st error.
     --  raise Constraint_Error;

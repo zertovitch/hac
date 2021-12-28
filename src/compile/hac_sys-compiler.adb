@@ -18,7 +18,7 @@ package body HAC_Sys.Compiler is
 
   procedure Set_Message_Feedbacks (
     CD       : in out Compiler_Data;
-    pipe     :        Defs.Smart_error_pipe;
+    pipe     :        Defs.Smart_Error_Pipe;
     progress :        Co_Defs.Compilation_Feedback
   )
   is

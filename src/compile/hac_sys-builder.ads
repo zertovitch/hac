@@ -60,7 +60,7 @@ package HAC_Sys.Builder is
 
   procedure Set_Message_Feedbacks (
     BD       : in out Build_Data;
-    pipe     :        Defs.Smart_error_pipe;        --  Default (null): messages to Current_Error.
+    pipe     :        Defs.Smart_Error_Pipe;        --  Default (null): messages to Current_Error.
     progress :        Co_Defs.Compilation_Feedback  --  Default (null): messages to Current_Output.
   );
 
