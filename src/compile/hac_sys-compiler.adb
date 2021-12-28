@@ -59,13 +59,14 @@ package body HAC_Sys.Compiler is
     --  Scanner data
     --
     Init (CD.CUD);
-    CD.syStart       := 1;
-    CD.syEnd         := 1;
-    CD.prev_sy_start := 1;
-    CD.prev_sy_end   := 1;
-    CD.prev_sy_line  := 0;
-    CD.Err_Count     := 0;
-    CD.Errs          := error_free;
+    CD.syStart           := 1;
+    CD.syEnd             := 1;
+    CD.prev_sy_start     := 1;
+    CD.prev_sy_end       := 1;
+    CD.prev_sy_line      := 0;
+    CD.error_count       := 0;
+    CD.minor_error_count := 0;
+    CD.Errs              := error_free;
     Scanner.InSymbol (CD);
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009
@@ -502,7 +503,7 @@ package body HAC_Sys.Compiler is
 
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean is
   begin
-    return CD.Err_Count = 0;
+    return CD.error_count = 0;
   end Unit_Compilation_Successful;
 
   function Unit_Object_Code_Size (CD : Compiler_Data) return Natural is

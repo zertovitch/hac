@@ -152,7 +152,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data) is
   begin
     if CD.Sy = Semicolon then
-      Error (CD, err_duplicate_semicolon, stop => True);
+      Error (CD, err_duplicate_semicolon, is_minor => True);
       while CD.Sy = Semicolon loop
         InSymbol (CD);
       end loop;

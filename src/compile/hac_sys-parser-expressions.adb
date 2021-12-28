@@ -220,7 +220,7 @@ package body HAC_Sys.Parser.Expressions is
           if Not_In then
             Need (CD, IN_Symbol, err_IN_missing);
           end if;
-          if CD.Err_Count = 0 then
+          if CD.error_count = 0 then
             Ranges.Dynamic_Range (CD, Level, FSys_Rel, err_discrete_type_expected, Y);
             if X /= Y then
               Type_Mismatch (CD, err_membership_test_type_mismatch, Found => Y, Expected => X);
@@ -313,7 +313,7 @@ package body HAC_Sys.Parser.Expressions is
         X.TYP := NOTYP;
       end if;
     end loop;
-    if X.TYP = NOTYP and then CD.Err_Count = 0 then
+    if X.TYP = NOTYP and then CD.error_count = 0 then
       Error (CD, err_object_used_before_end_own_declaration, stop => True);
     end if;
   end Expression;
@@ -411,7 +411,7 @@ package body HAC_Sys.Parser.Expressions is
                   when others =>
                     null;
                 end case;
-                if X.TYP = NOTYP and then CD.Err_Count = 0 then
+                if X.TYP = NOTYP and then CD.error_count = 0 then
                   Error
                     (CD, err_object_used_before_end_own_declaration,
                      '"' & To_String (r.Name_with_case) & """ ", True);
@@ -448,7 +448,7 @@ package body HAC_Sys.Parser.Expressions is
             when others =>
               null;
           end case;
-          if X.TYP = NOTYP and then CD.Err_Count = 0 then
+          if X.TYP = NOTYP and then CD.error_count = 0 then
             Error (CD, err_object_used_before_end_own_declaration, stop => True);
           end if;
         end Primary;

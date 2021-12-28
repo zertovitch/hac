@@ -24,8 +24,9 @@ package HAC_Sys.UErrors is
     CD              : in out Co_Defs.Compiler_Data;
     code            :        Defs.Compile_Error;
     hint            :        String      := "";
-    stop            :        Boolean     := False;
-    previous_symbol :        Boolean     := False
+    stop            :        Boolean     := False;  --  Stop compilation
+    previous_symbol :        Boolean     := False;
+    is_minor        :        Boolean     := False   --  We can continue compilation normally
   );
 
   procedure Compilation_Errors_Summary (CD : Co_Defs.Compiler_Data);

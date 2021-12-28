@@ -44,7 +44,7 @@ package body HAC_Sys.UErrors is
         return "expecting double dot symbol: ""..""";
       when err_semicolon_missing =>
         return "missing a semicolon: "";""";
-      when err_duplicate_semicolon =>
+      when err_duplicate_semicolon =>  --  "extra semicolon" on some compilers
         return "duplicate semicolon: "";""";
       when err_bad_result_type_for_a_function =>
         return "bad result type for a function";
@@ -291,8 +291,9 @@ package body HAC_Sys.UErrors is
     CD              : in out Co_Defs.Compiler_Data;
     code            :        Defs.Compile_Error;
     hint            :        String      := "";
-    stop            :        Boolean     := False;
-    previous_symbol :        Boolean     := False
+    stop            :        Boolean     := False;  --  Stop compilation
+    previous_symbol :        Boolean     := False;
+    is_minor        :        Boolean     := False   --  We can continue compilation normally
   )
   is
     use Ada.Text_IO;
@@ -339,7 +340,11 @@ package body HAC_Sys.UErrors is
     end if;
     Show_to_comp_dump (line, col_start, col_stop, -1, hint);
     CD.Errs (code) := True;
-    CD.Err_Count := CD.Err_Count + 1;
+    if is_minor then
+      CD.minor_error_count := CD.minor_error_count + 1;
+    else
+      CD.error_count := CD.error_count + 1;
+    end if;
     if CD.Error_Pipe = null then
       Put_Line (
         Current_Error,

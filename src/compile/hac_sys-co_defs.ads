@@ -252,7 +252,7 @@ package HAC_Sys.Co_Defs is
     listing   : Ada.Text_IO.File_Type;
     comp_dump : Ada.Text_IO.File_Type;
     --
-    Err_Count  : Natural;
+    error_count, minor_error_count : Natural;
     Errs       : Error_set;
     Error_Pipe : Smart_Error_Pipe     := null;
     Progress   : Compilation_Feedback := null;

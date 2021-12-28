@@ -216,13 +216,13 @@ package body HAC_Sys.Parser is
       elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
         Error (CD, err_string_to_vstring_assignment);
       elsif X.TYP = NOTYP then
-        if CD.Err_Count = 0 then
+        if CD.error_count = 0 then
           raise Internal_error with "Assignment: assigned variable (X) is typeless";
         else
           null;  --  All right, there were already enough compilation error messages...
         end if;
       elsif Y.TYP = NOTYP then
-        if CD.Err_Count = 0 then
+        if CD.error_count = 0 then
           raise Internal_error with "Assignment: assigned value (Y) is typeless";
         else
           null;  --  All right, there were already enough compilation error messages...
@@ -458,7 +458,7 @@ package body HAC_Sys.Parser is
       end if;
       loop
         Statement (statement_or_sentinel);
-        exit when Sentinel (CD.Sy) or CD.Err_Count > 0;
+        exit when Sentinel (CD.Sy) or CD.error_count > 0;
       end loop;
     end Sequence_of_Statements;
 
@@ -1200,7 +1200,7 @@ package body HAC_Sys.Parser is
       I_Statement : Integer;
 
     begin  --  Statement
-      if CD.Err_Count > 0 then
+      if CD.error_count > 0 then
         return;
       end if;
       if Statement_Begin_Symbol (CD.Sy) then
@@ -1370,15 +1370,16 @@ package body HAC_Sys.Parser is
         Error
           (CD, err_incorrect_block_name,
            hint => To_String (Block_Id_with_case),
-           previous_symbol => True
+           previous_symbol => True,
            --  ^ Ideally we would enclose the whole wrong full name, possibly on several lines.
            --  But it is correct on a single wrong identifier, the most frequent case.
+           is_minor => True
           );
       end if;
     end Check_ident_after_END;
 
   begin  --  Block
-    if CD.Err_Count > 0 then
+    if CD.error_count > 0 then
       return;
     end if;
     if CD.Full_Block_Id = Universe then
@@ -1406,7 +1407,7 @@ package body HAC_Sys.Parser is
       Formal_Parameter_List;
     end if;
     --
-    if CD.Err_Count > 0 then
+    if CD.error_count > 0 then
       return;
     end if;
     --
@@ -1461,7 +1462,7 @@ package body HAC_Sys.Parser is
       --
       if CD.Sy = END_Symbol then
         InSymbol;
-      elsif CD.Err_Count > 0 then
+      elsif CD.error_count > 0 then
         return;  --  At this point the program is already FUBAR.
       else
         Error (CD, err_END_missing);
@@ -1482,9 +1483,12 @@ package body HAC_Sys.Parser is
     end if;
     --
     if Level <= 1 or Is_a_block_statement then
-      null;
+      --  Time to count the minor errors as errors.
+      CD.error_count := CD.error_count + CD.minor_error_count;
+      CD.minor_error_count := 0;
     else
       InSymbol;  --  Consume ';' symbol after END [Subprogram_Id].
+      Ignore_Extra_Semicolons (CD);
       --
       --  Now we have either another declaration,
       --  or BEGIN or, if it's a package, END  .
@@ -1495,7 +1499,7 @@ package body HAC_Sys.Parser is
       );
     end if;
     CD.Full_Block_Id := Restore_Block_ID;
-    if CD.Err_Count = 0 then
+    if CD.error_count = 0 then
       pragma Assert (Level = Initial_Level);
     end if;
   end Block;

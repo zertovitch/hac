@@ -326,7 +326,7 @@ package body HAC_Sys.Parser.Type_Def is
       end case;  --  CD.Sy
       Test (CD, FSys_TD, Empty_Symset, err_incorrectly_used_symbol);
     end if;
-    if CD.Err_Count = 0 then
+    if CD.error_count = 0 then
       pragma Assert (Level = Initial_Level);
     end if;
   end Type_Definition;
