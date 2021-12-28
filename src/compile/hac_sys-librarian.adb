@@ -132,7 +132,7 @@ package body HAC_Sys.Librarian is
   begin
     pragma Assert (Pkg_Idx /= No_Id);
     if CD.IdTab (Pkg_Idx).Entity /= Paquetage then
-      Error (CD, err_syntax_error, ": package name expected", True);
+      Error (CD, err_syntax_error, ": package name expected", major);
     end if;
     --  The package specification's definitions begins immediately after the
     --  package's identifier.
@@ -494,7 +494,7 @@ package body HAC_Sys.Librarian is
         CD,
         err_library_error,
         ": no file found matching the name " & GNAT_Naming (Upper_Name) & ".ad*",
-        True
+        major
       );
     else
       Compiler.Compile_Unit (CD, LD, Upper_Name, fn, fn (fn'Last) = 's', kind);
@@ -535,7 +535,7 @@ package body HAC_Sys.Librarian is
         CD,
         err_library_error,
         "the new name of HAC_Pack is " & HAL_Name,
-        True
+        major
       );
     else
       begin

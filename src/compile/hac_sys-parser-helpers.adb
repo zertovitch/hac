@@ -25,11 +25,15 @@ package body HAC_Sys.Parser.Helpers is
     Forgive : KeyWSymbol := Dummy_Symbol
   )
   is
+    severity : Error_Severity := medium;
   begin
     if CD.Sy = S then
       InSymbol (CD);
     else
-      Error (CD, E, stop => Forgive = Dummy_Symbol);
+      if Forgive = Dummy_Symbol then
+        severity := major;
+      end if;
+      Error (CD, E, severity => severity);
       if CD.Sy = Forgive then
         InSymbol (CD);
       end if;
@@ -104,7 +108,7 @@ package body HAC_Sys.Parser.Helpers is
         end loop;
         hint := "Found: " & KeyWSymbol'Image (CD.Sy) & "; expected: " & hint;
         if stop_on_error then
-          Error (CD, N, stop => True, hint => HAL.VStr_Pkg.To_String (hint));
+          Error (CD, N, HAL.VStr_Pkg.To_String (hint), major);
         end if;
         Skip (CD, S1 + S2, N, HAL.VStr_Pkg.To_String (hint));
       end;
@@ -152,7 +156,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data) is
   begin
     if CD.Sy = Semicolon then
-      Error (CD, err_duplicate_semicolon, is_minor => True);
+      Error (CD, err_duplicate_semicolon, severity => minor);
       while CD.Sy = Semicolon loop
         InSymbol (CD);
       end loop;
@@ -248,7 +252,7 @@ package body HAC_Sys.Parser.Helpers is
       CD, Err,
       "found: "      & Nice_Exact_Image (CD, Found) &
       ", expected: " & Types_List (Expected),
-      stop => True
+      major
     );
   end Type_Mismatch;
 
@@ -301,10 +305,10 @@ package body HAC_Sys.Parser.Helpers is
   begin
     Error (CD,
       err_numeric_type_coercion_operator,
-        Op_Hint (Operator) &
+      Op_Hint (Operator) &
         "left is "    & Nice_Exact_Image (CD, Left) &
         ", right is " & Nice_Exact_Image (CD, Right),
-      stop => True
+      major
     );
   end Forbid_Type_Coercion;
 
@@ -317,7 +321,8 @@ package body HAC_Sys.Parser.Helpers is
     Error (CD, err_numeric_type_coercion,
       "found "    & Nice_Exact_Image (CD, Found) &
       ", expected " & Nice_Exact_Image (CD, Expected),
-      stop => True);
+      major
+    );
   end Forbid_Type_Coercion;
 
   function Singleton (s : KeyWSymbol) return Symset is
@@ -374,7 +379,7 @@ package body HAC_Sys.Parser.Helpers is
       if not Fail_when_No_Id then
         return No_Id;
       end if;
-      Error (CD, err_undefined_identifier, To_String (Id), True);  --  Exception raised here.
+      Error (CD, err_undefined_identifier, To_String (Id), major);  --  Exception raised here.
     end if;
     --  Name aliasing resolution (brought by a use clause
     --  or a simple renames clause).
@@ -397,7 +402,7 @@ package body HAC_Sys.Parser.Helpers is
             Fail_when_No_Id
           );
         end if;
-        Error (CD, err_identifier_missing, stop => True);
+        Error (CD, err_identifier_missing, severity => major);
       end if;
     end if;
     return J;

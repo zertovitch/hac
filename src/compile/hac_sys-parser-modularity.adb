@@ -15,7 +15,7 @@ package body HAC_Sys.Parser.Modularity is
     InSymbol (CD);  --  Consume "with".
     loop
       if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing, stop => True);
+        Error (CD, err_identifier_missing, severity => major);
       end if;
       Librarian.Apply_WITH (CD, LD, To_String (CD.Id));
       InSymbol (CD);  --  Consume the identifier.
@@ -35,7 +35,7 @@ package body HAC_Sys.Parser.Modularity is
     InSymbol (CD);  --  Consume "use".
     loop
       if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing, stop => True);
+        Error (CD, err_identifier_missing, severity => major);
       end if;
       Apply_USE_Clause (CD, Level, Helpers.Locate_Identifier (CD, To_Alfa (CD.Id), Level));
       InSymbol (CD);  --  Consume the identifier.

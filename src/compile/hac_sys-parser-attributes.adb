@@ -59,7 +59,7 @@ package body HAC_Sys.Parser.Attributes is
           if Discrete_Typ (Typ_ID.xTyp.TYP) then
             First_Last_Discrete;
           else
-            Error (CD, err_attribute_prefix_invalid, attr_ID, True);
+            Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
           end if;
       end case;
       Type_of_Result := Typ_ID.xTyp;
@@ -97,12 +97,12 @@ package body HAC_Sys.Parser.Attributes is
             null;  --  Already in error
           when Floats =>
             --  !! To do !!
-            Error (CD, err_not_yet_implemented, "attribute " & attr_ID & " for this subtype", True);
+            Error (CD, err_not_yet_implemented, "attribute " & attr_ID & " for this subtype", major);
           when others =>
             if Discrete_Typ (Typ_ID.xTyp.TYP) then
               Pred_Succ_Discrete;
             else
-              Error (CD, err_attribute_prefix_invalid, attr_ID, True);
+              Error (CD, err_attribute_prefix_invalid, attr_ID, major);
             end if;
         end case;
       else
@@ -128,7 +128,7 @@ package body HAC_Sys.Parser.Attributes is
         end if;
         Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
       else
-        Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, True);
+        Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, major);
       end if;
     end Pos;
     --
@@ -148,7 +148,7 @@ package body HAC_Sys.Parser.Attributes is
         end if;
         Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
       else
-        Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, True);
+        Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, major);
       end if;
     end Val;
     --
@@ -160,11 +160,11 @@ package body HAC_Sys.Parser.Attributes is
       when Pos          => Pos;
       when Val          => Val;
       when others =>
-        Error (CD, err_not_yet_implemented, "attribute " & attr_ID, True);
+        Error (CD, err_not_yet_implemented, "attribute " & attr_ID, major);
     end case;
   exception
     when Constraint_Error =>
-      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, True);
+      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
   end Scalar_Subtype_Attribute;
 
 end HAC_Sys.Parser.Attributes;

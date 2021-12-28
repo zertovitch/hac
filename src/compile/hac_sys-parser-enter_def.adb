@@ -69,7 +69,7 @@ package body HAC_Sys.Parser.Enter_Def is
         CD.CUD.level_0_def.Include (Id);
       end if;
     else
-      Error (CD, err_duplicate_identifier, To_String (Id), stop => True);
+      Error (CD, err_duplicate_identifier, To_String (Id), major);
     end if;
   end Enter;
 
@@ -86,13 +86,13 @@ package body HAC_Sys.Parser.Enter_Def is
     if L > H then
       Error (CD,
         err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)", -- !!
-        stop => True
+        major
       );
     end if;
     if abs (L) > XMax or abs (H) > XMax then
       Error (CD,
         err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",
-        stop => True
+        major
       );
     end if;
     if CD.Arrays_Count = AMax then

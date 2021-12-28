@@ -72,7 +72,7 @@ package body HAC_Sys.Parser.Type_Def is
                 end if;
               end if;
             else
-              Error (CD, err_illegal_constant_or_constant_identifier, stop => True);
+              Error (CD, err_illegal_constant_or_constant_identifier, severity => major);
             end if;
           end if;  --  X /= 0
           InSymbol;
@@ -233,7 +233,7 @@ package body HAC_Sys.Parser.Type_Def is
             Offset                  := Offset + Field_Size;
           end loop;
         else
-          Error (CD, err_identifier_missing, stop => True);
+          Error (CD, err_identifier_missing, severity => major);
         end if;
         Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
         Ignore_Extra_Semicolons (CD);

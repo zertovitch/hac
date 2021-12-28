@@ -33,7 +33,7 @@ package body HAC_Sys.Parser.Expressions is
           Field_Id := CD.IdTab (Field_Id).Link;
         end loop;
         if Field_Id = No_Id then
-          Error (CD, err_undefined_identifier, To_String (CD.Id_with_case), True);
+          Error (CD, err_undefined_identifier, To_String (CD.Id_with_case), major);
         end if;
         V            := CD.IdTab (Field_Id).xTyp;
         Field_Offset := CD.IdTab (Field_Id).Adr_or_Sz;
@@ -314,7 +314,7 @@ package body HAC_Sys.Parser.Expressions is
       end if;
     end loop;
     if X.TYP = NOTYP and then CD.error_count = 0 then
-      Error (CD, err_object_used_before_end_own_declaration, stop => True);
+      Error (CD, err_object_used_before_end_own_declaration, severity => major);
     end if;
   end Expression;
 
@@ -414,7 +414,7 @@ package body HAC_Sys.Parser.Expressions is
                 if X.TYP = NOTYP and then CD.error_count = 0 then
                   Error
                     (CD, err_object_used_before_end_own_declaration,
-                     '"' & To_String (r.Name_with_case) & """ ", True);
+                     '"' & To_String (r.Name_with_case) & """ ", major);
                 end if;
               end;
               --
@@ -449,7 +449,7 @@ package body HAC_Sys.Parser.Expressions is
               null;
           end case;
           if X.TYP = NOTYP and then CD.error_count = 0 then
-            Error (CD, err_object_used_before_end_own_declaration, stop => True);
+            Error (CD, err_object_used_before_end_own_declaration, severity => major);
           end if;
         end Primary;
 
@@ -744,7 +744,7 @@ package body HAC_Sys.Parser.Expressions is
       when Apostrophe =>  --  S'First, S'Image, ...
         Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Typ_ID, X);
       when others =>
-        Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", True);
+        Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", major);
     end case;
   end Subtype_Prefixed_Expression;
 

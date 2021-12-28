@@ -77,7 +77,7 @@ package body HAC_Sys.Parser is
               --  We could pass string literals as "in" parameter
               --  if we replaced String_Literals by a record wrapping
               --  the string length and the index into the string table.
-              Error (CD, err_string_not_supported_as_parameter, stop => True);
+              Error (CD, err_string_not_supported_as_parameter, severity => major);
             elsif X /= No_Id then
               if CD.IdTab (X).Entity = TypeMark then
                 xTP := CD.IdTab (X).xTyp;
@@ -87,7 +87,7 @@ package body HAC_Sys.Parser is
                   Sz := 1;
                 end if;
               else
-                Error (CD, err_missing_a_type_identifier, stop => True);
+                Error (CD, err_missing_a_type_identifier, severity => major);
               end if;
             end if;  --  X /= No_Id
           else
@@ -108,7 +108,7 @@ package body HAC_Sys.Parser is
             end;
           end loop;  --  while T0 < CD.Id_Count
         else
-          Error (CD, err_colon_missing, stop => True);
+          Error (CD, err_colon_missing, severity => major);
         end if;
         if CD.Sy /= RParent then
           Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
@@ -210,7 +210,7 @@ package body HAC_Sys.Parser is
           Error (CD, err_string_lengths_do_not_match,
             "variable has length" & X_Len'Image &
             ", literal has length" & CD.SLeng'Image,
-            stop => True
+            minor
           );
         end if;
       elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
@@ -453,13 +453,14 @@ package body HAC_Sys.Parser is
     procedure Sequence_of_Statements (Sentinel : Symset) is  --  Ada RM 5.1 (2)
       statement_or_sentinel : constant Symset := Statement_Begin_Symbol or Sentinel;
     begin
-      if Sentinel (CD.Sy) then -- GdM 15-Aug-2014: there should be at least one statement.
-        Error (CD, err_statement_expected, stop => True);
+      if Sentinel (CD.Sy) then  --  GdM 15-Aug-2014: there should be at least one statement.
+        Error (CD, err_statement_expected, severity => minor);
+      else
+        loop
+          Statement (statement_or_sentinel);
+          exit when Sentinel (CD.Sy) or CD.error_count > 0;
+        end loop;
       end if;
-      loop
-        Statement (statement_or_sentinel);
-        exit when Sentinel (CD.Sy) or CD.error_count > 0;
-      end loop;
     end Sequence_of_Statements;
 
     ------------------------------------------------------------------
@@ -597,7 +598,7 @@ package body HAC_Sys.Parser is
           end if;
         else
           if not Is_a_function then
-            Error (CD, err_procedures_cannot_return_a_value, stop => True);
+            Error (CD, err_procedures_cannot_return_a_value, severity => major);
           end if;
           --  Calculate return value (destination: X; expression: Y).
           if CD.IdTab (Block_Id_Index).Block_Ref /= CD.Display (Level) then
@@ -723,7 +724,7 @@ package body HAC_Sys.Parser is
             InSymbol;
           end if;
           if CD.Sy = THEN_Symbol then  --  Mistake happens when converting IF statements to CASE.
-            Error (CD, err_THEN_instead_of_Arrow, stop => True);
+            Error (CD, err_THEN_instead_of_Arrow, severity => major);
             InSymbol;
           else
             Need (CD, Finger, err_FINGER_missing);
@@ -755,7 +756,7 @@ package body HAC_Sys.Parser is
             Error (CD, err_IS_missing);
         end case;
         if CD.Sy /= WHEN_Symbol then
-          Error (CD, err_WHEN_missing, stop => True);
+          Error (CD, err_WHEN_missing, severity => major);
         end if;
         loop  --  All cases are parsed here.
           One_CASE;
@@ -1140,7 +1141,7 @@ package body HAC_Sys.Parser is
         Error (
           CD, err_not_yet_implemented,
           hint => "Block statements don't work yet",
-          stop => True
+          severity => major
         );
         --
         Block (CD, FSys_St, Is_a_function, True, Level + 1, CD.Id_Count, block_name, block_name);  --  !! up/low case
@@ -1177,7 +1178,7 @@ package body HAC_Sys.Parser is
       begin
         Enter (CD, Level, new_ident_for_statement, CD.Id_with_case, Label);
         if CD.Sy /= Colon then
-          Error (CD, err_colon_missing_for_named_statement, To_String (CD.Id_with_case), True);
+          Error (CD, err_colon_missing_for_named_statement, To_String (CD.Id_with_case), major);
         end if;
         InSymbol;  --  Consume ':' symbol.
         case CD.Sy is
@@ -1217,12 +1218,12 @@ package body HAC_Sys.Parser is
                   Assignment (I_Statement, Check_read_only => True);
                 when Declared_Number_or_Enum_Item =>
                   Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
-                         stop => True);
+                         major);
                 when TypeMark =>
-                  Error (CD, err_illegal_statement_start_symbol, "type name", stop => True);
+                  Error (CD, err_illegal_statement_start_symbol, "type name", major);
                 when Funktion | Funktion_Intrinsic =>
                   Error (CD, err_illegal_statement_start_symbol, "function name",
-                         stop => True);
+                         major);
                 when aTask =>
                   Entry_Call (CD, Level, FSys_St, I_Statement, Normal_Entry_Call);
                 when Prozedure =>
@@ -1333,18 +1334,18 @@ package body HAC_Sys.Parser is
           InSymbol;
           if I_Res_Type /= 0 then
             if CD.IdTab (I_Res_Type).Entity /= TypeMark then
-              Error (CD, err_missing_a_type_identifier, stop => True);
+              Error (CD, err_missing_a_type_identifier, severity => major);
             elsif Standard_or_Enum_Typ (CD.IdTab (I_Res_Type).xTyp.TYP) then
               CD.IdTab (Block_Id_Index).xTyp := CD.IdTab (I_Res_Type).xTyp;
             else
-              Error (CD, err_bad_result_type_for_a_function, stop => True);
+              Error (CD, err_bad_result_type_for_a_function, severity => major);
             end if;
           end if;
         else
-          Error (CD, err_identifier_missing, stop => True);
+          Error (CD, err_identifier_missing, severity => major);
         end if;
       else
-        Error (CD, err_RETURN_missing, stop => True);
+        Error (CD, err_RETURN_missing, severity => major);
       end if;
     end Function_Result_Profile;
 
@@ -1373,7 +1374,7 @@ package body HAC_Sys.Parser is
            previous_symbol => True,
            --  ^ Ideally we would enclose the whole wrong full name, possibly on several lines.
            --  But it is correct on a single wrong identifier, the most frequent case.
-           is_minor => True
+           severity => minor
           );
       end if;
     end Check_ident_after_END;

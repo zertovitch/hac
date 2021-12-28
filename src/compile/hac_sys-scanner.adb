@@ -360,9 +360,9 @@ package body HAC_Sys.Scanner is
         if CD.CUD.c = '_' then
           NextCh (CD);
           if CD.CUD.c = '_' then
-            Error (CD, err_double_underline_not_permitted, stop => True);
+            Error (CD, err_double_underline_not_permitted, severity => major);
           elsif CharacterTypes (CD.CUD.c) /= Number then
-            Error (CD, err_digit_expected, stop => True);
+            Error (CD, err_digit_expected, severity => major);
           end if;
         end if;
       end Skip_eventual_underscore;
@@ -450,7 +450,7 @@ package body HAC_Sys.Scanner is
       --      *  9 '        (end of a line after last non-blank)
       --
       if CD.CUD.CC = CD.CUD.LL then  --  Case (9) above
-        Error (CD, err_character_zero_chars, stop => True);
+        Error (CD, err_character_zero_chars, severity => major);
       end if;
       NextCh (CD);
       C1 := CD.CUD.c;
@@ -461,13 +461,13 @@ package body HAC_Sys.Scanner is
           return;
         end if;
         --  Case (7), (8)
-        Error (CD, err_character_zero_chars, stop => True);
+        Error (CD, err_character_zero_chars, severity => major);
       end if;
       --  We peek the next character without moving.
       --  Possible since CD.CC < CD.LL .
       C2 := CD.CUD.input_line (CD.CUD.CC + 1);
       if C1 = ''' and C2 /= ''' then  --  Case (6)
-        Error (CD, err_character_zero_chars, stop => True);
+        Error (CD, err_character_zero_chars, severity => major);
       end if;
       --  Until now, case (5) to (9) are treated.
       if C2 = ''' then  --  Cases (1), (2)
@@ -522,7 +522,7 @@ package body HAC_Sys.Scanner is
               CD.Id (K)           := UpCase (CD.CUD.c);
               CD.Id_with_case (K) := CD.CUD.c;
               if K > 1 and then CD.Id (K - 1 .. K) = "__" then
-                Error (CD, err_double_underline_not_permitted, To_String (CD.Id), stop => True);
+                Error (CD, err_double_underline_not_permitted, To_String (CD.Id), major);
               end if;
             else
               Error (CD, err_identifier_too_long, To_String (CD.Id));
@@ -532,7 +532,7 @@ package body HAC_Sys.Scanner is
                      and then special_or_illegal (CharacterTypes (CD.CUD.c));
           end loop;
           if K > 0 and then CD.Id (K) = '_' then
-            Error (CD, err_identifier_cannot_end_with_underline, To_String (CD.Id), stop => True);
+            Error (CD, err_identifier_cannot_end_with_underline, To_String (CD.Id), major);
           end if;
           --
           I := 1;
@@ -632,7 +632,8 @@ package body HAC_Sys.Scanner is
               Error (
                 CD,
                 err_syntax_error,
-                ": missing closing quote on previous line ", stop => True
+                ": missing closing quote on previous line ",
+                major
               );
             else
               null;  --  Continue

@@ -20,13 +20,18 @@ package HAC_Sys.UErrors is
 
   nothing_to_repair : constant Defs.Repair_Kit := (Defs.none, HAL.Null_VString);
 
+  type Error_Severity is (
+    minor,   --  Extra ';', ')' etc.: we can continue compilation normally.
+    medium,  --  Compilation is shortened - tricky!
+    major    --  In this case, the best choice is to STOP the compilation immediately.
+  );
+
   procedure Error (
     CD              : in out Co_Defs.Compiler_Data;
     code            :        Defs.Compile_Error;
-    hint            :        String      := "";
-    stop            :        Boolean     := False;  --  Stop compilation
-    previous_symbol :        Boolean     := False;
-    is_minor        :        Boolean     := False   --  We can continue compilation normally
+    hint            :        String         := "";
+    severity        :        Error_Severity := medium;
+    previous_symbol :        Boolean        := False
   );
 
   procedure Compilation_Errors_Summary (CD : Co_Defs.Compiler_Data);

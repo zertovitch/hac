@@ -290,10 +290,9 @@ package body HAC_Sys.UErrors is
   procedure Error (
     CD              : in out Co_Defs.Compiler_Data;
     code            :        Defs.Compile_Error;
-    hint            :        String      := "";
-    stop            :        Boolean     := False;  --  Stop compilation
-    previous_symbol :        Boolean     := False;
-    is_minor        :        Boolean     := False   --  We can continue compilation normally
+    hint            :        String         := "";
+    severity        :        Error_Severity := medium;
+    previous_symbol :        Boolean        := False
   )
   is
     use Ada.Text_IO;
@@ -340,7 +339,7 @@ package body HAC_Sys.UErrors is
     end if;
     Show_to_comp_dump (line, col_start, col_stop, -1, hint);
     CD.Errs (code) := True;
-    if is_minor then
+    if severity = minor then
       CD.minor_error_count := CD.minor_error_count + 1;
     else
       CD.error_count := CD.error_count + 1;
@@ -380,7 +379,8 @@ package body HAC_Sys.UErrors is
     end if;
     --  Uncomment the next line for getting a nice trace-back of 1st error.
     --  raise Constraint_Error;
-    if stop then
+    --
+    if severity = major then
       raise Compilation_abandoned;
     end if;
   end Error;

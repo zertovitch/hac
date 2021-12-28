@@ -252,12 +252,12 @@ package body HAC_Sys.Compiler is
     Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.
 
     if CD.Sy /= PROCEDURE_Symbol then
-      Error (CD, err_missing_a_procedure_declaration, stop => True);  --  PROCEDURE Name is
+      Error (CD, err_missing_a_procedure_declaration, severity => major);  --  PROCEDURE Name is
     end if;
     Scanner.InSymbol (CD);
     loop
       if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing, stop => True);
+        Error (CD, err_identifier_missing, severity => major);
       end if;
       full_main_Id := HAL."&" (full_main_Id, To_String (CD.Id_with_case));
       Scanner.InSymbol (CD);
@@ -273,12 +273,12 @@ package body HAC_Sys.Compiler is
       Error (CD, err_library_error,
         ": unit name """ & main_name_hint & """ expected in this file, found: """ &
         To_String (CD.Main_Program_ID) & '"',
-        True
+        major
       );
     end if;
     if CD.Sy /= IS_Symbol then
       --  procedure Name IS
-      Error (CD, err_syntax_error, ": main procedure should be parameterless", stop => True);
+      Error (CD, err_syntax_error, ": main procedure should be parameterless", major);
     end if;
 
     if CD.comp_dump_requested then
@@ -432,7 +432,7 @@ package body HAC_Sys.Compiler is
           CD,
           err_library_error,
           "Packages are not yet supported",
-          True
+          major
         );
       when FUNCTION_Symbol =>
         kind := Function_Unit;
@@ -440,14 +440,14 @@ package body HAC_Sys.Compiler is
         kind := Procedure_Unit;
       when others =>
         kind := Package_Unit;  --  Useless, but this removes an ObjectAda warning.
-        Error (CD, err_syntax_error, ": `package`, `procedure` or `function` expected here", True);
+        Error (CD, err_syntax_error, ": `package`, `procedure` or `function` expected here", major);
     end case;
     Scanner.InSymbol (CD);
     if CD.Sy /= IDent then
-      Error (CD, err_identifier_missing, stop => True);
+      Error (CD, err_identifier_missing, severity => major);
     end if;
     if To_String (CD.Id) /= upper_name then
-      Error (CD, err_library_error, ": unit name """ & upper_name & """ expected in this file", True);
+      Error (CD, err_library_error, ": unit name """ & upper_name & """ expected in this file", major);
     end if;
     Unit_Id_with_case := CD.Id_with_case;
     case kind is
@@ -467,7 +467,7 @@ package body HAC_Sys.Compiler is
         CD,
         err_library_error,
         "Specification units not yet supported (" & file_name & ')',
-        True
+        major
       );
     else
       case kind is
