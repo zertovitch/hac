@@ -483,6 +483,7 @@ package body HAC_Sys.Scanner is
     exit_big_loop : Boolean;
 
   begin  --  InSymbol
+    CD.prev_sy       := CD.Sy;
     CD.prev_sy_start := CD.syStart;
     CD.prev_sy_end   := CD.syEnd;
     CD.prev_sy_line  := CD.CUD.line_count;

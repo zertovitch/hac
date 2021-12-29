@@ -318,6 +318,7 @@ package HAC_Sys.Defs is
     err_expecting_double_dot,
     err_semicolon_missing,
     err_duplicate_semicolon,
+    err_extra_right_parenthesis,                 --  2021-12-29
     err_bad_result_type_for_a_function,
     err_type_of_return_statement_doesnt_match,
     err_illegal_statement_start_symbol,

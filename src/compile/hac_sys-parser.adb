@@ -111,8 +111,7 @@ package body HAC_Sys.Parser is
           Error (CD, err_colon_missing, severity => major);
         end if;
         if CD.Sy /= RParent then
-          Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
-          Ignore_Extra_Semicolons (CD);
+          Need_Semicolon (CD);
           Test (CD, IDent_Set, FSys + RParent, err_incorrectly_used_symbol);
         end if;
       end loop;  --  while Sy = IDent
@@ -1268,8 +1267,7 @@ package body HAC_Sys.Parser is
             null;
         end case;
         --
-        Need (CD, Semicolon, err_semicolon_missing);
-        Ignore_Extra_Semicolons (CD);
+        Need_Semicolon (CD);
       end if;  --  CD.Sy in Statement_Begin_Symbol
       --
       Test (CD, FSys_St - Semicolon, Semicolon_Set, err_incorrectly_used_symbol);

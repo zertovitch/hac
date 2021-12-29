@@ -207,8 +207,8 @@ package HAC_Sys.Co_Defs is
 
   type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
     CUD : Current_Unit_Data;
-    --  Parsing
-    Sy               : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
+    --  Scanning & Parsing
+    Sy, prev_sy      : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
     syStart, syEnd   : Integer;            --  Start and end on line for the symbol in Sy
     prev_sy_start,
     prev_sy_end,

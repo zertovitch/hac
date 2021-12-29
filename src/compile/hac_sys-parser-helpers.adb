@@ -163,6 +163,18 @@ package body HAC_Sys.Parser.Helpers is
     end if;
   end Ignore_Extra_Semicolons;
 
+  procedure Need_Semicolon (CD : in out Compiler_Data) is
+  begin
+    if CD.Sy = RParent and then CD.prev_sy = RParent then
+      Error (CD, err_extra_right_parenthesis, severity => minor);
+      while CD.Sy = RParent loop
+        InSymbol (CD);
+      end loop;
+    end if;
+    Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
+    Ignore_Extra_Semicolons (CD);
+  end Need_Semicolon;
+
   procedure Argument_Type_Not_Supported (CD : in out Compiler_Data) is
   begin
     Error (CD, err_type_conversion_not_supported, "argument type not supported");

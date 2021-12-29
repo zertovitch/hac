@@ -59,6 +59,7 @@ package body HAC_Sys.Compiler is
     --  Scanner data
     --
     Init (CD.CUD);
+    CD.Sy                := Dummy_Symbol;
     CD.syStart           := 1;
     CD.syEnd             := 1;
     CD.prev_sy_start     := 1;

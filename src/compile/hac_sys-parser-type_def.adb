@@ -235,8 +235,7 @@ package body HAC_Sys.Parser.Type_Def is
         else
           Error (CD, err_identifier_missing, severity => major);
         end if;
-        Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
-        Ignore_Extra_Semicolons (CD);
+        Need_Semicolon (CD);
         exit when CD.Sy = END_Symbol;
       end loop;
       --

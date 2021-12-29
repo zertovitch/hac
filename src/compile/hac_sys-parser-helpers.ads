@@ -65,9 +65,15 @@ package HAC_Sys.Parser.Helpers is
 
   procedure Test_END_Symbol (CD : in out Compiler_Data);
 
-  procedure Check_Boolean (CD : in out Compiler_Data; T : Typen);
-
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data);
+
+  procedure Need_Semicolon (CD : in out Compiler_Data);
+
+  -----------------------------------
+  --  Data type checks and errors  --
+  -----------------------------------
+
+  procedure Check_Boolean (CD : in out Compiler_Data; T : Typen);
 
   procedure Argument_Type_Not_Supported (CD : in out Compiler_Data);
 
