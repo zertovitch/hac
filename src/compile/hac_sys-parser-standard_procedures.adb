@@ -108,9 +108,6 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Need (CD, Comma, err_COMMA_missing);
         Expression (CD, Level, FSys + Colon_Comma_RParent, Item_Typ);
       end if;
-      if Item_Typ.TYP = Enums then
-        Item_Typ.TYP := Ints;  --  Ow... Silent S'Pos. We keep this hack until 'Image is done.
-      end if;
       if Item_Typ.TYP in Standard_Typ or else Item_Typ.TYP = String_Literals then
         null;  --  Good, Put[_Line] can do it all "as is"!
       elsif Is_Char_Array (CD, Item_Typ) then

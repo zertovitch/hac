@@ -43,7 +43,10 @@ package body HAC_Sys.Compiler is
     --  Identifiers
     CD.Id_Count := 0;
     --  Strings
-    CD.Strings_Table_Top := CD.Strings_Constants_Table'First;
+    CD.Strings_Table_Top :=
+      CD.Strings_Constants_Table'First
+        --  The begin of the strings table is used for the 'Image attribute:
+        + Source_Line_String'Length;  --  Enumerated types' items cannot exceed a source line.
     --  Tasks, Entries
     CD.Tasks_Definitions_Count := 0;
     CD.Entries_Count := 0;

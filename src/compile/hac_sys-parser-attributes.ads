@@ -8,7 +8,8 @@ private package HAC_Sys.Parser.Attributes is
   --  Example:
   --    S is Boolean, we have the expression "Boolean'Image (Flag)"
   --    From here we parse the attribute ("Image"), then, its
-  --    parameter "(Flag)", return a X = (String_Literals, 0) internal type.
+  --    parameter "(Flag)" if any.
+  --    The return type is X = (String_Literals, 0), an internal type in this case.
 
   procedure Scalar_Subtype_Attribute (
     CD             : in out Co_Defs.Compiler_Data;

@@ -317,13 +317,20 @@ package HAC_Sys.PCode is
     SF_Day,
     SF_Seconds,
     --
-    SF_Image_Ints,
-    SF_Image_Floats,            --  "Nice" image
-    SF_Image_Attribute_Floats,  --  Image attribute "as is" from Ada
-    SF_Image_Times,
-    SF_Image_Durations,
+    SF_Image_Ints,              --  HAL.Image without the nasty ' ' before non-negative values
+    SF_Image_Floats,            --  HAL.Image with a human-readable formatting whenever possible
+    SF_Image_Times,             --  HAL.Image
+    SF_Image_Durations,         --  HAL.Image
+    --
     SF_Integer_Value,
     SF_Float_Value,
+    --
+    SF_Image_Attribute_Ints,    --  'Image attribute "as is" from Ada
+    SF_Image_Attribute_Floats,  --  'Image attribute "as is" from Ada
+    SF_Image_Attribute_Bools,   --  'Image attribute "as is" from Ada in all capitals
+    SF_Image_Attribute_Chars,   --  'Image attribute "as is" from Ada
+    SF_Image_Attribute_Durs,    --  'Image attribute "as is" from Ada with leading ' '
+    SF_Image_Attribute_Enums,   --  'Image attribute "as is" from Ada in all capitals
     --
     SF_Argument,
     --  Ada.Directories-like

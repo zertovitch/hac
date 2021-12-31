@@ -150,27 +150,6 @@ procedure COVID_19_S is
     sep : constant Character := ';';
     --  ! use Ada.Characters.Handling;
     basic_reproductive_number : constant := 3.5;
-
-    --  ! The following functions are there just because HAC 0.074 lacks
-    --  ! the S'Image attribute.
-    function Status_Image (s : Status) return VString is
-    begin
-      case s is
-        when Susceptible => return +"Susceptible";
-        when Exposed     => return +"Exposed";
-        when Infectious  => return +"Infectious";
-        when Recovered   => return +"Recovered";
-      end case;
-    end Status_Image;
-    --
-    function Scenario_Image (s : Scenario) return VString is
-    begin
-      case s is
-        when No_Lockdown           => return +"No_Lockdown";
-        when Lockdown              => return +"Lockdown";
-        when Lockdown_in_two_Steps => return +"Lockdown_in_two_Steps";
-      end case;
-    end Scenario_Image;
   begin
     dt := 1.0;
     n_iter := 365;
@@ -187,11 +166,11 @@ procedure COVID_19_S is
     x (Recovered  ) :=         0.0;
     --  Status numbers at time t = 0.
 
-    Create (rf, "covid_19_s_" & To_Lower (Scenario_Image (s)) & ".csv");
+    Create (rf, "covid_19_s_" & To_Lower (+Scenario'Image (s)) & ".csv");
     Put (rf, "t");
     for l in Status loop
       Put (rf, sep);
-      Put (rf, Status_Image (l));
+      Put (rf, Status'Image (l));
     end loop;
     New_Line (rf);
     for i in 0 .. n_iter loop

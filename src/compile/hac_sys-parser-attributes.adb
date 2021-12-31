@@ -15,7 +15,8 @@ package body HAC_Sys.Parser.Attributes is
     Pred,
     Succ,
     Val,
-    Value
+    Value,
+    VValue   --  Like Value but has a VString argument
   );
 
   procedure Scalar_Subtype_Attribute (
@@ -152,6 +153,36 @@ package body HAC_Sys.Parser.Attributes is
       end if;
     end Val;
     --
+    procedure Image is
+      s_base, type_of_argument : Exact_Typ;
+    begin
+      Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
+      Expressions.Expression (CD, Level, FSys, type_of_argument);
+      --  Argument is of the base type (S'Base).
+      s_base := Exact_Typ (Typ_ID.xTyp);
+      if s_base = type_of_argument then
+        case Typ_ID.xTyp.TYP is
+          when NOTYP     => null;  --  Already in error
+          when Ints      => Emit_Std_Funct (CD, SF_Image_Attribute_Ints);
+          when Floats    => Emit_Std_Funct (CD, SF_Image_Attribute_Floats);
+          when Bools     => Emit_Std_Funct (CD, SF_Image_Attribute_Bools);
+          when Chars     => Emit_Std_Funct (CD, SF_Image_Attribute_Chars);
+          when Durations => Emit_Std_Funct (CD, SF_Image_Attribute_Durs);
+          when Enums     =>
+            --  The enumeration items' declarations follow the type name
+            --  For example: `type Enum is (a, b, c)`, we send the index
+            --  of the first item, `a`, in the identifier table.
+            Emit_Std_Funct (CD, SF_Image_Attribute_Enums, Operand_1_Type (Typ_ID.xTyp.Ref + 1));
+          when others =>
+            Error (CD, err_attribute_prefix_invalid, attr_ID, major);
+        end case;
+      else
+        Helpers.Type_Mismatch (CD, err_parameter_types_do_not_match, type_of_argument, s_base);
+      end if;
+      Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
+      Type_of_Result := (String_Literals, 0, 0, 0);
+    end Image;
+    --
   begin
     Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
     case attr is
@@ -159,12 +190,13 @@ package body HAC_Sys.Parser.Attributes is
       when Pred  | Succ => Pred_Succ;
       when Pos          => Pos;
       when Val          => Val;
+      when Image        => Image;
       when others =>
         Error (CD, err_not_yet_implemented, "attribute " & attr_ID, major);
     end case;
-  exception
-    when Constraint_Error =>
-      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
+  --  exception
+  --    when Constraint_Error =>
+  --      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
   end Scalar_Subtype_Attribute;
 
 end HAC_Sys.Parser.Attributes;

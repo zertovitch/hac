@@ -419,11 +419,6 @@ package body HAL is
     return +HAC_Image (F);
   end Image;
 
-  function Image_Attribute (F : Real) return VString is
-  begin
-    return +Real'Image (F);
-  end Image_Attribute;
-
   function Image (T : Ada.Calendar.Time) return VString is
   begin
     return +HAC_Image (T);

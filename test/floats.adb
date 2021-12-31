@@ -73,11 +73,11 @@ procedure Floats is
       tol := tol * ma;  --  Relative tolerance
       eq := z <= tol;
       if not eq then
-        Put ("Bug [Base_Test " &
-               Image_Attribute (x) & ", " &
-               Image_Attribute (y) & ", " &
-               Image_Attribute (x - y) & ", " &
-               Image_Attribute (tol) & "]  ");
+        Put (+"Bug [Base_Test " &
+               Real'Image (x) & ", " &
+               Real'Image (y) & ", " &
+               Real'Image (x - y) & ", " &
+               Real'Image (tol) & "]  ");
         Set_Exit_Status (1);  --  Compiler test failed.
       end if;
       return eq;
@@ -160,7 +160,7 @@ procedure Floats is
     if not do_it then
       return;  --  We stay silent
     end if;
-    for it in 1 .. 50 loop
+    for it in 51 .. 100 loop
       n := +"";
       case Rand (2) is
         when 0 => n := n & '+';
@@ -179,7 +179,7 @@ procedure Floats is
         end case;
         n := n & Rand(20);
       end if;
-      nn := Image_Attribute (Float_Value (n));
+      nn := +Real'Image (Float_Value (n));
       Put_Line ( "    if not Almost_equal (" & n & (+", ") & nn &
                  ") then Put_Line (""[" & it & "]""); end if;");
     end loop;

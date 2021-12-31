@@ -147,7 +147,7 @@ package HAC_Sys.Co_Defs is
   --  Label                         ?
   --  Alias                         Index into the Identifier table of the aliased entity.
 
-  subtype Source_Line_String is String (1 .. 1000);
+  subtype Source_Line_String is String (1 .. 1000);  --  Must be at least 200 (RM 2.2 (15))
 
   -----------------------
   --  Compiler tables  --

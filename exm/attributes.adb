@@ -8,18 +8,9 @@ procedure Attributes is
   type Enum is (aa, bb, cc, dd);
   subtype Sub_Enum is Enum range bb .. cc;
 
-  use HAL;
+  d : constant Duration := 123.456;
 
-  --  VImage will be added soon as attribute...
-  function VImage (e : Enum) return VString is
-  begin
-    case e is
-      when aa => return +"AA";
-      when bb => return +"BB";
-      when cc => return +"CC";
-      when dd => return +"DD";
-    end case;
-  end VImage;
+  use HAL;
 
 begin
   Put_Line ("Attributes. Standard subtypes are indicated with '*'");
@@ -27,15 +18,15 @@ begin
   New_Line;
   Put_Line ("S'First and S'Last attributes");
   New_Line;
-  Put_Line (+"  * Integer's bounds    : " & Integer'First           & " .. " & Integer'Last);
-  Put_Line (+"  * Natural's bounds    : " & Natural'First           & " .. " & Natural'Last);
-  Put_Line (+"  * Positive's bounds   : " & Positive'First          & " .. " & Positive'Last);
-  Put_Line (+"    Some_Range's bounds : " & Some_Range'First        & " .. " & Some_Range'Last);
-  Put_Line (+"  * Boolean's bounds    : " & Boolean'First           & " .. " & Boolean'Last);
-  Put_Line (+"    A_to_Z's bounds     : " & A_to_Z'First            & " .. " & A_to_Z'Last);
-  Put_Line (+"  # Real's bounds       : " & Real'First              & " .. " & Real'Last);
-  Put_Line (+"    Enum's bounds       : " & VImage (Enum'First)     & " .. " & VImage (Enum'Last));
-  Put_Line (+"    Sub_Enum's bounds   : " & VImage (Sub_Enum'First) & " .. " & VImage (Sub_Enum'Last));
+  Put_Line (+"  * Integer's bounds    : " & Integer'First               & " .. " & Integer'Last);
+  Put_Line (+"  * Natural's bounds    : " & Natural'First               & " .. " & Natural'Last);
+  Put_Line (+"  * Positive's bounds   : " & Positive'First              & " .. " & Positive'Last);
+  Put_Line (+"    Some_Range's bounds : " & Some_Range'First            & " .. " & Some_Range'Last);
+  Put_Line (+"  * Boolean's bounds    : " & Boolean'First               & " .. " & Boolean'Last);
+  Put_Line (+"    A_to_Z's bounds     : " & A_to_Z'First                & " .. " & A_to_Z'Last);
+  Put_Line (+"  # Real's bounds       : " & Real'First                  & " .. " & Real'Last);
+  Put_Line (+"    Enum's bounds       : " & Enum'Image (Enum'First)     & " .. " & Enum'Image (Enum'Last));
+  Put_Line (+"    Sub_Enum's bounds   : " & Enum'Image (Sub_Enum'First) & " .. " & Enum'Image (Sub_Enum'Last));
   New_Line;
   Put_Line ("S'Pred and S'Succ attributes");
   New_Line;
@@ -43,14 +34,23 @@ begin
   Put_Line (+"  * Integer'Pred (100)                : " & Integer'Pred (100));
   Put_Line (+"    Some_Range'Succ (Some_Range'First): " & Some_Range'Succ (Some_Range'First));
   New_Line;
-  Put_Line ("S'Pos and S'Val attribute");
+  Put_Line ("S'Pos and S'Val attributes");
   New_Line;
   Put_Line (+"  * Boolean'Pos (True) : " & Boolean'Pos (True));
   Put_Line (+"  * Boolean'Val (0)    : " & Boolean'Val (0));
   Put_Line (+"  * Character'Pos (' '): " & Character'Pos (' '));
   Put_Line (+"  * Character'Val (65) : " & Character'Val (65));
-  Put_Line (+"    Enum'Pos (AA)      : " & Enum'Pos (AA));
-  Put_Line (+"    Enum'Val (3)       : " & VImage (Enum'Val (3)));
+  Put_Line (+"    Enum'Pos (aa)      : " & Enum'Pos (aa));
+  Put_Line (+"    Enum'Val (3)       : " & Enum'Image (Enum'Val (3)));
+  New_Line;
+  Put_Line ("S'Image attribute");
+  New_Line;
+  Put_Line (+"  * Integer'Image (123)      : [" & Integer'Image (123) & ']');
+  Put_Line (+"  * Real'Image (Pi)          : [" & Real'Image (Pi) & ']');
+  Put_Line (+"  * Boolean'Image (True)     : [" & Boolean'Image (True) & ']');
+  Put_Line (+"  * Character'Image ('x')    : [" & Character'Image ('x') & ']');
+  Put_Line (+"  * Duration'Image (123.456) : [" & Duration'Image (d) & ']');
+  Put_Line (+"  * Enum'Image (bb)          : [" & Enum'Image (bb) & ']');
 
   ----------------------------------------------------------------------------------
   --  If you uncomment any of the following lines you'll get a Constraint_Error:  --

@@ -343,7 +343,6 @@ package body HAC_Sys.Librarian is
     --  Attribute-like functions
     --
     Enter_HAL_Funct ("Image",               VStrings, SF_Image_Ints);
-    Enter_HAL_Funct ("Image_Attribute",     VStrings, SF_Image_Attribute_Floats);
     Enter_HAL_Funct ("Integer_Value",       Ints,     SF_Integer_Value);
     Enter_HAL_Funct ("Float_Value",         Floats,   SF_Float_Value);
     --

@@ -114,12 +114,4 @@ begin
   --
   Test_CASE;
   --
-  --  put (zz (d).x4);  --  = j (pos = 3)  --  !! should be available through 'Image & 'Pos
-  --  put (zz (e).x4);  --  = i (pos = 2)  --  !! should be available through 'Image & 'Pos
-  --  put (zz (f).x4);  --  = h (pos = 1)  --  !! should be available through 'Image & 'Pos
-  --  new_line;
-  --
-  --  for var in e .. f loop
-  --    put(var);
-  --  end loop;
 end Enumerations;

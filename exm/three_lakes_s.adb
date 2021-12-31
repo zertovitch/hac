@@ -188,11 +188,7 @@ procedure Three_Lakes_S is
     Put (rf, "t");
     for l in Lake loop
       Put (rf, sep);
-      case l is  --  ! Full Ada: Put (rf, Lake'Image (l));
-        when Morat     => Put (rf, "Morat");
-        when Neuchatel => Put (rf, "Neuchatel");
-        when Bienne    => Put (rf, "Bienne");
-      end case;
+      Put (rf, Lake'Image (l));
     end loop;
     New_Line (rf);
     for i in 0 .. n_iter loop

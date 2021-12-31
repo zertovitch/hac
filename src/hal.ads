@@ -178,9 +178,9 @@ package HAL is
 
   function Image (I : Integer) return VString;
   function Image (F : Real) return VString;            --  "nice" image of F
-  function Image_Attribute (F : Real) return VString;  --  returns +Real'Image(F) "as is"
   function Image (T : Ada.Calendar.Time) return VString;
   function Image (D : Duration) return VString;
+
   function Integer_Value (V : VString) return Integer;
   function Float_Value (V : VString) return Real;
 
