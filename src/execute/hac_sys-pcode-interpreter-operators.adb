@@ -109,6 +109,13 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       Push (ND);
       ND.S (Curr_TCB.T - 1).I := s'Length;                 --  Length of string
       ND.S (Curr_TCB.T).I     := HAC_Integer (cst'First);  --  Index to string table
+      --  !! Task switching should be locked from here until
+      --     completion of the Ada statement, for preventing any tampering
+      --     of the area of Strings_Constants_Table reserved for 'Image or
+      --     anything calling Prepare_as_String_Literal.
+      --     Ideas: critical section (Task_State = Critical) or something
+      --     specific: a new Task_State = Running_Locked and a new
+      --     instruction, Unlock_Switching, emitted in such a case.
     end Prepare_as_String_Literal;
     --
   begin

@@ -202,7 +202,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
                     ND.Nb_Complete := ND.Nb_Complete + 1;
                   else
                     if ND.TCB (ITERM).TS = Ready and
-                       Curr_TCB.TS = Running
+                      Curr_TCB.TS = Running
                     then
                       ND.Nb_Complete := ND.Nb_Complete + 1;
                     end if;

@@ -46,11 +46,11 @@ begin
   Put_Line ("S'Image attribute");
   New_Line;
   Put_Line (+"  * Integer'Image (123)      : [" & Integer'Image (123) & ']');
-  Put_Line (+"  * Real'Image (Pi)          : [" & Real'Image (Pi) & ']');
+  Put_Line (+"  # Real'Image (Pi)          : [" & Real'Image (Pi) & ']');
   Put_Line (+"  * Boolean'Image (True)     : [" & Boolean'Image (True) & ']');
   Put_Line (+"  * Character'Image ('x')    : [" & Character'Image ('x') & ']');
   Put_Line (+"  * Duration'Image (123.456) : [" & Duration'Image (d) & ']');
-  Put_Line (+"  * Enum'Image (bb)          : [" & Enum'Image (bb) & ']');
+  Put_Line (+"    Enum'Image (bb)          : [" & Enum'Image (bb) & ']');
 
   ----------------------------------------------------------------------------------
   --  If you uncomment any of the following lines you'll get a Constraint_Error:  --
