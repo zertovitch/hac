@@ -1,6 +1,5 @@
 with HAC_Sys.Builder,
      HAC_Sys.Compiler.PCode_Emit,
-     HAC_Sys.Librarian,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Modularity,
      HAC_Sys.PCode,
@@ -42,11 +41,8 @@ package body HAC_Sys.Compiler is
     CD.Float_Constants_Count := 0;
     --  Identifiers
     CD.Id_Count := 0;
-    --  Strings
-    CD.Strings_Table_Top :=
-      CD.Strings_Constants_Table'First
-        --  The begin of the strings table is used for the 'Image attribute:
-        + Source_Line_String'Length;  --  Enumerated types' items cannot exceed a source line.
+    --  Strings literals
+    CD.Strings_Table_Top := CD.Strings_Constants_Table'First;
     --  Tasks, Entries
     CD.Tasks_Definitions_Count := 0;
     CD.Entries_Count := 0;
@@ -203,7 +199,7 @@ package body HAC_Sys.Compiler is
 
   procedure Compile_Main (
     CD                 : in out Co_Defs.Compiler_Data;
-    LD                 : in out Li_Defs.Library_Data;
+    LD                 : in out Librarian.Library_Data;
     main_name_hint     :        String;  --  This is used for circular unit dependency detection
     asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
@@ -395,14 +391,14 @@ package body HAC_Sys.Compiler is
 
   procedure Compile_Unit (
     CD                 : in out Co_Defs.Compiler_Data;
-    LD                 : in out Li_Defs.Library_Data;
+    LD                 : in out Librarian.Library_Data;
     upper_name         :        String;
     file_name          :        String;
     as_specification   :        Boolean;
-    kind               :    out Li_Defs.Unit_Kind  --  The unit kind is discovered by parsing.
+    kind               :    out Librarian.Unit_Kind  --  The unit kind is discovered by parsing.
   )
   is
-    use Ada.Text_IO, UErrors, Li_Defs, Parser.Helpers, PCode;
+    use Ada.Text_IO, Librarian, UErrors, Parser.Helpers, PCode;
     --  Save state of unit currently parsed (within a WITH clause).
     mem : constant Current_Unit_Data := CD.CUD;
     src : File_Type;

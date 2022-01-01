@@ -1,12 +1,11 @@
-with HAC_Sys.Compiler,
-     HAC_Sys.Librarian;
+with HAC_Sys.Compiler;
 
 with Ada.Characters.Handling;
 
 package body HAC_Sys.Builder is
 
   procedure Build_Main (BD : in out Build_Data) is
-    use HAL.VStr_Pkg, Li_Defs;
+    use Librarian, HAL.VStr_Pkg;
   begin
     BD.LD.Library.Clear;
     BD.LD.Map.Clear;

@@ -15,8 +15,6 @@ with HAC_Sys.Compiler,
      HAC_Sys.PCode,
      HAC_Sys.UErrors;
 
-with HAL;
-
 with Ada.Characters.Handling,
      Ada.Exceptions;
 
@@ -27,13 +25,13 @@ package body HAC_Sys.Librarian is
   ---------------------------------------------
 
   procedure Register_Unit (
-    LD        : in out Li_Defs.Library_Data;
+    LD        : in out Library_Data;
     Full_Name : in     String;  --  Full unit name, like "Ada.Strings.Fixed"
-    Kind      : in     Li_Defs.Unit_Kind;
-    Status    : in     Li_Defs.Compilation_Status := Li_Defs.Done
+    Kind      : in     Unit_Kind;
+    Status    : in     Compilation_Status := Done
   )
   is
-    use Li_Defs, Li_Defs.Library_Name_Mapping;
+    use Librarian.Library_Name_Mapping;
     VFN  : constant HAL.VString := HAL.To_VString (Full_Name);
     UVFN : constant HAL.VString := HAL.To_Upper (VFN);
     is_new : Boolean;
@@ -54,13 +52,13 @@ package body HAC_Sys.Librarian is
   end Register_Unit;
 
   procedure Change_Unit_Details (
-    LD         : in out Li_Defs.Library_Data;
+    LD         : in out Library_Data;
     Full_Name  : in     String;  --  Full unit name, like "Ada.Strings.Fixed"
-    New_Kind   : in     Li_Defs.Unit_Kind;
-    New_Status : in     Li_Defs.Compilation_Status
+    New_Kind   : in     Unit_Kind;
+    New_Status : in     Compilation_Status
   )
   is
-    use Li_Defs, Li_Defs.Library_Name_Mapping;
+    use Library_Name_Mapping;
     VFN  : constant HAL.VString := HAL.To_VString (Full_Name);
     UVFN : constant HAL.VString := HAL.To_Upper (VFN);
     c : Cursor;
@@ -209,7 +207,7 @@ package body HAC_Sys.Librarian is
 
   procedure Define_and_Register_Standard (
     CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Li_Defs.Library_Data
+    LD         : in out Library_Data
   )
   is
     use Co_Defs, Defs;
@@ -218,7 +216,7 @@ package body HAC_Sys.Librarian is
       Enter_Zero_Level_Def (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
   begin
-    Register_Unit (LD, "Standard", Li_Defs.Package_Unit);
+    Register_Unit (LD, "Standard", Package_Unit);
     --
     Enter_Zero_Level_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
@@ -249,7 +247,7 @@ package body HAC_Sys.Librarian is
 
   procedure Define_and_Register_HAL (
     CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Li_Defs.Library_Data
+    LD         : in out Library_Data
   )
   is
     use Co_Defs, Defs, PCode;
@@ -279,7 +277,7 @@ package body HAC_Sys.Librarian is
     end Enter_HAL_Proc;
 
   begin
-    Register_Unit (LD, Defs.HAL_Name, Li_Defs.Package_Unit);
+    Register_Unit (LD, Defs.HAL_Name, Package_Unit);
     --
     Enter_Zero_Level_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
     --
@@ -474,13 +472,13 @@ package body HAC_Sys.Librarian is
 
   procedure Apply_Custom_WITH (
     CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Li_Defs.Library_Data;
+    LD         : in out Library_Data;
     Upper_Name : in     String
   )
   is
     fn : constant String := Find_Unit_File_Name (Upper_Name);
-    use Defs, Li_Defs, UErrors;
-    kind : Li_Defs.Unit_Kind := Package_Unit;
+    use Defs, UErrors;
+    kind : Unit_Kind := Package_Unit;
     --  ^ Temporary value, file may contain another kind of unit.
   begin
     --
@@ -509,11 +507,11 @@ package body HAC_Sys.Librarian is
 
   procedure Apply_WITH (
     CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Li_Defs.Library_Data;
+    LD         : in out Library_Data;
     Upper_Name : in     String
   )
   is
-    use Ada.Exceptions, Defs, HAL, Li_Defs, UErrors;
+    use Ada.Exceptions, Defs, HAL, UErrors;
     UVN : constant VString := To_VString (Upper_Name);
   begin
     if LD.Map.Contains (UVN) then
@@ -548,13 +546,13 @@ package body HAC_Sys.Librarian is
 
   procedure Apply_WITH_USE_Standard (
     CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Li_Defs.Library_Data
+    LD         : in out Library_Data
   )
   is
   begin
     Apply_WITH (CD, LD, "STANDARD");
     Apply_USE_Clause (
-      CD, Li_Defs.Library_Level,
+      CD, Library_Level,
       Parser.Helpers.Locate_Identifier (CD, Defs.To_Alfa ("STANDARD"), 0)
     );
   end Apply_WITH_USE_Standard;

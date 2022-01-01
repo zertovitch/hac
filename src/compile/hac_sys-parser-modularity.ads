@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Li_Defs;
+with HAC_Sys.Librarian;
 
 package HAC_Sys.Parser.Modularity is
 
@@ -22,7 +22,7 @@ package HAC_Sys.Parser.Modularity is
   --
   procedure Context_Clause (
     CD : in out Co_Defs.Compiler_Data;
-    LD : in out Li_Defs.Library_Data
+    LD : in out Librarian.Library_Data
   );
 
   --  Use clause. It is either part of a context clause, or a local declaration.

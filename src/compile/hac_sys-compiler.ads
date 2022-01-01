@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.Li_Defs;
+with HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.Librarian;
 
 package HAC_Sys.Compiler is
 
@@ -23,7 +23,7 @@ package HAC_Sys.Compiler is
   --
   procedure Compile_Main (
     CD                 : in out Co_Defs.Compiler_Data;
-    LD                 : in out Li_Defs.Library_Data;
+    LD                 : in out Librarian.Library_Data;
     main_name_hint     :        String;  --  This is used for circular unit dependency detection
     asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
@@ -38,11 +38,11 @@ package HAC_Sys.Compiler is
   --
   procedure Compile_Unit (
     CD                 : in out Co_Defs.Compiler_Data;
-    LD                 : in out Li_Defs.Library_Data;
+    LD                 : in out Librarian.Library_Data;
     upper_name         :        String;
     file_name          :        String;
     as_specification   :        Boolean;
-    kind               :    out Li_Defs.Unit_Kind  --  The unit kind is discovered during parsing.
+    kind               :    out Librarian.Unit_Kind  --  The unit kind is discovered during parsing.
   );
 
   procedure Set_Message_Feedbacks (
