@@ -1,24 +1,29 @@
-with HAL; use HAL;
+with HAL;
 
 procedure Strings is
+  use HAL;
+  
   procedure Failure (Msg: VString) is
   begin
     Put_Line (+"Failure in test: " & Msg);
     Set_Exit_Status (1);  --  Compiler test failed.
   end;
-  --
-  procedure Assert(Check : in Boolean) is  --  Similar to RM 11.4.2
+ 
+  procedure Assert (Check : in Boolean) is
+  --  Similar to RM 11.4.2 but without raising an exception.
   begin
     if not Check then Failure (+"Assert fails"); end if;
   end;
+
   s1, s2, s3, s4, s4_s4 : VString;
   Planck   : constant := 6.62607015e-34;
-  Pi       : constant := 3.141592653;
+  Pi_9_dgt : constant := 3.141592653;
   Avogadro : constant := 6.02214076e023;
   r : Real;
   fs_1 : String (4 .. 6);
+
 begin
-  s4 := +"abc" & 'd' & "ef";
+  s4 := To_VString ("abc") & 'd' & "ef";
   if s4 /= +"abcdef" then
     Failure (+"Compiler bug [Comp. VString to VString, or conv. Literal String to VString]");
   end if;
@@ -39,8 +44,8 @@ begin
   if s1 & 7 /= +"ab7"   then Failure (+"Compiler bug [VStr & Int = +Str_Lit]"); end if;
   if s1 & 7 /=  "ab7"   then Failure (+"Compiler bug [VStr & Int =  Str_Lit]"); end if;
   --
-  if 3.14 & s2 /= "3.14cdef"      then Failure (+"Compiler bug [R & VString]"); end if;
-  if s2 & Pi /= "cdef3.141592653" then Failure (+"Compiler bug [VString & R]"); end if;
+  if 3.14 & s2 /= "3.14cdef"            then Failure (+"Compiler bug [R & VString]"); end if;
+  if s2 & Pi_9_dgt /= "cdef3.141592653" then Failure (+"Compiler bug [VString & R]"); end if;
   if s2 & Avogadro /= +"cdef6.02214076E+23" then
     Failure (+"Compiler bug - HAC_Image for HAC_Float :" & Avogadro);
     Put_Line (Avogadro);
