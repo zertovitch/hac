@@ -9,7 +9,9 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Scanner,
+with HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.PCode,
+     HAC_Sys.Scanner,
      HAC_Sys.UErrors;
 
 with HAL;
@@ -183,19 +185,20 @@ package body HAC_Sys.Parser.Helpers is
   function Nice_Image (T : Typen) return String is
   begin
     case T is
-      when NOTYP           => return "(undefined type)";
-      when Ints            => return "integer type";
-      when Chars           => return "Character type";        -- "the" Character type
-      when Bools           => return "Boolean type";          -- "the" Boolean type
-      when Floats          => return "floating-point type";
-      when Arrays          => return "array type";
-      when Records         => return "record type";
-      when Enums           => return "enumeration type";
-      when String_Literals => return "String type";
-      when VStrings        => return "VString type";
-      when Times           => return "Time type";                   --  "the" Time type
-      when Durations       => return "Duration type";               --  "the" Duration type
-      when Text_Files      => return "text file type";
+      when NOTYP               => return "(undefined type)";
+      when Ints                => return "integer type";
+      when Chars               => return "Character type";        -- "the" Character type
+      when Bools               => return "Boolean type";          -- "the" Boolean type
+      when Floats              => return "floating-point type";
+      when Arrays              => return "array type";
+      when Records             => return "record type";
+      when Enums               => return "enumeration type";
+      when String_Literals |
+           Strings_as_VStrings => return "String type";
+      when VStrings            => return "VString type";
+      when Times               => return "Time type";             --  "the" Time type
+      when Durations           => return "Duration type";         --  "the" Duration type
+      when Text_Files          => return "text file type";
     end case;
   end Nice_Image;
 
@@ -348,6 +351,33 @@ package body HAC_Sys.Parser.Helpers is
   begin
     return T.TYP = Arrays and then CD.Arrays_Table (T.Ref).Element_xTyp.TYP = Chars;
   end Is_Char_Array;
+
+  procedure Check_any_String_and_promote_to_VString
+    (CD : in out Compiler_Data; X : in out Exact_Typ; include_characters : Boolean)
+  is
+    use Compiler.PCode_Emit, PCode;
+  begin
+    if X.TYP = String_Literals then
+      Emit_Std_Funct (CD, SF_Literal_to_VString);
+    elsif Is_Char_Array (CD, X) then
+      Emit_Std_Funct (CD,
+        SF_String_to_VString,
+        Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
+      );
+    elsif X.TYP = VStrings or X.TYP = Strings_as_VStrings then
+      null;  --  Already a VString.
+    elsif X.TYP = Chars and include_characters then
+      Emit_Std_Funct (CD, SF_Char_to_VString);
+    else
+      Type_Mismatch (
+        CD,
+        err_parameter_types_do_not_match,
+        Found    => X,
+        Expected => VStrings_Set or Str_Lit_Set
+      );
+    end if;
+    X.TYP := VStrings;
+  end Check_any_String_and_promote_to_VString;
 
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-

@@ -9,7 +9,7 @@
 
 --  Legal licensing note:
 
---  Copyright (c) 2013 .. 2021 Gautier de Montmollin
+--  Copyright (c) 2013 .. 2022 Gautier de Montmollin
 --
 --      History and authors list of works HAC was originally
 --      derived from can be found in hac.txt.
@@ -45,7 +45,7 @@ package HAC_Sys is
   --------------------------------------------------------------
 
   version   : constant String := "0.098";
-  reference : constant String := "31-Dec-2021";
+  reference : constant String := "1-Jan-2022";
   --  Hopefully the latest version is at one of those URLs:
   web       : constant String := "https://hacadacompiler.sourceforge.io/";
   web2      : constant String := "https://github.com/zertovitch/hac";

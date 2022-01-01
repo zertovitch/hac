@@ -180,7 +180,7 @@ package body HAC_Sys.Parser.Attributes is
         Helpers.Type_Mismatch (CD, err_parameter_types_do_not_match, type_of_argument, s_base);
       end if;
       Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
-      Type_of_Result := (String_Literals, 0, 0, 0);
+      Type_of_Result := (Strings_as_VStrings, 0, 0, 0);
     end Image;
     --
   begin

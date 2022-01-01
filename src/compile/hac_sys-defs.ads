@@ -269,10 +269,12 @@ package HAC_Sys.Defs is
     Arrays,
     Records,
     Enums,
-    --------------------------------------------------
-    --  Special types appearing during the parsing  --
-    --------------------------------------------------
-    String_Literals
+    -------------------------------------------------------
+    --  Special types appearing only during the parsing  --
+    --  and invisible to the programmer.                 --
+    -------------------------------------------------------
+    String_Literals,     --  Strings in the "abcd" form.
+    Strings_as_VStrings  --  VString value, but semantically a String.
   );
   for Typen'Size use 8;
 
@@ -404,7 +406,6 @@ package HAC_Sys.Defs is
     err_operator_not_defined_for_types,          --  2020-04-06
     err_no_null_functions,                       --  2020-04-10
     err_digit_expected,
-    err_expected_char_or_string,
     err_cannot_modify_constant_or_in_parameter,
     err_case_others_alone_last,
     err_END_LOOP_ident_missing,

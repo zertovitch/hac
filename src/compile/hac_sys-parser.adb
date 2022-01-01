@@ -193,42 +193,52 @@ package body HAC_Sys.Parser is
               raise Internal_error with "Assignment: X := Y on unsupported Typ ?";
           end case;
         end if;
-      elsif X.TYP = Floats and Y.TYP = Ints then
-        Forbid_Type_Coercion (CD, Found => Y, Expected => Exact_Typ (X));
-        Emit_1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda. Emit's
-        Emit (CD, k_Store);                 --  not needed: compilation error.
-      elsif X.TYP = Durations and Y.TYP = Floats then
-        --  Duration hack (see Delay_Statement for full explanation).
-        Emit_Std_Funct (CD, SF_Float_to_Duration);
-        Emit (CD, k_Store);
-      elsif Is_Char_Array (CD, Exact_Typ (X)) and Y.TYP = String_Literals then
-        X_Len := CD.Arrays_Table (X.Ref).Array_Size;
-        if X_Len = CD.SLeng then
-          Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (X_Len));
-        else
-          Error (CD, err_string_lengths_do_not_match,
-            "variable has length" & X_Len'Image &
-            ", literal has length" & CD.SLeng'Image,
-            minor
-          );
-        end if;
-      elsif X.TYP = VStrings and then (Y.TYP = String_Literals or else Is_Char_Array (CD, Y)) then
-        Error (CD, err_string_to_vstring_assignment);
-      elsif X.TYP = NOTYP then
-        if CD.error_count = 0 then
-          raise Internal_error with "Assignment: assigned variable (X) is typeless";
-        else
-          null;  --  All right, there were already enough compilation error messages...
-        end if;
-      elsif Y.TYP = NOTYP then
-        if CD.error_count = 0 then
-          raise Internal_error with "Assignment: assigned value (Y) is typeless";
-        else
-          null;  --  All right, there were already enough compilation error messages...
-        end if;
       else
-        Issue_Type_Mismatch_Error;
-        --  NB: We are in the X.TYP /= Y.TYP case.
+        --
+        --  Here, X.TYP and Y.TYP are different.
+        --
+        if X.TYP = Floats and Y.TYP = Ints then
+          Forbid_Type_Coercion (CD, Found => Y, Expected => Exact_Typ (X));
+          Emit_1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda. Emit's
+          Emit (CD, k_Store);                 --  not needed: compilation error.
+        elsif X.TYP = Durations and Y.TYP = Floats then
+          --  Duration hack (see Delay_Statement for full explanation).
+          Emit_Std_Funct (CD, SF_Float_to_Duration);
+          Emit (CD, k_Store);
+        elsif Is_Char_Array (CD, Exact_Typ (X)) and Y.TYP = String_Literals then
+          X_Len := CD.Arrays_Table (X.Ref).Array_Size;
+          if X_Len = CD.SLeng then
+            Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (X_Len));
+          else
+            Error (CD, err_string_lengths_do_not_match,
+              "variable has length" & X_Len'Image &
+              ", literal has length" & CD.SLeng'Image,
+              minor
+            );
+          end if;
+        elsif X.TYP = VStrings
+          and then
+            (Y.TYP = String_Literals
+               or else Y.TYP = Strings_as_VStrings
+               or else Is_Char_Array (CD, Y))
+        then
+          Error (CD, err_string_to_vstring_assignment);
+        elsif X.TYP = NOTYP then
+          if CD.error_count = 0 then
+            raise Internal_error with "Assignment: assigned variable (X) is typeless";
+          else
+            null;  --  All right, there were already enough compilation error messages...
+          end if;
+        elsif Y.TYP = NOTYP then
+          if CD.error_count = 0 then
+            raise Internal_error with "Assignment: assigned value (Y) is typeless";
+          else
+            null;  --  All right, there were already enough compilation error messages...
+          end if;
+        else
+          Issue_Type_Mismatch_Error;
+          --  NB: We are in the X.TYP /= Y.TYP case.
+        end if;
       end if;
     end Assignment;
 

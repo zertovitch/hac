@@ -102,22 +102,6 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     use type Defs.HAC_Float, Defs.HAC_Integer, HAL.Time, HAL.VString;
     Going : Direction;
     --
-    procedure Prepare_as_String_Literal (s : String) is
-      cst : String renames CD.Strings_Constants_Table.all;
-    begin
-      cst (cst'First .. cst'First - 1 + s'Length) := s;
-      Push (ND);
-      ND.S (Curr_TCB.T - 1).I := s'Length;                 --  Length of string
-      ND.S (Curr_TCB.T).I     := HAC_Integer (cst'First);  --  Index to string table
-      --  !! Task switching should be locked from here until
-      --     completion of the Ada statement, for preventing any tampering
-      --     of the area of Strings_Constants_Table reserved for 'Image or
-      --     anything calling Prepare_as_String_Literal.
-      --     Ideas: critical section (Task_State = Critical) or something
-      --     specific: a new Task_State = Running_Locked and a new
-      --     instruction, Unlock_Switching, emitted in such a case.
-    end Prepare_as_String_Literal;
-    --
   begin
     case Code is
       when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
@@ -386,13 +370,13 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E), True);
         end;
       --
-      when SF_Image_Attribute_Ints   => Prepare_as_String_Literal (HAC_Integer'Image (Top_Item.I));
-      when SF_Image_Attribute_Floats => Prepare_as_String_Literal (HAC_Float'Image (Top_Item.R));
-      when SF_Image_Attribute_Bools  => Prepare_as_String_Literal (Boolean'Image (Boolean'Val (Top_Item.I)));
-      when SF_Image_Attribute_Chars  => Prepare_as_String_Literal (Character'Image (Character'Val (Top_Item.I)));
-      when SF_Image_Attribute_Durs   => Prepare_as_String_Literal (Duration'Image (Top_Item.Dur));
+      when SF_Image_Attribute_Ints   => Top_Item := GR_VString (HAC_Integer'Image (Top_Item.I));
+      when SF_Image_Attribute_Floats => Top_Item := GR_VString (HAC_Float'Image (Top_Item.R));
+      when SF_Image_Attribute_Bools  => Top_Item := GR_VString (Boolean'Image (Boolean'Val (Top_Item.I)));
+      when SF_Image_Attribute_Chars  => Top_Item := GR_VString (Character'Image (Character'Val (Top_Item.I)));
+      when SF_Image_Attribute_Durs   => Top_Item := GR_VString (Duration'Image (Top_Item.Dur));
       when SF_Image_Attribute_Enums  =>
-        Prepare_as_String_Literal (To_String (CD.IdTab (Natural (ND.IR.X) + Natural (Top_Item.I)).Name));
+        Top_Item := GR_VString (To_String (CD.IdTab (Natural (ND.IR.X) + Natural (Top_Item.I)).Name));
       --
       when SF_Get_Env =>
         declare

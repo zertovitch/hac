@@ -52,6 +52,16 @@ begin
   Put_Line (+"  * Duration'Image (123.456) : [" & Duration'Image (d) & ']');
   Put_Line (+"    Enum'Image (bb)          : [" & Enum'Image (bb) & ']');
 
+  New_Line;
+  --  Test Strings_as_VStrings on some operators and HAL overloaded subprograms.
+  for x in Enum loop
+    Set_Env (Enum'Image (x), +"Set_to_" & Enum'Image (x));
+  end loop;
+  --
+  for x in Enum loop
+    Put_Line (Get_Env (Enum'Image (x)));
+  end loop;
+
   ----------------------------------------------------------------------------------
   --  If you uncomment any of the following lines you'll get a Constraint_Error:  --
   ----------------------------------------------------------------------------------

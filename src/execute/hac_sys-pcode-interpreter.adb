@@ -197,15 +197,16 @@ package body HAC_Sys.PCode.Interpreter is
     begin
       if Code in SP_Put .. SP_Put_Line then
         case Typen'Val (ND.IR.Y) is
-          when Ints            => Console.Put (Item.I, Field (Format_1), Number_Base (Format_2));
-          when Floats          => Console.Put (Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
-          when Bools           => Console.Put (Boolean'Val (Item.I), Field (Format_1));
-          when Chars           => Console.Put (Character'Val (Item.I));
-          when VStrings        => Console.Put (HAL.VStr_Pkg.To_String (Item.V));
-          when String_Literals => Console.Put (
+          when Ints                => Console.Put (Item.I, Field (Format_1), Number_Base (Format_2));
+          when Floats              => Console.Put (Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
+          when Bools               => Console.Put (Boolean'Val (Item.I), Field (Format_1));
+          when Chars               => Console.Put (Character'Val (Item.I));
+          when VStrings |
+               Strings_as_VStrings => Console.Put (HAL.VStr_Pkg.To_String (Item.V));
+          when String_Literals     => Console.Put (
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
-          when Arrays          => Console.Put (Get_String_from_Stack (ND, Integer (Item.I), Format_1));
+          when Arrays              => Console.Put (Get_String_from_Stack (ND, Integer (Item.I), Format_1));
           when others =>
             null;
         end case;
@@ -216,15 +217,16 @@ package body HAC_Sys.PCode.Interpreter is
       else
         FP := ND.S (Curr_TCB.T - 4).Txt;
         case Typen'Val (ND.IR.Y) is
-          when Ints            => IIO.Put         (FP.all, Item.I, Field (Format_1), Number_Base (Format_2));
-          when Floats          => RIO.Put         (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
-          when Bools           => BIO.Put         (FP.all, Boolean'Val (Item.I), Field (Format_1));
-          when Chars           => Ada.Text_IO.Put (FP.all, Character'Val (Item.I));
-          when VStrings        => Ada.Text_IO.Put (FP.all, HAL.VStr_Pkg.To_String (Item.V));
-          when String_Literals => Ada.Text_IO.Put (FP.all,
+          when Ints                => IIO.Put         (FP.all, Item.I, Field (Format_1), Number_Base (Format_2));
+          when Floats              => RIO.Put         (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
+          when Bools               => BIO.Put         (FP.all, Boolean'Val (Item.I), Field (Format_1));
+          when Chars               => Ada.Text_IO.Put (FP.all, Character'Val (Item.I));
+          when VStrings            => Ada.Text_IO.Put (FP.all, HAL.VStr_Pkg.To_String (Item.V));
+          when String_Literals |
+               Strings_as_VStrings => Ada.Text_IO.Put (FP.all,
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
-          when Arrays          => Ada.Text_IO.Put (FP.all,
+          when Arrays              => Ada.Text_IO.Put (FP.all,
               Get_String_from_Stack (ND, Integer (Item.I), Format_1));
           when others =>
             null;

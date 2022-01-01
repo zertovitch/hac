@@ -1,8 +1,7 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
-     HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Scanner;
 
 package body HAC_Sys.Parser.Standard_Functions is
 
@@ -39,10 +38,15 @@ package body HAC_Sys.Parser.Standard_Functions is
     Expected : array (1 .. Max_Args) of Typ_Set;    --  Expected type of the function's arguments
     Actual   : array (1 .. Max_Args) of Exact_Typ;  --  Actual type from argument expression
     Code_Adjusted : SF_Code := Code;
-    Extra : Operand_1_Type := 0;
+    do_SF_emit : Boolean := True;
     X : Exact_Typ;
     --
     procedure Prepare_Accepted_Parameter_Types is
+      VString_or_Chars_Set     : constant Typ_Set := VStrings_Set or Chars_Set;
+      Any_String_Set           : constant Typ_Set :=
+        VStrings_Set or Arrays_Set or Str_Lit_Set or Str_as_VStr_Set;
+      Any_String_or_Chars_Set  : constant Typ_Set := Any_String_Set or Chars_Set;
+      Chars_or_Strings_Set     : constant Typ_Set := Chars_Set or Arrays_Set or Str_Lit_Set;
     begin
       case Code is
         when SF_Abs_Int =>
@@ -75,19 +79,19 @@ package body HAC_Sys.Parser.Standard_Functions is
         when SF_Slice =>
           Expected (1 .. 3) := (VStrings_Set, Ints_Set, Ints_Set);
         when SF_To_Lower_Char | SF_To_Upper_Char =>
-          Expected (1) := VStrings_or_Chars_Set;
+          Expected (1) := VString_or_Chars_Set;
         when SF_Literal_to_VString =>
           Expected (1) := Chars_or_Strings_Set;
         when SF_Index | SF_Index_Backward =>
-          --  Index (OS, +"Windows"), Index (OS, "Windows") or Index (OS, 'W')
-          Expected (1 .. 3) := (VStrings_Set, VStrings_Chars_or_Str_Lit_Set, Ints_Set);
+          --  Index (OS, +"Windows"[, 3]), Index (OS, "Windows"[, 3]) or Index (OS, 'W'[, 3])
+          Expected (1 .. 3) := (VStrings_Set, Any_String_or_Chars_Set, Ints_Set);
         when SF_Starts_With | SF_Ends_With | SF_Tail_After_Match =>
-          Expected (1 .. 2) := (VStrings_Set, VStrings_Chars_or_Str_Lit_Set);
+          Expected (1 .. 2) := (VStrings_Set, Any_String_or_Chars_Set);
         when SF_Year .. SF_Seconds =>
           Expected (1) := Times_Set;
         when SF_Directory_Exists | SF_Exists | SF_File_Exists | SF_Get_Env =>
           --  Get_Env (+"PATH")  _or_  Get_Env ("PATH")
-          Expected (1) := VStrings_or_Str_Lit_Set;
+          Expected (1) := Any_String_Set;
         when SF_Niladic =>
           null;  --  Zero argument -> no argument type to check.
         when SF_File_Information =>
@@ -198,46 +202,22 @@ package body HAC_Sys.Parser.Standard_Functions is
               Emit_1 (CD, k_Push_Discrete_Literal, 0);  --  We push a non-positive value for `From`.
             end if;
             Emit (CD, k_Pop_to_Temp);
-            --  `From` is now removed from the stack. `Pattern` is at the top.
+            --  `From` is now temporarily removed from the stack. `Pattern` is at the top.
           end if;
-          case Actual (2).TYP is  --  Second parameter can be a Character, a String, or a VString.
-            when Chars =>
-              --  `Index (OS, 'W')`  becomes  `Index (OS, +'W')`
-              Emit_Std_Funct (CD, SF_Char_to_VString);
-            when String_Literals =>
-              --  `Index (OS, "Windows")`  becomes  `Index (OS, +"Windows")`
-              --  NB: a String_Literal takes 2 positions on the stack, a VString only one.
-              Emit_Std_Funct (CD, SF_Literal_to_VString);
-            when others =>
-              null;
-          end case;
+          --  Second parameter can be a Character, a String, or a VString.
+          Check_any_String_and_promote_to_VString (CD, Actual (2), True);
           if Code in SF_Index_Any_Direction then
             Emit (CD, k_Push_Temp);
             --  `From` is now back at the stack top.
           end if;
         when SF_Directory_Exists | SF_Exists | SF_File_Exists | SF_Get_Env =>
           --  Get_Env ("PATH")  becomes  Get_Env (+"PATH")
-          if Actual (1).TYP = String_Literals then
-            Emit_Std_Funct (CD, SF_Literal_to_VString);
-          end if;
+          Check_any_String_and_promote_to_VString (CD, Actual (1), False);
         when SF_Literal_to_VString =>
-          --  Call to the `To_VString` function, identical to the unary "+".
+          --  Explicit call to the `To_VString` function, identical to the unary "+".
           --  See Simple_Expression in Parser.Expressions
-          case Actual (1).TYP is
-            when String_Literals =>
-              null;  --  This is the default behaviour.
-            when Chars =>
-              Code_Adjusted := SF_Char_to_VString;
-            when Arrays =>
-              if Is_Char_Array (CD, Actual (1)) then
-                Extra := Operand_1_Type (CD.Arrays_Table (Actual (1).Ref).Array_Size);
-                Code_Adjusted := SF_String_to_VString;
-              else
-                UErrors.Error (CD, err_expected_char_or_string);
-              end if;
-            when others =>
-              null;  --  Case is filtered out at the Prepare_Accepted_Parameter_Types step.
-          end case;
+          Check_any_String_and_promote_to_VString (CD, Actual (1), True);
+          do_SF_emit := False;  --  Conversion code is already emitted.
         when SF_Niladic =>
           null;  --  No arguments, nothing to adjust
         when others =>
@@ -258,7 +238,9 @@ package body HAC_Sys.Parser.Standard_Functions is
         Parse_Arguments;
       end if;
       Adjustments_to_Parameter_Types;
-      Emit_Std_Funct (CD, Code_Adjusted, Extra);
+      if do_SF_emit then
+        Emit_Std_Funct (CD, Code_Adjusted);
+      end if;
       if Args > 0 then
         Need (CD, RParent, err_closing_parenthesis_missing);
       end if;

@@ -190,6 +190,11 @@ package body HAC_Sys.Parser.Expressions is
             --  a new Standard Function (SF_Code) for (VStr op Lit_Str).
             Emit_Std_Funct (CD, SF_Literal_to_VString);            --  Now we have X < +"World".
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);    --  Emit "<" (X, +Y).
+          elsif (X.TYP = VStrings and Y.TYP = Strings_as_VStrings)
+             or (X.TYP = Strings_as_VStrings and Y.TYP = VStrings)
+          then
+            --  The internal type is actually a VString.
+            Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
           elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
             --  We needs convert the literal before anything else,
             --  since it takes two elements on the stack.
@@ -523,7 +528,7 @@ package body HAC_Sys.Parser.Expressions is
                     Emit_Std_Funct (CD, SF_Literal_to_VString);
                     Emit_Std_Funct (CD, SF_Int_Times_VStr);  --  N * Some_String_Literal
                     X.TYP := VStrings;
-                  when VStrings =>
+                  when VStrings | Strings_as_VStrings =>
                     Emit_Std_Funct (CD, SF_Int_Times_VStr);  --  N * Some_VString
                     X.TYP := VStrings;
                   when others =>
@@ -577,13 +582,15 @@ package body HAC_Sys.Parser.Expressions is
       Adding_OP := CD.Sy;
       InSymbol (CD);
       Term (FSys + Plus_Minus, X);
-      if Adding_OP = Plus and X.TYP = String_Literals then        --  +"Hello"
+      if Adding_OP = Plus and X.TYP = String_Literals then         --  +"Hello"
         Emit_Std_Funct (CD, SF_Literal_to_VString);
         X.TYP := VStrings;
-      elsif Adding_OP = Plus and X.TYP = Chars then               --  +'H'
+      elsif Adding_OP = Plus and X.TYP = Strings_as_VStrings then  --  +Enum'Image (x)
+        X.TYP := VStrings;
+      elsif Adding_OP = Plus and X.TYP = Chars then                --  +'H'
         Emit_Std_Funct (CD, SF_Char_to_VString);
         X.TYP := VStrings;
-      elsif Adding_OP = Plus and then Is_Char_Array (CD, X) then  --  +S
+      elsif Adding_OP = Plus and then Is_Char_Array (CD, X) then   --  +S
         Emit_Std_Funct (CD,
           SF_String_to_VString,
           Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
@@ -678,6 +685,11 @@ package body HAC_Sys.Parser.Expressions is
                 Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
               );
               Emit (CD, k_Swap);   --  +s, then v on the stack
+              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+              X.TYP := VStrings;
+            elsif (X.TYP = VStrings and Y.TYP = Strings_as_VStrings)    --  v & Enum'Image (x)
+               or (X.TYP = Strings_as_VStrings and Y.TYP = VStrings)    --  Enum'Image (x) & v
+            then
               Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
               X.TYP := VStrings;
             elsif X.TYP = VStrings and Y.TYP = Chars then               --  v & 'x'  A.4.5 (18)

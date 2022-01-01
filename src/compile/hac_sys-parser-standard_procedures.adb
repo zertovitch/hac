@@ -26,20 +26,6 @@ package body HAC_Sys.Parser.Standard_Procedures is
     Code    :        PCode.SP_Code
   )
   is
-    procedure Check_any_String_and_promote_to_VString (X : Exact_Typ) is
-    begin
-      if VStrings_or_Str_Lit_Set (X.TYP) then
-        if X.TYP = String_Literals then
-          Emit_Std_Funct (CD, SF_Literal_to_VString);
-        end if;
-      else
-        Type_Mismatch (
-          CD, err_parameter_types_do_not_match,
-          Found    => X,
-          Expected => VStrings_or_Str_Lit_Set
-        );
-      end if;
-    end Check_any_String_and_promote_to_VString;
 
     procedure File_I_O_Call (FIO_Code : SP_Code; Param : Operand_2_Type := 0) is
     begin
@@ -79,7 +65,8 @@ package body HAC_Sys.Parser.Standard_Procedures is
             Code_2 := SP_Get_F;
           end if;
         end if;
-        if Found.TYP = Arrays then  --  We have a fixed-sized String here.
+        if Found.TYP = Arrays then
+          --  Array: it must be a fixed-sized String here.
           if Is_Char_Array (CD, Found) then
             String_Length_Encoding := (2 ** Typen'Size) *
               Operand_2_Type (CD.Arrays_Table (Found.Ref).Array_Size);
@@ -108,7 +95,13 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Need (CD, Comma, err_COMMA_missing);
         Expression (CD, Level, FSys + Colon_Comma_RParent, Item_Typ);
       end if;
-      if Item_Typ.TYP in Standard_Typ or else Item_Typ.TYP = String_Literals then
+      --
+      --  Here we have tha actual thing to "Put": a character, (v)string, a number.
+      --
+      if Item_Typ.TYP in Standard_Typ
+        or else Item_Typ.TYP = String_Literals
+        or else Item_Typ.TYP = Strings_as_VStrings
+      then
         null;  --  Good, Put[_Line] can do it all "as is"!
       elsif Is_Char_Array (CD, Item_Typ) then
         --  Address is already pushed; we need to push the string's length.
@@ -138,7 +131,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         end if;
       end loop;
       if Item_Typ.TYP = String_Literals or else Is_Char_Array (CD, Item_Typ) then
-        --  With String_Literals and String's we have *two* values pushed on the stack.
+        --  With String_Literals and String's, we have *two* values pushed on the stack.
         Format_Params := Format_Params + 1;
       end if;
       for Param in Format_Params + 1 .. 3 loop
@@ -236,7 +229,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
             --  Parse file name.
             Need (CD, Comma, err_COMMA_missing);
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-            Check_any_String_and_promote_to_VString (X);
+            Check_any_String_and_promote_to_VString (CD, X, False);
           end if;
           File_I_O_Call (Code);
           Need (CD, RParent, err_closing_parenthesis_missing);
@@ -299,11 +292,11 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         for arg in 1 .. 2 loop
           Expression (CD, Level, Colon_Comma_RParent, X);  --  We push the arguments in the stack.
-          --  Set_Env ( "HAC_Var",  "Hello");     <-  2 String_Literals
-          --  Set_Env (+"HAC_Var", +"Hello");     <-  2 VStrings
+          --  Set_Env ( "HAC_Var",  "Hello");     <-  2 String's
+          --  Set_Env (+"HAC_Var", +"Hello");     <-  2 VString's
           --  Set_Env (+"HAC_Var",  "Hello");
           --  Set_Env ( "HAC_Var", +"Hello");
-          Check_any_String_and_promote_to_VString (X);
+          Check_any_String_and_promote_to_VString (CD, X, False);
           if arg < 2 then
             Need (CD, Comma, err_COMMA_missing);
           end if;
@@ -314,14 +307,14 @@ package body HAC_Sys.Parser.Standard_Procedures is
       when SP_Delete_File | SP_Set_Directory =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expression (CD, Level, RParent_Set, X);  --  We push the argument in the stack.
-        Check_any_String_and_promote_to_VString (X);
+        Check_any_String_and_promote_to_VString (CD, X, False);
         File_I_O_Call (Code);
         Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Shell_Execute =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expression (CD, Level, Comma_RParent, X);  --  We push the argument in the stack.
-        Check_any_String_and_promote_to_VString (X);
+        Check_any_String_and_promote_to_VString (CD, X, False);
         --  ` Shell_Execute (cmd `  has been parsed at this point.
         if CD.Sy = Comma then
           InSymbol (CD);
