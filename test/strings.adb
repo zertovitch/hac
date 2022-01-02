@@ -5,7 +5,7 @@ procedure Strings is
   
   procedure Failure (Msg: VString) is
   begin
-    Put_Line (+"Failure in test: " & Msg);
+    Put_Line (+"Failure in test: [" & Msg & ']');
     Set_Exit_Status (1);  --  Compiler test failed.
   end;
  
@@ -22,30 +22,35 @@ procedure Strings is
   r : Real;
   fs_1 : String (4 .. 6);
 
+  type Enum is (U, V, W);
+
 begin
   s4 := To_VString ("abc") & 'd' & "ef";
   if s4 /= +"abcdef" then
-    Failure (+"Compiler bug [Comp. VString to VString, or conv. Literal String to VString]");
+    Failure (+"Comparing VString to VString, or converting Literal String to VString");
+  end if;
+  if s4 /= "abcdef" then
+    Failure (+"Comparing VString to Literal String");
   end if;
   --
-  if Element (s4, 3) /= 'c'    then Failure (+"Compiler bug [VString Element]"); end if;
-  if Length (s4) /= 6          then Failure (+"Compiler bug [VString Length]"); end if;
-  if Slice (s4, 3, 5) /= "cde" then Failure (+"Compiler bug [VString Slice]"); end if;
+  if Element (s4, 3) /= 'c'    then Failure (+"VString Element"); end if;
+  if Length (s4) /= 6          then Failure (+"VString Length"); end if;
+  if Slice (s4, 3, 5) /= "cde" then Failure (+"VString Slice"); end if;
   --
   s1 := +"ab";
   s2 := +"cdef";
   s3 := 'b' & s2;
-  if s1 & s2 /= s4      then Failure (+"Compiler bug [VString & VString]"); end if;
-  if s1 & "cdef" /= s4  then Failure (+"Compiler bug [VString & String]"); end if;
-  if "ab" & s2 /= s4    then Failure (+"Compiler bug [String  & VString]"); end if;
-  if 'a' & s3 /= s4     then Failure (+"Compiler bug [Character & VString]"); end if;
-  if 7 & s1 /= +"7ab"   then Failure (+"Compiler bug [Int & VString]"); end if;
+  if s1 & s2 /= s4      then Failure (+"VString & VString"); end if;
+  if s1 & "cdef" /= s4  then Failure (+"VString & String"); end if;
+  if "ab" & s2 /= s4    then Failure (+"String  & VString"); end if;
+  if 'a' & s3 /= s4     then Failure (+"Character & VString"); end if;
+  if 7 & s1 /= +"7ab"   then Failure (+"Int & VString"); end if;
   --
-  if s1 & 7 /= +"ab7"   then Failure (+"Compiler bug [VStr & Int = +Str_Lit]"); end if;
-  if s1 & 7 /=  "ab7"   then Failure (+"Compiler bug [VStr & Int =  Str_Lit]"); end if;
+  if s1 & 7 /= +"ab7"   then Failure (+"VStr & Int = +Str_Lit"); end if;
+  if s1 & 7 /=  "ab7"   then Failure (+"VStr & Int =  Str_Lit"); end if;
   --
-  if 3.14 & s2 /= "3.14cdef"            then Failure (+"Compiler bug [R & VString]"); end if;
-  if s2 & Pi_9_dgt /= "cdef3.141592653" then Failure (+"Compiler bug [VString & R]"); end if;
+  if 3.14 & s2 /= "3.14cdef"            then Failure (+"R & VString"); end if;
+  if s2 & Pi_9_dgt /= "cdef3.141592653" then Failure (+"VString & R"); end if;
   if s2 & Avogadro /= +"cdef6.02214076E+23" then
     Failure (+"Compiler bug - HAC_Image for HAC_Float :" & Avogadro);
     Put_Line (Avogadro);
@@ -117,6 +122,19 @@ begin
   if +fs_1 /= Slice (s4, 4, 6)    then Failure (+"Fixed String to VString"); end if;
   if +"abc" & fs_1 /= +"abcdef"   then Failure (+"VString & String"); end if;
   if fs_1 & (+"ghi") /= +"defghi" then Failure (+"String & VString"); end if;
+  --
+  --  Strings_as_VStrings 
+  --
+  if Enum'Image(V) /= "V" then Failure (+"Strings_as_VStrings 1"); end if;
+  --  Concatenation between various String internal types or with Character:
+  if Enum'Image(U) & fs_1 /= "Udef" then Failure (+"Strings_as_VStrings 2"); end if;
+  if Enum'Image(W) & "aw" /= "Waw"  then Failure (+"Strings_as_VStrings 3"); end if;
+  if fs_1 & Enum'Image(W) /= "defW" then Failure (+"Strings_as_VStrings 4"); end if;
+  if "UB" & Enum'Image(U) /= "UBU"  then Failure (+"Strings_as_VStrings 5"); end if;
+  if 'U' & Enum'Image(V) /= "UV" then Failure (+"Strings_as_VStrings 6"); end if;
+  if Enum'Image(U) & 'V' /= "UV" then Failure (+"Strings_as_VStrings 7"); end if;
+  --
+  --  HAL functions
   --
   if Starts_With (+"package",  "proc") then Failure (+"Starts_With"); end if;
   if Starts_With (+"package", +"proc") then Failure (+"Starts_With"); end if;

@@ -376,6 +376,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_Image_Attribute_Chars  => Top_Item := GR_VString (Character'Image (Character'Val (Top_Item.I)));
       when SF_Image_Attribute_Durs   => Top_Item := GR_VString (Duration'Image (Top_Item.Dur));
       when SF_Image_Attribute_Enums  =>
+        --  .Name contains the upper case representation as required by RM 3.5 (32).
         Top_Item := GR_VString (To_String (CD.IdTab (Natural (ND.IR.X) + Natural (Top_Item.I)).Name));
       --
       when SF_Get_Env =>

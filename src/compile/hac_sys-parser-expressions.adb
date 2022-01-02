@@ -140,6 +140,8 @@ package body HAC_Sys.Parser.Expressions is
     Operator_Undefined (CD, Undef_OP, X, Y);
   end Issue_Undefined_Operator_Error;
 
+  Internally_VString_Set : constant Typ_Set := VStrings_Set or Str_as_VStr_Set;
+
   ------------------------------------------------------------------
   -------------------------------------------------------Expression-
   procedure Expression (
@@ -184,16 +186,13 @@ package body HAC_Sys.Parser.Expressions is
             Emit_1 (CD, k_Integer_to_Float, 0);
           elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
             Issue_Comparison_Type_Mismatch_Error;
-          elsif X.TYP = VStrings and Y.TYP = String_Literals then  --  E.g., X < "World"
+          elsif Internally_VString_Set (X.TYP) and Y.TYP = String_Literals then  --  E.g., X < "World"
             --  Y is on top of the stack, we turn it into a VString.
             --  If this becomes a perfomance issue we could consider
             --  a new Standard Function (SF_Code) for (VStr op Lit_Str).
             Emit_Std_Funct (CD, SF_Literal_to_VString);            --  Now we have X < +"World".
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);    --  Emit "<" (X, +Y).
-          elsif (X.TYP = VStrings and Y.TYP = Strings_as_VStrings)
-             or (X.TYP = Strings_as_VStrings and Y.TYP = VStrings)
-             or (X.TYP = Strings_as_VStrings and Y.TYP = Strings_as_VStrings)
-          then
+          elsif Internally_VString_Set (X.TYP) and Internally_VString_Set (Y.TYP) then
             --  The internal type is actually a VString on both sides.
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
           elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
@@ -574,7 +573,112 @@ package body HAC_Sys.Parser.Expressions is
     end Term;
 
     Adding_OP : KeyWSymbol;
-    Y         : Exact_Typ;
+    y         : Exact_Typ;
+
+    function VString_Concatenation return Boolean is
+    begin
+      --  !!  Check if HAL is "use"-visible  !!
+      --
+      --  RM References are about Unbounded_String (A.4.5).
+      if X.TYP /= VStrings and y.TYP /= VStrings then
+        return False;
+        --  Below this line, at least X or Y is a VString.
+      elsif Internally_VString_Set (X.TYP) and Internally_VString_Set (y.TYP) then
+        --  v1 & v2              A.4.5 (15)
+        --  v & Enum'Image (x)   A.4.5 (16),
+        --  Enum'Image (x) & v   A.4.5 (17)
+        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+      elsif y.TYP = String_Literals then                          --  v & "x"  A.4.5 (16)
+        --  Y is on top of the stack, we turn it into a VString.
+        --  If this becomes a perfomance issue we could consider
+        --  adding a Standard Function (SF_Code) for (VStr op Lit_Str).
+        Emit_Std_Funct (CD, SF_Literal_to_VString);
+        --  Now we concatenate both VStrings.
+        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+      elsif X.TYP = String_Literals then                          --  "x" & v  A.4.5 (17)
+        Emit_Std_Funct (CD, SF_LStr_VString_Concat);
+      elsif Is_Char_Array (CD, y) then                            --  v & s    A.4.5 (16)
+        Emit_Std_Funct (CD,
+          SF_String_to_VString,
+          Operand_1_Type (CD.Arrays_Table (y.Ref).Array_Size)
+        );
+        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+      elsif Is_Char_Array (CD, X) then                            --  s & v    A.4.5 (17)
+        Emit (CD, k_Swap);   --  v, then s on the stack
+        Emit_Std_Funct (CD,  --  s -> +s
+          SF_String_to_VString,
+          Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
+        );
+        Emit (CD, k_Swap);   --  +s, then v on the stack
+        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+      elsif y.TYP = Chars then                                    --  v & 'x'  A.4.5 (18)
+        Emit_Std_Funct (CD, SF_VString_Char_Concat);
+      elsif X.TYP = Chars then                                    --  'x' & v  A.4.5 (19)
+        Emit_Std_Funct (CD, SF_Char_VString_Concat);
+      --
+      --  Hereafter, we have "&" operators on VString provided only by HAL
+      --  and not by Ada.Unbounded_Strings
+      --
+      elsif y.TYP = Ints then      Emit_Std_Funct (CD, SF_VString_Int_Concat);       --  v & 123
+      elsif X.TYP = Ints then      Emit_Std_Funct (CD, SF_Int_VString_Concat);       --  123 & v
+      elsif y.TYP = Floats then    Emit_Std_Funct (CD, SF_VString_Float_Concat);     --  v & 3.14159
+      elsif X.TYP = Floats then    Emit_Std_Funct (CD, SF_Float_VString_Concat);     --  3.14159 & v
+      elsif y.TYP = Durations then Emit_Std_Funct (CD, SF_VString_Duration_Concat);  --  v & dur
+      elsif X.TYP = Durations then Emit_Std_Funct (CD, SF_Duration_VString_Concat);  --  dur & v
+      elsif y.TYP = Bools then     Emit_Std_Funct (CD, SF_VString_Boolean_Concat);   --  v & is_found
+      elsif X.TYP = Bools then     Emit_Std_Funct (CD, SF_Boolean_VString_Concat);   --  is_found & v
+      else
+        return False;
+      end if;
+      X.TYP := VStrings;
+      return True;
+    end VString_Concatenation;
+
+    function String_Concatenation return Boolean is
+    begin
+      --  Arguments can be one of the three internal representations of String:
+      --      - sv : VString (the parser sees the TYP Strings_as_VStrings)
+      --      - sc : constrained array of character
+      --      - "x": literal string
+      --  Additionally, we can have a character:
+      --      - 'x': character (value or literal)
+      --  So, it makes 16 argument combinations. Not all are implemented.
+      --
+      --  Result is always Strings_as_VStrings.
+      --  RM Reference: the predefined "&" operator 4.5.3(3), applied to String.
+      --
+      if X.TYP = Strings_as_VStrings and y.TYP = Strings_as_VStrings then     --  sv1 & sv2
+        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+      elsif X.TYP = Strings_as_VStrings and then Is_Char_Array (CD, y) then   --  sv1 & sc2
+        Emit_Std_Funct (CD,
+          SF_String_to_VString,
+          Operand_1_Type (CD.Arrays_Table (y.Ref).Array_Size)
+        );
+        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+      elsif Is_Char_Array (CD, X) and then y.TYP = Strings_as_VStrings then   --  sc1 & sv2
+        Emit (CD, k_Swap);   --  sc2, then sv1 on the stack
+        Emit_Std_Funct (CD,  --  sc1 -> To_VString (sc1)
+          SF_String_to_VString,
+          Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
+        );
+        Emit (CD, k_Swap);   --  To_VString (sc1), then sv2 on the stack
+        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+      elsif X.TYP = Strings_as_VStrings and y.TYP = String_Literals then      --  sv & "x"
+        Emit_Std_Funct (CD, SF_Literal_to_VString);
+        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+      elsif X.TYP = String_Literals and y.TYP = Strings_as_VStrings then      --  "x" & sv
+        Emit_Std_Funct (CD, SF_LStr_VString_Concat);
+      elsif X.TYP = Strings_as_VStrings and y.TYP = Chars then                --  sv & 'x'
+        Emit_Std_Funct (CD, SF_VString_Char_Concat);
+      elsif X.TYP = Chars and y.TYP = Strings_as_VStrings then                --  'x' & sv
+        Emit_Std_Funct (CD, SF_Char_VString_Concat);
+      else
+        return False;
+      end if;
+      X.TYP := Strings_as_VStrings;
+      return True;
+    end String_Concatenation;
+
   begin  --  Simple_Expression
     if Plus_Minus (CD.Sy) then
       --
@@ -611,157 +715,60 @@ package body HAC_Sys.Parser.Expressions is
     while binary_adding_operator (CD.Sy) loop
       Adding_OP := CD.Sy;
       InSymbol (CD);
-      Term (FSys + binary_adding_operator, Y);
-      if X.TYP = NOTYP or Y.TYP = NOTYP then
+      Term (FSys + binary_adding_operator, y);
+      if X.TYP = NOTYP or y.TYP = NOTYP then
         null;  --  Something is already wrong at this point; nothing to check or emit.
       else
         case Adding_OP is
           when OR_Symbol =>
-            if X.TYP = Bools and Y.TYP = Bools then
+            if X.TYP = Bools and y.TYP = Bools then
               Emit (CD, k_OR_Boolean);
             else
               Error (CD, err_resulting_type_should_be_Boolean);
               X.TYP := NOTYP;
             end if;
           when XOR_Symbol =>
-            if X.TYP = Bools and Y.TYP = Bools then
+            if X.TYP = Bools and y.TYP = Bools then
               Emit (CD, k_XOR_Boolean);
             else
               Error (CD, err_resulting_type_should_be_Boolean);
               X.TYP := NOTYP;
             end if;
           when Plus | Minus =>
-            if X.TYP in Numeric_Typ and then Y.TYP in Numeric_Typ then
-              if X.TYP = Y.TYP then
+            if X.TYP in Numeric_Typ and then y.TYP in Numeric_Typ then
+              if X.TYP = y.TYP then
                 Emit_Arithmetic_Binary_Instruction (CD, Adding_OP, X.TYP);
               else
-                Forbid_Type_Coercion (CD, Adding_OP, X, Y);
+                Forbid_Type_Coercion (CD, Adding_OP, X, y);
               end if;
-            elsif X.TYP = Times and Y.TYP = Times and Adding_OP = Minus then
+            elsif X.TYP = Times and y.TYP = Times and Adding_OP = Minus then
               Emit_Std_Funct (CD, SF_Time_Subtract);  --  T2 - T1
               X.TYP := Durations;
             elsif X.TYP = Durations then
-              if Y.TYP = Floats then
+              if y.TYP = Floats then
                 --  Duration hack for "X + 1.234" (see Delay_Statement
                 --  for full explanation).
                 Emit_Std_Funct (CD, SF_Float_to_Duration);
-                Y.TYP := Durations;  --  Now X and Y have the type Duration.
+                y.TYP := Durations;  --  Now X and Y have the type Duration.
               end if;
-              if Y.TYP = Durations then
+              if y.TYP = Durations then
                 if Adding_OP = Plus then
                   Emit_Std_Funct (CD, SF_Duration_Add);
                 else
                   Emit_Std_Funct (CD, SF_Duration_Subtract);
                 end if;
               else
-                Issue_Undefined_Operator_Error (CD, Adding_OP, X, Y);
+                Issue_Undefined_Operator_Error (CD, Adding_OP, X, y);
               end if;
             else
-              Issue_Undefined_Operator_Error (CD, Adding_OP, X, Y);
+              Issue_Undefined_Operator_Error (CD, Adding_OP, X, y);
             end if;
           when Ampersand_Symbol =>
-            --  Concatenation.
-            --  RM References are about Unbounded_String.
-            --  !!  Check if HAL is "use"-visible  !!
-            if X.TYP = VStrings and Y.TYP = VStrings then               --  v1 & v2  A.4.5 (15)
-              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-            elsif X.TYP = VStrings and Y.TYP = String_Literals then     --  v & "x"  A.4.5 (16)
-              --  Y is on top of the stack, we turn it into a VString.
-              --  If this becomes a perfomance issue we could consider
-              --  adding a Standard Function (SF_Code) for (VStr op Lit_Str).
-              Emit_Std_Funct (CD, SF_Literal_to_VString);
-              --  Now we concatenate both VStrings.
-              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-            elsif X.TYP = String_Literals and Y.TYP = VStrings then     --  "x" & v  A.4.5 (17)
-              Emit_Std_Funct (CD, SF_LStr_VString_Concat);
-              X.TYP := VStrings;
-            elsif X.TYP = VStrings and then Is_Char_Array (CD, Y) then  --  v & s    A.4.5 (16)
-              Emit_Std_Funct (CD,
-                SF_String_to_VString,
-                Operand_1_Type (CD.Arrays_Table (Y.Ref).Array_Size)
-              );
-              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-            elsif Is_Char_Array (CD, X) and then Y.TYP = VStrings then  --  s & v    A.4.5 (17)
-              Emit (CD, k_Swap);   --  v, then s on the stack
-              Emit_Std_Funct (CD,  --  s -> +s
-                SF_String_to_VString,
-                Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
-              );
-              Emit (CD, k_Swap);   --  +s, then v on the stack
-              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-              X.TYP := VStrings;
-            elsif (X.TYP = VStrings and Y.TYP = Strings_as_VStrings)    --  v & Enum'Image (x)
-               or (X.TYP = Strings_as_VStrings and Y.TYP = VStrings)    --  Enum'Image (x) & v
-            then
-              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-              X.TYP := VStrings;
-            elsif X.TYP = VStrings and Y.TYP = Chars then               --  v & 'x'  A.4.5 (18)
-              Emit_Std_Funct (CD, SF_VString_Char_Concat);
-            elsif X.TYP = Chars and Y.TYP = VStrings then               --  'x' & v  A.4.5 (19)
-              Emit_Std_Funct (CD, SF_Char_VString_Concat);
-              X.TYP := VStrings;
-            --
-            --  Hereafter we have "&" operators on VString provided only by HAL
-            --  and not by Ada.Unbounded_Strings
-            --
-            elsif X.TYP = VStrings and Y.TYP = Ints then                --  v & 123
-              Emit_Std_Funct (CD, SF_VString_Int_Concat);
-            elsif X.TYP = Ints and Y.TYP = VStrings then                --  123 & v
-              Emit_Std_Funct (CD, SF_Int_VString_Concat);
-              X.TYP := VStrings;
-            elsif X.TYP = VStrings and Y.TYP = Floats then              --  v & 3.14159
-              Emit_Std_Funct (CD, SF_VString_Float_Concat);
-            elsif X.TYP = Floats and Y.TYP = VStrings then              --  3.14159 & v
-              Emit_Std_Funct (CD, SF_Float_VString_Concat);
-              X.TYP := VStrings;
-            elsif X.TYP = VStrings and Y.TYP = Durations then           --  v & (Time_1 - Time_0)
-              Emit_Std_Funct (CD, SF_VString_Duration_Concat);
-            elsif X.TYP = Durations and Y.TYP = VStrings then           --  (Time_1 - Time_0) & v
-              Emit_Std_Funct (CD, SF_Duration_VString_Concat);
-              X.TYP := VStrings;
-            elsif X.TYP = VStrings and Y.TYP = Bools then               --  v & is_found
-              Emit_Std_Funct (CD, SF_VString_Boolean_Concat);
-            elsif X.TYP = Bools and Y.TYP = VStrings then               --  is_found & v
-              Emit_Std_Funct (CD, SF_Boolean_VString_Concat);
-              X.TYP := VStrings;
-            --
-            --  Now, we have the concatenation of String's. Result is using the VString
-            --  representation internally, the parser sees the TYP Strings_as_VStrings
-            --  for the result of "&", but semantically, it's String.
-            --  RM Reference: the predefined "&" operator 4.5.3(3), applied to String.
-            --
-            elsif X.TYP = Strings_as_VStrings and Y.TYP = Strings_as_VStrings then  --  s1 & s2
-              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-            elsif X.TYP = Strings_as_VStrings and then Is_Char_Array (CD, Y) then   --  s1 & s2
-              Emit_Std_Funct (CD,
-                SF_String_to_VString,
-                Operand_1_Type (CD.Arrays_Table (Y.Ref).Array_Size)
-              );
-              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-            elsif Is_Char_Array (CD, X) and then Y.TYP = Strings_as_VStrings then   --  s1 & s2
-              Emit (CD, k_Swap);   --  s2, then s1 on the stack
-              Emit_Std_Funct (CD,  --  s1 -> To_VString (s1)
-                SF_String_to_VString,
-                Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
-              );
-              Emit (CD, k_Swap);   --  To_VString (s1), then s2 on the stack
-              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-              X.TYP := Strings_as_VStrings;
-            elsif X.TYP = Strings_as_VStrings and Y.TYP = String_Literals then      --  s & "x"
-              Emit_Std_Funct (CD, SF_Literal_to_VString);
-              Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-            elsif X.TYP = String_Literals and Y.TYP = Strings_as_VStrings then      --  "x" & s
-              Emit_Std_Funct (CD, SF_LStr_VString_Concat);
-              X.TYP := Strings_as_VStrings;
-            elsif X.TYP = Strings_as_VStrings and Y.TYP = Chars then                --  s & 'x'
-              Emit_Std_Funct (CD, SF_VString_Char_Concat);
-            elsif X.TYP = Chars and Y.TYP = Strings_as_VStrings then                --  'x' & s
-              Emit_Std_Funct (CD, SF_Char_VString_Concat);
-              X.TYP := Strings_as_VStrings;
-            else
-              Issue_Undefined_Operator_Error (CD, Adding_OP, X, Y);
+            if not (VString_Concatenation or else String_Concatenation) then
+              Issue_Undefined_Operator_Error (CD, Adding_OP, X, y);
             end if;
-          when others =>  --  Doesn't happen: Binary_Adding_Operators(OP) is True.
+          when others =>
+            --  Doesn't happen: Binary_Adding_Operators(OP) is True.
             null;
         end case;
       end if;

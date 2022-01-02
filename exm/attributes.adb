@@ -47,7 +47,7 @@ begin
   New_Line;
   Put_Line (+"  * Integer'Image (123)      : [" & Integer'Image (123) & ']');
   Put_Line (+"  # Real'Image (Pi)          : [" & Real'Image (Pi) & ']');
-  Put_Line (+"  * Boolean'Image (True)     : [" & 
+  Put_Line (+"  * Boolean'Image (True)     : [" &
     Boolean'Image (
       --  Here we test "<" on values of the internal type Strings_as_VStrings.
       Enum'Image (bb) < Enum'Image (cc)

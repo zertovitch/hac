@@ -8,7 +8,7 @@
 --     and toggle it.
 --   The third time, visit every 3rd door (door #3, #6, #9, ...), etc,
 --     until you only visit the 100th door.
---   
+--
 --   Task
 --   Answer the question:
 --     what state are the doors in after the last pass?
@@ -43,6 +43,6 @@ begin
   --
   for i in Door_Range loop
     Put ("Door "); Put (i, 4);
-    Put_Line (+" is " & Door_State'Image (the_doors (i)));
+    Put_Line (" is " & Door_State'Image (the_doors (i)));
   end loop;
 end Doors;

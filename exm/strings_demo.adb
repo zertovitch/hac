@@ -126,20 +126,21 @@ begin
   Slice_Show (+"What's happening to this string?!");
   Up_Low (+"Upside Down");
   --
-  Put_Line (+"  [" & (-123) & "]  [" & 123 & "]  [" & 3.14159 & ']');
+  Put_Line (+"  [" & (-123) & "]  [" & 123 & "]  [" & Real (Pi) & ']');
   Put_Line (123 & (+" & Right VString"));
-  Put_Line ((-456.0) & (+" & Right VString"));
-  Put_Line ((-456.0e9) & (+" & Right VString"));
-  Put_Line (456.0e11 & (+" & Right VString"));
-  Put_Line (456.0e66 & (+" & Right VString"));
-  Put_Line (456.789e13 & (+" & Right VString"));
-  Put_Line (4.56789e13 & (+" & Right VString"));
-  Put_Line (4.56789e14 & (+" & Right VString"));
-  Put_Line (4.56789e15 & (+" & Right VString"));
-  Put_Line (1.79769313486232E+307 & (+" & Right VString"));
-  Put_Line ("Image... " &     Image (Real (4.56789e10)));
-  Put_Line ("Image..."  & Image_Attribute (4.56789e10));
-  Put_Line ("Image... " & Image (456789));
+  Put_Line (Real (-456.0) & (+" & Right VString"));
+  Put_Line (Real (-456.0e9) & (+" & Right VString"));
+  Put_Line (Real (456.0e11) & (+" & Right VString"));
+  Put_Line (Real (456.0e66) & (+" & Right VString"));
+  Put_Line (Real (456.789e13) & (+" & Right VString"));
+  Put_Line (Real (4.56789e13) & (+" & Right VString"));
+  Put_Line (Real (4.56789e14) & (+" & Right VString"));
+  Put_Line (Real (4.56789e15) & (+" & Right VString"));
+  Put_Line (Real (1.79769313486232E+307) & (+" & Right VString"));
+  Put_Line ("Integer: Image...        " & Image (456789));
+  Put_Line ("Real: Image...           " & Image (Real (456789.0)));
+  Put_Line ("Real: Image...           " & Image (Real (4.56789e10)));
+  Put_Line ("Real: Image attribute..."  & Real'Image (4.56789e10));
   Put_Line (Float_Value   (+"456.789e13"));  --  Ada.Text_IO display of the Real number
   Put_Line (Integer_Value (+"456"));         --  Ada.Text_IO display of the Integer number
   Put (Str3); Put ("! ");
