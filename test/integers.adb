@@ -8,7 +8,7 @@ procedure Integers is
   x2 : Integer;
   x3 : Integer;
 
-  function Fibonacci (P: Integer) return Integer is
+  function Fibonacci (P : Integer) return Integer is
   begin
     if P <= 2 then
       return 1;

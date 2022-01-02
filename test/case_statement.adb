@@ -6,7 +6,7 @@ procedure Case_Statement is
 
   procedure Test_Int (i : Integer) is
   begin
-    case (2*(i + 1)) / 2 - 1 is
+    case (2 * (i + 1)) / 2 - 1 is
       when 1 | -1 =>
         if abs i /= 1 then
           Put_Line ("Compiler bug [Int, A]");
@@ -28,12 +28,12 @@ procedure Case_Statement is
 
   vowel_occurences : Integer := 0;
 
-  procedure Test_Char (c: Character) is
+  procedure Test_Char (c : Character) is
   begin
     case c is
       when 'a' | 'A' =>
         if (c /= 'a') and (c /= 'A') then
-          Put(c); Put_Line ("  Compiler bug [Char, A]");
+          Put (c); Put_Line ("  Compiler bug [Char, A]");
           Set_Exit_Status (1);  --  Compiler test failed.
         end if;
         vowel_occurences := vowel_occurences + 1;

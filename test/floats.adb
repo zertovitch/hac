@@ -145,7 +145,7 @@ procedure Floats is
   end Base_Test;
 
   procedure Produce_Base_Test (do_it : Boolean) is
-    digitz : constant String (1..16) := "0123456789ABCDEF";
+    digitz : constant String (1 .. 16) := "0123456789ABCDEF";
     function Rand_Digits (base : Integer) return VString is
       r : VString := +"";
     begin
@@ -153,7 +153,7 @@ procedure Floats is
         r := r & digitz (1 + Rand (base - 1));
       end loop;
       return r;
-    end;
+    end Rand_Digits;
     b : Integer;
     n, nn : VString;
   begin
@@ -168,7 +168,7 @@ procedure Floats is
         when others => null;
       end case;
       b := 2 + Rand (14);
-      -- TBD: could it be that GNAT is less accurate for non-10 bases ?...
+      --  TBD: could it be that GNAT is less accurate for non-10 bases ?...
       n := n & b & (+"#") & Rand_Digits (b) & '.' & Rand_Digits (b) & '#';
       if Rnd > 0.5 then
         n := n & 'e';
@@ -177,11 +177,11 @@ procedure Floats is
           when 1 => n := n & '-';
           when others => null;
         end case;
-        n := n & Rand(20);
+        n := n & Rand (20);
       end if;
       nn := +Real'Image (Float_Value (n));
-      Put_Line ( "    if not Almost_equal (" & n & (+", ") & nn &
-                 ") then Put_Line (""[" & it & "]""); end if;");
+      Put_Line ("    if not Almost_equal (" & n & (+", ") & nn &
+                ") then Put_Line (""[" & it & "]""); end if;");
     end loop;
   end Produce_Base_Test;
 
@@ -195,15 +195,15 @@ procedure Floats is
 
     procedure Times (l : Real; v : Lake_Vector; r : out Lake_Vector) is
     begin
-      for i in Lake loop r(i) := v(i) * l; end loop;
+      for i in Lake loop r (i) := v (i) * l; end loop;
     end Times;
 
     procedure Plus (a, b : Lake_Vector; r : out Lake_Vector) is
     begin
-      for i in Lake loop r(i) := a(i) + b(i); end loop;
+      for i in Lake loop r (i) := a (i) + b (i); end loop;
     end Plus;
 
-    function Sign (i: Real) return Real is
+    function Sign (i : Real) return Real is
     begin
       if    i < 0.0 then  return -1.0;
       elsif i = 0.0 then  return  0.0;
@@ -211,46 +211,46 @@ procedure Floats is
       end if;
     end Sign;
 
-    ivs: Lake_Vector;
+    ivs : Lake_Vector;
 
     procedure Init_Sensitivity is
     begin
-      ivs (Morat     ) := 1.0 / 2.2820e7;
-      ivs (Neuchatel ) := 1.0 / 2.1581e8;
-      ivs (Bienne    ) := 1.0 / 4.0870e7;
-    end;
+      ivs (Morat)     := 1.0 / 2.2820e7;
+      ivs (Neuchatel) := 1.0 / 2.1581e8;
+      ivs (Bienne)    := 1.0 / 4.0870e7;
+    end Init_Sensitivity;
 
     procedure Evolution (x : in out Lake_Vector; q_e : Lake_Vector; q_sb, h : Real) is
 
-      procedure f (x : Lake_Vector; r: out Lake_Vector) is
+      procedure f (x : Lake_Vector; r : out Lake_Vector) is
         q_tr_mn, q_tr_nb : Real;
         --
         procedure Flux_tansfert is
         begin
-          q_tr_mn:=
+          q_tr_mn :=
             --  Canal de la Broye: Morat -> Neuchatel.
-            Sign (x(Morat)-x(Neuchatel)) *                           --  sens d'ecoulement
-            15.223 *                                                  --  facteur de debit
-            ( ( (x(Morat)+x(Neuchatel))*0.5-426.0 )**1.868 ) *   --  effet du niveau moyen
-            ( (abs(x(Morat)-x(Neuchatel)))**0.483 );      --  effet de la diff. de niveaux
+            Sign (x (Morat) - x (Neuchatel)) *                       --  sens d'ecoulement
+            15.223 *                                                 --  facteur de debit
+            (((x (Morat) + x (Neuchatel)) * 0.5 - 426.0)**1.868) *   --  effet du niveau moyen
+            ((abs (x (Morat) - x (Neuchatel)))**0.483);      --  effet de la diff. de niveaux
           --
-          q_tr_nb:=
+          q_tr_nb :=
             --  Canal de la Thielle: Neuchatel -> Bienne.
-            Sign (x(Neuchatel)-x(Bienne)) *                          --  sens d'ecoulement
-            18.582 *                                                  --  facteur de debit
-            ( ( (x(Neuchatel)+x(Bienne))*0.5-426.0 )**2.511 ) *  --  effet du niveau moyen
-            ( (abs(x(Neuchatel)-x(Bienne)))**0.482 );     --  effet de la diff. de niveaux
+            Sign (x (Neuchatel) - x (Bienne)) *                      --  sens d'ecoulement
+            18.582 *                                                 --  facteur de debit
+            (((x (Neuchatel) + x (Bienne)) * 0.5 - 426.0)**2.511) *  --  effet du niveau moyen
+            ((abs (x (Neuchatel) - x (Bienne)))**0.482);     --  effet de la diff. de niveaux
         end Flux_tansfert;
       begin
         Flux_tansfert;
-        r (Morat    ) := (q_e (Morat)     - q_tr_mn                 ) * ivs (Morat);
-        r (Neuchatel) := (q_e (Neuchatel) + q_tr_mn - q_tr_nb       ) * ivs (Neuchatel);
-        r (Bienne   ) := (q_e (Bienne)              + q_tr_nb - q_sb) * ivs (Bienne);
+        r (Morat) := (q_e (Morat)     - q_tr_mn) * ivs (Morat);
+        r (Neuchatel) := (q_e (Neuchatel) + q_tr_mn - q_tr_nb) * ivs (Neuchatel);
+        r (Bienne) := (q_e (Bienne)              + q_tr_nb - q_sb) * ivs (Bienne);
       end f;
       k1, k2, k3, k4, tmp_a, tmp_b, dbk2, dbk3 : Lake_Vector;
     begin
       --  Runge-Kutta, Order 4
-      f (x               , k1);
+      f (x, k1);
       --
       Times (h * 0.5, k1, tmp_a);
       Plus (x, tmp_a, tmp_b);      --  tmp_b = x + h * 0.5 * k1
@@ -269,7 +269,7 @@ procedure Floats is
       Plus (k1, dbk2, tmp_a);
       Plus (tmp_a, dbk3, tmp_b);
       Plus (tmp_b, k4, tmp_a);     --  tmp_a = (k1 + 2.0 * k2 + 2.0 * k3 + k4)
-      Times (h * (1.0/6.0), tmp_a, tmp_b);
+      Times (h * (1.0 / 6.0), tmp_a, tmp_b);
       Plus (x, tmp_b, tmp_a);
       x := tmp_a;
     end Evolution;
@@ -322,8 +322,8 @@ begin
     Put_Line ("Compiler bug [C]");
     Set_Exit_Status (1);  --  Compiler test failed.
   end if;
-  ww (1).x3:= 3.4_5_6_7_8_9;
-  ww (5).x3:= ww (1).x3;
+  ww (1).x3 := 3.4_5_6_7_8_9;
+  ww (5).x3 := ww (1).x3;
   ww (1).x3 := 7.89;
   v.x3 := 1.0;
   v.x2 := 2.0;

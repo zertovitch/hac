@@ -2,23 +2,23 @@ with HAL;
 
 procedure Strings is
   use HAL;
-  
-  procedure Failure (Msg: VString) is
+
+  procedure Failure (Msg : VString) is
   begin
     Put_Line (+"Failure in test: [" & Msg & ']');
     Set_Exit_Status (1);  --  Compiler test failed.
-  end;
- 
+  end Failure;
+
   procedure Assert (Check : in Boolean) is
   --  Similar to RM 11.4.2 but without raising an exception.
   begin
     if not Check then Failure (+"Assert fails"); end if;
-  end;
+  end Assert;
 
   s1, s2, s3, s4, s4_s4 : VString;
-  Planck   : constant := 6.62607015e-34;
-  Pi_9_dgt : constant := 3.141592653;
-  Avogadro : constant := 6.02214076e023;
+  Planck   : constant Real := 6.62607015e-34;
+  Pi_9_dgt : constant Real := 3.141592653;
+  Avogadro : constant Real := 6.02214076e023;
   r : Real;
   fs_1 : String (4 .. 6);
 
@@ -49,7 +49,7 @@ begin
   if s1 & 7 /= +"ab7"   then Failure (+"VStr & Int = +Str_Lit"); end if;
   if s1 & 7 /=  "ab7"   then Failure (+"VStr & Int =  Str_Lit"); end if;
   --
-  if 3.14 & s2 /= "3.14cdef"            then Failure (+"R & VString"); end if;
+  if Real (3.14) & s2 /= "3.14cdef"     then Failure (+"R & VString"); end if;
   if s2 & Pi_9_dgt /= "cdef3.141592653" then Failure (+"VString & R"); end if;
   if s2 & Avogadro /= +"cdef6.02214076E+23" then
     Failure (+"Compiler bug - HAC_Image for HAC_Float :" & Avogadro);
@@ -68,9 +68,9 @@ begin
   if not (+"A" >= +"A")  then Failure (+"VString >= VString"); end if;
   --
   if To_Lower (+"X") /= +"x" then Failure (+"To_Lower VString"); end if;
-  if To_Lower ( 'X') /=  'x' then Failure (+"To_Lower Char");    end if;
+  if To_Lower  ('X') /=  'x' then Failure (+"To_Lower Char");    end if;
   if To_Upper (+"x") /= +"X" then Failure (+"To_Upper VString"); end if;
-  if To_Upper ( 'x') /=  'X' then Failure (+"To_Upper Char");    end if;
+  if To_Upper  ('x') /=  'X' then Failure (+"To_Upper Char");    end if;
   --
   if Index (s4, +"cat") /= 0 then Failure (+"Index 1");    end if;
   if Index (s4, +"cde") /= 3 then Failure (+"Index 2");    end if;
@@ -123,16 +123,16 @@ begin
   if +"abc" & fs_1 /= +"abcdef"   then Failure (+"VString & String"); end if;
   if fs_1 & (+"ghi") /= +"defghi" then Failure (+"String & VString"); end if;
   --
-  --  Strings_as_VStrings 
+  --  Strings_as_VStrings
   --
-  if Enum'Image(V) /= "V" then Failure (+"Strings_as_VStrings 1"); end if;
+  if Enum'Image (V) /= "V" then Failure (+"Strings_as_VStrings 1"); end if;
   --  Concatenation between various String internal types or with Character:
-  if Enum'Image(U) & fs_1 /= "Udef" then Failure (+"Strings_as_VStrings 2"); end if;
-  if Enum'Image(W) & "aw" /= "Waw"  then Failure (+"Strings_as_VStrings 3"); end if;
-  if fs_1 & Enum'Image(W) /= "defW" then Failure (+"Strings_as_VStrings 4"); end if;
-  if "UB" & Enum'Image(U) /= "UBU"  then Failure (+"Strings_as_VStrings 5"); end if;
-  if 'U' & Enum'Image(V) /= "UV" then Failure (+"Strings_as_VStrings 6"); end if;
-  if Enum'Image(U) & 'V' /= "UV" then Failure (+"Strings_as_VStrings 7"); end if;
+  if Enum'Image (U) & fs_1 /= "Udef" then Failure (+"Strings_as_VStrings 2"); end if;
+  if Enum'Image (W) & "aw" /= "Waw"  then Failure (+"Strings_as_VStrings 3"); end if;
+  if fs_1 & Enum'Image (W) /= "defW" then Failure (+"Strings_as_VStrings 4"); end if;
+  if "UB" & Enum'Image (U) /= "UBU"  then Failure (+"Strings_as_VStrings 5"); end if;
+  if 'U' & Enum'Image (V) /= "UV" then Failure (+"Strings_as_VStrings 6"); end if;
+  if Enum'Image (U) & 'V' /= "UV" then Failure (+"Strings_as_VStrings 7"); end if;
   --
   --  HAL functions
   --
@@ -148,14 +148,14 @@ begin
   --  The following test is in one answer of
   --  https://stackoverflow.com/questions/62080743/how-do-you-check-if-string-ends-with-another-string-in-ada
   Assert (Ends_With (+"John Johnson", "son") = True);
-  Assert (Ends_With (+""  , ""  ) = True);
-  Assert (Ends_With (+" " , ""  ) = True);
-  Assert (Ends_With (+""  , " " ) = False);
-  Assert (Ends_With (+" " , " " ) = True);
-  Assert (Ends_With (+""  , "n" ) = False);
-  Assert (Ends_With (+"n"  , "" ) = True);
+  Assert (Ends_With (+"", "") = True);
+  Assert (Ends_With (+" ", "") = True);
+  Assert (Ends_With (+"", " ") = False);
+  Assert (Ends_With (+" ", " ") = True);
+  Assert (Ends_With (+"", "n") = False);
+  Assert (Ends_With (+"n", "") = True);
   Assert (Ends_With (+"n ", "n ") = True);
-  Assert (Ends_With (+" n", "n" ) = True);
-  Assert (Ends_With (+"n" , " n") = False);
+  Assert (Ends_With (+" n", "n") = True);
+  Assert (Ends_With (+"n", " n") = False);
   Assert (Ends_With (+" n", " n") = True);
 end Strings;

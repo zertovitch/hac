@@ -39,7 +39,7 @@ procedure Constants is
     Test_In (x);
     --  Test_Out (y);     --  must be rejected (cannot modify constant)
     --  Test_In_Out (x);  --  must be rejected (cannot modify constant)
-  end;
+  end Test_12_34;
 
   type Animal is (ant, bat, cat, dog);
 

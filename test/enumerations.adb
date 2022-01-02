@@ -13,7 +13,7 @@ procedure Enumerations is
     aa : array (E3) of E4;
   begin
     aa (e) := g;
-  end;
+  end Test_ARRAY;
 
   x1 : E1;
   x2 : E2;
@@ -34,7 +34,7 @@ procedure Enumerations is
 
   type Animal is (ant, bat, cat, dog);
 
-  pet2: Animal;
+  pet2 : Animal;
 
   procedure Test_CASE is
     a : Animal := dog;
@@ -74,8 +74,8 @@ begin
     Put_Line ("Compiler bug [C]");  --  Former HAC bug with selectors for enums
     Set_Exit_Status (1);  --  Compiler test failed.
   end if;
-  ww (1).x3:= e;
-  ww (5).x3:= ww (1).x3;
+  ww (1).x3 := e;
+  ww (5).x3 := ww (1).x3;
   ww (1).x3 := f;
   --
   zz (d).x4 := j;
@@ -105,10 +105,10 @@ begin
   for pet in Mammal loop
     pet2 := pet;
     if pet2 in Insect then
-      Put("Compiler bug membership 1");
+      Put ("Compiler bug membership 1");
     end if;
     if pet2 not in Mammal then
-      Put("Compiler bug membership 2");
+      Put ("Compiler bug membership 2");
     end if;
   end loop;
   --

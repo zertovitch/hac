@@ -3,17 +3,17 @@ procedure Exception_03 is
     function F2 return Integer is
       a : array (1 .. 3) of Integer;
     begin
-      a (4) := 5;       --  <-  *** Boom! *** : 4 is out-of-range
+      a (0) := 123;     --  <-  *** Boom! *** : 0 is out-of-range
       return 0;
-    end;
+    end F2;
     i : Integer := F2;  --  <-  Trace-back should show this line
   begin
     null;
-  end;
+  end P1;
   dummy : Integer;
 begin
   P1;                   --  <-  Trace-back should show this line
   dummy := 1234;
   dummy := 4321;
   P1;                   --  <-  No executed due to previously raised exception.
-end;
+end Exception_03;

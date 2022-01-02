@@ -5,7 +5,7 @@ with HAL; use HAL;
 
 procedure Recursion is
 
-  function Fibonacci (P: Natural) return Positive is
+  function Fibonacci (P : Natural) return Positive is
   begin
     if P <= 2 then
       return 1;
@@ -75,18 +75,18 @@ procedure Recursion is
 
     procedure Nesting_Test_P is
       --  Outer calls inner and vice-versa.
-      procedure Add_1_and_shift (U: in out Usine_a_Gaz; Level : Integer) is
-        procedure Shift_and_add_1 (U: in out Usine_a_Gaz) is
+      procedure Add_1_and_shift (U : in out Usine_a_Gaz; Level : Integer) is
+        procedure Shift_and_add_1 (U : in out Usine_a_Gaz) is
         begin
           if Level > 1 then
             U.N := U.N * 2;
             Add_1_and_shift (U, Level - 1);
           end if;
-        end;
+        end Shift_and_add_1;
       begin
         U.N := U.N + 1;
         Shift_and_add_1 (U);
-      end;
+      end Add_1_and_shift;
       R : Usine_a_Gaz;
     begin
       for L in 1 .. Max_L loop
@@ -100,17 +100,17 @@ procedure Recursion is
 
     procedure Nesting_Test_F is
       --  Outer calls inner and vice-versa.
-      function Add_1_and_shift (N: Integer; Level : Integer) return Integer is
-        function Shift_and_add_1 (N: Integer) return Integer is
+      function Add_1_and_shift (N : Integer; Level : Integer) return Integer is
+        function Shift_and_add_1 (N : Integer) return Integer is
         begin
           if Level > 1 then
             return Add_1_and_shift (N * 2, Level - 1);
           end if;
           return N;
-        end;
+        end Shift_and_add_1;
       begin
         return Shift_and_add_1 (N + 1);
-      end;
+      end Add_1_and_shift;
     begin
       for L in 1 .. Max_L loop
         if Add_1_and_shift (0, L) /= 2 ** L - 1 then

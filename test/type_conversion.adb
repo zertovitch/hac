@@ -9,7 +9,7 @@ procedure Type_Conversion is
   function To_Int (x : Real) return Integer is
   begin
     return Integer (x);
-  end;
+  end To_Int;
 
   subtype Day is Integer range 1 .. 31;
   i, j : Integer;

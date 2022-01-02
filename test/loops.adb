@@ -4,9 +4,9 @@ with HAL; use HAL;
 
 procedure Loops is
 begin
-  Ident_For:
+  Ident_For :
   for i in 1 .. 10 loop
-    exit when i = 5;
+    exit Ident_For when i = 5;
     if i >= 5 then
       Put_Line ("Compiler bug [A (missed exit]");
       Set_Exit_Status (1);  --  Compiler test failed.

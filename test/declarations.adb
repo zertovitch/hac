@@ -27,7 +27,7 @@ procedure Declarations is
 
   type ee is (r, r2);
 
-  procedure Test (I: Integer) is
+  procedure Test (I : Integer) is
   begin
     null;
   end Test;
@@ -35,8 +35,8 @@ procedure Declarations is
   procedure Not_Yet_Done (a : Integer) is null;  --  Ada 2005 null procedure.
 
   --  HAC 0.01: a type right after a subprogram borked the parser!
-  type rec is record x, y: Integer; end record;
-  a, b: rec;
+  type rec is record x, y : Integer; end record;
+  a, b : rec;
 
 begin
   a.x := 5;

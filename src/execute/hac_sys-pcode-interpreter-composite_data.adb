@@ -1,3 +1,5 @@
+with Ada.Strings.Fixed;
+
 package body HAC_Sys.PCode.Interpreter.Composite_Data is
 
   procedure Do_Composite_Data_Operation (CD : Compiler_Data; ND : in out Interpreter_Data) is
@@ -14,15 +16,16 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       ATI : constant Integer := Integer (IR.Y);
       ATE : ATabEntry renames CD.Arrays_Table (ATI);
       Idx : constant Index := Index (ND.S (Curr_TCB.T).I);
+      use Ada.Strings, Ada.Strings.Fixed;
     begin
       if Idx < ATE.Low then
         raise VM_Out_of_Range
-          with ": index (pos: " & Index'Image (Idx) &
-            ") below lower bound (pos: " &  Index'Image (ATE.Low) & ')';
+          with ": index (pos:" & Trim (Defs.Index'Image (Idx), Left) &
+            ") below lower bound (pos:" & Trim (Defs.Index'Image (ATE.Low), Left) & ')';
       elsif Idx > ATE.High then
         raise VM_Out_of_Range
-          with ": index (pos: " & Index'Image (Idx) &
-            ") above upper bound (pos:" &  Index'Image (ATE.High) & ')';
+          with ": index (pos:" & Trim (Defs.Index'Image (Idx), Left) &
+            ") above upper bound (pos:" & Trim (Defs.Index'Image (ATE.High), Left) & ')';
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.
       if size_1 then

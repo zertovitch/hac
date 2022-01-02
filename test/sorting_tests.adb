@@ -9,7 +9,7 @@ procedure Sorting_Tests is
 
   procedure Merge is
 
-    type Vector is array (1..26) of Character;
+    type Vector is array (1 .. 26) of Character;
     v                : Vector;
     temp_array       : Vector;
     max              : Integer;
@@ -40,23 +40,23 @@ procedure Sorting_Tests is
         --  Merge subarrays
         --  Go until one subarray runs out
         while (left < top_left) and (right < top_right) loop
-          if temp_array(left) <= temp_array(right) then
-            v(m)  := temp_array(left);
+          if temp_array (left) <= temp_array (right) then
+            v (m)  := temp_array (left);
             left  := left + 1;
           else
-            v(m)  := temp_array(right);
+            v (m)  := temp_array (right);
             right := right + 1;
           end if;
           m := m + 1;
         end loop;
-        -- Now "copy tail" of whichever subarray remains
+        --  Now "copy tail" of whichever subarray remains
         while left < top_left loop
-          v(m) := temp_array(left);
+          v (m) := temp_array (left);
           m    := m + 1;
           left := left + 1;
         end loop;
         while right < top_right loop
-          v(m)  := temp_array(right);
+          v (m)  := temp_array (right);
           right := right + 1;
           m     := m + 1;
         end loop;
@@ -74,44 +74,44 @@ procedure Sorting_Tests is
   end Merge;
 
   procedure Shell is
-    b : String(1..26);
+    b : String (1 .. 26);
     i, j, step : Integer;
-    step_size : array(1..4) of Integer;
+    step_size : array (1 .. 4) of Integer;
     stop : Boolean;
     temp : Character;
   begin
     b := "ZYXWVUTSRQPONMLKJIHGFEDCBA";
-    -- 'steps' contains decreasing increments for each
-    -- pass. The last pass has increment 1.
-    step_size(4) := 1;
-    for pass in reverse 1..3 loop
-      step_size(pass):= 2*step_size(pass+1);
+    --  'steps' contains decreasing increments for each
+    --  pass. The last pass has increment 1.
+    step_size (4) := 1;
+    for pass in reverse 1 .. 3 loop
+      step_size (pass) := 2 * step_size (pass + 1);
     end loop;
-    for pass in 1..4 loop
-      step := step_size(pass);
-      -- Do a straight insertion sort with 'step' as
-      -- an increment instead of 1.
-      i:= step + 1;
+    for pass in 1 .. 4 loop
+      step := step_size (pass);
+      --  Do a straight insertion sort with 'step' as
+      --  an increment instead of 1.
+      i := step + 1;
       while i <= 26 loop
-        temp := b(i);
-        j:= i;
-        stop:= False;
+        temp := b (i);
+        j := i;
+        stop := False;
         while (j > step) and not stop loop
           j := j - step;
-          if b(j) > temp then
-            b(j+step):= b(j);
+          if b (j) > temp then
+            b (j + step) := b (j);
           else
-            b(j+step):= temp;
-            stop:= True;
+            b (j + step) := temp;
+            stop := True;
           end if;
         end loop;
         if not stop then
-          b(1):= temp;
+          b (1) := temp;
         end if;
         i := i + step;
       end loop;
     end loop; -- for pass in 1..npass
-    for k in 1..26 loop
+    for k in 1 .. 26 loop
       if b (k) /= expected_result (k) then
         Put_Line ("Wrong result in Shell Sort");
         Set_Exit_Status (1);  --  Compiler test failed.

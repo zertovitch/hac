@@ -36,7 +36,7 @@ procedure Init_Var is
         v (True).a (r1, r2).i := n1 * w1 (True).a (r1, r2).j;
       end loop;
     end loop;
-  end;
+  end Init_Nest_Arr;
 
   dummy_1 : Real := 101010.0;
 
@@ -49,7 +49,7 @@ procedure Init_Var is
         v.a (r1, r2).i := n2 * w1.a (r1, r2).j;
       end loop;
     end loop;
-  end;
+  end Init_Nest_Rec;
 
   dummy_2 : Integer := 1000 * 200 * 30;
 
