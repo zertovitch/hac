@@ -20,12 +20,12 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
     begin
       if Idx < ATE.Low then
         raise VM_Out_of_Range
-          with ": index (pos:" & Trim (Defs.Index'Image (Idx), Left) &
-            ") below lower bound (pos:" & Trim (Defs.Index'Image (ATE.Low), Left) & ')';
+          with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
+            ") is below lower bound (pos: " & Trim (Defs.Index'Image (ATE.Low), Left) & ')';
       elsif Idx > ATE.High then
         raise VM_Out_of_Range
-          with ": index (pos:" & Trim (Defs.Index'Image (Idx), Left) &
-            ") above upper bound (pos:" & Trim (Defs.Index'Image (ATE.High), Left) & ')';
+          with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
+            ") is above upper bound (pos: " & Trim (Defs.Index'Image (ATE.High), Left) & ')';
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.
       if size_1 then

@@ -11,11 +11,11 @@ procedure Unit_A is
 
   procedure X is
   begin
-    Put("(x>");
+    Put ("(x>");
     a_msg := +"A";
     Unit_B (v, +"b", +"B");
     v := v * 3;
-    Put("<x)");
+    Put ("<x)");
   end X;
 
 begin
@@ -24,13 +24,13 @@ begin
   Put_Line ("  the output should be identical on all Ada implementations.");
   v := 10101;
   a_msg := +"a";
-  HAL.Put(+"(a" & a_msg & ">");
+  HAL.Put (+"(a" & a_msg & ">");
   for i in 1 .. 2 loop
-    Put(Image(Unit_C (+"u", +"U", v)));
+    Put (Image (Unit_C (+"u", +"U", v)));
   end loop;
   X;
   Unit_B (v, +"b", +"B");
   X;
-  HAL.Put(v, 0);
-  HAL.Put("<A" & a_msg & ")");
+  HAL.Put (v, 0);
+  HAL.Put ("<A" & a_msg & ")");
 end Unit_A;

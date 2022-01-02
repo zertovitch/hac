@@ -60,15 +60,15 @@ procedure Three_Lakes_S is
 
   procedure Times (l : Real; v : Lake_Vector; r : out Lake_Vector) is
   begin
-    for i in Lake loop r(i) := v(i) * l; end loop;
+    for i in Lake loop r (i) := v (i) * l; end loop;
   end Times;
 
   procedure Plus (a, b : Lake_Vector; r : out Lake_Vector) is
   begin
-    for i in Lake loop r(i) := a(i) + b(i); end loop;
+    for i in Lake loop r (i) := a (i) + b (i); end loop;
   end Plus;
 
-  function Sign (i: Real) return Real is
+  function Sign (i : Real) return Real is
   begin
     if    i < 0.0 then  return -1.0;
     elsif i = 0.0 then  return  0.0;
@@ -83,14 +83,14 @@ procedure Three_Lakes_S is
   --
   --  ! Full Ada: aggregates
 
-  ivs: Lake_Vector;
+  ivs : Lake_Vector;
 
   procedure Init_Sensitivity is
   begin
-    ivs (Morat     ) := 1.0 / 2.2820e7;
-    ivs (Neuchatel ) := 1.0 / 2.1581e8;
-    ivs (Bienne    ) := 1.0 / 4.0870e7;
-  end;
+    ivs (Morat) := 1.0 / 2.2820e7;
+    ivs (Neuchatel) := 1.0 / 2.1581e8;
+    ivs (Bienne) := 1.0 / 4.0870e7;
+  end Init_Sensitivity;
 
   --  We solve numerically   x' (t) = f (x (t), t)   over the time step h.
   --
@@ -99,31 +99,31 @@ procedure Three_Lakes_S is
     --  ! function f (x : Lake_Vector) return Lake_Vector is
     --  ! Full Ada: functions with non-atomic results.
 
-    procedure f (x : Lake_Vector; res_f: out Lake_Vector) is
+    procedure f (x : Lake_Vector; res_f : out Lake_Vector) is
       q_tr_mn, q_tr_nb : Real;
       --
       procedure Flux_tansfert is
         --  ! use PFEF;
       begin
-        q_tr_mn:=
+        q_tr_mn :=
           --  Canal de la Broye: Morat -> Neuchatel.
-          Sign (x(Morat)-x(Neuchatel)) *                           --  sens d'ecoulement
-          15.223 *                                                  --  facteur de debit
-          ( ( (x(Morat)+x(Neuchatel))*0.5-426.0 )**1.868 ) *   --  effet du niveau moyen
-          ( (abs(x(Morat)-x(Neuchatel)))**0.483 );      --  effet de la diff. de niveaux
+          Sign (x (Morat) - x (Neuchatel)) *                           --  sens d'ecoulement
+          15.223 *                                                      --  facteur de debit
+          (((x (Morat) + x (Neuchatel)) * 0.5 - 426.0)**1.868) *   --  effet du niveau moyen
+          ((abs (x (Morat) - x (Neuchatel)))**0.483);       --  effet de la diff. de niveaux
         --
-        q_tr_nb:=
+        q_tr_nb :=
           --  Canal de la Thielle: Neuchatel -> Bienne.
-          Sign (x(Neuchatel)-x(Bienne)) *                          --  sens d'ecoulement
-          18.582 *                                                  --  facteur de debit
-          ( ( (x(Neuchatel)+x(Bienne))*0.5-426.0 )**2.511 ) *  --  effet du niveau moyen
-          ( (abs(x(Neuchatel)-x(Bienne)))**0.482 );     --  effet de la diff. de niveaux
+          Sign (x (Neuchatel) - x (Bienne)) *                          --  sens d'ecoulement
+          18.582 *                                                      --  facteur de debit
+          (((x (Neuchatel) + x (Bienne)) * 0.5 - 426.0)**2.511) *  --  effet du niveau moyen
+          ((abs (x (Neuchatel) - x (Bienne)))**0.482);      --  effet de la diff. de niveaux
       end Flux_tansfert;
     begin
       Flux_tansfert;
-      res_f (Morat    ) := (q_e (Morat)     - q_tr_mn                 ) * ivs (Morat);
-      res_f (Neuchatel) := (q_e (Neuchatel) + q_tr_mn - q_tr_nb       ) * ivs (Neuchatel);
-      res_f (Bienne   ) := (q_e (Bienne)              + q_tr_nb - q_sb) * ivs (Bienne);
+      res_f (Morat) := (q_e (Morat)     - q_tr_mn) * ivs (Morat);
+      res_f (Neuchatel) := (q_e (Neuchatel) + q_tr_mn - q_tr_nb) * ivs (Neuchatel);
+      res_f (Bienne) := (q_e (Bienne)              + q_tr_nb - q_sb) * ivs (Bienne);
     end f;
     k1, k2, k3, k4, tmp_a, tmp_b, dbk2, dbk3 : Lake_Vector;
   begin
@@ -137,7 +137,7 @@ procedure Three_Lakes_S is
     --  !  k4 := f (x + h *       k3);
     --  !  x := x + h * (1.0/6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
     --
-    f (x               , k1);
+    f (x, k1);
     --
     Times (h * 0.5, k1, tmp_a);
     Plus (x, tmp_a, tmp_b);      --  tmp_b = x + h * 0.5 * k1
@@ -156,7 +156,7 @@ procedure Three_Lakes_S is
     Plus (k1, dbk2, tmp_a);
     Plus (tmp_a, dbk3, tmp_b);
     Plus (tmp_b, k4, tmp_a);     --  tmp_a = (k1 + 2.0 * k2 + 2.0 * k3 + k4)
-    Times (h * (1.0/6.0), tmp_a, tmp_b);
+    Times (h * (1.0 / 6.0), tmp_a, tmp_b);
     Plus (x, tmp_b, tmp_a);
     x := tmp_a;
   end Evolution;
@@ -196,7 +196,7 @@ procedure Three_Lakes_S is
         Put (rf, i);
         for l in Lake loop
           Put (rf, sep);
-          Put (rf, x(l), 4, 5, 0);
+          Put (rf, x (l), 4, 5, 0);
         end loop;
         New_Line (rf);
       end if;

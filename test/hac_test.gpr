@@ -1,10 +1,12 @@
---  This is a GNAT, GCC or GNAT Programming Studio (GPS) project file
+--  This is a GNAT, GCC or GNAT Studio project file
 --  for the examples of the HAC project ( https://sf.net/projects/hacadacompiler/ ).
 --
 --  These examples give (or should give...) the same output on a real
 --  Ada compiler as when compiled and run by HAC.
 --
---  Build me with "gprbuild -p -P hac_test", or open me with GPS.
+--  The official regression test for HAC is `all_silent_tests.adb`.
+--
+--  Build me with "gprbuild -P hac_test", or open me with GNAT Studio.
 --  
 
 project HAC_Test is
@@ -13,6 +15,8 @@ project HAC_Test is
    HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
 
    for Main use (
+     "all_noisy_tests.adb",
+     "all_silent_tests.adb",
      "case_statement.adb",
      "constants.adb",
      "declarations.adb",
@@ -44,6 +48,7 @@ project HAC_Test is
 
    for Source_Dirs use (".", "../src");
    for Exec_Dir use ".";
+   for Create_Missing_Dirs use "True";  --  Flips by default the "-p" switch
 
    package Pretty_Printer is
       for Default_Switches ("ada") use ("-i2");

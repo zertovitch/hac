@@ -60,12 +60,12 @@ procedure COVID_19_S is
 
   procedure Times (l : Real; v : Status_Vector; r : out Status_Vector) is
   begin
-    for i in Status loop r(i) := v(i) * l; end loop;
+    for i in Status loop r (i) := v (i) * l; end loop;
   end Times;
 
   procedure Plus (a, b : Status_Vector; r : out Status_Vector) is
   begin
-    for i in Status loop r(i) := a(i) + b(i); end loop;
+    for i in Status loop r (i) := a (i) + b (i); end loop;
   end Plus;
 
   inv_incubation_period : constant Real := 1.0 / 5.2;
@@ -98,9 +98,9 @@ procedure COVID_19_S is
       --  Infectious people recover after infective period. -> Recovered.
       --  This rate is already computed: nb_infected_over_period;
       res_f (Susceptible) := -s_to_e;
-      res_f (Exposed    ) :=  s_to_e - e_to_i;
-      res_f (Infectious ) :=           e_to_i - nb_infected_over_period;
-      res_f (Recovered  ) :=                    nb_infected_over_period;
+      res_f (Exposed) :=  s_to_e - e_to_i;
+      res_f (Infectious) :=           e_to_i - nb_infected_over_period;
+      res_f (Recovered) :=                    nb_infected_over_period;
     end f;
     k1, k2, k3, k4, tmp_a, tmp_b, dbk2, dbk3 : Status_Vector;
   begin
@@ -113,7 +113,7 @@ procedure COVID_19_S is
     --  !  k4 := f (x + h *       k3);
     --  !  x := x + h * (1.0/6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
     --
-    f (xt              , k1);
+    f (xt, k1);
     --
     Times (h * 0.5, k1, tmp_a);
     Plus (xt, tmp_a, tmp_b);      --  tmp_b = xt + h * 0.5 * k1
@@ -132,14 +132,14 @@ procedure COVID_19_S is
     Plus (k1, dbk2, tmp_a);
     Plus (tmp_a, dbk3, tmp_b);
     Plus (tmp_b, k4, tmp_a);      --  tmp_a = (k1 + 2.0 * k2 + 2.0 * k3 + k4)
-    Times (h * (1.0/6.0), tmp_a, tmp_b);
+    Times (h * (1.0 / 6.0), tmp_a, tmp_b);
     Plus (xt, tmp_b, tmp_a);
     xt := tmp_a;
   end Evolution;
 
   type Scenario is (No_Lockdown, Lockdown, Lockdown_in_two_Steps);
 
-  procedure Simulation (s: Scenario) is
+  procedure Simulation (s : Scenario) is
     --  ! use Ada.Text_IO, Ada.Integer_Text_IO, PFIO;
     x : Status_Vector;
     dt : Real;
@@ -161,9 +161,9 @@ procedure COVID_19_S is
     --  !     Recovered   =>         0.0
     --  !   );
     x (Susceptible) := 1_000_000.0;
-    x (Exposed    ) :=         0.0;
-    x (Infectious ) :=         1.0;  --  Patient 1.
-    x (Recovered  ) :=         0.0;
+    x (Exposed) :=         0.0;
+    x (Infectious) :=         1.0;  --  Patient 1.
+    x (Recovered) :=         0.0;
     --  Status numbers at time t = 0.
 
     Create (rf, "covid_19_s_" & To_Lower (+Scenario'Image (s)) & ".csv");
@@ -178,7 +178,7 @@ procedure COVID_19_S is
         Put (rf, i);
         for l in Status loop
           Put (rf, sep);
-          Put (rf, x(l), 4, 5, 0);
+          Put (rf, x (l), 4, 5, 0);
         end loop;
         New_Line (rf);
       end if;

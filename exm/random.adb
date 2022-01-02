@@ -7,7 +7,7 @@ procedure Random is
   procedure Discrete (iterations : Integer) is
     faces : constant := 6;
     histogram : array (1 .. faces) of Integer;
-    r, t: Integer;
+    r, t : Integer;
   begin
     for f in 1 .. faces loop
       histogram (f) := 0;
@@ -48,7 +48,7 @@ procedure Random is
 
 begin
   for dec in 3 .. 7 loop
-    Put_Line( +"======= Iterations: 10 ** " & dec );
+    Put_Line (+"======= Iterations: 10 ** " & dec);
     it := 10 ** dec;
     Discrete (it);
     Continuous (it);

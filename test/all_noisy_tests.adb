@@ -19,6 +19,7 @@ procedure All_Noisy_Tests is
 
     procedure Launch_HAC (Ada_file_name : VString) is
     begin
+      Put_Line ("-------------------------------------------------------");
       Shell (
         +".." & Directory_Separator & "hac -v1 " & Ada_file_name,
         False
@@ -27,11 +28,11 @@ procedure All_Noisy_Tests is
 
     procedure Build_HAC is
     begin
-      if Get_Env("hacbuild") = "done" then
+      if Get_Env ("hacbuild") = "done" then
         return;
-      end if;   
+      end if;
       Put_Line ("(Re-)building HAC, in case the present program isn't run from HAC...");
-      Shell (+"gprbuild -p -P .." & Directory_Separator & "hac", True);
+      Shell (+"gprbuild -P .." & Directory_Separator & "hac", True);
     end Build_HAC;
 
     procedure Pause is
@@ -43,13 +44,13 @@ procedure All_Noisy_Tests is
     end Pause;
 
   begin
-    Put_Line( "    ___________      _________________________________");
-    Put_Line( "   / *  HAC  * \    /  ""Noisy tests"": a human is      \");
-    Put_Line( "   \__Testing__/    \__required to check the output.__/");
+    Put_Line ("    ___________      _________________________________");
+    Put_Line ("   / *  HAC  * \    /  ""Noisy tests"": a human is      \");
+    Put_Line ("   \__Testing__/    \__required to check the output.__/");
     New_Line;
     Build_HAC;  --  Redundant if this program is itself run through HAC.
     --
-    Put_Line( "----> Launching tests (one instance of HAC each)...");
+    Put_Line ("----> Launching tests (one instance of HAC each)...");
     for e in 1 .. 4 loop
       Launch_HAC (+"exception_0" & e & ".adb");
     end loop;

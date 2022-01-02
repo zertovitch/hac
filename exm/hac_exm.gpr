@@ -1,16 +1,16 @@
---  This is a GNAT, GCC or GNAT Programming Studio (GPS) project file
+--  This is a GNAT, GCC or GNAT Studio project file
 --  for the examples of the HAC project ( https://sf.net/projects/hacadacompiler/ ).
 --
 --  These examples give (or should give...) the same output on a real
 --  Ada compiler as when compiled and run by HAC.
 --
---  Build me with "gprbuild -p -P hac_exm", or open me with GPS.
+--  Build me with "gprbuild -P hac_exm", or open me with GNAT Studio.
 --  
 
 project HAC_Exm is
 
-   type Build_Mode_Type is ("Debug", "Fast");
-   Build_Mode : Build_Mode_Type := external ("Build_Mode", "Debug");
+   type HAC_Build_Mode_Type is ("Debug", "Fast");
+   HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
 
    for Main use (
      --
@@ -74,7 +74,7 @@ project HAC_Exm is
      --  "racedead.adb",
      --  "test2.adb"
    );
-   case Build_Mode is
+   case HAC_Build_Mode is
       when "Debug" =>
          for Object_Dir use "../obj/debug";
       when "Fast" =>
@@ -83,43 +83,64 @@ project HAC_Exm is
 
    for Source_Dirs use (".", "../src", "not_working");
    for Exec_Dir use ".";
+   for Create_Missing_Dirs use "True";  --  Flips by default the "-p" switch
 
    package Pretty_Printer is
       for Default_Switches ("ada") use ("-i2");
    end Pretty_Printer;
 
+   Common_Compiler_Options := (
+     "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
+     "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
+     "-gnatwcijkmopruvz.c.p.t.w.x",  --  Warnings switches (run "gnatmake" for full list)
+     "-gnatf",  --  Full errors. Verbose details, all undefined references
+     "-gnatq",  --  Don't quit, try semantics, even if parse errors
+     "-gnatQ",  --  Don't quit, write ali/tree file even if compile errors
+     --
+     "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
+     "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
+     "-gnatyx",       --  Style: check x:no extra parens
+     "-gnatye",       --  Style: check e:end/exit labels present
+     "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
+   );
+
+   Debug_Options := (
+     "-gnata",         --  Assertions enabled
+     "-gnato",         --  Enable overflow checking in STRICT mode
+     "-gnatVa",        --  Enable all validity checking options
+     "-fstack-check",
+     "-fno-inline",
+     --
+     "-g"              --  Generate debugging information
+   );
+
+   Fast_Options := (
+     "-O2",
+     "-gnatpn", 
+     "-fipa-cp-clone", "-fgcse-after-reload", 
+     "-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
+     "-ftracer", "-fweb", "-ftree-vectorize",
+     "-frename-registers", "-ffunction-sections",
+     "-g"     
+   );
+   
    package Compiler is
-      case Build_Mode is
-         when "Debug" =>
-            for Default_Switches ("ada") use (
-						  "-gnatf", "-gnato", "-fstack-check", "-g", 
-							"-gnatwa", "-gnatVa", 
-							"-gnatec" & project'Project_Dir & "../debug.pra",               
-              "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
-              "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
-              "-gnatyx"        --  Style: check x:no extra parens
-              --  ,
-              --  "-gnatye",       --  Style: check e:end/exit labels present
-              --  "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
-            );
-         when "Fast" =>
-            for Default_Switches ("ada") use (
-						  "-gnatwa", "-O2", "-gnatpn", 
-							"-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
-							"-ftracer", "-fweb", "-frename-registers", "-ffunction-sections");
+      case HAC_Build_Mode is
+         when "Debug" => for Default_Switches ("ada") use Common_Compiler_Options & Debug_Options;
+         when "Fast"  => for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options;
       end case;
    end Compiler;
 
    package Binder is
-      case Build_Mode is
+      case HAC_Build_Mode is
          when "Debug" =>
-            for Default_Switches ("ada") use ("-E");
+            for Default_Switches ("ada") use ("-Es");
          when "Fast" =>
       end case;
    end Binder;
 
    package Linker is
-      case Build_Mode is
+      case HAC_Build_Mode is
          when "Debug" =>
             for Default_Switches ("ada") use ("-g");
          when "Fast" =>
