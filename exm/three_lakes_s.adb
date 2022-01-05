@@ -87,9 +87,9 @@ procedure Three_Lakes_S is
 
   procedure Init_Sensitivity is
   begin
-    ivs (Morat) := 1.0 / 2.2820e7;
+    ivs (Morat)     := 1.0 / 2.2820e7;
     ivs (Neuchatel) := 1.0 / 2.1581e8;
-    ivs (Bienne) := 1.0 / 4.0870e7;
+    ivs (Bienne)    := 1.0 / 4.0870e7;
   end Init_Sensitivity;
 
   --  We solve numerically   x' (t) = f (x (t), t)   over the time step h.

@@ -161,9 +161,9 @@ procedure COVID_19_S is
     --  !     Recovered   =>         0.0
     --  !   );
     x (Susceptible) := 1_000_000.0;
-    x (Exposed) :=         0.0;
-    x (Infectious) :=         1.0;  --  Patient 1.
-    x (Recovered) :=         0.0;
+    x (Exposed)     :=         0.0;
+    x (Infectious)  :=         1.0;  --  Patient 1.
+    x (Recovered)   :=         0.0;
     --  Status numbers at time t = 0.
 
     Create (rf, "covid_19_s_" & To_Lower (+Scenario'Image (s)) & ".csv");

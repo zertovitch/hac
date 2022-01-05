@@ -30,6 +30,7 @@ project HAC_Exm is
      "env.adb",
      "existence.adb",
      "hello.adb",
+     "hello_big.adb",
      "gallery.adb",
      "file_append.adb",
      "file_copy.adb",
