@@ -267,11 +267,12 @@ package HAC_Sys.PCode is
     --
     --  VString functions
     --
-    SF_String_to_VString,        --  +S        (S is a fixed-size string)
+    SF_String_to_VString,        --  +s        (s is a fixed-size string)
     SF_Literal_to_VString,       --  +"Hello"
+    SF_VString_to_String,        --  -v
     SF_Char_to_VString,          --  +'x'
-    SF_Two_VStrings_Concat,      --  V1 & V2
-    SF_VString_Char_Concat,      --  V & 'x'
+    SF_Two_VStrings_Concat,      --  v1 & v2
+    SF_VString_Char_Concat,      --  v & 'x'
     SF_Char_VString_Concat,      --  'x' & v
     SF_LStr_VString_Concat,      --  "Hello " & v
     --

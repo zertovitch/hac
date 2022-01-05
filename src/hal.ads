@@ -1,14 +1,14 @@
 --  HAL - HAC Ada Library
 -------------------------
 --
---  The HAL package and possible children contains all definitions
---  that are useful for HAC in its default operating mode.
+--  The HAL package and possible children contains definitions
+--  that are useful for HAC in its minimal operating mode.
 --
---  HAL is compilable by a full Ada compiler like GNAT or ObjectAda,
+--  HAL is compilable by a "full Ada" compiler like GNAT or ObjectAda,
 --  so the HAC programs can be run on both HAC and a full Ada system.
 --
 --  Another purpose of this specification is to have a document,
---  automatically verified by full Ada systems, of the standard types
+--  automatically verified by "full Ada" systems, of the standard types
 --  and subprograms available in HAC.
 --
 --  Furthermore, some items of HAL are used in the HAC virtual machine.
@@ -98,6 +98,7 @@ package HAL is
   Null_VString : VString renames VStr_Pkg.Null_Unbounded_String;
   function To_VString (S : String) return VString renames VStr_Pkg.To_Unbounded_String;
   function To_VString (C : Character) return VString;
+  function To_String (V : VString) return String renames VStr_Pkg.To_String;
   package ACH renames Ada.Characters.Handling;
   --
   function Element (Source : VString; Index : Positive) return Character renames VStr_Pkg.Element;
@@ -139,6 +140,7 @@ package HAL is
   --
   function "+" (S : String) return VString renames To_VString;
   function "+" (C : Character) return VString renames To_VString;
+  function "-" (V : VString) return String renames To_String;
   --
   function "*" (Num : Natural; Pattern : Character) return VString renames VStr_Pkg."*";
   function "*" (Num : Natural; Pattern : String) return VString;

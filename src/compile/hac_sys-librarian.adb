@@ -312,14 +312,15 @@ package body HAC_Sys.Librarian is
     Enter_HAL_Funct ("Rnd",                 Floats, SF_Random_Float);
     Enter_HAL_Funct ("Clock",               Times,  SF_Clock);
     --
-    Enter_HAL_Funct ("Element",             Chars,    SF_Element);
-    Enter_HAL_Funct ("Index",               Ints,     SF_Index);
-    Enter_HAL_Funct ("Index_Backward",      Ints,     SF_Index_Backward);
-    Enter_HAL_Funct ("Length",              Ints,     SF_Length);
-    Enter_HAL_Funct ("Slice",               VStrings, SF_Slice);
-    Enter_HAL_Funct ("To_Lower",            Chars,    SF_To_Lower_Char);
-    Enter_HAL_Funct ("To_Upper",            Chars,    SF_To_Upper_Char);
-    Enter_HAL_Funct ("To_VString",          VStrings, SF_Literal_to_VString);
+    Enter_HAL_Funct ("Element",             Chars,               SF_Element);
+    Enter_HAL_Funct ("Index",               Ints,                SF_Index);
+    Enter_HAL_Funct ("Index_Backward",      Ints,                SF_Index_Backward);
+    Enter_HAL_Funct ("Length",              Ints,                SF_Length);
+    Enter_HAL_Funct ("Slice",               VStrings,            SF_Slice);
+    Enter_HAL_Funct ("To_Lower",            Chars,               SF_To_Lower_Char);
+    Enter_HAL_Funct ("To_Upper",            Chars,               SF_To_Upper_Char);
+    Enter_HAL_Funct ("To_VString",          VStrings,            SF_Literal_to_VString);
+    Enter_HAL_Funct ("To_String",           Strings_as_VStrings, SF_VString_to_String);
     --
     Enter_HAL_Funct ("Trim_Left",           VStrings, SF_Trim_Left);
     Enter_HAL_Funct ("Trim_Right",          VStrings, SF_Trim_Right);

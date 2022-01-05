@@ -174,9 +174,13 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         Len := Integer (ND.S (Curr_TCB.T).I);      --  Length of string
         Idx := Integer (ND.S (Curr_TCB.T + 1).I);  --  Index to string table
         ND.S (Curr_TCB.T) := GR_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
+      when SF_VString_to_String =>
+        --  The type has just changed to Strings_as_VStrings at parser level.
+        --  For the VM, it's a VString one way or the other.
+        null;
       when SF_Char_to_VString =>
         --  We create a 1-character temporary String: (1 => Character'Val (...)) and
-        --  convert it to a VString
+        --  convert it to a VString.
         ND.S (Curr_TCB.T) := GR_VString (HAL.To_VString ((1 => Character'Val (ND.S (Curr_TCB.T).I))));
       when SF_Two_VStrings_Concat =>
         Pop (ND);

@@ -193,8 +193,8 @@ package body HAC_Sys.Parser.Helpers is
       when Arrays              => return "array type";
       when Records             => return "record type";
       when Enums               => return "enumeration type";
-      when String_Literals |
-           Strings_as_VStrings => return "String type";
+      when String_Literals     => return "String type [literal]";
+      when Strings_as_VStrings => return "String type [pseudo-unconstrained]";
       when VStrings            => return "VString type";
       when Times               => return "Time type";             --  "the" Time type
       when Durations           => return "Duration type";         --  "the" Duration type

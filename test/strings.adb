@@ -40,6 +40,7 @@ begin
   s1 := +"ab";
   s2 := +"cdef";
   s3 := 'b' & s2;
+  --
   if s1 & s2 /= s4      then Failure (+"VString & VString"); end if;
   if s1 & "cdef" /= s4  then Failure (+"VString & String"); end if;
   if "ab" & s2 /= s4    then Failure (+"String  & VString"); end if;
@@ -72,10 +73,10 @@ begin
   if To_Upper (+"x") /= +"X" then Failure (+"To_Upper VString"); end if;
   if To_Upper  ('x') /=  'X' then Failure (+"To_Upper Char");    end if;
   --
-  if Index (s4, +"cat") /= 0 then Failure (+"Index 1");    end if;
-  if Index (s4, +"cde") /= 3 then Failure (+"Index 2");    end if;
-  if Index (s4,  "cat") /= 0 then Failure (+"Index 3");    end if;
-  if Index (s4,  "cde") /= 3 then Failure (+"Index 4");    end if;
+  if Index (s4, +"cat") /= 0 then Failure (+"Index, #1");    end if;
+  if Index (s4, +"cde") /= 3 then Failure (+"Index, #2");    end if;
+  if Index (s4,  "cat") /= 0 then Failure (+"Index, #3");    end if;
+  if Index (s4,  "cde") /= 3 then Failure (+"Index, #4");    end if;
   --
   s4_s4 := s4 & s4;  --  abcdefabcdef
                      --  123456789012
@@ -125,14 +126,17 @@ begin
   --
   --  Strings_as_VStrings
   --
-  if Enum'Image (V) /= "V" then Failure (+"Strings_as_VStrings 1"); end if;
+  if Enum'Image (V) /= "V" then Failure (+"Strings_as_VStrings, #1"); end if;
   --  Concatenation between various String internal types or with Character:
-  if Enum'Image (U) & fs_1 /= "Udef" then Failure (+"Strings_as_VStrings 2"); end if;
-  if Enum'Image (W) & "aw" /= "Waw"  then Failure (+"Strings_as_VStrings 3"); end if;
-  if fs_1 & Enum'Image (W) /= "defW" then Failure (+"Strings_as_VStrings 4"); end if;
-  if "UB" & Enum'Image (U) /= "UBU"  then Failure (+"Strings_as_VStrings 5"); end if;
-  if 'U' & Enum'Image (V) /= "UV" then Failure (+"Strings_as_VStrings 6"); end if;
-  if Enum'Image (U) & 'V' /= "UV" then Failure (+"Strings_as_VStrings 7"); end if;
+  if Enum'Image (U) & fs_1 /= "Udef" then Failure (+"Strings_as_VStrings, #2"); end if;
+  if Enum'Image (W) & "aw" /= "Waw"  then Failure (+"Strings_as_VStrings, #3"); end if;
+  if fs_1 & Enum'Image (W) /= "defW" then Failure (+"Strings_as_VStrings, #4"); end if;
+  if "UB" & Enum'Image (U) /= "UBU"  then Failure (+"Strings_as_VStrings, #5"); end if;
+  if 'U' & Enum'Image (V) /= "UV"    then Failure (+"Strings_as_VStrings, #6"); end if;
+  if Enum'Image (U) & 'V' /= "UV"    then Failure (+"Strings_as_VStrings, #7"); end if;
+  if To_String (To_VString ("abcd") & (+"ef")) /= "abcdef" then
+    Failure (+"String <-> VString, #1");
+  end if;
   --
   --  HAL functions
   --

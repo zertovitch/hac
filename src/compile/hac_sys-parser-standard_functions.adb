@@ -82,6 +82,8 @@ package body HAC_Sys.Parser.Standard_Functions is
           Expected (1) := VString_or_Chars_Set;
         when SF_Literal_to_VString =>
           Expected (1) := Chars_or_Strings_Set;
+        when SF_VString_to_String =>
+          Expected (1) := VStrings_Set;
         when SF_Index | SF_Index_Backward =>
           --  Index (OS, +"Windows"[, 3]), Index (OS, "Windows"[, 3]) or Index (OS, 'W'[, 3])
           Expected (1 .. 3) := (VStrings_Set, Any_String_or_Chars_Set, Ints_Set);

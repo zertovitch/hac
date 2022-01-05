@@ -701,6 +701,8 @@ package body HAC_Sys.Parser.Expressions is
           Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
         );
         X.TYP := VStrings;
+      elsif Adding_OP = Minus and X.TYP = VStrings then            --  -v
+        X.TYP := Strings_as_VStrings;
       elsif X.TYP not in Numeric_Typ then
         Error (CD, err_illegal_type_for_arithmetic_expression);
       elsif Adding_OP = Minus then
