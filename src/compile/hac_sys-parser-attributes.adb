@@ -15,8 +15,7 @@ package body HAC_Sys.Parser.Attributes is
     Pred,
     Succ,
     Val,
-    Value,
-    VValue   --  Like Value but has a VString argument
+    Value
   );
 
   procedure Scalar_Subtype_Attribute (
@@ -158,7 +157,7 @@ package body HAC_Sys.Parser.Attributes is
     begin
       Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
       Expressions.Expression (CD, Level, FSys, type_of_argument);
-      --  Argument is of the base type (S'Base).
+      --  Argument is of the base type (S'Base). Translation: we forget the constraints here.
       s_base := Exact_Typ (Typ_ID.xTyp);
       if s_base = type_of_argument then
         case Typ_ID.xTyp.TYP is
@@ -183,6 +182,56 @@ package body HAC_Sys.Parser.Attributes is
       Type_of_Result := (Strings_as_VStrings, 0, 0, 0);
     end Image;
     --
+    procedure Value is
+      type_of_argument : Exact_Typ;
+      use Helpers;
+    begin
+      Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
+      Expressions.Expression (CD, Level, FSys, type_of_argument);
+      --  Argument is of the base type (S'Base).
+      if type_of_argument.TYP = String_Literals then
+        Emit_Std_Funct (CD, SF_Literal_to_VString);
+      elsif type_of_argument.TYP = Strings_as_VStrings then
+        null;
+      elsif Is_Char_Array (CD, type_of_argument) then
+        Emit_Std_Funct (CD,
+          SF_String_to_VString,
+          Operand_1_Type (CD.Arrays_Table (type_of_argument.Ref).Array_Size)
+        );
+      else
+      Type_Mismatch (
+        CD,
+        err_parameter_types_do_not_match,
+        Found    => type_of_argument,
+        Expected => Str_Lit_Set or Str_as_VStr_Set or Arrays_Set
+      );
+      end if;
+      case Typ_ID.xTyp.TYP is
+        when NOTYP     => null;  --  Already in error
+        when Ints      =>
+          Emit_Std_Funct (CD, SF_Value_Attribute_Ints);
+          Type_of_Result := (Ints, 0, 0, 0);
+        when Floats    =>
+          Emit_Std_Funct (CD, SF_Value_Attribute_Floats);
+          Type_of_Result := (Floats, 0, 0, 0);
+        when Bools     =>
+          Emit_Std_Funct (CD, SF_Value_Attribute_Bools);
+          Type_of_Result := (Bools, 0, 0, 0);
+        when Chars     =>
+          Emit_Std_Funct (CD, SF_Value_Attribute_Chars);
+          Type_of_Result := (Chars, 0, 0, 0);
+        when Durations =>
+          Emit_Std_Funct (CD, SF_Value_Attribute_Durs);
+          Type_of_Result := (Durations, 0, 0, 0);
+        when Enums     =>
+          Emit_Std_Funct (CD, SF_Value_Attribute_Enums, Operand_1_Type (Typ_ID.xTyp.Ref));
+          Type_of_Result := Typ_ID.xTyp;
+        when others =>
+          Error (CD, err_attribute_prefix_invalid, attr_ID, major);
+      end case;
+      Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
+    end Value;
+    --
   begin
     Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
     case attr is
@@ -191,12 +240,11 @@ package body HAC_Sys.Parser.Attributes is
       when Pos          => Pos;
       when Val          => Val;
       when Image        => Image;
-      when others =>
-        Error (CD, err_not_yet_implemented, "attribute " & attr_ID, major);
+      when Value        => Value;
     end case;
-  --  exception
-  --    when Constraint_Error =>
-  --      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
+    exception
+      when Constraint_Error =>
+        Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
   end Scalar_Subtype_Attribute;
 
 end HAC_Sys.Parser.Attributes;

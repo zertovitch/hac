@@ -356,7 +356,11 @@ package body HAC_Sys.Parser.Helpers is
     (CD : in out Compiler_Data; X : in out Exact_Typ; include_characters : Boolean)
   is
     use Compiler.PCode_Emit, PCode;
+    expected_set : Typ_Set :=  VStrings_Set or Str_Lit_Set or Str_as_VStr_Set or Arrays_Set;
   begin
+    if include_characters then
+      expected_set := expected_set or Chars_Set;
+    end if;
     if X.TYP = String_Literals then
       Emit_Std_Funct (CD, SF_Literal_to_VString);
     elsif Is_Char_Array (CD, X) then
@@ -373,7 +377,7 @@ package body HAC_Sys.Parser.Helpers is
         CD,
         err_parameter_types_do_not_match,
         Found    => X,
-        Expected => VStrings_Set or Str_Lit_Set
+        Expected => expected_set
       );
     end if;
     X.TYP := VStrings;

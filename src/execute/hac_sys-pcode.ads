@@ -325,13 +325,20 @@ package HAC_Sys.PCode is
     --
     SF_Integer_Value,
     SF_Float_Value,
-    --
-    SF_Image_Attribute_Ints,    --  'Image attribute "as is" from Ada
-    SF_Image_Attribute_Floats,  --  'Image attribute "as is" from Ada
-    SF_Image_Attribute_Bools,   --  'Image attribute "as is" from Ada in all capitals
-    SF_Image_Attribute_Chars,   --  'Image attribute "as is" from Ada
-    SF_Image_Attribute_Durs,    --  'Image attribute "as is" from Ada with leading ' '
-    SF_Image_Attribute_Enums,   --  'Image attribute "as is" from Ada in all capitals
+    --  'Image attribute "as is" from Ada:
+    SF_Image_Attribute_Ints,
+    SF_Image_Attribute_Floats,
+    SF_Image_Attribute_Bools,
+    SF_Image_Attribute_Chars,
+    SF_Image_Attribute_Durs,
+    SF_Image_Attribute_Enums,
+    --  'Value attribute "as is" from Ada:
+    SF_Value_Attribute_Ints,
+    SF_Value_Attribute_Floats,
+    SF_Value_Attribute_Bools,
+    SF_Value_Attribute_Chars,
+    SF_Value_Attribute_Durs,
+    SF_Value_Attribute_Enums,
     --
     SF_Argument,
     --  Ada.Directories-like

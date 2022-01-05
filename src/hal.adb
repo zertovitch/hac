@@ -210,14 +210,20 @@ package body HAL is
     return V & Image (D);
   end "&";
 
+  function Nice_Image (B : Boolean) return VString is
+    img : constant String := Boolean'Image (B);
+  begin
+    return +(img (img'First) & ACH.To_Lower (img (img'First + 1 .. img'Last)));
+  end Nice_Image;
+
   function "&" (B : Boolean; V : VString) return VString is
   begin
-    return (+Boolean'Image (B)) & V;
+    return Nice_Image (B) & V;
   end "&";
 
   function "&" (V : VString; B : Boolean) return VString is
   begin
-    return V & (+Boolean'Image (B));
+    return V & Nice_Image (B);
   end "&";
 
   function To_Lower (Item : VString) return VString is

@@ -752,7 +752,7 @@ package body HAC_Sys.PCode.Interpreter is
 
   function Message (E : Exception_Propagation_Data) return String is
   begin
-    return HAL.VStr_Pkg.To_String (E.Exception_Message);
+    return HAL.To_String (E.Exception_Message);
   end Message;
 
   function Is_Exception_Raised (E : Exception_Propagation_Data) return Boolean is
@@ -764,8 +764,8 @@ package body HAC_Sys.PCode.Interpreter is
   begin
     for STL of E.ST_Message loop
       Show_Line_Information (
-        HAL.VStr_Pkg.To_String (STL.File_Name),
-        HAL.VStr_Pkg.To_String (STL.Full_Block_Id),
+        HAL.To_String (STL.File_Name),
+        HAL.To_String (STL.Full_Block_Id),
         STL.Line_Number
       );
     end loop;

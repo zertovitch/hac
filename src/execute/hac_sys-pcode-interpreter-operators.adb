@@ -359,16 +359,16 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_Image_Times     => Top_Item := GR_VString (HAL.HAC_Image (Top_Item.Tim));
       when SF_Image_Durations => Top_Item := GR_VString (HAL.Image (Top_Item.Dur));
       --
-      when SF_Integer_Value =>
+      when SF_Integer_Value | SF_Value_Attribute_Ints =>
         begin
-          Top_Item.I := HAC_Integer'Value (HAL.VStr_Pkg.To_String (Top_Item.V));
+          Top_Item.I := HAC_Integer'Value (HAL.To_String (Top_Item.V));
         exception
           when E : Constraint_Error =>
             Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E), True);
         end;
-      when SF_Float_Value =>
+      when SF_Float_Value | SF_Value_Attribute_Floats =>
         begin
-          Top_Item := GR_Real (HAC_Float'Value (HAL.VStr_Pkg.To_String (Top_Item.V)));
+          Top_Item := GR_Real (HAC_Float'Value (HAL.To_String (Top_Item.V)));
         exception
           when E : Constraint_Error =>
             Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E), True);
@@ -383,6 +383,51 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         --  .Name contains the upper case representation as required by RM 3.5 (32).
         Top_Item := GR_VString (To_String (CD.IdTab (Natural (ND.IR.X) + Natural (Top_Item.I)).Name));
       --
+      when SF_Value_Attribute_Bools  =>
+        begin
+          Top_Item.I := Boolean'Pos (Boolean'Value (HAL.To_String (Top_Item.V)));
+        exception
+          when E : Constraint_Error =>
+            Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E), True);
+        end;
+      when SF_Value_Attribute_Chars  =>
+        begin
+          Top_Item.I := Character'Pos (Character'Value (HAL.To_String (Top_Item.V)));
+        exception
+          when E : Constraint_Error =>
+            Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E), True);
+        end;
+      when SF_Value_Attribute_Durs   =>
+        begin
+          Top_Item := GR_Duration (Duration'Value (HAL.To_String (Top_Item.V)));
+        exception
+          when E : Constraint_Error =>
+            Raise_Standard (ND, VME_Constraint_Error, Ada.Exceptions.Exception_Message (E), True);
+        end;
+      when SF_Value_Attribute_Enums  =>
+        --  If there is a performance issue here, we could replace
+        --  this linear search with something using Hashed_Maps.
+        declare
+          to_match_any_case : constant String := HAL.To_String (Top_Item.V);
+          to_match : constant String := HAL.ACH.To_Upper (to_match_any_case);
+          j : HAC_Integer := -1;
+        begin
+          for i in 0 .. CD.IdTab (Natural (ND.IR.X)).xTyp.Discrete_Last loop
+            if To_String (CD.IdTab (Natural (ND.IR.X) + Natural (i + 1)).Name) = to_match then
+              j := i;
+              exit;
+            end if;
+          end loop;
+          if j >= 0 then
+            Top_Item.I := j;
+          else
+            Raise_Standard (ND, VME_Constraint_Error,
+              '"' & to_match_any_case &
+              """ is not a literal of enumeration type """ &
+              To_String (CD.IdTab (Natural (ND.IR.X)).Name_with_case) & '"',
+              True);
+          end if;
+        end;
       when SF_Get_Env =>
         declare
           Name : constant String := HAL.VStr_Pkg.To_String (Top_Item.V);
