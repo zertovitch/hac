@@ -280,12 +280,10 @@ package body HAL is
     Source_Length : constant Natural := Length (Source);
     Pattern_Length : constant Natural := Length (Pattern);
   begin
-    for I in reverse 1 .. Source_Length loop
-      if I <= Source_Length - Pattern_Length then
-        if Slice (Source, I, I + Pattern_Length - 1) = Pattern then
-          Result := Slice (Source, I + Pattern_Length, Source_Length);
-          exit;
-        end if;
+    for I in reverse 1 .. Source_Length - Pattern_Length loop
+      if Slice (Source, I, I + Pattern_Length - 1) = Pattern then
+        Result := Slice (Source, I + Pattern_Length, Source_Length);
+        exit;
       end if;
     end loop;
     return Result;

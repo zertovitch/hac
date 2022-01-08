@@ -127,13 +127,18 @@ package HAL is
   function Starts_With (Item : VString; Pattern : String) return Boolean;
   function Starts_With (Item : VString; Pattern : VString) return Boolean;
   function Tail (Source : VString; Count : Natural) return VString;
+
+  --  Tail_After_Match returns the tail of Source following last occurence of Pattern.
+  --  The result is empty if Pattern is not found.
   function Tail_After_Match (Source : VString; Pattern : Character) return VString;
   function Tail_After_Match (Source : VString; Pattern : String) return VString;
   function Tail_After_Match (Source : VString; Pattern : VString) return VString;
+
   function To_Lower (Item : Character) return Character renames ACH.To_Lower;  --  RM A.3.2 (6)
   function To_Upper (Item : Character) return Character renames ACH.To_Upper;  --  RM A.3.2 (6)
   function To_Lower (Item : VString) return VString;
   function To_Upper (Item : VString) return VString;
+
   function Trim_Left  (Source : VString) return VString;
   function Trim_Right (Source : VString) return VString;
   function Trim_Both  (Source : VString) return VString;

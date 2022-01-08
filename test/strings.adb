@@ -9,10 +9,10 @@ procedure Strings is
     Set_Exit_Status (1);  --  Compiler test failed.
   end Failure;
 
-  procedure Assert (Check : in Boolean) is
+  procedure Assert (Msg: VString; Check : in Boolean) is
   --  Similar to RM 11.4.2 but without raising an exception.
   begin
-    if not Check then Failure (+"Assert fails"); end if;
+    if not Check then Failure (Msg & ", assertion"); end if;
   end Assert;
 
   s1, s2, s3, s4, s4_s4 : VString;
@@ -140,26 +140,37 @@ begin
   --
   --  HAL functions
   --
-  if Starts_With (+"package",  "proc") then Failure (+"Starts_With"); end if;
-  if Starts_With (+"package", +"proc") then Failure (+"Starts_With"); end if;
-  if not Starts_With (+"package",  "pack") then Failure (+"Starts_With"); end if;
-  if not Starts_With (+"package", +"pack") then Failure (+"Starts_With"); end if;
+  Assert (+"SW_1", not Starts_With (+"package",  "proc"));
+  Assert (+"SW_2", not Starts_With (+"package", +"proc"));
+  Assert (+"SW_3",     Starts_With (+"package",  "pack"));
+  Assert (+"SW_4",     Starts_With (+"package", +"pack"));
   --
-  if Ends_With (+"package",  "proc") then Failure (+"Ends_With"); end if;
-  if Ends_With (+"package", +"proc") then Failure (+"Ends_With"); end if;
-  if not Ends_With (+"package",  "age") then Failure (+"Ends_With"); end if;
-  if not Ends_With (+"package", +"age") then Failure (+"Ends_With"); end if;
+  Assert (+"EW_1", not Ends_With (+"package",  "proc"));
+  Assert (+"EW_2", not Ends_With (+"package", +"proc"));
+  Assert (+"EW_3",     Ends_With (+"package",  "age"));
+  Assert (+"EW_4",     Ends_With (+"package", +"age"));
+  --
+  Assert (+"TAM_1", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/") = "gnx-startup");
+  Assert (+"TAM_2", Tail_After_Match (+"/etc/genesix/gnx-startup", +"ix") = "/gnx-startup");
+  Assert (+"TAM_3", Tail_After_Match (+"/etc/genesix/gnx-startup", +"gene") = "six/gnx-startup");
+  Assert (+"TAM_4", Tail_After_Match (+"/etc/genesix/gnx-startup", +"etc/genesix/gnx-startu") = "p");
+  Assert (+"TAM_5", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startu") = "p");
+  Assert (+"TAM_6", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startup") = "");
+  Assert (+"TAM_7", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startupp") = "");
+  Assert (+"TAM_8", Tail_After_Match (+"/etc/genesix/gnx-startup", "/g") = "nx-startup");  --  Must match the last "/g"
+  Assert (+"TAM_9", Tail_After_Match (+"/etc/genesix/gnx-startup", "/g") /= "enesix/gnx-startup");
+  --
   --  The following test is in one answer of
   --  https://stackoverflow.com/questions/62080743/how-do-you-check-if-string-ends-with-another-string-in-ada
-  Assert (Ends_With (+"John Johnson", "son") = True);
-  Assert (Ends_With (+"", "") = True);
-  Assert (Ends_With (+" ", "") = True);
-  Assert (Ends_With (+"", " ") = False);
-  Assert (Ends_With (+" ", " ") = True);
-  Assert (Ends_With (+"", "n") = False);
-  Assert (Ends_With (+"n", "") = True);
-  Assert (Ends_With (+"n ", "n ") = True);
-  Assert (Ends_With (+" n", "n") = True);
-  Assert (Ends_With (+"n", " n") = False);
-  Assert (Ends_With (+" n", " n") = True);
+  Assert (+"EW_101", Ends_With (+"John Johnson", "son") = True);
+  Assert (+"EW_102", Ends_With (+"", "") = True);
+  Assert (+"EW_103", Ends_With (+" ", "") = True);
+  Assert (+"EW_104", Ends_With (+"", " ") = False);
+  Assert (+"EW_105", Ends_With (+" ", " ") = True);
+  Assert (+"EW_106", Ends_With (+"", "n") = False);
+  Assert (+"EW_107", Ends_With (+"n", "") = True);
+  Assert (+"EW_108", Ends_With (+"n ", "n ") = True);
+  Assert (+"EW_109", Ends_With (+" n", "n") = True);
+  Assert (+"EW_110", Ends_With (+"n", " n") = False);
+  Assert (+"EW_111", Ends_With (+" n", " n") = True);
 end Strings;
