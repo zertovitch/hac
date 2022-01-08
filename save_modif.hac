@@ -1,0 +1,93 @@
+#!/usr/bin/env hac
+
+--  This HAC script detects changes between two commits and
+--  saves the repository's modified files into a Zip-ball.
+
+with HAL;
+
+procedure Save_Modif is
+
+  use HAL;
+
+  function Nice_Date (with_intraday : Boolean) return VString is
+    t1 : constant Time := Clock;
+    day_secs, day_mins : Integer;
+    just_day : VString;
+    --
+    function Two_Digits (x : Integer) return VString is
+    begin
+      if x < 10 then
+        return "0" & Image (x);
+      else
+        return Image (x);
+      end if;
+    end Two_Digits;
+    --
+  begin
+    day_secs := Integer (Seconds (t1));
+    day_mins := day_secs / 60;
+    just_day := +"" &  --  VString concatenation
+      Year (t1)  & '-' &
+      Two_Digits (Month (t1)) & '-' &
+      Two_Digits (Day (t1));
+    if with_intraday then
+      return just_day & "--" &
+      Two_Digits (day_mins / 60) & '-' &
+      Two_Digits (day_mins mod 60) & '-' &
+      Two_Digits (day_secs mod 60);
+    else
+      return just_day;
+    end if;
+  end Nice_Date;
+
+  l, nd, root, mod_zip, files: VString;
+  r : Integer;
+  f : File_Type;
+
+  log_name : VString := +"modif.log";
+  sep : Character := Directory_Separator;
+
+begin
+  Put_Line ("Save date: " & Nice_Date (True));
+  Put_Line ("-----");
+  root := Tail_After_Match (Current_Directory, sep);
+  files := root & sep & log_name;
+
+  Shell_Execute (+"svn status -q >" & log_name);
+  --  Or: git status -s -uno
+  --  Or: hg status -q
+
+  Open (f, log_name);
+  while not End_Of_File (f) loop
+    Get_Line (f, l);
+    if Length (l) > 0 then
+      case Element (l, 1) is
+        when ' ' | 'D' =>
+          --  Ignore extra lines or items to be Deleted
+          null;
+        when others =>
+          l := root & sep & Slice (l, 9, Length (l));
+          Put_Line (l);
+          files := files & ' ' & l;
+      end case;
+    end if;
+  end loop;
+  Close (f);
+  Put_Line ("-----");
+  New_Line;
+
+  Shell_Execute ("echo . >>" & log_name);
+  Shell_Execute ("echo --- SVN Info --- >>" & log_name);
+  Shell_Execute ("svn info >>" & log_name);
+
+  nd := Nice_Date (True);
+
+  mod_zip := root & sep & root & "-modif-" & nd & ".zip";
+
+  Set_Directory ("..");
+  Shell_Execute ("zipada -ep2 " & mod_zip & ' ' & files);
+  Set_Directory (root);
+
+  Put ("Press Return ");
+  Skip_Line;
+end Save_Modif;

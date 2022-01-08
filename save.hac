@@ -1,3 +1,5 @@
+#!/usr/bin/env hac
+
 --  Local backup Ada shell script for the HAC project.
 --
 --  This script works both with HAC (command: hac save.adb)
@@ -7,6 +9,10 @@
 --  A "shebang" for Unix/Linux, such as "#!/usr/bin/env hac" can be
 --  added on the top line of this file.
 --  HAC will ignore it, but GNAT won't like it.
+--
+--  The extension for the main procedure is a free choice.
+--  We choose .hac so we can associate those files by default
+--  with hac.exe on Windows.
 
 with HAL;
 
@@ -47,19 +53,21 @@ procedure Save is
 
   root, examples, files, tests : VString;
   zip_res : Integer;
+  sep : Character := Directory_Separator;
 
 begin
   Put_Line ("Save date: " & Nice_Date (True));
   Put_Line ("Current directory: " & Current_Directory);
   Put_Line ("-----");
+  root := Tail_After_Match (Current_Directory, sep);
 
-  root := +"hac";
   Set_Directory ("..");
 
   examples := root & "/exm/*.ad* "  &
               root & "/exm/*.gpr  " & root & "/exm/*.prj  " &
               root & "/exm/e.cmd "  & root & "/exm/not_working/*.ad* " &
-              root & "/exm/aoc/2020/aoc* ";
+              root & "/exm/aoc/2020/aoc* " &
+              root & "/exm/aoc/2021/aoc* ";
 
   tests    := root & "/test/*.ad* " &
               root & "/test/*.gpr " & root & "/test/*.prj " &
@@ -69,9 +77,10 @@ begin
   files := root & "/src/*.ad* " &
            root & "/src/compile/*.ad* " &
            root & "/src/execute/*.ad* " &
+           root & "/src/manage/*.ad* " &
            root & "/*.gpr " &
            root & "/*.prj " &
-           root & "/save.adb " &
+           root & "/*.hac " &
            root & "/build.cmd " &
            root & "/fast.cmd " &
            root & "/*.txt " &
@@ -91,7 +100,7 @@ begin
   --    https://github.com/zertovitch/zip-ada
   --  or from ALIRE (Ada LIbrary REpository) @ https://alire.ada.dev/
   --
-  Shell_Execute ("zipada -ep2 " & root & "/hac-" & Nice_Date (True) & "- " & files, zip_res);
+  Shell_Execute ("zipada -ep2 " & root & sep & root & '-' & Nice_Date (True) & "- " & files, zip_res);
   if zip_res = 0 then
     Put_Line ("Zip archive creation successful");
   else
@@ -99,5 +108,8 @@ begin
   end if;
 
   Set_Directory (root);
+
+  Put ("Press Return ");
+  Skip_Line;
 
 end Save;

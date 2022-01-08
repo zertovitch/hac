@@ -278,6 +278,7 @@ package body HAC_Sys.UErrors is
       err_closing_LOOP_missing        => (insert,        +" loop"),
       err_missing_closing_CASE        => (insert,        +" case"),
       err_missing_closing_IF          => (insert,        +" if"),
+      err_RECORD_missing              => (insert,        +" record"),
       err_closing_parenthesis_missing => (insert,        +")"),
       err_incorrect_block_name        => (replace_token, +"[...]"),
       err_END_LOOP_ident_missing      => (insert,        +"[...]"),

@@ -43,21 +43,15 @@ package body HAC_Sys.Scanner is
         '+' | '-' | '*' | '/' |
         '(' | ')' |
         '&' |
-        '$' |
         '=' |
         ' ' |
         ',' |
         '.' |
         ''' |
-        '[' |
-        ']' |
         ':' |
-        '^' |
         '_' |
         ';' |
-        '{' |
         '|' |
-        '}' |
         '<' |
         '>' |
         '"' => Special,
@@ -669,13 +663,6 @@ package body HAC_Sys.Scanner is
           else
             CD.Sy := EQL;
           end if;
-
-        when '{' =>  --  Special non documented comment !! O_o: remove that !!
-          while CD.CUD.c /= '}' loop
-            NextCh (CD);
-          end loop;
-          NextCh (CD);
-          exit_big_loop := False;
 
         when '|' =>
           CD.Sy := Alt;
