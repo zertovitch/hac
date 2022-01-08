@@ -246,6 +246,26 @@ package body HAL is
     return VStr_Pkg.Tail (Source, Count);  --  We use the default padding: ' '.
   end Tail;
 
+  function Head_Before_Match (Source : VString; Pattern : Character) return VString is
+  begin
+    return Head_Before_Match (Source, (1 => Pattern));
+  end Head_Before_Match;
+
+  function Head_Before_Match (Source : VString; Pattern : String) return VString is
+  begin
+    return Head_Before_Match (Source, +Pattern);
+  end Head_Before_Match;
+
+  function Head_Before_Match (Source : VString; Pattern : VString) return VString is
+    i : constant Natural := Index (Source, Pattern);
+  begin
+    if i = 0 then
+      return Null_VString;
+    else
+      return Slice (Source, 1, i - 1);
+    end if;
+  end Head_Before_Match;
+
   function Tail_After_Match (Source : VString; Pattern : Character) return VString is
   begin
     return Tail_After_Match (Source, (1 => Pattern));

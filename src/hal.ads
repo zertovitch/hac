@@ -13,6 +13,34 @@
 --
 --  Furthermore, some items of HAL are used in the HAC virtual machine.
 --  See occurrences of "HAL" in HAC.PCode.Interpreter's body.
+------------------------
+--
+--  Legal licensing note:
+--
+--  Copyright (c) 2020 .. 2022 Gautier de Montmollin
+--
+--  Permission is hereby granted, free of charge, to any person obtaining a copy
+--  of this software and associated documentation files (the "Software"), to deal
+--  in the Software without restriction, including without limitation the rights
+--  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+--  copies of the Software, and to permit persons to whom the Software is
+--  furnished to do so, subject to the following conditions:
+--
+--  The above copyright notice and this permission notice shall be included in
+--  all copies or substantial portions of the Software.
+--
+--  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+--  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+--  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+--  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+--  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+--  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+--  THE SOFTWARE.
+--
+--  NB: this is the MIT License, as found 12-Sep-2013 on the site
+--  http://www.opensource.org/licenses/mit-license.php
+--
+-------------------------------------------------------------------------------------
 --
 with Ada.Calendar,
      Ada.Characters.Handling,
@@ -127,6 +155,12 @@ package HAL is
   function Starts_With (Item : VString; Pattern : String) return Boolean;
   function Starts_With (Item : VString; Pattern : VString) return Boolean;
   function Tail (Source : VString; Count : Natural) return VString;
+
+  --  Head_Before_Match returns the head of Source preceding first occurence of Pattern.
+  --  The result is empty if Pattern is not found.
+  function Head_Before_Match (Source : VString; Pattern : Character) return VString;
+  function Head_Before_Match (Source : VString; Pattern : String) return VString;
+  function Head_Before_Match (Source : VString; Pattern : VString) return VString;
 
   --  Tail_After_Match returns the tail of Source following last occurence of Pattern.
   --  The result is empty if Pattern is not found.

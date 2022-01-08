@@ -40,35 +40,57 @@ procedure Save_Modif is
     end if;
   end Nice_Date;
 
-  l, nd, root, mod_zip, files: VString;
+  line, nd, root, mod_zip, files: VString;
   r : Integer;
   f : File_Type;
 
   log_name : VString := +"modif.log";
   sep : Character := Directory_Separator;
 
+  type VCS_Type is (none, git, subversion, mercurial);
+
+  function Detect_VCS return VCS_Type is
+  begin
+    if Directory_Exists (".git") then
+      return git;
+    elsif Directory_Exists (".hg") then
+      return mercurial;
+    elsif Directory_Exists (".svn") then
+      return subversion;
+    end if;
+    return none;
+  end Detect_VCS;
+
+  vcs : VCS_Type := Detect_VCS;
+  col_tag, col_name : Integer;
+
 begin
   Put_Line ("Save date: " & Nice_Date (True));
+  Put_Line ("Version Control System: " & VCS_Type'Image (vcs));
   Put_Line ("-----");
   root := Tail_After_Match (Current_Directory, sep);
   files := root & sep & log_name;
 
-  Shell_Execute (+"svn status -q >" & log_name);
-  --  Or: git status -s -uno
-  --  Or: hg status -q
+  case vcs is
+    when git        => Shell_Execute (+"git status -s -uno >" & log_name); col_tag := 2; col_name := 4;
+    when mercurial  => Shell_Execute (+"hg  status    -q   >" & log_name); col_tag := 1; col_name := 9;
+    when subversion => Shell_Execute (+"svn status    -q   >" & log_name); col_tag := 1; col_name := 9;
+    when none       => return;
+  end case;
 
   Open (f, log_name);
   while not End_Of_File (f) loop
-    Get_Line (f, l);
-    if Length (l) > 0 then
-      case Element (l, 1) is
-        when ' ' | 'D' =>
-          --  Ignore extra lines or items to be Deleted
+    Get_Line (f, line);
+    if Length (line) > 2 then
+      case Element (line, col_tag) is
+        when ' ' | 'D' |'R' =>
+          --  Ignore extra lines, or items to be Deleted / Removed
+          --  !!  Needs to be reworked.
           null;
         when others =>
-          l := root & sep & Slice (l, 9, Length (l));
-          Put_Line (l);
-          files := files & ' ' & l;
+          line := root & sep & Slice (line, col_name, Length (line));
+          Put_Line (line);
+          files := files & ' ' & line;
       end case;
     end if;
   end loop;
@@ -76,9 +98,9 @@ begin
   Put_Line ("-----");
   New_Line;
 
-  Shell_Execute ("echo . >>" & log_name);
-  Shell_Execute ("echo --- SVN Info --- >>" & log_name);
-  Shell_Execute ("svn info >>" & log_name);
+  --  Shell_Execute ("echo . >>" & log_name);
+  --  Shell_Execute ("echo --- SVN Info --- >>" & log_name);
+  --  Shell_Execute ("svn info >>" & log_name);
 
   nd := Nice_Date (True);
 

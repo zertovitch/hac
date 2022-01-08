@@ -9,7 +9,7 @@ procedure Strings is
     Set_Exit_Status (1);  --  Compiler test failed.
   end Failure;
 
-  procedure Assert (Msg: VString; Check : in Boolean) is
+  procedure Assert (Msg : VString; Check : in Boolean) is
   --  Similar to RM 11.4.2 but without raising an exception.
   begin
     if not Check then Failure (Msg & ", assertion"); end if;
@@ -150,8 +150,8 @@ begin
   Assert (+"EW_3",     Ends_With (+"package",  "age"));
   Assert (+"EW_4",     Ends_With (+"package", +"age"));
   --
-  Assert (+"TAM_1", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/") = "gnx-startup");
-  Assert (+"TAM_2", Tail_After_Match (+"/etc/genesix/gnx-startup", +"ix") = "/gnx-startup");
+  Assert (+"TAM_1", Tail_After_Match (+"/etc/genesix/gnx-startup", '/') = "gnx-startup");
+  Assert (+"TAM_2", Tail_After_Match (+"/etc/genesix/gnx-startup", "ix") = "/gnx-startup");
   Assert (+"TAM_3", Tail_After_Match (+"/etc/genesix/gnx-startup", +"gene") = "six/gnx-startup");
   Assert (+"TAM_4", Tail_After_Match (+"/etc/genesix/gnx-startup", +"etc/genesix/gnx-startu") = "p");
   Assert (+"TAM_5", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startu") = "p");
@@ -159,6 +159,12 @@ begin
   Assert (+"TAM_7", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startupp") = "");
   Assert (+"TAM_8", Tail_After_Match (+"/etc/genesix/gnx-startup", "/g") = "nx-startup");  --  Must match the last "/g"
   Assert (+"TAM_9", Tail_After_Match (+"/etc/genesix/gnx-startup", "/g") /= "enesix/gnx-startup");
+  --
+  Assert (+"HBM_1", Head_Before_Match (+"the quick brown fox jumps", "fox") = "the quick brown ");
+  Assert (+"HBM_2", Head_Before_Match (+"the quick brown fox jumps", "dog") = "");
+  Assert (+"HBM_3", Head_Before_Match (+"the quick brown fox jumps", "jumps ") = "");
+  Assert (+"HBM_4", Head_Before_Match (+"the quick brown fox jumps", +"quick") = "the ");
+  Assert (+"HBM_4", Head_Before_Match (+"the quick brown fox jumps", 'k') = "the quic");
   --
   --  The following test is in one answer of
   --  https://stackoverflow.com/questions/62080743/how-do-you-check-if-string-ends-with-another-string-in-ada

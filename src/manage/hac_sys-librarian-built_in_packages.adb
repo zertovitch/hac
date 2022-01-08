@@ -135,6 +135,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAL_Funct ("Trim_Both",           VStrings, SF_Trim_Both);
     --
     Enter_HAL_Funct ("Head",                VStrings, SF_Head);
+    Enter_HAL_Funct ("Head_Before_Match",   VStrings, SF_Head_Before_Match);
     Enter_HAL_Funct ("Tail",                VStrings, SF_Tail);
     Enter_HAL_Funct ("Tail_After_Match",    VStrings, SF_Tail_After_Match);
     Enter_HAL_Funct ("Starts_With",         Bools,    SF_Starts_With);

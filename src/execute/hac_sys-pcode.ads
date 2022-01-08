@@ -303,6 +303,7 @@ package HAC_Sys.PCode is
     SF_Trim_Both,
     --
     SF_Head,
+    SF_Head_Before_Match,
     SF_Tail,
     SF_Tail_After_Match,
     SF_Starts_With,

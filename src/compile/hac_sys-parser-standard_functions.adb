@@ -12,6 +12,7 @@ package body HAC_Sys.Parser.Standard_Functions is
       SF_Min_Max_Int |
       SF_Element |
       SF_Head | SF_Tail |
+      SF_Head_Before_Match |
       SF_Tail_After_Match |
       SF_Starts_With |
       SF_Ends_With |
@@ -87,7 +88,8 @@ package body HAC_Sys.Parser.Standard_Functions is
         when SF_Index | SF_Index_Backward =>
           --  Index (OS, +"Windows"[, 3]), Index (OS, "Windows"[, 3]) or Index (OS, 'W'[, 3])
           Expected (1 .. 3) := (VStrings_Set, Any_String_or_Chars_Set, Ints_Set);
-        when SF_Starts_With | SF_Ends_With | SF_Tail_After_Match =>
+        when SF_Starts_With | SF_Ends_With |
+             SF_Head_Before_Match | SF_Tail_After_Match =>
           Expected (1 .. 2) := (VStrings_Set, Any_String_or_Chars_Set);
         when SF_Year .. SF_Seconds =>
           Expected (1) := Times_Set;
@@ -198,7 +200,7 @@ package body HAC_Sys.Parser.Standard_Functions is
           end if;
         when SF_Index | SF_Index_Backward |
              SF_Starts_With | SF_Ends_With |
-             SF_Tail_After_Match =>
+             SF_Head_Before_Match | SF_Tail_After_Match =>
           if Code in SF_Index_Any_Direction then
             if Args = 2 then
               Emit_1 (CD, k_Push_Discrete_Literal, 0);  --  We push a non-positive value for `From`.

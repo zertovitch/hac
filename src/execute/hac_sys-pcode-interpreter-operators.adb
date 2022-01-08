@@ -305,6 +305,11 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         --  [T] := Tail ([T], [T+1]) :
         ND.S (Curr_TCB.T).V :=
           HAL.VStr_Pkg.Tail (ND.S (Curr_TCB.T).V, Natural (ND.S (Curr_TCB.T + 1).I));
+      when SF_Head_Before_Match =>
+        Pop (ND);
+        --  [T] := Head_Before_Match ([T], [T+1]) :
+        ND.S (Curr_TCB.T).V :=
+          HAL.Head_Before_Match (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).V);
       when SF_Tail_After_Match =>
         Pop (ND);
         --  [T] := Tail_After_Match ([T], [T+1]) :
