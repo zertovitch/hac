@@ -199,6 +199,7 @@ package body HAC_Sys.Parser.Helpers is
       when Times               => return "Time type";             --  "the" Time type
       when Durations           => return "Duration type";         --  "the" Duration type
       when Text_Files          => return "text file type";
+      when Scalar_Range        => return "scalar range";
     end case;
   end Nice_Image;
 
@@ -453,28 +454,5 @@ package body HAC_Sys.Parser.Helpers is
     end if;
     return J;
   end Locate_Identifier;
-
-  ------------------------------------------------------------------
-  ----------------------------------------------Enter_or_find_Float-
-  procedure Enter_or_find_Float (
-    CD         : in out Compiler_Data;
-    X          :        HAC_Float;
-    RNum_Index :    out Natural
-  )
-  is
-    use type HAC_Float;
-  begin
-    if CD.Float_Constants_Count = Float_Const_Table_Max - 1 then
-      Fatal (FLOAT_CONSTANTS);  --  Exception is raised there.
-    end if;
-    CD.Float_Constants_Table (CD.Float_Constants_Count + 1) := X;  --  We add X's value as an extra item.
-    RNum_Index := 1;
-    while CD.Float_Constants_Table (RNum_Index) /= X loop  --  Binary equality.
-      RNum_Index := RNum_Index + 1;
-    end loop;
-    if RNum_Index > CD.Float_Constants_Count then  --  X's value was not previously in the table.
-      CD.Float_Constants_Count := RNum_Index;
-    end if;
-  end Enter_or_find_Float;
 
 end HAC_Sys.Parser.Helpers;

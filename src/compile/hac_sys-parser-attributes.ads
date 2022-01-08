@@ -15,7 +15,7 @@ private package HAC_Sys.Parser.Attributes is
     CD             : in out Co_Defs.Compiler_Data;
     Level          : in     Defs.Nesting_level;
     FSys           : in     Defs.Symset;
-    Typ_ID         : in     Co_Defs.IdTabEntry;
+    Typ_ID_Index   : in     Natural;
     Type_of_Result :    out Co_Defs.Exact_Subtyp
   );
 

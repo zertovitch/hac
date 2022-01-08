@@ -77,6 +77,8 @@ package HAC_Sys.Parser.Helpers is
 
   procedure Argument_Type_Not_Supported (CD : in out Compiler_Data);
 
+  function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ) return String;
+
   procedure Type_Mismatch (
     CD               : in out Compiler_Data;
     Err              :        Compile_Error;
@@ -346,13 +348,5 @@ package HAC_Sys.Parser.Helpers is
     Level_0_Match    : in     Boolean := True
   )
   return Natural;
-
-  ------------------------------------------------------------------
-  ----------------------------------------------Enter_or_find_Float-
-  procedure Enter_or_find_Float (
-    CD         : in out Compiler_Data;
-    X          :        HAC_Float;
-    RNum_Index :    out Natural
-  );
 
 end HAC_Sys.Parser.Helpers;

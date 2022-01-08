@@ -337,7 +337,6 @@ package body HAC_Sys.Parser.Expressions is
 
         procedure Primary (FSys_Prim : Symset; X : out Exact_Typ) is    --  RM 4.4 (7)
           F   : Opcode;
-          Ident_Index : Integer;
         begin
           X := Type_Undefined;
           Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_primary_unexpected_symbol);
@@ -348,12 +347,12 @@ package body HAC_Sys.Parser.Expressions is
               Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.INum));   --  Index To String IdTab
               InSymbol (CD);
             when IDent =>
-              Ident_Index := Locate_Identifier (CD, CD.Id, Level);
-              InSymbol (CD);
               declare
+                Ident_Index : constant Integer := Locate_Identifier (CD, CD.Id, Level);
                 r : IdTabEntry renames CD.IdTab (Ident_Index);
                 X_Sub : Exact_Subtyp;
               begin
+                InSymbol (CD);
                 case r.Entity is
                   when Declared_Number_or_Enum_Item =>
                     X := Exact_Typ (r.xTyp);
@@ -401,7 +400,7 @@ package body HAC_Sys.Parser.Expressions is
                     --
                   when TypeMark =>
                     X_Sub := r.xTyp;
-                    Subtype_Prefixed_Expression (CD, Level, FSys_Prim, r, X_Sub);
+                    Subtype_Prefixed_Expression (CD, Level, FSys_Prim, Ident_Index, X_Sub);
                     X := Exact_Typ (X_Sub);  --  Discard subtype information.
                     --  !!  Keep subtype information, could be useful for optimizing out checks  !!
                   when Prozedure | Prozedure_Intrinsic =>
@@ -790,11 +789,11 @@ package body HAC_Sys.Parser.Expressions is
   end Boolean_Expression;
 
   procedure Subtype_Prefixed_Expression (
-    CD     : in out Co_Defs.Compiler_Data;
-    Level  : in     Defs.Nesting_level;
-    FSys   : in     Defs.Symset;
-    Typ_ID : in     Co_Defs.IdTabEntry;
-    X      : in out Co_Defs.Exact_Subtyp
+    CD           : in out Co_Defs.Compiler_Data;
+    Level        : in     Defs.Nesting_level;
+    FSys         : in     Defs.Symset;
+    Typ_ID_Index : in     Natural;
+    X            : in out Co_Defs.Exact_Subtyp
   )
   is
     Mem_Sy : constant KeyWSymbol := CD.Sy;
@@ -802,9 +801,9 @@ package body HAC_Sys.Parser.Expressions is
     InSymbol (CD);
     case Mem_Sy is
       when LParent    =>  --  S (...)
-        Type_Conversion (CD, Level, FSys, Typ_ID, X);
+        Type_Conversion (CD, Level, FSys, CD.IdTab (Typ_ID_Index), X);
       when Apostrophe =>  --  S'First, S'Image, ...
-        Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Typ_ID, X);
+        Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Typ_ID_Index, X);
       when others =>
         Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", major);
     end case;

@@ -271,10 +271,11 @@ package HAC_Sys.Defs is
     Enums,
     -------------------------------------------------------
     --  Special types appearing only during the parsing  --
-    --  and invisible to the programmer.                 --
+    --  and unavailable to the programmer.               --
     -------------------------------------------------------
-    String_Literals,     --  Strings in the "abcd" form.
-    Strings_as_VStrings  --  VString value, but semantically a String.
+    String_Literals,      --  Strings in the "abcd" form. Takes 2 items on the stack.
+    Strings_as_VStrings,  --  VString value, but semantically a String. E.g. returned by S'Image
+    Scalar_Range          --  Takes 2 items on the stack. E.g. returned by S'Range
   );
   for Typen'Size use 8;
 

@@ -164,7 +164,7 @@ begin
   Assert (+"HBM_2", Head_Before_Match (+"the quick brown fox jumps", "dog") = "");
   Assert (+"HBM_3", Head_Before_Match (+"the quick brown fox jumps", "jumps ") = "");
   Assert (+"HBM_4", Head_Before_Match (+"the quick brown fox jumps", +"quick") = "the ");
-  Assert (+"HBM_4", Head_Before_Match (+"the quick brown fox jumps", 'k') = "the quic");
+  Assert (+"HBM_5", Head_Before_Match (+"the quick brown fox jumps", 'k') = "the quic");
   --
   --  The following test is in one answer of
   --  https://stackoverflow.com/questions/62080743/how-do-you-check-if-string-ends-with-another-string-in-ada

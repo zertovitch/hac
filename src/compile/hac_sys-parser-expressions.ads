@@ -37,11 +37,11 @@ private package HAC_Sys.Parser.Expressions is
   --  or attribute, like  ` Integer'Image (123) `.
   --
   procedure Subtype_Prefixed_Expression (
-    CD     : in out Co_Defs.Compiler_Data;
-    Level  : in     Defs.Nesting_level;
-    FSys   : in     Defs.Symset;
-    Typ_ID : in     Co_Defs.IdTabEntry;
-    X      : in out Co_Defs.Exact_Subtyp
+    CD           : in out Co_Defs.Compiler_Data;
+    Level        : in     Defs.Nesting_level;
+    FSys         : in     Defs.Symset;
+    Typ_ID_Index : in     Natural;
+    X            : in out Co_Defs.Exact_Subtyp
   );
 
 end HAC_Sys.Parser.Expressions;

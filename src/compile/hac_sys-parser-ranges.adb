@@ -32,12 +32,20 @@ package body HAC_Sys.Parser.Ranges is
         Id_T : IdTabEntry renames CD.IdTab (Idx);
       begin
         if Id_T.Entity = TypeMark and then Discrete_Typ (Id_T.xTyp.TYP) then
-          Low.TP  := Exact_Typ (Id_T.xTyp);
-          Low.I   := Id_T.xTyp.Discrete_First;
-          High.TP := Exact_Typ (Id_T.xTyp);
-          High.I  := Id_T.xTyp.Discrete_Last;
-          Found   := True;
-          InSymbol (CD);
+          --  Subtype S, but need to exclude the attribute case: S'First, S'Image, ...
+          Skip_Blanks (CD);
+          if CD.CUD.c /= ''' then  --  We sneak a look at the next symbol.
+            --  Not a S'... attribute here.
+            --  We can use the subtype identifier as a range.
+            Low.TP  := Exact_Typ (Id_T.xTyp);
+            Low.I   := Id_T.xTyp.Discrete_First;
+            --
+            High.TP := Exact_Typ (Id_T.xTyp);
+            High.I  := Id_T.xTyp.Discrete_Last;
+            --
+            Found   := True;
+            InSymbol (CD);  --  Consume the identifier.
+          end if;
         end if;
       end;
     end if;
@@ -100,7 +108,8 @@ package body HAC_Sys.Parser.Ranges is
       --  pass further "False .. True".
     end if;
     --
-    --  We try an explicit static range, like: "1 .. N" (N declared number) or "red .. blue".
+    --  We try an explicit static range, like: `1 .. N` (N declared number),
+    --  `red .. blue` or `Base_Colour'First .. Colour'Last`.
     --
     Explicit_Static_Range (CD, Level, FSys, Specific_Error, Lower_Bound, Higher_Bound);
   end Static_Range;
@@ -142,23 +151,35 @@ package body HAC_Sys.Parser.Ranges is
     --  See RM 3.5 (3).
     --
     Simple_Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys, Lower_Bound);
-    --  Why did the Ada standard authors take Simple_Expression
-    --  instead of Expression for the bounds ?
+    --  You may ask: why did the Ada standard authors take Simple_Expression
+    --  instead of Expression for the range bounds ?
     --  It's for stopping the parsing on relational and logical operators.
     --  Consider the following example (in exm/aoc/2021/aoc_2021_11.adb ).
-    --  With Expression for bound, you need brackets for the membership tests:
+    --  With Expression for bounds, you need brackets for the membership tests:
     --
     --      if (xx in 1 .. sx) and then (yy in 1 .. sy) and then map (xx, yy) <= 9 then
     --
-    --  With Simple_Expression you can write instead the more intuitive:
+    --  With Simple_Expression, you can write, instead, the more intuitive:
     --
     --      if xx in 1 .. sx and then yy in 1 .. sy and then map (xx, yy) <= 9 then
     --
-    Range_Typ := Lower_Bound;
-    if not Discrete_Typ (Lower_Bound.TYP) then
-      Error (CD, Non_Discrete_Error);
+    if Lower_Bound.TYP = Scalar_Range then
+      --  We got a ` X'Range ` expression which is a shortcut for ` X'First .. X'Last `.
+      Range_Typ := Exact_Typ (CD.IdTab (Lower_Bound.Ref).xTyp);
+      --  Exact_Typ (...): forget the subtype's bounds.
+      --    The bounds are pushed on the stack so they are dynamically used.
+      --    Perhaps we should keep the subtype information for e.g.
+      --    optimizing out checks on FOR loops.
+    else
+      Range_Typ := Lower_Bound;
     end if;
-    if CD.Sy = Range_Double_Dot_Symbol then  --  ".."
+    if not Discrete_Typ (Range_Typ.TYP) then
+      Error (CD, Non_Discrete_Error, Nice_Exact_Image (CD, Range_Typ));
+    end if;
+    if Lower_Bound.TYP = Scalar_Range then
+      --  The ` .. X'Last ` part has been implicitly parsed with ` X'Range ` .
+      null;
+    elsif CD.Sy = Range_Double_Dot_Symbol then  --  ".."
       InSymbol (CD);
       --
       Simple_Expression (CD, Level, FSys + LOOP_Symbol, Upper_Bound);

@@ -32,10 +32,11 @@ package HAC_Sys.Co_Defs is
     --  If TYP is not a standard type, then (TYP, Ref) does identify the base type.
     --  E.g. it can be (Enums, [index of the enumerated type definition]).
     --
-    --  Rules:
-    --    If TYP = Records, Ref is an index into the Block_Table;
-    --    if TYP = Arrays,  Ref is an index into the Arrays_Table , or
-    --    if TYP = Enums,   Ref is an index into the Id table (the type's name).
+    --  Ref is an index into different tables, depending on TYP:
+    --    If TYP = Records,      Block_Table;
+    --    if TYP = Arrays,       Arrays_Table;
+    --    if TYP = Enums,        Idtab (the enumeration type's declaration).
+    --    if TYP = Scalar_Range, Idtab (the range's subtype's declaration).
   end record;
 
   type Exact_Subtyp is new Exact_Typ with record

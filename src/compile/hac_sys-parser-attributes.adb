@@ -13,6 +13,7 @@ package body HAC_Sys.Parser.Attributes is
     Last,
     Pos,
     Pred,
+    Range_Attr,
     Succ,
     Val,
     Value
@@ -22,48 +23,56 @@ package body HAC_Sys.Parser.Attributes is
     CD             : in out Co_Defs.Compiler_Data;
     Level          : in     Defs.Nesting_level;
     FSys           : in     Defs.Symset;
-    Typ_ID         : in     Co_Defs.IdTabEntry;
+    Typ_ID_Index   : in     Natural;
     Type_of_Result :    out Co_Defs.Exact_Subtyp
   )
   is
     use Co_Defs, Compiler.PCode_Emit, Defs, PCode, UErrors;
-    attr_ID : constant String := To_String (CD.Id);
-    attr : constant Attribute := Attribute'Value (attr_ID);
+    Typ_ID  : constant IdTabEntry := CD.IdTab (Typ_ID_Index);
+    attr_ID : constant String     := To_String (CD.Id);
+    attr    : Attribute;
     --
-    procedure First_Last_Discrete is
-      discrete_value : HAC_Integer;
-    begin
-      if attr = First then
-        discrete_value := Typ_ID.xTyp.Discrete_First;
-      else
-        discrete_value := Typ_ID.xTyp.Discrete_Last;
-      end if;
-      Emit_1 (CD, k_Push_Discrete_Literal, discrete_value);
-    end First_Last_Discrete;
-    --
-    procedure First_Last is  --  RM 3.5 (12 ,13)
-      RNum_Index : Natural;
+    procedure First_Last is  --  RM 3.5 (12, 13)
     begin
       case Typ_ID.xTyp.TYP is
         when NOTYP =>
           null;  --  Already in error
         when Floats =>
           --  !! To do: floating point strict subtypes
-          if attr = First then
-            Helpers.Enter_or_find_Float (CD, HAC_Float'First, RNum_Index);
-          else
-            Helpers.Enter_or_find_Float (CD, HAC_Float'Last, RNum_Index);
-          end if;
-          Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (RNum_Index));
+          Emit_Push_Float_Literal (CD,
+            (if attr = First then HAC_Float'First else HAC_Float'Last)
+          );
         when others =>
           if Discrete_Typ (Typ_ID.xTyp.TYP) then
-            First_Last_Discrete;
+            Emit_1 (CD, k_Push_Discrete_Literal,
+              (if attr = First then Typ_ID.xTyp.Discrete_First else Typ_ID.xTyp.Discrete_Last)
+            );
           else
             Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
           end if;
       end case;
       Type_of_Result := Typ_ID.xTyp;
     end First_Last;
+    --
+    procedure Range_Attribute is  --  RM 3.5 (14)
+    begin
+      case Typ_ID.xTyp.TYP is
+        when NOTYP =>
+          null;  --  Already in error
+        when Floats =>
+          --  !! To do: floating point strict subtypes
+          Emit_Push_Float_Literal (CD, HAC_Float'First);
+          Emit_Push_Float_Literal (CD, HAC_Float'Last);
+        when others =>
+          if Discrete_Typ (Typ_ID.xTyp.TYP) then
+            Emit_1 (CD, k_Push_Discrete_Literal, Typ_ID.xTyp.Discrete_First);
+            Emit_1 (CD, k_Push_Discrete_Literal, Typ_ID.xTyp.Discrete_Last);
+          else
+            Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
+          end if;
+      end case;
+      Type_of_Result := (Scalar_Range, Typ_ID_Index, 0, 0);
+    end Range_Attribute;
     --
     procedure Pred_Succ_Discrete is
       use type HAC_Integer;
@@ -233,18 +242,24 @@ package body HAC_Sys.Parser.Attributes is
     end Value;
     --
   begin
+    if attr_ID = "RANGE" then
+      attr := Range_Attr;
+    else
+      attr := Attribute'Value (attr_ID);
+    end if;
     Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
     case attr is
-      when First | Last => First_Last;
+      when First | Last => First_Last;       --  RM 3.5 (12, 13)
+      when Range_Attr   => Range_Attribute;  --  RM 3.5 (14)
       when Pred  | Succ => Pred_Succ;
       when Pos          => Pos;
       when Val          => Val;
       when Image        => Image;
       when Value        => Value;
     end case;
-    exception
-      when Constraint_Error =>
-        Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
+  exception
+    when Constraint_Error =>
+      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
   end Scalar_Subtype_Attribute;
 
 end HAC_Sys.Parser.Attributes;

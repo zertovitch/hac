@@ -10,7 +10,7 @@
 --
 
 with HAC_Sys.Defs,
-     HAC_Sys.Parser.Helpers,
+     HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.PCode;
 
 with HAL;
@@ -63,7 +63,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     procedure Enter_HAL_Const (Name : String; Value : HAC_Float) is
       Float_Index : Integer;
     begin
-      Parser.Helpers.Enter_or_find_Float (CD, Value, Float_Index);
+      Compiler.PCode_Emit.Enter_or_find_Float (CD, Value, Float_Index);
       Enter_Zero_Level_Def
         (CD, HAL_Name & '.' & Name,
          Declared_Number_or_Enum_Item, Floats, Float_Index);

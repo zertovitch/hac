@@ -59,4 +59,15 @@ package HAC_Sys.Compiler.PCode_Emit is
     Base_Typ  :        Numeric_Typ
   );
 
+  procedure Emit_Push_Float_Literal (
+    CD : in out Compiler_Data;
+    X  :        HAC_Float
+  );
+
+  procedure Enter_or_find_Float (
+    CD         : in out Compiler_Data;
+    X          :        HAC_Float;
+    RNum_Index :    out Natural
+  );
+
 end HAC_Sys.Compiler.PCode_Emit;

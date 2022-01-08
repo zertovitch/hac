@@ -88,7 +88,11 @@ begin
     Set_Env (Enum'Image (x), +"Set_to_" & Enum'Image (x));
   end loop;
   --
-  for x in Enum loop
+  for x in Enum'First .. Enum'Last loop  --  Identical to `for x in Enum loop`
+    Put_Line (Get_Env (Enum'Image (x)));
+  end loop;
+  --
+  for x in Enum'Range loop  --  `Enum'Range` is a shortcut for `Enum'First .. Enum'Last`
     Put_Line (Get_Env (Enum'Image (x)));
   end loop;
 

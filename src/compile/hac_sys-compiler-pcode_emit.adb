@@ -145,4 +145,38 @@ package body HAC_Sys.Compiler.PCode_Emit is
     end case;
   end Emit_Arithmetic_Binary_Instruction;
 
+  procedure Emit_Push_Float_Literal (
+    CD : in out Compiler_Data;
+    X  :        HAC_Float
+  )
+  is
+    RNum_Index : Natural;
+  begin
+    Enter_or_find_Float (CD, X, RNum_Index);
+    Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (RNum_Index));
+  end Emit_Push_Float_Literal;
+
+  procedure Enter_or_find_Float (
+    CD         : in out Compiler_Data;
+    X          :        HAC_Float;
+    RNum_Index :    out Natural
+  )
+  is
+    use UErrors;
+    use type HAC_Float;
+  begin
+    if CD.Float_Constants_Count = Float_Const_Table_Max - 1 then
+      Fatal (FLOAT_CONSTANTS);  --  Exception is raised there.
+    end if;
+    --  We add X's value as an extra item: potential new item *and* sentinel value.
+    CD.Float_Constants_Table (CD.Float_Constants_Count + 1) := X;
+    RNum_Index := 1;
+    while CD.Float_Constants_Table (RNum_Index) /= X loop  --  Binary equality.
+      RNum_Index := RNum_Index + 1;
+    end loop;
+    if RNum_Index > CD.Float_Constants_Count then  --  X's value was not previously in the table.
+      CD.Float_Constants_Count := RNum_Index;
+    end if;
+  end Enter_or_find_Float;
+
 end HAC_Sys.Compiler.PCode_Emit;

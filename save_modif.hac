@@ -40,12 +40,11 @@ procedure Save_Modif is
     end if;
   end Nice_Date;
 
-  line, nd, root, mod_zip, files: VString;
-  r : Integer;
+  line, nd, root, mod_zip, files : VString;
   f : File_Type;
 
-  log_name : VString := +"modif.log";
-  sep : Character := Directory_Separator;
+  log_name : constant VString := +"modif.log";
+  sep : constant Character := Directory_Separator;
 
   type VCS_Type is (none, git, subversion, mercurial);
 
@@ -61,7 +60,7 @@ procedure Save_Modif is
     return none;
   end Detect_VCS;
 
-  vcs : VCS_Type := Detect_VCS;
+  vcs : constant VCS_Type := Detect_VCS;
   col_tag, col_name : Integer;
 
 begin
@@ -83,7 +82,7 @@ begin
     Get_Line (f, line);
     if Length (line) > 2 then
       case Element (line, col_tag) is
-        when ' ' | 'D' |'R' =>
+        when ' ' | 'D' | 'R' =>
           --  Ignore extra lines, or items to be Deleted / Removed
           --  !!  Needs to be reworked.
           null;
