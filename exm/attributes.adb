@@ -13,6 +13,8 @@ procedure Attributes is
   dummy_e : Enum;
   dummy_i : Integer;
 
+  type A is array (Sub_Enum) of HAL.Real;
+
   use HAL;
 
 begin
@@ -30,7 +32,7 @@ begin
   Put_Line ("Attributes      Standard subtypes are indicated with '*'");
   Put_Line ("==========           HAL subtypes are indicated with '#'");
   New_Line;
-  Put_Line ("S'First and S'Last attributes:");
+  Put_Line ("S'First and S'Last attributes for scalar subtype S:");
   New_Line;
   Put_Line (+"  * Integer's bounds    : " & Integer'First               & " .. " & Integer'Last);
   Put_Line (+"  * Natural's bounds    : " & Natural'First               & " .. " & Natural'Last);
@@ -93,6 +95,17 @@ begin
   end loop;
   --
   for x in Enum'Range loop  --  `Enum'Range` is a shortcut for `Enum'First .. Enum'Last`
+    Put_Line (Get_Env (Enum'Image (x)));
+  end loop;
+
+  New_Line;
+  Put_Line ("A'First, A'Last, A'Range, A'Length attributes for array type A:");
+  New_Line;
+  Put_Line (+"  * A'First (should be BB of type Enum) : " & Enum'Image (A'First));
+  Put_Line (+"  * A'Last (should be CC of type Enum) : " & Enum'Image (A'Last));
+  Put_Line (+"  * A'Length (should be 2) : " & A'Length);
+  
+  for x in A'Range loop
     Put_Line (Get_Env (Enum'Image (x)));
   end loop;
 

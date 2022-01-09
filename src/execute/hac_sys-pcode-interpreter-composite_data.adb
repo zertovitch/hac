@@ -13,25 +13,27 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
     procedure Do_Array_Index;
 
     procedure Do_Array_Index is
-      ATI : constant Integer := Integer (IR.Y);
-      ATE : ATabEntry renames CD.Arrays_Table (ATI);
-      Idx : constant Index := Index (ND.S (Curr_TCB.T).I);
+      ATI  : constant Integer := Integer (IR.Y);
+      ATE  : ATabEntry renames CD.Arrays_Table (ATI);
+      Low  : constant Index := Index (ATE.Index_xTyp.Discrete_First);
+      High : constant Index := Index (ATE.Index_xTyp.Discrete_Last);
+      Idx  : constant Index := Index (ND.S (Curr_TCB.T).I);
       use Ada.Strings, Ada.Strings.Fixed;
     begin
-      if Idx < ATE.Low then
+      if Idx < Low then
         raise VM_Out_of_Range
           with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
-            ") is below lower bound (pos: " & Trim (Defs.Index'Image (ATE.Low), Left) & ')';
-      elsif Idx > ATE.High then
+            ") is below lower bound (pos: " & Trim (Defs.Index'Image (Low), Left) & ')';
+      elsif Idx > High then
         raise VM_Out_of_Range
           with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
-            ") is above upper bound (pos: " & Trim (Defs.Index'Image (ATE.High), Left) & ')';
+            ") is above upper bound (pos: " & Trim (Defs.Index'Image (High), Left) & ')';
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.
       if size_1 then
-        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer (Idx - ATE.Low);
+        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer (Idx - Low);
       else
-        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer ((Idx - ATE.Low) * ATE.Element_Size);
+        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer ((Idx - Low) * ATE.Element_Size);
       end if;
     end Do_Array_Index;
 

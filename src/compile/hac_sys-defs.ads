@@ -273,9 +273,8 @@ package HAC_Sys.Defs is
     --  Special types appearing only during the parsing  --
     --  and unavailable to the programmer.               --
     -------------------------------------------------------
-    String_Literals,      --  Strings in the "abcd" form. Takes 2 items on the stack.
-    Strings_as_VStrings,  --  VString value, but semantically a String. E.g. returned by S'Image
-    Scalar_Range          --  Takes 2 items on the stack. E.g. returned by S'Range
+    String_Literals,     --  Strings in the "abcd" form. Takes 2 items on the stack.
+    Strings_as_VStrings  --  VString value, but semantically a String. E.g. returned by S'Image
   );
   for Typen'Size use 8;
 

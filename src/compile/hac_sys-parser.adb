@@ -47,7 +47,7 @@ package body HAC_Sys.Parser is
     procedure Formal_Parameter_List is
       Sz, X, T0 : Integer;
       ValParam  : Boolean;
-      xTP       : Exact_Subtyp := Subtype_Undefined;
+      xTP       : Exact_Subtyp := Undefined;
     begin
       InSymbol;  --  Consume '(' symbol.
       Sz := 0;
@@ -832,7 +832,7 @@ package body HAC_Sys.Parser is
                 Link           => Previous_Last,
                 Entity         => Variable,
                 Read_only      => True,
-                xTyp           => Subtype_Undefined,  --  Subtype is determined by the range.
+                xTyp           => Undefined,  --  Subtype is determined by the range.
                 Block_Ref      => 0,
                 Normal         => True,
                 LEV            => Level,
@@ -1411,7 +1411,7 @@ package body HAC_Sys.Parser is
       CD.IdTab (Block_Id_Index).Block_Ref := PRB;
     end if;
     CD.Display (Level) := PRB;
-    CD.IdTab (Block_Id_Index).xTyp := Subtype_Undefined;
+    CD.IdTab (Block_Id_Index).xTyp := Undefined;
     if CD.Sy = LParent then
       Formal_Parameter_List;
     end if;

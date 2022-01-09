@@ -321,7 +321,7 @@ package HAC_Sys.Parser.Helpers is
   --  Base types  --
   ------------------
 
-  Standard_Integer : constant Exact_Subtyp := (Ints, 0, HAC_Integer'First, HAC_Integer'Last);
+  Standard_Integer : constant Exact_Subtyp := (Ints, 0, False, HAC_Integer'First, HAC_Integer'Last);
 
   -------------
   --  Misc.  --

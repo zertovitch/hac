@@ -48,7 +48,7 @@ package body HAC_Sys.Parser.Calls is
     F : Opcode;
     found_with_constraint : Exact_Subtyp;
   begin
-    Found := Type_Undefined;
+    Found := Undefined;
     if CD.Sy = IDent then
       K := Locate_Identifier (CD, CD.Id, Level);
       InSymbol (CD);

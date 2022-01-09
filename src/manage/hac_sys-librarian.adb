@@ -105,6 +105,7 @@ package body HAC_Sys.Librarian is
       Read_only      => True,
       xTyp           => (TYP            => Base_Type,
                          Ref            => 0,
+                         Is_Range       => False,
                          Discrete_First => Discrete_First,
                          Discrete_Last  => Discrete_Last),
       Block_Ref      => 0,
@@ -324,9 +325,9 @@ package body HAC_Sys.Librarian is
       end if;
       Activate_Unit (CD, Upper_Name);
     elsif Upper_Name = "STANDARD" then
-      HAC_Sys.Librarian.Built_In_Packages.Define_and_Register_Standard (CD, LD);
+      Built_In_Packages.Define_and_Register_Standard (CD, LD);
     elsif Upper_Name = HAL_Name then
-      HAC_Sys.Librarian.Built_In_Packages.Define_and_Register_HAL (CD, LD);
+      Built_In_Packages.Define_and_Register_HAL (CD, LD);
     elsif Upper_Name = "HAC_PACK" then
       Error (
         CD,

@@ -36,14 +36,14 @@ package body HAC_Sys.Parser.Type_Def is
     signed : Boolean := False;
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
   begin
-    C.TP := Type_Undefined;
+    C.TP := Undefined;
     C.I  := 0;
     Test (CD, Constant_Definition_Begin_Symbol, FSys_ND, err_illegal_symbol_for_a_number_declaration);
     if not Constant_Definition_Begin_Symbol (CD.Sy) then
       return;
     end if;
     if CD.Sy = CharCon then  --  Untyped character constant, occurs only in ranges.
-      C.TP := (Chars, 0);
+      C.TP := Construct_Root (Chars);
       C.I  := CD.INum;
       InSymbol;
     else
@@ -77,11 +77,11 @@ package body HAC_Sys.Parser.Type_Def is
           end if;  --  X /= 0
           InSymbol;
         when IntCon =>
-          C.TP := (Ints, 0);
+          C.TP := Construct_Root (Ints);
           C.I  := Sign * CD.INum;
           InSymbol;
         when FloatCon =>
-          C.TP := (Floats, 0);
+          C.TP := Construct_Root (Floats);
           C.R  := HAC_Float (Sign) * CD.RNum;
           InSymbol;
         when others =>
@@ -142,14 +142,22 @@ package body HAC_Sys.Parser.Type_Def is
       Element_Size         : Integer;
       Lower_Bound          : Constant_Rec;
       Higher_Bound         : Constant_Rec;
+      Index_Exact_Subtyp   : Exact_Subtyp;
       use Ranges;
     begin
       Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
-      Enter_Array (CD, Lower_Bound.TP, Integer (Lower_Bound.I), Integer (Higher_Bound.I));
+      --  !!  Use a exact_subtyp for Static_Range, once exact_subtyp
+      --  !!  can also memorize float ranges.
+      Exact_Typ (Index_Exact_Subtyp) := Lower_Bound.TP;
+      Index_Exact_Subtyp.Discrete_First := Lower_Bound.I;
+      Index_Exact_Subtyp.Discrete_Last  := Higher_Bound.I;
+      Enter_Array (CD, Index_Exact_Subtyp);
       Arr_Tab_Ref := CD.Arrays_Count;
       if String_Constrained_Subtype then
         --  We define String (L .. H) exactly as an "array (L .. H) of Character".
-        Element_Exact_Subtyp := (Chars, 0, 0, 255);
+        Element_Exact_Subtyp := Construct_Root (Chars);
+        Element_Exact_Subtyp.Discrete_First := 0;
+        Element_Exact_Subtyp.Discrete_Last  := 255;
         Element_Size := 1;
         Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
       elsif CD.Sy = Comma then
@@ -175,7 +183,8 @@ package body HAC_Sys.Parser.Type_Def is
     procedure Enumeration_Typ is  --  RM 3.5.1 Enumeration Types
       enum_count : Natural := 0;
     begin
-      xTP := (Enums, CD.Id_Count, 0, 0);
+      xTP := Construct_Root (Enums);
+      xTP.Ref := CD.Id_Count;
       loop
         InSymbol;  --  Consume '(' symbol.
         if CD.Sy = IDent then
@@ -207,7 +216,8 @@ package body HAC_Sys.Parser.Type_Def is
     begin
       InSymbol;  --  Consume RECORD symbol.
       Enter_Block (CD, CD.Id_Count);
-      xTP := (Records, CD.Blocks_Count, 0, 0);
+      xTP := Construct_Root (Records);
+      xTP.Ref := CD.Blocks_Count;
       if Level = Nesting_Level_Max then
         Fatal (LEVELS);  --  Exception is raised there.
       end if;
@@ -299,7 +309,7 @@ package body HAC_Sys.Parser.Type_Def is
     end Sub_Typ;
 
   begin
-    xTP   := Subtype_Undefined;
+    xTP   := Undefined;
     Size  := 0;
     Test (CD, Type_Begin_Symbol, FSys_TD, err_missing_ARRAY_RECORD_or_ident);
     if Type_Begin_Symbol (CD.Sy) then

@@ -70,7 +70,7 @@ package body HAC_Sys.Parser.Ranges is
     --
     if Lower_Bound.TP.TYP = Floats then
       Error (CD, Specific_Error, "a float type is not expected here");
-      Lower_Bound.TP := (Ints, 0);
+      Lower_Bound.TP := Construct_Root (Ints);
       Lower_Bound.I  := 0;
     end if;
     --
@@ -163,20 +163,14 @@ package body HAC_Sys.Parser.Ranges is
     --
     --      if xx in 1 .. sx and then yy in 1 .. sy and then map (xx, yy) <= 9 then
     --
-    if Lower_Bound.TYP = Scalar_Range then
-      --  We got a ` X'Range ` expression which is a shortcut for ` X'First .. X'Last `.
-      Range_Typ := Exact_Typ (CD.IdTab (Lower_Bound.Ref).xTyp);
-      --  Exact_Typ (...): forget the subtype's bounds.
-      --    The bounds are pushed on the stack so they are dynamically used.
-      --    Perhaps we should keep the subtype information for e.g.
-      --    optimizing out checks on FOR loops.
-    else
-      Range_Typ := Lower_Bound;
-    end if;
+    Range_Typ          := Lower_Bound;
+    Range_Typ.Is_Range := False;
+    --
     if not Discrete_Typ (Range_Typ.TYP) then
       Error (CD, Non_Discrete_Error, Nice_Exact_Image (CD, Range_Typ));
     end if;
-    if Lower_Bound.TYP = Scalar_Range then
+    if Lower_Bound.Is_Range then
+      --  We got a ` X'Range ` expression which is a shortcut for ` X'First .. X'Last `.
       --  The ` .. X'Last ` part has been implicitly parsed with ` X'Range ` .
       null;
     elsif CD.Sy = Range_Double_Dot_Symbol then  --  ".."

@@ -173,8 +173,8 @@ package body HAC_Sys.Compiler is
           Put (CD.comp_dump, Typen'Image (r.Index_xTyp.TYP) & "   " &
                              Typen'Image (r.Element_xTyp.TYP));
           Put (CD.comp_dump, r.Element_xTyp.Ref, 5);
-          Put (CD.comp_dump, r.Low, 5);
-          Put (CD.comp_dump, r.High, 5);
+          Put (CD.comp_dump, Integer (r.Element_xTyp.Discrete_First), 5);
+          Put (CD.comp_dump, Integer (r.Element_xTyp.Discrete_Last), 5);
           Put (CD.comp_dump, r.Element_Size, 5);
           Put (CD.comp_dump, r.Array_Size, 5);
           New_Line (CD.comp_dump);

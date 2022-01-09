@@ -199,7 +199,6 @@ package body HAC_Sys.Parser.Helpers is
       when Times               => return "Time type";             --  "the" Time type
       when Durations           => return "Duration type";         --  "the" Duration type
       when Text_Files          => return "text file type";
-      when Scalar_Range        => return "scalar range";
     end case;
   end Nice_Image;
 

@@ -57,7 +57,7 @@ package body HAC_Sys.Parser.Enter_Def is
           Link           => L,
           Entity         => K,
           Read_only      => False,
-          xTyp           => Subtype_Undefined,
+          xTyp           => Undefined,
           Block_Ref      => 0,
           Normal         => True,
           LEV            => Level,
@@ -77,19 +77,21 @@ package body HAC_Sys.Parser.Enter_Def is
   -------------------------------------------------------EnterArray-
 
   procedure Enter_Array (
-    CD       : in out Co_Defs.Compiler_Data;
-    Index_TP :        Co_Defs.Exact_Typ;
-    L, H     :        Integer
+    CD        : in out Co_Defs.Compiler_Data;
+    Index_STP :        Co_Defs.Exact_Subtyp
   )
   is
+    use type HAC_Integer;
   begin
-    if L > H then
+    if Index_STP.Discrete_First > Index_STP.Discrete_Last then
       Error (CD,
         err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)", -- !!
         major
       );
     end if;
-    if abs (L) > XMax or abs (H) > XMax then
+    if   abs (Index_STP.Discrete_First) > HAC_Integer (XMax)
+      or abs (Index_STP.Discrete_Last)  > HAC_Integer (XMax)
+    then
       Error (CD,
         err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",
         major
@@ -99,13 +101,7 @@ package body HAC_Sys.Parser.Enter_Def is
       Fatal (ARRAYS);  --  Exception is raised there.
     end if;
     CD.Arrays_Count := CD.Arrays_Count + 1;
-    declare
-      New_A : ATabEntry renames CD.Arrays_Table (CD.Arrays_Count);
-    begin
-      New_A.Index_xTyp := Index_TP;
-      New_A.Low        := L;
-      New_A.High       := H;
-    end;
+    CD.Arrays_Table (CD.Arrays_Count).Index_xTyp := Index_STP;
   end Enter_Array;
 
   ------------------------------------------------------------------

@@ -57,11 +57,11 @@ package body HAC_Sys.Parser.Expressions is
             ATI : constant Integer := V.Ref;
             ATE : ATabEntry renames CD.Arrays_Table (ATI);
           begin
-            if ATE.Index_xTyp /= Array_Index_Typ then
+            if Exact_Typ (ATE.Index_xTyp) /= Array_Index_Typ then
               Type_Mismatch (
                 CD, err_illegal_array_subscript,
                 Found    => Array_Index_Typ,
-                Expected => ATE.Index_xTyp
+                Expected => Exact_Typ (ATE.Index_xTyp)
               );
             elsif ATE.Element_Size = 1 then
               Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
@@ -338,7 +338,7 @@ package body HAC_Sys.Parser.Expressions is
         procedure Primary (FSys_Prim : Symset; X : out Exact_Typ) is    --  RM 4.4 (7)
           F   : Opcode;
         begin
-          X := Type_Undefined;
+          X := Undefined;
           Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_primary_unexpected_symbol);
           case CD.Sy is
             when StrCon =>

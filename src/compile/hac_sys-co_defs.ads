@@ -35,17 +35,22 @@ package HAC_Sys.Co_Defs is
     --  Ref is an index into different tables, depending on TYP:
     --    If TYP = Records,      Block_Table;
     --    if TYP = Arrays,       Arrays_Table;
-    --    if TYP = Enums,        Idtab (the enumeration type's declaration);
-    --    if TYP = Scalar_Range, Idtab (the range's subtype's declaration).
+    --    if TYP = Enums,        Idtab (the enumeration type's declaration).
+    --
+    Is_Range : Boolean;
+    --  ^ For X'Range expressions, indicates a pair of values waiting on the stack.
   end record;
+
+  function Construct_Root (Typ : Typen) return Exact_Typ;
+  function Undefined return Exact_Typ;
 
   type Exact_Subtyp is new Exact_Typ with record
     Discrete_First : HAC_Integer;   --  If subtype S is discrete, S'First
     Discrete_Last  : HAC_Integer;   --  If subtype S is discrete, S'Last
   end record;
 
-  Subtype_Undefined : constant Exact_Subtyp := (TYP => NOTYP, Ref => 0, others => 0);
-  Type_Undefined : constant Exact_Typ := Exact_Typ (Subtype_Undefined);
+  overriding function Construct_Root (Typ : Typen) return Exact_Subtyp;
+  overriding function Undefined return Exact_Subtyp;
 
   -------------------------------------------------------------------------
   ------------------------------------------------------------ATabEntry----
@@ -55,15 +60,13 @@ package HAC_Sys.Co_Defs is
   --  the compiler and ignored by the interpreter):
   --
   type ATabEntry is record
-    Index_xTyp   : Exact_Typ;  --  C  Type of the index
-    Low, High    : Index;      --  Limits on the array index: array (Low .. High) of Element_TYP
-                               --  ^ !!  Merge Low, High with Index_xTyp, as Exact_Subtyp !!
-    Element_Size : Index;      --  Size of an element
+    Index_xTyp   : Exact_Subtyp;  --  C  Type of the index
+    Element_Size : Index;         --  Size of an element
     Element_xTyp : Exact_Subtyp;  --  C  Subtype of the elements of the array.
                                   --     If the elements of the array are themselves
                                   --     arrays, Element_xTYP.Ref is an index to an
                                   --     entry in Arrays_Table (it's not a special case).
-    Array_Size   : Index;      --  C  Total size of the array
+    Array_Size   : Index;         --  C  Total size of the array
   end record;
 
   -------------------------------------------------------------------------

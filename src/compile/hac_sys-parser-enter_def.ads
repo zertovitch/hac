@@ -24,9 +24,8 @@ package HAC_Sys.Parser.Enter_Def is  --  Package around entering definitions.
   );
 
   procedure Enter_Array (
-    CD       : in out Co_Defs.Compiler_Data;
-    Index_TP :        Co_Defs.Exact_Typ;
-    L, H     :        Integer
+    CD        : in out Co_Defs.Compiler_Data;
+    Index_STP :        Co_Defs.Exact_Subtyp
   );
 
   procedure Enter_Variables (
