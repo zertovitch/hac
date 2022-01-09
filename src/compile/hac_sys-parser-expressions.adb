@@ -215,7 +215,7 @@ package body HAC_Sys.Parser.Expressions is
           else
             Issue_Comparison_Type_Mismatch_Error;
           end if;
-          X.TYP := Bools;  --  The result of the comparison is always Boolean.
+          X := Construct_Root (Bools);  --  The result of the comparison is always Boolean.
         when IN_Symbol | NOT_Symbol =>
           --
           --  We collect here a membership test, e.g.: x [not] in a .. b
@@ -238,7 +238,7 @@ package body HAC_Sys.Parser.Expressions is
             if Not_In then
               Emit (CD, k_NOT_Boolean);
             end if;
-            X.TYP := Bools;  --  The result of the membership test is always Boolean.
+            X := Construct_Root (Bools);  --  The result of the membership test is always Boolean.
           end if;
         when others =>
           null;

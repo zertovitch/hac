@@ -1,4 +1,4 @@
-#!/usr/bin/env hac
+--#!/usr/bin/env hac
 
 --  Local backup Ada shell script for the HAC project.
 --
@@ -55,7 +55,7 @@ procedure Save is
 
   root, examples, files, tests : VString;
   zip_res : Integer;
-  sep : Character := Directory_Separator;
+  sep : constant Character := Directory_Separator;
 
 begin
   Put_Line ("Save date: " & Nice_Date (True));

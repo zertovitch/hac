@@ -1,4 +1,4 @@
-#!/usr/bin/env hac
+--#!/usr/bin/env hac
 
 --  This HAC script detects changes between two commits and
 --  saves the repository's modified files into a Zip-ball.
@@ -46,22 +46,33 @@ procedure Save_Modif is
   log_name : constant VString := +"modif.log";
   sep : constant Character := Directory_Separator;
 
-  type VCS_Type is (none, git, subversion, mercurial);
+  type VCS_Type is (None, Git, Mercurial, Subversion);
 
   function Detect_VCS return VCS_Type is
   begin
     if Directory_Exists (".git") then
-      return git;
+      return Git;
     elsif Directory_Exists (".hg") then
-      return mercurial;
+      return Mercurial;
     elsif Directory_Exists (".svn") then
-      return subversion;
+      return Subversion;
     end if;
-    return none;
+    return None;
   end Detect_VCS;
 
+  function Abbreviation (vcs : VCS_Type) return VString is
+  begin
+    case vcs is
+      when Git        => return +"git";
+      when Mercurial  => return +"hg";
+      when Subversion => return +"svn";
+      when None       => return +"";
+    end case;
+  end Abbreviation;
+
   vcs : constant VCS_Type := Detect_VCS;
-  col_tag, col_name : Integer;
+  col_name : Integer;
+  add_line : Boolean;
 
 begin
   Put_Line ("Save date: " & Nice_Date (True));
@@ -71,26 +82,31 @@ begin
   files := root & sep & log_name;
 
   case vcs is
-    when git        => Shell_Execute (+"git status -s -uno >" & log_name); col_tag := 2; col_name := 4;
-    when mercurial  => Shell_Execute (+"hg  status    -q   >" & log_name); col_tag := 1; col_name := 9;
-    when subversion => Shell_Execute (+"svn status    -q   >" & log_name); col_tag := 1; col_name := 9;
-    when none       => return;
+    when Git        => Shell_Execute (+"git status -s -uno >" & log_name); col_name := 4;
+    when Mercurial  => Shell_Execute (+"hg  status    -q   >" & log_name); col_name := 9;
+    when Subversion => Shell_Execute (+"svn status    -q   >" & log_name); col_name := 9;
+    when None       => return;
   end case;
 
   Open (f, log_name);
   while not End_Of_File (f) loop
     Get_Line (f, line);
-    if Length (line) > 2 then
-      case Element (line, col_tag) is
-        when ' ' | 'D' | 'R' =>
-          --  Ignore extra lines, or items to be Deleted / Removed
-          --  !!  Needs to be reworked.
-          null;
-        when others =>
-          line := root & sep & Slice (line, col_name, Length (line));
-          Put_Line (line);
-          files := files & ' ' & line;
-      end case;
+    if Length (line) > 3 then
+      add_line := False;
+      for col_tag in 1 .. 2 loop  --  Git tags are on two columns
+        case Element (line, col_tag) is
+          when ' ' | 'D' | 'R' =>
+            --  Ignore extra lines, or items to be Deleted / Removed
+            null;
+          when others =>
+            add_line := True;
+        end case;
+      end loop;
+      if add_line then
+        line := root & sep & Slice (line, col_name, Length (line));
+        Put_Line (line);
+        files := files & ' ' & line;
+      end if;
     end if;
   end loop;
   Close (f);
@@ -103,7 +119,7 @@ begin
 
   nd := Nice_Date (True);
 
-  mod_zip := root & sep & root & "-modif-" & nd & ".zip";
+  mod_zip := root & sep & root & "-modif-" & Abbreviation (vcs) & '-' & nd & ".zip";
 
   Set_Directory ("..");
   Shell_Execute ("zipada -ep2 " & mod_zip & ' ' & files);

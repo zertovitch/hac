@@ -253,6 +253,8 @@ package body HAC_Sys.UErrors is
         return "invalid prefix for """ & hint & """ attribute";
       when err_attribute_prefix_must_be_discrete_type =>
         return "prefix of """ & hint & """ attribute must be discrete type";
+      when err_invalid_dimension_number =>
+        return "invalid dimension number for array type, " & hint;
     end case;
   end Error_String;
 

@@ -174,7 +174,8 @@ package body HAC_Sys.Parser.Type_Def is
       declare
         New_A : ATabEntry renames CD.Arrays_Table (Arr_Tab_Ref);
       begin
-        New_A.Array_Size   := Arr_Size;  --  Index_xTyp, Low, High already set by Enter_Array.
+        --  New_A.Index_xTyp already set by Enter_Array.
+        New_A.Array_Size   := Arr_Size;
         New_A.Element_xTyp := Element_Exact_Subtyp;
         New_A.Element_Size := Element_Size;
       end;

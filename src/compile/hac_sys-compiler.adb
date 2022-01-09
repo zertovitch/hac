@@ -76,6 +76,8 @@ package body HAC_Sys.Compiler is
   --
   procedure Print_Tables (CD : in Compiler_Data) is
     use Ada.Text_IO, Ada.Integer_Text_IO, Ada.Strings.Fixed;
+    package HIIO is new Integer_IO (HAC_Integer);
+    use HIIO;
     --
     procedure Show_Padded (n : String; t : Positive) is
     begin
@@ -164,19 +166,26 @@ package body HAC_Sys.Compiler is
     if CD.Arrays_Count = 0 then
       Put_Line (CD.comp_dump, " Arrays: none");
     else
-      Put_Line (CD.comp_dump, " Arrays    Xtyp Etyp Eref  Low High ELSZ Size");
+      Put_Line (CD.comp_dump,
+        " Arrays  | Index: typ_________  Element: typ_______ref    Low___High   El. Size Ar. Size"
+      );
       for I in 1 .. CD.Arrays_Count loop
         declare
           r : ATabEntry renames CD.Arrays_Table (I);
+          package TIO is new Enumeration_IO (Typen);
+          use TIO;
+          typ_img : String (1 .. Typen'Width);
         begin
-          Put (CD.comp_dump, I, 4);
-          Put (CD.comp_dump, Typen'Image (r.Index_xTyp.TYP) & "   " &
-                             Typen'Image (r.Element_xTyp.TYP));
-          Put (CD.comp_dump, r.Element_xTyp.Ref, 5);
-          Put (CD.comp_dump, Integer (r.Element_xTyp.Discrete_First), 5);
-          Put (CD.comp_dump, Integer (r.Element_xTyp.Discrete_Last), 5);
-          Put (CD.comp_dump, r.Element_Size, 5);
-          Put (CD.comp_dump, r.Array_Size, 5);
+          Put (CD.comp_dump, I, 7);
+          Put (typ_img, r.Index_xTyp.TYP);    --  Padded
+          Put (CD.comp_dump, "  | " & typ_img);
+          Put (typ_img, r.Element_xTyp.TYP);  --  Padded
+          Put (CD.comp_dump, "  " & typ_img);
+          Put (CD.comp_dump, r.Element_xTyp.Ref, 3);
+          Put (CD.comp_dump, r.Index_xTyp.Discrete_First, 7);
+          Put (CD.comp_dump, r.Index_xTyp.Discrete_Last,  7);
+          Put (CD.comp_dump, r.Element_Size, 11);
+          Put (CD.comp_dump, r.Array_Size,    9);
           New_Line (CD.comp_dump);
         end;
       end loop;

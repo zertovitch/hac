@@ -1,6 +1,7 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
+     HAC_Sys.Parser.Type_Def,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
@@ -266,24 +267,50 @@ package body HAC_Sys.Parser.Attributes is
     end Scalar_Subtype_Attribute;
 
     procedure Array_Subtype_Attribute is
-      A : ATabEntry renames CD.Arrays_Table (S.Ref);
-      Low  : constant Index := Index (A.Index_xTyp.Discrete_First);
-      High : constant Index := Index (A.Index_xTyp.Discrete_Last);
-      use Compiler.PCode_Emit, PCode;
+      A : ATabEntry := CD.Arrays_Table (S.Ref);
+      Low, High : Index;
+      N : Constant_Rec;
+      use Compiler.PCode_Emit, PCode, Scanner, Type_Def;
+      use type HAC_Integer;
     begin
+      N.I := 1;
+      if CD.Sy = LParent then
+        InSymbol (CD);
+        Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, FSys + RParent, N);
+        if N.TP.TYP /= Ints then
+          Error (CD, err_parameter_must_be_Integer, severity => major);
+        end if;
+        Need (CD, RParent, err_closing_parenthesis_missing);
+      end if;
+      if N.I < 1 then
+        Error (CD, err_invalid_dimension_number, "minimum is 1", major);
+      end if;
+      --
+      Jump_to_next_Dimension :
+      for Skip_Dim in 2 .. N.I loop
+        if A.Element_xTyp.TYP = Arrays then
+          A := CD.Arrays_Table (A.Element_xTyp.Ref);
+        else
+          Error (CD, err_invalid_dimension_number, "maximum is" &
+            HAC_Integer'Image (Skip_Dim - 1), major);
+        end if;
+      end loop Jump_to_next_Dimension;
+      --
+      Low  := Index (A.Index_xTyp.Discrete_First);
+      High := Index (A.Index_xTyp.Discrete_Last);
       case attr is
-        when First =>       --  RM 3.6.2 (3)
+        when First =>       --  RM 3.6.2 (3, 4)
           Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
           Type_of_Result := A.Index_xTyp;
-        when Last =>        --  RM 3.6.2 (5)
+        when Last =>        --  RM 3.6.2 (5, 6)
           Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High));
           Type_of_Result := A.Index_xTyp;
-        when Range_Attr =>  --  RM 3.6.2 (7)
+        when Range_Attr =>  --  RM 3.6.2 (7, 8)
           Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
           Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High));
           Type_of_Result          := A.Index_xTyp;
           Type_of_Result.Is_Range := True;
-        when Length =>      --  RM 3.6.2 (9)
+        when Length =>      --  RM 3.6.2 (9, 10)
           Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High - Low + 1));
           Type_of_Result := Construct_Root (Ints);
         when others =>

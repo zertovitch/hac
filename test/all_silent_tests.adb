@@ -87,6 +87,7 @@ procedure All_Silent_Tests is
     Put_Line( "  One instance of HAC is called each time, with compilation and execution...");
     New_Line;
     Put_Line( +"    Normal tests in " & Current_Directory & ':');
+    Normal_Test (+"attributes_test.adb");
     Normal_Test (+"case_statement.adb");
     Normal_Test (+"constants.adb");
     Normal_Test (+"declarations.adb");

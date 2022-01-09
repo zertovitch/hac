@@ -11,17 +11,21 @@ procedure Attributes is
   subtype Sub_Enum is Enum range bb .. cc;
 
   dummy_e : Enum;
-  dummy_i : Integer;
+  dummy_i, sum : Integer;
 
   type A is array (Sub_Enum) of HAL.Real;
+
+  type M is array (-5 .. -2, bb .. dd) of Integer;
+
+  mm : M;
 
   use HAL;
 
 begin
-  ---------------------------------------------
-  --  If you uncomment any of the following  --
-  --  lines you'll get a Constraint_Error:   --
-  ---------------------------------------------
+  ---------------------------------------------------
+  --  If you uncomment any of the following lines  --
+  --  you'll get a Constraint_Error on run time:   --
+  ---------------------------------------------------
 
   --  dummy_i := Some_Range'Succ (Some_Range'Last);
   --  dummy_i := Some_Range'Pred (Some_Range'First);
@@ -91,22 +95,44 @@ begin
   end loop;
   --
   for x in Enum'First .. Enum'Last loop  --  Identical to `for x in Enum loop`
-    Put_Line (Get_Env (Enum'Image (x)));
+    Put_Line (+"Env. variable   " & Enum'Image (x) & "   has the value   " & Get_Env (Enum'Image (x)));
   end loop;
-  --
+  New_Line;
   for x in Enum'Range loop  --  `Enum'Range` is a shortcut for `Enum'First .. Enum'Last`
-    Put_Line (Get_Env (Enum'Image (x)));
+    Put_Line (+"Env. variable   " & Enum'Image (x) & "   has the value   " & Get_Env (Enum'Image (x)));
   end loop;
 
   New_Line;
   Put_Line ("A'First, A'Last, A'Range, A'Length attributes for array type A:");
   New_Line;
-  Put_Line (+"  * A'First (should be BB of type Enum) : " & Enum'Image (A'First));
-  Put_Line (+"  * A'Last (should be CC of type Enum) : " & Enum'Image (A'Last));
-  Put_Line (+"  * A'Length (should be 2) : " & A'Length);
-  
+  Put_Line (+"  * A'First   (should be BB of type Enum) : " & Enum'Image (A'First));
+  Put_Line (+"  * A'Last    (should be CC of type Enum) : " & Enum'Image (A'Last));
+  Put_Line (+"  * A'Length  (should be 2) : " & A'Length);
+
   for x in A'Range loop
-    Put_Line (Get_Env (Enum'Image (x)));
+    Put_Line (+"Env. variable   " & Enum'Image (x) & "   has the value   " & Get_Env (Enum'Image (x)));
   end loop;
+
+  New_Line;
+  Put_Line ("A'First (N), A'Last (N), A'Range (N), A'Length (N) attributes:");
+  New_Line;
+  Put_Line (+"  * M'First (1)  (should be -5) : " & M'First (1));
+  Put_Line (+"  * M'Last (1)   (should be -2) : " & M'Last (1));
+  Put_Line (+"  * M'First (2)  (should be bb) : " & Enum'Image (M'First (2)));
+  Put_Line (+"  * M'Last (2)   (should be dd) : " & Enum'Image (M'Last (2)));
+
+  for i in M'Range (1) loop
+    for j in M'Range (2) loop
+      mm (i, j) := i * Enum'Pos (j);
+    end loop;
+  end loop;
+
+  sum := 0;
+  for j in M'Range (2) loop
+    for i in M'Range (1) loop
+      sum := sum + mm (i, j);
+    end loop;
+  end loop;
+  Put_Line (+"Sum of elements in the matrix: " & sum);
 
 end Attributes;
