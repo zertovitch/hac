@@ -425,12 +425,7 @@ package body HAC_Sys.Parser.Expressions is
             when CharCon | IntCon | FloatCon =>
               if CD.Sy = FloatCon then
                 X.TYP := Floats;
-                declare
-                  RNum_Index : Natural;
-                begin
-                  Enter_or_find_Float (CD, CD.RNum, RNum_Index);
-                  Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (RNum_Index));
-                end;
+                Emit_Push_Float_Literal (CD, CD.RNum);
               else
                 if CD.Sy = CharCon then
                   X.TYP := Chars;
@@ -798,12 +793,13 @@ package body HAC_Sys.Parser.Expressions is
   is
     Mem_Sy : constant KeyWSymbol := CD.Sy;
   begin
+    pragma Assert (CD.IdTab (Typ_ID_Index).Entity = TypeMark);
     InSymbol (CD);
     case Mem_Sy is
       when LParent    =>  --  S (...)
         Type_Conversion (CD, Level, FSys, CD.IdTab (Typ_ID_Index), X);
       when Apostrophe =>  --  S'First, S'Image, ...
-        Attributes.Scalar_Subtype_Attribute (CD, Level, FSys, Typ_ID_Index, X);
+        Attributes.Subtype_Attribute (CD, Level, FSys, Typ_ID_Index, X);
       when others =>
         Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", major);
     end case;

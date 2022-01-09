@@ -8,11 +8,13 @@
 --
 --  A "shebang" for Unix/Linux, such as "#!/usr/bin/env hac" can be
 --  added on the top line of this file.
---  HAC will ignore it, but GNAT won't like it.
+--  HAC will ignore it, but GNAT won't like it (that's normal).
 --
 --  The extension for the main procedure is a free choice.
---  We choose .hac so we can associate those files by default
---  with hac.exe on Windows.
+--  We choose ".hac" so we can associate the ".hac" files by
+--  default with hac.exe on Windows, for Explorer *and* command-line!
+--    Explorer: double-click / hit Return on "save.hac".
+--    Cmd / PowerShell: type "save.hac" and hit Return.
 
 with HAL;
 

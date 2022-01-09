@@ -313,6 +313,10 @@ package HAC_Sys.Parser.Helpers is
   Standard_Set             : constant Typ_Set := (Standard_Typ => True, others => False);
   Text_IO_Get_Item_Set     : constant Typ_Set := (Standard_Set and not Bools_Set) or Arrays_Set;
 
+  --  RM 3.2 (3):
+  Scalar_Set : constant Typ_Set :=
+    (Ints | Floats | Durations | Chars | Bools | Enums => True, others => False);
+
   ------------------
   --  Base types  --
   ------------------

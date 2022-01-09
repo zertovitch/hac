@@ -25,10 +25,42 @@ package body HAC_Sys.Parser.Attributes is
     FSys           : in     Defs.Symset;
     Typ_ID_Index   : in     Natural;
     Type_of_Result :    out Co_Defs.Exact_Subtyp
+  );
+
+  procedure Subtype_Attribute (
+    CD             : in out Co_Defs.Compiler_Data;
+    Level          : in     Defs.Nesting_level;
+    FSys           : in     Defs.Symset;
+    Typ_ID_Index   : in     Natural;
+    Type_of_Result :    out Co_Defs.Exact_Subtyp
+  )
+  is
+    use Co_Defs, Defs, Helpers, UErrors;
+    Typ_ID : IdTabEntry renames CD.IdTab (Typ_ID_Index);
+    S : Exact_Subtyp renames Typ_ID.xTyp;
+  begin
+    pragma Assert (Typ_ID.Entity = TypeMark);
+    --
+    if Scalar_Set (S.TYP) then
+      Scalar_Subtype_Attribute (CD, Level, FSys, Typ_ID_Index, Type_of_Result);
+    else
+      Error (CD, err_syntax_error,
+        ": no attribute defined for this type: " &
+        To_String (Typ_ID.Name_with_case), major
+      );
+    end if;
+  end Subtype_Attribute;
+
+  procedure Scalar_Subtype_Attribute (
+    CD             : in out Co_Defs.Compiler_Data;
+    Level          : in     Defs.Nesting_level;
+    FSys           : in     Defs.Symset;
+    Typ_ID_Index   : in     Natural;
+    Type_of_Result :    out Co_Defs.Exact_Subtyp
   )
   is
     use Co_Defs, Compiler.PCode_Emit, Defs, PCode, UErrors;
-    Typ_ID  : constant IdTabEntry := CD.IdTab (Typ_ID_Index);
+    Typ_ID  : IdTabEntry renames CD.IdTab (Typ_ID_Index);
     attr_ID : constant String     := To_String (CD.Id);
     attr    : Attribute;
     --

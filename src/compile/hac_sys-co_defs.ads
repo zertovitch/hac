@@ -35,7 +35,7 @@ package HAC_Sys.Co_Defs is
     --  Ref is an index into different tables, depending on TYP:
     --    If TYP = Records,      Block_Table;
     --    if TYP = Arrays,       Arrays_Table;
-    --    if TYP = Enums,        Idtab (the enumeration type's declaration).
+    --    if TYP = Enums,        Idtab (the enumeration type's declaration);
     --    if TYP = Scalar_Range, Idtab (the range's subtype's declaration).
   end record;
 
