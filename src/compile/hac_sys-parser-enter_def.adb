@@ -4,7 +4,7 @@ with HAC_Sys.Scanner,
 package body HAC_Sys.Parser.Enter_Def is
 
   use Co_Defs, Defs, UErrors;
-  use type Nesting_level;
+  use type HAC_Integer;
 
   ------------------------------------------------------------------
   ------------------------------------------------------Enter_Block-
@@ -82,7 +82,6 @@ package body HAC_Sys.Parser.Enter_Def is
     Index_STP :        Co_Defs.Exact_Subtyp
   )
   is
-    use type HAC_Integer;
   begin
     if Index_STP.Discrete_First > Index_STP.Discrete_Last then
       Error (CD,

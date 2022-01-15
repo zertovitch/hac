@@ -18,7 +18,7 @@ with HAC_Sys.Parser.Enter_Def,
 package body HAC_Sys.Parser.Type_Def is
 
   use Co_Defs, Defs, Enter_Def, Helpers, UErrors;
-  use type Nesting_level;
+  use type HAC_Integer;
 
   procedure Number_Declaration_or_Enum_Item_or_Literal_Char (
     CD      : in out Co_Defs.Compiler_Data;
@@ -33,7 +33,7 @@ package body HAC_Sys.Parser.Type_Def is
     --  Was: Constant in the Pascal compiler.
     X : Integer;
     Sign : HAC_Integer;
-    use type HAC_Float, HAC_Integer;
+    use type HAC_Float;
     signed : Boolean := False;
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
   begin

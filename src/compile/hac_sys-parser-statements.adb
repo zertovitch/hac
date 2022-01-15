@@ -12,7 +12,7 @@ with HAC_Sys.Compiler.PCode_Emit,
 
 package body HAC_Sys.Parser.Statements is
 
-  use type Defs.Nesting_level;
+  use type Defs.HAC_Integer;
 
   procedure Assignment
     (CD              : in out Co_Defs.Compiler_Data;
@@ -30,7 +30,6 @@ package body HAC_Sys.Parser.Statements is
     begin
       Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => Exact_Typ (X));
     end Issue_Type_Mismatch_Error;
-    use type HAC_Integer;
   begin
     pragma Assert (CD.IdTab (Var_Id_Index).Entity = Variable);
     X := CD.IdTab (Var_Id_Index).xTyp;
@@ -375,7 +374,6 @@ package body HAC_Sys.Parser.Statements is
       procedure Discrete_Choice is  --  Ada RM 3.8.1 (5)
         label_1 : Constant_Rec;
         K   : Integer;
-        use type HAC_Integer;
       begin
         Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Block_Data.level, FSys_St + Alt_Finger_THEN, label_1);
         if label_1.TP /= X then
