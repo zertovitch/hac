@@ -372,10 +372,26 @@ package body HAC_Sys.Parser.Statements is
       others_flag : Boolean := False;
 
       procedure Discrete_Choice is  --  Ada RM 3.8.1 (5)
-        label_1 : Constant_Rec;
-        K   : Integer;
+        label_1, label_2 : Constant_Rec;
+        K : Integer;
+        choice_symbol_set : constant Symset := FSys_St + Alt_Finger_THEN + Range_Double_Dot_Symbol;
       begin
-        Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Block_Data.level, FSys_St + Alt_Finger_THEN, label_1);
+        Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Block_Data.level, choice_symbol_set, label_1);
+        if CD.Sy = Range_Double_Dot_Symbol then
+          --  !!  To do: non-explicit ranges, like a subtype name, a 'Range, ... .
+          --      Ranges.Static_Range.
+          InSymbol;
+          Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Block_Data.level, choice_symbol_set, label_2);
+          if label_2.TP /= label_1.TP then
+            Type_Mismatch (
+              CD, err_case_label_not_same_type_as_case_clause,
+              Found    => label_2.TP,
+              Expected => label_1.TP
+            );
+          end if;
+        else
+          label_2 := label_1;
+        end if;
         if label_1.TP /= X then
           Type_Mismatch (
             CD, err_case_label_not_same_type_as_case_clause,
@@ -386,11 +402,15 @@ package body HAC_Sys.Parser.Statements is
           Fatal (Case_Labels);  --  Exception is raised there.
         else
           I := I + 1;
-          CaseTab (I) := (value_1 => label_1.I, LC => CD.LC, Is_others => False);
+          CaseTab (I) := (value_1 => label_1.I, value_2 => label_2.I, LC => CD.LC, Is_others => False);
           K := 0;
           loop
             K := K + 1;
-            exit when CaseTab (K).value_1 = label_1.I;
+            --  Detect any range overlap.
+            exit when
+                label_1.I in CaseTab (K).value_1 .. CaseTab (K).value_2
+              or
+                label_2.I in CaseTab (K).value_1 .. CaseTab (K).value_2;
           end loop;
           if K < I then
             Error (CD, err_duplicate_case_choice_value);
@@ -425,7 +445,7 @@ package body HAC_Sys.Parser.Statements is
             Fatal (Case_Labels);  --  Exception is raised there.
           end if;
           I := I + 1;
-          CaseTab (I) := (value_1 => 0, LC => CD.LC, Is_others => True);
+          CaseTab (I) := (value_1 | value_2 => 0, LC => CD.LC, Is_others => True);
           InSymbol;
         end if;
         if CD.Sy = THEN_Symbol then  --  Mistake happens when converting IF statements to CASE.
@@ -471,12 +491,14 @@ package body HAC_Sys.Parser.Statements is
       CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
       --  Set correct address for k_CASE_Switch above.
       --  This is the address of the following bunch of
-      --  (k_CASE_Choice_Data, k_CASE_Match_Jump) pairs.
+      --  (CASE_Any_Choice, k_CASE_Match_Jump) pairs.
       for K in 1 .. I loop
         if CaseTab (K).Is_others then
           Emit (CD, k_CASE_Choice_Others);
-        else
+        elsif CaseTab (K).value_1 = CaseTab (K).value_2 then
           Emit_1 (CD, k_CASE_Choice_Value, CaseTab (K).value_1);
+        else
+          Emit_2 (CD, k_CASE_Choice_Range, CaseTab (K).value_1, CaseTab (K).value_2);
         end if;
         Emit_1 (CD, k_CASE_Match_Jump, Operand_2_Type (CaseTab (K).LC));
       end loop;

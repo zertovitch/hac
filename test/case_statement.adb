@@ -2,6 +2,18 @@ with HAL; use HAL;
 
 procedure Case_Statement is
 
+  procedure Failure (Msg : VString) is
+  begin
+    Put_Line (+"Failure in test: [" & Msg & ']');
+    Set_Exit_Status (1);  --  Compiler test failed.
+  end Failure;
+
+  procedure Assert (Msg : VString; Check : in Boolean) is
+  --  Similar to RM 11.4.2 but without raising an exception.
+  begin
+    if not Check then Failure (Msg & ", assertion"); end if;
+  end Assert;
+
   after_int_case : Boolean := False;
 
   procedure Test_Int (i : Integer) is
@@ -26,7 +38,8 @@ procedure Case_Statement is
     after_int_case := True;
   end Test_Int;
 
-  vowel_occurences : Integer := 0;
+  some_vowels_occurrences : Integer := 0;
+  small_consonants_occurrences : Integer := 0;
 
   procedure Test_Char (c : Character) is
   begin
@@ -36,11 +49,13 @@ procedure Case_Statement is
           Put (c); Put_Line ("  Compiler bug [Char, A]");
           Set_Exit_Status (1);  --  Compiler test failed.
         end if;
-        vowel_occurences := vowel_occurences + 1;
-      when 'b' | 'B' =>
+        some_vowels_occurrences := some_vowels_occurrences + 1;
+      when '*' =>
         null;
       when 'e' =>
-        vowel_occurences := vowel_occurences + 1;
+        some_vowels_occurrences := some_vowels_occurrences + 1;
+      when 'b' .. 'd' | 'f' .. 'h' | 'j' .. 'n' | 'p' .. 't' | 'v' .. 'x' | 'z' =>
+        small_consonants_occurrences := small_consonants_occurrences + 1;
       when others => null;
     end case;
   end Test_Char;
@@ -59,8 +74,6 @@ begin
   for c in big_A .. 'z' loop
     Test_Char (c);
   end loop;
-  if vowel_occurences /= 3 then
-    Put_Line ("Compiler bug [Char, Z]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (+"Char, CASE 1", some_vowels_occurrences = 3);
+  Assert (+"Char, CASE 2", small_consonants_occurrences = 20);
 end Case_Statement;
