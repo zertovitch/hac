@@ -35,12 +35,14 @@ package body HAC_Sys.Parser is
         Type_Def, UErrors;
     --
     Level : Nesting_level := Initial_Level;
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
-    Dx      : Integer;  -- data allocation Index
-    MaxDX   : Integer;
-    PRB     : Integer;  -- B-Index of this procedure
-    ICode   : Integer;  -- Size of initialization ObjCode generated
+    subprogram_block_index          : Integer;  --  Was: PRB
+    initialization_object_code_size : Integer;  --  Was: ICode
+    data_allocation_index           : Integer;  --  Was: DX
+    max_data_allocation_index       : Integer;  --  Was: MaxDX
+    --  ^ includes parameters of FOR loops
+
+    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
     ------------------------------------------------------------------
     --------------------------------------------Formal_Parameter_List-
@@ -102,9 +104,9 @@ package body HAC_Sys.Parser is
               r.xTyp      := xTP;
               r.Normal    := ValParam;
               r.Read_only := ValParam;
-              r.Adr_or_Sz := Dx;
+              r.Adr_or_Sz := data_allocation_index;
               r.LEV       := Level;
-              Dx          := Dx + Sz;
+              data_allocation_index := data_allocation_index + Sz;
             end;
           end loop;  --  while T0 < CD.Id_Count
         else
@@ -314,8 +316,8 @@ package body HAC_Sys.Parser is
         --  right after the "BEGIN" of current block (see Statements_Part_Setup).
         --  Nested subprograms have their own code and their eventual own
         --  initialization code coming before in the object code table.
-        ICode := ICode + (LC1 - LC0);  --  Size of initialization ObjCode
-        if LC0 + ICode >= CD.CMax - ICode then
+        initialization_object_code_size := initialization_object_code_size + (LC1 - LC0);  --  Size of initialization ObjCode
+        if LC0 + initialization_object_code_size >= CD.CMax - initialization_object_code_size then
           Fatal (Object_Code);  --  Collision during the copy (loop below). Garbage guaranteed.
         end if;
         while LC0 < LC1 loop
@@ -396,8 +398,8 @@ package body HAC_Sys.Parser is
                 end case;
               else  --  A variable or a typed constant
                 r.xTyp      := xTyp;
-                r.Adr_or_Sz := Dx;
-                Dx          := Dx + Sz;
+                r.Adr_or_Sz := data_allocation_index;
+                data_allocation_index := data_allocation_index + Sz;
               end if;
             end;
           end loop;  --  While T0 < T1
@@ -429,8 +431,8 @@ package body HAC_Sys.Parser is
     end Var_Declaration;
 
     ------------------------------------------------------------------
-    --------------------------------------------Proc_Func_Declaration-
-    procedure Proc_Func_Declaration is
+    ----------------Subprogram_Declaration_or_Body - Ada RM 6.1, 6.3--
+    procedure Subprogram_Declaration_or_Body is
       IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
     begin
       InSymbol;
@@ -455,7 +457,7 @@ package body HAC_Sys.Parser is
       else
         Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
       end if;
-    end Proc_Func_Declaration;
+    end Subprogram_Declaration_or_Body;
 
     procedure Statement (FSys_St : Symset);  --  Ada RM 5.1 (3)
 
@@ -836,14 +838,13 @@ package body HAC_Sys.Parser is
                 Block_Ref      => 0,
                 Normal         => True,
                 LEV            => Level,
-                Adr_or_Sz      => Dx
+                Adr_or_Sz      => data_allocation_index
                );
           CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx  := CD.Id_Count;
-          Dx := Dx + 1;
-          if Dx > MaxDX then
-            MaxDX := Dx;
-          end if;
-          CD.Blocks_Table (CD.Display (Level)).VSize := MaxDX;
+          data_allocation_index := data_allocation_index + 1;
+          max_data_allocation_index :=
+            Integer'Max (max_data_allocation_index, data_allocation_index);
+          CD.Blocks_Table (CD.Display (Level)).VSize := max_data_allocation_index;
         else
           Skip (CD, Fail_after_FOR + FSys_St, err_identifier_missing);
         end if;
@@ -870,7 +871,7 @@ package body HAC_Sys.Parser is
         --  Forget the loop parameter (the "iterator variable"):
         CD.Id_Count := CD.Id_Count - 1;
         CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := Previous_Last;
-        Dx := Dx - 1;
+        data_allocation_index := data_allocation_index - 1;
         --  The VM must also de-stack the 3 data pushed on the stack for the FOR loop:
         Emit (CD, k_FOR_Release_Stack_After_End);
       end FOR_Statement;
@@ -1293,30 +1294,26 @@ package body HAC_Sys.Parser is
           stop_on_error => True  --  Exception is raised there if there is an error.
         );
         case CD.Sy is
-          when IDent          => Var_Declaration;
+          when IDent              => Var_Declaration;
           when TYPE_Symbol |
-               SUBTYPE_Symbol => Type_Declaration (CD, Level, FSys);
-          when TASK_Symbol    => Tasking.Task_Declaration (CD, FSys, Level);
-          when USE_Symbol     => Modularity.Use_Clause (CD, Level);
+               SUBTYPE_Symbol     => Type_Declaration (CD, Level, FSys);
+          when TASK_Symbol        => Tasking.Task_Declaration (CD, FSys, Level);
+          when USE_Symbol         => Modularity.Use_Clause (CD, Level);
+          when PROCEDURE_Symbol |
+               FUNCTION_Symbol    => Subprogram_Declaration_or_Body;
           when others => null;
         end case;
-        CD.Blocks_Table (PRB).VSize := Dx;
-        --  ^ TBD: check if this is still correct for declarations that appear
-        --    after subprograms !!
-        while CD.Sy = PROCEDURE_Symbol or CD.Sy = FUNCTION_Symbol loop
-          Proc_Func_Declaration;
-        end loop;
-        --
+        CD.Blocks_Table (subprogram_block_index).VSize := data_allocation_index;
         exit when CD.Sy = BEGIN_Symbol;
       end loop;
     end Declarative_Part;
 
     procedure Statements_Part_Setup is
     begin
-      MaxDX := Dx;
+      max_data_allocation_index := data_allocation_index;
       CD.IdTab (Block_Id_Index).Adr_or_Sz := CD.LC;
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
-      for Init_Code_Idx in reverse CD.CMax + 1 .. CD.CMax + ICode loop
+      for Init_Code_Idx in reverse CD.CMax + 1 .. CD.CMax + initialization_object_code_size loop
         CD.ObjCode (CD.LC) := CD.ObjCode (Init_Code_Idx);
         CD.LC              := CD.LC + 1;
       end loop;
@@ -1324,12 +1321,12 @@ package body HAC_Sys.Parser is
       --  At nesting level 0, it will be CDMax.
       --  For higher levels, it will be CDMax minus the sum of
       --  current values of ICode for all lower levels.
-      CD.CMax := CD.CMax + ICode;
+      CD.CMax := CD.CMax + initialization_object_code_size;
     end Statements_Part_Setup;
 
     procedure Statements_Part_Closing is
     begin
-      CD.Blocks_Table (PRB).SrcTo := CD.CUD.line_count;
+      CD.Blocks_Table (subprogram_block_index).SrcTo := CD.CUD.line_count;
     end Statements_Part_Closing;
 
     procedure Function_Result_Profile is
@@ -1396,21 +1393,21 @@ package body HAC_Sys.Parser is
     else
       CD.Full_Block_Id := CD.Full_Block_Id & '.' & To_String (Block_Id_with_case);
     end if;
-    Dx    := 5;
-    ICode := 0;
+    data_allocation_index := 5;  --  fixed area of the subprogram activation record.
+    initialization_object_code_size := 0;
     if Is_a_block_statement then
       null;  --  We should be here with Sy = BEGIN_Symbol or Sy = DECLARE_Symbol.
     else
       Test (CD, Symbols_after_Subprogram_Identifier, FSys, err_incorrectly_used_symbol);
     end if;
     if CD.IdTab (Block_Id_Index).Block_Ref > 0 then
-      PRB := CD.IdTab (Block_Id_Index).Block_Ref;
+      subprogram_block_index := CD.IdTab (Block_Id_Index).Block_Ref;
     else
       Enter_Block (CD, Block_Id_Index);
-      PRB := CD.Blocks_Count;
-      CD.IdTab (Block_Id_Index).Block_Ref := PRB;
+      subprogram_block_index := CD.Blocks_Count;
+      CD.IdTab (Block_Id_Index).Block_Ref := subprogram_block_index;
     end if;
-    CD.Display (Level) := PRB;
+    CD.Display (Level) := subprogram_block_index;
     CD.IdTab (Block_Id_Index).xTyp := Undefined;
     if CD.Sy = LParent then
       Formal_Parameter_List;
@@ -1420,8 +1417,8 @@ package body HAC_Sys.Parser is
       return;
     end if;
     --
-    CD.Blocks_Table (PRB).Last_Param_Id_Idx := CD.Id_Count;
-    CD.Blocks_Table (PRB).PSize := Dx;
+    CD.Blocks_Table (subprogram_block_index).Last_Param_Id_Idx := CD.Id_Count;
+    CD.Blocks_Table (subprogram_block_index).PSize := data_allocation_index;
     --
     if Is_a_function and not Is_a_block_statement then
       Function_Result_Profile;
@@ -1432,7 +1429,7 @@ package body HAC_Sys.Parser is
       --  since ';' is blocked as symbol). Body declared later.
       --  Example:
       --  procedure A; procedure B is begin ... A ... end; procedure A is ... B ... end;
-      CD.Blocks_Table (PRB).VSize := Dx;
+      CD.Blocks_Table (subprogram_block_index).VSize := data_allocation_index;
       CD.IdTab (Block_Id_Index).Adr_or_Sz := -1;
       --  Address of body TBD (or, we could have an indirect call mechanism).
       return;
