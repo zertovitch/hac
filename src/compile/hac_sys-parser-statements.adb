@@ -5,7 +5,6 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Ranges,
      HAC_Sys.PCode,
-     HAC_Sys.Parser.Type_Def,
      HAC_Sys.Parser.Standard_Procedures,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
@@ -169,7 +168,7 @@ package body HAC_Sys.Parser.Statements is
      Block_Data : in out Block_Data_Type)
   is
     use Compiler.PCode_Emit, Calls, Co_Defs, Defs, Enter_Def, Expressions,
-        Helpers, PCode, Type_Def, UErrors;
+        Helpers, PCode, UErrors;
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
     procedure Accept_Statement is            -- Hathorn
@@ -376,12 +375,12 @@ package body HAC_Sys.Parser.Statements is
         K : Integer;
         choice_symbol_set : constant Symset := FSys_St + Alt_Finger_THEN + Range_Double_Dot_Symbol;
       begin
-        Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Block_Data.level, choice_symbol_set, label_1);
+        Static_Scalar_Expression (CD, Block_Data.level, choice_symbol_set, label_1);
         if CD.Sy = Range_Double_Dot_Symbol then
           --  !!  To do: non-explicit ranges, like a subtype name, a 'Range, ... .
           --      Ranges.Static_Range.
           InSymbol;
-          Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Block_Data.level, choice_symbol_set, label_2);
+          Static_Scalar_Expression (CD, Block_Data.level, choice_symbol_set, label_2);
           if label_2.TP /= label_1.TP then
             Type_Mismatch (
               CD, err_case_label_not_same_type_as_case_clause,

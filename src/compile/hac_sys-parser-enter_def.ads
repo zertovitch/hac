@@ -8,8 +8,10 @@
 --
 -------------------------------------------------------------------------------------
 --
+--  Package around entering definitions, from the parser or "by hand",
+--  for built-in packages.
 
-package HAC_Sys.Parser.Enter_Def is  --  Package around entering definitions.
+package HAC_Sys.Parser.Enter_Def is
 
   procedure Enter_Block (
     CD    : in out Co_Defs.Compiler_Data;

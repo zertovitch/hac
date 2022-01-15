@@ -11,7 +11,14 @@
 
 private package HAC_Sys.Parser.Expressions is
 
-  --  For all expressions:
+  procedure Static_Scalar_Expression (
+    CD      : in out Co_Defs.Compiler_Data;
+    Level   : in     Defs.Nesting_level;
+    FSys_ND : in     Defs.Symset;
+    C       :    out Co_Defs.Constant_Rec
+  );
+
+  --  For all dynamic expressions:
   --   - the appropriate machine code is emitted;
   --   - in the machine code, the expression is pushed on the stack
   --   - for parsing: the type of the expression is set in X.

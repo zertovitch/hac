@@ -15,12 +15,14 @@ with HAC_Sys.Co_Defs,
 package HAC_Sys.Parser is
 
   type Block_Data_Type is record
-    level                     : Defs.Nesting_level;
-    is_a_function             : Boolean;             --  RETURN [Value] statement expected
-    block_id_index            : Integer;
-    data_allocation_index     : Integer;             --  Was: DX
-    max_data_allocation_index : Integer;             --  Was: MaxDX
-    --  ^ includes parameters of FOR loops
+    level                           : Defs.Nesting_level;
+    is_a_function                   : Boolean;             --  RETURN [Value] statement expected
+    block_id_index                  : Integer;
+    initialization_object_code_size : Integer;             --  Was: ICode
+    data_allocation_index           : Integer;             --  Was: DX
+    max_data_allocation_index       : Integer;             --  Was: MaxDX
+    --  ^ includes the maximum space needed
+    --    for parameters of FOR loops.
   end record;
 
   procedure Block (

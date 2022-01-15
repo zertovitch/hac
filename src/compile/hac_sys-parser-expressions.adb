@@ -13,6 +13,79 @@ package body HAC_Sys.Parser.Expressions is
 
   use Compiler.PCode_Emit, Co_Defs, Defs, Helpers, PCode, Scanner, UErrors;
 
+  procedure Static_Scalar_Expression (
+    CD      : in out Co_Defs.Compiler_Data;
+    Level   : in     Defs.Nesting_level;
+    FSys_ND : in     Defs.Symset;
+    C       :    out Co_Defs.Constant_Rec
+  )
+  is
+    use Co_Defs, Defs, Helpers, UErrors;
+    --  This covers number declarations (RM 3.3.2) and enumeration items (RM 3.5.1).
+    --  Additionally this compiler does on-the-fly declarations for static values:
+    --  bounds in ranges (FOR, ARRAY), and values in CASE statements.
+    --  Was: Constant in the Pascal compiler.
+    X : Integer;
+    Sign : HAC_Integer;
+    use type HAC_Float, HAC_Integer;
+    signed : Boolean := False;
+    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+  begin
+    C.TP := Undefined;
+    C.I  := 0;
+    Test (CD, Constant_Definition_Begin_Symbol, FSys_ND, err_illegal_symbol_for_a_number_declaration);
+    if not Constant_Definition_Begin_Symbol (CD.Sy) then
+      return;
+    end if;
+    if CD.Sy = CharCon then  --  Untyped character constant, occurs only in ranges.
+      C.TP := Construct_Root (Chars);
+      C.I  := CD.INum;
+      InSymbol;
+    else
+      Sign := 1;
+      if Plus_Minus (CD.Sy) then
+        signed := True;
+        if CD.Sy = Minus then
+          Sign := -1;
+        end if;
+        InSymbol;
+      end if;
+      case CD.Sy is
+        when IDent =>
+          --  Number defined using another one: "minus_pi : constant := -pi;"
+          --  ... or, we have an enumeration item.
+          X := Locate_Identifier (CD, CD.Id, Level);
+          if X /= 0 then
+            if CD.IdTab (X).Entity = Declared_Number_or_Enum_Item then
+              C.TP := Exact_Typ (CD.IdTab (X).xTyp);
+              if C.TP.TYP = Floats then
+                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr_or_Sz);
+              else
+                C.I := Sign * HAC_Integer (CD.IdTab (X).Adr_or_Sz);
+                if signed and then C.TP.TYP not in Numeric_Typ then
+                  Error (CD, err_numeric_constant_expected);
+                end if;
+              end if;
+            else
+              Error (CD, err_illegal_constant_or_constant_identifier, severity => major);
+            end if;
+          end if;  --  X /= 0
+          InSymbol;
+        when IntCon =>
+          C.TP := Construct_Root (Ints);
+          C.I  := Sign * CD.INum;
+          InSymbol;
+        when FloatCon =>
+          C.TP := Construct_Root (Floats);
+          C.R  := HAC_Float (Sign) * CD.RNum;
+          InSymbol;
+        when others =>
+          Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
+      end case;
+    end if;
+    Test (CD, FSys_ND, Empty_Symset, err_incorrectly_used_symbol);
+  end Static_Scalar_Expression;
+
   ------------------------------------------------------------------
   ---------------------------------------------------------Selector-
   procedure Selector (

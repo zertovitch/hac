@@ -1,7 +1,6 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
-     HAC_Sys.Parser.Type_Def,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.UErrors;
@@ -49,13 +48,13 @@ package body HAC_Sys.Parser.Attributes is
     A : ATabEntry := CD.Arrays_Table (Array_Index);
     Low, High : Index;
     N : Constant_Rec;
-    use Compiler.PCode_Emit, PCode, Scanner, Type_Def;
+    use Compiler.PCode_Emit, Expressions, PCode, Scanner;
     use type HAC_Integer;
   begin
     N.I := 1;
     if CD.Sy = LParent then
       InSymbol (CD);
-      Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, FSys + RParent, N);
+      Static_Scalar_Expression (CD, Level, FSys + RParent, N);
       if N.TP.TYP /= Ints then
         Error (CD, err_parameter_must_be_Integer, severity => major);
       end if;

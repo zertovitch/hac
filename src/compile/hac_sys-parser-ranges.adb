@@ -1,5 +1,4 @@
 with HAC_Sys.Compiler.PCode_Emit,
-     HAC_Sys.Parser.Type_Def,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.PCode,
@@ -64,9 +63,9 @@ package body HAC_Sys.Parser.Ranges is
     Higher_Bound   :    out Co_Defs.Constant_Rec
   )
   is
-    use Co_Defs, Defs, Helpers, Type_Def, UErrors;
+    use Co_Defs, Defs, Expressions, Helpers, UErrors;
   begin
-    Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, OF_RANGE_Double_Dot_RParent + FSys, Lower_Bound);
+    Static_Scalar_Expression (CD, Level, OF_RANGE_Double_Dot_RParent + FSys, Lower_Bound);
     --
     if Lower_Bound.TP.TYP = Floats then
       Error (CD, Specific_Error, "a float type is not expected here");
@@ -76,7 +75,7 @@ package body HAC_Sys.Parser.Ranges is
     --
     Need (CD, Range_Double_Dot_Symbol, err_expecting_double_dot);  --  " .. "
     --
-    Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, Comma_OF_RParent + FSys, Higher_Bound);
+    Static_Scalar_Expression (CD, Level, Comma_OF_RParent + FSys, Higher_Bound);
     --
     if Higher_Bound.TP /= Lower_Bound.TP then
       Error (CD, Specific_Error, "types in range bounds do not match");
