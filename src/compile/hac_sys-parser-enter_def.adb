@@ -4,6 +4,7 @@ with HAC_Sys.Scanner,
 package body HAC_Sys.Parser.Enter_Def is
 
   use Co_Defs, Defs, UErrors;
+  use type Nesting_level;
 
   ------------------------------------------------------------------
   ------------------------------------------------------Enter_Block-

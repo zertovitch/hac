@@ -46,7 +46,9 @@ package HAC_Sys.PCode is
     k_Jump_If_Non_Zero_No_Pop,          --  Jump if [T].I /= 0, no pop
     --
     k_CASE_Switch,
-    k_CASE_Choice_Data,
+    k_CASE_Choice_Value,
+    k_CASE_Choice_Range,
+    k_CASE_Choice_Others,
     k_CASE_Match_Jump,
     k_CASE_No_Choice_Found,
     --
@@ -134,7 +136,8 @@ package HAC_Sys.PCode is
   --
   subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Literal;
   subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Update_Display_Vector;
-  subtype CASE_Data_Opcode        is Opcode range k_CASE_Choice_Data .. k_CASE_No_Choice_Found;
+  subtype CASE_Any_Choice         is Opcode range k_CASE_Choice_Value .. k_CASE_Choice_Others;
+  subtype CASE_Data_Opcode        is Opcode range k_CASE_Choice_Value .. k_CASE_No_Choice_Found;
   subtype Composite_Data_Opcode   is Opcode range k_Array_Index_Element_Size_1 .. k_String_Literal_Assignment;
   subtype Jump_Opcode             is Opcode range k_Jump .. k_Jump_If_Non_Zero_No_Pop;
   subtype Multi_Statement_Opcode  is Opcode range k_CASE_Switch .. k_FOR_Release_Stack_After_End;
@@ -146,11 +149,10 @@ package HAC_Sys.PCode is
   OK_for_Exception : constant Opcode_Set :=
     (k_Exit_Call .. k_Exit_Function | k_Halt_Interpreter => True, others => False);
 
-  subtype Operand_1_Type is Defs.Nesting_level'Base;  --  Mostly used to pass nesting levels
-
   --  Type for operand 2 (Y) is large enough for containing
   --  addresses, plus signed integer values *in* HAC programs.
   --
+  subtype Operand_1_Type is HAC_Sys.Defs.HAC_Integer;
   subtype Operand_2_Type is HAC_Sys.Defs.HAC_Integer;
 
   type Debug_Info is record

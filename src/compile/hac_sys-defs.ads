@@ -69,12 +69,9 @@ package HAC_Sys.Defs is
   KMax                  : constant := HAC_Float'Digits;
 
   Nesting_Level_Max     : constant := 20;
-  type Nesting_level is new HAC_Integer range 0 .. Nesting_Level_Max;
+  subtype Nesting_level is HAC_Integer range 0 .. Nesting_Level_Max;
 
   End_Function_without_Return : constant := -1;
-
-  Case_when_something : constant := +1;
-  Case_when_others    : constant := -1;
 
   Normal_Procedure_Call  : constant := 0;
   Normal_Entry_Call      : constant := 1;

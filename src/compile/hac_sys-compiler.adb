@@ -217,6 +217,7 @@ package body HAC_Sys.Compiler is
   )
   is
     use Ada.Exceptions, Ada.Text_IO, Parser.Helpers, PCode, UErrors;
+    use type Nesting_level;
 
     asm_dump : File_Type;
     map_file : File_Type;

@@ -19,6 +19,7 @@ with HAL;
 package body HAC_Sys.Parser.Helpers is
 
   use Scanner, UErrors;
+  use type Nesting_level;
 
   procedure Need (
     CD      : in out Compiler_Data;

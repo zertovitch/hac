@@ -51,6 +51,7 @@ package body HAC_Sys.PCode.Interpreter is
       Top_Item : General_Register renames ND.S (Curr_TCB.T);
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
       use Defs;
+      use type Operand_1_Type;
     begin
       case Code is
         when SF_File_Information =>

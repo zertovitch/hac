@@ -18,6 +18,7 @@ with HAC_Sys.Parser.Enter_Def,
 package body HAC_Sys.Parser.Type_Def is
 
   use Co_Defs, Defs, Enter_Def, Helpers, UErrors;
+  use type Nesting_level;
 
   procedure Number_Declaration_or_Enum_Item_or_Literal_Char (
     CD      : in out Co_Defs.Compiler_Data;

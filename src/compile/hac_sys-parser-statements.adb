@@ -12,6 +12,8 @@ with HAC_Sys.Compiler.PCode_Emit,
 
 package body HAC_Sys.Parser.Statements is
 
+  use type Defs.Nesting_level;
+
   procedure Assignment
     (CD              : in out Co_Defs.Compiler_Data;
      FSys            :        Defs.Symset;
@@ -136,6 +138,11 @@ package body HAC_Sys.Parser.Statements is
       end if;
     end if;
   end Assignment;
+
+  procedure Statement  --  Ada RM 5.1 (3)
+    (CD         : in out Co_Defs.Compiler_Data;
+     FSys_St    :        Defs.Symset;
+     Block_Data : in out Block_Data_Type);
 
   procedure Sequence_of_Statements  --  Ada RM 5.1 (2)
     (CD         : in out Co_Defs.Compiler_Data;
@@ -358,56 +365,57 @@ package body HAC_Sys.Parser.Statements is
       Emit (CD, k_Delay);
     end Delay_Statement;
 
-    procedure CASE_Statement is
+    procedure CASE_Statement is  --  Ada RM 5.4
       X         : Exact_Typ;
       I, J, LC1 : Integer;
       CaseTab : array (1 .. Cases_Max) of CASE_Label_Value;
       ExitTab : array (1 .. Cases_Max) of Integer;
       others_flag : Boolean := False;
 
-      procedure CASE_Label is
-        Lab : Constant_Rec;
+      procedure Discrete_Choice is  --  Ada RM 3.8.1 (5)
+        label_1 : Constant_Rec;
         K   : Integer;
         use type HAC_Integer;
       begin
-        Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Block_Data.level, FSys_St + Alt_Finger_THEN, Lab);
-        if Lab.TP /= X then
+        Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Block_Data.level, FSys_St + Alt_Finger_THEN, label_1);
+        if label_1.TP /= X then
           Type_Mismatch (
             CD, err_case_label_not_same_type_as_case_clause,
-            Found    => Lab.TP,
+            Found    => label_1.TP,
             Expected => X
           );
         elsif I = Cases_Max then
           Fatal (Case_Labels);  --  Exception is raised there.
         else
           I := I + 1;
-          CaseTab (I) := (Val => Lab.I, LC => CD.LC, Is_others => False);
+          CaseTab (I) := (value_1 => label_1.I, LC => CD.LC, Is_others => False);
           K := 0;
           loop
             K := K + 1;
-            exit when CaseTab (K).Val = Lab.I;
+            exit when CaseTab (K).value_1 = label_1.I;
           end loop;
           if K < I then
             Error (CD, err_duplicate_case_choice_value);
           end if;
         end if;
-      end CASE_Label;
+      end Discrete_Choice;
 
-      procedure One_CASE is
+      procedure WHEN_Discrete_Choice_List is
       begin
         pragma Assert (CD.Sy = WHEN_Symbol);  --  One_Case called only on WHEN_Symbol.
-        InSymbol;
+        InSymbol;  --  Consume `WHEN`
+        --  Here, a discrete_choice_list (Ada RM 3.8.1 (4)) following WHEN.
         if Constant_Definition_Begin_Symbol (CD.Sy) then
           if others_flag then  --  Normal choice list *atfer* the "others" choice.
             Error (CD, err_case_others_alone_last);
           end if;
-          CASE_Label;
+          Discrete_Choice;
           while CD.Sy = Alt loop
             InSymbol;  --  Consume '|' symbol.
             if CD.Sy = OTHERS_Symbol then  --  "others" mixed with normal choices.
               Error (CD, err_case_others_alone_last);
             else
-              CASE_Label;
+              Discrete_Choice;
             end if;
           end loop;
         elsif CD.Sy = OTHERS_Symbol then        -- Hathorn
@@ -419,7 +427,7 @@ package body HAC_Sys.Parser.Statements is
             Fatal (Case_Labels);  --  Exception is raised there.
           end if;
           I := I + 1;
-          CaseTab (I) := (Val => 0, LC => CD.LC, Is_others => True);
+          CaseTab (I) := (value_1 => 0, LC => CD.LC, Is_others => True);
           InSymbol;
         end if;
         if CD.Sy = THEN_Symbol then  --  Mistake happens when converting IF statements to CASE.
@@ -432,7 +440,7 @@ package body HAC_Sys.Parser.Statements is
         J := J + 1;
         ExitTab (J) := CD.LC;
         Emit (CD, k_Jump);
-      end One_CASE;
+      end WHEN_Discrete_Choice_List;
 
     begin  --  CASE_Statement
       InSymbol;
@@ -458,7 +466,7 @@ package body HAC_Sys.Parser.Statements is
         Error (CD, err_WHEN_missing, severity => major);
       end if;
       loop  --  All cases are parsed here.
-        One_CASE;
+        WHEN_Discrete_Choice_List;
         exit when CD.Sy /= WHEN_Symbol;
       end loop;
 
@@ -468,9 +476,9 @@ package body HAC_Sys.Parser.Statements is
       --  (k_CASE_Choice_Data, k_CASE_Match_Jump) pairs.
       for K in 1 .. I loop
         if CaseTab (K).Is_others then
-          Emit_2 (CD, k_CASE_Choice_Data, Case_when_others, 0);
+          Emit (CD, k_CASE_Choice_Others);
         else
-          Emit_2 (CD, k_CASE_Choice_Data, Case_when_something, CaseTab (K).Val);
+          Emit_1 (CD, k_CASE_Choice_Value, CaseTab (K).value_1);
         end if;
         Emit_1 (CD, k_CASE_Match_Jump, Operand_2_Type (CaseTab (K).LC));
       end loop;

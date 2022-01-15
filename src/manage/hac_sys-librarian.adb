@@ -87,6 +87,7 @@ package body HAC_Sys.Librarian is
   )
   is
     use Ada.Characters.Handling, Defs;
+    use type Nesting_level;
     Alfa_Ident       : constant Alfa := To_Alfa (Full_Ident);
     Alfa_Ident_Upper : constant Alfa := To_Alfa (To_Upper (Full_Ident));
     last : Index := CD.Id_Count;
@@ -124,6 +125,7 @@ package body HAC_Sys.Librarian is
   )
   is
     use Co_Defs, Defs, Parser.Enter_Def, UErrors;
+    use type Nesting_level;
     Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).Name);
     Pkg_UName_Dot : constant String := Pkg_UName & '.';
     Pkg_Initial   : constant Character := Pkg_UName (Pkg_UName'First);

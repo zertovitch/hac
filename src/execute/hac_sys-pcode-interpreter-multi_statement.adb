@@ -9,6 +9,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
       Value : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
       H2 : Integer;
       use type Defs.Nesting_level;
+      jump : Boolean;
     begin
       Pop (ND);
       H2 := Integer (IR.Y);
@@ -17,21 +18,27 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
       --  that should covers all cases.
       --
       loop
-        if CD.ObjCode (H2).F /= k_CASE_Choice_Data then
+        if CD.ObjCode (H2).F not in CASE_Any_Choice then
           --  We hit the end of (k_CASE_Choice_Data, k_CASE_Match_Jump) pairs.
           --  This means that Value, or OTHERS, were not found so far.
           --  This situation should not happen; should be caught at compile-time.
           raise VM_Case_Check_Error;
-        elsif CD.ObjCode (H2).Y = Value
-              or CD.ObjCode (H2).X = Defs.Case_when_others
-        then
-          Curr_TCB.PC := Defs.Index (CD.ObjCode (H2 + 1).Y);
-          --  The interpreter will execute instructions following "=>".
-          --  The address is stored with a k_CASE_Match_Jump.
-          exit;
         else
-          --  Check the next (k_CASE_Choice_Data, k_CASE_Match_Jump) instruction pair:
-          H2 := H2 + 2;
+          case CASE_Any_Choice (CD.ObjCode (H2).F) is
+            when k_CASE_Choice_Value => jump := Value = CD.ObjCode (H2).Y;
+            when k_CASE_Choice_Range => jump := Value in CD.ObjCode (H2).X .. CD.ObjCode (H2).Y;
+            when k_CASE_Choice_Others => jump := True;
+          end case;
+          if jump then
+            --  The interpreter will execute instructions following "=>".
+            --  The address is stored with a k_CASE_Match_Jump instruction just after
+            --  the CASE_Any_Choice instruction.
+            Curr_TCB.PC := Defs.Index (CD.ObjCode (H2 + 1).Y);
+            exit;
+          else
+            --  Check the next (CASE_Any_Choice, k_CASE_Match_Jump) instruction pair:
+            H2 := H2 + 2;
+          end if;
         end if;
       end loop;
     end Do_CASE_Switch_1;

@@ -7,6 +7,7 @@ with HAC_Sys.Compiler.PCode_Emit,
 package body HAC_Sys.Parser.Calls is
 
   use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
+  use type Nesting_level;
 
   procedure Push_and_Check_by_Value_Parameter (
     CD       : in out Co_Defs.Compiler_Data;

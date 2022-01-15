@@ -28,6 +28,7 @@ package body HAC_Sys.Parser is
     use Co_Defs, Compiler, Defs, Enter_Def,
         Helpers, PCode, Compiler.PCode_Emit,
         UErrors;
+    use type Nesting_level;
     --
     block_data : Block_Data_Type := Initial_Block_Data;
     subprogram_block_index          : Integer;  --  Was: PRB
