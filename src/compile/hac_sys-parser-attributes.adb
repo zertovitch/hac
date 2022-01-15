@@ -21,6 +21,101 @@ package body HAC_Sys.Parser.Attributes is
     Value
   );
 
+  procedure Which_Attribute (CD : in out Co_Defs.Compiler_Data; attr : out Attribute) is
+    use Co_Defs, Defs, UErrors;
+    attr_ID : constant String := To_String (CD.Id);
+  begin
+    if attr_ID = "RANGE" then
+      attr := Range_Attr;
+    else
+      attr := Attribute'Value (attr_ID);
+    end if;
+    Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
+  exception
+    when Constraint_Error =>
+      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
+  end Which_Attribute;
+
+  procedure Array_Subtype_Attribute (
+    CD             : in out Co_Defs.Compiler_Data;
+    Level          : in     Defs.Nesting_level;
+    FSys           : in     Defs.Symset;
+    Array_Index    : in     Natural;
+    attr           : in     Attribute;
+    Type_of_Result :    out Co_Defs.Exact_Subtyp
+  )
+  is
+    use Co_Defs, Defs, Helpers, UErrors;
+    A : ATabEntry := CD.Arrays_Table (Array_Index);
+    Low, High : Index;
+    N : Constant_Rec;
+    use Compiler.PCode_Emit, PCode, Scanner, Type_Def;
+    use type HAC_Integer;
+  begin
+    N.I := 1;
+    if CD.Sy = LParent then
+      InSymbol (CD);
+      Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, FSys + RParent, N);
+      if N.TP.TYP /= Ints then
+        Error (CD, err_parameter_must_be_Integer, severity => major);
+      end if;
+      Need (CD, RParent, err_closing_parenthesis_missing);
+    end if;
+    if N.I < 1 then
+      Error (CD, err_invalid_dimension_number, "minimum is 1", major);
+    end if;
+    --
+    Jump_to_next_Dimension :
+    for Skip_Dim in 2 .. N.I loop
+      if A.Element_xTyp.TYP = Arrays then
+        A := CD.Arrays_Table (A.Element_xTyp.Ref);
+      else
+        Error (CD, err_invalid_dimension_number, "maximum is" &
+          HAC_Integer'Image (Skip_Dim - 1), major);
+      end if;
+    end loop Jump_to_next_Dimension;
+    --
+    Low  := Index (A.Index_xTyp.Discrete_First);
+    High := Index (A.Index_xTyp.Discrete_Last);
+    case attr is
+      when First =>       --  RM 3.6.2 (3, 4)
+        Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
+        Type_of_Result := A.Index_xTyp;
+      when Last =>        --  RM 3.6.2 (5, 6)
+        Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High));
+        Type_of_Result := A.Index_xTyp;
+      when Range_Attr =>  --  RM 3.6.2 (7, 8)
+        Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
+        Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High));
+        Type_of_Result          := A.Index_xTyp;
+        Type_of_Result.Is_Range := True;
+      when Length =>      --  RM 3.6.2 (9, 10)
+        Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High - Low + 1));
+        Type_of_Result := Construct_Root (Ints);
+      when others =>
+        Error (CD, err_syntax_error, ": attribute not defined for this type", major);
+    end case;
+  end Array_Subtype_Attribute;
+
+  procedure Object_Attribute (
+    CD                : in out Co_Defs.Compiler_Data;
+    Level             : in     Defs.Nesting_level;
+    FSys              : in     Defs.Symset;
+    Object_xSubtyp    : in     Co_Defs.Exact_Subtyp;
+    xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
+  )
+  is
+    use Defs, Helpers, UErrors;
+    attr : Attribute;
+  begin
+    Which_Attribute (CD, attr);
+    if Arrays_Set (Object_xSubtyp.TYP) then
+      Array_Subtype_Attribute (CD, Level, FSys, Object_xSubtyp.Ref, attr, xSubtyp_of_Result);
+    else
+      Error (CD, err_syntax_error, ": no attribute defined for this object", major);
+    end if;
+  end Object_Attribute;
+
   procedure Subtype_Attribute (
     CD             : in out Co_Defs.Compiler_Data;
     Level          : in     Defs.Nesting_level;
@@ -265,82 +360,21 @@ package body HAC_Sys.Parser.Attributes is
           );
       end case;
     end Scalar_Subtype_Attribute;
-
-    procedure Array_Subtype_Attribute is
-      A : ATabEntry := CD.Arrays_Table (S.Ref);
-      Low, High : Index;
-      N : Constant_Rec;
-      use Compiler.PCode_Emit, PCode, Scanner, Type_Def;
-      use type HAC_Integer;
-    begin
-      N.I := 1;
-      if CD.Sy = LParent then
-        InSymbol (CD);
-        Number_Declaration_or_Enum_Item_or_Literal_Char (CD, Level, FSys + RParent, N);
-        if N.TP.TYP /= Ints then
-          Error (CD, err_parameter_must_be_Integer, severity => major);
-        end if;
-        Need (CD, RParent, err_closing_parenthesis_missing);
-      end if;
-      if N.I < 1 then
-        Error (CD, err_invalid_dimension_number, "minimum is 1", major);
-      end if;
-      --
-      Jump_to_next_Dimension :
-      for Skip_Dim in 2 .. N.I loop
-        if A.Element_xTyp.TYP = Arrays then
-          A := CD.Arrays_Table (A.Element_xTyp.Ref);
-        else
-          Error (CD, err_invalid_dimension_number, "maximum is" &
-            HAC_Integer'Image (Skip_Dim - 1), major);
-        end if;
-      end loop Jump_to_next_Dimension;
-      --
-      Low  := Index (A.Index_xTyp.Discrete_First);
-      High := Index (A.Index_xTyp.Discrete_Last);
-      case attr is
-        when First =>       --  RM 3.6.2 (3, 4)
-          Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
-          Type_of_Result := A.Index_xTyp;
-        when Last =>        --  RM 3.6.2 (5, 6)
-          Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High));
-          Type_of_Result := A.Index_xTyp;
-        when Range_Attr =>  --  RM 3.6.2 (7, 8)
-          Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
-          Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High));
-          Type_of_Result          := A.Index_xTyp;
-          Type_of_Result.Is_Range := True;
-        when Length =>      --  RM 3.6.2 (9, 10)
-          Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High - Low + 1));
-          Type_of_Result := Construct_Root (Ints);
-        when others =>
-          Error (CD, err_syntax_error, ": attribute not defined for this type", major);
-      end case;
-    end Array_Subtype_Attribute;
     --
   begin
     pragma Assert (Typ_ID.Entity = TypeMark);
     --
-    if attr_ID = "RANGE" then
-      attr := Range_Attr;
-    else
-      attr := Attribute'Value (attr_ID);
-    end if;
-    --
-    Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
+    Which_Attribute (CD, attr);
     if Scalar_Set (S.TYP) then
       Scalar_Subtype_Attribute;
     elsif Arrays_Set (S.TYP) then
-      Array_Subtype_Attribute;
+      Array_Subtype_Attribute (CD, Level, FSys, S.Ref, attr, Type_of_Result);
     else
       Error (CD, err_syntax_error,
         ": no attribute defined for this type: " &
         To_String (Typ_ID.Name_with_case), major
       );
     end if;
-  exception
-    when Constraint_Error =>
-      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
   end Subtype_Attribute;
 
 end HAC_Sys.Parser.Attributes;

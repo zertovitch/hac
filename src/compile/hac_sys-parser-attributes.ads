@@ -1,5 +1,13 @@
 private package HAC_Sys.Parser.Attributes is
 
+  procedure Object_Attribute (
+    CD                : in out Co_Defs.Compiler_Data;
+    Level             : in     Defs.Nesting_level;
+    FSys              : in     Defs.Symset;
+    Object_xSubtyp    : in     Co_Defs.Exact_Subtyp;
+    xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
+  );
+
   --  Subtype attributes. Ada RM ref: scalar 3.5 (10), arrays 3.6 (2)
   --
   --  The subtype name has just been parsed and determined to

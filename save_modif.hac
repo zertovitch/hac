@@ -1,4 +1,4 @@
---#!/usr/bin/env hac
+--  #!/usr/bin/env hac
 
 --  This HAC script detects changes between two commits and
 --  saves the repository's modified files into a Zip-ball.
@@ -83,7 +83,7 @@ begin
 
   case vcs is
     when Git        => Shell_Execute (+"git status -s -uno >" & log_name); col_name := 4;
-    when Mercurial  => Shell_Execute (+"hg  status    -q   >" & log_name); col_name := 9;
+    when Mercurial  => Shell_Execute (+"hg  status         >" & log_name); col_name := 3;
     when Subversion => Shell_Execute (+"svn status    -q   >" & log_name); col_name := 9;
     when None       => return;
   end case;
@@ -95,8 +95,8 @@ begin
       add_line := False;
       for col_tag in 1 .. 2 loop  --  Git tags are on two columns
         case Element (line, col_tag) is
-          when ' ' | 'D' | 'R' =>
-            --  Ignore extra lines, or items to be Deleted / Removed
+          when ' ' | 'D' | 'R' | '!' | '?' =>
+            --  Ignore extra lines, or missing items, or items to be Deleted / Removed
             null;
           when others =>
             add_line := True;

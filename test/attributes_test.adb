@@ -23,14 +23,25 @@ procedure Attributes_test is
 
   type A is array (Sub_Enum) of HAL.Real;
   type M is array (-5 .. -2, bb .. dd) of Integer;
-
   mm : M;
+
+  type R is record
+    x : Real;
+    y : M;
+  end record;
+
+  mmm : array (10 .. 20) of R;
 
 begin
   Assert (+"""<"" on values Strings_as_VStrings, Image", Enum'Image (bb) < Enum'Image (cc));
 
-  Assert (+"A'First ", bb = A'First);
-  Assert (+"A'Last  ", cc = A'Last);
+  Assert (+"S'First",  Enum'First = aa);
+  Assert (+"S'Last",   Enum'Last = dd);
+  Assert (+"S'Pred",   Enum'Pred (dd) = cc);
+  Assert (+"S'Succ",   Enum'Succ (bb) = cc);
+
+  Assert (+"A'First",  bb = A'First);
+  Assert (+"A'Last",   cc = A'Last);
   Assert (+"A'Length", 2 = A'Length);
 
   Assert (+"M'First (1)", M'First (1) = -5);
@@ -51,5 +62,8 @@ begin
     end loop;
   end loop;
   Assert (+"M'Range (N)", sum = -84);
+
+  Assert (+"Obj.Last (1)", -2 = mmm (1).y'Last (1));
+  Assert (+"Obj.First (2)", bb = mmm (15).y'First (2));
 
 end Attributes_test;

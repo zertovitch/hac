@@ -336,7 +336,8 @@ package body HAC_Sys.Parser.Expressions is
       procedure Factor (FSys_Fact : Symset; X : out Exact_Typ) is       --  RM 4.4 (6)
 
         procedure Primary (FSys_Prim : Symset; X : out Exact_Typ) is    --  RM 4.4 (7)
-          F   : Opcode;
+          F : Opcode;
+          LC_Mem : Integer;
         begin
           X := Undefined;
           Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_primary_unexpected_symbol);
@@ -366,14 +367,15 @@ package body HAC_Sys.Parser.Expressions is
                     --
                   when Variable =>
                     X_Sub := r.xTyp;
+                    LC_Mem := CD.LC;
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                       if r.Normal then
                         F := k_Push_Address;  --  Composite: push "v'Access".
                       else
-                        F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
+                        F := k_Push_Value;    --  Composite: push "(v.all)'Access", that is, v.
                       end if;
                       Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
-                      Selector (CD, Level, FSys_Prim, X_Sub);
+                      Selector (CD, Level, FSys_Prim + Apostrophe, X_Sub);
                       if Standard_or_Enum_Typ (X_Sub.TYP) then
                         --  We are at a leaf point of composite type selection,
                         --  so the stack top is expected to contain a value, not
@@ -394,6 +396,11 @@ package body HAC_Sys.Parser.Expressions is
                         F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                       end if;
                       Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
+                    end if;
+                    if CD.Sy = Apostrophe then
+                      InSymbol (CD);
+                      CD.LC := LC_Mem;  --  Forget the code emitted for the variable
+                      Attributes.Object_Attribute (CD, Level, FSys_Prim, X_Sub, X_Sub);
                     end if;
                     X := Exact_Typ (X_Sub);  --  Discard subtype information.
                     --  !!  Keep subtype information, could be useful for optimizing out checks  !!

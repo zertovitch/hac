@@ -114,12 +114,13 @@ begin
   end loop;
 
   New_Line;
-  Put_Line ("A'First (N), A'Last (N), A'Range (N), A'Length (N) attributes:");
+  Put_Line ("M'First (N), M'Last (N), M'Range (N), M'Length (N) attributes");
+  Put_Line ("---  M = Multidimensional array type, mm = object of type M:");
   New_Line;
   Put_Line (+"  * M'First (1)  (should be -5) : " & M'First (1));
-  Put_Line (+"  * M'Last (1)   (should be -2) : " & M'Last (1));
-  Put_Line (+"  * M'First (2)  (should be bb) : " & Enum'Image (M'First (2)));
-  Put_Line (+"  * M'Last (2)   (should be dd) : " & Enum'Image (M'Last (2)));
+  Put_Line (+"  * mm'Last (1)  (should be -2) : " & mm'Last (1));
+  Put_Line (+"  * M'First (2)  (should be BB) : " & Enum'Image (M'First (2)));
+  Put_Line (+"  * mm'Last (2)  (should be DD) : " & Enum'Image (mm'Last (2)));
 
   for i in M'Range (1) loop
     for j in M'Range (2) loop
