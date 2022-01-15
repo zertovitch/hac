@@ -9,17 +9,25 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Co_Defs, HAC_Sys.Defs;
+with HAC_Sys.Co_Defs,
+     HAC_Sys.Defs;
 
 package HAC_Sys.Parser is
+
+  type Block_Data_Type is record
+    level                     : Defs.Nesting_level;
+    is_a_function             : Boolean;             --  RETURN [Value] statement expected
+    block_id_index            : Integer;
+    data_allocation_index     : Integer;             --  Was: DX
+    max_data_allocation_index : Integer;             --  Was: MaxDX
+    --  ^ includes parameters of FOR loops
+  end record;
 
   procedure Block (
     CD                   : in out Co_Defs.Compiler_Data;
     FSys                 :        Defs.Symset;
-    Is_a_function        :        Boolean;        --  RETURN [Value] statement expected
     Is_a_block_statement :        Boolean;        --  RM: 5.6 Block Statements
-    Initial_Level        :        Defs.Nesting_level;
-    Block_Id_Index       :        Integer;
+    Initial_Block_Data   :        Block_Data_Type;
     Block_Id             :        Defs.Alfa;      --  Name of this block (if any)
     Block_Id_with_case   :        Defs.Alfa
   );

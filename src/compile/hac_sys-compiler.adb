@@ -236,6 +236,7 @@ package body HAC_Sys.Compiler is
     end Dump_Asm;
 
     full_main_Id : HAL.VString;
+    main_block : Parser.Block_Data_Type;
 
   begin  --  Compile_Main
     if CD.Progress = null then
@@ -307,11 +308,13 @@ package body HAC_Sys.Compiler is
       SrcFrom           => CD.CUD.line_count,
       SrcTo             => CD.CUD.line_count);
 
+    main_block.level          := 1;
+    main_block.block_id_index := CD.Id_Count;
+    main_block.is_a_function  := False;
     --  Start Compiling of Main
     Parser.Block (
       CD, Block_Begin_Symbol + Statement_Begin_Symbol,
-      False, False, 1,
-      CD.Id_Count,
+      False, main_block,
       CD.Main_Program_ID,
       CD.Main_Program_ID_with_case
     );
@@ -413,6 +416,7 @@ package body HAC_Sys.Compiler is
     src : File_Type;
     shebang_offset : Natural;
     Unit_Id_with_case : Alfa;
+    unit_block : Parser.Block_Data_Type;
   begin
     if CD.Progress = null then
       Put_Line ("Compiling UNIT " & file_name);
@@ -479,14 +483,15 @@ package body HAC_Sys.Compiler is
         major
       );
     else
+      unit_block.level          := 1;
+      unit_block.block_id_index := CD.Id_Count;
+      unit_block.is_a_function  := kind = Function_Unit;
       case kind is
         when Subprogram_Unit =>
           Parser.Block (
             CD, Block_Begin_Symbol + Statement_Begin_Symbol,
-            kind = Function_Unit,
             False,
-            1,
-            CD.Id_Count,
+            unit_block,
             CD.IdTab (CD.Id_Count).Name,
             Unit_Id_with_case
           );

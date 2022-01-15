@@ -1,3 +1,14 @@
+-------------------------------------------------------------------------------------
+--
+--  HAC - HAC Ada Compiler
+--
+--  A compiler in Ada for an Ada subset
+--
+--  Copyright, license, etc. : see top package.
+--
+-------------------------------------------------------------------------------------
+--
+
 private package HAC_Sys.Parser.Expressions is
 
   --  For all expressions:

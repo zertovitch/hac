@@ -23,6 +23,7 @@ package body HAC_Sys.Parser.Tasking is
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
     I, T0  : Integer;
     TaskID : Alfa;
+    task_block : Block_Data_Type;
   begin
     InSymbol;
     if CD.Sy = BODY_Symbol then  --  Task Body
@@ -31,7 +32,10 @@ package body HAC_Sys.Parser.Tasking is
       TaskID := CD.IdTab (I).Name;
       CD.Blocks_Table (CD.IdTab (I).Block_Ref).SrcFrom := saveLineCount;  --  (* Manuel *)
       InSymbol;
-      Block (CD, FSys, False, False, Level + 1, I, TaskID, TaskID);  --  !! up/low case
+      task_block.level          := Level + 1;
+      task_block.block_id_index := I;
+      task_block.is_a_function  := False;
+      Block (CD, FSys, False, task_block, TaskID, TaskID);  --  !! up/low case
       Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
     else                         --  Task Specification
       if CD.Sy = IDent then
@@ -72,7 +76,10 @@ package body HAC_Sys.Parser.Tasking is
           CD.Entries_Table (CD.Entries_Count) := CD.Id_Count;  --  point to identifier table location
           T0                                  := CD.Id_Count;  --  of TaskID
           InSymbol;
-          Block (CD, FSys, False, False, Level + 1, CD.Id_Count,
+          task_block.level          := Level + 1;
+          task_block.block_id_index := CD.Id_Count;
+          task_block.is_a_function  := False;
+          Block (CD, FSys, False, task_block,
                  CD.IdTab (CD.Id_Count).Name, CD.IdTab (CD.Id_Count).Name_with_case);
           CD.IdTab (T0).Adr_or_Sz := CD.Tasks_Definitions_Count;
           if CD.Sy = Semicolon then
