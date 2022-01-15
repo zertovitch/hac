@@ -13,7 +13,7 @@ with HAC_Sys.Compiler,
      HAC_Sys.Librarian.Built_In_Packages,
      HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Helpers,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 with Ada.Characters.Handling,
      Ada.Exceptions;
@@ -124,7 +124,7 @@ package body HAC_Sys.Librarian is
     Pkg_Idx  : in     Natural  --  Index in the identifier table
   )
   is
-    use Co_Defs, Defs, Parser.Enter_Def, UErrors;
+    use Co_Defs, Defs, Parser.Enter_Def, Errors;
     use type Nesting_level;
     Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).Name);
     Pkg_UName_Dot : constant String := Pkg_UName & '.';
@@ -280,7 +280,7 @@ package body HAC_Sys.Librarian is
   )
   is
     fn : constant String := Find_Unit_File_Name (Upper_Name);
-    use Defs, UErrors;
+    use Defs, Errors;
     kind : Unit_Kind := Package_Unit;
     --  ^ Temporary value, file may contain another kind of unit.
   begin
@@ -314,7 +314,7 @@ package body HAC_Sys.Librarian is
     Upper_Name : in     String
   )
   is
-    use Ada.Exceptions, Defs, HAL, UErrors;
+    use Ada.Exceptions, Defs, HAL, Errors;
     UVN : constant VString := To_VString (Upper_Name);
   begin
     if LD.Map.Contains (UVN) then

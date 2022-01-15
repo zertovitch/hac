@@ -3,11 +3,11 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Tasking is
 
-  use Compiler, Compiler.PCode_Emit, Co_Defs, Defs, Enter_Def, Helpers, PCode, UErrors;
+  use Compiler, Compiler.PCode_Emit, Co_Defs, Defs, Enter_Def, Helpers, PCode, Errors;
   use type HAC_Integer;
 
   ------------------------------------------------------------------

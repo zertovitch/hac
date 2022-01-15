@@ -7,7 +7,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.PCode,
      HAC_Sys.Parser.Standard_Procedures,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Statements is
 
@@ -20,7 +20,7 @@ package body HAC_Sys.Parser.Statements is
      Var_Id_Index    :        Integer;
      Check_read_only :        Boolean)
   is
-    use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
+    use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
     X     : Exact_Subtyp;
     Y     : Exact_Typ;
     F     : Opcode;
@@ -147,7 +147,7 @@ package body HAC_Sys.Parser.Statements is
      Sentinel   :        Defs.Symset;
      Block_Data : in out Block_Data_Type)
   is
-    use Defs, Helpers, UErrors;
+    use Defs, Helpers, Errors;
     statement_or_sentinel : constant Symset := Statement_Begin_Symbol or Sentinel;
   begin
     if Sentinel (CD.Sy) then  --  GdM 15-Aug-2014: there should be at least one statement.
@@ -168,7 +168,7 @@ package body HAC_Sys.Parser.Statements is
      Block_Data : in out Block_Data_Type)
   is
     use Compiler.PCode_Emit, Calls, Co_Defs, Defs, Enter_Def, Expressions,
-        Helpers, PCode, UErrors;
+        Helpers, PCode, Errors;
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
     procedure Accept_Statement is            -- Hathorn

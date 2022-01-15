@@ -3,11 +3,11 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Standard_Procedures is
 
-  use Calls, Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
+  use Calls, Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
 
   type Def_param_type is array (Typen, 1 .. 3) of Integer;
 

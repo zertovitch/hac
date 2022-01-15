@@ -3,7 +3,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Ranges is
 
@@ -63,7 +63,7 @@ package body HAC_Sys.Parser.Ranges is
     Higher_Bound   :    out Co_Defs.Constant_Rec
   )
   is
-    use Co_Defs, Defs, Expressions, Helpers, UErrors;
+    use Co_Defs, Defs, Expressions, Helpers, Errors;
   begin
     Static_Scalar_Expression (CD, Level, OF_RANGE_Double_Dot_RParent + FSys, Lower_Bound);
     --
@@ -125,7 +125,7 @@ package body HAC_Sys.Parser.Ranges is
     Range_Typ          :    out Co_Defs.Exact_Typ
   )
   is
-    use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, UErrors;
+    use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
     --  The variant "Low_Expr .. High_Expr" was initially
     --  in HAC.Parser <= 0.07 for FOR statements.
     Lower_Bound : Exact_Typ;

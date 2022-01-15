@@ -3,7 +3,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Attributes is
 
@@ -21,7 +21,7 @@ package body HAC_Sys.Parser.Attributes is
   );
 
   procedure Which_Attribute (CD : in out Co_Defs.Compiler_Data; attr : out Attribute) is
-    use Co_Defs, Defs, UErrors;
+    use Co_Defs, Defs, Errors;
     attr_ID : constant String := To_String (CD.Id);
   begin
     if attr_ID = "RANGE" then
@@ -44,7 +44,7 @@ package body HAC_Sys.Parser.Attributes is
     Type_of_Result :    out Co_Defs.Exact_Subtyp
   )
   is
-    use Co_Defs, Defs, Helpers, UErrors;
+    use Co_Defs, Defs, Helpers, Errors;
     A : ATabEntry := CD.Arrays_Table (Array_Index);
     Low, High : Index;
     N : Constant_Rec;
@@ -104,7 +104,7 @@ package body HAC_Sys.Parser.Attributes is
     xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
   )
   is
-    use Defs, Helpers, UErrors;
+    use Defs, Helpers, Errors;
     attr : Attribute;
   begin
     Which_Attribute (CD, attr);
@@ -123,7 +123,7 @@ package body HAC_Sys.Parser.Attributes is
     Type_of_Result :    out Co_Defs.Exact_Subtyp
   )
   is
-    use Co_Defs, Defs, Helpers, UErrors;
+    use Co_Defs, Defs, Helpers, Errors;
     Typ_ID : IdTabEntry renames CD.IdTab (Typ_ID_Index);
     S : Exact_Subtyp renames Typ_ID.xTyp;
     attr_ID : constant String := To_String (CD.Id);

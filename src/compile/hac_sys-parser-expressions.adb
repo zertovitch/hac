@@ -7,11 +7,11 @@ with HAC_Sys.Parser.Standard_Functions;
 with HAC_Sys.Parser.Type_Conversion;
 with HAC_Sys.PCode;
 with HAC_Sys.Scanner;
-with HAC_Sys.UErrors;
+with HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Expressions is
 
-  use Compiler.PCode_Emit, Co_Defs, Defs, Helpers, PCode, Scanner, UErrors;
+  use Compiler.PCode_Emit, Co_Defs, Defs, Helpers, PCode, Scanner, Errors;
 
   procedure Static_Scalar_Expression (
     CD      : in out Co_Defs.Compiler_Data;
@@ -20,7 +20,6 @@ package body HAC_Sys.Parser.Expressions is
     C       :    out Co_Defs.Constant_Rec
   )
   is
-    use Co_Defs, Defs, Helpers, UErrors;
     --  This covers number declarations (RM 3.3.2) and enumeration items (RM 3.5.1).
     --  Additionally this compiler does on-the-fly declarations for static values:
     --  bounds in ranges (FOR, ARRAY), and values in CASE statements.

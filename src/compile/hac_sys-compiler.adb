@@ -4,7 +4,7 @@ with HAC_Sys.Builder,
      HAC_Sys.Parser.Modularity,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 with HAL;
 
@@ -216,7 +216,7 @@ package body HAC_Sys.Compiler is
     var_map_file_name  :        String  := ""   --  Output of variables (map)
   )
   is
-    use Ada.Exceptions, Ada.Text_IO, Parser.Helpers, PCode, UErrors;
+    use Ada.Exceptions, Ada.Text_IO, Parser.Helpers, PCode, Errors;
     use type HAC_Integer;
 
     asm_dump : File_Type;
@@ -411,7 +411,7 @@ package body HAC_Sys.Compiler is
     kind               :    out Librarian.Unit_Kind  --  The unit kind is discovered by parsing.
   )
   is
-    use Ada.Text_IO, Librarian, UErrors, Parser.Helpers, PCode;
+    use Ada.Text_IO, Librarian, Errors, Parser.Helpers, PCode;
     --  Save state of unit currently parsed (within a WITH clause).
     mem : constant Current_Unit_Data := CD.CUD;
     src : File_Type;

@@ -12,13 +12,13 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 with HAL;
 
 package body HAC_Sys.Parser.Helpers is
 
-  use Scanner, UErrors;
+  use Scanner, Errors;
   use type HAC_Integer;
 
   procedure Need (

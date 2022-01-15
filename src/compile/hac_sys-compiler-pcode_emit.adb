@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.UErrors;
+with HAC_Sys.Errors;
 
 package body HAC_Sys.Compiler.PCode_Emit is
 
@@ -101,7 +101,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
         when GEQ => Emit (CD, k_GEQ_VString);
       end case;
     else
-      raise UErrors.Internal_error with
+      raise Errors.Internal_error with
         "Emit_Comparison_Instruction: comparison instruction for not supported type";
     end if;
   end Emit_Comparison_Instruction;
@@ -162,7 +162,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
     RNum_Index :    out Natural
   )
   is
-    use UErrors;
+    use Errors;
     use type HAC_Float;
   begin
     if CD.Float_Constants_Count = Float_Const_Table_Max - 1 then

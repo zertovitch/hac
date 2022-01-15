@@ -13,11 +13,11 @@ with HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Ranges,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Type_Def is
 
-  use Co_Defs, Defs, Enter_Def, Helpers, UErrors;
+  use Co_Defs, Defs, Enter_Def, Helpers, Errors;
   use type HAC_Integer;
 
   procedure Type_Declaration (

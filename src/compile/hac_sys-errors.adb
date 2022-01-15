@@ -1,7 +1,7 @@
 with Ada.Strings.Fixed;                 use Ada.Strings, Ada.Strings.Fixed;
 with Ada.Text_IO;
 
-package body HAC_Sys.UErrors is
+package body HAC_Sys.Errors is
 
   use Defs;
 
@@ -446,4 +446,4 @@ package body HAC_Sys.UErrors is
     end loop;
   end Compilation_Errors_Summary;
 
-end HAC_Sys.UErrors;
+end HAC_Sys.Errors;

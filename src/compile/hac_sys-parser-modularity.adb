@@ -1,6 +1,6 @@
 with HAC_Sys.Parser.Helpers,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Modularity is
 
@@ -9,7 +9,7 @@ package body HAC_Sys.Parser.Modularity is
     LD : in out Librarian.Library_Data
   )
   is
-    use Defs, Scanner, UErrors;
+    use Defs, Scanner, Errors;
   begin
     InSymbol (CD);  --  Consume "with".
     loop
@@ -29,7 +29,7 @@ package body HAC_Sys.Parser.Modularity is
     Level :        Defs.Nesting_level
   )
   is  --  8.4 (2)
-    use Librarian, Defs, Scanner, UErrors;
+    use Librarian, Defs, Scanner, Errors;
   begin
     InSymbol (CD);  --  Consume "use".
     loop

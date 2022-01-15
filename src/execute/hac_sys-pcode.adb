@@ -1,4 +1,4 @@
-with HAC_Sys.UErrors;
+with HAC_Sys.Errors;
 
 with Ada.Strings.Fixed;
 
@@ -80,7 +80,7 @@ package body HAC_Sys.PCode is
   is
   begin
     if LC = OC'Last then
-      UErrors.Fatal (UErrors.Object_Code);
+      Errors.Fatal (Errors.Object_Code);
     end if;
     OC (LC).F := FCT;
     OC (LC).X := a;
@@ -127,7 +127,7 @@ package body HAC_Sys.PCode is
     if Top < PT'Last then
       Top := Top + 1;
     else
-      UErrors.Fatal (UErrors.PATCHING);
+      Errors.Fatal (Errors.PATCHING);
     end if;
     PT (Top) := Operand_2_Type (LC);
   end Feed_Patch_Table;

@@ -1,9 +1,9 @@
 with HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Enter_Def is
 
-  use Co_Defs, Defs, UErrors;
+  use Co_Defs, Defs, Errors;
   use type HAC_Integer;
 
   ------------------------------------------------------------------

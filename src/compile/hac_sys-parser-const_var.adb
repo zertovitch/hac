@@ -8,7 +8,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Type_Def,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 package body HAC_Sys.Parser.Const_Var is
 
@@ -17,7 +17,7 @@ package body HAC_Sys.Parser.Const_Var is
      FSys       :        Defs.Symset;
      Block_Data : in out Block_Data_Type)
   is
-    use Compiler.PCode_Emit, Co_Defs, Defs, Enter_Def, Helpers, PCode, UErrors;
+    use Compiler.PCode_Emit, Co_Defs, Defs, Enter_Def, Helpers, PCode, Errors;
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
     --  This procedure processes both Variable and Constant declarations.

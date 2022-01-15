@@ -8,7 +8,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Type_Def,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
-     HAC_Sys.UErrors;
+     HAC_Sys.Errors;
 
 with HAL;
 
@@ -28,7 +28,7 @@ package body HAC_Sys.Parser is
   is
     use Co_Defs, Compiler, Defs, Enter_Def,
         Helpers, PCode, Compiler.PCode_Emit,
-        UErrors;
+        Errors;
     use type HAC_Integer;
     --
     block_data : Block_Data_Type := Initial_Block_Data;

@@ -13,7 +13,7 @@ with HAC_Sys.Co_Defs,
 
 with HAL;
 
-package HAC_Sys.UErrors is
+package HAC_Sys.Errors is
 
   has_new_line : constant array (Defs.Repair_Kind_Type) of Boolean :=
     (Defs.insert_line => True, others => False);
@@ -57,4 +57,4 @@ package HAC_Sys.UErrors is
 
   function Error_String (code : Defs.Compile_Error; hint : String := "") return String;
 
-end HAC_Sys.UErrors;
+end HAC_Sys.Errors;
