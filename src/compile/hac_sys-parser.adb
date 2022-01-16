@@ -123,6 +123,7 @@ package body HAC_Sys.Parser is
     procedure Subprogram_Declaration_or_Body is
       IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
       sub_sub_prog_block_data : Block_Data_Type;
+      sub_sub_id_idx : Natural;
     begin
       InSymbol;
       if CD.Sy /= IDent then
@@ -141,13 +142,16 @@ package body HAC_Sys.Parser is
         sub_sub_prog_block_data.level          := block_data.level + 1;
         sub_sub_prog_block_data.block_id_index := CD.Id_Count;
         sub_sub_prog_block_data.is_a_function  := IsFun;
+        sub_sub_id_idx := CD.Id_Count;
         Block (CD, FSys, False, sub_sub_prog_block_data,
-               CD.IdTab (CD.Id_Count).name, Id_subprog_with_case);
+               CD.IdTab (sub_sub_id_idx).name, Id_subprog_with_case);
       end;
-      if IsFun then
-        Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
-      else
-        Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+      if CD.IdTab (sub_sub_id_idx).forward = body_declaration then
+        if IsFun then
+          Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
+        else
+          Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+        end if;
       end if;
     end Subprogram_Declaration_or_Body;
 
@@ -292,14 +296,15 @@ package body HAC_Sys.Parser is
     end if;
     --
     if CD.Sy = Semicolon then
+      InSymbol;
       --  End of subprogram specification part (forward declaration).
       --  Body is declared later in this block.
       CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
       CD.IdTab (block_data.block_id_index).adr_or_sz := -1;
-      CD.IdTab (block_data.block_id_index).forward := spec_only;
+      CD.IdTab (block_data.block_id_index).forward := spec_unresolved;
       return;
     end if;
-    CD.IdTab (block_data.block_id_index).forward := body_only;
+    CD.IdTab (block_data.block_id_index).forward := body_declaration;
     --
     if Is_a_block_statement then
       case CD.Sy is

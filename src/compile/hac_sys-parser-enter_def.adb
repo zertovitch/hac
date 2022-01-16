@@ -58,7 +58,7 @@ package body HAC_Sys.Parser.Enter_Def is
           link           => L,
           entity         => K,
           read_only      => False,
-          forward        => body_only,
+          forward        => body_declaration,
           xtyp           => Undefined,
           block_ref      => 0,
           normal         => True,

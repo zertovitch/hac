@@ -117,7 +117,7 @@ package HAC_Sys.Co_Defs is
       Alias   --  Short name of another entity ("use" clause).
   );
 
-  type Forward_Declaration is (spec_only, spec_resolved, body_only);
+  type Forward_Declaration is (spec_unresolved, spec_resolved, body_declaration);
 
   ------------------------------
   --  Identifier Table Entry  --

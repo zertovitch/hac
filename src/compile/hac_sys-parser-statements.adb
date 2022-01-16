@@ -549,7 +549,7 @@ package body HAC_Sys.Parser.Statements is
               link           => Previous_Last,
               entity         => Variable,
               read_only      => True,
-              forward        => body_only,
+              forward        => body_declaration,
               xtyp           => Undefined,  --  Subtype is determined by the range.
               block_ref      => 0,
               normal         => True,

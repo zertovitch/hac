@@ -104,7 +104,7 @@ package body HAC_Sys.Librarian is
       link           => last,
       entity         => New_Entity,
       read_only      => True,
-      forward        => Co_Defs.body_only,
+      forward        => Co_Defs.body_declaration,
       xtyp           => (TYP            => Base_Type,
                          Ref            => 0,
                          Is_Range       => False,
