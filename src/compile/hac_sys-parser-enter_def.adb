@@ -34,44 +34,52 @@ package body HAC_Sys.Parser.Enter_Def is
     CD               : in out Co_Defs.Compiler_Data;
     Level            :        Defs.Nesting_level;
     Id, Id_with_case :        Defs.Alfa;
-    K                :        Entity_Kind
+    K                :        Entity_Kind;
+    Forward_Decl_Id  :    out Natural
   )
   is
-    J, L : Integer;
+    last_id : constant Integer :=
+      CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
+    J : Integer := last_id;
   begin
+    Forward_Decl_Id := No_Id;
     if CD.Id_Count = Id_Table_Max then
       Fatal (IDENTIFIERS);  --  Exception is raised there.
     end if;
     CD.IdTab (No_Id).name := Id;  --  Sentinel
-    J                     := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
-    L                     := J;
+    --  Follow the chain of identifiers for current Level:
     while CD.IdTab (J).name /= Id loop
       J := CD.IdTab (J).link;
     end loop;
-    --  Follow the chain of identifiers for current Level.
     if J = No_Id then
-      --  Enter identifier in table IdTab
-      CD.Id_Count            := CD.Id_Count + 1;
-      CD.IdTab (CD.Id_Count) :=
-         (name           => Id,
-          name_with_case => Id_with_case,
-          link           => L,
-          entity         => K,
-          read_only      => False,
-          forward        => body_declaration,
-          xtyp           => Undefined,
-          block_ref      => 0,
-          normal         => True,
-          lev            => Level,
-          adr_or_sz      => 0
-         );
-      --  Update start of identifier chain:
-      CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
-      if Level = 0 then
-        CD.CUD.level_0_def.Include (Id);
-      end if;
+      null;  --  All good: the identifier is new at this nesting level.
+    elsif CD.IdTab (J).entity = K
+      and then (K = Prozedure or K = Funktion)
+      and then CD.IdTab (J).forward = spec_unresolved
+    then
+      Forward_Decl_Id := J;
     else
       Error (CD, err_duplicate_identifier, To_String (Id), major);
+    end if;
+    --  Enter identifier in table IdTab
+    CD.Id_Count            := CD.Id_Count + 1;
+    CD.IdTab (CD.Id_Count) :=
+      (name           => Id,
+       name_with_case => Id_with_case,
+       link           => last_id,
+       entity         => K,
+       read_only      => False,
+       forward        => body_declaration,
+       xtyp           => Undefined,
+       block_ref      => 0,
+       normal         => True,
+       lev            => Level,
+       adr_or_sz      => 0
+      );
+    --  Update start of identifier chain:
+    CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
+    if Level = 0 then
+      CD.CUD.level_0_def.Include (Id);
     end if;
   end Enter;
 
@@ -114,9 +122,10 @@ package body HAC_Sys.Parser.Enter_Def is
   )
   is
     procedure Enter_Variable is
+      dummy_id_idx : Natural;
     begin
       if CD.Sy = IDent then
-        Enter (CD, Level, CD.Id, CD.Id_with_case, Variable);
+        Enter (CD, Level, CD.Id, CD.Id_with_case, Variable, dummy_id_idx);
         Scanner.InSymbol (CD);
       else
         Error (CD, err_identifier_missing);

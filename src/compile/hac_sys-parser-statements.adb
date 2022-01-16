@@ -905,8 +905,9 @@ package body HAC_Sys.Parser.Statements is
         end if;
       end Check_ID_after_END_LOOP;
       --
+      dummy_idx : Natural;
     begin
-      Enter (CD, Block_Data.level, new_ident_for_statement, CD.Id_with_case, Label);
+      Enter (CD, Block_Data.level, new_ident_for_statement, CD.Id_with_case, Label, dummy_idx);
       if CD.Sy /= Colon then
         Error (CD, err_colon_missing_for_named_statement, To_String (CD.Id_with_case), major);
       end if;

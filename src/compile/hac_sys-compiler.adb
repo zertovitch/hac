@@ -88,7 +88,7 @@ package body HAC_Sys.Compiler is
     Put_Line (CD.comp_dump,
        " Identifiers" & (Alng - 6) * ' ' &
        "Link  Object                        " &
-       "TYP              Ref  Norm Lvl  Adr Blck"
+       "TYP                    Ref  Norm Lvl  Adr Blck"
     );
     Put_Line (CD.comp_dump,
        (Alng + Entity_Kind'Width + Typen'Width + Boolean'Width + 34) * '-'
@@ -114,6 +114,7 @@ package body HAC_Sys.Compiler is
         else
           Put (CD.comp_dump, "     ");
         end if;
+        Put (CD.comp_dump, "  " & r.forward'Image);
         New_Line (CD.comp_dump);
       end;
     end loop;

@@ -130,7 +130,7 @@ package body HAC_Sys.Librarian is
     Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).name);
     Pkg_UName_Dot : constant String := Pkg_UName & '.';
     Pkg_Initial   : constant Character := Pkg_UName (Pkg_UName'First);
-    Id_Alias : Natural;
+    Id_Alias, dummy_id_idx : Natural;
   begin
     pragma Assert (Pkg_Idx /= No_Id);
     if CD.IdTab (Pkg_Idx).entity /= Paquetage then
@@ -178,7 +178,8 @@ package body HAC_Sys.Librarian is
             Enter (CD, Level,
               Short_Id,
               To_Alfa (Full_Name (Start .. Full_Name'Last)),
-              Alias
+              Alias,
+              dummy_id_idx
             );
             CD.IdTab (CD.Id_Count).adr_or_sz := i;  --  i = Aliased entity's index.
           else

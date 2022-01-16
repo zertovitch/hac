@@ -15,7 +15,7 @@ package body HAC_Sys.Errors is
           return "undefined identifier: " & hint;
         end if;
       when err_duplicate_identifier =>
-        return "multiple definition of an identifier: " & hint;
+        return "duplicate identifier: " & hint;
       when err_identifier_missing =>
         return "missing an identifier";
       when err_missing_a_procedure_declaration =>

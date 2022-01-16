@@ -27,6 +27,7 @@ project HAC_Test is
      "exception_03.adb",
      "exception_04.adb",
      "floats.adb",
+     "forward.adb",
      "if_then_elsif_else.adb",
      "integers.adb",
      "init_var.adb",

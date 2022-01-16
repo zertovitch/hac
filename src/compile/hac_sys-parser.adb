@@ -123,7 +123,7 @@ package body HAC_Sys.Parser is
     procedure Subprogram_Declaration_or_Body is
       IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
       sub_sub_prog_block_data : Block_Data_Type;
-      sub_sub_id_idx : Natural;
+      sub_sub_id_idx, forward_id_idx : Natural;
     begin
       InSymbol;
       if CD.Sy /= IDent then
@@ -134,9 +134,9 @@ package body HAC_Sys.Parser is
         Id_subprog_with_case : constant Alfa := CD.Id_with_case;
       begin
         if IsFun then
-          Enter (CD, block_data.level, CD.Id, Id_subprog_with_case, Funktion);
+          Enter (CD, block_data.level, CD.Id, Id_subprog_with_case, Funktion, forward_id_idx);
         else
-          Enter (CD, block_data.level, CD.Id, Id_subprog_with_case, Prozedure);
+          Enter (CD, block_data.level, CD.Id, Id_subprog_with_case, Prozedure, forward_id_idx);
         end if;
         InSymbol;
         sub_sub_prog_block_data.level          := block_data.level + 1;
@@ -145,14 +145,35 @@ package body HAC_Sys.Parser is
         sub_sub_id_idx := CD.Id_Count;
         Block (CD, FSys, False, sub_sub_prog_block_data,
                CD.IdTab (sub_sub_id_idx).name, Id_subprog_with_case);
+        case CD.IdTab (sub_sub_id_idx).forward is
+          when spec_unresolved =>
+            if forward_id_idx = No_Id then
+              null;  --  First occurrence of the spec.
+            else
+              --  Duplicate spec.
+              Error (CD, err_duplicate_identifier, To_String (Id_subprog_with_case), major);
+            end if;
+          when spec_resolved =>
+            null;  --  This case doesn't happen.
+          when body_declaration =>
+            if IsFun then
+              Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
+            else
+              Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+            end if;
+            if forward_id_idx /= No_Id then
+              CD.IdTab (forward_id_idx).forward := spec_resolved;
+              --  The following is only for making the compiler dump
+              --  easier to understand:
+              CD.Blocks_Table (CD.IdTab (forward_id_idx).block_ref).Id :=
+                To_Alfa ("Unused (was from a subprogram spec)");
+              --  Clone key information: address, block ref (hence, the correct VSize):
+              CD.IdTab (forward_id_idx).adr_or_sz := CD.IdTab (sub_sub_id_idx).adr_or_sz;
+              CD.IdTab (forward_id_idx).block_ref := CD.IdTab (sub_sub_id_idx).block_ref;
+              --  !!  Check that the formal parameter list is identical  !!
+            end if;
+        end case;
       end;
-      if CD.IdTab (sub_sub_id_idx).forward = body_declaration then
-        if IsFun then
-          Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
-        else
-          Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
-        end if;
-      end if;
     end Subprogram_Declaration_or_Body;
 
     procedure Declarative_Part is
@@ -177,6 +198,7 @@ package body HAC_Sys.Parser is
         CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
         exit when CD.Sy = BEGIN_Symbol;
       end loop;
+      --  !!  Check unresolved forwards !!
     end Declarative_Part;
 
     procedure Statements_Part_Setup is

@@ -93,6 +93,7 @@ procedure All_Silent_Tests is
     Normal_Test (+"declarations.adb");
     Normal_Test (+"enumerations.adb");
     Normal_Test (+"floats.adb");
+    Normal_Test (+"forward.adb");
     Normal_Test (+"init_var.adb");
     Normal_Test (+"integers.adb");
     Normal_Test (+"loops.adb");
