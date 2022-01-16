@@ -144,6 +144,7 @@ package body HAC_Sys.PCode is
     package Code_Pos_IO is new Integer_IO (Natural);
     package Operand1_IO is new Integer_IO (Operand_1_Type);
     package Operand2_IO is new Integer_IO (Operand_2_Type);
+    function HAC_Image is new HAL.HAC_Generic_Image (Defs.HAC_Integer);
     SF_C : SF_Code;
     SP_C : SP_Code;
     Old_Y1, Old_Y2, Old_Y3, Old_Y4 : Operand_2_Type := 0;
@@ -207,14 +208,24 @@ package body HAC_Sys.PCode is
               null;
           end case;
         when k_FOR_Release_Stack_After_End =>
-          Put (Text, "; after END LOOP of a FOR loop");
+          Put (Text, "; Cleanup after END LOOP of a FOR loop");
+        when k_CASE_Switch =>
+          Put (Text, "; (CASE) Jump to the switch block");
+        when k_CASE_Choice_Value =>
+          Put (Text, "; (CASE) WHEN " & HAC_Image (OC (i).Y) & " =>");
+        when k_CASE_Choice_Range =>
+          Put (Text, "; (CASE) WHEN " &
+            HAC_Image (OC (i).X) & " .." &
+            HAC_Image (OC (i).Y) & " =>");
+        when k_CASE_Choice_Others =>
+          Put (Text, "; (CASE) WHEN OTHERS =>");
         when k_Mark_Stack =>
-          Put (Text, "; Mark stack for calling" & OC (i).Y'Image);
+          Put (Text, "; Mark stack for calling " & HAC_Image (OC (i).Y));
         when k_Call =>
-          Put (Text, "; Call with PSize =" & Operand_2_Type'Image (OC (i).Y + 1));
+          Put (Text, "; Call with PSize = " & HAC_Image (OC (i).Y + 1));
         when k_Update_Display_Vector =>
-          Put (Text, "; Update: low level (called) =" & OC (i).X'Image &
-                     ", high level (caller) =" & OC (i).Y'Image);
+          Put (Text, "; Update: low level (called) = " & HAC_Image (OC (i).X) &
+                     ", high level (caller) = " & HAC_Image (OC (i).Y));
         when others =>
           null;
       end case;

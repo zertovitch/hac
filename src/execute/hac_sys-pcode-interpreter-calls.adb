@@ -15,6 +15,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     use type HAC_Integer;
 
     procedure Do_Mark_Stack is
+      --  VSize is the maximum stack room needed by the subprogram to be called.
       VSize : constant Integer :=
         Integer (CD.Blocks_Table (CD.IdTab (Integer (IR.Y)).Block_Ref).VSize);
     begin
