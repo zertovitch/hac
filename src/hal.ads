@@ -452,11 +452,11 @@ package HAL is
   ---------------------------------
   --  End of compatibility part  --
   ---------------------------------
-  --  The following part is formally public, but can only directly
+  --  The following part is formally public, but can only be directly
   --  used by the HAC system itself (HAC_Sys) or other "full Ada"
   --  programs using HAL (HAC programs cannot, so far, return String's
   --  or use generics).
-  --  Those "privete" items avoid code duplication or incompatibilities
+  --  Those "private" items avoid code duplication or incompatibilities
   --  between HAL (as compatibility package) and the HAC run-time system
   --  itself.
 

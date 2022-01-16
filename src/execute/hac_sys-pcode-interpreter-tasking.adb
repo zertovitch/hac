@@ -71,7 +71,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     begin
       H1 := Integer (IR.Y);                         --  entry pointer
       H2 := First_Caller (CD, ND, H1);     --  first waiting task
-      H3 := Integer (CD.IdTab (H1).LEV);  --  level of accepting entry
+      H3 := Integer (CD.IdTab (H1).lev);  --  level of accepting entry
       if H2 >= 0 then
         --  start rendzv if call is waiting
         Curr_TCB.DISPLAY (Defs.Nesting_level (H3 + 1)) := ND.TCB (H2).B; --  address callers
@@ -143,7 +143,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
         when 3 => --  Accept if its still on queue
           H1 := Integer (Curr_TCB.R3.I);
           H2 := First_Caller (CD, ND, H1);    --  first waiting task
-          H3 := Integer (CD.IdTab (H1).LEV);     --  level of accepting entry
+          H3 := Integer (CD.IdTab (H1).lev);     --  level of accepting entry
           if H2 >= 0 then
             Curr_TCB.DISPLAY (Defs.Nesting_level (H3 + 1)) := ND.TCB (H2).B;
               --  address callers parms
@@ -358,8 +358,8 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     declare
       Main_TCB : Task_Control_Block renames ND.TCB (0);
     begin
-      Main_TCB.PC := CD.IdTab (CD.Main_Proc_Id_Index).Adr_or_Sz; --  first pcode instruction
-      Main_TCB.T := CD.Blocks_Table (CD.IdTab (CD.Main_Proc_Id_Index).Block_Ref).VSize - 1;
+      Main_TCB.PC := CD.IdTab (CD.Main_Proc_Id_Index).adr_or_sz; --  first pcode instruction
+      Main_TCB.T := CD.Blocks_Table (CD.IdTab (CD.Main_Proc_Id_Index).block_ref).VSize - 1;
       Main_TCB.B := 0;
       Main_TCB.TS := Ready;
       Main_TCB.InRendzv := NilTask;
@@ -385,9 +385,9 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
         Curr_TCB : Task_Control_Block renames ND.TCB (Task_To_Init);
       begin
         H1 := CD.Tasks_Definitions_Table (Task_To_Init);
-        Curr_TCB.PC := CD.IdTab (H1).Adr_or_Sz;
+        Curr_TCB.PC := CD.IdTab (H1).adr_or_sz;
         Curr_TCB.B := ND.TCB (Task_To_Init - 1).STACKSIZE + 1;
-        Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).Block_Ref).VSize - 1;
+        Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).block_ref).VSize - 1;
         ND.S (Curr_TCB.B + 1).I := 0;
         ND.S (Curr_TCB.B + 2).I := 0;
         ND.S (Curr_TCB.B + 3).I := -1;
@@ -407,7 +407,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     end loop;
     --  Initially no queued entry calls
     for E_Idx in 1 .. CD.Entries_Count loop
-      ND.EList (E_Idx).Task_Index := CD.IdTab (CD.Entries_Table (E_Idx)).Adr_or_Sz;  --  Task index
+      ND.EList (E_Idx).Task_Index := CD.IdTab (CD.Entries_Table (E_Idx)).adr_or_sz;  --  Task index
       ND.EList (E_Idx).First := null;
       ND.EList (E_Idx).Last  := null;
     end loop;
@@ -428,7 +428,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     p  : Eptr := ND.EList (ix).First;
     use Defs, Ada.Text_IO;
   begin
-    Put ("Dumping q for entry " & To_String (CD.IdTab (Entry_Index).Name) & " entry index=");
+    Put ("Dumping q for entry " & To_String (CD.IdTab (Entry_Index).name) & " entry index=");
     IIO.Put (HAC_Integer (ix));
     New_Line;
     if p = null then
@@ -437,7 +437,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     else
       loop
         Put ("Task ");
-        Put (To_String (CD.IdTab (CD.Tasks_Definitions_Table (p.Task_Index)).Name));
+        Put (To_String (CD.IdTab (CD.Tasks_Definitions_Table (p.Task_Index)).name));
         New_Line;
         p := p.Next;
         exit when p = null;

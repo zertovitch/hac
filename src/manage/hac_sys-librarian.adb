@@ -94,25 +94,26 @@ package body HAC_Sys.Librarian is
   begin
     CD.Id_Count := CD.Id_Count + 1;
     --  Find the last zero-level definition:
-    while last > 0 and then CD.IdTab (last).LEV > 0 loop
+    while last > 0 and then CD.IdTab (last).lev > 0 loop
       last := last - 1;
     end loop;
     CD.IdTab (CD.Id_Count) :=
      (
-      Name           => Alfa_Ident_Upper,
-      Name_with_case => Alfa_Ident,
-      Link           => last,
-      Entity         => New_Entity,
-      Read_only      => True,
-      xTyp           => (TYP            => Base_Type,
+      name           => Alfa_Ident_Upper,
+      name_with_case => Alfa_Ident,
+      link           => last,
+      entity         => New_Entity,
+      read_only      => True,
+      forward        => Co_Defs.body_only,
+      xtyp           => (TYP            => Base_Type,
                          Ref            => 0,
                          Is_Range       => False,
                          Discrete_First => Discrete_First,
                          Discrete_Last  => Discrete_Last),
-      Block_Ref      => 0,
-      Normal         => True,
-      LEV            => 0,
-      Adr_or_Sz      => Size
+      block_ref      => 0,
+      normal         => True,
+      lev            => 0,
+      adr_or_sz      => Size
     );
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper);
@@ -126,13 +127,13 @@ package body HAC_Sys.Librarian is
   is
     use Co_Defs, Defs, Parser.Enter_Def, Errors;
     use type Nesting_level;
-    Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).Name);
+    Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).name);
     Pkg_UName_Dot : constant String := Pkg_UName & '.';
     Pkg_Initial   : constant Character := Pkg_UName (Pkg_UName'First);
     Id_Alias : Natural;
   begin
     pragma Assert (Pkg_Idx /= No_Id);
-    if CD.IdTab (Pkg_Idx).Entity /= Paquetage then
+    if CD.IdTab (Pkg_Idx).entity /= Paquetage then
       Error (CD, err_syntax_error, ": package name expected", major);
     end if;
     --  The package specification's definitions begins immediately after the
@@ -141,9 +142,9 @@ package body HAC_Sys.Librarian is
     --
     for i in Pkg_Idx + 1 .. CD.Id_Count loop
       --  Quick exit if the first character doesn't match the package's first letter:
-      exit when Initial (CD.IdTab (i).Name) /= Pkg_Initial;
+      exit when Initial (CD.IdTab (i).name) /= Pkg_Initial;
       declare
-        Full_UName : constant String := To_String (CD.IdTab (i).Name);
+        Full_UName : constant String := To_String (CD.IdTab (i).name);
         Full_Name  : String (Full_UName'Range);
         Start : Positive;
       begin
@@ -156,7 +157,7 @@ package body HAC_Sys.Librarian is
         --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
         --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
         Start := Full_UName'First + Pkg_UName_Dot'Length;
-        Full_Name := To_String (CD.IdTab (i).Name_with_case);
+        Full_Name := To_String (CD.IdTab (i).name_with_case);
         declare
           Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
           Short_Id     : constant Alfa := To_Alfa (Short_Id_str);
@@ -172,19 +173,19 @@ package body HAC_Sys.Librarian is
             Alias_Resolution => False,
             Level_0_Match    => False  --  We search any matching name, including at level 0.
           );
-          if Id_Alias = No_Id or else CD.IdTab (Id_Alias).LEV < Level then
+          if Id_Alias = No_Id or else CD.IdTab (Id_Alias).lev < Level then
             --  Here we enter, e.g. the "FALSE", "False" pair.
             Enter (CD, Level,
               Short_Id,
               To_Alfa (Full_Name (Start .. Full_Name'Last)),
               Alias
             );
-            CD.IdTab (CD.Id_Count).Adr_or_Sz := i;  --  i = Aliased entity's index.
+            CD.IdTab (CD.Id_Count).adr_or_sz := i;  --  i = Aliased entity's index.
           else
             --  Here we have found an identical and
             --  visible identifier at the same level.
-            if CD.IdTab (Id_Alias).Entity = Alias
-              and then CD.IdTab (Id_Alias).Adr_or_Sz = i
+            if CD.IdTab (Id_Alias).entity = Alias
+              and then CD.IdTab (Id_Alias).adr_or_sz = i
             then
               if Level > 0 then
                 null;  --  Just a duplicate "use" (we could emit a warning for that).
@@ -255,20 +256,20 @@ package body HAC_Sys.Librarian is
     --  HAL.PUT_LINE ("WITH: Activating " & Upper_Name);
     unit_idx := Parser.Helpers.Locate_Identifier (CD, upper_name_alfa, 0);
     --  Only packages specifications need to have their items made visible.
-    if CD.IdTab (unit_idx).Entity /= Paquetage then
+    if CD.IdTab (unit_idx).entity /= Paquetage then
       return;
     end if;
     for Pkg_Id of CD.IdTab (unit_idx + 1 .. CD.Id_Count) loop
       --  Quick exit if the first character doesn't match the unit's first letter:
-      exit when Initial (Pkg_Id.Name) /= unit_initial;
+      exit when Initial (Pkg_Id.name) /= unit_initial;
       declare
-        full_upper_name : constant String := To_String (Pkg_Id.Name);
+        full_upper_name : constant String := To_String (Pkg_Id.name);
       begin
         exit when full_upper_name'Length <= unit_uname_dot'Length
           or else full_upper_name (full_upper_name'First .. full_upper_name'First - 1 + unit_uname_dot'Length) /=
                    unit_uname_dot;
         --  We have a Pkg.Item to activate
-        CD.CUD.level_0_def.Include (Pkg_Id.Name);
+        CD.CUD.level_0_def.Include (Pkg_Id.name);
       end;
     end loop;
   end Activate_Unit;

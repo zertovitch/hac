@@ -220,7 +220,7 @@ package body HAC_Sys.PCode is
         when k_CASE_Choice_Others =>
           Put (Text, "; (CASE) WHEN OTHERS =>");
         when k_Mark_Stack =>
-          Put (Text, "; Mark stack for calling " & HAC_Image (OC (i).Y));
+          Put (Text, "; Mark stack for calling subprogram with ID #" & HAC_Image (OC (i).Y));
         when k_Call =>
           Put (Text, "; Call with PSize = " & HAC_Image (OC (i).Y + 1));
         when k_Update_Display_Vector =>

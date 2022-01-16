@@ -563,6 +563,8 @@ package body HAC_Sys.PCode.Interpreter is
     exception
       when VM_Case_Check_Error =>
         Raise_Standard (ND, VME_Program_Error, "CASE Statement doesn't cover all cases");
+      when VM_Subprogram_Spec =>
+        Raise_Standard (ND, VME_Program_Error, "(HAC bug) Unlinked subprogram specification");
       when VM_Division_by_0 =>
         Raise_Standard (ND, VME_Constraint_Error, "Division by 0");
       when VM_End_Error =>

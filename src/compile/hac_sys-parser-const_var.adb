@@ -43,11 +43,11 @@ package body HAC_Sys.Parser.Const_Var is
         --  In the above example:  "a := c"  and  "b := c".
         for Var of CD.IdTab (id_first .. id_last - 1) loop
           --  Push destination address:
-          Emit_2 (CD, k_Push_Address, Var.LEV, Operand_2_Type (Var.Adr_or_Sz));
+          Emit_2 (CD, k_Push_Address, Var.lev, Operand_2_Type (Var.adr_or_sz));
           if var_typ.TYP in Composite_Typ then
             --  Push source address:
-            Emit_2 (CD, k_Push_Address, CD.IdTab (id_last).LEV,
-              Operand_2_Type (CD.IdTab (id_last).Adr_or_Sz)
+            Emit_2 (CD, k_Push_Address, CD.IdTab (id_last).lev,
+              Operand_2_Type (CD.IdTab (id_last).adr_or_sz)
             );
             case Composite_Typ (var_typ.TYP) is
               when Arrays =>
@@ -62,8 +62,8 @@ package body HAC_Sys.Parser.Const_Var is
           else
             --  Non-composite type. We copy the value.
             Emit_2 (CD, k_Push_Value,
-              CD.IdTab (id_last).LEV,
-              Operand_2_Type (CD.IdTab (id_last).Adr_or_Sz)
+              CD.IdTab (id_last).lev,
+              Operand_2_Type (CD.IdTab (id_last).adr_or_sz)
             );
             Emit (CD, k_Store);
           end if;
@@ -71,9 +71,9 @@ package body HAC_Sys.Parser.Const_Var is
       else
         --  Implicit initialization (for instance, VString's and File_Type's).
         for Var of CD.IdTab (id_first .. id_last) loop
-          if Auto_Init_Typ (Var.xTyp.TYP) then
-            Emit_2 (CD, k_Push_Address, Var.LEV, Operand_2_Type (Var.Adr_or_Sz));
-            Emit_1 (CD, k_Variable_Initialization, Typen'Pos (Var.xTyp.TYP));
+          if Auto_Init_Typ (Var.xtyp.TYP) then
+            Emit_2 (CD, k_Push_Address, Var.lev, Operand_2_Type (Var.adr_or_sz));
+            Emit_1 (CD, k_Variable_Initialization, Typen'Pos (Var.xtyp.TYP));
           end if;
           --  !!  TBD: Must handle composite types (arrays or records) containing
           --           initialized types, too...
@@ -155,23 +155,23 @@ package body HAC_Sys.Parser.Const_Var is
           declare
             r : IdTabEntry renames CD.IdTab (T0);
           begin
-            r.Read_only := is_constant;
+            r.read_only := is_constant;
             if is_untyped_constant then
-              r.Entity := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
-              Exact_Typ (r.xTyp) := C.TP;
+              r.entity := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
+              Exact_Typ (r.xtyp) := C.TP;
               case C.TP.TYP is
                 when Floats =>
-                  Enter_or_find_Float (CD, C.R, r.Adr_or_Sz);
+                  Enter_or_find_Float (CD, C.R, r.adr_or_sz);
                 when Ints =>
-                  r.Adr_or_Sz := Integer (C.I);
+                  r.adr_or_sz := Integer (C.I);
                 when others =>
                   Error (CD, err_numeric_constant_expected);
                   --  "boo : constant := True;" or "x: constant := 'a';" are wrong in Ada.
-                  r.Adr_or_Sz := Integer (C.I);
+                  r.adr_or_sz := Integer (C.I);
               end case;
             else  --  A variable or a typed constant
-              r.xTyp      := xTyp;
-              r.Adr_or_Sz := Block_Data.data_allocation_index;
+              r.xtyp      := xTyp;
+              r.adr_or_sz := Block_Data.data_allocation_index;
               Block_Data.data_allocation_index := Block_Data.data_allocation_index + Sz;
             end if;
           end;

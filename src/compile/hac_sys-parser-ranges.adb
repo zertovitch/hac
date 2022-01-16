@@ -30,17 +30,17 @@ package body HAC_Sys.Parser.Ranges is
       declare
         Id_T : IdTabEntry renames CD.IdTab (Idx);
       begin
-        if Id_T.Entity = TypeMark and then Discrete_Typ (Id_T.xTyp.TYP) then
+        if Id_T.entity = TypeMark and then Discrete_Typ (Id_T.xtyp.TYP) then
           --  Subtype S, but need to exclude the attribute case: S'First, S'Image, ...
           Skip_Blanks (CD);
           if CD.CUD.c /= ''' then  --  We sneak a look at the next symbol.
             --  Not a S'... attribute here.
             --  We can use the subtype identifier as a range.
-            Low.TP  := Exact_Typ (Id_T.xTyp);
-            Low.I   := Id_T.xTyp.Discrete_First;
+            Low.TP  := Exact_Typ (Id_T.xtyp);
+            Low.I   := Id_T.xtyp.Discrete_First;
             --
-            High.TP := Exact_Typ (Id_T.xTyp);
-            High.I  := Id_T.xTyp.Discrete_Last;
+            High.TP := Exact_Typ (Id_T.xtyp);
+            High.I  := Id_T.xtyp.Discrete_Last;
             --
             Found   := True;
             InSymbol (CD);  --  Consume the identifier.

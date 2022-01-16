@@ -125,7 +125,7 @@ package body HAC_Sys.Parser.Attributes is
   is
     use Co_Defs, Defs, Helpers, Errors;
     Typ_ID : IdTabEntry renames CD.IdTab (Typ_ID_Index);
-    S : Exact_Subtyp renames Typ_ID.xTyp;
+    S : Exact_Subtyp renames Typ_ID.xtyp;
     attr_ID : constant String := To_String (CD.Id);
     attr : Attribute;
     --
@@ -361,7 +361,7 @@ package body HAC_Sys.Parser.Attributes is
     end Scalar_Subtype_Attribute;
     --
   begin
-    pragma Assert (Typ_ID.Entity = TypeMark);
+    pragma Assert (Typ_ID.entity = TypeMark);
     --
     Which_Attribute (CD, attr);
     if Scalar_Set (S.TYP) then
@@ -371,7 +371,7 @@ package body HAC_Sys.Parser.Attributes is
     else
       Error (CD, err_syntax_error,
         ": no attribute defined for this type: " &
-        To_String (Typ_ID.Name_with_case), major
+        To_String (Typ_ID.name_with_case), major
       );
     end if;
   end Subtype_Attribute;

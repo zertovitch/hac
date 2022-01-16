@@ -55,23 +55,23 @@ package body HAC_Sys.Parser.Calls is
       InSymbol (CD);
       if K = No_Id then
         null;  --  Error already issued due to undefined identifier
-      elsif CD.IdTab (K).Entity /= Variable then
+      elsif CD.IdTab (K).entity /= Variable then
         Error (CD, err_variable_missing);
-      elsif CD.IdTab (K).Read_only then
+      elsif CD.IdTab (K).read_only then
         Error (
           CD, err_cannot_modify_constant_or_in_parameter,
           ": passed to OUT or IN OUT parameter"
         );
       else
-        found_with_constraint := CD.IdTab (K).xTyp;
-        if CD.IdTab (K).Normal then
+        found_with_constraint := CD.IdTab (K).xtyp;
+        if CD.IdTab (K).normal then
           F := k_Push_Address;  --  Push "v'Access".
         else
           F := k_Push_Value;    --  Push "(v.all)'Access", that is, v (v is an access type).
         end if;
         Emit_2 (CD, F,
-          Operand_1_Type (CD.IdTab (K).LEV),
-          Operand_2_Type (CD.IdTab (K).Adr_or_Sz)
+          Operand_1_Type (CD.IdTab (K).lev),
+          Operand_2_Type (CD.IdTab (K).adr_or_sz)
         );
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
           Selector (CD, Level, FSys + Colon_Comma_RParent, found_with_constraint);
@@ -105,7 +105,7 @@ package body HAC_Sys.Parser.Calls is
     Found, Expected : Exact_Typ;
   begin
     Emit_1 (CD, k_Mark_Stack, Operand_2_Type (Ident_Index));
-    Last_Param := CD.Blocks_Table (CD.IdTab (Ident_Index).Block_Ref).Last_Param_Id_Idx;
+    Last_Param := CD.Blocks_Table (CD.IdTab (Ident_Index).block_ref).Last_Param_Id_Idx;
     CP := Ident_Index;
     if CD.Sy = LParent then  --  Actual parameter list
       loop
@@ -114,8 +114,8 @@ package body HAC_Sys.Parser.Calls is
           Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
         else
           CP := CP + 1;
-          Expected := Exact_Typ (CD.IdTab (CP).xTyp);
-          if CD.IdTab (CP).Normal then
+          Expected := Exact_Typ (CD.IdTab (CP).xtyp);
+          if CD.IdTab (CP).normal then
             --------------------------------------------------
             --  Value parameter (IN)                        --
             --  Currently we pass it only by value (copy).  --
@@ -141,15 +141,15 @@ package body HAC_Sys.Parser.Calls is
       Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
     end if;
     --
-    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (Ident_Index).Block_Ref).PSize - 1));
+    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (Ident_Index).block_ref).PSize - 1));
     if CallType /= Normal_Procedure_Call then  --  Some for of entry call
       Emit_1 (CD, k_Exit_Call, Operand_2_Type (CallType));  --  Return from Entry Call
     end if;
     --
-    if CD.IdTab (Ident_Index).LEV < Level then
+    if CD.IdTab (Ident_Index).lev < Level then
       Emit_2 (CD,
         k_Update_Display_Vector,
-        Operand_1_Type (CD.IdTab (Ident_Index).LEV),
+        Operand_1_Type (CD.IdTab (Ident_Index).lev),
         Operand_2_Type (Level)
       );
     end if;
@@ -170,10 +170,10 @@ package body HAC_Sys.Parser.Calls is
     if CD.Sy = Period then
       InSymbol (CD);                  --  Task Entry Selector
       if CD.Sy = IDent then
-        J := CD.Blocks_Table (CD.IdTab (I).Block_Ref).Last_Id_Idx;
-        CD.IdTab (0).Name := CD.Id;
-        while CD.IdTab (J).Name /= CD.Id loop
-          J := CD.IdTab (J).Link;
+        J := CD.Blocks_Table (CD.IdTab (I).block_ref).Last_Id_Idx;
+        CD.IdTab (0).name := CD.Id;
+        while CD.IdTab (J).name /= CD.Id loop
+          J := CD.IdTab (J).link;
         end loop;
         --
         if J = 0 then

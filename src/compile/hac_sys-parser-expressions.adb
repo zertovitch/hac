@@ -55,12 +55,12 @@ package body HAC_Sys.Parser.Expressions is
           --  ... or, we have an enumeration item.
           X := Locate_Identifier (CD, CD.Id, Level);
           if X /= 0 then
-            if CD.IdTab (X).Entity = Declared_Number_or_Enum_Item then
-              C.TP := Exact_Typ (CD.IdTab (X).xTyp);
+            if CD.IdTab (X).entity = Declared_Number_or_Enum_Item then
+              C.TP := Exact_Typ (CD.IdTab (X).xtyp);
               if C.TP.TYP = Floats then
-                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).Adr_or_Sz);
+                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).adr_or_sz);
               else
-                C.I := Sign * HAC_Integer (CD.IdTab (X).Adr_or_Sz);
+                C.I := Sign * HAC_Integer (CD.IdTab (X).adr_or_sz);
                 if signed and then C.TP.TYP not in Numeric_Typ then
                   Error (CD, err_numeric_constant_expected);
                 end if;
@@ -100,15 +100,15 @@ package body HAC_Sys.Parser.Expressions is
     begin
       if V.TYP = Records then
         Field_Id := CD.Blocks_Table (V.Ref).Last_Id_Idx;
-        CD.IdTab (0).Name := CD.Id;
-        while CD.IdTab (Field_Id).Name /= CD.Id loop  --  Search field identifier
-          Field_Id := CD.IdTab (Field_Id).Link;
+        CD.IdTab (0).name := CD.Id;
+        while CD.IdTab (Field_Id).name /= CD.Id loop  --  Search field identifier
+          Field_Id := CD.IdTab (Field_Id).link;
         end loop;
         if Field_Id = No_Id then
           Error (CD, err_undefined_identifier, To_String (CD.Id_with_case), major);
         end if;
-        V            := CD.IdTab (Field_Id).xTyp;
-        Field_Offset := CD.IdTab (Field_Id).Adr_or_Sz;
+        V            := CD.IdTab (Field_Id).xtyp;
+        Field_Offset := CD.IdTab (Field_Id).adr_or_sz;
         if Field_Offset /= 0 then
           Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
         end if;
@@ -426,27 +426,27 @@ package body HAC_Sys.Parser.Expressions is
                 X_Sub : Exact_Subtyp;
               begin
                 InSymbol (CD);
-                case r.Entity is
+                case r.entity is
                   when Declared_Number_or_Enum_Item =>
-                    X := Exact_Typ (r.xTyp);
+                    X := Exact_Typ (r.xtyp);
                     if X.TYP = Floats then
                       --  Address is an index in the float constants table.
-                      Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.Adr_or_Sz));
+                      Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.adr_or_sz));
                     else
                       --  Here the address is actually the immediate (discrete) value.
-                      Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.Adr_or_Sz));
+                      Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.adr_or_sz));
                     end if;
                     --
                   when Variable =>
-                    X_Sub := r.xTyp;
+                    X_Sub := r.xtyp;
                     LC_Mem := CD.LC;
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-                      if r.Normal then
+                      if r.normal then
                         F := k_Push_Address;  --  Composite: push "v'Access".
                       else
                         F := k_Push_Value;    --  Composite: push "(v.all)'Access", that is, v.
                       end if;
-                      Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
+                      Emit_2 (CD, F, Operand_1_Type (r.lev), Operand_2_Type (r.adr_or_sz));
                       Selector (CD, Level, FSys_Prim + Apostrophe, X_Sub);
                       if Standard_or_Enum_Typ (X_Sub.TYP) then
                         --  We are at a leaf point of composite type selection,
@@ -457,17 +457,17 @@ package body HAC_Sys.Parser.Expressions is
                     else
                       --  No selector.
                       if Standard_or_Enum_Typ (X_Sub.TYP) then
-                        if r.Normal then
+                        if r.normal then
                           F := k_Push_Value;           --  Push variable v's value.
                         else
                           F := k_Push_Indirect_Value;  --  Push "v.all" (v is an access).
                         end if;
-                      elsif r.Normal then
+                      elsif r.normal then
                         F := k_Push_Address;  --  Composite: push "v'Access".
                       else
                         F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
                       end if;
-                      Emit_2 (CD, F, Operand_1_Type (r.LEV), Operand_2_Type (r.Adr_or_Sz));
+                      Emit_2 (CD, F, Operand_1_Type (r.lev), Operand_2_Type (r.adr_or_sz));
                     end if;
                     if CD.Sy = Apostrophe then
                       InSymbol (CD);
@@ -478,26 +478,26 @@ package body HAC_Sys.Parser.Expressions is
                     --  !!  Keep subtype information, could be useful for optimizing out checks  !!
                     --
                   when TypeMark =>
-                    X_Sub := r.xTyp;
+                    X_Sub := r.xtyp;
                     Subtype_Prefixed_Expression (CD, Level, FSys_Prim, Ident_Index, X_Sub);
                     X := Exact_Typ (X_Sub);  --  Discard subtype information.
                     --  !!  Keep subtype information, could be useful for optimizing out checks  !!
                   when Prozedure | Prozedure_Intrinsic =>
                     Error (CD, err_expected_constant_function_variable_or_subtype);
                   when Funktion =>
-                    X := Exact_Typ (r.xTyp);
+                    X := Exact_Typ (r.xtyp);
                     Calls.Subprogram_or_Entry_Call
                       (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
                   when Funktion_Intrinsic =>
                     Standard_Functions.Standard_Function
-                      (CD, Level, FSys_Prim, Ident_Index, SF_Code'Val (r.Adr_or_Sz), X);
+                      (CD, Level, FSys_Prim, Ident_Index, SF_Code'Val (r.adr_or_sz), X);
                   when others =>
                     null;
                 end case;
                 if X.TYP = NOTYP and then CD.error_count = 0 then
                   Error
                     (CD, err_object_used_before_end_own_declaration,
-                     '"' & To_String (r.Name_with_case) & """ ", major);
+                     '"' & To_String (r.name_with_case) & """ ", major);
                 end if;
               end;
               --
@@ -872,7 +872,7 @@ package body HAC_Sys.Parser.Expressions is
   is
     Mem_Sy : constant KeyWSymbol := CD.Sy;
   begin
-    pragma Assert (CD.IdTab (Typ_ID_Index).Entity = TypeMark);
+    pragma Assert (CD.IdTab (Typ_ID_Index).entity = TypeMark);
     InSymbol (CD);
     case Mem_Sy is
       when LParent    =>  --  S (...)

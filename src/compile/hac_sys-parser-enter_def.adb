@@ -21,7 +21,7 @@ package body HAC_Sys.Parser.Enter_Def is
     declare
       New_B : BTabEntry renames CD.Blocks_Table (CD.Blocks_Count);
     begin
-      New_B.Id                := CD.IdTab (Tptr).Name;
+      New_B.Id                := CD.IdTab (Tptr).name;
       New_B.Last_Id_Idx       := 0;
       New_B.Last_Param_Id_Idx := 0;
       New_B.SrcFrom           := CD.CUD.line_count;
@@ -42,27 +42,28 @@ package body HAC_Sys.Parser.Enter_Def is
     if CD.Id_Count = Id_Table_Max then
       Fatal (IDENTIFIERS);  --  Exception is raised there.
     end if;
-    CD.IdTab (No_Id).Name := Id;  --  Sentinel
+    CD.IdTab (No_Id).name := Id;  --  Sentinel
     J                     := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
     L                     := J;
-    while CD.IdTab (J).Name /= Id loop
-      J := CD.IdTab (J).Link;
+    while CD.IdTab (J).name /= Id loop
+      J := CD.IdTab (J).link;
     end loop;
     --  Follow the chain of identifiers for current Level.
     if J = No_Id then
       --  Enter identifier in table IdTab
       CD.Id_Count            := CD.Id_Count + 1;
       CD.IdTab (CD.Id_Count) :=
-         (Name           => Id,
-          Name_with_case => Id_with_case,
-          Link           => L,
-          Entity         => K,
-          Read_only      => False,
-          xTyp           => Undefined,
-          Block_Ref      => 0,
-          Normal         => True,
-          LEV            => Level,
-          Adr_or_Sz      => 0
+         (name           => Id,
+          name_with_case => Id_with_case,
+          link           => L,
+          entity         => K,
+          read_only      => False,
+          forward        => body_only,
+          xtyp           => Undefined,
+          block_ref      => 0,
+          normal         => True,
+          lev            => Level,
+          adr_or_sz      => 0
          );
       --  Update start of identifier chain:
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;

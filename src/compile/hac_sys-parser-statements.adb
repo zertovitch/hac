@@ -30,16 +30,16 @@ package body HAC_Sys.Parser.Statements is
       Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => Exact_Typ (X));
     end Issue_Type_Mismatch_Error;
   begin
-    pragma Assert (CD.IdTab (Var_Id_Index).Entity = Variable);
-    X := CD.IdTab (Var_Id_Index).xTyp;
-    if CD.IdTab (Var_Id_Index).Normal then
+    pragma Assert (CD.IdTab (Var_Id_Index).entity = Variable);
+    X := CD.IdTab (Var_Id_Index).xtyp;
+    if CD.IdTab (Var_Id_Index).normal then
       F := k_Push_Address;  --  Normal variable, we push its address
     else
       F := k_Push_Value;    --  The value is a reference, we want that address.
     end if;
     Emit_2 (CD, F,
-      Operand_1_Type (CD.IdTab (Var_Id_Index).LEV),
-      Operand_2_Type (CD.IdTab (Var_Id_Index).Adr_or_Sz));
+      Operand_1_Type (CD.IdTab (Var_Id_Index).lev),
+      Operand_2_Type (CD.IdTab (Var_Id_Index).adr_or_sz));
     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
       --  Resolve composite types' selectors (arrays and records).
       Selector (CD, Level, Becomes_EQL + FSys, X);
@@ -56,7 +56,7 @@ package body HAC_Sys.Parser.Statements is
       when others =>
         Error (CD, err_BECOMES_missing);
     end case;
-    if Check_read_only and then CD.IdTab (Var_Id_Index).Read_only then
+    if Check_read_only and then CD.IdTab (Var_Id_Index).read_only then
       Error (CD, err_cannot_modify_constant_or_in_parameter);
     end if;
     Expression (CD, Level, Semicolon_Set, Y);
@@ -192,7 +192,7 @@ package body HAC_Sys.Parser.Statements is
     begin  --  Accept_Statement
       InSymbol;
       I_Entry := Locate_Identifier (CD, CD.Id, Block_Data.level);
-      if CD.IdTab (I_Entry).Entity /= aEntry then
+      if CD.IdTab (I_Entry).entity /= aEntry then
         Error (CD, err_syntax_error, ": an entry name is expected here");
       end if;
       InSymbol;
@@ -203,12 +203,12 @@ package body HAC_Sys.Parser.Statements is
           Fatal (LEVELS);  --  Exception is raised there.
         end if;
         Block_Data.level := Block_Data.level + 1;
-        CD.Display (Block_Data.level) := CD.IdTab (I_Entry).Block_Ref;
+        CD.Display (Block_Data.level) := CD.IdTab (I_Entry).block_ref;
         InSymbol;
         Sequence_of_Statements (CD, END_Set, Block_Data);
         Test_END_Symbol (CD);
         if CD.Sy = IDent then
-          if CD.Id /= CD.IdTab (I_Entry).Name then
+          if CD.Id /= CD.IdTab (I_Entry).name then
             Error (CD, err_incorrect_block_name);
           end if;
           InSymbol;
@@ -305,18 +305,18 @@ package body HAC_Sys.Parser.Statements is
           Error (CD, err_procedures_cannot_return_a_value, severity => major);
         end if;
         --  Calculate return value (destination: X; expression: Y).
-        if CD.IdTab (Block_Data.block_id_index).Block_Ref /= CD.Display (Block_Data.level) then
+        if CD.IdTab (Block_Data.block_id_index).block_ref /= CD.Display (Block_Data.level) then
           raise Program_Error with
             "Is it `return x` from main? Issue should have been caught earlier: " &
             "err_procedures_cannot_return_a_value.";
         end if;
-        X := CD.IdTab (Block_Data.block_id_index).xTyp;
-        if CD.IdTab (Block_Data.block_id_index).Normal then
+        X := CD.IdTab (Block_Data.block_id_index).xtyp;
+        if CD.IdTab (Block_Data.block_id_index).normal then
           F := k_Push_Address;
         else
           F := k_Push_Value;
         end if;
-        Emit_2 (CD, F, Operand_1_Type (CD.IdTab (Block_Data.block_id_index).LEV + 1), 0);
+        Emit_2 (CD, F, Operand_1_Type (CD.IdTab (Block_Data.block_id_index).lev + 1), 0);
         --
         Expression (CD, Block_Data.level, Semicolon_Set, Y);
         if X.TYP = Y.TYP then
@@ -544,16 +544,17 @@ package body HAC_Sys.Parser.Statements is
         Previous_Last := CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx;
         CD.Id_Count := CD.Id_Count + 1;
         CD.IdTab (CD.Id_Count) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
-             (Name           => CD.Id,
-              Name_with_case => CD.Id_with_case,
-              Link           => Previous_Last,
-              Entity         => Variable,
-              Read_only      => True,
-              xTyp           => Undefined,  --  Subtype is determined by the range.
-              Block_Ref      => 0,
-              Normal         => True,
-              LEV            => Block_Data.level,
-              Adr_or_Sz      => Block_Data.data_allocation_index
+             (name           => CD.Id,
+              name_with_case => CD.Id_with_case,
+              link           => Previous_Last,
+              entity         => Variable,
+              read_only      => True,
+              forward        => body_only,
+              xtyp           => Undefined,  --  Subtype is determined by the range.
+              block_ref      => 0,
+              normal         => True,
+              lev            => Block_Data.level,
+              adr_or_sz      => Block_Data.data_allocation_index
              );
         CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx  := CD.Id_Count;
         Block_Data.data_allocation_index := Block_Data.data_allocation_index + 1;
@@ -565,8 +566,8 @@ package body HAC_Sys.Parser.Statements is
       end if;
       --
       Emit_2 (CD, k_Push_Address,
-        Operand_1_Type (CD.IdTab (CD.Id_Count).LEV),
-        Operand_2_Type (CD.IdTab (CD.Id_Count).Adr_or_Sz)
+        Operand_1_Type (CD.IdTab (CD.Id_Count).lev),
+        Operand_2_Type (CD.IdTab (CD.Id_Count).adr_or_sz)
       );
       InSymbol;
       FOR_Begin := k_FOR_Forward_Begin;
@@ -577,7 +578,7 @@ package body HAC_Sys.Parser.Statements is
       end if;
       Ranges.Dynamic_Range (CD, Block_Data.level, FSys_St,
         err_control_variable_of_the_wrong_type,
-        Exact_Typ (CD.IdTab (CD.Id_Count).xTyp)  --  Set the type of "C" in "for C in Red .. Blue loop"
+        Exact_Typ (CD.IdTab (CD.Id_Count).xtyp)  --  Set the type of "C" in "for C in Red .. Blue loop"
       );
       LC_FOR_Begin := CD.LC;
       Emit (CD, FOR_Begin);
@@ -606,7 +607,7 @@ package body HAC_Sys.Parser.Statements is
         Y                  : Exact_Typ;
       begin
         I := Locate_Identifier (CD, CD.Id, Block_Data.level);
-        if CD.IdTab (I).Entity = aTask then
+        if CD.IdTab (I).entity = aTask then
           InSymbol;
           Entry_Call (CD, Block_Data.level, FSys_St, I, -1);
           if CD.ObjCode (CD.LC - 2).F = k_Call then  --  Need to patch CallType later
@@ -713,7 +714,7 @@ package body HAC_Sys.Parser.Statements is
         begin         -- Accept_Statment_2
           InSymbol;
           I := Locate_Identifier (CD, CD.Id, Block_Data.level);
-          if CD.IdTab (I).Entity /= aEntry then
+          if CD.IdTab (I).entity /= aEntry then
             Select_Error (err_syntax_error);
           end if;
           InSymbol;
@@ -727,12 +728,12 @@ package body HAC_Sys.Parser.Statements is
               Fatal (LEVELS);  --  Exception is raised there.
             end if;
             Block_Data.level := Block_Data.level + 1;
-            CD.Display (Block_Data.level) := CD.IdTab (I).Block_Ref;
+            CD.Display (Block_Data.level) := CD.IdTab (I).block_ref;
             InSymbol;
             Sequence_of_Statements (CD, END_Set, Block_Data);
             Test_END_Symbol (CD);
             if CD.Sy = IDent then
-              if CD.Id /= CD.IdTab (I).Name then
+              if CD.Id /= CD.IdTab (I).name then
                 Select_Error (err_incorrect_block_name);
               end if;
             end if;
@@ -942,7 +943,7 @@ package body HAC_Sys.Parser.Statements is
             --  New identifier: must be an identifier for a named Block_Statement or loop.
             Named_Statement;
           else
-            case CD.IdTab (I_Statement).Entity is
+            case CD.IdTab (I_Statement).entity is
               when Variable =>
                 Assignment (CD, FSys_St, Block_Data.level, I_Statement, Check_read_only => True);
               when Declared_Number_or_Enum_Item =>
@@ -959,7 +960,7 @@ package body HAC_Sys.Parser.Statements is
                 Subprogram_or_Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Procedure_Call);
               when Prozedure_Intrinsic =>
                 Standard_Procedures.Standard_Procedure
-                  (CD, Block_Data.level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).Adr_or_Sz));
+                  (CD, Block_Data.level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).adr_or_sz));
               when Label =>
                 Error (CD, err_duplicate_label, To_String (CD.Id));
                 Test (CD, Colon_Set, FSys_St, err_colon_missing);

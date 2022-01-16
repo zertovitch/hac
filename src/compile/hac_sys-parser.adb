@@ -73,10 +73,10 @@ package body HAC_Sys.Parser is
               --  the string length and the index into the string table.
               Error (CD, err_string_not_supported_as_parameter, severity => major);
             elsif X /= No_Id then
-              if CD.IdTab (X).Entity = TypeMark then
-                xTP := CD.IdTab (X).xTyp;
+              if CD.IdTab (X).entity = TypeMark then
+                xTP := CD.IdTab (X).xtyp;
                 if ValParam then
-                  Sz := CD.IdTab (X).Adr_or_Sz;
+                  Sz := CD.IdTab (X).adr_or_sz;
                 else
                   Sz := 1;
                 end if;
@@ -93,11 +93,11 @@ package body HAC_Sys.Parser is
             declare
               r : IdTabEntry renames CD.IdTab (T0);
             begin
-              r.xTyp      := xTP;
-              r.Normal    := ValParam;
-              r.Read_only := ValParam;
-              r.Adr_or_Sz := block_data.data_allocation_index;
-              r.LEV       := block_data.level;
+              r.xtyp      := xTP;
+              r.normal    := ValParam;
+              r.read_only := ValParam;
+              r.adr_or_sz := block_data.data_allocation_index;
+              r.lev       := block_data.level;
               block_data.data_allocation_index := block_data.data_allocation_index + Sz;
             end;
           end loop;  --  while T0 < CD.Id_Count
@@ -142,7 +142,7 @@ package body HAC_Sys.Parser is
         sub_sub_prog_block_data.block_id_index := CD.Id_Count;
         sub_sub_prog_block_data.is_a_function  := IsFun;
         Block (CD, FSys, False, sub_sub_prog_block_data,
-               CD.IdTab (CD.Id_Count).Name, Id_subprog_with_case);
+               CD.IdTab (CD.Id_Count).name, Id_subprog_with_case);
       end;
       if IsFun then
         Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
@@ -178,7 +178,7 @@ package body HAC_Sys.Parser is
     procedure Statements_Part_Setup is
     begin
       block_data.max_data_allocation_index := block_data.data_allocation_index;
-      CD.IdTab (block_data.block_id_index).Adr_or_Sz := CD.LC;
+      CD.IdTab (block_data.block_id_index).adr_or_sz := CD.LC;
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
       for Init_Code_Idx in reverse CD.CMax + 1 .. CD.CMax + block_data.initialization_object_code_size loop
         CD.ObjCode (CD.LC) := CD.ObjCode (Init_Code_Idx);
@@ -205,10 +205,10 @@ package body HAC_Sys.Parser is
           I_Res_Type := Locate_Identifier (CD, CD.Id, block_data.level);
           InSymbol;
           if I_Res_Type /= 0 then
-            if CD.IdTab (I_Res_Type).Entity /= TypeMark then
+            if CD.IdTab (I_Res_Type).entity /= TypeMark then
               Error (CD, err_missing_a_type_identifier, severity => major);
-            elsif Standard_or_Enum_Typ (CD.IdTab (I_Res_Type).xTyp.TYP) then
-              CD.IdTab (block_data.block_id_index).xTyp := CD.IdTab (I_Res_Type).xTyp;
+            elsif Standard_or_Enum_Typ (CD.IdTab (I_Res_Type).xtyp.TYP) then
+              CD.IdTab (block_data.block_id_index).xtyp := CD.IdTab (I_Res_Type).xtyp;
             else
               Error (CD, err_bad_result_type_for_a_function, severity => major);
             end if;
@@ -267,15 +267,15 @@ package body HAC_Sys.Parser is
     else
       Test (CD, Symbols_after_Subprogram_Identifier, FSys, err_incorrectly_used_symbol);
     end if;
-    if CD.IdTab (block_data.block_id_index).Block_Ref > 0 then
-      subprogram_block_index := CD.IdTab (block_data.block_id_index).Block_Ref;
+    if CD.IdTab (block_data.block_id_index).block_ref > 0 then
+      subprogram_block_index := CD.IdTab (block_data.block_id_index).block_ref;
     else
       Enter_Block (CD, block_data.block_id_index);
       subprogram_block_index := CD.Blocks_Count;
-      CD.IdTab (block_data.block_id_index).Block_Ref := subprogram_block_index;
+      CD.IdTab (block_data.block_id_index).block_ref := subprogram_block_index;
     end if;
     CD.Display (block_data.level) := subprogram_block_index;
-    CD.IdTab (block_data.block_id_index).xTyp := Undefined;
+    CD.IdTab (block_data.block_id_index).xtyp := Undefined;
     if CD.Sy = LParent then
       Formal_Parameter_List;
     end if;
@@ -292,15 +292,14 @@ package body HAC_Sys.Parser is
     end if;
     --
     if CD.Sy = Semicolon then
-      --  End of subprogram specification part ("forward", not yet available
-      --  since ';' is blocked as symbol). Body declared later.
-      --  Example:
-      --  procedure A; procedure B is begin ... A ... end; procedure A is ... B ... end;
+      --  End of subprogram specification part (forward declaration).
+      --  Body is declared later in this block.
       CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
-      CD.IdTab (block_data.block_id_index).Adr_or_Sz := -1;
-      --  Address of body TBD (or, we could have an indirect call mechanism).
+      CD.IdTab (block_data.block_id_index).adr_or_sz := -1;
+      CD.IdTab (block_data.block_id_index).forward := spec_only;
       return;
     end if;
+    CD.IdTab (block_data.block_id_index).forward := body_only;
     --
     if Is_a_block_statement then
       case CD.Sy is
@@ -321,7 +320,8 @@ package body HAC_Sys.Parser is
       InSymbol;  --  Consume NULL symbol.
       Statements_Part_Setup;
       if block_data.is_a_function then
-        Error (CD, err_no_null_functions);  --  There are no null functions: what would be the result?
+        --  There are no null functions: what would be the result?
+        Error (CD, err_no_null_functions);
       else
         null;  --  No statement -> no instruction, like for the NULL statement.
       end if;

@@ -117,23 +117,25 @@ package HAC_Sys.Co_Defs is
       Alias   --  Short name of another entity ("use" clause).
   );
 
-  ------------------------------------------------------------------------
-  ------------------------------------------------------------TabEntry----
-  ------------------------------------------------------------------------
-  --  Identifier Table Entry
+  type Forward_Declaration is (spec_only, spec_resolved, body_only);
+
+  ------------------------------
+  --  Identifier Table Entry  --
+  ------------------------------
   type IdTabEntry is record
-    Name           : Alfa;          --  identifier name in ALL CAPS
-    Name_with_case : Alfa;          --  identifier name with original casing
-    Link           : Index;
-    Entity         : Entity_Kind;
-    Read_only      : Boolean;       --  If Entity = Variable and Read_only = True,
-                                    --    it's a typed constant.
-    xTyp           : Exact_Subtyp;  --  Subtype identification
-    Block_Ref      : Index;         --  Was: Ref (that was used also for what is now xTyp.Ref,
-                                    --       which caused a mixup for functions' return types!)
-    Normal         : Boolean;       --  value param?
-    LEV            : Nesting_level;
-    Adr_or_Sz      : Integer;
+    name           : Alfa;                 --  identifier name in ALL CAPS
+    name_with_case : Alfa;                 --  identifier name with original casing
+    link           : Index;
+    entity         : Entity_Kind;
+    read_only      : Boolean;              --  If Entity = Variable and read_only = True,
+                                           --    it's a typed constant.
+    forward        : Forward_Declaration;  --  Forward declaration of a type, a constant, a subprogram.
+    xtyp           : Exact_Subtyp;         --  Subtype identification
+    block_ref      : Index;                --  Was: Ref (that was used also for what is now xtyp.Ref,
+                                           --       which caused a mixup for functions' return types!)
+    normal         : Boolean;              --  value param?
+    lev            : Nesting_level;
+    adr_or_sz      : Integer;
   end record;
 
   --  Entity                        Meaning of Adr_or_Sz

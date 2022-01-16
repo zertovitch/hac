@@ -101,16 +101,16 @@ package body HAC_Sys.Compiler is
         r : IdTabEntry renames CD.IdTab (I);
       begin
         Put (CD.comp_dump, I, 4);
-        Show_Padded (To_String (r.Name_with_case), Alng);
-        Put (CD.comp_dump, r.Link, 4);
-        Show_Padded (Entity_Kind'Image (r.Entity), Entity_Kind'Width);
-        Show_Padded (Typen'Image (r.xTyp.TYP), Typen'Width);
-        Put (CD.comp_dump, r.xTyp.Ref, 5);
-        Show_Padded (Boolean'Image (r.Normal), Boolean'Width);
-        Put (CD.comp_dump, Integer (r.LEV), 3);
-        Put (CD.comp_dump, r.Adr_or_Sz, 5);
-        if r.Block_Ref > 0 then
-          Put (CD.comp_dump, r.Block_Ref, 5);
+        Show_Padded (To_String (r.name_with_case), Alng);
+        Put (CD.comp_dump, r.link, 4);
+        Show_Padded (Entity_Kind'Image (r.entity), Entity_Kind'Width);
+        Show_Padded (Typen'Image (r.xtyp.TYP), Typen'Width);
+        Put (CD.comp_dump, r.xtyp.Ref, 5);
+        Show_Padded (Boolean'Image (r.normal), Boolean'Width);
+        Put (CD.comp_dump, Integer (r.lev), 3);
+        Put (CD.comp_dump, r.adr_or_sz, 5);
+        if r.block_ref > 0 then
+          Put (CD.comp_dump, r.block_ref, 5);
         else
           Put (CD.comp_dump, "     ");
         end if;
@@ -123,8 +123,8 @@ package body HAC_Sys.Compiler is
     for I in 1 .. CD.Tasks_Definitions_Count loop
       Put (CD.comp_dump, I, 4);
       Put (CD.comp_dump, ' ');
-      Put (CD.comp_dump, To_String (CD.IdTab (CD.Tasks_Definitions_Table (I)).Name) & "  ");
-      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).Block_Ref);
+      Put (CD.comp_dump, To_String (CD.IdTab (CD.Tasks_Definitions_Table (I)).name) & "  ");
+      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).block_ref);
       New_Line (CD.comp_dump);
     end loop;
 
@@ -136,10 +136,10 @@ package body HAC_Sys.Compiler is
       for I in 1 .. CD.Entries_Count loop
         Put (CD.comp_dump, I, 4);
         Put (CD.comp_dump,
-             ' ' & To_String (CD.IdTab (CD.Entries_Table (I)).Name) & " in Task " &
+             ' ' & To_String (CD.IdTab (CD.Entries_Table (I)).name) & " in Task " &
              To_String (CD.IdTab (
-               CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).Adr_or_Sz)
-             ).Name)
+               CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).adr_or_sz)
+             ).name)
         );
         New_Line (CD.comp_dump);
       end loop;
@@ -200,7 +200,7 @@ package body HAC_Sys.Compiler is
     Put_Line (CD.comp_dump, " Information about Main procedure:");
     New_Line (CD.comp_dump);
     Put_Line (CD.comp_dump, "   Name    : " & To_String (CD.Main_Program_ID_with_case));
-    Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).Block_Ref'Image);
+    Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).block_ref'Image);
 
   end Print_Tables;
 
@@ -357,17 +357,17 @@ package body HAC_Sys.Compiler is
       Put_Line (map_file, "------------------------");
       New_Line (map_file);
       for Blk of CD.IdTab (CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count) loop
-        if Blk.Entity = Variable then
-          if Blk.xTyp.TYP /= NOTYP then
-            Ada.Integer_Text_IO.Put (map_file, Blk.Adr_or_Sz, 4);
-            Put (map_file, To_String (Blk.Name) & "   ");
+        if Blk.entity = Variable then
+          if Blk.xtyp.TYP /= NOTYP then
+            Ada.Integer_Text_IO.Put (map_file, Blk.adr_or_sz, 4);
+            Put (map_file, To_String (Blk.name) & "   ");
           end if;
-          if Blk.LEV = 1 then
+          if Blk.lev = 1 then
             Put (map_file, " Global(");
           else
             Put (map_file, " Local (");
           end if;
-          Put (map_file, Nesting_level'Image (Blk.LEV));
+          Put (map_file, Nesting_level'Image (Blk.lev));
           Put (map_file, ')');
           New_Line (map_file);
         end if;
@@ -493,7 +493,7 @@ package body HAC_Sys.Compiler is
             CD, Block_Begin_Symbol + Statement_Begin_Symbol,
             False,
             unit_block,
-            CD.IdTab (CD.Id_Count).Name,
+            CD.IdTab (CD.Id_Count).name,
             Unit_Id_with_case
           );
           if kind = Function_Unit then

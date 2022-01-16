@@ -122,7 +122,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     New_Line;
     Put_Line (
       "Stack Variables of Task " &
-      Defs.To_String (CD.IdTab (CD.Tasks_Definitions_Table (ND.CurTask)).Name)
+      Defs.To_String (CD.IdTab (CD.Tasks_Definitions_Table (ND.CurTask)).name)
     );
     H1 := ND.TCB (ND.CurTask).B;   --  current bottom of stack
     BLKCNT := 10;
@@ -136,27 +136,27 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
       if H1 = 0 then
         Put_Line ("Task Variables");
       else
-        Put (Defs.To_String (CD.IdTab (H2).Name));
+        Put (Defs.To_String (CD.IdTab (H2).name));
         Put (" CALLED AT");
         Put (ND.S (H1 + 1).I, 5);
         New_Line;
       end if;
-      H2 := CD.Blocks_Table (CD.IdTab (H2).Block_Ref).Last_Id_Idx;
+      H2 := CD.Blocks_Table (CD.IdTab (H2).block_ref).Last_Id_Idx;
       while H2 /= 0 loop
         --  [P2Ada]: WITH instruction
         declare
           P2Ada_Var_7 : IdTabEntry renames CD.IdTab (H2);
           use Defs;
         begin
-          if P2Ada_Var_7.Entity = Variable then
-            if Defs.Standard_or_Enum_Typ (P2Ada_Var_7.xTyp.TYP) then
-              if P2Ada_Var_7.Normal then
-                H3 := H1 + P2Ada_Var_7.Adr_or_Sz;
+          if P2Ada_Var_7.entity = Variable then
+            if Defs.Standard_or_Enum_Typ (P2Ada_Var_7.xtyp.TYP) then
+              if P2Ada_Var_7.normal then
+                H3 := H1 + P2Ada_Var_7.adr_or_sz;
               else
-                H3 := Integer (ND.S (H1 + P2Ada_Var_7.Adr_or_Sz).I);
+                H3 := Integer (ND.S (H1 + P2Ada_Var_7.adr_or_sz).I);
               end if;
-              Put ("  " & To_String (P2Ada_Var_7.Name) & " = ");
-              case P2Ada_Var_7.xTyp.TYP is
+              Put ("  " & To_String (P2Ada_Var_7.name) & " = ");
+              case P2Ada_Var_7.xtyp.TYP is
                 when Defs.Enums | Defs.Ints =>
                   Put (ND.S (H3).I);
                   New_Line;
@@ -174,7 +174,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
               end case;
             end if;
           end if;
-          H2 := P2Ada_Var_7.Link;
+          H2 := P2Ada_Var_7.link;
         end; -- [P2Ada]: end of WITH
 
       end loop;

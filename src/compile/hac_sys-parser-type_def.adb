@@ -41,8 +41,8 @@ package body HAC_Sys.Parser.Type_Def is
       Type_Definition (
         CD, Level,
         FSys_TD => Comma_IDent_Semicolon + FSys_NTD,
-        xTP     => New_T.xTyp,
-        Size    => New_T.Adr_or_Sz
+        xTP     => New_T.xtyp,
+        Size    => New_T.adr_or_sz
       );
     end;
     --
@@ -123,9 +123,9 @@ package body HAC_Sys.Parser.Type_Def is
           declare
             New_Enum_Item : IdTabEntry renames CD.IdTab (CD.Id_Count);
           begin
-            New_Enum_Item.Read_only := True;
-            New_Enum_Item.xTyp      := xTP;
-            New_Enum_Item.Adr_or_Sz := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
+            New_Enum_Item.read_only := True;
+            New_Enum_Item.xtyp      := xTP;
+            New_Enum_Item.adr_or_sz := enum_count - 1;  --  RM 3.5.1 (7): position begins with 0.
           end;
         else
           Error (CD, err_identifier_missing);
@@ -168,8 +168,8 @@ package body HAC_Sys.Parser.Type_Def is
           );
           while T0 < T1 loop
             T0                      := T0 + 1;
-            CD.IdTab (T0).xTyp      := Field_Exact_Subtyp;
-            CD.IdTab (T0).Adr_or_Sz := Offset;
+            CD.IdTab (T0).xtyp      := Field_Exact_Subtyp;
+            CD.IdTab (T0).adr_or_sz := Offset;
             Offset                  := Offset + Field_Size;
           end loop;
         else
@@ -210,9 +210,9 @@ package body HAC_Sys.Parser.Type_Def is
       declare
         Id_T : IdTabEntry renames CD.IdTab (Ident_Index);
       begin
-        if Id_T.Entity = TypeMark then
-          xTP   := Id_T.xTyp;
-          Size  := Id_T.Adr_or_Sz;
+        if Id_T.entity = TypeMark then
+          xTP   := Id_T.xtyp;
+          Size  := Id_T.adr_or_sz;
           if xTP.TYP = NOTYP then
             Error (CD, err_undefined_type);
           end if;

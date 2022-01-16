@@ -175,6 +175,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   procedure Push (ND : in out Interpreter_Data; Amount : Positive := 1);
 
   VM_Case_Check_Error            : exception;
+  VM_Subprogram_Spec             : exception;
   VM_Division_by_0               : exception;
   VM_End_Error                   : exception;
   VM_Function_End_without_Return : exception;

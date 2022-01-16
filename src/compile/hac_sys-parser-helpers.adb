@@ -205,7 +205,7 @@ package body HAC_Sys.Parser.Helpers is
 
   function Enum_Name (CD : Compiler_Data; E_Ref : Index) return String is
   begin
-    return To_String (CD.IdTab (E_Ref).Name_with_case);
+    return To_String (CD.IdTab (E_Ref).name_with_case);
   end Enum_Name;
 
   function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ) return String is
@@ -401,12 +401,12 @@ package body HAC_Sys.Parser.Helpers is
     ID_Copy : Alfa;
   begin
     L                     := Level;
-    CD.IdTab (No_Id).Name := Id;  --  Sentinel
+    CD.IdTab (No_Id).name := Id;  --  Sentinel
     --  Scan all Id's on level L down to 0:
     loop
       J := CD.Blocks_Table (CD.Display (L)).Last_Id_Idx;
       --  Scan all Id's on level L:
-      while CD.IdTab (J).Name /= Id
+      while CD.IdTab (J).name /= Id
         or else
             --  Id is matching, but it is a level 0 definition from a previous unit's compilation
             --  which was not yet reactivated.
@@ -417,7 +417,7 @@ package body HAC_Sys.Parser.Helpers is
               and then not CD.CUD.level_0_def.Contains (Id)  --  Invisible 0-level definition.
             )
       loop
-        J := CD.IdTab (J).Link;
+        J := CD.IdTab (J).link;
       end loop;
       L := L - 1;  --  Decrease nesting level.
       exit when L < 0 or J /= No_Id;
@@ -430,11 +430,11 @@ package body HAC_Sys.Parser.Helpers is
     end if;
     --  Name aliasing resolution (brought by a use clause
     --  or a simple renames clause).
-    while Alias_Resolution and CD.IdTab (J).Entity = Alias loop
-      J := CD.IdTab (J).Adr_or_Sz;  --  E.g. True -> Standard.True
+    while Alias_Resolution and CD.IdTab (J).entity = Alias loop
+      J := CD.IdTab (J).adr_or_sz;  --  E.g. True -> Standard.True
     end loop;
     --  Prefixed package resolution.
-    if CD.IdTab (J).Entity = Paquetage then
+    if CD.IdTab (J).entity = Paquetage then
       Skip_Blanks (CD);
       if CD.CUD.c = '.' then  --  We sneak a look at the next symbol.
         ID_Copy := Id;
