@@ -32,6 +32,7 @@ project HAC_Exm is
      "hello.adb",
      "hello_big.adb",
      "gallery.adb",
+     "hofstadter.adb",
      "file_append.adb",
      "file_copy.adb",
      "file_read.adb",

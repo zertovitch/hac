@@ -79,6 +79,7 @@ procedure AoC_2021_12 is
     end loop;
     Close (f);
   end Read_Data;
+
   --
   --  `Visit` has a side effect on `seen` array.
   --
@@ -127,17 +128,18 @@ procedure AoC_2021_12 is
     seen (cave) := seen (cave) - 1;
     return result;
   end Visit;
+
   r : array (1 .. 2) of Integer;
-  compiler_test_mode : constant Boolean := Argument_Count >= 2;
+  compiler_test_mode : constant Boolean := Argument_Count >= 1;
 begin
   Read_Data;
   r (1) := Visit (start_idx, False);
-  r (2) := Visit (start_idx, True);
+  if not compiler_test_mode then
+    r (2) := Visit (start_idx, True);
+  end if;
   --
   if compiler_test_mode then
-    if r (1) /= Integer_Value (Argument (1)) or
-       r (2) /= Integer_Value (Argument (2))
-    then
+    if r (1) /= Integer_Value (Argument (1)) then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else

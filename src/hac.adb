@@ -1,6 +1,8 @@
 with HAC_Sys.Builder,
      HAC_Sys.PCode.Interpreter.In_Defs;
 
+with HAL;
+
 with Show_License;
 
 with Ada.Calendar,
@@ -59,6 +61,18 @@ procedure HAC is
     --
     procedure CIO_Trace_Back is new Show_Trace_Back (Show_Line_Information);
     --
+    procedure Failure is
+      use HAL;
+    begin
+      if Ends_With (+Ada_file_name, ".hac") then
+        --  Main has the "HAC script extension", possibly run
+        --  from Explorer, Nautilus, etc.
+        HAL.Put ("Failure in " & Ada_file_name & ", press Return");
+        HAL.Skip_Line;
+      end if;
+      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
+    end Failure;
+    --
     f : File_Type;
     t1, t2 : Time;
     BD : Build_Data;
@@ -89,7 +103,7 @@ procedure HAC is
     end if;
     --
     if not Build_Successful (BD) then
-      Set_Exit_Status (Failure);
+      Failure;
       return;
     end if;
     if verbosity >= 2 then
@@ -124,7 +138,7 @@ procedure HAC is
       Put_Line (Current_Error, Message (post_mortem.Unhandled));
       Put_Line (Current_Error, "Trace-back: approximate location");
       CIO_Trace_Back (post_mortem.Unhandled);
-      Set_Exit_Status (Failure);
+      Failure;
     elsif verbosity >= 1 then
       Put_Line ("Execution of " & Ada_file_name & " completed.");
     end if;
@@ -149,14 +163,14 @@ procedure HAC is
         Current_Error,
         Ada.Exceptions.Exception_Message (E)
       );
-      Set_Exit_Status (Failure);
+      Failure;
     when Name_Error =>
       Put_Line (
         Current_Error,
         HAC_margin_3 &
         "Error: file """ & Ada_file_name &
         """ not found (perhaps in exm or test subdirectory ?)");
-      Set_Exit_Status (Failure);
+      Failure;
   end Compile_and_interpret_file;
 
   assembler_output_name : constant String := "asm_dump.pca";       --  PCA = PCode Assembler

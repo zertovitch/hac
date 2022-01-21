@@ -8,7 +8,7 @@
 --
 --  HAC 0.081 "nice to have"'s detected in this exercise:
 --
---    *     I/O with enums, at least 'Image and 'Value.
+--    *     I/O with enums, at least 'Image and 'Value. [Solved with HAC v.0.099]
 --    *     "=" for composite types ( ` rules (ri).contains (cti).col = c  `)
 --
 with HAL; use HAL;  --  in ../../../src
@@ -24,70 +24,6 @@ procedure AoC_2020_07 is
     (bright, clear, dark, dim, dotted, drab, dull, faded, light,
      mirrored, muted, other, pale, plaid, posh, shiny, striped, vibrant, wavy);
 
-  --  Here we have images for the above enum types, absent proper 'Image / 'Value attributes
-  --  in HAC 0.081. Ouch...
-
-  Base_Colour_Img : array (Base_Colour) of VString;
-  Colour_Qualifier_Img : array (Colour_Qualifier) of VString;
-
-  procedure Init_Img is  --  Shame on HAC 0.081 !
-  begin
-    --  Don't worry, the following code was NOT typed by hand :-) .
-    Colour_Qualifier_Img (bright) := +"bright";
-    Colour_Qualifier_Img (clear) := +"clear";
-    Colour_Qualifier_Img (dark) := +"dark";
-    Colour_Qualifier_Img (dim) := +"dim";
-    Colour_Qualifier_Img (dotted) := +"dotted";
-    Colour_Qualifier_Img (drab) := +"drab";
-    Colour_Qualifier_Img (dull) := +"dull";
-    Colour_Qualifier_Img (faded) := +"faded";
-    Colour_Qualifier_Img (light) := +"light";
-    Colour_Qualifier_Img (mirrored) := +"mirrored";
-    Colour_Qualifier_Img (muted) := +"muted";
-    Colour_Qualifier_Img (other) := +"other";
-    Colour_Qualifier_Img (pale) := +"pale";
-    Colour_Qualifier_Img (plaid) := +"plaid";
-    Colour_Qualifier_Img (posh) := +"posh";
-    Colour_Qualifier_Img (shiny) := +"shiny";
-    Colour_Qualifier_Img (striped) := +"striped";
-    Colour_Qualifier_Img (vibrant) := +"vibrant";
-    Colour_Qualifier_Img (wavy) := +"wavy";
-    --
-    Base_Colour_Img (aqua) := +"aqua";
-    Base_Colour_Img (beige) := +"beige";
-    Base_Colour_Img (black) := +"black";
-    Base_Colour_Img (blue) := +"blue";
-    Base_Colour_Img (bronze) := +"bronze";
-    Base_Colour_Img (brown) := +"brown";
-    Base_Colour_Img (chartreuse) := +"chartreuse";
-    Base_Colour_Img (coral) := +"coral";
-    Base_Colour_Img (crimson) := +"crimson";
-    Base_Colour_Img (cyan) := +"cyan";
-    Base_Colour_Img (fuchsia) := +"fuchsia";
-    Base_Colour_Img (gold) := +"gold";
-    Base_Colour_Img (gray) := +"gray";
-    Base_Colour_Img (green) := +"green";
-    Base_Colour_Img (indigo) := +"indigo";
-    Base_Colour_Img (lavender) := +"lavender";
-    Base_Colour_Img (lime) := +"lime";
-    Base_Colour_Img (magenta) := +"magenta";
-    Base_Colour_Img (maroon) := +"maroon";
-    Base_Colour_Img (olive) := +"olive";
-    Base_Colour_Img (orange) := +"orange";
-    Base_Colour_Img (plum) := +"plum";
-    Base_Colour_Img (purple) := +"purple";
-    Base_Colour_Img (red) := +"red";
-    Base_Colour_Img (salmon) := +"salmon";
-    Base_Colour_Img (silver) := +"silver";
-    Base_Colour_Img (tan) := +"tan";
-    Base_Colour_Img (teal) := +"teal";
-    Base_Colour_Img (tomato) := +"tomato";
-    Base_Colour_Img (turquoise) := +"turquoise";
-    Base_Colour_Img (violet) := +"violet";
-    Base_Colour_Img (white) := +"white";
-    Base_Colour_Img (yellow) := +"yellow";
-  end Init_Img;
-
   --  Emulate full Ada's Enumeration_IO's Get (ouch!) ...
 
   procedure Get_CQ (f : in out File_Type; cq : out Colour_Qualifier) is
@@ -99,8 +35,9 @@ procedure AoC_2020_07 is
       exit when c < 'a' or c > 'z';
       s := s & c;
     end loop;
+    s := To_Upper (s);
     for x in Colour_Qualifier loop
-      if s = Colour_Qualifier_Img (x) then
+      if s = Colour_Qualifier'Image (x) then
         cq := x;
         return;
       end if;
@@ -117,8 +54,9 @@ procedure AoC_2020_07 is
       exit when c < 'a' or c > 'z';
       s := s & c;
     end loop;
+    s := To_Upper (s);
     for x in Base_Colour loop
-      if s = Base_Colour_Img (x) then
+      if s = Base_Colour'Image (x) then
         bc := x;
         return;
       end if;
@@ -172,7 +110,7 @@ procedure AoC_2020_07 is
 
   procedure Put_Colour (c : Colour) is
   begin
-    Put (Colour_Qualifier_Img (c.cq)); Put ("~"); Put (Base_Colour_Img (c.bc));
+    Put (Colour_Qualifier'Image (c.cq)); Put ("~"); Put (Base_Colour'Image (c.bc));
   end Put_Colour;
 
   function Equal (c1, c2 : Colour) return Boolean is
@@ -288,7 +226,6 @@ procedure AoC_2020_07 is
   shiny_gold : Colour;
   test_mode : constant Boolean := Argument_Count >= 2;
 begin
-  Init_Img;
   shiny_gold.cq := shiny;
   shiny_gold.bc := gold;
   Get_Rules;

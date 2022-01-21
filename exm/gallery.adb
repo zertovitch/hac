@@ -48,6 +48,7 @@ procedure Gallery is
     Launch_HAC (+"ackermann.adb");
     Launch_HAC (+"anti_primes.adb");
     Launch_HAC (+"doors.adb");
+    Launch_HAC (+"hofstadter.adb");
     Launch_HAC (+"mandelbrot.adb");
     Launch_HAC (+"shell_sort.adb");
     Launch_HAC (+"merge_sort.adb");

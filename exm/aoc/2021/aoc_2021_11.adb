@@ -37,6 +37,7 @@ procedure AoC_2021_11 is
   f : File_Type;
   r : array (1 .. 2) of Integer;
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
+  T0 : constant Time := Clock;
 begin
   Open (f, input);
   for y in 1 .. sy loop
@@ -85,6 +86,7 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
+    Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: Total flashes in the first 100 steps: " & r (1));
     Put_Line (+"Part 2: First step during which all octopuses flash: " & r (2));
     --  Part 1: validated by AoC: 1679

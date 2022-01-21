@@ -126,7 +126,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2020", +"20", +"83775126454273"             );  --  Jurassic Jigsaw
     Launch_AoC (+"2020", +"22", +"31957"                      );  --  Crab Combat
     Launch_AoC (+"2020", +"23", +"67384529 49576328"          );  --  Crab Cups
-    Launch_AoC (+"2020", +"24", +"341 332"                    );  --  Lobby Layout
+    Launch_AoC (+"2020", +"24", +"341 285"                    );  --  Lobby Layout
     --
     Launch_AoC (+"2021", +"01", +"1154 1127"                  );  --  Sonar Sweep
     Launch_AoC (+"2021", +"02", +"2187380 2086357770"         );  --  Dive!

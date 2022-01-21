@@ -120,23 +120,23 @@ procedure AoC_2021_13 is
     end if;
   end Fold;
   --
-  r : array (1 .. 2) of Integer;
+  r : Integer;
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
 begin
   Read_Data;
   for f in 1 .. f_last loop
     Fold (f);
     if f = 1 then
-      r (1) := Count;
+      r := Count;
       exit when compiler_test_mode;
     end if;
   end loop;
   if compiler_test_mode then
-    if r (1) /= Integer_Value (Argument (1)) then
+    if r /= Integer_Value (Argument (1)) then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: Number of dots after 1st fold: " & r (1));
+    Put_Line (+"Part 1: Number of dots after 1st fold: " & r);
     Put_Line (+"Part 2: Height-letter code:");
     Show;
     --  Part 1: validated by AoC: 602

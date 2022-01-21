@@ -16,6 +16,7 @@ procedure AoC_2020_09 is
   mem : array (Mem_Range) of Integer;
   found : Boolean;
   test_mode : constant Boolean := Argument_Count >= 2;
+  T0 : constant Time := Clock;
 begin
   for part in 1 .. 2 loop
     Open (f, "aoc_2020_09.txt");
@@ -79,6 +80,7 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
+    Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1:  Not a sum of a pair: " & res_no_pair);
     Put_Line (+"Part 2:  Encryption weakness: " & weakness);
     --  Part 1: officially validated by AoC: 138879426

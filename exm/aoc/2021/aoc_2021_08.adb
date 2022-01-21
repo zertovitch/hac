@@ -206,6 +206,7 @@ procedure AoC_2021_08 is
   end Part_2;
   --
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
+  T0 : constant Time := Clock;
 begin
   Part_1;
   Part_2;
@@ -217,6 +218,7 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
+    Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: number of unique digit display patterns: " & r (1));
     Put_Line (+"Part 2: sum of decoded display numbers: " & r (2));
     --  Part 1: validated by AoC: 440

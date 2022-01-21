@@ -209,7 +209,7 @@ begin
   --  Part 2, hexagonal game of life
   --
   if compiler_test_mode then
-    rounds := 5;
+    rounds := 2;
   else
     rounds := 100;
   end if;
