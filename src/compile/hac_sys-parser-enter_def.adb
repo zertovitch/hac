@@ -55,7 +55,7 @@ package body HAC_Sys.Parser.Enter_Def is
       null;  --  All good: the identifier is new at this nesting level.
     elsif CD.IdTab (J).entity = K
       and then (K = Prozedure or K = Funktion)
-      and then CD.IdTab (J).forward = spec_unresolved
+      and then CD.IdTab (J).decl_kind = spec_unresolved
     then
       Forward_Decl_Id := J;
     else
@@ -69,7 +69,7 @@ package body HAC_Sys.Parser.Enter_Def is
        link           => last_id,
        entity         => K,
        read_only      => False,
-       forward        => body_declaration,
+       decl_kind      => complete,
        xtyp           => Undefined,
        block_ref      => 0,
        normal         => True,

@@ -17,7 +17,8 @@ package HAC_Sys.Parser is
   type Block_Data_Type is record
     level                           : Defs.Nesting_level;
     is_a_function                   : Boolean;             --  RETURN [Value] statement expected
-    block_id_index                  : Integer;
+    block_id_index                  : Natural;
+    prev_decl_id_index              : Natural;
     initialization_object_code_size : Integer;             --  Was: ICode
     data_allocation_index           : Integer;             --  Was: DX
     max_data_allocation_index       : Integer;             --  Was: MaxDX

@@ -117,7 +117,7 @@ package HAC_Sys.Co_Defs is
       Alias   --  Short name of another entity ("use" clause).
   );
 
-  type Forward_Declaration is (spec_unresolved, spec_resolved, body_declaration);
+  type Declaration_Kind is (spec_unresolved, spec_resolved, complete);
 
   ------------------------------
   --  Identifier Table Entry  --
@@ -129,7 +129,8 @@ package HAC_Sys.Co_Defs is
     entity         : Entity_Kind;
     read_only      : Boolean;              --  If Entity = Variable and read_only = True,
                                            --    it's a typed constant.
-    forward        : Forward_Declaration;  --  Forward declaration of a type, a constant, a subprogram.
+    decl_kind      : Declaration_Kind;     --  Declaration kind: forward or complete.
+    --                                           Matters for a type, a constant, a subprogram.
     xtyp           : Exact_Subtyp;         --  Subtype identification
     block_ref      : Index;                --  Was: Ref (that was used also for what is now xtyp.Ref,
                                            --       which caused a mixup for functions' return types!)

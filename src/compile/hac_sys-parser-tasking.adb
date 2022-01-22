@@ -34,9 +34,10 @@ package body HAC_Sys.Parser.Tasking is
       TaskID := CD.IdTab (I).name;
       CD.Blocks_Table (CD.IdTab (I).block_ref).SrcFrom := saveLineCount;  --  (* Manuel *)
       InSymbol;
-      task_block.level          := Level + 1;
-      task_block.block_id_index := I;
-      task_block.is_a_function  := False;
+      task_block.level              := Level + 1;
+      task_block.block_id_index     := I;
+      task_block.is_a_function      := False;
+      task_block.prev_decl_id_index := No_Id;
       Block (CD, FSys, False, task_block, TaskID, TaskID);  --  !! up/low case
       Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
     else                         --  Task Specification
@@ -78,9 +79,10 @@ package body HAC_Sys.Parser.Tasking is
           CD.Entries_Table (CD.Entries_Count) := CD.Id_Count;  --  point to identifier table location
           T0                                  := CD.Id_Count;  --  of TaskID
           InSymbol;
-          task_block.level          := Level + 1;
-          task_block.block_id_index := CD.Id_Count;
-          task_block.is_a_function  := False;
+          task_block.level              := Level + 1;
+          task_block.block_id_index     := CD.Id_Count;
+          task_block.is_a_function      := False;
+          task_block.prev_decl_id_index := No_Id;
           Block (CD, FSys, False, task_block,
                  CD.IdTab (CD.Id_Count).name, CD.IdTab (CD.Id_Count).name_with_case);
           CD.IdTab (T0).adr_or_sz := CD.Tasks_Definitions_Count;

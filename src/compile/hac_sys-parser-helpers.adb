@@ -455,4 +455,103 @@ package body HAC_Sys.Parser.Helpers is
     return J;
   end Locate_Identifier;
 
+  procedure Check_Duplicate_Specification
+    (CD         : in out Compiler_Data;
+     old_id_idx :        Natural;
+     id_current :        Alfa)
+  is
+  begin
+    if old_id_idx = No_Id then
+      return;  --  First occurrence of the specification.
+    end if;
+    Error (CD, err_duplicate_identifier, "specification of " & To_String (id_current), major);
+  end Check_Duplicate_Specification;
+
+  procedure Resolve_Forward
+    (CD         : in out Compiler_Data;
+     new_id_idx :        Natural;
+     old_id_idx :        Natural;
+     id_current :        Alfa)
+  is
+    sub_sub_last_param_idx, forward_last_param_idx,
+    sub_sub_params, forward_params,
+    f, s : Natural;
+  begin
+    if old_id_idx = No_Id then
+      return;
+    end if;
+    CD.IdTab (old_id_idx).decl_kind := spec_resolved;
+    --  The following is only for making the compiler dump
+    --  easier to understand:
+    CD.Blocks_Table (CD.IdTab (old_id_idx).block_ref).Id :=
+      To_Alfa ("Unused (was from a subprogram spec)");
+    --  Check that the formal parameter list is identical:
+    sub_sub_last_param_idx :=
+      CD.Blocks_Table (CD.IdTab (new_id_idx).block_ref).Last_Param_Id_Idx;
+    forward_last_param_idx :=
+      CD.Blocks_Table (CD.IdTab (old_id_idx).block_ref).Last_Param_Id_Idx;
+    sub_sub_params := sub_sub_last_param_idx - new_id_idx;
+    forward_params := forward_last_param_idx - old_id_idx;
+    if sub_sub_params > forward_params then
+      Error (CD, err_number_of_parameters_do_not_match,
+             ": specification of " & To_String (id_current) & " has less parameters",
+             major);
+    elsif sub_sub_params < forward_params then
+      Error (CD, err_number_of_parameters_do_not_match,
+             ": specification of " & To_String (id_current) & " has more parameters",
+             major);
+    end if;
+    --  Check the formal parameter list:
+    f := old_id_idx + 1;
+    s := new_id_idx + 1;
+    for count in 1 .. sub_sub_params loop
+      if CD.IdTab (s).name /= CD.IdTab (f).name then
+        Error (CD, err_spec_body_mismatch,
+               "parameter #" & Integer'Image (count) & " has a different name",
+             major);
+        exit;
+      end if;
+      if CD.IdTab (s).xtyp /= CD.IdTab (f).xtyp then
+        Error (CD, err_spec_body_mismatch,
+               "parameter #" & Integer'Image (count) & " has a different type",
+             major);
+        exit;
+      end if;
+      f := f + 1;
+      s := s + 1;
+    end loop;
+    if CD.IdTab (new_id_idx).entity = Funktion
+      and then CD.IdTab (new_id_idx).xtyp /= CD.IdTab (old_id_idx).xtyp
+    then
+      Error (CD, err_spec_body_mismatch, "result type is different",
+             major);
+    end if;
+  end Resolve_Forward;
+
+  procedure Link_Forward
+    (CD         : in out Compiler_Data;
+     new_id_idx :        Natural;
+     old_id_idx :        Natural)
+  is
+  begin
+    --  Clone key information: address, block ref (hence, the correct VSize):
+    CD.IdTab (old_id_idx).adr_or_sz := CD.IdTab (new_id_idx).adr_or_sz;
+    CD.IdTab (old_id_idx).block_ref := CD.IdTab (new_id_idx).block_ref;
+  end Link_Forward;
+
+  procedure Check_Incomplete_Definitions
+    (CD    : in out Co_Defs.Compiler_Data;
+     Level :        Defs.Nesting_level)
+  is
+    i : Integer := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
+  begin
+    --  Follow the chain of identifiers for Level:
+    while i /= 0 loop
+      if CD.IdTab (i).decl_kind = spec_unresolved then
+        Error (CD, err_incomplete_declaration, To_String (CD.IdTab (i).name_with_case));
+      end if;
+      i := CD.IdTab (i).link;
+    end loop;
+  end Check_Incomplete_Definitions;
+
 end HAC_Sys.Parser.Helpers;

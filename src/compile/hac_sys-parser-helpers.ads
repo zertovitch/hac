@@ -353,4 +353,24 @@ package HAC_Sys.Parser.Helpers is
   )
   return Natural;
 
+  procedure Check_Duplicate_Specification
+    (CD         : in out Compiler_Data;
+     old_id_idx :        Natural;
+     id_current :        Alfa);
+
+  procedure Resolve_Forward
+    (CD         : in out Compiler_Data;
+     new_id_idx :        Natural;
+     old_id_idx :        Natural;
+     id_current :        Alfa);
+
+  procedure Link_Forward
+    (CD         : in out Compiler_Data;
+     new_id_idx :        Natural;
+     old_id_idx :        Natural);
+
+  procedure Check_Incomplete_Definitions
+    (CD    : in out Co_Defs.Compiler_Data;
+     Level :        Defs.Nesting_level);
+
 end HAC_Sys.Parser.Helpers;

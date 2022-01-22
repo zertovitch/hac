@@ -114,7 +114,7 @@ package body HAC_Sys.Compiler is
         else
           Put (CD.comp_dump, "     ");
         end if;
-        Put (CD.comp_dump, "  " & r.forward'Image);
+        Put (CD.comp_dump, "  " & r.decl_kind'Image);
         New_Line (CD.comp_dump);
       end;
     end loop;
@@ -310,9 +310,10 @@ package body HAC_Sys.Compiler is
       SrcFrom           => CD.CUD.line_count,
       SrcTo             => CD.CUD.line_count);
 
-    main_block.level          := 1;
-    main_block.block_id_index := CD.Id_Count;
-    main_block.is_a_function  := False;
+    main_block.level              := 1;
+    main_block.block_id_index     := CD.Id_Count;
+    main_block.is_a_function      := False;
+    main_block.prev_decl_id_index := No_Id;
     --  Start Compiling of Main
     Parser.Block (
       CD, Block_Begin_Symbol + Statement_Begin_Symbol,
@@ -485,9 +486,10 @@ package body HAC_Sys.Compiler is
         major
       );
     else
-      unit_block.level          := 1;
-      unit_block.block_id_index := CD.Id_Count;
-      unit_block.is_a_function  := kind = Function_Unit;
+      unit_block.level              := 1;
+      unit_block.block_id_index     := CD.Id_Count;
+      unit_block.is_a_function      := kind = Function_Unit;
+      unit_block.prev_decl_id_index := No_Id;  --  !!  Fetch eventual spec
       case kind is
         when Subprogram_Unit =>
           Parser.Block (

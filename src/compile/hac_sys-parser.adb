@@ -121,9 +121,9 @@ package body HAC_Sys.Parser is
     ------------------------------------------------------------------
     ----------------Subprogram_Declaration_or_Body - Ada RM 6.1, 6.3--
     procedure Subprogram_Declaration_or_Body is
+      new_id_idx, old_id_idx : Natural;
       IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
       sub_sub_prog_block_data : Block_Data_Type;
-      sub_sub_id_idx, forward_id_idx : Natural;
     begin
       InSymbol;
       if CD.Sy /= IDent then
@@ -131,48 +131,28 @@ package body HAC_Sys.Parser is
         CD.Id := Empty_Alfa;
       end if;
       declare
-        Id_subprog_with_case : constant Alfa := CD.Id_with_case;
+        id_subprog_with_case : constant Alfa := CD.Id_with_case;
       begin
         if IsFun then
-          Enter (CD, block_data.level, CD.Id, Id_subprog_with_case, Funktion, forward_id_idx);
+          Enter (CD, block_data.level, CD.Id, id_subprog_with_case, Funktion, old_id_idx);
         else
-          Enter (CD, block_data.level, CD.Id, Id_subprog_with_case, Prozedure, forward_id_idx);
+          Enter (CD, block_data.level, CD.Id, id_subprog_with_case, Prozedure, old_id_idx);
         end if;
         InSymbol;
-        sub_sub_prog_block_data.level          := block_data.level + 1;
-        sub_sub_prog_block_data.block_id_index := CD.Id_Count;
-        sub_sub_prog_block_data.is_a_function  := IsFun;
-        sub_sub_id_idx := CD.Id_Count;
+        sub_sub_prog_block_data.level              := block_data.level + 1;
+        sub_sub_prog_block_data.block_id_index     := CD.Id_Count;
+        sub_sub_prog_block_data.is_a_function      := IsFun;
+        sub_sub_prog_block_data.prev_decl_id_index := old_id_idx;
+        new_id_idx := CD.Id_Count;
         Block (CD, FSys, False, sub_sub_prog_block_data,
-               CD.IdTab (sub_sub_id_idx).name, Id_subprog_with_case);
-        case CD.IdTab (sub_sub_id_idx).forward is
-          when spec_unresolved =>
-            if forward_id_idx = No_Id then
-              null;  --  First occurrence of the spec.
-            else
-              --  Duplicate spec.
-              Error (CD, err_duplicate_identifier, To_String (Id_subprog_with_case), major);
-            end if;
-          when spec_resolved =>
-            null;  --  This case doesn't happen.
-          when body_declaration =>
-            if IsFun then
-              Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
-            else
-              Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
-            end if;
-            if forward_id_idx /= No_Id then
-              CD.IdTab (forward_id_idx).forward := spec_resolved;
-              --  The following is only for making the compiler dump
-              --  easier to understand:
-              CD.Blocks_Table (CD.IdTab (forward_id_idx).block_ref).Id :=
-                To_Alfa ("Unused (was from a subprogram spec)");
-              --  Clone key information: address, block ref (hence, the correct VSize):
-              CD.IdTab (forward_id_idx).adr_or_sz := CD.IdTab (sub_sub_id_idx).adr_or_sz;
-              CD.IdTab (forward_id_idx).block_ref := CD.IdTab (sub_sub_id_idx).block_ref;
-              --  !!  Check that the formal parameter list is identical  !!
-            end if;
-        end case;
+               CD.IdTab (new_id_idx).name, id_subprog_with_case);
+        if CD.IdTab (new_id_idx).decl_kind = complete then
+          if IsFun then
+            Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
+          else
+            Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+          end if;
+        end if;
       end;
     end Subprogram_Declaration_or_Body;
 
@@ -198,13 +178,14 @@ package body HAC_Sys.Parser is
         CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
         exit when CD.Sy = BEGIN_Symbol;
       end loop;
-      --  !!  Check unresolved forwards !!
+      Check_Incomplete_Definitions (CD, block_data.level);
     end Declarative_Part;
 
     procedure Statements_Part_Setup is
     begin
       block_data.max_data_allocation_index := block_data.data_allocation_index;
       CD.IdTab (block_data.block_id_index).adr_or_sz := CD.LC;
+      Link_Forward (CD, block_data.block_id_index, block_data.prev_decl_id_index);
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
       for Init_Code_Idx in reverse CD.CMax + 1 .. CD.CMax + block_data.initialization_object_code_size loop
         CD.ObjCode (CD.LC) := CD.ObjCode (Init_Code_Idx);
@@ -277,6 +258,95 @@ package body HAC_Sys.Parser is
       end if;
     end Check_ident_after_END;
 
+    procedure Process_Spec is
+    begin
+      CD.IdTab (block_data.block_id_index).decl_kind := spec_unresolved;
+      CD.IdTab (block_data.block_id_index).adr_or_sz := -1;
+      Check_Duplicate_Specification (CD, block_data.prev_decl_id_index, Block_Id_with_case);
+      CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
+      --
+      InSymbol;  --  Consume ';'
+      --  End of subprogram specification part (forward declaration).
+      --  Body is declared later in this block.
+    end Process_Spec;
+
+    procedure Process_Body is
+    begin
+      CD.IdTab (block_data.block_id_index).decl_kind := complete;
+      Resolve_Forward (CD, block_data.block_id_index, block_data.prev_decl_id_index, Block_Id_with_case);
+      --
+      if Is_a_block_statement then
+        case CD.Sy is
+          when DECLARE_Symbol => InSymbol;
+          when BEGIN_Symbol   => null;
+          when others         => raise Internal_error with "Unexpected " & KeyWSymbol'Image (CD.Sy);
+        end case;
+      elsif CD.Sy = IS_Symbol then  --  The "IS" in "procedure ABC (param : T_Type) IS"
+        InSymbol;
+      else
+        Error (CD, err_IS_missing);
+        return;
+      end if;
+      --
+      if CD.Sy = NULL_Symbol and not Is_a_block_statement then
+        --  RM 6.7 Null Procedures (Ada 2005)
+        --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;"
+        InSymbol;  --  Consume NULL symbol.
+        Statements_Part_Setup;
+        if block_data.is_a_function then
+          --  There are no null functions: what would be the result?
+          Error (CD, err_no_null_functions);
+        else
+          null;  --  No statement -> no instruction, like for the NULL statement.
+        end if;
+        Statements_Part_Closing;
+      else
+        Declarative_Part;
+        InSymbol;  --  Consume BEGIN symbol.
+        Statements_Part_Setup;
+        Statements.Sequence_of_Statements (CD, END_Set, block_data);
+        Statements_Part_Closing;
+        --
+        if CD.Sy = END_Symbol then
+          InSymbol;
+        elsif CD.error_count > 0 then
+          return;  --  At this point the program is already FUBAR.
+        else
+          Error (CD, err_END_missing);
+          return;
+        end if;
+        --
+        if CD.Sy = IDent then  --  Verify that the name after "end" matches the unit name.
+          Check_ident_after_END;
+        elsif Is_a_block_statement and Block_Id /= Empty_Alfa then
+          --  No identifier after "end", but "end [label]" is required in this case.
+          Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
+        end if;
+      end if;
+      --
+      if CD.Sy /= Semicolon then
+        Error (CD, err_semicolon_missing);
+        return;
+      end if;
+      --
+      if block_data.level <= 1 or Is_a_block_statement then
+        --  Time to count the minor errors as errors.
+        CD.error_count := CD.error_count + CD.minor_error_count;
+        CD.minor_error_count := 0;
+      else
+        InSymbol;  --  Consume ';' symbol after END [Subprogram_Id].
+        Ignore_Extra_Semicolons (CD);
+        --
+        --  Now we have either another declaration,
+        --  or BEGIN or, if it's a package, END  .
+        Test (
+          CD, FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
+          Empty_Symset,
+          err_incorrectly_used_symbol
+        );
+      end if;
+    end Process_Body;
+
   begin  --  Block
     if CD.error_count > 0 then
       return;
@@ -318,85 +388,9 @@ package body HAC_Sys.Parser is
     end if;
     --
     if CD.Sy = Semicolon then
-      InSymbol;
-      --  End of subprogram specification part (forward declaration).
-      --  Body is declared later in this block.
-      CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
-      CD.IdTab (block_data.block_id_index).adr_or_sz := -1;
-      CD.IdTab (block_data.block_id_index).forward := spec_unresolved;
-      return;
-    end if;
-    CD.IdTab (block_data.block_id_index).forward := body_declaration;
-    --
-    if Is_a_block_statement then
-      case CD.Sy is
-        when DECLARE_Symbol => InSymbol;
-        when BEGIN_Symbol   => null;
-        when others         => raise Internal_error with "Unexpected " & KeyWSymbol'Image (CD.Sy);
-      end case;
-    elsif CD.Sy = IS_Symbol then  --  The "IS" in "procedure ABC (param : T_Type) IS"
-      InSymbol;
+      Process_Spec;
     else
-      Error (CD, err_IS_missing);
-      return;
-    end if;
-    --
-    if CD.Sy = NULL_Symbol and not Is_a_block_statement then
-      --  RM 6.7 Null Procedures (Ada 2005)
-      --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;"
-      InSymbol;  --  Consume NULL symbol.
-      Statements_Part_Setup;
-      if block_data.is_a_function then
-        --  There are no null functions: what would be the result?
-        Error (CD, err_no_null_functions);
-      else
-        null;  --  No statement -> no instruction, like for the NULL statement.
-      end if;
-      Statements_Part_Closing;
-    else
-      Declarative_Part;
-      InSymbol;  --  Consume BEGIN symbol.
-      Statements_Part_Setup;
-      Statements.Sequence_of_Statements (CD, END_Set, block_data);
-      Statements_Part_Closing;
-      --
-      if CD.Sy = END_Symbol then
-        InSymbol;
-      elsif CD.error_count > 0 then
-        return;  --  At this point the program is already FUBAR.
-      else
-        Error (CD, err_END_missing);
-        return;
-      end if;
-      --
-      if CD.Sy = IDent then  --  Verify that the name after "end" matches the unit name.
-        Check_ident_after_END;
-      elsif Is_a_block_statement and Block_Id /= Empty_Alfa then
-        --  No identifier after "end", but "end [label]" is required in this case.
-        Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
-      end if;
-    end if;
-    --
-    if CD.Sy /= Semicolon then
-      Error (CD, err_semicolon_missing);
-      return;
-    end if;
-    --
-    if block_data.level <= 1 or Is_a_block_statement then
-      --  Time to count the minor errors as errors.
-      CD.error_count := CD.error_count + CD.minor_error_count;
-      CD.minor_error_count := 0;
-    else
-      InSymbol;  --  Consume ';' symbol after END [Subprogram_Id].
-      Ignore_Extra_Semicolons (CD);
-      --
-      --  Now we have either another declaration,
-      --  or BEGIN or, if it's a package, END  .
-      Test (
-        CD, FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
-        Empty_Symset,
-        err_incorrectly_used_symbol
-      );
+      Process_Body;
     end if;
     CD.Full_Block_Id := Restore_Block_ID;
     if CD.error_count = 0 then

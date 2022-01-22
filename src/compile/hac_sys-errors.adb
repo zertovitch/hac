@@ -255,6 +255,10 @@ package body HAC_Sys.Errors is
         return "prefix of """ & hint & """ attribute must be discrete type";
       when err_invalid_dimension_number =>
         return "invalid dimension number for array type, " & hint;
+      when err_spec_body_mismatch =>
+        return "specification vs. body mismatch: " & hint;
+      when err_incomplete_declaration =>
+        return "missing body or full declaration for " & hint;
     end case;
   end Error_String;
 
