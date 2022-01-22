@@ -85,6 +85,7 @@ begin
            root & "/*.hac " &
            root & "/build.cmd " &
            root & "/fast.cmd " &
+           root & "/small.cmd " &
            root & "/*.txt " &
            root & "/doc/*.txt " &
            root & "/doc/*.xls " &

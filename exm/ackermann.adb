@@ -17,7 +17,7 @@ procedure Ackermann is
   end A;
 
   use HAL;
- 
+
 begin
   Put_Line ("Ackermann function");
   --  With M >= 4, numbers and recursions become HUGE.
