@@ -2,7 +2,7 @@
 
 echo (Re-)building HAC
 cd..
-call build hac
+gprbuild -P hac.gpr hac
 cd exm
 set hacbuild=done
 

@@ -44,7 +44,13 @@ begin
   Put_Line (+"    Some_Range's bounds : " & Some_Range'First            & " .. " & Some_Range'Last);
   Put_Line (+"  * Boolean's bounds    : " & Boolean'First               & " .. " & Boolean'Last);
   Put_Line (+"    A_to_Z's bounds     : " & A_to_Z'First                & " .. " & A_to_Z'Last);
-  Put_Line (+"  # Real's bounds       : " & Real'First                  & " .. " & Real'Last);
+  --  On some old versions of GNAT HAC_Image (called for the "&" operator)
+  --  enters an infinite loop. So we avoid "&".
+  Put ("  # Real's bounds       : ");
+  Put(Real'First);
+  Put(" .. ");
+  Put(Real'Last);
+  New_Line;
   Put_Line (+"    Enum's bounds       : " & Enum'Image (Enum'First)     & " .. " & Enum'Image (Enum'Last));
   Put_Line (+"    Sub_Enum's bounds   : " & Enum'Image (Sub_Enum'First) & " .. " & Enum'Image (Sub_Enum'Last));
   New_Line;

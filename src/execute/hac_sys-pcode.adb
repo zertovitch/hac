@@ -170,6 +170,7 @@ package body HAC_Sys.PCode is
       case OC (i).F is  --  Omit showing X for some 1-operand instructions
         when k_Exit_Call | k_Exit_Function |
           k_Mark_Stack | k_Push_Discrete_Literal |
+          k_Push_Float_Literal .. k_Push_Float_Last |
           k_Pop | Jump_Opcode
         =>
           Put (Text, "     ");
@@ -177,7 +178,8 @@ package body HAC_Sys.PCode is
           Operand1_IO.Put (Text, OC (i).X, 5);
       end case;
       case OC (i).F is  --  Omit showing Y for some 0-operand instructions
-        when k_Pop
+        when k_Pop |
+          k_Push_Float_First .. k_Push_Float_Last
         =>
           Put (Text, "                    ");
         when others =>
@@ -189,6 +191,10 @@ package body HAC_Sys.PCode is
       case OC (i).F is  --  Show extra information
         when k_Push_Float_Literal =>
           Put (Text, "; " & HAL.HAC_Image (Flt_Const (Integer (OC (i).Y))));
+        when k_Push_Float_First =>
+          Put (Text, "; HAL.Real'First: " & HAC_Float'Image (HAL.Real'First));
+        when k_Push_Float_Last =>
+          Put (Text, "; HAL.Real'Last: " & HAC_Float'Image (HAL.Real'Last));
         when k_Variable_Initialization =>
           Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
         when k_Standard_Functions =>

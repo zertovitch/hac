@@ -472,6 +472,18 @@ package body HAC_Sys.PCode.Interpreter is
               I       => 0,
               R       => CD.Float_Constants_Table (Integer (IR.Y))
             );
+          when k_Push_Float_First =>
+            ND.S (Curr_TCB.T) := (
+              Special => Defs.Floats,
+              I       => 0,
+              R       => HAC_Float'First
+            );
+          when k_Push_Float_Last =>
+            ND.S (Curr_TCB.T) := (
+              Special => Defs.Floats,
+              I       => 0,
+              R       => HAC_Float'Last
+            );
         end case;
       end Do_Atomic_Data_Push_Operation;
       --

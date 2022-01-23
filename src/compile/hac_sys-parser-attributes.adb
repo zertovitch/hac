@@ -139,9 +139,11 @@ package body HAC_Sys.Parser.Attributes is
             null;  --  Already in error
           when Floats =>
             --  !! To do: floating point strict subtypes
-            Emit_Push_Float_Literal (CD,
-              (if attr = First then HAC_Float'First else HAC_Float'Last)
-            );
+            if attr = First then
+              Emit (CD, k_Push_Float_First);
+            else
+              Emit (CD, k_Push_Float_Last);
+            end if;
           when others =>
             if Discrete_Typ (S.TYP) then
               Emit_1 (CD, k_Push_Discrete_Literal,

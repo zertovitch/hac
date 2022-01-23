@@ -27,6 +27,8 @@ package HAC_Sys.PCode is
     k_Push_Indirect_Value,
     k_Push_Discrete_Literal,
     k_Push_Float_Literal,
+    k_Push_Float_First,
+    k_Push_Float_Last,
     --
     k_Pop,
     --
@@ -134,7 +136,7 @@ package HAC_Sys.PCode is
   subtype Unary_Operator_Opcode  is Opcode range k_Integer_to_Float .. k_NOT_Boolean;
   subtype Binary_Operator_Opcode is Opcode range k_EQL_Integer .. k_XOR_Boolean;
   --
-  subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Literal;
+  subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Last;
   subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Update_Display_Vector;
   subtype CASE_Any_Choice         is Opcode range k_CASE_Choice_Value .. k_CASE_Choice_Others;
   subtype CASE_Data_Opcode        is Opcode range k_CASE_Choice_Value .. k_CASE_No_Choice_Found;
