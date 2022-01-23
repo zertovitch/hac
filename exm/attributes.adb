@@ -44,15 +44,13 @@ begin
   Put_Line (+"    Some_Range's bounds : " & Some_Range'First            & " .. " & Some_Range'Last);
   Put_Line (+"  * Boolean's bounds    : " & Boolean'First               & " .. " & Boolean'Last);
   Put_Line (+"    A_to_Z's bounds     : " & A_to_Z'First                & " .. " & A_to_Z'Last);
-  --  On some old versions of GNAT HAC_Image (called for the "&" operator)
-  --  enters an infinite loop. So we avoid "&".
-  Put ("  # Real's bounds       : ");
-  Put(Real'First);
-  Put(" .. ");
-  Put(Real'Last);
+  --  On some old versions of GNAT, the function HAC_Image, as called for the "&" (VString, Real) operator,
+  --  enters an infinite loop following a segmentation fault in System.Img_Real, procedure Set_Image_Real.
+  --  So we avoid that version of the "&" operator.
+  Put_Line ( "  # Real's bounds       : " & Real'Image (Real'First)     & " .. " & Real'Image (Real'Last));
   New_Line;
-  Put_Line (+"    Enum's bounds       : " & Enum'Image (Enum'First)     & " .. " & Enum'Image (Enum'Last));
-  Put_Line (+"    Sub_Enum's bounds   : " & Enum'Image (Sub_Enum'First) & " .. " & Enum'Image (Sub_Enum'Last));
+  Put_Line ( "    Enum's bounds       : " & Enum'Image (Enum'First)     & " .. " & Enum'Image (Enum'Last));
+  Put_Line ( "    Sub_Enum's bounds   : " & Enum'Image (Sub_Enum'First) & " .. " & Enum'Image (Sub_Enum'Last));
   New_Line;
   Put_Line ("S'Pred and S'Succ attributes:");
   New_Line;
@@ -111,8 +109,8 @@ begin
   New_Line;
   Put_Line ("A'First, A'Last, A'Range, A'Length attributes for array type A:");
   New_Line;
-  Put_Line (+"  * A'First   (should be BB of type Enum) : " & Enum'Image (A'First));
-  Put_Line (+"  * A'Last    (should be CC of type Enum) : " & Enum'Image (A'Last));
+  Put_Line ( "  * A'First   (should be BB of type Enum) : " & Enum'Image (A'First));
+  Put_Line ( "  * A'Last    (should be CC of type Enum) : " & Enum'Image (A'Last));
   Put_Line (+"  * A'Length  (should be 2) : " & A'Length);
 
   for x in A'Range loop
@@ -125,8 +123,8 @@ begin
   New_Line;
   Put_Line (+"  * M'First (1)  (should be -5) : " & M'First (1));
   Put_Line (+"  * mm'Last (1)  (should be -2) : " & mm'Last (1));
-  Put_Line (+"  * M'First (2)  (should be BB) : " & Enum'Image (M'First (2)));
-  Put_Line (+"  * mm'Last (2)  (should be DD) : " & Enum'Image (mm'Last (2)));
+  Put_Line ( "  * M'First (2)  (should be BB) : " & Enum'Image (M'First (2)));
+  Put_Line ( "  * mm'Last (2)  (should be DD) : " & Enum'Image (mm'Last (2)));
 
   for i in M'Range (1) loop
     for j in M'Range (2) loop
