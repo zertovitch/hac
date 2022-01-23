@@ -21,6 +21,7 @@ project HAC_Test is
      "case_statement.adb",
      "constants.adb",
      "declarations.adb",
+     "digitz.adb",
      "enumerations.adb",
      "exception_01.adb",
      "exception_02.adb",

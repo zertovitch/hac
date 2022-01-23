@@ -44,11 +44,10 @@ begin
   Put_Line (+"    Some_Range's bounds : " & Some_Range'First            & " .. " & Some_Range'Last);
   Put_Line (+"  * Boolean's bounds    : " & Boolean'First               & " .. " & Boolean'Last);
   Put_Line (+"    A_to_Z's bounds     : " & A_to_Z'First                & " .. " & A_to_Z'Last);
-  --  On some old versions of GNAT, the function HAC_Image, as called for the "&" (VString, Real) operator,
-  --  enters an infinite loop following a segmentation fault in System.Img_Real, procedure Set_Image_Real.
-  --  So we avoid that version of the "&" operator.
-  Put_Line ( "  # Real's bounds       : " & Real'Image (Real'First)     & " .. " & Real'Image (Real'Last));
-  New_Line;
+  --  Alternative using VString and the direct concatenation VString & Real:
+  Put_Line (+"  # Real's bounds       : " & Real'First                  & " .. " & Real'Last);
+  --  Alternative using String and the 'Image attribute:
+  Put_Line ( "  # Real's bounds       : " & Real'Image (Real'First)     & " .."  & Real'Image (Real'Last));
   Put_Line ( "    Enum's bounds       : " & Enum'Image (Enum'First)     & " .. " & Enum'Image (Enum'Last));
   Put_Line ( "    Sub_Enum's bounds   : " & Enum'Image (Sub_Enum'First) & " .. " & Enum'Image (Sub_Enum'Last));
   New_Line;

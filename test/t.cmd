@@ -3,7 +3,7 @@
 echo (Re-)building HAC
 cd..
 set hacbuild=unknown
-call build hac
+gprbuild -P hac.gpr hac
 if NOT "%ERRORLEVEL%" == "0" goto hac_build_failed
 cd test
 set hacbuild=done

@@ -767,6 +767,8 @@ package body HAL is
     end if;
   end HAC_Generic_Image;
 
+  largest_without_exponent : constant := 10.0 ** (Real'Digits - 1);
+
   function HAC_Image (F : Real) return String is
     --  Code from TeXCAD (tc.adb, TeX_Number),
     --  less a few simplifications.
@@ -811,9 +813,12 @@ package body HAL is
       return n;
     end Count_Nonzero_Digits;
   begin
+    if abs F >= largest_without_exponent then
+      return Image_with_exponent;
+    end if;
     --  Image without exponent (E).
-    --  If the number is too large for this layout, a Layout_Error
-    --  is raised and we call Image_with_exponent.
+    --  If the number is too large for this layout, the Layout_Error
+    --  exception is raised and we call Image_with_exponent.
     RIO.Put (s, F, Exp => 0);
     if Count_Nonzero_Digits (s) < Count_Nonzero_Digits (Real'Image (F)) then
       return Image_with_exponent;  --  Loss of significant digits.
