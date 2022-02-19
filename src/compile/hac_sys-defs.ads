@@ -279,6 +279,8 @@ package HAC_Sys.Defs is
 
   subtype Standard_Typ is Typen range NOTYP .. Text_Files;
 
+  subtype Special_Strings is Typen range String_Literals .. Strings_as_VStrings;
+
   subtype Composite_Typ is Typen range Arrays .. Records;
 
   Standard_or_Enum_Typ : constant Typ_Set :=

@@ -222,9 +222,9 @@ package body HAC_Sys.PCode.Interpreter is
           when Floats              => RIO.Put         (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
           when Bools               => BIO.Put         (FP.all, Boolean'Val (Item.I), Field (Format_1));
           when Chars               => Ada.Text_IO.Put (FP.all, Character'Val (Item.I));
-          when VStrings            => Ada.Text_IO.Put (FP.all, HAL.VStr_Pkg.To_String (Item.V));
-          when String_Literals |
-               Strings_as_VStrings => Ada.Text_IO.Put (FP.all,
+          when VStrings |
+               Strings_as_VStrings => Ada.Text_IO.Put (FP.all, HAL.VStr_Pkg.To_String (Item.V));
+          when String_Literals     => Ada.Text_IO.Put (FP.all,
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
           when Arrays              => Ada.Text_IO.Put (FP.all,

@@ -98,10 +98,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       --
       --  Here we have tha actual thing to "Put": a character, (v)string, a number.
       --
-      if Item_Typ.TYP = Strings_as_VStrings then
-        Item_Typ.TYP := VStrings;
-      end if;
-      if Item_Typ.TYP in Standard_Typ or else Item_Typ.TYP = String_Literals then
+      if Item_Typ.TYP in Standard_Typ or else Item_Typ.TYP in Special_Strings then
         null;  --  Good, Put[_Line] can do it all "as is"!
       elsif Is_Char_Array (CD, Item_Typ) then
         --  Address is already pushed; we need to push the string's length.
