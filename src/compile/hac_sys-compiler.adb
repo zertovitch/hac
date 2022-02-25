@@ -26,11 +26,12 @@ package body HAC_Sys.Compiler is
     CD.Progress   := progress;
   end Set_Message_Feedbacks;
 
-  procedure Init (SD : out Current_Unit_Data) is
+  procedure Init (CUD : out Current_Unit_Data) is
   begin
-    SD.c := ' ';
-    SD.CC := 0;
-    SD.LL := 0;
+    CUD.c := ' ';
+    CUD.CC := 0;
+    CUD.LL := 0;
+    CUD.level_0_def.Clear;
   end Init;
 
   procedure Init (CD : out Compiler_Data) is
@@ -55,9 +56,10 @@ package body HAC_Sys.Compiler is
     CD.Main_Program_ID           := Empty_Alfa;
     CD.Main_Program_ID_with_case := Empty_Alfa;
     --
-    --  Scanner data
+    --  Current unit data
     --
     Init (CD.CUD);
+    --  Scanner data
     CD.Sy                := Dummy_Symbol;
     CD.syStart           := 1;
     CD.syEnd             := 1;
@@ -207,6 +209,15 @@ package body HAC_Sys.Compiler is
 
   ---------------------------------------------------------------------------
 
+  procedure Progress_Message (CD : Co_Defs.Compiler_Data; msg : String) is
+  begin
+    if CD.Progress = null then
+      Ada.Text_IO.Put_Line (msg);
+    else
+      CD.Progress (msg);
+    end if;
+  end Progress_Message;
+
   procedure Compile_Main (
     CD                 : in out Co_Defs.Compiler_Data;
     LD                 : in out Librarian.Library_Data;
@@ -239,13 +250,10 @@ package body HAC_Sys.Compiler is
 
     full_main_Id : HAL.VString;
     main_block : Parser.Block_Data_Type;
+    main_file_name : constant String := HAL.VStr_Pkg.To_String (CD.CUD.source_file_name);
 
   begin  --  Compile_Main
-    if CD.Progress = null then
-      Put_Line ("Compiling MAIN " & HAL.VStr_Pkg.To_String (CD.CUD.source_file_name));
-    else
-      CD.Progress ("Compiling " & HAL.VStr_Pkg.To_String (CD.CUD.source_file_name));
-    end if;
+    Progress_Message (CD, "Compiling main: " & main_file_name);
 
     Init (CD);
 
@@ -380,6 +388,8 @@ package body HAC_Sys.Compiler is
 
     Dump_Asm;
 
+    Progress_Message (CD, "Compilation of " & main_file_name & " completed");
+
   exception
     when End_Error =>
       Error (CD, err_unexpected_end_of_text);
@@ -421,16 +431,14 @@ package body HAC_Sys.Compiler is
     Unit_Id_with_case : Alfa;
     unit_block : Parser.Block_Data_Type;
   begin
-    if CD.Progress = null then
-      Put_Line ("Compiling UNIT " & file_name);
-    else
-      CD.Progress ("Compiling " & file_name);
-    end if;
+    Progress_Message (CD, "Compiling unit: " & file_name);
 
     Open (src, In_File, file_name);
     Builder.Skip_Shebang (src, shebang_offset);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
-    Init (CD.CUD);  --  Reset scanner data (line counter etc.) and 0-level visible declarations
+    --  Reset scanner data (line counter etc.) and
+    --  0-level visible declarations (processed WITH of caller's compilation)
+    Init (CD.CUD);
     --  HAL.PUT_LINE("Compiling unit " & upper_name);
 
     --
@@ -509,7 +517,7 @@ package body HAC_Sys.Compiler is
       end case;
     end if;
     Close (src);
-    --  HAL.PUT_LINE("Compilation of unit " & upper_name & " done");
+    Progress_Message (CD, "Compilation of " & file_name & " completed");
     CD.CUD := mem;
   exception
     when others =>
