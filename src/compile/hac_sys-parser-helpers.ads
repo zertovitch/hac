@@ -349,7 +349,7 @@ package HAC_Sys.Parser.Helpers is
     Level            : in     Defs.Nesting_level;
     Fail_when_No_Id  : in     Boolean := True;
     Alias_Resolution : in     Boolean := True;
-    Level_0_Match    : in     Boolean := True
+    Level_0_Filter   : in     Boolean := True
   )
   return Natural;
 
@@ -358,16 +358,16 @@ package HAC_Sys.Parser.Helpers is
      old_id_idx :        Natural;
      id_current :        Alfa);
 
-  procedure Resolve_Forward
+  procedure Check_Spec_Body_Consistency
     (CD         : in out Compiler_Data;
-     new_id_idx :        Natural;
      old_id_idx :        Natural;
+     new_id_idx :        Natural;
      id_current :        Alfa);
 
-  procedure Link_Forward
+  procedure Link_Forward_Declaration
     (CD         : in out Compiler_Data;
-     new_id_idx :        Natural;
-     old_id_idx :        Natural);
+     old_id_idx :        Natural;
+     new_id_idx :        Natural);
 
   procedure Check_Incomplete_Definitions
     (CD    : in out Co_Defs.Compiler_Data;

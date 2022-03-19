@@ -206,7 +206,13 @@ package HAC_Sys.Co_Defs is
 
   function Get_Source_Name (SD : Current_Unit_Data) return String;
 
-  type Compilation_Feedback is access procedure (Message : String);
+  type Compilation_Feedback is access procedure (message : String);
+
+  type Compilation_Trace_Parameters is record
+    pipe         : Defs.Smart_Error_Pipe := null;  --  Default: messages to Current_Error.
+    progress     : Compilation_Feedback  := null;  --  Default: messages to Current_Output.
+    detail_level : Natural               := 0;
+  end record;
 
   ---------------------
   --  Compiler_Data  --
@@ -260,9 +266,12 @@ package HAC_Sys.Co_Defs is
     comp_dump : Ada.Text_IO.File_Type;
     --
     error_count, minor_error_count : Natural;
-    Errs       : Error_set;
-    Error_Pipe : Smart_Error_Pipe     := null;
-    Progress   : Compilation_Feedback := null;
+    errs         : Error_set;
+    trace        : Compilation_Trace_Parameters;
+    --  On `WITH X`, we start the recursive compilation of X,
+    --  if X is not yet compiled or built-in. We monitor the
+    --  recursion level for the fun of it.
+    recursion    : Natural := 0;
   end record;
 
   overriding procedure Finalize (CD : in out Compiler_Data);

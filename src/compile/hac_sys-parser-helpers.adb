@@ -392,7 +392,7 @@ package body HAC_Sys.Parser.Helpers is
     Level            : in     Defs.Nesting_level;
     Fail_when_No_Id  : in     Boolean := True;
     Alias_Resolution : in     Boolean := True;
-    Level_0_Match    : in     Boolean := True
+    Level_0_Filter    : in     Boolean := True
   )
   return Natural
   is
@@ -408,16 +408,20 @@ package body HAC_Sys.Parser.Helpers is
       --  Scan all Id's on level L:
       while CD.IdTab (J).name /= Id
         or else
-            --  Id is matching, but it is a level 0 definition from a previous unit's compilation
-            --  which was not yet reactivated.
+            --  Id is matching, but it is a library level definition from a previous unit's
+            --  compilation which was not yet reactivated.
             --  In that case, we skip the matching Id, except if it is the sentinel.
             (L = 0
-              and then Level_0_Match
+              and then Level_0_Filter
               and then J /= No_Id                            --  Not the sentinel.
-              and then not CD.CUD.level_0_def.Contains (Id)  --  Invisible 0-level definition.
+              and then not CD.CUD.level_0_def.Contains (Id)  --  Invisible library-level definition.
             )
+            --  !! To do: direct skipping of all of
+            --     the package's invisible definitions:
+            --     possible performance issue when large
+            --     specifications lay in the library.
       loop
-        J := CD.IdTab (J).link;
+        J := CD.IdTab (J).link;  --  Skip this identifier.
       end loop;
       L := L - 1;  --  Decrease nesting level.
       exit when L < 0 or J /= No_Id;
@@ -467,10 +471,10 @@ package body HAC_Sys.Parser.Helpers is
     Error (CD, err_duplicate_identifier, "specification of " & To_String (id_current), major);
   end Check_Duplicate_Specification;
 
-  procedure Resolve_Forward
+  procedure Check_Spec_Body_Consistency
     (CD         : in out Compiler_Data;
-     new_id_idx :        Natural;
      old_id_idx :        Natural;
+     new_id_idx :        Natural;
      id_current :        Alfa)
   is
     sub_sub_last_param_idx, forward_last_param_idx,
@@ -526,18 +530,23 @@ package body HAC_Sys.Parser.Helpers is
       Error (CD, err_spec_body_mismatch, "result type is different",
              major);
     end if;
-  end Resolve_Forward;
+  end Check_Spec_Body_Consistency;
 
-  procedure Link_Forward
+  procedure Link_Forward_Declaration
     (CD         : in out Compiler_Data;
-     new_id_idx :        Natural;
-     old_id_idx :        Natural)
+     old_id_idx :        Natural;
+     new_id_idx :        Natural)
   is
   begin
-    --  Clone key information: address, block ref (hence, the correct VSize):
+    --  Clone key information at the new id's index (the body)
+    --  onto the data at old id's index (the specification):
+    --    * Subprogram's machine code address
+    --    * The block_ref (hence, the correct VSize
+    --        is used for reserving the stack)
+    --
     CD.IdTab (old_id_idx).adr_or_sz := CD.IdTab (new_id_idx).adr_or_sz;
     CD.IdTab (old_id_idx).block_ref := CD.IdTab (new_id_idx).block_ref;
-  end Link_Forward;
+  end Link_Forward_Declaration;
 
   procedure Check_Incomplete_Definitions
     (CD    : in out Co_Defs.Compiler_Data;

@@ -12,7 +12,6 @@
 --  virtual machine) from Ada sources (a main procedure and eventual depending units).
 
 with HAC_Sys.Co_Defs,
-     HAC_Sys.Defs,
      HAC_Sys.Librarian;
 
 with HAL;
@@ -59,9 +58,8 @@ package HAC_Sys.Builder is
   );
 
   procedure Set_Message_Feedbacks (
-    BD       : in out Build_Data;
-    pipe     :        Defs.Smart_Error_Pipe;        --  Default (null): messages to Current_Error.
-    progress :        Co_Defs.Compilation_Feedback  --  Default (null): messages to Current_Output.
+    BD           : in out Build_Data;
+    trace_params : in     Co_Defs.Compilation_Trace_Parameters
   );
 
   --  Emulate GNAT's Unrestricted_Access attribute

@@ -1,4 +1,5 @@
 with HAC_Sys.Builder,
+     HAC_Sys.Co_Defs,
      HAC_Sys.PCode.Interpreter.In_Defs;
 
 with HAL;
@@ -26,13 +27,13 @@ procedure HAC is
 
   use Ada.Strings.Unbounded;
 
-  procedure Compilation_Feedback (Message : String) is
+  procedure Compilation_Feedback (message : String) is
     use Ada.Text_IO;
   begin
     case verbosity is
       when 0      => null;
-      when 1      => Put_Line (Message);
-      when others => Put_Line (HAC_margin_2 & Message);
+      when 1      => Put_Line (message);
+      when others => Put_Line (HAC_margin_2 & message);
     end case;
   end Compilation_Feedback;
 
@@ -79,6 +80,11 @@ procedure HAC is
     post_mortem : Post_Mortem_Data;
     unhandled_found : Boolean;
     shebang_offset : Natural;
+    trace : constant HAC_Sys.Co_Defs.Compilation_Trace_Parameters :=
+      (pipe         => null,
+       progress     => Unrestricted (Compilation_Feedback'Address),
+       detail_level => verbosity);
+
   begin
     if verbosity > 1 then
       New_Line;
@@ -89,7 +95,7 @@ procedure HAC is
     Skip_Shebang (f, shebang_offset);
     Set_Diagnostic_File_Names (BD, To_String (asm_dump_file_name), To_String (cmp_dump_file_name));
     Set_Main_Source_Stream (BD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
-    Set_Message_Feedbacks (BD, null, Unrestricted (Compilation_Feedback'Address));
+    Set_Message_Feedbacks (BD, trace);
     t1 := Clock;
     Build_Main (BD);
     t2 := Clock;

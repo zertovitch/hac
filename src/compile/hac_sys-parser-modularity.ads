@@ -15,10 +15,10 @@ package HAC_Sys.Parser.Modularity is
 
   --  Context clause, 10.1.2.
   --
-  --  Parse the bunch of "with" and "use" before a nesting level 0
+  --  Parse the bunch of "with" and "use" before a library level
   --  unit (which can be a subprogram or a package).
   --  Referenced units (specifications or body-only) are compiled if
-  --  necessary, or reactivated as level 0 definitions.
+  --  necessary, or reactivated as library level definitions.
   --
   procedure Context_Clause (
     CD : in out Co_Defs.Compiler_Data;

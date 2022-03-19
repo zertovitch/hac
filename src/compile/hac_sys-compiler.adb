@@ -1,5 +1,6 @@
 with HAC_Sys.Builder,
      HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Defs,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Modularity,
      HAC_Sys.PCode,
@@ -8,22 +9,21 @@ with HAC_Sys.Builder,
 
 with HAL;
 
-with Ada.Exceptions,
-     Ada.Integer_Text_IO,
+with Ada.Integer_Text_IO,
      Ada.Strings.Fixed,
      Ada.Text_IO.Text_Streams;
 
 package body HAC_Sys.Compiler is
 
+  use Defs;
+
   procedure Set_Message_Feedbacks (
-    CD       : in out Compiler_Data;
-    pipe     :        Defs.Smart_Error_Pipe;
-    progress :        Co_Defs.Compilation_Feedback
+    CD           : in out Compiler_Data;
+    trace_params : in     Compilation_Trace_Parameters
   )
   is
   begin
-    CD.Error_Pipe := pipe;
-    CD.Progress   := progress;
+    CD.trace := trace_params;
   end Set_Message_Feedbacks;
 
   procedure Init (CUD : out Current_Unit_Data) is
@@ -68,7 +68,7 @@ package body HAC_Sys.Compiler is
     CD.prev_sy_line      := 0;
     CD.error_count       := 0;
     CD.minor_error_count := 0;
-    CD.Errs              := error_free;
+    CD.errs              := error_free;
     Scanner.InSymbol (CD);
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009
@@ -195,7 +195,7 @@ package body HAC_Sys.Compiler is
     end if;
 
     New_Line (CD.comp_dump);
-    Put_Line (CD.comp_dump, " Level 0 visible identifiers (unordered list):");
+    Put_Line (CD.comp_dump, " Library Level visible identifiers (unordered list):");
     for l0 of CD.CUD.level_0_def loop
       Put_Line (CD.comp_dump, "    " & To_String (l0));
     end loop;
@@ -211,49 +211,48 @@ package body HAC_Sys.Compiler is
 
   procedure Progress_Message (CD : Co_Defs.Compiler_Data; msg : String) is
   begin
-    if CD.Progress = null then
+    if CD.trace.progress = null then
       Ada.Text_IO.Put_Line (msg);
     else
-      CD.Progress (msg);
+      CD.trace.progress (msg);
     end if;
   end Progress_Message;
+
+  procedure Dump_Asm (CD : Co_Defs.Compiler_Data; file_name : String) is
+    use Ada.Text_IO;
+    asm_dump : File_Type;
+  begin
+    Create (asm_dump, Out_File, file_name);
+    PCode.Dump
+      (CD.ObjCode (CD.ObjCode'First .. CD.LC - 1),  --  Dump only compiled part.
+       CD.Strings_Constants_Table.all,
+       CD.Float_Constants_Table,
+       asm_dump);
+    Close (asm_dump);
+  end Dump_Asm;
 
   procedure Compile_Main (
     CD                 : in out Co_Defs.Compiler_Data;
     LD                 : in out Librarian.Library_Data;
     main_name_hint     :        String;  --  This is used for circular unit dependency detection
-    asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
     listing_file_name  :        String  := "";  --  Listing of source code with details
     var_map_file_name  :        String  := ""   --  Output of variables (map)
   )
   is
-    use Ada.Exceptions, Ada.Text_IO, Parser.Helpers, PCode, Errors;
+    use Ada.Text_IO, Parser.Helpers, PCode, Errors;
     use type HAC_Integer;
 
-    asm_dump : File_Type;
     map_file : File_Type;
-
-    procedure Dump_Asm is
-    begin
-      if asm_dump_file_name /= "" then
-        Create (asm_dump, Out_File, asm_dump_file_name);
-        Dump (
-          CD.ObjCode (CD.ObjCode'First .. CD.LC - 1),  --  Dump only compiled part.
-          CD.Strings_Constants_Table.all,
-          CD.Float_Constants_Table,
-          asm_dump
-        );
-        Close (asm_dump);
-      end if;
-    end Dump_Asm;
 
     full_main_Id : HAL.VString;
     main_block : Parser.Block_Data_Type;
     main_file_name : constant String := HAL.VStr_Pkg.To_String (CD.CUD.source_file_name);
 
   begin  --  Compile_Main
-    Progress_Message (CD, "Compiling main: " & main_file_name);
+    if CD.trace.detail_level >= 1 then
+      Progress_Message (CD, "Compiling main: " & main_file_name);
+    end if;
 
     Init (CD);
 
@@ -305,23 +304,23 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: main procedure is " & To_String (CD.Main_Program_ID));
     end if;
 
-    Librarian.Enter_Zero_Level_Def (CD, To_String (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
+    Librarian.Enter_Library_Level_Def (CD, To_String (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  Task Table Entry for main task.
 
     CD.Blocks_Table (0) :=  --  Block Table Entry for stuff before Main (probably useless)
      (Id                => To_Alfa ("--  Definitions before Main"),
-      Last_Id_Idx       => CD.Id_Count,
+      Last_Id_Idx       => CD.Main_Proc_Id_Index,
       Last_Param_Id_Idx => 1,
       PSize             => 0,
       VSize             => 0,
       SrcFrom           => CD.CUD.line_count,
       SrcTo             => CD.CUD.line_count);
 
-    main_block.level              := 1;
-    main_block.block_id_index     := CD.Id_Count;
-    main_block.is_a_function      := False;
-    main_block.prev_decl_id_index := No_Id;
+    main_block.level                         := 1;
+    main_block.block_id_index                := CD.Id_Count;
+    main_block.is_a_function                 := False;
+    main_block.previous_declaration_id_index := No_Id;
     --  Start Compiling of Main
     Parser.Block (
       CD, Block_Begin_Symbol + Statement_Begin_Symbol,
@@ -350,13 +349,8 @@ package body HAC_Sys.Compiler is
       Close (CD.listing);
     end if;
 
-    if CD.Errs /= error_free then
+    if CD.errs /= error_free then
       Compilation_Errors_Summary (CD);
-    end if;
-
-    if CD.comp_dump_requested then
-      Print_Tables (CD);
-      Close (CD.comp_dump);
     end if;
 
     if var_map_file_name /= "" then
@@ -386,28 +380,13 @@ package body HAC_Sys.Compiler is
       Close (map_file);
     end if;
 
-    Dump_Asm;
-
-    Progress_Message (CD, "Compilation of " & main_file_name & " completed");
+    if CD.trace.detail_level >= 2 then
+      Progress_Message (CD, "Compilation of " & main_file_name & " (main) completed");
+    end if;
 
   exception
     when End_Error =>
       Error (CD, err_unexpected_end_of_text);
-    when Compilation_abandoned =>
-      --  Just too many errors...
-      Compilation_Errors_Summary (CD);
-      if CD.comp_dump_requested then
-        Print_Tables (CD);
-        Close (CD.comp_dump);
-      end if;
-      Dump_Asm;
-    when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
-      Error (CD,
-        err_library_error,
-        "Circular unit dependency (""->"" means ""depends on""): " &
-        main_name_hint & " -> " &
-        Exception_Message (E)
-      );
   end Compile_Main;
 
   --
@@ -415,30 +394,45 @@ package body HAC_Sys.Compiler is
   --
 
   procedure Compile_Unit (
-    CD                 : in out Co_Defs.Compiler_Data;
-    LD                 : in out Librarian.Library_Data;
-    upper_name         :        String;
-    file_name          :        String;
-    as_specification   :        Boolean;
-    kind               :    out Librarian.Unit_Kind  --  The unit kind is discovered by parsing.
+    CD                     : in out Co_Defs.Compiler_Data;
+    LD                     : in out Librarian.Library_Data;
+    upper_name             :        String;
+    file_name              :        String;
+    as_specification       :        Boolean;
+    specification_id_index :        Natural;
+    new_id_index           :    out Natural;
+    unit_context           : in out Co_Defs.Id_Set.Set;  --  in : empty for spec, spec's context for body
+                                                         --  out: spec's context or body's full context.
+    kind                   :    out Librarian.Unit_Kind  --  The unit kind is discovered during parsing.
   )
   is
-    use Ada.Text_IO, Librarian, Errors, Parser.Helpers, PCode;
+    use Ada.Strings.Fixed, Ada.Text_IO, Librarian, Errors, Parser.Helpers, PCode;
     --  Save state of unit currently parsed (within a WITH clause).
     mem : constant Current_Unit_Data := CD.CUD;
     src : File_Type;
     shebang_offset : Natural;
     Unit_Id_with_case : Alfa;
     unit_block : Parser.Block_Data_Type;
+    indent : Natural := 0;
   begin
-    Progress_Message (CD, "Compiling unit: " & file_name);
+    CD.recursion := CD.recursion + 1;
+    if CD.trace.detail_level >= 1 then
+      if CD.trace.detail_level >= 2 then
+        indent := CD.recursion;
+      end if;
+      Progress_Message (CD,
+        indent * '.' &
+        "Compiling: " & file_name &
+        " (" & (if as_specification then "specification" else "body") & ')');
+    end if;
 
     Open (src, In_File, file_name);
     Builder.Skip_Shebang (src, shebang_offset);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
     --  Reset scanner data (line counter etc.) and
-    --  0-level visible declarations (processed WITH of caller's compilation)
+    --  library-level visible declarations (processed WITH of caller's compilation)
     Init (CD.CUD);
+    CD.CUD.level_0_def := unit_context;
     --  HAL.PUT_LINE("Compiling unit " & upper_name);
 
     --
@@ -473,52 +467,68 @@ package body HAC_Sys.Compiler is
     if To_String (CD.Id) /= upper_name then
       Error (CD, err_library_error, ": unit name """ & upper_name & """ expected in this file", major);
     end if;
+    --
+    --  Enter the identifier:
+    --
     Unit_Id_with_case := CD.Id_with_case;
     case kind is
       when Procedure_Unit =>
-        Librarian.Enter_Zero_Level_Def (CD, To_String (Unit_Id_with_case), Prozedure, NOTYP, 0);
+        Librarian.Enter_Library_Level_Def (CD, To_String (Unit_Id_with_case), Prozedure, NOTYP, 0);
       when Function_Unit =>
-        Librarian.Enter_Zero_Level_Def (CD, To_String (Unit_Id_with_case), Funktion, NOTYP, 0);
+        Librarian.Enter_Library_Level_Def (CD, To_String (Unit_Id_with_case), Funktion, NOTYP, 0);
         --  The type of the return value is adjusted by Block.Function_Result_Profile.
       when Package_Unit =>
-        null;  --  !! TBD
+        raise Program_Error with "Package (enter declaration): TBD";
     end case;
     Scanner.InSymbol (CD);
     --  Here the symbol should be: ";", "IS", "(", "RETURN" for a parameterless function.
     --
-    if as_specification then
-      Error (
-        CD,
-        err_library_error,
-        "Specification units not yet supported (" & file_name & ')',
-        major
-      );
-    else
-      unit_block.level              := 1;
-      unit_block.block_id_index     := CD.Id_Count;
-      unit_block.is_a_function      := kind = Function_Unit;
-      unit_block.prev_decl_id_index := No_Id;  --  !!  Fetch eventual spec
-      case kind is
-        when Subprogram_Unit =>
-          Parser.Block (
-            CD, Block_Begin_Symbol + Statement_Begin_Symbol,
-            False,
-            unit_block,
-            CD.IdTab (CD.Id_Count).name,
-            Unit_Id_with_case
-          );
-          if kind = Function_Unit then
-            PCode_Emit.Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
-          else
-            PCode_Emit.Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
-          end if;
-        when Package_Unit =>
-          null;  --  !! TBD
-      end case;
-    end if;
+    case kind is
+      when Subprogram_Unit =>
+        new_id_index := CD.Id_Count;
+        unit_block.level                         := 1;
+        unit_block.block_id_index                := new_id_index;
+        unit_block.is_a_function                 := kind = Function_Unit;
+        unit_block.previous_declaration_id_index := specification_id_index;
+        Parser.Block (
+          CD, Block_Begin_Symbol + Statement_Begin_Symbol,
+          False,
+          unit_block,
+          CD.IdTab (CD.Id_Count).name,
+          Unit_Id_with_case
+        );
+        case CD.IdTab (unit_block.block_id_index).decl_kind is
+          when complete =>
+            if as_specification then
+              Error (CD, err_library_error, "specification expected in this file; found body", major);
+            end if;
+            if kind = Function_Unit then
+              PCode_Emit.Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
+            else
+              PCode_Emit.Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+            end if;
+          when spec_unresolved =>
+            if not as_specification then
+              Error (CD, err_library_error, "body expected in this file; found specification", major);
+            end if;
+          when spec_resolved =>
+            raise Program_Error with "Unexpected case: spec_resolved";
+        end case;
+      when Package_Unit =>
+        raise Program_Error with "Package compilation: TBD";
+    end case;
     Close (src);
-    Progress_Message (CD, "Compilation of " & file_name & " completed");
+    if CD.trace.detail_level >= 2 then
+      Progress_Message (CD,
+       indent * '.' &
+       "Compilation of " & file_name & " completed");
+    end if;
+    --  Export library-level context, possibly needed later by a body:
+    unit_context := CD.CUD.level_0_def;
+    --  Forget about the compilation just completed, back to the ongoing
+    --  compilation that triggered a call to Compile_Unit via a WITH:
     CD.CUD := mem;
+    CD.recursion := CD.recursion - 1;
   exception
     when others =>
       if Is_Open (src) then

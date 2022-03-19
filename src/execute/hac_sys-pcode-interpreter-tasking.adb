@@ -363,7 +363,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       Main_TCB.B := 0;
       Main_TCB.TS := Ready;
       Main_TCB.InRendzv := NilTask;
-      Main_TCB.DISPLAY (0) := 0;  --  Added for modularity (0-level calls), in 2021
+      Main_TCB.DISPLAY (0) := 0;  --  Added for modularity (library-level calls), in 2021
       Main_TCB.DISPLAY (1) := 0;  --  In Pascal-S.
       Main_TCB.STACKSIZE := Defs.StMax - (CD.Tasks_Definitions_Count * Defs.STKINCR);
       Main_TCB.SUSPEND := 0;

@@ -871,10 +871,10 @@ package body HAC_Sys.Parser.Statements is
         severity => major
       );
       --
-      block_statement_data.level              := Block_Data.level + 1;
-      block_statement_data.block_id_index     := CD.Id_Count;
-      block_statement_data.is_a_function      := Block_Data.is_a_function;
-      block_statement_data.prev_decl_id_index := No_Id;
+      block_statement_data.level                         := Block_Data.level + 1;
+      block_statement_data.block_id_index                := CD.Id_Count;
+      block_statement_data.is_a_function                 := Block_Data.is_a_function;
+      block_statement_data.previous_declaration_id_index := No_Id;
       Block (CD, FSys_St, True, block_statement_data, block_name, block_name);  --  !! up/low case
       --
       --  !! to check:

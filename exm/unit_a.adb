@@ -19,9 +19,12 @@ procedure Unit_A is
   end X;
 
 begin
-  Put_Line ("Unit_A: demo of modularity features.");
+  Put_Line ("Unit_A: demo of modularity features for subprograms.");
+  Put_Line ("------");
   Put_Line ("  NB: the program and its output are nonsensical, but");
   Put_Line ("  the output should be identical on all Ada implementations.");
+  New_Line;
+  Put_Line ("----[begin]----");
   v := 10101;
   a_msg := +"a";
   HAL.Put (+"(a" & a_msg & ">");
@@ -33,4 +36,6 @@ begin
   X;
   HAL.Put (v, 0);
   HAL.Put ("<A" & a_msg & ")");
+  New_Line;
+  Put_Line ("----[end]------");
 end Unit_A;

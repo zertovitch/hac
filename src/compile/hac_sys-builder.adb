@@ -1,29 +1,116 @@
-with HAC_Sys.Compiler;
+with HAC_Sys.Compiler,
+     HAC_Sys.Errors;
 
-with Ada.Characters.Handling;
+with Ada.Characters.Handling,
+     Ada.Exceptions;
+with HAC_Sys.Defs;
 
 package body HAC_Sys.Builder is
 
+  procedure Compile_Pending_Bodies_Single_Round
+    (BD : in out Build_Data; num_pending : out Natural)
+  is
+    use HAL, Librarian;
+    pending : Library_Unit_Vectors.Vector;
+    previous_context : Co_Defs.Id_Set.Set;
+  begin
+    for lu of BD.LD.Library loop
+      if lu.status = Body_Postponed then
+        pending.Append (lu);
+      end if;
+    end loop;
+    --
+    --  The list of pending bodies is established
+    --  for this round. Of course the library may expand
+    --  further due to dependencies, adding pending bodies
+    --  for the next round.
+    --
+    for lu of pending loop
+      if lu.status = Body_Postponed then
+        declare
+          upper_vname : constant VString := To_Upper (lu.full_name);
+          upper_name : constant String := To_String (upper_vname);
+          fn : String := Find_Unit_File_Name (upper_name);
+        begin
+          fn (fn'Last) := 'b';  --  Name ending for a unit's body (*.adb).
+          previous_context :=
+            BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
+          Compiler.Compile_Unit
+            (BD.CD, BD.LD, upper_name, fn, False,
+             lu.id_index,
+             lu.id_body_index,
+             previous_context,
+             lu.kind);
+          lu.status := Done;
+          Change_Unit_Details (BD.LD, lu);
+        end;
+      end if;
+    end loop;
+    --
+    num_pending := Integer (pending.Length);
+  end Compile_Pending_Bodies_Single_Round;
+
   procedure Build_Main (BD : in out Build_Data) is
-    use Librarian, HAL.VStr_Pkg;
+    use Librarian, HAL.VStr_Pkg, Ada.Exceptions, Ada.Text_IO;
+    num_pending : Natural;
+    main_unit : Library_Unit :=
+      (full_name     => BD.main_name_hint,
+       kind          => Procedure_Unit,
+       needs_body    => False,
+       status        => In_Progress,    --  Temporary value.
+       id_index      => Co_Defs.No_Id,  --  Temporary value.
+       id_body_index => Co_Defs.No_Id,  --  Temporary value.
+       spec_context  => Co_Defs.Id_Set.Empty_Set);
   begin
     BD.LD.Library.Clear;
     BD.LD.Map.Clear;
-    Librarian.Register_Unit (
-      BD.LD,
-      To_String (BD.main_name_hint),
-      Procedure_Unit,
-      In_Progress
-    );
+    Librarian.Register_Unit (BD.LD, main_unit);
     Compiler.Compile_Main (
       BD.CD,
       BD.LD,
       To_String (BD.main_name_hint),
-      To_String (BD.asm_dump_file_name),
       To_String (BD.cmp_dump_file_name),
       To_String (BD.listing_file_name),
       To_String (BD.var_map_file_name)
     );
+    main_unit.id_index := BD.CD.Main_Proc_Id_Index;
+    Librarian.Change_Unit_Details (BD.LD, main_unit);
+
+    if BD.CD.trace.detail_level >= 2 then
+      Compiler.Progress_Message
+        (BD.CD, "--  Compilation of eventual with'ed unit's bodies  --");
+    end if;
+    loop
+      Compile_Pending_Bodies_Single_Round (BD, num_pending);
+      if num_pending > 0 and BD.CD.trace.detail_level >= 2 then
+        Compiler.Progress_Message
+          (BD.CD, "--  Compiled bodies:" & Integer'Image (num_pending));
+      end if;
+      exit when num_pending = 0;
+    end loop;
+    if BD.CD.comp_dump_requested then
+      Compiler.Print_Tables (BD.CD);
+      Close (BD.CD.comp_dump);
+    end if;
+    if BD.asm_dump_file_name /= "" then
+      Compiler.Dump_Asm (BD.CD, To_String (BD.asm_dump_file_name));
+    end if;
+  exception
+    when Errors.Compilation_abandoned =>
+      --  Just too many errors...
+      Errors.Compilation_Errors_Summary (BD.CD);
+      if BD.CD.comp_dump_requested then
+        Compiler.Print_Tables (BD.CD);
+        Close (BD.CD.comp_dump);
+      end if;
+      Compiler.Dump_Asm (BD.CD, To_String (BD.asm_dump_file_name));
+    when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
+      Errors.Error
+        (BD.CD,
+         Defs.err_library_error,
+         "Circular unit dependency (""->"" means ""depends on""): " &
+         To_String (BD.main_name_hint) & " -> " &
+         Exception_Message (E));
   end Build_Main;
 
   procedure Set_Diagnostic_File_Names (
@@ -72,19 +159,18 @@ package body HAC_Sys.Builder is
   end Set_Main_Source_Stream;
 
   procedure Set_Message_Feedbacks (
-    BD       : in out Build_Data;
-    pipe     :        Defs.Smart_Error_Pipe;
-    progress :        Co_Defs.Compilation_Feedback
+    BD           : in out Build_Data;
+    trace_params : in     Co_Defs.Compilation_Trace_Parameters
   )
   is
   begin
-    Compiler.Set_Message_Feedbacks (BD.CD, pipe, progress);
+    Compiler.Set_Message_Feedbacks (BD.CD, trace_params);
   end Set_Message_Feedbacks;
 
   function Build_Successful (BD : Build_Data) return Boolean is
   begin
     return Compiler.Unit_Compilation_Successful (BD.CD);
-    --  !!  ... plus other compilations, plus link
+    --  NB: currently, only full builds are supported.
   end Build_Successful;
 
   function Object_Code_Size (BD : Build_Data) return Natural is

@@ -47,9 +47,9 @@ begin
   --  Alternative using VString and the direct concatenation VString & Real:
   Put_Line (+"  # Real's bounds       : " & Real'First                  & " .. " & Real'Last);
   --  Alternative using String and the 'Image attribute:
-  Put_Line ( "  # Real's bounds       : " & Real'Image (Real'First)     & " .."  & Real'Image (Real'Last));
-  Put_Line ( "    Enum's bounds       : " & Enum'Image (Enum'First)     & " .. " & Enum'Image (Enum'Last));
-  Put_Line ( "    Sub_Enum's bounds   : " & Enum'Image (Sub_Enum'First) & " .. " & Enum'Image (Sub_Enum'Last));
+  Put_Line  ("  # Real's bounds       : " & Real'Image (Real'First)     & " .."  & Real'Image (Real'Last));
+  Put_Line  ("    Enum's bounds       : " & Enum'Image (Enum'First)     & " .. " & Enum'Image (Enum'Last));
+  Put_Line  ("    Sub_Enum's bounds   : " & Enum'Image (Sub_Enum'First) & " .. " & Enum'Image (Sub_Enum'Last));
   New_Line;
   Put_Line ("S'Pred and S'Succ attributes:");
   New_Line;
@@ -108,8 +108,8 @@ begin
   New_Line;
   Put_Line ("A'First, A'Last, A'Range, A'Length attributes for array type A:");
   New_Line;
-  Put_Line ( "  * A'First   (should be BB of type Enum) : " & Enum'Image (A'First));
-  Put_Line ( "  * A'Last    (should be CC of type Enum) : " & Enum'Image (A'Last));
+  Put_Line  ("  * A'First   (should be BB of type Enum) : " & Enum'Image (A'First));
+  Put_Line  ("  * A'Last    (should be CC of type Enum) : " & Enum'Image (A'Last));
   Put_Line (+"  * A'Length  (should be 2) : " & A'Length);
 
   for x in A'Range loop
@@ -122,8 +122,8 @@ begin
   New_Line;
   Put_Line (+"  * M'First (1)  (should be -5) : " & M'First (1));
   Put_Line (+"  * mm'Last (1)  (should be -2) : " & mm'Last (1));
-  Put_Line ( "  * M'First (2)  (should be BB) : " & Enum'Image (M'First (2)));
-  Put_Line ( "  * mm'Last (2)  (should be DD) : " & Enum'Image (mm'Last (2)));
+  Put_Line  ("  * M'First (2)  (should be BB) : " & Enum'Image (M'First (2)));
+  Put_Line  ("  * mm'Last (2)  (should be DD) : " & Enum'Image (mm'Last (2)));
 
   for i in M'Range (1) loop
     for j in M'Range (2) loop

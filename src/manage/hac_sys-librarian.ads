@@ -45,10 +45,13 @@ package HAC_Sys.Librarian is
   subtype Subprogram_Unit is Unit_Kind range Procedure_Unit .. Function_Unit;
 
   type Library_Unit is record
-    Kind       : Unit_Kind;
-    Full_Name  : HAL.VString;  --  Full unit name, like "Ada.Strings.Fixed"
-    Status     : Compilation_Status;
-    Needs_Body : Boolean;
+    full_name     : HAL.VString;  --  Full unit name, like "Ada.Strings.Fixed"
+    kind          : Unit_Kind;
+    status        : Compilation_Status;
+    needs_body    : Boolean;
+    id_index      : Natural;
+    id_body_index : Natural;
+    spec_context  : Co_Defs.Id_Set.Set;  --  WITH & USE's visible to the spec.
   end record;
 
   package Library_Unit_Vectors is new Ada.Containers.Vectors (Positive, Library_Unit);
@@ -63,6 +66,18 @@ package HAC_Sys.Librarian is
     Library : Library_Unit_Vectors.Vector;  --  The library itself
     Map     : Library_Name_Mapping.Map;     --  Quick access by name to unit number
   end record;
+
+  --  Search for "physical" file corresponding to unit name
+  --  First a spec, then a body.
+  --  If nothing found, return empty string.
+  --
+  function Find_Unit_File_Name (
+    Unit_Name : String
+    --  TBD:
+    --  search path for single source files;
+    --  search path for zipped files (.har, like .jar ...)
+  )
+  return String;
 
   -----------------------------------------------------
   --  Apply WITH clause for any unit, including the  --
@@ -82,7 +97,7 @@ package HAC_Sys.Librarian is
   procedure Apply_USE_Clause (
     CD       : in out Co_Defs.Compiler_Data;
     Level    : in     Defs.Nesting_level;
-    Pkg_Idx  : in     Natural  --  Index in the identifier table
+    Pkg_Idx  : in     Natural  --  Index in the identifier table for USEd package.
   );
 
   ----------------------------------------------------------
@@ -98,7 +113,7 @@ package HAC_Sys.Librarian is
   --  Add a new definition to the identifier table, at library level  --
   ----------------------------------------------------------------------
 
-  procedure Enter_Zero_Level_Def (
+  procedure Enter_Library_Level_Def (
     CD             : in out Co_Defs.Compiler_Data;
     Full_Ident     : in     String;  --  "Main", "Standard.False", ...
     New_Entity     : in     Co_Defs.Entity_Kind;
@@ -111,10 +126,15 @@ package HAC_Sys.Librarian is
   Circular_Unit_Dependency : exception;
 
   procedure Register_Unit (
-    LD        : in out Library_Data;
-    Full_Name : in     String;  --  Full unit name, like "Ada.Strings.Fixed"
-    Kind      : in     Unit_Kind;
-    Status    : in     Compilation_Status := Done
+    LD         : in out Library_Data;
+    Descriptor : in     Library_Unit
+  );
+
+  procedure Change_Unit_Details (
+    LD         : in out Library_Data;
+    Descriptor : in     Library_Unit
+    --  ^ Changes in the library the details for
+    --    unit named Descriptor.Full_Name.
   );
 
 end HAC_Sys.Librarian;

@@ -9,14 +9,15 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.PCode;
+with HAC_Sys.Defs,
+     HAC_Sys.PCode;
 
 package HAC_Sys.Compiler.PCode_Emit is
 
   --  This layer could be developed to abstract the virtual machine
   --  code emission, for instance for producing real machine code.
 
-  use PCode;
+  use Defs, PCode;
 
   procedure Emit (
     CD   : in out Compiler_Data;

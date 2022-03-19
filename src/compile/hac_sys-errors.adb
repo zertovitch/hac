@@ -1,5 +1,5 @@
-with Ada.Strings.Fixed;                 use Ada.Strings, Ada.Strings.Fixed;
-with Ada.Text_IO;
+with Ada.Strings.Fixed,
+     Ada.Text_IO;
 
 package body HAC_Sys.Errors is
 
@@ -334,6 +334,7 @@ package body HAC_Sys.Errors is
     updated_repair_kit : Repair_Kit := repair_table (code);
     ub_hint : constant HAL.VString := HAL.To_VString (hint);
     use HAL.VStr_Pkg;
+    use Ada.Strings, Ada.Strings.Fixed;
     diagnostic : Diagnostic_Kit;
   begin
     if previous_symbol then
@@ -346,13 +347,13 @@ package body HAC_Sys.Errors is
       col_stop  := CD.syEnd;
     end if;
     Show_to_comp_dump (line, col_start, col_stop, -1, hint);
-    CD.Errs (code) := True;
+    CD.errs (code) := True;
     if severity = minor then
       CD.minor_error_count := CD.minor_error_count + 1;
     else
       CD.error_count := CD.error_count + 1;
     end if;
-    if CD.Error_Pipe = null then
+    if CD.trace.pipe = null then
       Put_Line (
         Current_Error,
         To_String (CD.CUD.source_file_name) & ": " &
@@ -383,7 +384,7 @@ package body HAC_Sys.Errors is
       diagnostic.column_a  := col_start;
       diagnostic.column_z  := col_stop;
       --
-      CD.Error_Pipe (diagnostic);
+      CD.trace.pipe (diagnostic);
     end if;
     --  Uncomment the next line for getting a nice trace-back of 1st error.
     --  raise Constraint_Error;
@@ -436,8 +437,8 @@ package body HAC_Sys.Errors is
       New_Line (CD.listing);
       Put_Line (CD.listing, "==== Error MESSAGE(S) ====");
     end if;
-    for K in CD.Errs'Range loop
-      if CD.Errs (K) then
+    for K in CD.errs'Range loop
+      if CD.errs (K) then
         if CD.comp_dump_requested then
           Put_Line (CD.comp_dump, Defs.Compile_Error'Image (K) & ":  " & Error_String (K, ""));
           --  Should be Error_hint(K,n) !!

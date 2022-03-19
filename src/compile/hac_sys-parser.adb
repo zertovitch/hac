@@ -139,10 +139,10 @@ package body HAC_Sys.Parser is
           Enter (CD, block_data.level, CD.Id, id_subprog_with_case, Prozedure, old_id_idx);
         end if;
         InSymbol;
-        sub_sub_prog_block_data.level              := block_data.level + 1;
-        sub_sub_prog_block_data.block_id_index     := CD.Id_Count;
-        sub_sub_prog_block_data.is_a_function      := IsFun;
-        sub_sub_prog_block_data.prev_decl_id_index := old_id_idx;
+        sub_sub_prog_block_data.level                         := block_data.level + 1;
+        sub_sub_prog_block_data.block_id_index                := CD.Id_Count;
+        sub_sub_prog_block_data.is_a_function                 := IsFun;
+        sub_sub_prog_block_data.previous_declaration_id_index := old_id_idx;
         new_id_idx := CD.Id_Count;
         Block (CD, FSys, False, sub_sub_prog_block_data,
                CD.IdTab (new_id_idx).name, id_subprog_with_case);
@@ -185,14 +185,14 @@ package body HAC_Sys.Parser is
     begin
       block_data.max_data_allocation_index := block_data.data_allocation_index;
       CD.IdTab (block_data.block_id_index).adr_or_sz := CD.LC;
-      Link_Forward (CD, block_data.block_id_index, block_data.prev_decl_id_index);
+      Link_Forward_Declaration (CD, block_data.previous_declaration_id_index, block_data.block_id_index);
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
       for Init_Code_Idx in reverse CD.CMax + 1 .. CD.CMax + block_data.initialization_object_code_size loop
         CD.ObjCode (CD.LC) := CD.ObjCode (Init_Code_Idx);
         CD.LC              := CD.LC + 1;
       end loop;
       --  Restore CMax to the initial max.
-      --  At nesting level 0, it will be CDMax.
+      --  At lowest nesting level, it will be CDMax.
       --  For higher levels, it will be CDMax minus the sum of
       --  current values of ICode for all lower levels.
       CD.CMax := CD.CMax + block_data.initialization_object_code_size;
@@ -262,18 +262,25 @@ package body HAC_Sys.Parser is
     begin
       CD.IdTab (block_data.block_id_index).decl_kind := spec_unresolved;
       CD.IdTab (block_data.block_id_index).adr_or_sz := -1;
-      Check_Duplicate_Specification (CD, block_data.prev_decl_id_index, Block_Id_with_case);
+      --  ^ This invalid address will raise VM_Subprogram_Spec.
+      Check_Duplicate_Specification (CD, block_data.previous_declaration_id_index, Block_Id_with_case);
       CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
       --
-      InSymbol;  --  Consume ';'
+      if block_data.level > 1 then
+        InSymbol;  --  Consume ';'
+      end if;
       --  End of subprogram specification part (forward declaration).
-      --  Body is declared later in this block.
+      --  Body is declared later in the containing block or elsewhere in the library.
     end Process_Spec;
 
     procedure Process_Body is
     begin
       CD.IdTab (block_data.block_id_index).decl_kind := complete;
-      Resolve_Forward (CD, block_data.block_id_index, block_data.prev_decl_id_index, Block_Id_with_case);
+      Check_Spec_Body_Consistency
+        (CD,
+         block_data.previous_declaration_id_index,
+         block_data.block_id_index,
+         Block_Id_with_case);
       --
       if Is_a_block_statement then
         case CD.Sy is
@@ -356,7 +363,7 @@ package body HAC_Sys.Parser is
     else
       CD.Full_Block_Id := CD.Full_Block_Id & '.' & To_String (Block_Id_with_case);
     end if;
-    block_data.data_allocation_index := 5;  --  fixed area of the subprogram activation record.
+    block_data.data_allocation_index := 5;  --  Fixed area of the subprogram activation record.
     block_data.initialization_object_code_size := 0;
     if Is_a_block_statement then
       null;  --  We should be here with Sy = BEGIN_Symbol or Sy = DECLARE_Symbol.

@@ -1,4 +1,4 @@
-with Unit_C, HAL;
+with Unit_C, Unit_E, Unit_F;
 
 procedure Unit_B (n : in out Integer; title_1, title_2 : HAL.VString) is
   use HAL;
@@ -20,5 +20,9 @@ begin
   Put (Image (Unit_C (+"s", +"S", n)));
   Y2;
   HAL.Put (+"<" & title_2 & b_msg & ")");
+  Unit_E;
+  if n /= 777 then
+    Unit_F;
+  end if;
   n := n * 2;
 end Unit_B;

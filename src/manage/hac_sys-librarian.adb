@@ -25,58 +25,45 @@ package body HAC_Sys.Librarian is
   ---------------------------------------------
 
   procedure Register_Unit (
-    LD        : in out Library_Data;
-    Full_Name : in     String;  --  Full unit name, like "Ada.Strings.Fixed"
-    Kind      : in     Unit_Kind;
-    Status    : in     Compilation_Status := Done
+    LD         : in out Library_Data;
+    Descriptor : in     Library_Unit
   )
   is
     use Librarian.Library_Name_Mapping;
-    VFN  : constant HAL.VString := HAL.To_VString (Full_Name);
-    UVFN : constant HAL.VString := HAL.To_Upper (VFN);
+    UVFN : constant HAL.VString := HAL.To_Upper (Descriptor.full_name);
     is_new : Boolean;
-    New_Unit : Library_Unit;
   begin
     is_new := LD.Map.Find (UVFN) = No_Element;
     if not is_new then
       raise Program_Error with
-        "Duplicate registration for unit " & Full_Name &
+        "Duplicate registration for unit " &
+        HAL.To_String (Descriptor.full_name) &
         ". This case should be handled by Apply_WITH";
     end if;
-    New_Unit.Kind      := Kind;
-    New_Unit.Full_Name := VFN;
-    New_Unit.Status    := Status;
-    LD.Library.Append (New_Unit);
+    LD.Library.Append (Descriptor);
     LD.Map.Insert (UVFN, LD.Library.Last_Index);
     --  HAL.PUT_LINE ("Registering: " & Full_Name);
   end Register_Unit;
 
   procedure Change_Unit_Details (
     LD         : in out Library_Data;
-    Full_Name  : in     String;  --  Full unit name, like "Ada.Strings.Fixed"
-    New_Kind   : in     Unit_Kind;
-    New_Status : in     Compilation_Status
+    Descriptor : in     Library_Unit
   )
   is
     use Library_Name_Mapping;
-    VFN  : constant HAL.VString := HAL.To_VString (Full_Name);
-    UVFN : constant HAL.VString := HAL.To_Upper (VFN);
+    UVFN : constant HAL.VString := HAL.To_Upper (Descriptor.full_name);
     c : Cursor;
     book_nr : Positive;
-    changed_book : Library_Unit;
   begin
     c := LD.Map.Find (UVFN);
     if c = No_Element then
       raise Program_Error with "Change_Unit_Status called on non-registered unit";
     end if;
     book_nr := Element (c);
-    changed_book := LD.Library.Element (book_nr);
-    changed_book.Status := New_Status;
-    changed_book.Kind   := New_Kind;
-    LD.Library.Replace_Element (book_nr, changed_book);
+    LD.Library.Replace_Element (book_nr, Descriptor);
   end Change_Unit_Details;
 
-  procedure Enter_Zero_Level_Def (
+  procedure Enter_Library_Level_Def (
     CD             : in out Co_Defs.Compiler_Data;
     Full_Ident     : in     String;  --  "Main", "Standard.False", ...
     New_Entity     : in     Co_Defs.Entity_Kind;
@@ -93,7 +80,7 @@ package body HAC_Sys.Librarian is
     last : Index := CD.Id_Count;
   begin
     CD.Id_Count := CD.Id_Count + 1;
-    --  Find the last zero-level definition:
+    --  Find the last library-level definition:
     while last > 0 and then CD.IdTab (last).lev > 0 loop
       last := last - 1;
     end loop;
@@ -117,12 +104,12 @@ package body HAC_Sys.Librarian is
     );
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper);
-  end Enter_Zero_Level_Def;
+  end Enter_Library_Level_Def;
 
   procedure Apply_USE_Clause (
     CD       : in out Co_Defs.Compiler_Data;
     Level    : in     Defs.Nesting_level;
-    Pkg_Idx  : in     Natural  --  Index in the identifier table
+    Pkg_Idx  : in     Natural  --  Index in the identifier table for USEd package.
   )
   is
     use Co_Defs, Defs, Parser.Enter_Def, Errors;
@@ -160,9 +147,10 @@ package body HAC_Sys.Librarian is
         Full_Name := To_String (CD.IdTab (i).name_with_case);
         declare
           Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
-          Short_Id     : constant Alfa := To_Alfa (Short_Id_str);
+          Short_Id     : constant Alfa := To_Alfa (Short_Id_str);  --  Id as visible after USE.
         begin
-          --  Check if there is already this identifier, even as a level 0 invisible definition
+          --  Check if there is already this identifier, even as
+          --  a library level invisible definition.
           --  If not, we do a "FROM Pkg IMPORT Short_Id" (as it would be in Modula-2/Python
           --  style).
           Id_Alias := Parser.Helpers.Locate_Identifier (
@@ -171,7 +159,8 @@ package body HAC_Sys.Librarian is
             Level            => Level,
             Fail_when_No_Id  => False,
             Alias_Resolution => False,
-            Level_0_Match    => False  --  We search any matching name, including at level 0.
+            Level_0_Filter   => False
+            --  ^ We search any matching name, including hidden at library level.
           );
           if Id_Alias = No_Id or else CD.IdTab (Id_Alias).lev < Level then
             --  Here we enter, e.g. the "FALSE", "False" pair.
@@ -275,7 +264,7 @@ package body HAC_Sys.Librarian is
     end loop;
   end Activate_Unit;
 
-  procedure Apply_Custom_WITH (
+  procedure Compile_WITHed_Unit (
     CD         : in out Co_Defs.Compiler_Data;
     LD         : in out Library_Data;
     Upper_Name : in     String
@@ -283,13 +272,21 @@ package body HAC_Sys.Librarian is
   is
     fn : constant String := Find_Unit_File_Name (Upper_Name);
     use Defs, Errors;
-    kind : Unit_Kind := Package_Unit;
-    --  ^ Temporary value, file may contain another kind of unit.
+    unit : Library_Unit :=
+      (full_name  => HAL.To_VString (Upper_Name),
+       kind       => Package_Unit,    --  Temporary value
+       needs_body => False,           --  Temporary value
+       status        => In_Progress,     --  Temporary value.
+       id_index      => Co_Defs.No_Id,   --  Temporary value.
+       id_body_index => Co_Defs.No_Id,   --  Temporary value.
+       spec_context  => Co_Defs.Id_Set.Empty_Set);
+    as_specification : Boolean;
   begin
     --
     --  Add new unit name to the library catalogue
     --
-    Register_Unit (LD, Upper_Name, kind, Status => In_Progress);
+    --
+    Register_Unit (LD, unit);
     --
     if fn = "" then
       Error (
@@ -299,16 +296,34 @@ package body HAC_Sys.Librarian is
         major
       );
     else
-      Compiler.Compile_Unit (CD, LD, Upper_Name, fn, fn (fn'Last) = 's', kind);
+      as_specification := fn (fn'Last) = 's';
+      Compiler.Compile_Unit
+        (CD, LD, Upper_Name, fn, as_specification,
+         Co_Defs.No_Id,
+         unit.id_index,
+         unit.spec_context,
+         unit.kind);
+      --
+      if as_specification then
+        unit.status := Body_Postponed;
+        case unit.kind is
+          when Procedure_Unit | Function_Unit =>
+            unit.needs_body := True;
+          when Package_Unit =>
+            --  unit.needs_body := <depends on the presence of subprogram specs>
+            raise Program_Error with "Not yet supported, case TBD";
+        end case;
+      else
+        unit.status := Done;
+      end if;
+      Change_Unit_Details (LD, unit);
+      --
+      --  Activate unit library-level declaration for the first time.
+      --  It must be visible to the WITH-ing unit.
+      --
+      Activate_Unit (CD, Upper_Name);
     end if;
-    --
-    Change_Unit_Details (LD, Upper_Name, kind, New_Status => Done);
-    --
-    --  Activate unit 0-level declaration for the first time.
-    --  It must be visible to the WITH-ing unit.
-    --
-    Activate_Unit (CD, Upper_Name);
-  end Apply_Custom_WITH;
+  end Compile_WITHed_Unit;
 
   procedure Apply_WITH (
     CD         : in out Co_Defs.Compiler_Data;
@@ -324,7 +339,7 @@ package body HAC_Sys.Librarian is
       --  of another unit), we just need to reactivate it.
       --  This situation includes the duplicate WITH case (not nice but correct).
       --  Packages Standard and HAL are also reactivated on second WITH (implicitly for Standard).
-      if LD.Library.Element (LD.Map.Element (UVN)).Status = In_Progress then
+      if LD.Library.Element (LD.Map.Element (UVN)).status = In_Progress then
         raise Circular_Unit_Dependency with Upper_Name;
       end if;
       Activate_Unit (CD, Upper_Name);
@@ -341,7 +356,7 @@ package body HAC_Sys.Librarian is
       );
     else
       begin
-        Apply_Custom_WITH (CD, LD, Upper_Name);
+        Compile_WITHed_Unit (CD, LD, Upper_Name);
       exception
         when E : Circular_Unit_Dependency =>
           raise Circular_Unit_Dependency with Upper_Name & " -> " & Exception_Message (E);

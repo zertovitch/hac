@@ -25,17 +25,26 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     use Co_Defs, Defs;
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Zero_Level_Def (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
+      Enter_Library_Level_Def (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
+    --
+    unit : Library_Unit :=
+      (full_name     => HAL.To_VString ("Standard"),
+       kind          => Package_Unit,
+       needs_body    => False,
+       status        => Done,
+       id_index      => No_Id,
+       id_body_index => No_Id,
+       spec_context  => Co_Defs.Id_Set.Empty_Set);
   begin
-    Register_Unit (LD, "Standard", Package_Unit);
+    Enter_Library_Level_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
-    Enter_Zero_Level_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
+    Enter_Library_Level_Def (CD, "Standard", Paquetage, NOTYP, 0);
+    unit.id_index := CD.Id_Count;
+    Register_Unit (LD, unit);
     --
-    Enter_Zero_Level_Def (CD, "Standard", Paquetage, NOTYP, 0);
-    --
-    Enter_Zero_Level_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
-    Enter_Zero_Level_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
+    Enter_Library_Level_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
+    Enter_Library_Level_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
     --
     Enter_Std_Typ ("Character",      Chars, 0, 255);
     Enter_Std_Typ ("Boolean",        Bools, 0, 1);
@@ -43,8 +52,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     --  The "String" type identifier is treated separately in the Type_Definition parser
     --  and returns a constrained array of Character.
-    --  Here we just reserve the "String" identifier at level 0, with a bogus base type,
-    --  String_Literals, which is actually used only for string literals like "abcd".
+    --  Here we just reserve the "String" identifier at library level, with a bogus base,
+    --  type String_Literals, which is actually used only for string literals like "abcd".
     Enter_Std_Typ ("String",         String_Literals, 0, 0);
     CD.String_Id_Index := CD.Id_Count;
     --
@@ -64,30 +73,38 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Float_Index : Integer;
     begin
       Compiler.PCode_Emit.Enter_or_find_Float (CD, Value, Float_Index);
-      Enter_Zero_Level_Def
+      Enter_Library_Level_Def
         (CD, HAL_Name & '.' & Name,
          Declared_Number_or_Enum_Item, Floats, Float_Index);
     end Enter_HAL_Const;
 
     procedure Enter_HAL_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Zero_Level_Def (CD, HAL_Name & '.' & Name, TypeMark, T, 1, First, Last);
+      Enter_Library_Level_Def (CD, HAL_Name & '.' & Name, TypeMark, T, 1, First, Last);
     end Enter_HAL_Typ;
 
     procedure Enter_HAL_Funct (Name : String; T : Typen; Code : PCode.SF_Code) is
     begin
-      Enter_Zero_Level_Def (CD, HAL_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
+      Enter_Library_Level_Def (CD, HAL_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
     end Enter_HAL_Funct;
 
     procedure Enter_HAL_Proc (Name : String; Code : PCode.SP_Code) is
     begin
-      Enter_Zero_Level_Def (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
+      Enter_Library_Level_Def (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
     end Enter_HAL_Proc;
 
+    unit : Library_Unit :=
+      (full_name     => HAL.To_VString (HAL_Name),
+       kind          => Package_Unit,
+       needs_body    => False,
+       status        => Done,
+       id_index      => No_Id,
+       id_body_index => No_Id,
+       spec_context  => Co_Defs.Id_Set.Empty_Set);
   begin
-    Register_Unit (LD, Defs.HAL_Name, Package_Unit);
-    --
-    Enter_Zero_Level_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
+    Enter_Library_Level_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
+    unit.id_index := CD.Id_Count;
+    Register_Unit (LD, unit);
     --
     Enter_HAL_Typ ("File_Type",    Text_Files, 0, 0);  --  2020.05.17
     Enter_HAL_Typ (HAC_Float_Name, Floats, 0, 0);      --  Moved from Std 2021.12.26

@@ -9,11 +9,11 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Co_Defs, HAC_Sys.Defs, HAC_Sys.Librarian;
+with HAC_Sys.Co_Defs, HAC_Sys.Librarian;
 
 package HAC_Sys.Compiler is
 
-  use HAC_Sys.Co_Defs, HAC_Sys.Defs;
+  use HAC_Sys.Co_Defs;
 
   --  Main compilation procedure.
   --  The source code stream (CD.CUD.compiler_stream) is already
@@ -25,7 +25,6 @@ package HAC_Sys.Compiler is
     CD                 : in out Co_Defs.Compiler_Data;
     LD                 : in out Librarian.Library_Data;
     main_name_hint     :        String;  --  This is used for circular unit dependency detection
-    asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
     cmp_dump_file_name :        String  := "";  --  Compiler dump
     listing_file_name  :        String  := "";  --  Listing of source code with details
     var_map_file_name  :        String  := ""   --  Output of variables (map)
@@ -37,19 +36,26 @@ package HAC_Sys.Compiler is
   --  Registration into the library is done after, by the librarian.
   --
   procedure Compile_Unit (
-    CD                 : in out Co_Defs.Compiler_Data;
-    LD                 : in out Librarian.Library_Data;
-    upper_name         :        String;
-    file_name          :        String;
-    as_specification   :        Boolean;
-    kind               :    out Librarian.Unit_Kind  --  The unit kind is discovered during parsing.
+    CD                     : in out Co_Defs.Compiler_Data;
+    LD                     : in out Librarian.Library_Data;
+    upper_name             :        String;
+    file_name              :        String;
+    as_specification       :        Boolean;
+    specification_id_index :        Natural;
+    new_id_index           :    out Natural;
+    unit_context           : in out Co_Defs.Id_Set.Set;  --  in : empty for spec, spec's context for body
+                                                         --  out: spec's context or body's full context.
+    kind                   :    out Librarian.Unit_Kind  --  The unit kind is discovered during parsing.
   );
 
   procedure Set_Message_Feedbacks (
-    CD       : in out Compiler_Data;
-    pipe     :        Defs.Smart_Error_Pipe;        --  Default (null): messages to Current_Error.
-    progress :        Co_Defs.Compilation_Feedback  --  Default (null): messages to Current_Output.
+    CD           : in out Compiler_Data;
+    trace_params : in     Compilation_Trace_Parameters
   );
+
+  procedure Print_Tables (CD : in Compiler_Data);
+  procedure Progress_Message (CD : Co_Defs.Compiler_Data; msg : String);
+  procedure Dump_Asm (CD : Co_Defs.Compiler_Data; file_name : String);
 
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean;
   function Unit_Object_Code_Size (CD : Compiler_Data) return Natural;
