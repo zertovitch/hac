@@ -20,25 +20,23 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
         if CD.ObjCode (H2).F not in CASE_Any_Choice then
           --  We hit the end of (k_CASE_Choice_Data, k_CASE_Match_Jump) pairs.
           --  This means that Value, or OTHERS, were not found so far.
-          --  This situation should not happen; should be caught at compile-time.
+          --  This situation should not happen; it should be caught at compile-time.
           raise VM_Case_Check_Error;
-        else
-          case CASE_Any_Choice (CD.ObjCode (H2).F) is
-            when k_CASE_Choice_Value => jump := Value = CD.ObjCode (H2).Y;
-            when k_CASE_Choice_Range => jump := Value in CD.ObjCode (H2).X .. CD.ObjCode (H2).Y;
-            when k_CASE_Choice_Others => jump := True;
-          end case;
-          if jump then
-            --  The interpreter will execute instructions following "=>".
-            --  The address is stored with a k_CASE_Match_Jump instruction just after
-            --  the CASE_Any_Choice instruction.
-            Curr_TCB.PC := Defs.Index (CD.ObjCode (H2 + 1).Y);
-            exit;
-          else
-            --  Check the next (CASE_Any_Choice, k_CASE_Match_Jump) instruction pair:
-            H2 := H2 + 2;
-          end if;
         end if;
+        case CASE_Any_Choice (CD.ObjCode (H2).F) is
+          when k_CASE_Choice_Value => jump := Value = CD.ObjCode (H2).Y;
+          when k_CASE_Choice_Range => jump := Value in CD.ObjCode (H2).X .. CD.ObjCode (H2).Y;
+          when k_CASE_Choice_Others => jump := True;
+        end case;
+        if jump then
+          --  The interpreter will execute instructions following "=>".
+          --  The address is stored with a k_CASE_Match_Jump instruction just after
+          --  the CASE_Any_Choice instruction.
+          Curr_TCB.PC := Defs.Index (CD.ObjCode (H2 + 1).Y);
+          exit;
+        end if;
+        --  Check the next (CASE_Any_Choice, k_CASE_Match_Jump) instruction pair:
+        H2 := H2 + 2;
       end loop;
     end Do_CASE_Switch_1;
 
@@ -66,7 +64,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
         ND.S (FOR_Param_Addr).I := Next_Value;
         Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump back to loop's begin
       else
-        null;  --  Leave loop (just go to next instruction: k_FOR_Release_Stack_After_End)
+        null;  --  Leave loop (just go to next instruction, k_FOR_Release_Stack_After_End)
       end if;
     end Do_FOR_Forward_End;
 
@@ -94,7 +92,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
         ND.S (FOR_Param_Addr).I := Next_Value;
         Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump back to loop's begin
       else
-        null;  --  Leave loop (just go to next instruction: k_FOR_Release_Stack_After_End)
+        null;  --  Leave loop (just go to next instruction, k_FOR_Release_Stack_After_End)
       end if;
     end Do_FOR_Reverse_End;
 

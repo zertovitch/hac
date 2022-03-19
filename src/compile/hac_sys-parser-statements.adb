@@ -121,15 +121,13 @@ package body HAC_Sys.Parser.Statements is
       elsif X.TYP = NOTYP then
         if CD.error_count = 0 then
           raise Internal_error with "Assignment: assigned variable (X) is typeless";
-        else
-          null;  --  All right, there were already enough compilation error messages...
         end if;
+        --  All right, there were already enough compilation error messages...
       elsif Y.TYP = NOTYP then
         if CD.error_count = 0 then
           raise Internal_error with "Assignment: assigned value (Y) is typeless";
-        else
-          null;  --  All right, there were already enough compilation error messages...
         end if;
+        --  All right, there were already enough compilation error messages...
       else
         Issue_Type_Mismatch_Error;
         --  NB: We are in the X.TYP /= Y.TYP case.
@@ -757,24 +755,25 @@ package body HAC_Sys.Parser.Statements is
               InSymbol;  --  Consume WHEN symbol.
               Boolean_Expression (CD, Block_Data.level, FSys_St + Finger, X);
               InSymbol;
-              if CD.Sy = ACCEPT_Symbol then
-                Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
-                Emit (CD, k_Jump_If_Zero_With_Pop);
-                Accept_Statement_2;
-              elsif CD.Sy = DELAY_Symbol then
-                Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
-                Emit (CD, k_Jump_If_Zero_With_Pop);
-                InSymbol;
-                Expression (CD, Block_Data.level, FSys_St + Semicolon, Y);
-                Emit_2 (CD, k_Selective_Wait, 4, Operand_2_Type (CD.LC + 2));  --  Update delay time
-                if Y.TYP /= Floats then
-                  Select_Error (err_wrong_type_in_DELAY);
-                end if;
-                Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
-                Emit (CD, k_Jump);
-              else
-                Select_Error (err_missing_a_procedure_declaration);
-              end if;
+              case CD.Sy is
+                when ACCEPT_Symbol =>
+                  Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
+                  Emit (CD, k_Jump_If_Zero_With_Pop);
+                  Accept_Statement_2;
+                when DELAY_Symbol =>
+                  Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
+                  Emit (CD, k_Jump_If_Zero_With_Pop);
+                  InSymbol;
+                  Expression (CD, Block_Data.level, FSys_St + Semicolon, Y);
+                  Emit_2 (CD, k_Selective_Wait, 4, Operand_2_Type (CD.LC + 2));  --  Update delay time
+                  if Y.TYP /= Floats then
+                    Select_Error (err_wrong_type_in_DELAY);
+                  end if;
+                  Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
+                  Emit (CD, k_Jump);
+                when others =>
+                  Select_Error (err_missing_a_procedure_declaration);
+              end case;
               InSymbol;
               Sequence_of_Statements (CD, ELSE_END_OR, Block_Data);
               Feed_Patch_Table (JSD, ISD, CD.LC);
@@ -850,16 +849,17 @@ package body HAC_Sys.Parser.Statements is
 
     begin
       InSymbol;  --  Consume SELECT symbol.
-      if CD.Sy = ACCEPT_Symbol or CD.Sy = WHEN_Symbol then
-        Selective_Wait;
-        InSymbol;
-      elsif CD.Sy = IDent then  --  Task Entry objectName.
-        Qualified_Entry_Call;
-        InSymbol;
-        --  Timed or Conditional Entry Call (?)
-      else
-        Select_Error (err_expecting_accept_when_or_entry_id);
-      end if;
+      case CD.Sy is
+        when ACCEPT_Symbol | WHEN_Symbol =>
+          Selective_Wait;
+          InSymbol;
+        when IDent =>  --  Task Entry objectName.
+          Qualified_Entry_Call;
+          InSymbol;
+          --  Timed or Conditional Entry Call (?)
+        when others =>
+          Select_Error (err_expecting_accept_when_or_entry_id);
+      end case;
     end Select_Statement;
 
     procedure Block_Statement (block_name : Alfa) is  --  RM: 5.6

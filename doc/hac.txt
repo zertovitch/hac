@@ -15,7 +15,7 @@ Objectives
     - Produce the smallest Hello-world executable!
     - Have a tool for script-like jobs (avoid long
         programming-compiling-binding-linking-running cycles).
-    - Stay compatible (HAC programs can be compiled
+    - Stay Ada-compatible (HAC programs can be compiled
         and run by other Ada compilers, currently through
         the compatibility package HAL).
 
@@ -63,6 +63,7 @@ Directories
 ===========
 
    src        sources of HAC, plus the compatibility package HAL
+   doc        documentation
    exm        examples
    exm/aoc    Advent of Code solutions - also used for regression testing
    test       testing (notably, the all_silent_tests.adb test suite)
@@ -77,8 +78,11 @@ Key files in the main directory
 Documentation
 =============
 
-   hac.txt       this file
-   hac_work.xls  workbook containing, notably, a bug list and a to-do list
+   hac.txt                             this file
+   HAC Ada Compiler User Manual.pdf    an 80+ pages user manual
+   hac_work.xls                        Excel workbook containing, notably,
+                                         a bug list and a "to-do" list and
+                                         a "done" (history) list
 
 Some design points
 ==================
@@ -88,7 +92,7 @@ Some design points
       like libraries in Zip files, for instance), from an internet stream,
       from an editor buffer (see the LEA project), from a source stored in
       memory, etc.
-  - Ada source file naming follows the GNAT convention: "parent-child.ads"
+  - HAC Ada source file naming follows the GNAT convention: "parent-child.ads"
       for specification and "parent-child.adb" for body. An exception for
       HAC is the main program where the extension can be anything. We
       recommend using ".hac" for programs that are meant to be principally
@@ -106,7 +110,7 @@ To-do list
 ==========
 
   The to-do list is located in the spreadsheet "To do", within the
-  workbook "hac_work.xls".
+  workbook "doc/hac_work.xls".
 
 Language subset
 ===============
