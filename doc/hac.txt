@@ -88,6 +88,13 @@ Some design points
       like libraries in Zip files, for instance), from an internet stream,
       from an editor buffer (see the LEA project), from a source stored in
       memory, etc.
+  - Ada source file naming follows the GNAT convention: "parent-child.ads"
+      for specification and "parent-child.adb" for body. An exception for
+      HAC is the main program where the extension can be anything. We
+      recommend using ".hac" for programs that are meant to be principally
+      executed through HAC. That way you can associate the ".hac" extension
+      with the "hac[.exe]" excecutable on your operating system or your
+      file explorer.
   - One goal is to complement or challenge GNAT, for instance in terms of
       compilation speed, or object code compactness, or useability on
       certain targets or for certain purposes (like scripting jobs).
