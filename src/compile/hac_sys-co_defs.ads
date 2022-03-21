@@ -214,6 +214,8 @@ package HAC_Sys.Co_Defs is
     detail_level : Natural               := 0;
   end record;
 
+  default_trace : constant Compilation_Trace_Parameters := (others => <>);
+
   ---------------------
   --  Compiler_Data  --
   ---------------------
