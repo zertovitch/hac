@@ -40,7 +40,11 @@ package HAC_Sys.Librarian is
     Done
   );
 
-  type Unit_Kind is (Package_Unit, Procedure_Unit, Function_Unit);
+  --  RM 10.1.1
+
+  type Unit_Kind is
+    (Package_Declaration, Package_Body,
+     Procedure_Unit, Function_Unit);
 
   subtype Subprogram_Unit is Unit_Kind range Procedure_Unit .. Function_Unit;
 

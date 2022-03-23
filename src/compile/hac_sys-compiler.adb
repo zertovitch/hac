@@ -3,6 +3,7 @@ with HAC_Sys.Builder,
      HAC_Sys.Defs,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Modularity,
+     HAC_Sys.Parser.Packages,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
@@ -271,7 +272,7 @@ package body HAC_Sys.Compiler is
     Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.
 
     if CD.Sy /= PROCEDURE_Symbol then
-      Error (CD, err_missing_a_procedure_declaration, severity => major);  --  PROCEDURE Name is
+      Error (CD, err_missing_a_procedure_declaration, " (main)", severity => major);  --  PROCEDURE Name is
     end if;
     Scanner.InSymbol (CD);
     loop
@@ -445,19 +446,24 @@ package body HAC_Sys.Compiler is
     Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.
     case CD.Sy is
       when PACKAGE_Symbol =>
-        kind := Package_Unit;
-        Error (
-          CD,
-          err_library_error,
-          "Packages are not yet supported",
-          major
-        );
+        if CD.Sy = BODY_Symbol then
+          Scanner.InSymbol (CD);  --  Absorb the BODY symbol.
+          kind := Package_Body;
+          if as_specification then
+            Error (CD, err_library_error, "specification expected in this file; found body", major);
+          end if;
+        else
+          kind := Package_Declaration;
+          if not as_specification then
+            Error (CD, err_library_error, "body expected in this file; found specification", major);
+          end if;
+        end if;
       when FUNCTION_Symbol =>
         kind := Function_Unit;
       when PROCEDURE_Symbol =>
         kind := Procedure_Unit;
       when others =>
-        kind := Package_Unit;  --  Useless, but this removes an ObjectAda warning.
+        kind := Package_Declaration;  --  Useless, but this removes an ObjectAda warning.
         Error (CD, err_syntax_error, ": `package`, `procedure` or `function` expected here", major);
     end case;
     Scanner.InSymbol (CD);
@@ -477,11 +483,13 @@ package body HAC_Sys.Compiler is
       when Function_Unit =>
         Librarian.Enter_Library_Level_Def (CD, To_String (Unit_Id_with_case), Funktion, NOTYP, 0);
         --  The type of the return value is adjusted by Block.Function_Result_Profile.
-      when Package_Unit =>
-        raise Program_Error with "Package (enter declaration): TBD";
+      when Package_Declaration =>
+        Librarian.Enter_Library_Level_Def (CD, To_String (Unit_Id_with_case), Paquetage, NOTYP, 0);
+      when Package_Body =>
+        null;
     end case;
-    Scanner.InSymbol (CD);
-    --  Here the symbol should be: ";", "IS", "(", "RETURN" for a parameterless function.
+    Scanner.InSymbol (CD);  --  Absorb the identifier symbol.
+    --  Here the symbol should be: ";", "IS", "(", or "RETURN" for a parameterless function.
     --
     case kind is
       when Subprogram_Unit =>
@@ -514,8 +522,10 @@ package body HAC_Sys.Compiler is
           when spec_resolved =>
             raise Program_Error with "Unexpected case: spec_resolved";
         end case;
-      when Package_Unit =>
-        raise Program_Error with "Package compilation: TBD";
+      when Package_Declaration =>
+        Parser.Packages.Package_Declaration (CD, Empty_Symset);
+      when Package_Body =>
+        Parser.Packages.Package_Body (CD, Empty_Symset);
     end case;
     Close (src);
     if CD.trace.detail_level >= 2 then

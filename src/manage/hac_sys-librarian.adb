@@ -274,11 +274,11 @@ package body HAC_Sys.Librarian is
     use Defs, Errors;
     unit : Library_Unit :=
       (full_name  => HAL.To_VString (Upper_Name),
-       kind       => Package_Unit,    --  Temporary value
-       needs_body => False,           --  Temporary value
-       status        => In_Progress,     --  Temporary value.
-       id_index      => Co_Defs.No_Id,   --  Temporary value.
-       id_body_index => Co_Defs.No_Id,   --  Temporary value.
+       kind       => Package_Declaration,  --  Temporary value
+       needs_body => False,                --  Temporary value
+       status        => In_Progress,       --  Temporary value.
+       id_index      => Co_Defs.No_Id,     --  Temporary value.
+       id_body_index => Co_Defs.No_Id,     --  Temporary value.
        spec_context  => Co_Defs.Id_Set.Empty_Set);
     as_specification : Boolean;
   begin
@@ -309,9 +309,11 @@ package body HAC_Sys.Librarian is
         case unit.kind is
           when Procedure_Unit | Function_Unit =>
             unit.needs_body := True;
-          when Package_Unit =>
+          when Package_Declaration =>
             --  unit.needs_body := <depends on the presence of subprogram specs>
-            raise Program_Error with "Not yet supported, case TBD";
+            null;
+          when Package_Body =>
+            null;
         end case;
       else
         unit.status := Done;

@@ -138,6 +138,8 @@ package body HAC_Sys.Parser is
         else
           Enter (CD, block_data.level, CD.Id, id_subprog_with_case, Prozedure, old_id_idx);
         end if;
+        --  NB: now old_id_idx, if different than No_Id, points to the
+        --  eventual previous declaration of the subprogram with that name.
         InSymbol;
         sub_sub_prog_block_data.level                         := block_data.level + 1;
         sub_sub_prog_block_data.block_id_index                := CD.Id_Count;

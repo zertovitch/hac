@@ -68,8 +68,16 @@ begin
   examples := root & "/exm/*.ad* "  &
               root & "/exm/*.gpr  " & root & "/exm/*.prj  " &
               root & "/exm/e.cmd "  & root & "/exm/not_working/*.ad* " &
-              root & "/exm/aoc/2020/aoc* " &
-              root & "/exm/aoc/2021/aoc* ";
+              --
+              root & "/exm/aoc/2020/aoc*.ad* " &
+              root & "/exm/aoc/2020/aoc*.txt " &
+              root & "/exm/aoc/2020/aoc*.gpr " &
+              root & "/exm/aoc/2020/aoc*.prj " &
+              --
+              root & "/exm/aoc/2021/aoc*.ad* " &
+              root & "/exm/aoc/2021/aoc*.txt " &
+              root & "/exm/aoc/2021/aoc*.gpr " &
+              root & "/exm/aoc/2021/aoc*.prj ";
 
   tests    := root & "/test/*.ad* " &
               root & "/test/*.gpr " & root & "/test/*.prj " &
@@ -87,9 +95,9 @@ begin
            root & "/fast.cmd " &
            root & "/small.cmd " &
            root & "/*.txt " &
-           root & "/doc/*.txt " &
-           root & "/doc/*.xls " &
-           root & "/doc/*.pdf " &
+           root & "/doc/hac*.txt " &
+           root & "/doc/hac*.xls " &
+           root & "/doc/hac*.pdf " &
            root & "/debug.pra " &
            root & "/obj/hac_icon* " &
            root & "/obj/debug/create_dir.txt " &

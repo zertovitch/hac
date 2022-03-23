@@ -30,7 +30,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     unit : Library_Unit :=
       (full_name     => HAL.To_VString ("Standard"),
-       kind          => Package_Unit,
+       kind          => Package_Declaration,
        needs_body    => False,
        status        => Done,
        id_index      => No_Id,
@@ -95,7 +95,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
 
     unit : Library_Unit :=
       (full_name     => HAL.To_VString (HAL_Name),
-       kind          => Package_Unit,
+       kind          => Package_Declaration,
        needs_body    => False,
        status        => Done,
        id_index      => No_Id,

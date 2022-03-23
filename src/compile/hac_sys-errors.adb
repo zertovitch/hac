@@ -19,7 +19,7 @@ package body HAC_Sys.Errors is
       when err_identifier_missing =>
         return "missing an identifier";
       when err_missing_a_procedure_declaration =>
-        return "missing a procedure declaration";
+        return "missing a procedure declaration" & hint;
       when err_closing_parenthesis_missing =>
         return "missing closing parenthesis "")""";
       when err_colon_missing =>

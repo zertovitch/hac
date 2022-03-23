@@ -772,7 +772,7 @@ package body HAC_Sys.Parser.Statements is
                   Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
                   Emit (CD, k_Jump);
                 when others =>
-                  Select_Error (err_missing_a_procedure_declaration);
+                  Select_Error (err_missing_a_procedure_declaration);  --  ??
               end case;
               InSymbol;
               Sequence_of_Statements (CD, ELSE_END_OR, Block_Data);

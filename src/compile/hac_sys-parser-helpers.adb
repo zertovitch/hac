@@ -392,7 +392,7 @@ package body HAC_Sys.Parser.Helpers is
     Level            : in     Defs.Nesting_level;
     Fail_when_No_Id  : in     Boolean := True;
     Alias_Resolution : in     Boolean := True;
-    Level_0_Filter    : in     Boolean := True
+    Level_0_Filter   : in     Boolean := True
   )
   return Natural
   is
@@ -400,27 +400,24 @@ package body HAC_Sys.Parser.Helpers is
     J : Integer;
     ID_Copy : Alfa;
   begin
-    L                     := Level;
-    CD.IdTab (No_Id).name := Id;  --  Sentinel
+    L := Level;
     --  Scan all Id's on level L down to 0:
     loop
       J := CD.Blocks_Table (CD.Display (L)).Last_Id_Idx;
       --  Scan all Id's on level L:
-      while CD.IdTab (J).name /= Id
-        or else
-            --  Id is matching, but it is a library level definition from a previous unit's
-            --  compilation which was not yet reactivated.
-            --  In that case, we skip the matching Id, except if it is the sentinel.
-            (L = 0
-              and then Level_0_Filter
-              and then J /= No_Id                            --  Not the sentinel.
-              and then not CD.CUD.level_0_def.Contains (Id)  --  Invisible library-level definition.
-            )
-            --  !! To do: direct skipping of all of
-            --     the package's invisible definitions:
-            --     possible performance issue when large
-            --     specifications lay in the library.
       loop
+        exit when J = No_Id;  --  Beginning of ID table reached.
+        if CD.IdTab (J).name = Id then
+          --  Reasons to consider the matched identifier:
+          exit when L > 0;                             --  Local subprogram identifier.
+          exit when not Level_0_Filter;                --  Filter for library-level definition is disabled.
+          exit when CD.CUD.level_0_def.Contains (Id);  --  Activated library-level definition.
+          --  !! To do:
+          --     Problem: possible performance issue when large
+          --     specifications lay in the library.
+          --     Solution direct skipping of all of the package's
+          --     definitions, when package is deactivated.
+        end if;
         J := CD.IdTab (J).link;  --  Skip this identifier.
       end loop;
       L := L - 1;  --  Decrease nesting level.
