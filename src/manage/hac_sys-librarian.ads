@@ -52,7 +52,6 @@ package HAC_Sys.Librarian is
     full_name     : HAL.VString;  --  Full unit name, like "Ada.Strings.Fixed"
     kind          : Unit_Kind;
     status        : Compilation_Status;
-    needs_body    : Boolean;
     id_index      : Natural;
     id_body_index : Natural;
     spec_context  : Co_Defs.Id_Set.Set;  --  WITH & USE's visible to the spec.
@@ -92,16 +91,6 @@ package HAC_Sys.Librarian is
     CD         : in out Co_Defs.Compiler_Data;
     LD         : in out Library_Data;
     Upper_Name : in     String
-  );
-
-  -------------------------------------------------
-  --  Apply the USE clause at any nesting level  --
-  -------------------------------------------------
-
-  procedure Apply_USE_Clause (
-    CD       : in out Co_Defs.Compiler_Data;
-    Level    : in     Defs.Nesting_level;
-    Pkg_Idx  : in     Natural  --  Index in the identifier table for USEd package.
   );
 
   ----------------------------------------------------------

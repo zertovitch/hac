@@ -25,12 +25,4 @@ package HAC_Sys.Parser.Modularity is
     LD : in out Librarian.Library_Data
   );
 
-  --  Use clause. It is either part of a context clause, or a local declaration.
-  --  8.4 (2)
-  --
-  procedure Use_Clause (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level
-  );
-
 end HAC_Sys.Parser.Modularity;

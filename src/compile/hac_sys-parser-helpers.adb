@@ -118,14 +118,15 @@ package body HAC_Sys.Parser.Helpers is
     end if;
   end Test;
 
-  After_semicolon : constant Symset :=
+  After_Semicolon_after_Declaration : constant Symset :=
     Declaration_X_Subprogram_Symbol +
-    Block_Begin_Symbol;
+    Block_Begin_Symbol +
+    END_Symbol;
 
   Comma_or_colon : constant Symset :=
     Symset'(Comma | Colon => True, others => False);
 
-  procedure Test_Semicolon_in_Declaration (CD : in out Compiler_Data; FSys : Symset) is
+  procedure Need_Semicolon_after_Declaration (CD : in out Compiler_Data; FSys : Symset) is
   begin
     if CD.Sy = Semicolon then
       InSymbol (CD);
@@ -136,17 +137,17 @@ package body HAC_Sys.Parser.Helpers is
         InSymbol (CD);
       end if;
     end if;
-    Test (CD, After_semicolon, FSys, err_incorrectly_used_symbol);
-  end Test_Semicolon_in_Declaration;
+    Test (CD, After_Semicolon_after_Declaration, FSys, err_incorrectly_used_symbol);
+  end Need_Semicolon_after_Declaration;
 
-  procedure Test_END_Symbol (CD : in out Compiler_Data) is
+  procedure Need_END_Symbol (CD : in out Compiler_Data) is
   begin
     if CD.Sy = END_Symbol then
       InSymbol (CD);
     else
       Skip (CD, Semicolon, err_END_missing);
     end if;
-  end Test_END_Symbol;
+  end Need_END_Symbol;
 
   procedure Check_Boolean (CD : in out Compiler_Data; T : Typen) is
   begin
@@ -399,6 +400,9 @@ package body HAC_Sys.Parser.Helpers is
     L : Defs.Nesting_level'Base;
     J : Integer;
     ID_Copy : Alfa;
+    is_name_matched : Boolean;
+    dot_pos : Integer;
+    use HAL;
   begin
     L := Level;
     --  Scan all Id's on level L down to 0:
@@ -407,11 +411,39 @@ package body HAC_Sys.Parser.Helpers is
       --  Scan all Id's on level L:
       loop
         exit when J = No_Id;  --  Beginning of ID table reached.
-        if CD.IdTab (J).name = Id then
+        dot_pos := Length (CD.pkg_prefix);
+        if dot_pos = 0 then
+          is_name_matched := CD.IdTab (J).name = Id;
+        else
+          --  We are within a package declaration; things are a bit more
+          --  complicated... Say we are within `Pkg.Child_1.Subpackage_2`
+          --  declaration.
+          --  For entry `Pkg.Child_1.Subpackage_2.Item` in the identifier
+          --  table, `Item` is visible, as well as `Subpackage_2[.Item]`
+          --  `Child_1[.Subpackage_2[.Item]]`.
+          --  NB : the stuff with [] is resolved below.
+          loop
+            is_name_matched :=
+              CD.IdTab (J).name =
+              To_Alfa (To_String (Slice (CD.pkg_prefix, 1, dot_pos)) & To_String (Id));
+            exit when is_name_matched;
+            exit when dot_pos = 0;
+            loop
+              dot_pos := dot_pos - 1;
+              exit when dot_pos = 0;
+              exit when Element (CD.pkg_prefix, dot_pos) = '.';
+            end loop;
+          end loop;
+        end if;
+        if is_name_matched then
           --  Reasons to consider the matched identifier:
-          exit when L > 0;                             --  Local subprogram identifier.
-          exit when not Level_0_Filter;                --  Filter for library-level definition is disabled.
-          exit when CD.CUD.level_0_def.Contains (Id);  --  Activated library-level definition.
+          --    * We have a local subprogram identifier (eventually
+          --        wrapped in a local package):
+          exit when L > 0;
+          --    * Filter for library-level definition is disabled:
+          exit when not Level_0_Filter;
+          --    * Activated library-level definition:
+          exit when CD.CUD.level_0_def.Contains (CD.IdTab (J).name);
           --  !! To do:
           --     Problem: possible performance issue when large
           --     specifications lay in the library.
@@ -429,12 +461,16 @@ package body HAC_Sys.Parser.Helpers is
       end if;
       Error (CD, err_undefined_identifier, To_String (Id), major);  --  Exception raised here.
     end if;
+    --
+    --  From this point, the identifier ID is matched with
+    --  element J in the identifier table.
+    --
     --  Name aliasing resolution (brought by a use clause
     --  or a simple renames clause).
-    while Alias_Resolution and CD.IdTab (J).entity = Alias loop
+    while Alias_Resolution and then CD.IdTab (J).entity = Alias loop
       J := CD.IdTab (J).adr_or_sz;  --  E.g. True -> Standard.True
     end loop;
-    --  Prefixed package resolution.
+    --  Prefixed package resolution: `Pkg.Item`, `Pkg.Child_1.Item`, ...
     if CD.IdTab (J).entity = Paquetage then
       Skip_Blanks (CD);
       if CD.CUD.c = '.' then  --  We sneak a look at the next symbol.

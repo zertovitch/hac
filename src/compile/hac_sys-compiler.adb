@@ -201,10 +201,12 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "    " & To_String (l0));
     end loop;
 
-    Put_Line (CD.comp_dump, " Information about Main procedure:");
-    New_Line (CD.comp_dump);
-    Put_Line (CD.comp_dump, "   Name    : " & To_String (CD.Main_Program_ID_with_case));
-    Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).block_ref'Image);
+    if CD.Main_Program_ID /= Empty_Alfa then
+      Put_Line (CD.comp_dump, " Information about Main procedure:");
+      New_Line (CD.comp_dump);
+      Put_Line (CD.comp_dump, "   Name    : " & To_String (CD.Main_Program_ID_with_case));
+      Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).block_ref'Image);
+    end if;
 
   end Print_Tables;
 
@@ -402,9 +404,10 @@ package body HAC_Sys.Compiler is
     as_specification       :        Boolean;
     specification_id_index :        Natural;
     new_id_index           :    out Natural;
-    unit_context           : in out Co_Defs.Id_Set.Set;  --  in : empty for spec, spec's context for body
-                                                         --  out: spec's context or body's full context.
-    kind                   :    out Librarian.Unit_Kind  --  The unit kind is discovered during parsing.
+    unit_context           : in out Co_Defs.Id_Set.Set;   --  in : empty for spec, spec's context for body
+                                                          --  out: spec's context or body's full context.
+    kind                   :    out Librarian.Unit_Kind;  --  The unit kind is discovered during parsing.
+    needs_body             :    out Boolean
   )
   is
     use Ada.Strings.Fixed, Ada.Text_IO, Librarian, Errors, Parser.Helpers, PCode;
@@ -427,7 +430,12 @@ package body HAC_Sys.Compiler is
         " (" & (if as_specification then "specification" else "body") & ')');
     end if;
 
-    Open (src, In_File, file_name);
+    begin
+      Open (src, In_File, file_name);
+    exception
+      when Name_Error =>
+        Error (CD, err_library_error, "File " & file_name & " not found", major);
+    end;
     Builder.Skip_Shebang (src, shebang_offset);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
     --  Reset scanner data (line counter etc.) and
@@ -488,12 +496,12 @@ package body HAC_Sys.Compiler is
       when Package_Body =>
         null;
     end case;
-    Scanner.InSymbol (CD);  --  Absorb the identifier symbol.
-    --  Here the symbol should be: ";", "IS", "(", or "RETURN" for a parameterless function.
-    --
+    new_id_index := CD.Id_Count;
     case kind is
       when Subprogram_Unit =>
-        new_id_index := CD.Id_Count;
+        Scanner.InSymbol (CD);  --  Absorb the identifier symbol.
+        --  Here the symbol should be: ";", "IS", "(", or "RETURN" for a parameterless function.
+        --
         unit_block.level                         := 1;
         unit_block.block_id_index                := new_id_index;
         unit_block.is_a_function                 := kind = Function_Unit;
@@ -522,10 +530,12 @@ package body HAC_Sys.Compiler is
           when spec_resolved =>
             raise Program_Error with "Unexpected case: spec_resolved";
         end case;
+        needs_body := as_specification;
       when Package_Declaration =>
-        Parser.Packages.Package_Declaration (CD, Empty_Symset);
+        Parser.Packages.Package_Declaration (CD, Empty_Symset, 0, needs_body);
       when Package_Body =>
-        Parser.Packages.Package_Body (CD, Empty_Symset);
+        Parser.Packages.Package_Body (CD, Empty_Symset, 0);
+        needs_body := False;
     end case;
     Close (src);
     if CD.trace.detail_level >= 2 then

@@ -195,7 +195,7 @@ package body HAC_Sys.Parser.Const_Var is
           var_typ  => xTyp
         );
       end if;
-      Test_Semicolon_in_Declaration (CD, FSys);
+      Need_Semicolon_after_Declaration (CD, FSys);
     end Single_Var_Declaration;
   begin
     while CD.Sy = IDent loop

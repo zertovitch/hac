@@ -61,9 +61,9 @@ package HAC_Sys.Parser.Helpers is
     N             : Compile_Error;
     stop_on_error : Boolean := False);
 
-  procedure Test_Semicolon_in_Declaration (CD : in out Compiler_Data; FSys : Symset);
+  procedure Need_Semicolon_after_Declaration (CD : in out Compiler_Data; FSys : Symset);
 
-  procedure Test_END_Symbol (CD : in out Compiler_Data);
+  procedure Need_END_Symbol (CD : in out Compiler_Data);
 
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data);
 
@@ -227,6 +227,7 @@ package HAC_Sys.Parser.Helpers is
 
   Declaration_X_Subprogram_Symbol : constant Symset :=
     (IDent            |
+     PACKAGE_Symbol   |
      SUBTYPE_Symbol   |
      TYPE_Symbol      |
      TASK_Symbol      |

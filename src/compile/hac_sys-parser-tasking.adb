@@ -94,13 +94,13 @@ package body HAC_Sys.Parser.Tasking is
         end loop;  --  while CD.Sy = ENTRY_Symbol
 
         Level := Level - 1;
-        Test_END_Symbol (CD);
+        Need_END_Symbol (CD);
         if CD.Sy = IDent and CD.Id = TaskID then
           InSymbol;
         else
-          Skip (CD, Semicolon, err_incorrect_block_name);
+          Skip (CD, Semicolon, err_incorrect_name_after_END);
         end if;
-        Test_Semicolon_in_Declaration (CD, FSys);
+        Need_Semicolon_after_Declaration (CD, FSys);
       end if;
     end if;
     pragma Assert (Level = Initial_Level);

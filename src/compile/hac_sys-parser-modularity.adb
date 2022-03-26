@@ -1,4 +1,5 @@
 with HAC_Sys.Parser.Helpers,
+     HAC_Sys.Parser.Packages,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
@@ -24,26 +25,6 @@ package body HAC_Sys.Parser.Modularity is
     InSymbol (CD);  --  Consume the ';'.
   end With_Clause;
 
-  procedure Use_Clause (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level
-  )
-  is  --  8.4 (2)
-    use Librarian, Defs, Scanner, Errors;
-  begin
-    InSymbol (CD);  --  Consume "use".
-    loop
-      if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing, severity => major);
-      end if;
-      Apply_USE_Clause (CD, Level, Helpers.Locate_Identifier (CD, To_Alfa (CD.Id), Level));
-      InSymbol (CD);  --  Consume the identifier.
-      exit when CD.Sy = Semicolon;
-      Helpers.Need (CD, Comma, err_syntax_error);
-    end loop;
-    InSymbol (CD);  --  Consume the ';'.
-  end Use_Clause;
-
   procedure Context_Clause (
     CD : in out Co_Defs.Compiler_Data;
     LD : in out Librarian.Library_Data
@@ -54,7 +35,7 @@ package body HAC_Sys.Parser.Modularity is
     loop
       case CD.Sy is
         when WITH_Symbol => With_Clause (CD, LD);
-        when USE_Symbol  => Use_Clause (CD, Library_Level);
+        when USE_Symbol  => Packages.Use_Clause (CD, Library_Level);
         when others => exit;
       end case;
     end loop;

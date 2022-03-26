@@ -330,7 +330,7 @@ package HAC_Sys.Defs is
     err_number_too_large,
     err_illegal_character_in_number,
     err_negative_exponent_for_integer_literal,
-    err_incorrect_block_name,
+    err_incorrect_name_after_END,
     err_bad_type_for_a_case_statement,
     err_illegal_character,
     err_illegal_constant_or_constant_identifier,

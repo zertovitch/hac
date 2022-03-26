@@ -233,6 +233,7 @@ package HAC_Sys.Co_Defs is
     INum             : HAC_Integer;        --  Integer from InSymbol
     RNum             : HAC_Float;          --  FLOAT Number from InSymbol
     SLeng            : Integer;            --  String Length
+    pkg_prefix       : HAL.VString;        --  Prefix of package being currently parsed.
     --  Compiler tables. Floats and Strings are used by interpreter at run-time.
     Arrays_Table            : Arrays_Table_Type;  --  NB: only static-sized arrays so far.
     Blocks_Table            : Blocks_Table_Access            := new Blocks_Table_Type;

@@ -68,7 +68,7 @@ package body HAC_Sys.Errors is
         return "illegal character in number" & hint;
       when err_negative_exponent_for_integer_literal =>
         return "integer literal with negative exponent; suggestion: a float with "".0"" such as" & hint;
-      when err_incorrect_block_name =>
+      when err_incorrect_name_after_END =>
         return """end " & hint & ";"" expected here";
       when err_bad_type_for_a_case_statement =>
         return "bad type for a case statement";
@@ -286,7 +286,7 @@ package body HAC_Sys.Errors is
       err_missing_closing_IF          => (insert,        +" if"),
       err_RECORD_missing              => (insert,        +" record"),
       err_closing_parenthesis_missing => (insert,        +")"),
-      err_incorrect_block_name        => (replace_token, +"[...]"),
+      err_incorrect_name_after_END    => (replace_token, +"[...]"),
       err_END_LOOP_ident_missing      => (insert,        +"[...]"),
       err_END_LOOP_ident_wrong        => (replace_token, +"[...]"),
       err_EQUALS_instead_of_BECOMES   => (replace_token, +":="),
@@ -364,7 +364,7 @@ package body HAC_Sys.Errors is
       );
     else
       case code is
-        when err_incorrect_block_name =>
+        when err_incorrect_name_after_END =>
           if hint = "" then
             updated_repair_kit.repair_kind := none;
           else

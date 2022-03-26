@@ -204,10 +204,10 @@ package body HAC_Sys.Parser.Statements is
         CD.Display (Block_Data.level) := CD.IdTab (I_Entry).block_ref;
         InSymbol;
         Sequence_of_Statements (CD, END_Set, Block_Data);
-        Test_END_Symbol (CD);
+        Need_END_Symbol (CD);
         if CD.Sy = IDent then
           if CD.Id /= CD.IdTab (I_Entry).name then
-            Error (CD, err_incorrect_block_name);
+            Error (CD, err_incorrect_name_after_END);
           end if;
           InSymbol;
         end if;
@@ -729,10 +729,10 @@ package body HAC_Sys.Parser.Statements is
             CD.Display (Block_Data.level) := CD.IdTab (I).block_ref;
             InSymbol;
             Sequence_of_Statements (CD, END_Set, Block_Data);
-            Test_END_Symbol (CD);
+            Need_END_Symbol (CD);
             if CD.Sy = IDent then
               if CD.Id /= CD.IdTab (I).name then
-                Select_Error (err_incorrect_block_name);
+                Select_Error (err_incorrect_name_after_END);
               end if;
             end if;
             Block_Data.level := Block_Data.level - 1;

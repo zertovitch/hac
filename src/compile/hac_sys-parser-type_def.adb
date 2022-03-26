@@ -15,15 +15,17 @@ with HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
+with HAL;
+
 package body HAC_Sys.Parser.Type_Def is
 
-  use Co_Defs, Defs, Enter_Def, Helpers, Errors;
+  use Co_Defs, Defs, Enter_Def, Helpers, Errors, HAL;
   use type HAC_Integer;
 
   procedure Type_Declaration (
-    CD       : in out Co_Defs.Compiler_Data;
-    Level    : in     Defs.Nesting_level;
-    FSys_NTD : in     Defs.Symset
+    CD         : in out Co_Defs.Compiler_Data;
+    Level      : in     Defs.Nesting_level;
+    FSys_NTD   : in     Defs.Symset
   )
   is
     T1 : Integer;
@@ -32,7 +34,17 @@ package body HAC_Sys.Parser.Type_Def is
   begin
     InSymbol;  --  Consume TYPE or SUBTYPE symbol.
     Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
-    Enter (CD, Level, CD.Id, CD.Id_with_case, TypeMark, forward_id_idx);
+    if Length (CD.pkg_prefix) = 0 then
+      Enter (CD, Level, CD.Id, CD.Id_with_case, TypeMark, forward_id_idx);
+    else
+      Enter
+        (CD,
+         Level,
+         To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id)),
+         To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id_with_case)),
+         TypeMark,
+         forward_id_idx);
+    end if;
     T1 := CD.Id_Count;
     InSymbol;
     Need (CD, IS_Symbol, err_IS_missing);
@@ -47,7 +59,7 @@ package body HAC_Sys.Parser.Type_Def is
       );
     end;
     --
-    Test_Semicolon_in_Declaration (CD, FSys_NTD);
+    Need_Semicolon_after_Declaration (CD, FSys_NTD);
   end Type_Declaration;
 
   procedure Type_Definition (

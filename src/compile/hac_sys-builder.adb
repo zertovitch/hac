@@ -13,6 +13,7 @@ package body HAC_Sys.Builder is
     use HAL, Librarian;
     pending : Library_Unit_Vectors.Vector;
     previous_context : Co_Defs.Id_Set.Set;
+    needs_body_dummy : Boolean;
   begin
     for lu of BD.LD.Library loop
       if lu.status = Body_Postponed then
@@ -26,25 +27,24 @@ package body HAC_Sys.Builder is
     --  for the next round.
     --
     for lu of pending loop
-      if lu.status = Body_Postponed then
-        declare
-          upper_vname : constant VString := To_Upper (lu.full_name);
-          upper_name : constant String := To_String (upper_vname);
-          fn : String := Find_Unit_File_Name (upper_name);
-        begin
-          fn (fn'Last) := 'b';  --  Name ending for a unit's body (*.adb).
-          previous_context :=
-            BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
-          Compiler.Compile_Unit
-            (BD.CD, BD.LD, upper_name, fn, False,
-             lu.id_index,
-             lu.id_body_index,
-             previous_context,
-             lu.kind);
-          lu.status := Done;
-          Change_Unit_Details (BD.LD, lu);
-        end;
-      end if;
+      declare
+        upper_vname : constant VString := To_Upper (lu.full_name);
+        upper_name : constant String := To_String (upper_vname);
+        fn : String := Find_Unit_File_Name (upper_name);
+      begin
+        fn (fn'Last) := 'b';  --  Name ending for a unit's body (*.adb).
+        previous_context :=
+          BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
+        Compiler.Compile_Unit
+          (BD.CD, BD.LD, upper_name, fn, False,
+           lu.id_index,
+           lu.id_body_index,
+           previous_context,
+           lu.kind,
+           needs_body_dummy);
+        lu.status := Done;
+        Change_Unit_Details (BD.LD, lu);
+      end;
     end loop;
     --
     num_pending := Integer (pending.Length);
@@ -56,7 +56,6 @@ package body HAC_Sys.Builder is
     main_unit : Library_Unit :=
       (full_name     => BD.main_name_hint,
        kind          => Procedure_Unit,
-       needs_body    => False,
        status        => In_Progress,    --  Temporary value.
        id_index      => Co_Defs.No_Id,  --  Temporary value.
        id_body_index => Co_Defs.No_Id,  --  Temporary value.

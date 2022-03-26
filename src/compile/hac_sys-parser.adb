@@ -1,7 +1,7 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Helpers,
-     HAC_Sys.Parser.Modularity,
+     HAC_Sys.Parser.Packages,
      HAC_Sys.Parser.Statements,
      HAC_Sys.Parser.Tasking,
      HAC_Sys.Parser.Const_Var,
@@ -172,7 +172,7 @@ package body HAC_Sys.Parser is
           when TYPE_Symbol |
                SUBTYPE_Symbol     => Type_Def.Type_Declaration (CD, block_data.level, FSys);
           when TASK_Symbol        => Tasking.Task_Declaration (CD, FSys, block_data.level);
-          when USE_Symbol         => Modularity.Use_Clause (CD, block_data.level);
+          when USE_Symbol         => Packages.Use_Clause (CD, block_data.level);
           when PROCEDURE_Symbol |
                FUNCTION_Symbol    => Subprogram_Declaration_or_Body;
           when others => null;
@@ -250,7 +250,7 @@ package body HAC_Sys.Parser is
       end loop;
       if VStr_Pkg.To_String (full_name) /= To_String (Block_Id) then
         Error
-          (CD, err_incorrect_block_name,
+          (CD, err_incorrect_name_after_END,
            hint => To_String (Block_Id_with_case),
            previous_symbol => True,
            --  ^ Ideally we would enclose the whole wrong full name, possibly on several lines.
@@ -329,7 +329,7 @@ package body HAC_Sys.Parser is
           Check_ident_after_END;
         elsif Is_a_block_statement and Block_Id /= Empty_Alfa then
           --  No identifier after "end", but "end [label]" is required in this case.
-          Error (CD, err_incorrect_block_name, hint => To_String (Block_Id_with_case));
+          Error (CD, err_incorrect_name_after_END, hint => To_String (Block_Id_with_case));
         end if;
       end if;
       --

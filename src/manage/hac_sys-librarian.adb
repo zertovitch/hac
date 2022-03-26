@@ -11,8 +11,8 @@
 
 with HAC_Sys.Compiler,
      HAC_Sys.Librarian.Built_In_Packages,
-     HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Helpers,
+     HAC_Sys.Parser.Packages,
      HAC_Sys.Errors;
 
 with Ada.Characters.Handling,
@@ -106,95 +106,6 @@ package body HAC_Sys.Librarian is
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper);
   end Enter_Library_Level_Def;
 
-  procedure Apply_USE_Clause (
-    CD       : in out Co_Defs.Compiler_Data;
-    Level    : in     Defs.Nesting_level;
-    Pkg_Idx  : in     Natural  --  Index in the identifier table for USEd package.
-  )
-  is
-    use Co_Defs, Defs, Parser.Enter_Def, Errors;
-    use type Nesting_level;
-    Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).name);
-    Pkg_UName_Dot : constant String := Pkg_UName & '.';
-    Pkg_Initial   : constant Character := Pkg_UName (Pkg_UName'First);
-    Id_Alias, dummy_id_idx : Natural;
-  begin
-    pragma Assert (Pkg_Idx /= No_Id);
-    if CD.IdTab (Pkg_Idx).entity /= Paquetage then
-      Error (CD, err_syntax_error, ": package name expected", major);
-    end if;
-    --  The package specification's definitions begins immediately after the
-    --  package's identifier.
-    --  E.g. HAL: PAQUETAGE; HAL.File_Type: TYPEMARK; ...
-    --
-    for i in Pkg_Idx + 1 .. CD.Id_Count loop
-      --  Quick exit if the first character doesn't match the package's first letter:
-      exit when Initial (CD.IdTab (i).name) /= Pkg_Initial;
-      declare
-        Full_UName : constant String := To_String (CD.IdTab (i).name);
-        Full_Name  : String (Full_UName'Range);
-        Start : Positive;
-      begin
-        exit when
-          --  We have left the public part of the package specification.
-          Full_UName'Length <= Pkg_UName_Dot'Length
-          or else Full_UName (Full_UName'First .. Full_UName'First - 1 + Pkg_UName_Dot'Length) /=
-                   Pkg_UName_Dot;
-        --  We have spotted an item with the correct prefix.
-        --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
-        --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
-        Start := Full_UName'First + Pkg_UName_Dot'Length;
-        Full_Name := To_String (CD.IdTab (i).name_with_case);
-        declare
-          Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
-          Short_Id     : constant Alfa := To_Alfa (Short_Id_str);  --  Id as visible after USE.
-        begin
-          --  Check if there is already this identifier, even as
-          --  a library level invisible definition.
-          --  If not, we do a "FROM Pkg IMPORT Short_Id" (as it would be in Modula-2/Python
-          --  style).
-          Id_Alias := Parser.Helpers.Locate_Identifier (
-            CD               => CD,
-            Id               => Short_Id,
-            Level            => Level,
-            Fail_when_No_Id  => False,
-            Alias_Resolution => False,
-            Level_0_Filter   => False
-            --  ^ We search any matching name, including hidden at library level.
-          );
-          if Id_Alias = No_Id or else CD.IdTab (Id_Alias).lev < Level then
-            --  Here we enter, e.g. the "FALSE", "False" pair.
-            Enter (CD, Level,
-              Short_Id,
-              To_Alfa (Full_Name (Start .. Full_Name'Last)),
-              Alias,
-              dummy_id_idx
-            );
-            CD.IdTab (CD.Id_Count).adr_or_sz := i;  --  i = Aliased entity's index.
-          else
-            --  Here we have found an identical and
-            --  visible identifier at the same level.
-            if CD.IdTab (Id_Alias).entity = Alias
-              and then CD.IdTab (Id_Alias).adr_or_sz = i
-            then
-              if Level > 0 then
-                null;  --  Just a duplicate "use" (we could emit a warning for that).
-              else
-                if CD.CUD.level_0_def.Contains (Short_Id) then
-                  null;  --  Just a duplicate "use" (we could emit a warning for that).
-                else
-                  --  Re-activate definition at zero level (context clause).
-                  CD.CUD.level_0_def.Include (Short_Id);
-                  --  HAL.PUT_LINE ("Activate USEd item: " & Short_Id_str);
-                end if;
-              end if;
-            end if;
-          end if;
-        end;
-      end;
-    end loop;
-  end Apply_USE_Clause;
-
   --  GNAT_Naming returns the file name that GNAT expects for a unit
   --  with the name Unit_Name.
 
@@ -272,15 +183,15 @@ package body HAC_Sys.Librarian is
   is
     fn : constant String := Find_Unit_File_Name (Upper_Name);
     use Defs, Errors;
+    as_specification : Boolean;
+    needs_body : Boolean;
     unit : Library_Unit :=
       (full_name  => HAL.To_VString (Upper_Name),
        kind       => Package_Declaration,  --  Temporary value
-       needs_body => False,                --  Temporary value
        status        => In_Progress,       --  Temporary value.
        id_index      => Co_Defs.No_Id,     --  Temporary value.
        id_body_index => Co_Defs.No_Id,     --  Temporary value.
        spec_context  => Co_Defs.Id_Set.Empty_Set);
-    as_specification : Boolean;
   begin
     --
     --  Add new unit name to the library catalogue
@@ -302,18 +213,21 @@ package body HAC_Sys.Librarian is
          Co_Defs.No_Id,
          unit.id_index,
          unit.spec_context,
-         unit.kind);
+         unit.kind,
+         needs_body);
       --
       if as_specification then
-        unit.status := Body_Postponed;
         case unit.kind is
-          when Procedure_Unit | Function_Unit =>
-            unit.needs_body := True;
+          when Subprogram_Unit =>
+            unit.status := Body_Postponed;
           when Package_Declaration =>
-            --  unit.needs_body := <depends on the presence of subprogram specs>
-            null;
+            if needs_body then
+              unit.status := Body_Postponed;
+            else
+              unit.status := Done;
+            end if;
           when Package_Body =>
-            null;
+            null;  --  Not relevant (spec.)
         end case;
       else
         unit.status := Done;
@@ -373,7 +287,7 @@ package body HAC_Sys.Librarian is
   is
   begin
     Apply_WITH (CD, LD, "STANDARD");
-    Apply_USE_Clause (
+    Parser.Packages.Apply_USE_Clause (
       CD, Library_Level,
       Parser.Helpers.Locate_Identifier (CD, Defs.To_Alfa ("STANDARD"), 0)
     );
