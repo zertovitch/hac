@@ -40,7 +40,7 @@ package body HAC_Sys.Parser.Packages is
         stop_on_error => True  --  Exception is raised there if there is an error.
       );
       case CD.Sy is
-        when IDent              =>
+        when IDent =>
           Error
             (CD,
              err_not_yet_implemented,
@@ -48,10 +48,12 @@ package body HAC_Sys.Parser.Packages is
              major);
           --  Const_Var.Var_Declaration (CD, FSys, block_data);
         when TYPE_Symbol |
-             SUBTYPE_Symbol     =>
+             SUBTYPE_Symbol =>
           Type_Def.Type_Declaration (CD, subprogram_level, FSys + END_Symbol);
-        when TASK_Symbol        => Tasking.Task_Declaration (CD, FSys, subprogram_level);
-        when USE_Symbol         => Use_Clause (CD, subprogram_level);
+        when TASK_Symbol =>
+          Tasking.Task_Declaration (CD, FSys, subprogram_level);
+        when USE_Symbol =>
+          Use_Clause (CD, subprogram_level);
         when PROCEDURE_Symbol |
              FUNCTION_Symbol
           =>
@@ -59,6 +61,7 @@ package body HAC_Sys.Parser.Packages is
           --  Subprogram_Declaration_or_Body;
           needs_body := True;
         when PACKAGE_Symbol =>
+          --  Subpackage:
           Scanner.InSymbol (CD);
           if CD.Sy /= IDent then
             Error (CD, err_identifier_missing, severity => major);

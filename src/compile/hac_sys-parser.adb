@@ -26,9 +26,7 @@ package body HAC_Sys.Parser is
     Block_Id_with_case   :        Defs.Alfa
   )
   is
-    use Co_Defs, Compiler, Defs, Enter_Def,
-        Helpers, PCode, Compiler.PCode_Emit,
-        Errors;
+    use Co_Defs, Defs, Enter_Def, Errors, Helpers, PCode;
     use type HAC_Integer;
     --
     block_data : Block_Data_Type := Initial_Block_Data;
@@ -118,47 +116,8 @@ package body HAC_Sys.Parser is
       end if;
     end Formal_Parameter_List;
 
-    ------------------------------------------------------------------
-    ----------------Subprogram_Declaration_or_Body - Ada RM 6.1, 6.3--
-    procedure Subprogram_Declaration_or_Body is
-      new_id_idx, old_id_idx : Natural;
-      IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
-      sub_sub_prog_block_data : Block_Data_Type;
-    begin
-      InSymbol;
-      if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing);
-        CD.Id := Empty_Alfa;
-      end if;
-      declare
-        id_subprog_with_case : constant Alfa := CD.Id_with_case;
-      begin
-        if IsFun then
-          Enter (CD, block_data.level, CD.Id, id_subprog_with_case, Funktion, old_id_idx);
-        else
-          Enter (CD, block_data.level, CD.Id, id_subprog_with_case, Prozedure, old_id_idx);
-        end if;
-        --  NB: now old_id_idx, if different than No_Id, points to the
-        --  eventual previous declaration of the subprogram with that name.
-        InSymbol;
-        sub_sub_prog_block_data.level                         := block_data.level + 1;
-        sub_sub_prog_block_data.block_id_index                := CD.Id_Count;
-        sub_sub_prog_block_data.is_a_function                 := IsFun;
-        sub_sub_prog_block_data.previous_declaration_id_index := old_id_idx;
-        new_id_idx := CD.Id_Count;
-        Block (CD, FSys, False, sub_sub_prog_block_data,
-               CD.IdTab (new_id_idx).name, id_subprog_with_case);
-        if CD.IdTab (new_id_idx).decl_kind = complete then
-          if IsFun then
-            Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
-          else
-            Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
-          end if;
-        end if;
-      end;
-    end Subprogram_Declaration_or_Body;
-
     procedure Declarative_Part is
+      ignored : Declaration_Kind;
     begin
       loop
         Test (  --  Added 17-Apr-2018 to avoid infinite loop on erroneous code
@@ -174,7 +133,7 @@ package body HAC_Sys.Parser is
           when TASK_Symbol        => Tasking.Task_Declaration (CD, FSys, block_data.level);
           when USE_Symbol         => Packages.Use_Clause (CD, block_data.level);
           when PROCEDURE_Symbol |
-               FUNCTION_Symbol    => Subprogram_Declaration_or_Body;
+               FUNCTION_Symbol    => Subprogram_Declaration_or_Body (CD, FSys, block_data.level, ignored);
           when others => null;
         end case;
         CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
@@ -406,5 +365,52 @@ package body HAC_Sys.Parser is
       pragma Assert (block_data.level = Initial_Block_Data.level);
     end if;
   end Block;
+
+  procedure Subprogram_Declaration_or_Body (
+    CD            : in out Co_Defs.Compiler_Data;
+    FSys          : in     Defs.Symset;
+    current_level : in     Defs.Nesting_level;
+    kind          :    out Co_Defs.Declaration_Kind
+  )
+  is
+    use Co_Defs, Compiler.PCode_Emit, Defs, Enter_Def, Errors, PCode;
+    use type HAC_Integer;
+    new_id_idx, old_id_idx : Natural;
+    IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
+    sub_sub_prog_block_data : Block_Data_Type;
+  begin
+    Scanner.InSymbol (CD);
+    if CD.Sy /= IDent then
+      Error (CD, err_identifier_missing);
+      CD.Id := Empty_Alfa;
+    end if;
+    declare
+      id_subprog_with_case : constant Alfa := CD.Id_with_case;
+    begin
+      if IsFun then
+        Enter (CD, current_level, CD.Id, id_subprog_with_case, Funktion, old_id_idx);
+      else
+        Enter (CD, current_level, CD.Id, id_subprog_with_case, Prozedure, old_id_idx);
+      end if;
+      --  NB: now old_id_idx, if different than No_Id, points to the
+      --  eventual previous declaration of the subprogram with that name.
+      Scanner.InSymbol (CD);
+      sub_sub_prog_block_data.level                         := current_level + 1;
+      sub_sub_prog_block_data.block_id_index                := CD.Id_Count;
+      sub_sub_prog_block_data.is_a_function                 := IsFun;
+      sub_sub_prog_block_data.previous_declaration_id_index := old_id_idx;
+      new_id_idx := CD.Id_Count;
+      Block (CD, FSys, False, sub_sub_prog_block_data,
+             CD.IdTab (new_id_idx).name, id_subprog_with_case);
+      kind := CD.IdTab (new_id_idx).decl_kind;
+      if kind = complete then
+        if IsFun then
+          Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
+        else
+          Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+        end if;
+      end if;
+    end;
+  end Subprogram_Declaration_or_Body;
 
 end HAC_Sys.Parser;

@@ -26,6 +26,10 @@ package HAC_Sys.Parser is
     --    for parameters of FOR loops.
   end record;
 
+  --------------------------------------------
+  --  Block: subprogram or block statement  --
+  --------------------------------------------
+
   procedure Block (
     CD                   : in out Co_Defs.Compiler_Data;
     FSys                 :        Defs.Symset;
@@ -39,5 +43,16 @@ package HAC_Sys.Parser is
   --  True will be passed for both Is_a_function and Is_a_block_statement.
   --  When Is_a_block_statement = True, the current symbol Sy must be either
   --  DECLARE_symbol or BEGIN_symbol
+
+  --------------------------------------------------------
+  --  Subprogram declaration or body (Ada RM 6.1, 6.3)  --
+  --------------------------------------------------------
+
+  procedure Subprogram_Declaration_or_Body (
+    CD            : in out Co_Defs.Compiler_Data;
+    FSys          : in     Defs.Symset;
+    current_level : in     Defs.Nesting_level;
+    kind          :    out Co_Defs.Declaration_Kind
+  );
 
 end HAC_Sys.Parser;
