@@ -141,7 +141,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
         Put (ND.S (H1 + 1).I, 5);
         New_Line;
       end if;
-      H2 := CD.Blocks_Table (CD.IdTab (H2).block_ref).Last_Id_Idx;
+      H2 := CD.Blocks_Table (CD.IdTab (H2).block_pkg_ref).Last_Id_Idx;
       while H2 /= 0 loop
         --  [P2Ada]: WITH instruction
         declare

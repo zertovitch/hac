@@ -17,7 +17,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     procedure Do_Mark_Stack is
       --  VSize is the maximum stack room needed by the subprogram to be called.
       VSize : constant Integer :=
-        Integer (CD.Blocks_Table (CD.IdTab (Integer (IR.Y)).block_ref).VSize);
+        Integer (CD.Blocks_Table (CD.IdTab (Integer (IR.Y)).block_pkg_ref).VSize);
     begin
       if Curr_TCB.T + VSize > Curr_TCB.STACKSIZE then
         raise VM_Stack_Overflow;

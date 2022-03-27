@@ -37,10 +37,10 @@ package body HAC_Sys.Compiler is
 
   procedure Init (CD : out Compiler_Data) is
   begin
-    --  Array and block tables are clearly 1-based
-    CD.Arrays_Count := 0;
-    CD.Blocks_Count := 0;
+    CD.Arrays_Count          := 0;
+    CD.Blocks_Count          := 0;
     CD.Float_Constants_Count := 0;
+    CD.Packages_Count        := 0;
     --  Identifiers
     CD.Id_Count := 0;
     --  Strings literals
@@ -112,8 +112,8 @@ package body HAC_Sys.Compiler is
         Show_Padded (Boolean'Image (r.normal), Boolean'Width);
         Put (CD.comp_dump, Integer (r.lev), 3);
         Put (CD.comp_dump, r.adr_or_sz, 5);
-        if r.block_ref > 0 then
-          Put (CD.comp_dump, r.block_ref, 5);
+        if r.block_pkg_ref > 0 then
+          Put (CD.comp_dump, r.block_pkg_ref, 5);
         else
           Put (CD.comp_dump, "     ");
         end if;
@@ -128,7 +128,7 @@ package body HAC_Sys.Compiler is
       Put (CD.comp_dump, I, 4);
       Put (CD.comp_dump, ' ');
       Put (CD.comp_dump, To_String (CD.IdTab (CD.Tasks_Definitions_Table (I)).name) & "  ");
-      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).block_ref);
+      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).block_pkg_ref);
       New_Line (CD.comp_dump);
     end loop;
 
@@ -205,7 +205,7 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, " Information about Main procedure:");
       New_Line (CD.comp_dump);
       Put_Line (CD.comp_dump, "   Name    : " & To_String (CD.Main_Program_ID_with_case));
-      Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).block_ref'Image);
+      Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).block_pkg_ref'Image);
     end if;
 
   end Print_Tables;

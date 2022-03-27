@@ -331,12 +331,12 @@ package body HAC_Sys.Parser is
     else
       Test (CD, Symbols_after_Subprogram_Identifier, FSys, err_incorrectly_used_symbol);
     end if;
-    if CD.IdTab (block_data.block_id_index).block_ref > 0 then
-      subprogram_block_index := CD.IdTab (block_data.block_id_index).block_ref;
+    if CD.IdTab (block_data.block_id_index).block_pkg_ref > 0 then
+      subprogram_block_index := CD.IdTab (block_data.block_id_index).block_pkg_ref;
     else
       Enter_Block (CD, block_data.block_id_index);
       subprogram_block_index := CD.Blocks_Count;
-      CD.IdTab (block_data.block_id_index).block_ref := subprogram_block_index;
+      CD.IdTab (block_data.block_id_index).block_pkg_ref := subprogram_block_index;
     end if;
     CD.Display (block_data.level) := subprogram_block_index;
     CD.IdTab (block_data.block_id_index).xtyp := Undefined;

@@ -26,7 +26,10 @@ package body HAC_Sys.Parser.Packages is
     previous_pkg_prefix    : constant HAL.VString := CD.pkg_prefix;
     subpkg_needs_body : Boolean;
     dummy_forward : Natural;
+    current_pkg_table_index : Positive;
   begin
+    Feed_Packages_Table (CD);
+    current_pkg_table_index := CD.Packages_Count;
     Scanner.InSymbol (CD);  --  Absorb the identifier symbol.
     Need (CD, IS_Symbol, err_IS_missing);
     --  Set new prefix, support also eventual subpackages:
@@ -80,6 +83,7 @@ package body HAC_Sys.Parser.Packages is
       end case;
       exit when CD.Sy = END_Symbol;
     end loop;
+    CD.Packages_Table (current_pkg_table_index).last_public_declaration := CD.Id_Count;
     Scanner.InSymbol (CD);  --  Absorb END symbol
     if CD.Sy = IDent then
       --  !! For supporting child package names ("x.y.z"), reuse/share Check_ident_after_END
@@ -149,6 +153,7 @@ package body HAC_Sys.Parser.Packages is
     Pkg_UName_Dot : constant String := Pkg_UName & '.';
     Pkg_Initial   : constant Character := Pkg_UName (Pkg_UName'First);
     Id_Alias, dummy_id_idx : Natural;
+    pkg_table_index : Positive;
   begin
     pragma Assert (Pkg_Idx /= No_Id);
     if CD.IdTab (Pkg_Idx).entity /= Paquetage then
@@ -158,19 +163,17 @@ package body HAC_Sys.Parser.Packages is
     --  package's identifier.
     --  E.g. HAL: PAQUETAGE; HAL.File_Type: TYPEMARK; ...
     --
-    for i in Pkg_Idx + 1 .. CD.Id_Count loop
-      --  Quick exit if the first character doesn't match the package's first letter:
-      exit when Initial (CD.IdTab (i).name) /= Pkg_Initial;
+    pkg_table_index := CD.IdTab (Pkg_Idx).block_pkg_ref;
+    pragma Assert (Pkg_Idx + 1 = CD.Packages_Table (pkg_table_index).first_public_declaration);
+    --
+    for i in CD.Packages_Table (pkg_table_index).first_public_declaration ..
+             CD.Packages_Table (pkg_table_index).last_public_declaration
+    loop
       declare
         Full_UName : constant String := To_String (CD.IdTab (i).name);
         Full_Name  : String (Full_UName'Range);
         Start : Positive;
       begin
-        exit when
-          --  We have left the public part of the package specification.
-          Full_UName'Length <= Pkg_UName_Dot'Length
-          or else Full_UName (Full_UName'First .. Full_UName'First - 1 + Pkg_UName_Dot'Length) /=
-                   Pkg_UName_Dot;
         --  We have spotted an item with the correct prefix.
         --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
         --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
@@ -194,13 +197,14 @@ package body HAC_Sys.Parser.Packages is
             --  ^ We search any matching name, including hidden at library level.
           );
           if Id_Alias = No_Id or else CD.IdTab (Id_Alias).lev < Level then
-            --  Here we enter, e.g. the "FALSE", "False" pair.
-            Enter (CD, Level,
-              Short_Id,
-              To_Alfa (Full_Name (Start .. Full_Name'Last)),
-              Alias,
-              dummy_id_idx
-            );
+            --  Name was not found or defined at a lower nesting level.
+            --  We enter, e.g. the "FALSE", "False" pair.
+            Enter
+              (CD, Level,
+               Short_Id,
+               To_Alfa (Full_Name (Start .. Full_Name'Last)),
+               Alias,
+               dummy_id_idx);
             CD.IdTab (CD.Id_Count).adr_or_sz := i;  --  i = Aliased entity's index.
           else
             --  Here we have found an identical and
@@ -208,6 +212,8 @@ package body HAC_Sys.Parser.Packages is
             if CD.IdTab (Id_Alias).entity = Alias
               and then CD.IdTab (Id_Alias).adr_or_sz = i
             then
+              --  Here we have an identical alias (same name and points
+              --  to the same definition).
               if Level > 0 then
                 null;  --  Just a duplicate "use" (we could emit a warning for that).
               else
@@ -225,5 +231,12 @@ package body HAC_Sys.Parser.Packages is
       end;
     end loop;
   end Apply_USE_Clause;
+
+  procedure Feed_Packages_Table (CD : in out Co_Defs.Compiler_Data) is
+  begin
+    CD.Packages_Count := CD.Packages_Count + 1;
+    CD.IdTab (CD.Id_Count).block_pkg_ref := CD.Packages_Count;
+    CD.Packages_Table (CD.Packages_Count).first_public_declaration := CD.Id_Count + 1;
+  end Feed_Packages_Table;
 
 end HAC_Sys.Parser.Packages;

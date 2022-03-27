@@ -71,7 +71,7 @@ package body HAC_Sys.Parser.Enter_Def is
        read_only      => False,
        decl_kind      => complete,
        xtyp           => Undefined,
-       block_ref      => 0,
+       block_pkg_ref  => 0,
        normal         => True,
        lev            => Level,
        adr_or_sz      => 0

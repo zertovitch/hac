@@ -520,13 +520,13 @@ package body HAC_Sys.Parser.Helpers is
     CD.IdTab (old_id_idx).decl_kind := spec_resolved;
     --  The following is only for making the compiler dump
     --  easier to understand:
-    CD.Blocks_Table (CD.IdTab (old_id_idx).block_ref).Id :=
+    CD.Blocks_Table (CD.IdTab (old_id_idx).block_pkg_ref).Id :=
       To_Alfa ("Unused (was from a subprogram spec)");
     --  Check that the formal parameter list is identical:
     sub_sub_last_param_idx :=
-      CD.Blocks_Table (CD.IdTab (new_id_idx).block_ref).Last_Param_Id_Idx;
+      CD.Blocks_Table (CD.IdTab (new_id_idx).block_pkg_ref).Last_Param_Id_Idx;
     forward_last_param_idx :=
-      CD.Blocks_Table (CD.IdTab (old_id_idx).block_ref).Last_Param_Id_Idx;
+      CD.Blocks_Table (CD.IdTab (old_id_idx).block_pkg_ref).Last_Param_Id_Idx;
     sub_sub_params := sub_sub_last_param_idx - new_id_idx;
     forward_params := forward_last_param_idx - old_id_idx;
     if sub_sub_params > forward_params then
@@ -577,8 +577,8 @@ package body HAC_Sys.Parser.Helpers is
     --    * The block_ref (hence, the correct VSize
     --        is used for reserving the stack)
     --
-    CD.IdTab (old_id_idx).adr_or_sz := CD.IdTab (new_id_idx).adr_or_sz;
-    CD.IdTab (old_id_idx).block_ref := CD.IdTab (new_id_idx).block_ref;
+    CD.IdTab (old_id_idx).adr_or_sz     := CD.IdTab (new_id_idx).adr_or_sz;
+    CD.IdTab (old_id_idx).block_pkg_ref := CD.IdTab (new_id_idx).block_pkg_ref;
   end Link_Forward_Declaration;
 
   procedure Check_Incomplete_Definitions

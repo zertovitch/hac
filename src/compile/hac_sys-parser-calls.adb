@@ -105,7 +105,7 @@ package body HAC_Sys.Parser.Calls is
     Found, Expected : Exact_Typ;
   begin
     Emit_1 (CD, k_Mark_Stack, Operand_2_Type (Ident_Index));
-    Last_Param := CD.Blocks_Table (CD.IdTab (Ident_Index).block_ref).Last_Param_Id_Idx;
+    Last_Param := CD.Blocks_Table (CD.IdTab (Ident_Index).block_pkg_ref).Last_Param_Id_Idx;
     CP := Ident_Index;
     if CD.Sy = LParent then  --  Actual parameter list
       loop
@@ -141,7 +141,7 @@ package body HAC_Sys.Parser.Calls is
       Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
     end if;
     --
-    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (Ident_Index).block_ref).PSize - 1));
+    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (Ident_Index).block_pkg_ref).PSize - 1));
     if CallType /= Normal_Procedure_Call then  --  Some for of entry call
       Emit_1 (CD, k_Exit_Call, Operand_2_Type (CallType));  --  Return from Entry Call
     end if;
@@ -170,7 +170,7 @@ package body HAC_Sys.Parser.Calls is
     if CD.Sy = Period then
       InSymbol (CD);                  --  Task Entry Selector
       if CD.Sy = IDent then
-        J := CD.Blocks_Table (CD.IdTab (I).block_ref).Last_Id_Idx;
+        J := CD.Blocks_Table (CD.IdTab (I).block_pkg_ref).Last_Id_Idx;
         CD.IdTab (0).name := CD.Id;
         while CD.IdTab (J).name /= CD.Id loop
           J := CD.IdTab (J).link;

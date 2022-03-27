@@ -16,9 +16,9 @@ package HAC_Sys.Parser.Packages is
 
   --------------------------------------------------------------------------
   --  Parse a package right after the "PACKAGE name" symbol sequence.     --
-  --  `name` has been entered as "Paquetage" kind, either as a            --
-  --  library-level declaration and library item, or a declaration which  --
-  --  is local to a subprogram.                                           --
+  --  `name` has been entered in the identifier table as "Paquetage"      --
+  --  kind, either as a library-level declaration and library item,       --
+  --  or a declaration which is local to a subprogram.                    --
   --------------------------------------------------------------------------
 
   procedure Package_Declaration (
@@ -59,5 +59,11 @@ package HAC_Sys.Parser.Packages is
     Level    : in     Defs.Nesting_level;
     Pkg_Idx  : in     Natural  --  Index in the identifier table for USEd package.
   );
+
+  ------------------------------------------
+  --  Feed the compiler's packages table  --
+  ------------------------------------------
+
+  procedure Feed_Packages_Table (CD : in out Co_Defs.Compiler_Data);
 
 end HAC_Sys.Parser.Packages;

@@ -95,6 +95,11 @@ package HAC_Sys.Co_Defs is
     SrcTo             : Positive;     --   and goes until here    (* Manuel *)
   end record;
 
+  type Package_Table_Entry is record
+    first_public_declaration : Positive;
+    last_public_declaration  : Positive;
+  end record;
+
   type Entity_Kind is  --  RM 3.1
   (
       --  Declared number: untyped constant, like
@@ -132,8 +137,7 @@ package HAC_Sys.Co_Defs is
     decl_kind      : Declaration_Kind;     --  Declaration kind: forward or complete.
     --                                           Matters for a type, a constant, a subprogram.
     xtyp           : Exact_Subtyp;         --  Subtype identification
-    block_ref      : Index;                --  Was: Ref (that was used also for what is now xtyp.Ref,
-                                           --       which caused a mixup for functions' return types!)
+    block_pkg_ref  : Index;                --  Reference in the block or package tables.
     normal         : Boolean;              --  value param?
     lev            : Nesting_level;
     adr_or_sz      : Integer;
@@ -165,6 +169,7 @@ package HAC_Sys.Co_Defs is
   type    Display_Type                 is array (Nesting_level)     of Integer;
   type    Entries_Table_Type           is array (0 .. EntryMax)     of Index;
   type    Identifier_Table_Type        is array (0 .. Id_Table_Max) of IdTabEntry;
+  type    Packages_Table_Type          is array (0 .. PMax)         of Package_Table_Entry;
   subtype Strings_Constants_Table_Type is String (1 .. SMax);
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)      of Index;
   --      ^ Task #0 is main task.
@@ -241,6 +246,7 @@ package HAC_Sys.Co_Defs is
     Entries_Table           : Entries_Table_Type;
     Float_Constants_Table   : Float_Constants_Table_Type;
     IdTab                   : Identifier_Table_Access        := new Identifier_Table_Type;
+    Packages_Table          : Packages_Table_Type;
     Strings_Constants_Table : Strings_Constants_Table_Access := new Strings_Constants_Table_Type;
     Tasks_Definitions_Table : Tasks_Definitions_Table_Type;
     --  Indices to compiler tables
@@ -250,6 +256,7 @@ package HAC_Sys.Co_Defs is
     Float_Constants_Count   : Natural;
     Id_Count                : Natural;
     Main_Proc_Id_Index      : Natural;
+    Packages_Count          : Natural;
     String_Id_Index         : Natural;
     Strings_Table_Top       : Natural;
     Tasks_Definitions_Count : Natural;

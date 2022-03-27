@@ -201,7 +201,7 @@ package body HAC_Sys.Parser.Statements is
           Fatal (LEVELS);  --  Exception is raised there.
         end if;
         Block_Data.level := Block_Data.level + 1;
-        CD.Display (Block_Data.level) := CD.IdTab (I_Entry).block_ref;
+        CD.Display (Block_Data.level) := CD.IdTab (I_Entry).block_pkg_ref;
         InSymbol;
         Sequence_of_Statements (CD, END_Set, Block_Data);
         Need_END_Symbol (CD);
@@ -303,7 +303,7 @@ package body HAC_Sys.Parser.Statements is
           Error (CD, err_procedures_cannot_return_a_value, severity => major);
         end if;
         --  Calculate return value (destination: X; expression: Y).
-        if CD.IdTab (Block_Data.block_id_index).block_ref /= CD.Display (Block_Data.level) then
+        if CD.IdTab (Block_Data.block_id_index).block_pkg_ref /= CD.Display (Block_Data.level) then
           raise Program_Error with
             "Is it `return x` from main? Issue should have been caught earlier: " &
             "err_procedures_cannot_return_a_value.";
@@ -549,7 +549,7 @@ package body HAC_Sys.Parser.Statements is
               read_only      => True,
               decl_kind      => complete,
               xtyp           => Undefined,  --  Subtype is determined by the range.
-              block_ref      => 0,
+              block_pkg_ref  => 0,
               normal         => True,
               lev            => Block_Data.level,
               adr_or_sz      => Block_Data.data_allocation_index
@@ -726,7 +726,7 @@ package body HAC_Sys.Parser.Statements is
               Fatal (LEVELS);  --  Exception is raised there.
             end if;
             Block_Data.level := Block_Data.level + 1;
-            CD.Display (Block_Data.level) := CD.IdTab (I).block_ref;
+            CD.Display (Block_Data.level) := CD.IdTab (I).block_pkg_ref;
             InSymbol;
             Sequence_of_Statements (CD, END_Set, Block_Data);
             Need_END_Symbol (CD);

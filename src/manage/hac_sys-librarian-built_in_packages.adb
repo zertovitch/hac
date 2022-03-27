@@ -11,6 +11,7 @@
 
 with HAC_Sys.Defs,
      HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Parser.Packages,
      HAC_Sys.PCode;
 
 with HAL;
@@ -39,6 +40,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_Library_Level_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
     Enter_Library_Level_Def (CD, "Standard", Paquetage, NOTYP, 0);
+    Parser.Packages.Feed_Packages_Table (CD);
+    --  Feed library:
     unit.id_index := CD.Id_Count;
     Register_Unit (LD, unit);
     --
@@ -59,6 +62,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_Std_Typ ("Natural",  Ints, 0, HAC_Integer'Last);
     Enter_Std_Typ ("Positive", Ints, 1, HAC_Integer'Last);
     Enter_Std_Typ ("Duration", Durations, 0, 0);
+    --
+    CD.Packages_Table (CD.Packages_Count).last_public_declaration := CD.Id_Count;
   end Define_and_Register_Standard;
 
   procedure Define_and_Register_HAL (
@@ -101,6 +106,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
        spec_context  => Co_Defs.Id_Set.Empty_Set);
   begin
     Enter_Library_Level_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
+    Parser.Packages.Feed_Packages_Table (CD);
+    --  Feed library:
     unit.id_index := CD.Id_Count;
     Register_Unit (LD, unit);
     --
@@ -224,6 +231,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAL_Proc ("Quantum",        SP_Quantum);
     Enter_HAL_Proc ("Priority",       SP_Priority);
     Enter_HAL_Proc ("InheritP",       SP_InheritP);
+    --
+    CD.Packages_Table (CD.Packages_Count).last_public_declaration := CD.Id_Count;
   end Define_and_Register_HAL;
 
 end HAC_Sys.Librarian.Built_In_Packages;

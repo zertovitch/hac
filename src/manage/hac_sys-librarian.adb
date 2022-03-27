@@ -97,7 +97,7 @@ package body HAC_Sys.Librarian is
                          Is_Range       => False,
                          Discrete_First => Discrete_First,
                          Discrete_Last  => Discrete_Last),
-      block_ref      => 0,
+      block_pkg_ref  => 0,
       normal         => True,
       lev            => 0,
       adr_or_sz      => Size

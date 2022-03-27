@@ -67,6 +67,7 @@ package HAC_Sys.Defs is
   EntryMax              : constant := 30;       --  Maximum Number of Entry Statements
   FMax                  : constant := 20;       --  Maximum Number of files for I/O
   KMax                  : constant := HAC_Float'Digits;
+  PMax                  : constant := 10_000;   --  Size of Package table
 
   Nesting_Level_Max     : constant := 20;
   subtype Nesting_level is HAC_Integer range 0 .. Nesting_Level_Max;
