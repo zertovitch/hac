@@ -16,7 +16,6 @@ with HAC_Sys.Defs,
 with HAL;
 
 with Ada.Containers.Hashed_Sets,
-     Ada.Finalization,
      Ada.Streams,
      Ada.Strings.Fixed.Hash,
      Ada.Text_IO;
@@ -174,11 +173,6 @@ package HAC_Sys.Co_Defs is
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)      of Index;
   --      ^ Task #0 is main task.
 
-  type Blocks_Table_Access            is access Blocks_Table_Type;
-  type Object_Code_Table_Access       is access HAC_Sys.PCode.Object_Code_Table;
-  type Strings_Constants_Table_Access is access Strings_Constants_Table_Type;
-  type Identifier_Table_Access        is access Identifier_Table_Type;
-
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 
   No_Id : constant := 0;
@@ -225,7 +219,7 @@ package HAC_Sys.Co_Defs is
   --  Compiler_Data  --
   ---------------------
 
-  type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
+  type Compiler_Data is record
     CUD : Current_Unit_Data;
     --  Scanning & Parsing
     Sy, prev_sy      : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
@@ -241,13 +235,13 @@ package HAC_Sys.Co_Defs is
     pkg_prefix       : HAL.VString;        --  Prefix of package being currently parsed.
     --  Compiler tables. Floats and Strings are used by interpreter at run-time.
     Arrays_Table            : Arrays_Table_Type;  --  NB: only static-sized arrays so far.
-    Blocks_Table            : Blocks_Table_Access            := new Blocks_Table_Type;
+    Blocks_Table            : Blocks_Table_Type;
     Display                 : Display_Type;
     Entries_Table           : Entries_Table_Type;
     Float_Constants_Table   : Float_Constants_Table_Type;
-    IdTab                   : Identifier_Table_Access        := new Identifier_Table_Type;
+    IdTab                   : Identifier_Table_Type;
     Packages_Table          : Packages_Table_Type;
-    Strings_Constants_Table : Strings_Constants_Table_Access := new Strings_Constants_Table_Type;
+    Strings_Constants_Table : Strings_Constants_Table_Type;
     Tasks_Definitions_Table : Tasks_Definitions_Table_Type;
     --  Indices to compiler tables
     Arrays_Count            : Natural;
@@ -261,7 +255,7 @@ package HAC_Sys.Co_Defs is
     Strings_Table_Top       : Natural;
     Tasks_Definitions_Count : Natural;
     --  Object code
-    ObjCode                 : Object_Code_Table_Access := new HAC_Sys.PCode.Object_Code_Table (0 .. CDMax);
+    ObjCode                 : PCode.Object_Code_Table (0 .. CDMax);
     LC                      : Integer;  --  Location counter in the Object_Code_Table
     CMax                    : Integer;  --  Top of available ObjCode table;
                                         --  CMax + 1 .. CDMax: variable initialization code
@@ -283,8 +277,6 @@ package HAC_Sys.Co_Defs is
     --  recursion level for the fun of it.
     recursion    : Natural := 0;
   end record;
-
-  overriding procedure Finalize (CD : in out Compiler_Data);
 
   Universe : constant HAL.VString := HAL.To_VString ("[-- The Universe --]");
 

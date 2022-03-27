@@ -16,15 +16,19 @@ with HAC_Sys.Co_Defs,
 
 with HAL;
 
-with Ada.Streams, Ada.Text_IO,
+with Ada.Finalization,
+     Ada.Streams,
+     Ada.Text_IO,
      Ada.Unchecked_Conversion;
 
 with System;
 
 package HAC_Sys.Builder is
 
-  type Build_Data is record
-    CD                 : Co_Defs.Compiler_Data;
+  type Compiler_Data_Access is access Co_Defs.Compiler_Data;
+
+  type Build_Data is new Ada.Finalization.Limited_Controlled with record
+    CD                 : Compiler_Data_Access := new Co_Defs.Compiler_Data;
     LD                 : Librarian.Library_Data;
     main_name_hint     : HAL.VString;  --  This is used for circular unit dependency detection
     asm_dump_file_name : HAL.VString;  --  Assembler output of compiled object code
@@ -32,6 +36,8 @@ package HAC_Sys.Builder is
     listing_file_name  : HAL.VString;  --  Listing of source code with details
     var_map_file_name  : HAL.VString;  --  Output of variables (map)
   end record;
+
+  overriding procedure Finalize (BD : in out Build_Data);
 
   --  Build the main procedure.
   --  The main procedure's source code stream is already

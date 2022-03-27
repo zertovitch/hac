@@ -149,9 +149,7 @@ package body HAC_Sys.Parser.Packages is
   is
     use Co_Defs, Defs, Parser.Enter_Def, Errors;
     use type Nesting_level;
-    Pkg_UName     : constant String := To_String (CD.IdTab (Pkg_Idx).name);
-    Pkg_UName_Dot : constant String := Pkg_UName & '.';
-    Pkg_Initial   : constant Character := Pkg_UName (Pkg_UName'First);
+    Pkg_UName : constant String := To_String (CD.IdTab (Pkg_Idx).name);
     Id_Alias, dummy_id_idx : Natural;
     pkg_table_index : Positive;
   begin
@@ -177,7 +175,7 @@ package body HAC_Sys.Parser.Packages is
         --  We have spotted an item with the correct prefix.
         --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
         --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
-        Start := Full_UName'First + Pkg_UName_Dot'Length;
+        Start := Full_UName'First + Pkg_UName'Length + 1;
         Full_Name := To_String (CD.IdTab (i).name_with_case);
         declare
           Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);

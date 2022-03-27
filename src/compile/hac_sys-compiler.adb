@@ -228,7 +228,7 @@ package body HAC_Sys.Compiler is
     Create (asm_dump, Out_File, file_name);
     PCode.Dump
       (CD.ObjCode (CD.ObjCode'First .. CD.LC - 1),  --  Dump only compiled part.
-       CD.Strings_Constants_Table.all,
+       CD.Strings_Constants_Table,
        CD.Float_Constants_Table,
        asm_dump);
     Close (asm_dump);

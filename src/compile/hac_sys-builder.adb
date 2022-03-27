@@ -1,11 +1,21 @@
 with HAC_Sys.Compiler,
+     HAC_Sys.Defs,
      HAC_Sys.Errors;
 
 with Ada.Characters.Handling,
-     Ada.Exceptions;
-with HAC_Sys.Defs;
+     Ada.Exceptions,
+     Ada.Unchecked_Deallocation;
 
 package body HAC_Sys.Builder is
+
+  overriding procedure Finalize (BD : in out Build_Data) is
+
+    procedure Unchecked_Free is
+      new Ada.Unchecked_Deallocation (Co_Defs.Compiler_Data, Compiler_Data_Access);
+
+  begin
+    Unchecked_Free (BD.CD);
+  end Finalize;
 
   procedure Compile_Pending_Bodies_Single_Round
     (BD : in out Build_Data; num_pending : out Natural)
@@ -36,7 +46,7 @@ package body HAC_Sys.Builder is
         previous_context :=
           BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
         Compiler.Compile_Unit
-          (BD.CD, BD.LD, upper_name, fn, False,
+          (BD.CD.all, BD.LD, upper_name, fn, False,
            lu.id_index,
            lu.id_body_index,
            previous_context,
@@ -65,7 +75,7 @@ package body HAC_Sys.Builder is
     BD.LD.Map.Clear;
     Librarian.Register_Unit (BD.LD, main_unit);
     Compiler.Compile_Main (
-      BD.CD,
+      BD.CD.all,
       BD.LD,
       To_String (BD.main_name_hint),
       To_String (BD.cmp_dump_file_name),
@@ -77,35 +87,35 @@ package body HAC_Sys.Builder is
 
     if BD.CD.trace.detail_level >= 2 then
       Compiler.Progress_Message
-        (BD.CD, "--  Compilation of eventual with'ed unit's bodies  --");
+        (BD.CD.all, "--  Compilation of eventual with'ed unit's bodies  --");
     end if;
     loop
       Compile_Pending_Bodies_Single_Round (BD, num_pending);
       if num_pending > 0 and BD.CD.trace.detail_level >= 2 then
         Compiler.Progress_Message
-          (BD.CD, "--  Compiled bodies:" & Integer'Image (num_pending));
+          (BD.CD.all, "--  Compiled bodies:" & Integer'Image (num_pending));
       end if;
       exit when num_pending = 0;
     end loop;
     if BD.CD.comp_dump_requested then
-      Compiler.Print_Tables (BD.CD);
+      Compiler.Print_Tables (BD.CD.all);
       Close (BD.CD.comp_dump);
     end if;
     if BD.asm_dump_file_name /= "" then
-      Compiler.Dump_Asm (BD.CD, To_String (BD.asm_dump_file_name));
+      Compiler.Dump_Asm (BD.CD.all, To_String (BD.asm_dump_file_name));
     end if;
   exception
     when Errors.Compilation_abandoned =>
       --  Just too many errors...
-      Errors.Compilation_Errors_Summary (BD.CD);
+      Errors.Compilation_Errors_Summary (BD.CD.all);
       if BD.CD.comp_dump_requested then
-        Compiler.Print_Tables (BD.CD);
+        Compiler.Print_Tables (BD.CD.all);
         Close (BD.CD.comp_dump);
       end if;
-      Compiler.Dump_Asm (BD.CD, To_String (BD.asm_dump_file_name));
+      Compiler.Dump_Asm (BD.CD.all, To_String (BD.asm_dump_file_name));
     when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
       Errors.Error
-        (BD.CD,
+        (BD.CD.all,
          Defs.err_library_error,
          "Circular unit dependency (""->"" means ""depends on""): " &
          To_String (BD.main_name_hint) & " -> " &
@@ -163,18 +173,18 @@ package body HAC_Sys.Builder is
   )
   is
   begin
-    Compiler.Set_Message_Feedbacks (BD.CD, trace_params);
+    Compiler.Set_Message_Feedbacks (BD.CD.all, trace_params);
   end Set_Message_Feedbacks;
 
   function Build_Successful (BD : Build_Data) return Boolean is
   begin
-    return Compiler.Unit_Compilation_Successful (BD.CD);
+    return Compiler.Unit_Compilation_Successful (BD.CD.all);
     --  NB: currently, only full builds are supported.
   end Build_Successful;
 
   function Object_Code_Size (BD : Build_Data) return Natural is
   begin
-    return Compiler.Unit_Object_Code_Size (BD.CD);
+    return Compiler.Unit_Object_Code_Size (BD.CD.all);
     --  Whatever the build mode, the entire object code lands into Main_CD's object code.
   end Object_Code_Size;
 
