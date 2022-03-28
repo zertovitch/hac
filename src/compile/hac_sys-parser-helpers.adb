@@ -121,7 +121,8 @@ package body HAC_Sys.Parser.Helpers is
   After_Semicolon_after_Declaration : constant Symset :=
     Declaration_X_Subprogram_Symbol +
     Block_Begin_Symbol +
-    END_Symbol;
+    END_Symbol +
+    PRIVATE_Symbol;
 
   Comma_or_colon : constant Symset :=
     Symset'(Comma | Colon => True, others => False);

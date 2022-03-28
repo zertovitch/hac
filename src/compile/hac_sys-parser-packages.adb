@@ -21,15 +21,37 @@ package body HAC_Sys.Parser.Packages is
   )
   is
     use Co_Defs, Defs, Errors, HAL, Helpers;
+    use type HAC_Integer;
     package_name           : constant Alfa := CD.Id;
     package_name_with_case : constant Alfa := CD.Id_with_case;
+    package_id_index       : constant Natural := CD.Id_Count;
     previous_pkg_prefix    : constant HAL.VString := CD.pkg_prefix;
     subpkg_needs_body : Boolean;
+    in_private : Boolean := False;
     dummy_forward : Natural;
     current_pkg_table_index : Positive;
+    subprogram_kind : Declaration_Kind;
+    --
+    procedure Mark_Last_Declaration is
+    begin
+      if CD.Id_Count > package_id_index then
+        if in_private then
+          CD.Packages_Table (current_pkg_table_index).last_private_declaration := CD.Id_Count;
+        else
+          CD.Packages_Table (current_pkg_table_index).last_public_declaration := CD.Id_Count;
+        end if;
+      end if;
+    end Mark_Last_Declaration;
+    --
   begin
     Feed_Packages_Table (CD);
+    --  CD.Packages_Count can be incremented further during
+    --  this procedure due to subpackages, so we need to memorize it.
     current_pkg_table_index := CD.Packages_Count;
+    --
+    CD.Packages_Table (current_pkg_table_index).last_public_declaration  := 0;
+    CD.Packages_Table (current_pkg_table_index).last_private_declaration := 0;
+    --
     Scanner.InSymbol (CD);  --  Absorb the identifier symbol.
     Need (CD, IS_Symbol, err_IS_missing);
     --  Set new prefix, support also eventual subpackages:
@@ -37,7 +59,7 @@ package body HAC_Sys.Parser.Packages is
     needs_body := False;
     loop
       Test (
-        CD, Declaration_Symbol + END_Symbol,
+        CD, Declaration_Symbol + END_Symbol + PRIVATE_Symbol,
         Empty_Symset,
         err_incorrectly_used_symbol,
         stop_on_error => True  --  Exception is raised there if there is an error.
@@ -57,11 +79,16 @@ package body HAC_Sys.Parser.Packages is
           Tasking.Task_Declaration (CD, FSys, subprogram_level);
         when USE_Symbol =>
           Use_Clause (CD, subprogram_level);
-        when PROCEDURE_Symbol |
-             FUNCTION_Symbol
-          =>
-          Error (CD, err_not_yet_implemented, "Subprograms not yet implemented for packages");
-          --  Subprogram_Declaration_or_Body;
+        when PROCEDURE_Symbol | FUNCTION_Symbol =>
+          Subprogram_Declaration_or_Body (CD, FSys, subprogram_level, subprogram_kind);
+          if subprogram_kind = complete then
+            Error
+              (CD, err_syntax_error,
+               ": subprogram body not allowed in package specification", major);
+          end if;
+          if subprogram_level = 0 then
+            Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
+          end if;
           needs_body := True;
         when PACKAGE_Symbol =>
           --  Subpackage:
@@ -79,11 +106,18 @@ package body HAC_Sys.Parser.Packages is
           Package_Declaration (CD, FSys, subprogram_level, subpkg_needs_body);
           Need_Semicolon_after_Declaration (CD, FSys);
           needs_body := needs_body or subpkg_needs_body;
+        when PRIVATE_Symbol =>
+          Scanner.InSymbol (CD);
+          Mark_Last_Declaration;
+          if in_private then
+            Error (CD, err_syntax_error, ": only one private part allowed per package");
+          end if;
+          in_private := True;
         when others => null;
       end case;
       exit when CD.Sy = END_Symbol;
     end loop;
-    CD.Packages_Table (current_pkg_table_index).last_public_declaration := CD.Id_Count;
+    Mark_Last_Declaration;
     Scanner.InSymbol (CD);  --  Absorb END symbol
     if CD.Sy = IDent then
       --  !! For supporting child package names ("x.y.z"), reuse/share Check_ident_after_END

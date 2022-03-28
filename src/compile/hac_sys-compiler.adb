@@ -418,23 +418,21 @@ package body HAC_Sys.Compiler is
     Unit_Id_with_case : Alfa;
     unit_block : Parser.Block_Data_Type;
     indent : Natural := 0;
+    function Spec_or_Body return String is
+      (" (" & (if as_specification then "specification)" else "body)"));
   begin
     CD.recursion := CD.recursion + 1;
     if CD.trace.detail_level >= 1 then
       if CD.trace.detail_level >= 2 then
         indent := CD.recursion;
       end if;
-      Progress_Message (CD,
-        indent * '.' &
-        "Compiling: " & file_name &
-        " (" & (if as_specification then "specification" else "body") & ')');
+      Progress_Message (CD, indent * '.' & "Compiling: " & file_name & Spec_or_Body);
     end if;
-
     begin
       Open (src, In_File, file_name);
     exception
       when Name_Error =>
-        Error (CD, err_library_error, "File " & file_name & " not found", major);
+        Error (CD, err_library_error, "File " & file_name & Spec_or_Body & " not found", major);
     end;
     Builder.Skip_Shebang (src, shebang_offset);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
@@ -454,6 +452,7 @@ package body HAC_Sys.Compiler is
     Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.
     case CD.Sy is
       when PACKAGE_Symbol =>
+        Scanner.InSymbol (CD);
         if CD.Sy = BODY_Symbol then
           Scanner.InSymbol (CD);  --  Absorb the BODY symbol.
           kind := Package_Body;
@@ -468,13 +467,14 @@ package body HAC_Sys.Compiler is
         end if;
       when FUNCTION_Symbol =>
         kind := Function_Unit;
+        Scanner.InSymbol (CD);
       when PROCEDURE_Symbol =>
         kind := Procedure_Unit;
+        Scanner.InSymbol (CD);
       when others =>
         kind := Package_Declaration;  --  Useless, but this removes an ObjectAda warning.
         Error (CD, err_syntax_error, ": `package`, `procedure` or `function` expected here", major);
     end case;
-    Scanner.InSymbol (CD);
     if CD.Sy /= IDent then
       Error (CD, err_identifier_missing, severity => major);
     end if;

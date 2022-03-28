@@ -149,30 +149,25 @@ package body HAC_Sys.Librarian is
     use Co_Defs, Defs;
     unit_idx : Natural;
     upper_name_alfa : constant Alfa := To_Alfa (Upper_Name);
-    unit_initial : constant Character := Upper_Name (Upper_Name'First);
-    unit_uname_dot : constant String := Upper_Name & '.';
   begin
     --  Activate the unit itself:
     CD.CUD.level_0_def.Include (upper_name_alfa);
     --  HAL.PUT_LINE ("WITH: Activating " & Upper_Name);
     unit_idx := Parser.Helpers.Locate_Identifier (CD, upper_name_alfa, 0);
     --  Only packages specifications need to have their items made visible.
-    if CD.IdTab (unit_idx).entity /= Paquetage then
-      return;
-    end if;
-    for Pkg_Id of CD.IdTab (unit_idx + 1 .. CD.Id_Count) loop
-      --  Quick exit if the first character doesn't match the unit's first letter:
-      exit when Initial (Pkg_Id.name) /= unit_initial;
+    if CD.IdTab (unit_idx).entity = Paquetage then
       declare
-        full_upper_name : constant String := To_String (Pkg_Id.name);
+        pkg_table_entry : Package_Table_Entry
+          renames CD.Packages_Table (CD.IdTab (unit_idx).block_pkg_ref);
       begin
-        exit when full_upper_name'Length <= unit_uname_dot'Length
-          or else full_upper_name (full_upper_name'First .. full_upper_name'First - 1 + unit_uname_dot'Length) /=
-                   unit_uname_dot;
-        --  We have a Pkg.Item to activate
-        CD.CUD.level_0_def.Include (Pkg_Id.name);
+        for declaration_in_pkg of
+          CD.IdTab (pkg_table_entry.first_public_declaration ..
+                    pkg_table_entry.last_public_declaration)
+        loop
+          CD.CUD.level_0_def.Include (declaration_in_pkg.name);
+        end loop;
       end;
-    end loop;
+    end if;
   end Activate_Unit;
 
   procedure Compile_WITHed_Unit (

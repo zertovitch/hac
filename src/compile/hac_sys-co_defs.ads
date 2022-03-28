@@ -95,8 +95,9 @@ package HAC_Sys.Co_Defs is
   end record;
 
   type Package_Table_Entry is record
-    first_public_declaration : Positive;
-    last_public_declaration  : Positive;
+    first_public_declaration  : Positive;
+    last_public_declaration   : Natural;   -- = 0 if none.
+    last_private_declaration  : Natural;   -- = 0 if none.
   end record;
 
   type Entity_Kind is  --  RM 3.1
