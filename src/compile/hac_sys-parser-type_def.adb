@@ -34,17 +34,13 @@ package body HAC_Sys.Parser.Type_Def is
   begin
     InSymbol;  --  Consume TYPE or SUBTYPE symbol.
     Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
-    if Length (CD.pkg_prefix) = 0 then
-      Enter (CD, Level, CD.Id, CD.Id_with_case, TypeMark, forward_id_idx);
-    else
-      Enter
-        (CD,
-         Level,
-         To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id)),
-         To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id_with_case)),
-         TypeMark,
-         forward_id_idx);
-    end if;
+    Enter
+      (CD,
+       Level,
+       To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id)),
+       To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id_with_case)),
+       TypeMark,
+       forward_id_idx);
     T1 := CD.Id_Count;
     InSymbol;
     Need (CD, IS_Symbol, err_IS_missing);

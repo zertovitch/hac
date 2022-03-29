@@ -373,7 +373,7 @@ package body HAC_Sys.Parser is
     kind          :    out Co_Defs.Declaration_Kind
   )
   is
-    use Co_Defs, Compiler.PCode_Emit, Defs, Enter_Def, Errors, PCode;
+    use Co_Defs, Compiler.PCode_Emit, Defs, Enter_Def, Errors, HAL, PCode;
     use type HAC_Integer;
     new_id_idx, old_id_idx : Natural;
     IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
@@ -387,11 +387,13 @@ package body HAC_Sys.Parser is
     declare
       id_subprog_with_case : constant Alfa := CD.Id_with_case;
     begin
-      if IsFun then
-        Enter (CD, current_level, CD.Id, id_subprog_with_case, Funktion, old_id_idx);
-      else
-        Enter (CD, current_level, CD.Id, id_subprog_with_case, Prozedure, old_id_idx);
-      end if;
+      Enter
+        (CD,
+         current_level,
+         To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id)),
+         To_Alfa (To_String (CD.pkg_prefix) & To_String (id_subprog_with_case)),
+         (if IsFun then Funktion else Prozedure),
+         old_id_idx);
       --  NB: now old_id_idx, if different than No_Id, points to the
       --  eventual previous declaration of the subprogram with that name.
       Scanner.InSymbol (CD);

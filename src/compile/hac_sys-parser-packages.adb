@@ -22,10 +22,10 @@ package body HAC_Sys.Parser.Packages is
   is
     use Co_Defs, Defs, Errors, HAL, Helpers;
     use type HAC_Integer;
-    package_name           : constant Alfa := CD.Id;
-    package_name_with_case : constant Alfa := CD.Id_with_case;
+    package_name           : constant Alfa    := CD.Id;
+    package_name_with_case : constant Alfa    := CD.Id_with_case;
     package_id_index       : constant Natural := CD.Id_Count;
-    previous_pkg_prefix    : constant HAL.VString := CD.pkg_prefix;
+    previous_pkg_prefix    : constant VString := CD.pkg_prefix;
     subpkg_needs_body : Boolean;
     in_private : Boolean := False;
     dummy_forward : Natural;
@@ -52,7 +52,7 @@ package body HAC_Sys.Parser.Packages is
     CD.Packages_Table (current_pkg_table_index).last_public_declaration  := 0;
     CD.Packages_Table (current_pkg_table_index).last_private_declaration := 0;
     --
-    Scanner.InSymbol (CD);  --  Absorb the identifier symbol.
+    Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);
     --  Set new prefix, support also eventual subpackages:
     CD.pkg_prefix := CD.pkg_prefix & To_String (package_name) & '.';
@@ -69,7 +69,7 @@ package body HAC_Sys.Parser.Packages is
           Error
             (CD,
              err_not_yet_implemented,
-             "variables and constants in package specs",
+             "variables and constants in packages",
              major);
           --  Const_Var.Var_Declaration (CD, FSys, block_data);
         when TYPE_Symbol |
@@ -149,9 +149,104 @@ package body HAC_Sys.Parser.Packages is
     subprogram_level     :        Defs.Nesting_level
   )
   is
-    use Defs, Errors;
+    use Co_Defs, Defs, Errors, HAL, Helpers;
+    use type HAC_Integer;
+    package_name           : constant Alfa    := CD.Id;
+    package_name_with_case : constant Alfa    := CD.Id_with_case;
+    previous_pkg_prefix    : constant VString := CD.pkg_prefix;
+    subprogram_kind : Declaration_Kind;
+    dummy_forward : Natural;
+    subpkg_needs_body : Boolean;
+    subpackage_body : Boolean;
   begin
-    Error (CD, err_not_yet_implemented, "packages bodies", major);
+    Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
+    Need (CD, IS_Symbol, err_IS_missing);
+    CD.pkg_prefix := CD.pkg_prefix & To_String (package_name) & '.';
+    loop
+      Test (
+        CD, Declaration_Symbol + BEGIN_Symbol + END_Symbol + PRIVATE_Symbol,
+        Empty_Symset,
+        err_incorrectly_used_symbol,
+        stop_on_error => True  --  Exception is raised there if there is an error.
+      );
+      case CD.Sy is
+        when IDent =>
+          Error
+            (CD,
+             err_not_yet_implemented,
+             "variables and constants in packages",
+             major);
+          --  Const_Var.Var_Declaration (CD, FSys, block_data);
+        when TYPE_Symbol |
+             SUBTYPE_Symbol =>
+          Type_Def.Type_Declaration (CD, subprogram_level, FSys + END_Symbol);
+        when TASK_Symbol =>
+          Tasking.Task_Declaration (CD, FSys, subprogram_level);
+        when USE_Symbol =>
+          Use_Clause (CD, subprogram_level);
+        when PROCEDURE_Symbol | FUNCTION_Symbol =>
+          Subprogram_Declaration_or_Body (CD, FSys, subprogram_level, subprogram_kind);
+          if subprogram_level = 0 then
+            Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
+          end if;
+        when PACKAGE_Symbol =>
+          --  Subpackage:
+          Scanner.InSymbol (CD);
+          subpackage_body := False;
+          if CD.Sy = BODY_Symbol then
+            Scanner.InSymbol (CD);
+            subpackage_body := True;
+          end if;
+          if CD.Sy /= IDent then
+            Error (CD, err_identifier_missing, severity => major);
+          end if;
+          Enter_Def.Enter
+            (CD,
+             subprogram_level,
+             To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id)),
+             To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id_with_case)),
+             Paquetage,
+             dummy_forward);
+          --  !!  forward not so dummy...
+          --  !!  Activate eventual subpackage spec contents...
+          if subpackage_body then
+            Package_Body (CD, FSys, subprogram_level);
+          else
+            Package_Declaration (CD, FSys, subprogram_level, subpkg_needs_body);
+          end if;
+          --  !!  Do something with subpkg_needs_body ...
+          Need_Semicolon_after_Declaration (CD, FSys);
+        when PRIVATE_Symbol =>
+          Error (CD, err_syntax_error, ": ""private"" belongs to specification");
+          Scanner.InSymbol (CD);
+        when others => null;
+      end case;
+      exit when CD.Sy = BEGIN_Symbol or CD.Sy = END_Symbol;
+    end loop;
+    Check_Incomplete_Definitions (CD, subprogram_level);
+    if CD.Sy = BEGIN_Symbol then
+      Error (CD, err_not_yet_implemented, "initialisation part in packages", major);
+    end if;
+    Scanner.InSymbol (CD);  --  Absorb END symbol
+    if CD.Sy = IDent then
+      --  !! For supporting child package names ("x.y.z"), reuse/share Check_ident_after_END
+      if CD.Id /= package_name then
+        Error
+          (CD, err_incorrect_name_after_END,
+           hint => To_String (package_name_with_case),
+           severity => minor
+          );
+      end if;
+      Scanner.InSymbol (CD);  --  Absorb identifier symbol
+    end if;
+    --  Test semicolon but don't absorb it (we might be at the end of the stream).
+    Test
+       (CD, Semicolon_Set,
+        Empty_Symset,
+        err_incorrectly_used_symbol,
+        stop_on_error => True);  --  Exception is raised there if there is an error.
+
+    CD.pkg_prefix := previous_pkg_prefix;
   end Package_Body;
 
   procedure Use_Clause (
