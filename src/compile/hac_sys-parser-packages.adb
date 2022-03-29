@@ -69,7 +69,7 @@ package body HAC_Sys.Parser.Packages is
           Error
             (CD,
              err_not_yet_implemented,
-             "Variables and constants not yet implemented for packages",
+             "variables and constants in package specs",
              major);
           --  Const_Var.Var_Declaration (CD, FSys, block_data);
         when TYPE_Symbol |
@@ -149,10 +149,9 @@ package body HAC_Sys.Parser.Packages is
     subprogram_level     :        Defs.Nesting_level
   )
   is
+    use Defs, Errors;
   begin
-    pragma Compile_Time_Warning
-      (Standard.True, "Package_Body unimplemented");
-    raise Program_Error with "Unimplemented procedure Package_Body";
+    Error (CD, err_not_yet_implemented, "packages bodies", major);
   end Package_Body;
 
   procedure Use_Clause (
@@ -240,7 +239,7 @@ package body HAC_Sys.Parser.Packages is
             CD.IdTab (CD.Id_Count).adr_or_sz := i;  --  i = Aliased entity's index.
           else
             --  Here we have found an identical and
-            --  visible identifier at the same level.
+            --  visible short identifier at the same level.
             if CD.IdTab (Id_Alias).entity = Alias
               and then CD.IdTab (Id_Alias).adr_or_sz = i
             then
@@ -253,7 +252,7 @@ package body HAC_Sys.Parser.Packages is
                   null;  --  Just a duplicate "use" (we could emit a warning for that).
                 else
                   --  Re-activate definition at zero level (context clause).
-                  CD.CUD.level_0_def.Include (Short_Id);
+                  CD.CUD.level_0_def.Include (Short_Id, Id_Alias);
                   --  HAL.PUT_LINE ("Activate USEd item: " & Short_Id_str);
                 end if;
               end if;

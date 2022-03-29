@@ -15,7 +15,7 @@ with HAC_Sys.Defs,
 
 with HAL;
 
-with Ada.Containers.Hashed_Sets,
+with Ada.Containers.Hashed_Maps,
      Ada.Streams,
      Ada.Strings.Fixed.Hash,
      Ada.Text_IO;
@@ -180,7 +180,11 @@ package HAC_Sys.Co_Defs is
 
   type Source_Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
 
-  package Id_Set is new Ada.Containers.Hashed_Sets (Alfa, Ada.Strings.Fixed.Hash, "=");
+  package Id_Maps is new Ada.Containers.Hashed_Maps
+    (Key_Type        => Alfa,
+     Element_Type    => Positive,
+     Hash            => Ada.Strings.Fixed.Hash,
+     Equivalent_Keys => "=");
 
   type Current_Unit_Data is record
     --  Current source code information and scanner data
@@ -193,7 +197,7 @@ package HAC_Sys.Co_Defs is
     CC               : Integer;             --  Character counter (=column in current line)
     LL               : Natural;             --  Length of current line
     --  Level 0 definitions visible to currently compiled unit:
-    level_0_def      : Id_Set.Set;
+    level_0_def      : Id_Maps.Map;
   end record;
 
   --  Set current source stream (file, editor data, zipped file,...)

@@ -30,12 +30,12 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     end Enter_Std_Typ;
     --
     unit : Library_Unit :=
-      (full_name     => HAL.To_VString ("Standard"),
-       kind          => Package_Declaration,
-       status        => Done,
-       id_index      => No_Id,
-       id_body_index => No_Id,
-       spec_context  => Co_Defs.Id_Set.Empty_Set);
+        (full_name     => HAL.To_VString ("Standard"),
+         kind          => Package_Declaration,
+         status        => Done,
+         id_index      => No_Id,
+         id_body_index => No_Id,
+         spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
     Enter_Library_Level_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
@@ -98,12 +98,12 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     end Enter_HAL_Proc;
 
     unit : Library_Unit :=
-      (full_name     => HAL.To_VString (HAL_Name),
-       kind          => Package_Declaration,
-       status        => Done,
-       id_index      => No_Id,
-       id_body_index => No_Id,
-       spec_context  => Co_Defs.Id_Set.Empty_Set);
+        (full_name     => HAL.To_VString (HAL_Name),
+         kind          => Package_Declaration,
+         status        => Done,
+         id_index      => No_Id,
+         id_body_index => No_Id,
+         spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
     Enter_Library_Level_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
     Parser.Packages.Feed_Packages_Table (CD);

@@ -22,7 +22,7 @@ package body HAC_Sys.Builder is
   is
     use HAL, Librarian;
     pending : Library_Unit_Vectors.Vector;
-    previous_context : Co_Defs.Id_Set.Set;
+    previous_context : Co_Defs.Id_Maps.Map;
     needs_body_dummy : Boolean;
   begin
     for lu of BD.LD.Library loop
@@ -69,7 +69,7 @@ package body HAC_Sys.Builder is
        status        => In_Progress,    --  Temporary value.
        id_index      => Co_Defs.No_Id,  --  Temporary value.
        id_body_index => Co_Defs.No_Id,  --  Temporary value.
-       spec_context  => Co_Defs.Id_Set.Empty_Set);
+       spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
     BD.LD.Library.Clear;
     BD.LD.Map.Clear;

@@ -403,11 +403,21 @@ package body HAC_Sys.Parser.Helpers is
     ID_Copy : Alfa;
     is_name_matched : Boolean;
     dot_pos : Integer;
-    use HAL;
+    l0_def : Id_Maps.Cursor;
+    use HAL, Id_Maps;
   begin
     L := Level;
     --  Scan all Id's on level L down to 0:
     loop
+      if L = 0 and then Level_0_Filter then
+        l0_def := CD.CUD.level_0_def.Find (Id);
+        if l0_def /= No_Element then
+          --  In this case there is no point
+          --  doing a tedious linear search :-) .
+          J := Element (l0_def);
+          exit;
+        end if;
+      end if;
       J := CD.Blocks_Table (CD.Display (L)).Last_Id_Idx;
       --  Scan all Id's on level L:
       loop
@@ -445,11 +455,6 @@ package body HAC_Sys.Parser.Helpers is
           exit when not Level_0_Filter;
           --    * Activated library-level definition:
           exit when CD.CUD.level_0_def.Contains (CD.IdTab (J).name);
-          --  !! To do:
-          --     Problem: possible performance issue when large
-          --     specifications lay in the library.
-          --     Solution direct skipping of all of the package's
-          --     definitions, when package is deactivated.
         end if;
         J := CD.IdTab (J).link;  --  Skip this identifier.
       end loop;

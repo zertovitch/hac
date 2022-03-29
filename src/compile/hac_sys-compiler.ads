@@ -43,7 +43,7 @@ package HAC_Sys.Compiler is
     as_specification       :        Boolean;
     specification_id_index :        Natural;
     new_id_index           :    out Natural;
-    unit_context           : in out Co_Defs.Id_Set.Set;   --  in : empty for spec, spec's context for body
+    unit_context           : in out Co_Defs.Id_Maps.Map;  --  in : empty for spec, spec's context for body
                                                           --  out: spec's context or body's full context.
     kind                   :    out Librarian.Unit_Kind;  --  The unit kind is discovered during parsing.
     needs_body             :    out Boolean

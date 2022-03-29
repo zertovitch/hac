@@ -54,7 +54,7 @@ package HAC_Sys.Librarian is
     status        : Compilation_Status;
     id_index      : Natural;
     id_body_index : Natural;
-    spec_context  : Co_Defs.Id_Set.Set;  --  WITH & USE's visible to the spec.
+    spec_context  : Co_Defs.Id_Maps.Map;  --  WITH & USE's visible to the spec.
   end record;
 
   package Library_Unit_Vectors is new Ada.Containers.Vectors (Positive, Library_Unit);

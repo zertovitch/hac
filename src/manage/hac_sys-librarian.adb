@@ -103,7 +103,7 @@ package body HAC_Sys.Librarian is
       adr_or_sz      => Size
     );
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
-    CD.CUD.level_0_def.Include (Alfa_Ident_Upper);
+    CD.CUD.level_0_def.Include (Alfa_Ident_Upper, CD.Id_Count);
   end Enter_Library_Level_Def;
 
   --  GNAT_Naming returns the file name that GNAT expects for a unit
@@ -150,21 +150,23 @@ package body HAC_Sys.Librarian is
     unit_idx : Natural;
     upper_name_alfa : constant Alfa := To_Alfa (Upper_Name);
   begin
-    --  Activate the unit itself:
-    CD.CUD.level_0_def.Include (upper_name_alfa);
     --  HAL.PUT_LINE ("WITH: Activating " & Upper_Name);
-    unit_idx := Parser.Helpers.Locate_Identifier (CD, upper_name_alfa, 0);
+    --  Activate the unit itself:
+    unit_idx := Parser.Helpers.Locate_Identifier
+      (CD, upper_name_alfa, Level => 0, Level_0_Filter => False);
+    CD.CUD.level_0_def.Include (upper_name_alfa, unit_idx);
     --  Only packages specifications need to have their items made visible.
     if CD.IdTab (unit_idx).entity = Paquetage then
       declare
         pkg_table_entry : Package_Table_Entry
           renames CD.Packages_Table (CD.IdTab (unit_idx).block_pkg_ref);
       begin
-        for declaration_in_pkg of
-          CD.IdTab (pkg_table_entry.first_public_declaration ..
-                    pkg_table_entry.last_public_declaration)
+        for declaration_in_pkg_index in
+          pkg_table_entry.first_public_declaration ..
+          pkg_table_entry.last_public_declaration
         loop
-          CD.CUD.level_0_def.Include (declaration_in_pkg.name);
+          CD.CUD.level_0_def.Include
+            (CD.IdTab (declaration_in_pkg_index).name, declaration_in_pkg_index);
         end loop;
       end;
     end if;
@@ -186,7 +188,7 @@ package body HAC_Sys.Librarian is
        status        => In_Progress,       --  Temporary value.
        id_index      => Co_Defs.No_Id,     --  Temporary value.
        id_body_index => Co_Defs.No_Id,     --  Temporary value.
-       spec_context  => Co_Defs.Id_Set.Empty_Set);
+       spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
     --
     --  Add new unit name to the library catalogue
