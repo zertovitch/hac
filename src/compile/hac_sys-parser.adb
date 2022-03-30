@@ -47,7 +47,7 @@ package body HAC_Sys.Parser is
       --
       while CD.Sy = IDent loop
         T0 := CD.Id_Count;
-        Enter_Variables (CD, block_data.level);
+        Enter_Variables (CD, block_data.level, False);
         --
         if CD.Sy = Colon then  --  The ':'  in  "function F (x, y : in Real) return Real;"
           InSymbol;
@@ -237,7 +237,7 @@ package body HAC_Sys.Parser is
     procedure Process_Body is
     begin
       CD.IdTab (block_data.block_id_index).decl_kind := complete;
-      Check_Spec_Body_Consistency
+      Check_Subprogram_Spec_Body_Consistency
         (CD,
          block_data.previous_declaration_id_index,
          block_data.block_id_index,
@@ -373,7 +373,7 @@ package body HAC_Sys.Parser is
     kind          :    out Co_Defs.Declaration_Kind
   )
   is
-    use Co_Defs, Compiler.PCode_Emit, Defs, Enter_Def, Errors, HAL, PCode;
+    use Co_Defs, Compiler.PCode_Emit, Defs, Enter_Def, Errors, PCode;
     use type HAC_Integer;
     new_id_idx, old_id_idx : Natural;
     IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
@@ -390,8 +390,8 @@ package body HAC_Sys.Parser is
       Enter
         (CD,
          current_level,
-         To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id)),
-         To_Alfa (To_String (CD.pkg_prefix) & To_String (id_subprog_with_case)),
+         CD.Id,
+         id_subprog_with_case,
          (if IsFun then Funktion else Prozedure),
          old_id_idx);
       --  NB: now old_id_idx, if different than No_Id, points to the

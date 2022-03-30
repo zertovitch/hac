@@ -109,6 +109,7 @@ procedure HAC is
     end if;
     --
     if not Build_Successful (BD) then
+      Put_Line (Current_Error, "Errors were found. Build failed.");
       Failure;
       return;
     end if;
@@ -203,28 +204,41 @@ procedure HAC is
     Show_License (Current_Error, "hac_sys.ads");
   end Help;
 
-  no_hac_ing : Boolean := True;
+  hac_ing : Boolean := False;
+  quit : Boolean := False;
+
+  procedure Process_Argument (arg : String; arg_pos : Positive) is
+    use Ada.Text_IO;
+  begin
+    if arg = "-h" then
+      quit := True;
+    elsif arg = "-v" or else arg = "-v1" then
+      verbosity := 1;
+    elsif arg = "-v2" then
+      verbosity := 2;
+    elsif arg = "-a" then
+      asm_dump_file_name := To_Unbounded_String (assembler_output_name);
+    elsif arg = "-d" then
+      cmp_dump_file_name := To_Unbounded_String (compiler_dump_name);
+    elsif arg (arg'First) = '-' then
+      Put_Line (Current_Error, "Unknown option: """ & arg & '"');
+      New_Line (Current_Error);
+      quit := True;
+    else
+      Compile_and_interpret_file (arg, arg_pos);
+      hac_ing := True;
+      quit := True;  --  The other arguments are for the HAC program.
+    end if;
+  end Process_Argument;
+
   use Ada.Command_Line;
 
 begin
   for i in 1 .. Argument_Count loop
-    if Argument (i) = "-h" then
-      exit;
-    elsif Argument (i) = "-v" or else Argument (i) = "-v1" then
-      verbosity := 1;
-    elsif Argument (i) = "-v2" then
-      verbosity := 2;
-    elsif Argument (i) = "-a" then
-      asm_dump_file_name := To_Unbounded_String (assembler_output_name);
-    elsif Argument (i) = "-d" then
-      cmp_dump_file_name := To_Unbounded_String (compiler_dump_name);
-    else
-      Compile_and_interpret_file (Argument (i), i);
-      no_hac_ing := False;
-      exit;  --  The other arguments are for the HAC program.
-    end if;
+    Process_Argument (Argument (i), i);
+    exit when quit;
   end loop;
-  if no_hac_ing then
+  if not hac_ing then
     Help;
     if verbosity > 1 then
       Ada.Text_IO.Put_Line ("Size of a HAC VM memory unit:" &

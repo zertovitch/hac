@@ -32,8 +32,9 @@ package HAC_Sys.Parser.Enter_Def is
   );
 
   procedure Enter_Variables (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level
+    CD       : in out Co_Defs.Compiler_Data;
+    Level    :        Defs.Nesting_level;
+    Prefixed :        Boolean
   );
 
 end HAC_Sys.Parser.Enter_Def;

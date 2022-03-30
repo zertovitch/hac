@@ -435,12 +435,16 @@ package body HAC_Sys.Compiler is
         Error (CD, err_library_error, "File " & file_name & Spec_or_Body & " not found", major);
     end;
     Builder.Skip_Shebang (src, shebang_offset);
+    --  HAL.PUT_LINE("Compiling unit " & upper_name);
     Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
     --  Reset scanner data (line counter etc.) and
     --  library-level visible declarations (processed WITH of caller's compilation)
     Init (CD.CUD);
+    --  If we are compiling the body of a unit, unit_context already contains, automatically:
+    --    - the WITH and USE context clauses of the spec,
+    --    - the package's declarations, incuding the private part.
+    --  Basically the body is a continuation of the spec, possibly in another file.
     CD.CUD.level_0_def := unit_context;
-    --  HAL.PUT_LINE("Compiling unit " & upper_name);
 
     --
     --  We define Standard, or activate if this is not the first unit compiled.
@@ -532,6 +536,9 @@ package body HAC_Sys.Compiler is
         end case;
         needs_body := as_specification;
       when Package_Declaration =>
+        CD.IdTab (new_id_index).decl_kind := spec_resolved;
+        --  Why spec_resolved ? missing bodies for eventual suprograms
+        --  in that package are checked anyway.
         Parser.Packages.Package_Declaration (CD, Empty_Symset, 0, needs_body);
       when Package_Body =>
         Parser.Packages.Package_Body (CD, Empty_Symset, 0);

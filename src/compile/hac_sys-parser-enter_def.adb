@@ -1,6 +1,8 @@
 with HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
+with HAL;
+
 package body HAC_Sys.Parser.Enter_Def is
 
   use Co_Defs, Defs, Errors;
@@ -41,31 +43,40 @@ package body HAC_Sys.Parser.Enter_Def is
     last_id : constant Integer :=
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
     J : Integer := last_id;
+    use HAL;
+    pkg_prefix            : constant String := To_String (CD.pkg_prefix);
+    prefixed_Id           : constant Alfa := To_Alfa (pkg_prefix & To_String (Id));
+    prefixed_Id_with_case : constant Alfa := To_Alfa (pkg_prefix & To_String (Id_with_case));
   begin
     Forward_Decl_Id := No_Id;
     if CD.Id_Count = Id_Table_Max then
       Fatal (IDENTIFIERS);  --  Exception is raised there.
     end if;
-    CD.IdTab (No_Id).name := Id;  --  Sentinel
+    CD.IdTab (No_Id).name := prefixed_Id;  --  Sentinel
     --  Follow the chain of identifiers for current Level:
-    while CD.IdTab (J).name /= Id loop
+    while CD.IdTab (J).name /= prefixed_Id loop
       J := CD.IdTab (J).link;
     end loop;
     if J = No_Id then
       null;  --  All good: the identifier is new at this nesting level.
     elsif CD.IdTab (J).entity = K
-      and then (K = Prozedure or K = Funktion)
-      and then CD.IdTab (J).decl_kind = spec_unresolved
+      and then
+        (
+            ((K = Prozedure or K = Funktion)
+              and then CD.IdTab (J).decl_kind = spec_unresolved)
+          or else
+            (K = Paquetage and then CD.IdTab (J).decl_kind = spec_resolved)
+        )
     then
       Forward_Decl_Id := J;
     else
-      Error (CD, err_duplicate_identifier, To_String (Id), major);
+      Error (CD, err_duplicate_identifier, To_String (prefixed_Id), major);
     end if;
     --  Enter identifier in table IdTab
     CD.Id_Count            := CD.Id_Count + 1;
     CD.IdTab (CD.Id_Count) :=
-      (name           => Id,
-       name_with_case => Id_with_case,
+      (name           => prefixed_Id,
+       name_with_case => prefixed_Id_with_case,
        link           => last_id,
        entity         => K,
        read_only      => False,
@@ -79,7 +90,7 @@ package body HAC_Sys.Parser.Enter_Def is
     --  Update start of identifier chain:
     CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
     if Level = 0 then
-      CD.CUD.level_0_def.Include (Id, CD.Id_Count);
+      CD.CUD.level_0_def.Include (prefixed_Id, CD.Id_Count);
     end if;
   end Enter;
 
@@ -117,8 +128,9 @@ package body HAC_Sys.Parser.Enter_Def is
   --------------------------------------------------Enter_Variables-
 
   procedure Enter_Variables (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level
+    CD       : in out Co_Defs.Compiler_Data;
+    Level    :        Defs.Nesting_level;
+    Prefixed :        Boolean
   )
   is
     procedure Enter_Variable is
@@ -132,12 +144,23 @@ package body HAC_Sys.Parser.Enter_Def is
       end if;
     end Enter_Variable;
     --
+    use HAL;
+    need_prefix_mem : constant Boolean :=
+      (not Prefixed) and then Length (CD.pkg_prefix) > 0;
+    prefix_mem : VString;
   begin
+    if need_prefix_mem then
+      prefix_mem := CD.pkg_prefix;
+      CD.pkg_prefix := Null_VString;
+    end if;
     Enter_Variable;
     while CD.Sy = Comma loop  --  ','  in  "a, b, c : Integer;"
       Scanner.InSymbol (CD);
       Enter_Variable;
     end loop;
+    if need_prefix_mem then
+      CD.pkg_prefix := prefix_mem;
+    end if;
   end Enter_Variables;
 
 end HAC_Sys.Parser.Enter_Def;

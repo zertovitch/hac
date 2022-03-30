@@ -15,11 +15,9 @@ with HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
-with HAL;
-
 package body HAC_Sys.Parser.Type_Def is
 
-  use Co_Defs, Defs, Enter_Def, Helpers, Errors, HAL;
+  use Co_Defs, Defs, Enter_Def, Helpers, Errors;
   use type HAC_Integer;
 
   procedure Type_Declaration (
@@ -34,13 +32,7 @@ package body HAC_Sys.Parser.Type_Def is
   begin
     InSymbol;  --  Consume TYPE or SUBTYPE symbol.
     Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
-    Enter
-      (CD,
-       Level,
-       To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id)),
-       To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id_with_case)),
-       TypeMark,
-       forward_id_idx);
+    Enter (CD, Level, CD.Id, CD.Id_with_case, TypeMark, forward_id_idx);
     T1 := CD.Id_Count;
     InSymbol;
     Need (CD, IS_Symbol, err_IS_missing);
@@ -167,9 +159,9 @@ package body HAC_Sys.Parser.Type_Def is
       --
       loop
         if CD.Sy = IDent then
-          --  RM 3.8 Component declaration
+          --  RM 3.8: Record component declaration
           T0 := CD.Id_Count;
-          Enter_Variables (CD, Level);
+          Enter_Variables (CD, Level, False);
           Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
           T1 := CD.Id_Count;
           Type_Definition (

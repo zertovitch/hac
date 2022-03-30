@@ -359,7 +359,7 @@ package HAC_Sys.Parser.Helpers is
      old_id_idx :        Natural;
      id_current :        Alfa);
 
-  procedure Check_Spec_Body_Consistency
+  procedure Check_Subprogram_Spec_Body_Consistency
     (CD         : in out Compiler_Data;
      old_id_idx :        Natural;
      new_id_idx :        Natural;

@@ -84,7 +84,8 @@ package body HAC_Sys.Parser.Packages is
           if subprogram_kind = complete then
             Error
               (CD, err_syntax_error,
-               ": subprogram body not allowed in package specification", major);
+               ": subprogram body not allowed in package specification",
+               major);
           end if;
           if subprogram_level = 0 then
             Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
@@ -93,16 +94,21 @@ package body HAC_Sys.Parser.Packages is
         when PACKAGE_Symbol =>
           --  Subpackage:
           Scanner.InSymbol (CD);
-          if CD.Sy /= IDent then
-            Error (CD, err_identifier_missing, severity => major);
-          end if;
-          Enter_Def.Enter
-            (CD,
-             subprogram_level,
-             To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id)),
-             To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id_with_case)),
-             Paquetage,
-             dummy_forward);
+          case CD.Sy is
+            when BODY_Symbol =>
+              Error
+                (CD, err_syntax_error,
+                 ": proper body not allowed in package specification",
+                 major);
+            when IDent =>
+              null;  --  Good!
+            when others =>
+              Error (CD, err_identifier_missing, severity => major);
+          end case;
+          Enter_Def.Enter (CD, subprogram_level, CD.Id, CD.Id_with_case, Paquetage, dummy_forward);
+          CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
+          --  Why spec_resolved ? missing bodies for eventual suprograms
+          --  in that package are checked anyway.
           Package_Declaration (CD, FSys, subprogram_level, subpkg_needs_body);
           Need_Semicolon_after_Declaration (CD, FSys);
           needs_body := needs_body or subpkg_needs_body;
@@ -200,18 +206,13 @@ package body HAC_Sys.Parser.Packages is
           if CD.Sy /= IDent then
             Error (CD, err_identifier_missing, severity => major);
           end if;
-          Enter_Def.Enter
-            (CD,
-             subprogram_level,
-             To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id)),
-             To_Alfa (To_String (CD.pkg_prefix) & To_String (CD.Id_with_case)),
-             Paquetage,
-             dummy_forward);
-          --  !!  forward not so dummy...
-          --  !!  Activate eventual subpackage spec contents...
+          Enter_Def.Enter (CD, subprogram_level, CD.Id, CD.Id_with_case, Paquetage, dummy_forward);
           if subpackage_body then
             Package_Body (CD, FSys, subprogram_level);
           else
+            CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
+            --  Why spec_resolved ? missing bodies for eventual suprograms
+            --  in that package are checked anyway.
             Package_Declaration (CD, FSys, subprogram_level, subpkg_needs_body);
           end if;
           --  !!  Do something with subpkg_needs_body ...
@@ -326,7 +327,8 @@ package body HAC_Sys.Parser.Packages is
             --  Name was not found or defined at a lower nesting level.
             --  We enter, e.g. the "FALSE", "False" pair.
             Enter
-              (CD, Level,
+              (CD,
+               Level,
                Short_Id,
                To_Alfa (Full_Name (Start .. Full_Name'Last)),
                Alias,

@@ -510,7 +510,7 @@ package body HAC_Sys.Parser.Helpers is
     Error (CD, err_duplicate_identifier, "specification of " & To_String (id_current), major);
   end Check_Duplicate_Specification;
 
-  procedure Check_Spec_Body_Consistency
+  procedure Check_Subprogram_Spec_Body_Consistency
     (CD         : in out Compiler_Data;
      old_id_idx :        Natural;
      new_id_idx :        Natural;
@@ -569,7 +569,7 @@ package body HAC_Sys.Parser.Helpers is
       Error (CD, err_spec_body_mismatch, "result type is different",
              major);
     end if;
-  end Check_Spec_Body_Consistency;
+  end Check_Subprogram_Spec_Body_Consistency;
 
   procedure Link_Forward_Declaration
     (CD         : in out Compiler_Data;
