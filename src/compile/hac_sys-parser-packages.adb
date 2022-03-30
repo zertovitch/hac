@@ -224,7 +224,6 @@ package body HAC_Sys.Parser.Packages is
       end case;
       exit when CD.Sy = BEGIN_Symbol or CD.Sy = END_Symbol;
     end loop;
-    Check_Incomplete_Definitions (CD, subprogram_level);
     if CD.Sy = BEGIN_Symbol then
       Error (CD, err_not_yet_implemented, "initialisation part in packages", major);
     end if;

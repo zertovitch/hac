@@ -542,6 +542,7 @@ package body HAC_Sys.Compiler is
         Parser.Packages.Package_Declaration (CD, Empty_Symset, 0, needs_body);
       when Package_Body =>
         Parser.Packages.Package_Body (CD, Empty_Symset, 0);
+        Check_Incomplete_Definitions (CD, 0);
         needs_body := False;
     end case;
     Close (src);

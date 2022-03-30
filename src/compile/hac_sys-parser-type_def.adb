@@ -228,11 +228,11 @@ package body HAC_Sys.Parser.Type_Def is
         InSymbol;
         Ranges.Explicit_Static_Range (CD, Level, FSys_TD, err_range_constraint_error, Low, High);
         if Low.TP /= Exact_Typ (xTP) then
-          Error (CD, err_range_constraint_error, "type of bounds don't match with the parent type");
+          Error (CD, err_range_constraint_error, "type of bounds don't match with the parent type", major);
         elsif Low.I not in xTP.Discrete_First .. xTP.Discrete_Last then
-          Error (CD, err_range_constraint_error, "lower bound is out of parent type's range");
+          Error (CD, err_range_constraint_error, "lower bound is out of parent type's range", major);
         elsif High.I not in xTP.Discrete_First .. xTP.Discrete_Last then
-          Error (CD, err_range_constraint_error, "higher bound is out of parent type's range");
+          Error (CD, err_range_constraint_error, "higher bound is out of parent type's range", major);
         else
           xTP.Discrete_First := Low.I;
           xTP.Discrete_Last  := High.I;
