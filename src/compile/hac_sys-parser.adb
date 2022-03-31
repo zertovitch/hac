@@ -385,6 +385,7 @@ package body HAC_Sys.Parser is
       CD.Id := Empty_Alfa;
     end if;
     declare
+      id_subprog           : constant Alfa := CD.Id;
       id_subprog_with_case : constant Alfa := CD.Id_with_case;
     begin
       Enter
@@ -402,8 +403,11 @@ package body HAC_Sys.Parser is
       sub_sub_prog_block_data.is_a_function                 := IsFun;
       sub_sub_prog_block_data.previous_declaration_id_index := old_id_idx;
       new_id_idx := CD.Id_Count;
-      Block (CD, FSys, False, sub_sub_prog_block_data,
-             CD.IdTab (new_id_idx).name, id_subprog_with_case);
+      Block
+        (CD, FSys, False,
+         sub_sub_prog_block_data,
+         id_subprog,
+         id_subprog_with_case);
       kind := CD.IdTab (new_id_idx).decl_kind;
       if kind = complete then
         if IsFun then
