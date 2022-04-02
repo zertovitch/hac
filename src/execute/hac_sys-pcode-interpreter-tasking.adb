@@ -359,7 +359,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       Main_TCB : Task_Control_Block renames ND.TCB (0);
     begin
       Main_TCB.PC := CD.IdTab (CD.Main_Proc_Id_Index).adr_or_sz; --  first pcode instruction
-      Main_TCB.T := CD.Blocks_Table (CD.IdTab (CD.Main_Proc_Id_Index).block_pkg_ref).VSize - 1;
+      Main_TCB.T := CD.Blocks_Table (CD.IdTab (CD.Main_Proc_Id_Index).block_or_pkg_ref).VSize - 1;
       Main_TCB.B := 0;
       Main_TCB.TS := Ready;
       Main_TCB.InRendzv := NilTask;
@@ -387,7 +387,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
         H1 := CD.Tasks_Definitions_Table (Task_To_Init);
         Curr_TCB.PC := CD.IdTab (H1).adr_or_sz;
         Curr_TCB.B := ND.TCB (Task_To_Init - 1).STACKSIZE + 1;
-        Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).block_pkg_ref).VSize - 1;
+        Curr_TCB.T := Curr_TCB.B + CD.Blocks_Table (CD.IdTab (H1).block_or_pkg_ref).VSize - 1;
         ND.S (Curr_TCB.B + 1).I := 0;
         ND.S (Curr_TCB.B + 2).I := 0;
         ND.S (Curr_TCB.B + 3).I := -1;

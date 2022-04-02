@@ -350,7 +350,8 @@ package HAC_Sys.Parser.Helpers is
     Level            : in     Defs.Nesting_level;
     Fail_when_No_Id  : in     Boolean := True;
     Alias_Resolution : in     Boolean := True;
-    Level_0_Filter   : in     Boolean := True
+    Level_0_Filter   : in     Boolean := True;
+    Public_Filter    : in     Index   := Index'Last
   )
   return Natural;
 

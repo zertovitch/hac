@@ -4,6 +4,7 @@ package Pkg_1 is
 
   subtype A is Integer;
 
+  subtype B0 is A;
   subtype B is Pkg_1.A;
 
   subtype C is B range 0 .. 1000;

@@ -15,7 +15,8 @@ with HAC_Sys.Co_Defs,
 package HAC_Sys.Parser is
 
   type Block_Data_Type is record
-    level                           : Defs.Nesting_level;
+    level                           : Defs.Nesting_level;  --  When level = 0, the rest of
+                                                           --    this record is garbage.
     is_a_function                   : Boolean;             --  RETURN [Value] statement expected
     block_id_index                  : Natural;
     previous_declaration_id_index   : Natural;             --  Subprogram "forward" declaration

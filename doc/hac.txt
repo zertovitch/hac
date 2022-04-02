@@ -152,8 +152,8 @@ Language subset
         See exm/prc.adb for an example with packages as modules.
     - Generics are not yet implemented.
     - Tasks are implemented, but not working yet.
-    - Small parts of the standard Ada library are available through
-        the HAL package. You can see the currently available
+    - Small parts of the standard Ada library are available indirectly
+        through the HAL package. You can see the currently available
         items in the specification, src/hal.ads .
 
   A systematic testing is done in the "test" directory, via

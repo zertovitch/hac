@@ -32,7 +32,7 @@ package body HAC_Sys.Parser.Tasking is
       InSymbol;
       I      := Locate_Identifier (CD, CD.Id, Level);
       TaskID := CD.IdTab (I).name;
-      CD.Blocks_Table (CD.IdTab (I).block_pkg_ref).SrcFrom := saveLineCount;  --  (* Manuel *)
+      CD.Blocks_Table (CD.IdTab (I).block_or_pkg_ref).SrcFrom := saveLineCount;  --  (* Manuel *)
       InSymbol;
       task_block.level                         := Level + 1;
       task_block.block_id_index                := I;
@@ -54,7 +54,7 @@ package body HAC_Sys.Parser.Tasking is
       Enter (CD, Level, TaskID, TaskID, aTask, forward_id_idx);  --  !! casing
       CD.Tasks_Definitions_Table (CD.Tasks_Definitions_Count) := CD.Id_Count;
       Enter_Block (CD, CD.Id_Count);
-      CD.IdTab (CD.Id_Count).block_pkg_ref := CD.Blocks_Count;
+      CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.Blocks_Count;
       InSymbol;
       if CD.Sy = Semicolon then
         InSymbol;  --  Task with no entries

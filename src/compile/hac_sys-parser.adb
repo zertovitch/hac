@@ -26,7 +26,7 @@ package body HAC_Sys.Parser is
     Block_Id_with_case   :        Defs.Alfa
   )
   is
-    use Co_Defs, Defs, Enter_Def, Errors, Helpers, PCode;
+    use Co_Defs, Defs, Enter_Def, Errors, Helpers;
     use type HAC_Integer;
     --
     block_data : Block_Data_Type := Initial_Block_Data;
@@ -117,7 +117,9 @@ package body HAC_Sys.Parser is
     end Formal_Parameter_List;
 
     procedure Declarative_Part is
-      ignored : Declaration_Kind;
+      ignored_kind : Declaration_Kind;
+      ignored_needs_body, is_body : Boolean;
+      pkg_spec_index : Index;
     begin
       loop
         Test (  --  Added 17-Apr-2018 to avoid infinite loop on erroneous code
@@ -133,7 +135,31 @@ package body HAC_Sys.Parser is
           when TASK_Symbol        => Tasking.Task_Declaration (CD, FSys, block_data.level);
           when USE_Symbol         => Packages.Use_Clause (CD, block_data.level);
           when PROCEDURE_Symbol |
-               FUNCTION_Symbol    => Subprogram_Declaration_or_Body (CD, FSys, block_data.level, ignored);
+               FUNCTION_Symbol    => Subprogram_Declaration_or_Body (CD, FSys, block_data.level, ignored_kind);
+          when PACKAGE_Symbol =>
+            --  Local package (local to a block or subprogram).
+            InSymbol;
+            is_body := CD.Sy = BODY_Symbol;
+            if is_body then
+              InSymbol;
+            end if;
+            if CD.Sy /= IDent then
+              Error (CD, err_identifier_missing, severity => major);
+            end if;
+            Enter (CD, block_data.level, CD.Id, CD.Id_with_case, Paquetage, pkg_spec_index);
+            if is_body then
+              if pkg_spec_index = No_Id then
+                Error (CD, err_syntax_error, ": missing specification for package body", major);
+              end if;
+              CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.IdTab (pkg_spec_index).block_or_pkg_ref;
+              Parser.Packages.Package_Body (CD, Empty_Symset, block_data);
+            else
+              CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
+              --  Why spec_resolved ? missing bodies for eventual suprograms
+              --  in that package are checked anyway.
+              Parser.Packages.Package_Declaration (CD, Empty_Symset, block_data, ignored_needs_body);
+            end if;
+            InSymbol;  --  Absorb ';'
           when others => null;
         end case;
         CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
@@ -331,15 +357,16 @@ package body HAC_Sys.Parser is
     else
       Test (CD, Symbols_after_Subprogram_Identifier, FSys, err_incorrectly_used_symbol);
     end if;
-    if CD.IdTab (block_data.block_id_index).block_pkg_ref > 0 then
-      subprogram_block_index := CD.IdTab (block_data.block_id_index).block_pkg_ref;
+    if CD.IdTab (block_data.block_id_index).block_or_pkg_ref > 0 then
+      subprogram_block_index := CD.IdTab (block_data.block_id_index).block_or_pkg_ref;
     else
       Enter_Block (CD, block_data.block_id_index);
       subprogram_block_index := CD.Blocks_Count;
-      CD.IdTab (block_data.block_id_index).block_pkg_ref := subprogram_block_index;
+      CD.IdTab (block_data.block_id_index).block_or_pkg_ref := subprogram_block_index;
     end if;
     CD.Display (block_data.level) := subprogram_block_index;
     CD.IdTab (block_data.block_id_index).xtyp := Undefined;
+    CD.Blocks_Table (subprogram_block_index).First_Param_Id_Idx := CD.Id_Count + 1;
     if CD.Sy = LParent then
       Formal_Parameter_List;
     end if;

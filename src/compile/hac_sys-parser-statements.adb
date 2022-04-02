@@ -201,7 +201,7 @@ package body HAC_Sys.Parser.Statements is
           Fatal (LEVELS);  --  Exception is raised there.
         end if;
         Block_Data.level := Block_Data.level + 1;
-        CD.Display (Block_Data.level) := CD.IdTab (I_Entry).block_pkg_ref;
+        CD.Display (Block_Data.level) := CD.IdTab (I_Entry).block_or_pkg_ref;
         InSymbol;
         Sequence_of_Statements (CD, END_Set, Block_Data);
         Need_END_Symbol (CD);
@@ -303,7 +303,7 @@ package body HAC_Sys.Parser.Statements is
           Error (CD, err_procedures_cannot_return_a_value, severity => major);
         end if;
         --  Calculate return value (destination: X; expression: Y).
-        if CD.IdTab (Block_Data.block_id_index).block_pkg_ref /= CD.Display (Block_Data.level) then
+        if CD.IdTab (Block_Data.block_id_index).block_or_pkg_ref /= CD.Display (Block_Data.level) then
           raise Program_Error with
             "Is it `return x` from main? Issue should have been caught earlier: " &
             "err_procedures_cannot_return_a_value.";
@@ -525,7 +525,7 @@ package body HAC_Sys.Parser.Statements is
     procedure FOR_Statement is  --  RM 5.5 (9)
       FOR_Begin : Opcode; --  Forward  or  Reverse
       LC_FOR_Begin,
-      Previous_Last : Integer;
+      Previous_Last : Index;
     begin
       --
       --  Pushed on the stack:
@@ -542,17 +542,17 @@ package body HAC_Sys.Parser.Statements is
         Previous_Last := CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx;
         CD.Id_Count := CD.Id_Count + 1;
         CD.IdTab (CD.Id_Count) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
-             (name           => CD.Id,
-              name_with_case => CD.Id_with_case,
-              link           => Previous_Last,
-              entity         => Variable,
-              read_only      => True,
-              decl_kind      => complete,
-              xtyp           => Undefined,  --  Subtype is determined by the range.
-              block_pkg_ref  => 0,
-              normal         => True,
-              lev            => Block_Data.level,
-              adr_or_sz      => Block_Data.data_allocation_index
+             (name             => CD.Id,
+              name_with_case   => CD.Id_with_case,
+              link             => Previous_Last,
+              entity           => Variable,
+              read_only        => True,
+              decl_kind        => complete,
+              xtyp             => Undefined,  --  Subtype is determined by the range.
+              block_or_pkg_ref => 0,
+              normal           => True,
+              lev              => Block_Data.level,
+              adr_or_sz        => Block_Data.data_allocation_index
              );
         CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx  := CD.Id_Count;
         Block_Data.data_allocation_index := Block_Data.data_allocation_index + 1;
@@ -726,7 +726,7 @@ package body HAC_Sys.Parser.Statements is
               Fatal (LEVELS);  --  Exception is raised there.
             end if;
             Block_Data.level := Block_Data.level + 1;
-            CD.Display (Block_Data.level) := CD.IdTab (I).block_pkg_ref;
+            CD.Display (Block_Data.level) := CD.IdTab (I).block_or_pkg_ref;
             InSymbol;
             Sequence_of_Statements (CD, END_Set, Block_Data);
             Need_END_Symbol (CD);
@@ -954,8 +954,7 @@ package body HAC_Sys.Parser.Statements is
               when TypeMark =>
                 Error (CD, err_illegal_statement_start_symbol, "type name", major);
               when Funktion | Funktion_Intrinsic =>
-                Error (CD, err_illegal_statement_start_symbol, "function name",
-                       major);
+                Error (CD, err_illegal_statement_start_symbol, "function name", major);
               when aTask =>
                 Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Entry_Call);
               when Prozedure =>
@@ -967,8 +966,12 @@ package body HAC_Sys.Parser.Statements is
                 Error (CD, err_duplicate_label, To_String (CD.Id));
                 Test (CD, Colon_Set, FSys_St, err_colon_missing);
                 InSymbol;
+              when Paquetage =>
+                Error (CD, err_illegal_statement_start_symbol, "package name", major);
               when others =>
-                null;
+                Error
+                  (CD, err_syntax_error,
+                   ". Entity found: " & Entity_Kind'Image (CD.IdTab (I_Statement).entity), major);
             end case;
           end if;  --  end IDent
         when ACCEPT_Symbol =>

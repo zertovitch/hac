@@ -423,7 +423,8 @@ package HAC_Sys.Defs is
     err_attribute_prefix_must_be_discrete_type,  --  2021-12-26
     err_invalid_dimension_number,                --  2022-01-09
     err_spec_body_mismatch,                      --  2022-01-22
-    err_incomplete_declaration                   --  2022-01-22
+    err_incomplete_declaration,                  --  2022-01-22
+    err_non_public_entity                        --  2022-04-02
   );
 
   type Error_set is array (Compile_Error) of Boolean;

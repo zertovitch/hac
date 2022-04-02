@@ -112,8 +112,8 @@ package body HAC_Sys.Compiler is
         Show_Padded (Boolean'Image (r.normal), Boolean'Width);
         Put (CD.comp_dump, Integer (r.lev), 3);
         Put (CD.comp_dump, r.adr_or_sz, 5);
-        if r.block_pkg_ref > 0 then
-          Put (CD.comp_dump, r.block_pkg_ref, 5);
+        if r.block_or_pkg_ref > 0 then
+          Put (CD.comp_dump, r.block_or_pkg_ref, 5);
         else
           Put (CD.comp_dump, "     ");
         end if;
@@ -128,7 +128,7 @@ package body HAC_Sys.Compiler is
       Put (CD.comp_dump, I, 4);
       Put (CD.comp_dump, ' ');
       Put (CD.comp_dump, To_String (CD.IdTab (CD.Tasks_Definitions_Table (I)).name) & "  ");
-      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).block_pkg_ref);
+      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).block_or_pkg_ref);
       New_Line (CD.comp_dump);
     end loop;
 
@@ -150,7 +150,7 @@ package body HAC_Sys.Compiler is
       New_Line (CD.comp_dump);
     end if;
 
-    Put_Line (CD.comp_dump, " Blocks" & Alng * ' ' & "  Last_ID LPar PSze Vsze");
+    Put_Line (CD.comp_dump, " Blocks" & Alng * ' ' & "  Last_ID FPar LPar PSze Vsze");
     for I in 1 .. CD.Blocks_Count loop
       declare
         r : BTabEntry renames CD.Blocks_Table (I);
@@ -158,29 +158,29 @@ package body HAC_Sys.Compiler is
         Put (CD.comp_dump, I, 4);
         Show_Padded (To_String (r.Id), Alng);
         Put (CD.comp_dump, r.Last_Id_Idx, 10);
+        Put (CD.comp_dump, r.First_Param_Id_Idx, 5);
         Put (CD.comp_dump, r.Last_Param_Id_Idx, 5);
         Put (CD.comp_dump, r.PSize, 5);
         Put (CD.comp_dump, r.VSize, 5);
         New_Line (CD.comp_dump);
       end;
     end loop;
-
     New_Line (CD.comp_dump);
 
     if CD.Arrays_Count = 0 then
       Put_Line (CD.comp_dump, " Arrays: none");
     else
       Put_Line (CD.comp_dump,
-        " Arrays  | Index: typ_________  Element: typ_______ref    Low___High   El. Size Ar. Size"
+        " Array   | Index: typ_________  Element: typ_______ref    Low___High   El. Size Ar. Size"
       );
-      for I in 1 .. CD.Arrays_Count loop
+      for i in 1 .. CD.Arrays_Count loop
         declare
-          r : ATabEntry renames CD.Arrays_Table (I);
+          r : ATabEntry renames CD.Arrays_Table (i);
           package TIO is new Enumeration_IO (Typen);
           use TIO;
           typ_img : String (1 .. Typen'Width);
         begin
-          Put (CD.comp_dump, I, 7);
+          Put (CD.comp_dump, i, 7);
           Put (typ_img, r.Index_xTyp.TYP);    --  Padded
           Put (CD.comp_dump, "  | " & typ_img);
           Put (typ_img, r.Element_xTyp.TYP);  --  Padded
@@ -190,22 +190,40 @@ package body HAC_Sys.Compiler is
           Put (CD.comp_dump, r.Index_xTyp.Discrete_Last,  7);
           Put (CD.comp_dump, r.Element_Size, 11);
           Put (CD.comp_dump, r.Array_Size,    9);
-          New_Line (CD.comp_dump);
         end;
+        New_Line (CD.comp_dump);
       end loop;
     end if;
+    New_Line (CD.comp_dump);
 
+    if CD.Packages_Count = 0 then
+      Put_Line (CD.comp_dump, " Packages: none");
+    else
+      Put_Line
+        (CD.comp_dump, " Package  | First decl. | Last public | Last private");
+      for i in 1 .. CD.Packages_Count loop
+        declare
+          p : Package_Table_Entry renames CD.Packages_Table (i);
+        begin
+          Put (CD.comp_dump, i, 8);
+          Put (CD.comp_dump, p.first_public_declaration, 15);
+          Put (CD.comp_dump, p.last_public_declaration,  14);
+          Put (CD.comp_dump, p.last_private_declaration, 15);
+        end;
+        New_Line (CD.comp_dump);
+      end loop;
+    end if;
     New_Line (CD.comp_dump);
     Put_Line (CD.comp_dump, " Library Level visible identifiers (unordered list):");
     for l0 of CD.CUD.level_0_def loop
       Put_Line (CD.comp_dump, "    " & To_String (CD.IdTab (l0).name));
     end loop;
+    New_Line (CD.comp_dump);
 
     if CD.Main_Program_ID /= Empty_Alfa then
       Put_Line (CD.comp_dump, " Information about Main procedure:");
-      New_Line (CD.comp_dump);
       Put_Line (CD.comp_dump, "   Name    : " & To_String (CD.Main_Program_ID_with_case));
-      Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).block_pkg_ref'Image);
+      Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).block_or_pkg_ref'Image);
     end if;
 
   end Print_Tables;
@@ -312,13 +330,14 @@ package body HAC_Sys.Compiler is
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  Task Table Entry for main task.
 
     CD.Blocks_Table (0) :=  --  Block Table Entry for stuff before Main (probably useless)
-     (Id                => To_Alfa ("--  Definitions before Main"),
-      Last_Id_Idx       => CD.Main_Proc_Id_Index,
-      Last_Param_Id_Idx => 1,
-      PSize             => 0,
-      VSize             => 0,
-      SrcFrom           => CD.CUD.line_count,
-      SrcTo             => CD.CUD.line_count);
+     (Id                 => To_Alfa ("--  Definitions before Main"),
+      Last_Id_Idx        => CD.Main_Proc_Id_Index,
+      First_Param_Id_Idx => 1,
+      Last_Param_Id_Idx  => 0,
+      PSize              => 0,
+      VSize              => 0,
+      SrcFrom            => CD.CUD.line_count,
+      SrcTo              => CD.CUD.line_count);
 
     main_block.level                         := 1;
     main_block.block_id_index                := CD.Id_Count;
@@ -498,7 +517,7 @@ package body HAC_Sys.Compiler is
       when Package_Declaration =>
         Librarian.Enter_Library_Level_Def (CD, To_String (Unit_Id_with_case), Paquetage, NOTYP, 0);
       when Package_Body =>
-        null;
+        null;  --  Library-level package body doesn't need an entry in the identifier table.
     end case;
     new_id_index := CD.Id_Count;
     case kind is
@@ -536,12 +555,14 @@ package body HAC_Sys.Compiler is
         end case;
         needs_body := as_specification;
       when Package_Declaration =>
+        unit_block.level := 0;  --  Actually, not a block.
         CD.IdTab (new_id_index).decl_kind := spec_resolved;
         --  Why spec_resolved ? missing bodies for eventual suprograms
         --  in that package are checked anyway.
-        Parser.Packages.Package_Declaration (CD, Empty_Symset, 0, needs_body);
+        Parser.Packages.Package_Declaration (CD, Empty_Symset, unit_block, needs_body);
       when Package_Body =>
-        Parser.Packages.Package_Body (CD, Empty_Symset, 0);
+        unit_block.level := 0;  --  Actually, not a block.
+        Parser.Packages.Package_Body (CD, Empty_Symset, unit_block);
         Check_Incomplete_Definitions (CD, 0);
         needs_body := False;
     end case;

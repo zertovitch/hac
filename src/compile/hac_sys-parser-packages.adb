@@ -1,4 +1,5 @@
 with HAC_Sys.Errors,
+     HAC_Sys.Parser.Const_Var,
      HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Tasking,
@@ -14,10 +15,10 @@ package body HAC_Sys.Parser.Packages is
   ---------------------------
 
   procedure Package_Declaration (
-    CD                   : in out Co_Defs.Compiler_Data;
-    FSys                 :        Defs.Symset;
-    subprogram_level     :        Defs.Nesting_level;
-    needs_body           :    out Boolean
+    CD         : in out Co_Defs.Compiler_Data;
+    FSys       :        Defs.Symset;
+    block_data : in out Block_Data_Type;
+    needs_body :    out Boolean
   )
   is
     use Co_Defs, Defs, Errors, HAL, Helpers;
@@ -49,9 +50,6 @@ package body HAC_Sys.Parser.Packages is
     --  this procedure due to subpackages, so we need to memorize it.
     current_pkg_table_index := CD.Packages_Count;
     --
-    CD.Packages_Table (current_pkg_table_index).last_public_declaration  := 0;
-    CD.Packages_Table (current_pkg_table_index).last_private_declaration := 0;
-    --
     Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);
     --  Set new prefix, support also eventual subpackages:
@@ -66,31 +64,37 @@ package body HAC_Sys.Parser.Packages is
       );
       case CD.Sy is
         when IDent =>
-          Error
-            (CD,
-             err_not_yet_implemented,
-             "variables and constants in packages",
+          if block_data.level = 0 then
+            Error
+              (CD,
+               err_not_yet_implemented,
+               "variables and constants in packages at library level",
              major);
-          --  Const_Var.Var_Declaration (CD, FSys, block_data);
+          end if;
+          Const_Var.Var_Declaration (CD, FSys, block_data);
+          Mark_Last_Declaration;
         when TYPE_Symbol |
              SUBTYPE_Symbol =>
-          Type_Def.Type_Declaration (CD, subprogram_level, FSys + END_Symbol);
+          Type_Def.Type_Declaration (CD, block_data.level, FSys + END_Symbol);
+          Mark_Last_Declaration;
         when TASK_Symbol =>
-          Tasking.Task_Declaration (CD, FSys, subprogram_level);
+          Tasking.Task_Declaration (CD, FSys, block_data.level);
+          Mark_Last_Declaration;
         when USE_Symbol =>
-          Use_Clause (CD, subprogram_level);
+          Use_Clause (CD, block_data.level);
         when PROCEDURE_Symbol | FUNCTION_Symbol =>
-          Subprogram_Declaration_or_Body (CD, FSys, subprogram_level, subprogram_kind);
+          Subprogram_Declaration_or_Body (CD, FSys, block_data.level, subprogram_kind);
           if subprogram_kind = complete then
             Error
               (CD, err_syntax_error,
                ": subprogram body not allowed in package specification",
                major);
           end if;
-          if subprogram_level = 0 then
+          if block_data.level = 0 then
             Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
           end if;
           needs_body := True;
+          Mark_Last_Declaration;
         when PACKAGE_Symbol =>
           --  Subpackage:
           Scanner.InSymbol (CD);
@@ -105,16 +109,16 @@ package body HAC_Sys.Parser.Packages is
             when others =>
               Error (CD, err_identifier_missing, severity => major);
           end case;
-          Enter_Def.Enter (CD, subprogram_level, CD.Id, CD.Id_with_case, Paquetage, dummy_forward);
+          Enter_Def.Enter (CD, block_data.level, CD.Id, CD.Id_with_case, Paquetage, dummy_forward);
           CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
           --  Why spec_resolved ? missing bodies for eventual suprograms
           --  in that package are checked anyway.
-          Package_Declaration (CD, FSys, subprogram_level, subpkg_needs_body);
+          Package_Declaration (CD, FSys, block_data, subpkg_needs_body);
           Need_Semicolon_after_Declaration (CD, FSys);
           needs_body := needs_body or subpkg_needs_body;
+          Mark_Last_Declaration;
         when PRIVATE_Symbol =>
           Scanner.InSymbol (CD);
-          Mark_Last_Declaration;
           if in_private then
             Error (CD, err_syntax_error, ": only one private part allowed per package");
           end if;
@@ -123,7 +127,6 @@ package body HAC_Sys.Parser.Packages is
       end case;
       exit when CD.Sy = END_Symbol;
     end loop;
-    Mark_Last_Declaration;
     Scanner.InSymbol (CD);  --  Absorb END symbol
     if CD.Sy = IDent then
       --  !! For supporting child package names ("x.y.z"), reuse/share Check_ident_after_END
@@ -150,9 +153,9 @@ package body HAC_Sys.Parser.Packages is
   --------------------
 
   procedure Package_Body (
-    CD                   : in out Co_Defs.Compiler_Data;
-    FSys                 :        Defs.Symset;
-    subprogram_level     :        Defs.Nesting_level
+    CD         : in out Co_Defs.Compiler_Data;
+    FSys       :        Defs.Symset;
+    block_data : in out Block_Data_Type
   )
   is
     use Co_Defs, Defs, Errors, HAL, Helpers;
@@ -160,8 +163,9 @@ package body HAC_Sys.Parser.Packages is
     package_name           : constant Alfa    := CD.Id;
     package_name_with_case : constant Alfa    := CD.Id_with_case;
     previous_pkg_prefix    : constant VString := CD.pkg_prefix;
+    last_id : constant Defs.Index := CD.Blocks_Table (CD.Display (block_data.level)).Last_Id_Idx;
     subprogram_kind : Declaration_Kind;
-    dummy_forward : Natural;
+    pkg_spec_index : Natural;
     subpkg_needs_body : Boolean;
     subpackage_body : Boolean;
   begin
@@ -177,22 +181,24 @@ package body HAC_Sys.Parser.Packages is
       );
       case CD.Sy is
         when IDent =>
-          Error
-            (CD,
-             err_not_yet_implemented,
-             "variables and constants in packages",
+          if block_data.level = 0 then
+            Error
+              (CD,
+               err_not_yet_implemented,
+               "variables and constants in packages at library level",
              major);
-          --  Const_Var.Var_Declaration (CD, FSys, block_data);
+          end if;
+          Const_Var.Var_Declaration (CD, FSys, block_data);
         when TYPE_Symbol |
              SUBTYPE_Symbol =>
-          Type_Def.Type_Declaration (CD, subprogram_level, FSys + END_Symbol);
+          Type_Def.Type_Declaration (CD, block_data.level, FSys + END_Symbol);
         when TASK_Symbol =>
-          Tasking.Task_Declaration (CD, FSys, subprogram_level);
+          Tasking.Task_Declaration (CD, FSys, block_data.level);
         when USE_Symbol =>
-          Use_Clause (CD, subprogram_level);
+          Use_Clause (CD, block_data.level);
         when PROCEDURE_Symbol | FUNCTION_Symbol =>
-          Subprogram_Declaration_or_Body (CD, FSys, subprogram_level, subprogram_kind);
-          if subprogram_level = 0 then
+          Subprogram_Declaration_or_Body (CD, FSys, block_data.level, subprogram_kind);
+          if block_data.level = 0 then
             Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
           end if;
         when PACKAGE_Symbol =>
@@ -206,14 +212,18 @@ package body HAC_Sys.Parser.Packages is
           if CD.Sy /= IDent then
             Error (CD, err_identifier_missing, severity => major);
           end if;
-          Enter_Def.Enter (CD, subprogram_level, CD.Id, CD.Id_with_case, Paquetage, dummy_forward);
+          Enter_Def.Enter (CD, block_data.level, CD.Id, CD.Id_with_case, Paquetage, pkg_spec_index);
           if subpackage_body then
-            Package_Body (CD, FSys, subprogram_level);
+            if pkg_spec_index = No_Id then
+              Error (CD, err_syntax_error, ": missing specification for package body", major);
+            end if;
+            CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.IdTab (pkg_spec_index).block_or_pkg_ref;
+            Package_Body (CD, FSys, block_data);
           else
             CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
             --  Why spec_resolved ? missing bodies for eventual suprograms
             --  in that package are checked anyway.
-            Package_Declaration (CD, FSys, subprogram_level, subpkg_needs_body);
+            Package_Declaration (CD, FSys, block_data, subpkg_needs_body);
           end if;
           --  !!  Do something with subpkg_needs_body ...
           Need_Semicolon_after_Declaration (CD, FSys);
@@ -247,6 +257,8 @@ package body HAC_Sys.Parser.Packages is
         stop_on_error => True);  --  Exception is raised there if there is an error.
 
     CD.pkg_prefix := previous_pkg_prefix;
+    --  Make body's declarations unreachable in identifier chain.
+    CD.Blocks_Table (CD.Display (block_data.level)).Last_Id_Idx := last_id;
   end Package_Body;
 
   procedure Use_Clause (
@@ -281,7 +293,7 @@ package body HAC_Sys.Parser.Packages is
     Id_Alias, dummy_id_idx : Natural;
     pkg_table_index : Positive;
   begin
-    pragma Assert (Pkg_Idx /= No_Id);
+    pragma Assert (Pkg_Idx > No_Id);
     if CD.IdTab (Pkg_Idx).entity /= Paquetage then
       Error (CD, err_syntax_error, ": package name expected", major);
     end if;
@@ -289,8 +301,7 @@ package body HAC_Sys.Parser.Packages is
     --  package's identifier.
     --  E.g. HAL: PAQUETAGE; HAL.File_Type: TYPEMARK; ...
     --
-    pkg_table_index := CD.IdTab (Pkg_Idx).block_pkg_ref;
-    pragma Assert (Pkg_Idx + 1 = CD.Packages_Table (pkg_table_index).first_public_declaration);
+    pkg_table_index := CD.IdTab (Pkg_Idx).block_or_pkg_ref;
     --
     for i in CD.Packages_Table (pkg_table_index).first_public_declaration ..
              CD.Packages_Table (pkg_table_index).last_public_declaration
@@ -362,8 +373,14 @@ package body HAC_Sys.Parser.Packages is
   procedure Feed_Packages_Table (CD : in out Co_Defs.Compiler_Data) is
   begin
     CD.Packages_Count := CD.Packages_Count + 1;
-    CD.IdTab (CD.Id_Count).block_pkg_ref := CD.Packages_Count;
-    CD.Packages_Table (CD.Packages_Count).first_public_declaration := CD.Id_Count + 1;
+    CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.Packages_Count;
+    declare
+      p : Co_Defs.Package_Table_Entry renames CD.Packages_Table (CD.Packages_Count);
+    begin
+      p.first_public_declaration := CD.Id_Count + 1;
+      p.last_public_declaration  := 0;
+      p.last_private_declaration := 0;
+    end;
   end Feed_Packages_Table;
 
 end HAC_Sys.Parser.Packages;

@@ -101,34 +101,36 @@ package body HAC_Sys.Parser.Calls is
     --    = 2 then timed Task Entry Call,          CallTMDE
     --    = 3 then conditional Task Entry Call,    CallCNDE
     --****************************************************************
-    Last_Param, CP : Integer;
-    Found, Expected : Exact_Typ;
+    last_param, current_param : Integer;
+    found, expected : Exact_Typ;
+    block_idx : Index;
   begin
     Emit_1 (CD, k_Mark_Stack, Operand_2_Type (Ident_Index));
-    Last_Param := CD.Blocks_Table (CD.IdTab (Ident_Index).block_pkg_ref).Last_Param_Id_Idx;
-    CP := Ident_Index;
+    block_idx := CD.IdTab (Ident_Index).block_or_pkg_ref;
+    current_param := CD.Blocks_Table (block_idx).First_Param_Id_Idx - 1;
+    last_param    := CD.Blocks_Table (block_idx).Last_Param_Id_Idx;
     if CD.Sy = LParent then  --  Actual parameter list
       loop
         InSymbol (CD);
-        if CP >= Last_Param then
+        if current_param >= last_param then
           Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
         else
-          CP := CP + 1;
-          Expected := Exact_Typ (CD.IdTab (CP).xtyp);
-          if CD.IdTab (CP).normal then
+          current_param := current_param + 1;
+          expected := Exact_Typ (CD.IdTab (current_param).xtyp);
+          if CD.IdTab (current_param).normal then
             --------------------------------------------------
             --  Value parameter (IN)                        --
             --  Currently we pass it only by value (copy).  --
             --------------------------------------------------
-            Push_and_Check_by_Value_Parameter (CD, Level, FSys, Expected);
+            Push_and_Check_by_Value_Parameter (CD, Level, FSys, expected);
           else
             -----------------------------------------------
             --  Variable (Name) parameter (IN OUT, OUT)  --
             --  This is passed by reference              --
             -----------------------------------------------
-            Push_by_Reference_Parameter (CD, Level, FSys, Found);
-            if Found /= Expected then
-              Type_Mismatch (CD, err_parameter_types_do_not_match, Found, Expected);
+            Push_by_Reference_Parameter (CD, Level, FSys, found);
+            if found /= expected then
+              Type_Mismatch (CD, err_parameter_types_do_not_match, found, expected);
             end if;
           end if;
         end if;
@@ -137,11 +139,11 @@ package body HAC_Sys.Parser.Calls is
       end loop;
       Need (CD, RParent, err_closing_parenthesis_missing);
     end if;
-    if CP < Last_Param then
+    if current_param < last_param then
       Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
     end if;
     --
-    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (Ident_Index).block_pkg_ref).PSize - 1));
+    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (Ident_Index).block_or_pkg_ref).PSize - 1));
     if CallType /= Normal_Procedure_Call then  --  Some for of entry call
       Emit_1 (CD, k_Exit_Call, Operand_2_Type (CallType));  --  Return from Entry Call
     end if;
@@ -170,7 +172,7 @@ package body HAC_Sys.Parser.Calls is
     if CD.Sy = Period then
       InSymbol (CD);                  --  Task Entry Selector
       if CD.Sy = IDent then
-        J := CD.Blocks_Table (CD.IdTab (I).block_pkg_ref).Last_Id_Idx;
+        J := CD.Blocks_Table (CD.IdTab (I).block_or_pkg_ref).Last_Id_Idx;
         CD.IdTab (0).name := CD.Id;
         while CD.IdTab (J).name /= CD.Id loop
           J := CD.IdTab (J).link;

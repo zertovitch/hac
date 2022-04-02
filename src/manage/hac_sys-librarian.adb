@@ -86,21 +86,21 @@ package body HAC_Sys.Librarian is
     end loop;
     CD.IdTab (CD.Id_Count) :=
      (
-      name           => Alfa_Ident_Upper,
-      name_with_case => Alfa_Ident,
-      link           => last,
-      entity         => New_Entity,
-      read_only      => True,
-      decl_kind      => Co_Defs.complete,
-      xtyp           => (TYP            => Base_Type,
-                         Ref            => 0,
-                         Is_Range       => False,
-                         Discrete_First => Discrete_First,
-                         Discrete_Last  => Discrete_Last),
-      block_pkg_ref  => 0,
-      normal         => True,
-      lev            => 0,
-      adr_or_sz      => Size
+      name             => Alfa_Ident_Upper,
+      name_with_case   => Alfa_Ident,
+      link             => last,
+      entity           => New_Entity,
+      read_only        => True,
+      decl_kind        => Co_Defs.complete,
+      xtyp             => (TYP            => Base_Type,
+                           Ref            => 0,
+                           Is_Range       => False,
+                           Discrete_First => Discrete_First,
+                           Discrete_Last  => Discrete_Last),
+      block_or_pkg_ref => 0,
+      normal           => True,
+      lev              => 0,
+      adr_or_sz        => Size
     );
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper, CD.Id_Count);
@@ -159,7 +159,7 @@ package body HAC_Sys.Librarian is
     if CD.IdTab (unit_idx).entity = Paquetage then
       declare
         pkg_table_entry : Package_Table_Entry
-          renames CD.Packages_Table (CD.IdTab (unit_idx).block_pkg_ref);
+          renames CD.Packages_Table (CD.IdTab (unit_idx).block_or_pkg_ref);
       begin
         for declaration_in_pkg_index in
           pkg_table_entry.first_public_declaration ..

@@ -22,10 +22,10 @@ package HAC_Sys.Parser.Packages is
   --------------------------------------------------------------------------
 
   procedure Package_Declaration (
-    CD                   : in out Co_Defs.Compiler_Data;
-    FSys                 :        Defs.Symset;
-    subprogram_level     :        Defs.Nesting_level;
-    needs_body           :    out Boolean
+    CD         : in out Co_Defs.Compiler_Data;
+    FSys       :        Defs.Symset;
+    block_data : in out Block_Data_Type;
+    needs_body :    out Boolean
   );
 
   ------------------------------------------------------------------
@@ -34,9 +34,9 @@ package HAC_Sys.Parser.Packages is
   ------------------------------------------------------------------
 
   procedure Package_Body (
-    CD                   : in out Co_Defs.Compiler_Data;
-    FSys                 :        Defs.Symset;
-    subprogram_level     :        Defs.Nesting_level
+    CD         : in out Co_Defs.Compiler_Data;
+    FSys       :        Defs.Symset;
+    block_data : in out Block_Data_Type
   );
 
   ----------------------------------------------------------------------

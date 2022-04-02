@@ -96,6 +96,7 @@ project HAC_Exm is
      "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
      "-gnatwcijkmopruvz.c.p.t.w.x",  --  Warnings switches (run "gnatmake" for full list)
+     "-gnatwUVM",   --  Disable some warnings
      "-gnatf",  --  Full errors. Verbose details, all undefined references
      "-gnatq",  --  Don't quit, try semantics, even if parse errors
      "-gnatQ",  --  Don't quit, write ali/tree file even if compile errors

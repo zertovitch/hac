@@ -394,7 +394,8 @@ package body HAC_Sys.Parser.Helpers is
     Level            : in     Defs.Nesting_level;
     Fail_when_No_Id  : in     Boolean := True;
     Alias_Resolution : in     Boolean := True;
-    Level_0_Filter   : in     Boolean := True
+    Level_0_Filter   : in     Boolean := True;
+    Public_Filter    : in     Index   := Index'Last
   )
   return Natural
   is
@@ -426,13 +427,15 @@ package body HAC_Sys.Parser.Helpers is
         if dot_pos = 0 then
           is_name_matched := CD.IdTab (J).name = Id;
         else
-          --  We are within a package declaration; things are a bit more
-          --  complicated... Say we are within `Pkg.Child_1.Subpackage_2`
-          --  declaration.
+          --  We are within a package declaration.
+          --  Things are a bit more complicated: the package's items
+          --  are visible to the package itself. So we simulate a hidden USE.
+          --
+          --  Say we are within `Pkg.Child_1.Subpackage_2` declaration.
           --  For entry `Pkg.Child_1.Subpackage_2.Item` in the identifier
           --  table, `Item` is visible, as well as `Subpackage_2[.Item]`
           --  `Child_1[.Subpackage_2[.Item]]`.
-          --  NB : the stuff with [] is resolved below.
+          --  NB : the stuff with [] is resolved at the end of Locate_Identifier.
           loop
             is_name_matched :=
               CD.IdTab (J).name =
@@ -448,8 +451,8 @@ package body HAC_Sys.Parser.Helpers is
         end if;
         if is_name_matched then
           --  Reasons to consider the matched identifier:
-          --    * We have a local subprogram identifier (eventually
-          --        wrapped in a local package):
+          --    * Not library-level: we have a local subprogram
+          --        identifier (eventually wrapped in a local package):
           exit when L > 0;
           --    * Filter for library-level definition is disabled:
           exit when not Level_0_Filter;
@@ -471,11 +474,17 @@ package body HAC_Sys.Parser.Helpers is
     --  From this point, the identifier ID is matched with
     --  element J in the identifier table.
     --
+
     --  Name aliasing resolution (brought by a use clause
-    --  or a simple renames clause).
+    --  or a simple renames clause):
     while Alias_Resolution and then CD.IdTab (J).entity = Alias loop
       J := CD.IdTab (J).adr_or_sz;  --  E.g. True -> Standard.True
     end loop;
+
+    if J > Public_Filter then
+      Error (CD, err_non_public_entity, To_String (Id), major);
+    end if;
+
     --  Prefixed package resolution: `Pkg.Item`, `Pkg.Child_1.Item`, ...
     if CD.IdTab (J).entity = Paquetage then
       Skip_Blanks (CD);
@@ -489,7 +498,10 @@ package body HAC_Sys.Parser.Helpers is
             CD,
             To_Alfa (To_String (ID_Copy) & '.' & To_String (CD.Id)),
             Level,
-            Fail_when_No_Id
+            Fail_when_No_Id,
+            Alias_Resolution,
+            Level_0_Filter,
+            CD.Packages_Table (CD.IdTab (J).block_or_pkg_ref).last_public_declaration
           );
         end if;
         Error (CD, err_identifier_missing, severity => major);
@@ -526,13 +538,13 @@ package body HAC_Sys.Parser.Helpers is
     CD.IdTab (old_id_idx).decl_kind := spec_resolved;
     --  The following is only for making the compiler dump
     --  easier to understand:
-    CD.Blocks_Table (CD.IdTab (old_id_idx).block_pkg_ref).Id :=
+    CD.Blocks_Table (CD.IdTab (old_id_idx).block_or_pkg_ref).Id :=
       To_Alfa ("Unused (was from a subprogram spec)");
     --  Check that the formal parameter list is identical:
     sub_sub_last_param_idx :=
-      CD.Blocks_Table (CD.IdTab (new_id_idx).block_pkg_ref).Last_Param_Id_Idx;
+      CD.Blocks_Table (CD.IdTab (new_id_idx).block_or_pkg_ref).Last_Param_Id_Idx;
     forward_last_param_idx :=
-      CD.Blocks_Table (CD.IdTab (old_id_idx).block_pkg_ref).Last_Param_Id_Idx;
+      CD.Blocks_Table (CD.IdTab (old_id_idx).block_or_pkg_ref).Last_Param_Id_Idx;
     sub_sub_params := sub_sub_last_param_idx - new_id_idx;
     forward_params := forward_last_param_idx - old_id_idx;
     if sub_sub_params > forward_params then
@@ -583,8 +595,8 @@ package body HAC_Sys.Parser.Helpers is
     --    * The block_ref (hence, the correct VSize
     --        is used for reserving the stack)
     --
-    CD.IdTab (old_id_idx).adr_or_sz     := CD.IdTab (new_id_idx).adr_or_sz;
-    CD.IdTab (old_id_idx).block_pkg_ref := CD.IdTab (new_id_idx).block_pkg_ref;
+    CD.IdTab (old_id_idx).adr_or_sz        := CD.IdTab (new_id_idx).adr_or_sz;
+    CD.IdTab (old_id_idx).block_or_pkg_ref := CD.IdTab (new_id_idx).block_or_pkg_ref;
   end Link_Forward_Declaration;
 
   procedure Check_Incomplete_Definitions

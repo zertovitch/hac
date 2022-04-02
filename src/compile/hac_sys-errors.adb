@@ -259,6 +259,8 @@ package body HAC_Sys.Errors is
         return "specification vs. body mismatch: " & hint;
       when err_incomplete_declaration =>
         return "missing body or full declaration for " & hint;
+      when err_non_public_entity =>
+        return '"' & hint & """ is not a public entity of the package in prefix";
     end case;
   end Error_String;
 

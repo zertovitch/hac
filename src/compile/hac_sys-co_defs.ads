@@ -83,15 +83,17 @@ package HAC_Sys.Co_Defs is
   --  Once again, fields marked with C are used only by the compiler
   --
   type BTabEntry is record
-    Id                : Alfa;         --   Name of the block
-    Last_Id_Idx       : Index;        -- C pointer to the last identifier in this block
-    Last_Param_Id_Idx : Index;        -- C pointer to the last parameter in this block
-    PSize             : Index;        --   sum of the lengths of areas (1) & (2) above
-    VSize             : Index := 0;   --   sum of PSize and length of area (3)
-                                      --   (i.e. size of the activation record for
-                                      --    this block if it is a subprogram)
-    SrcFrom           : Positive;     --   Source code line count.  Source starts here
-    SrcTo             : Positive;     --   and goes until here    (* Manuel *)
+    Id                 : Alfa;         --   Name of the block
+    Last_Id_Idx        : Index;        -- C index of the last identifier in this block
+    First_Param_Id_Idx : Index;        -- C index of the first parameter in this block
+    Last_Param_Id_Idx  : Index;        -- C index of the last parameter in this block
+                                       --     (if first > last, it's parameterless)
+    PSize              : Index;        --   sum of the lengths of areas (1) & (2) above
+    VSize              : Index := 0;   --   sum of PSize and length of area (3)
+                                       --   (i.e. size of the activation record for
+                                       --    this block if it is a subprogram)
+    SrcFrom            : Positive;     --   Source code line count.  Source starts here
+    SrcTo              : Positive;     --   and goes until here    (* Manuel *)
   end record;
 
   type Package_Table_Entry is record
@@ -128,19 +130,19 @@ package HAC_Sys.Co_Defs is
   --  Identifier Table Entry  --
   ------------------------------
   type IdTabEntry is record
-    name           : Alfa;                 --  identifier name in ALL CAPS
-    name_with_case : Alfa;                 --  identifier name with original casing
-    link           : Index;
-    entity         : Entity_Kind;
-    read_only      : Boolean;              --  If Entity = Variable and read_only = True,
-                                           --    it's a typed constant.
-    decl_kind      : Declaration_Kind;     --  Declaration kind: forward or complete.
-    --                                           Matters for a type, a constant, a subprogram.
-    xtyp           : Exact_Subtyp;         --  Subtype identification
-    block_pkg_ref  : Index;                --  Reference in the block or package tables.
-    normal         : Boolean;              --  value param?
-    lev            : Nesting_level;
-    adr_or_sz      : Integer;
+    name             : Alfa;                 --  identifier name in ALL CAPS
+    name_with_case   : Alfa;                 --  identifier name with original casing
+    link             : Index;
+    entity           : Entity_Kind;
+    read_only        : Boolean;              --  If Entity = Variable and read_only = True,
+                                             --    it's a typed constant.
+    decl_kind        : Declaration_Kind;     --  Declaration kind: forward or complete.
+    --                                             Matters for a type, a constant, a subprogram.
+    xtyp             : Exact_Subtyp;         --  Subtype identification
+    block_or_pkg_ref : Index;                --  Reference in the block or package tables.
+    normal           : Boolean;              --  value param?
+    lev              : Nesting_level;
+    adr_or_sz        : Integer;
   end record;
 
   --  Entity                        Meaning of Adr_or_Sz

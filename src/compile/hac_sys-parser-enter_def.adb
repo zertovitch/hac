@@ -23,10 +23,11 @@ package body HAC_Sys.Parser.Enter_Def is
     declare
       New_B : BTabEntry renames CD.Blocks_Table (CD.Blocks_Count);
     begin
-      New_B.Id                := CD.IdTab (Tptr).name;
-      New_B.Last_Id_Idx       := 0;
-      New_B.Last_Param_Id_Idx := 0;
-      New_B.SrcFrom           := CD.CUD.line_count;
+      New_B.Id                 := CD.IdTab (Tptr).name;
+      New_B.Last_Id_Idx        := 0;
+      New_B.First_Param_Id_Idx := 0;
+      New_B.Last_Param_Id_Idx  := 0;
+      New_B.SrcFrom            := CD.CUD.line_count;
     end;
   end Enter_Block;
 
@@ -40,7 +41,7 @@ package body HAC_Sys.Parser.Enter_Def is
     Forward_Decl_Id  :    out Natural
   )
   is
-    last_id : constant Integer :=
+    last_id : constant Index :=
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
     J : Integer := last_id;
     use HAL;
@@ -75,17 +76,17 @@ package body HAC_Sys.Parser.Enter_Def is
     --  Enter identifier in table IdTab
     CD.Id_Count            := CD.Id_Count + 1;
     CD.IdTab (CD.Id_Count) :=
-      (name           => prefixed_Id,
-       name_with_case => prefixed_Id_with_case,
-       link           => last_id,
-       entity         => K,
-       read_only      => False,
-       decl_kind      => complete,
-       xtyp           => Undefined,
-       block_pkg_ref  => 0,
-       normal         => True,
-       lev            => Level,
-       adr_or_sz      => 0
+      (name             => prefixed_Id,
+       name_with_case   => prefixed_Id_with_case,
+       link             => last_id,
+       entity           => K,
+       read_only        => False,
+       decl_kind        => complete,
+       xtyp             => Undefined,
+       block_or_pkg_ref => 0,
+       normal           => True,
+       lev              => Level,
+       adr_or_sz        => 0
       );
     --  Update start of identifier chain:
     CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
