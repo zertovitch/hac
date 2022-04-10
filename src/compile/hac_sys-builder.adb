@@ -1,6 +1,7 @@
 with HAC_Sys.Compiler,
      HAC_Sys.Defs,
-     HAC_Sys.Errors;
+     HAC_Sys.Errors,
+     HAC_Sys.Parser.Helpers;
 
 with Ada.Characters.Handling,
      Ada.Exceptions,
@@ -89,14 +90,17 @@ package body HAC_Sys.Builder is
       Compiler.Progress_Message
         (BD.CD.all, "--  Compilation of eventual with'ed unit's bodies  --");
     end if;
-    loop
+    for round in Positive loop
       Compile_Pending_Bodies_Single_Round (BD, num_pending);
       if num_pending > 0 and BD.CD.trace.detail_level >= 2 then
         Compiler.Progress_Message
-          (BD.CD.all, "--  Compiled bodies:" & Integer'Image (num_pending));
+          (BD.CD.all,
+           "--  Round" & Integer'Image (round) &
+           ", compiled bodies:" & Integer'Image (num_pending));
       end if;
       exit when num_pending = 0;
     end loop;
+    Parser.Helpers.Check_Incomplete_Definitions (BD.CD.all, 0);
     if BD.CD.comp_dump_requested then
       Compiler.Print_Tables (BD.CD.all);
       Close (BD.CD.comp_dump);

@@ -563,7 +563,6 @@ package body HAC_Sys.Compiler is
       when Package_Body =>
         unit_block.level := 0;  --  Actually, not a block.
         Parser.Packages.Package_Body (CD, Empty_Symset, unit_block);
-        Check_Incomplete_Definitions (CD, 0);
         needs_body := False;
     end case;
     Close (src);
