@@ -150,6 +150,7 @@ Language subset
         can "with") is implemented.
         See exm/unit_a.adb for an example with subprograms as modules.
         See exm/prc.adb for an example with packages as modules.
+        See exm/pkg_demo.adb for a larger example with packages.
     - Generics are not yet implemented.
     - Tasks are implemented, but not working yet.
     - Small parts of the standard Ada library are available indirectly
