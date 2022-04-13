@@ -50,8 +50,11 @@ procedure All_Silent_Tests is
     end Launch_HAC;
 
     procedure Normal_Test (Ada_file_name : VString) is
+      short : VString;
+      sep : Natural := Index_Backward (Ada_file_name, Directory_Separator);
     begin
-      Put_Line (+"      " & Ada_file_name);
+      short := Slice (Ada_file_name, sep + 1, Length (Ada_file_name));
+      Put_Line (+"      " & short);
       Launch_HAC (Ada_file_name, +"", 1);
     end Normal_Test;
 
@@ -70,6 +73,11 @@ procedure All_Silent_Tests is
     end Launch_AoC;
 
     hac_build_success : Boolean;
+
+    generate : constant VString :=
+      +".." & Directory_Separator & 
+       "hac .." & Directory_Separator &
+       "exm" & Directory_Separator & "pkg_demo_gen.adb";
 
   begin
     Put_Line( "    ___________      _____________________________________________________________________");
@@ -97,6 +105,10 @@ procedure All_Silent_Tests is
     Normal_Test (+"init_var.adb");
     Normal_Test (+"integers.adb");
     Normal_Test (+"loops.adb");
+    --  Create the X_* packages.
+    Shell_Execute (generate);
+    Normal_Test (+".." & Directory_Separator & "exm" & Directory_Separator & "pkg_demo.adb test_mode");
+    Shell_Execute (generate & " delete");
     Normal_Test (+"recursion.adb");
     Normal_Test (+"sorting_tests.adb");
     Normal_Test (+"strings.adb");
@@ -139,7 +151,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2021", +"09", +"423 1198704"                );  --  Smoke Basin
     Launch_AoC (+"2021", +"10", +"388713 3539961434"          );  --  Syntax Scoring
     Launch_AoC (+"2021", +"11", +"1679 519"                   );  --  Dumbo Octopus
-    Launch_AoC (+"2021", +"12", +"3497 93686"                 );  --  Passage Pathing
+    Launch_AoC (+"2021", +"12", +"3497"                       );  --  Passage Pathing
     Launch_AoC (+"2021", +"13", +"602"                        );  --  Transparent Origami
     Launch_AoC (+"2021", +"14", +"2345 2432786807053"         );  --  Extended Polymerization
     Launch_AoC (+"2021", +"15", +"656"                        );  --  Chiton

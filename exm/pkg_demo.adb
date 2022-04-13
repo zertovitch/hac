@@ -20,8 +20,26 @@ procedure Pkg_Demo is
 
   use HAL;
 
+  procedure Failure (Msg : VString) is
+  begin
+    Put_Line (+"Failure in test: [" & Msg & ']');
+    Set_Exit_Status (1);  --  Compiler test failed.
+  end Failure;
+
+  procedure Assert (Msg : VString; Check : in Boolean) is
+    --  Similar to RM 11.4.2 but without raising an exception.
+  begin
+    if not Check then Failure (Msg & ", assertion"); end if;
+  end Assert;
+
 begin
-  Put ("Specs:  "); X_Pkg_Demo_S.Do_it; New_Line;
-  Put ("Mixed:  "); X_Pkg_Demo_M.Do_it; New_Line;
-  Put ("Bodies: "); X_Pkg_Demo_B.Do_it; New_Line;
+  if Argument_Count = 0 then
+    Put_Line (+"Specs:  " & X_Pkg_Demo_S.Do_it); 
+    Put_Line (+"Mixed:  " & X_Pkg_Demo_M.Do_it); 
+    Put_Line (+"Bodies: " & X_Pkg_Demo_B.Do_it); 
+  else
+    Assert (+"Specs",  X_Pkg_Demo_S.Do_it = "[S][S1][S11][S12][S13][S2][S21][S22][S23][S3][S31][S32][S33]"); 
+    Assert (+"Mixed",  X_Pkg_Demo_M.Do_it = "[M][M1][M11][M12][M13][M2][M21][M22][M23][M3][M31][M32][M33]"); 
+    Assert (+"Bodies", X_Pkg_Demo_B.Do_it = "[B][B1][B11][B12][B13][B2][B21][B22][B23][B3][B31][B32][B33]"); 
+  end if;
 end Pkg_Demo;

@@ -152,7 +152,7 @@ procedure HAC is
     if verbosity >= 2 then
       Put_Line (
         "Maximum stack usage:" & post_mortem.Max_Stack_Usage'Image & " of" &
-        post_mortem.Stack_Size'Image & " units, around" &
+        post_mortem.Stack_Size'Image & " memory units, around" &
         Integer'Image (100 * post_mortem.Max_Stack_Usage / post_mortem.Stack_Size) & "%."
       );
     end if;
