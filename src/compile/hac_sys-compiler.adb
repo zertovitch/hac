@@ -73,6 +73,7 @@ package body HAC_Sys.Compiler is
     Scanner.InSymbol (CD);
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009
+    CD.pkg_prefix := HAL.Null_VString;
   end Init;
 
   --  Print_Tables is for debugging purposes.

@@ -151,6 +151,7 @@ package body HAC_Sys.Parser.Enter_Def is
     prefix_mem : VString;
   begin
     if need_prefix_mem then
+      --  For instance, fields in a record must be non-prefixed.
       prefix_mem := CD.pkg_prefix;
       CD.pkg_prefix := Null_VString;
     end if;
