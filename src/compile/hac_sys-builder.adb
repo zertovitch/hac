@@ -27,7 +27,7 @@ package body HAC_Sys.Builder is
     needs_body_dummy : Boolean;
   begin
     for lu of BD.LD.Library loop
-      if lu.status = Body_Postponed then
+      if lu.status in Spec_Done then
         pending.Append (lu);
       end if;
     end loop;
@@ -37,6 +37,7 @@ package body HAC_Sys.Builder is
     --  further due to dependencies, adding pending bodies
     --  for the next round.
     --
+    num_pending := 0;
     for lu of pending loop
       declare
         upper_vname : constant VString := To_Upper (lu.full_name);
@@ -44,21 +45,31 @@ package body HAC_Sys.Builder is
         fn : String := Find_Unit_File_Name (upper_name);
       begin
         fn (fn'Last) := 'b';  --  Name ending for a unit's body (*.adb).
-        previous_context :=
-          BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
-        Compiler.Compile_Unit
-          (BD.CD.all, BD.LD, upper_name, fn, False,
-           lu.id_index,
-           lu.id_body_index,
-           previous_context,
-           lu.kind,
-           needs_body_dummy);
+        case Spec_Done (lu.status) is
+          when Body_Postponed =>
+            previous_context :=
+              BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
+            Compiler.Compile_Unit
+              (BD.CD.all, BD.LD, upper_name, fn, False,
+               lu.id_index,
+               lu.id_body_index,
+               previous_context,
+               lu.kind,
+               needs_body_dummy);
+            num_pending :=  num_pending + 1;
+          when Spec_Only =>
+            if Exists (fn) then  --  !! Search in source path
+              Errors.Error
+                (BD.CD.all,
+                 Defs.err_library_error,
+                 "package shall not have a body unless it " &
+                   "requires a body (7.2 (4)); found file: " & fn);
+            end if;
+        end case;
         lu.status := Done;
         Change_Unit_Details (BD.LD, lu);
       end;
     end loop;
-    --
-    num_pending := Integer (pending.Length);
   end Compile_Pending_Bodies_Single_Round;
 
   procedure Build_Main (BD : in out Build_Data) is
@@ -121,7 +132,7 @@ package body HAC_Sys.Builder is
       Errors.Error
         (BD.CD.all,
          Defs.err_library_error,
-         "Circular unit dependency (""->"" means ""depends on""): " &
+         "circular unit dependency (""->"" means ""depends on""): " &
          To_String (BD.main_name_hint) & " -> " &
          Exception_Message (E));
   end Build_Main;

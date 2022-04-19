@@ -37,8 +37,11 @@ package HAC_Sys.Librarian is
   type Compilation_Status is (
     In_Progress,     --  Specification or body-only is in progress.
     Body_Postponed,  --  Specification done, body will be done later.
-    Done
+    Spec_Only,       --  Specification-only is done, but we need to check absence of body.
+    Done             --  Specification done; eventual body is done or its absence is checked.
   );
+
+  subtype Spec_Done is Compilation_Status range Body_Postponed .. Spec_Only;
 
   --  RM 10.1.1
 

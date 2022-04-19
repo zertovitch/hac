@@ -200,7 +200,7 @@ package body HAC_Sys.Librarian is
       Error (
         CD,
         err_library_error,
-        ": no file found matching the name " & GNAT_Naming (Upper_Name) & ".ad*",
+        "no file found matching the name " & GNAT_Naming (Upper_Name) & ".ad*",
         major
       );
     else
@@ -221,7 +221,7 @@ package body HAC_Sys.Librarian is
             if needs_body then
               unit.status := Body_Postponed;
             else
-              unit.status := Done;
+              unit.status := Spec_Only;
             end if;
           when Package_Body =>
             null;  --  Not relevant (spec.)

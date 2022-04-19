@@ -452,7 +452,7 @@ package body HAC_Sys.Compiler is
       Open (src, In_File, file_name);
     exception
       when Name_Error =>
-        Error (CD, err_library_error, "File " & file_name & Spec_or_Body & " not found", major);
+        Error (CD, err_library_error, "file " & file_name & Spec_or_Body & " not found", major);
     end;
     Builder.Skip_Shebang (src, shebang_offset);
     --  HAL.PUT_LINE("Compiling unit " & upper_name);
@@ -503,7 +503,7 @@ package body HAC_Sys.Compiler is
       Error (CD, err_identifier_missing, severity => major);
     end if;
     if To_String (CD.Id) /= upper_name then
-      Error (CD, err_library_error, ": unit name """ & upper_name & """ expected in this file", major);
+      Error (CD, err_library_error, "unit name """ & upper_name & """ expected in this file", major);
     end if;
     --
     --  Enter the identifier:
