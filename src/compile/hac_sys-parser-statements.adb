@@ -64,10 +64,10 @@ package body HAC_Sys.Parser.Statements is
     if X.TYP = Y.TYP and X.TYP /= NOTYP then
       if Discrete_Typ (X.TYP) then
         if X.Discrete_First > HAC_Integer'First then
-          Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_bound, X.Discrete_First);
+          Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_Bound, X.Discrete_First);
         end if;
         if X.Discrete_Last < HAC_Integer'Last then
-          Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_bound, X.Discrete_Last);
+          Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_Bound, X.Discrete_Last);
         end if;
       end if;
       if X.TYP in Standard_Typ then

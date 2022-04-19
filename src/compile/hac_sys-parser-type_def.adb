@@ -230,9 +230,25 @@ package body HAC_Sys.Parser.Type_Def is
         if Low.TP /= Exact_Typ (xTP) then
           Error (CD, err_range_constraint_error, "type of bounds don't match with the parent type", major);
         elsif Low.I not in xTP.Discrete_First .. xTP.Discrete_Last then
-          Error (CD, err_range_constraint_error, "lower bound is out of parent type's range", major);
+          Error
+            (CD,
+             err_range_constraint_error,
+             "lower bound (pos: " & HAC_Image (Low.I) &
+             ") is out of parent type's range (" &
+             HAC_Image (xTP.Discrete_First) & " .. " &
+             HAC_Image (xTP.Discrete_Last) &
+             ')',
+             major);
         elsif High.I not in xTP.Discrete_First .. xTP.Discrete_Last then
-          Error (CD, err_range_constraint_error, "higher bound is out of parent type's range", major);
+          Error
+            (CD,
+             err_range_constraint_error,
+             "higher bound (pos: " & HAC_Image (High.I) &
+             ") is out of parent type's range (" &
+             HAC_Image (xTP.Discrete_First) & " .. " &
+             HAC_Image (xTP.Discrete_Last) &
+             ')',
+             major);
         else
           xTP.Discrete_First := Low.I;
           xTP.Discrete_Last  := High.I;

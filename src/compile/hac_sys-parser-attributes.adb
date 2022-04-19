@@ -185,13 +185,13 @@ package body HAC_Sys.Parser.Attributes is
           --  !!  overflow check here if arg = hac_integer'first.
           Emit (CD, k_SUBTRACT_Integer);
           if S.Discrete_First > HAC_Integer'First then
-            Emit_1 (CD, k_Check_Lower_bound, S.Discrete_First);
+            Emit_1 (CD, k_Check_Lower_Bound, S.Discrete_First);
           end if;
         else
           --  !!  overflow check here if arg = hac_integer'first.
           Emit (CD, k_ADD_Integer);
           if S.Discrete_Last < HAC_Integer'Last then
-            Emit_1 (CD, k_Check_Upper_bound, S.Discrete_Last);
+            Emit_1 (CD, k_Check_Upper_Bound, S.Discrete_Last);
           end if;
         end if;
       end Pred_Succ_Discrete;

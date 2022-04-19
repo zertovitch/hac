@@ -128,8 +128,8 @@ package body HAC_Sys.Parser.Ranges is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
     --  The variant "Low_Expr .. High_Expr" was initially
     --  in HAC.Parser <= 0.07 for FOR statements.
-    Lower_Bound : Exact_Typ;
-    Upper_Bound : Exact_Typ;
+    Lower_Bound_Typ : Exact_Typ;
+    Upper_Bound_Typ : Exact_Typ;
     Lower_Bound_Static  : Constant_Rec;
     Higher_Bound_Static : Constant_Rec;
     Is_SI_Found : Boolean;
@@ -149,7 +149,7 @@ package body HAC_Sys.Parser.Ranges is
     --  We try an explicit dynamic range, like: "f (z) + j .. n * 2"  or  "1 .. 6".
     --  See RM 3.5 (3).
     --
-    Simple_Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys, Lower_Bound);
+    Simple_Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys, Lower_Bound_Typ);
     --  You may ask: why did the Ada standard authors take Simple_Expression
     --  instead of Expression for the range bounds ?
     --  It's for stopping the parsing on relational and logical operators.
@@ -162,26 +162,26 @@ package body HAC_Sys.Parser.Ranges is
     --
     --      if xx in 1 .. sx and then yy in 1 .. sy and then map (xx, yy) <= 9 then
     --
-    Range_Typ          := Lower_Bound;
+    Range_Typ          := Lower_Bound_Typ;
     Range_Typ.Is_Range := False;
     --
     if not Discrete_Typ (Range_Typ.TYP) then
       Error (CD, Non_Discrete_Error, Nice_Exact_Image (CD, Range_Typ));
     end if;
-    if Lower_Bound.Is_Range then
+    if Lower_Bound_Typ.Is_Range then
       --  We got a ` X'Range ` expression which is a shortcut for ` X'First .. X'Last `.
       --  The ` .. X'Last ` part has been implicitly parsed with ` X'Range ` .
       null;
     elsif CD.Sy = Range_Double_Dot_Symbol then  --  ".."
       InSymbol (CD);
       --
-      Simple_Expression (CD, Level, FSys + LOOP_Symbol, Upper_Bound);
+      Simple_Expression (CD, Level, FSys + LOOP_Symbol, Upper_Bound_Typ);
       --
-      if Upper_Bound /= Lower_Bound then
+      if Upper_Bound_Typ /= Lower_Bound_Typ then
         Type_Mismatch (
           CD, err_bounds_type_mismatch,
-          Found    => Upper_Bound,
-          Expected => Lower_Bound
+          Found    => Upper_Bound_Typ,
+          Expected => Lower_Bound_Typ
         );
       end if;
     else

@@ -37,8 +37,8 @@ package HAC_Sys.PCode is
     k_Swap,         --  Swap the two items at the top of the stack.
     k_Pop_to_Temp,  --  Pop top item to a temp register.
     k_Push_Temp,    --  Push temp register on the stack.
-    k_Check_Lower_bound,
-    k_Check_Upper_bound,
+    k_Check_Lower_Bound,
+    k_Check_Upper_Bound,
     --
     k_Standard_Functions,
     --
