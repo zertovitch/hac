@@ -3,6 +3,8 @@ with Ada.Numerics.Float_Random,
      Ada.Streams.Stream_IO,
      Ada.Strings.Fixed;
 
+with Interfaces;
+
 package body HAL is
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions (Real);
@@ -933,5 +935,8 @@ package body HAL is
   end Directory_Separator;
 
 begin
+  pragma Assert
+    (Real'Digits >= Interfaces.IEEE_Float_64'Digits,
+     "HAL.Real must have at least the precision of IEEE Double Precision");
   Ada.Numerics.Float_Random.Reset (gen);  --  Randomize.
 end HAL;
