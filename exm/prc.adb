@@ -2,8 +2,9 @@
 
 with HAL;
 with Pkg_1, Pkg_2;
+with Cross_A, Cross_B;
 
-procedure prc is
+procedure Prc is
 
   x : Pkg_1.A;
 
@@ -28,4 +29,6 @@ begin
   Put (r, 0, 7, 0);
   New_Line;
   Sub_Pkg_2.Proc_2 (+"Hey man");
-end prc;
+  Cross_A.A (5);
+  Cross_B.B (5);
+end Prc;
