@@ -9,8 +9,11 @@ with HAL;
 --  For a build with "full Ada": files hal*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
+with Interfaces;  --  Needed for GNAT (Integer_64).
+
 procedure AoC_2021_16 is
-  use HAL;
+  use HAL, Interfaces;
+
   subtype Bit is Integer range 0 .. 1;
   --
   msg_max : constant := 32000;
@@ -44,20 +47,19 @@ procedure AoC_2021_16 is
     end loop;
   end Read_Data;
   --
-  b : Positive := 1;
-  vsum : Natural := 0;
+  b : Integer_64 := 1;
+  vsum : Integer_64 := 0;
   --
-  function Process return Natural is
-    procedure Decode (var : out Natural; bits : Positive) is
+  function Process return Integer_64 is
+    procedure Decode (var : out Integer_64; bits : Positive) is
     begin
       var := 0;
       for i in 1 .. bits loop
-        var := var * 2 + msg (b);
+        var := var * 2 + Integer_64 (msg (Integer (b)));
         b := b + 1;
       end loop;
     end Decode;
-    version, id, end_mark, lit, length_id, sub_length, sub_num : Natural;
-    res : Integer;
+    end_mark, length_id, sub_length, sub_num, version, id, lit, res : Integer_64;
     --
     id_sum     : constant := 0;
     id_product : constant := 1;
@@ -69,7 +71,7 @@ procedure AoC_2021_16 is
     id_equal   : constant := 7;
     --
     procedure Cumulate (first : Boolean) is
-      term : constant Integer := Process;  --  Here is the recursion :-) .
+      term : constant Integer_64 := Process;  --  Here is the recursion :-) .
     begin
       if first then
         res := term;
@@ -77,8 +79,8 @@ procedure AoC_2021_16 is
         case id is
           when id_sum     => res := res + term;
           when id_product => res := res * term;
-          when id_minimum => res := Min (res, term);
-          when id_maximum => res := Max (res, term);
+          when id_minimum => if term < res then res := term; end if;
+          when id_maximum => if term > res then res := term; end if;
           when id_greater => if res > term then res := 1; else res := 0; end if;
           when id_less    => if res < term then res := 1; else res := 0; end if;
           when id_equal   => if res = term then res := 1; else res := 0; end if;
@@ -86,7 +88,7 @@ procedure AoC_2021_16 is
         end case;
       end if;
     end Cumulate;
-    b_mem : Positive;
+    b_mem : Integer_64;
   begin
     Decode (version, 3);
     vsum := vsum + version;
@@ -119,7 +121,7 @@ procedure AoC_2021_16 is
     return res;
   end Process;
   --
-  r : array (1 .. 2) of Integer;
+  r : array (1 .. 2) of Integer_64;
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   T0 : constant Time := Clock;
 begin
@@ -127,15 +129,15 @@ begin
   r (2) := Process;
   r (1) := vsum;
   if compiler_test_mode then
-    if r (1) /= Integer_Value (Argument (1)) or
-       r (2) /= Integer_Value (Argument (2))
+    if r (1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: sum of version numbers: " & r (1));
-    Put_Line (+"Part 2: value of expression:    " & r (2));
+    Put_Line (+"Part 1: sum of version numbers:" & Integer_64'Image (r (1)));
+    Put_Line (+"Part 2: value of expression:   " & Integer_64'Image (r (2)));
     --  Part 1: validated by AoC: 927
     --  Part 2: validated by AoC: 1725277876501
   end if;

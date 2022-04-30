@@ -11,7 +11,9 @@
 --      0.58 second (GNAT AoC_Build_Mode_Type = "Fast", i5-9400 @ 2.9 GHz).
 --    324.75 seconds (HAC, fastest build, same machine...).
 
-with HAL; use HAL;  --  in ../../../src
+with HAL; use HAL;
+--  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
 
 procedure AoC_2020_23 is
 

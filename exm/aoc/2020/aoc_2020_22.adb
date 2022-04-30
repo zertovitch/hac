@@ -8,9 +8,12 @@
 --
 --    *     comparison (equality operators) "=", "/=" of composite types (arrays and records)
 
-with HAL; use HAL;  --  in ../../../src
+with HAL;
+--  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
 
 procedure AoC_2020_22 is
+  use HAL;
 
   max_deck : constant := 50;
 
@@ -187,24 +190,19 @@ procedure AoC_2020_22 is
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
 begin
   Read_Data (g_start);
-  for is_recursive in Boolean loop
-    g := g_start;
-    Play (g, winner, is_recursive, 1);
-    if verbosity > 0 then
-      Put_Line (+"Winner is: " & winner);
-      Show (g (winner));
+  g := g_start;
+  Play (g, winner, False, 1);
+  if verbosity > 0 then
+    Put_Line (+"Winner is: " & winner);
+    Show (g (winner));
+  end if;
+  if compiler_test_mode then
+    if Score (g (winner)) /= Integer_Value (Argument (1)) then
+      Set_Exit_Status (1);  --  Compiler test failed.
     end if;
-    if compiler_test_mode then
-      if Score (g (winner)) /= Integer_Value (Argument (1))
-      then
-        Set_Exit_Status (1);  --  Compiler test failed.
-      end if;
-    else
-      Put_Line (+"Score: " & Score (g (winner)));
-    end if;
-    exit when not is_recursive;
-    --  ^ This is for HAC: we skip part 2 (see remarks around Game_Mem).
-  end loop;
+  else
+    Put_Line (+"Score: " & Score (g (winner)));
+  end if;
   --  Part 1: validated by AoC: 31957
-  --  Part 2: validated by AoC: 33212
+  --  Part 2: validated by AoC: 33212. Part skipped (see remarks around Game_Mem).
 end AoC_2020_22;

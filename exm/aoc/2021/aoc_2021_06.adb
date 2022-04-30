@@ -9,20 +9,22 @@ with HAL;
 --  For a build with "full Ada": files hal*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
+with Interfaces;  --  Needed for GNAT (Integer_64).
+
 procedure AoC_2021_06 is
   timer_max : constant := 8;
   subtype Timer_Range is Integer range 0 .. timer_max;
-  type Lanternfish_Population is array (Timer_Range) of Natural;
+  use HAL, Interfaces;
+  type Lanternfish_Population is array (Timer_Range) of Integer_64;
   pop_init, pop : Lanternfish_Population;
-  pop_0 : Natural;
+  pop_0 : Integer_64;
   days : array (1 .. 2) of Positive;
   --
-  use HAL;
   input : constant VString := +"aoc_2021_06.txt";
   sep : Character;
   i : Integer;
   f : File_Type;
-  result : array (1 .. 2) of Integer;
+  r : array (1 .. 2) of Integer_64;
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
 begin
   for j in Timer_Range loop
@@ -49,15 +51,15 @@ begin
       pop (6) := pop (6) + pop_0;  --  Life cycle
       pop (timer_max) := pop_0;    --  New fishes
     end loop;
-    result (part) := 0;
+    r (part) := 0;
     for j in Timer_Range loop
-      result (part) := result (part) + pop (j);
+      r (part) := r (part) + pop (j);
     end loop;
   end loop;
   --
   if compiler_test_mode then
-    if result (1) /= Integer_Value (Argument (1)) or
-       result (2) /= Integer_Value (Argument (2))
+    if r (1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
@@ -65,7 +67,7 @@ begin
     for part in 1 .. 2 loop
       Put_Line (
         +"Part " & part & ": population after " & days (part) &
-        " days: " & result (part));
+        " days:" & Integer_64'Image (r (part)));
     end loop;
     --  Part 1: validated by AoC: 388419
     --  Part 2: validated by AoC: 1740449478328

@@ -16,8 +16,10 @@ with HAL;
 --  For a build with "full Ada": files hal*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
+with Interfaces;  --  Needed for GNAT (Integer_64).
+
 procedure AoC_2021_07 is
-  use HAL;
+  use HAL, Interfaces;
   --
   input : constant VString := +"aoc_2021_07.txt";
   --
@@ -26,17 +28,19 @@ procedure AoC_2021_07 is
   r : array (1 .. 2) of Integer;
   x_min_min : constant := 0;
   x_max_max : constant := 2000;
-  subtype Position_Range is Integer range x_min_min .. x_max_max;
-  type Crab_Population is array (Position_Range) of Natural;
+  subtype Position_Range is Integer_64 range x_min_min .. x_max_max;
+  type Crab_Population is array (Position_Range) of Integer_64;
   pop : Crab_Population;
+  xx_inp : Integer;
   xx, x_min, x_max,
   cost_1, cost, cost_min,
   dist, x_cost_min,
-  s_px, s_x_px, total, total_x_px, total_x2_px : Integer;
+  s_px, s_x_px, total, total_x_px, total_x2_px : Integer_64;
   --
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   verbose : constant Boolean := False;
   fast : constant Boolean := True;
+  T0 : constant Time := Clock;
 begin
   for j in Position_Range loop
     pop (j) := 0;
@@ -44,30 +48,31 @@ begin
   total := 0;
   Open (f, input);
   loop
-    Get (f, xx);
+    Get (f, xx_inp);
+    xx := Integer_64 (xx_inp);
     pop (xx) := pop (xx) + 1;
     total := total + 1;
     if total = 1 then
       x_min := xx;
       x_max := xx;
     end if;
-    x_min := Min (x_min, xx);
-    x_max := Max (x_max, xx);
+    if xx < x_min then x_min := xx; end if;
+    if xx > x_max then x_max := xx; end if;
     exit when End_Of_File (f);
     Get (f, sep);
   end loop;
   Close (f);
   if verbose then
-    Put_Line (+"Pos min: " & x_min);
-    Put_Line (+"Pos max: " & x_max);
-    Put_Line (+"Total: " & total);
+    Put_Line (+"Pos min:" & Integer_64'Image (x_min));
+    Put_Line (+"Pos max:" & Integer_64'Image (x_max));
+    Put_Line (+"Total:" & Integer_64'Image (total));
   end if;
   if fast then
     total_x_px := 0;
     total_x2_px := 0;
     for x in x_min .. x_max loop
-      total_x_px  := total_x_px  + x * pop (x);
-      total_x2_px := total_x2_px + x * x * pop (x);
+      total_x_px  := total_x_px  + Integer_64 (x) * pop (x);
+      total_x2_px := total_x2_px + Integer_64 (x * x) * pop (x);
     end loop;
   end if;
   --
@@ -81,18 +86,18 @@ begin
       --  Compute the cost of moving all crabs to position y.
       if fast then
         --  Quick computation without inner loop:
-        s_px   := s_px   + pop (y);      --  Partial sum: sum_{x <= y} pop_x
-        s_x_px := s_x_px + y * pop (y);  --  Partial sum: sum_{x <= y} x * pop_x
+        s_px   := s_px   + pop (y);                   --  Partial sum: sum_{x <= y} pop_x
+        s_x_px := s_x_px + Integer_64 (y) * pop (y);  --  Partial sum: sum_{x <= y} x * pop_x
         --
         if part = 1 then
           cost := y * (2 * s_px - total) - 2 * s_x_px + total_x_px;
         else
-          cost :=      (2 * y *        s_px -
-                        2 *            s_x_px +
-                                       total_x2_px +
-                        (1 - 2 * y)  * total_x_px +
-                        (y ** 2 - y) * total)
-                   / 2;
+          cost :=      (2 * y *        s_px -           --
+                        2 *            s_x_px +         --   Maths,
+                                       total_x2_px +    --   pencil & paper
+                        (1 - 2 * y)  * total_x_px +     --
+                        (y ** 2 - y) * total)           --   --> 639x faster!
+                   / 2;                                 --
         end if;
       else
         --  Slow, straightforward computation, with inner loop:
@@ -114,9 +119,11 @@ begin
       end if;
     end loop;
     if verbose then
-       Put_Line (+"Minimal cost: " & cost_min & " at x = " & x_cost_min);
+       Put_Line
+         ("Minimal cost:" & Integer_64'Image (cost_min) &
+          " at x =" & Integer_64'Image (x_cost_min));
     end if;
-    r (part) := cost_min;
+    r (part) := Integer (cost_min);
   end loop;
   --
   if compiler_test_mode then
@@ -126,6 +133,7 @@ begin
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
+    Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: sum of linear costs: " & r (1));
     Put_Line (+"Part 2: sum of quadratic costs: " & r (2));
     --  Part 1: validated by AoC: 340052

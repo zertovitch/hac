@@ -10,7 +10,9 @@
 --    - lack of 'Value (or at least 'Image) attribute
 --    - lack of logical operators on arrays of Boolean
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL;
+--  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
 
 procedure AoC_2020_21_full_Ada is
 
@@ -39,6 +41,8 @@ procedure AoC_2020_21_full_Ada is
     xvjk, zbxj, zcphr, zdthsvl, zfnttf, zgvtn, zjbgp, zmsdzh, zppxp, zvq);
 
   type Allergen is (dairy, eggs, fish, nuts, peanuts, sesame, soy, wheat);
+
+  use HAL;
 
   name : constant VString := +"aoc_2020_21.txt";
 

@@ -6,9 +6,14 @@
 --
 --  Part 1 only
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL;
+--  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
+
+with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_20 is
+  use HAL, Interfaces;
   size : constant := 144;
   name : constant VString := +"aoc_2020_20.txt";
 
@@ -113,12 +118,12 @@ procedure AoC_2020_20 is
       (edge_count (side_code (right, n)) = 1 and edge_count (side_code (down, n)) = 1);
   end Is_Corner;
   --
-  function Spot_Corners return Positive is
-    prod : Integer := 1;
+  function Spot_Corners return Integer_64 is
+    prod : Integer_64 := 1;
   begin
     for n in Tile_Range loop
       if Is_Corner (n) then
-        prod := prod * label (n);
+        prod := prod * Integer_64 (label (n));
       end if;
     end loop;
     return prod;
@@ -128,11 +133,11 @@ begin
   Read_Data;
   Count_Edges;
   if compiler_test_mode then
-    if Spot_Corners /= Integer_Value (Argument (1)) then
+    if Spot_Corners /= Integer_64'Value (To_String (Argument (1))) then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Product of corner labels: " & Spot_Corners);
+    Put_Line ("Product of corner labels:" & Integer_64'Image (Spot_Corners));
   end if;
   --  20899048083289 (example)
   --  83775126454273 (input)

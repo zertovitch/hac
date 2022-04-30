@@ -9,7 +9,9 @@
 --      As an hommage to John Conway, there are three
 --      "Game of Life" puzzles: Day 11, 17, 24.
 --
-with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAL;
+--  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
 
 procedure AoC_2020_24 is
 

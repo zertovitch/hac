@@ -9,8 +9,10 @@ with HAL;
 --  For a build with "full Ada": files hal*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
+with Interfaces;  --  Needed for GNAT (Integer_64).
+
 procedure AoC_2021_14 is
-  use HAL;
+  use HAL, Interfaces;
   --
   rule_max : constant := 200;
   subtype Rule_Range is Integer range 1 .. rule_max;
@@ -30,7 +32,7 @@ procedure AoC_2021_14 is
   rules : Natural := 0;
   --
   initial_polymer : VString;
-  type Pair_Population is array (Rule_Range) of Natural;
+  type Pair_Population is array (Rule_Range) of Integer_64;
   zero : Pair_Population;
   gen_pop : array (1 .. 2) of Pair_Population;
   --
@@ -87,10 +89,10 @@ procedure AoC_2021_14 is
   gen : Positive := 1;
   --
   procedure Evolve is
-    parents : Natural;
+    parents : Integer_64;
     new_gen : constant Positive := 3 - gen;
     child_1_idx, child_2_idx : Positive;
-    procedure Increase (pop : in out Natural) is
+    procedure Increase (pop : in out Integer_64) is
     begin
       pop := pop + parents;
     end Increase;
@@ -106,18 +108,18 @@ procedure AoC_2021_14 is
     gen := new_gen;
   end Evolve;
   --
-  r : array (1 .. 2) of Integer;
+  r : array (1 .. 2) of Integer_64;
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   verbose : constant Boolean := not compiler_test_mode;
   --
-  res : Natural;
+  res : Integer_64;
   --
   procedure Atom_Counts is
-    stat : array (Alpha) of Natural;
-    total : Natural := 0;
+    stat : array (Alpha) of Integer_64;
+    total : Integer_64 := 0;
     aa : Alpha;
-    stat_most_common_element  : Natural := Natural'First;  --  "- infinity"
-    stat_least_common_element : Natural := Natural'Last;   --  "+ infinity"
+    stat_most_common_element  : Integer_64 := Integer_64'First;  --  "- infinity"
+    stat_least_common_element : Integer_64 := Integer_64'Last;   --  "+ infinity"
   begin
     for a in Alpha loop
       stat (a) := 0;
@@ -139,16 +141,20 @@ procedure AoC_2021_14 is
       stat (a) := stat (a) / 2;
       total := total + stat (a);
       if stat (a) > 0 and then verbose then
-        Put_Line (+"  " & a & ": " & stat (a));
+        Put_Line (+"  " & a & ":" & Integer_64'Image (stat (a)));
       end if;
     end loop;
     if verbose then
-      Put_Line (+"  Total: " & total);
+      Put_Line (+"  Total:" & Integer_64'Image (total));
     end if;
     for a in Alpha loop
       if stat (a) > 0 then
-        stat_least_common_element := Min (stat_least_common_element, stat (a));
-        stat_most_common_element  := Max (stat_most_common_element, stat (a));
+        if stat (a) < stat_least_common_element then
+          stat_least_common_element := stat (a);
+        end if;
+        if stat (a) > stat_most_common_element then
+          stat_most_common_element := stat (a);
+        end if;
       end if;
     end loop;
     res := stat_most_common_element - stat_least_common_element;
@@ -175,14 +181,14 @@ begin
   r (2) := res;
   --
   if compiler_test_mode then
-    if r (1) /= Integer_Value (Argument (1)) or
-       r (2) /= Integer_Value (Argument (2))
+    if r (1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: count after 10 generations: " & r (1));
-    Put_Line (+"Part 2: count after 40 generations: " & r (2));
+    Put_Line (+"Part 1: count after 10 generations:" & Integer_64'Image (r (1)));
+    Put_Line (+"Part 2: count after 40 generations:" & Integer_64'Image (r (2)));
     --  Part 1: validated by AoC: 2345
     --  Part 2: validated by AoC: 2432786807053
   end if;

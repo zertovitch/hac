@@ -4,18 +4,23 @@
 --
 --  https://adventofcode.com/2020/day/13
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL;
+--  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
+
+with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_13 is
+  use HAL, Interfaces;
 
   --  Taken from MathPaqs (Euclidean_Ring_Tools, de-generic-ized for HAC):
 
-  procedure GCD_and_Bezout (a, b : in Integer; s, t, the_gcd : out Integer) is
+  procedure GCD_and_Bezout (a, b : in Integer_64; s, t, the_gcd : out Integer_64) is
     --  Finds the GCD and s, t for the
     --  ` GCD (a, b) = a * s + b * t ` factorization (Bezout theorem).
     --  Program 1.8, Introduction to number theory, RBJT Allenby & EJ Redfern
-    ta, tb : array (1 .. 3) of Integer;
-    q, r : Integer;
+    ta, tb : array (1 .. 3) of Integer_64;
+    q, r : Integer_64;
   begin
     ta (1) := 1;         tb (1) := 0;
     ta (2) := 0;         tb (2) := 1;
@@ -33,21 +38,24 @@ procedure AoC_2020_13 is
     the_gcd := ta (3);
   end GCD_and_Bezout;
 
-  answer_1, answer_2, d, earliest, prod, sk, tk, sum, gcd, n : Integer;
-  dmin, idmin : Integer := 0;
+  answer_1, answer_2, d, earliest, sk, tk, sum, prod, gcd : Integer_64;
+  freq_inp, earliest_inp, n : Integer;
+  dmin, idmin : Integer_64 := 0;
   f : File_Type;
-  freq : array (1 .. 1000) of Integer;
+  freq : array (1 .. 1000) of Integer_64;
   sep : Character;
   --
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   verbose : constant Boolean := False;
  begin
   Open (f, "aoc_2020_13.txt");
-  Get (f, earliest);
+  Get (f, earliest_inp);
+  earliest := Integer_64 (earliest_inp);
   n := 0;
   loop
     n := n + 1;
-    Get (f, freq (n));
+    Get (f, freq_inp);
+    freq (n) := Integer_64 (freq_inp);
     exit when End_Of_File (f);
     Get (f, sep);
   end loop;
@@ -66,15 +74,15 @@ procedure AoC_2020_13 is
       prod := prod * freq (k);
       if verbose then
         Put_Line (
-          +"  frequency: " & freq (k) &
-          ", first departure: " & d &
-          ", delta time: " & (k - 1)
+          +"  frequency:"      & Integer_64'Image (freq (k)) &
+          ", first departure:" & Integer_64'Image (d) &
+          ", delta time: "     & (k - 1)
         );
       end if;
     end if;
   end loop;
   if verbose then
-    Put_Line (+"First bus for you : ID " & idmin);
+    Put_Line ("First bus for you : ID " & Integer_64'Image (idmin));
   end if;
   answer_1 := (dmin - earliest) * idmin;
   --  Chinese remainder theorem (the frequencies are assumed to be coprime)
@@ -86,21 +94,21 @@ procedure AoC_2020_13 is
         Put_Line ("Not coprime, Chinese remainder theorem cannot be used.");
         return;
       end if;
-      sum := sum + (freq (k) - k + 1) * sk * (prod / freq (k));
+      sum := sum + (freq (k) - Integer_64 (k) + 1) * sk * (prod / freq (k));
     end if;
   end loop;
   sum := sum mod prod;
   answer_2 := sum;
   --
   if compiler_test_mode then
-    if answer_1 /= Integer_Value (Argument (1)) or
-       answer_2 /= Integer_Value (Argument (2))
+    if answer_1 /= Integer_64'Value (To_String (Argument (1))) or
+       answer_2 /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: first bus for you (encoded answer): " & answer_1);
-    Put_Line (+"Part 2: earliest timestamp for first bus in correct sequence: " & answer_2);
+    Put_Line ("Part 1: first bus for you (encoded answer):" & Integer_64'Image (answer_1));
+    Put_Line ("Part 2: earliest timestamp for first bus in correct sequence:" & Integer_64'Image (answer_2));
     --  Part 1: validated by AoC: 222
     --  Part 2: validated by AoC: 408270049879073
   end if;

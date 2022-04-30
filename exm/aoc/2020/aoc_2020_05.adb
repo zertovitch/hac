@@ -51,4 +51,6 @@ begin
   else
     Put_Line (+"Maximum seat Id in the plane = " & max);
   end if;
+  --  Part 1: validated by AoC: 835
+  --  Part 2: validated by AoC: 649
 end AoC_2020_05;

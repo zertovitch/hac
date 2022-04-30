@@ -14,10 +14,15 @@
 --
 --    *     ` cc_match := (others => (others => True)); `
 --
-with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAL;
+--  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
+
+with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_16 is
-  use HAL;
+  use HAL, Interfaces;
+
   criteria : constant := 20;
   subtype Criteria_Range is Positive range 1 .. criteria;
   val_11, val_12, val_21, val_22 : array (Criteria_Range) of Integer;
@@ -38,7 +43,7 @@ procedure AoC_2020_16 is
   unlinked : array (Column_Range) of Boolean;
   cc, matching : Integer;
   err : Natural := 0;
-  prod : Integer;  --  Need Integer_64 here on Ada's with 32-bit Integer.
+  prod : Integer_64;
   c, sep1, sep2, sep3 : Character;
   f : File_Type;
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
@@ -180,7 +185,7 @@ begin
         if verbose > 0 then
           Put (" column: "); Put (col, 0);
         end if;
-        prod := prod * my_ticket (col);
+        prod := prod * Integer_64 (my_ticket (col));
       end if;
     end loop;
     if verbose > 0 then
@@ -190,7 +195,7 @@ begin
   end loop;
   if compiler_test_mode then
     if err /= Integer_Value (Argument (1)) or
-       prod /= Integer_Value (Argument (2))
+       prod /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
@@ -198,8 +203,8 @@ begin
     Put ("Part 1: ticket scanning error rate . . . . . . . .  : ");
     Put (err, 0);   --  Validated by AoC: 23954
     New_Line;
-    Put ("Part 2: product of column numbers for ""destination"" : ");
-    Put (prod, 0);  --  Validated by AoC: 453459307723
+    Put ("Part 2: product of column numbers for ""destination"" :");
+    Put (Integer_64'Image (prod));  --  Validated by AoC: 453459307723
     New_Line;
   end if;
 end AoC_2020_16;

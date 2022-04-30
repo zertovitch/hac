@@ -8,9 +8,15 @@
 --
 --  https://adventofcode.com/2020/day/3
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL;
+--  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
+
+with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_03 is
+  use HAL, Interfaces;
+
   i_max : constant := 323;  --  1-based
   j_max : constant := 30;   --  0-based
   --
@@ -39,6 +45,7 @@ procedure AoC_2020_03 is
   --
   test_mode : constant Boolean := Argument_Count >= 2;
   f : File_Type;
+  prod : Integer_64;
 begin
   Open (f, "aoc_2020_03.txt");
   for i in 1 .. i_max loop
@@ -48,18 +55,21 @@ begin
   end loop;
   Close (f);
   --
+  prod := Integer_64 (Trees (1, 1)) *
+          Integer_64 (Trees (1, 3)) *
+          Integer_64 (Trees (1, 5)) *
+          Integer_64 (Trees (1, 7)) *
+          Integer_64 (Trees (2, 1));
   if test_mode then
-    if    (Trees (1, 3) /= Integer_Value (Argument (1)))
-       or (Trees (1, 1) * Trees (1, 3) * Trees (1, 5) * Trees (1, 7) *
-           Trees (2, 1)
-            /= Integer_Value (Argument (2)))
+    if    Trees (1, 3) /= Integer_Value (Argument (1))
+       or prod /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+" a) Trees met with slope 1/3: " & Trees (1, 3));
-    Put_Line (+" b) Product of total met trees with different slopes: " &
-              Trees (1, 1) * Trees (1, 3) * Trees (1, 5) * Trees (1, 7) *
-              Trees (2, 1));
+    Put_Line (+" b) Product of total met trees with different slopes:" & Integer_64'Image (prod));
+    --  Part 1: validated by AoC: 218
+    --  Part 2: validated by AoC: 3847183340
   end if;
 end AoC_2020_03;

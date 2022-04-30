@@ -14,9 +14,13 @@ with HAL;
 --  For a build with "full Ada": files hal*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
+with Interfaces;  --  Needed for GNAT (Integer_64).
+
 procedure AoC_2021_21 is
 
-  r : array (1 .. 2) of Integer;
+  use Interfaces;
+
+  r : array (1 .. 2) of Integer_64;
 
   subtype Player_Range is Integer range 0 .. 1;
 
@@ -42,7 +46,7 @@ procedure AoC_2021_21 is
         if score (playing) >= 1000 then
           done := True;
           rolls := 3 * (1 + (round - 1) * 2 + playing);
-          r (1) := score (1 - playing) * rolls;
+          r (1) := Interfaces.Integer_64 (score (1 - playing) * rolls);
           exit;
         end if;
       end loop;
@@ -68,7 +72,7 @@ procedure AoC_2021_21 is
   end Init_Dirac;
 
   --  Universes wins counts for player 1 and 2.
-  type Univs_Pair is array (1 .. 2) of Integer;
+  type Univs_Pair is array (1 .. 2) of Integer_64;
 
   procedure Play_Part_2 (start_player_1, start_player_2 : Positive) is
     win_score : constant := 21;
@@ -108,7 +112,7 @@ procedure AoC_2021_21 is
           --  In this case, player A wins when reaching new_pos_A.
           --  It happens once if the numbers diced were 1, 1, 1;
           --  3 times if the numbers diced were 1, 1, 2 (in any order), etc.
-          univs (1) := univs (1) + dice_counts (dirac_dice_3);
+          univs (1) := univs (1) + Integer_64 (dice_counts (dirac_dice_3));
         else
           --  Player A doesn't win, so it's player B's turn to play.
           Winning_Universes (
@@ -118,8 +122,8 @@ procedure AoC_2021_21 is
             new_pos_A,
             other_play  --  = (#universes where B wins, #universes where A wins)
           );
-          univs (1) := univs (1) + dice_counts (dirac_dice_3) * other_play (2);
-          univs (2) := univs (2) + dice_counts (dirac_dice_3) * other_play (1);
+          univs (1) := univs (1) + Integer_64 (dice_counts (dirac_dice_3)) * other_play (2);
+          univs (2) := univs (2) + Integer_64 (dice_counts (dirac_dice_3)) * other_play (1);
         end if;
       end loop;
       --
@@ -140,7 +144,8 @@ procedure AoC_2021_21 is
     end loop;
     --
     Winning_Universes (0, 0, start_player_1 - 1, start_player_2 - 1, res);
-    r (2) := HAL.Max (res (1), res (2));
+    r (2) := res (1);
+    if res (2) > res (1) then r (2) := res (2); end if;
   end Play_Part_2;
 
   use HAL;
@@ -152,15 +157,15 @@ begin
   Play_Part_1 (7, 1);
   Play_Part_2 (7, 1);
   if compiler_test_mode then
-    if r (1) /= Integer_Value (Argument (1)) or
-       r (2) /= Integer_Value (Argument (2))
+    if r (1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: " & r (1));
-    Put_Line (+"Part 2: " & r (2));
+    Put_Line (+"Part 1:" & Integer_64'Image (r (1)));
+    Put_Line (+"Part 2:" & Integer_64'Image (r (2)));
     --  Part 1: validated by AoC: 684495
     --  Part 2: validated by AoC: 152587196649184
   end if;

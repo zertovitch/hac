@@ -9,8 +9,10 @@ with HAL;
 --  For a build with "full Ada": files hal*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
+with Interfaces;  --  Needed for GNAT (Integer_64).
+
 procedure AoC_2021_10 is
-  use HAL;
+  use HAL, Interfaces;
   --
   input : constant VString := +"aoc_2021_10.txt";
   --
@@ -32,14 +34,14 @@ procedure AoC_2021_10 is
     return stack (top + 1) = c;
   end Pop_OK;
   --
-  scores : array (1 .. 100) of Positive;
+  scores : array (1 .. 100) of Integer_64;
   top_score_array : Natural := 0;
   ins : Natural;
-  line_score : Natural := 0;
+  line_score : Integer_64 := 0;
   f : File_Type;
   c : Character;
-  points : Positive;
-  r : array (1 .. 2) of Integer;
+  points : Integer_64;
+  r : array (1 .. 2) of Integer_64;
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
 begin
   r (1) := 0;
@@ -109,14 +111,14 @@ begin
   --  ^ "There will always be an odd number of scores to consider."
   Close (f);
   if compiler_test_mode then
-    if r (1) /= Integer_Value (Argument (1)) or
-       r (2) /= Integer_Value (Argument (2))
+    if r (1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Put_Line (+"Part 1: invalid closing delimiter points: " & r (1));
-    Put_Line (+"Part 2: autocomplete points: " & r (2));
+    Put_Line (+"Part 1: invalid closing delimiter points:" & Integer_64'Image (r (1)));
+    Put_Line (+"Part 2: autocomplete points:             " & Integer_64'Image (r (2)));
     --  Part 1: validated by AoC: 388713
     --  Part 2: validated by AoC: 3539961434
   end if;

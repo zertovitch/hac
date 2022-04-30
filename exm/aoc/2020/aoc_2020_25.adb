@@ -4,14 +4,20 @@
 --
 --  https://adventofcode.com/2020/day/25
 --
-with HAL; use HAL;  --  in ../../../src
+with HAL;
+--  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
+
+with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_25 is
 
   N : constant := 20201227;  --  A prime number.
 
-  function Transform (subjet_number, loop_size : Positive) return Natural is
-    value : Integer := 1;
+  use HAL, Interfaces;
+
+  function Transform (subjet_number : Integer_64; loop_size : Positive) return Integer_64 is
+    value : Integer_64 := 1;
   begin
     for i in 1 .. loop_size loop
       value := value * subjet_number;
@@ -20,10 +26,10 @@ procedure AoC_2020_25 is
     return value;
   end Transform;
 
-  procedure Solve (seed, card_public_key, door_public_key : Positive) is
+  procedure Solve (seed, card_public_key, door_public_key : Integer_64) is
 
-    function Find_Loop_Size (key : Natural) return Natural is
-      value : Integer := 1;
+    function Find_Loop_Size (key : Integer_64) return Natural is
+      value : Integer_64 := 1;
       max_loop_size : constant := 10_000_000;
     begin
       for i in 1 .. max_loop_size loop
@@ -41,7 +47,7 @@ procedure AoC_2020_25 is
     Put_Line (+"  Card's reverse-engineered loop size : " & card_loop_size);
     Put_Line (+"  Door's reverse-engineered loop size : " & Find_Loop_Size (door_public_key));
     --
-    Put_Line (+"  Encryption key : " & Transform (door_public_key, card_loop_size));
+    Put_Line ("  Encryption key :" & Integer_64'Image (Transform (door_public_key, card_loop_size)));
     --
     --  NB:
     --
@@ -54,12 +60,12 @@ procedure AoC_2020_25 is
   end Solve;
 
   procedure Test_Example is
-    card_public_key : constant Natural := Transform (7, 8);
-    door_public_key : constant Natural := Transform (7, 11);
+    card_public_key : constant Integer_64 := Transform (7, 8);
+    door_public_key : constant Integer_64 := Transform (7, 11);
   begin
     Put_Line ("Example");
-    Put_Line (+"  Card's public key : " & card_public_key);
-    Put_Line (+"  Door's public key : " & door_public_key);
+    Put_Line ("  Card's public key :" & Integer_64'Image (card_public_key));
+    Put_Line ("  Door's public key :" & Integer_64'Image (door_public_key));
     --
     Solve (7, card_public_key, door_public_key);
   end Test_Example;

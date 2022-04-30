@@ -14,7 +14,7 @@ procedure AoC_2020_12 is
   --
   function D2R (a : Real) return Real is
   begin
-    return (pi / 180.0) * a;
+    return (Pi / 180.0) * a;
   end D2R;
   --
   procedure Rotate (x, y : in out Real; a : Real) is

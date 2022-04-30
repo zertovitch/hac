@@ -15,7 +15,9 @@
 with Ada.Containers.Hashed_Sets,
      Ada.Containers.Vectors;
 
-with HAL;  --  in ../../../src
+with HAL;
+--  ^ Files hal*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
 
 procedure AoC_2020_22_full_Ada is
 
