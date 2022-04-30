@@ -258,6 +258,8 @@ package body HAC_Sys.Librarian is
       Activate_Unit (CD, Upper_Name);
     elsif Upper_Name = "STANDARD" then
       Built_In_Packages.Define_and_Register_Standard (CD, LD);
+    elsif Upper_Name = "INTERFACES" then
+      Built_In_Packages.Define_and_Register_Interfaces (CD, LD);
     elsif Upper_Name = HAL_Name then
       Built_In_Packages.Define_and_Register_HAL (CD, LD);
     elsif Upper_Name = "HAC_PACK" then

@@ -15,8 +15,31 @@ with HAC_Sys.Defs,
      HAC_Sys.PCode;
 
 with HAL;
+with Interfaces;
 
 package body HAC_Sys.Librarian.Built_In_Packages is
+
+  procedure Enter_and_Register_Built_In_Package (
+    CD   : in out Co_Defs.Compiler_Data;
+    LD   : in out Library_Data;
+    name : in     String
+  )
+  is
+    use Co_Defs, Defs;
+    unit : Library_Unit :=
+        (full_name     => HAL.To_VString (name),
+         kind          => Package_Declaration,
+         status        => Done,
+         id_index      => No_Id,
+         id_body_index => No_Id,
+         spec_context  => Co_Defs.Id_Maps.Empty_Map);
+  begin
+    Enter_Library_Level_Def (CD, name, Paquetage, NOTYP, 0);
+    Parser.Packages.Feed_Packages_Table (CD);
+    --  Feed library:
+    unit.id_index := CD.Id_Count;
+    Register_Unit (LD, unit);
+  end Enter_and_Register_Built_In_Package;
 
   procedure Define_and_Register_Standard (
     CD : in out Co_Defs.Compiler_Data;
@@ -28,22 +51,10 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     begin
       Enter_Library_Level_Def (CD, "Standard." & Name, TypeMark, T, 1, First, Last);
     end Enter_Std_Typ;
-    --
-    unit : Library_Unit :=
-        (full_name     => HAL.To_VString ("Standard"),
-         kind          => Package_Declaration,
-         status        => Done,
-         id_index      => No_Id,
-         id_body_index => No_Id,
-         spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
     Enter_Library_Level_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
-    Enter_Library_Level_Def (CD, "Standard", Paquetage, NOTYP, 0);
-    Parser.Packages.Feed_Packages_Table (CD);
-    --  Feed library:
-    unit.id_index := CD.Id_Count;
-    Register_Unit (LD, unit);
+    Enter_and_Register_Built_In_Package (CD, LD, "Standard");
     --
     Enter_Library_Level_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0);
     Enter_Library_Level_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1);
@@ -65,6 +76,27 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     CD.Packages_Table (CD.Packages_Count).last_public_declaration := CD.Id_Count;
   end Define_and_Register_Standard;
+
+  procedure Define_and_Register_Interfaces (
+    CD : in out Co_Defs.Compiler_Data;
+    LD : in out Library_Data
+  )
+  is
+    use Co_Defs, Defs, Interfaces;
+    procedure Enter_Interfaces_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
+    begin
+      Enter_Library_Level_Def (CD, "Interfaces." & Name, TypeMark, T, 1, First, Last);
+    end Enter_Interfaces_Typ;
+  begin
+    Enter_and_Register_Built_In_Package (CD, LD, "Interfaces");
+    --
+    Enter_Interfaces_Typ ("Integer_64", Ints, -2**63, 2**63 - 1);
+    Enter_Interfaces_Typ ("Integer_32", Ints, -2**31, 2**31 - 1);
+    Enter_Interfaces_Typ ("Integer_16", Ints, -2**15, 2**15 - 1);
+    Enter_Interfaces_Typ ("Integer_8",  Ints, -2**7,  2**7  - 1);
+    --
+    CD.Packages_Table (CD.Packages_Count).last_public_declaration := CD.Id_Count;
+  end Define_and_Register_Interfaces;
 
   procedure Define_and_Register_HAL (
     CD : in out Co_Defs.Compiler_Data;
@@ -97,19 +129,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Enter_Library_Level_Def (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
     end Enter_HAL_Proc;
 
-    unit : Library_Unit :=
-        (full_name     => HAL.To_VString (HAL_Name),
-         kind          => Package_Declaration,
-         status        => Done,
-         id_index      => No_Id,
-         id_body_index => No_Id,
-         spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
-    Enter_Library_Level_Def (CD, HAL_Name, Paquetage, NOTYP, 0);
-    Parser.Packages.Feed_Packages_Table (CD);
-    --  Feed library:
-    unit.id_index := CD.Id_Count;
-    Register_Unit (LD, unit);
+    Enter_and_Register_Built_In_Package (CD, LD, HAL_Name);
     --
     Enter_HAL_Typ ("File_Type",    Text_Files, 0, 0);  --  2020.05.17
     Enter_HAL_Typ (HAC_Float_Name, Floats, 0, 0);      --  Moved from Std 2021.12.26

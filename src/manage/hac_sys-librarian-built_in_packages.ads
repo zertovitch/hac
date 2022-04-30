@@ -24,6 +24,15 @@ private package HAC_Sys.Librarian.Built_In_Packages is
     LD : in out Library_Data
   );
 
+  -----------------------------------------------
+  --  Enter "manually" the Interfaces package  --
+  -----------------------------------------------
+
+  procedure Define_and_Register_Interfaces (
+    CD : in out Co_Defs.Compiler_Data;
+    LD : in out Library_Data
+  );
+
   ----------------------------------------
   --  Enter "manually" the HAL package  --
   ----------------------------------------
