@@ -1,9 +1,11 @@
 --  We check numerical recursive functions (and also a bit the
 --  correctness of array operations, and nested subprograms too).
 
-with HAL; use HAL;
+with HAL;
+with Testing_Utilities;
 
 procedure Recursion is
+  use HAL, Testing_Utilities;
 
   function Fibonacci (P : Natural) return Positive is
   begin
@@ -48,17 +50,11 @@ procedure Recursion is
     --
     for N in reverse 0 .. N_Max loop
       for M in 0 .. M_Max loop
-        if B (M, N) /= Ackermann (M, N) then
-          Put_Line ("Compiler bug [Array]");
-          Set_Exit_Status (1);  --  Compiler test failed.
-        end if;
+        Assert (B (M, N) = Ackermann (M, N), +"Compiler bug [Recursion, Ackermannm, Array]");
       end loop;
     end loop;
     --
-    if Noise_1 + Noise_2 /= Noise_3 then
-      Put_Line ("Compiler bug [Stack]");
-      Set_Exit_Status (1);  --  Compiler test failed.
-    end if;
+    Assert (Noise_1 + Noise_2 = Noise_3, +"Compiler bug [Stack]");
   end Ackarray;
 
   procedure Nesting_Tests is
@@ -92,9 +88,7 @@ procedure Recursion is
       for L in 1 .. Max_L loop
         R.N := 0;
         Add_1_and_shift (R, L);
-        if R.N /= 2 ** L - 1 then
-          Put_Line ("Compiler bug [Nesting_Test_P]");
-        end if;
+        Assert (R.N = 2 ** L - 1, +"Compiler bug [Recursion, Nesting_Test_P]");
       end loop;
     end Nesting_Test_P;
 
@@ -113,10 +107,7 @@ procedure Recursion is
       end Add_1_and_shift;
     begin
       for L in 1 .. Max_L loop
-        if Add_1_and_shift (0, L) /= 2 ** L - 1 then
-          Put_Line ("Compiler bug [Nesting_Test_F]");
-          Set_Exit_Status (1);  --  Compiler test failed.
-        end if;
+        Assert (Add_1_and_shift (0, L) = 2 ** L - 1, +"Compiler bug [Recursion, Nesting_Test_F]");
       end loop;
     end Nesting_Test_F;
 
@@ -126,14 +117,8 @@ procedure Recursion is
   end Nesting_Tests;
 
 begin
-  if Fibonacci (22) /= 17_711 then
-    Put_Line ("Compiler bug [Fibonacci]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
-  if Ackermann (3, 4) /= 125 then
-    Put_Line ("Compiler bug [Ackermann]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (Fibonacci (22) = 17_711, +"Compiler bug [Recursion, Fibonacci]");
+  Assert (Ackermann (3, 4) = 125,  +"Compiler bug [Recursion, Ackermann]");
   Ackarray;
   Nesting_Tests;
 end Recursion;

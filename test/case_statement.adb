@@ -1,18 +1,8 @@
-with HAL; use HAL;
+with HAL;
+with Testing_Utilities;
 
 procedure Case_Statement is
-
-  procedure Failure (Msg : VString) is
-  begin
-    Put_Line (+"Failure in test: [" & Msg & ']');
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end Failure;
-
-  procedure Assert (Msg : VString; Check : in Boolean) is
-  --  Similar to RM 11.4.2 but without raising an exception.
-  begin
-    if not Check then Failure (Msg & ", assertion"); end if;
-  end Assert;
+  use HAL, Testing_Utilities;
 
   after_int_case : Boolean := False;
 
@@ -20,15 +10,9 @@ procedure Case_Statement is
   begin
     case (2 * (i + 1)) / 2 - 1 is
       when 1 | -1 =>
-        if abs i /= 1 then
-          Put_Line ("Compiler bug [Int, A]");
-          Set_Exit_Status (1);  --  Compiler test failed.
-        end if;
+        Assert (abs i = 1, +"Compiler bug [CASE test, Int, A]");
       when -7 =>
-        if i + 7 /= 0 then
-          Put_Line ("Compiler bug [Int, B]");
-          Set_Exit_Status (1);  --  Compiler test failed.
-        end if;
+        Assert (i + 7 = 0, +"Compiler bug [CASE test, Int, B]");
       when others => null;
       --  !! When "OTHERS" omitted: HAC compiles but the VM enters a Case_Check_Error state.
       --
@@ -66,14 +50,11 @@ begin
   for i in -10 .. 10 loop
     Test_Int (i);
   end loop;
-  if not after_int_case then
-    Put_Line ("Compiler bug [Int, Z]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (after_int_case, +"Compiler bug [CASE, Int, Z]");
   --
   for c in big_A .. 'z' loop
     Test_Char (c);
   end loop;
-  Assert (+"Char, CASE 1", some_vowels_occurrences = 3);
-  Assert (+"Char, CASE 2", small_consonants_occurrences = 20);
+  Assert (some_vowels_occurrences = 3,       +"Char, CASE 1");
+  Assert (small_consonants_occurrences = 20, +"Char, CASE 2");
 end Case_Statement;

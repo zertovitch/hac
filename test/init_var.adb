@@ -1,10 +1,10 @@
 --  Output should be empty if the compiler is correct.
 
 with HAL;
+with Testing_Utilities;
 
 procedure Init_Var is
-
-  use HAL;
+  use HAL, Testing_Utilities;
 
   type Rec_1 is record
     i : Integer;
@@ -72,13 +72,7 @@ begin
   end loop;
   --
   Init_Nest_Arr (y, z);
-  if z (True).a (9, 11).i /= 9 * 11 * n1 then
-    Put_Line ("Compiler bug [Arr]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (z (True).a (9, 11).i = 9 * 11 * n1, +"Compiler bug [Arr]");
   Init_Nest_Rec (y (True), r);
-  if r.a (7, 13).i /= 7 * 13 * n2 then
-    Put_Line ("Compiler bug [Rec]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (r.a (7, 13).i = 7 * 13 * n2, +"Compiler bug [Rec]");
 end Init_Var;

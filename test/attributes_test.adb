@@ -1,19 +1,8 @@
 with HAL;
+with Testing_Utilities;
 
 procedure Attributes_test is
-  use HAL;
-
-  procedure Failure (Msg : VString) is
-  begin
-    Put_Line (+"Failure in test: [" & Msg & ']');
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end Failure;
-
-  procedure Assert (Msg : VString; Check : in Boolean) is
-  --  Similar to RM 11.4.2 but without raising an exception.
-  begin
-    if not Check then Failure (Msg & ", assertion"); end if;
-  end Assert;
+  use HAL, Testing_Utilities;
 
   type Enum is (aa, bb, cc, dd);
   subtype Sub_Enum is Enum range bb .. cc;
@@ -33,21 +22,21 @@ procedure Attributes_test is
   mmm : array (10 .. 20) of R;
 
 begin
-  Assert (+"""<"" on values Strings_as_VStrings, Image", Enum'Image (bb) < Enum'Image (cc));
+  Assert (Enum'Image (bb) < Enum'Image (cc), +"""<"" on values Strings_as_VStrings, Image");
 
-  Assert (+"S'First",  Enum'First = aa);
-  Assert (+"S'Last",   Enum'Last = dd);
-  Assert (+"S'Pred",   Enum'Pred (dd) = cc);
-  Assert (+"S'Succ",   Enum'Succ (bb) = cc);
+  Assert (Enum'First = aa,     +"S'First");
+  Assert (Enum'Last = dd,      +"S'Last");
+  Assert (Enum'Pred (dd) = cc, +"S'Pred");
+  Assert (Enum'Succ (bb) = cc, +"S'Succ");
 
-  Assert (+"A'First",  bb = A'First);
-  Assert (+"A'Last",   cc = A'Last);
-  Assert (+"A'Length", 2 = A'Length);
+  Assert (bb = A'First, +"A'First");
+  Assert (cc = A'Last,  +"A'Last");
+  Assert (2 = A'Length, +"A'Length");
 
-  Assert (+"M'First (1)", M'First (1) = -5);
-  Assert (+"M'Last (1)",  M'Last (1) = -2);
-  Assert (+"M'First (2)", bb = M'First (2));
-  Assert (+"M'Last (2)",  dd = M'Last (2));
+  Assert (M'First (1) = -5, +"M'First (1)");
+  Assert (M'Last (1) = -2,  +"M'Last (1)");
+  Assert (bb = M'First (2), +"M'First (2)");
+  Assert (dd = M'Last (2),  +"M'Last (2)");
 
   for i in M'Range (1) loop
     for j in M'Range (2) loop
@@ -61,9 +50,9 @@ begin
       sum := sum + mm (i, j);
     end loop;
   end loop;
-  Assert (+"M'Range (N)", sum = -84);
+  Assert (sum = -84, +"M'Range (N)");
 
-  Assert (+"Obj.Last (1)", -2 = mmm (1).y'Last (1));
-  Assert (+"Obj.First (2)", bb = mmm (15).y'First (2));
+  Assert (-2 = mmm (10).y'Last (1),  +"Obj.Last (1)");
+  Assert (bb = mmm (15).y'First (2), +"Obj.First (2)");
 
 end Attributes_test;

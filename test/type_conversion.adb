@@ -2,26 +2,28 @@
 --
 --  4.6 Type Conversions
 
-with HAL; use HAL;
+with HAL;
+with Testing_Utilities;
 
 procedure Type_Conversion is
+  use HAL, Testing_Utilities;
 
   function To_Int (x : Real) return Integer is
   begin
     return Integer (x);
   end To_Int;
 
-  subtype Day is Integer range 1 .. 31;
+  subtype Day_Range is Integer range 1 .. 31;
   i, j : Integer;
   x, y : Real;
   d, e : Duration;
   oa_duration_delta : constant := 0.00006103515625;
-  --  OA Win 32 & 64: type Duration is delta 2.0**(-14) range -131072.0..+131072.0-2.0**(-14);
-  dd : Day;
+  --  ObjectAda Win 32 & 64: type Duration is delta 2.0**(-14) range -131072.0..+131072.0-2.0**(-14);
+  dd : Day_Range;
 begin
   i := 1234;
   x := Real (i);
-  --  dd := Day (x);  --  <---- This should raise a Constraint_Error (not in range)
+  --  dd := Day_Range (x);  --  <---- This should raise a Constraint_Error (not in range)
   --
   dd := 1;
   i := dd;
@@ -29,14 +31,8 @@ begin
   y := x + Real (i);
   j := i + To_Int (3.51);
   --
-  if y /= 3.0 then
-    Put_Line ("Compiler bug [A]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
-  if j /= 5 then
-    Put_Line ("Compiler bug [B]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (y = 3.0, +"Compiler bug [Type_Conversion, A]");
+  Assert (j = 5,   +"Compiler bug [Type_Conversion, B]");
   --
   --  Duration <-> Real
   --
@@ -45,9 +41,9 @@ begin
   delay d;
   x := Real (d);
   if abs (x * 100.0 - Real (e)) > 100.0 * oa_duration_delta then
-    Put_Line ("Compiler bug [C]");
+    Put_Line ("Type_Conversion, Compiler bug [C]");
     Put_Line (+"100 * x = " & 100.0 * x);
     Put_Line (+"e = " & Image (e));
-    Set_Exit_Status (1);  --  Compiler test failed.
+    Failure (+"");
   end if;
 end Type_Conversion;

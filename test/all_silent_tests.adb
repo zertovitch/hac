@@ -24,7 +24,7 @@ procedure All_Silent_Tests is
 
     procedure Build_HAC (success : out Boolean) is
     begin
-      if Get_Env("hacbuild") = "done" then
+      if Get_Env ("hacbuild") = "done" then
         success := True;
         return;
       end if;
@@ -51,7 +51,7 @@ procedure All_Silent_Tests is
 
     procedure Normal_Test (Ada_file_name : VString) is
       short : VString;
-      sep : Natural := Index_Backward (Ada_file_name, Directory_Separator);
+      sep : constant Natural := Index_Backward (Ada_file_name, Directory_Separator);
     begin
       short := Slice (Ada_file_name, sep + 1, Length (Ada_file_name));
       Put_Line (+"      " & short);
@@ -75,15 +75,15 @@ procedure All_Silent_Tests is
     hac_build_success : Boolean;
 
     generate : constant VString :=
-      +".." & Directory_Separator & 
+      +".." & Directory_Separator &
        "hac .." & Directory_Separator &
        "exm" & Directory_Separator & "pkg_demo_gen.adb";
 
   begin
-    Put_Line( "    ___________      _____________________________________________________________________");
-    Put_Line( "   / *  HAC  * \    /  ""Silent tests"": when there is zero output, no compilation error,   \");
-    Put_Line( "   |  Testing  |    |  no run-time error, and 0 failure, then the test suite is all fine. |");
-    Put_Line( "   \___________/    \_____________________________________________________________________/");
+    Put_Line ("    ___________      _____________________________________________________________________");
+    Put_Line ("   / *  HAC  * \    /  ""Silent tests"": when there is zero output, no compilation error,   \");
+    Put_Line ("   |  Testing  |    |  no run-time error, and 0 failure, then the test suite is all fine. |");
+    Put_Line ("   \___________/    \_____________________________________________________________________/");
     New_Line;
     Build_HAC (hac_build_success);  --  Redundant if this program is itself run through HAC.
     if not hac_build_success then
@@ -91,10 +91,10 @@ procedure All_Silent_Tests is
       return;
     end if;
     --
-    Put_Line( "----> Launching tests.");
-    Put_Line( "  One instance of HAC is called each time, with compilation and execution...");
+    Put_Line ("----> Launching tests.");
+    Put_Line ("  One instance of HAC is called each time, with compilation and execution...");
     New_Line;
-    Put_Line( +"    Normal tests in " & Current_Directory & ':');
+    Put_Line (+"    Normal tests in " & Current_Directory & ':');
     Normal_Test (+"attributes_test.adb");
     Normal_Test (+"case_statement.adb");
     Normal_Test (+"constants.adb");

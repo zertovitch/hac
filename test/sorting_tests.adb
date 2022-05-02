@@ -1,9 +1,11 @@
 --  Silent versions of merge_sort.adb and shell_sort.adb.
 --  We check the result. No output <=> compiler is correct.
 
-with HAL; use HAL;
+with HAL;
+with Testing_Utilities;
 
 procedure Sorting_Tests is
+  use HAL;
 
   expected_result : constant String (1 .. 26) := "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -66,10 +68,8 @@ procedure Sorting_Tests is
       cur_length := cur_length * 2;
     end loop;
     for k in 1 .. 26 loop
-      if v (k) /= expected_result (k) then
-        Put_Line ("Wrong result in Merge Sort");
-        Set_Exit_Status (1);  --  Compiler test failed.
-      end if;
+      Testing_Utilities.Assert
+        (v (k) = expected_result (k), +"Wrong result in Merge Sort");
     end loop;
   end Merge;
 
@@ -112,10 +112,8 @@ procedure Sorting_Tests is
       end loop;
     end loop; -- for pass in 1..npass
     for k in 1 .. 26 loop
-      if b (k) /= expected_result (k) then
-        Put_Line ("Wrong result in Shell Sort");
-        Set_Exit_Status (1);  --  Compiler test failed.
-      end if;
+      Testing_Utilities.Assert
+        (b (k) = expected_result (k), +"Wrong result in Shell Sort");
     end loop;
   end Shell;
 

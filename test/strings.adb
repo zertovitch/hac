@@ -1,19 +1,8 @@
 with HAL;
+with Testing_Utilities;
 
 procedure Strings is
-  use HAL;
-
-  procedure Failure (Msg : VString) is
-  begin
-    Put_Line (+"Failure in test: [" & Msg & ']');
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end Failure;
-
-  procedure Assert (Msg : VString; Check : in Boolean) is
-  --  Similar to RM 11.4.2 but without raising an exception.
-  begin
-    if not Check then Failure (Msg & ", assertion"); end if;
-  end Assert;
+  use HAL, Testing_Utilities;
 
   s1, s2, s3, s4, s4_s4 : VString;
   Planck   : constant Real := 6.62607015e-34;
@@ -138,45 +127,45 @@ begin
     Failure (+"String <-> VString, #1");
   end if;
   --
-  --  HAL functions
+  --  Testing HAL functions
   --
-  Assert (+"SW_1", not Starts_With (+"package",  "proc"));
-  Assert (+"SW_2", not Starts_With (+"package", +"proc"));
-  Assert (+"SW_3",     Starts_With (+"package",  "pack"));
-  Assert (+"SW_4",     Starts_With (+"package", +"pack"));
+  Assert (not Starts_With (+"package",  "proc"), +"SW_1");
+  Assert (not Starts_With (+"package", +"proc"), +"SW_2");
+  Assert     (Starts_With (+"package",  "pack"), +"SW_3");
+  Assert     (Starts_With (+"package", +"pack"), +"SW_4");
   --
-  Assert (+"EW_1", not Ends_With (+"package",  "proc"));
-  Assert (+"EW_2", not Ends_With (+"package", +"proc"));
-  Assert (+"EW_3",     Ends_With (+"package",  "age"));
-  Assert (+"EW_4",     Ends_With (+"package", +"age"));
+  Assert (not Ends_With (+"package",  "proc"), +"EW_1");
+  Assert (not Ends_With (+"package", +"proc"), +"EW_2");
+  Assert     (Ends_With (+"package",  "age"),  +"EW_3");
+  Assert     (Ends_With (+"package", +"age"),  +"EW_4");
   --
-  Assert (+"TAM_1", Tail_After_Match (+"/etc/genesix/gnx-startup", '/') = "gnx-startup");
-  Assert (+"TAM_2", Tail_After_Match (+"/etc/genesix/gnx-startup", "ix") = "/gnx-startup");
-  Assert (+"TAM_3", Tail_After_Match (+"/etc/genesix/gnx-startup", +"gene") = "six/gnx-startup");
-  Assert (+"TAM_4", Tail_After_Match (+"/etc/genesix/gnx-startup", +"etc/genesix/gnx-startu") = "p");
-  Assert (+"TAM_5", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startu") = "p");
-  Assert (+"TAM_6", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startup") = "");
-  Assert (+"TAM_7", Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startupp") = "");
-  Assert (+"TAM_8", Tail_After_Match (+"/etc/genesix/gnx-startup", "/g") = "nx-startup");  --  Must match the last "/g"
-  Assert (+"TAM_9", Tail_After_Match (+"/etc/genesix/gnx-startup", "/g") /= "enesix/gnx-startup");
+  Assert (Tail_After_Match (+"/etc/genesix/gnx-startup", '/') = "gnx-startup",               +"TAM_1");
+  Assert (Tail_After_Match (+"/etc/genesix/gnx-startup", "ix") = "/gnx-startup",             +"TAM_2");
+  Assert (Tail_After_Match (+"/etc/genesix/gnx-startup", +"gene") = "six/gnx-startup",       +"TAM_3");
+  Assert (Tail_After_Match (+"/etc/genesix/gnx-startup", +"etc/genesix/gnx-startu") = "p",   +"TAM_4");
+  Assert (Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startu") = "p",  +"TAM_5");
+  Assert (Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startup") = "",  +"TAM_6");
+  Assert (Tail_After_Match (+"/etc/genesix/gnx-startup", +"/etc/genesix/gnx-startupp") = "", +"TAM_7");
+  Assert (Tail_After_Match (+"/etc/genesix/gnx-startup", "/g") = "nx-startup",               +"TAM_8");  --  Must match the last "/g"
+  Assert (Tail_After_Match (+"/etc/genesix/gnx-startup", "/g") /= "enesix/gnx-startup",      +"TAM_9");
   --
-  Assert (+"HBM_1", Head_Before_Match (+"the quick brown fox jumps", "fox") = "the quick brown ");
-  Assert (+"HBM_2", Head_Before_Match (+"the quick brown fox jumps", "dog") = "");
-  Assert (+"HBM_3", Head_Before_Match (+"the quick brown fox jumps", "jumps ") = "");
-  Assert (+"HBM_4", Head_Before_Match (+"the quick brown fox jumps", +"quick") = "the ");
-  Assert (+"HBM_5", Head_Before_Match (+"the quick brown fox jumps", 'k') = "the quic");
+  Assert (Head_Before_Match (+"the quick brown fox jumps", "fox") = "the quick brown ", +"HBM_1");
+  Assert (Head_Before_Match (+"the quick brown fox jumps", "dog") = "",                 +"HBM_2");
+  Assert (Head_Before_Match (+"the quick brown fox jumps", "jumps ") = "",              +"HBM_3");
+  Assert (Head_Before_Match (+"the quick brown fox jumps", +"quick") = "the ",          +"HBM_4");
+  Assert (Head_Before_Match (+"the quick brown fox jumps", 'k') = "the quic",           +"HBM_5");
   --
   --  The following test is in one answer of
   --  https://stackoverflow.com/questions/62080743/how-do-you-check-if-string-ends-with-another-string-in-ada
-  Assert (+"EW_101", Ends_With (+"John Johnson", "son") = True);
-  Assert (+"EW_102", Ends_With (+"", "") = True);
-  Assert (+"EW_103", Ends_With (+" ", "") = True);
-  Assert (+"EW_104", Ends_With (+"", " ") = False);
-  Assert (+"EW_105", Ends_With (+" ", " ") = True);
-  Assert (+"EW_106", Ends_With (+"", "n") = False);
-  Assert (+"EW_107", Ends_With (+"n", "") = True);
-  Assert (+"EW_108", Ends_With (+"n ", "n ") = True);
-  Assert (+"EW_109", Ends_With (+" n", "n") = True);
-  Assert (+"EW_110", Ends_With (+"n", " n") = False);
-  Assert (+"EW_111", Ends_With (+" n", " n") = True);
+  Assert (Ends_With (+"John Johnson", "son") = True, +"EW_101");
+  Assert (Ends_With (+"", "") = True,                +"EW_102");
+  Assert (Ends_With (+" ", "") = True,               +"EW_103");
+  Assert (Ends_With (+"", " ") = False,              +"EW_104");
+  Assert (Ends_With (+" ", " ") = True,              +"EW_105");
+  Assert (Ends_With (+"", "n") = False,              +"EW_106");
+  Assert (Ends_With (+"n", "") = True,               +"EW_107");
+  Assert (Ends_With (+"n ", "n ") = True,            +"EW_108");
+  Assert (Ends_With (+" n", "n") = True,             +"EW_109");
+  Assert (Ends_With (+"n", " n") = False,            +"EW_110");
+  Assert (Ends_With (+" n", " n") = True,            +"EW_111");
 end Strings;

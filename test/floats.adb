@@ -1,8 +1,10 @@
 --  Output should be empty if the compiler is correct.
 
-with HAL; use HAL;
+with HAL;
+with Testing_Utilities;
 
 procedure Floats is
+  use HAL, Testing_Utilities;
 
   procedure Test_Exp_Log is
     scale : constant := 500.0;
@@ -12,16 +14,12 @@ procedure Floats is
     for i in 0 .. steps loop
       x1 := Real (i) * scale * (1.0 / Real (steps));
       x2 := Log (Exp (x1));
-      if abs (x2 - x1) > 1.0e-15 then
-        Put_Line ("Compiler bug [Exp_Log]");
-        Set_Exit_Status (1);  --  Compiler test failed.
-      end if;
+      Assert (abs (x2 - x1) <= 1.0e-15, +"Compiler bug [Floats, Exp_Log]");
     end loop;
   end Test_Exp_Log;
 
   procedure Test_Trigo is
-    pi : constant := 3.141592653;
-    scale : constant Real := pi * 0.25;
+    scale : constant Real := Pi * 0.25;
     steps : constant := 100;
     x, s, c, t : Real;
   begin
@@ -31,10 +29,7 @@ procedure Floats is
       c := Cos (x);
       if abs c > 0.0 then
         t := s / c;
-        if abs (Arctan (t) - x) > 1.0e-15 then
-          Put_Line ("Compiler bug [Trigo]");
-          Set_Exit_Status (1);  --  Compiler test failed.
-        end if;
+        Assert (abs (Arctan (t) - x) <= 1.0e-15, +"Compiler bug [Floats, Trigo]");
       end if;
     end loop;
   end Test_Trigo;
@@ -72,14 +67,12 @@ procedure Floats is
       --  ma is the minimum of absolute values of x and y.
       tol := tol * ma;  --  Relative tolerance
       eq := z <= tol;
-      if not eq then
-        Put (+"Bug [Base_Test " &
+      Assert (eq,
+               +"Bug [Base_Test " &
                Real'Image (x) & ", " &
                Real'Image (y) & ", " &
                Real'Image (x - y) & ", " &
                Real'Image (tol) & "]  ");
-        Set_Exit_Status (1);  --  Compiler test failed.
-      end if;
       return eq;
     end Almost_equal;
   begin
@@ -292,10 +285,7 @@ procedure Floats is
       for i in 0 .. n_iter loop
         Evolution (x, q_e, q_sb, h);
       end loop;
-      if abs (x (Neuchatel) - 429.06377) > 0.0002 then
-        Put_Line ("Compiler bug [Three_Lakes_S]");
-        Set_Exit_Status (1);  --  Compiler test failed.
-      end if;
+      Assert (abs (x (Neuchatel) - 429.06377) <= 0.0002, +"Compiler bug [Floats, Three_Lakes_S]");
     end Simulation;
 
   begin
@@ -308,34 +298,19 @@ begin
   v.x2 := 3.0;
   x3 := 5.0;
   v.x3 := 6.0;
-  if x3 /= 5.0 then
-    Put_Line ("Compiler bug [A]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (x3 = 5.0, +"Compiler bug [Floats, A]");
   x1 := v.x1;
-  if x1 /= 1.0 then
-    Put_Line ("Compiler bug [B]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (x1 = 1.0, +"Compiler bug [Floats, B]");
   x3 := v.x2;
-  if x3 /= 3.0 then
-    Put_Line ("Compiler bug [C]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (x3 = 3.0, +"Compiler bug [Floats, C]");
   ww (1).x3 := 3.4_5_6_7_8_9;
   ww (5).x3 := ww (1).x3;
   ww (1).x3 := 7.89;
   v.x3 := 1.0;
   v.x2 := 2.0;
-  if abs (ww (5).x3 - (2.345_678 + 1.111111)) > 0.000_000_1 then
-    Put_Line ("Compiler bug [D]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (abs (ww (5).x3 - (2.345_678 + 1.111111)) <= 0.000_000_1, +"Compiler bug [Floats, D]");
   x2 := neg_float_value;
-  if -x2 /= 5.07 then
-    Put_Line ("Compiler bug [E]");  --  Former HAC bug: unary minus was ineffective for floats
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (-x2 = 5.07, +"Compiler bug [Floats, E]");  --  Former HAC bug: unary minus was ineffective for floats
   --
   Test_Exp_Log;
   Test_Trigo;

@@ -1,8 +1,10 @@
 --  Output should be empty if the compiler is correct.
 
-with HAL; use HAL;
+with HAL;
+with Testing_Utilities;
 
 procedure Integers is
+  use HAL, Testing_Utilities;
 
   x1 : Integer;
   x2 : Integer;
@@ -31,10 +33,12 @@ procedure Integers is
     pt : Integer;
   begin
     for i in 1 .. 1 loop
+      --  SmallAda and early HAC versions patched all
+      --  instructions with an operand = -1 !...
       pt := patch_trap;
       if -pt /= 1 then
-        Put (pt); Put_Line ("  Compiler bug [Patch]");
-        Set_Exit_Status (1);  --  Compiler test failed.
+        Put (pt);
+        Failure (+"  Compiler bug [Integers, IF Patch]");
       end if;
     end loop;
   end Test_Patching;
@@ -44,35 +48,20 @@ begin
   v.x2 := 3;
   x3 := 5;
   v.x3 := 6;
-  if x3 /= 5 then
-    Put_Line ("Compiler bug [A]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (x3 = 5, +"Compiler bug [Integers, A]");
   x1 := v.x1;
-  if x1 /= 1 then
-    Put_Line ("Compiler bug [B]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (x1 = 1, +"Compiler bug [Integers, B]");
   x3 := v.x3;
-  if x3 /= 6 then
-    Put_Line ("Compiler bug [C]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (x3 = 6, +"Compiler bug [Integers, C]");
   --
   for i in 1 .. 10 loop
     v.x1 := Fibonacci (i);
     v.x2 := Fibonacci (i + 1);
     v.x3 := Fibonacci (i + 2);
-    if not (v.x1 - v.x3 + v.x2 = 0) then
-      Put_Line ("Compiler bug [D]");
-      Set_Exit_Status (1);  --  Compiler test failed.
-    end if;
+    Assert (v.x1 - v.x3 + v.x2 = 0, +"Compiler bug [Integers, D]");
   end loop;
   --
-  if 12_000 /= 12e003 then
-    Put_Line ("Compiler bug [E]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (12_000 = 12e003, +"Compiler bug [Integers, E]");
   --
   Test_Patching;
 end Integers;

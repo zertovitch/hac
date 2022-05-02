@@ -1,8 +1,10 @@
 --  Output should be empty if the compiler is correct.
 
-with HAL; use HAL;
+with HAL;
+with Testing_Utilities;
 
 procedure Enumerations is
+  use HAL, Testing_Utilities;
 
   type E1 is (a);
   type E2 is (b, c);
@@ -42,10 +44,7 @@ procedure Enumerations is
     case a is
       --  when d => null;  --  <-- wrong enum type
       when dog =>
-        if a /= dog then
-          Put_Line ("Compiler bug [CASE]");
-          Set_Exit_Status (1);  --  Compiler test failed.
-        end if;
+        Assert (a = dog, +"Compiler bug [Enumerations, CASE]");
       when others =>
         null;
     end case;
@@ -60,20 +59,11 @@ begin
   v.x2 := c;
   x3 := e;
   v.x3 := f;
-  if x3 /= e then
-    Put_Line ("Compiler bug [A]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (x3 = e, +"Compiler bug [Enumerations, A]");
   x1 := v.x1;
-  if x1 /= a then
-    Put_Line ("Compiler bug [B]");  --  Former HAC bug with selectors for enums
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (x1 = a, +"Compiler bug [Enumerations, B]");  --  Former HAC bug with selectors for enums
   x3 := v.x3;
-  if x3 /= f then
-    Put_Line ("Compiler bug [C]");  --  Former HAC bug with selectors for enums
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (x3 = f, +"Compiler bug [Enumerations, C]");  --  Former HAC bug with selectors for enums
   ww (1).x3 := e;
   ww (5).x3 := ww (1).x3;
   ww (1).x3 := f;
@@ -84,32 +74,16 @@ begin
   --
   v.x3 := d;
   v.x2 := b;
-  if ww (5).x3 /= e then
-    Put_Line ("Compiler bug [D]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (ww (5).x3 = e, +"Compiler bug [Enumerations, D]");
   --
-  if zz (d).x4 /= j then
-    Put_Line ("Compiler bug [E1]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
-  if zz (e).x4 /= i then
-    Put_Line ("Compiler bug [E2]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
-  if zz (f).x4 /= h then
-    Put_Line ("Compiler bug [E3]");
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end if;
+  Assert (zz (d).x4 = j, +"Compiler bug [Enumerations, E1]");
+  Assert (zz (e).x4 = i, +"Compiler bug [Enumerations, E2]");
+  Assert (zz (f).x4 = h, +"Compiler bug [Enumerations, E3]");
   --
   for pet in Mammal loop
     pet2 := pet;
-    if pet2 in Insect then
-      Put ("Compiler bug membership 1");
-    end if;
-    if pet2 not in Mammal then
-      Put ("Compiler bug membership 2");
-    end if;
+    Assert (not (pet2 in Insect),     +"Compiler bug: Enumerations, membership 1 (IN)");
+    Assert (not (pet2 not in Mammal), +"Compiler bug: Enumerations, membership 2 (NOT IN)");
   end loop;
   --
   Test_CASE;

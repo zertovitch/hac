@@ -13,24 +13,12 @@
 --       0 1 2 3 4 5 6 7 8 9 0 1 2
 --
 with HAL;
+with Testing_Utilities;
 
 procedure Forward is
+  use HAL, Testing_Utilities;
 
-  use HAL;
-
-  procedure Failure (Msg : VString) is
-  begin
-    Put_Line (+"Failure in test: [" & Msg & ']');
-    Set_Exit_Status (1);  --  Compiler test failed.
-  end Failure;
-
-  procedure Assert (Msg : VString; Check : in Boolean) is
-    --  Similar to RM 11.4.2 but without raising an exception.
-  begin
-    if not Check then Failure (Msg & ", assertion"); end if;
-  end Assert;
-
-  function M (N : Integer) return Integer;
+  function M (N : Integer) return Integer;  --  Forward declaration of M.
 
   function F (N : Integer) return Integer is
   begin
@@ -51,8 +39,8 @@ procedure Forward is
   end M;
 
 begin
-  Assert (+"F", 4 = F (6));
-  Assert (+"M", 4 = M (6));
-  Assert (+"F", 8 = F (12));
-  Assert (+"M", 7 = M (12));
+  Assert (4 = F (6),  +"F (6)");
+  Assert (4 = M (6),  +"M (6)");
+  Assert (8 = F (12), +"F (12)");
+  Assert (7 = M (12), +"M (12)");
 end Forward;

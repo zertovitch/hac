@@ -1,6 +1,8 @@
-with HAL; use HAL;
+with HAL;
+with Testing_Utilities;
 
 procedure Var_Init is
+  use HAL, Testing_Utilities;
 
   --  Test "atomic" (<- in the PCode sense) variables, explicit
   --  initialization.
@@ -8,10 +10,7 @@ procedure Var_Init is
     a, b, c : Integer := 777;
     d, e, f : constant Integer := 111;
   begin
-    if a - 666 /= d or b / 7 /= e or c + f /= 888 then
-      Put_Line ("Compiler bug [Atomic_Explicit]");
-      Set_Exit_Status (1);  --  Compiler test failed.
-    end if;
+    Assert (a - 666 = d and b / 7 = e and c + f = 888, +"Compiler bug [Atomic_Explicit]");
     a := 3;
     b := 4;
     c := 5;
@@ -20,13 +19,10 @@ procedure Var_Init is
   --  Test "atomic" (<- in the PCode sense) variables, implicit
   --  initialization.
   procedure Atomic_Implicit is
-    a, b, c : VString;
+    a, b, c : VString;  --  Initialized as empty VString's (= Unbounded_String's).
   begin
     a := a & b & "abc" & c;
-    if a /= "abc" then
-      Put_Line ("Compiler bug [Atomic_Implicit]");
-      Set_Exit_Status (1);  --  Compiler test failed.
-    end if;
+    Assert (a = "abc", +"Compiler bug [Atomic_Implicit]");
     b := +"gruik";
     c := +"grrrr";
   end Atomic_Implicit;
