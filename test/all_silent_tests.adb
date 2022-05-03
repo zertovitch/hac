@@ -102,9 +102,9 @@ procedure All_Silent_Tests is
     Normal_Test (+"enumerations.adb");
     Normal_Test (+"floats.adb");
     Normal_Test (+"forward.adb");
-    Normal_Test (+"init_var.adb");
     Normal_Test (+"integers.adb");
     Normal_Test (+"loops.adb");
+    Normal_Test (+"object_init.adb");
     --  Create the X_* packages.
     Shell_Execute (generate);
     Normal_Test (+".." & Directory_Separator & "exm" & Directory_Separator & "pkg_demo.adb test_mode");
@@ -113,7 +113,6 @@ procedure All_Silent_Tests is
     Normal_Test (+"sorting_tests.adb");
     Normal_Test (+"strings.adb");
     Normal_Test (+"type_conversion.adb");
-    Normal_Test (+"var_init.adb");
     --
     Set_Directory (+".." & Directory_Separator &
                    "exm" & Directory_Separator &

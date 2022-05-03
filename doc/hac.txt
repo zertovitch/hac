@@ -115,17 +115,18 @@ To-do list
 Language subset
 ===============
 
-  HAC supports a very small subset of the Ada language. On the other hand,
+  HAC supports a small subset of the Ada language. On the other hand,
   Ada is very large, so even a small subset could already fit your needs.
   There is a growing list of programs that are working (in the meaning:
   the compilation succeeds and the execution gives a correct output).
   They are located in the "exm" directory and subdirectories (except
   the "not_working" one), as well as in the "test" subdirectory.
 
-  You will see that the "Pascal subset" plus tasking is more or less
-  supported, so you have things like subprograms (including multiple-level
-  nested and recursive subprograms), expressions, that are working,
-  for instance.
+  The available Ada language subset supported by HAC is so far, roughly,
+  the "Pascal subset", plus tasking, plus packages, less pointers.
+  From a different perspective, HAC supports Ada 83, less pointers, less generics,
+  less unconstrained types, plus a few items from Ada 95 and 2005.
+  Recursion and nested subprograms are supported.
 
     - You can define your own data types: enumerations, records, arrays
         (and every combination of records and arrays).
@@ -154,8 +155,9 @@ Language subset
     - Generics are not yet implemented.
     - Tasks are implemented, but not working yet.
     - Small parts of the standard Ada library are available indirectly
-        through the HAL package. You can see the currently available
-        items in the specification, src/hal.ads .
+        through the HAL, Interfaces and Standard packages.
+        You can see the currently available HAL items in its
+        specification, src/hal.ads .
 
   A systematic testing is done in the "test" directory, via
   the all_silent_tests.adb test suite.
