@@ -255,7 +255,7 @@ package HAL is
     renames Ada.Text_IO.Skip_Line;
 
   --  Put
-  procedure Put (C     : Character) renames Ada.Text_IO.Put;
+  procedure Put (C     : Character);
   procedure Put (I     : Integer;
                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
                  Base  : Ada.Text_IO.Number_Base := IIO.Default_Base) renames IIO.Put;
@@ -265,7 +265,7 @@ package HAL is
                  Expo  : Integer := RIO.Default_Exp) renames RIO.Put;
   procedure Put (B     : Boolean;
                  Width : Ada.Text_IO.Field       := BIO.Default_Width);
-  procedure Put (S     : String) renames Ada.Text_IO.Put;
+  procedure Put (S     : String);
   procedure Put (V     : VString);
 
   --  Put and then New_Line (for S: it is the same as Ada.Text_IO.Put_Line)
@@ -325,7 +325,7 @@ package HAL is
     renames Ada.Text_IO.Skip_Line;
 
   --  Put
-  procedure Put (File  : File_Type; C : Character) renames Ada.Text_IO.Put;
+  procedure Put (File  : File_Type; C : Character);
   procedure Put (File  : File_Type;
                  I     : Integer;
                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
@@ -339,7 +339,7 @@ package HAL is
                  B     : Boolean;
                  Width : Ada.Text_IO.Field       := BIO.Default_Width);
   procedure Put (File  : File_Type;
-                 S     : String) renames Ada.Text_IO.Put;
+                 S     : String);
   procedure Put (File  : File_Type;
                  V     : VString);
 

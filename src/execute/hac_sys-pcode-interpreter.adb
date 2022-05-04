@@ -220,13 +220,13 @@ package body HAC_Sys.PCode.Interpreter is
           when Ints                => IIO.Put         (FP.all, Item.I, Field (Format_1), Number_Base (Format_2));
           when Floats              => RIO.Put         (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
           when Bools               => BIO.Put         (FP.all, Boolean'Val (Item.I), Field (Format_1));
-          when Chars               => Ada.Text_IO.Put (FP.all, Character'Val (Item.I));
+          when Chars               => HAL.Put (FP.all, Character'Val (Item.I));
           when VStrings |
-               Strings_as_VStrings => Ada.Text_IO.Put (FP.all, HAL.VStr_Pkg.To_String (Item.V));
-          when String_Literals     => Ada.Text_IO.Put (FP.all,
+               Strings_as_VStrings => HAL.Put (FP.all, HAL.VStr_Pkg.To_String (Item.V));
+          when String_Literals     => HAL.Put (FP.all,
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
-          when Arrays              => Ada.Text_IO.Put (FP.all,
+          when Arrays              => HAL.Put (FP.all,
               Get_String_from_Stack (ND, Integer (Item.I), Format_1));
           when others =>
             null;
@@ -716,8 +716,8 @@ package body HAC_Sys.PCode.Interpreter is
           Defs.IIO.Put,
           Defs.RIO.Put,
           Defs.BIO.Put,
-          Ada.Text_IO.Put,
-          Ada.Text_IO.Put,
+          HAL.Put,
+          HAL.Put,
           Ada.Text_IO.New_Line
          );
 

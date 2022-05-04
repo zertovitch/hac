@@ -1,7 +1,8 @@
 with Ada.Numerics.Float_Random,
      Ada.Numerics.Generic_Elementary_Functions,
      Ada.Streams.Stream_IO,
-     Ada.Strings.Fixed;
+     Ada.Strings.Fixed,
+     Ada.Text_IO.Text_Streams;
 
 with Interfaces;
 
@@ -533,6 +534,16 @@ package body HAL is
   -- PUT --
   ---------
 
+  procedure Put (C     : Character) is
+  begin
+    Character'Write (Ada.Text_IO.Text_Streams.Stream (Ada.Text_IO.Current_Output), C);
+  end Put;
+
+  procedure Put (File  : File_Type; C : Character) is
+  begin
+    Character'Write (Ada.Text_IO.Text_Streams.Stream (File), C);
+  end Put;
+
   procedure Put (B     : Boolean;
                  Width : Ada.Text_IO.Field := BIO.Default_Width)
   is
@@ -546,6 +557,16 @@ package body HAL is
   is
   begin
     BIO.Put (File, B, Width);
+  end Put;
+
+  procedure Put (S : in String) is
+  begin
+    String'Write (Ada.Text_IO.Text_Streams.Stream (Ada.Text_IO.Current_Output), S);
+  end Put;
+
+  procedure Put (File : File_Type; S : in String) is
+  begin
+    String'Write (Ada.Text_IO.Text_Streams.Stream (File), S);
   end Put;
 
   procedure Put (V : in VString) is begin Put (VStr_Pkg.To_String (V)); end Put;
