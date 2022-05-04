@@ -90,7 +90,7 @@ package body HAC_Sys.Parser.Attributes is
         Type_of_Result.Is_Range := True;
       when Length =>      --  RM 3.6.2 (9, 10)
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High - Low + 1));
-        Type_of_Result := Construct_Root (Ints);
+        Construct_Root (Type_of_Result, Ints);
       when others =>
         Error (CD, err_syntax_error, ": attribute not defined for this type", major);
     end case;
@@ -291,7 +291,7 @@ package body HAC_Sys.Parser.Attributes is
           Type_Mismatch (CD, err_parameter_types_do_not_match, type_of_argument, s_base);
         end if;
         Need (CD, RParent, err_closing_parenthesis_missing);
-        Type_of_Result := Construct_Root (Strings_as_VStrings);
+        Construct_Root (Type_of_Result, Strings_as_VStrings);
       end Image;
       --
       procedure Value is
@@ -321,19 +321,19 @@ package body HAC_Sys.Parser.Attributes is
           when NOTYP     => null;  --  Already in error
           when Ints      =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Ints);
-            Type_of_Result := Construct_Root (Ints);
+            Construct_Root (Type_of_Result, Ints);
           when Floats    =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Floats);
-            Type_of_Result := Construct_Root (Floats);
+            Construct_Root (Type_of_Result, Floats);
           when Bools     =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Bools);
-            Type_of_Result := Construct_Root (Bools);
+            Construct_Root (Type_of_Result, Bools);
           when Chars     =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Chars);
-            Type_of_Result := Construct_Root (Chars);
+            Construct_Root (Type_of_Result, Chars);
           when Durations =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Durs);
-            Type_of_Result := Construct_Root (Durations);
+            Construct_Root (Type_of_Result, Durations);
           when Enums     =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Enums, Operand_1_Type (S.Ref));
             Type_of_Result := S;

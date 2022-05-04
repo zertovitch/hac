@@ -1,11 +1,17 @@
 package body HAC_Sys.Co_Defs is
 
-  function Construct_Root (Typ : Typen) return Exact_Typ is
+  procedure Construct_Root (Root : out Exact_Typ; Typ : Typen) is
   begin
-    return
-      (TYP      => Typ,
-       Ref      => 0,
-       Is_Range => False);
+    Root.TYP      := Typ;
+    Root.Ref      := 0;
+    Root.Is_Range := False;
+  end Construct_Root;
+
+  function Construct_Root (Typ : Typen) return Exact_Typ is
+    result : Exact_Typ;
+  begin
+    Construct_Root (result, Typ);
+    return result;
   end Construct_Root;
 
   function Undefined return Exact_Typ is
@@ -13,13 +19,18 @@ package body HAC_Sys.Co_Defs is
     return Construct_Root (NOTYP);
   end Undefined;
 
-  overriding function Construct_Root (Typ : Typen) return Exact_Subtyp is
-    es : Exact_Subtyp;
+  overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen) is
   begin
-    Exact_Typ (es) := Construct_Root (Typ);
-    es.Discrete_First := 0;
-    es.Discrete_Last  := 0;
-    return es;
+    Construct_Root (Exact_Typ (Root), Typ);  --  Call parent method.
+    Root.Discrete_First := 0;
+    Root.Discrete_Last  := 0;
+  end Construct_Root;
+
+  overriding function Construct_Root (Typ : Typen) return Exact_Subtyp is
+    result : Exact_Subtyp;
+  begin
+    Construct_Root (result, Typ);
+    return result;
   end Construct_Root;
 
   overriding function Undefined return Exact_Subtyp is

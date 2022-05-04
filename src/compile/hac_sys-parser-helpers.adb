@@ -383,7 +383,7 @@ package body HAC_Sys.Parser.Helpers is
         Expected => expected_set
       );
     end if;
-    X.TYP := VStrings;
+    Construct_Root (X, VStrings);
   end Check_any_String_and_promote_to_VString;
 
   ------------------------------------------------------------------

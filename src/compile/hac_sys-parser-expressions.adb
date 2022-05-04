@@ -37,7 +37,7 @@ package body HAC_Sys.Parser.Expressions is
       return;
     end if;
     if CD.Sy = CharCon then  --  Untyped character constant, occurs only in ranges.
-      C.TP := Construct_Root (Chars);
+      Construct_Root (C.TP, Chars);
       C.I  := CD.INum;
       InSymbol;
     else
@@ -71,11 +71,11 @@ package body HAC_Sys.Parser.Expressions is
           end if;  --  X /= 0
           InSymbol;
         when IntCon =>
-          C.TP := Construct_Root (Ints);
+          Construct_Root (C.TP, Ints);
           C.I  := Sign * CD.INum;
           InSymbol;
         when FloatCon =>
-          C.TP := Construct_Root (Floats);
+          Construct_Root (C.TP, Floats);
           C.R  := HAC_Float (Sign) * CD.RNum;
           InSymbol;
         when others =>
@@ -287,7 +287,7 @@ package body HAC_Sys.Parser.Expressions is
           else
             Issue_Comparison_Type_Mismatch_Error;
           end if;
-          X := Construct_Root (Bools);  --  The result of the comparison is always Boolean.
+          Construct_Root (X, Bools);  --  The result of the comparison is always Boolean.
         when IN_Symbol | NOT_Symbol =>
           --
           --  We collect here a membership test, e.g.: x [not] in a .. b
@@ -310,7 +310,7 @@ package body HAC_Sys.Parser.Expressions is
             if Not_In then
               Emit (CD, k_NOT_Boolean);
             end if;
-            X := Construct_Root (Bools);  --  The result of the membership test is always Boolean.
+            Construct_Root (X, Bools);  --  The result of the membership test is always Boolean.
           end if;
         when others =>
           null;
@@ -415,7 +415,7 @@ package body HAC_Sys.Parser.Expressions is
           Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_primary_unexpected_symbol);
           case CD.Sy is
             when StrCon =>
-              X.TYP := String_Literals;
+              Construct_Root (X, String_Literals);
               Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.SLeng));  --  String Literal Length
               Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.INum));   --  Index To String IdTab
               InSymbol (CD);
@@ -503,17 +503,16 @@ package body HAC_Sys.Parser.Expressions is
               --
             when CharCon | IntCon | FloatCon =>
               if CD.Sy = FloatCon then
-                X.TYP := Floats;
+                Construct_Root (X, Floats);
                 Emit_Push_Float_Literal (CD, CD.RNum);
               else
                 if CD.Sy = CharCon then
-                  X.TYP := Chars;
+                  Construct_Root (X, Chars);
                 else
-                  X.TYP := Ints;
+                  Construct_Root (X, Ints);
                 end if;
                 Emit_1 (CD, k_Push_Discrete_Literal, CD.INum);
               end if;
-              X.Ref := 0;
               InSymbol (CD);
               --
             when LParent =>
@@ -595,15 +594,15 @@ package body HAC_Sys.Parser.Expressions is
                 case Y.TYP is
                   when Chars =>
                     Emit_Std_Funct (CD, SF_Int_Times_Char);  --  N * Some_Char
-                    X.TYP := VStrings;
+                    Construct_Root (X, VStrings);
                   when String_Literals =>
                     --  Y is on top of the stack, we turn it into a VString.
                     Emit_Std_Funct (CD, SF_Literal_to_VString);
                     Emit_Std_Funct (CD, SF_Int_Times_VStr);  --  N * Some_String_Literal
-                    X.TYP := VStrings;
+                    Construct_Root (X, VStrings);
                   when VStrings | Strings_as_VStrings =>
                     Emit_Std_Funct (CD, SF_Int_Times_VStr);  --  N * Some_VString
-                    X.TYP := VStrings;
+                    Construct_Root (X, VStrings);
                   when others =>
                     Issue_Undefined_Operator_Error (CD, Mult_OP, X, Y);
                 end case;
@@ -703,7 +702,7 @@ package body HAC_Sys.Parser.Expressions is
       else
         return False;
       end if;
-      X.TYP := VStrings;
+      Construct_Root (X, VStrings);
       return True;
     end VString_Concatenation;
 
@@ -748,7 +747,7 @@ package body HAC_Sys.Parser.Expressions is
       else
         return False;
       end if;
-      X.TYP := Strings_as_VStrings;
+      Construct_Root (X, Strings_as_VStrings);
       return True;
     end String_Concatenation;
 
@@ -762,20 +761,20 @@ package body HAC_Sys.Parser.Expressions is
       Term (FSys + Plus_Minus, X);
       if Adding_OP = Plus and X.TYP = String_Literals then         --  +"Hello"
         Emit_Std_Funct (CD, SF_Literal_to_VString);
-        X.TYP := VStrings;
+        Construct_Root (X, VStrings);
       elsif Adding_OP = Plus and X.TYP = Strings_as_VStrings then  --  +Enum'Image (x)
-        X.TYP := VStrings;
+        Construct_Root (X, VStrings);
       elsif Adding_OP = Plus and X.TYP = Chars then                --  +'H'
         Emit_Std_Funct (CD, SF_Char_to_VString);
-        X.TYP := VStrings;
+        Construct_Root (X, VStrings);
       elsif Adding_OP = Plus and then Is_Char_Array (CD, X) then   --  +S
         Emit_Std_Funct (CD,
           SF_String_to_VString,
           Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
         );
-        X.TYP := VStrings;
+        Construct_Root (X, VStrings);
       elsif Adding_OP = Minus and X.TYP = VStrings then            --  -v
-        X.TYP := Strings_as_VStrings;
+        Construct_Root (X, Strings_as_VStrings);
       elsif X.TYP not in Numeric_Typ then
         Error (CD, err_illegal_type_for_arithmetic_expression);
       elsif Adding_OP = Minus then
@@ -818,13 +817,13 @@ package body HAC_Sys.Parser.Expressions is
               end if;
             elsif X.TYP = Times and y.TYP = Times and Adding_OP = Minus then
               Emit_Std_Funct (CD, SF_Time_Subtract);  --  T2 - T1
-              X.TYP := Durations;
+              Construct_Root (X, Durations);
             elsif X.TYP = Durations then
               if y.TYP = Floats then
                 --  Duration hack for "X + 1.234" (see Delay_Statement
                 --  for full explanation).
                 Emit_Std_Funct (CD, SF_Float_to_Duration);
-                y.TYP := Durations;  --  Now X and Y have the type Duration.
+                Construct_Root (y, Durations);  --  Now X and Y have the type Duration.
               end if;
               if y.TYP = Durations then
                 if Adding_OP = Plus then

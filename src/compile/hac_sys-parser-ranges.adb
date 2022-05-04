@@ -69,7 +69,7 @@ package body HAC_Sys.Parser.Ranges is
     --
     if Lower_Bound.TP.TYP = Floats then
       Error (CD, Specific_Error, "a float type is not expected here");
-      Lower_Bound.TP := Construct_Root (Ints);
+      Construct_Root (Lower_Bound.TP, Ints);
       Lower_Bound.I  := 0;
     end if;
     --

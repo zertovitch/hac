@@ -85,7 +85,7 @@ package body HAC_Sys.Parser.Type_Def is
       Arr_Tab_Ref := CD.Arrays_Count;
       if String_Constrained_Subtype then
         --  We define String (L .. H) exactly as an "array (L .. H) of Character".
-        Element_Exact_Subtyp := Construct_Root (Chars);
+        Construct_Root (Element_Exact_Subtyp, Chars);
         Element_Exact_Subtyp.Discrete_First := 0;
         Element_Exact_Subtyp.Discrete_Last  := 255;
         Element_Size := 1;
@@ -93,7 +93,7 @@ package body HAC_Sys.Parser.Type_Def is
       elsif CD.Sy = Comma then
         --  Multidimensional array is equivalant to:  array (range_1) of array (range_2,...).
         InSymbol;  --  Consume ',' symbol.
-        Element_Exact_Subtyp.TYP := Arrays;  --  Recursion for next array dimension.
+        Construct_Root (Element_Exact_Subtyp, Arrays);  --  Recursion for next array dimension.
         Array_Typ (Element_Exact_Subtyp.Ref, Element_Size, False);
       else
         Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
@@ -115,7 +115,7 @@ package body HAC_Sys.Parser.Type_Def is
       enum_count : Natural := 0;
       forward_id_idx : Natural;
     begin
-      xTP := Construct_Root (Enums);
+      Construct_Root (xTP, Enums);
       xTP.Ref := CD.Id_Count;
       loop
         InSymbol;  --  Consume '(' symbol.
@@ -148,7 +148,7 @@ package body HAC_Sys.Parser.Type_Def is
     begin
       InSymbol;  --  Consume RECORD symbol.
       Enter_Block (CD, CD.Id_Count);
-      xTP := Construct_Root (Records);
+      Construct_Root (xTP, Records);
       xTP.Ref := CD.Blocks_Count;
       if Level = Nesting_Level_Max then
         Fatal (LEVELS);  --  Exception is raised there.
@@ -195,7 +195,7 @@ package body HAC_Sys.Parser.Type_Def is
     begin
       InSymbol;
       Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
-      xTP.TYP := Arrays;
+      Construct_Root (xTP, Arrays);
       Array_Typ (xTP.Ref, Size, String_Constrained_Subtype => True);
     end String_Sub_Typ;
 
@@ -272,7 +272,7 @@ package body HAC_Sys.Parser.Type_Def is
         when ARRAY_Symbol =>
           InSymbol;
           Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
-          xTP.TYP := Arrays;
+          Construct_Root (xTP, Arrays);
           Array_Typ (xTP.Ref, Size, String_Constrained_Subtype => False);
         when RECORD_Symbol =>
           Record_Typ;

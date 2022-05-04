@@ -40,7 +40,11 @@ package HAC_Sys.Co_Defs is
     --  ^ For X'Range expressions, indicates a pair of values waiting on the stack.
   end record;
 
+  procedure Construct_Root (Root : out Exact_Typ; Typ : Typen);
+  pragma Inline (Construct_Root);
+
   function Construct_Root (Typ : Typen) return Exact_Typ;
+
   function Undefined return Exact_Typ;
 
   type Exact_Subtyp is new Exact_Typ with record
@@ -48,7 +52,11 @@ package HAC_Sys.Co_Defs is
     Discrete_Last  : HAC_Integer;   --  If subtype S is discrete, S'Last
   end record;
 
+  overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen);
+  pragma Inline (Construct_Root);
+
   overriding function Construct_Root (Typ : Typen) return Exact_Subtyp;
+
   overriding function Undefined return Exact_Subtyp;
 
   -------------------------------------------------------------------------
