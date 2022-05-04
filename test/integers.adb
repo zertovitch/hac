@@ -64,4 +64,7 @@ begin
   Assert (12_000 = 12e003, +"Compiler bug [Integers, E]");
   --
   Test_Patching;
+  --
+  Assert (Max (1, 2) = 2, +"HAL.Max");
+  Assert (Min (1, 2) = 1, +"HAL.Min");
 end Integers;

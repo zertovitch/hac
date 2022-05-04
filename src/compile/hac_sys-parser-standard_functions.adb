@@ -171,6 +171,7 @@ package body HAC_Sys.Parser.Standard_Functions is
             Emit_1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda
           end if;
         when SF_Min_Max_Int =>
+          Return_Typ := Actual (1);
           if Actual (1).TYP = Floats then
             if Code = SF_Min_Int then
               Code_Adjusted := SF_Min_Float;

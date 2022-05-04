@@ -318,4 +318,7 @@ begin
   Produce_Base_Test (False);
   Base_Test;
   Three_Lakes_S;
+  --
+  Assert (Max (1.0, 2.0) = 2.0, +"HAL.Max");
+  Assert (Min (1.0, 2.0) = 1.0, +"HAL.Min");
 end Floats;
