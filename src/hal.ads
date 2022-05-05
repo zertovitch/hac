@@ -368,6 +368,7 @@ package HAL is
 
   function End_Of_Line (File : File_Type) return Boolean renames Ada.Text_IO.End_Of_Line;
   function End_Of_File (File : File_Type) return Boolean renames Ada.Text_IO.End_Of_File;
+  function Is_Open     (File : File_Type) return Boolean renames Ada.Text_IO.Is_Open;
 
   ------------
   --  Time  --

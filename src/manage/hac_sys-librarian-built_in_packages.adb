@@ -231,6 +231,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAL_Proc ("New_Line",       SP_New_Line);
     Enter_HAL_Funct ("End_Of_File",   Bools, SF_EOF);
     Enter_HAL_Funct ("End_Of_Line",   Bools, SF_EOLN);
+    Enter_HAL_Funct ("Is_Open",       Bools, SF_Is_Open);
     --
     --  Ada.Environment_Variables-like procedures
     --

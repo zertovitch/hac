@@ -474,10 +474,12 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             --  upper calling level by Do_Standard_Function.
             null;
         end case;
-      when SF_EOF | SF_EOLN | SF_Argument =>
+      when SF_File_or_Console_Information | SF_Argument =>
         --  Those functions have been already processed at an
         --  upper calling level by Do_Standard_Function.
         null;
+      when SF_Is_Open =>
+        ND.S (Curr_TCB.T).I := Boolean'Pos (HAL.Is_Open (ND.S (Curr_TCB.T).Txt.all));
     end case;
   end Do_SF_Operator;
 

@@ -53,19 +53,19 @@ package body HAC_Sys.PCode.Interpreter is
       use type Operand_1_Type;
     begin
       case Code is
-        when SF_File_Information =>
+        when SF_File_or_Console_Information =>
           if ND.IR.X = 0 then  --  Niladic File info function -> abstract console
             Push;
-            case SF_File_Information (Code) is
+            case SF_File_or_Console_Information (Code) is
               when SF_EOF  => ND.S (Curr_TCB.T).I := Boolean'Pos (Console.End_Of_File);
               when SF_EOLN => ND.S (Curr_TCB.T).I := Boolean'Pos (Console.End_Of_Line);
             end case;
           else
-            case SF_File_Information (Code) is
+            case SF_File_or_Console_Information (Code) is
               when SF_EOF =>
-                ND.S (Curr_TCB.T).I := Boolean'Pos (Ada.Text_IO.End_Of_File (ND.S (Curr_TCB.T).Txt.all));
+                ND.S (Curr_TCB.T).I := Boolean'Pos (HAL.End_Of_File (ND.S (Curr_TCB.T).Txt.all));
               when SF_EOLN =>
-                ND.S (Curr_TCB.T).I := Boolean'Pos (Ada.Text_IO.End_Of_Line (ND.S (Curr_TCB.T).Txt.all));
+                ND.S (Curr_TCB.T).I := Boolean'Pos (HAL.End_Of_Line (ND.S (Curr_TCB.T).Txt.all));
             end case;
           end if;
         when SF_Argument =>

@@ -98,8 +98,10 @@ package body HAC_Sys.Parser.Standard_Functions is
           Expected (1) := Any_String_Set;
         when SF_Niladic =>
           null;  --  Zero argument -> no argument type to check.
-        when SF_File_Information =>
+        when SF_File_or_Console_Information =>
           null;  --  Arguments are parsed separately.
+        when SF_Is_Open =>
+          Expected (1) := Txt_Fil_Set;
         when others =>
           null;
           --  Here we have functions that are never parsed
@@ -235,7 +237,7 @@ package body HAC_Sys.Parser.Standard_Functions is
     --
     Prepare_Accepted_Parameter_Types;
     --
-    if Code in SF_File_Information then
+    if Code in SF_File_or_Console_Information then
       Parse_File_Information_Function (Code);
     else
       if Args > 0 then

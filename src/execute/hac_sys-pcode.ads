@@ -263,6 +263,7 @@ package HAC_Sys.PCode is
     SF_Arctan,
     SF_EOF,
     SF_EOLN,
+    SF_Is_Open,
     SF_Random_Int,
     SF_Min_Int,
     SF_Max_Int,
@@ -370,7 +371,7 @@ package HAC_Sys.PCode is
 
   subtype SF_Min_Max_Int is SF_Code range SF_Min_Int .. SF_Max_Int;
 
-  subtype SF_File_Information is SF_Code range SF_EOF .. SF_EOLN;
+  subtype SF_File_or_Console_Information is SF_Code range SF_EOF .. SF_EOLN;
 
   subtype SF_Index_Any_Direction is SF_Code range SF_Index .. SF_Index_Backward;
 
