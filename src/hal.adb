@@ -843,10 +843,21 @@ package body HAL is
     --  If the number is too large for this layout, the Layout_Error
     --  exception is raised and we call Image_with_exponent.
     RIO.Put (s, F, Exp => 0);
-    if Count_Nonzero_Digits (s) < Count_Nonzero_Digits (Real'Image (F)) then
-      return Image_with_exponent;  --  Loss of significant digits.
-    end if;
-    --  We don't lose any digits in decimal representation without exponent.
+    declare
+      F_image   : constant String := Real'Image (F);
+      tolerance : constant := 1;
+    begin
+      if Count_Nonzero_Digits (s) + tolerance < Count_Nonzero_Digits (F_image) then
+        return Image_with_exponent;
+        --  Significant loss of significant digits.
+        --  Typically 6.62607015e-34 is displayed as 0.0[0] unless the
+        --  type Real has a 34 digits precision (unlikely...). See Strings test.
+        --  The tolerance is due to the case where s is, e.g., "123.4567890"
+        --  and F_image is "1.234567891E+02". Spot the last significant
+        --  digit: '0' vs. '1'. Such an accuracy error is normal.
+      end if;
+    end;
+    --  We don't want to lose any digit in the decimal representation without exponent.
     na := s'First;
     nb := s'Last;
     np := 0;

@@ -42,12 +42,13 @@ begin
   if Real (3.14) & s2 /= "3.14cdef"     then Failure (+"R & VString"); end if;
   if s2 & Pi_9_dgt /= "cdef3.141592653" then Failure (+"VString & R"); end if;
   if s2 & Avogadro /= +"cdef6.02214076E+23" then
-    Failure (+"Compiler bug - HAC_Image for HAC_Float :" & Avogadro);
+    Failure (+"Compiler bug - HAC_Image for HAC_Float - Avogadro : " & Avogadro);
     Put_Line (Avogadro);
   end if;
   if s1 & Planck /= +"ab6.62607015E-34" then
-    Failure (+"Compiler bug - HAC_Image for HAC_Float :" & Planck);
+    Failure (+"Compiler bug - HAC_Image for HAC_Float - Planck : " & Planck);
     Put_Line (Planck);
+    Put_Line (Planck, 1, 7, 0);
   end if;
   if not (+"A" < +"B")   then Failure (+"VString < VString"); end if;
   if not (+"AA" > +"A")  then Failure (+"VString > VString"); end if;
