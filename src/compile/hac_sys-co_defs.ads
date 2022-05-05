@@ -120,6 +120,7 @@ package HAC_Sys.Co_Defs is
       TypeMark,
       --
       Paquetage,
+      Paquetage_Body,
       Prozedure,
       Prozedure_Intrinsic,
       Funktion,

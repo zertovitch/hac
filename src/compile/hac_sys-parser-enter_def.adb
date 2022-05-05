@@ -60,18 +60,24 @@ package body HAC_Sys.Parser.Enter_Def is
     end loop;
     if J = No_Id then
       null;  --  All good: the identifier is new at this nesting level.
-    elsif CD.IdTab (J).entity = K
-      and then
-        (
-            ((K = Prozedure or K = Funktion)
-              and then CD.IdTab (J).decl_kind = spec_unresolved)
-          or else
-            (K = Paquetage and then CD.IdTab (J).decl_kind = spec_resolved)
-        )
+    elsif
+       ((K = Prozedure or K = Funktion)
+        and then K = CD.IdTab (J).entity
+        and then CD.IdTab (J).decl_kind = spec_unresolved)
+      or else
+       (K = Paquetage_Body and then CD.IdTab (J).entity = Paquetage)
     then
+      --  No duplicate in those cases: J is a spec., new declaration
+      --  is the corresponding body.
       Forward_Decl_Id := J;
     else
-      Error (CD, err_duplicate_identifier, To_String (prefixed_Id), major);
+      Error
+        (CD,
+         err_duplicate_identifier,
+         To_String (prefixed_Id)
+         --  & ", previous is a " & CD.IdTab (J).entity'Image
+         ,
+         major);
     end if;
     --  Enter identifier in table IdTab
     CD.Id_Count            := CD.Id_Count + 1;

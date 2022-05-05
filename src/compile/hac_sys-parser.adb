@@ -120,6 +120,7 @@ package body HAC_Sys.Parser is
       ignored_kind : Declaration_Kind;
       ignored_needs_body, is_body : Boolean;
       pkg_spec_index : Index;
+      pkg_kind : Entity_Kind;
     begin
       loop
         Test (  --  Added 17-Apr-2018 to avoid infinite loop on erroneous code
@@ -140,13 +141,15 @@ package body HAC_Sys.Parser is
             --  Local package (local to a block or subprogram).
             InSymbol;
             is_body := CD.Sy = BODY_Symbol;
+            pkg_kind := Paquetage;
             if is_body then
               InSymbol;
+              pkg_kind := Paquetage_Body;
             end if;
             if CD.Sy /= IDent then
               Error (CD, err_identifier_missing, severity => major);
             end if;
-            Enter (CD, block_data.level, CD.Id, CD.Id_with_case, Paquetage, pkg_spec_index);
+            Enter (CD, block_data.level, CD.Id, CD.Id_with_case, pkg_kind, pkg_spec_index);
             if is_body then
               if pkg_spec_index = No_Id then
                 Error (CD, err_syntax_error, ": missing specification for package body", major);

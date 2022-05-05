@@ -102,7 +102,7 @@ package body HAC_Sys.Parser.Packages is
             when BODY_Symbol =>
               Error
                 (CD, err_syntax_error,
-                 ": proper body not allowed in package specification",
+                 ": subpackage body not allowed in package specification",
                  major);
             when IDent =>
               null;  --  Good!
@@ -168,6 +168,7 @@ package body HAC_Sys.Parser.Packages is
     pkg_spec_index : Natural;
     subpkg_needs_body : Boolean;
     subpackage_body : Boolean;
+    subpkg_kind : Entity_Kind;
   begin
     Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);
@@ -202,17 +203,21 @@ package body HAC_Sys.Parser.Packages is
             Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
           end if;
         when PACKAGE_Symbol =>
-          --  Subpackage:
+          --  Subpackage inside a package body.
+          --  Subpackage can be spec & body, or just a spec, or the body of
+          --  a spec defined in the parent package...
           Scanner.InSymbol (CD);
           subpackage_body := False;
+          subpkg_kind := Paquetage;
           if CD.Sy = BODY_Symbol then
             Scanner.InSymbol (CD);
             subpackage_body := True;
+            subpkg_kind := Paquetage_Body;
           end if;
           if CD.Sy /= IDent then
             Error (CD, err_identifier_missing, severity => major);
           end if;
-          Enter_Def.Enter (CD, block_data.level, CD.Id, CD.Id_with_case, Paquetage, pkg_spec_index);
+          Enter_Def.Enter (CD, block_data.level, CD.Id, CD.Id_with_case, subpkg_kind, pkg_spec_index);
           if subpackage_body then
             if pkg_spec_index = No_Id then
               Error (CD, err_syntax_error, ": missing specification for package body", major);

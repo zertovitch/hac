@@ -423,41 +423,44 @@ package body HAC_Sys.Parser.Helpers is
       --  Scan all Id's on level L:
       loop
         exit when J = No_Id;  --  Beginning of ID table reached.
-        dot_pos := Length (CD.pkg_prefix);
-        if dot_pos = 0 then
-          is_name_matched := CD.IdTab (J).name = Id;
-        else
-          --  We are within a package declaration.
-          --  Things are a bit more complicated: the package's items
-          --  are visible to the package itself. So we simulate a hidden USE.
-          --
-          --  Say we are within `Pkg.Child_1.Subpackage_2` declaration.
-          --  For entry `Pkg.Child_1.Subpackage_2.Item` in the identifier
-          --  table, `Item` is visible, as well as `Subpackage_2[.Item]`
-          --  `Child_1[.Subpackage_2[.Item]]`.
-          --  NB : the stuff with [] is resolved at the end of Locate_Identifier.
-          loop
-            is_name_matched :=
-              CD.IdTab (J).name =
-              To_Alfa (To_String (Slice (CD.pkg_prefix, 1, dot_pos)) & To_String (Id));
-            exit when is_name_matched;
-            exit when dot_pos = 0;
+        if CD.IdTab (J).entity /= Paquetage_Body then
+          --  ^ A package body is invisible as a declaration.
+          dot_pos := Length (CD.pkg_prefix);
+          if dot_pos = 0 then
+            is_name_matched := CD.IdTab (J).name = Id;
+          else
+            --  We are within a package declaration.
+            --  Things are a bit more complicated: the package's items
+            --  are visible to the package itself. So we simulate a hidden USE.
+            --
+            --  Say we are within `Pkg.Child_1.Subpackage_2` declaration.
+            --  For entry `Pkg.Child_1.Subpackage_2.Item` in the identifier
+            --  table, `Item` is visible, as well as `Subpackage_2[.Item]`
+            --  `Child_1[.Subpackage_2[.Item]]`.
+            --  NB : the stuff with [] is resolved at the end of Locate_Identifier.
             loop
-              dot_pos := dot_pos - 1;
+              is_name_matched :=
+                CD.IdTab (J).name =
+                To_Alfa (To_String (Slice (CD.pkg_prefix, 1, dot_pos)) & To_String (Id));
+              exit when is_name_matched;
               exit when dot_pos = 0;
-              exit when Element (CD.pkg_prefix, dot_pos) = '.';
+              loop
+                dot_pos := dot_pos - 1;
+                exit when dot_pos = 0;
+                exit when Element (CD.pkg_prefix, dot_pos) = '.';
+              end loop;
             end loop;
-          end loop;
-        end if;
-        if is_name_matched then
-          --  Reasons to consider the matched identifier:
-          --    * Not library-level: we have a local subprogram
-          --        identifier (eventually wrapped in a local package):
-          exit when L > 0;
-          --    * Filter for library-level definition is disabled:
-          exit when not Level_0_Filter;
-          --    * Activated library-level definition:
-          exit when CD.CUD.level_0_def.Contains (CD.IdTab (J).name);
+          end if;
+          if is_name_matched then
+            --  Reasons to consider the matched identifier:
+            --    * Not library-level: we have a local subprogram
+            --        identifier (eventually wrapped in a local package):
+            exit when L > 0;
+            --    * Filter for library-level definition is disabled:
+            exit when not Level_0_Filter;
+            --    * Activated library-level definition:
+            exit when CD.CUD.level_0_def.Contains (CD.IdTab (J).name);
+          end if;
         end if;
         J := CD.IdTab (J).link;  --  Skip this identifier.
       end loop;
