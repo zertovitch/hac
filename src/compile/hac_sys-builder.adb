@@ -38,6 +38,9 @@ package body HAC_Sys.Builder is
     --  for the next round.
     --
     num_pending := 0;
+    if BD.CD.error_count > 0 then
+      return;
+    end if;
     for lu of pending loop
       declare
         upper_vname : constant VString := To_Upper (lu.full_name);
@@ -56,14 +59,15 @@ package body HAC_Sys.Builder is
                previous_context,
                lu.kind,
                needs_body_dummy);
-            num_pending :=  num_pending + 1;
+            exit when BD.CD.error_count > 0;
+            num_pending := num_pending + 1;
           when Spec_Only =>
             if Exists (fn) then  --  !! Search in source path
               Errors.Error
                 (BD.CD.all,
                  Defs.err_library_error,
-                 "package shall not have a body unless it " &
-                   "requires a body (7.2 (4)); found file: " & fn);
+                 "library package declaration shall not have a body unless it " &
+                   "requires a body (Ada RM 7.2 (4)); found file: " & fn);
             end if;
         end case;
         lu.status := Done;
@@ -111,7 +115,9 @@ package body HAC_Sys.Builder is
       end if;
       exit when num_pending = 0;
     end loop;
-    Parser.Helpers.Check_Incomplete_Definitions (BD.CD.all, 0);
+    if BD.CD.error_count = 0 then
+      Parser.Helpers.Check_Incomplete_Definitions (BD.CD.all, 0);
+    end if;
     if BD.CD.comp_dump_requested then
       Compiler.Print_Tables (BD.CD.all);
       Close (BD.CD.comp_dump);
