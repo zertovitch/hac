@@ -9,6 +9,16 @@ package body Pkg_1 is
 
   package Sub_Pkg_4 is
     function F return Integer;
+    --
+    package Spec_which_doesnt_need_any_body is
+      subtype Ha is Integer;
+    end Spec_which_doesnt_need_any_body;
+    --
+    --  package Spec_which_needs_a_body_1 is
+    --    procedure Ho_1;
+    --  end Spec_which_needs_a_body_1;
+    --
+    --  !! HAC bug: doesn't check for missing body !!
   end Sub_Pkg_4;
 
   type Some_Useless_Type is record
@@ -19,9 +29,20 @@ package body Pkg_1 is
 
   package body Sub_Pkg_4 is
 
+    package Spec_which_needs_a_body_2 is
+      procedure Ho2;
+    end Spec_which_needs_a_body_2;
+
+    package body Spec_which_needs_a_body_2 is
+      procedure Ho2 is begin HAL.Put ("[Ho2] "); end Ho2;
+    end Spec_which_needs_a_body_2;
+
+    --  !! HAC bug: doesn't check for missing body !!
+
     function F return Integer is
       variable_local_to_F : Some_Useless_Type;
     begin
+      Spec_which_needs_a_body_2.Ho2;
       variable_local_to_F.useless_3 := PA'Last;
       return 656 + variable_local_to_F.useless_3;  --  Should be 666.
     end F;
