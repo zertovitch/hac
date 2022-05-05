@@ -465,6 +465,8 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             ND.S (Curr_TCB.T) := GR_Time (Ada.Calendar.Clock);
           when SF_Random_Float =>
             ND.S (Curr_TCB.T) := GR_Real (Defs.HAC_Float (Random (ND.Gen)));
+          when SF_Null_VString =>
+            ND.S (Curr_TCB.T) := GR_VString (HAL.Null_VString);
           when SF_Argument_Count | SF_Directory_Separator |
                SF_Current_Directory | SF_Get_Needs_Skip_Line |
                SF_Command_Name =>

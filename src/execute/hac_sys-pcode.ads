@@ -357,6 +357,7 @@ package HAC_Sys.PCode is
     --
     SF_Clock,
     SF_Random_Float,
+    SF_Null_VString,
     SF_Argument_Count,
     SF_Command_Name,
     SF_Directory_Separator,

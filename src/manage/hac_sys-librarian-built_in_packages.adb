@@ -163,6 +163,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAL_Funct ("Rnd",                 Floats, SF_Random_Float);
     Enter_HAL_Funct ("Clock",               Times,  SF_Clock);
     --
+    Enter_HAL_Funct ("Null_VString",        VStrings,            SF_Null_VString);
     Enter_HAL_Funct ("Element",             Chars,               SF_Element);
     Enter_HAL_Funct ("Index",               Ints,                SF_Index);
     Enter_HAL_Funct ("Index_Backward",      Ints,                SF_Index_Backward);
