@@ -11,8 +11,6 @@ with HAL;
 
 with Ada.Characters.Handling,
      Ada.Command_Line,
-     Ada.Directories,
-     Ada.Environment_Variables,
      Ada.Exceptions,
      Ada.IO_Exceptions;
 
@@ -90,7 +88,7 @@ package body HAC_Sys.PCode.Interpreter is
           ND.S (Curr_TCB.T).I := Character'Pos (System_Calls.Directory_Separator);
         when SF_Current_Directory =>
           Push;  --  Niladic function, needs to push a new item (their own result).
-          ND.S (Curr_TCB.T) := GR_VString (Ada.Directories.Current_Directory);
+          ND.S (Curr_TCB.T) := GR_VString (HAL.Current_Directory);
         when SF_Get_Needs_Skip_Line =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := Boolean'Pos (Console.Get_Needs_Skip_Line);
@@ -255,59 +253,23 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Do_File_IO is
       Code : constant SP_Code := SP_Code'Val (ND.IR.X);
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
+      Top_Item       : General_Register renames ND.S (Curr_TCB.T);
+      Below_Top_Item : General_Register renames ND.S (Curr_TCB.T - 1);
       use HAL.VStr_Pkg;
       Lines : Ada.Text_IO.Positive_Count;
       Shell_Exec_Result : Integer;
     begin
       case Code is
-        when SP_Open =>
-          Pop (2);
-          Ada.Text_IO.Open (
-            ND.S (Curr_TCB.T + 1).Txt.all,
-            Ada.Text_IO.In_File,
-            To_String (ND.S (Curr_TCB.T + 2).V)
-          );
-        when SP_Append =>
-          Pop (2);
-          Ada.Text_IO.Open (
-            ND.S (Curr_TCB.T + 1).Txt.all,
-            Ada.Text_IO.Append_File,
-            To_String (ND.S (Curr_TCB.T + 2).V)
-          );
-        when SP_Create =>
-          Pop (2);
-          Ada.Text_IO.Create (
-            ND.S (Curr_TCB.T + 1).Txt.all,
-            Ada.Text_IO.Out_File,
-            To_String (ND.S (Curr_TCB.T + 2).V)
-          );
-        when SP_Close =>
-          Ada.Text_IO.Close (ND.S (Curr_TCB.T).Txt.all);
-          Pop;
-        when SP_Set_Env =>
-          Ada.Environment_Variables.Set (
-            To_String (ND.S (Curr_TCB.T - 1).V),
-            To_String (ND.S (Curr_TCB.T).V)
-          );
-          Pop (2);
-        when SP_Copy_File =>
-          Ada.Directories.Copy_File (
-            To_String (ND.S (Curr_TCB.T - 1).V),
-            To_String (ND.S (Curr_TCB.T).V)
-          );
-          Pop (2);
-        when SP_Delete_File =>
-          Ada.Directories.Delete_File (To_String (ND.S (Curr_TCB.T).V));
-          Pop;
-        when SP_Rename =>
-          Ada.Directories.Rename (
-            To_String (ND.S (Curr_TCB.T - 1).V),
-            To_String (ND.S (Curr_TCB.T).V)
-          );
-          Pop (2);
-        when SP_Set_Directory =>
-          Ada.Directories.Set_Directory (To_String (ND.S (Curr_TCB.T).V));
-          Pop;
+        when SP_Open            => HAL.Open   (Below_Top_Item.Txt.all, Top_Item.V);
+        when SP_Append          => HAL.Append (Below_Top_Item.Txt.all, Top_Item.V);
+        when SP_Create          => HAL.Create (Below_Top_Item.Txt.all, Top_Item.V);
+        when SP_Close           => HAL.Close  (Top_Item.Txt.all);
+        when SP_Set_Env         => HAL.Set_Env   (Below_Top_Item.V, Top_Item.V);
+        when SP_Copy_File       => HAL.Copy_File (Below_Top_Item.V, Top_Item.V);
+        when SP_Rename          => HAL.Rename    (Below_Top_Item.V, Top_Item.V);
+        when SP_Delete_File     => HAL.Delete_File (Top_Item.V);
+        when SP_Set_Directory   => HAL.Set_Directory (Top_Item.V);
+        when SP_Set_Exit_Status => HAL.Set_Exit_Status (Integer (Top_Item.I));
         when SP_Push_Abstract_Console =>
           Push;
           ND.S (Curr_TCB.T) := GR_Abstract_Console;
@@ -316,67 +278,71 @@ package body HAC_Sys.PCode.Interpreter is
         when SP_Put | SP_Put_Line | SP_Put_F | SP_Put_Line_F =>
           Do_Write_Formatted (Code);
         when SP_New_Line =>
-          Lines := Ada.Text_IO.Positive_Count (ND.S (Curr_TCB.T).I);
-          if ND.S (Curr_TCB.T - 1).Txt = Abstract_Console then
+          Lines := Ada.Text_IO.Positive_Count (Top_Item.I);
+          if Below_Top_Item.Txt = Abstract_Console then
             Console.New_Line (Lines);
           else
-            Ada.Text_IO.New_Line (ND.S (Curr_TCB.T - 1).Txt.all, Lines);
+            HAL.New_Line (Below_Top_Item.Txt.all, Lines);
           end if;
-          Pop (2);
         when SP_Skip_Line =>
-          Lines := Ada.Text_IO.Positive_Count (ND.S (Curr_TCB.T).I);
-          if ND.S (Curr_TCB.T - 1).Txt = Abstract_Console then
+          Lines := Ada.Text_IO.Positive_Count (Top_Item.I);
+          if Below_Top_Item.Txt = Abstract_Console then
             --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
             Console.Skip_Line (Lines);
-          elsif Ada.Text_IO.End_Of_File (ND.S (Curr_TCB.T - 1).Txt.all) then
+          elsif HAL.End_Of_File (Below_Top_Item.Txt.all) then
             raise VM_End_Error;
           else
-            Ada.Text_IO.Skip_Line (ND.S (Curr_TCB.T - 1).Txt.all, Lines);
+            HAL.Skip_Line (Below_Top_Item.Txt.all, Lines);
           end if;
-          Pop (2);
         when SP_Shell_Execute_without_Result =>
           declare
-            Command : constant String := To_String (ND.S (Curr_TCB.T).V);
+            Command : constant String := To_String (Top_Item.V);
           begin
             System_Calls.Shell_Execute (Command, Shell_Exec_Result);
-            Pop;
           end;
         when SP_Shell_Execute_with_Result =>
           declare
-            Command        : constant String     := To_String (ND.S (Curr_TCB.T - 1).V);
-            Result_Address : constant Defs.Index := Defs.Index (ND.S (Curr_TCB.T).I);
+            Command        : constant String     := To_String (Below_Top_Item.V);
+            Result_Address : constant Defs.Index := Defs.Index (Top_Item.I);
           begin
             System_Calls.Shell_Execute (Command, Shell_Exec_Result);
             ND.S (Result_Address).I := Defs.HAC_Integer (Shell_Exec_Result);
-            Pop (2);
           end;
         when SP_Shell_Execute_Output =>
           declare
-            Command           : constant String     := To_String (ND.S (Curr_TCB.T - 1).V);
-            Output_Address    : constant Defs.Index := Defs.Index (ND.S (Curr_TCB.T).I);
+            Command           : constant String     := To_String (Below_Top_Item.V);
+            Output_Address    : constant Defs.Index := Defs.Index (Top_Item.I);
             Shell_Exec_Output : HAL.VString;
           begin
             System_Calls.Shell_Execute_Output (Command, Shell_Exec_Result, Shell_Exec_Output);
             ND.S (Output_Address) := GR_VString (Shell_Exec_Output);
-            Pop (2);
           end;
         when SP_Shell_Execute_Result_Output =>
           declare
             Command           : constant String     := To_String (ND.S (Curr_TCB.T - 2).V);
-            Result_Address    : constant Defs.Index := Defs.Index (ND.S (Curr_TCB.T - 1).I);
-            Output_Address    : constant Defs.Index := Defs.Index (ND.S (Curr_TCB.T).I);
+            Result_Address    : constant Defs.Index := Defs.Index (Below_Top_Item.I);
+            Output_Address    : constant Defs.Index := Defs.Index (Top_Item.I);
             Shell_Exec_Output : HAL.VString;
           begin
             System_Calls.Shell_Execute_Output (Command, Shell_Exec_Result, Shell_Exec_Output);
             ND.S (Result_Address).I := Defs.HAC_Integer (Shell_Exec_Result);
             ND.S (Output_Address)   := GR_VString (Shell_Exec_Output);
-            Pop (3);
           end;
-        when SP_Set_Exit_Status =>
-          HAL.Set_Exit_Status (Integer (ND.S (Curr_TCB.T).I));
-          Pop;
         when SP_Wait | SP_Signal | SP_Priority | SP_InheritP | SP_Quantum =>
           null;
+      end case;
+      --  Release the stack:
+      case Code is
+        when SP_Close | SP_Delete_File | SP_Set_Directory | SP_Set_Exit_Status |
+             SP_Shell_Execute_without_Result =>
+          Pop;
+        when SP_Open | SP_Append | SP_Create | SP_Set_Env | SP_Copy_File |
+             SP_Rename | SP_New_Line | SP_Skip_Line |
+             SP_Shell_Execute_with_Result | SP_Shell_Execute_Output =>
+          Pop (2);
+        when SP_Shell_Execute_Result_Output =>
+          Pop (3);
+        when others => null;
       end case;
       ND.SWITCH := True;  --  give up control when doing I/O
     exception
@@ -384,7 +350,7 @@ package body HAC_Sys.PCode.Interpreter is
         case Code is
           when SP_Open | SP_Create | SP_Append =>
             Raise_Standard (ND, VME_Name_Error,
-              "File not found, or invalid name: " & To_String (ND.S (Curr_TCB.T + 2).V), True);
+              "File not found, or invalid name: " & To_String (Top_Item.V), True);
           when others =>
             Raise_Standard (ND, VME_Name_Error, Stop_Current_Instruction => True);
         end case;
@@ -404,7 +370,7 @@ package body HAC_Sys.PCode.Interpreter is
         case Code is
           when SP_Open | SP_Create | SP_Append =>
             Raise_Standard (ND, VME_Use_Error,
-              "Cannot access file: " & To_String (ND.S (Curr_TCB.T + 2).V), True);
+              "Cannot access file: " & To_String (Top_Item.V), True);
           when others =>
             Raise_Standard (ND, VME_Use_Error, Stop_Current_Instruction => True);
         end case;
@@ -460,29 +426,17 @@ package body HAC_Sys.PCode.Interpreter is
             --  Push variable v's value.
             ND.S (Curr_TCB.T) := ND.S (Address_of_Variable);
           when k_Push_Indirect_Value =>
-            --  Push "v.all" (v is an access).
+            --  Push "v.all" (variable v contains an access).
             ND.S (Curr_TCB.T) := ND.S (Index (ND.S (Address_of_Variable).I));
           when k_Push_Discrete_Literal =>
             --  Literal: discrete value (Integer, Character, Boolean, Enum)
             ND.S (Curr_TCB.T).I := IR.Y;
           when k_Push_Float_Literal =>
-            ND.S (Curr_TCB.T) := (
-              Special => Defs.Floats,
-              I       => 0,
-              R       => CD.Float_Constants_Table (Integer (IR.Y))
-            );
+            ND.S (Curr_TCB.T) := GR_Real (CD.Float_Constants_Table (Integer (IR.Y)));
           when k_Push_Float_First =>
-            ND.S (Curr_TCB.T) := (
-              Special => Defs.Floats,
-              I       => 0,
-              R       => HAC_Float'First
-            );
+            ND.S (Curr_TCB.T) := GR_Real (HAC_Float'First);
           when k_Push_Float_Last =>
-            ND.S (Curr_TCB.T) := (
-              Special => Defs.Floats,
-              I       => 0,
-              R       => HAC_Float'Last
-            );
+            ND.S (Curr_TCB.T) := GR_Real (HAC_Float'Last);
         end case;
       end Do_Atomic_Data_Push_Operation;
       --
