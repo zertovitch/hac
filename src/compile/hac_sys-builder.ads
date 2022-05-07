@@ -47,6 +47,8 @@ package HAC_Sys.Builder is
   --
   procedure Build_Main (BD : in out Build_Data);
 
+  procedure Build_Main_from_File (BD : in out Build_Data; File_Name : String);
+
   procedure Set_Diagnostic_File_Names (
     BD                 : in out Build_Data;
     asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code

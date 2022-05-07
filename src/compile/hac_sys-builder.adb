@@ -5,6 +5,7 @@ with HAC_Sys.Compiler,
 
 with Ada.Characters.Handling,
      Ada.Exceptions,
+     Ada.Streams.Stream_IO,
      Ada.Unchecked_Deallocation;
 
 package body HAC_Sys.Builder is
@@ -142,6 +143,16 @@ package body HAC_Sys.Builder is
          To_String (BD.main_name_hint) & " -> " &
          Exception_Message (E));
   end Build_Main;
+
+  procedure Build_Main_from_File (BD : in out Build_Data; File_Name : String) is
+    f : Ada.Streams.Stream_IO.File_Type;
+    use Ada.Streams.Stream_IO;
+  begin
+    Open (f, In_File, File_Name);
+    BD.Set_Main_Source_Stream (Stream (f), File_Name);
+    BD.Build_Main;
+    Close (f);
+  end Build_Main_from_File;
 
   procedure Set_Diagnostic_File_Names (
     BD                 : in out Build_Data;
