@@ -214,10 +214,15 @@ package body HAC_Sys.Builder is
     --  NB: currently, only full builds are supported.
   end Build_Successful;
 
+  function Total_Compiled_Lines (BD : Build_Data) return Natural is
+  begin
+    return BD.CD.total_lines;
+  end Total_Compiled_Lines;
+
   function Object_Code_Size (BD : Build_Data) return Natural is
   begin
     return Compiler.Unit_Object_Code_Size (BD.CD.all);
-    --  Whatever the build mode, the entire object code lands into Main_CD's object code.
+    --  Whatever the build mode, the entire object code lands into BD.CD's object code.
   end Object_Code_Size;
 
   function Maximum_Object_Code_Size return Natural is

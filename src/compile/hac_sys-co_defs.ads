@@ -287,6 +287,7 @@ package HAC_Sys.Co_Defs is
     --
     error_count, minor_error_count : Natural;
     errs         : Error_set;
+    total_lines  : Natural;
     trace        : Compilation_Trace_Parameters;
     --  On `WITH X`, we start the recursive compilation of X,
     --  if X is not yet compiled or built-in. We monitor the

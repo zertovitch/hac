@@ -41,8 +41,7 @@ procedure HAC is
   cmp_dump_file_name : Unbounded_String;
 
   procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
-    use HAC_Sys.Builder,
-        HAC_Sys.PCode.Interpreter;
+    use HAC_Sys.PCode.Interpreter;
     use Ada.Calendar, Ada.Command_Line, Ada.Containers, Ada.Text_IO;
     --
     procedure Show_Line_Information (
@@ -76,13 +75,13 @@ procedure HAC is
     --
     f : File_Type;
     t1, t2 : Time;
-    BD : Build_Data;
+    BD : HAC_Sys.Builder.Build_Data;
     post_mortem : Post_Mortem_Data;
     unhandled_found : Boolean;
     shebang_offset : Natural;
     trace : constant HAC_Sys.Co_Defs.Compilation_Trace_Parameters :=
       (pipe         => null,
-       progress     => Unrestricted (Compilation_Feedback'Address),
+       progress     => HAC_Sys.Builder.Unrestricted (Compilation_Feedback'Address),
        detail_level => verbosity);
 
   begin
@@ -92,30 +91,31 @@ procedure HAC is
       Put_Line (HAC_margin_1 & caveat & " Type ""hac"" for license.");
     end if;
     Open (f, In_File, Ada_file_name);
-    Skip_Shebang (f, shebang_offset);
-    Set_Diagnostic_File_Names (BD, To_String (asm_dump_file_name), To_String (cmp_dump_file_name));
-    Set_Main_Source_Stream (BD, Text_Streams.Stream (f), Ada_file_name, shebang_offset);
-    Set_Message_Feedbacks (BD, trace);
+    HAC_Sys.Builder.Skip_Shebang (f, shebang_offset);
+    BD.Set_Diagnostic_File_Names (To_String (asm_dump_file_name), To_String (cmp_dump_file_name));
+    BD.Set_Main_Source_Stream (Text_Streams.Stream (f), Ada_file_name, shebang_offset);
+    BD.Set_Message_Feedbacks (trace);
     t1 := Clock;
-    Build_Main (BD);
+    BD.Build_Main;
     t2 := Clock;
     Close (f);
     if verbosity >= 2 then
       Put_Line (
         HAC_margin_2 & "Build finished in" &
         Duration'Image (t2 - t1) &
-        " seconds."
+        " seconds." &
+        Integer'Image (BD.Total_Compiled_Lines) & " lines compiled."
       );
     end if;
     --
-    if not Build_Successful (BD) then
+    if not BD.Build_Successful then
       Put_Line (Current_Error, "Errors were found. Build failed.");
       Failure;
       return;
     end if;
     if verbosity >= 2 then
-      Put_Line (HAC_margin_2 & "Object code size:" & Object_Code_Size (BD)'Image &
-                " of" & Maximum_Object_Code_Size'Image &
+      Put_Line (HAC_margin_2 & "Object code size:" & BD.Object_Code_Size'Image &
+                " of" & HAC_Sys.Builder.Maximum_Object_Code_Size'Image &
                 " Virtual Machine instructions.");
       Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
     end if;

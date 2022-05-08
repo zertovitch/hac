@@ -70,6 +70,7 @@ package body HAC_Sys.Compiler is
     CD.error_count       := 0;
     CD.minor_error_count := 0;
     CD.errs              := error_free;
+    CD.total_lines       := 0;
     Scanner.InSymbol (CD);
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009
@@ -351,6 +352,7 @@ package body HAC_Sys.Compiler is
       CD.Main_Program_ID,
       CD.Main_Program_ID_with_case
     );
+    CD.total_lines := CD.total_lines + CD.CUD.line_count;  --  Add line count of main program.
     --  Main procedure is parsed.
     PCode_Emit.Emit (CD, k_Halt_Interpreter);
 
@@ -574,6 +576,7 @@ package body HAC_Sys.Compiler is
     end if;
     --  Export library-level context, possibly needed later by a body:
     unit_context := CD.CUD.level_0_def;
+    CD.total_lines := CD.total_lines + CD.CUD.line_count;
     --  Forget about the compilation just completed, back to the ongoing
     --  compilation that triggered a call to Compile_Unit via a WITH:
     CD.CUD := mem;

@@ -75,6 +75,7 @@ package HAC_Sys.Builder is
     new Ada.Unchecked_Conversion (System.Address, Co_Defs.Compilation_Feedback);
 
   function Build_Successful (BD : Build_Data) return Boolean;
+  function Total_Compiled_Lines (BD : Build_Data) return Natural;
   function Object_Code_Size (BD : Build_Data) return Natural;
   function Maximum_Object_Code_Size return Natural;
 
