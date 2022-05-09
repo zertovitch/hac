@@ -215,9 +215,9 @@ package body HAC_Sys.PCode.Interpreter is
       else
         FP := ND.S (Curr_TCB.T - 4).Txt;
         case Typen'Val (ND.IR.Y) is
-          when Ints                => IIO.Put         (FP.all, Item.I, Field (Format_1), Number_Base (Format_2));
-          when Floats              => RIO.Put         (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
-          when Bools               => BIO.Put         (FP.all, Boolean'Val (Item.I), Field (Format_1));
+          when Ints                => IIO.Put (FP.all, Item.I, Field (Format_1), Number_Base (Format_2));
+          when Floats              => RIO.Put (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
+          when Bools               => BIO.Put (FP.all, Boolean'Val (Item.I), Field (Format_1));
           when Chars               => HAL.Put (FP.all, Character'Val (Item.I));
           when VStrings |
                Strings_as_VStrings => HAL.Put (FP.all, HAL.VStr_Pkg.To_String (Item.V));
@@ -256,20 +256,45 @@ package body HAC_Sys.PCode.Interpreter is
       Top_Item       : General_Register renames ND.S (Curr_TCB.T);
       Below_Top_Item : General_Register renames ND.S (Curr_TCB.T - 1);
       use HAL.VStr_Pkg;
+      use type Defs.Typen;
       Lines : Ada.Text_IO.Positive_Count;
       Shell_Exec_Result : Integer;
+      --
+      procedure Check_Type_is_File (X : Defs.Typen) is
+      pragma Inline (Check_Type_is_File);
+      --  Can be removed when bug #2 is fixed (see below).
+      begin
+        if X /= Defs.Text_Files then
+          raise VM_Invalid_Data;
+        end if;
+      end Check_Type_is_File;
     begin
       case Code is
-        when SP_Open            => HAL.Open   (Below_Top_Item.Txt.all, Top_Item.V);
-        when SP_Append          => HAL.Append (Below_Top_Item.Txt.all, Top_Item.V);
-        when SP_Create          => HAL.Create (Below_Top_Item.Txt.all, Top_Item.V);
-        when SP_Close           => HAL.Close  (Top_Item.Txt.all);
         when SP_Set_Env         => HAL.Set_Env   (Below_Top_Item.V, Top_Item.V);
         when SP_Copy_File       => HAL.Copy_File (Below_Top_Item.V, Top_Item.V);
         when SP_Rename          => HAL.Rename    (Below_Top_Item.V, Top_Item.V);
         when SP_Delete_File     => HAL.Delete_File (Top_Item.V);
         when SP_Set_Directory   => HAL.Set_Directory (Top_Item.V);
         when SP_Set_Exit_Status => HAL.Set_Exit_Status (Integer (Top_Item.I));
+        --
+        when SP_Close =>
+          Check_Type_is_File (ND.S (Defs.Index (Top_Item.I)).Special);
+          HAL.Close (ND.S (Defs.Index (Top_Item.I)).Txt.all);
+        when SP_Open =>
+          Check_Type_is_File (ND.S (Defs.Index (Below_Top_Item.I)).Special);
+          HAL.Open (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+        when SP_Append =>
+          Check_Type_is_File (ND.S (Defs.Index (Below_Top_Item.I)).Special);
+          HAL.Append (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+        when SP_Create =>
+          if Below_Top_Item.Special /= Defs.Text_Files then
+            --  !!  Workaround for the non-initialization of files in records
+            --      and arrays (bug #2). We can remove this late initialization
+            --      when general implicit initialization (including for composite
+            --      types: arrays, records) is implemented.
+            Allocate_Text_File (ND, ND.S (Defs.Index (Below_Top_Item.I)));
+          end if;
+          HAL.Create (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
         when SP_Push_Abstract_Console =>
           Push;
           ND.S (Curr_TCB.T) := GR_Abstract_Console;
@@ -468,6 +493,15 @@ package body HAC_Sys.PCode.Interpreter is
             Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
           end if;
         when k_Store =>  --  [T-1].all := [T]
+          if Typ_with_Variant_Part (Typen'Val (IR.Y))
+            and then IR.Y /= Typen'Pos (ND.S (Curr_TCB.T).Special)
+          then
+            raise VM_Invalid_Data;
+          end if;
+          --  NB: we don't check the destination discriminant
+          --  which may be wrong for the right reason: on first
+          --  assignment to a variable, which has contained garbage
+          --  before the assignment.
           ND.S (Index (ND.S (Curr_TCB.T - 1).I)) := ND.S (Curr_TCB.T);
           Pop (2);
         when k_Swap =>
@@ -532,6 +566,8 @@ package body HAC_Sys.PCode.Interpreter is
         Raise_Standard (ND, VME_End_Error, "");
       when VM_Function_End_without_Return =>
         Raise_Standard (ND, VME_Program_Error, "Function's end reached without ""return"" statement");
+      when VM_Invalid_Data =>
+        Raise_Standard (ND, VME_Constraint_Error, "Invalid data (maybe due to an uninitialized variable)");
       when E : VM_Out_of_Range  =>
         Raise_Standard (ND, VME_Constraint_Error, "Out of range" & Exception_Message (E));
       when VM_Stack_Overflow  =>

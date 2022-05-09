@@ -295,6 +295,9 @@ package HAC_Sys.Defs is
   Auto_Init_Typ : constant Typ_Set :=
     (VStrings | Text_Files => True, others => False);
 
+  Typ_with_Variant_Part : constant Typ_Set :=
+    (Floats | VStrings | Times | Durations | Text_Files => True, others => False);
+
   subtype Index is Integer range -XMax .. +XMax;
 
   type Float_Constants_Table_Type is array (1 .. Float_Const_Table_Max) of HAC_Float;

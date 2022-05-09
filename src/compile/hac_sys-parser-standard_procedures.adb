@@ -210,18 +210,10 @@ package body HAC_Sys.Parser.Standard_Procedures is
       when SP_Open | SP_Create | SP_Append | SP_Close =>
         if CD.Sy = LParent then
           InSymbol (CD);
-          Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+          Push_by_Reference_Parameter (CD, Level, FSys + Colon_Comma_RParent, X);
           if X.TYP /= Text_Files then
             Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
           end if;
-          --
-          --  We pass the File_Type variable as value parameter.
-          --  It could be by reference, with forced initialization of
-          --  the corresponding File_Ptr in the VM.
-          --  But File_Ptr is always initialized anyway, to avoid
-          --  text files being routed accidentally to the abstract
-          --  console (= null) if Create or Open was not called.
-          --
           if Code = SP_Open or Code = SP_Create or Code = SP_Append then
             --  Parse file name.
             Need (CD, Comma, err_COMMA_missing);

@@ -71,7 +71,7 @@ package body HAC_Sys.Parser.Statements is
         end if;
       end if;
       if X.TYP in Standard_Typ then
-        Emit (CD, k_Store);
+        Emit_1 (CD, k_Store, Typen'Pos (X.TYP));
       elsif X.Ref /= Y.Ref then
         Issue_Type_Mismatch_Error;  --  E.g. different arrays, enums, ...
       else
@@ -83,7 +83,7 @@ package body HAC_Sys.Parser.Statements is
           when Enums =>
             --  Behaves like a "Standard_Typ".
             --  We have checked that X.Ref = Y.Ref (same actual type).
-            Emit (CD, k_Store);
+            Emit_1 (CD, k_Store, Typen'Pos (X.TYP));
           when others =>
             raise Internal_error with "Assignment: X := Y on unsupported Typ ?";
         end case;
@@ -94,12 +94,10 @@ package body HAC_Sys.Parser.Statements is
       --
       if X.TYP = Floats and Y.TYP = Ints then
         Forbid_Type_Coercion (CD, Found => Y, Expected => Exact_Typ (X));
-        Emit_1 (CD, k_Integer_to_Float, 0);  --  Ghost of SmallAda. Emit's
-        Emit (CD, k_Store);                 --  not needed: compilation error.
       elsif X.TYP = Durations and Y.TYP = Floats then
         --  Duration hack (see Delay_Statement for full explanation).
         Emit_Std_Funct (CD, SF_Float_to_Duration);
-        Emit (CD, k_Store);
+        Emit_1 (CD, k_Store, Typen'Pos (X.TYP));
       elsif Is_Char_Array (CD, Exact_Typ (X)) and Y.TYP = String_Literals then
         X_Len := CD.Arrays_Table (X.Ref).Array_Size;
         if X_Len = CD.SLeng then
@@ -319,14 +317,12 @@ package body HAC_Sys.Parser.Statements is
         Expression (CD, Block_Data.level, Semicolon_Set, Y);
         if X.TYP = Y.TYP then
           if (X.TYP in Standard_Typ) or else (X.TYP = Enums and then Exact_Typ (X) = Y) then
-            Emit (CD, k_Store);
+            Emit_1 (CD, k_Store, Typen'Pos (X.TYP));
           elsif X.Ref /= Y.Ref then
             Issue_Type_Mismatch_Error;
           end if;
         elsif X.TYP = Floats and Y.TYP = Ints then
           Forbid_Type_Coercion (CD, Found => Y, Expected => Exact_Typ (X));
-          Emit_1 (CD, k_Integer_to_Float, 0);
-          Emit (CD, k_Store);
         elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
           Issue_Type_Mismatch_Error;
         end if;

@@ -65,7 +65,7 @@ package body HAC_Sys.Parser.Const_Var is
               CD.IdTab (id_last).lev,
               Operand_2_Type (CD.IdTab (id_last).adr_or_sz)
             );
-            Emit (CD, k_Store);
+            Emit_1 (CD, k_Store, Typen'Pos (var_typ.TYP));
           end if;
         end loop;
       else

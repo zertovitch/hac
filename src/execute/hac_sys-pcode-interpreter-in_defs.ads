@@ -179,6 +179,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   VM_Division_by_0               : exception;
   VM_End_Error                   : exception;
   VM_Function_End_without_Return : exception;
+  VM_Invalid_Data                : exception;
   VM_Out_of_Range                : exception;
   VM_Stack_Overflow              : exception;
   VM_Stack_Underflow             : exception;

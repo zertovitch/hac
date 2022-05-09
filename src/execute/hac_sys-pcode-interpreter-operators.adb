@@ -34,17 +34,33 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
     X : General_Register renames ND.S (Curr_TCB_Top - 1);  --  X = [T-1]
     Y : General_Register renames ND.S (Curr_TCB_Top);      --  Y = [T]
+    use type Defs.HAC_Float, Defs.HAC_Integer, Defs.Typen;
+    --
+    procedure Check_X_Float is
+    pragma Inline (Check_X_Float);
+    begin
+      if X.Special /= Defs.Floats then
+        raise VM_Invalid_Data;
+      end if;
+    end Check_X_Float;
+    --
+    procedure Check_X_Y_Float is
+    pragma Inline (Check_X_Y_Float);
+    begin
+      if X.Special /= Defs.Floats or else Y.Special /= Defs.Floats then
+        raise VM_Invalid_Data;
+      end if;
+    end Check_X_Y_Float;
     use HAL.VStr_Pkg;
-    use type Defs.HAC_Float, Defs.HAC_Integer;
   begin
     --  We do  [T] <- ([T-1] operator [T])  and pop later.
     case Binary_Operator_Opcode (ND.IR.F) is
-      when k_EQL_Float =>   X.I := Boolean'Pos (X.R =  Y.R);
-      when k_NEQ_Float =>   X.I := Boolean'Pos (X.R /= Y.R);
-      when k_LSS_Float =>   X.I := Boolean'Pos (X.R <  Y.R);
-      when k_LEQ_Float =>   X.I := Boolean'Pos (X.R <= Y.R);
-      when k_GTR_Float =>   X.I := Boolean'Pos (X.R >  Y.R);
-      when k_GEQ_Float =>   X.I := Boolean'Pos (X.R >= Y.R);
+      when k_EQL_Float => Check_X_Y_Float; X.I := Boolean'Pos (X.R =  Y.R);
+      when k_NEQ_Float => Check_X_Y_Float; X.I := Boolean'Pos (X.R /= Y.R);
+      when k_LSS_Float => Check_X_Y_Float; X.I := Boolean'Pos (X.R <  Y.R);
+      when k_LEQ_Float => Check_X_Y_Float; X.I := Boolean'Pos (X.R <= Y.R);
+      when k_GTR_Float => Check_X_Y_Float; X.I := Boolean'Pos (X.R >  Y.R);
+      when k_GEQ_Float => Check_X_Y_Float; X.I := Boolean'Pos (X.R >= Y.R);
       --
       when k_EQL_Integer => X.I := Boolean'Pos (X.I =  Y.I);
       when k_NEQ_Integer => X.I := Boolean'Pos (X.I /= Y.I);
@@ -78,12 +94,12 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         X.I := X.I rem Y.I;
       when k_Power_Integer    => X.I := X.I ** Natural (Y.I);
       --
-      when k_ADD_Float           => X.R := X.R + Y.R;
-      when k_SUBTRACT_Float      => X.R := X.R - Y.R;
-      when k_MULT_Float          => X.R := X.R * Y.R;
-      when k_DIV_Float           => X.R := X.R / Y.R;
-      when k_Power_Float         => X.R := X.R ** Y.R;
-      when k_Power_Float_Integer => X.R := X.R ** Natural (Y.I);
+      when k_ADD_Float           => Check_X_Y_Float; X.R := X.R + Y.R;
+      when k_SUBTRACT_Float      => Check_X_Y_Float; X.R := X.R - Y.R;
+      when k_MULT_Float          => Check_X_Y_Float; X.R := X.R * Y.R;
+      when k_DIV_Float           => Check_X_Y_Float; X.R := X.R / Y.R;
+      when k_Power_Float         => Check_X_Y_Float; X.R := X.R ** Y.R;
+      when k_Power_Float_Integer => Check_X_Float;   X.R := X.R ** Natural (Y.I);
     end case;
     Pop (ND);
   end Do_Binary_Operator;
