@@ -189,4 +189,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   --
   procedure Post_Mortem_Dump (CD : Co_Defs.Compiler_Data; ND : In_Defs.Interpreter_Data);
 
+  procedure Check_Discriminant_Type (X : General_Register; Y : Defs.Typen);
+  pragma Inline (Check_Discriminant_Type);
+
 end HAC_Sys.PCode.Interpreter.In_Defs;

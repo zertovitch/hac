@@ -259,15 +259,6 @@ package body HAC_Sys.PCode.Interpreter is
       use type Defs.Typen;
       Lines : Ada.Text_IO.Positive_Count;
       Shell_Exec_Result : Integer;
-      --
-      procedure Check_Type_is_File (X : Defs.Typen) is
-      pragma Inline (Check_Type_is_File);
-      --  Can be removed when bug #2 is fixed (see below).
-      begin
-        if X /= Defs.Text_Files then
-          raise VM_Invalid_Data;
-        end if;
-      end Check_Type_is_File;
     begin
       case Code is
         when SP_Set_Env         => HAL.Set_Env   (Below_Top_Item.V, Top_Item.V);
@@ -278,16 +269,16 @@ package body HAC_Sys.PCode.Interpreter is
         when SP_Set_Exit_Status => HAL.Set_Exit_Status (Integer (Top_Item.I));
         --
         when SP_Close =>
-          Check_Type_is_File (ND.S (Defs.Index (Top_Item.I)).Special);
+          Check_Discriminant_Type (ND.S (Defs.Index (Top_Item.I)), Defs.Text_Files);
           HAL.Close (ND.S (Defs.Index (Top_Item.I)).Txt.all);
         when SP_Open =>
-          Check_Type_is_File (ND.S (Defs.Index (Below_Top_Item.I)).Special);
+          Check_Discriminant_Type (ND.S (Defs.Index (Below_Top_Item.I)), Defs.Text_Files);
           HAL.Open (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
         when SP_Append =>
-          Check_Type_is_File (ND.S (Defs.Index (Below_Top_Item.I)).Special);
+          Check_Discriminant_Type (ND.S (Defs.Index (Below_Top_Item.I)), Defs.Text_Files);
           HAL.Append (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
         when SP_Create =>
-          if Below_Top_Item.Special /= Defs.Text_Files then
+          if ND.S (Defs.Index (Below_Top_Item.I)).Special /= Defs.Text_Files then
             --  !!  Workaround for the non-initialization of files in records
             --      and arrays (bug #2). We can remove this late initialization
             --      when general implicit initialization (including for composite

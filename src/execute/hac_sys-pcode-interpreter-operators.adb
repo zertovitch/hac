@@ -200,13 +200,17 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         ND.S (Curr_TCB.T) := GR_VString (HAL.To_VString ((1 => Character'Val (ND.S (Curr_TCB.T).I))));
       when SF_Two_VStrings_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T + 1), Defs.VStrings);
         --  [T] := [T] & [T+1] :
         ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & ND.S (Curr_TCB.T + 1).V;
       when SF_VString_Char_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
         ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & Character'Val (ND.S (Curr_TCB.T + 1).I);
       when SF_Char_VString_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T + 1), Defs.VStrings);
         ND.S (Curr_TCB.T) :=
           GR_VString (Character'Val (ND.S (Curr_TCB.T).I) & ND.S (Curr_TCB.T + 1).V);
       when SF_LStr_VString_Concat =>
@@ -214,32 +218,41 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         Pop (ND, 2);
         Len := Integer (ND.S (Curr_TCB.T).I);      --  Length of string
         Idx := Integer (ND.S (Curr_TCB.T + 1).I);  --  Index to string table
+        Check_Discriminant_Type (ND.S (Curr_TCB.T + 2), Defs.VStrings);
         ND.S (Curr_TCB.T) :=
           GR_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1) & ND.S (Curr_TCB.T + 2).V);
       when SF_VString_Int_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
         ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & HAL.To_VString (HAC_Image (ND.S (Curr_TCB.T + 1).I));
       when SF_Int_VString_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T + 1), Defs.VStrings);
         ND.S (Curr_TCB.T) := GR_VString ((HAC_Image (ND.S (Curr_TCB.T).I)) & ND.S (Curr_TCB.T + 1).V);
       when SF_VString_Float_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
         ND.S (Curr_TCB.T).V := HAL."&" (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).R);
       when SF_Float_VString_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T + 1), Defs.VStrings);
         ND.S (Curr_TCB.T) :=
           GR_VString (HAL."&" (ND.S (Curr_TCB.T).R, ND.S (Curr_TCB.T + 1).V));
       when SF_VString_Duration_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
         ND.S (Curr_TCB.T).V := HAL."&" (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).Dur);
       when SF_Duration_VString_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T + 1), Defs.VStrings);
         ND.S (Curr_TCB.T) := GR_VString (HAL."&" (ND.S (Curr_TCB.T).Dur, ND.S (Curr_TCB.T + 1).V));
       when SF_VString_Boolean_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
         ND.S (Curr_TCB.T).V := HAL."&" (ND.S (Curr_TCB.T).V, Boolean'Val (ND.S (Curr_TCB.T + 1).I));
       when SF_Boolean_VString_Concat =>
         Pop (ND);
+        Check_Discriminant_Type (ND.S (Curr_TCB.T + 1), Defs.VStrings);
         ND.S (Curr_TCB.T) := GR_VString (HAL."&" (Boolean'Val (ND.S (Curr_TCB.T).I), ND.S (Curr_TCB.T + 1).V));
       when SF_Element =>
         Pop (ND);

@@ -183,4 +183,12 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     end loop;
   end Post_Mortem_Dump;
 
+  procedure Check_Discriminant_Type (X : General_Register; Y : Defs.Typen) is
+    use Defs;
+  begin
+    if X.Special /= Y then
+      raise VM_Invalid_Data;
+    end if;
+  end Check_Discriminant_Type;
+
 end HAC_Sys.PCode.Interpreter.In_Defs;
