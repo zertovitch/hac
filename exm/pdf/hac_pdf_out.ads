@@ -7,8 +7,9 @@
 --
 --  Elements of PDF_OUT removed in HAC_PDF_OUT are:
 --
---    - Type extension (tagged type for PDF stream).
+--    - Object-oriented type extension (tagged type for PDF stream).
 --        PDF Files are the only supported PDF streams.
+--    - Object.method notation
 --    - Default values in records, replaced by explicit initialization.
 --    - Inclusion of raster images.
 --    - User-defined exceptions (PDF_stream_not_created, ...).

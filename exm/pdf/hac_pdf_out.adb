@@ -172,8 +172,8 @@ package body HAC_PDF_Out is
 
   function producer return VString is
   begin
-    return +"HAC_PDF_Out is a stripped down Ada PDF Writer, http://apdf.sf.net/ , " &
-            "adapted to the HAC Ada Compiler language subset.";
+    return +"HAC_PDF_Out, a version of Ada PDF Writer (http://apdf.sf.net/), " &
+            "stripped down for the HAC Ada Compiler language subset.";
   end producer;
 
   procedure Write_PDF_header (pdf : in out PDF_Out_File) is

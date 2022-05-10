@@ -53,6 +53,11 @@ procedure Koch_Curve is
       Current.y := 0.0;
       --
       Create (Doc, +"koch_" & Character'Val (Character'Pos ('0') + Level) & ".pdf");
+      Creator_Application (Doc, +"Koch_Curve");
+      Title (Doc, +"Koch snowflake curve drawn with HAC_PDF_Out");
+      Author (Doc, +"Niels Fabian Helge von Koch");
+      Subject (Doc, +"Koch snowflake curve with recursion level" & Level_Type'Image (Level));
+      Keywords (Doc, +"Koch, snowflake, curve, fractal");
       Set_A4_portrait (My_Layout);
       Page_Setup (Doc, My_Layout);
       My_Margins.left   := cm_2_5;

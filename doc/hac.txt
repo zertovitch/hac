@@ -66,6 +66,7 @@ Directories
    doc        documentation
    exm        examples
    exm/aoc    Advent of Code solutions - also used for regression testing
+   exm/pdf    demos of Acrobat (tm) PDF documents produced by HAC
    test       testing (notably, the all_silent_tests.adb test suite)
 
 Key files in the main directory

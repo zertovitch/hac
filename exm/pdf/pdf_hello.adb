@@ -10,6 +10,8 @@ procedure PDF_Hello is
 
 begin
   Create (pdf, +"hello.pdf");
+  Creator_Application (pdf, +"PDF_Hello");
+  Keywords (pdf, +"Hello, World, HAC, PDF");
   Put_Line (pdf, +"Hello world !");
   New_Line (pdf);
   Put_Line (pdf, +"This PDF document was created by...");
@@ -29,6 +31,6 @@ begin
   New_Line (pdf);
   Put_Line (pdf, +"HAC");
   Font_Size (pdf, 18.0);
-  Put_Line (pdf, +"Hac Ada Compiler");
+  Put_Line (pdf, +"HAC Ada Compiler");
   Close (pdf);
 end PDF_Hello;
