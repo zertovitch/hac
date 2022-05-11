@@ -259,6 +259,21 @@ package body HAC_Sys.PCode.Interpreter is
       use type Defs.Typen;
       Lines : Ada.Text_IO.Positive_Count;
       Shell_Exec_Result : Integer;
+      --
+      --  !!  Workaround for the non-initialization of files in records
+      --      and arrays (bug #2). We can remove this late initialization
+      --      when general implicit initialization (including for composite
+      --      types: arrays, records) is implemented.
+      --      When the memory cell already contains a Text_Files,
+      --      if the previous owner forgot to close the file, we get
+      --      a Status_Error instead of a Use_Error.
+      --
+      procedure Switch_to_Text_Files (M : in out General_Register) is
+      begin
+        if M.Special /= Defs.Text_Files then
+          Allocate_Text_File (ND, M);
+        end if;
+      end Switch_to_Text_Files;
     begin
       case Code is
         when SP_Set_Env         => HAL.Set_Env   (Below_Top_Item.V, Top_Item.V);
@@ -268,24 +283,18 @@ package body HAC_Sys.PCode.Interpreter is
         when SP_Set_Directory   => HAL.Set_Directory (Top_Item.V);
         when SP_Set_Exit_Status => HAL.Set_Exit_Status (Integer (Top_Item.I));
         --
+        when SP_Create =>
+          Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
+          HAL.Create (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+        when SP_Open =>
+          Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
+          HAL.Open (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+        when SP_Append =>
+          Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
+          HAL.Append (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
         when SP_Close =>
           Check_Discriminant_Type (ND.S (Defs.Index (Top_Item.I)), Defs.Text_Files);
           HAL.Close (ND.S (Defs.Index (Top_Item.I)).Txt.all);
-        when SP_Open =>
-          Check_Discriminant_Type (ND.S (Defs.Index (Below_Top_Item.I)), Defs.Text_Files);
-          HAL.Open (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
-        when SP_Append =>
-          Check_Discriminant_Type (ND.S (Defs.Index (Below_Top_Item.I)), Defs.Text_Files);
-          HAL.Append (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
-        when SP_Create =>
-          if ND.S (Defs.Index (Below_Top_Item.I)).Special /= Defs.Text_Files then
-            --  !!  Workaround for the non-initialization of files in records
-            --      and arrays (bug #2). We can remove this late initialization
-            --      when general implicit initialization (including for composite
-            --      types: arrays, records) is implemented.
-            Allocate_Text_File (ND, ND.S (Defs.Index (Below_Top_Item.I)));
-          end if;
-          HAL.Create (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
         when SP_Push_Abstract_Console =>
           Push;
           ND.S (Curr_TCB.T) := GR_Abstract_Console;
