@@ -26,6 +26,7 @@ package body HAC_Sys.Parser.Tasking is
     TaskID : Alfa;
     task_block : Block_Data_Type;
     forward_id_idx : Natural;
+    use type Alfa;
   begin
     InSymbol;
     if CD.Sy = BODY_Symbol then  --  Task Body

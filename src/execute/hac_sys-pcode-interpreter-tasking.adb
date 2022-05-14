@@ -428,7 +428,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     p  : Eptr := ND.EList (ix).First;
     use Defs, Ada.Text_IO;
   begin
-    Put ("Dumping q for entry " & To_String (CD.IdTab (Entry_Index).name) & " entry index=");
+    Put ("Dumping q for entry " & A2S (CD.IdTab (Entry_Index).name) & " entry index=");
     IIO.Put (HAC_Integer (ix));
     New_Line;
     if p = null then
@@ -437,7 +437,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     else
       loop
         Put ("Task ");
-        Put (To_String (CD.IdTab (CD.Tasks_Definitions_Table (p.Task_Index)).name));
+        Put (A2S (CD.IdTab (CD.Tasks_Definitions_Table (p.Task_Index)).name));
         New_Line;
         p := p.Next;
         exit when p = null;

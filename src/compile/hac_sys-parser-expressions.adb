@@ -97,6 +97,7 @@ package body HAC_Sys.Parser.Expressions is
     --
     procedure Record_Field_Selector is
       Field_Offset, Field_Id : Integer;
+      use type Alfa;
     begin
       if V.TYP = Records then
         Field_Id := CD.Blocks_Table (V.Ref).Last_Id_Idx;
@@ -105,7 +106,7 @@ package body HAC_Sys.Parser.Expressions is
           Field_Id := CD.IdTab (Field_Id).link;
         end loop;
         if Field_Id = No_Id then
-          Error (CD, err_undefined_identifier, To_String (CD.Id_with_case), major);
+          Error (CD, err_undefined_identifier, A2S (CD.Id_with_case), major);
         end if;
         V            := CD.IdTab (Field_Id).xtyp;
         Field_Offset := CD.IdTab (Field_Id).adr_or_sz;
@@ -497,7 +498,7 @@ package body HAC_Sys.Parser.Expressions is
                 if X.TYP = NOTYP and then CD.error_count = 0 then
                   Error
                     (CD, err_object_used_before_end_own_declaration,
-                     '"' & To_String (r.name_with_case) & """ ", major);
+                     '"' & A2S (r.name_with_case) & """ ", major);
                 end if;
               end;
               --

@@ -75,8 +75,8 @@ package body HAC_Sys.Librarian is
   is
     use Ada.Characters.Handling, Defs;
     use type Nesting_level;
-    Alfa_Ident       : constant Alfa := To_Alfa (Full_Ident);
-    Alfa_Ident_Upper : constant Alfa := To_Alfa (To_Upper (Full_Ident));
+    Alfa_Ident       : constant Alfa := S2A (Full_Ident);
+    Alfa_Ident_Upper : constant Alfa := S2A (To_Upper (Full_Ident));
     last : Index := CD.Id_Count;
   begin
     CD.Id_Count := CD.Id_Count + 1;
@@ -148,7 +148,7 @@ package body HAC_Sys.Librarian is
   procedure Activate_Unit (CD : in out Co_Defs.Compiler_Data; Upper_Name : in String) is
     use Co_Defs, Defs;
     unit_idx : Natural;
-    upper_name_alfa : constant Alfa := To_Alfa (Upper_Name);
+    upper_name_alfa : constant Alfa := S2A (Upper_Name);
   begin
     --  HAL.PUT_LINE ("WITH: Activating " & Upper_Name);
     --  Activate the unit itself:
@@ -288,7 +288,7 @@ package body HAC_Sys.Librarian is
     Apply_WITH (CD, LD, "STANDARD");
     Parser.Packages.Apply_USE_Clause (
       CD, Library_Level,
-      Parser.Helpers.Locate_Identifier (CD, Defs.To_Alfa ("STANDARD"), 0)
+      Parser.Helpers.Locate_Identifier (CD, Defs.S2A ("STANDARD"), 0)
     );
   end Apply_WITH_USE_Standard;
 

@@ -84,10 +84,23 @@ package body HAC_Sys.Compiler is
     package HIIO is new Integer_IO (HAC_Integer);
     use HIIO;
     --
-    procedure Show_Padded (n : String; t : Positive) is
+    function Cut_name (n : String; l : Natural) return String is
+      dots : constant String := "...";
     begin
-      Put (CD.comp_dump, "  " & n & Integer'Max (0, t - n'Length) * ' ');
+      if n'Length > l then
+        return dots & n (n'Last - (l - 1) + dots'Length .. n'Last);
+      else
+        return n;
+      end if;
+    end Cut_name;
+    --
+    procedure Show_Padded (n : String; t : Positive) is
+      trunc : constant String := Cut_name (n, t);
+    begin
+      Put (CD.comp_dump, "  " & trunc & Integer'Max (0, t - trunc'Length) * ' ');
     end Show_Padded;
+    use type Alfa;
+    Alng : constant := 50;  --  Max characters displayed on this dump.
   begin
     New_Line (CD.comp_dump);
     Put_Line (CD.comp_dump,
@@ -106,7 +119,7 @@ package body HAC_Sys.Compiler is
         r : IdTabEntry renames CD.IdTab (I);
       begin
         Put (CD.comp_dump, I, 4);
-        Show_Padded (To_String (r.name_with_case), Alng);
+        Show_Padded (A2S (r.name_with_case), Alng);
         Put (CD.comp_dump, r.link, 4);
         Show_Padded (Entity_Kind'Image (r.entity), Entity_Kind'Width);
         Show_Padded (Typen'Image (r.xtyp.TYP), Typen'Width);
@@ -129,7 +142,7 @@ package body HAC_Sys.Compiler is
     for I in 1 .. CD.Tasks_Definitions_Count loop
       Put (CD.comp_dump, I, 4);
       Put (CD.comp_dump, ' ');
-      Put (CD.comp_dump, To_String (CD.IdTab (CD.Tasks_Definitions_Table (I)).name) & "  ");
+      Put (CD.comp_dump, A2S (CD.IdTab (CD.Tasks_Definitions_Table (I)).name) & "  ");
       Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).block_or_pkg_ref);
       New_Line (CD.comp_dump);
     end loop;
@@ -142,8 +155,8 @@ package body HAC_Sys.Compiler is
       for I in 1 .. CD.Entries_Count loop
         Put (CD.comp_dump, I, 4);
         Put (CD.comp_dump,
-             ' ' & To_String (CD.IdTab (CD.Entries_Table (I)).name) & " in Task " &
-             To_String (CD.IdTab (
+             ' ' & A2S (CD.IdTab (CD.Entries_Table (I)).name) & " in Task " &
+             A2S (CD.IdTab (
                CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).adr_or_sz)
              ).name)
         );
@@ -158,7 +171,7 @@ package body HAC_Sys.Compiler is
         r : BTabEntry renames CD.Blocks_Table (I);
       begin
         Put (CD.comp_dump, I, 4);
-        Show_Padded (To_String (r.Id), Alng);
+        Show_Padded (A2S (r.Id), Alng);
         Put (CD.comp_dump, r.Last_Id_Idx, 10);
         Put (CD.comp_dump, r.First_Param_Id_Idx, 5);
         Put (CD.comp_dump, r.Last_Param_Id_Idx, 5);
@@ -218,13 +231,13 @@ package body HAC_Sys.Compiler is
     New_Line (CD.comp_dump);
     Put_Line (CD.comp_dump, " Library Level visible identifiers (unordered list):");
     for l0 of CD.CUD.level_0_def loop
-      Put_Line (CD.comp_dump, "    " & To_String (CD.IdTab (l0).name));
+      Put_Line (CD.comp_dump, "    " & A2S (CD.IdTab (l0).name));
     end loop;
     New_Line (CD.comp_dump);
 
     if CD.Main_Program_ID /= Empty_Alfa then
       Put_Line (CD.comp_dump, " Information about Main procedure:");
-      Put_Line (CD.comp_dump, "   Name    : " & To_String (CD.Main_Program_ID_with_case));
+      Put_Line (CD.comp_dump, "   Name    : " & A2S (CD.Main_Program_ID_with_case));
       Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).block_or_pkg_ref'Image);
     end if;
 
@@ -264,7 +277,7 @@ package body HAC_Sys.Compiler is
   )
   is
     use Ada.Text_IO, Parser.Helpers, PCode, Errors;
-    use type HAC_Integer;
+    use type HAC_Integer, Alfa;
 
     map_file : File_Type;
 
@@ -301,20 +314,20 @@ package body HAC_Sys.Compiler is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, severity => major);
       end if;
-      full_main_Id := HAL."&" (full_main_Id, To_String (CD.Id_with_case));
+      full_main_Id := full_main_Id & CD.Id_with_case;
       Scanner.InSymbol (CD);
       exit when CD.Sy /= Period;
       --  Here we have a Parent.Child naming.
       Scanner.InSymbol (CD);
       --  !! TBD: do the implicit "with Parent;" here.
-      full_main_Id := HAL."&" (full_main_Id, '.');
+      full_main_Id := full_main_Id & '.';
     end loop;
-    CD.Main_Program_ID_with_case := To_Alfa (HAL.VStr_Pkg.To_String (full_main_Id));
-    CD.Main_Program_ID           := To_Alfa (HAL.VStr_Pkg.To_String (HAL.To_Upper (full_main_Id)));
-    if To_String (CD.Main_Program_ID) /= main_name_hint then
+    CD.Main_Program_ID_with_case := full_main_Id;
+    CD.Main_Program_ID           := HAL.To_Upper (full_main_Id);
+    if CD.Main_Program_ID /= main_name_hint then
       Error (CD, err_library_error,
         ": unit name """ & main_name_hint & """ expected in this file, found: """ &
-        To_String (CD.Main_Program_ID) & '"',
+        A2S (CD.Main_Program_ID) & '"',
         major
       );
     end if;
@@ -324,15 +337,15 @@ package body HAC_Sys.Compiler is
     end if;
 
     if CD.comp_dump_requested then
-      Put_Line (CD.comp_dump, "Compiler: main procedure is " & To_String (CD.Main_Program_ID));
+      Put_Line (CD.comp_dump, "Compiler: main procedure is " & A2S (CD.Main_Program_ID));
     end if;
 
-    Librarian.Enter_Library_Level_Def (CD, To_String (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
+    Librarian.Enter_Library_Level_Def (CD, A2S (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  Task Table Entry for main task.
 
     CD.Blocks_Table (0) :=  --  Block Table Entry for stuff before Main (probably useless)
-     (Id                 => To_Alfa ("--  Definitions before Main"),
+     (Id                 => S2A ("--  Definitions before Main"),
       Last_Id_Idx        => CD.Main_Proc_Id_Index,
       First_Param_Id_Idx => 1,
       Last_Param_Id_Idx  => 0,
@@ -389,7 +402,7 @@ package body HAC_Sys.Compiler is
         if Blk.entity = Variable then
           if Blk.xtyp.TYP /= NOTYP then
             Ada.Integer_Text_IO.Put (map_file, Blk.adr_or_sz, 4);
-            Put (map_file, To_String (Blk.name) & "   ");
+            Put (map_file, A2S (Blk.name) & "   ");
           end if;
           if Blk.lev = 1 then
             Put (map_file, " Global(");
@@ -504,7 +517,7 @@ package body HAC_Sys.Compiler is
     if CD.Sy /= IDent then
       Error (CD, err_identifier_missing, severity => major);
     end if;
-    if To_String (CD.Id) /= upper_name then
+    if A2S (CD.Id) /= upper_name then
       Error (CD, err_library_error, "unit name """ & upper_name & """ expected in this file", major);
     end if;
     --
@@ -513,12 +526,12 @@ package body HAC_Sys.Compiler is
     Unit_Id_with_case := CD.Id_with_case;
     case kind is
       when Procedure_Unit =>
-        Librarian.Enter_Library_Level_Def (CD, To_String (Unit_Id_with_case), Prozedure, NOTYP, 0);
+        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), Prozedure, NOTYP, 0);
       when Function_Unit =>
-        Librarian.Enter_Library_Level_Def (CD, To_String (Unit_Id_with_case), Funktion, NOTYP, 0);
+        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), Funktion, NOTYP, 0);
         --  The type of the return value is adjusted by Block.Function_Result_Profile.
       when Package_Declaration =>
-        Librarian.Enter_Library_Level_Def (CD, To_String (Unit_Id_with_case), Paquetage, NOTYP, 0);
+        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), Paquetage, NOTYP, 0);
       when Package_Body =>
         null;  --  Library-level package body doesn't need an entry in the identifier table.
     end case;

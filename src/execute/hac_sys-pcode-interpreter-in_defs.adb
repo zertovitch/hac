@@ -122,7 +122,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     New_Line;
     Put_Line (
       "Stack Variables of Task " &
-      Defs.To_String (CD.IdTab (CD.Tasks_Definitions_Table (ND.CurTask)).name)
+      Defs.A2S (CD.IdTab (CD.Tasks_Definitions_Table (ND.CurTask)).name)
     );
     H1 := ND.TCB (ND.CurTask).B;   --  current bottom of stack
     BLKCNT := 10;
@@ -136,7 +136,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
       if H1 = 0 then
         Put_Line ("Task Variables");
       else
-        Put (Defs.To_String (CD.IdTab (H2).name));
+        Put (Defs.A2S (CD.IdTab (H2).name));
         Put (" CALLED AT");
         Put (ND.S (H1 + 1).I, 5);
         New_Line;
@@ -155,7 +155,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
               else
                 H3 := Integer (ND.S (H1 + P2Ada_Var_7.adr_or_sz).I);
               end if;
-              Put ("  " & To_String (P2Ada_Var_7.name) & " = ");
+              Put ("  " & A2S (P2Ada_Var_7.name) & " = ");
               case P2Ada_Var_7.xtyp.TYP is
                 when Defs.Enums | Defs.Ints =>
                   Put (ND.S (H3).I);

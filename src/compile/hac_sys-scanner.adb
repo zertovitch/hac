@@ -1,10 +1,12 @@
 with HAC_Sys.Defs, HAC_Sys.Errors;
 
-with Ada.Text_IO; use Ada.Text_IO;
+with HAL;
+
+with Ada.Strings.Unbounded, Ada.Text_IO;
 
 package body HAC_Sys.Scanner is
 
-  use Co_Defs, Defs, Errors;
+  use Co_Defs, Defs, Errors, HAL;
 
   type SSTBzz is array (Character'(' ') .. ']') of KeyWSymbol;
 
@@ -59,89 +61,87 @@ package body HAC_Sys.Scanner is
         c128 => Special,
         others => Illegal);
 
-  subtype AdaKeyW_String is String (1 .. 12);
-
   type AdaKeyW_Pair is record
-    st : AdaKeyW_String;
+    st : VString;
     sy : KeyWSymbol;
   end record;
 
   type AdaKeyW_List is array (Positive range <>) of AdaKeyW_Pair;
 
   AdaKeyW : constant AdaKeyW_List :=
-       (("ABORT       ", ABORT_Symbol),
-        ("ABS         ", ABS_Symbol),
-        ("ABSTRACT    ", ABSTRACT_Symbol),     -- [added in] Ada 95
-        ("ACCEPT      ", ACCEPT_Symbol),
-        ("ACCESS      ", ACCESS_Symbol),
-        ("ALIASED     ", ALIASED_Symbol),      -- Ada 95
-        ("ALL         ", ALL_Symbol),          -- Ada 95
-        ("AND         ", AND_Symbol),
-        ("ARRAY       ", ARRAY_Symbol),
-        ("AT          ", AT_Symbol),
-        ("BEGIN       ", BEGIN_Symbol),
-        ("BODY        ", BODY_Symbol),
-        ("CASE        ", CASE_Symbol),
-        ("CONSTANT    ", CONSTANT_Symbol),
-        ("DECLARE     ", DECLARE_Symbol),
-        ("DELAY       ", DELAY_Symbol),
-        ("DELTA       ", DELTA_Symbol),
-        ("DIGITS      ", DIGITS_Symbol),
-        ("DO          ", DO_Symbol),
-        ("ELSE        ", ELSE_Symbol),
-        ("ELSIF       ", ELSIF_Symbol),
-        ("END         ", END_Symbol),
-        ("ENTRY       ", ENTRY_Symbol),
-        ("EXCEPTION   ", EXCEPTION_Symbol),
-        ("EXIT        ", EXIT_Symbol),
-        ("FOR         ", FOR_Symbol),
-        ("FUNCTION    ", FUNCTION_Symbol),
-        ("GENERIC     ", GENERIC_Symbol),
-        ("GOTO        ", GOTO_Symbol),
-        ("IF          ", IF_Symbol),
-        ("IN          ", IN_Symbol),
-        ("INTERFACE   ", INTERFACE_Symbol),    -- Ada 2005
-        ("IS          ", IS_Symbol),
-        ("LIMITED     ", LIMITED_Symbol),
-        ("LOOP        ", LOOP_Symbol),
-        ("MOD         ", MOD_Symbol),
-        ("NEW         ", NEW_Symbol),
-        ("NOT         ", NOT_Symbol),
-        ("NULL        ", NULL_Symbol),
-        ("OF          ", OF_Symbol),
-        ("OR          ", OR_Symbol),
-        ("OTHERS      ", OTHERS_Symbol),
-        ("OUT         ", OUT_Symbol),
-        ("OVERRIDING  ", OVERRIDING_Symbol),   -- Ada 2005
-        ("PACKAGE     ", PACKAGE_Symbol),
-        ("PRAGMA      ", PRAGMA_Symbol),
-        ("PRIVATE     ", PRIVATE_Symbol),
-        ("PROCEDURE   ", PROCEDURE_Symbol),
-        ("PROTECTED   ", PROTECTED_Symbol),    -- Ada 95
-        ("RAISE       ", RAISE_Symbol),
-        ("RANGE       ", RANGE_Keyword_Symbol),
-        ("RECORD      ", RECORD_Symbol),
-        ("REM         ", REM_Symbol),
-        ("RENAMES     ", RENAMES_Symbol),
-        ("REQUEUE     ", REQUEUE_Symbol),      -- Ada 95
-        ("RETURN      ", RETURN_Symbol),
-        ("REVERSE     ", REVERSE_Symbol),
-        ("SELECT      ", SELECT_Symbol),
-        ("SEPARATE    ", SEPARATE_Symbol),
-        ("SOME        ", SOME_Symbol),         -- Ada 2012
-        ("SUBTYPE     ", SUBTYPE_Symbol),
-        ("SYNCHRONIZED", SYNCHRONIZED_Symbol), -- Ada 2005
-        ("TAGGED      ", TAGGED_Symbol),       -- Ada 95
-        ("TASK        ", TASK_Symbol),
-        ("TERMINATE   ", TERMINATE_Symbol),
-        ("THEN        ", THEN_Symbol),
-        ("TYPE        ", TYPE_Symbol),
-        ("UNTIL       ", UNTIL_Symbol),        -- Ada 95
-        ("USE         ", USE_Symbol),
-        ("WHEN        ", WHEN_Symbol),
-        ("WHILE       ", WHILE_Symbol),
-        ("WITH        ", WITH_Symbol),
-        ("XOR         ", XOR_Symbol)
+       ((+"ABORT",        ABORT_Symbol),
+        (+"ABS",          ABS_Symbol),
+        (+"ABSTRACT",     ABSTRACT_Symbol),     -- [added in] Ada 95
+        (+"ACCEPT",       ACCEPT_Symbol),
+        (+"ACCESS",       ACCESS_Symbol),
+        (+"ALIASED",      ALIASED_Symbol),      -- Ada 95
+        (+"ALL",          ALL_Symbol),          -- Ada 95
+        (+"AND",          AND_Symbol),
+        (+"ARRAY",        ARRAY_Symbol),
+        (+"AT",           AT_Symbol),
+        (+"BEGIN",        BEGIN_Symbol),
+        (+"BODY",         BODY_Symbol),
+        (+"CASE",         CASE_Symbol),
+        (+"CONSTANT",     CONSTANT_Symbol),
+        (+"DECLARE",      DECLARE_Symbol),
+        (+"DELAY",        DELAY_Symbol),
+        (+"DELTA",        DELTA_Symbol),
+        (+"DIGITS",       DIGITS_Symbol),
+        (+"DO",           DO_Symbol),
+        (+"ELSE",         ELSE_Symbol),
+        (+"ELSIF",        ELSIF_Symbol),
+        (+"END",          END_Symbol),
+        (+"ENTRY",        ENTRY_Symbol),
+        (+"EXCEPTION",    EXCEPTION_Symbol),
+        (+"EXIT",         EXIT_Symbol),
+        (+"FOR",          FOR_Symbol),
+        (+"FUNCTION",     FUNCTION_Symbol),
+        (+"GENERIC",      GENERIC_Symbol),
+        (+"GOTO",         GOTO_Symbol),
+        (+"IF",           IF_Symbol),
+        (+"IN",           IN_Symbol),
+        (+"INTERFACE",    INTERFACE_Symbol),    -- Ada 2005
+        (+"IS",           IS_Symbol),
+        (+"LIMITED",      LIMITED_Symbol),
+        (+"LOOP",         LOOP_Symbol),
+        (+"MOD",          MOD_Symbol),
+        (+"NEW",          NEW_Symbol),
+        (+"NOT",          NOT_Symbol),
+        (+"NULL",         NULL_Symbol),
+        (+"OF",           OF_Symbol),
+        (+"OR",           OR_Symbol),
+        (+"OTHERS",       OTHERS_Symbol),
+        (+"OUT",          OUT_Symbol),
+        (+"OVERRIDING",   OVERRIDING_Symbol),   -- Ada 2005
+        (+"PACKAGE",      PACKAGE_Symbol),
+        (+"PRAGMA",       PRAGMA_Symbol),
+        (+"PRIVATE",      PRIVATE_Symbol),
+        (+"PROCEDURE",    PROCEDURE_Symbol),
+        (+"PROTECTED",    PROTECTED_Symbol),    -- Ada 95
+        (+"RAISE",        RAISE_Symbol),
+        (+"RANGE",        RANGE_Keyword_Symbol),
+        (+"RECORD",       RECORD_Symbol),
+        (+"REM",          REM_Symbol),
+        (+"RENAMES",      RENAMES_Symbol),
+        (+"REQUEUE",      REQUEUE_Symbol),      -- Ada 95
+        (+"RETURN",       RETURN_Symbol),
+        (+"REVERSE",      REVERSE_Symbol),
+        (+"SELECT",       SELECT_Symbol),
+        (+"SEPARATE",     SEPARATE_Symbol),
+        (+"SOME",         SOME_Symbol),         -- Ada 2012
+        (+"SUBTYPE",      SUBTYPE_Symbol),
+        (+"SYNCHRONIZED", SYNCHRONIZED_Symbol), -- Ada 2005
+        (+"TAGGED",       TAGGED_Symbol),       -- Ada 95
+        (+"TASK",         TASK_Symbol),
+        (+"TERMINATE",    TERMINATE_Symbol),
+        (+"THEN",         THEN_Symbol),
+        (+"TYPE",         TYPE_Symbol),
+        (+"UNTIL",        UNTIL_Symbol),        -- Ada 95
+        (+"USE",          USE_Symbol),
+        (+"WHEN",         WHEN_Symbol),
+        (+"WHILE",        WHILE_Symbol),
+        (+"WITH",         WITH_Symbol),
+        (+"XOR",          XOR_Symbol)
        );
 
   procedure NextCh (CD : in out Compiler_Data) is  --  Read Next Char; process line end
@@ -217,18 +217,6 @@ package body HAC_Sys.Scanner is
 
   procedure InSymbol (CD : in out Compiler_Data) is
     I, J, K, e : Integer;
-
-    function UpCase (c : Character) return Character is
-    begin
-      if c in 'a' .. 'z' then
-        return Character'Val
-                (Character'Pos (c) -
-                 Character'Pos ('a') +
-                 Character'Pos ('A'));
-      else
-        return c;
-      end if;
-    end UpCase;
 
     procedure Read_Scale (allow_minus : Boolean) is
       S, Sign : Integer;
@@ -507,38 +495,40 @@ package body HAC_Sys.Scanner is
 
       exit_big_loop := True;
       case CD.CUD.c is
-        when 'A' .. 'Z' |  --  identifier or wordsymbol
+        when 'A' .. 'Z' |   --  Identifier or keyword
              'a' .. 'z' =>
-          K  := 0;
-          CD.Id := Empty_Alfa;
-          CD.Id_with_case := CD.Id;
+          K := 0;
+          CD.Id_with_case := Null_VString;
           loop
-            if K < Alng then
+            if K < max_identifier_length then
               K := K + 1;
-              CD.Id (K)           := UpCase (CD.CUD.c);
-              CD.Id_with_case (K) := CD.CUD.c;
-              if K > 1 and then CD.Id (K - 1 .. K) = "__" then
-                Error (CD, err_double_underline_not_permitted, To_String (CD.Id), major);
+              Ada.Strings.Unbounded.Append (CD.Id_with_case, CD.CUD.c);
+              if K > 1 and then Slice (CD.Id_with_case, K - 1, K) = "__" then
+                Error
+                  (CD, err_double_underline_not_permitted, severity => major);
               end if;
             else
-              Error (CD, err_identifier_too_long, To_String (CD.Id));
+              Error (CD, err_identifier_too_long);
             end if;
             NextCh (CD);
             exit when CD.CUD.c /= '_'
                      and then special_or_illegal (CharacterTypes (CD.CUD.c));
           end loop;
-          if K > 0 and then CD.Id (K) = '_' then
-            Error (CD, err_identifier_cannot_end_with_underline, To_String (CD.Id), major);
+          if K > 0 and then Element (CD.Id_with_case, K) = '_' then
+            Error
+              (CD, err_identifier_cannot_end_with_underline, severity => major);
           end if;
+          --
+          CD.Id := To_Upper (CD.Id_with_case);
           --
           I := 1;
           J := AdaKeyW'Last;  --  Binary Search
           loop
             K := (I + J) / 2;
-            if CD.Id (AdaKeyW_String'Range) <= AdaKeyW (K).st then
+            if CD.Id <= AdaKeyW (K).st then
               J := K - 1;
             end if;
-            if CD.Id (AdaKeyW_String'Range) >= AdaKeyW (K).st then
+            if CD.Id >= AdaKeyW (K).st then
               I := K + 1;
             end if;
             exit when I > J;
@@ -548,10 +538,6 @@ package body HAC_Sys.Scanner is
             CD.Sy := AdaKeyW (K).sy;
           else
             CD.Sy := IDent;
-          end if;
-          if CD.Sy = USy then
-            CD.Sy := IDent;
-            Error (CD, err_Ada_reserved_word);
           end if;
 
         when '0' .. '9' =>
@@ -712,7 +698,7 @@ package body HAC_Sys.Scanner is
       );
       case CD.Sy is
         when IDent =>
-          Put (CD.comp_dump, ": " & To_String (CD.Id));
+          Put (CD.comp_dump, ": " & A2S (CD.Id));
         when IntCon =>
           Put (CD.comp_dump, ": " & HAC_Integer'Image (CD.INum));
         when FloatCon =>

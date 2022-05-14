@@ -17,7 +17,7 @@ with HAL;
 
 with Ada.Containers.Hashed_Maps,
      Ada.Streams,
-     Ada.Strings.Fixed.Hash,
+     Ada.Strings.Unbounded.Hash,
      Ada.Text_IO;
 
 package HAC_Sys.Co_Defs is
@@ -194,8 +194,8 @@ package HAC_Sys.Co_Defs is
   package Id_Maps is new Ada.Containers.Hashed_Maps
     (Key_Type        => Alfa,
      Element_Type    => Positive,
-     Hash            => Ada.Strings.Fixed.Hash,
-     Equivalent_Keys => "=");
+     Hash            => Ada.Strings.Unbounded.Hash,
+     Equivalent_Keys => HAL."=");
 
   type Current_Unit_Data is record
     --  Current source code information and scanner data

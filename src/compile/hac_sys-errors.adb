@@ -155,8 +155,6 @@ package body HAC_Sys.Errors is
         return "missing the finger ""=>""";
       when err_missing_closing_CASE =>
         return "missing closing ""case""";
-      when err_Ada_reserved_word =>
-        return "Ada reserved word; not supported";
       when err_functions_must_return_a_value =>
         return "functions must return a value";
       when err_procedures_cannot_return_a_value =>
@@ -190,7 +188,9 @@ package body HAC_Sys.Errors is
       when err_numeric_constant_expected =>
         return "numeric constant expected";
       when err_identifier_too_long =>
-        return "identifier """ & hint & "..."" is too long";
+        return
+          "identifier is too long; max =" &
+          max_identifier_length'Image & " characters";
       when err_identifier_cannot_end_with_underline =>
         return "identifier cannot end with underline";
       when err_double_underline_not_permitted =>

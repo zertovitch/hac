@@ -239,10 +239,10 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     --  Ada.Directories-like procedures
     --
-    Enter_HAL_Proc ("Copy_File ",     SP_Copy_File);
-    Enter_HAL_Proc ("Delete_File ",   SP_Delete_File);
-    Enter_HAL_Proc ("Rename ",        SP_Rename);
-    Enter_HAL_Proc ("Set_Directory ", SP_Set_Directory);
+    Enter_HAL_Proc ("Copy_File",      SP_Copy_File);
+    Enter_HAL_Proc ("Delete_File",    SP_Delete_File);
+    Enter_HAL_Proc ("Rename",         SP_Rename);
+    Enter_HAL_Proc ("Set_Directory",  SP_Set_Directory);
     --
     Enter_HAL_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
     Enter_HAL_Proc ("Set_Exit_Status", SP_Set_Exit_Status);

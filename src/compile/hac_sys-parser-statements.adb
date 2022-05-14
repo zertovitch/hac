@@ -165,6 +165,8 @@ package body HAC_Sys.Parser.Statements is
   is
     use Compiler.PCode_Emit, Calls, Co_Defs, Defs, Enter_Def, Expressions,
         Helpers, PCode, Errors;
+    use type Alfa;
+
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
     procedure Accept_Statement is            -- Hathorn
@@ -893,12 +895,12 @@ package body HAC_Sys.Parser.Statements is
         if CD.Sy = IDent then
           if CD.Id /= new_ident_for_statement then
             Error (CD, err_END_LOOP_ident_wrong,
-                   hint => To_String (new_ident_for_statement_with_case));
+                   hint => A2S (new_ident_for_statement_with_case));
           end if;
           InSymbol;  --  Consume identifier.
         else
           Error (CD, err_END_LOOP_ident_missing,
-                 hint => To_String (new_ident_for_statement_with_case));
+                 hint => A2S (new_ident_for_statement_with_case));
         end if;
       end Check_ID_after_END_LOOP;
       --
@@ -906,7 +908,7 @@ package body HAC_Sys.Parser.Statements is
     begin
       Enter (CD, Block_Data.level, new_ident_for_statement, CD.Id_with_case, Label, dummy_idx);
       if CD.Sy /= Colon then
-        Error (CD, err_colon_missing_for_named_statement, To_String (CD.Id_with_case), major);
+        Error (CD, err_colon_missing_for_named_statement, A2S (CD.Id_with_case), major);
       end if;
       InSymbol;  --  Consume ':' symbol.
       case CD.Sy is
@@ -959,7 +961,7 @@ package body HAC_Sys.Parser.Statements is
                 Standard_Procedures.Standard_Procedure
                   (CD, Block_Data.level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).adr_or_sz));
               when Label =>
-                Error (CD, err_duplicate_label, To_String (CD.Id));
+                Error (CD, err_duplicate_label, A2S (CD.Id));
                 Test (CD, Colon_Set, FSys_St, err_colon_missing);
                 InSymbol;
               when Paquetage =>

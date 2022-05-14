@@ -17,7 +17,7 @@ package body HAC_Sys.Parser.Modularity is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, severity => major);
       end if;
-      Librarian.Apply_WITH (CD, LD, To_String (CD.Id));
+      Librarian.Apply_WITH (CD, LD, A2S (CD.Id));
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
       Helpers.Need (CD, Comma, err_syntax_error);

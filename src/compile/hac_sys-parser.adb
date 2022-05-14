@@ -227,7 +227,7 @@ package body HAC_Sys.Parser is
     begin
       pragma Assert (CD.Sy = IDent);
       loop
-        full_name := full_name & To_String (CD.Id);
+        full_name := full_name & CD.Id;
         InSymbol;
         exit when CD.Sy /= Period;
         full_name := full_name & '.';
@@ -236,10 +236,10 @@ package body HAC_Sys.Parser is
           Error (CD, err_identifier_missing);
         end if;
       end loop;
-      if VStr_Pkg.To_String (full_name) /= To_String (Block_Id) then
+      if full_name /= Block_Id then
         Error
           (CD, err_incorrect_name_after_END,
-           hint => To_String (Block_Id_with_case),
+           hint => A2S (Block_Id_with_case),
            previous_symbol => True,
            --  ^ Ideally we would enclose the whole wrong full name, possibly on several lines.
            --  But it is correct on a single wrong identifier, the most frequent case.
@@ -317,7 +317,7 @@ package body HAC_Sys.Parser is
           Check_ident_after_END;
         elsif Is_a_block_statement and Block_Id /= Empty_Alfa then
           --  No identifier after "end", but "end [label]" is required in this case.
-          Error (CD, err_incorrect_name_after_END, hint => To_String (Block_Id_with_case));
+          Error (CD, err_incorrect_name_after_END, hint => A2S (Block_Id_with_case));
         end if;
       end if;
       --
@@ -349,9 +349,9 @@ package body HAC_Sys.Parser is
       return;
     end if;
     if CD.Full_Block_Id = Universe then
-      CD.Full_Block_Id := HAL.To_VString (To_String (Block_Id_with_case));
+      CD.Full_Block_Id := Block_Id_with_case;
     else
-      CD.Full_Block_Id := CD.Full_Block_Id & '.' & To_String (Block_Id_with_case);
+      CD.Full_Block_Id := CD.Full_Block_Id & '.' & Block_Id_with_case;
     end if;
     block_data.data_allocation_index := 5;  --  Fixed area of the subprogram activation record.
     block_data.initialization_object_code_size := 0;

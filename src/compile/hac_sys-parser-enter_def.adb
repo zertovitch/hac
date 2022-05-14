@@ -45,9 +45,8 @@ package body HAC_Sys.Parser.Enter_Def is
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
     J : Integer := last_id;
     use HAL;
-    pkg_prefix            : constant String := To_String (CD.pkg_prefix);
-    prefixed_Id           : constant Alfa := To_Alfa (pkg_prefix & To_String (Id));
-    prefixed_Id_with_case : constant Alfa := To_Alfa (pkg_prefix & To_String (Id_with_case));
+    prefixed_Id           : constant Alfa := CD.pkg_prefix & Id;
+    prefixed_Id_with_case : constant Alfa := CD.pkg_prefix & Id_with_case;
   begin
     Forward_Decl_Id := No_Id;
     if CD.Id_Count = Id_Table_Max then
@@ -74,7 +73,7 @@ package body HAC_Sys.Parser.Enter_Def is
       Error
         (CD,
          err_duplicate_identifier,
-         To_String (prefixed_Id)
+         A2S (prefixed_Id)
          --  & ", previous is a " & CD.IdTab (J).entity'Image
          ,
          major);

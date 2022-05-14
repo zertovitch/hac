@@ -22,7 +22,7 @@ package body HAC_Sys.Parser.Attributes is
 
   procedure Which_Attribute (CD : in out Co_Defs.Compiler_Data; attr : out Attribute) is
     use Co_Defs, Defs, Errors;
-    attr_ID : constant String := To_String (CD.Id);
+    attr_ID : constant String := A2S (CD.Id);
   begin
     if attr_ID = "RANGE" then
       attr := Range_Attr;
@@ -126,7 +126,7 @@ package body HAC_Sys.Parser.Attributes is
     use Co_Defs, Defs, Helpers, Errors;
     Typ_ID : IdTabEntry renames CD.IdTab (Typ_ID_Index);
     S : Exact_Subtyp renames Typ_ID.xtyp;
-    attr_ID : constant String := To_String (CD.Id);
+    attr_ID : constant String := A2S (CD.Id);
     attr : Attribute;
     --
     procedure Scalar_Subtype_Attribute is
@@ -373,7 +373,7 @@ package body HAC_Sys.Parser.Attributes is
     else
       Error (CD, err_syntax_error,
         ": no attribute defined for this type: " &
-        To_String (Typ_ID.name_with_case), major
+        A2S (Typ_ID.name_with_case), major
       );
     end if;
   end Subtype_Attribute;

@@ -207,7 +207,7 @@ package body HAC_Sys.Parser.Helpers is
 
   function Enum_Name (CD : Compiler_Data; E_Ref : Index) return String is
   begin
-    return To_String (CD.IdTab (E_Ref).name_with_case);
+    return A2S (CD.IdTab (E_Ref).name_with_case);
   end Enum_Name;
 
   function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ) return String is
@@ -441,7 +441,7 @@ package body HAC_Sys.Parser.Helpers is
             loop
               is_name_matched :=
                 CD.IdTab (J).name =
-                To_Alfa (To_String (Slice (CD.pkg_prefix, 1, dot_pos)) & To_String (Id));
+                  Slice (CD.pkg_prefix, 1, dot_pos) & Id;
               exit when is_name_matched;
               exit when dot_pos = 0;
               loop
@@ -471,7 +471,7 @@ package body HAC_Sys.Parser.Helpers is
       if not Fail_when_No_Id then
         return No_Id;
       end if;
-      Error (CD, err_undefined_identifier, To_String (Id), major);  --  Exception raised here.
+      Error (CD, err_undefined_identifier, A2S (Id), major);  --  Exception raised here.
     end if;
     --
     --  From this point, the identifier ID is matched with
@@ -485,7 +485,7 @@ package body HAC_Sys.Parser.Helpers is
     end loop;
 
     if J > Public_Filter then
-      Error (CD, err_non_public_entity, To_String (Id), major);
+      Error (CD, err_non_public_entity, A2S (Id), major);
     end if;
 
     --  Prefixed package resolution: `Pkg.Item`, `Pkg.Child_1.Item`, ...
@@ -499,7 +499,7 @@ package body HAC_Sys.Parser.Helpers is
         if CD.Sy = IDent then
           return Locate_Identifier (
             CD,
-            To_Alfa (To_String (ID_Copy) & '.' & To_String (CD.Id)),
+            ID_Copy & '.' & CD.Id,
             Level,
             Fail_when_No_Id,
             Alias_Resolution,
@@ -522,7 +522,7 @@ package body HAC_Sys.Parser.Helpers is
     if old_id_idx = No_Id then
       return;  --  First occurrence of the specification.
     end if;
-    Error (CD, err_duplicate_identifier, "specification of " & To_String (id_current), major);
+    Error (CD, err_duplicate_identifier, "specification of " & A2S (id_current), major);
   end Check_Duplicate_Specification;
 
   procedure Check_Subprogram_Spec_Body_Consistency
@@ -534,6 +534,7 @@ package body HAC_Sys.Parser.Helpers is
     sub_sub_last_param_idx, forward_last_param_idx,
     sub_sub_params, forward_params,
     f, s : Natural;
+    use type Alfa;
   begin
     if old_id_idx = No_Id then
       return;
@@ -542,7 +543,7 @@ package body HAC_Sys.Parser.Helpers is
     --  The following is only for making the compiler dump
     --  easier to understand:
     CD.Blocks_Table (CD.IdTab (old_id_idx).block_or_pkg_ref).Id :=
-      To_Alfa ("Unused (was from a subprogram spec)");
+      S2A ("Unused (was from a subprogram spec)");
     --  Check that the formal parameter list is identical:
     sub_sub_last_param_idx :=
       CD.Blocks_Table (CD.IdTab (new_id_idx).block_or_pkg_ref).Last_Param_Id_Idx;
@@ -552,11 +553,11 @@ package body HAC_Sys.Parser.Helpers is
     forward_params := forward_last_param_idx - old_id_idx;
     if sub_sub_params > forward_params then
       Error (CD, err_number_of_parameters_do_not_match,
-             ": specification of " & To_String (id_current) & " has less parameters",
+             ": specification of " & A2S (id_current) & " has less parameters",
              major);
     elsif sub_sub_params < forward_params then
       Error (CD, err_number_of_parameters_do_not_match,
-             ": specification of " & To_String (id_current) & " has more parameters",
+             ": specification of " & A2S (id_current) & " has more parameters",
              major);
     end if;
     --  Check the formal parameter list:
@@ -611,7 +612,7 @@ package body HAC_Sys.Parser.Helpers is
     --  Follow the chain of identifiers for given Level:
     while i /= Co_Defs.No_Id loop
       if CD.IdTab (i).decl_kind = spec_unresolved then
-        Error (CD, err_incomplete_declaration, To_String (CD.IdTab (i).name_with_case));
+        Error (CD, err_incomplete_declaration, A2S (CD.IdTab (i).name_with_case));
       end if;
       i := CD.IdTab (i).link;
     end loop;

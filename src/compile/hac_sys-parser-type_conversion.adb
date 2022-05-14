@@ -77,7 +77,7 @@ begin
       Error (
         CD,
         err_type_conversion_not_supported,
-        "no support for target type " & To_String (Typ_ID.name_with_case)
+        "no support for target type " & A2S (Typ_ID.name_with_case)
       );
   end case;
   Need (CD, RParent, err_closing_parenthesis_missing);

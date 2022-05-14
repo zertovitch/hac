@@ -58,7 +58,6 @@ package HAC_Sys.Defs is
 
   MaxINT     : constant Integer := Integer'Last - 1;
 
-  Alng                  : constant := 50;       --  NO. OF SIGNIFICANT CHARS IN IDENTIFIERS
   AMax                  : constant := 1_000;    --  Size OF ARRAY-TABLE
   BMax                  : constant := 10_000;   --  Size OF Block-TABLE
   Float_Const_Table_Max : constant := 200;
@@ -132,7 +131,6 @@ package HAC_Sys.Defs is
     Finger,
     Becomes,
     IDent,
-    USy,                --  (Apparently) unused symbol
     Dummy_Symbol,       --  Symbol that is never parsed.
     Ampersand_Symbol,
     --                  Ada keywords
@@ -230,17 +228,10 @@ package HAC_Sys.Defs is
   -- Identifiers --
   -----------------
 
-  --  Alfa is a space-padded string
-     --  !! Consider replacing by VString or a bounded-length string.
-     --     First step for a smooth transition:
-     --       type Alfa is array (1 .. Alng) of Character;
-     --     detects all type incompatibilities except: slice = literal expressions.
-  subtype Alfa is String (1 .. Alng);
-  Empty_Alfa : constant Alfa := (others => ' ');
-  function Equal (a : Alfa; s : String) return Boolean;
-  function Initial (a : Alfa) return Character;
-  function To_String (a : Alfa) return String;
-  function To_Alfa (s : String) return Alfa;
+  subtype Alfa is HAL.VString;  --  Originally, Alfa was a space-padded fixed string.
+  Empty_Alfa : Alfa renames HAL.Null_VString;
+  function A2S (a : Alfa) return String renames HAL.To_String;
+  function S2A (s : String) return Alfa renames HAL.To_VString;
 
   --  Data types in HAC. We call them "Typ" (with an Akzent ;-) ) to avoid
   --  confusion with the types of the HAC code itself.
@@ -301,6 +292,8 @@ package HAC_Sys.Defs is
   subtype Index is Integer range -XMax .. +XMax;
 
   type Float_Constants_Table_Type is array (1 .. Float_Const_Table_Max) of HAC_Float;
+
+  max_identifier_length : constant := 200;
 
   ------------------------------
   --  Compilation error type  --
@@ -377,7 +370,6 @@ package HAC_Sys.Defs is
     err_WHEN_missing,
     err_FINGER_missing,
     err_missing_closing_CASE,
-    err_Ada_reserved_word,
     err_functions_must_return_a_value,
     err_procedures_cannot_return_a_value,
     err_missing_an_entry,

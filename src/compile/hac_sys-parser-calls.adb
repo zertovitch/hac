@@ -168,6 +168,7 @@ package body HAC_Sys.Parser.Calls is
   )
   is -- Hathorn
     Addr, J : Integer;
+    use type Alfa;
   begin
     if CD.Sy = Period then
       InSymbol (CD);                  --  Task Entry Selector
@@ -179,7 +180,7 @@ package body HAC_Sys.Parser.Calls is
         end loop;
         --
         if J = 0 then
-          Error (CD, err_undefined_identifier, To_String (CD.Id_with_case));
+          Error (CD, err_undefined_identifier, A2S (CD.Id_with_case));
         end if;
         --
         Addr := J;

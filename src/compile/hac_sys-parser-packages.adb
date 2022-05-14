@@ -53,7 +53,7 @@ package body HAC_Sys.Parser.Packages is
     Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);
     --  Set new prefix, support also eventual subpackages:
-    CD.pkg_prefix := CD.pkg_prefix & To_String (package_name) & '.';
+    CD.pkg_prefix := CD.pkg_prefix & A2S (package_name) & '.';
     needs_body := False;
     loop
       Test (
@@ -133,7 +133,7 @@ package body HAC_Sys.Parser.Packages is
       if CD.Id /= package_name then
         Error
           (CD, err_incorrect_name_after_END,
-           hint => To_String (package_name_with_case),
+           hint => A2S (package_name_with_case),
            severity => minor
           );
       end if;
@@ -172,7 +172,7 @@ package body HAC_Sys.Parser.Packages is
   begin
     Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);
-    CD.pkg_prefix := CD.pkg_prefix & To_String (package_name) & '.';
+    CD.pkg_prefix := CD.pkg_prefix & A2S (package_name) & '.';
     loop
       Test (
         CD, Declaration_Symbol + BEGIN_Symbol + END_Symbol + PRIVATE_Symbol,
@@ -248,7 +248,7 @@ package body HAC_Sys.Parser.Packages is
       if CD.Id /= package_name then
         Error
           (CD, err_incorrect_name_after_END,
-           hint => To_String (package_name_with_case),
+           hint => A2S (package_name_with_case),
            severity => minor
           );
       end if;
@@ -278,7 +278,7 @@ package body HAC_Sys.Parser.Packages is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, severity => major);
       end if;
-      Apply_USE_Clause (CD, Level, Helpers.Locate_Identifier (CD, To_Alfa (CD.Id), Level));
+      Apply_USE_Clause (CD, Level, Helpers.Locate_Identifier (CD, CD.Id, Level));
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
       Helpers.Need (CD, Comma, err_syntax_error);
@@ -294,7 +294,7 @@ package body HAC_Sys.Parser.Packages is
   is
     use Co_Defs, Defs, Parser.Enter_Def, Errors;
     use type Nesting_level;
-    Pkg_UName : constant String := To_String (CD.IdTab (Pkg_Idx).name);
+    Pkg_UName : constant String := A2S (CD.IdTab (Pkg_Idx).name);
     Id_Alias, dummy_id_idx : Natural;
     pkg_table_index : Positive;
   begin
@@ -312,7 +312,7 @@ package body HAC_Sys.Parser.Packages is
              CD.Packages_Table (pkg_table_index).last_public_declaration
     loop
       declare
-        Full_UName : constant String := To_String (CD.IdTab (i).name);
+        Full_UName : constant String := A2S (CD.IdTab (i).name);
         Full_Name  : String (Full_UName'Range);
         Start : Positive;
       begin
@@ -320,10 +320,10 @@ package body HAC_Sys.Parser.Packages is
         --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
         --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
         Start := Full_UName'First + Pkg_UName'Length + 1;
-        Full_Name := To_String (CD.IdTab (i).name_with_case);
+        Full_Name := A2S (CD.IdTab (i).name_with_case);
         declare
           Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
-          Short_Id     : constant Alfa := To_Alfa (Short_Id_str);  --  Id as visible after USE.
+          Short_Id     : constant Alfa := S2A (Short_Id_str);  --  Id as visible after USE.
         begin
           --  Check if there is already this identifier, even as
           --  a library level invisible definition.
@@ -345,7 +345,7 @@ package body HAC_Sys.Parser.Packages is
               (CD,
                Level,
                Short_Id,
-               To_Alfa (Full_Name (Start .. Full_Name'Last)),
+               S2A (Full_Name (Start .. Full_Name'Last)),
                Alias,
                dummy_id_idx);
             CD.IdTab (CD.Id_Count).adr_or_sz := i;  --  i = Aliased entity's index.
