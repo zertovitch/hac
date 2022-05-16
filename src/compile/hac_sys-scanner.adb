@@ -337,82 +337,95 @@ package body HAC_Sys.Scanner is
       end;
     end Read_with_Sharp;
 
-    procedure Scan_Number is
-      procedure Skip_eventual_underscore is
-      begin
+    procedure Skip_eventual_underscore is
+    begin
+      if CD.CUD.c = '_' then
+        NextCh (CD);
         if CD.CUD.c = '_' then
-          NextCh (CD);
-          if CD.CUD.c = '_' then
-            Error (CD, err_double_underline_not_permitted, severity => major);
-          elsif CharacterTypes (CD.CUD.c) /= Number then
-            Error (CD, err_digit_expected, severity => major);
-          end if;
+          Error (CD, err_double_underline_not_permitted, severity => major);
+        elsif CharacterTypes (CD.CUD.c) /= Number then
+          Error (CD, err_digit_expected, severity => major);
         end if;
-      end Skip_eventual_underscore;
-      use type HAC_Float, HAC_Integer;
+      end if;
+    end Skip_eventual_underscore;
+
+    procedure Read_Decimal_Float is
+    begin
+      --  Floating-point number 123.456
+      --  Cursor is here -----------^
+      if CD.CUD.c = '.' then  --  Double dot.
+        CD.CUD.c := c128;
+      else
+        --  Read decimal part.
+        CD.Sy := FloatCon;
+        CD.RNum := HAC_Float (CD.INum);
+        e := 0;
+        while CharacterTypes (CD.CUD.c) = Number loop
+          e := e - 1;
+          CD.RNum := 10.0 * CD.RNum +
+                  HAC_Float (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
+          NextCh (CD);
+          Skip_eventual_underscore;
+        end loop;
+        if e = 0 then
+          Error (CD, err_illegal_character_in_number, "; expected digit after '.'");
+        end if;
+        if CD.CUD.c = 'E' or CD.CUD.c = 'e' then
+          Read_Scale (True);
+        end if;
+        if e /= 0 then
+          Adjust_Scale;
+        end if;
+      end if;
+    end Read_Decimal_Float;
+
+    procedure Scan_Number (skip_leading_integer : Boolean) is
+      use type HAC_Integer;
     begin
       K       := 0;
       CD.INum := 0;
       CD.Sy   := IntCon;
-      --  Scan the integer part of the number.
-      loop
-        CD.INum := CD.INum * 10 + Character'Pos (CD.CUD.c) - Character'Pos ('0');
-        K := K + 1;
-        NextCh (CD);
-        Skip_eventual_underscore;
-        exit when CharacterTypes (CD.CUD.c) /= Number;
-      end loop;
-      --
-      if K > KMax then
-        Error (
-          CD, err_number_too_large,
-          Integer'Image (K) & " > Max =" &
-          Integer'Image (KMax)
-        );
-        CD.INum := 0;
-        K       := 0;
-      end if;
-      --  Integer part is read (CD.INum).
-      case CD.CUD.c is
-        when '.' =>
-          --  Floating-point number 123.456.
+      if skip_leading_integer then
+        --  A naughty person has put ".123" in his/her code.
+        --  An error is laready emmitted at this point but we continue the scanning and parsing.
+        Read_Decimal_Float;
+      else
+        --  Scan the integer part of the number.
+        loop
+          CD.INum := CD.INum * 10 + Character'Pos (CD.CUD.c) - Character'Pos ('0');
+          K := K + 1;
           NextCh (CD);
-          if CD.CUD.c = '.' then  --  Double dot.
-            CD.CUD.c := c128;
-          else
-            --  Read decimal part.
-            CD.Sy := FloatCon;
-            CD.RNum := HAC_Float (CD.INum);
+          Skip_eventual_underscore;
+          exit when CharacterTypes (CD.CUD.c) /= Number;
+        end loop;
+        --
+        if K > KMax then
+          Error (
+            CD, err_number_too_large,
+            Integer'Image (K) & " > Max =" &
+            Integer'Image (KMax)
+          );
+          CD.INum := 0;
+          K       := 0;
+        end if;
+        --  Integer part is read (CD.INum).
+        case CD.CUD.c is
+          when '.' =>
+            NextCh (CD);
+            Read_Decimal_Float;
+          when 'E' | 'e' =>
+            --  Integer with exponent: 123e4.
             e := 0;
-            while CharacterTypes (CD.CUD.c) = Number loop
-              e := e - 1;
-              CD.RNum := 10.0 * CD.RNum +
-                      HAC_Float (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
-              NextCh (CD);
-              Skip_eventual_underscore;
-            end loop;
-            if e = 0 then
-              Error (CD, err_illegal_character_in_number, "; expected digit after '.'");
-            end if;
-            if CD.CUD.c = 'E' or CD.CUD.c = 'e' then
-              Read_Scale (True);
-            end if;
+            Read_Scale (False);
             if e /= 0 then
-              Adjust_Scale;
+              CD.INum := CD.INum * 10 ** e;
             end if;
-          end if;
-        when 'E' | 'e' =>
-          --  Integer with exponent: 123e4.
-          e := 0;
-          Read_Scale (False);
-          if e /= 0 then
-            CD.INum := CD.INum * 10 ** e;
-          end if;
-        when '#' =>
-          Read_with_Sharp;
-        when others =>
-          null;  --  Number was an integer in base 10.
-      end case;
+          when '#' =>
+            Read_with_Sharp;
+          when others =>
+            null;  --  Number was an integer in base 10.
+        end case;
+      end if;
     end Scan_Number;
 
     procedure Scan_Apostrophe_or_Character is
@@ -541,7 +554,7 @@ package body HAC_Sys.Scanner is
           end if;
 
         when '0' .. '9' =>
-          Scan_Number;
+          Scan_Number (skip_leading_integer => False);
 
         when ':' =>
           NextCh (CD);
@@ -581,12 +594,16 @@ package body HAC_Sys.Scanner is
 
         when '.' =>
           NextCh (CD);
-          if CD.CUD.c = '.' then
-            CD.Sy := Range_Double_Dot_Symbol;
-            NextCh (CD);
-          else
-            CD.Sy := Period;
-          end if;
+          case CD.CUD.c is
+            when '.' =>
+              CD.Sy := Range_Double_Dot_Symbol;
+              NextCh (CD);
+            when '0' .. '9' =>
+              Error (CD, err_syntax_error, ": numeric literal cannot start with point", minor);
+              Scan_Number (skip_leading_integer => True);
+            when others =>
+              CD.Sy := Period;
+          end case;
 
         when c128 =>  --  Hathorn
           CD.Sy := Range_Double_Dot_Symbol;
