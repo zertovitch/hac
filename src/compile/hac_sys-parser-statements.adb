@@ -331,7 +331,7 @@ package body HAC_Sys.Parser.Statements is
       end if;
       if Block_Data.is_a_function then
         Emit_1 (CD, k_Exit_Function, Normal_Procedure_Call);
-      elsif Block_Data.level <= 1 then
+      elsif Block_Data.is_main then
         Emit (CD, k_Halt_Interpreter);
       else
         Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
@@ -872,6 +872,7 @@ package body HAC_Sys.Parser.Statements is
       block_statement_data.level                         := Block_Data.level + 1;
       block_statement_data.block_id_index                := CD.Id_Count;
       block_statement_data.is_a_function                 := Block_Data.is_a_function;
+      block_statement_data.is_main                       := False;
       block_statement_data.previous_declaration_id_index := No_Id;
       Block (CD, FSys_St, True, block_statement_data, block_name, block_name);  --  !! up/low case
       --

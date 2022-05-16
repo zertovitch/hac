@@ -357,6 +357,7 @@ package body HAC_Sys.Compiler is
     main_block.level                         := 1;
     main_block.block_id_index                := CD.Id_Count;
     main_block.is_a_function                 := False;
+    main_block.is_main                       := True;
     main_block.previous_declaration_id_index := No_Id;
     --  Start Compiling of Main
     Parser.Block (
@@ -366,7 +367,8 @@ package body HAC_Sys.Compiler is
       CD.Main_Program_ID_with_case
     );
     CD.total_lines := CD.total_lines + CD.CUD.line_count;  --  Add line count of main program.
-    --  Main procedure is parsed.
+    --  Main procedure is parsed. Block did not emit a final "exit",
+    --  then we can opt for halting the machine instead.
     PCode_Emit.Emit (CD, k_Halt_Interpreter);
 
     if CD.Sy /= Semicolon then
@@ -544,6 +546,7 @@ package body HAC_Sys.Compiler is
         unit_block.level                         := 1;
         unit_block.block_id_index                := new_id_index;
         unit_block.is_a_function                 := kind = Function_Unit;
+        unit_block.is_main                       := False;
         unit_block.previous_declaration_id_index := specification_id_index;
         Parser.Block (
           CD, Block_Begin_Symbol + Statement_Begin_Symbol,

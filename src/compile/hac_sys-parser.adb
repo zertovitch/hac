@@ -431,6 +431,7 @@ package body HAC_Sys.Parser is
       sub_sub_prog_block_data.level                         := current_level + 1;
       sub_sub_prog_block_data.block_id_index                := CD.Id_Count;
       sub_sub_prog_block_data.is_a_function                 := IsFun;
+      sub_sub_prog_block_data.is_main                       := False;
       sub_sub_prog_block_data.previous_declaration_id_index := old_id_idx;
       new_id_idx := CD.Id_Count;
       Block

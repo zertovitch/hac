@@ -17,6 +17,8 @@ project HAC_Test is
    for Main use (
      "all_noisy_tests.adb",
      "all_silent_tests.adb",
+     "silent_tests_single_build.adb",
+     --
      "attributes_test.adb",
      "case_statement.adb",
      "constants.adb",

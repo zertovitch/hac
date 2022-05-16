@@ -38,6 +38,7 @@ package body HAC_Sys.Parser.Tasking is
       task_block.level                         := Level + 1;
       task_block.block_id_index                := I;
       task_block.is_a_function                 := False;
+      task_block.is_main                       := False;
       task_block.previous_declaration_id_index := No_Id;
       Block (CD, FSys, False, task_block, TaskID, TaskID);  --  !! up/low case
       Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
@@ -83,6 +84,7 @@ package body HAC_Sys.Parser.Tasking is
           task_block.level                         := Level + 1;
           task_block.block_id_index                := CD.Id_Count;
           task_block.is_a_function                 := False;
+          task_block.is_main                       := False;
           task_block.previous_declaration_id_index := No_Id;
           Block (CD, FSys, False, task_block,
                  CD.IdTab (CD.Id_Count).name, CD.IdTab (CD.Id_Count).name_with_case);
