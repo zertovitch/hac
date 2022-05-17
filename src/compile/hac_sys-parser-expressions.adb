@@ -547,6 +547,7 @@ package body HAC_Sys.Parser.Expressions is
               when NOTYP  => null;  --  Another error before.
               when others => Error (CD, err_argument_to_std_function_of_wrong_type);
             end case;
+            X.Construct_Root (X.TYP);  --  Forget subtype bounds
           when NOT_Symbol =>
             InSymbol (CD);
             Primary (FSys_Fact, X);
@@ -567,6 +568,7 @@ package body HAC_Sys.Parser.Expressions is
               else
                 Error (CD, err_invalid_power_operands);
               end if;
+              X.Construct_Root (X.TYP);  --  Forget subtype bounds
             end if;
         end case;
       end Factor;
@@ -593,6 +595,7 @@ package body HAC_Sys.Parser.Expressions is
                 else
                   Forbid_Type_Coercion (CD, Mult_OP, X, Y);
                 end if;
+                X.Construct_Root (X.TYP);  --  Forget subtype bounds
               elsif X.TYP = Ints then
                 --  N * (something non-numeric)
                 case Y.TYP is
@@ -616,6 +619,7 @@ package body HAC_Sys.Parser.Expressions is
             when Divide =>    --  /
               if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
                 Emit_Arithmetic_Binary_Instruction (CD, Mult_OP, X.TYP);
+                X.Construct_Root (X.TYP);  --  Forget subtype bounds
               else
                 if X.TYP = Ints then
                   Forbid_Type_Coercion (CD, Mult_OP, X, Y);
@@ -819,6 +823,7 @@ package body HAC_Sys.Parser.Expressions is
               else
                 Forbid_Type_Coercion (CD, Adding_OP, X, y);
               end if;
+              X.Construct_Root (X.TYP);  --  Forget subtype bounds
             elsif X.TYP = Times and y.TYP = Times and Adding_OP = Minus then
               Emit_Std_Funct (CD, SF_Time_Subtract);  --  T2 - T1
               Construct_Root (X, Durations);

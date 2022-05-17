@@ -149,7 +149,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Puts;
     --
-    X, Y, Z    : Exact_Subtyp;
+    X, Y, Z : Exact_Subtyp;
   begin
     case Code is
       when SP_Get | SP_Get_Immediate | SP_Get_Line =>
