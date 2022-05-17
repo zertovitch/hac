@@ -39,7 +39,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
     --
     procedure Parse_Gets (Code : PCode.SP_Code) is
       --  Parse Get & Co including an eventual File parameter
-      Found : Exact_Typ;
+      Found : Exact_Subtyp;
       with_file : Boolean;
       Code_2 : PCode.SP_Code := Code;
       String_Length_Encoding : Operand_2_Type := 0;
@@ -83,7 +83,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
     --
     procedure Parse_Puts (Code : PCode.SP_Code) is
       --  Parse Put & Co including an eventual File parameter
-      Item_Typ, Format_Param_Typ : Exact_Typ;
+      Item_Typ, Format_Param_Typ : Exact_Subtyp;
       Format_Params : Natural := 0;
       with_file : Boolean;
       Code_2 : PCode.SP_Code := Code;
@@ -149,7 +149,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Puts;
     --
-    X, Y, Z : Exact_Typ;
+    X, Y, Z    : Exact_Subtyp;
   begin
     case Code is
       when SP_Get | SP_Get_Immediate | SP_Get_Line =>

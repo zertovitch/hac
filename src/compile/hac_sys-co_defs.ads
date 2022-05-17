@@ -304,7 +304,7 @@ package HAC_Sys.Co_Defs is
   end record;
 
   type Constant_Rec is record
-    TP : Exact_Typ;
+    TP : Exact_Subtyp;
     I  : HAC_Integer;  --  Includes Character and enumeration types (including Boolean)
     R  : HAC_Float;
   end record;

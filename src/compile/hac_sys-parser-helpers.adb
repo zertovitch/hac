@@ -210,7 +210,7 @@ package body HAC_Sys.Parser.Helpers is
     return A2S (CD.IdTab (E_Ref).name_with_case);
   end Enum_Name;
 
-  function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ) return String is
+  function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ'Class) return String is
   begin
     if xT.TYP = Enums then
       return Nice_Image (xT.TYP) & " (" & Enum_Name (CD, xT.Ref) & ')';
@@ -222,7 +222,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Type_Mismatch (
     CD               : in out Compiler_Data;
     Err              :        Compile_Error;
-    Found, Expected  :        Exact_Typ
+    Found, Expected  :        Exact_Typ'Class
   )
   is
   begin
@@ -245,7 +245,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Type_Mismatch (
     CD       : in out Compiler_Data;
     Err      :        Compile_Error;
-    Found    :        Exact_Typ;
+    Found    :        Exact_Subtyp;
     Expected :        Typ_Set
   )
   is
@@ -290,7 +290,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Operator_Undefined (
     CD          : in out Compiler_Data;
     Operator    :        KeyWSymbol;
-    Left, Right :        Exact_Typ
+    Left, Right :        Exact_Subtyp
   )
   is
   begin
@@ -317,7 +317,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Forbid_Type_Coercion (
     CD          : in out Compiler_Data;
     Operator    :        KeyWSymbol;
-    Left, Right :        Exact_Typ
+    Left, Right :        Exact_Subtyp
   )
   is
   begin
@@ -332,7 +332,7 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Forbid_Type_Coercion (
     CD              : in out Compiler_Data;
-    Found, Expected :        Exact_Typ
+    Found, Expected :        Exact_Subtyp
   )
   is
   begin
@@ -350,13 +350,13 @@ package body HAC_Sys.Parser.Helpers is
     return res;
   end Singleton;
 
-  function Is_Char_Array (CD : Compiler_Data; T : Exact_Typ) return Boolean is
+  function Is_Char_Array (CD : Compiler_Data; T : Exact_Subtyp) return Boolean is
   begin
     return T.TYP = Arrays and then CD.Arrays_Table (T.Ref).Element_xTyp.TYP = Chars;
   end Is_Char_Array;
 
   procedure Check_any_String_and_promote_to_VString
-    (CD : in out Compiler_Data; X : in out Exact_Typ; include_characters : Boolean)
+    (CD : in out Compiler_Data; X : in out Exact_Subtyp; include_characters : Boolean)
   is
     use Compiler.PCode_Emit, PCode;
     expected_set : Typ_Set :=  VStrings_Set or Str_Lit_Set or Str_as_VStr_Set or Arrays_Set;
@@ -383,7 +383,7 @@ package body HAC_Sys.Parser.Helpers is
         Expected => expected_set
       );
     end if;
-    Construct_Root (X, VStrings);
+    X.Construct_Root (VStrings);
   end Check_any_String_and_promote_to_VString;
 
   ------------------------------------------------------------------

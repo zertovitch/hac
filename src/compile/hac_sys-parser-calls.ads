@@ -17,14 +17,14 @@ private package HAC_Sys.Parser.Calls is
     CD       : in out Co_Defs.Compiler_Data;
     Level    :        Defs.Nesting_level;
     FSys     :        Defs.Symset;
-    Expected :        Co_Defs.Exact_Typ
+    Expected :        Co_Defs.Exact_Subtyp
   );
 
   procedure Push_by_Reference_Parameter (
     CD       : in out Co_Defs.Compiler_Data;
     Level    :        Defs.Nesting_level;
     FSys     :        Defs.Symset;
-    Found    :    out Co_Defs.Exact_Typ
+    Found    :    out Co_Defs.Exact_Subtyp
   );
 
   procedure Entry_Call (

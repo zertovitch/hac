@@ -11,7 +11,7 @@ private package HAC_Sys.Parser.Standard_Functions is
     FSys        :        Defs.Symset;
     Ident_Index :        Integer;
     Code        :        PCode.SF_Code;
-    Return_Typ  :    out Co_Defs.Exact_Typ
+    Return_Typ  :    out Co_Defs.Exact_Subtyp
   );
 
 end HAC_Sys.Parser.Standard_Functions;

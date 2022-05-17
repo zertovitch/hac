@@ -27,21 +27,21 @@ private package HAC_Sys.Parser.Expressions is
     CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    X     :    out Co_Defs.Exact_Typ
+    X     :    out Co_Defs.Exact_Subtyp
   );
 
   procedure Expression (
     CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    X     :    out Co_Defs.Exact_Typ
+    X     :    out Co_Defs.Exact_Subtyp
   );  --  RM 4.4 (2)
 
   procedure Simple_Expression (
     CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    X     :    out Co_Defs.Exact_Typ
+    X     :    out Co_Defs.Exact_Subtyp
   );  --  RM 4.4 (4)
 
   procedure Selector (

@@ -22,8 +22,8 @@ package body HAC_Sys.Co_Defs is
   overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen) is
   begin
     Construct_Root (Exact_Typ (Root), Typ);  --  Call parent method.
-    Root.Discrete_First := 0;
-    Root.Discrete_Last  := 0;
+    Root.Discrete_First := HAC_Integer'First;
+    Root.Discrete_Last  := HAC_Integer'Last;
   end Construct_Root;
 
   overriding function Construct_Root (Typ : Typen) return Exact_Subtyp is

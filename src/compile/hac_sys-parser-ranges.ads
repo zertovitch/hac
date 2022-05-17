@@ -87,7 +87,7 @@ private package HAC_Sys.Parser.Ranges is
     Level              : in     Defs.Nesting_level;
     FSys               : in     Defs.Symset;
     Non_Discrete_Error : in     Defs.Compile_Error;
-    Range_Typ          :    out Co_Defs.Exact_Typ
+    Range_Typ          :    out Co_Defs.Exact_Subtyp
   );
 
 end HAC_Sys.Parser.Ranges;

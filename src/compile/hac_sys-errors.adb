@@ -239,7 +239,7 @@ package body HAC_Sys.Errors is
       when err_discrete_type_expected =>
         return "discrete type expected";
       when err_membership_test_type_mismatch =>
-        return "incompatible types: " & hint;
+        return "incompatible types in membership test: " & hint;
       when err_string_not_supported_as_parameter =>
         return "string not supported as parameter" &
           " - define a constrained ""subtype S2 is String (1..2)"" or use a VString";
@@ -261,6 +261,9 @@ package body HAC_Sys.Errors is
         return "missing body or full declaration for " & hint;
       when err_non_public_entity =>
         return '"' & hint & """ is not a public entity of the package in prefix";
+      when err_choices_not_covered =>
+        return "all case values shall be covered, either explicitly " &
+               "or by ""others"" (RM 5.4 (6))";
     end case;
   end Error_String;
 

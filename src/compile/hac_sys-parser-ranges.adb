@@ -36,10 +36,10 @@ package body HAC_Sys.Parser.Ranges is
           if CD.CUD.c /= ''' then  --  We sneak a look at the next symbol.
             --  Not a S'... attribute here.
             --  We can use the subtype identifier as a range.
-            Low.TP  := Exact_Typ (Id_T.xtyp);
+            Low.TP  := Id_T.xtyp;
             Low.I   := Id_T.xtyp.Discrete_First;
             --
-            High.TP := Exact_Typ (Id_T.xtyp);
+            High.TP := Id_T.xtyp;
             High.I  := Id_T.xtyp.Discrete_Last;
             --
             Found   := True;
@@ -122,14 +122,14 @@ package body HAC_Sys.Parser.Ranges is
     Level              : in     Defs.Nesting_level;
     FSys               : in     Defs.Symset;
     Non_Discrete_Error : in     Defs.Compile_Error;
-    Range_Typ          :    out Co_Defs.Exact_Typ
+    Range_Typ          :    out Co_Defs.Exact_Subtyp
   )
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
     --  The variant "Low_Expr .. High_Expr" was initially
     --  in HAC.Parser <= 0.07 for FOR statements.
-    Lower_Bound_Typ : Exact_Typ;
-    Upper_Bound_Typ : Exact_Typ;
+    Lower_Bound_Typ : Exact_Subtyp;
+    Upper_Bound_Typ : Exact_Subtyp;
     Lower_Bound_Static  : Constant_Rec;
     Higher_Bound_Static : Constant_Rec;
     Is_SI_Found : Boolean;
@@ -168,6 +168,7 @@ package body HAC_Sys.Parser.Ranges is
     if not Discrete_Typ (Range_Typ.TYP) then
       Error (CD, Non_Discrete_Error, Nice_Exact_Image (CD, Range_Typ));
     end if;
+    --
     if Lower_Bound_Typ.Is_Range then
       --  We got a ` X'Range ` expression which is a shortcut for ` X'First .. X'Last `.
       --  The ` .. X'Last ` part has been implicitly parsed with ` X'Range ` .
@@ -177,13 +178,14 @@ package body HAC_Sys.Parser.Ranges is
       --
       Simple_Expression (CD, Level, FSys + LOOP_Symbol, Upper_Bound_Typ);
       --
-      if Upper_Bound_Typ /= Lower_Bound_Typ then
+      if Exact_Typ (Upper_Bound_Typ) /= Exact_Typ (Lower_Bound_Typ) then
         Type_Mismatch (
           CD, err_bounds_type_mismatch,
           Found    => Upper_Bound_Typ,
           Expected => Lower_Bound_Typ
         );
       end if;
+      Range_Typ.Discrete_Last := Upper_Bound_Typ.Discrete_Last;
     else
       Skip (CD, END_LOOP_Semicolon + FSys, err_expecting_double_dot);
     end if;

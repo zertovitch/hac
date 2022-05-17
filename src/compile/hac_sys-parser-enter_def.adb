@@ -115,8 +115,8 @@ package body HAC_Sys.Parser.Enter_Def is
         major
       );
     end if;
-    if   abs (Index_STP.Discrete_First) > HAC_Integer (XMax)
-      or abs (Index_STP.Discrete_Last)  > HAC_Integer (XMax)
+    if   Index_STP.Discrete_First < -HAC_Integer (XMax)
+      or Index_STP.Discrete_Last  >  HAC_Integer (XMax)
     then
       Error (CD,
         err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",

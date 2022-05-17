@@ -16,7 +16,7 @@ is
   use type HAC_Integer;
   type Type_Conversion_Kind is (To_Float, To_Integer, To_Duration, Unknown);
   kind : Type_Conversion_Kind;
-  T_Expr : Co_Defs.Exact_Typ;
+  T_Expr : Co_Defs.Exact_Subtyp;
 begin
   --  X is the type of the name just parsed, as in the identifier table.
   --  E.g.:  "Natural (12.34)"  ->  X is from Standard.Natural as entered by the librarian.

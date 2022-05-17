@@ -158,7 +158,7 @@ package body HAC_Sys.Parser.Const_Var is
             r.read_only := is_constant;
             if is_untyped_constant then
               r.entity := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
-              Exact_Typ (r.xtyp) := C.TP;
+              r.xtyp := C.TP;
               case C.TP.TYP is
                 when Floats =>
                   Enter_or_find_Float (CD, C.R, r.adr_or_sz);

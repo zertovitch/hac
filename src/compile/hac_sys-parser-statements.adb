@@ -21,13 +21,12 @@ package body HAC_Sys.Parser.Statements is
      Check_read_only :        Boolean)
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
-    X     : Exact_Subtyp;
-    Y     : Exact_Typ;
+    X, Y  : Exact_Subtyp;
     F     : Opcode;
     X_Len : Natural;
     procedure Issue_Type_Mismatch_Error is
     begin
-      Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => Exact_Typ (X));
+      Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
     end Issue_Type_Mismatch_Error;
   begin
     pragma Assert (CD.IdTab (Var_Id_Index).entity = Variable);
@@ -93,12 +92,12 @@ package body HAC_Sys.Parser.Statements is
       --  Here, X.TYP and Y.TYP are different.
       --
       if X.TYP = Floats and Y.TYP = Ints then
-        Forbid_Type_Coercion (CD, Found => Y, Expected => Exact_Typ (X));
+        Forbid_Type_Coercion (CD, Found => Y, Expected => X);
       elsif X.TYP = Durations and Y.TYP = Floats then
         --  Duration hack (see Delay_Statement for full explanation).
         Emit_Std_Funct (CD, SF_Float_to_Duration);
         Emit_1 (CD, k_Store, Typen'Pos (X.TYP));
-      elsif Is_Char_Array (CD, Exact_Typ (X)) and Y.TYP = String_Literals then
+      elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
         X_Len := CD.Arrays_Table (X.Ref).Array_Size;
         if X_Len = CD.SLeng then
           Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (X_Len));
@@ -218,7 +217,7 @@ package body HAC_Sys.Parser.Statements is
 
     procedure Exit_Statement is
       --  Generate an absolute branch statement with a dummy end loop address
-      X : Exact_Typ;
+      X : Exact_Subtyp;
     begin
       pragma Assert (CD.Sy = EXIT_Symbol);
       InSymbol;  --  Consume EXIT symbol.
@@ -231,7 +230,7 @@ package body HAC_Sys.Parser.Statements is
     end Exit_Statement;
 
     procedure IF_Statement is
-      X        : Exact_Typ;
+      X        : Exact_Subtyp;
       LC0, LC1 : Integer;
     begin
       InSymbol;
@@ -285,12 +284,11 @@ package body HAC_Sys.Parser.Statements is
 
     procedure RETURN_Statement is           -- Hathorn
       --  Generate a procedure or function return Statement, calculate return value if req'D.
-      X : Exact_Subtyp;
-      Y : Exact_Typ;
-      F : Opcode;
+      X, Y : Exact_Subtyp;
+      F    : Opcode;
       procedure Issue_Type_Mismatch_Error is
       begin
-        Type_Mismatch (CD, err_type_of_return_statement_doesnt_match, Found => Y, Expected => Exact_Typ (X));
+        Type_Mismatch (CD, err_type_of_return_statement_doesnt_match, Found => Y, Expected => X);
       end Issue_Type_Mismatch_Error;
     begin
       InSymbol;
@@ -318,13 +316,15 @@ package body HAC_Sys.Parser.Statements is
         --
         Expression (CD, Block_Data.level, Semicolon_Set, Y);
         if X.TYP = Y.TYP then
-          if (X.TYP in Standard_Typ) or else (X.TYP = Enums and then Exact_Typ (X) = Y) then
+          if (X.TYP in Standard_Typ)
+            or else (X.TYP = Enums and then Exact_Typ (X) = Exact_Typ (Y))
+          then
             Emit_1 (CD, k_Store, Typen'Pos (X.TYP));
           elsif X.Ref /= Y.Ref then
             Issue_Type_Mismatch_Error;
           end if;
         elsif X.TYP = Floats and Y.TYP = Ints then
-          Forbid_Type_Coercion (CD, Found => Y, Expected => Exact_Typ (X));
+          Forbid_Type_Coercion (CD, Found => Y, Expected => X);
         elsif X.TYP /= NOTYP and Y.TYP /= NOTYP then
           Issue_Type_Mismatch_Error;
         end if;
@@ -339,7 +339,7 @@ package body HAC_Sys.Parser.Statements is
     end RETURN_Statement;
 
     procedure Delay_Statement is            -- Cramer. Generate a Task delay.
-      Y : Exact_Typ;
+      Y : Exact_Subtyp;
     begin
       InSymbol;
       if CD.Sy = Semicolon then
@@ -360,11 +360,19 @@ package body HAC_Sys.Parser.Statements is
     end Delay_Statement;
 
     procedure CASE_Statement is  --  Ada RM 5.4
-      X         : Exact_Typ;
+      X         : Exact_Subtyp;
       I, J, LC1 : Integer;
       CaseTab : array (1 .. Cases_Max) of CASE_Label_Value;
       ExitTab : array (1 .. Cases_Max) of Integer;
       others_flag : Boolean := False;
+      type Choice_Count_Type is range -2 ** 127 .. 2 ** 127 - 1;
+      actual_choices : Choice_Count_Type := 0;
+
+      function Count_Choices (Low, High : HAC_Integer) return Choice_Count_Type is
+      begin
+        pragma Assert (Low <= High);
+        return Choice_Count_Type (High) - Choice_Count_Type (Low) + 1;
+      end Count_Choices;
 
       procedure Discrete_Choice is  --  Ada RM 3.8.1 (5)
         label_1, label_2 : Constant_Rec;
@@ -387,7 +395,7 @@ package body HAC_Sys.Parser.Statements is
         else
           label_2 := label_1;
         end if;
-        if label_1.TP /= X then
+        if Exact_Typ (label_1.TP) /= Exact_Typ (X) then
           Type_Mismatch (
             CD, err_case_label_not_same_type_as_case_clause,
             Found    => label_1.TP,
@@ -410,6 +418,10 @@ package body HAC_Sys.Parser.Statements is
           if K < I then
             Error (CD, err_duplicate_case_choice_value);
           end if;
+          --  Since single choices or ranges do not overlap,
+          --  we can simply add the number of covered values in order to check
+          --  at the end that everything is covered.
+          actual_choices := actual_choices + Count_Choices (label_1.I, label_2.I);
         end if;
       end Discrete_Choice;
 
@@ -455,6 +467,20 @@ package body HAC_Sys.Parser.Statements is
         Emit (CD, k_Jump);
       end WHEN_Discrete_Choice_List;
 
+      procedure Check_Coverage is
+        expected_choices : Choice_Count_Type;
+      begin
+        pragma Assert (Choice_Count_Type'Size >= HAC_Integer'Size);
+        if others_flag then
+          return;
+        end if;
+        expected_choices := Count_Choices (X.Discrete_First, X.Discrete_Last);
+        if actual_choices < expected_choices then
+          Error (CD, err_choices_not_covered, severity => minor);
+          --  !!  Add a hint: first gap's lower bound and last gap's higher bound.
+        end if;
+      end Check_Coverage;
+
     begin  --  CASE_Statement
       InSymbol;
       I := 0;
@@ -482,7 +508,7 @@ package body HAC_Sys.Parser.Statements is
         WHEN_Discrete_Choice_List;
         exit when CD.Sy /= WHEN_Symbol;
       end loop;
-
+      Check_Coverage;
       CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
       --  Set correct address for k_CASE_Switch above.
       --  This is the address of the following bunch of
@@ -508,7 +534,7 @@ package body HAC_Sys.Parser.Statements is
     end CASE_Statement;
 
     procedure WHILE_Statement is  --  RM 5.5 (8)
-      X : Exact_Typ;
+      X : Exact_Subtyp;
       LC_Cond_Eval, LC_Cond_Jump : Integer;
     begin
       InSymbol;  --  Consume WHILE symbol.
@@ -574,7 +600,7 @@ package body HAC_Sys.Parser.Statements is
       end if;
       Ranges.Dynamic_Range (CD, Block_Data.level, FSys_St,
         err_control_variable_of_the_wrong_type,
-        Exact_Typ (CD.IdTab (CD.Id_Count).xtyp)  --  Set the type of "C" in "for C in Red .. Blue loop"
+        CD.IdTab (CD.Id_Count).xtyp  --  Set the subtype of "C" in "for C in Red .. Blue loop"
       );
       LC_FOR_Begin := CD.LC;
       Emit (CD, FOR_Begin);
@@ -600,7 +626,7 @@ package body HAC_Sys.Parser.Statements is
         I, J, IStart, IEnd : Integer;
         patch              : array (0 .. 4) of Integer;
         O                  : Order;
-        Y                  : Exact_Typ;
+        Y                  : Exact_Subtyp;
       begin
         I := Locate_Identifier (CD, CD.Id, Block_Data.level);
         if CD.IdTab (I).entity = aTask then
@@ -684,7 +710,7 @@ package body HAC_Sys.Parser.Statements is
         JSD, Alt_Patch      : Fixed_Size_Patch_Table;
         ISD, IAlt, StartSel : Integer;
         SelectDone          : Boolean;
-        Y, X                : Exact_Typ;
+        X, Y                : Exact_Subtyp;
         do_terminate        : Boolean;
 
         procedure Accept_Statement_2 is      -- Kurtz

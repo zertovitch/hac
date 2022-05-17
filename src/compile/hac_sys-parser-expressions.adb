@@ -56,7 +56,7 @@ package body HAC_Sys.Parser.Expressions is
           X := Locate_Identifier (CD, CD.Id, Level);
           if X /= 0 then
             if CD.IdTab (X).entity = Declared_Number_or_Enum_Item then
-              C.TP := Exact_Typ (CD.IdTab (X).xtyp);
+              C.TP := CD.IdTab (X).xtyp;
               if C.TP.TYP = Floats then
                 C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).adr_or_sz);
               else
@@ -71,11 +71,11 @@ package body HAC_Sys.Parser.Expressions is
           end if;  --  X /= 0
           InSymbol;
         when IntCon =>
-          Construct_Root (C.TP, Ints);
+          C.TP.Construct_Root (Ints);
           C.I  := Sign * CD.INum;
           InSymbol;
         when FloatCon =>
-          Construct_Root (C.TP, Floats);
+          C.TP.Construct_Root (Floats);
           C.R  := HAC_Float (Sign) * CD.RNum;
           InSymbol;
         when others =>
@@ -120,7 +120,7 @@ package body HAC_Sys.Parser.Expressions is
     end Record_Field_Selector;
     --
     procedure Array_Coordinates_Selector is
-      Array_Index_Typ : Exact_Typ;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
+      Array_Index_Typ : Exact_Subtyp;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
     begin
       loop
         InSymbol (CD);  --  Consume '(' or ',' symbol.
@@ -130,11 +130,11 @@ package body HAC_Sys.Parser.Expressions is
             ATI : constant Integer := V.Ref;
             ATE : ATabEntry renames CD.Arrays_Table (ATI);
           begin
-            if Exact_Typ (ATE.Index_xTyp) /= Array_Index_Typ then
+            if Exact_Typ (ATE.Index_xTyp) /= Exact_Typ (Array_Index_Typ) then
               Type_Mismatch (
                 CD, err_illegal_array_subscript,
                 Found    => Array_Index_Typ,
-                Expected => Exact_Typ (ATE.Index_xTyp)
+                Expected => ATE.Index_xTyp
               );
             elsif ATE.Element_Size = 1 then
               Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
@@ -207,7 +207,7 @@ package body HAC_Sys.Parser.Expressions is
   procedure Issue_Undefined_Operator_Error (
     CD       : in out Co_Defs.Compiler_Data;
     Undef_OP :        KeyWSymbol;
-    X, Y     :        Exact_Typ)
+    X, Y     :        Exact_Subtyp)
   is
   begin
     Operator_Undefined (CD, Undef_OP, X, Y);
@@ -221,11 +221,11 @@ package body HAC_Sys.Parser.Expressions is
     CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    X     :    out Co_Defs.Exact_Typ
+    X     :    out Co_Defs.Exact_Subtyp
   )
   is
-    procedure Relation (FSys_Rel : Symset; X : out Exact_Typ) is  --  RM 4.4 (3)
-      Y : Exact_Typ;
+    procedure Relation (FSys_Rel : Symset; X : out Exact_Subtyp) is  --  RM 4.4 (3)
+      Y : Exact_Subtyp;
 
       procedure Issue_Comparison_Type_Mismatch_Error is
       begin
@@ -300,7 +300,7 @@ package body HAC_Sys.Parser.Expressions is
           end if;
           if CD.error_count = 0 then
             Ranges.Dynamic_Range (CD, Level, FSys_Rel, err_discrete_type_expected, Y);
-            if X /= Y then
+            if Exact_Typ (X) /= Exact_Typ (Y) then
               Type_Mismatch (CD, err_membership_test_type_mismatch, Found => Y, Expected => X);
               --  The RM 4.5.2 (2) seems to accept any types for X and Y. The test would be False
               --  if types were incompatible. However, in that situation, GNAT says
@@ -319,7 +319,7 @@ package body HAC_Sys.Parser.Expressions is
     end Relation;
 
     Logical_OP    : KeyWSymbol;
-    Y             : Exact_Typ;
+    Y             : Exact_Subtyp;
     short_circuit : Boolean;
     LC_Cond_Jump  : Integer;
 
@@ -400,15 +400,15 @@ package body HAC_Sys.Parser.Expressions is
     CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    X     :    out Co_Defs.Exact_Typ
+    X     :    out Co_Defs.Exact_Subtyp
   )
   is  --  RM 4.4 (4)
 
-    procedure Term (FSys_Term : Symset; X : out Exact_Typ) is           --  RM 4.4 (5)
+    procedure Term (FSys_Term : Symset; X : out Exact_Subtyp) is         --  RM 4.4 (5)
 
-      procedure Factor (FSys_Fact : Symset; X : out Exact_Typ) is       --  RM 4.4 (6)
+      procedure Factor (FSys_Fact : Symset; X : out Exact_Subtyp) is     --  RM 4.4 (6)
 
-        procedure Primary (FSys_Prim : Symset; X : out Exact_Typ) is    --  RM 4.4 (7)
+        procedure Primary (FSys_Prim : Symset; X : out Exact_Subtyp) is  --  RM 4.4 (7)
           F : Opcode;
           LC_Mem : Integer;
         begin
@@ -424,22 +424,24 @@ package body HAC_Sys.Parser.Expressions is
               declare
                 Ident_Index : constant Integer := Locate_Identifier (CD, CD.Id, Level);
                 r : IdTabEntry renames CD.IdTab (Ident_Index);
-                X_Sub : Exact_Subtyp;
               begin
                 InSymbol (CD);
                 case r.entity is
                   when Declared_Number_or_Enum_Item =>
-                    X := Exact_Typ (r.xtyp);
+                    X := r.xtyp;
                     if X.TYP = Floats then
                       --  Address is an index in the float constants table.
                       Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.adr_or_sz));
                     else
                       --  Here the address is actually the immediate (discrete) value.
                       Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.adr_or_sz));
+                      --  The local subtype for the value V is the range V .. V.
+                      X.Discrete_First := HAC_Integer (r.adr_or_sz);
+                      X.Discrete_Last  := HAC_Integer (r.adr_or_sz);
                     end if;
                     --
                   when Variable =>
-                    X_Sub := r.xtyp;
+                    X := r.xtyp;
                     LC_Mem := CD.LC;
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                       if r.normal then
@@ -448,8 +450,8 @@ package body HAC_Sys.Parser.Expressions is
                         F := k_Push_Value;    --  Composite: push "(v.all)'Access", that is, v.
                       end if;
                       Emit_2 (CD, F, Operand_1_Type (r.lev), Operand_2_Type (r.adr_or_sz));
-                      Selector (CD, Level, FSys_Prim + Apostrophe, X_Sub);
-                      if Standard_or_Enum_Typ (X_Sub.TYP) then
+                      Selector (CD, Level, FSys_Prim + Apostrophe, X);
+                      if Standard_or_Enum_Typ (X.TYP) then
                         --  We are at a leaf point of composite type selection,
                         --  so the stack top is expected to contain a value, not
                         --  an address (for an expression).
@@ -457,7 +459,7 @@ package body HAC_Sys.Parser.Expressions is
                       end if;
                     else
                       --  No selector.
-                      if Standard_or_Enum_Typ (X_Sub.TYP) then
+                      if Standard_or_Enum_Typ (X.TYP) then
                         if r.normal then
                           F := k_Push_Value;           --  Push variable v's value.
                         else
@@ -473,20 +475,17 @@ package body HAC_Sys.Parser.Expressions is
                     if CD.Sy = Apostrophe then
                       InSymbol (CD);
                       CD.LC := LC_Mem;  --  Forget the code emitted for the variable
-                      Attributes.Object_Attribute (CD, Level, FSys_Prim, X_Sub, X_Sub);
+                      Attributes.Object_Attribute (CD, Level, FSys_Prim, X, X);
                     end if;
-                    X := Exact_Typ (X_Sub);  --  Discard subtype information.
-                    --  !!  Keep subtype information, could be useful for optimizing out checks  !!
                     --
                   when TypeMark =>
-                    X_Sub := r.xtyp;
-                    Subtype_Prefixed_Expression (CD, Level, FSys_Prim, Ident_Index, X_Sub);
-                    X := Exact_Typ (X_Sub);  --  Discard subtype information.
+                    X := r.xtyp;
+                    Subtype_Prefixed_Expression (CD, Level, FSys_Prim, Ident_Index, X);
                     --  !!  Keep subtype information, could be useful for optimizing out checks  !!
                   when Prozedure | Prozedure_Intrinsic =>
                     Error (CD, err_expected_constant_function_variable_or_subtype);
                   when Funktion =>
-                    X := Exact_Typ (r.xtyp);
+                    X := r.xtyp;
                     Calls.Subprogram_or_Entry_Call
                       (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
                   when Funktion_Intrinsic =>
@@ -504,15 +503,19 @@ package body HAC_Sys.Parser.Expressions is
               --
             when CharCon | IntCon | FloatCon =>
               if CD.Sy = FloatCon then
-                Construct_Root (X, Floats);
+                X.Construct_Root (Floats);
                 Emit_Push_Float_Literal (CD, CD.RNum);
               else
+                --  Here we have a discrete literal
                 if CD.Sy = CharCon then
-                  Construct_Root (X, Chars);
+                  X.Construct_Root (Chars);
                 else
-                  Construct_Root (X, Ints);
+                  X.Construct_Root (Ints);
                 end if;
                 Emit_1 (CD, k_Push_Discrete_Literal, CD.INum);
+                --  The local subtype for the value V is the range V .. V.
+                X.Discrete_First := CD.INum;
+                X.Discrete_Last  := CD.INum;
               end if;
               InSymbol (CD);
               --
@@ -531,7 +534,7 @@ package body HAC_Sys.Parser.Expressions is
           end if;
         end Primary;
 
-        Y : Exact_Typ;
+        Y : Exact_Subtyp;
 
       begin  --  Factor
         case CD.Sy is
@@ -569,7 +572,7 @@ package body HAC_Sys.Parser.Expressions is
       end Factor;
 
       Mult_OP : KeyWSymbol;
-      Y       : Exact_Typ;
+      Y       : Exact_Subtyp;
     begin  --  Term
       Factor (FSys_Term + multiplying_operator, X);
       --
@@ -646,7 +649,7 @@ package body HAC_Sys.Parser.Expressions is
     end Term;
 
     Adding_OP : KeyWSymbol;
-    y         : Exact_Typ;
+    y         : Exact_Subtyp;
 
     function VString_Concatenation return Boolean is
     begin
@@ -854,7 +857,7 @@ package body HAC_Sys.Parser.Expressions is
     CD    : in out Co_Defs.Compiler_Data;
     Level :        Defs.Nesting_level;
     FSys  :        Defs.Symset;
-    X     :    out Co_Defs.Exact_Typ
+    X     :    out Co_Defs.Exact_Subtyp
   )
   is
   begin

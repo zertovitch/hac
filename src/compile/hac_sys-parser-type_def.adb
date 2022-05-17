@@ -76,9 +76,7 @@ package body HAC_Sys.Parser.Type_Def is
       use Ranges;
     begin
       Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
-      --  !!  Use a exact_subtyp for Static_Range, once exact_subtyp
-      --  !!  can also memorize float ranges.
-      Exact_Typ (Index_Exact_Subtyp) := Lower_Bound.TP;
+      Index_Exact_Subtyp := Lower_Bound.TP;
       Index_Exact_Subtyp.Discrete_First := Lower_Bound.I;
       Index_Exact_Subtyp.Discrete_Last  := Higher_Bound.I;
       Enter_Array (CD, Index_Exact_Subtyp);
@@ -115,7 +113,7 @@ package body HAC_Sys.Parser.Type_Def is
       enum_count : Natural := 0;
       forward_id_idx : Natural;
     begin
-      Construct_Root (xTP, Enums);
+      xTP.Construct_Root (Enums);
       xTP.Ref := CD.Id_Count;
       loop
         InSymbol;  --  Consume '(' symbol.
@@ -136,7 +134,8 @@ package body HAC_Sys.Parser.Type_Def is
         exit when CD.Sy /= Comma;
       end loop;
       Size  := 1;
-      xTP.Discrete_Last := HAC_Integer (enum_count - 1);
+      xTP.Discrete_First := 0;
+      xTP.Discrete_Last  := HAC_Integer (enum_count - 1);
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Enumeration_Typ;
 
@@ -227,7 +226,7 @@ package body HAC_Sys.Parser.Type_Def is
         --  Here comes the optional `  range 'a' .. 'z'  ` constraint.
         InSymbol;
         Ranges.Explicit_Static_Range (CD, Level, FSys_TD, err_range_constraint_error, Low, High);
-        if Low.TP /= Exact_Typ (xTP) then
+        if Exact_Typ (Low.TP) /= Exact_Typ (xTP) then
           Error (CD, err_range_constraint_error, "type of bounds don't match with the parent type", major);
         elsif Low.I not in xTP.Discrete_First .. xTP.Discrete_Last then
           Error

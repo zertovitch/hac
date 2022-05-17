@@ -419,7 +419,8 @@ package HAC_Sys.Defs is
     err_invalid_dimension_number,                --  2022-01-09
     err_spec_body_mismatch,                      --  2022-01-22
     err_incomplete_declaration,                  --  2022-01-22
-    err_non_public_entity                        --  2022-04-02
+    err_non_public_entity,                       --  2022-04-02
+    err_choices_not_covered
   );
 
   type Error_set is array (Compile_Error) of Boolean;

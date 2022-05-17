@@ -30,17 +30,17 @@ package body HAC_Sys.Parser.Standard_Functions is
     FSys        :        Defs.Symset;
     Ident_Index :        Integer;
     Code        :        PCode.SF_Code;
-    Return_Typ  :    out Co_Defs.Exact_Typ
+    Return_Typ  :    out Co_Defs.Exact_Subtyp
   )
   is
     use Co_Defs;
     Max_Args : constant := 3;
     Args : Natural := SF_Args (Code);
-    Expected : array (1 .. Max_Args) of Typ_Set;    --  Expected type of the function's arguments
-    Actual   : array (1 .. Max_Args) of Exact_Typ;  --  Actual type from argument expression
+    Expected : array (1 .. Max_Args) of Typ_Set;       --  Expected type of the function's arguments
+    Actual   : array (1 .. Max_Args) of Exact_Subtyp;  --  Actual type from argument expression
     Code_Adjusted : SF_Code := Code;
     do_SF_emit : Boolean := True;
-    X : Exact_Typ;
+    X : Exact_Subtyp;
     --
     procedure Prepare_Accepted_Parameter_Types is
       VString_or_Chars_Set     : constant Typ_Set := VStrings_Set or Chars_Set;
@@ -233,7 +233,7 @@ package body HAC_Sys.Parser.Standard_Functions is
     end Adjustments_to_Parameter_Types;
     --
   begin
-    Return_Typ := Exact_Typ (CD.IdTab (Ident_Index).xtyp);
+    Return_Typ := CD.IdTab (Ident_Index).xtyp;
     --
     Prepare_Accepted_Parameter_Types;
     --

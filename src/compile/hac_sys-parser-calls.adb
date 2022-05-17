@@ -13,10 +13,10 @@ package body HAC_Sys.Parser.Calls is
     CD       : in out Co_Defs.Compiler_Data;
     Level    :        Defs.Nesting_level;
     FSys     :        Defs.Symset;
-    Expected :        Co_Defs.Exact_Typ
+    Expected :        Co_Defs.Exact_Subtyp
   )
   is
-    X : Exact_Typ;
+    X : Exact_Subtyp;
   begin
     --  Expression does all the job of parsing and
     --  emitting the right "push" instructions.
@@ -42,12 +42,11 @@ package body HAC_Sys.Parser.Calls is
     CD       : in out Co_Defs.Compiler_Data;
     Level    :        Defs.Nesting_level;
     FSys     :        Defs.Symset;
-    Found    :    out Co_Defs.Exact_Typ  --  Funny note: Found is itself pushed by reference...
+    Found    :    out Co_Defs.Exact_Subtyp  --  Funny note: Found is itself pushed by reference...
   )
   is
     K : Integer;
     F : Opcode;
-    found_with_constraint : Exact_Subtyp;
   begin
     Found := Undefined;
     if CD.Sy = IDent then
@@ -63,7 +62,7 @@ package body HAC_Sys.Parser.Calls is
           ": passed to OUT or IN OUT parameter"
         );
       else
-        found_with_constraint := CD.IdTab (K).xtyp;
+        Found := CD.IdTab (K).xtyp;
         if CD.IdTab (K).normal then
           F := k_Push_Address;  --  Push "v'Access".
         else
@@ -74,9 +73,8 @@ package body HAC_Sys.Parser.Calls is
           Operand_2_Type (CD.IdTab (K).adr_or_sz)
         );
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-          Selector (CD, Level, FSys + Colon_Comma_RParent, found_with_constraint);
+          Selector (CD, Level, FSys + Colon_Comma_RParent, Found);
         end if;
-        Found := Exact_Typ (found_with_constraint);
       end if;
     else
       Error (CD, err_identifier_missing);
@@ -102,7 +100,7 @@ package body HAC_Sys.Parser.Calls is
     --    = 3 then conditional Task Entry Call,    CallCNDE
     --****************************************************************
     last_param, current_param : Integer;
-    found, expected : Exact_Typ;
+    found, expected : Exact_Subtyp;
     block_idx : Index;
   begin
     Emit_1 (CD, k_Mark_Stack, Operand_2_Type (Ident_Index));
@@ -116,7 +114,7 @@ package body HAC_Sys.Parser.Calls is
           Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
         else
           current_param := current_param + 1;
-          expected := Exact_Typ (CD.IdTab (current_param).xtyp);
+          expected := CD.IdTab (current_param).xtyp;
           if CD.IdTab (current_param).normal then
             --------------------------------------------------
             --  Value parameter (IN)                        --
@@ -129,7 +127,7 @@ package body HAC_Sys.Parser.Calls is
             --  This is passed by reference              --
             -----------------------------------------------
             Push_by_Reference_Parameter (CD, Level, FSys, found);
-            if found /= expected then
+            if Exact_Typ (found) /= Exact_Typ (expected) then
               Type_Mismatch (CD, err_parameter_types_do_not_match, found, expected);
             end if;
           end if;

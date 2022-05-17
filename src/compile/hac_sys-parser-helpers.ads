@@ -77,25 +77,25 @@ package HAC_Sys.Parser.Helpers is
 
   procedure Argument_Type_Not_Supported (CD : in out Compiler_Data);
 
-  function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ) return String;
+  function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ'Class) return String;
 
   procedure Type_Mismatch (
     CD               : in out Compiler_Data;
     Err              :        Compile_Error;
-    Found, Expected  :        Exact_Typ
+    Found, Expected  :        Exact_Typ'Class
   );
 
   procedure Type_Mismatch (
     CD       : in out Compiler_Data;
     Err      :        Compile_Error;
-    Found    :        Exact_Typ;
+    Found    :        Exact_Subtyp;
     Expected :        Typ_Set
   );
 
   procedure Operator_Undefined (
     CD          : in out Compiler_Data;
     Operator    :        KeyWSymbol;
-    Left, Right :        Exact_Typ
+    Left, Right :        Exact_Subtyp
   );
 
   --  https://en.wikipedia.org/wiki/Type_conversion#Implicit_type_conversion
@@ -106,12 +106,12 @@ package HAC_Sys.Parser.Helpers is
   procedure Forbid_Type_Coercion (
     CD          : in out Compiler_Data;
     Operator    :        KeyWSymbol;
-    Left, Right :        Exact_Typ
+    Left, Right :        Exact_Subtyp
   );
 
   procedure Forbid_Type_Coercion (
     CD              : in out Compiler_Data;
-    Found, Expected :        Exact_Typ
+    Found, Expected :        Exact_Subtyp
   );
 
   ------------------------------------
@@ -330,11 +330,11 @@ package HAC_Sys.Parser.Helpers is
 
   --  Check if we have an "array of Character", for instance a String.
   --
-  function Is_Char_Array (CD : Compiler_Data; T : Exact_Typ) return Boolean;
+  function Is_Char_Array (CD : Compiler_Data; T : Exact_Subtyp) return Boolean;
 
   --  Convert a string of any kind sitting on stack top to VString.
   procedure Check_any_String_and_promote_to_VString
-    (CD : in out Compiler_Data; X : in out Exact_Typ; include_characters : Boolean);
+    (CD : in out Compiler_Data; X : in out Exact_Subtyp; include_characters : Boolean);
 
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-

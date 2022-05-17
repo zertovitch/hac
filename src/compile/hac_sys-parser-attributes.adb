@@ -197,13 +197,14 @@ package body HAC_Sys.Parser.Attributes is
       end Pred_Succ_Discrete;
       --
       procedure Pred_Succ is  --  S'Pred (...), S'Succ (...): RM 3.5 (22, 25)
-        s_base, type_of_argument : Exact_Typ;
+        s_base : Exact_Typ;
+        type_of_argument : Exact_Subtyp;
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expressions.Expression (CD, Level, FSys, type_of_argument);
         --  Argument is of the base type (S'Base).
         s_base := Exact_Typ (S);
-        if s_base = type_of_argument then
+        if s_base = Exact_Typ (type_of_argument) then
           case S.TYP is
             when NOTYP =>
               null;  --  Already in error
@@ -225,14 +226,15 @@ package body HAC_Sys.Parser.Attributes is
       end Pred_Succ;
       --
       procedure Pos is  --  S'Pos (...): RM 3.5.5 (2)
-        s_base, type_of_argument : Exact_Typ;
+        s_base : Exact_Typ;
+        type_of_argument : Exact_Subtyp;
       begin
         if Discrete_Typ (S.TYP) then
           Need (CD, LParent, err_missing_an_opening_parenthesis);
           Expressions.Expression (CD, Level, FSys, type_of_argument);
           --  Argument is of the base type (S'Base).
           s_base := Exact_Typ (S);
-          if s_base = type_of_argument then
+          if s_base = Exact_Typ (type_of_argument) then
             --  Just set the desired type, and that's it - no VM instruction!
             Type_of_Result := Standard_Integer;
           else
@@ -245,7 +247,7 @@ package body HAC_Sys.Parser.Attributes is
       end Pos;
       --
       procedure Val is  --  S'Val (...): RM 3.5.5 (5)
-        type_of_argument : Exact_Typ;
+        type_of_argument : Exact_Subtyp;
       begin
         if Discrete_Typ (S.TYP) then
           Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
@@ -255,8 +257,7 @@ package body HAC_Sys.Parser.Attributes is
             Type_of_Result := S;
           else
             Helpers.Type_Mismatch
-              (CD, err_parameter_types_do_not_match,
-               type_of_argument, Exact_Typ (Helpers.Standard_Integer));
+              (CD, err_parameter_types_do_not_match, type_of_argument, Helpers.Standard_Integer);
           end if;
           Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
         else
@@ -265,13 +266,14 @@ package body HAC_Sys.Parser.Attributes is
       end Val;
       --
       procedure Image is  --  S'Image (...)
-        s_base, type_of_argument : Exact_Typ;
+        s_base : Exact_Typ;
+        type_of_argument : Exact_Subtyp;
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expressions.Expression (CD, Level, FSys, type_of_argument);
         --  Argument is of the base type (S'Base). Translation: we forget the constraints here.
         s_base := Exact_Typ (S);
-        if s_base = type_of_argument then
+        if s_base = Exact_Typ (type_of_argument) then
           case S.TYP is
             when NOTYP     => null;  --  Already in error
             when Ints      => Emit_Std_Funct (CD, SF_Image_Attribute_Ints);
@@ -295,7 +297,7 @@ package body HAC_Sys.Parser.Attributes is
       end Image;
       --
       procedure Value is
-        type_of_argument : Exact_Typ;
+        type_of_argument : Exact_Subtyp;
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expressions.Expression (CD, Level, FSys, type_of_argument);
