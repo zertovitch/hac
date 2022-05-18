@@ -114,6 +114,14 @@ package HAC_Sys.Parser.Helpers is
     Found, Expected :        Exact_Subtyp
   );
 
+  procedure Set_Singleton_Range (X : in out Exact_Subtyp; Value : HAC_Integer);
+
+  function Is_Singleton_Range (X : Exact_Subtyp) return Boolean;
+  pragma Inline (Is_Singleton_Range);
+
+  function Is_Singleton_Range (X : Exact_Subtyp; Value : HAC_Integer) return Boolean;
+  pragma Inline (Is_Singleton_Range);
+
   ------------------------------------
   --  Symbol sets used for parsing  --
   ------------------------------------

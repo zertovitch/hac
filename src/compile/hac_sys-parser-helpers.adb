@@ -343,6 +343,22 @@ package body HAC_Sys.Parser.Helpers is
     );
   end Forbid_Type_Coercion;
 
+  procedure Set_Singleton_Range (X : in out Exact_Subtyp; Value : HAC_Integer) is
+  begin
+    X.Discrete_First := Value;
+    X.Discrete_Last  := Value;
+  end Set_Singleton_Range;
+
+  function Is_Singleton_Range (X : Exact_Subtyp) return Boolean is
+  begin
+    return X.Discrete_First = X.Discrete_Last;
+  end Is_Singleton_Range;
+
+  function Is_Singleton_Range (X : Exact_Subtyp; Value : HAC_Integer) return Boolean is
+  begin
+    return Is_Singleton_Range (X) and then X.Discrete_First = Value;
+  end Is_Singleton_Range;
+
   function Singleton (s : KeyWSymbol) return Symset is
     res : Symset := Empty_Symset;
   begin

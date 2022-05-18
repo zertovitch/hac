@@ -436,8 +436,7 @@ package body HAC_Sys.Parser.Expressions is
                       --  Here the address is actually the immediate (discrete) value.
                       Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.adr_or_sz));
                       --  The local subtype for the value V is the range V .. V.
-                      X.Discrete_First := HAC_Integer (r.adr_or_sz);
-                      X.Discrete_Last  := HAC_Integer (r.adr_or_sz);
+                      Set_Singleton_Range (X, HAC_Integer (r.adr_or_sz));
                     end if;
                     --
                   when Variable =>
@@ -514,8 +513,7 @@ package body HAC_Sys.Parser.Expressions is
                 end if;
                 Emit_1 (CD, k_Push_Discrete_Literal, CD.INum);
                 --  The local subtype for the value V is the range V .. V.
-                X.Discrete_First := CD.INum;
-                X.Discrete_Last  := CD.INum;
+                Set_Singleton_Range (X, CD.INum);
               end if;
               InSymbol (CD);
               --
@@ -573,6 +571,7 @@ package body HAC_Sys.Parser.Expressions is
         end case;
       end Factor;
 
+      use type HAC_Integer;
       Mult_OP : KeyWSymbol;
       Y       : Exact_Subtyp;
     begin  --  Term
@@ -595,7 +594,28 @@ package body HAC_Sys.Parser.Expressions is
                 else
                   Forbid_Type_Coercion (CD, Mult_OP, X, Y);
                 end if;
-                X.Construct_Root (X.TYP);  --  Forget subtype bounds
+                --  Figure out the subtype range after the
+                --  multiplication, if possible. NB: beyond trivial cases,
+                --  compile-time overflow checks would be needed.
+                if X.TYP = Ints then
+                  --  Find some possible static values.
+                  if Is_Singleton_Range (X, 0) then
+                    --  0 * Y = 0.
+                    null;  --  Keep X's range, which is [0; 0].
+                  elsif Is_Singleton_Range (Y, 0) then
+                    --  X * 0 = 0.
+                    Set_Singleton_Range (X, 0);
+                  elsif Is_Singleton_Range (X, 1) then
+                    --  1 * Y = Y.
+                    X.Discrete_First := Y.Discrete_First;
+                    X.Discrete_Last  := Y.Discrete_Last;
+                  elsif Is_Singleton_Range (Y, 1) then
+                    --  X * 1 = X.
+                    null;  --  Keep X's range.
+                  else
+                    X.Construct_Root (X.TYP);  --  Forget subtype bounds
+                  end if;
+                end if;
               elsif X.TYP = Ints then
                 --  N * (something non-numeric)
                 case Y.TYP is
@@ -823,7 +843,14 @@ package body HAC_Sys.Parser.Expressions is
               else
                 Forbid_Type_Coercion (CD, Adding_OP, X, y);
               end if;
-              X.Construct_Root (X.TYP);  --  Forget subtype bounds
+              if X.TYP = Ints then
+                if Is_Singleton_Range (y, 0) then
+                  --  X +/- 0 = X.
+                  null;  --  Keep X's range.
+                else
+                  X.Construct_Root (X.TYP);  --  Forget subtype bounds
+                end if;
+              end if;
             elsif X.TYP = Times and y.TYP = Times and Adding_OP = Minus then
               Emit_Std_Funct (CD, SF_Time_Subtract);  --  T2 - T1
               Construct_Root (X, Durations);
