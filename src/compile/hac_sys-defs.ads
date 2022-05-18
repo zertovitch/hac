@@ -420,7 +420,8 @@ package HAC_Sys.Defs is
     err_spec_body_mismatch,                      --  2022-01-22
     err_incomplete_declaration,                  --  2022-01-22
     err_non_public_entity,                       --  2022-04-02
-    err_choices_not_covered
+    err_choices_not_covered,
+    err_choice_out_of_range
   );
 
   type Error_set is array (Compile_Error) of Boolean;

@@ -69,8 +69,8 @@ package body HAC_Sys.Librarian is
     New_Entity     : in     Co_Defs.Entity_Kind;
     Base_Type      : in     Defs.Typen;
     Size           : in     Integer;
-    Discrete_First : in     Defs.HAC_Integer := 0;
-    Discrete_Last  : in     Defs.HAC_Integer := 0
+    Discrete_First : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
+    Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last
   )
   is
     use Ada.Characters.Handling, Defs;

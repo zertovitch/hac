@@ -366,7 +366,7 @@ package body HAC_Sys.Parser.Statements is
       ExitTab : array (1 .. Cases_Max) of Integer;
       others_flag : Boolean := False;
       type Choice_Count_Type is range -2 ** 127 .. 2 ** 127 - 1;
-      actual_choices : Choice_Count_Type := 0;
+      parsed_choices : Choice_Count_Type := 0;
 
       function Count_Choices (Low, High : HAC_Integer) return Choice_Count_Type is
       begin
@@ -404,6 +404,11 @@ package body HAC_Sys.Parser.Statements is
         elsif I = Cases_Max then
           Fatal (Case_Labels);  --  Exception is raised there.
         else
+          if        (label_1.I not in X.Discrete_First .. X.Discrete_Last)
+            or else (label_2.I not in X.Discrete_First .. X.Discrete_Last)
+          then
+            Error (CD, err_choice_out_of_range, severity => minor);
+          end if;
           I := I + 1;
           CaseTab (I) := (value_1 => label_1.I, value_2 => label_2.I, LC => CD.LC, Is_others => False);
           K := 0;
@@ -421,7 +426,7 @@ package body HAC_Sys.Parser.Statements is
           --  Since single choices or ranges do not overlap,
           --  we can simply add the number of covered values in order to check
           --  at the end that everything is covered.
-          actual_choices := actual_choices + Count_Choices (label_1.I, label_2.I);
+          parsed_choices := parsed_choices + Count_Choices (label_1.I, label_2.I);
         end if;
       end Discrete_Choice;
 
@@ -468,16 +473,23 @@ package body HAC_Sys.Parser.Statements is
       end WHEN_Discrete_Choice_List;
 
       procedure Check_Coverage is
-        expected_choices : Choice_Count_Type;
+        expected_choices, difference : Choice_Count_Type;
       begin
         pragma Assert (Choice_Count_Type'Size >= HAC_Integer'Size);
         if others_flag then
           return;
         end if;
         expected_choices := Count_Choices (X.Discrete_First, X.Discrete_Last);
-        if actual_choices < expected_choices then
-          Error (CD, err_choices_not_covered, severity => minor);
-          --  !!  Add a hint: first gap's lower bound and last gap's higher bound.
+        difference := expected_choices - parsed_choices;
+        --  When difference < 0, choices are out of
+        --  range (error detected on parsing).
+        if difference > 0 then
+          Error
+            (CD, err_choices_not_covered,
+             (if difference > 99 then ""
+              elsif difference = 1 then ": one case is missing"
+              else ":" & difference'Image & " cases are missing"),
+             minor);
         end if;
       end Check_Coverage;
 

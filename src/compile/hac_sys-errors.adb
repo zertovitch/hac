@@ -263,7 +263,9 @@ package body HAC_Sys.Errors is
         return '"' & hint & """ is not a public entity of the package in prefix";
       when err_choices_not_covered =>
         return "all case values shall be covered, either explicitly " &
-               "or by ""others"" (RM 5.4 (6))";
+               "or by ""others"" (RM 5.4 (6))" & hint;
+      when err_choice_out_of_range =>
+        return "choice(s) out of range of case expression";
     end case;
   end Error_String;
 
