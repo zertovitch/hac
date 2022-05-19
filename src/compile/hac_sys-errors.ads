@@ -21,8 +21,10 @@ package HAC_Sys.Errors is
   nothing_to_repair : constant Defs.Repair_Kit := (Defs.none, HAL.Null_VString);
 
   type Error_Severity is (
-    minor,   --  Extra ';', ')' etc.: we can continue compilation normally.
-    medium,  --  Compilation is shortened - tricky!
+    minor,   --  Extra ';', ')', value out of range, etc.: we can continue the
+             --     compilation normally for catching other eventual errors.
+    medium,  --  Compilation is shortened at some points in order to avoid
+             --     infinite loops in the parser. Tricky!
     major    --  In this case, the best choice is to STOP the compilation immediately.
   );
 

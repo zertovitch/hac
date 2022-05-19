@@ -122,6 +122,14 @@ package HAC_Sys.Parser.Helpers is
   function Is_Singleton_Range (X : Exact_Subtyp; Value : HAC_Integer) return Boolean;
   pragma Inline (Is_Singleton_Range);
 
+  --  Check whether ranges [X_min .. X_max] and [Y_min .. Y_max] overlap.
+  --
+  function Do_Ranges_Overlap (X_min, X_max, Y_min, Y_max : HAC_Integer) return Boolean;
+  pragma Inline (Do_Ranges_Overlap);
+
+  function Do_Ranges_Overlap (X, Y : Exact_Subtyp) return Boolean;
+  pragma Inline (Do_Ranges_Overlap);
+
   ------------------------------------
   --  Symbol sets used for parsing  --
   ------------------------------------

@@ -44,7 +44,7 @@ package body HAC_Sys.Parser.Statements is
       Selector (CD, Level, Becomes_EQL + FSys, X);
       --  Now, X denotes the leaf type (which can be composite as well).
     end if;
-    --  Parse the ":=" of "X := Y;"
+    --  Parse the  ":="  of  "X := Y;"
     case CD.Sy is
       when Becomes =>
         InSymbol (CD);
@@ -62,11 +62,17 @@ package body HAC_Sys.Parser.Statements is
     --
     if X.TYP = Y.TYP and X.TYP /= NOTYP then
       if Discrete_Typ (X.TYP) then
-        if X.Discrete_First > HAC_Integer'First then
-          Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_Bound, X.Discrete_First);
-        end if;
-        if X.Discrete_Last < HAC_Integer'Last then
-          Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_Bound, X.Discrete_Last);
+        if Do_Ranges_Overlap (X, Y) then
+          if X.Discrete_First > Y.Discrete_First then
+            Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_Bound, X.Discrete_First);
+          end if;
+          if X.Discrete_Last < Y.Discrete_Last then
+            Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_Bound, X.Discrete_Last);
+          end if;
+        else
+          Error
+            (CD, err_range_constraint_error,
+             "Subtype ranges left and right of "":="" do not overlap", minor);
         end if;
       end if;
       if X.TYP in Standard_Typ then
@@ -416,9 +422,7 @@ package body HAC_Sys.Parser.Statements is
             K := K + 1;
             --  Detect any range overlap.
             exit when
-                label_1.I in CaseTab (K).value_1 .. CaseTab (K).value_2
-              or
-                label_2.I in CaseTab (K).value_1 .. CaseTab (K).value_2;
+              Do_Ranges_Overlap (label_1.I, label_2.I, CaseTab (K).value_1, CaseTab (K).value_2);
           end loop;
           if K < I then
             Error (CD, err_duplicate_case_choice_value);
