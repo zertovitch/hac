@@ -63,6 +63,9 @@ package HAC_Sys.PCode is
     --
     k_Array_Index_Element_Size_1,
     k_Array_Index,
+    k_Array_Index_Element_Size_1_No_Checks,
+    k_Array_Index_No_Checks,
+    --
     k_Record_Field_Offset,
     k_Load_Block,
     k_Copy_Block,

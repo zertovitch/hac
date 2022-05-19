@@ -172,7 +172,9 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Integer) return String;
 
   procedure Pop (ND : in out Interpreter_Data; Amount : Positive := 1);
+  pragma Inline (Pop);
   procedure Push (ND : in out Interpreter_Data; Amount : Positive := 1);
+  pragma Inline (Push);
 
   VM_Case_Check_Error            : exception;
   VM_Subprogram_Spec             : exception;

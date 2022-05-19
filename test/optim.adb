@@ -11,6 +11,9 @@ procedure Optim is
     x : Chiffre;
   begin
     x := 1;  --  Low and high bound checks are optimized out.
+    for j in 2 .. 9 loop
+      x := j;  --  Low and high bound checks are optimized out.
+    end loop;
   end;
 
   procedure Assignment_Upper_Bound_Check_Only (y : Positive) is
@@ -31,8 +34,30 @@ procedure Optim is
     x := y;  --  Low and high bound checks remain.
   end;
 
+  procedure Array_With_Check (y : Integer) is
+    a : array (Chiffre) of Character;
+  begin
+    a (y) := 'x';
+  end;
+
+  procedure Array_No_Check (y : Chiffre) is
+    a : array (Chiffre) of Character;
+  begin
+    a (y) := 'x';
+    a (1) := 'a';
+    for idx in 2 .. 4 loop
+      a (idx) := 'a';
+    end loop;
+    for idx in Chiffre loop
+      a (idx) := 'a';
+    end loop;
+    for idx in a'Range loop
+      a (idx) := 'a';
+    end loop;
+  end;
+
   i : Integer;
 
 begin
-  i := 0;
+  i := 5;
 end Optim;

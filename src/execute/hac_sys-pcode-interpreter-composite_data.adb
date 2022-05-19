@@ -9,7 +9,8 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
     use type HAC_Integer;
 
     generic
-      size_1 : Boolean;
+      size_1      : Boolean;
+      range_check : Boolean;
     procedure Do_Array_Index;
 
     procedure Do_Array_Index is
@@ -20,14 +21,16 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       Idx  : constant Index := Index (ND.S (Curr_TCB.T).I);
       use Ada.Strings, Ada.Strings.Fixed;
     begin
-      if Idx < Low then
-        raise VM_Out_of_Range
-          with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
-            ") is below lower bound (pos: " & Trim (Defs.Index'Image (Low), Left) & ')';
-      elsif Idx > High then
-        raise VM_Out_of_Range
-          with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
-            ") is above upper bound (pos: " & Trim (Defs.Index'Image (High), Left) & ')';
+      if range_check then
+        if Idx < Low then
+          raise VM_Out_of_Range
+            with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
+              ") is below lower bound (pos: " & Trim (Defs.Index'Image (Low), Left) & ')';
+        elsif Idx > High then
+          raise VM_Out_of_Range
+            with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
+              ") is above upper bound (pos: " & Trim (Defs.Index'Image (High), Left) & ')';
+        end if;
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.
       if size_1 then
@@ -37,11 +40,10 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       end if;
     end Do_Array_Index;
 
-    procedure Do_Array_Index_Size_1 is
-      new Do_Array_Index (size_1 => True);
-
-    procedure Do_Array_Index_Any_Size is
-      new Do_Array_Index (size_1 => False);
+    procedure Do_Array_Index_Size_1 is            new Do_Array_Index (size_1 => True,  range_check => True);
+    procedure Do_Array_Index_Any_Size is          new Do_Array_Index (size_1 => False, range_check => True);
+    procedure Do_Array_Index_Size_1_No_Check is   new Do_Array_Index (size_1 => True,  range_check => False);
+    procedure Do_Array_Index_Any_Size_No_Check is new Do_Array_Index (size_1 => False, range_check => False);
 
     procedure Do_Load_Block is
       H1, H2 : Index;
@@ -100,12 +102,14 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
 
   begin
     case Composite_Data_Opcode (ND.IR.F) is
-      when k_Array_Index_Element_Size_1 => Do_Array_Index_Size_1;
-      when k_Array_Index                => Do_Array_Index_Any_Size;
-      when k_Record_Field_Offset        => ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
-      when k_Load_Block                 => Do_Load_Block;
-      when k_Copy_Block                 => Do_Copy_Block;
-      when k_String_Literal_Assignment  => Do_String_Literal_Assignment;
+      when k_Array_Index_Element_Size_1           => Do_Array_Index_Size_1;
+      when k_Array_Index                          => Do_Array_Index_Any_Size;
+      when k_Array_Index_Element_Size_1_No_Checks => Do_Array_Index_Size_1_No_Check;
+      when k_Array_Index_No_Checks                => Do_Array_Index_Any_Size_No_Check;
+      when k_Record_Field_Offset                  => ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
+      when k_Load_Block                           => Do_Load_Block;
+      when k_Copy_Block                           => Do_Copy_Block;
+      when k_String_Literal_Assignment            => Do_String_Literal_Assignment;
     end case;
   end Do_Composite_Data_Operation;
 

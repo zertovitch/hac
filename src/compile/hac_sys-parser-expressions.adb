@@ -121,6 +121,8 @@ package body HAC_Sys.Parser.Expressions is
     --
     procedure Array_Coordinates_Selector is
       Array_Index_Typ : Exact_Subtyp;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
+      range_check_needed : Boolean;
+      use type HAC_Integer;
     begin
       loop
         InSymbol (CD);  --  Consume '(' or ',' symbol.
@@ -136,10 +138,24 @@ package body HAC_Sys.Parser.Expressions is
                 Found    => Array_Index_Typ,
                 Expected => ATE.Index_xTyp
               );
-            elsif ATE.Element_Size = 1 then
-              Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
             else
-              Emit_1 (CD, k_Array_Index, Operand_2_Type (ATI));
+              range_check_needed :=
+                   Array_Index_Typ.Discrete_First < ATE.Index_xTyp.Discrete_First
+                or Array_Index_Typ.Discrete_Last  > ATE.Index_xTyp.Discrete_Last;
+              --
+              if ATE.Element_Size = 1 then
+                if range_check_needed then
+                  Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
+                else
+                  Emit_1 (CD, k_Array_Index_Element_Size_1_No_Checks, Operand_2_Type (ATI));
+                end if;
+              else
+                if range_check_needed then
+                  Emit_1 (CD, k_Array_Index, Operand_2_Type (ATI));
+                else
+                  Emit_1 (CD, k_Array_Index_No_Checks, Operand_2_Type (ATI));
+                end if;
+              end if;
             end if;
             V := ATE.Element_xTyp;
           end;
