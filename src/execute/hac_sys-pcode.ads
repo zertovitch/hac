@@ -39,6 +39,7 @@ package HAC_Sys.PCode is
     k_Push_Temp,    --  Push temp register on the stack.
     k_Check_Lower_Bound,
     k_Check_Upper_Bound,
+    k_Check_Bounds,
     --
     k_Standard_Functions,
     --

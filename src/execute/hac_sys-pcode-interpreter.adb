@@ -472,6 +472,28 @@ package body HAC_Sys.PCode.Interpreter is
         ND.S (Curr_TCB.T - 1) := temp;
       end Do_Swap;
       --
+      procedure Check_Lower (bound : HAC_Integer) is
+      pragma Inline (Check_Lower);
+      begin
+        if ND.S (Curr_TCB.T).I < bound then
+          raise VM_Out_of_Range
+            with
+              ": pos, " & HAC_Image (ND.S (Curr_TCB.T).I) &
+              ", is below (sub)type's lower bound, " & HAC_Image (bound);
+        end if;
+      end Check_Lower;
+      --
+      procedure Check_Upper (bound : HAC_Integer) is
+      pragma Inline (Check_Upper);
+      begin
+        if ND.S (Curr_TCB.T).I > bound then
+          raise VM_Out_of_Range
+            with
+              ": pos, " & HAC_Image (ND.S (Curr_TCB.T).I) &
+              ", is above (sub)type's upper bound, " & HAC_Image (bound);
+        end if;
+      end Check_Upper;
+      --
     begin
       case ND.IR.F is
         when k_Pop =>
@@ -512,20 +534,10 @@ package body HAC_Sys.PCode.Interpreter is
         when k_Push_Temp =>
           Push;
           ND.S (Curr_TCB.T) := Curr_TCB.R_Temp;
-        when k_Check_Lower_Bound =>
-          if ND.S (Curr_TCB.T).I < IR.Y then
-            raise VM_Out_of_Range
-              with
-                ": pos, " & HAC_Image (ND.S (Curr_TCB.T).I) &
-                ", is below (sub)type's lower bound, " & HAC_Image (IR.Y);
-          end if;
-        when k_Check_Upper_Bound =>
-          if ND.S (Curr_TCB.T).I > IR.Y then
-            raise VM_Out_of_Range
-              with
-                ": pos, " & HAC_Image (ND.S (Curr_TCB.T).I) &
-                ", is above (sub)type's upper bound, " & HAC_Image (IR.Y);
-          end if;
+        --
+        when k_Check_Lower_Bound => Check_Lower (IR.Y);
+        when k_Check_Upper_Bound => Check_Upper (IR.Y);
+        when k_Check_Bounds      => Check_Lower (IR.X); Check_Upper (IR.Y);
         --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
         when k_File_I_O                => Do_File_IO;

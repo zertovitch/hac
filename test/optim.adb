@@ -3,29 +3,29 @@
 
 procedure Optim is
 
-  subtype Chiffre is Integer range 0 .. 9;
+  subtype Chiffre is Integer range 1 .. 9;
 
-  subtype Fuzzy is Integer range -100 .. 9;
+  subtype Fuzzy is Integer range -100 .. 8;
 
-  procedure Assignment_1 is
+  procedure Assignment_No_Checks is
     x : Chiffre;
   begin
-    x := 0;  --  Low and high bound checks are optimized out.
+    x := 1;  --  Low and high bound checks are optimized out.
   end;
 
-  procedure Assignment_2 (y : Natural) is
+  procedure Assignment_Upper_Bound_Check_Only (y : Positive) is
     x : Chiffre;
   begin
     x := y;  --  Low bound check is optimized out, high check remains.
   end;
 
-  procedure Assignment_3 (y : Fuzzy) is
+  procedure Assignment_Lower_Bound_Check_Only (y : Fuzzy) is
     x : Chiffre;
   begin
     x := y;  --  High bound check is optimized out, low check remains.
   end;
   
-  procedure Assignment_4 (y : Integer) is
+  procedure Assignment_Both_Checks (y : Integer) is
     x : Chiffre;
   begin
     x := y;  --  Low and high bound checks remain.

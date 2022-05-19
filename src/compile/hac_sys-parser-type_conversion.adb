@@ -51,7 +51,7 @@ begin
         when Durations =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Duration_to_Int);
         when Ints =>
-          null;  --  !! Spot useless conversions !!
+          null;  --  !! Spot useless conversions (identical range) !!
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;

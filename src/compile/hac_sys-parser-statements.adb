@@ -63,10 +63,11 @@ package body HAC_Sys.Parser.Statements is
     if X.TYP = Y.TYP and X.TYP /= NOTYP then
       if Discrete_Typ (X.TYP) then
         if Do_Ranges_Overlap (X, Y) then
-          if X.Discrete_First > Y.Discrete_First then
+          if X.Discrete_First > Y.Discrete_First and X.Discrete_Last < Y.Discrete_Last then
+            Compiler.PCode_Emit.Emit_2 (CD, k_Check_Bounds, X.Discrete_First, X.Discrete_Last);
+          elsif X.Discrete_First > Y.Discrete_First then
             Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_Bound, X.Discrete_First);
-          end if;
-          if X.Discrete_Last < Y.Discrete_Last then
+          elsif X.Discrete_Last < Y.Discrete_Last then
             Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_Bound, X.Discrete_Last);
           end if;
         else
