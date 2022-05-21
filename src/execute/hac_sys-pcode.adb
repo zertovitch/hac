@@ -88,23 +88,33 @@ package body HAC_Sys.PCode is
     if LC > OC'First then
       case FCT is
         when k_ADD_Integer =>
-          if OC (LC - 1).F = k_ADD_Integer then
-            OC (LC - 1).F := k_ADD_Integer_Multiple;
-            OC (LC - 1).Y := 3;
-            folded := True;
-          elsif OC (LC - 1).F = k_ADD_Integer_Multiple then
-            OC (LC - 1).Y := OC (LC - 1).Y + 1;
-            folded := True;
-          end if;
+          case OC (LC - 1).F is
+            when k_ADD_Integer =>
+              OC (LC - 1).F := k_ADD_Integer_Multiple;
+              OC (LC - 1).Y := 3;
+              folded := True;
+            when k_ADD_Integer_Multiple =>
+              OC (LC - 1).Y := OC (LC - 1).Y + 1;
+              folded := True;
+            when k_MULT_Integer =>
+              OC (LC - 1).F := k_MULT_then_ADD_Integer;
+              folded := True;
+            when others => null;
+          end case;
         when k_ADD_Float =>
-          if OC (LC - 1).F = k_ADD_Float then
-            OC (LC - 1).F := k_ADD_Float_Multiple;
-            OC (LC - 1).Y := 3;
-            folded := True;
-          elsif OC (LC - 1).F = k_ADD_Float_Multiple then
-            OC (LC - 1).Y := OC (LC - 1).Y + 1;
-            folded := True;
-          end if;
+          case OC (LC - 1).F is
+            when k_ADD_Float =>
+              OC (LC - 1).F := k_ADD_Float_Multiple;
+              OC (LC - 1).Y := 3;
+              folded := True;
+            when k_ADD_Float_Multiple =>
+              OC (LC - 1).Y := OC (LC - 1).Y + 1;
+              folded := True;
+            when k_MULT_Float =>
+              OC (LC - 1).F := k_MULT_then_ADD_Float;
+              folded := True;
+            when others => null;
+          end case;
         when others =>
           null;
       end case;
@@ -199,7 +209,11 @@ package body HAC_Sys.PCode is
         when k_Exit_Call | k_Exit_Function |
           k_Mark_Stack | k_Push_Discrete_Literal |
           k_Push_Float_Literal .. k_Push_Float_Last |
-          k_Pop | Jump_Opcode
+          k_Store |
+          k_Pop |
+          Binary_Operator_Opcode |
+          Special_Operator_Opcode |
+          Jump_Opcode
         =>
           Put (Text, "     ");
         when others =>
@@ -207,7 +221,9 @@ package body HAC_Sys.PCode is
       end case;
       case OC (i).F is  --  Omit showing Y for some 0-operand instructions
         when k_Pop |
-          k_Push_Float_First .. k_Push_Float_Last
+          k_Push_Float_First .. k_Push_Float_Last |
+          Binary_Operator_Opcode |
+          Special_Operator_Opcode
         =>
           Put (Text, "                    ");
         when others =>

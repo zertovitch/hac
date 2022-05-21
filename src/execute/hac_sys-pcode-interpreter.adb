@@ -549,6 +549,7 @@ package body HAC_Sys.PCode.Interpreter is
         when Unary_Operator_Opcode    => Operators.Do_Unary_Operator (ND);
         when Binary_Operator_Opcode   => Operators.Do_Binary_Operator (ND);
         when Multiple_Operator_Opcode => Operators.Do_Multiple_Operator (ND);
+        when Special_Operator_Opcode  => Operators.Do_Special_Operator (ND);
         when Calling_Opcode           => Calls.Do_Calling_Operation (CD, ND);
         when Tasking_Opcode           => Tasking.Do_Tasking_Operation (CD, ND);
       end case;

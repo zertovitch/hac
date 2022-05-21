@@ -82,12 +82,15 @@ procedure Optim is
   m5 : constant := -5;
 
 begin
-  HAL.Put_Line (1 + (2 + (3 + 4)));
-  HAL.Put_Line (1 + 2 * 3);
-  HAL.Put_Line (1.0 + (2.0 + (3.0 + 4.0)));
+  HAL.Put_Line (1 + (2 + (3 + 4)));          --  Add_Multiple instruction
+  HAL.Put_Line (1.0 + (2.0 + (3.0 + 4.0)));  --  Add_Multiple instruction
+  HAL.Put_Line (1 + 2 * 3);          --  Mult_then_Add instruction
+  HAL.Put_Line (1.0 + 2.0 * 3.0);    --  Mult_then_Add instruction
   p := -m5;
   p := -(-5);
-  i := 5;
+  i := 0;
+  i := 5 + i * p;  --  Mult_then_Add instruction
+  --
   --  i := -Integer'First;  --  This issues (as it should) a compilation error.
   Assignment_No_Checks;
   Assignment_Upper_Bound_Check_Only (Chiffre'Last);

@@ -12,6 +12,7 @@ private package HAC_Sys.PCode.Interpreter.Operators is
   procedure Do_Unary_Operator (ND : in out Interpreter_Data);
   procedure Do_Binary_Operator (ND : in out Interpreter_Data);
   procedure Do_Multiple_Operator (ND : in out Interpreter_Data);
+  procedure Do_Special_Operator (ND : in out Interpreter_Data);
 
   --  Execute operator through the Opcode k_Standard_Functions.
   procedure Do_SF_Operator (CD : Compiler_Data; ND : in out Interpreter_Data);
