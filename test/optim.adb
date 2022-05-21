@@ -94,4 +94,5 @@ begin
   --  i := -Integer'First;  --  This issues (as it should) a compilation error.
   Assignment_No_Checks;
   Assignment_Upper_Bound_Check_Only (Chiffre'Last);
+  i := -5;  --  Fold K_PUSH_DISCRETE_LITERAL & K_UNARY_MINUS_INTEGER into K_PUSH_DISCRETE_LITERAL.
 end Optim;

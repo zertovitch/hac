@@ -238,7 +238,7 @@ package HAC_Sys.PCode is
     OC     : in out Object_Code_Table;
     LC     : in out Integer;
     D      :        Debug_Info;
-    FCT    :         Opcode;
+    FCT    :        Opcode;
     a      :        Operand_1_Type;
     B      :        Operand_2_Type;
     folded :    out Boolean

@@ -73,7 +73,7 @@ package body HAC_Sys.PCode is
     OC     : in out Object_Code_Table;
     LC     : in out Integer;
     D      :        Debug_Info;
-    FCT    :         Opcode;
+    FCT    :        Opcode;
     a      :        Operand_1_Type;
     B      :        Operand_2_Type;
     folded :    out Boolean
@@ -115,6 +115,13 @@ package body HAC_Sys.PCode is
               folded := True;
             when others => null;
           end case;
+        when k_Unary_MINUS_Integer =>
+          if OC (LC - 1).F = k_Push_Discrete_Literal
+            and then OC (LC - 1).Y > Defs.HAC_Integer'First
+          then
+            OC (LC - 1).Y := -OC (LC - 1).Y;
+            folded := True;
+          end if;
         when others =>
           null;
       end case;
