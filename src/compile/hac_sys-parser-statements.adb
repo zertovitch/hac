@@ -62,7 +62,7 @@ package body HAC_Sys.Parser.Statements is
     --
     if X.TYP = Y.TYP and X.TYP /= NOTYP then
       if Discrete_Typ (X.TYP) then
-        if Do_Ranges_Overlap (X, Y) then
+        if Ranges.Do_Ranges_Overlap (X, Y) then
           if X.Discrete_First > Y.Discrete_First and X.Discrete_Last < Y.Discrete_Last then
             Compiler.PCode_Emit.Emit_2 (CD, k_Check_Bounds, X.Discrete_First, X.Discrete_Last);
           elsif X.Discrete_First > Y.Discrete_First then
@@ -73,7 +73,10 @@ package body HAC_Sys.Parser.Statements is
         else
           Error
             (CD, err_range_constraint_error,
-             "Subtype ranges left and right of "":="" do not overlap", minor);
+             (if Ranges.Is_Singleton_Range (Y) then
+              "value of expression is out of range"  --  More understandable for a single value
+               else
+              "subtype ranges left and right of "":="" do not overlap"), minor);
         end if;
       end if;
       if X.TYP in Standard_Typ then
@@ -423,7 +426,7 @@ package body HAC_Sys.Parser.Statements is
             K := K + 1;
             --  Detect any range overlap.
             exit when
-              Do_Ranges_Overlap (label_1.I, label_2.I, CaseTab (K).value_1, CaseTab (K).value_2);
+              Ranges.Do_Ranges_Overlap (label_1.I, label_2.I, CaseTab (K).value_1, CaseTab (K).value_2);
           end loop;
           if K < I then
             Error (CD, err_duplicate_case_choice_value);

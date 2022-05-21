@@ -191,4 +191,65 @@ package body HAC_Sys.Parser.Ranges is
     end if;
   end Dynamic_Range;
 
+  procedure Set_Singleton_Range (X : in out Co_Defs.Exact_Subtyp; Value : Defs.HAC_Integer) is
+  begin
+    X.Discrete_First := Value;
+    X.Discrete_Last  := Value;
+  end Set_Singleton_Range;
+
+  function Is_Singleton_Range (X : Co_Defs.Exact_Subtyp) return Boolean is
+    use type Defs.HAC_Integer;
+  begin
+    return X.Discrete_First = X.Discrete_Last;
+  end Is_Singleton_Range;
+
+  function Is_Singleton_Range (X : Co_Defs.Exact_Subtyp; Value : Defs.HAC_Integer) return Boolean is
+    use type Defs.HAC_Integer;
+  begin
+    return Is_Singleton_Range (X) and then X.Discrete_First = Value;
+  end Is_Singleton_Range;
+
+  procedure Negate_Range
+    (CD : in out Co_Defs.Compiler_Data;
+     X  : in out Co_Defs.Exact_Subtyp)
+  is
+    use Defs;
+    use type HAC_Integer;
+    temp : HAC_Integer;
+  begin
+    pragma Assert (X.TYP = Ints);
+    if X.Discrete_Last = HAC_Integer'First then
+      --  *Upper* bound is -2**(bits-1) -> overflow guaranteed on negating.
+      Errors.Error (CD, err_range_constraint_error, ": overflow on applying ""-""");
+    end if;
+    temp := X.Discrete_Last;
+    if X.Discrete_First = HAC_Integer'First then  --  Compile-time overflow if we negate that!
+      X.Discrete_Last := HAC_Integer'Last;  -- one off
+    else
+      X.Discrete_Last := -X.Discrete_First;
+    end if;
+    X.Discrete_First := -temp;
+  end Negate_Range;
+
+  function Do_Ranges_Overlap (X_min, X_max, Y_min, Y_max : Defs.HAC_Integer) return Boolean is
+    use type Defs.HAC_Integer;
+  begin
+    pragma Assert (X_min <= X_max and Y_min <= Y_max);
+    --
+    --  The following is logically identical to: "not (Y_max < X_min or X_max < Y_min)",
+    --  which means we don't have this situation:
+    --       [X_min .. X_max] ... a gap ... [Y_min .. Y_max].
+    --  or   [Y_min .. Y_max] ... a gap ... [X_min .. X_max].
+    --
+    return Y_max >= X_min and then
+           X_max >= Y_min;
+  end Do_Ranges_Overlap;
+
+  function Do_Ranges_Overlap (X, Y : Co_Defs.Exact_Subtyp) return Boolean is
+  begin
+    return Do_Ranges_Overlap
+             (X.Discrete_First, X.Discrete_Last,
+              Y.Discrete_First, Y.Discrete_Last);
+  end Do_Ranges_Overlap;
+
 end HAC_Sys.Parser.Ranges;

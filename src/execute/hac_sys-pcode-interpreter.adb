@@ -582,6 +582,8 @@ package body HAC_Sys.PCode.Interpreter is
         Raise_Standard (ND, VME_Constraint_Error, "Invalid data (maybe due to an uninitialized variable)");
       when E : VM_Out_of_Range  =>
         Raise_Standard (ND, VME_Constraint_Error, "Out of range" & Exception_Message (E));
+      when VM_Overflow_Error =>
+        Raise_Standard (ND, VME_Constraint_Error, "Overflow error");
       when VM_Stack_Overflow  =>
         Raise_Standard (ND, VME_Storage_Error, "Stack overflow");
       when VM_Stack_Underflow =>

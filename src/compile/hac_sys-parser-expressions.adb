@@ -452,7 +452,7 @@ package body HAC_Sys.Parser.Expressions is
                       --  Here the address is actually the immediate (discrete) value.
                       Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.adr_or_sz));
                       --  The local subtype for the value V is the range V .. V.
-                      Set_Singleton_Range (X, HAC_Integer (r.adr_or_sz));
+                      Ranges.Set_Singleton_Range (X, HAC_Integer (r.adr_or_sz));
                     end if;
                     --
                   when Variable =>
@@ -529,7 +529,7 @@ package body HAC_Sys.Parser.Expressions is
                 end if;
                 Emit_1 (CD, k_Push_Discrete_Literal, CD.INum);
                 --  The local subtype for the value V is the range V .. V.
-                Set_Singleton_Range (X, CD.INum);
+                Ranges.Set_Singleton_Range (X, CD.INum);
               end if;
               InSymbol (CD);
               --
@@ -615,17 +615,17 @@ package body HAC_Sys.Parser.Expressions is
                 --  compile-time overflow checks would be needed.
                 if X.TYP = Ints then
                   --  Find some possible static values.
-                  if Is_Singleton_Range (X, 0) then
+                  if Ranges.Is_Singleton_Range (X, 0) then
                     --  0 * Y = 0.
                     null;  --  Keep X's range, which is [0; 0].
-                  elsif Is_Singleton_Range (Y, 0) then
+                  elsif Ranges.Is_Singleton_Range (Y, 0) then
                     --  X * 0 = 0.
-                    Set_Singleton_Range (X, 0);
-                  elsif Is_Singleton_Range (X, 1) then
+                    Ranges.Set_Singleton_Range (X, 0);
+                  elsif Ranges.Is_Singleton_Range (X, 1) then
                     --  1 * Y = Y.
                     X.Discrete_First := Y.Discrete_First;
                     X.Discrete_Last  := Y.Discrete_Last;
-                  elsif Is_Singleton_Range (Y, 1) then
+                  elsif Ranges.Is_Singleton_Range (Y, 1) then
                     --  X * 1 = X.
                     null;  --  Keep X's range.
                   else
@@ -803,6 +803,7 @@ package body HAC_Sys.Parser.Expressions is
       Adding_OP := CD.Sy;
       InSymbol (CD);
       Term (FSys + Plus_Minus, X);
+      --  At this point we have consumed "+X" or "-X".
       if Adding_OP = Plus and X.TYP = String_Literals then         --  +"Hello"
         Emit_Std_Funct (CD, SF_Literal_to_VString);
         Construct_Root (X, VStrings);
@@ -823,6 +824,9 @@ package body HAC_Sys.Parser.Expressions is
         Error (CD, err_illegal_type_for_arithmetic_expression);
       elsif Adding_OP = Minus then
         Emit_Unary_Minus (CD, X.TYP);
+        if X.TYP = Ints then
+          Ranges.Negate_Range (CD, X);
+        end if;
       end if;
     else
       Term (FSys + binary_adding_operator, X);
@@ -860,7 +864,7 @@ package body HAC_Sys.Parser.Expressions is
                 Forbid_Type_Coercion (CD, Adding_OP, X, y);
               end if;
               if X.TYP = Ints then
-                if Is_Singleton_Range (y, 0) then
+                if Ranges.Is_Singleton_Range (y, 0) then
                   --  X +/- 0 = X.
                   null;  --  Keep X's range.
                 else

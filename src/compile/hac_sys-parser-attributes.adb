@@ -1,6 +1,7 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
+     HAC_Sys.Parser.Ranges,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
@@ -154,6 +155,10 @@ package body HAC_Sys.Parser.Attributes is
             end if;
         end case;
         Type_of_Result := S;
+        if Discrete_Typ (S.TYP) then
+          Ranges.Set_Singleton_Range
+            (Type_of_Result, (if attr = First then S.Discrete_First else S.Discrete_Last));
+        end if;
       end First_Last;
       --
       procedure Range_Attribute is  --  S'Range: RM 3.5 (14)

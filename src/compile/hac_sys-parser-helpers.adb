@@ -343,42 +343,6 @@ package body HAC_Sys.Parser.Helpers is
     );
   end Forbid_Type_Coercion;
 
-  procedure Set_Singleton_Range (X : in out Exact_Subtyp; Value : HAC_Integer) is
-  begin
-    X.Discrete_First := Value;
-    X.Discrete_Last  := Value;
-  end Set_Singleton_Range;
-
-  function Is_Singleton_Range (X : Exact_Subtyp) return Boolean is
-  begin
-    return X.Discrete_First = X.Discrete_Last;
-  end Is_Singleton_Range;
-
-  function Is_Singleton_Range (X : Exact_Subtyp; Value : HAC_Integer) return Boolean is
-  begin
-    return Is_Singleton_Range (X) and then X.Discrete_First = Value;
-  end Is_Singleton_Range;
-
-  function Do_Ranges_Overlap (X_min, X_max, Y_min, Y_max : HAC_Integer) return Boolean is
-  begin
-    pragma Assert (X_min <= X_max and Y_min <= Y_max);
-    --
-    --  The following is logically identical to: "not (Y_max < X_min or X_max < Y_min)",
-    --  which means we don't have this situation:
-    --       [X_min .. X_max] ... a gap ... [Y_min .. Y_max].
-    --  or   [Y_min .. Y_max] ... a gap ... [X_min .. X_max].
-    --
-    return Y_max >= X_min and then
-           X_max >= Y_min;
-  end Do_Ranges_Overlap;
-
-  function Do_Ranges_Overlap (X, Y : Exact_Subtyp) return Boolean is
-  begin
-    return Do_Ranges_Overlap
-             (X.Discrete_First, X.Discrete_Last,
-              Y.Discrete_First, Y.Discrete_Last);
-  end Do_Ranges_Overlap;
-
   function Singleton (s : KeyWSymbol) return Symset is
     res : Symset := Empty_Symset;
   begin

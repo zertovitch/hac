@@ -90,4 +90,24 @@ private package HAC_Sys.Parser.Ranges is
     Range_Typ          :    out Co_Defs.Exact_Subtyp
   );
 
+  procedure Set_Singleton_Range (X : in out Co_Defs.Exact_Subtyp; Value : Defs.HAC_Integer);
+
+  function Is_Singleton_Range (X : Co_Defs.Exact_Subtyp) return Boolean;
+  pragma Inline (Is_Singleton_Range);
+
+  function Is_Singleton_Range (X : Co_Defs.Exact_Subtyp; Value : Defs.HAC_Integer) return Boolean;
+  pragma Inline (Is_Singleton_Range);
+
+  procedure Negate_Range
+    (CD : in out Co_Defs.Compiler_Data;
+     X  : in out Co_Defs.Exact_Subtyp);
+
+  --  Check whether ranges [X_min .. X_max] and [Y_min .. Y_max] overlap.
+  --
+  function Do_Ranges_Overlap (X_min, X_max, Y_min, Y_max : Defs.HAC_Integer) return Boolean;
+  pragma Inline (Do_Ranges_Overlap);
+
+  function Do_Ranges_Overlap (X, Y : Co_Defs.Exact_Subtyp) return Boolean;
+  pragma Inline (Do_Ranges_Overlap);
+
 end HAC_Sys.Parser.Ranges;
