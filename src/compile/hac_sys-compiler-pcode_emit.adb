@@ -46,14 +46,19 @@ package body HAC_Sys.Compiler.PCode_Emit is
     B    :        Operand_2_Type
   )
   is
+    folded : Boolean;
   begin
     PCode.Emit_Instruction (
       CD.ObjCode (CD.ObjCode'First .. CD.CMax),
       --  ^ We don't pass the full object code table (CD.ObjCode)
       --    but the part before variable initialization code,
       --    for preventing overwriting existing initialization code.
-      CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, a, B
+      CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, a, B,
+      folded
     );
+    if folded then
+      CD.folded_instructions := CD.folded_instructions + 1;
+    end if;
   end Emit_2;
 
   procedure Emit_Std_Funct (

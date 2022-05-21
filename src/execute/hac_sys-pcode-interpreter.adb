@@ -543,13 +543,14 @@ package body HAC_Sys.PCode.Interpreter is
         when k_File_I_O                => Do_File_IO;
         when k_Standard_Functions      => Do_Standard_Function;
         --
-        when Multi_Statement_Opcode  => Multi_Statement.Do_Multi_Statement_Operation (CD, ND);
-        when Atomic_Data_Push_Opcode => Do_Atomic_Data_Push_Operation;
-        when Composite_Data_Opcode   => Composite_Data.Do_Composite_Data_Operation (CD, ND);
-        when Unary_Operator_Opcode   => Operators.Do_Unary_Operator (ND);
-        when Binary_Operator_Opcode  => Operators.Do_Binary_Operator (ND);
-        when Calling_Opcode          => Calls.Do_Calling_Operation (CD, ND);
-        when Tasking_Opcode          => Tasking.Do_Tasking_Operation (CD, ND);
+        when Multi_Statement_Opcode   => Multi_Statement.Do_Multi_Statement_Operation (CD, ND);
+        when Atomic_Data_Push_Opcode  => Do_Atomic_Data_Push_Operation;
+        when Composite_Data_Opcode    => Composite_Data.Do_Composite_Data_Operation (CD, ND);
+        when Unary_Operator_Opcode    => Operators.Do_Unary_Operator (ND);
+        when Binary_Operator_Opcode   => Operators.Do_Binary_Operator (ND);
+        when Multiple_Operator_Opcode => Operators.Do_Multiple_Operator (ND);
+        when Calling_Opcode           => Calls.Do_Calling_Operation (CD, ND);
+        when Tasking_Opcode           => Tasking.Do_Tasking_Operation (CD, ND);
       end case;
     exception
       when others =>

@@ -275,6 +275,7 @@ package HAC_Sys.Co_Defs is
     LC                      : Integer;  --  Location counter in the Object_Code_Table
     CMax                    : Integer;  --  Top of available ObjCode table;
                                         --  CMax + 1 .. CDMax: variable initialization code
+    folded_instructions     : Natural;
     --  Information about source code
     Full_Block_Id             : HAL.VString;         --  Full block's Id (P1.P2.F3.P4)
     Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name

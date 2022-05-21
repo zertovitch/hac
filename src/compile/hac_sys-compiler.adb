@@ -51,6 +51,7 @@ package body HAC_Sys.Compiler is
     --  Location Counter (in output code)
     CD.LC   := 0;
     CD.CMax := CDMax;
+    CD.folded_instructions := 0;
     --  Current block name for debugging of HAC programs.
     CD.Full_Block_Id := Universe;
     --

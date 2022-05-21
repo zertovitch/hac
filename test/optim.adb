@@ -82,6 +82,9 @@ procedure Optim is
   m5 : constant := -5;
 
 begin
+  HAL.Put_Line (1 + (2 + (3 + 4)));
+  HAL.Put_Line (1 + 2 * 3);
+  HAL.Put_Line (1.0 + (2.0 + (3.0 + 4.0)));
   p := -m5;
   p := -(-5);
   i := 5;

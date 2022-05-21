@@ -70,25 +70,53 @@ package body HAC_Sys.PCode is
   end For_END;
 
   procedure Emit_Instruction (
-    OC   : in out Object_Code_Table;
-    LC   : in out Integer;
-    D    :        Debug_Info;
-    FCT  :        Opcode;
-    a    :        Operand_1_Type;
-    B    :        Operand_2_Type
+    OC     : in out Object_Code_Table;
+    LC     : in out Integer;
+    D      :        Debug_Info;
+    FCT    :         Opcode;
+    a      :        Operand_1_Type;
+    B      :        Operand_2_Type;
+    folded :    out Boolean
   )
   is
+    use type Defs.HAC_Integer;
   begin
+    folded := False;
     if LC = OC'Last then
       Errors.Fatal (Errors.Object_Code);
     end if;
-    OC (LC).F := FCT;
-    OC (LC).X := a;
-    OC (LC).Y := B;
-    OC (LC).D := D;
-    LC        := LC + 1;
+    if LC > OC'First then
+      case FCT is
+        when k_ADD_Integer =>
+          if OC (LC - 1).F = k_ADD_Integer then
+            OC (LC - 1).F := k_ADD_Integer_Multiple;
+            OC (LC - 1).Y := 3;
+            folded := True;
+          elsif OC (LC - 1).F = k_ADD_Integer_Multiple then
+            OC (LC - 1).Y := OC (LC - 1).Y + 1;
+            folded := True;
+          end if;
+        when k_ADD_Float =>
+          if OC (LC - 1).F = k_ADD_Float then
+            OC (LC - 1).F := k_ADD_Float_Multiple;
+            OC (LC - 1).Y := 3;
+            folded := True;
+          elsif OC (LC - 1).F = k_ADD_Float_Multiple then
+            OC (LC - 1).Y := OC (LC - 1).Y + 1;
+            folded := True;
+          end if;
+        when others =>
+          null;
+      end case;
+    end if;
+    if not folded then
+      OC (LC).F := FCT;
+      OC (LC).X := a;
+      OC (LC).Y := B;
+      OC (LC).D := D;
+      LC        := LC + 1;
+    end if;
   end Emit_Instruction;
-
   procedure Patch_Addresses (
     OC            : in out Object_Code_Table;
     dummy_address :        Operand_2_Type

@@ -57,7 +57,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     end Check_X_Y_Float;
     use HAL.VStr_Pkg;
   begin
-    --  We do  [T] <- ([T-1] operator [T])  and pop later.
+    --  We do  [T-1] <- ([T-1] operator [T])  and pop later.
     case Binary_Operator_Opcode (ND.IR.F) is
       when k_EQL_Float => Check_X_Y_Float; X.I := Boolean'Pos (X.R =  Y.R);
       when k_NEQ_Float => Check_X_Y_Float; X.I := Boolean'Pos (X.R /= Y.R);
@@ -107,6 +107,28 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     end case;
     Pop (ND);
   end Do_Binary_Operator;
+
+  procedure Do_Multiple_Operator (ND : in out Interpreter_Data) is
+    Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
+    result_pos, terms : Integer;
+    use type Defs.HAC_Float, Defs.HAC_Integer;
+    --
+  begin
+    --  [T-(terms-1)] := [T-(terms-1)] + [T-(terms-1)+1] + ... + [T-(terms-1)+(terms-1)]
+    terms := Integer (ND.IR.Y);
+    result_pos := Curr_TCB_Top - (terms - 1);
+    case Multiple_Operator_Opcode (ND.IR.F) is
+      when k_ADD_Integer_Multiple =>
+        for term in 2 .. terms loop
+          ND.S (result_pos).I := ND.S (result_pos).I + ND.S (result_pos + term - 1).I;
+        end loop;
+      when k_ADD_Float_Multiple =>
+        for term in 2 .. terms loop
+          ND.S (result_pos).R := ND.S (result_pos).R + ND.S (result_pos + term - 1).R;
+        end loop;
+    end case;
+    Pop (ND, terms - 1);
+  end Do_Multiple_Operator;
 
   procedure Do_SF_Operator (CD : Compiler_Data; ND : in out Interpreter_Data) is
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);

@@ -123,6 +123,9 @@ package HAC_Sys.PCode is
     k_AND_Boolean,
     k_XOR_Boolean,
     --
+    k_ADD_Integer_Multiple,             --  2022-05-21 : add 3 or more terms
+    k_ADD_Float_Multiple,               --  2022-05-21 : add 3 or more terms
+    --
     k_File_I_O,
     --
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
@@ -137,8 +140,9 @@ package HAC_Sys.PCode is
     k_Selective_Wait
   );
 
-  subtype Unary_Operator_Opcode  is Opcode range k_Integer_to_Float .. k_NOT_Boolean;
-  subtype Binary_Operator_Opcode is Opcode range k_EQL_Integer .. k_XOR_Boolean;
+  subtype Unary_Operator_Opcode    is Opcode range k_Integer_to_Float .. k_NOT_Boolean;
+  subtype Binary_Operator_Opcode   is Opcode range k_EQL_Integer .. k_XOR_Boolean;
+  subtype Multiple_Operator_Opcode is Opcode range k_ADD_Integer_Multiple .. k_ADD_Float_Multiple;
   --
   subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Last;
   subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Update_Display_Vector;
@@ -228,12 +232,13 @@ package HAC_Sys.PCode is
   --  Store PCode instruction in the object code table OC at position LC and increments LC.
 
   procedure Emit_Instruction (
-    OC   : in out Object_Code_Table;
-    LC   : in out Integer;
-    D    :        Debug_Info;
-    FCT  :        Opcode;
-    a    :        Operand_1_Type;
-    B    :        Operand_2_Type
+    OC     : in out Object_Code_Table;
+    LC     : in out Integer;
+    D      :        Debug_Info;
+    FCT    :         Opcode;
+    a      :        Operand_1_Type;
+    B      :        Operand_2_Type;
+    folded :    out Boolean
   );
 
   --  Save and restore an object file

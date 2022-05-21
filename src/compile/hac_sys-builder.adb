@@ -225,6 +225,11 @@ package body HAC_Sys.Builder is
     --  Whatever the build mode, the entire object code lands into BD.CD's object code.
   end Object_Code_Size;
 
+  function Folded_Instructions (BD : Build_Data) return Natural is
+  begin
+    return BD.CD.folded_instructions;
+  end Folded_Instructions;
+
   function Maximum_Object_Code_Size return Natural is
   begin
     return Defs.CDMax;
