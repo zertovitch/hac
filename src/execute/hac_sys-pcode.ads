@@ -131,6 +131,16 @@ package HAC_Sys.PCode is
     k_ADD_Float_Multiple,               --  2022-05-21 : add 3 or more terms
     k_MULT_then_ADD_Integer,            --  2022-05-21 : i + j * k
     k_MULT_then_ADD_Float,              --  2022-05-21 : i + j * k
+    k_ADD_Integer_Literal,
+    k_SUBTRACT_Integer_Literal,
+    k_MULT_Integer_Literal,
+    k_DIV_Integer_Literal,
+    k_EQL_Integer_Literal,
+    k_NEQ_Integer_Literal,
+    k_LSS_Integer_Literal,
+    k_LEQ_Integer_Literal,
+    k_GTR_Integer_Literal,
+    k_GEQ_Integer_Literal,
     k_NAND_Boolean,
     k_NOR_Boolean,
     --

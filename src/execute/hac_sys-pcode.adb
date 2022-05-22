@@ -102,8 +102,56 @@ package body HAC_Sys.PCode is
             when k_MULT_Integer =>
               old.F := k_MULT_then_ADD_Integer;
               folded := True;
+            when k_Push_Discrete_Literal =>
+              old.F := k_ADD_Integer_Literal;
+              folded := True;
             when others => null;
           end case;
+        when k_SUBTRACT_Integer =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_SUBTRACT_Integer_Literal;
+            folded := True;
+          end if;
+        when k_MULT_Integer =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_MULT_Integer_Literal;
+            folded := True;
+          end if;
+        when k_DIV_Integer =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_DIV_Integer_Literal;
+            folded := True;
+          end if;
+        when k_EQL_Integer =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_EQL_Integer_Literal;
+            folded := True;
+          end if;
+        when k_NEQ_Integer =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_NEQ_Integer_Literal;
+            folded := True;
+          end if;
+        when k_LSS_Integer =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_LSS_Integer_Literal;
+            folded := True;
+          end if;
+        when k_LEQ_Integer =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_LEQ_Integer_Literal;
+            folded := True;
+          end if;
+        when k_GTR_Integer =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_GTR_Integer_Literal;
+            folded := True;
+          end if;
+        when k_GEQ_Integer =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_GEQ_Integer_Literal;
+            folded := True;
+          end if;
         when k_ADD_Float =>
           case old.F is
             when k_ADD_Float =>

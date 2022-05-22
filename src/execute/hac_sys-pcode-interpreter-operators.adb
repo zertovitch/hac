@@ -153,6 +153,16 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         end loop;
         X.R := X.R + Y.R * Z.R;
         Pop (ND, 2);
+      when k_ADD_Integer_Literal      => Z.I := Z.I + ND.IR.Y;  --  No push/pop !
+      when k_SUBTRACT_Integer_Literal => Z.I := Z.I - ND.IR.Y;  --  No push/pop !
+      when k_MULT_Integer_Literal     => Z.I := Z.I * ND.IR.Y;  --  No push/pop !
+      when k_DIV_Integer_Literal      => Z.I := Z.I / ND.IR.Y;  --  No push/pop !
+      when k_EQL_Integer_Literal      => Z.I := Boolean'Pos (Z.I =  ND.IR.Y);  --  No push/pop !
+      when k_NEQ_Integer_Literal      => Z.I := Boolean'Pos (Z.I /= ND.IR.Y);  --  No push/pop !
+      when k_LSS_Integer_Literal      => Z.I := Boolean'Pos (Z.I <  ND.IR.Y);  --  No push/pop !
+      when k_LEQ_Integer_Literal      => Z.I := Boolean'Pos (Z.I <= ND.IR.Y);  --  No push/pop !
+      when k_GTR_Integer_Literal      => Z.I := Boolean'Pos (Z.I >  ND.IR.Y);  --  No push/pop !
+      when k_GEQ_Integer_Literal      => Z.I := Boolean'Pos (Z.I >= ND.IR.Y);  --  No push/pop !
       when k_NAND_Boolean =>
         Y.I := Boolean'Pos (not (Boolean'Val (Y.I) and Boolean'Val (Z.I)));
         Pop (ND);
