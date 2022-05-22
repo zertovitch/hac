@@ -121,14 +121,16 @@ package HAC_Sys.PCode is
     k_Power_Float,                      --  2018-03-22 : 3.14 ** 6.28
     k_Power_Float_Integer,              --  2018-03-22 : 3.14 ** 6
     --
-    k_OR_Boolean,
     k_AND_Boolean,
+    k_OR_Boolean,
     k_XOR_Boolean,
     --
     k_ADD_Integer_Multiple,             --  2022-05-21 : add 3 or more terms
     k_ADD_Float_Multiple,               --  2022-05-21 : add 3 or more terms
     k_MULT_then_ADD_Integer,            --  2022-05-21 : i + j * k
-    k_MULT_then_ADD_Float,            --  2022-05-21 : i + j * k
+    k_MULT_then_ADD_Float,              --  2022-05-21 : i + j * k
+    k_NAND_Boolean,
+    k_NOR_Boolean,
     --
     k_File_I_O,
     --
@@ -147,7 +149,7 @@ package HAC_Sys.PCode is
   subtype Unary_Operator_Opcode    is Opcode range k_Integer_to_Float .. k_NOT_Boolean;
   subtype Binary_Operator_Opcode   is Opcode range k_EQL_Integer .. k_XOR_Boolean;
   subtype Multiple_Operator_Opcode is Opcode range k_ADD_Integer_Multiple .. k_ADD_Float_Multiple;
-  subtype Special_Operator_Opcode  is Opcode range k_MULT_then_ADD_Integer .. k_MULT_then_ADD_Float;
+  subtype Special_Operator_Opcode  is Opcode range k_MULT_then_ADD_Integer .. k_NOR_Boolean;
   --
   subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Last;
   subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Update_Display_Vector;

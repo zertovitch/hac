@@ -129,6 +129,16 @@ package body HAC_Sys.PCode is
             OC (LC - 1).Y := B;
             folded := True;
           end if;
+        when k_NOT_Boolean =>
+          case OC (LC - 1).F is
+            when k_AND_Boolean =>
+              OC (LC - 1).F := k_NAND_Boolean;
+              folded := True;
+            when k_OR_Boolean =>
+              OC (LC - 1).F := k_NOR_Boolean;
+              folded := True;
+            when others => null;
+          end case;
         when others =>
           null;
       end case;
@@ -216,8 +226,8 @@ package body HAC_Sys.PCode is
       (Text, "Position   : Opcode " & (Opcode'Width - 7) * ' ' &
              "Level/X        " &
              "Addr/Val/Y" &
-             ";      Approx. source location; Extra information");
-    Put_Line (Text, 90 * '-');
+             ";      Approx source location; Extra information");
+    Put_Line (Text, 120 * '-');
     for i in OC'Range loop
       Code_Pos_IO.Put (Text, i);
       Put (Text, ": " & Padded_Opcode (OC (i).F));
@@ -227,6 +237,7 @@ package body HAC_Sys.PCode is
           k_Push_Float_Literal .. k_Push_Float_Last |
           k_Store |
           k_Pop |
+          Unary_Operator_Opcode |
           Binary_Operator_Opcode |
           Special_Operator_Opcode |
           Jump_Opcode

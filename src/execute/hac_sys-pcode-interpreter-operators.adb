@@ -136,11 +136,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
 
   procedure Do_Special_Operator (ND : in out Interpreter_Data) is
     Top : Integer renames ND.TCB (ND.CurTask).T;
+    X : General_Register renames ND.S (Top - 2);  --  X = [T-2]
+    Y : General_Register renames ND.S (Top - 1);  --  Y = [T-1]
+    Z : General_Register renames ND.S (Top);      --  Z = [T]
     use type Defs.HAC_Float, Defs.HAC_Integer, Defs.Typen;
   begin
     case Special_Operator_Opcode (ND.IR.F) is
       when k_MULT_then_ADD_Integer =>
-        ND.S (Top - 2).I := ND.S (Top - 2).I + ND.S (Top - 1).I * ND.S (Top).I;
+        X.I := X.I + Y.I * Z.I;
         Pop (ND, 2);
       when k_MULT_then_ADD_Float =>
         for cell in 0 .. 2 loop
@@ -148,8 +151,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             raise VM_Invalid_Data;
           end if;
         end loop;
-        ND.S (Top - 2).R := ND.S (Top - 2).R + ND.S (Top - 1).R * ND.S (Top).R;
+        X.R := X.R + Y.R * Z.R;
         Pop (ND, 2);
+      when k_NAND_Boolean =>
+        Y.I := Boolean'Pos (not (Boolean'Val (Y.I) and Boolean'Val (Z.I)));
+        Pop (ND);
+      when k_NOR_Boolean =>
+        Y.I := Boolean'Pos (not (Boolean'Val (Y.I) or Boolean'Val (Z.I)));
+        Pop (ND);
     end case;
   end Do_Special_Operator;
 
