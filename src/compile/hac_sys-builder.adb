@@ -230,6 +230,11 @@ package body HAC_Sys.Builder is
     return BD.CD.folded_instructions;
   end Folded_Instructions;
 
+  function Specialized_Instructions (BD : Build_Data) return Natural is
+  begin
+    return BD.CD.specialized_instructions;
+  end Specialized_Instructions;
+
   function Maximum_Object_Code_Size return Natural is
   begin
     return Defs.CDMax;

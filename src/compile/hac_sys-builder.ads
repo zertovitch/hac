@@ -78,6 +78,7 @@ package HAC_Sys.Builder is
   function Total_Compiled_Lines (BD : Build_Data) return Natural;
   function Object_Code_Size (BD : Build_Data) return Natural;
   function Folded_Instructions (BD : Build_Data) return Natural;
+  function Specialized_Instructions (BD : Build_Data) return Natural;
   function Maximum_Object_Code_Size return Natural;
 
   -------------------------

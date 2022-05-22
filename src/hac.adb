@@ -117,9 +117,12 @@ procedure HAC is
       Put_Line (HAC_margin_2 & "Object code size:" & BD.Object_Code_Size'Image &
                 " of" & HAC_Sys.Builder.Maximum_Object_Code_Size'Image &
                 " Virtual Machine instructions.");
-      if BD.Folded_Instructions > 0 then
+      if BD.Folded_Instructions + BD.Specialized_Instructions > 0 then
         Put_Line (HAC_margin_2 & "Code optimization:");
-        Put_Line (HAC_margin_2 & "  " & BD.Folded_Instructions'Image & " folded instructions");
+        Put_Line (HAC_margin_2 & "  " & BD.Folded_Instructions'Image &
+          " instructions were folded");
+        Put_Line (HAC_margin_2 & "  " & BD.Specialized_Instructions'Image &
+          " instructions were specialized");
       end if;
       Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
     end if;

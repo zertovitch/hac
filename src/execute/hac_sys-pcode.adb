@@ -70,13 +70,14 @@ package body HAC_Sys.PCode is
   end For_END;
 
   procedure Emit_Instruction (
-    OC     : in out Object_Code_Table;
-    LC     : in out Integer;
-    D      :        Debug_Info;
-    FCT    :        Opcode;
-    a      :        Operand_1_Type;
-    B      :        Operand_2_Type;
-    folded :    out Boolean
+    OC          : in out Object_Code_Table;
+    LC          : in out Integer;
+    D           :        Debug_Info;
+    FCT         :        Opcode;
+    a           :        Operand_1_Type;
+    B           :        Operand_2_Type;
+    folded      :    out Boolean;
+    specialized :    out Boolean
   )
   is
     use type Defs.HAC_Integer;
@@ -88,6 +89,14 @@ package body HAC_Sys.PCode is
     --
     procedure Try_Folding is
       old : Order renames OC (LC - 1);
+      procedure Simple_Substitution
+        (prev_old_value, prev_new_value : Opcode) is
+      begin
+        if old.F = prev_old_value then
+          old.F := prev_new_value;
+          folded := True;
+        end if;
+      end Simple_Substitution;
     begin
       case FCT_corr is
         when k_ADD_Integer =>
@@ -99,59 +108,19 @@ package body HAC_Sys.PCode is
             when k_ADD_Integer_Multiple =>
               old.Y := old.Y + 1;
               folded := True;
-            when k_MULT_Integer =>
-              old.F := k_MULT_then_ADD_Integer;
-              folded := True;
-            when k_Push_Discrete_Literal =>
-              old.F := k_ADD_Integer_Literal;
-              folded := True;
             when others => null;
           end case;
-        when k_SUBTRACT_Integer =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_SUBTRACT_Integer_Literal;
-            folded := True;
-          end if;
-        when k_MULT_Integer =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_MULT_Integer_Literal;
-            folded := True;
-          end if;
-        when k_DIV_Integer =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_DIV_Integer_Literal;
-            folded := True;
-          end if;
-        when k_EQL_Integer =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_EQL_Integer_Literal;
-            folded := True;
-          end if;
-        when k_NEQ_Integer =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_NEQ_Integer_Literal;
-            folded := True;
-          end if;
-        when k_LSS_Integer =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_LSS_Integer_Literal;
-            folded := True;
-          end if;
-        when k_LEQ_Integer =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_LEQ_Integer_Literal;
-            folded := True;
-          end if;
-        when k_GTR_Integer =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_GTR_Integer_Literal;
-            folded := True;
-          end if;
-        when k_GEQ_Integer =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_GEQ_Integer_Literal;
-            folded := True;
-          end if;
+          Simple_Substitution (k_MULT_Integer, k_MULT_then_ADD_Integer);
+          Simple_Substitution (k_Push_Discrete_Literal, k_ADD_Integer_Literal);
+        when k_SUBTRACT_Integer => Simple_Substitution (k_Push_Discrete_Literal, k_SUBTRACT_Integer_Literal);
+        when k_MULT_Integer     => Simple_Substitution (k_Push_Discrete_Literal, k_MULT_Integer_Literal);
+        when k_DIV_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_DIV_Integer_Literal);
+        when k_EQL_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_EQL_Integer_Literal);
+        when k_NEQ_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_NEQ_Integer_Literal);
+        when k_LSS_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_LSS_Integer_Literal);
+        when k_LEQ_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_LEQ_Integer_Literal);
+        when k_GTR_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_GTR_Integer_Literal);
+        when k_GEQ_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_GEQ_Integer_Literal);
         when k_ADD_Float =>
           case old.F is
             when k_ADD_Float =>
@@ -161,11 +130,9 @@ package body HAC_Sys.PCode is
             when k_ADD_Float_Multiple =>
               old.Y := old.Y + 1;
               folded := True;
-            when k_MULT_Float =>
-              old.F := k_MULT_then_ADD_Float;
-              folded := True;
             when others => null;
           end case;
+          Simple_Substitution (k_MULT_Float, k_MULT_then_ADD_Float);
         when k_Unary_MINUS_Integer =>
           if old.F = k_Push_Discrete_Literal
             and then old.Y > Defs.HAC_Integer'First
@@ -181,34 +148,26 @@ package body HAC_Sys.PCode is
             folded := True;
           end if;
         when k_Store_Discrete =>
-          if old.F = k_Push_Discrete_Literal then
-            old.F := k_Store_Discrete_Literal;
-            --  B (in this case, special type info) is discarded
-            --  since we have a subtype-checked discrete value.
-            folded := True;
-          end if;
+          Simple_Substitution (k_Push_Discrete_Literal, k_Store_Discrete_Literal);
+          --  B (for this opcode, special type info) is discarded
+          --  since we have a (subtype-checked) discrete value.
         when k_NOT_Boolean =>
-          case old.F is
-            when k_AND_Boolean =>
-              old.F := k_NAND_Boolean;
-              folded := True;
-            when k_OR_Boolean =>
-              old.F := k_NOR_Boolean;
-              folded := True;
-            when others => null;
-          end case;
+          Simple_Substitution (k_AND_Boolean, k_NAND_Boolean);
+          Simple_Substitution (k_OR_Boolean,  k_NOR_Boolean);
         when others =>
           null;
       end case;
     end Try_Folding;
   begin
-    folded := False;
+    folded      := False;
+    specialized := False;
     if LC = OC'Last then
       Errors.Fatal (Errors.Object_Code);
     end if;
     if FCT_corr = k_Store then
       if Defs.Discrete_Typ (Defs.Typen'Val (B)) then
         FCT_corr := k_Store_Discrete;
+        specialized := True;
       end if;
     end if;
     if LC > OC'First then

@@ -251,13 +251,14 @@ package HAC_Sys.PCode is
   --  Store PCode instruction in the object code table OC at position LC and increments LC.
 
   procedure Emit_Instruction (
-    OC     : in out Object_Code_Table;
-    LC     : in out Integer;
-    D      :        Debug_Info;
-    FCT    :        Opcode;
-    a      :        Operand_1_Type;
-    B      :        Operand_2_Type;
-    folded :    out Boolean
+    OC          : in out Object_Code_Table;
+    LC          : in out Integer;
+    D           :        Debug_Info;
+    FCT         :        Opcode;
+    a           :        Operand_1_Type;
+    B           :        Operand_2_Type;
+    folded      :    out Boolean;
+    specialized :    out Boolean
   );
 
   --  Save and restore an object file

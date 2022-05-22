@@ -46,7 +46,8 @@ package body HAC_Sys.Compiler.PCode_Emit is
     B    :        Operand_2_Type
   )
   is
-    folded : Boolean;
+    folded      : Boolean;
+    specialized : Boolean;
   begin
     PCode.Emit_Instruction (
       CD.ObjCode (CD.ObjCode'First .. CD.CMax),
@@ -54,10 +55,14 @@ package body HAC_Sys.Compiler.PCode_Emit is
       --    but the part before variable initialization code,
       --    for preventing overwriting existing initialization code.
       CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, a, B,
-      folded
+      folded,
+      specialized
     );
     if folded then
       CD.folded_instructions := CD.folded_instructions + 1;
+    end if;
+    if specialized then
+      CD.specialized_instructions := CD.specialized_instructions + 1;
     end if;
   end Emit_2;
 
