@@ -36,7 +36,8 @@ package HAC_Sys.PCode is
     --
     k_Variable_Initialization,
     k_Store,
-    k_Store_Discrete_Literal,   --  Equivalent to: Push_Discrete_Literal, then Store.
+    k_Store_Discrete,
+    k_Store_Discrete_Literal,   --  Equivalent to: Push_Discrete_Literal, then Store_Discrete.
     k_Swap,                     --  Swap the two items at the top of the stack.
     k_Pop_to_Temp,              --  Pop top item to a temp register.
     k_Push_Temp,                --  Push temp register on the stack.

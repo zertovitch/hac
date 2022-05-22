@@ -526,8 +526,11 @@ package body HAC_Sys.PCode.Interpreter is
           --  before the assignment.
           ND.S (Index (ND.S (Curr_TCB.T - 1).I)) := ND.S (Curr_TCB.T);
           Pop (2);
+        when k_Store_Discrete =>  --  [T-1].all := [T], then pop 2x.
+          ND.S (Index (ND.S (Curr_TCB.T - 1).I)).I := ND.S (Curr_TCB.T).I;
+          Pop (2);
         when k_Store_Discrete_Literal =>  --  [T].all := IR.Y, then pop.
-          --  Equivalent to: Push_Discrete_Literal, then Store.
+          --  Equivalent to: Push_Discrete_Literal, then Store_Discrete.
           --  No validity check: the value is discrete and
           --  range-checked at compile-time (in current version of HAC
           --  where all ranges & subtypes are static).

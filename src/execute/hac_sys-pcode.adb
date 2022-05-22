@@ -80,6 +80,7 @@ package body HAC_Sys.PCode is
   )
   is
     use type Defs.HAC_Integer;
+    FCT_corr : Opcode := FCT;
     --
     --  Try folding two instruction into one.
     --  This technique is only doable within Ada statements,
@@ -88,7 +89,7 @@ package body HAC_Sys.PCode is
     procedure Try_Folding is
       old : Order renames OC (LC - 1);
     begin
-      case FCT is
+      case FCT_corr is
         when k_ADD_Integer =>
           case old.F is
             when k_ADD_Integer =>
@@ -131,7 +132,7 @@ package body HAC_Sys.PCode is
             old.Y := B;
             folded := True;
           end if;
-        when k_Store =>
+        when k_Store_Discrete =>
           if old.F = k_Push_Discrete_Literal then
             old.F := k_Store_Discrete_Literal;
             --  B (in this case, special type info) is discarded
@@ -157,11 +158,16 @@ package body HAC_Sys.PCode is
     if LC = OC'Last then
       Errors.Fatal (Errors.Object_Code);
     end if;
+    if FCT_corr = k_Store then
+      if Defs.Discrete_Typ (Defs.Typen'Val (B)) then
+        FCT_corr := k_Store_Discrete;
+      end if;
+    end if;
     if LC > OC'First then
       Try_Folding;
     end if;
     if not folded then
-      OC (LC).F := FCT;
+      OC (LC).F := FCT_corr;
       OC (LC).X := a;
       OC (LC).Y := B;
       OC (LC).D := D;
