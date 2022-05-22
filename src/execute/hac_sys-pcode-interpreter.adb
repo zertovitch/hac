@@ -514,18 +514,28 @@ package body HAC_Sys.PCode.Interpreter is
           if ND.S (Curr_TCB.T).I /= 0 then  --  if True, then ...
             Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
           end if;
-        when k_Store =>  --  [T-1].all := [T]
+        when k_Store =>  --  [T-1].all := [T], then pop 2x.
           if Typ_with_Variant_Part (Typen'Val (IR.Y))
-            and then IR.Y /= Typen'Pos (ND.S (Curr_TCB.T).Special)
+            and then Typen'Val (IR.Y) /= ND.S (Curr_TCB.T).Special
           then
-            raise VM_Invalid_Data;
+            raise VM_Invalid_Data;  --  Source contains uninitialized data.
           end if;
           --  NB: we don't check the destination discriminant
-          --  which may be wrong for the right reason: on first
+          --  which may be wrong for the right reason, i.e. on first
           --  assignment to a variable, which has contained garbage
           --  before the assignment.
           ND.S (Index (ND.S (Curr_TCB.T - 1).I)) := ND.S (Curr_TCB.T);
           Pop (2);
+        when k_Store_Discrete_Literal =>  --  [T].all := IR.Y, then pop.
+          --  Equivalent to: Push_Discrete_Literal, then Store.
+          --  No validity check: the value is discrete and
+          --  range-checked at compile-time (in current version of HAC
+          --  where all ranges & subtypes are static).
+          --  Future versions: range checks would be between
+          --  k_Push_Discrete_Literal and k_Store; then, no folding
+          --  into k_Store_Discrete_Literal.
+          ND.S (Index (ND.S (Curr_TCB.T).I)).I := IR.Y;
+          Pop;
         when k_Swap =>
           Do_Swap;
         when k_Pop_to_Temp =>

@@ -80,68 +80,85 @@ package body HAC_Sys.PCode is
   )
   is
     use type Defs.HAC_Integer;
-  begin
-    folded := False;
-    if LC = OC'Last then
-      Errors.Fatal (Errors.Object_Code);
-    end if;
-    if LC > OC'First then
+    --
+    --  Try folding two instruction into one.
+    --  This technique is only doable within Ada statements,
+    --  otherwise the jumps will be wrong...
+    --
+    procedure Try_Folding is
+      old : Order renames OC (LC - 1);
+    begin
       case FCT is
         when k_ADD_Integer =>
-          case OC (LC - 1).F is
+          case old.F is
             when k_ADD_Integer =>
-              OC (LC - 1).F := k_ADD_Integer_Multiple;
-              OC (LC - 1).Y := 3;
+              old.F := k_ADD_Integer_Multiple;
+              old.Y := 3;
               folded := True;
             when k_ADD_Integer_Multiple =>
-              OC (LC - 1).Y := OC (LC - 1).Y + 1;
+              old.Y := old.Y + 1;
               folded := True;
             when k_MULT_Integer =>
-              OC (LC - 1).F := k_MULT_then_ADD_Integer;
+              old.F := k_MULT_then_ADD_Integer;
               folded := True;
             when others => null;
           end case;
         when k_ADD_Float =>
-          case OC (LC - 1).F is
+          case old.F is
             when k_ADD_Float =>
-              OC (LC - 1).F := k_ADD_Float_Multiple;
-              OC (LC - 1).Y := 3;
+              old.F := k_ADD_Float_Multiple;
+              old.Y := 3;
               folded := True;
             when k_ADD_Float_Multiple =>
-              OC (LC - 1).Y := OC (LC - 1).Y + 1;
+              old.Y := old.Y + 1;
               folded := True;
             when k_MULT_Float =>
-              OC (LC - 1).F := k_MULT_then_ADD_Float;
+              old.F := k_MULT_then_ADD_Float;
               folded := True;
             when others => null;
           end case;
         when k_Unary_MINUS_Integer =>
-          if OC (LC - 1).F = k_Push_Discrete_Literal
-            and then OC (LC - 1).Y > Defs.HAC_Integer'First
+          if old.F = k_Push_Discrete_Literal
+            and then old.Y > Defs.HAC_Integer'First
           then
-            OC (LC - 1).Y := -OC (LC - 1).Y;
+            old.Y := -old.Y;
             folded := True;
           end if;
         when k_Push_Discrete_Literal =>
-          if OC (LC - 1).F = k_Push_Discrete_Literal then
-            OC (LC - 1).F := k_Push_Two_Discrete_Literals;
-            OC (LC - 1).X := OC (LC - 1).Y;
-            OC (LC - 1).Y := B;
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_Push_Two_Discrete_Literals;
+            old.X := old.Y;
+            old.Y := B;
+            folded := True;
+          end if;
+        when k_Store =>
+          if old.F = k_Push_Discrete_Literal then
+            old.F := k_Store_Discrete_Literal;
+            --  B (in this case, special type info) is discarded
+            --  since we have a subtype-checked discrete value.
             folded := True;
           end if;
         when k_NOT_Boolean =>
-          case OC (LC - 1).F is
+          case old.F is
             when k_AND_Boolean =>
-              OC (LC - 1).F := k_NAND_Boolean;
+              old.F := k_NAND_Boolean;
               folded := True;
             when k_OR_Boolean =>
-              OC (LC - 1).F := k_NOR_Boolean;
+              old.F := k_NOR_Boolean;
               folded := True;
             when others => null;
           end case;
         when others =>
           null;
       end case;
+    end Try_Folding;
+  begin
+    folded := False;
+    if LC = OC'Last then
+      Errors.Fatal (Errors.Object_Code);
+    end if;
+    if LC > OC'First then
+      Try_Folding;
     end if;
     if not folded then
       OC (LC).F := FCT;
