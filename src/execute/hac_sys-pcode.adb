@@ -122,6 +122,13 @@ package body HAC_Sys.PCode is
             OC (LC - 1).Y := -OC (LC - 1).Y;
             folded := True;
           end if;
+        when k_Push_Discrete_Literal =>
+          if OC (LC - 1).F = k_Push_Discrete_Literal then
+            OC (LC - 1).F := k_Push_Two_Discrete_Literals;
+            OC (LC - 1).X := OC (LC - 1).Y;
+            OC (LC - 1).Y := B;
+            folded := True;
+          end if;
         when others =>
           null;
       end case;
@@ -134,6 +141,7 @@ package body HAC_Sys.PCode is
       LC        := LC + 1;
     end if;
   end Emit_Instruction;
+
   procedure Patch_Addresses (
     OC            : in out Object_Code_Table;
     dummy_address :        Operand_2_Type
@@ -192,7 +200,8 @@ package body HAC_Sys.PCode is
     function HAC_Image is new HAL.HAC_Generic_Image (Defs.HAC_Integer);
     SF_C : SF_Code;
     SP_C : SP_Code;
-    Old_Y1, Old_Y2, Old_Y3, Old_Y4 : Operand_2_Type := 0;
+    Old_X1, Old_X2 : Operand_1_Type := 0;
+    Old_Y1, Old_Y2 : Operand_2_Type := 0;
     --
     function Padded_Opcode (o : Opcode) return String is
       s : String (1 .. Opcode'Width);
@@ -259,7 +268,7 @@ package body HAC_Sys.PCode is
               Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
             when SP_Put .. SP_Put_Line =>
               if Defs.Typen'Val (OC (i).Y) = Defs.String_Literals then
-                Put (Text, "; """ & Str_Const (Integer (Old_Y3) .. Integer (Old_Y3 + Old_Y4 - 1)) & '"');
+                Put (Text, "; """ & Str_Const (Integer (Old_Y2) .. Integer (Old_Y2 + Old_X2 - 1)) & '"');
               end if;
             when others =>
               null;
@@ -287,8 +296,10 @@ package body HAC_Sys.PCode is
           null;
       end case;
       New_Line (Text);
-      Old_Y4 := Old_Y3;
-      Old_Y3 := Old_Y2;
+      --
+      Old_X2 := Old_X1;
+      Old_X1 := OC (i).X;
+      --
       Old_Y2 := Old_Y1;
       Old_Y1 := OC (i).Y;
     end loop;

@@ -534,6 +534,10 @@ package body HAC_Sys.PCode.Interpreter is
         when k_Push_Temp =>
           Push;
           ND.S (Curr_TCB.T) := Curr_TCB.R_Temp;
+        when k_Push_Two_Discrete_Literals =>
+          Push (2);
+          ND.S (Curr_TCB.T - 1).I := IR.X;
+          ND.S (Curr_TCB.T).I     := IR.Y;
         --
         when k_Check_Lower_Bound => Check_Lower (IR.Y);
         when k_Check_Upper_Bound => Check_Upper (IR.Y);

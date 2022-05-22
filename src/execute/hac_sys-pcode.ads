@@ -30,6 +30,8 @@ package HAC_Sys.PCode is
     k_Push_Float_First,
     k_Push_Float_Last,
     --
+    k_Push_Two_Discrete_Literals,
+    --
     k_Pop,
     --
     k_Variable_Initialization,
@@ -260,6 +262,7 @@ package HAC_Sys.PCode is
     SF_T_Succ,                  --  S'Succ : RM 3.5 (22)
     SF_T_Pred,                  --  S'Pred : RM 3.5 (25)
     SF_in_discrete_Interval,
+    SF_not_in_discrete_Interval,
     --  Numerical functions
     SF_Round_Float_to_Int,
     SF_Trunc_Float_to_Int,

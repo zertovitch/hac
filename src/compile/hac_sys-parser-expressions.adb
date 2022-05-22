@@ -323,9 +323,10 @@ package body HAC_Sys.Parser.Expressions is
               --  "incompatible types", ObjectAda says "LRM:8.6(28), Inappropriate operands
               --  for "IN" operation".
             end if;
-            Emit_Std_Funct (CD, SF_in_discrete_Interval);
             if Not_In then
-              Emit (CD, k_NOT_Boolean);
+              Emit_Std_Funct (CD, SF_not_in_discrete_Interval);
+            else
+              Emit_Std_Funct (CD, SF_in_discrete_Interval);
             end if;
             Construct_Root (X, Bools);  --  The result of the membership test is always Boolean.
           end if;
@@ -433,8 +434,10 @@ package body HAC_Sys.Parser.Expressions is
           case CD.Sy is
             when StrCon =>
               Construct_Root (X, String_Literals);
-              Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.SLeng));  --  String Literal Length
-              Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (CD.INum));   --  Index To String IdTab
+              Emit_2
+                (CD, k_Push_Two_Discrete_Literals,
+                 Operand_1_Type (CD.SLeng),  --  String Literal Length
+                 Operand_2_Type (CD.INum));  --  Index To String IdTab
               InSymbol (CD);
             when IDent =>
               declare

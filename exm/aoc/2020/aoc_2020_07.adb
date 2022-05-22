@@ -35,13 +35,7 @@ procedure AoC_2020_07 is
       exit when c < 'a' or c > 'z';
       s := s & c;
     end loop;
-    s := To_Upper (s);
-    for x in Colour_Qualifier loop
-      if s = Colour_Qualifier'Image (x) then
-        cq := x;
-        return;
-      end if;
-    end loop;
+    cq := Colour_Qualifier'Value (To_String (s));
     --  We don't treat the invalid cases...
   end Get_CQ;
 
@@ -54,13 +48,7 @@ procedure AoC_2020_07 is
       exit when c < 'a' or c > 'z';
       s := s & c;
     end loop;
-    s := To_Upper (s);
-    for x in Base_Colour loop
-      if s = Base_Colour'Image (x) then
-        bc := x;
-        return;
-      end if;
-    end loop;
+    bc := Base_Colour'Value (To_String (s));
     --  We don't treat the invalid cases...
   end Get_BC;
 

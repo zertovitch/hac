@@ -187,6 +187,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           Boolean'Pos (
             ND.S (Curr_TCB.T).I in ND.S (Curr_TCB.T + 1).I .. ND.S (Curr_TCB.T + 2).I
           );
+      when SF_not_in_discrete_Interval =>
+        --  SF_not_in_discrete_Interval (x, a, b) is equivalent to: `x not in a .. b`
+        Pop (ND, 2);
+        --  [T] := [T] not in [T+1] .. [T+2]
+        ND.S (Curr_TCB.T).I :=
+          Boolean'Pos (
+            ND.S (Curr_TCB.T).I not in ND.S (Curr_TCB.T + 1).I .. ND.S (Curr_TCB.T + 2).I
+          );
       when SF_Round_Float_to_Int =>
         Top_Item.I := HAC_Integer (Top_Item.R);
       when SF_Trunc_Float_to_Int =>
