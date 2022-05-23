@@ -60,15 +60,6 @@ package body HAC_Sys.PCode is
   --  *
   --  * Manuel *
 
-  function For_END (for_BEGIN : Opcode) return Opcode is
-  begin
-    case for_BEGIN is
-      when k_FOR_Forward_Begin => return k_FOR_Forward_End;
-      when k_FOR_Reverse_Begin => return k_FOR_Reverse_End;
-      when others => return for_BEGIN;
-    end case;
-  end For_END;
-
   procedure Emit_Instruction (
     OC          : in out Object_Code_Table;
     LC          : in out Integer;
@@ -91,14 +82,24 @@ package body HAC_Sys.PCode is
       old : Order renames OC (LC - 1);
       procedure Simple_Substitution
         (prev_old_value, prev_new_value : Opcode) is
+      pragma Inline (Simple_Substitution);
       begin
-        if old.F = prev_old_value then
+        if (not folded) and old.F = prev_old_value then
           old.F := prev_new_value;
           folded := True;
         end if;
       end Simple_Substitution;
     begin
       case FCT_corr is
+        when k_SUBTRACT_Integer => Simple_Substitution (k_Push_Discrete_Literal, k_SUBTRACT_Integer_Literal);
+        when k_MULT_Integer     => Simple_Substitution (k_Push_Discrete_Literal, k_MULT_Integer_Literal);
+        when k_DIV_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_DIV_Integer_Literal);
+        when k_EQL_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_EQL_Integer_Literal);
+        when k_NEQ_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_NEQ_Integer_Literal);
+        when k_LSS_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_LSS_Integer_Literal);
+        when k_LEQ_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_LEQ_Integer_Literal);
+        when k_GTR_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_GTR_Integer_Literal);
+        when k_GEQ_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_GEQ_Integer_Literal);
         when k_ADD_Integer =>
           case old.F is
             when k_ADD_Integer =>
@@ -112,15 +113,6 @@ package body HAC_Sys.PCode is
           end case;
           Simple_Substitution (k_MULT_Integer, k_MULT_then_ADD_Integer);
           Simple_Substitution (k_Push_Discrete_Literal, k_ADD_Integer_Literal);
-        when k_SUBTRACT_Integer => Simple_Substitution (k_Push_Discrete_Literal, k_SUBTRACT_Integer_Literal);
-        when k_MULT_Integer     => Simple_Substitution (k_Push_Discrete_Literal, k_MULT_Integer_Literal);
-        when k_DIV_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_DIV_Integer_Literal);
-        when k_EQL_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_EQL_Integer_Literal);
-        when k_NEQ_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_NEQ_Integer_Literal);
-        when k_LSS_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_LSS_Integer_Literal);
-        when k_LEQ_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_LEQ_Integer_Literal);
-        when k_GTR_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_GTR_Integer_Literal);
-        when k_GEQ_Integer      => Simple_Substitution (k_Push_Discrete_Literal, k_GEQ_Integer_Literal);
         when k_ADD_Float =>
           case old.F is
             when k_ADD_Float =>
@@ -147,10 +139,28 @@ package body HAC_Sys.PCode is
             old.Y := B;
             folded := True;
           end if;
+        when k_Push_Float_Literal =>
+          if old.F = k_Push_Float_Literal then
+            old.F := k_Push_Two_Float_Literals;
+            old.X := old.Y;
+            old.Y := B;
+            folded := True;
+          end if;
+        when k_Store =>
+          Simple_Substitution (k_Push_Float_Literal, k_Store_Float_Literal);
+          --  ^ B (for this opcode, special type info) is discarded
+          --  since the TYP is forced to Floats.
+          --
+          Simple_Substitution (k_ADD_Float,      k_ADD_Float_then_Store);
+          Simple_Substitution (k_SUBTRACT_Float, k_SUBTRACT_Float_then_Store);
+          Simple_Substitution (k_MULT_Float,     k_MULT_Float_then_Store);
         when k_Store_Discrete =>
           Simple_Substitution (k_Push_Discrete_Literal, k_Store_Discrete_Literal);
-          --  B (for this opcode, special type info) is discarded
+          --  ^ B (for this opcode, special type info) is discarded
           --  since we have a (subtype-checked) discrete value.
+          Simple_Substitution (k_ADD_Integer,      k_ADD_Integer_then_Store);
+          Simple_Substitution (k_SUBTRACT_Integer, k_SUBTRACT_Integer_then_Store);
+          Simple_Substitution (k_MULT_Integer,     k_MULT_Integer_then_Store);
         when k_NOT_Boolean =>
           Simple_Substitution (k_AND_Boolean, k_NAND_Boolean);
           Simple_Substitution (k_OR_Boolean,  k_NOR_Boolean);

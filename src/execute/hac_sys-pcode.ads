@@ -24,6 +24,7 @@ package HAC_Sys.PCode is
   (
     k_Push_Address,
     k_Push_Value,
+    k_Push_Discrete_Value,
     k_Push_Indirect_Value,
     k_Push_Discrete_Literal,
     k_Push_Float_Literal,
@@ -31,13 +32,15 @@ package HAC_Sys.PCode is
     k_Push_Float_Last,
     --
     k_Push_Two_Discrete_Literals,
+    k_Push_Two_Float_Literals,
     --
     k_Pop,
     --
     k_Variable_Initialization,
     k_Store,
-    k_Store_Discrete,
+    k_Store_Discrete,           --  Like Store, but copies only the discrete field.
     k_Store_Discrete_Literal,   --  Equivalent to: Push_Discrete_Literal, then Store_Discrete.
+    k_Store_Float_Literal,      --  Equivalent to: Push_Float_Literal, then Store.
     k_Swap,                     --  Swap the two items at the top of the stack.
     k_Pop_to_Temp,              --  Pop top item to a temp register.
     k_Push_Temp,                --  Push temp register on the stack.
@@ -60,15 +63,15 @@ package HAC_Sys.PCode is
     k_CASE_No_Choice_Found,
     --
     k_FOR_Forward_Begin,
-    k_FOR_Forward_End,
     k_FOR_Reverse_Begin,
+    k_FOR_Forward_End,
     k_FOR_Reverse_End,
     k_FOR_Release_Stack_After_End,
     --
     k_Array_Index_Element_Size_1,
     k_Array_Index,
-    k_Array_Index_Element_Size_1_No_Checks,
-    k_Array_Index_No_Checks,
+    k_Array_Index_No_Check_Element_Size_1,
+    k_Array_Index_No_Check,
     --
     k_Record_Field_Offset,
     k_Load_Block,
@@ -81,11 +84,15 @@ package HAC_Sys.PCode is
     k_Exit_Function,
     k_Update_Display_Vector,
     --
+    --  Unary operators
+    --
     k_Integer_to_Float,                 --  The reverse conversion is done by a k_Standard_Functions
     k_Dereference,
     k_Unary_MINUS_Float,                --  2020-04-04
     k_Unary_MINUS_Integer,
     k_NOT_Boolean,
+    --
+    --  Binary operators
     --
     k_EQL_Integer,
     k_NEQ_Integer,
@@ -127,10 +134,21 @@ package HAC_Sys.PCode is
     k_OR_Boolean,
     k_XOR_Boolean,
     --
+    --  Special operators, resulting of folding of two or more instructions
+    --
     k_ADD_Integer_Multiple,             --  2022-05-21 : add 3 or more terms
     k_ADD_Float_Multiple,               --  2022-05-21 : add 3 or more terms
     k_MULT_then_ADD_Integer,            --  2022-05-21 : i + j * k
     k_MULT_then_ADD_Float,              --  2022-05-21 : i + j * k
+    --
+    k_ADD_Integer_then_Store,
+    k_SUBTRACT_Integer_then_Store,
+    k_MULT_Integer_then_Store,
+    --
+    k_ADD_Float_then_Store,
+    k_SUBTRACT_Float_then_Store,
+    k_MULT_Float_then_Store,
+    --
     k_ADD_Integer_Literal,
     k_SUBTRACT_Integer_Literal,
     k_MULT_Integer_Literal,
@@ -141,12 +159,16 @@ package HAC_Sys.PCode is
     k_LEQ_Integer_Literal,
     k_GTR_Integer_Literal,
     k_GEQ_Integer_Literal,
+    --
     k_NAND_Boolean,
     k_NOR_Boolean,
     --
     k_File_I_O,
     --
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
+    --
+    --  Tasking stuff
+    --
     k_Accept_Rendezvous,
     k_End_Rendezvous,
     k_Wait_Semaphore,
@@ -172,7 +194,9 @@ package HAC_Sys.PCode is
   subtype Multi_Statement_Opcode  is Opcode range k_CASE_Switch .. k_FOR_Release_Stack_After_End;
   subtype Tasking_Opcode          is Opcode range k_Halt_Interpreter .. k_Selective_Wait;
 
-  function For_END (for_BEGIN : Opcode) return Opcode;
+  For_END_Instruction : constant array (k_FOR_Forward_Begin .. k_FOR_Reverse_Begin) of Opcode :=
+    (k_FOR_Forward_Begin => k_FOR_Forward_End,
+     k_FOR_Reverse_Begin => k_FOR_Reverse_End);
 
   type Opcode_Set is array (Opcode) of Boolean;
   OK_for_Exception : constant Opcode_Set :=

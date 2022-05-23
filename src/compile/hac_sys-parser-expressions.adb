@@ -147,13 +147,13 @@ package body HAC_Sys.Parser.Expressions is
                 if range_check_needed then
                   Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
                 else
-                  Emit_1 (CD, k_Array_Index_Element_Size_1_No_Checks, Operand_2_Type (ATI));
+                  Emit_1 (CD, k_Array_Index_No_Check_Element_Size_1, Operand_2_Type (ATI));
                 end if;
               else
                 if range_check_needed then
                   Emit_1 (CD, k_Array_Index, Operand_2_Type (ATI));
                 else
-                  Emit_1 (CD, k_Array_Index_No_Checks, Operand_2_Type (ATI));
+                  Emit_1 (CD, k_Array_Index_No_Check, Operand_2_Type (ATI));
                 end if;
               end if;
             end if;
@@ -463,9 +463,9 @@ package body HAC_Sys.Parser.Expressions is
                     LC_Mem := CD.LC;
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                       if r.normal then
-                        F := k_Push_Address;  --  Composite: push "v'Access".
+                        F := k_Push_Address;         --  Composite: push "v'Access".
                       else
-                        F := k_Push_Value;    --  Composite: push "(v.all)'Access", that is, v.
+                        F := k_Push_Discrete_Value;  --  Composite: push "(a.all)'Access", that is, a.
                       end if;
                       Emit_2 (CD, F, Operand_1_Type (r.lev), Operand_2_Type (r.adr_or_sz));
                       Selector (CD, Level, FSys_Prim + Apostrophe, X);
@@ -479,14 +479,18 @@ package body HAC_Sys.Parser.Expressions is
                       --  No selector.
                       if Standard_or_Enum_Typ (X.TYP) then
                         if r.normal then
-                          F := k_Push_Value;           --  Push variable v's value.
+                          if Discrete_Typ (r.xtyp.TYP) then
+                            F := k_Push_Discrete_Value;  --  Push variable v's discrete value.
+                          else
+                            F := k_Push_Value;           --  Push variable v's value.
+                          end if;
                         else
-                          F := k_Push_Indirect_Value;  --  Push "v.all" (v is an access).
+                          F := k_Push_Indirect_Value;    --  Push "a.all" (a is an access).
                         end if;
                       elsif r.normal then
-                        F := k_Push_Address;  --  Composite: push "v'Access".
+                        F := k_Push_Address;         --  Composite: push "v'Access".
                       else
-                        F := k_Push_Value;    --  Composite: push "(v.all)'Access, that is, v.
+                        F := k_Push_Discrete_Value;  --  Composite: push "(a.all)'Access, that is, a.
                       end if;
                       Emit_2 (CD, F, Operand_1_Type (r.lev), Operand_2_Type (r.adr_or_sz));
                     end if;

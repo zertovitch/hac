@@ -140,6 +140,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     Y : General_Register renames ND.S (Top - 1);  --  Y = [T-1]
     Z : General_Register renames ND.S (Top);      --  Z = [T]
     use type Defs.HAC_Float, Defs.HAC_Integer, Defs.Typen;
+    --
+    procedure Check_Y_Z_Float is
+    pragma Inline (Check_Y_Z_Float);
+    begin
+      if Y.Special /= Defs.Floats or else Z.Special /= Defs.Floats then
+        raise VM_Invalid_Data;
+      end if;
+    end Check_Y_Z_Float;
   begin
     case Special_Operator_Opcode (ND.IR.F) is
       when k_MULT_then_ADD_Integer =>
@@ -153,6 +161,27 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         end loop;
         X.R := X.R + Y.R * Z.R;
         Pop (ND, 2);
+      when k_ADD_Integer_then_Store =>
+        ND.S (Defs.Index (X.I)).I := Y.I + Z.I;
+        Pop (ND, 3);
+      when k_SUBTRACT_Integer_then_Store =>
+        ND.S (Defs.Index (X.I)).I := Y.I - Z.I;
+        Pop (ND, 3);
+      when k_MULT_Integer_then_Store =>
+        ND.S (Defs.Index (X.I)).I := Y.I * Z.I;
+        Pop (ND, 3);
+      when k_ADD_Float_then_Store =>
+        Check_Y_Z_Float;
+        ND.S (Defs.Index (X.I)) := GR_Real (Y.R + Z.R);
+        Pop (ND, 3);
+      when k_SUBTRACT_Float_then_Store =>
+        Check_Y_Z_Float;
+        ND.S (Defs.Index (X.I)) := GR_Real (Y.R - Z.R);
+        Pop (ND, 3);
+      when k_MULT_Float_then_Store =>
+        Check_Y_Z_Float;
+        ND.S (Defs.Index (X.I)) := GR_Real (Y.R * Z.R);
+        Pop (ND, 3);
       when k_ADD_Integer_Literal      => Z.I := Z.I + ND.IR.Y;  --  No push/pop !
       when k_SUBTRACT_Integer_Literal => Z.I := Z.I - ND.IR.Y;  --  No push/pop !
       when k_MULT_Integer_Literal     => Z.I := Z.I * ND.IR.Y;  --  No push/pop !

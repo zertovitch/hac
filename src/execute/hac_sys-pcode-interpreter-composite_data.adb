@@ -102,14 +102,14 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
 
   begin
     case Composite_Data_Opcode (ND.IR.F) is
-      when k_Array_Index_Element_Size_1           => Do_Array_Index_Size_1;
-      when k_Array_Index                          => Do_Array_Index_Any_Size;
-      when k_Array_Index_Element_Size_1_No_Checks => Do_Array_Index_Size_1_No_Check;
-      when k_Array_Index_No_Checks                => Do_Array_Index_Any_Size_No_Check;
-      when k_Record_Field_Offset                  => ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
-      when k_Load_Block                           => Do_Load_Block;
-      when k_Copy_Block                           => Do_Copy_Block;
-      when k_String_Literal_Assignment            => Do_String_Literal_Assignment;
+      when k_Array_Index_Element_Size_1          => Do_Array_Index_Size_1;
+      when k_Array_Index                         => Do_Array_Index_Any_Size;
+      when k_Array_Index_No_Check_Element_Size_1 => Do_Array_Index_Size_1_No_Check;
+      when k_Array_Index_No_Check                => Do_Array_Index_Any_Size_No_Check;
+      when k_Record_Field_Offset                 => ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
+      when k_Load_Block                          => Do_Load_Block;
+      when k_Copy_Block                          => Do_Copy_Block;
+      when k_String_Literal_Assignment           => Do_String_Literal_Assignment;
     end case;
   end Do_Composite_Data_Operation;
 

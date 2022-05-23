@@ -64,9 +64,9 @@ package body HAC_Sys.Parser.Calls is
       else
         Found := CD.IdTab (K).xtyp;
         if CD.IdTab (K).normal then
-          F := k_Push_Address;  --  Push "v'Access".
+          F := k_Push_Address;         --  Push "v'Access".
         else
-          F := k_Push_Value;    --  Push "(v.all)'Access", that is, v (v is an access type).
+          F := k_Push_Discrete_Value;  --  Push "(a.all)'Access", that is, a (a is an access type).
         end if;
         Emit_2 (CD, F,
           Operand_1_Type (CD.IdTab (K).lev),

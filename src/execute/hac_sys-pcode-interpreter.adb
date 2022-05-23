@@ -450,6 +450,9 @@ package body HAC_Sys.PCode.Interpreter is
           when k_Push_Value =>
             --  Push variable v's value.
             ND.S (Curr_TCB.T) := ND.S (Address_of_Variable);
+          when k_Push_Discrete_Value =>
+            --  Push variable v's discrete value.
+            ND.S (Curr_TCB.T).I := ND.S (Address_of_Variable).I;
           when k_Push_Indirect_Value =>
             --  Push "v.all" (variable v contains an access).
             ND.S (Curr_TCB.T) := ND.S (Index (ND.S (Address_of_Variable).I));
@@ -539,6 +542,10 @@ package body HAC_Sys.PCode.Interpreter is
           --  into k_Store_Discrete_Literal.
           ND.S (Index (ND.S (Curr_TCB.T).I)).I := IR.Y;
           Pop;
+        when k_Store_Float_Literal =>  --  [T].all := float_table (IR.Y), then pop.
+          ND.S (Index (ND.S (Curr_TCB.T).I)) :=
+            GR_Real (CD.Float_Constants_Table (Integer (IR.Y)));
+          Pop;
         when k_Swap =>
           Do_Swap;
         when k_Pop_to_Temp =>
@@ -551,6 +558,10 @@ package body HAC_Sys.PCode.Interpreter is
           Push (2);
           ND.S (Curr_TCB.T - 1).I := IR.X;
           ND.S (Curr_TCB.T).I     := IR.Y;
+        when k_Push_Two_Float_Literals =>
+          Push (2);
+          ND.S (Curr_TCB.T - 1) := GR_Real (CD.Float_Constants_Table (Integer (IR.X)));
+          ND.S (Curr_TCB.T)     := GR_Real (CD.Float_Constants_Table (Integer (IR.Y)));
         --
         when k_Check_Lower_Bound => Check_Lower (IR.Y);
         when k_Check_Upper_Bound => Check_Upper (IR.Y);

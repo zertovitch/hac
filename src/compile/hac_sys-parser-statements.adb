@@ -32,9 +32,9 @@ package body HAC_Sys.Parser.Statements is
     pragma Assert (CD.IdTab (Var_Id_Index).entity = Variable);
     X := CD.IdTab (Var_Id_Index).xtyp;
     if CD.IdTab (Var_Id_Index).normal then
-      F := k_Push_Address;  --  Normal variable, we push its address
+      F := k_Push_Address;         --  Normal variable, we push its address
     else
-      F := k_Push_Value;    --  The value is a reference, we want that address.
+      F := k_Push_Discrete_Value;  --  The value is a reference, we want that address.
     end if;
     Emit_2 (CD, F,
       Operand_1_Type (CD.IdTab (Var_Id_Index).lev),
@@ -567,7 +567,7 @@ package body HAC_Sys.Parser.Statements is
     end WHILE_Statement;
 
     procedure FOR_Statement is  --  RM 5.5 (9)
-      FOR_Begin : Opcode; --  Forward  or  Reverse
+      FOR_Begin_Instruction : Opcode; --  Forward  or  Reverse
       LC_FOR_Begin,
       Previous_Last : Index;
     begin
@@ -612,10 +612,10 @@ package body HAC_Sys.Parser.Statements is
         Operand_2_Type (CD.IdTab (CD.Id_Count).adr_or_sz)
       );
       InSymbol;
-      FOR_Begin := k_FOR_Forward_Begin;
+      FOR_Begin_Instruction := k_FOR_Forward_Begin;
       Need (CD, IN_Symbol, err_IN_missing);  --       "IN"  in  "for i in reverse 1 .. 10 loop"
       if CD.Sy = REVERSE_Symbol then         --  "REVERSE"  in  "for i in reverse 1 .. 10 loop"
-        FOR_Begin := k_FOR_Reverse_Begin;
+        FOR_Begin_Instruction := k_FOR_Reverse_Begin;
         InSymbol;
       end if;
       Ranges.Dynamic_Range (CD, Block_Data.level, FSys_St,
@@ -623,8 +623,8 @@ package body HAC_Sys.Parser.Statements is
         CD.IdTab (CD.Id_Count).xtyp  --  Set the subtype of "C" in "for C in Red .. Blue loop"
       );
       LC_FOR_Begin := CD.LC;
-      Emit (CD, FOR_Begin);
-      LOOP_Statement (For_END (FOR_Begin), CD.LC);
+      Emit (CD, FOR_Begin_Instruction);
+      LOOP_Statement (For_END_Instruction (FOR_Begin_Instruction), CD.LC);
       CD.ObjCode (LC_FOR_Begin).Y := Operand_2_Type (CD.LC);  --  Address of the code just after the loop's end.
       --  Forget the loop parameter (the "iterator variable"):
       CD.Id_Count := CD.Id_Count - 1;

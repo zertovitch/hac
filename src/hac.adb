@@ -120,9 +120,9 @@ procedure HAC is
       if BD.Folded_Instructions + BD.Specialized_Instructions > 0 then
         Put_Line (HAC_margin_2 & "Code optimization:");
         Put_Line (HAC_margin_2 & "  " & BD.Folded_Instructions'Image &
-          " instructions were folded");
+          " instructions folded");
         Put_Line (HAC_margin_2 & "  " & BD.Specialized_Instructions'Image &
-          " instructions were specialized");
+          " instructions specialized");
       end if;
       Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
     end if;
