@@ -73,7 +73,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
   )
   is
   begin
-    Emit_2 (CD, k_Standard_Functions, Extra, SF_Code'Pos (Code));
+    Emit_2 (CD, k_HAL_Function, Extra, SF_Code'Pos (Code));
   end Emit_Std_Funct;
 
   procedure Emit_Comparison_Instruction (

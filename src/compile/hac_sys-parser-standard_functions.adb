@@ -152,7 +152,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         --  Niladic End_Of_File, End_Of_Line without parameter.
         file_parameter := False;
       end if;
-      Emit_2 (CD, k_Standard_Functions, Boolean'Pos (file_parameter), SF_Code'Pos (FIF_Code));
+      Emit_2 (CD, k_HAL_Function, Boolean'Pos (file_parameter), SF_Code'Pos (FIF_Code));
     end Parse_File_Information_Function;
     --
     procedure Adjustments_to_Parameter_Types is  --  Here is the actual overloading implemented.

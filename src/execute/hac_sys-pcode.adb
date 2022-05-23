@@ -308,10 +308,10 @@ package body HAC_Sys.PCode is
           Put (Text, "; HAL.Real'Last: " & HAC_Float'Image (HAL.Real'Last));
         when k_Variable_Initialization =>
           Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
-        when k_Standard_Functions =>
+        when k_HAL_Function =>
           SF_C := SF_Code'Val (OC (i).Y);
           Put (Text, "; " & SF_Code'Image (SF_C));
-        when k_File_I_O =>
+        when k_HAL_Procedure =>
           SP_C := SP_Code'Val (OC (i).X);
           Put (Text, "; " & SP_Code'Image (SP_C));
           case SP_C is

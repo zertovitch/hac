@@ -43,7 +43,7 @@ package body HAC_Sys.PCode.Interpreter is
       Post_Mortem.Max_Stack_Usage := 0;
     end Start_Interpreter;
 
-    procedure Do_Standard_Function is
+    procedure Do_HAL_Function is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       Top_Item : General_Register renames ND.S (Curr_TCB.T);
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
@@ -95,7 +95,7 @@ package body HAC_Sys.PCode.Interpreter is
         when others =>
           Operators.Do_SF_Operator (CD, ND);  --  Doesn't need generic stuff.
       end case;
-    end Do_Standard_Function;
+    end Do_HAL_Function;
 
     procedure Do_Text_Read (Code : SP_Code) is
       CH : Character;
@@ -250,7 +250,7 @@ package body HAC_Sys.PCode.Interpreter is
       Pop;
     end Do_Code_for_Automatic_Initialization;
 
-    procedure Do_File_IO is
+    procedure Do_HAL_Procedure is
       Code : constant SP_Code := SP_Code'Val (ND.IR.X);
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       Top_Item       : General_Register renames ND.S (Curr_TCB.T);
@@ -399,7 +399,7 @@ package body HAC_Sys.PCode.Interpreter is
           when others =>
             Raise_Standard (ND, VME_Use_Error, Stop_Current_Instruction => True);
         end case;
-    end Do_File_IO;
+    end Do_HAL_Procedure;
 
     procedure Add_Stack_Trace_Line (Offset : Natural) is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
@@ -499,24 +499,6 @@ package body HAC_Sys.PCode.Interpreter is
       --
     begin
       case ND.IR.F is
-        when k_Pop =>
-          Pop;
-        when k_Jump =>
-          Curr_TCB.PC := Index (IR.Y);
-        when k_Jump_If_Zero_With_Pop =>
-          --  NB: this is the original conditional jump in Pascal-S.
-          if ND.S (Curr_TCB.T).I = 0 then   --  if False, then ...
-            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
-          end if;
-          Pop;  --  NB: the popping happens regardless of the branch.
-        when k_Jump_If_Zero_No_Pop =>
-          if ND.S (Curr_TCB.T).I = 0 then   --  if False, then ...
-            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
-          end if;
-        when k_Jump_If_Non_Zero_No_Pop =>
-          if ND.S (Curr_TCB.T).I /= 0 then  --  if True, then ...
-            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
-          end if;
         when k_Store =>  --  [T-1].all := [T], then pop 2x.
           if Typ_with_Variant_Part (Typen'Val (IR.Y))
             and then Typen'Val (IR.Y) /= ND.S (Curr_TCB.T).Special
@@ -546,6 +528,44 @@ package body HAC_Sys.PCode.Interpreter is
           ND.S (Index (ND.S (Curr_TCB.T).I)) :=
             GR_Real (CD.Float_Constants_Table (Integer (IR.Y)));
           Pop;
+        --
+        when Atomic_Data_Push_Opcode  => Do_Atomic_Data_Push_Operation;
+        when Composite_Data_Opcode    => Composite_Data.Do_Composite_Data_Operation (CD, ND);
+        when Unary_Operator_Opcode    => Operators.Do_Unary_Operator (ND);
+        when Binary_Operator_Opcode   => Operators.Do_Binary_Operator (ND);
+        when Multiple_Operator_Opcode => Operators.Do_Multiple_Operator (ND);
+        when Special_Operator_Opcode  => Operators.Do_Special_Operator (ND);
+        when Multi_Statement_Opcode   => Multi_Statement.Do_Multi_Statement_Operation (CD, ND);
+        when Calling_Opcode           => Calls.Do_Calling_Operation (CD, ND);
+        when Tasking_Opcode           => Tasking.Do_Tasking_Operation (CD, ND);
+        --
+        when k_Jump =>
+          Curr_TCB.PC := Index (IR.Y);
+        when k_Jump_If_Zero_With_Pop =>
+          --  NB: this is the original conditional jump in Pascal-S.
+          if ND.S (Curr_TCB.T).I = 0 then   --  if False, then ...
+            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
+          end if;
+          Pop;  --  NB: the popping happens regardless of the branch.
+        when k_Jump_If_Zero_No_Pop =>
+          if ND.S (Curr_TCB.T).I = 0 then   --  if False, then ...
+            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
+          end if;
+        when k_Jump_If_Non_Zero_No_Pop =>
+          if ND.S (Curr_TCB.T).I /= 0 then  --  if True, then ...
+            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
+          end if;
+        --
+        when k_Check_Lower_Bound => Check_Lower (IR.Y);
+        when k_Check_Upper_Bound => Check_Upper (IR.Y);
+        when k_Check_Bounds      => Check_Lower (IR.X); Check_Upper (IR.Y);
+        --
+        when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
+        when k_HAL_Procedure           => Do_HAL_Procedure;
+        when k_HAL_Function            => Do_HAL_Function;
+        --
+        when k_Pop =>
+          Pop;
         when k_Swap =>
           Do_Swap;
         when k_Pop_to_Temp =>
@@ -562,24 +582,6 @@ package body HAC_Sys.PCode.Interpreter is
           Push (2);
           ND.S (Curr_TCB.T - 1) := GR_Real (CD.Float_Constants_Table (Integer (IR.X)));
           ND.S (Curr_TCB.T)     := GR_Real (CD.Float_Constants_Table (Integer (IR.Y)));
-        --
-        when k_Check_Lower_Bound => Check_Lower (IR.Y);
-        when k_Check_Upper_Bound => Check_Upper (IR.Y);
-        when k_Check_Bounds      => Check_Lower (IR.X); Check_Upper (IR.Y);
-        --
-        when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
-        when k_File_I_O                => Do_File_IO;
-        when k_Standard_Functions      => Do_Standard_Function;
-        --
-        when Multi_Statement_Opcode   => Multi_Statement.Do_Multi_Statement_Operation (CD, ND);
-        when Atomic_Data_Push_Opcode  => Do_Atomic_Data_Push_Operation;
-        when Composite_Data_Opcode    => Composite_Data.Do_Composite_Data_Operation (CD, ND);
-        when Unary_Operator_Opcode    => Operators.Do_Unary_Operator (ND);
-        when Binary_Operator_Opcode   => Operators.Do_Binary_Operator (ND);
-        when Multiple_Operator_Opcode => Operators.Do_Multiple_Operator (ND);
-        when Special_Operator_Opcode  => Operators.Do_Special_Operator (ND);
-        when Calling_Opcode           => Calls.Do_Calling_Operation (CD, ND);
-        when Tasking_Opcode           => Tasking.Do_Tasking_Operation (CD, ND);
       end case;
     exception
       when others =>

@@ -48,8 +48,6 @@ package HAC_Sys.PCode is
     k_Check_Upper_Bound,
     k_Check_Bounds,
     --
-    k_Standard_Functions,
-    --
     k_Jump,
     k_Jump_If_Zero_With_Pop,            --  Jump if [T].I = 0, always pop
     k_Jump_If_Zero_No_Pop,              --  Jump if [T].I = 0, no pop
@@ -163,7 +161,9 @@ package HAC_Sys.PCode is
     k_NAND_Boolean,
     k_NOR_Boolean,
     --
-    k_File_I_O,
+    k_HAL_Procedure,
+    k_HAL_Function,
+    --
     --
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
     --
@@ -184,6 +184,14 @@ package HAC_Sys.PCode is
   subtype Binary_Operator_Opcode   is Opcode range k_EQL_Integer .. k_XOR_Boolean;
   subtype Multiple_Operator_Opcode is Opcode range k_ADD_Integer_Multiple .. k_ADD_Float_Multiple;
   subtype Special_Operator_Opcode  is Opcode range k_MULT_then_ADD_Integer .. k_NOR_Boolean;
+  subtype Op_then_Store_Opcode is Special_Operator_Opcode
+     range k_ADD_Integer_then_Store .. k_MULT_Float_then_Store;
+  subtype Op_Float_then_Store_Opcode is Op_then_Store_Opcode
+     range k_ADD_Float_then_Store .. k_MULT_Float_then_Store;
+  subtype Op_Integer_Literal_Opcode is Special_Operator_Opcode
+     range k_ADD_Integer_Literal .. k_GEQ_Integer_Literal;
+  subtype Compare_Integer_Literal_Opcode is Op_Integer_Literal_Opcode
+     range k_EQL_Integer_Literal .. k_GEQ_Integer_Literal;
   --
   subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Last;
   subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Update_Display_Vector;
