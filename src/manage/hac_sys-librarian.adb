@@ -16,7 +16,11 @@ with HAC_Sys.Compiler,
      HAC_Sys.Errors;
 
 with Ada.Characters.Handling,
-     Ada.Exceptions;
+     Ada.Containers.Indefinite_Hashed_Maps,
+     Ada.Exceptions,
+     Ada.Strings.Hash,
+     Ada.Text_IO.Text_Streams,
+     Ada.Unchecked_Deallocation;
 
 package body HAC_Sys.Librarian is
 
@@ -120,25 +124,27 @@ package body HAC_Sys.Librarian is
     return result;
   end GNAT_Naming;
 
-  --  Search for "physical" file corresponding to unit name
-  --  First a spec, then a body.
-  --  If nothing found, return empty string.
-  --
-  function Find_Unit_File_Name (
-    Unit_Name : String
-    --  TBD:
-    --  search path for single source files;
-    --  search path for zipped files (.har, like .jar ...)
-  )
+  procedure Set_Source_Access
+    (LD          : in out Library_Data;
+     exists      :        Extended_Exists;
+     open_source :        Extended_Open) is
+  begin
+    LD.exists      := exists;
+    LD.open_source := open_source;
+  end Set_Source_Access;
+
+  function Find_Unit_File_Name
+    (LD        : Library_Data;
+     Unit_Name : String)
   return String
   is
     GNAT_prefix : constant String := GNAT_Naming (Unit_Name);
     spec_fn : constant String := GNAT_prefix & ".ads";
     body_fn : constant String := GNAT_prefix & ".adb";
   begin
-    if HAL.Exists (spec_fn) then
+    if LD.exists (spec_fn) then
       return spec_fn;
-    elsif HAL.Exists (body_fn) then
+    elsif LD.exists (body_fn) then
       return body_fn;
     else
       return "";
@@ -178,7 +184,7 @@ package body HAC_Sys.Librarian is
     Upper_Name : in     String
   )
   is
-    fn : constant String := Find_Unit_File_Name (Upper_Name);
+    fn : constant String := Find_Unit_File_Name (LD, Upper_Name);
     use Defs, Errors;
     as_specification : Boolean;
     needs_body : Boolean;
@@ -291,5 +297,46 @@ package body HAC_Sys.Librarian is
       Parser.Helpers.Locate_Identifier (CD, Defs.S2A ("STANDARD"), 0)
     );
   end Apply_WITH_USE_Standard;
+
+  --  Here we have the default behaviour for Library_Data's open source
+  --  and close source routines.
+  --  It can be a template for a customized, abstracted file system
+  --  for getting source (and other) files.
+
+  type Text_File_Access is access Ada.Text_IO.File_Type;
+
+  package Default_File_Name_Mapping is new Ada.Containers.Indefinite_Hashed_Maps
+    (Key_Type        => String,  --  Simple file name
+     Element_Type    => Text_File_Access,
+     Hash            => Ada.Strings.Hash,
+     Equivalent_Keys => "=");
+
+  default_file_names : Default_File_Name_Mapping.Map;
+
+  procedure default_open_file_proc (Simple_Name : String; Stream : out Co_Defs.Source_Stream_Access) is
+    use Ada.Text_IO;
+    new_file : constant Text_File_Access := new File_Type;
+  begin
+    default_file_names.Insert (Simple_Name, new_file);
+    Open (new_file.all, In_File, Simple_Name);
+    Stream := Co_Defs.Source_Stream_Access (Text_Streams.Stream (new_file.all));
+  end default_open_file_proc;
+
+  procedure default_close_file_proc (Simple_Name : String) is
+    use Ada.Text_IO;
+    procedure Free is new Ada.Unchecked_Deallocation (File_Type, Text_File_Access);
+    file : Text_File_Access;
+  begin
+    if default_file_names.Contains (Simple_Name) then
+      file := default_file_names.Element (Simple_Name);
+      if file /= null then
+        if Is_Open (file.all) then
+          Close (file.all);
+        end if;
+        Free (file);
+      end if;
+      default_file_names.Delete (Simple_Name);
+    end if;
+  end default_close_file_proc;
 
 end HAC_Sys.Librarian;

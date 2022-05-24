@@ -46,7 +46,7 @@ package body HAC_Sys.Builder is
       declare
         upper_vname : constant VString := To_Upper (lu.full_name);
         upper_name : constant String := To_String (upper_vname);
-        fn : String := Find_Unit_File_Name (upper_name);
+        fn : String := Find_Unit_File_Name (BD.LD, upper_name);
       begin
         fn (fn'Last) := 'b';  --  Name ending for a unit's body (*.adb).
         case Spec_Done (lu.status) is

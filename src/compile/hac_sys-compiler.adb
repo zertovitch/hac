@@ -1,5 +1,4 @@
-with HAC_Sys.Builder,
-     HAC_Sys.Compiler.PCode_Emit,
+with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Defs,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Modularity,
@@ -12,7 +11,7 @@ with HAL;
 
 with Ada.Integer_Text_IO,
      Ada.Strings.Fixed,
-     Ada.Text_IO.Text_Streams;
+     Ada.Text_IO;
 
 package body HAC_Sys.Compiler is
 
@@ -453,11 +452,10 @@ package body HAC_Sys.Compiler is
     use Ada.Strings.Fixed, Ada.Text_IO, Librarian, Errors, Parser.Helpers, PCode;
     --  Save state of unit currently parsed (within a WITH clause).
     mem : constant Current_Unit_Data := CD.CUD;
-    src : File_Type;
-    shebang_offset : Natural;
     Unit_Id_with_case : Alfa;
     unit_block : Parser.Block_Data_Type;
     indent : Natural := 0;
+    src_stream : Co_Defs.Source_Stream_Access;
     function Spec_or_Body return String is
       (" (" & (if as_specification then "specification)" else "body)"));
   begin
@@ -469,14 +467,13 @@ package body HAC_Sys.Compiler is
       Progress_Message (CD, indent * '.' & "Compiling: " & file_name & Spec_or_Body);
     end if;
     begin
-      Open (src, In_File, file_name);
+      LD.open_source (file_name, src_stream);
     exception
       when Name_Error =>
         Error (CD, err_library_error, "file " & file_name & Spec_or_Body & " not found", major);
     end;
-    Builder.Skip_Shebang (src, shebang_offset);
     --  HAL.PUT_LINE("Compiling unit " & upper_name);
-    Set_Source_Stream (CD.CUD, Text_Streams.Stream (src), file_name, shebang_offset);
+    Set_Source_Stream (CD.CUD, src_stream, file_name, 0);
     --  Reset scanner data (line counter etc.) and
     --  library-level visible declarations (processed WITH of caller's compilation)
     Init (CD.CUD);
@@ -587,7 +584,7 @@ package body HAC_Sys.Compiler is
         Parser.Packages.Package_Body (CD, Empty_Symset, unit_block);
         needs_body := False;
     end case;
-    Close (src);
+    LD.close_source (file_name);
     if CD.trace.detail_level >= 2 then
       Progress_Message (CD,
        indent * '.' &
@@ -602,9 +599,7 @@ package body HAC_Sys.Compiler is
     CD.recursion := CD.recursion - 1;
   exception
     when others =>
-      if Is_Open (src) then
-        Close (src);
-      end if;
+      LD.close_source (file_name);
       raise;
   end Compile_Unit;
 

@@ -68,21 +68,55 @@ package HAC_Sys.Librarian is
      Hash            => Ada.Strings.Unbounded.Hash,
      Equivalent_Keys => Ada.Strings.Unbounded."=");
 
+  --  Does a file name exist?
+  --  The file name can be, for instance:
+  --    - looked for on current directory
+  --    - searched on a set of directories (a search path)
+  --    - a name of a remote file accessed through Internet
+  --    - a name in one or more Zip archives (.har)
+  --    - a name in a set of open editor windows
+  --    - a name in a database
+  --  Of course we can have a combination of the above.
+  --  In the last four examples, it could be that the "physical" file
+  --  cannot be accessed via Ada.*_IO, or doesn't even exists.
+  --
+  type Extended_Exists is access
+    function (Simple_Name : String) return Boolean;
+
+  --  Default `Extended_Exists` is just looking for a physical
+  --  file in the current directory.
+  default_exists : constant Extended_Exists := HAL.Exists'Access;
+
+  type Extended_Open is access
+    procedure (Simple_Name : String; Stream : out Co_Defs.Source_Stream_Access);
+
+  default_open_file : constant Extended_Open;
+
+  type Extended_Close is access procedure (Simple_Name : String);
+
+  default_close_file : constant Extended_Close;
+
   type Library_Data is record
-    Library : Library_Unit_Vectors.Vector;  --  The library itself
-    Map     : Library_Name_Mapping.Map;     --  Quick access by name to unit number
+    Library      : Library_Unit_Vectors.Vector;  --  The library itself
+    Map          : Library_Name_Mapping.Map;     --  Quick access by name to unit number
+    exists       : Extended_Exists := default_exists;
+    open_source  : Extended_Open   := default_open_file;
+    close_source : Extended_Close  := default_close_file;
   end record;
 
-  --  Search for "physical" file corresponding to unit name
+  procedure Set_Source_Access
+    (LD          : in out Library_Data;
+     exists      :        Extended_Exists;
+     open_source :        Extended_Open);
+
+  --  Search for file (physical or not, depending on the
+  --  LD.exists.all function) corresponding to unit name.
   --  First a spec, then a body.
   --  If nothing found, return empty string.
   --
-  function Find_Unit_File_Name (
-    Unit_Name : String
-    --  TBD:
-    --  search path for single source files;
-    --  search path for zipped files (.har, like .jar ...)
-  )
+  function Find_Unit_File_Name
+    (LD        : Library_Data;
+     Unit_Name : String)
   return String;
 
   -----------------------------------------------------
@@ -132,5 +166,13 @@ package HAC_Sys.Librarian is
     --  ^ Changes in the library the details for
     --    unit named Descriptor.Full_Name.
   );
+
+private
+
+  procedure default_open_file_proc (Simple_Name : String; Stream : out Co_Defs.Source_Stream_Access);
+  default_open_file : constant Extended_Open := default_open_file_proc'Access;
+
+  procedure default_close_file_proc (Simple_Name : String);
+  default_close_file : constant Extended_Close := default_close_file_proc'Access;
 
 end HAC_Sys.Librarian;

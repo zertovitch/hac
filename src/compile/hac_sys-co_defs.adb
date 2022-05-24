@@ -39,16 +39,16 @@ package body HAC_Sys.Co_Defs is
   end Undefined;
 
   procedure Set_Source_Stream (
-    SD         : in out Current_Unit_Data;
+    CUD        : in out Current_Unit_Data;
     s          : access Ada.Streams.Root_Stream_Type'Class;
     file_name  : in     String;
     start_line : in     Natural := 0
   )
   is
   begin
-    SD.compiler_stream  := Source_Stream_Access (s);
-    SD.source_file_name := HAL.To_VString (file_name);
-    SD.line_count       := start_line;
+    CUD.compiler_stream  := Source_Stream_Access (s);
+    CUD.source_file_name := HAL.To_VString (file_name);
+    CUD.line_count       := start_line;
   end Set_Source_Stream;
 
   function Get_Source_Name (SD : Current_Unit_Data) return String is
