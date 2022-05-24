@@ -300,42 +300,46 @@ package body HAC_Sys.Librarian is
 
   --  Here we have the default behaviour for Library_Data's open source
   --  and close source routines.
-  --  It can be a template for a customized, abstracted file system
-  --  for getting source (and other) files.
+  --  It can be a template for a customized, more elaborate, abstracted
+  --  file system for getting source (and other) streams.
+  --  The routines can also used as end point of the said abstracted
+  --  file system when "physical" files are involved.
 
   type Text_File_Access is access Ada.Text_IO.File_Type;
 
   package Default_File_Name_Mapping is new Ada.Containers.Indefinite_Hashed_Maps
-    (Key_Type        => String,  --  Simple file name
+    (Key_Type        => String,
      Element_Type    => Text_File_Access,
      Hash            => Ada.Strings.Hash,
      Equivalent_Keys => "=");
 
+  --  Here we have a global mapping
+  --  !! Not task-safe -> wrap into a protected object!
   default_file_names : Default_File_Name_Mapping.Map;
 
-  procedure default_open_file_proc (Simple_Name : String; Stream : out Co_Defs.Source_Stream_Access) is
+  procedure default_open_file_proc (Name : String; Stream : out Co_Defs.Source_Stream_Access) is
     use Ada.Text_IO;
     new_file : constant Text_File_Access := new File_Type;
   begin
-    default_file_names.Insert (Simple_Name, new_file);
-    Open (new_file.all, In_File, Simple_Name);
+    default_file_names.Insert (Name, new_file);
+    Open (new_file.all, In_File, Name);
     Stream := Co_Defs.Source_Stream_Access (Text_Streams.Stream (new_file.all));
   end default_open_file_proc;
 
-  procedure default_close_file_proc (Simple_Name : String) is
+  procedure default_close_file_proc (Name : String) is
     use Ada.Text_IO;
     procedure Free is new Ada.Unchecked_Deallocation (File_Type, Text_File_Access);
     file : Text_File_Access;
   begin
-    if default_file_names.Contains (Simple_Name) then
-      file := default_file_names.Element (Simple_Name);
+    if default_file_names.Contains (Name) then
+      file := default_file_names.Element (Name);
       if file /= null then
         if Is_Open (file.all) then
           Close (file.all);
         end if;
         Free (file);
       end if;
-      default_file_names.Delete (Simple_Name);
+      default_file_names.Delete (Name);
     end if;
   end default_close_file_proc;
 

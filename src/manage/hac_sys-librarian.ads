@@ -90,6 +90,9 @@ package HAC_Sys.Librarian is
   type Extended_Open is access
     procedure (Simple_Name : String; Stream : out Co_Defs.Source_Stream_Access);
 
+  --  Default `Extended_Open` opens a text file in the current directory.
+  --  In that case the simple file name, e.g. "my_package.ads", is used
+  --  "as is" for the file operations.
   default_open_file : constant Extended_Open;
 
   type Extended_Close is access procedure (Simple_Name : String);
@@ -169,10 +172,10 @@ package HAC_Sys.Librarian is
 
 private
 
-  procedure default_open_file_proc (Simple_Name : String; Stream : out Co_Defs.Source_Stream_Access);
+  procedure default_open_file_proc (Name : String; Stream : out Co_Defs.Source_Stream_Access);
   default_open_file : constant Extended_Open := default_open_file_proc'Access;
 
-  procedure default_close_file_proc (Simple_Name : String);
+  procedure default_close_file_proc (Name : String);
   default_close_file : constant Extended_Close := default_close_file_proc'Access;
 
 end HAC_Sys.Librarian;
