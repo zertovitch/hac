@@ -99,7 +99,7 @@ package HAC_Sys.Librarian is
 
   default_close_file : constant Extended_Close;
 
-  type Library_Data is record
+  type Library_Data is tagged record
     Library      : Library_Unit_Vectors.Vector;  --  The library itself
     Map          : Library_Name_Mapping.Map;     --  Quick access by name to unit number
     exists       : Extended_Exists := default_exists;
@@ -109,8 +109,9 @@ package HAC_Sys.Librarian is
 
   procedure Set_Source_Access
     (LD          : in out Library_Data;
-     exists      :        Extended_Exists;
-     open_source :        Extended_Open);
+     exists       : Extended_Exists;
+     open_source  : Extended_Open;
+     close_source : Extended_Close);
 
   --  Search for file (physical or not, depending on the
   --  LD.exists.all function) corresponding to unit name.

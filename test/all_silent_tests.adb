@@ -107,7 +107,7 @@ procedure All_Silent_Tests is
     Normal_Test (+"object_init.adb");
     --  Create the X_* packages.
     Shell_Execute (generate);
-    Normal_Test (+".." & Directory_Separator & "exm" & Directory_Separator & "pkg_demo.adb test_mode");
+    Normal_Test (+"-I. .." & Directory_Separator & "exm" & Directory_Separator & "pkg_demo.adb test_mode");
     Shell_Execute (generate & " delete");
     Normal_Test (+"recursion.adb");
     Normal_Test (+"sorting_tests.adb");

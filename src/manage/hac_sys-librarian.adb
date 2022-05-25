@@ -126,11 +126,13 @@ package body HAC_Sys.Librarian is
 
   procedure Set_Source_Access
     (LD          : in out Library_Data;
-     exists      :        Extended_Exists;
-     open_source :        Extended_Open) is
+     exists       : Extended_Exists;
+     open_source  : Extended_Open;
+     close_source : Extended_Close) is
   begin
-    LD.exists      := exists;
-    LD.open_source := open_source;
+    LD.exists       := exists;
+    LD.open_source  := open_source;
+    LD.close_source := close_source;
   end Set_Source_Access;
 
   function Find_Unit_File_Name
