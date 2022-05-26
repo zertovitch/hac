@@ -30,6 +30,18 @@ procedure HAC is
   HAC_margin_2 : constant String := ". . . .[ HAC ]. . . .   ";
   HAC_margin_3 : constant String := "-------[ HAC ]-------   ";
 
+  procedure PLCE (s : String) is
+    use Ada.Text_IO;
+  begin
+    Put_Line (Current_Error, s);
+  end PLCE;
+
+  procedure NLCE is
+    use Ada.Text_IO;
+  begin
+    New_Line (Current_Error);
+  end NLCE;
+
   procedure Compilation_Feedback (message : String) is
   begin
     case verbosity is
@@ -100,7 +112,7 @@ procedure HAC is
           return fn;
         end if;
       end;
-      --  3) Ommitted.
+      --  3) Omitted.
       --  4) Each of the directories listed in the value of the ADA_INCLUDE_PATH environment variable.
       declare
         fn : constant String :=
@@ -137,12 +149,10 @@ procedure HAC is
     )
     is
     begin
-      Put_Line (
-        Current_Error,
-        File_Name & ": " &
-        Block_Name & " at line" &
-        Integer'Image (Line_Number)
-      );
+      PLCE
+        (File_Name & ": " &
+         Block_Name & " at line" &
+         Integer'Image (Line_Number));
     end Show_Line_Information;
     --
     procedure CIO_Trace_Back is new Show_Trace_Back (Show_Line_Information);
@@ -199,7 +209,7 @@ procedure HAC is
     end if;
     --
     if not BD.Build_Successful then
-      Put_Line (Current_Error, "Errors were found. Build failed.");
+      PLCE ("Errors were found. Build failed.");
       Failure;
       return;
     end if;
@@ -238,9 +248,9 @@ procedure HAC is
       end if;
     end if;
     if unhandled_found then
-      Put_Line (Current_Error, "HAC VM: raised " & Image (post_mortem.Unhandled));
-      Put_Line (Current_Error, Message (post_mortem.Unhandled));
-      Put_Line (Current_Error, "Trace-back: approximate location");
+      PLCE ("HAC VM: raised " & Image (post_mortem.Unhandled));
+      PLCE (Message (post_mortem.Unhandled));
+      PLCE ("Trace-back: approximate location");
       CIO_Trace_Back (post_mortem.Unhandled);
       Failure;
     elsif verbosity >= 1 then
@@ -265,80 +275,98 @@ procedure HAC is
     end if;
   exception
     when E : Abnormal_Termination =>
-      Put_Line (
-        Current_Error,
-        Ada.Exceptions.Exception_Message (E)
-      );
+      PLCE (Ada.Exceptions.Exception_Message (E));
       Failure;
     when Name_Error =>
-      Put_Line (
-        Current_Error,
-        HAC_margin_3 &
-        "Error: file """ & Ada_file_name &
-        """ not found (perhaps in exm or test subdirectory ?)");
+      PLCE
+        (HAC_margin_3 &
+         "Error: file """ & Ada_file_name &
+         """ not found (perhaps in exm or test subdirectory ?)");
       Failure;
   end Compile_and_interpret_file;
 
   assembler_output_name : constant String := "asm_dump.pca";       --  PCA = PCode Assembler
   compiler_dump_name    : constant String := "compiler_dump.lst";
 
-  procedure Help is
+  procedure Help (level : Positive) is
     use Ada.Text_IO;
   begin
-    Put_Line (Current_Error, "HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
-    Put_Line (Current_Error, version_info);
-    Put_Line (Current_Error, "URL: " & HAC_Sys.web);
-    New_Line (Current_Error);
-    Put_Line (Current_Error, "Usage: hac [options] main.adb [command-line parameters for main]");
-    New_Line (Current_Error);
-    Put_Line (Current_Error, "Options: -h     : this help");
-    Put_Line (Current_Error, "         -I     : specify source files search path");
-    Put_Line (Current_Error, "         -v, v1 : verbose");
-    Put_Line (Current_Error, "         -v2    : very verbose");
-    Put_Line (Current_Error, "         -a     : assembler output in " & assembler_output_name);
-    Put_Line (Current_Error, "         -d     : dump compiler information in " & compiler_dump_name);
-    New_Line (Current_Error);
-    Put_Line (Current_Error, caveat);
-    Put_Line (Current_Error, "Note: HAC (this command-line tool) accepts source files with shebang's,");
-    Put_Line (Current_Error, "      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
+    PLCE ("HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
+    PLCE (version_info);
+    PLCE ("URL: " & HAC_Sys.web);
+    NLCE;
+    PLCE ("Usage: hac [options] main.adb [command-line parameters for main]");
+    NLCE;
+    PLCE ("Options: -h     : this help");
+    PLCE ("         -I     : specify source files search path");
+    PLCE ("         -v, v1 : verbose");
+    PLCE ("         -v2    : very verbose");
+    PLCE ("         -a     : assembler output in " & assembler_output_name);
+    PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
+    PLCE ("         -h2    : show more help about options");
+    NLCE;
+    PLCE (caveat);
+    PLCE ("Note: HAC (this command-line tool) accepts source files with shebang's,");
+    PLCE ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
     Show_License (Current_Error, "hac_sys.ads");
+    if level > 1 then
+      PLCE ("Extended help for HAC");
+      PLCE ("---------------------");
+      NLCE;
+      PLCE ("Option -I : specify source files search path");
+      NLCE;
+      PLCE ("  The search path is a list of directories separated by commas (,) or semicolons (;).");
+      PLCE ("  HAC searches Ada source files in the following order:");
+      PLCE ("    1) The directory containing the source file of the main unit");
+      PLCE ("         being compiled (the file name on the command line).");
+      PLCE ("    2) Each directory named by an -I switch given on the");
+      PLCE ("         hac command line, in the order given.");
+      PLCE ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
+      PLCE ("         environment variable.");
+    end if;
   end Help;
 
-  hac_ing : Boolean := False;
-  quit : Boolean := False;
+  hac_ing    : Boolean  := False;
+  quit       : Boolean  := False;
+  help_level : Positive := 1;
 
   procedure Process_Argument (arg : String; arg_pos : Positive) is
-    use Ada.Text_IO;
+    opt : constant String := arg (arg'First + 1 .. arg'Last);
+    use HAL;
   begin
-    if arg = "-h" then
-      quit := True;
-    elsif arg = "-v" or else arg = "-v1" then
-      verbosity := 1;
-    elsif arg = "-v2" then
-      verbosity := 2;
-    elsif arg = "-a" then
-      asm_dump_file_name := HAL.To_VString (assembler_output_name);
-    elsif arg = "-d" then
-      cmp_dump_file_name := HAL.To_VString (compiler_dump_name);
-    elsif arg (arg'First) = '-' then
-      --  More complicated options
-      declare
-        opt : constant String := arg (arg'First + 1 .. arg'Last);
-      begin
-        if opt'Length = 0 then
-          Put_Line (Current_Error, "Missing option code: ""-""");
-          New_Line (Current_Error);
-          quit := True;
-          return;
-        end if;
-        if opt (opt'First) = 'I' then
-          command_line_source_path := HAL.To_VString (opt (opt'First + 1 .. opt'Last));
-          return;
-        end if;
-        Put_Line (Current_Error, "Unknown option: """ & arg & '"');
-        New_Line (Current_Error);
+    if arg (arg'First) = '-' then
+      if opt'Length = 0 then
+        PLCE ("Missing option code: ""-""");
+        NLCE;
         quit := True;
-      end;
+        return;
+      end if;
+      case opt (opt'First) is
+        when 'a' =>
+          asm_dump_file_name := HAL.To_VString (assembler_output_name);
+        when 'd' =>
+          cmp_dump_file_name := HAL.To_VString (compiler_dump_name);
+        when 'h' =>
+          if opt'Length > 1 and then opt (opt'First + 1) = '2' then
+            help_level := 2;
+          end if;
+          quit := True;
+        when 'I' =>
+          if command_line_source_path /= "" then
+            command_line_source_path := command_line_source_path & ';';
+          end if;
+          command_line_source_path :=
+            command_line_source_path & HAL.To_VString (opt (opt'First + 1 .. opt'Last));
+        when 'v' =>
+          verbosity := 1;
+          if opt'Length > 1 and then opt (opt'First + 1) = '2' then
+            verbosity := 2;
+          end if;
+        when others =>
+          PLCE ("Unknown option: """ & arg & '"');
+          NLCE;
+          quit := True;
+      end case;
     else
       Compile_and_interpret_file (arg, arg_pos);
       hac_ing := True;
@@ -354,7 +382,7 @@ begin
     exit when quit;
   end loop;
   if not hac_ing then
-    Help;
+    Help (help_level);
     if verbosity > 1 then
       Ada.Text_IO.Put_Line ("Size of a HAC VM memory unit:" &
         Integer'Image (HAC_Sys.PCode.Interpreter.In_Defs.Data_Type'Size / 8) &
