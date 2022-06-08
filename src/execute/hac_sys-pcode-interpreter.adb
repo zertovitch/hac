@@ -475,25 +475,29 @@ package body HAC_Sys.PCode.Interpreter is
         ND.S (Curr_TCB.T - 1) := temp;
       end Do_Swap;
       --
-      procedure Check_Lower (bound : HAC_Integer) is
+      procedure Check_Lower (bound : HAC_Integer; TYP : Typen; Ref : Index) is
       pragma Inline (Check_Lower);
       begin
         if ND.S (Curr_TCB.T).I < bound then
           raise VM_Out_of_Range
             with
-              ": pos, " & HAC_Image (ND.S (Curr_TCB.T).I) &
-              ", is below (sub)type's lower bound, " & HAC_Image (bound);
+              ": value " &
+              Discrete_Image (CD, ND.S (Curr_TCB.T).I, TYP, Ref) &
+              " is below destination (sub)type's lower bound, " &
+              Discrete_Image (CD, bound, TYP, Ref);
         end if;
       end Check_Lower;
       --
-      procedure Check_Upper (bound : HAC_Integer) is
+      procedure Check_Upper (bound : HAC_Integer; TYP : Typen; Ref : Index) is
       pragma Inline (Check_Upper);
       begin
         if ND.S (Curr_TCB.T).I > bound then
           raise VM_Out_of_Range
             with
-              ": pos, " & HAC_Image (ND.S (Curr_TCB.T).I) &
-              ", is above (sub)type's upper bound, " & HAC_Image (bound);
+              ": value " &
+              Discrete_Image (CD, ND.S (Curr_TCB.T).I, TYP, Ref) &
+              " is above destination (sub)type's upper bound, " &
+              Discrete_Image (CD, bound, TYP, Ref);
         end if;
       end Check_Upper;
       --
@@ -556,9 +560,8 @@ package body HAC_Sys.PCode.Interpreter is
             Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
           end if;
         --
-        when k_Check_Lower_Bound => Check_Lower (IR.Y);
-        when k_Check_Upper_Bound => Check_Upper (IR.Y);
-        when k_Check_Bounds      => Check_Lower (IR.X); Check_Upper (IR.Y);
+        when k_Check_Lower_Bound => Check_Lower (IR.X, Typen'Val (IR.Y), Index (IR.Z));
+        when k_Check_Upper_Bound => Check_Upper (IR.X, Typen'Val (IR.Y), Index (IR.Z));
         --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
         when k_HAL_Procedure           => Do_HAL_Procedure;

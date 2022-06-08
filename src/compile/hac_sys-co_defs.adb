@@ -56,4 +56,25 @@ package body HAC_Sys.Co_Defs is
     return HAL.VStr_Pkg.To_String (SD.source_file_name);
   end Get_Source_Name;
 
+  function Discrete_Image
+    (CD : Compiler_Data; value : HAC_Integer; Typ : Typen; Ref : Index) return String is
+  begin
+    case Typ is
+      when Ints  => return HAC_Image (value);
+      when Bools => return Boolean'Image (Boolean'Val (value));
+      when Chars => return Character'Image (Character'Val (value));
+      when Enums => return A2S (CD.IdTab (Ref + 1 + Integer (value)).name_with_case);
+      when others => raise Program_Error with "Non-discrete type";
+    end case;
+  end Discrete_Image;
+
+  function Discrete_Range_Image
+    (CD : Compiler_Data; value_1, value_2 : HAC_Integer; Typ : Typen; Ref : Index) return String is
+  begin
+    return
+      Discrete_Image (CD, value_1, Typ, Ref) &
+      " .. " &
+      Discrete_Image (CD, value_2, Typ, Ref);
+  end Discrete_Range_Image;
+
 end HAC_Sys.Co_Defs;

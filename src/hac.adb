@@ -209,7 +209,7 @@ procedure HAC is
     end if;
     --
     if not BD.Build_Successful then
-      PLCE ("Errors were found. Build failed.");
+      PLCE ("Errors found, build failed.");
       Failure;
       return;
     end if;

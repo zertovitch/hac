@@ -67,6 +67,7 @@ package body HAC_Sys.PCode is
     FCT         :        Opcode;
     a           :        Operand_1_Type;
     B           :        Operand_2_Type;
+    c           :        Operand_3_Type;
     folded      :    out Boolean;
     specialized :    out Boolean
   )
@@ -148,15 +149,15 @@ package body HAC_Sys.PCode is
           end if;
         when k_Store =>
           Simple_Substitution (k_Push_Float_Literal, k_Store_Float_Literal);
-          --  ^ B (for this opcode, special type info) is discarded
-          --  since the TYP is forced to Floats.
+          --  ^ Operand B (for this opcode, special type info) is discarded
+          --  since the TYP is Floats.
           --
           Simple_Substitution (k_ADD_Float,      k_ADD_Float_then_Store);
           Simple_Substitution (k_SUBTRACT_Float, k_SUBTRACT_Float_then_Store);
           Simple_Substitution (k_MULT_Float,     k_MULT_Float_then_Store);
         when k_Store_Discrete =>
           Simple_Substitution (k_Push_Discrete_Literal, k_Store_Discrete_Literal);
-          --  ^ B (for this opcode, special type info) is discarded
+          --  ^ Operand B (for this opcode, special type info) is discarded
           --  since we have a (subtype-checked) discrete value.
           Simple_Substitution (k_ADD_Integer,      k_ADD_Integer_then_Store);
           Simple_Substitution (k_SUBTRACT_Integer, k_SUBTRACT_Integer_then_Store);
@@ -187,6 +188,7 @@ package body HAC_Sys.PCode is
       OC (LC).F := FCT_corr;
       OC (LC).X := a;
       OC (LC).Y := B;
+      OC (LC).Z := c;
       OC (LC).D := D;
       LC        := LC + 1;
     end if;

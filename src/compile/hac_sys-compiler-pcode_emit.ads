@@ -37,6 +37,15 @@ package HAC_Sys.Compiler.PCode_Emit is
     B    :        Operand_2_Type
   );
 
+  procedure Emit_3 (
+    CD   : in out Compiler_Data;
+    FCT  :        Opcode;
+    a    :        Operand_1_Type;
+    B    :        Operand_2_Type;
+    c    :        Operand_3_Type
+  );
+  pragma Inline (Emit_3);
+
   procedure Emit_Std_Funct (
     CD    : in out Compiler_Data;
     Code  :        SF_Code;

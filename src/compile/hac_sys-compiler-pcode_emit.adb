@@ -26,7 +26,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
   )
   is
   begin
-    Emit_2 (CD, FCT, 0, 0);
+    Emit_3 (CD, FCT, 0, 0, 0);
   end Emit;
 
   procedure Emit_1 (
@@ -36,7 +36,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
   )
   is
   begin
-    Emit_2 (CD, FCT, 0, B);
+    Emit_3 (CD, FCT, 0, B, 0);
   end Emit_1;
 
   procedure Emit_2 (
@@ -44,6 +44,18 @@ package body HAC_Sys.Compiler.PCode_Emit is
     FCT  :        Opcode;
     a    :        Operand_1_Type;
     B    :        Operand_2_Type
+  )
+  is
+  begin
+    Emit_3 (CD, FCT, a, B, 0);
+  end Emit_2;
+
+  procedure Emit_3 (
+    CD   : in out Compiler_Data;
+    FCT  :        Opcode;
+    a    :        Operand_1_Type;
+    B    :        Operand_2_Type;
+    c    :        Operand_3_Type
   )
   is
     folded      : Boolean;
@@ -54,7 +66,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
       --  ^ We don't pass the full object code table (CD.ObjCode)
       --    but the part before variable initialization code,
       --    for preventing overwriting existing initialization code.
-      CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, a, B,
+      CD.LC, Compiler_Data_to_Debug_Info (CD), FCT, a, B, c,
       folded,
       specialized
     );
@@ -64,7 +76,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
     if specialized then
       CD.specialized_instructions := CD.specialized_instructions + 1;
     end if;
-  end Emit_2;
+  end Emit_3;
 
   procedure Emit_Std_Funct (
     CD    : in out Compiler_Data;

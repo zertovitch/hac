@@ -1,5 +1,3 @@
-with Ada.Strings.Fixed;
-
 package body HAC_Sys.PCode.Interpreter.Composite_Data is
 
   procedure Do_Composite_Data_Operation (CD : Compiler_Data; ND : in out Interpreter_Data) is
@@ -19,17 +17,24 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       Low  : constant Index := Index (ATE.Index_xTyp.Discrete_First);
       High : constant Index := Index (ATE.Index_xTyp.Discrete_Last);
       Idx  : constant Index := Index (ND.S (Curr_TCB.T).I);
-      use Ada.Strings, Ada.Strings.Fixed;
+      --
+      function Out_Message (bound : Defs.Index; excerpt : String) return String is
+      begin
+        return
+          ": index, " &
+          Discrete_Image (CD, HAC_Integer (Idx), ATE.Index_xTyp.TYP, ATE.Index_xTyp.Ref) &
+          ", is " &
+          excerpt &
+          " bound, " &
+          Discrete_Image (CD, HAC_Integer (bound), ATE.Index_xTyp.TYP, ATE.Index_xTyp.Ref);
+      end Out_Message;
+      --
     begin
       if range_check then
         if Idx < Low then
-          raise VM_Out_of_Range
-            with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
-              ") is below lower bound (pos: " & Trim (Defs.Index'Image (Low), Left) & ')';
+          raise VM_Out_of_Range with Out_Message (Low, "below lower");
         elsif Idx > High then
-          raise VM_Out_of_Range
-            with ": index (pos: " & Trim (Defs.Index'Image (Idx), Left) &
-              ") is above upper bound (pos: " & Trim (Defs.Index'Image (High), Left) & ')';
+          raise VM_Out_of_Range with Out_Message (High, "above upper");
         end if;
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.

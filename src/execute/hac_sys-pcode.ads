@@ -46,7 +46,6 @@ package HAC_Sys.PCode is
     k_Push_Temp,                --  Push temp register on the stack.
     k_Check_Lower_Bound,
     k_Check_Upper_Bound,
-    k_Check_Bounds,
     --
     k_Jump,
     k_Jump_If_Zero_With_Pop,            --  Jump if [T].I = 0, always pop
@@ -215,6 +214,7 @@ package HAC_Sys.PCode is
   --
   subtype Operand_1_Type is HAC_Sys.Defs.HAC_Integer;
   subtype Operand_2_Type is HAC_Sys.Defs.HAC_Integer;
+  subtype Operand_3_Type is HAC_Sys.Defs.HAC_Integer;
 
   type Debug_Info is record
     --  Line number in the source code.
@@ -231,6 +231,7 @@ package HAC_Sys.PCode is
     X : Operand_1_Type;  --  Operand 1 is mostly used to point to the static level
     Y : Operand_2_Type;  --  Operand 2 is used to pass addresses and sizes to the
                          --    instructions, or to pass immediate discrete values (k_Literal).
+    Z : Operand_3_Type;
     D : Debug_Info;
   end record;
 
@@ -289,6 +290,7 @@ package HAC_Sys.PCode is
     FCT         :        Opcode;
     a           :        Operand_1_Type;
     B           :        Operand_2_Type;
+    c           :        Operand_3_Type;
     folded      :    out Boolean;
     specialized :    out Boolean
   );

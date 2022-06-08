@@ -63,20 +63,27 @@ package body HAC_Sys.Parser.Statements is
     if X.TYP = Y.TYP and X.TYP /= NOTYP then
       if Discrete_Typ (X.TYP) then
         if Ranges.Do_Ranges_Overlap (X, Y) then
-          if X.Discrete_First > Y.Discrete_First and X.Discrete_Last < Y.Discrete_Last then
-            Compiler.PCode_Emit.Emit_2 (CD, k_Check_Bounds, X.Discrete_First, X.Discrete_Last);
-          elsif X.Discrete_First > Y.Discrete_First then
-            Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_Bound, X.Discrete_First);
-          elsif X.Discrete_Last < Y.Discrete_Last then
-            Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_Bound, X.Discrete_Last);
+          if X.Discrete_First > Y.Discrete_First then
+            Compiler.PCode_Emit.Emit_3
+              (CD, k_Check_Lower_Bound, X.Discrete_First, Typen'Pos (X.TYP), Operand_3_Type (X.Ref));
+          end if;
+          if X.Discrete_Last < Y.Discrete_Last then
+            Compiler.PCode_Emit.Emit_3
+              (CD, k_Check_Upper_Bound, X.Discrete_Last, Typen'Pos (X.TYP), Operand_3_Type (X.Ref));
           end if;
         else
           Error
             (CD, err_range_constraint_error,
+             "value of expression (" &
              (if Ranges.Is_Singleton_Range (Y) then
-              "value of expression is out of range"  --  More understandable for a single value
-               else
-              "subtype ranges left and right of "":="" do not overlap"), minor);
+                --  More understandable message part for a single value
+                Discrete_Image (CD, Y.Discrete_First, X.TYP, X.Ref)
+              else
+                "range: " &
+                Discrete_Range_Image (CD, Y.Discrete_First, Y.Discrete_Last, X.TYP, X.Ref)) &
+             ") is out the destination's range, " &
+             Discrete_Range_Image (CD, X.Discrete_First, X.Discrete_Last, X.TYP, X.Ref),
+             minor);
         end if;
       end if;
       if X.TYP in Standard_Typ then

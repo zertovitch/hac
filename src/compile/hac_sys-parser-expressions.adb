@@ -139,22 +139,51 @@ package body HAC_Sys.Parser.Expressions is
                 Expected => ATE.Index_xTyp
               );
             else
-              range_check_needed :=
-                   Array_Index_Typ.Discrete_First < ATE.Index_xTyp.Discrete_First
-                or Array_Index_Typ.Discrete_Last  > ATE.Index_xTyp.Discrete_Last;
-              --
-              if ATE.Element_Size = 1 then
-                if range_check_needed then
-                  Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
+              if Ranges.Do_Ranges_Overlap (Array_Index_Typ,  ATE.Index_xTyp) then
+                range_check_needed :=
+                     Array_Index_Typ.Discrete_First < ATE.Index_xTyp.Discrete_First
+                  or Array_Index_Typ.Discrete_Last  > ATE.Index_xTyp.Discrete_Last;
+                --
+                if ATE.Element_Size = 1 then
+                  if range_check_needed then
+                    Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
+                  else
+                    Emit_1 (CD, k_Array_Index_No_Check_Element_Size_1, Operand_2_Type (ATI));
+                  end if;
                 else
-                  Emit_1 (CD, k_Array_Index_No_Check_Element_Size_1, Operand_2_Type (ATI));
+                  if range_check_needed then
+                    Emit_1 (CD, k_Array_Index, Operand_2_Type (ATI));
+                  else
+                    Emit_1 (CD, k_Array_Index_No_Check, Operand_2_Type (ATI));
+                  end if;
                 end if;
               else
-                if range_check_needed then
-                  Emit_1 (CD, k_Array_Index, Operand_2_Type (ATI));
-                else
-                  Emit_1 (CD, k_Array_Index_No_Check, Operand_2_Type (ATI));
-                end if;
+                Error
+                  (CD, err_range_constraint_error,
+                   "value of index (" &
+                   (if Ranges.Is_Singleton_Range (Array_Index_Typ) then
+                      --  More understandable message part for a single value
+                      Discrete_Image
+                       (CD,
+                        Array_Index_Typ.Discrete_First,
+                        ATE.Index_xTyp.TYP,
+                        ATE.Index_xTyp.Ref)
+                    else
+                      "range: " &
+                      Discrete_Range_Image
+                        (CD,
+                         Array_Index_Typ.Discrete_First,
+                         Array_Index_Typ.Discrete_Last,
+                         ATE.Index_xTyp.TYP,
+                         ATE.Index_xTyp.Ref)) &
+                      ") is out of the array's range, " &
+                      Discrete_Range_Image
+                        (CD,
+                         ATE.Index_xTyp.Discrete_First,
+                         ATE.Index_xTyp.Discrete_Last,
+                         ATE.Index_xTyp.TYP,
+                         ATE.Index_xTyp.Ref),
+                      minor);
               end if;
             end if;
             V := ATE.Element_xTyp;

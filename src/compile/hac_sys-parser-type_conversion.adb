@@ -56,10 +56,12 @@ begin
           Argument_Type_Not_Supported (CD);
       end case;
       if X.Discrete_First > HAC_Integer'First then
-        Compiler.PCode_Emit.Emit_1 (CD, k_Check_Lower_Bound, X.Discrete_First);
+        Compiler.PCode_Emit.Emit_3
+          (CD, k_Check_Lower_Bound, X.Discrete_First, Typen'Pos (X.TYP), Operand_3_Type (X.Ref));
       end if;
       if X.Discrete_Last < HAC_Integer'Last then
-        Compiler.PCode_Emit.Emit_1 (CD, k_Check_Upper_Bound, X.Discrete_Last);
+        Compiler.PCode_Emit.Emit_3
+          (CD, k_Check_Upper_Bound, X.Discrete_Last, Typen'Pos (X.TYP), Operand_3_Type (X.Ref));
       end if;
       --
     when To_Duration =>

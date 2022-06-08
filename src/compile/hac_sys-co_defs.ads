@@ -297,6 +297,14 @@ package HAC_Sys.Co_Defs is
     recursion    : Natural := 0;
   end record;
 
+  --  Image function for compilation errors or out-of-range exception messages.
+  --
+  function Discrete_Image
+    (CD : Compiler_Data; value : HAC_Integer; Typ : Typen; Ref : Index) return String;
+
+  function Discrete_Range_Image
+    (CD : Compiler_Data; value_1, value_2 : HAC_Integer; Typ : Typen; Ref : Index) return String;
+
   Universe : constant HAL.VString := HAL.To_VString ("[-- The Universe --]");
 
   type CASE_Label_Value is record
