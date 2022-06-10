@@ -12,11 +12,12 @@ procedure Exception_04 is
       function Add_n_shift (N : Integer; Level : Integer) return Integer is
         function Shift_n_add (N : Integer) return Integer is
           a : array (1 .. 3) of Integer;
+          minus_4 : Integer := -4;
         begin
           if Level > 1 then
             return Add_n_shift (N * 2, Level - 1);  --  <-  Trace-back should show this line
           else
-            a (-4) := 5;                            --  <-  *** Boom! *** : -4 is out-of-range
+            a (minus_4) := 5;                       --  <-  *** Boom! *** : -4 is out-of-range
           end if;
           return N;
         end Shift_n_add;

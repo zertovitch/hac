@@ -232,21 +232,17 @@ package body HAC_Sys.Parser.Type_Def is
           Error
             (CD,
              err_range_constraint_error,
-             "lower bound (pos: " & HAC_Image (Low.I) &
-             ") is out of parent type's range (" &
-             HAC_Image (xTP.Discrete_First) & " .. " &
-             HAC_Image (xTP.Discrete_Last) &
-             ')',
+             "lower bound, " & Discrete_Image (CD, Low.I, xTP.TYP, xTP.Ref) &
+             ", is out of parent type's range, " &
+             Discrete_Range_Image (CD, xTP.Discrete_First, xTP.Discrete_Last, xTP.TYP, xTP.Ref),
              major);
         elsif High.I not in xTP.Discrete_First .. xTP.Discrete_Last then
           Error
             (CD,
              err_range_constraint_error,
-             "higher bound (pos: " & HAC_Image (High.I) &
-             ") is out of parent type's range (" &
-             HAC_Image (xTP.Discrete_First) & " .. " &
-             HAC_Image (xTP.Discrete_Last) &
-             ')',
+             "higher bound, " & Discrete_Image (CD, High.I, xTP.TYP, xTP.Ref) &
+             ", is out of parent type's range, " &
+             Discrete_Range_Image (CD, xTP.Discrete_First, xTP.Discrete_Last, xTP.TYP, xTP.Ref),
              major);
         else
           xTP.Discrete_First := Low.I;
