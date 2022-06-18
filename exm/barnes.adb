@@ -1,13 +1,13 @@
 --  Puzzle presented by John Barnes in the restaurant "De Abt" in Ghent,
---  the 15th of June 2022, during the Ada-Europe conference
---  http://www.ada-europe.org/conference2022/
+--  the 15th of June 2022, during the Ada-Europe 2022 conference
+--            http://www.ada-europe.org/conference2022/
 --
 --  The question is (from memory):
 --
 --       "Find the integer (there is only one) with all decimal digits appearing
 --        once and only once, for which the number formed by the first
 --        two digits can be divided by two, the number formed by the
---        first three digits can be divided by three, and so on ?"
+--        first three digits can be divided by three, and so on."
 --
 --  Solution by J-P Rosen, adapted to the HAC subset and added to HAC's regression suite.
 --  The original solution is reproduced as a comment at the bottom of this procedure.
@@ -28,7 +28,7 @@ procedure Barnes is
 
    test_mode : constant Boolean := Argument_Count >= 1;
 
-   procedure Put_S (S : Digit_String) is
+   procedure Put_Solution (S : Digit_String) is
       Chars : constant array (Coeff_Range) of Character := "0123456789";
       Res : My_Int := 0;
    begin
@@ -46,7 +46,7 @@ procedure Barnes is
          end loop;
          New_Line;
       end if;
-   end Put_S;
+   end Put_Solution;
 
    function Is_Possible (S : Digit_String; Last : My_Int) return Boolean is
       Seen : array (Coeff_Range) of Boolean;
@@ -103,7 +103,7 @@ procedure Barnes is
                                                 Candidate (9) := D9;
                                                 if Is_Possible (Candidate, 9) then
                                                    Candidate (10) := 0;
-                                                   Put_S (Candidate);
+                                                   Put_Solution (Candidate);
                                                    return;
                                                 end if;
                                              end loop;
