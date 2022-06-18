@@ -2,6 +2,7 @@
 --  Usage:  hac all_silent_tests.adb
 
 with HAL;
+with Testing_Utilities;
 
 procedure All_Silent_Tests is
 
@@ -16,9 +17,9 @@ procedure All_Silent_Tests is
         Put_Line ("Executing: [" & command & ']');
       end if;
       Shell_Execute (command, r);
-      success := r = 0;
-      if r /= 0 then
-        Put_Line ("*** Command: [" & command & "] FAILED ***.");
+      success := r = Testing_Utilities.OK_Code;
+      if not success then
+        Put_Line (+"*** Command: [" & command & "] FAILED ***. Return code: " & r);
       end if;
     end Shell;
 
@@ -74,10 +75,13 @@ procedure All_Silent_Tests is
 
     hac_build_success : Boolean;
 
+    examples_dir : constant VString :=
+      +".." & Directory_Separator &
+       "exm" & Directory_Separator;
+    
     generate : constant VString :=
       +".." & Directory_Separator &
-       "hac .." & Directory_Separator &
-       "exm" & Directory_Separator & "pkg_demo_gen.adb";
+       "hac " & examples_dir & "pkg_demo_gen.adb";
 
   begin
     Put_Line ("    ___________      _____________________________________________________________________");
@@ -96,6 +100,7 @@ procedure All_Silent_Tests is
     New_Line;
     Put_Line (+"    Normal tests in " & Current_Directory & ':');
     Normal_Test (+"attributes_test.adb");
+    Normal_Test (examples_dir & "barnes.adb 3816547290");
     Normal_Test (+"case_statement.adb");
     Normal_Test (+"constants.adb");
     Normal_Test (+"declarations.adb");
@@ -105,10 +110,11 @@ procedure All_Silent_Tests is
     Normal_Test (+"integers.adb");
     Normal_Test (+"loops.adb");
     Normal_Test (+"object_init.adb");
-    --  Create the X_* packages.
+    --  Create the X_* packages, run pkg_demo and finally delete the X_* packages .
     Shell_Execute (generate);
     Normal_Test (+"-I. .." & Directory_Separator & "exm" & Directory_Separator & "pkg_demo.adb test_mode");
     Shell_Execute (generate & " delete");
+    --
     Normal_Test (+"recursion.adb");
     Normal_Test (+"sorting_tests.adb");
     Normal_Test (+"strings.adb");

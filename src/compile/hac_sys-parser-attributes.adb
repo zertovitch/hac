@@ -110,7 +110,7 @@ package body HAC_Sys.Parser.Attributes is
   begin
     Which_Attribute (CD, attr);
     if Arrays_Set (Object_xSubtyp.TYP) then
-      Array_Subtype_Attribute (CD, Level, FSys, Object_xSubtyp.Ref, attr, xSubtyp_of_Result);
+      Array_Subtype_Attribute (CD, Level, FSys + RParent, Object_xSubtyp.Ref, attr, xSubtyp_of_Result);
     else
       Error (CD, err_syntax_error, ": no attribute defined for this object", major);
     end if;
@@ -210,7 +210,7 @@ package body HAC_Sys.Parser.Attributes is
         type_of_argument : Exact_Subtyp;
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expressions.Expression (CD, Level, FSys, type_of_argument);
+        Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
         --  Argument is of the base type (S'Base).
         s_base := Exact_Typ (S);
         if s_base = Exact_Typ (type_of_argument) then
@@ -240,7 +240,7 @@ package body HAC_Sys.Parser.Attributes is
       begin
         if Discrete_Typ (S.TYP) then
           Need (CD, LParent, err_missing_an_opening_parenthesis);
-          Expressions.Expression (CD, Level, FSys, type_of_argument);
+          Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
           --  Argument is of the base type (S'Base).
           s_base := Exact_Typ (S);
           if s_base = Exact_Typ (type_of_argument) then
@@ -260,7 +260,7 @@ package body HAC_Sys.Parser.Attributes is
       begin
         if Discrete_Typ (S.TYP) then
           Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
-          Expressions.Expression (CD, Level, FSys, type_of_argument);
+          Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
           if type_of_argument.TYP = Ints then
             --  Just set the desired type, and that's it - no VM instruction!
             Type_of_Result := S;
@@ -279,7 +279,7 @@ package body HAC_Sys.Parser.Attributes is
         type_of_argument : Exact_Subtyp;
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expressions.Expression (CD, Level, FSys, type_of_argument);
+        Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
         --  Argument is of the base type (S'Base). Translation: we forget the constraints here.
         s_base := Exact_Typ (S);
         if s_base = Exact_Typ (type_of_argument) then
@@ -309,7 +309,7 @@ package body HAC_Sys.Parser.Attributes is
         type_of_argument : Exact_Subtyp;
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expressions.Expression (CD, Level, FSys, type_of_argument);
+        Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
         --  Argument is of the base type (S'Base).
         if type_of_argument.TYP = String_Literals then
           Emit_Std_Funct (CD, SF_Literal_to_VString);
@@ -380,7 +380,7 @@ package body HAC_Sys.Parser.Attributes is
     if Scalar_Set (S.TYP) then
       Scalar_Subtype_Attribute;
     elsif Arrays_Set (S.TYP) then
-      Array_Subtype_Attribute (CD, Level, FSys, S.Ref, attr, Type_of_Result);
+      Array_Subtype_Attribute (CD, Level, FSys + RParent, S.Ref, attr, Type_of_Result);
     else
       Error (CD, err_syntax_error,
         ": no attribute defined for this type: " &

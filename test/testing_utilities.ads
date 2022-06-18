@@ -2,6 +2,8 @@ with HAL;
 
 package Testing_Utilities is
 
+  function OK_Code return Integer;
+
   procedure Failure (Message : HAL.VString);
 
   procedure Assert (Check : in Boolean; Message : HAL.VString);

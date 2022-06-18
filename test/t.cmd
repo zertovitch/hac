@@ -1,5 +1,8 @@
 @echo off
 
+REM  This script is basically the command "hac -v2 all_silent_tests.adb"
+REM  preceded by a potential rebuild of the hac executable.
+
 echo (Re-)building HAC
 cd..
 set hacbuild=unknown
@@ -27,7 +30,7 @@ pause
 goto fin
 
 :verbose_tests
-..\hac -v2 if_then_elsif_else.adb
+..\hac -v2 all_noisy_tests.adb
 goto fin
 
 :gnat
