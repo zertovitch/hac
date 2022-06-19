@@ -255,7 +255,6 @@ package body HAC_Sys.Scanner is
     procedure Adjust_Scale is
       S    : Integer;
       D, T : HAC_Float;
-      use type HAC_Float;
     begin
       if K + e > EMax then
         Error (
@@ -387,31 +386,30 @@ package body HAC_Sys.Scanner is
       CD.Sy   := IntCon;
       if skip_leading_integer then
         --  A naughty person has put ".123" in his/her code.
-        --  An error is laready emmitted at this point but we continue the scanning and parsing.
+        --  An error is already emmitted at this point but we continue the scanning and parsing.
         Read_Decimal_Float;
       else
         --  Scan the integer part of the number.
         loop
-          CD.INum := CD.INum * 10 + Character'Pos (CD.CUD.c) - Character'Pos ('0');
+          CD.INum := CD.INum * 10 + (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
           K := K + 1;
           NextCh (CD);
           Skip_eventual_underscore;
           exit when CharacterTypes (CD.CUD.c) /= Number;
         end loop;
-        --
-        if K > KMax then
-          Error (
-            CD, err_number_too_large,
-            Integer'Image (K) & " > Max =" &
-            Integer'Image (KMax)
-          );
-          CD.INum := 0;
-          K       := 0;
-        end if;
         --  Integer part is read (CD.INum).
         case CD.CUD.c is
           when '.' =>
             NextCh (CD);
+            if K > KMax then
+              Error (
+                CD, err_number_too_large,
+                Integer'Image (K) & " > Max =" &
+                Integer'Image (KMax)
+              );
+              CD.INum := 0;
+              K       := 0;
+            end if;
             Read_Decimal_Float;
           when 'E' | 'e' =>
             --  Integer with exponent: 123e4.

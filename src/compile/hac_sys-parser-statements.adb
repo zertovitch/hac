@@ -1,4 +1,5 @@
 with HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Multi_Precision_Integers,
      HAC_Sys.Parser.Calls,
      HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Expressions,
@@ -382,13 +383,16 @@ package body HAC_Sys.Parser.Statements is
       CaseTab : array (1 .. Cases_Max) of CASE_Label_Value;
       ExitTab : array (1 .. Cases_Max) of Integer;
       others_flag : Boolean := False;
-      type Choice_Count_Type is range -2 ** 127 .. 2 ** 127 - 1;
-      parsed_choices : Choice_Count_Type := 0;
+      use Multi_Precision_Integers;
+      subtype Choice_Count_Type is Multi_Int (4);
+      parsed_choices : Choice_Count_Type;
 
       function Count_Choices (Low, High : HAC_Integer) return Choice_Count_Type is
+        result : Choice_Count_Type;
       begin
         pragma Assert (Low <= High);
-        return Choice_Count_Type (High) - Choice_Count_Type (Low) + 1;
+        Fill (result, Multi (High) - Multi (Low) + 1);
+        return result;
       end Count_Choices;
 
       procedure Discrete_Choice is  --  Ada RM 3.8.1 (5)
@@ -441,7 +445,7 @@ package body HAC_Sys.Parser.Statements is
           --  Since single choices or ranges do not overlap,
           --  we can simply add the number of covered values in order to check
           --  at the end that everything is covered.
-          parsed_choices := parsed_choices + Count_Choices (label_1.I, label_2.I);
+          Fill (parsed_choices, parsed_choices + Count_Choices (label_1.I, label_2.I));
         end if;
       end Discrete_Choice;
 
@@ -494,21 +498,22 @@ package body HAC_Sys.Parser.Statements is
         if others_flag then
           return;
         end if;
-        expected_choices := Count_Choices (X.Discrete_First, X.Discrete_Last);
-        difference := expected_choices - parsed_choices;
+        Fill (expected_choices, Count_Choices (X.Discrete_First, X.Discrete_Last));
+        Fill (difference, expected_choices - parsed_choices);
         --  When difference < 0, choices are out of
         --  range (error detected on parsing).
         if difference > 0 then
           Error
             (CD, err_choices_not_covered,
              (if difference > 99 then ""
-              elsif difference = 1 then ": one case is missing"
-              else ":" & difference'Image & " cases are missing"),
+              elsif Equal (difference, 1) then ": one case is missing"
+              else ":" & Basic (difference)'Image & " cases are missing"),
              minor);
         end if;
       end Check_Coverage;
 
     begin  --  CASE_Statement
+      Fill (parsed_choices, 0);
       InSymbol;
       I := 0;
       J := 0;

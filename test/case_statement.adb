@@ -14,10 +14,11 @@ procedure Case_Statement is
       when -7 =>
         Assert (i + 7 = 0, +"Compiler bug [CASE test, Int, B]");
       when others => null;
-      --  !! When "OTHERS" omitted: HAC compiles but the VM enters a Case_Check_Error state.
       --
       --  when 9 | others => null;  --  the choice "others" must appear alone and last
       --  when 2 => null;  --  the choice "others" must appear alone and last
+      --  when 2 .. 9223372036854775807   => null;
+      --  when -9223372036854775807 .. -8 => null;  --  Integer'First as literal not supported (overflow)
     end case;
     after_int_case := True;
   end Test_Int;
