@@ -67,7 +67,9 @@ begin
 
   examples := root & "/exm/*.ad* "  &
               root & "/exm/*.gpr  " & root & "/exm/*.prj  " &
-              root & "/exm/e.cmd "  & root & "/exm/not_working/*.ad* " &
+              root & "/exm/e.cmd "  &
+              root & "/exm/not_working/*.ad* " &
+              root & "/exm/pdf/*.ad* " &
               --
               root & "/exm/aoc/2020/aoc*.ad* " &
               root & "/exm/aoc/2020/aoc*.txt " &

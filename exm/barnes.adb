@@ -18,13 +18,13 @@ with Interfaces;
 procedure Barnes is
    use HAL, Interfaces;
 
-   subtype My_Int is Interfaces.Integer_64 range 0 .. 1e11;         
-   subtype Digit_Range is My_Int range 1 .. 10;       
+   subtype My_Int is Interfaces.Integer_64 range 0 .. 1e11;
+   subtype Digit_Range is My_Int range 1 .. 10;
    type Digit_String is array (Digit_Range) of My_Int;
 
    subtype Coeff_Range is My_Int range 0 .. 9;
 
-   Coeff : array (Coeff_Range) of My_Int;        
+   Coeff : array (Coeff_Range) of My_Int;
 
    test_mode : constant Boolean := Argument_Count >= 1;
 
@@ -52,20 +52,20 @@ procedure Barnes is
       Seen : array (Coeff_Range) of Boolean;
       Accu : My_Int := 0;
    begin
-      for K in Seen'Range loop     
-        Seen (K) := False;         
-      end loop;                    
+      for K in Seen'Range loop
+        Seen (K) := False;
+      end loop;
       for I in S'First .. Last loop
-         if Seen (S(I)) then
+         if Seen (S (I)) then
             return False;
          end if;
-         Seen (S(I)) := True;
+         Seen (S (I)) := True;
          Accu := Accu + S (I) * Coeff (Last - I);
       end loop;
       return Accu mod Last = 0;
    end Is_Possible;
 
-   subtype My_Positive_Digit is My_Int range 1 .. 9;     
+   subtype My_Positive_Digit is My_Int range 1 .. 9;
    subtype My_One_To_Four_Digit is My_Int range 1 .. 4;
 
    Candidate : Digit_String;
@@ -74,11 +74,10 @@ procedure Barnes is
       D5 : constant := 5;
    begin
       Candidate (5) := D5;
-      
-      -- Small optimizations:
-      -- Last digit is 0 (dividable by 10) => not other digit is 0
-      -- Fifth digit is 5 (dividable by 5 and not 0)
-      -- Second digit is even => 2, 4, 6, 8
+      --  Small optimizations:
+      --  Last digit is 0 (dividable by 10) => not other digit is 0
+      --  Fifth digit is 5 (dividable by 5 and not a 0)
+      --  Second digit is even => 2, 4, 6, 8
       for D1 in My_Positive_Digit loop
          Candidate (1) := D1;
          for D2 in My_One_To_Four_Digit loop
@@ -123,6 +122,14 @@ procedure Barnes is
    end Try_Combinations;
 
 begin
+   if not test_mode then
+      Put_Line ("Find the integer (there is only one) with all decimal digits appearing");
+      Put_Line ("once and only once, for which the number formed by the first");
+      Put_Line ("two digits can be divided by two, the number formed by the");
+      Put_Line ("first three digits can be divided by three, and so on.");
+      New_Line;
+   end if;
+   --
    Coeff (0) := 1;
    for I in My_Positive_Digit loop
       Coeff (I) := Coeff (I - 1) * 10;
@@ -139,13 +146,13 @@ end Barnes;
 --  with Ada.Text_IO;
 --  procedure Barnes is
 --     use Ada.Text_Io;
---  
+--
 --     type My_Int is range 0 .. 10**11;
 --     Terminated : exception;
 --     D5         : constant My_Int := 5;
 --     type Digit_String is array (My_Int range <>) of My_Int;
 --     Coeff      : array (My_Int range 0 .. 9) of My_Int;
---  
+--
 --     procedure Put (S : Digit_String) is
 --        Chars : constant array (My_Int range 0 .. 9) of Character := "0123456789";
 --     begin
@@ -153,7 +160,7 @@ end Barnes;
 --           Put (Chars (S (I)));
 --        end loop;
 --     end Put;
---  
+--
 --     function Is_Possible (S : Digit_String) return Boolean is
 --        Seen : array (My_Int range 0..9) of Boolean := (others => False);
 --        Accu : My_Int := 0;
@@ -167,13 +174,13 @@ end Barnes;
 --        end loop;
 --        return Accu mod S'Length = 0;
 --     end Is_Possible;
---  
+--
 --  begin
 --     Coeff (0) := 1;
 --     for I in My_Int range 1 .. 9 loop
 --        Coeff (I) := Coeff (I - 1) * 10;
 --     end loop;
---  
+--
 --     -- Small optimizations:
 --     -- Last digit is 0 (dividable by 10) => not other digit is 0
 --     -- Fifth digit is 5 (dividable by 5 and not 0)

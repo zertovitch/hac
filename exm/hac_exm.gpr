@@ -20,6 +20,7 @@ project HAC_Exm is
      "arguments.adb",
      "anti_primes.adb",
      "attributes.adb",
+     "barnes.adb",                 --  John Barnes' Ada-Europe 2022 puzzle
      "bwt.adb",
      "console_io.adb",
      "covid_19_s.adb",
@@ -37,12 +38,12 @@ project HAC_Exm is
      "hello_big.adb",
      "gallery.adb",
      "hofstadter.adb",
-     "koch_curve.adb",
+     "koch_curve.adb",             --  PDF demo
      "mandelbrot.adb",
      "maze_gen.adb",
      "merge_sort.adb",
      "names_in_boxes.adb",
-     "pdf_hello.adb",
+     "pdf_hello.adb",              --  PDF demo
      "prc.adb",
      "random.adb",
      "series.adb",
