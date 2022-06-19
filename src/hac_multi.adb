@@ -80,7 +80,10 @@ procedure HAC_Multi is
         if Wall_Clock - tick >= 0.005 then
           if Random (gen) > 0.999 then
             User_Abort := True;
-            Put_Line ("A1" & sep & " Task" & sep & task_id'Image & sep & " wants to abort the HAC VM.");
+            Put_Line
+              ("A1" & sep & " Task" & sep &
+               Integer'Image (task_id) & sep
+               & " wants to abort the HAC VM.");
           end if;
           tick := Wall_Clock;
         end if;
@@ -111,12 +114,20 @@ procedure HAC_Multi is
       Close (f);
       --
       if Build_Successful (BD) then
-        Put_Line ("S" & sep & " Task" & sep & task_id'Image & sep & " successful compilation. Running the VM.");
+        Put_Line
+          ("S" & sep & " Task" & sep &
+           Integer'Image (task_id) & sep &
+           " successful compilation. Running the VM.");
         Interpret_for_Multi (BD, post_mortem);
         if Image (post_mortem.Unhandled) = "User_Abort" then
-          Put_Line ("A2" & sep & " Task" & sep & task_id'Image & sep & " got ""User_Abort"" exception from HAC VM.");
+          Put_Line
+            ("A2" & sep & " Task" & sep &
+             Integer'Image (task_id) & sep &
+             " got ""User_Abort"" exception from HAC VM.");
         else
-          Put_Line ("D" & sep & " Task" & sep & task_id'Image & sep & " is done.");
+          Put_Line
+            ("D" & sep & " Task" & sep &
+             Integer'Image (task_id) & sep & " is done.");
         end if;
       end if;
     end HAC_Instance;

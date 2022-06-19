@@ -80,7 +80,7 @@ begin
   Put ("M:      ");
   for n in 0 .. n_max - 1 loop Put (M (n), dig_it); end loop;
   New_Line;
-  Put ("F /= M  ");
+  Put ("F = M   ");
   for n in 0 .. n_max - 1 loop
     Put ((dig_it - 1) * ' ');
     if F (n) /= M (n) then

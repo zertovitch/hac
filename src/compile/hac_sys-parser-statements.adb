@@ -121,8 +121,8 @@ package body HAC_Sys.Parser.Statements is
           Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (X_Len));
         else
           Error (CD, err_string_lengths_do_not_match,
-            "variable has length" & X_Len'Image &
-            ", literal has length" & CD.SLeng'Image,
+            "variable has length" & Integer'Image (X_Len) &
+            ", literal has length" & Integer'Image (CD.SLeng),
             minor
           );
         end if;
@@ -507,7 +507,7 @@ package body HAC_Sys.Parser.Statements is
             (CD, err_choices_not_covered,
              (if difference > 99 then ""
               elsif Equal (difference, 1) then ": one case is missing"
-              else ":" & Basic (difference)'Image & " cases are missing"),
+              else ":" & Basic_Int'Image (Basic (difference)) & " cases are missing"),
              minor);
         end if;
       end Check_Coverage;

@@ -199,14 +199,17 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         Address_Base_Lower_Level := New_Base + 2;  --  Written by Do_Call.
         if Address_Base_Lower_Level not in ND.S'Range then
           raise Constraint_Error with
-            "Address_Base_Lower_Level = " & Address_Base_Lower_Level'Image &
+            "Address_Base_Lower_Level = " &
+            Defs.Index'Image (Address_Base_Lower_Level) &
             " out of stack range";
         end if;
         New_Base_Value := ND.S (Address_Base_Lower_Level).I;
         if New_Base_Value not in 0 .. HAC_Integer (MaxINT) then
           raise Constraint_Error with
-            "Invalid New_Base_Value =" & New_Base_Value'Image &
-            " found on stack @ index" & Address_Base_Lower_Level'Image;
+            "Invalid New_Base_Value =" &
+            HAC_Integer'Image (New_Base_Value) &
+            " found on stack @ index" &
+            Defs.Index'Image (Address_Base_Lower_Level);
         end if;
         New_Base := Defs.Index (New_Base_Value);
       end loop;

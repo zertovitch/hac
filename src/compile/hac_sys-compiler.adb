@@ -134,7 +134,7 @@ package body HAC_Sys.Compiler is
         else
           Put (CD.comp_dump, "     ");
         end if;
-        Put (CD.comp_dump, "  " & r.decl_kind'Image);
+        Put (CD.comp_dump, "  " & Declaration_Kind'Image (r.decl_kind));
         New_Line (CD.comp_dump);
       end;
     end loop;
@@ -240,7 +240,8 @@ package body HAC_Sys.Compiler is
     if CD.Main_Program_ID /= Empty_Alfa then
       Put_Line (CD.comp_dump, " Information about Main procedure:");
       Put_Line (CD.comp_dump, "   Name    : " & A2S (CD.Main_Program_ID_with_case));
-      Put_Line (CD.comp_dump, "   Block # : " & CD.IdTab (CD.Main_Proc_Id_Index).block_or_pkg_ref'Image);
+      Put_Line (CD.comp_dump, "   Block # : " &
+        Defs.Index'Image (CD.IdTab (CD.Main_Proc_Id_Index).block_or_pkg_ref));
     end if;
 
   end Print_Tables;

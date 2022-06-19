@@ -1,4 +1,4 @@
---  Burrows–Wheeler transform: block-sorting
+--  Burrows-Wheeler transform: block-sorting
 --  preprocessing for improving data compression.
 --  This technique is used in the BZip2 format.
 --

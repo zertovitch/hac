@@ -214,14 +214,16 @@ procedure HAC is
       return;
     end if;
     if verbosity >= 2 then
-      Put_Line (HAC_margin_2 & "Object code size:" & BD.Object_Code_Size'Image &
-                " of" & HAC_Sys.Builder.Maximum_Object_Code_Size'Image &
+      Put_Line (HAC_margin_2 & "Object code size:" &
+                Natural'Image (BD.Object_Code_Size) &
+                " of" &
+                Natural'Image (HAC_Sys.Builder.Maximum_Object_Code_Size) &
                 " Virtual Machine instructions.");
       if BD.Folded_Instructions + BD.Specialized_Instructions > 0 then
         Put_Line (HAC_margin_2 & "Code optimization:");
-        Put_Line (HAC_margin_2 & "  " & BD.Folded_Instructions'Image &
+        Put_Line (HAC_margin_2 & "  " & Natural'Image (BD.Folded_Instructions) &
           " instructions folded");
-        Put_Line (HAC_margin_2 & "  " & BD.Specialized_Instructions'Image &
+        Put_Line (HAC_margin_2 & "  " & Natural'Image (BD.Specialized_Instructions) &
           " instructions specialized");
       end if;
       Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
@@ -258,8 +260,9 @@ procedure HAC is
     end if;
     if verbosity >= 2 then
       Put_Line (
-        "Maximum stack usage:" & post_mortem.Max_Stack_Usage'Image & " of" &
-        post_mortem.Stack_Size'Image & " memory units, around" &
+        "Maximum stack usage:" &
+        Integer'Image (post_mortem.Max_Stack_Usage) & " of" &
+        Integer'Image (post_mortem.Stack_Size) & " memory units, around" &
         Integer'Image (100 * post_mortem.Max_Stack_Usage / post_mortem.Stack_Size) & "%."
       );
     end if;

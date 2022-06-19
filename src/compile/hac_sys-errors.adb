@@ -190,7 +190,7 @@ package body HAC_Sys.Errors is
       when err_identifier_too_long =>
         return
           "identifier is too long; max =" &
-          max_identifier_length'Image & " characters";
+          Integer'Image (max_identifier_length) & " characters";
       when err_identifier_cannot_end_with_underline =>
         return "identifier cannot end with underline";
       when err_double_underline_not_permitted =>
