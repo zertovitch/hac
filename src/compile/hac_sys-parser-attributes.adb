@@ -37,12 +37,12 @@ package body HAC_Sys.Parser.Attributes is
   end Which_Attribute;
 
   procedure Array_Subtype_Attribute (
-    CD             : in out Co_Defs.Compiler_Data;
-    Level          : in     Defs.Nesting_level;
-    FSys           : in     Defs.Symset;
-    Array_Index    : in     Natural;
-    attr           : in     Attribute;
-    Type_of_Result :    out Co_Defs.Exact_Subtyp
+    CD                : in out Co_Defs.Compiler_Data;
+    Level             : in     Defs.Nesting_level;
+    FSys              : in     Defs.Symset;
+    Array_Index       : in     Natural;
+    attr              : in     Attribute;
+    xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
   )
   is
     use Co_Defs, Defs, Helpers, Errors;
@@ -80,28 +80,58 @@ package body HAC_Sys.Parser.Attributes is
     case attr is
       when First =>       --  RM 3.6.2 (3, 4)
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
-        Type_of_Result := A.Index_xTyp;
+        xSubtyp_of_Result := A.Index_xTyp;
       when Last =>        --  RM 3.6.2 (5, 6)
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High));
-        Type_of_Result := A.Index_xTyp;
+        xSubtyp_of_Result := A.Index_xTyp;
       when Range_Attr =>  --  RM 3.6.2 (7, 8)
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High));
-        Type_of_Result          := A.Index_xTyp;
-        Type_of_Result.Is_Range := True;
+        xSubtyp_of_Result := A.Index_xTyp;
+        xSubtyp_of_Result.Is_Range := True;
       when Length =>      --  RM 3.6.2 (9, 10)
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High - Low + 1));
-        Construct_Root (Type_of_Result, Ints);
+        Construct_Root (xSubtyp_of_Result, Ints);
       when others =>
         Error (CD, err_syntax_error, ": attribute not defined for this type", major);
     end case;
   end Array_Subtype_Attribute;
+
+  procedure Image_Attribute  --  S'Image (...) or X'Image
+    (CD                : in out Co_Defs.Compiler_Data;
+     S                 : in     Co_Defs.Exact_Subtyp;
+     xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp)
+  is
+    use Co_Defs, Compiler.PCode_Emit, Defs, Errors, PCode;
+  begin
+    --  The value to get an image from is assumed to be
+    --  on top of the stack. The appropriate built-in function
+    --  will convert its image as a string.
+    case S.TYP is
+      when NOTYP     => null;  --  Already in error
+      when Ints      => Emit_Std_Funct (CD, SF_Image_Attribute_Ints);
+      when Floats    => Emit_Std_Funct (CD, SF_Image_Attribute_Floats);
+      when Bools     => Emit_Std_Funct (CD, SF_Image_Attribute_Bools);
+      when Chars     => Emit_Std_Funct (CD, SF_Image_Attribute_Chars);
+      when Durations => Emit_Std_Funct (CD, SF_Image_Attribute_Durs);
+      when Enums     =>
+        --  The enumeration items' declarations follow the type name
+        --  For example: `type Enum is (a, b, c)`, we send the index
+        --  of the first item, `a`, in the identifier table.
+        Emit_Std_Funct (CD, SF_Image_Attribute_Enums, Operand_1_Type (S.Ref + 1));
+      when others =>
+        Error (CD, err_attribute_prefix_invalid, "Image", major);
+    end case;
+    --  The result subtype is a VString disguised as a String.
+    Construct_Root (xSubtyp_of_Result, Strings_as_VStrings);
+  end Image_Attribute;
 
   procedure Object_Attribute (
     CD                : in out Co_Defs.Compiler_Data;
     Level             : in     Defs.Nesting_level;
     FSys              : in     Defs.Symset;
     Object_xSubtyp    : in     Co_Defs.Exact_Subtyp;
+    LC_before_Object  : in     Integer;
     xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
   )
   is
@@ -109,19 +139,27 @@ package body HAC_Sys.Parser.Attributes is
     attr : Attribute;
   begin
     Which_Attribute (CD, attr);
-    if Arrays_Set (Object_xSubtyp.TYP) then
-      Array_Subtype_Attribute (CD, Level, FSys + RParent, Object_xSubtyp.Ref, attr, xSubtyp_of_Result);
-    else
-      Error (CD, err_syntax_error, ": no attribute defined for this object", major);
-    end if;
+    case attr is
+      when Image =>  --  X'Image   (Ada 2022)
+        Image_Attribute (CD, Object_xSubtyp, xSubtyp_of_Result);
+      when others =>
+        if Arrays_Set (Object_xSubtyp.TYP) then
+          --  Forget all the code emitted for selecting the array variable.
+          --  It can be a complex thing like `a (i * 2).loc_x (3)` !
+          CD.LC := LC_before_Object;
+          Array_Subtype_Attribute (CD, Level, FSys + RParent, Object_xSubtyp.Ref, attr, xSubtyp_of_Result);
+        else
+          Error (CD, err_syntax_error, ": attribute not defined for this object", major);
+        end if;
+    end case;
   end Object_Attribute;
 
   procedure Subtype_Attribute (
-    CD             : in out Co_Defs.Compiler_Data;
-    Level          : in     Defs.Nesting_level;
-    FSys           : in     Defs.Symset;
-    Typ_ID_Index   : in     Natural;
-    Type_of_Result :    out Co_Defs.Exact_Subtyp
+    CD                : in out Co_Defs.Compiler_Data;
+    Level             : in     Defs.Nesting_level;
+    FSys              : in     Defs.Symset;
+    Typ_ID_Index      : in     Natural;
+    xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
   )
   is
     use Co_Defs, Defs, Helpers, Errors;
@@ -154,10 +192,10 @@ package body HAC_Sys.Parser.Attributes is
               Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
             end if;
         end case;
-        Type_of_Result := S;
+        xSubtyp_of_Result := S;
         if Discrete_Typ (S.TYP) then
           Ranges.Set_Singleton_Range
-            (Type_of_Result, (if attr = First then S.Discrete_First else S.Discrete_Last));
+            (xSubtyp_of_Result, (if attr = First then S.Discrete_First else S.Discrete_Last));
         end if;
       end First_Last;
       --
@@ -178,8 +216,8 @@ package body HAC_Sys.Parser.Attributes is
               Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
             end if;
         end case;
-        Type_of_Result          := S;
-        Type_of_Result.Is_Range := True;
+        xSubtyp_of_Result          := S;
+        xSubtyp_of_Result.Is_Range := True;
       end Range_Attribute;
       --
       procedure Pred_Succ_Discrete is
@@ -231,7 +269,7 @@ package body HAC_Sys.Parser.Attributes is
           Type_Mismatch (CD, err_parameter_types_do_not_match, type_of_argument, s_base);
         end if;
         Need (CD, RParent, err_closing_parenthesis_missing);
-        Type_of_Result := S;
+        xSubtyp_of_Result := S;
       end Pred_Succ;
       --
       procedure Pos is  --  S'Pos (...): RM 3.5.5 (2)
@@ -245,7 +283,7 @@ package body HAC_Sys.Parser.Attributes is
           s_base := Exact_Typ (S);
           if s_base = Exact_Typ (type_of_argument) then
             --  Just set the desired type, and that's it - no VM instruction!
-            Type_of_Result := Standard_Integer;
+            xSubtyp_of_Result := Standard_Integer;
           else
             Type_Mismatch (CD, err_parameter_types_do_not_match, type_of_argument, s_base);
           end if;
@@ -262,8 +300,8 @@ package body HAC_Sys.Parser.Attributes is
           Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
           Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
           if type_of_argument.TYP = Ints then
-            --  Just set the desired type, and that's it - no VM instruction!
-            Type_of_Result := S;
+            --  Just set the desired subtype, and that's it - no VM instruction!
+            xSubtyp_of_Result := S;
           else
             Helpers.Type_Mismatch
               (CD, err_parameter_types_do_not_match, type_of_argument, Helpers.Standard_Integer);
@@ -275,34 +313,19 @@ package body HAC_Sys.Parser.Attributes is
       end Val;
       --
       procedure Image is  --  S'Image (...)
-        s_base : Exact_Typ;
         type_of_argument : Exact_Subtyp;
+        --  Argument of the function is of the base type, that is: S'Base.
+        --  Translation: we forget the subtype constraints here.
+        s_base : constant Exact_Typ := Exact_Typ (S);
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
-        --  Argument is of the base type (S'Base). Translation: we forget the constraints here.
-        s_base := Exact_Typ (S);
         if s_base = Exact_Typ (type_of_argument) then
-          case S.TYP is
-            when NOTYP     => null;  --  Already in error
-            when Ints      => Emit_Std_Funct (CD, SF_Image_Attribute_Ints);
-            when Floats    => Emit_Std_Funct (CD, SF_Image_Attribute_Floats);
-            when Bools     => Emit_Std_Funct (CD, SF_Image_Attribute_Bools);
-            when Chars     => Emit_Std_Funct (CD, SF_Image_Attribute_Chars);
-            when Durations => Emit_Std_Funct (CD, SF_Image_Attribute_Durs);
-            when Enums     =>
-              --  The enumeration items' declarations follow the type name
-              --  For example: `type Enum is (a, b, c)`, we send the index
-              --  of the first item, `a`, in the identifier table.
-              Emit_Std_Funct (CD, SF_Image_Attribute_Enums, Operand_1_Type (S.Ref + 1));
-            when others =>
-              Error (CD, err_attribute_prefix_invalid, attr_ID, major);
-          end case;
+          Image_Attribute (CD, S, xSubtyp_of_Result);
         else
           Type_Mismatch (CD, err_parameter_types_do_not_match, type_of_argument, s_base);
         end if;
         Need (CD, RParent, err_closing_parenthesis_missing);
-        Construct_Root (Type_of_Result, Strings_as_VStrings);
       end Image;
       --
       procedure Value is
@@ -332,22 +355,22 @@ package body HAC_Sys.Parser.Attributes is
           when NOTYP     => null;  --  Already in error
           when Ints      =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Ints);
-            Construct_Root (Type_of_Result, Ints);
+            Construct_Root (xSubtyp_of_Result, Ints);
           when Floats    =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Floats);
-            Construct_Root (Type_of_Result, Floats);
+            Construct_Root (xSubtyp_of_Result, Floats);
           when Bools     =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Bools);
-            Construct_Root (Type_of_Result, Bools);
+            Construct_Root (xSubtyp_of_Result, Bools);
           when Chars     =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Chars);
-            Construct_Root (Type_of_Result, Chars);
+            Construct_Root (xSubtyp_of_Result, Chars);
           when Durations =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Durs);
-            Construct_Root (Type_of_Result, Durations);
+            Construct_Root (xSubtyp_of_Result, Durations);
           when Enums     =>
             Emit_Std_Funct (CD, SF_Value_Attribute_Enums, Operand_1_Type (S.Ref));
-            Type_of_Result := S;
+            xSubtyp_of_Result := S;
           when others =>
             Error (CD, err_attribute_prefix_invalid, attr_ID, major);
         end case;
@@ -380,7 +403,7 @@ package body HAC_Sys.Parser.Attributes is
     if Scalar_Set (S.TYP) then
       Scalar_Subtype_Attribute;
     elsif Arrays_Set (S.TYP) then
-      Array_Subtype_Attribute (CD, Level, FSys + RParent, S.Ref, attr, Type_of_Result);
+      Array_Subtype_Attribute (CD, Level, FSys + RParent, S.Ref, attr, xSubtyp_of_Result);
     else
       Error (CD, err_syntax_error,
         ": no attribute defined for this type: " &

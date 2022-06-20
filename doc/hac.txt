@@ -126,7 +126,7 @@ Language subset
   The available Ada language subset supported by HAC is so far, roughly,
   the "Pascal subset", plus tasking, plus packages, less pointers.
   From a different perspective, HAC supports Ada 83, less pointers, less generics,
-  less unconstrained types, plus a few items from Ada 95 and 2005.
+  less unconstrained types, plus a few items from Ada 95, 2005 and 2022.
   Recursion and nested subprograms are supported.
 
     - You can define your own data types: enumerations, records, arrays

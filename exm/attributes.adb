@@ -2,13 +2,18 @@ with HAL;
 
 procedure Attributes is
 
+  type Enum is (aa, bb, cc, dd);
+  subtype Sub_Enum is Enum range bb .. cc;
+
   d : constant Duration := 123.456;
+  i : constant Integer := 123;
+  r : constant HAL.Real := HAL.Pi;
+  b : constant Boolean := True;
+  c : constant Character := 'x';
+  e : constant Enum := dd;
 
   subtype Some_Range is Integer range -123 .. 456;
   subtype A_to_Z is Character range 'A' .. 'Z';
-
-  type Enum is (aa, bb, cc, dd);
-  subtype Sub_Enum is Enum range bb .. cc;
 
   dummy_e : Enum;
   dummy_i, sum : Integer;
@@ -33,10 +38,11 @@ begin
 
   --
 
-  Put_Line ("Attributes      Standard subtypes are indicated with '*'");
-  Put_Line ("==========           HAL subtypes are indicated with '#'");
+  Put_Line ("Attributes      S = Standard subtype, indicated with '*'");
+  Put_Line ("==========        or     HAL subtype, indicated with '#'");
   New_Line;
-  Put_Line ("S'First and S'Last attributes for scalar subtype S:");
+  Put_Line ("S'First and S'Last attributes for scalar subtype S");
+  Put_Line ("--------------------------------------------------");
   New_Line;
   Put_Line (+"  * Integer's bounds    : " & Integer'First               & " .. " & Integer'Last);
   Put_Line (+"  * Natural's bounds    : " & Natural'First               & " .. " & Natural'Last);
@@ -51,13 +57,15 @@ begin
   Put_Line  ("    Enum's bounds       : " & Enum'Image (Enum'First)     & " .. " & Enum'Image (Enum'Last));
   Put_Line  ("    Sub_Enum's bounds   : " & Enum'Image (Sub_Enum'First) & " .. " & Enum'Image (Sub_Enum'Last));
   New_Line;
-  Put_Line ("S'Pred and S'Succ attributes:");
+  Put_Line ("S'Pred and S'Succ attributes");
+  Put_Line ("----------------------------");
   New_Line;
   Put_Line (+"  * Integer'Succ (100)                 : " & Integer'Succ (100));
   Put_Line (+"  * Integer'Pred (100)                 : " & Integer'Pred (100));
   Put_Line (+"    Some_Range'Succ (Some_Range'First) : " & Some_Range'Succ (Some_Range'First));
   New_Line;
-  Put_Line ("S'Pos and S'Val attributes:");
+  Put_Line ("S'Pos and S'Val attributes");
+  Put_Line ("--------------------------");
   New_Line;
   Put_Line (+"  * Boolean'Pos (True)  : " & Boolean'Pos (True));
   Put_Line (+"  * Boolean'Val (0)     : " & Boolean'Val (0));
@@ -66,7 +74,8 @@ begin
   Put_Line (+"    Enum'Pos (aa)       : " & Enum'Pos (aa));
   Put_Line (+"    Enum'Val (3)        : " & Enum'Image (Enum'Val (3)));
   New_Line;
-  Put_Line ("S'Image attribute:");
+  Put_Line ("S'Image (...) attribute");
+  Put_Line ("-----------------------");
   New_Line;
   Put_Line ("  * Integer'Image (123)      : [" & Integer'Image (123) & ']');
   Put_Line ("  # Real'Image (Pi)          : [" & Real'Image (Pi) & ']');
@@ -81,8 +90,19 @@ begin
   Put_Line ("  * Duration'Image (123.456) : [" & Duration'Image (d) & ']');
   Put_Line ("    Enum'Image (bb)          : [" & Enum'Image (bb) & ']');
   New_Line;
+  Put_Line ("X'Image attribute");
+  Put_Line ("-----------------");
+  New_Line;
+  Put_Line ("  i'Image      : [" & i'Image & ']');
+  Put_Line ("  r'Image      : [" & r'Image & ']');
+  Put_Line ("  b'Image      : [" & b'Image & ']');
+  Put_Line ("  c'Image      : [" & c'Image & ']');
+  Put_Line ("  d'Image      : [" & d'Image & ']');
+  Put_Line ("  e'Image      : [" & e'Image & ']');
+  New_Line;
   Put_Line ("S'Value attribute, re-displayed via S'Image for Enum and,");
   Put_Line (" otherwise, via ""nice"" HAL.Image and VString concatenation");
+  Put_Line ("------------------------------------------------------------");
   New_Line;
   Put_Line (+"  * Integer'Value (""1e3"")     : [" & Integer'Value ("1e3") & ']');
   Put_Line (+"  # Real'Value (""1e3"")        : [" & Real'Value ("1e3") & ']');
@@ -106,7 +126,8 @@ begin
   end loop;
 
   New_Line;
-  Put_Line ("A'First, A'Last, A'Range, A'Length attributes for array type A:");
+  Put_Line ("A'First, A'Last, A'Range, A'Length attributes for array type A");
+  Put_Line ("--------------------------------------------------------------");
   New_Line;
   Put_Line  ("  * A'First   (should be BB of type Enum) : " & Enum'Image (A'First));
   Put_Line  ("  * A'Last    (should be CC of type Enum) : " & Enum'Image (A'Last));
@@ -118,7 +139,8 @@ begin
 
   New_Line;
   Put_Line ("M'First (N), M'Last (N), M'Range (N), M'Length (N) attributes");
-  Put_Line ("---  M = Multidimensional array type, mm = object of type M:");
+  Put_Line ("---   M = Multidimensional array type, mm = object of type M.");
+  Put_Line ("-------------------------------------------------------------");
   New_Line;
   Put_Line (+"  * M'First (1)  (should be -5) : " & M'First (1));
   Put_Line (+"  * mm'Last (1)  (should be -2) : " & mm'Last (1));

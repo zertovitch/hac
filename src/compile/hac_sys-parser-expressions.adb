@@ -525,8 +525,7 @@ package body HAC_Sys.Parser.Expressions is
                     end if;
                     if CD.Sy = Apostrophe then
                       InSymbol (CD);
-                      CD.LC := LC_Mem;  --  Forget the code emitted for the variable
-                      Attributes.Object_Attribute (CD, Level, FSys_Prim, X, X);
+                      Attributes.Object_Attribute (CD, Level, FSys_Prim, X, LC_Mem, X);
                     end if;
                     --
                   when TypeMark =>

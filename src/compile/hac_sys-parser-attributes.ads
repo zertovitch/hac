@@ -5,6 +5,7 @@ private package HAC_Sys.Parser.Attributes is
     Level             : in     Defs.Nesting_level;
     FSys              : in     Defs.Symset;
     Object_xSubtyp    : in     Co_Defs.Exact_Subtyp;
+    LC_before_Object  : in     Integer;
     xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
   );
 
@@ -20,11 +21,11 @@ private package HAC_Sys.Parser.Attributes is
   --    The return type is X = (Strings_as_VStrings, 0), an internal type in this case.
 
   procedure Subtype_Attribute (
-    CD             : in out Co_Defs.Compiler_Data;
-    Level          : in     Defs.Nesting_level;
-    FSys           : in     Defs.Symset;
-    Typ_ID_Index   : in     Natural;
-    Type_of_Result :    out Co_Defs.Exact_Subtyp
+    CD                : in out Co_Defs.Compiler_Data;
+    Level             : in     Defs.Nesting_level;
+    FSys              : in     Defs.Symset;
+    Typ_ID_Index      : in     Natural;
+    xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
   );
 
 end HAC_Sys.Parser.Attributes;
