@@ -282,7 +282,9 @@ package HAC_Sys.Parser.Helpers is
     others => False);
 
   Symbols_after_Subprogram_Identifier : constant Symset :=
-    (LParent | RETURN_Symbol | IS_Symbol | Semicolon => True,
+    (LParent | RETURN_Symbol | IS_Symbol | Semicolon |
+     WITH_Symbol  --  Aspect
+     => True,
      others => False);
 
   Type_Begin_Symbol : constant Symset :=

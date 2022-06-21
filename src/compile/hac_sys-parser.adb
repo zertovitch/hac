@@ -248,6 +248,25 @@ package body HAC_Sys.Parser is
       end if;
     end Check_ident_after_END;
 
+    procedure Subprogram_Aspect is
+    begin
+      Scanner.InSymbol (CD);  --  Consume WITH
+      if CD.Sy = IDent then
+        if CD.Id = "IMPORT" then
+          Scanner.InSymbol (CD);  --  Consume Import
+          Need (CD, Finger, err_syntax_error);
+          if CD.Id = "TRUE" then
+            Scanner.InSymbol (CD);  --  Consume True
+            null;
+          else
+            Error (CD, err_syntax_error, ": value True expected here");
+          end if;
+        end if;
+      else
+        Error (CD, err_syntax_error);
+      end if;
+    end Subprogram_Aspect;
+
     procedure Process_Spec is
     begin
       CD.IdTab (block_data.block_id_index).decl_kind := spec_unresolved;
@@ -256,6 +275,9 @@ package body HAC_Sys.Parser is
       Check_Duplicate_Specification (CD, block_data.previous_declaration_id_index, Block_Id_with_case);
       CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
       --
+      if CD.Sy = WITH_Symbol then
+        Subprogram_Aspect;
+      end if;
       if block_data.level > 1 then
         InSymbol;  --  Consume ';'
       end if;
@@ -385,7 +407,8 @@ package body HAC_Sys.Parser is
       Function_Result_Profile;
     end if;
     --
-    if CD.Sy = Semicolon then
+    if CD.Sy = Semicolon or CD.Sy = WITH_Symbol  --  Aspect
+    then
       Process_Spec;
     else
       Process_Body;
@@ -405,6 +428,7 @@ package body HAC_Sys.Parser is
   is
     use Co_Defs, Compiler.PCode_Emit, Defs, Enter_Def, Errors, PCode;
     use type HAC_Integer;
+    --
     new_id_idx, old_id_idx : Natural;
     IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
     sub_sub_prog_block_data : Block_Data_Type;
