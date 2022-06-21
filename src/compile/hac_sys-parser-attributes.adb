@@ -104,9 +104,9 @@ package body HAC_Sys.Parser.Attributes is
   is
     use Co_Defs, Compiler.PCode_Emit, Defs, Errors, PCode;
   begin
-    --  The value to get an image from is assumed to be
-    --  on top of the stack. The appropriate built-in function
-    --  will convert its image as a string.
+    --  The value to get an image from is assumed to be on top
+    --  of the stack. The appropriate built-in function will replace
+    --  it by its image as a string (internal type: Strings_as_VStrings).
     case S.TYP is
       when NOTYP     => null;  --  Already in error
       when Ints      => Emit_Std_Funct (CD, SF_Image_Attribute_Ints);
