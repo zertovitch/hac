@@ -16,9 +16,13 @@ with HAC_Sys.Defs,
 with HAL;
 
 with Ada.Containers.Hashed_Maps,
+     Ada.Containers.Indefinite_Hashed_Maps,
      Ada.Streams,
+     Ada.Strings.Hash,
      Ada.Strings.Unbounded.Hash,
      Ada.Text_IO;
+
+with System;
 
 package HAC_Sys.Co_Defs is
   --  NB: cannot be a child package of Compiler because of Parser, Scanner, ...
@@ -231,6 +235,15 @@ package HAC_Sys.Co_Defs is
 
   default_trace : constant Compilation_Trace_Parameters := (others => <>);
 
+  package Exported_Procedure_Mapping is new Ada.Containers.Indefinite_Hashed_Maps
+    (Key_Type        => String,
+     Element_Type    => System.Address,
+                        --  Actually: HAC_Sys.Interfacing.Exported_Procedure, but we
+                        --  end up in a circular unit dependency mess.
+     Hash            => Ada.Strings.Hash,
+     Equivalent_Keys => "=",
+     "="             => System."=");
+
   ---------------------
   --  Compiler_Data  --
   ---------------------
@@ -281,6 +294,7 @@ package HAC_Sys.Co_Defs is
     Full_Block_Id             : HAL.VString;         --  Full block's Id (P1.P2.F3.P4)
     Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
     Main_Program_ID_with_case : Alfa := Empty_Alfa;
+    Exported_Procedures       : Exported_Procedure_Mapping.Map;
     --
     listing_requested   : Boolean := False;
     comp_dump_requested : Boolean := False;

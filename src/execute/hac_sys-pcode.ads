@@ -77,6 +77,7 @@ package HAC_Sys.PCode is
     --
     k_Mark_Stack,                       --  First instruction for a Call
     k_Call,                             --  Procedure and task entry Call
+    k_Exchange_with_External,
     k_Exit_Call,
     k_Exit_Function,
     k_Update_Display_Vector,

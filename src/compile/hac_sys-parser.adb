@@ -249,15 +249,19 @@ package body HAC_Sys.Parser is
     end Check_ident_after_END;
 
     procedure Subprogram_Aspect is
+      use Compiler.PCode_Emit, PCode;
     begin
-      Scanner.InSymbol (CD);  --  Consume WITH
+      InSymbol;        --  Consume WITH
       if CD.Sy = IDent then
         if CD.Id = "IMPORT" then
-          Scanner.InSymbol (CD);  --  Consume Import
+          InSymbol;    --  Consume Import
           Need (CD, Finger, err_syntax_error);
           if CD.Id = "TRUE" then
-            Scanner.InSymbol (CD);  --  Consume True
-            null;
+            InSymbol;  --  Consume True
+            CD.IdTab (block_data.block_id_index).adr_or_sz := CD.LC;
+            CD.IdTab (block_data.block_id_index).decl_kind := spec_resolved;
+            Emit_1 (CD, k_Exchange_with_External, Operand_2_Type (block_data.block_id_index));
+            Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
           else
             Error (CD, err_syntax_error, ": value True expected here");
           end if;

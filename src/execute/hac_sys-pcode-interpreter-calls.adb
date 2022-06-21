@@ -1,6 +1,11 @@
-with HAC_Sys.PCode.Interpreter.Tasking;
+with HAC_Sys.Interfacing,
+     HAC_Sys.PCode.Interpreter.Exceptions,
+     HAC_Sys.PCode.Interpreter.Tasking;
 
-with Ada.Calendar;
+with Ada.Calendar,
+     Ada.Unchecked_Conversion;
+
+with System;
 
 package body HAC_Sys.PCode.Interpreter.Calls is
 
@@ -42,6 +47,24 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         end loop;
       end if;
     end Show_Display;
+
+    procedure Do_Exchange_with_External is
+      use Co_Defs.Exported_Procedure_Mapping;
+      function Convert is new Ada.Unchecked_Conversion (System.Address, Interfacing.Exported_Procedure);
+      cur    : Cursor;
+      name   : constant String := A2S (CD.IdTab (Integer (IR.Y)).name);
+      data   : Interfacing.HAC_Element_Array (1 .. 0);  --  !!  Actual size
+    begin
+      null;  --  !! Data exchange #1 (in, in out)
+      cur := CD.Exported_Procedures.Find (name);
+      if cur = No_Element then
+        Exceptions.Raise_Standard
+          (ND, VME_Constraint_Error, "Import name """ & name & """ not found. Was it registered ?");
+      else
+        Convert (Element (cur)) (data);
+      end if;
+      null;  --  !! Data exchange #2 (in out, out)
+    end Do_Exchange_with_External;
 
     procedure Do_Call is
       use Ada.Calendar;
@@ -218,11 +241,12 @@ package body HAC_Sys.PCode.Interpreter.Calls is
 
   begin
     case Calling_Opcode (ND.IR.F) is
-      when k_Mark_Stack            => Do_Mark_Stack;
-      when k_Call                  => Do_Call;
-      when k_Exit_Call             => Do_Exit_Call;
-      when k_Exit_Function         => Do_Exit_Function;
-      when k_Update_Display_Vector => Do_Update_Display_Vector;
+      when k_Mark_Stack             => Do_Mark_Stack;
+      when k_Call                   => Do_Call;
+      when k_Exchange_with_External => Do_Exchange_with_External;
+      when k_Exit_Call              => Do_Exit_Call;
+      when k_Exit_Function          => Do_Exit_Function;
+      when k_Update_Display_Vector  => Do_Update_Display_Vector;
     end case;
   end Do_Calling_Operation;
 

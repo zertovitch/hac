@@ -36,7 +36,7 @@ package body HAC_Sys.Parser.Helpers is
       if Forgive = Dummy_Symbol then
         severity := major;
       end if;
-      Error (CD, E, severity => severity);
+      Error (CD, E, ": " & KeyWSymbol'Image (S) & " expected", severity);
       if CD.Sy = Forgive then
         InSymbol (CD);
       end if;
