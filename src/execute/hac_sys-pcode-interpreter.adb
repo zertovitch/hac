@@ -435,14 +435,11 @@ package body HAC_Sys.PCode.Interpreter is
       use Defs;
       use type HAC_Integer;
       --
-      procedure Do_Atomic_Data_Push_Operation is
-        Base, Address_of_Variable : Index;
+      procedure Do_Atomic_Data_Push_Operation with Inline is
+        Base                : constant Index := Curr_TCB.DISPLAY (Nesting_level (IR.X));
+        Address_of_Variable : constant Index := Base + Index (IR.Y);
       begin
         Push;
-        if ND.IR.F in k_Push_Address .. k_Push_Indirect_Value then
-          Base                := Curr_TCB.DISPLAY (Nesting_level (IR.X));
-          Address_of_Variable := Base + Index (IR.Y);
-        end if;
         case Atomic_Data_Push_Opcode (ND.IR.F) is
           when k_Push_Address =>
             --  Push "v'Access" of variable v
@@ -456,6 +453,13 @@ package body HAC_Sys.PCode.Interpreter is
           when k_Push_Indirect_Value =>
             --  Push "v.all" (variable v contains an access).
             ND.S (Curr_TCB.T) := ND.S (Index (ND.S (Address_of_Variable).I));
+        end case;
+      end Do_Atomic_Data_Push_Operation;
+      --
+      procedure Do_Literal_Push_Operation with Inline is
+      begin
+        Push;
+        case Literal_Push_Opcode (ND.IR.F) is
           when k_Push_Discrete_Literal =>
             --  Literal: discrete value (Integer, Character, Boolean, Enum)
             ND.S (Curr_TCB.T).I := IR.Y;
@@ -466,7 +470,7 @@ package body HAC_Sys.PCode.Interpreter is
           when k_Push_Float_Last =>
             ND.S (Curr_TCB.T) := GR_Real (HAC_Float'Last);
         end case;
-      end Do_Atomic_Data_Push_Operation;
+      end Do_Literal_Push_Operation;
       --
       procedure Do_Swap is
         temp : constant General_Register := ND.S (Curr_TCB.T);
@@ -534,6 +538,7 @@ package body HAC_Sys.PCode.Interpreter is
           Pop;
         --
         when Atomic_Data_Push_Opcode  => Do_Atomic_Data_Push_Operation;
+        when Literal_Push_Opcode      => Do_Literal_Push_Operation;
         when Composite_Data_Opcode    => Composite_Data.Do_Composite_Data_Operation (CD, ND);
         when Unary_Operator_Opcode    => Operators.Do_Unary_Operator (ND);
         when Binary_Operator_Opcode   => Operators.Do_Binary_Operator (ND);

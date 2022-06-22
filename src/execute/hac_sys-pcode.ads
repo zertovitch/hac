@@ -193,7 +193,8 @@ package HAC_Sys.PCode is
   subtype Compare_Integer_Literal_Opcode is Op_Integer_Literal_Opcode
      range k_EQL_Integer_Literal .. k_GEQ_Integer_Literal;
   --
-  subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Float_Last;
+  subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Indirect_Value;
+  subtype Literal_Push_Opcode     is Opcode range k_Push_Discrete_Literal .. k_Push_Float_Last;
   subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Update_Display_Vector;
   subtype CASE_Any_Choice         is Opcode range k_CASE_Choice_Value .. k_CASE_Choice_Others;
   subtype CASE_Data_Opcode        is Opcode range k_CASE_Choice_Value .. k_CASE_No_Choice_Found;
