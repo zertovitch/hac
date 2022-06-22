@@ -74,7 +74,8 @@ Key files in the main directory
 
    hac.gpr             project file for building HAC with GNAT
    hac_objectada.prj   equivalent project file with ObjectAda64 for Windows
-   save.adb            backup script, works with both HAC and GNAT!
+   save.hac            backup program
+   save_modif.hac      backup program
 
 Documentation
 =============

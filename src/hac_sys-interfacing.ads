@@ -18,7 +18,15 @@ package HAC_Sys.Interfacing is
 
   type HAC_Element is private;
 
-  --  TBD: conversion functions from & to integer, floats, vstrings...
+  function To_HAC (Data : Integer)    return HAC_Element;
+  function To_HAC (Data : Long_Float) return HAC_Element;
+  function To_HAC (Data : String)     return HAC_Element;
+
+  function To_Native (Data : HAC_Element) return Integer;
+  function To_Native (Data : HAC_Element) return Long_Float;
+  function To_Native (Data : HAC_Element) return String;
+
+  HAC_Type_Error : exception;
 
   type HAC_Element_Array is array (Positive range <>) of HAC_Element;
 
@@ -31,6 +39,6 @@ package HAC_Sys.Interfacing is
 
 private
 
-  type HAC_Element is new HAC_Sys.PCode.Interpreter.In_Defs.General_Register;
+  type HAC_Element is new HAC_Sys.PCode.Interpreter.In_Defs.Data_Type;
 
 end HAC_Sys.Interfacing;

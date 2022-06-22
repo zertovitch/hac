@@ -37,9 +37,11 @@ package body HAC_Sys.Parser is
     ------------------------------------------------------------------
     --------------------------------------------Formal_Parameter_List-
     procedure Formal_Parameter_List is
-      Sz, X, T0 : Integer;
-      ValParam  : Boolean;
-      xTP       : Exact_Subtyp := Undefined;
+      Sz, X, T0  : Integer;
+      ValParam   : Boolean;
+      xTP        : Exact_Subtyp := Undefined;
+      param_kind : Parameter_Kind;
+      in_keyword : Boolean;
     begin
       InSymbol;  --  Consume '(' symbol.
       Sz := 0;
@@ -51,16 +53,24 @@ package body HAC_Sys.Parser is
         --
         if CD.Sy = Colon then  --  The ':'  in  "function F (x, y : in Real) return Real;"
           InSymbol;
+          param_kind := param_in;
+          in_keyword := False;
           if CD.Sy = IN_Symbol then
             InSymbol;
+            in_keyword := True;
           end if;
-          if block_data.is_a_function then  --  If I am a function, no InOut parms allowed
+          if block_data.is_a_function then  --  If I am a function, no In Out params allowed
             ValParam := True;
-          elsif CD.Sy /= OUT_Symbol then
-            ValParam := True;
-          else
+          elsif CD.Sy = OUT_Symbol then
             InSymbol;
             ValParam := False;
+            if in_keyword then
+              param_kind := param_in_out;
+            else
+              param_kind := param_out;
+            end if;
+          else
+            ValParam := True;
           end if;
           if CD.Sy = IDent then
             X := Locate_Identifier (CD, CD.Id, block_data.level);
@@ -94,6 +104,7 @@ package body HAC_Sys.Parser is
               r.xtyp      := xTP;
               r.normal    := ValParam;
               r.read_only := ValParam;
+              r.decl_kind := param_kind;
               r.adr_or_sz := block_data.data_allocation_index;
               r.lev       := block_data.level;
               block_data.data_allocation_index := block_data.data_allocation_index + Sz;
@@ -379,7 +390,7 @@ package body HAC_Sys.Parser is
     else
       CD.Full_Block_Id := CD.Full_Block_Id & '.' & Block_Id_with_case;
     end if;
-    block_data.data_allocation_index := 5;  --  Fixed area of the subprogram activation record.
+    block_data.data_allocation_index := fixed_area_size;  --  Fixed area of the subprogram activation record.
     block_data.initialization_object_code_size := 0;
     if Is_a_block_statement then
       null;  --  We should be here with Sy = BEGIN_Symbol or Sy = DECLARE_Symbol.

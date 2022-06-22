@@ -27,9 +27,9 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       if Curr_TCB.T + VSize > Curr_TCB.STACKSIZE then
         raise VM_Stack_Overflow;
       end if;
-      Curr_TCB.T := Curr_TCB.T + 5;          --  Make room for fixed area
+      Curr_TCB.T := Curr_TCB.T + Co_Defs.fixed_area_size;  --  Make room for fixed area
       ND.S (Curr_TCB.T - 1).I := HAC_Integer (VSize - 1);
-      ND.S (Curr_TCB.T).I     := IR.Y;       --  CD.IdTab index of called procedure/entry
+      ND.S (Curr_TCB.T).I     := IR.Y;                     --  CD.IdTab index of called procedure/entry
     end Do_Mark_Stack;
 
     trace_display : constant Boolean := False;
@@ -49,21 +49,58 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     end Show_Display;
 
     procedure Do_Exchange_with_External is
+      use Co_Defs;
       use Co_Defs.Exported_Procedure_Mapping;
-      function Convert is new Ada.Unchecked_Conversion (System.Address, Interfacing.Exported_Procedure);
-      cur    : Cursor;
-      name   : constant String := A2S (CD.IdTab (Integer (IR.Y)).name);
-      data   : Interfacing.HAC_Element_Array (1 .. 0);  --  !!  Actual size
+      proc_entry : IdTabEntry renames CD.IdTab (Integer (IR.Y));
+      proc_name  : constant String := A2S (proc_entry.name);
+      block_idx  : constant Index  := proc_entry.block_or_pkg_ref;
+      block      : BTabEntry renames CD.Blocks_Table (block_idx);
+      base       : constant Positive := Curr_TCB.T - block.PSize + 1;
+      param_size : constant Natural := block.PSize - Co_Defs.fixed_area_size;
+      data       : Interfacing.HAC_Element_Array (1 .. param_size);
+      --
+      procedure Data_Exchange (before_call : Boolean) is
+        function Convert is new Ada.Unchecked_Conversion (Interfacing.HAC_Element, Data_Type);
+        function Convert is new Ada.Unchecked_Conversion (Data_Type, Interfacing.HAC_Element);
+        data_idx  : Positive := 1;
+        stack_idx : Positive;
+      begin
+        for p in block.First_Param_Id_Idx .. block.Last_Param_Id_Idx loop
+          if CD.IdTab (p).decl_kind /= (if before_call then param_out else param_in) then
+            stack_idx := base + CD.IdTab (p).adr_or_sz;
+            if not CD.IdTab (p).normal then
+              --  Dereference.
+              stack_idx := Index (ND.S (stack_idx).I);
+            end if;
+            for count in 1 .. Size_of (CD, p) loop
+              if before_call then
+                data (data_idx) := Convert (ND.S (stack_idx));
+              else
+                ND.S (stack_idx) := Convert (data (data_idx));
+              end if;
+              data_idx  := data_idx + 1;
+              stack_idx := stack_idx + 1;
+            end loop;
+          end if;
+        end loop;
+      end Data_Exchange;
+      --
+      function Convert is
+        new Ada.Unchecked_Conversion (System.Address, Interfacing.Exported_Procedure);
+      cur : constant Cursor := CD.Exported_Procedures.Find (proc_name);
     begin
-      null;  --  !! Data exchange #1 (in, in out)
-      cur := CD.Exported_Procedures.Find (name);
+      --  Data exchange before call (in, in out)
+      Data_Exchange (before_call => True);
+      --
       if cur = No_Element then
         Exceptions.Raise_Standard
-          (ND, VME_Constraint_Error, "Import name """ & name & """ not found. Was it registered ?");
+          (ND, VME_Program_Error,
+           "Import name """ & proc_name & """ not found. Was it registered ?");
       else
-        Convert (Element (cur)) (data);
+        Convert (Element (cur)) (data);  --  Call to external procedure
       end if;
-      null;  --  !! Data exchange #2 (in out, out)
+      --  Data exchange after call (in out, out)
+      Data_Exchange (before_call => False);
     end Do_Exchange_with_External;
 
     procedure Do_Call is

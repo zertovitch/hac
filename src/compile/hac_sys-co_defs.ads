@@ -108,6 +108,8 @@ package HAC_Sys.Co_Defs is
     SrcTo              : Positive;     --   and goes until here    (* Manuel *)
   end record;
 
+  fixed_area_size : constant := 5;  --  Size of area (1) described above.
+
   type Package_Table_Entry is record
     first_public_declaration  : Positive;
     last_public_declaration   : Natural;   -- = 0 if none.
@@ -137,7 +139,13 @@ package HAC_Sys.Co_Defs is
       Alias   --  Short name of another entity ("use" clause).
   );
 
-  type Declaration_Kind is (spec_unresolved, spec_resolved, complete);
+  type Declaration_Kind is
+    (spec_unresolved, spec_resolved, complete,
+     param_in, param_in_out, param_out);
+
+  subtype Split_Declaration_Kind is Declaration_Kind range spec_unresolved .. complete;
+
+  subtype Parameter_Kind is Declaration_Kind range param_in .. param_out;
 
   ------------------------------
   --  Identifier Table Entry  --
@@ -150,7 +158,9 @@ package HAC_Sys.Co_Defs is
     read_only        : Boolean;              --  If Entity = Variable and read_only = True,
                                              --    it's a typed constant.
     decl_kind        : Declaration_Kind;     --  Declaration kind: forward or complete.
-    --                                             Matters for a type, a constant, a subprogram.
+    --                                             Matters for a type, a constant, a subprogram;
+    --                                             Values param_in .. param_out are
+    --                                             for subprogram parameters.
     xtyp             : Exact_Subtyp;         --  Subtype identification
     block_or_pkg_ref : Index;                --  Reference in the block or package tables.
     normal           : Boolean;              --  value param?
@@ -318,6 +328,10 @@ package HAC_Sys.Co_Defs is
 
   function Discrete_Range_Image
     (CD : Compiler_Data; value_1, value_2 : HAC_Integer; Typ : Typen; Ref : Index) return String;
+
+  --  Size of a variable or subprogram parameter
+  --
+  function Size_of (CD : Compiler_Data; Id_Index : Natural) return Positive;
 
   Universe : constant HAL.VString := HAL.To_VString ("[-- The Universe --]");
 

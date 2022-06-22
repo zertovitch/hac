@@ -99,7 +99,7 @@ package body HAC_Sys.Parser.Calls is
     --    = 2 then timed Task Entry Call,          CallTMDE
     --    = 3 then conditional Task Entry Call,    CallCNDE
     --****************************************************************
-    last_param, current_param : Integer;
+    last_param, current_param : Index;
     found, expected : Exact_Subtyp;
     block_idx : Index;
   begin

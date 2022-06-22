@@ -87,6 +87,7 @@ begin
               root & "/test/future/*.ad* ";
 
   files := root & "/src/*.ad* " &
+           root & "/src/apps/*.ad* " &
            root & "/src/compile/*.ad* " &
            root & "/src/execute/*.ad* " &
            root & "/src/manage/*.ad* " &

@@ -556,7 +556,7 @@ package body HAC_Sys.Compiler is
           CD.IdTab (CD.Id_Count).name,
           Unit_Id_with_case
         );
-        case CD.IdTab (unit_block.block_id_index).decl_kind is
+        case Split_Declaration_Kind (CD.IdTab (unit_block.block_id_index).decl_kind) is
           when complete =>
             if as_specification then
               Error (CD, err_library_error, "specification expected in this file; found body", major);

@@ -2,8 +2,8 @@
 --  HAC <-> Native data exchange demo  --
 -----------------------------------------
 
---  This file is compiled by the HAC compiler embedded
---  in Exchange_Native_Side (exchange_native_side.adb).
+--  This file is meant to be compiled by the HAC compiler which is embedded
+--  which is embedded in Exchange_Native_Side (exchange_native_side.adb).
 
 with HAL;
 
@@ -12,16 +12,52 @@ procedure Exchange_HAC_Side is
   use HAL;
 
   procedure Demo_Parameterless is
-    procedure Parameterless_Callback
-    with Import => True;
+    procedure Parameterless_Callback with Import => True;
   begin
     Put_Line ("   HAC: I call a parameterless callback.");
     Parameterless_Callback;
     Put_Line ("   HAC: done calling.");
+    New_Line;
   end Demo_Parameterless;
 
+  procedure Demo_Data_to_Native is
+    procedure Hello_Callback (message : in VString) with Import => True;
+    procedure Ints_Callback (i, j, k : in Integer) with Import => True;
+    procedure Floats_Callback (f, g, h : in Real) with Import => True;
+  begin
+    Put_Line ("   HAC: I send some stuff through callbacks.");
+    Hello_Callback (+"I'm HAC and I say hello!");
+    Ints_Callback (123, 456, 789);
+    Floats_Callback (123.0, 456.0, 789.0);
+    New_Line;
+  end Demo_Data_to_Native;
+
+  procedure Demo_Data_Bidirectional is
+    procedure Hello_Callback_in_out (message : in out VString) with Import => True;
+    procedure Ints_Callback_in_out (i : in out Integer) with Import => True;
+    procedure Floats_Callback_in_out (f : in out Real) with Import => True;
+    m : VString := +"I'm HAC";
+    i : Integer := 12;
+    f : Real := 11.0;
+  begin
+    m := +"I'm HAC";
+    Put_Line ("   HAC: message before call: [" & m & ']');
+    Hello_Callback_in_out (m);
+    Put_Line ("   HAC: message after call: [" & m & ']');
+    Put_Line (+"   HAC: integer before call: [" & i & ']');
+    Ints_Callback_in_out (i);
+    Put_Line (+"   HAC: integer after call: [" & i & ']');
+    Put_Line (+"   HAC: float before call: [" & f & ']');
+    Floats_Callback_in_out (f);
+    Put_Line (+"   HAC: float after call: [" & f & ']');
+    New_Line;
+  end Demo_Data_Bidirectional;
+
 begin
-  Put_Line ("Exchange_HAC_Side is started.");
+  Put_Line ("   Exchange_HAC_Side is started.");
+  New_Line;
   --
   Demo_Parameterless;
+  Demo_Data_to_Native;
+  Demo_Data_Bidirectional;
 end Exchange_HAC_Side;

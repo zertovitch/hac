@@ -77,4 +77,17 @@ package body HAC_Sys.Co_Defs is
       Discrete_Image (CD, value_2, Typ, Ref);
   end Discrete_Range_Image;
 
+  function Size_of (CD : Compiler_Data; Id_Index : Natural) return Positive is
+    X : constant Exact_Subtyp := CD.IdTab (Id_Index).xtyp;
+  begin
+    case X.TYP is
+      when Arrays =>
+        return CD.Arrays_Table (X.Ref).Array_Size;
+      when Records =>
+        return CD.Blocks_Table (X.Ref).VSize;
+      when others =>
+        return 1;
+    end case;
+  end Size_of;
+
 end HAC_Sys.Co_Defs;

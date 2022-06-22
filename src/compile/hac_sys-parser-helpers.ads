@@ -205,7 +205,7 @@ package HAC_Sys.Parser.Helpers is
   --  Other sets, named by their context:
 
   After_Subprogram_Parameters : constant Symset :=
-    (IS_Symbol | RETURN_Symbol | Semicolon => True, others => False);
+    (IS_Symbol | RETURN_Symbol | Semicolon | WITH_Symbol => True, others => False);
 
   Block_Begin_Symbol : constant Symset :=
    (PROCEDURE_Symbol |
