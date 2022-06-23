@@ -53,6 +53,42 @@ procedure Exchange_HAC_Side is
     New_Line;
   end Demo_Data_Bidirectional;
 
+  procedure Demo_Composite is
+    type Matrix is array (1 .. 2, 1 .. 2) of HAL.Real;
+    type Some_Record is record
+      i : Integer;
+      v : VString;
+    end record;
+    procedure Composite_Callback (a, b : in Matrix; r : in out Some_Record; c : out Matrix)
+    with Import => True;
+    m, n, o : Matrix;
+    s : Some_Record;
+  begin
+    --  HAC 0.1x: no aggregates, we have to write thatrix contents cell by cell.
+    m (1, 1) := 1.1;
+    m (1, 2) := 1.2;
+    m (2, 1) := 1.3;
+    m (2, 2) := 1.4;
+    n (1, 1) := -2.1;
+    n (1, 2) :=  2.2;
+    n (2, 1) := -2.3;
+    n (2, 2) :=  2.4;
+    s.i := 13;
+    s.v := +"I'm a HAC record field";
+    Put_Line (+"   HAC: integer before call: [" & s.i & ']');
+    Put_Line (+"        message before call: [" & s.v & ']');
+    Composite_Callback (m, n, s, o);
+    Put_Line (+"   HAC: integer after call: [" & s.i & ']');
+    Put_Line (+"        message after call: [" & s.v & ']');
+    Put_Line (+"        matrix product:");
+    for i in o'Range (1) loop
+      Put ("          ");
+      for j in o'Range (2) loop
+        Put (o (i, j), 2, 2, 0);
+      end loop;
+      New_Line;
+    end loop;
+  end Demo_Composite;
 begin
   Put_Line ("   Exchange_HAC_Side is started.");
   New_Line;
@@ -60,4 +96,5 @@ begin
   Demo_Parameterless;
   Demo_Data_to_Native;
   Demo_Data_Bidirectional;
+  Demo_Composite;
 end Exchange_HAC_Side;

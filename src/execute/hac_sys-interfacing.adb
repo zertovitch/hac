@@ -54,7 +54,16 @@ package body HAC_Sys.Interfacing is
     function Convert is new Ada.Unchecked_Conversion (Exported_Procedure, System.Address);
     use Ada.Characters.Handling;
   begin
-    BD.CD.Exported_Procedures.Include (To_Upper (Name), Convert (Callback));
+    if Callback /= null then
+      BD.CD.Exported_Procedures.Include (To_Upper (Name), Convert (Callback));
+    end if;
   end Register;
+
+  procedure Deregister (BD : Builder.Build_Data; Name : String)
+  is
+    use Ada.Characters.Handling;
+  begin
+    BD.CD.Exported_Procedures.Exclude (To_Upper (Name));
+  end Deregister;
 
 end HAC_Sys.Interfacing;

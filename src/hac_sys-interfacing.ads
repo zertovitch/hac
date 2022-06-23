@@ -37,6 +37,10 @@ package HAC_Sys.Interfacing is
      Callback : Exported_Procedure;
      Name     : String);
 
+  procedure Deregister
+    (BD       : Builder.Build_Data;
+     Name     : String);
+
 private
 
   type HAC_Element is new HAC_Sys.PCode.Interpreter.In_Defs.Data_Type;

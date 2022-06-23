@@ -56,8 +56,21 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       block_idx  : constant Index  := proc_entry.block_or_pkg_ref;
       block      : BTabEntry renames CD.Blocks_Table (block_idx);
       base       : constant Positive := Curr_TCB.T - block.PSize + 1;
-      param_size : constant Natural := block.PSize - Co_Defs.fixed_area_size;
-      data       : Interfacing.HAC_Element_Array (1 .. param_size);
+      --
+      --  The size of parameters' data can be larger that the size
+      --  taken on stack, as soon as a composite parameter of size
+      --  more than 1 is passed by reference (the reference takes 1 cell).
+      --
+      function param_data_size return Natural is
+        total : Natural := 0;
+      begin
+        for p in block.First_Param_Id_Idx .. block.Last_Param_Id_Idx loop
+          total := total + Size_of (CD, p);
+        end loop;
+        return total;
+      end param_data_size;
+      --
+      data : Interfacing.HAC_Element_Array (1 .. param_data_size);
       --
       procedure Data_Exchange (before_call : Boolean) is
         function Convert is new Ada.Unchecked_Conversion (Interfacing.HAC_Element, Data_Type);
@@ -66,7 +79,6 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         stack_idx : Positive;
       begin
         for p in block.First_Param_Id_Idx .. block.Last_Param_Id_Idx loop
-          if CD.IdTab (p).decl_kind /= (if before_call then param_out else param_in) then
             stack_idx := base + CD.IdTab (p).adr_or_sz;
             if not CD.IdTab (p).normal then
               --  Dereference.
@@ -74,14 +86,17 @@ package body HAC_Sys.PCode.Interpreter.Calls is
             end if;
             for count in 1 .. Size_of (CD, p) loop
               if before_call then
-                data (data_idx) := Convert (ND.S (stack_idx));
+                if CD.IdTab (p).decl_kind /= param_out then
+                  data (data_idx) := Convert (ND.S (stack_idx));
+                end if;
               else
-                ND.S (stack_idx) := Convert (data (data_idx));
+                if CD.IdTab (p).decl_kind /= param_in then
+                  ND.S (stack_idx) := Convert (data (data_idx));
+                end if;
               end if;
               data_idx  := data_idx + 1;
               stack_idx := stack_idx + 1;
             end loop;
-          end if;
         end loop;
       end Data_Exchange;
       --
