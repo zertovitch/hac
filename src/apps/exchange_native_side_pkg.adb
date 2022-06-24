@@ -4,10 +4,12 @@
 
 --  Callbacks on Native side.
 
-with Ada.Numerics.Long_Real_Arrays;
-with Ada.Text_IO;
+with Exchange_Common;
 
 with HAC_Sys.Interfacing;
+
+with Ada.Numerics.Long_Real_Arrays,
+     Ada.Text_IO;
 
 package body Exchange_Native_Side_Pkg is
   use Ada.Text_IO;
@@ -79,7 +81,7 @@ package body Exchange_Native_Side_Pkg is
     m_pos : constant :=  1;  --  Index for matrix 1
     n_pos : constant :=  5;  --  Index for matrix 2
     r_pos : constant :=  9;  --  Index for record 1
-    o_pos : constant := 11;  --  Index for matrix 3
+    o_pos : constant := 12;  --  Index for matrix 3
     use Ada.Numerics.Long_Real_Arrays;
     package LFIO is new Ada.Text_IO.Float_IO (Long_Float); use LFIO;
     procedure Show (m : Real_Matrix) is
@@ -93,6 +95,8 @@ package body Exchange_Native_Side_Pkg is
       end loop;
     end Show;
     m, n, o : Real_Matrix (1 .. 2, 1 .. 2);
+    function To_HAC is new To_HAC_Any_Enum (Exchange_Common.Animal);
+    function To_Native is new To_Native_Any_Enum (Exchange_Common.Animal);
   begin
     m := ((To_Native (Data (m_pos)),     To_Native (Data (m_pos + 1))),
           (To_Native (Data (m_pos + 2)), To_Native (Data (m_pos + 3))));
@@ -113,6 +117,8 @@ package body Exchange_Native_Side_Pkg is
 
     Data (r_pos)     := To_HAC (Integer'(To_Native (Data (r_pos))) ** 2);
     Data (r_pos + 1) := To_HAC ("I'm a Native message now (niarg niarg niarg)!");
+    Put_Line ("      Native: Enum = " & Exchange_Common.Animal'Image (To_Native (Data (r_pos + 2))));
+    Data (r_pos + 2) := To_HAC (Exchange_Common.dog);
   end Composite_Callback;
 
   procedure Register_All_Callbacks (BD : HAC_Sys.Builder.Build_Data) is

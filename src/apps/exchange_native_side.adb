@@ -7,7 +7,8 @@
 --  Native & master side of the demo.
 --  Compile with a "full Ada" compiler like GNAT.
 
-with Ada.Text_IO;
+with Ada.Directories,
+     Ada.Text_IO;
 
 with HAC_Sys.Builder,
      HAC_Sys.PCode.Interpreter;
@@ -22,7 +23,7 @@ procedure Exchange_Native_Side is
 
   procedure Build_and_Run is
     post_mortem : Post_Mortem_Data;
-    hac_program_name : constant String := "src/apps/exchange_hac_side.adb";
+    hac_program_name : constant String := "exchange_hac_side.adb";
   begin
     Put_Line ("   Native: building a HAC program: " & hac_program_name);
     New_Line;
@@ -40,5 +41,6 @@ begin
   Put_Line ("Exchange_Native_Side is started.");
   New_Line;
   Exchange_Native_Side_Pkg.Register_All_Callbacks (BD);
+  Ada.Directories.Set_Directory ("src/apps");
   Build_and_Run;
 end Exchange_Native_Side;

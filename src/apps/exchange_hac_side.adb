@@ -9,6 +9,8 @@
 
 with HAL;
 
+with Exchange_Common;
+
 procedure Exchange_HAC_Side is
 
   use HAL;
@@ -60,6 +62,7 @@ procedure Exchange_HAC_Side is
     type Some_Record is record
       i : Integer;
       v : VString;
+      e : Exchange_Common.Animal;
     end record;
     procedure Composite_Callback (a, b : in Matrix; r : in out Some_Record; c : out Matrix)
     with Import => True;
@@ -77,11 +80,14 @@ procedure Exchange_HAC_Side is
     n (2, 2) :=  2.4;
     s.i := 13;
     s.v := +"I'm a HAC record field";
+    s.e := Exchange_Common.bat;
     Put_Line (+"   HAC: integer before call: [" & s.i & ']');
     Put_Line (+"        message before call: [" & s.v & ']');
+    Put_Line (+"           enum before call: [" & s.e'Image & ']');
     Composite_Callback (m, n, s, o);
     Put_Line (+"   HAC: integer after call: [" & s.i & ']');
     Put_Line (+"        message after call: [" & s.v & ']');
+    Put_Line (+"           enum after call: [" & s.e'Image & ']');
     Put_Line (+"        matrix product:");
     for i in o'Range (1) loop
       Put ("          ");

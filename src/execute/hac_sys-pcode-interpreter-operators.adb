@@ -7,7 +7,7 @@ with Ada.Calendar,
      Ada.Environment_Variables,
      Ada.Exceptions,
      Ada.Numerics.Float_Random,
-     Ada.Strings;
+     Ada.Strings.Fixed;
 
 package body HAC_Sys.PCode.Interpreter.Operators is
 
@@ -521,7 +521,16 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_Image_Attribute_Durs   => Top_Item := GR_VString (Duration'Image (Top_Item.Dur));
       when SF_Image_Attribute_Enums  =>
         --  .Name contains the upper case representation as required by RM 3.5 (32).
-        Top_Item := GR_VString (A2S (CD.IdTab (Natural (ND.IR.X) + Natural (Top_Item.I)).name));
+        declare
+          full_name : constant String := A2S (CD.IdTab (Natural (ND.IR.X) + Natural (Top_Item.I)).name);
+          dot : constant Natural := Ada.Strings.Fixed.Index (full_name, ".", Going => Backward);
+        begin
+          if dot = 0 then
+            Top_Item := GR_VString (full_name);
+          else
+            Top_Item := GR_VString (full_name (dot + 1 .. full_name'Last));
+          end if;
+        end;
       --
       when SF_Value_Attribute_Bools  =>
         begin

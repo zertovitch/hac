@@ -31,6 +31,10 @@ package HAC_Sys.Interfacing is
   function To_HAC_Any_Integer (Data : Any_Integer) return HAC_Element;
 
   generic
+    type Any_Enum is (<>);
+  function To_HAC_Any_Enum (Data : Any_Enum) return HAC_Element;
+
+  generic
     type Any_Float is digits <>;
   function To_HAC_Any_Float (Data : Any_Float) return HAC_Element;
 
@@ -45,6 +49,10 @@ package HAC_Sys.Interfacing is
   generic
     type Any_Integer is range <>;
   function To_Native_Any_Integer (Data : HAC_Element) return Any_Integer;
+
+  generic
+    type Any_Enum is (<>);
+  function To_Native_Any_Enum (Data : HAC_Element) return Any_Enum;
 
   generic
     type Any_Float is digits <>;

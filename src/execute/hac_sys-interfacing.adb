@@ -34,6 +34,13 @@ package body HAC_Sys.Interfacing is
     return new_element;
   end To_HAC_Any_Integer;
 
+  function To_HAC_Any_Enum (Data : Any_Enum) return HAC_Element is
+    new_element : HAC_Element;
+  begin
+    new_element.I := Any_Enum'Pos (Data);
+    return new_element;
+  end To_HAC_Any_Enum;
+
   function To_HAC_Any_Float (Data : Any_Float) return HAC_Element is
   begin
     return GR_Real (HAL.Real (Data));
@@ -64,6 +71,11 @@ package body HAC_Sys.Interfacing is
   begin
     return Any_Integer (Data.I);
   end To_Native_Any_Integer;
+
+  function To_Native_Any_Enum (Data : HAC_Element) return Any_Enum is
+  begin
+    return Any_Enum'Val (Data.I);
+  end To_Native_Any_Enum;
 
   function To_Native_Any_Float (Data : HAC_Element) return Any_Float is
   begin
