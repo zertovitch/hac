@@ -453,6 +453,9 @@ package body HAC_Sys.PCode.Interpreter is
           when k_Push_Indirect_Value =>
             --  Push "v.all" (variable v contains an access).
             ND.S (Curr_TCB.T) := ND.S (Index (ND.S (Address_of_Variable).I));
+          when k_Push_Indirect_Discrete_Value =>
+            --  Discrete variant of k_Push_Indirect_Value.
+            ND.S (Curr_TCB.T).I := ND.S (Index (ND.S (Address_of_Variable).I)).I;
         end case;
       end Do_Atomic_Data_Push_Operation;
       --
@@ -524,10 +527,10 @@ package body HAC_Sys.PCode.Interpreter is
           Pop (2);
         when k_Store_Discrete_Literal =>  --  [T].all := IR.Y, then pop.
           --  Equivalent to: Push_Discrete_Literal, then Store_Discrete.
-          --  No validity check: the value is discrete and
-          --  range-checked at compile-time (in current version of HAC
+          --  No validity check: the value is discrete.
+          --  Range-checked at compile-time (in current version of HAC
           --  where all ranges & subtypes are static).
-          --  Future versions: range checks would be between
+          --  Future versions: eventual range checks would be between
           --  k_Push_Discrete_Literal and k_Store; then, no folding
           --  into k_Store_Discrete_Literal.
           ND.S (Index (ND.S (Curr_TCB.T).I)).I := IR.Y;

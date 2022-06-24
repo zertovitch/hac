@@ -75,6 +75,26 @@ package body HAC_Sys.PCode is
     use type Defs.HAC_Integer;
     FCT_corr : Opcode := FCT;
     --
+    procedure Try_Specialization is
+      procedure Specialize (new_value : Opcode) with Inline is
+      begin
+        FCT_corr := new_value;
+        specialized := True;
+      end Specialize;
+    begin
+      case FCT_corr is
+        when k_Store =>
+          if Defs.Discrete_Typ (Defs.Typen'Val (B)) then
+            Specialize (k_Store_Discrete);
+          end if;
+        when k_Dereference =>
+          if Defs.Discrete_Typ (Defs.Typen'Val (B)) then
+            Specialize (k_Dereference_Discrete);
+          end if;
+        when others => null;
+      end case;
+    end Try_Specialization;
+    --
     --  Try folding two instruction into one.
     --  This technique is only doable within Ada statements,
     --  otherwise the jumps will be wrong...
@@ -169,18 +189,14 @@ package body HAC_Sys.PCode is
           null;
       end case;
     end Try_Folding;
+    --
   begin
     folded      := False;
     specialized := False;
     if LC = OC'Last then
       Errors.Fatal (Errors.Object_Code);
     end if;
-    if FCT_corr = k_Store then
-      if Defs.Discrete_Typ (Defs.Typen'Val (B)) then
-        FCT_corr := k_Store_Discrete;
-        specialized := True;
-      end if;
-    end if;
+    Try_Specialization;
     if LC > OC'First then
       Try_Folding;
     end if;

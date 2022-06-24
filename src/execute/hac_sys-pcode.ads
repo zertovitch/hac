@@ -26,6 +26,8 @@ package HAC_Sys.PCode is
     k_Push_Value,
     k_Push_Discrete_Value,
     k_Push_Indirect_Value,
+    k_Push_Indirect_Discrete_Value,
+    --
     k_Push_Discrete_Literal,
     k_Push_Float_Literal,
     k_Push_Float_First,
@@ -86,6 +88,7 @@ package HAC_Sys.PCode is
     --
     k_Integer_to_Float,                 --  The reverse conversion is done by a k_Standard_Functions
     k_Dereference,
+    k_Dereference_Discrete,
     k_Unary_MINUS_Float,                --  2020-04-04
     k_Unary_MINUS_Integer,
     k_NOT_Boolean,
@@ -193,7 +196,7 @@ package HAC_Sys.PCode is
   subtype Compare_Integer_Literal_Opcode is Op_Integer_Literal_Opcode
      range k_EQL_Integer_Literal .. k_GEQ_Integer_Literal;
   --
-  subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Indirect_Value;
+  subtype Atomic_Data_Push_Opcode is Opcode range k_Push_Address .. k_Push_Indirect_Discrete_Value;
   subtype Literal_Push_Opcode     is Opcode range k_Push_Discrete_Literal .. k_Push_Float_Last;
   subtype Calling_Opcode          is Opcode range k_Mark_Stack .. k_Update_Display_Vector;
   subtype CASE_Any_Choice         is Opcode range k_CASE_Choice_Value .. k_CASE_Choice_Others;

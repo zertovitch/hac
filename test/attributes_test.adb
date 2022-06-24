@@ -1,7 +1,7 @@
 with HAL;
 with Testing_Utilities;
 
-procedure Attributes_test is
+procedure Attributes_Test is
   use HAL, Testing_Utilities;
 
   type Enum is (aa, bb, cc, dd);
@@ -55,4 +55,4 @@ begin
   Assert (-2 = mmm (10).y'Last (1),  +"Obj.Last (1)");
   Assert (bb = mmm (15).y'First (2), +"Obj.First (2)");
 
-end Attributes_test;
+end Attributes_Test;

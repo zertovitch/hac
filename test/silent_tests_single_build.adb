@@ -6,7 +6,7 @@
 
 with HAL;
 
-with Attributes_test,
+with Attributes_Test,
      Case_Statement,
      Constants,
      Declarations,
@@ -28,7 +28,8 @@ procedure Silent_Tests_Single_Build is
 begin
   Put_Line ("Silent_Tests_Single_Build is practical for testing any Ada compiler.");
   New_Line;
-  Put_Line ("Please use All_Silent_Tests for specifically and throughfully testing HAC.");
+  Put_Line (+"Please use All_Silent_Tests for specifically " & 
+             "and throughfully testing HAC (actual regression test).");
   New_Line;
   Put_Line ("Attributes_Test");   Attributes_test;
   Put_Line ("Case_Statement");    Case_Statement;

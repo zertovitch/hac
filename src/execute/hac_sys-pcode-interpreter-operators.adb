@@ -19,9 +19,10 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     I_to_F : Defs.HAC_Float;
   begin
     case Unary_Operator_Opcode (ND.IR.F) is
-      when k_Dereference         => X   := ND.S (Defs.Index (X.I));  --  "[T] := ([T].I).all"
-      when k_NOT_Boolean         => X.I := Boolean'Pos (not Boolean'Val (X.I));
-      when k_Unary_MINUS_Float   => X.R := -X.R;
+      when k_Dereference          => X   := ND.S (Defs.Index (X.I));  --  "[T] := ([T].I).all"
+      when k_Dereference_Discrete => X.I := ND.S (Defs.Index (X.I)).I;
+      when k_NOT_Boolean          => X.I := Boolean'Pos (not Boolean'Val (X.I));
+      when k_Unary_MINUS_Float    => X.R := -X.R;
       when k_Unary_MINUS_Integer =>
         if X.I = Defs.HAC_Integer'First then
           raise VM_Overflow_Error;
