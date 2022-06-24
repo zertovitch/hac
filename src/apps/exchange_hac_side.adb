@@ -1,9 +1,11 @@
 -----------------------------------------
 --  HAC <-> Native data exchange demo  --
 -----------------------------------------
+--  HAC side                           --
+-----------------------------------------
 
---  This file is meant to be compiled by the HAC compiler which is embedded
---  which is embedded in Exchange_Native_Side (exchange_native_side.adb).
+--  This file is meant to be compiled by the HAC compiler which is
+--  embedded in Exchange_Native_Side (exchange_native_side.adb).
 
 with HAL;
 

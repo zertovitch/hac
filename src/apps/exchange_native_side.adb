@@ -1,8 +1,11 @@
 -------------------------------------------
 --  HAC  <->  Native data exchange demo  --
 -------------------------------------------
+--  Native side                          --
+-------------------------------------------
 
---  Native side (compile with a "full Ada" compiler like GNAT).
+--  Native & master side of the demo.
+--  Compile with a "full Ada" compiler like GNAT.
 
 with Ada.Text_IO;
 

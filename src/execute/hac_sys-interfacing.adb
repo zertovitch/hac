@@ -27,6 +27,18 @@ package body HAC_Sys.Interfacing is
     return GR_VString (Data);
   end To_HAC;
 
+  function To_HAC_Any_Integer (Data : Any_Integer) return HAC_Element is
+    new_element : HAC_Element;
+  begin
+    new_element.I := HAC_Integer (Data);
+    return new_element;
+  end To_HAC_Any_Integer;
+
+  function To_HAC_Any_Float (Data : Any_Float) return HAC_Element is
+  begin
+    return GR_Real (HAL.Real (Data));
+  end To_HAC_Any_Float;
+
   function To_Native (Data : HAC_Element) return Integer is
   begin
     return Integer (Data.I);
@@ -47,6 +59,19 @@ package body HAC_Sys.Interfacing is
     end if;
     raise HAC_Type_Error with "Expected a VString, found Integer or " & Typen'Image (Data.Special);
   end To_Native;
+
+  function To_Native_Any_Integer (Data : HAC_Element) return Any_Integer is
+  begin
+    return Any_Integer (Data.I);
+  end To_Native_Any_Integer;
+
+  function To_Native_Any_Float (Data : HAC_Element) return Any_Float is
+  begin
+    if Data.Special = Floats then
+      return Any_Float (Data.R);
+    end if;
+    raise HAC_Type_Error with "Expected a HAL.Real, found Integer or " & Typen'Image (Data.Special);
+  end To_Native_Any_Float;
 
   procedure Register
     (BD : Builder.Build_Data; Callback : Exported_Procedure; Name : String)
