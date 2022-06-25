@@ -60,9 +60,9 @@ project HAC_Test is
 
    Common_Compiler_Options := (
      "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
+     "-gnatwcijkmopruvz.c.n.p.t.w.x",  --  Warnings switches (run "gnatmake" for full list)
      "-gnatwCKMUV",                    --  Warnings switches (turn off some irrelevant for the tests)
      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
-     "-gnatwijopruvz.c.p.t.w.x",       --  Warnings switches (run "gnatmake" for full list)
      "-gnatf",  --  Full errors. Verbose details, all undefined references
      "-gnatq",  --  Don't quit, try semantics, even if parse errors
      "-gnatQ",  --  Don't quit, write ali/tree file even if compile errors
