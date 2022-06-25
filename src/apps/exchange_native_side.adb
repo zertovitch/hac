@@ -5,7 +5,8 @@
 -------------------------------------------
 
 --  Native & master side of the demo.
---  Compile with a "full Ada" compiler like GNAT.
+--  HAC is embedded in this application.
+--  Compile this program with a "full Ada" compiler like GNAT.
 
 with Ada.Directories,
      Ada.Text_IO;

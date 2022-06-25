@@ -68,8 +68,11 @@ package HAC_Sys.Interfacing is
 
   type Exported_Procedure is access procedure (Data : in out HAC_Element_Array);
 
-  --  Registration. You can register call-backs any time: before, or after
-  --  compilation, but preferably *before* running the HAC program ;-)
+  --  Registration. You can register call-backs any time: before compilation,
+  --  after compilation, or even during HAC's run-time if you can control,
+  --  from the Native program, when a call-back is called. For instance,
+  --  the registration of a call-back to some Native procedure or another one
+  --  might be done during another call-back.
   --
   procedure Register
     (BD       : Builder.Build_Data;

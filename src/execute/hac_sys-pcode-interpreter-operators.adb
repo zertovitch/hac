@@ -89,13 +89,13 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when k_SUBTRACT_Integer => X.I := X.I - Y.I;
       when k_MULT_Integer     => X.I := X.I * Y.I;
       when k_DIV_Integer      =>
-        if Y.I = 0 then raise VM_Division_by_0 with "(/)"; end if;
+        if Y.I = 0 then raise VM_Division_by_0 with "/"; end if;
         X.I := X.I / Y.I;
       when k_MOD_Integer      =>
-        if Y.I = 0 then raise VM_Division_by_0 with "(mod)"; end if;
+        if Y.I = 0 then raise VM_Division_by_0 with "mod"; end if;
         X.I := X.I mod Y.I;
       when k_REM_Integer      =>
-        if Y.I = 0 then raise VM_Division_by_0 with "(rem)"; end if;
+        if Y.I = 0 then raise VM_Division_by_0 with "rem"; end if;
         X.I := X.I rem Y.I;
       when k_Power_Integer    => X.I := X.I ** Natural (Y.I);
       --
@@ -182,7 +182,9 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           when k_ADD_Integer_Literal      => Z.I := Z.I + ND.IR.Y;
           when k_SUBTRACT_Integer_Literal => Z.I := Z.I - ND.IR.Y;
           when k_MULT_Integer_Literal     => Z.I := Z.I * ND.IR.Y;
-          when k_DIV_Integer_Literal      => Z.I := Z.I / ND.IR.Y;
+          when k_DIV_Integer_Literal      =>
+            if ND.IR.Y = 0 then raise VM_Division_by_0 with "/"; end if;
+            Z.I := Z.I / ND.IR.Y;
           when Compare_Integer_Literal_Opcode =>
             case Compare_Integer_Literal_Opcode (ND.IR.F) is
               when k_EQL_Integer_Literal => Z.I := Boolean'Pos (Z.I =  ND.IR.Y);

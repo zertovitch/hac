@@ -9,7 +9,7 @@ package body Testing_Utilities is
 
   procedure Failure (Message : VString) is
   begin
-    Put_Line (+"Failure in test: [" & Message & ']');
+    Put_Line (+"   ----> Failure in test: [" & Message & ']');
     Set_Exit_Status (1);  --  Test failed.
   end Failure;
 

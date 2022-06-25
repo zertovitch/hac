@@ -26,18 +26,19 @@ procedure Barnes is
 
    Coeff : array (Coeff_Range) of My_Int;
 
-   test_mode : constant Boolean := Argument_Count >= 1;
+   compiler_regression_test_mode : constant Boolean := Get_Env ("compiler_test_value_1") /= "";
 
    procedure Put_Solution (S : Digit_String) is
       Chars : constant array (Coeff_Range) of Character := "0123456789";
       Res : My_Int := 0;
    begin
-      if test_mode then
+      if compiler_regression_test_mode then
          for I in S'Range loop
             Res := Res * 10 + Character'Pos (Chars (S (I))) - Character'Pos ('0');
          end loop;
-         if Res /= My_Int'Value (To_String (Argument (1))) then
-            Set_Exit_Status (1);  --  Compiler test failed.
+         if Res /= My_Int'Value (To_String (Get_Env ("compiler_test_value_1"))) then
+            Put_Line ("   ----> Compiler test failed.");
+            Set_Exit_Status (1);
          end if;
       else
          Put ("Solution = ");
@@ -122,7 +123,7 @@ procedure Barnes is
    end Try_Combinations;
 
 begin
-   if not test_mode then
+   if not compiler_regression_test_mode then
       Put_Line ("Find the integer (there is only one) with all decimal digits appearing");
       Put_Line ("once and only once, for which the number formed by the first");
       Put_Line ("two digits can be divided by two, the number formed by the");

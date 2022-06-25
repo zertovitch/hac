@@ -94,10 +94,15 @@ package body Exchange_Native_Side_Pkg is
         New_Line;
       end loop;
     end Show;
+    --
     m, n, o : Real_Matrix (1 .. 2, 1 .. 2);
+    e : Exchange_Common.Animal;
+    --
     function To_HAC is new To_HAC_Any_Enum (Exchange_Common.Animal);
     function To_Native is new To_Native_Any_Enum (Exchange_Common.Animal);
   begin
+    e := To_Native (Data (r_pos + 2));
+    Put_Line ("      Native: Enum = " & Exchange_Common.Animal'Image (e));
     m := ((To_Native (Data (m_pos)),     To_Native (Data (m_pos + 1))),
           (To_Native (Data (m_pos + 2)), To_Native (Data (m_pos + 3))));
     Put_Line ("      Native: Matrix m:");
@@ -117,8 +122,9 @@ package body Exchange_Native_Side_Pkg is
 
     Data (r_pos)     := To_HAC (Integer'(To_Native (Data (r_pos))) ** 2);
     Data (r_pos + 1) := To_HAC ("I'm a Native message now (niarg niarg niarg)!");
-    Put_Line ("      Native: Enum = " & Exchange_Common.Animal'Image (To_Native (Data (r_pos + 2))));
-    Data (r_pos + 2) := To_HAC (Exchange_Common.dog);
+    e := Exchange_Common.cat;
+    Data (r_pos + 2) := To_HAC (e);
+    Put_Line ("      Native: Enum = " & Exchange_Common.Animal'Image (e));
   end Composite_Callback;
 
   procedure Register_All_Callbacks (BD : HAC_Sys.Builder.Build_Data) is

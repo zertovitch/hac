@@ -45,8 +45,8 @@ procedure Object_Init is
       Atomic_Explicit;
       Atomic_Implicit;
     end loop;
-  end;
-    
+  end Test_Atomics;
+
   procedure Old_Tests is
     type Rec_1 is record
       i : Integer;
@@ -117,8 +117,8 @@ procedure Object_Init is
     Assert (z (True).a (9, 11).i = 9 * 11 * n1, +"Compiler bug [Arr]");
     Init_Nest_Rec (y (True), r);
     Assert (r.a (7, 13).i = 7 * 13 * n2, +"Compiler bug [Rec]");
-  end Old_Tests;    
-    
+  end Old_Tests;
+
 begin
   Test_Atomics;
   Old_Tests;

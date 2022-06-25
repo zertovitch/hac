@@ -615,8 +615,8 @@ package body HAC_Sys.PCode.Interpreter is
         Raise_Standard (ND, VME_Program_Error, "CASE Statement doesn't cover all cases");
       when VM_Subprogram_Spec =>
         Raise_Standard (ND, VME_Program_Error, "(HAC bug) Unlinked subprogram specification");
-      when VM_Division_by_0 =>
-        Raise_Standard (ND, VME_Constraint_Error, "Division by 0");
+      when E : VM_Division_by_0 =>
+        Raise_Standard (ND, VME_Constraint_Error, "Division by 0 (operator: " & Exception_Message (E) & ')');
       when VM_End_Error =>
         Raise_Standard (ND, VME_End_Error, "");
       when VM_Function_End_without_Return =>

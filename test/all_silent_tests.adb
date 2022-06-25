@@ -78,16 +78,16 @@ procedure All_Silent_Tests is
     examples_dir : constant VString :=
       +".." & Directory_Separator &
        "exm" & Directory_Separator;
-    
+
     generate : constant VString :=
       +".." & Directory_Separator &
        "hac " & examples_dir & "pkg_demo_gen.adb";
 
   begin
-    Put_Line ("    ___________      _____________________________________________________________________");
-    Put_Line ("   / *  HAC  * \    /  ""Silent tests"": when there is zero output, no compilation error,   \");
-    Put_Line ("   |  Testing  |    |  no run-time error, and 0 failure, then the test suite is all fine. |");
-    Put_Line ("   \___________/    \_____________________________________________________________________/");
+    Put_Line ("    ___________      _____________________________________________");
+    Put_Line ("   / *  HAC  * \    /  ""Silent tests"": when the failure count     \");
+    Put_Line ("   |  Testing  |    |  is zero, then the test suite is all fine.  |");
+    Put_Line ("   \___________/    \_____________________________________________/");
     New_Line;
     Build_HAC (hac_build_success);  --  Redundant if this program is itself run through HAC.
     if not hac_build_success then
@@ -100,7 +100,10 @@ procedure All_Silent_Tests is
     New_Line;
     Put_Line (+"    Normal tests in " & Current_Directory & ':');
     Normal_Test (+"attributes_test.adb");
-    Normal_Test (examples_dir & "barnes.adb 3816547290");
+    --
+    Set_Env ("compiler_test_value_1", "3816547290");
+    Normal_Test (examples_dir & "barnes.adb");
+    --
     Normal_Test (+"case_statement.adb");
     Normal_Test (+"constants.adb");
     Normal_Test (+"declarations.adb");
@@ -125,46 +128,47 @@ procedure All_Silent_Tests is
                    "aoc" & Directory_Separator &
                    "2021");  --  <- We put on purpose the wrong starting year.
     --
-    Launch_AoC (+"2020", +"02", +"607 321"                    );  --  Password Philosophy
-    Launch_AoC (+"2020", +"03", +"218 3847183340"             );  --  Toboggan Trajectory
-    Launch_AoC (+"2020", +"04", +"228 175"                    );  --  Passport Processing
-    Launch_AoC (+"2020", +"05", +"835"                        );  --  Binary Boarding
-    Launch_AoC (+"2020", +"06", +"6532 3427"                  );  --  Custom Customs
-    Launch_AoC (+"2020", +"07", +"169 82372"                  );  --  Handy Haversacks
-    Launch_AoC (+"2020", +"08", +"1394 1626"                  );  --  Handheld Halting
-    Launch_AoC (+"2020", +"09", +"138879426 23761694"         );  --  Encoding Error
-    Launch_AoC (+"2020", +"10", +"2277 37024595836928"        );  --  Adapter Array
-    Launch_AoC (+"2020", +"11", +"37 26"                      );  --  Seating System
-    Launch_AoC (+"2020", +"12", +"1631 58606"                 );  --  Rain Risk
-    Launch_AoC (+"2020", +"13", +"222 408270049879073"        );  --  Shuttle Search
+    Launch_AoC (+"2020", +"02", +"607 321");                      --  Password Philosophy
+    Launch_AoC (+"2020", +"03", +"218 3847183340");               --  Toboggan Trajectory
+    Launch_AoC (+"2020", +"04", +"228 175");                      --  Passport Processing
+    Launch_AoC (+"2020", +"05", +"835");                          --  Binary Boarding
+    Launch_AoC (+"2020", +"06", +"6532 3427");                    --  Custom Customs
+    Launch_AoC (+"2020", +"07", +"169 82372");                    --  Handy Haversacks
+    Launch_AoC (+"2020", +"08", +"1394 1626");                    --  Handheld Halting
+    Launch_AoC (+"2020", +"09", +"138879426 23761694");           --  Encoding Error
+    Launch_AoC (+"2020", +"10", +"2277 37024595836928");          --  Adapter Array
+    Launch_AoC (+"2020", +"11", +"37 26");                        --  Seating System
+    Launch_AoC (+"2020", +"12", +"1631 58606");                   --  Rain Risk
+    Launch_AoC (+"2020", +"13", +"222 408270049879073");          --  Shuttle Search
     Launch_AoC (+"2020", +"15", +"436 1 10 27 78 438 1836 249");  --  Rambunctious Recitation
-    Launch_AoC (+"2020", +"16", +"23954 453459307723"         );  --  Ticket Translation
-    Launch_AoC (+"2020", +"17", +"207"                        );  --  Conway Cubes
-    Launch_AoC (+"2020", +"20", +"83775126454273"             );  --  Jurassic Jigsaw
-    Launch_AoC (+"2020", +"22", +"31957"                      );  --  Crab Combat
-    Launch_AoC (+"2020", +"23", +"67384529 49576328"          );  --  Crab Cups
-    Launch_AoC (+"2020", +"24", +"341 285"                    );  --  Lobby Layout
+    Launch_AoC (+"2020", +"16", +"23954 453459307723");           --  Ticket Translation
+    Launch_AoC (+"2020", +"17", +"207");                          --  Conway Cubes
+    Launch_AoC (+"2020", +"20", +"83775126454273");               --  Jurassic Jigsaw
+    Launch_AoC (+"2020", +"22", +"31957");                        --  Crab Combat
+    Launch_AoC (+"2020", +"23", +"67384529 49576328");            --  Crab Cups
+    Launch_AoC (+"2020", +"24", +"341 285");                      --  Lobby Layout
     --
-    Launch_AoC (+"2021", +"01", +"1154 1127"                  );  --  Sonar Sweep
-    Launch_AoC (+"2021", +"02", +"2187380 2086357770"         );  --  Dive!
-    Launch_AoC (+"2021", +"03", +"3549854 3765399"            );  --  Binary Diagnostic
-    Launch_AoC (+"2021", +"04", +"39984 8468"                 );  --  Giant Squid
-    Launch_AoC (+"2021", +"05", +"6225 22116"                 );  --  Hydrothermal Venture
-    Launch_AoC (+"2021", +"06", +"388419 1740449478328"       );  --  Lanternfish
-    Launch_AoC (+"2021", +"07", +"340052 92948968"            );  --  The Treachery of Whales
-    Launch_AoC (+"2021", +"08", +"440 1046281"                );  --  Seven Segment Search
-    Launch_AoC (+"2021", +"09", +"423 1198704"                );  --  Smoke Basin
-    Launch_AoC (+"2021", +"10", +"388713 3539961434"          );  --  Syntax Scoring
-    Launch_AoC (+"2021", +"11", +"1679 519"                   );  --  Dumbo Octopus
-    Launch_AoC (+"2021", +"12", +"3497"                       );  --  Passage Pathing
-    Launch_AoC (+"2021", +"13", +"602"                        );  --  Transparent Origami
-    Launch_AoC (+"2021", +"14", +"2345 2432786807053"         );  --  Extended Polymerization
-    Launch_AoC (+"2021", +"15", +"656"                        );  --  Chiton
-    Launch_AoC (+"2021", +"16", +"927 1725277876501"          );  --  Packet Decoder
-    Launch_AoC (+"2021", +"21", +"684495 152587196649184"     );  --  Dirac Dice
+    Launch_AoC (+"2021", +"01", +"1154 1127");                    --  Sonar Sweep
+    Launch_AoC (+"2021", +"02", +"2187380 2086357770");           --  Dive!
+    Launch_AoC (+"2021", +"03", +"3549854 3765399");              --  Binary Diagnostic
+    Launch_AoC (+"2021", +"04", +"39984 8468");                   --  Giant Squid
+    Launch_AoC (+"2021", +"05", +"6225 22116");                   --  Hydrothermal Venture
+    Launch_AoC (+"2021", +"06", +"388419 1740449478328");         --  Lanternfish
+    Launch_AoC (+"2021", +"07", +"340052 92948968");              --  The Treachery of Whales
+    Launch_AoC (+"2021", +"08", +"440 1046281");                  --  Seven Segment Search
+    Launch_AoC (+"2021", +"09", +"423 1198704");                  --  Smoke Basin
+    Launch_AoC (+"2021", +"10", +"388713 3539961434");            --  Syntax Scoring
+    Launch_AoC (+"2021", +"11", +"1679 519");                     --  Dumbo Octopus
+    Launch_AoC (+"2021", +"12", +"3497");                         --  Passage Pathing
+    Launch_AoC (+"2021", +"13", +"602");                          --  Transparent Origami
+    Launch_AoC (+"2021", +"14", +"2345 2432786807053");           --  Extended Polymerization
+    Launch_AoC (+"2021", +"15", +"656");                          --  Chiton
+    Launch_AoC (+"2021", +"16", +"927 1725277876501");            --  Packet Decoder
+    Launch_AoC (+"2021", +"21", +"684495 152587196649184");       --  Dirac Dice
     --
     New_Line (2);
     Put_Line ("----> Done.");
+    Set_Env ("compiler_test_value_1", "");
     if failures = 0 then
       Put_Line ("All tests passed.");
     else

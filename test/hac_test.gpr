@@ -33,15 +33,14 @@ project HAC_Test is
      "forward.adb",
      "if_then_elsif_else.adb",
      "integers.adb",
-     "init_var.adb",
      "loops.adb",
+     "object_init.adb",
      "recursion.adb",
      "sorting_tests.adb",
      "strings.adb",
      "type_conversion.adb",
      "test.adb",
-     "test1.adb",
-     "var_init.adb"
+     "test1.adb"
    );
 
    case HAC_Build_Mode is
@@ -51,7 +50,7 @@ project HAC_Test is
          for Object_Dir use "../obj/fast";
    end case;
 
-   for Source_Dirs use (".", "../src");
+   for Source_Dirs use (".", "../src", "../exm");
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";  --  Flips by default the "-p" switch
 
@@ -61,8 +60,9 @@ project HAC_Test is
 
    Common_Compiler_Options := (
      "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
+     "-gnatwCKMUV",                    --  Warnings switches (turn off some irrelevant for the tests)
      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
-     "-gnatwcijkmopruvz.c.p.t.w.x",  --  Warnings switches (run "gnatmake" for full list)
+     "-gnatwijopruvz.c.p.t.w.x",       --  Warnings switches (run "gnatmake" for full list)
      "-gnatf",  --  Full errors. Verbose details, all undefined references
      "-gnatq",  --  Don't quit, try semantics, even if parse errors
      "-gnatQ",  --  Don't quit, write ali/tree file even if compile errors
@@ -70,7 +70,7 @@ project HAC_Test is
      "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
      "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
      "-gnatyx",       --  Style: check x:no extra parens
-     "-gnatye",       --  Style: check e:end/exit labels present
+     --  "-gnatye",       --  Style: check e:end/exit labels present
      "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
    );
 
