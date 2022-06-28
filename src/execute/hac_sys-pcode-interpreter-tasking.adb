@@ -412,9 +412,14 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       ND.EList (E_Idx).Last  := null;
     end loop;
     ND.TActive := CD.Tasks_Definitions_Count;  --  All tasks are active initially
+    if ND.TActive = 0 then
+      ND.Scheduler := Single_Task;  --  The VM runs in single-task mode
+    else
+      ND.Scheduler := 1;
+    end if;
     ND.CurTask := 0;  --  IT WAS -1 ?
     ND.SWITCH := True;
-    ND.TIMER := ND.Start_Time; -- was 0.0
+    ND.TIMER := ND.Start_Time;  --  was 0.0
     ND.PS := Running;
   end Init_other_tasks;
 
@@ -445,7 +450,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     end if;
   end ShowQ;
 
-  procedure Tasks_to_wake (
+  procedure Wake_Tasks (
     CD     :        Compiler_Data;
     ND     : in out Interpreter_Data;
     Result :    out Boolean
@@ -507,31 +512,31 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       end if;
     end loop;
     Result := count > 0;
-  end Tasks_to_wake;
+  end Wake_Tasks;
 
   procedure ShowTime is null;
   procedure SnapShot is null;
 
-  procedure Scheduling (CD : Compiler_Data; ND : in out Interpreter_Data) is
-    Result_Tasks_to_wake : Boolean;
+  procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is separate;
+
+  procedure Manage_Scheduling (CD : Compiler_Data; ND : in out Interpreter_Data) is
+    were_tasks_awakened : Boolean;
     use Ada.Calendar;
-  --  $I sched.pas
-  --  This file contains the different scheduling strategies
   begin
     ND.SYSCLOCK := Clock;
     if ND.Snap then
       ShowTime;
     end if;
-    if ND.TCB (ND.CurTask).TS = Critical then
+    if ND.TCB (ND.CurTask).TS = Critical then  --  SmallAda inter.pas line 456
       if ND.Snap then
         SnapShot;
       end if;
     else
-      HAC_Sys.PCode.Interpreter.Tasking.Tasks_to_wake (CD, ND, Result_Tasks_to_wake);
-      if ND.SWITCH or  --  ------------> Voluntary release of control
+      Wake_Tasks (CD, ND, were_tasks_awakened);
+      if ND.SWITCH or       --  ------------> Voluntary release of control
          ND.SYSCLOCK >= ND.TIMER or   --  ---> Time slice exceeded
-         Result_Tasks_to_wake
-      then --  ------> Awakened task causes switch
+         were_tasks_awakened      --  ------> Awakened task causes switch
+      then
         if ND.CurTask >= 0 then
           ND.TCB (ND.CurTask).LASTRUN := ND.SYSCLOCK;
           if ND.TCB (ND.CurTask).TS = Running then
@@ -539,9 +544,8 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
             --  SWITCH PROCCESS
           end if;
         end if;
-        loop --  Call Main Scheduler
-          --  Schedule(Scheduler,CurTask, PS);  --  sched.pas
-          ND.PS := Running;  --  !! Should call the task scheduler instead !!
+        loop  --  Call Main Scheduler (SmallAda inter.pas line 479):
+          Scheduler (CD, ND);
           ND.SYSCLOCK := Clock;
           if ND.Snap then
             ShowTime;
@@ -564,6 +568,6 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
         end if;
       end if;
     end if;
-  end Scheduling;
+  end Manage_Scheduling;
 
 end HAC_Sys.PCode.Interpreter.Tasking;

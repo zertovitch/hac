@@ -69,7 +69,7 @@ procedure Exchange_HAC_Side is
     m, n, o : Matrix;
     s : Some_Record;
   begin
-    --  HAC 0.1x: no aggregates, we have to write thatrix contents cell by cell.
+    --  HAC 0.2: no aggregates, we have to write the matrix' contents cell by cell.
     m (1, 1) := 1.1;
     m (1, 2) := 1.2;
     m (2, 1) := 1.3;

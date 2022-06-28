@@ -670,7 +670,7 @@ package body HAC_Sys.PCode.Interpreter is
       if ND.Scheduler = Single_Task then
         Single_Task_Delays;
       else
-        Tasking.Scheduling (CD, ND);
+        Tasking.Manage_Scheduling (CD, ND);
       end if;
       Post_Mortem.Max_Stack_Usage := Integer'Max (Post_Mortem.Max_Stack_Usage, ND.TCB (ND.CurTask).T);
       Feedback (
@@ -682,7 +682,7 @@ package body HAC_Sys.PCode.Interpreter is
       if User_Aborted then
         Raise_Standard (ND, VME_User_Abort, "");
       end if;
-      exit Running_State when ND.PS = DEADLOCK or ND.PS = FIN;
+      exit Running_State when ND.PS = DEADLOCK or ND.PS = FIN;  --  SmallAda inter.pas line 490
       --
       Fetch_Instruction;
       --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED (removed)

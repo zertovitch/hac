@@ -1,7 +1,7 @@
 with HAC_Sys.Co_Defs,
      HAC_Sys.PCode.Interpreter.In_Defs;
 
-package HAC_Sys.PCode.Interpreter.Tasking is
+private package HAC_Sys.PCode.Interpreter.Tasking is
   use Co_Defs, In_Defs;
 
   -----------------------
@@ -36,7 +36,7 @@ package HAC_Sys.PCode.Interpreter.Tasking is
     Entry_Index : Integer
   );
 
-  procedure Tasks_to_wake (
+  procedure Wake_Tasks (
     CD     :        Compiler_Data;
     ND     : in out Interpreter_Data;
     Result :    out Boolean
@@ -46,6 +46,6 @@ package HAC_Sys.PCode.Interpreter.Tasking is
   --  Feldman: 60ths of a sec on Mac
   TSlice : constant Duration := 0.016666666;
 
-  procedure Scheduling (CD : Compiler_Data; ND : in out Interpreter_Data);
+  procedure Manage_Scheduling (CD : Compiler_Data; ND : in out Interpreter_Data);
 
 end HAC_Sys.PCode.Interpreter.Tasking;
