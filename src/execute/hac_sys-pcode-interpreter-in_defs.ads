@@ -134,6 +134,8 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
 
   subtype Scheduler_Type is Integer range Single_Task .. 6;
 
+  type Tick_Type is mod 128;
+
   --  Objects of type Interpreter_Data contains data that may be useful
   --  to be kept post-mortem, or in a snapshot toward the "outside", or
   --  passed to the scheduler.
@@ -156,6 +158,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     TIMER       : Ada.Calendar.Time;  --  set to end of current task's time slice
     Gen         : Ada.Numerics.Float_Random.Generator;
     Scheduler   : Scheduler_Type := Single_Task;
+    Instr_Tick  : Tick_Type;
   end record;
 
   procedure Allocate_Text_File (

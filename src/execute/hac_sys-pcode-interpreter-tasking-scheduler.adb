@@ -43,22 +43,21 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
   begin
     if ND.TCB (t).Pcontrol.INHERIT then  --  Consider ALL tasks waiting on task t
       p1 := CVTR (ND.TCB (t).Pcontrol.UPRI) + Fairness (t);
-      for e  in  1 .. CD.Entries_Count loop
-        --  for each entry
+      for e in 1 .. CD.Entries_Count loop  --  For each entry
         if ND.EList (e).Task_Index = t then
-          --  if an entry queue for task t
+          --  If an entry queue for task t
           --  then check priority of every task on queue
           et := ND.EList (e).First;
           while et /= null loop
             --  Calc Priority, RECURSIVE
             p2 := Calc_Priority (et.all.Task_Index);
             if  p2 > p1 then
-              p1 := p2;  --  keep maximum priority
+              p1 := p2;  --  Keep maximum priority
             end if;
-            et := et.all.Next;  --  next task in queue
+            et := et.all.Next;  --  Next task in queue
           end loop;
-        end if; --  if Elist (e).task = t
-      end loop;  --  for e := 1 to ECount
+        end if;
+      end loop;
       Result_Calc_Priority := p1;
     else
       if ND.TCB (t).InRendzv /= NilTask then  --  In Rendezvous with some task
@@ -68,7 +67,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
         if  p1 > p2 then
           cp := p1;
         else
-          cp := p2;        --  return max
+          cp := p2;  --  Return max
         end if;
         Result_Calc_Priority := cp;
       else
@@ -101,7 +100,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
     else
       nready := 0;
       maxpriority := -1.0;
-      for t in  0 .. TCount loop
+      for t in 0 .. TCount loop
         --  Of ready tasks, find one w/ max priority
         if ND.TCB (t).TS = Ready then
           p := Calc_Priority (t);
@@ -137,7 +136,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
         --         end ;
       end if;
     end if;
-  end Scheduler_0;   --  Scheduler_0
+  end Scheduler_0;
 
   --  This Scheduler implements the Run Until Blocked strategy
   --              Amr El-Kadi    Fall 1990
@@ -156,7 +155,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
       end if;
       nready := 0;
       allcomplete := True;
-      for t in  0 .. TCount loop  --  Check if all have completed
+      for t in 0 .. TCount loop  --  Check if all have completed
         if ND.TCB (t).TS /= Completed then
           allcomplete := False;
           if ND.TCB (t).TS = Ready then nready := nready + 1; end if;  --  Count ready tasks
@@ -203,7 +202,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
       end if;
       nready := 0;
       allcomplete := True;
-      for t in  0 .. TCount loop  --  Check if all have completed
+      for t in 0 .. TCount loop  --  Check if all have completed
         if ND.TCB (t).TS /= Completed then
           allcomplete := False;
           if ND.TCB (t).TS = Ready then nready := nready + 1; end if;  --  Count ready tasks
@@ -231,7 +230,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
       end if;
     else
       PS := Running;
-    end if; --  Time slice was not exhausted
+    end if;  --  Time slice was not exhausted
   end Scheduler_2;
 
   --  This procedure searches the list of READY tasks and returns the
@@ -261,11 +260,11 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
     if ND.TCB (NextTask).TS = Running then ND.TCB (NextTask).TS := Ready; end if;
     if Any_Task_Delayed (CD, ND) then  --  Check if any is delayed
       Wake_Tasks (CD, ND, dummy);  --  wakes tasks
-      PS := WAIT; --  Processor's state is waiting
+      PS := WAIT;  --  Processor's state is waiting
     end if;
     nready := 0;
     allcomplete := True;
-    for t in  0 .. TCount loop  --  Check if all have completed
+    for t in 0 .. TCount loop  --  Check if all have completed
       if ND.TCB (t).TS /= Completed then
         allcomplete := False;
         if ND.TCB (t).TS = Ready then nready := nready + 1; end if; --  Count ready tasks
@@ -306,7 +305,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
       end if;
       nready := 0;
       allcomplete := True;
-      for t in  0 .. TCount loop  --  Check if all have completed
+      for t in 0 .. TCount loop  --  Check if all have completed
         if ND.TCB (t).TS /= Completed then
           allcomplete := False;
           if ND.TCB (t).TS = Ready then nready := nready + 1; end if; --  Count ready tasks
@@ -318,13 +317,13 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
         if nready = 0 and PS /= WAIT then
           PS := DEADLOCK;  --  No ready or delayed tasks
         else
-          if  nready /= 0 then
+          if nready /= 0 then
             --  There is at least one ready task
             PS := Running;
               --  Search for the highest priority task
               highest (NextTask);
               ND.TCB (NextTask).QUANTUM := TSlice; --  give it a time slice
-          end if; --  if
+          end if;
         end if;
       end if;
     else
@@ -347,11 +346,11 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
     if Any_Task_Delayed (CD, ND) then  --  Check if any is delayed
       Wake_Tasks (CD, ND, dummy);  --  wakes tasks
       PS := WAIT; --  Processor's state is waiting
-    end if; --  if
+    end if;
 
     nready := 0;
     allcomplete := True;
-    for t  in  0 .. TCount loop  --  Check if all have completed
+    for t in 0 .. TCount loop  --  Check if all have completed
       if ND.TCB (t).TS /= Completed then
         allcomplete := False;
         if ND.TCB (t).TS = Ready then nready := nready + 1; end if;  --  Count ready tasks
@@ -383,7 +382,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
         end if;
       end if;
     end if;
-  end Scheduler_5; --  Scheduler_5
+  end Scheduler_5;
 
   --  This Scheduler implements the Static Priority strategy  (using lexical order)
   --            This does not use time slicing, and it is not preemptive
@@ -404,7 +403,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
       end if;
       nready := 0;
       allcomplete := True;
-      for t  in  0 .. TCount loop  --  Check if all have completed
+      for t in 0 .. TCount loop  --  Check if all have completed
         if ND.TCB (t).TS /= Completed then
           allcomplete := False;
           if ND.TCB (t).TS = Ready then nready := nready + 1; end if; --  Count ready tasks

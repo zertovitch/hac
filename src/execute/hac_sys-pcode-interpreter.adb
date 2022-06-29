@@ -31,13 +31,14 @@ package body HAC_Sys.PCode.Interpreter is
 
     procedure Start_Interpreter is
     begin
-      ND.S := new Stack_Type;
-      ND.PS := Running;
+      ND.S          := new Stack_Type;
+      ND.PS         := Running;
       ND.Start_Time := Ada.Calendar.Clock;
-      ND.Snap     := False;
-      ND.SWITCH   := False;           --  invoke scheduler on next cycle flag
-      ND.SYSCLOCK := ND.Start_Time;
-      ND.TIMER    := ND.SYSCLOCK;     --  set to end of current task's time slice
+      ND.Snap       := False;
+      ND.SWITCH     := False;           --  invoke scheduler on next cycle flag
+      ND.SYSCLOCK   := ND.Start_Time;
+      ND.TIMER      := ND.SYSCLOCK;     --  set to end of current task's time slice
+      ND.Instr_Tick := 0;
       Tasking.Init_main_task (BD.CD.all, ND);
       Tasking.Init_other_tasks (BD.CD.all, ND);
       Post_Mortem.Max_Stack_Usage := 0;
@@ -411,7 +412,7 @@ package body HAC_Sys.PCode.Interpreter is
       end if;
     end Add_Stack_Trace_Line;
 
-    procedure Fetch_Instruction is
+    procedure Fetch_Instruction with Inline is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     begin
       if ND.PS = Exception_Raised then
@@ -601,7 +602,7 @@ package body HAC_Sys.PCode.Interpreter is
         raise;
     end Execute_Current_Instruction;
 
-    procedure Execute_Current_Instruction_with_Exception is
+    procedure Execute_Current_Instruction_with_Exception with Inline is
       use Ada.Exceptions;
     begin
       Execute_Current_Instruction;
@@ -667,26 +668,31 @@ package body HAC_Sys.PCode.Interpreter is
     --
     Running_State :
     loop  --  until Processor state is not Running or Exception_Raised
+      ND.Instr_Tick := ND.Instr_Tick + 1;
       if ND.Scheduler = Single_Task then
-        Single_Task_Delays;
+        if ND.Instr_Tick = 0 then
+          Single_Task_Delays;
+        end if;
       else
         Tasking.Manage_Scheduling (CD, ND);
       end if;
-      Post_Mortem.Max_Stack_Usage := Integer'Max (Post_Mortem.Max_Stack_Usage, ND.TCB (ND.CurTask).T);
-      Feedback (
-        Stack_Current => ND.TCB (ND.CurTask).T,
-        Stack_Total   => ND.S'Last,
-        Wall_Clock    => ND.SYSCLOCK,
-        User_Abort    => User_Aborted
-      );
-      if User_Aborted then
-        Raise_Standard (ND, VME_User_Abort, "");
+      if ND.Instr_Tick = 0 then
+        Feedback (
+          Stack_Current => ND.TCB (ND.CurTask).T,
+          Stack_Total   => ND.S'Last,
+          Wall_Clock    => ND.SYSCLOCK,
+          User_Abort    => User_Aborted
+        );
+        if User_Aborted then
+          Raise_Standard (ND, VME_User_Abort, "");
+        end if;
       end if;
       exit Running_State when ND.PS = DEADLOCK or ND.PS = FIN;  --  SmallAda inter.pas line 490
       --
       Fetch_Instruction;
       --  HERE IS THE POINT WHERE THE TASK MONITORING IS CALLED (removed)
       Execute_Current_Instruction_with_Exception;
+      Post_Mortem.Max_Stack_Usage := Integer'Max (Post_Mortem.Max_Stack_Usage, ND.TCB (ND.CurTask).T);
       --
       exit Running_State when ND.PS not in Running_or_in_Exception;
     end loop Running_State;
