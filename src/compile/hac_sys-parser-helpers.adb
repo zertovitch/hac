@@ -611,7 +611,9 @@ package body HAC_Sys.Parser.Helpers is
   begin
     --  Follow the chain of identifiers for given Level:
     while i /= Co_Defs.No_Id loop
-      if CD.IdTab (i).decl_kind = spec_unresolved then
+      if CD.IdTab (i).decl_kind = spec_unresolved
+         and then CD.IdTab (i).entity /= aEntry
+      then
         Error (CD, err_incomplete_declaration, A2S (CD.IdTab (i).name_with_case));
       end if;
       i := CD.IdTab (i).link;

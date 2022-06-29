@@ -311,11 +311,11 @@ package body HAC_Sys.Parser.Statements is
     begin
       InSymbol;
       if CD.Sy = Semicolon then
-        if Block_Data.is_a_function then
+        if Block_Data.entity = Funktion then
           Error (CD, err_functions_must_return_a_value);
         end if;
       else
-        if not Block_Data.is_a_function then
+        if Block_Data.entity = Prozedure then
           Error (CD, err_procedures_cannot_return_a_value, severity => major);
         end if;
         --  Calculate return value (destination: X; expression: Y).
@@ -347,7 +347,7 @@ package body HAC_Sys.Parser.Statements is
           Issue_Type_Mismatch_Error;
         end if;
       end if;
-      if Block_Data.is_a_function then
+      if Block_Data.entity = Funktion then
         Emit_1 (CD, k_Exit_Function, Normal_Procedure_Call);
       elsif Block_Data.is_main then
         Emit (CD, k_Halt_Interpreter);
@@ -929,7 +929,7 @@ package body HAC_Sys.Parser.Statements is
       --
       block_statement_data.level                         := Block_Data.level + 1;
       block_statement_data.block_id_index                := CD.Id_Count;
-      block_statement_data.is_a_function                 := Block_Data.is_a_function;
+      block_statement_data.entity                        := Block_Data.entity;
       block_statement_data.is_main                       := False;
       block_statement_data.previous_declaration_id_index := No_Id;
       Block (CD, FSys_St, True, block_statement_data, block_name, block_name);  --  !! up/low case

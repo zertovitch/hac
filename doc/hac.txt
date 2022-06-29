@@ -159,7 +159,7 @@ Language subset
         See exm/pkg_demo.adb for a larger example with packages.
     - Generics are not yet implemented.
     - Tasks are implemented, but not fully working yet (they used to
-        work on SmallAda). See in exm/tasks for what is working
+        work on SmallAda). See in exm/tasking for what is working
         and exm/not_working for what is not.
     - Small parts of the standard Ada library are available indirectly
         through the HAL, Interfaces and Standard built-in packages.

@@ -59,7 +59,7 @@ package body HAC_Sys.Parser is
             InSymbol;
             in_keyword := True;
           end if;
-          if block_data.is_a_function then  --  If I am a function, no In Out params allowed
+          if block_data.entity = Funktion then  --  If I am a function, no In Out params allowed
             ValParam := True;
           elsif CD.Sy = OUT_Symbol then
             InSymbol;
@@ -293,7 +293,7 @@ package body HAC_Sys.Parser is
       if CD.Sy = WITH_Symbol then
         Subprogram_Aspect;
       end if;
-      if block_data.level > 1 then
+      if block_data.level > 1 and then block_data.entity /= aEntry  then
         InSymbol;  --  Consume ';'
       end if;
       --  End of subprogram specification part (forward declaration).
@@ -327,7 +327,7 @@ package body HAC_Sys.Parser is
         --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;"
         InSymbol;  --  Consume NULL symbol.
         Statements_Part_Setup;
-        if block_data.is_a_function then
+        if block_data.entity = Funktion then
           --  There are no null functions: what would be the result?
           Error (CD, err_no_null_functions);
         else
@@ -418,7 +418,7 @@ package body HAC_Sys.Parser is
     CD.Blocks_Table (subprogram_block_index).Last_Param_Id_Idx := CD.Id_Count;
     CD.Blocks_Table (subprogram_block_index).PSize := block_data.data_allocation_index;
     --
-    if block_data.is_a_function and not Is_a_block_statement then
+    if block_data.entity = Funktion and not Is_a_block_statement then
       Function_Result_Profile;
     end if;
     --
@@ -469,7 +469,7 @@ package body HAC_Sys.Parser is
       Scanner.InSymbol (CD);
       sub_sub_prog_block_data.level                         := current_level + 1;
       sub_sub_prog_block_data.block_id_index                := CD.Id_Count;
-      sub_sub_prog_block_data.is_a_function                 := IsFun;
+      sub_sub_prog_block_data.entity                        := (if IsFun then Funktion else Prozedure);
       sub_sub_prog_block_data.is_main                       := False;
       sub_sub_prog_block_data.previous_declaration_id_index := old_id_idx;
       new_id_idx := CD.Id_Count;

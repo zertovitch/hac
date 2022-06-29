@@ -121,6 +121,10 @@ procedure All_Silent_Tests is
     Normal_Test (+"recursion.adb");
     Normal_Test (+"sorting_tests.adb");
     Normal_Test (+"strings.adb");
+    --
+    Set_Env ("compiler_test_value_1", "something");
+    Normal_Test (examples_dir & "tasking" & Directory_Separator & "tasks_02.adb");
+    --
     Normal_Test (+"type_conversion.adb");
     --
     Set_Directory (+".." & Directory_Separator &

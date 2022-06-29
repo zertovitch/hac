@@ -15,15 +15,15 @@ with HAC_Sys.Co_Defs,
 package HAC_Sys.Parser is
 
   type Block_Data_Type is record
-    level                           : Defs.Nesting_level;  --  When level = 0, the rest of
-                                                           --    this record is garbage.
-    is_a_function                   : Boolean;             --  RETURN [Value] statement expected
+    level                           : Defs.Nesting_level;   --  When level = 0, the rest of
+                                                            --    this record is garbage.
+    entity                          : Co_Defs.Entity_Kind;  --  Procedure, function or entry.
     is_main                         : Boolean;
     block_id_index                  : Natural;
-    previous_declaration_id_index   : Natural;             --  Subprogram "forward" declaration
-    initialization_object_code_size : Integer;             --  Was: ICode
-    data_allocation_index           : Integer;             --  Was: DX
-    max_data_allocation_index       : Integer;             --  Was: MaxDX
+    previous_declaration_id_index   : Natural;              --  Subprogram "forward" declaration
+    initialization_object_code_size : Integer;              --  Was: ICode
+    data_allocation_index           : Integer;              --  Was: DX
+    max_data_allocation_index       : Integer;              --  Was: MaxDX
     --  ^ includes the maximum space needed
     --    for parameters of FOR loops.
   end record;

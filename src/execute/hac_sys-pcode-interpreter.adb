@@ -670,9 +670,7 @@ package body HAC_Sys.PCode.Interpreter is
     loop  --  until Processor state is not Running or Exception_Raised
       ND.Instr_Tick := ND.Instr_Tick + 1;
       if ND.Scheduler = Single_Task then
-        if ND.Instr_Tick = 0 then
-          Single_Task_Delays;
-        end if;
+        Single_Task_Delays;
       else
         Tasking.Manage_Scheduling (CD, ND);
       end if;

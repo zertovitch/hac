@@ -359,7 +359,7 @@ package body HAC_Sys.Compiler is
 
     main_block.level                         := 1;
     main_block.block_id_index                := CD.Id_Count;
-    main_block.is_a_function                 := False;
+    main_block.entity                        := Prozedure;
     main_block.is_main                       := True;
     main_block.previous_declaration_id_index := No_Id;
     --  Start Compiling of Main
@@ -546,7 +546,7 @@ package body HAC_Sys.Compiler is
         --
         unit_block.level                         := 1;
         unit_block.block_id_index                := new_id_index;
-        unit_block.is_a_function                 := kind = Function_Unit;
+        unit_block.entity                        := (if kind = Function_Unit then Funktion else Prozedure);
         unit_block.is_main                       := False;
         unit_block.previous_declaration_id_index := specification_id_index;
         Parser.Block (

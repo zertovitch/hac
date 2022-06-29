@@ -37,7 +37,7 @@ package body HAC_Sys.Parser.Tasking is
       InSymbol;
       task_block.level                         := Level + 1;
       task_block.block_id_index                := I;
-      task_block.is_a_function                 := False;
+      task_block.entity                        := aEntry;
       task_block.is_main                       := False;
       task_block.previous_declaration_id_index := No_Id;
       Block (CD, FSys, False, task_block, TaskID, TaskID);  --  !! up/low case
@@ -83,7 +83,7 @@ package body HAC_Sys.Parser.Tasking is
           InSymbol;
           task_block.level                         := Level + 1;
           task_block.block_id_index                := CD.Id_Count;
-          task_block.is_a_function                 := False;
+          task_block.entity                        := aEntry;
           task_block.is_main                       := False;
           task_block.previous_declaration_id_index := No_Id;
           Block (CD, FSys, False, task_block,
