@@ -26,7 +26,7 @@ procedure Barnes is
 
    Coeff : array (Coeff_Range) of My_Int;
 
-   compiler_regression_test_mode : constant Boolean := Get_Env ("compiler_test_value_1") /= "";
+   compiler_regression_test_mode : constant Boolean := Argument_Count > 0;
 
    procedure Put_Solution (S : Digit_String) is
       Chars : constant array (Coeff_Range) of Character := "0123456789";
@@ -36,7 +36,7 @@ procedure Barnes is
          for I in S'Range loop
             Res := Res * 10 + Character'Pos (Chars (S (I))) - Character'Pos ('0');
          end loop;
-         if Res /= My_Int'Value (To_String (Get_Env ("compiler_test_value_1"))) then
+         if Res /= My_Int'Value (To_String (Argument (1))) then
             Put_Line ("   ----> Compiler test failed.");
             Set_Exit_Status (1);
          end if;

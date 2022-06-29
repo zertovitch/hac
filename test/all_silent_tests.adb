@@ -53,8 +53,13 @@ procedure All_Silent_Tests is
     procedure Normal_Test (Ada_file_name : VString) is
       short : VString;
       sep : constant Natural := Index_Backward (Ada_file_name, Directory_Separator);
+      spc : constant Natural := Index_Backward (Ada_file_name, ' ');
     begin
-      short := Slice (Ada_file_name, sep + 1, Length (Ada_file_name));
+      if spc > 0 then
+        short := Slice (Ada_file_name, sep + 1, spc - 1);
+      else
+        short := Slice (Ada_file_name, sep + 1, Length (Ada_file_name));
+      end if;
       Put_Line (+"      " & short);
       Launch_HAC (Ada_file_name, +"", 1);
     end Normal_Test;
@@ -100,10 +105,7 @@ procedure All_Silent_Tests is
     New_Line;
     Put_Line (+"    Normal tests in " & Current_Directory & ':');
     Normal_Test (+"attributes_test.adb");
-    --
-    Set_Env ("compiler_test_value_1", "3816547290");
-    Normal_Test (examples_dir & "barnes.adb");
-    --
+    Normal_Test (examples_dir & "barnes.adb 3816547290");
     Normal_Test (+"case_statement.adb");
     Normal_Test (+"constants.adb");
     Normal_Test (+"declarations.adb");
@@ -121,10 +123,7 @@ procedure All_Silent_Tests is
     Normal_Test (+"recursion.adb");
     Normal_Test (+"sorting_tests.adb");
     Normal_Test (+"strings.adb");
-    --
-    Set_Env ("compiler_test_value_1", "something");
-    Normal_Test (examples_dir & "tasking" & Directory_Separator & "tasks_02.adb");
-    --
+    Normal_Test (examples_dir & "tasking" & Directory_Separator & "tasks_02.adb x");
     Normal_Test (+"type_conversion.adb");
     --
     Set_Directory (+".." & Directory_Separator &
@@ -172,7 +171,6 @@ procedure All_Silent_Tests is
     --
     New_Line (2);
     Put_Line ("----> Done.");
-    Set_Env ("compiler_test_value_1", "");
     if failures = 0 then
       Put_Line ("All tests passed.");
     else

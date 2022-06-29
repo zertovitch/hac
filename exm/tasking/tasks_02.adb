@@ -4,8 +4,7 @@ with HAL;
 
 procedure Tasks_02 is
 
-  test_str : constant HAL.VString := HAL.Get_Env ("compiler_test_value_1");
-  compiler_regression_test_mode : constant Boolean := test_str /= "";
+  compiler_regression_test_mode : constant Boolean := HAL.Argument_Count > 0;
   verbose : constant Boolean := not compiler_regression_test_mode;
 
   procedure Selective_Put_Line (M : HAL.VString) is
@@ -13,7 +12,7 @@ procedure Tasks_02 is
     if verbose then
       HAL.Put_Line (M);
     end if;
-  end;
+  end Selective_Put_Line;
 
   task T1;
   task T2 is
@@ -22,6 +21,8 @@ procedure Tasks_02 is
   end T2;
 
   the_answer : constant := 42;
+
+  use HAL;
 
   task body T1 is
     Iii : Integer;
@@ -57,7 +58,7 @@ begin
   Selective_Put_Line (+"[point 2] mmm = " & Mmm);
   Selective_Put_Line (+"Done.");
   if compiler_regression_test_mode and then Mmm /= the_answer then
-    HAL.Put_Line ("   ----> Compiler test failed.");
-    HAL.Set_Exit_Status (1);
+    Put_Line ("   ----> Compiler test failed.");
+    Set_Exit_Status (1);
   end if;
 end Tasks_02;

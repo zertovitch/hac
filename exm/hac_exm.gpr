@@ -50,6 +50,8 @@ project HAC_Exm is
      "shell_sort.adb",
      "shell.adb",
      "strings_demo.adb",
+     "tasks_01.adb",
+     "tasks_02.adb",
      "three_lakes_s.adb",
      "timing.adb",
      "unit_a.adb",
@@ -77,8 +79,7 @@ project HAC_Exm is
      --  "pgm1.adb",
      --  "pgm2.adb",
      --  "race.adb",
-     --  "racedead.adb",
-     --  "test2.adb"
+     --  "racedead.adb"
    );
    case HAC_Build_Mode is
       when "Debug" =>
@@ -87,7 +88,7 @@ project HAC_Exm is
          for Object_Dir use "../obj/fast";
    end case;
 
-   for Source_Dirs use (".", "../src", "pdf", "not_working");
+   for Source_Dirs use (".", "../src", "pdf", "tasking", "not_working");
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";  --  Flips by default the "-p" switch
 
