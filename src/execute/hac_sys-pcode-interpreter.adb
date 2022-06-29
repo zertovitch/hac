@@ -659,6 +659,7 @@ package body HAC_Sys.PCode.Interpreter is
         delay Duration'Max (0.0, wake - ND.SYSCLOCK);
       end if;
       ND.SWITCH := False;
+      ND.Single_Task_Delay_Pending := False;
     end Single_Task_Delays;
 
     User_Aborted : Boolean;
@@ -667,13 +668,15 @@ package body HAC_Sys.PCode.Interpreter is
     Start_Interpreter;
     --
     Running_State :
-    loop  --  until Processor state is not Running or Exception_Raised
-      ND.Instr_Tick := ND.Instr_Tick + 1;
+    loop  --  ... until Processor state is not Running or Exception_Raised
       if ND.Scheduler = Single_Task then
-        Single_Task_Delays;
+        if ND.Single_Task_Delay_Pending then
+          Single_Task_Delays;
+        end if;
       else
         Tasking.Manage_Scheduling (CD, ND);
       end if;
+      ND.Instr_Tick := ND.Instr_Tick + 1;
       if ND.Instr_Tick = 0 then
         Feedback (
           Stack_Current => ND.TCB (ND.CurTask).T,

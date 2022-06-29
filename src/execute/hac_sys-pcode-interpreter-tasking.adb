@@ -308,6 +308,9 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       use type Ada.Calendar.Time;
     begin
       if ND.S (Curr_TCB.T).Dur > 0.0 then
+        if ND.Scheduler = Single_Task then
+          ND.Single_Task_Delay_Pending := True;
+        end if;
         Curr_TCB.TS := Delayed;  --  set task state to delayed
         ND.SYSCLOCK := Ada.Calendar.Clock;    --  update System Clock
         Curr_TCB.WAKETIME := ND.SYSCLOCK + ND.S (Curr_TCB.T).Dur;  --  set wakeup time

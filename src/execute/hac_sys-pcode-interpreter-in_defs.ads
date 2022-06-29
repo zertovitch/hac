@@ -141,24 +141,25 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
   --  passed to the scheduler.
 
   type Interpreter_Data is record
-    S           : Stack_Type_Access;
-    PS          : Processor_State;             --  Processor status register
-    IR          : Order;                       --  Instruction register
-    CurTask     : Integer;                     --  Index of currently executing task
-    TCB         : Task_Control_Blocks;
-    Files       : File_Vectors.Vector;
-    Snap        : Boolean;            --  Snapshot flag to display scheduler status
-    Nb_Callers  : Integer;            --  AVL  TERMINATE
-    Nb_Complete : Integer;            --  AVL  TERMINATE
-    EList       : Entry_Queue;
-    TActive     : TRange;             --  no. of active tasks
-    Start_Time  : Ada.Calendar.Time;
-    SWITCH      : Boolean;            --  invoke scheduler on next cycle flag
-    SYSCLOCK    : Ada.Calendar.Time;  --  (ms after 00:00:00 Jan 1, current year)
-    TIMER       : Ada.Calendar.Time;  --  set to end of current task's time slice
-    Gen         : Ada.Numerics.Float_Random.Generator;
-    Scheduler   : Scheduler_Type := Single_Task;
-    Instr_Tick  : Tick_Type;
+    S                         : Stack_Type_Access;
+    PS                        : Processor_State;             --  Processor status register
+    IR                        : Order;                       --  Instruction register
+    CurTask                   : Integer;                     --  Index of currently executing task
+    TCB                       : Task_Control_Blocks;
+    Files                     : File_Vectors.Vector;
+    Snap                      : Boolean;            --  Snapshot flag to display scheduler status
+    Nb_Callers                : Integer;            --  AVL  TERMINATE
+    Nb_Complete               : Integer;            --  AVL  TERMINATE
+    EList                     : Entry_Queue;
+    TActive                   : TRange;             --  no. of active tasks
+    Start_Time                : Ada.Calendar.Time;
+    SWITCH                    : Boolean;            --  invoke scheduler on next cycle flag
+    SYSCLOCK                  : Ada.Calendar.Time;  --  (ms after 00:00:00 Jan 1, current year)
+    TIMER                     : Ada.Calendar.Time;  --  set to end of current task's time slice
+    Gen                       : Ada.Numerics.Float_Random.Generator;
+    Scheduler                 : Scheduler_Type := Single_Task;
+    Single_Task_Delay_Pending : Boolean        := False;
+    Instr_Tick                : Tick_Type;
   end record;
 
   procedure Allocate_Text_File (
