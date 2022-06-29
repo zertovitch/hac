@@ -678,6 +678,7 @@ package body HAC_Sys.PCode.Interpreter is
       end if;
       ND.Instr_Tick := ND.Instr_Tick + 1;
       if ND.Instr_Tick = 0 then
+        ND.SYSCLOCK := Ada.Calendar.Clock;
         Feedback (
           Stack_Current => ND.TCB (ND.CurTask).T,
           Stack_Total   => ND.S'Last,
