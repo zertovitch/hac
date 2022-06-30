@@ -19,6 +19,14 @@ procedure PGM0 is
 
   ACCOUNT : ARRAY (1 .. 5) OF CUST_RECORD;
 
+  procedure Show is
+  begin
+    for i in account'Range loop
+      Put_Line (+"#" & i & "; ID: " & account (i).ID & "; balance: " & account (i).balance);
+    end loop;
+    New_Line;
+  end;
+
   TASK BODY CUST_C IS
   BEGIN
     TELLER.MAKE_DEP (435,75.50);
@@ -26,7 +34,7 @@ procedure PGM0 is
 
   TASK BODY CUST_B IS
   BEGIN
-    TELLER.MAKE_DEP (887,100.0);
+    TELLER.MAKE_DEP (878,100.0);
   END CUST_B;
 
   TASK BODY CUST_A IS
@@ -35,7 +43,6 @@ procedure PGM0 is
   END CUST_A;
 
   TASK BODY TELLER IS
-    I : INTEGER;
   BEGIN
     ACCOUNT (1).ID      := 125;
     ACCOUNT (1).BALANCE := 400.50;
@@ -47,24 +54,25 @@ procedure PGM0 is
     ACCOUNT (4).BALANCE := 557.00;
     ACCOUNT (5).ID      := 589;
     ACCOUNT (5).BALANCE := 235.75;
+    Show;
 
     LOOP
-       SELECT
-          ACCEPT MAKE_DEP (CUST_ID : INTEGER;
-                           AMOUNT  : Real) DO
-             I := 1;
-             WHILE ACCOUNT(I).ID /= CUST_ID LOOP
-                I := I + 1;
-             END LOOP;
+      SELECT
+        ACCEPT MAKE_DEP (CUST_ID : INTEGER;
+                         AMOUNT  : Real) DO
+           for I in account'Range loop
              IF ACCOUNT(I).ID = CUST_ID THEN
                 ACCOUNT(I).BALANCE :=
                    ACCOUNT(I).BALANCE
                    + AMOUNT;
+               Show;
+               exit;
              END IF;
-          END MAKE_DEP;
-       OR
-          TERMINATE;
-       END SELECT;
+           END LOOP;
+        END MAKE_DEP;
+      OR
+        TERMINATE;
+      END SELECT;
     END LOOP;
   END TELLER;
 

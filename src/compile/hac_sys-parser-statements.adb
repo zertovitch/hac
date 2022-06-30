@@ -158,12 +158,18 @@ package body HAC_Sys.Parser.Statements is
   procedure Sequence_of_Statements  --  Ada RM 5.1 (2)
     (CD         : in out Co_Defs.Compiler_Data;
      Sentinel   :        Defs.Symset;
-     Block_Data : in out Block_Data_Type)
+     Block_Data : in out Block_Data_Type;
+     Optional   :        Boolean := False)
   is
     use Defs, Helpers, Errors;
     statement_or_sentinel : constant Symset := Statement_Begin_Symbol or Sentinel;
   begin
-    if Sentinel (CD.Sy) then  --  GdM 15-Aug-2014: there should be at least one statement.
+    if Sentinel (CD.Sy) and then not Optional then
+      --  GdM 15-Aug-2014: there should be at least one statement.
+      --
+      --  But in some places in the grammar the sequence is optional:
+      --  in an accept_alternative and in a delay_alternative.
+      --  In both cases the sequence follow a first statement (accept or delay).
       Error (CD, err_statement_expected, severity => minor);
     else
       loop
@@ -831,7 +837,7 @@ package body HAC_Sys.Parser.Statements is
                   Select_Error (err_missing_a_procedure_declaration);  --  ??
               end case;
               InSymbol;
-              Sequence_of_Statements (CD, ELSE_END_OR, Block_Data);
+              Sequence_of_Statements (CD, ELSE_END_OR, Block_Data, True);
               Feed_Patch_Table (JSD, ISD, CD.LC);
               Emit (CD, k_Jump);          --  patch JMP ADDRESS AT EndSy
             --  end WHEN_Symbol
@@ -840,7 +846,7 @@ package body HAC_Sys.Parser.Statements is
               Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
               Accept_Statement_2;
               InSymbol;
-              Sequence_of_Statements (CD, ELSE_END_OR, Block_Data);
+              Sequence_of_Statements (CD, ELSE_END_OR, Block_Data, True);
               Feed_Patch_Table (JSD, ISD, CD.LC);
               Emit (CD, k_Jump);
 
@@ -870,7 +876,7 @@ package body HAC_Sys.Parser.Statements is
                 Emit (CD, k_Jump);
               end if;
               InSymbol;
-              Sequence_of_Statements (CD, ELSE_END_OR, Block_Data);
+              Sequence_of_Statements (CD, ELSE_END_OR, Block_Data, True);
               Feed_Patch_Table (JSD, ISD, CD.LC);
               Emit (CD, k_Jump);
 

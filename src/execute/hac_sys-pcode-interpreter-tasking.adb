@@ -134,8 +134,8 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     begin
       case IR.X is
         when 1 => --  Start Selective Wait seq.
-          Curr_TCB.R1.I := 0; --  next instruction if delay expires
-          Curr_TCB.R2.R := -1.0; --  delay time
+          Curr_TCB.R1.I := 0;               --  next instruction if delay expires
+          Curr_TCB.R2   := GR_Real (-1.0);  --  delay time
 
         when 2 => --  Retain entry ID
           Curr_TCB.R3.I := IR.Y;
