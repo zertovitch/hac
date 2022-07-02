@@ -105,4 +105,6 @@ begin
   Demo_Data_to_Native;
   Demo_Data_Bidirectional;
   Demo_Composite;
+  --
+  Set_VM_Variable ("Demo_Variable", Get_VM_Variable ("Demo_Variable") & "HAC... ");
 end Exchange_HAC_Side;

@@ -422,6 +422,7 @@ package HAC_Sys.PCode is
     SF_File_Exists,
     --  Ada.Environment_Variables-like
     SF_Get_Env,
+    SF_Get_VM_Variable,
     --
     --  Niladic functions (they have no arguments).
     --
@@ -479,6 +480,7 @@ package HAC_Sys.PCode is
     --  Ada.Environment_Variables-like procedures
     --
     SP_Set_Env,
+    SP_Set_VM_Variable,
     --
     --  Ada.Directories-like procedures
     --

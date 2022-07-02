@@ -1,4 +1,6 @@
-with HAC_Sys.PCode.Interpreter.Exceptions;
+with HAC_Sys.Co_Defs,
+     HAC_Sys.Interfacing,
+     HAC_Sys.PCode.Interpreter.Exceptions;
 
 with HAL;
 
@@ -11,7 +13,8 @@ with Ada.Calendar,
 
 package body HAC_Sys.PCode.Interpreter.Operators is
 
-  procedure Do_Unary_Operator (ND : in out Interpreter_Data) is
+  procedure Do_Unary_Operator (ND : in out In_Defs.Interpreter_Data) is
+    use In_Defs;
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
     X : General_Register renames ND.S (Curr_TCB_Top);
     H1 : Defs.Index;
@@ -35,7 +38,8 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     end case;
   end Do_Unary_Operator;
 
-  procedure Do_Binary_Operator (ND : in out Interpreter_Data) is
+  procedure Do_Binary_Operator (ND : in out In_Defs.Interpreter_Data) is
+    use In_Defs;
     Curr_TCB_Top : Integer renames ND.TCB (ND.CurTask).T;
     X : General_Register renames ND.S (Curr_TCB_Top - 1);  --  X = [T-1]
     Y : General_Register renames ND.S (Curr_TCB_Top);      --  Y = [T]
@@ -109,7 +113,8 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     Pop (ND);
   end Do_Binary_Operator;
 
-  procedure Do_Multiple_Operator (ND : in out Interpreter_Data) is
+  procedure Do_Multiple_Operator (ND : in out In_Defs.Interpreter_Data) is
+    use In_Defs;
     Top : Integer renames ND.TCB (ND.CurTask).T;
     result_pos, terms : Integer;
     use type Defs.HAC_Float, Defs.HAC_Integer, Defs.Typen;
@@ -135,7 +140,8 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     Pop (ND, terms - 1);
   end Do_Multiple_Operator;
 
-  procedure Do_Special_Operator (ND : in out Interpreter_Data) is
+  procedure Do_Special_Operator (ND : in out In_Defs.Interpreter_Data) is
+    use In_Defs;
     Top : Integer renames ND.TCB (ND.CurTask).T;
     X : General_Register renames ND.S (Top - 2);  --  X = [T-2]
     Y : General_Register renames ND.S (Top - 1);  --  Y = [T-1]
@@ -204,7 +210,9 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     end case;
   end Do_Special_Operator;
 
-  procedure Do_SF_Operator (CD : Compiler_Data; ND : in out Interpreter_Data) is
+  procedure Do_SF_Operator (BD : Builder.Build_Data; ND : in out In_Defs.Interpreter_Data) is
+    use In_Defs;
+    CD : Co_Defs.Compiler_Data renames BD.CD.all;
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     Top_Item : General_Register renames ND.S (Curr_TCB.T);
     temp : Defs.HAC_Float;
@@ -590,6 +598,8 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             Top_Item.V := HAL.Null_VString;
           end if;
         end;
+      when SF_Get_VM_Variable =>
+        Top_Item.V := HAL.To_VString (Interfacing.Get_VM_Variable (BD, HAL.To_String (Top_Item.V)));
       when SF_Directory_Exists | SF_Exists | SF_File_Exists =>
         declare
           Name : constant String := HAL.VStr_Pkg.To_String (Top_Item.V);

@@ -385,26 +385,41 @@ package HAL is
   function Day     (Date : Time) return Integer renames Ada.Calendar.Day;
   function Seconds (Date : Time) return Duration renames Ada.Calendar.Seconds;
 
-  --  Semaphore stuff (from SmallAda)
-  type Semaphore is new Integer; -- private;
-  procedure  Wait      (S : Semaphore);
-  procedure  Signal    (S : Semaphore);
-
-  --  System (items similar to items in Ada.Directories, Ada.Environment_Variables)
+  -------------------------------------------------------------------------------------
+  --  System (items similar to items in Ada.Directories, Ada.Environment_Variables)  --
+  -------------------------------------------------------------------------------------
 
   function Argument_Count return Natural renames Ada.Command_Line.Argument_Count;
   function Argument (Number : Positive) return VString;
   function Command_Name return VString;
   procedure Set_Exit_Status (Code : in Integer);
 
-  --  Get_Env. If env. var. Name is not set, returns an empty string.
+  --  Get_Env: returns the value of environment variable Name.
+  --  If Name is not set, returns an empty string.
   function Get_Env (Name : String)  return VString;
   function Get_Env (Name : VString) return VString;
 
+  --  Set_Env: sets the value of environment variable Name.
   procedure Set_Env (Name : String;  Value : String) renames Ada.Environment_Variables.Set;
   procedure Set_Env (Name : VString; Value : String);
   procedure Set_Env (Name : String;  Value : VString);
   procedure Set_Env (Name : VString; Value : VString);
+
+  --  Virtual Machine Variables work in a similar way as environment variables.
+  --  The difference: they are visible only to an instance of the Virtual Machine,
+  --  that is, to an object of type Builder.Build_Data.
+  --  There are two ways of accessing them:
+  --    1) from the HAC program via Get_VM_Variable, Set_VM_Variable below.
+  --    2) from the "full Ada" application hosting HAC,
+  --       via HAC_Sys.Interfacing.Get_VM_Variable, Set_VM_Variable.
+
+  function Get_VM_Variable (Name : String)  return VString;
+  function Get_VM_Variable (Name : VString) return VString;
+
+  procedure Set_VM_Variable (Name : String;  Value : String);
+  procedure Set_VM_Variable (Name : VString; Value : String);
+  procedure Set_VM_Variable (Name : String;  Value : VString);
+  procedure Set_VM_Variable (Name : VString; Value : VString);
 
   function Current_Directory return VString;
 
@@ -449,6 +464,12 @@ package HAL is
   procedure Shell_Execute (Command : VString; Output : out VString);
 
   function Directory_Separator return Character;
+
+  --  Semaphore stuff from SmallAda.
+  --  It pre-dates Ada tasks and stems from CoPascal.
+  type Semaphore is new Integer; -- private;
+  procedure  Wait   (S : Semaphore);
+  procedure  Signal (S : Semaphore);
 
   ---------------------------------
   --  End of compatibility part  --

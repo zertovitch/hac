@@ -85,6 +85,22 @@ package body HAC_Sys.Interfacing is
     raise HAC_Type_Error with "Expected a HAL.Real, found Integer or " & Typen'Image (Data.Special);
   end To_Native_Any_Float;
 
+  function Get_VM_Variable (BD : Builder.Build_Data; Name : String) return String is
+    cur : constant Builder.String_Maps.Cursor := BD.global_VM_variables.Find (HAL.To_VString (Name));
+    use Builder.String_Maps;
+  begin
+    if cur = Builder.String_Maps.No_Element then
+      return "";
+    else
+      return HAL.To_String (Builder.String_Maps.Element (cur));
+    end if;
+  end Get_VM_Variable;
+
+  procedure Set_VM_Variable (BD : in out Builder.Build_Data; Name : String; Value : String) is
+  begin
+    BD.global_VM_variables.Include (HAL.To_VString (Name), HAL.To_VString (Value));
+  end Set_VM_Variable;
+
   procedure Register
     (BD : Builder.Build_Data; Callback : Exported_Procedure; Name : String)
   is

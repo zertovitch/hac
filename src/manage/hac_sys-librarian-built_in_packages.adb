@@ -204,6 +204,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAL_Funct ("Argument",            VStrings, SF_Argument);
     Enter_HAL_Funct ("Command_Name",        VStrings, SF_Command_Name);
     Enter_HAL_Funct ("Get_Env",             VStrings, SF_Get_Env);
+    Enter_HAL_Funct ("Get_VM_Variable",     VStrings, SF_Get_VM_Variable);
     --
     --  Ada.Directories-like functions
     --
@@ -235,7 +236,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     --  Ada.Environment_Variables-like procedures
     --
-    Enter_HAL_Proc ("Set_Env",        SP_Set_Env);
+    Enter_HAL_Proc ("Set_Env",         SP_Set_Env);
+    Enter_HAL_Proc ("Set_VM_Variable", SP_Set_VM_Variable);
     --
     --  Ada.Directories-like procedures
     --

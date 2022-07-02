@@ -22,26 +22,39 @@ procedure Exchange_Native_Side is
 
   BD : HAC_Sys.Builder.Build_Data;
 
-  procedure Build_and_Run is
-    post_mortem : Post_Mortem_Data;
+  procedure Build is
     hac_program_name : constant String := "exchange_hac_side.adb";
   begin
-    Put_Line ("   Native: building a HAC program: " & hac_program_name);
+    Put_Line ("Native: building a HAC program: " & hac_program_name);
     New_Line;
     BD.Build_Main_from_File (hac_program_name);
-    if BD.Build_Successful then
-      Interpret_on_Current_IO (BD, 1, "", post_mortem);
-      if Is_Exception_Raised (post_mortem.Unhandled) then
-        Put_Line (Current_Error, "HAC VM: raised " & Image (post_mortem.Unhandled));
-        Put_Line (Current_Error, Message (post_mortem.Unhandled));
-      end if;
+  end Build;
+
+  procedure Run is
+    post_mortem : Post_Mortem_Data;
+  begin
+    Interpret_on_Current_IO (BD, 1, "", post_mortem);
+    if Is_Exception_Raised (post_mortem.Unhandled) then
+      Put_Line (Current_Error, "HAC VM: raised " & Image (post_mortem.Unhandled));
+      Put_Line (Current_Error, Message (post_mortem.Unhandled));
     end if;
-  end Build_and_Run;
+  end Run;
 
 begin
   Put_Line ("Exchange_Native_Side is started.");
   New_Line;
   Exchange_Native_Side_Pkg.Register_All_Callbacks (BD);
+  Exchange_Native_Side_Pkg.Set_Global (BD);
   Ada.Directories.Set_Directory ("src/apps");
-  Build_and_Run;
+  Build;
+  if BD.Build_Successful then
+    for i in 1 .. 2 loop
+      Put_Line ("Native: Run #" & Integer'Image (i));
+      Run;
+      Put_Line
+        ("Native: Run #" & Integer'Image (i) &
+         ". Global string variable is: " & Exchange_Native_Side_Pkg.Get_Global (BD));
+      New_Line;
+    end loop;
+  end if;
 end Exchange_Native_Side;

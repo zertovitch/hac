@@ -93,7 +93,8 @@ package body HAC_Sys.Parser.Standard_Functions is
           Expected (1 .. 2) := (VStrings_Set, Any_String_or_Chars_Set);
         when SF_Year .. SF_Seconds =>
           Expected (1) := Times_Set;
-        when SF_Directory_Exists | SF_Exists | SF_File_Exists | SF_Get_Env =>
+        when SF_Directory_Exists | SF_Exists | SF_File_Exists |
+             SF_Get_Env  | SF_Get_VM_Variable =>
           --  Get_Env (+"PATH")  _or_  Get_Env ("PATH")
           Expected (1) := Any_String_Set;
         when SF_Niladic =>
@@ -217,7 +218,8 @@ package body HAC_Sys.Parser.Standard_Functions is
             Emit (CD, k_Push_Temp);
             --  `From` is now back at the stack top.
           end if;
-        when SF_Directory_Exists | SF_Exists | SF_File_Exists | SF_Get_Env =>
+        when SF_Directory_Exists | SF_Exists | SF_File_Exists |
+             SF_Get_Env | SF_Get_VM_Variable =>
           --  Get_Env ("PATH")  becomes  Get_Env (+"PATH")
           Check_any_String_and_promote_to_VString (CD, Actual (1), False);
         when SF_Literal_to_VString =>

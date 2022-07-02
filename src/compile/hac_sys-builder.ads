@@ -16,8 +16,10 @@ with HAC_Sys.Co_Defs,
 
 with HAL;
 
-with Ada.Finalization,
+with Ada.Containers.Hashed_Maps,
+     Ada.Finalization,
      Ada.Streams,
+     Ada.Strings.Unbounded.Hash,
      Ada.Text_IO,
      Ada.Unchecked_Conversion;
 
@@ -27,14 +29,22 @@ package HAC_Sys.Builder is
 
   type Compiler_Data_Access is access Co_Defs.Compiler_Data;
 
+  package String_Maps is new Ada.Containers.Hashed_Maps
+    (Key_Type        => HAL.VString,
+     Element_Type    => HAL.VString,
+     Hash            => Ada.Strings.Unbounded.Hash,
+     Equivalent_Keys => HAL."=",
+     "="             => HAL."=");
+
   type Build_Data is new Ada.Finalization.Limited_Controlled with record
-    CD                 : Compiler_Data_Access := new Co_Defs.Compiler_Data;
-    LD                 : Librarian.Library_Data;
-    main_name_hint     : HAL.VString;  --  This is used for circular unit dependency detection
-    asm_dump_file_name : HAL.VString;  --  Assembler output of compiled object code
-    cmp_dump_file_name : HAL.VString;  --  Compiler dump
-    listing_file_name  : HAL.VString;  --  Listing of source code with details
-    var_map_file_name  : HAL.VString;  --  Output of variables (map)
+    CD                  : Compiler_Data_Access := new Co_Defs.Compiler_Data;
+    LD                  : Librarian.Library_Data;
+    global_VM_variables : String_Maps.Map;
+    main_name_hint      : HAL.VString;  --  This is used for circular unit dependency detection
+    asm_dump_file_name  : HAL.VString;  --  Assembler output of compiled object code
+    cmp_dump_file_name  : HAL.VString;  --  Compiler dump
+    listing_file_name   : HAL.VString;  --  Listing of source code with details
+    var_map_file_name   : HAL.VString;  --  Output of variables (map)
   end record;
 
   overriding procedure Finalize (BD : in out Build_Data);

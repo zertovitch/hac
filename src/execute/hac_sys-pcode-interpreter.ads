@@ -62,7 +62,7 @@ package HAC_Sys.PCode.Interpreter is
   ------------------------------------------------------------------------------
 
   procedure Interpret_on_Current_IO (
-    BD_CIO           : in     Builder.Build_Data;  --  Everything is compiled and ready to run
+    BD_CIO           : in out Builder.Build_Data;  --  Everything is compiled and ready to run
     Argument_Shift   : in     Natural := 0;        --  Number of arguments to be skipped
     Full_Script_Name : in     String;              --  This is for Command_Name
     Post_Mortem      :    out Post_Mortem_Data
@@ -139,7 +139,7 @@ package HAC_Sys.PCode.Interpreter is
     with package System_Calls is new System_Calls_Traits (<>);
     --
   procedure Interpret (
-    BD          : in     Builder.Build_Data;  --  Everything is compiled and ready to run
+    BD          : in out Builder.Build_Data;  --  Everything is compiled and ready to run
     Post_Mortem :    out Post_Mortem_Data
   );
 

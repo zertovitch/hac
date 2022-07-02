@@ -83,6 +83,21 @@ package HAC_Sys.Interfacing is
     (BD       : Builder.Build_Data;
      Name     : String);
 
+  ---------------------------------
+  --  Virtual Machine Variables  --
+  ---------------------------------
+
+  --  The strings set as Virtual Machine Variables can be read and written
+  --  from a HAC program via the HAL.Get_VM_Variable and HAL.Set_VM_Variable
+  --  subprograms. This way, data can be exchanged, before and after running
+  --  a program through the HAC VM interpreter, between that program and the
+  --  program that runs HAC. The strings are as persistent as an object
+  --  of type Builder.Build_Data is.
+  --  See src/apps/exchange_native_side_pkg.adb for an example.
+
+  function Get_VM_Variable (BD : Builder.Build_Data; Name : String) return String;
+  procedure Set_VM_Variable (BD : in out Builder.Build_Data; Name : String; Value : String);
+
 private
 
   type HAC_Element is new HAC_Sys.PCode.Interpreter.In_Defs.Data_Type;

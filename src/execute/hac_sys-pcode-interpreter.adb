@@ -1,4 +1,5 @@
 with HAC_Sys.Co_Defs,
+     HAC_Sys.Interfacing,
      HAC_Sys.PCode.Interpreter.Calls,
      HAC_Sys.PCode.Interpreter.Composite_Data,
      HAC_Sys.PCode.Interpreter.Exceptions,
@@ -17,7 +18,7 @@ with Ada.Characters.Handling,
 package body HAC_Sys.PCode.Interpreter is
 
   procedure Interpret (
-    BD          : in     Builder.Build_Data;  --  Everything is compiled and ready to run
+    BD          : in out Builder.Build_Data;  --  Everything is compiled and ready to run
     Post_Mortem :    out Post_Mortem_Data
   )
   is
@@ -94,7 +95,7 @@ package body HAC_Sys.PCode.Interpreter is
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := Boolean'Pos (Console.Get_Needs_Skip_Line);
         when others =>
-          Operators.Do_SF_Operator (CD, ND);  --  Doesn't need generic stuff.
+          Operators.Do_SF_Operator (BD, ND);  --  Doesn't need generic stuff.
       end case;
     end Do_HAL_Function;
 
@@ -278,6 +279,9 @@ package body HAC_Sys.PCode.Interpreter is
     begin
       case Code is
         when SP_Set_Env         => HAL.Set_Env   (Below_Top_Item.V, Top_Item.V);
+        when SP_Set_VM_Variable =>
+          Interfacing.Set_VM_Variable
+            (BD, To_String (Below_Top_Item.V), To_String (Top_Item.V));
         when SP_Copy_File       => HAL.Copy_File (Below_Top_Item.V, Top_Item.V);
         when SP_Rename          => HAL.Rename    (Below_Top_Item.V, Top_Item.V);
         when SP_Delete_File     => HAL.Delete_File (Top_Item.V);
@@ -724,7 +728,7 @@ package body HAC_Sys.PCode.Interpreter is
   end Current_IO_Get_Needs_Skip_Line;
 
   procedure Interpret_on_Current_IO (
-    BD_CIO           : in     Builder.Build_Data;  --  Everything is compiled and ready to run
+    BD_CIO           : in out Builder.Build_Data;  --  Everything is compiled and ready to run
     Argument_Shift   : in     Natural := 0;   --  Number of arguments to be skipped
     Full_Script_Name : in     String;         --  This is for Command_Name
     Post_Mortem      :    out Post_Mortem_Data

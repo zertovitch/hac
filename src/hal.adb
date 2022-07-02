@@ -1,7 +1,9 @@
-with Ada.Numerics.Float_Random,
+with Ada.Containers.Hashed_Maps,
+     Ada.Numerics.Float_Random,
      Ada.Numerics.Generic_Elementary_Functions,
      Ada.Streams.Stream_IO,
      Ada.Strings.Fixed,
+     Ada.Strings.Unbounded.Hash,
      Ada.Text_IO.Text_Streams;
 
 with Interfaces;
@@ -702,6 +704,52 @@ package body HAL is
   begin
     Set_Env (VStr_Pkg.To_String (Name), VStr_Pkg.To_String (Value));
   end Set_Env;
+
+  package String_Maps is new Ada.Containers.Hashed_Maps
+    (Key_Type        => VString,
+     Element_Type    => VString,
+     Hash            => Ada.Strings.Unbounded.Hash,
+     Equivalent_Keys => HAL."=",
+     "="             => HAL."=");
+
+  --  We emulate here the pool of VM variables attached to the HAC VM.
+  global_VM_variables : String_Maps.Map;
+
+  function Get_VM_Variable (Name : String)  return VString is
+  begin
+    return Get_VM_Variable (+Name);
+  end Get_VM_Variable;
+
+  function Get_VM_Variable (Name : VString) return VString is
+    cur : constant String_Maps.Cursor := global_VM_variables.Find (Name);
+    use String_Maps;
+  begin
+    if cur = String_Maps.No_Element then
+      return Null_VString;
+    else
+      return String_Maps.Element (cur);
+    end if;
+  end Get_VM_Variable;
+
+  procedure Set_VM_Variable (Name : String;  Value : String) is
+  begin
+    Set_VM_Variable (+Name, +Value);
+  end Set_VM_Variable;
+
+  procedure Set_VM_Variable (Name : VString; Value : String) is
+  begin
+    Set_VM_Variable (Name, +Value);
+  end Set_VM_Variable;
+
+  procedure Set_VM_Variable (Name : String;  Value : VString) is
+  begin
+    Set_VM_Variable (+Name, Value);
+  end Set_VM_Variable;
+
+  procedure Set_VM_Variable (Name : VString; Value : VString) is
+  begin
+    global_VM_variables.Include (Name, Value);
+  end Set_VM_Variable;
 
   function Current_Directory return VString is
   begin
