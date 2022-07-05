@@ -279,11 +279,7 @@ package body HAC_Sys.Scanner is
           T := D * T;
           exit when S = 0;
         end loop;
-        if e >= 0 then
-          CD.RNum := CD.RNum * T;
-        else
-          CD.RNum := CD.RNum / T;
-        end if;
+        CD.RNum := (if e >= 0 then CD.RNum * T else CD.RNum / T);
       end if;
     end Adjust_Scale;
 
@@ -545,11 +541,7 @@ package body HAC_Sys.Scanner is
             exit when I > J;
           end loop;
           --
-          if I - 1 > J then
-            CD.Sy := AdaKeyW (K).sy;
-          else
-            CD.Sy := IDent;
-          end if;
+          CD.Sy := (if I - 1 > J then AdaKeyW (K).sy else IDent);
 
         when '0' .. '9' =>
           Scan_Number (skip_leading_integer => False);

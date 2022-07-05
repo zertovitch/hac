@@ -5,8 +5,6 @@ with HAC_Sys.Co_Defs,
 with HAL;
 
 with Ada.Calendar,
-     Ada.Directories,
-     Ada.Environment_Variables,
      Ada.Exceptions,
      Ada.Numerics.Float_Random,
      Ada.Strings.Fixed;
@@ -411,35 +409,24 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_To_Upper_VStr =>
         Top_Item.V := HAL.To_VString (HAL.ACH.To_Upper (HAL.VStr_Pkg.To_String (Top_Item.V)));
       when SF_Index | SF_Index_Backward =>
-        if Code = SF_Index then
-          Going := Forward;
-        else
-          Going := Backward;
-        end if;
+        Going := (if Code = SF_Index then Forward else Backward);
         Pop (ND, 2);
         From := Integer (ND.S (Curr_TCB.T + 2).I);
-        if From >= 1 then
-          --  [T] := Index (Source: [T], Pattern: [T+1], From: [T+2], Going) :
-          ND.S (Curr_TCB.T).I :=
-            HAC_Integer (
-              HAL.VStr_Pkg.Index (
-                ND.S (Curr_TCB.T).V,
-                HAL.VStr_Pkg.To_String (ND.S (Curr_TCB.T + 1).V),
-                From,
-                Going
-              )
-            );
-        else
-          --  [T] := Index (Source: [T], Pattern: [T+1], Going) :
-          ND.S (Curr_TCB.T).I :=
-            HAC_Integer (
-              HAL.VStr_Pkg.Index (
-                ND.S (Curr_TCB.T).V,
-                HAL.VStr_Pkg.To_String (ND.S (Curr_TCB.T + 1).V),
-                Going
-              )
-            );
-        end if;
+        ND.S (Curr_TCB.T).I :=
+          HAC_Integer
+           (if From >= 1 then
+              --  [T] := Index (Source: [T], Pattern: [T+1], From: [T+2], Going) :
+              HAL.VStr_Pkg.Index
+                (ND.S (Curr_TCB.T).V,
+                 HAL.VStr_Pkg.To_String (ND.S (Curr_TCB.T + 1).V),
+                 From,
+                 Going)
+            else
+              --  [T] := Index (Source: [T], Pattern: [T+1], Going) :
+              HAL.VStr_Pkg.Index
+                (ND.S (Curr_TCB.T).V,
+                 HAL.VStr_Pkg.To_String (ND.S (Curr_TCB.T + 1).V),
+                 Going));
       when SF_Head =>
         Pop (ND);
         --  [T] := Head ([T], [T+1]) :
@@ -535,11 +522,11 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           full_name : constant String := A2S (CD.IdTab (Natural (ND.IR.X) + Natural (Top_Item.I)).name);
           dot : constant Natural := Ada.Strings.Fixed.Index (full_name, ".", Going => Backward);
         begin
-          if dot = 0 then
-            Top_Item := GR_VString (full_name);
-          else
-            Top_Item := GR_VString (full_name (dot + 1 .. full_name'Last));
-          end if;
+          Top_Item :=
+            (if dot = 0 then
+               GR_VString (full_name)
+             else
+               GR_VString (full_name (dot + 1 .. full_name'Last)));
         end;
       --
       when SF_Value_Attribute_Bools  =>
@@ -587,32 +574,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
               True);
           end if;
         end;
-      when SF_Get_Env =>
-        declare
-          Name : constant String := HAL.VStr_Pkg.To_String (Top_Item.V);
-          use Ada.Environment_Variables;
-        begin
-          if Exists (Name) then
-            Top_Item.V := HAL.To_VString (Value (Name));
-          else
-            Top_Item.V := HAL.Null_VString;
-          end if;
-        end;
-      when SF_Get_VM_Variable =>
+      --
+      when SF_Exists           => Top_Item.I := Boolean'Pos (HAL.Exists (Top_Item.V));
+      when SF_Directory_Exists => Top_Item.I := Boolean'Pos (HAL.Directory_Exists (Top_Item.V));
+      when SF_File_Exists      => Top_Item.I := Boolean'Pos (HAL.File_Exists (Top_Item.V));
+      when SF_Get_Env          => Top_Item.V := HAL.Get_Env (Top_Item.V);
+      when SF_Get_VM_Variable  =>
         Top_Item.V := HAL.To_VString (Interfacing.Get_VM_Variable (BD, HAL.To_String (Top_Item.V)));
-      when SF_Directory_Exists | SF_Exists | SF_File_Exists =>
-        declare
-          Name : constant String := HAL.VStr_Pkg.To_String (Top_Item.V);
-          use Ada.Directories;
-        begin
-          Top_Item.I := Boolean'Pos (
-            Exists (Name) and then
-              (Code = SF_Exists
-               or else (Code = SF_Directory_Exists and then Kind (Name) = Directory)
-               or else (Code = SF_File_Exists and then Kind (Name) = Ordinary_File)
-              )
-            );
-        end;
+      --
       when SF_Niladic =>
         --  NILADIC functions need to push a new item (their own result).
         Push (ND);

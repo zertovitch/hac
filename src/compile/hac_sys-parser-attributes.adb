@@ -25,11 +25,7 @@ package body HAC_Sys.Parser.Attributes is
     use Co_Defs, Defs, Errors;
     attr_ID : constant String := A2S (CD.Id);
   begin
-    if attr_ID = "RANGE" then
-      attr := Range_Attr;
-    else
-      attr := Attribute'Value (attr_ID);
-    end if;
+    attr := (if attr_ID = "RANGE" then Range_Attr else Attribute'Value (attr_ID));
     Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
   exception
     when Constraint_Error =>

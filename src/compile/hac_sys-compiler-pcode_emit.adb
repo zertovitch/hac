@@ -58,8 +58,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
     c    :        Operand_3_Type
   )
   is
-    folded      : Boolean;
-    specialized : Boolean;
+    folded, specialized : Boolean;
   begin
     PCode.Emit_Instruction (
       CD.ObjCode (CD.ObjCode'First .. CD.CMax),

@@ -64,11 +64,7 @@ package body HAC_Sys.Parser is
           elsif CD.Sy = OUT_Symbol then
             InSymbol;
             ValParam := False;
-            if in_keyword then
-              param_kind := param_in_out;
-            else
-              param_kind := param_out;
-            end if;
+            param_kind := (if in_keyword then param_in_out else param_out);
           else
             ValParam := True;
           end if;
@@ -83,11 +79,7 @@ package body HAC_Sys.Parser is
             elsif X /= No_Id then
               if CD.IdTab (X).entity = TypeMark then
                 xTP := CD.IdTab (X).xtyp;
-                if ValParam then
-                  Sz := CD.IdTab (X).adr_or_sz;
-                else
-                  Sz := 1;
-                end if;
+                Sz := (if ValParam then CD.IdTab (X).adr_or_sz else 1);
               else
                 Error (CD, err_missing_a_type_identifier, severity => major);
               end if;

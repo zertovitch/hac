@@ -414,16 +414,12 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       ND.EList (E_Idx).First := null;
       ND.EList (E_Idx).Last  := null;
     end loop;
-    ND.TActive := CD.Tasks_Definitions_Count;  --  All tasks are active initially
-    if ND.TActive = 0 then
-      ND.Scheduler := Single_Task;  --  The VM runs in single-task mode
-    else
-      ND.Scheduler := 1;
-    end if;
-    ND.CurTask := 0;  --  IT WAS -1 ?
-    ND.SWITCH := True;
-    ND.TIMER := ND.Start_Time;  --  was 0.0
-    ND.PS := Running;
+    ND.TActive   := CD.Tasks_Definitions_Count;  --  All tasks are active initially
+    ND.Scheduler := (if ND.TActive = 0 then Single_Task else 1);
+    ND.CurTask   := 0;  --  IT WAS -1 ?
+    ND.SWITCH    := True;
+    ND.TIMER     := ND.Start_Time;  --  was 0.0
+    ND.PS        := Running;
   end Init_other_tasks;
 
   procedure ShowQ (

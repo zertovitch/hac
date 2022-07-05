@@ -46,7 +46,6 @@ package body HAC_Sys.Parser.Calls is
   )
   is
     K : Integer;
-    F : Opcode;
   begin
     Found := Undefined;
     if CD.Sy = IDent then
@@ -63,15 +62,15 @@ package body HAC_Sys.Parser.Calls is
         );
       else
         Found := CD.IdTab (K).xtyp;
-        if CD.IdTab (K).normal then
-          F := k_Push_Address;         --  Push "v'Access".
-        else
-          F := k_Push_Discrete_Value;  --  Push "(a.all)'Access", that is, a (a is an access type).
-        end if;
-        Emit_2 (CD, F,
-          Operand_1_Type (CD.IdTab (K).lev),
-          Operand_2_Type (CD.IdTab (K).adr_or_sz)
-        );
+        Emit_2
+          (CD,
+           (if CD.IdTab (K).normal then
+              k_Push_Address           --  Push "v'Access".
+            else
+              k_Push_Discrete_Value),  --  Push "(a.all)'Access", that is, a (a is an access type).
+           Operand_1_Type (CD.IdTab (K).lev),
+           Operand_2_Type (CD.IdTab (K).adr_or_sz));
+        --
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
           Selector (CD, Level, FSys + Colon_Comma_RParent, Found);
         end if;

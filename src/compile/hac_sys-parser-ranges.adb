@@ -128,11 +128,9 @@ package body HAC_Sys.Parser.Ranges is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
     --  The variant "Low_Expr .. High_Expr" was initially
     --  in HAC.Parser <= 0.07 for FOR statements.
-    Lower_Bound_Typ : Exact_Subtyp;
-    Upper_Bound_Typ : Exact_Subtyp;
-    Lower_Bound_Static  : Constant_Rec;
-    Higher_Bound_Static : Constant_Rec;
-    Is_SI_Found : Boolean;
+    Lower_Bound_Typ, Upper_Bound_Typ        : Exact_Subtyp;
+    Lower_Bound_Static, Higher_Bound_Static : Constant_Rec;
+    Is_SI_Found                             : Boolean;
   begin
     Static_Subtype_Indication (CD, Level, Lower_Bound_Static, Higher_Bound_Static, Is_SI_Found);
     --

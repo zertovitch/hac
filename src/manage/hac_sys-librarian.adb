@@ -188,14 +188,14 @@ package body HAC_Sys.Librarian is
   is
     fn : constant String := Find_Unit_File_Name (LD, Upper_Name);
     use Defs, Errors;
-    as_specification : Boolean;
-    needs_body : Boolean;
+    as_specification, needs_body : Boolean;
+    --
     unit : Library_Unit :=
-      (full_name  => HAL.To_VString (Upper_Name),
-       kind       => Package_Declaration,  --  Temporary value
-       status        => In_Progress,       --  Temporary value.
-       id_index      => Co_Defs.No_Id,     --  Temporary value.
-       id_body_index => Co_Defs.No_Id,     --  Temporary value.
+      (full_name     => HAL.To_VString (Upper_Name),
+       kind          => Package_Declaration,  --  Temporary value
+       status        => In_Progress,          --  Temporary value.
+       id_index      => Co_Defs.No_Id,        --  Temporary value.
+       id_body_index => Co_Defs.No_Id,        --  Temporary value.
        spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
     --
@@ -226,11 +226,7 @@ package body HAC_Sys.Librarian is
           when Subprogram_Unit =>
             unit.status := Body_Postponed;
           when Package_Declaration =>
-            if needs_body then
-              unit.status := Body_Postponed;
-            else
-              unit.status := Spec_Only;
-            end if;
+            unit.status := (if needs_body then Body_Postponed else Spec_Only);
           when Package_Body =>
             null;  --  Not relevant (spec.)
         end case;

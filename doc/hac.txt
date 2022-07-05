@@ -174,11 +174,14 @@ Thanks
 
   - The authors of SmallAda (list below) for making their work open-source.
   - Stéphane Rivière, for extensive testing, contributions, suggestions,
-        remarks, feedbacks.
-  - J-P. Rosen for the free AdaControl tool (
-        https://www.adalog.fr/en/adacontrol.html ,
-        https://sourceforge.net/projects/adacontrol/ ) which was very
+        remarks, feedbacks and the User Manual.
+  - J-P. Rosen for the free AdaControl tool
+        ( https://www.adalog.fr/en/adacontrol.html ,
+          https://sourceforge.net/projects/adacontrol/ ) which was very
         helpful detecting global variables stemming from SmallAda's code.
+  - Pierre van de Laar for running his Renaissance-Ada tool
+        ( https://github.com/TNO/Renaissance-Ada )
+        on HAC's sources.
   - AdaCore for providing their excellent Ada compiler for free:
         https://www.adacore.com/community .
 

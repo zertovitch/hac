@@ -35,7 +35,7 @@ project HAC is
       when "Small" => for Object_Dir use "obj/small";
    end case;
 
-   for Source_Dirs use (".", "src", "src/apps", "src/compile", "src/execute", "src/manage");
+   for Source_Dirs use ("src", "src/apps", "src/compile", "src/execute", "src/manage");
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";  --  Flips by default the "-p" switch
 

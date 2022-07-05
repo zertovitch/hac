@@ -101,30 +101,30 @@ package body HAC_Sys.Multi_Precision_Integers is
   ----- Informations, conversions
 
   function Multi (small : Basic_Int) return Multi_int is
-    long : Long_Block_type_signed;
-    abss : Long_Block_type;
-    small_enough : Boolean;
-    case_first_value : Boolean;
-    heading : Long_Block_type;
-    negs : constant Boolean := small < 0;
+    long                           : Long_Block_type_signed;
+    abs_long, heading              : Long_Block_type;
+    small_enough, case_first_value : Boolean;
+    negs                           : constant Boolean := small < 0;
     Conversion_overflow : exception;
   begin
     long := Long_Block_type_signed (small);
     case_first_value := long = Long_Block_type_signed'First;
     if case_first_value then
-      --  `long` is equal to the smallest value for Long_Block_type_signed.
-      --  Then, (abs long) would overflow: e.g. -2**63 is ok, but 2**63 is
+      --  `long` is equal to the lowest value for Long_Block_type_signed.
+      --  Then, (abs long) will automatically overflow.
+      --  For example, for a 64-bit integer, -2**63 is ok, but 2**63 is
       --  larger than the maximum 64-bit integer, 2**63 - 1.
+      --  So we have to have a special case for that value.
       small_enough := False;
     else
-      abss := Long_Block_type (abs long);
-      small_enough := abss <= Long_Block_type (maxblock);
+      abs_long := Long_Block_type (abs long);
+      small_enough := abs_long <= Long_Block_type (maxblock);
     end if;
     --
     if small_enough then
       return Multi_int'
-             (n =>         0,                        --  One block is enough.
-              blk =>      (0 => Block_type (abss)),  --  The block contains the number.
+             (n =>         0,                            --  One block is enough.
+              blk =>      (0 => Block_type (abs_long)),  --  The block contains the number.
               neg =>       negs,
               zero =>      small = 0,
               last_used => 0
@@ -142,10 +142,10 @@ package body HAC_Sys.Multi_Precision_Integers is
               last_used => 1
              );
     else
-      heading := Shift_Right (abss, Block_type_bits);
+      heading := Shift_Right (abs_long, Block_type_bits);
       if heading <= Long_Block_type (maxblock) then
         return (n =>         1,                                    --  Two blocks are needed.
-                blk =>      (0 => Block_type (abss and maxblock),  --  Block #0
+                blk =>      (0 => Block_type (abs_long and maxblock),  --  Block #0
                              1 => Block_type (heading)),           --  Block #1
                 neg =>       negs,
                 zero =>      False,
@@ -157,7 +157,7 @@ package body HAC_Sys.Multi_Precision_Integers is
         end if;
 
         return (n =>     2,   --  Three blocks are needed. (e.g. 31 bits: 15+15+1)
-                blk =>  (0 => Block_type (abss and maxblock),                      --  Block #0
+                blk =>  (0 => Block_type (abs_long and maxblock),                      --  Block #0
                          1 => Block_type (heading and maxblock),                   --  Block #1
                          2 => Block_type (Shift_Right (heading, Block_type_bits))  --  Block #2
                          ),
@@ -907,11 +907,10 @@ package body HAC_Sys.Multi_Precision_Integers is
 
     for j in reverse vlast + 1 .. u.last_used loop
       declare
-        uj : constant Long_Block_type := Long_Block_type (u.blk (j));
-        uj1 : constant Long_Block_type := Long_Block_type (u.blk (j - 1));
-        uj2 : constant Long_Block_type := Long_Block_type (u.blk (j - 2));
-        ujL : Long_Block_type;
-        rmL : Long_Block_type;
+        uj       : constant Long_Block_type := Long_Block_type (u.blk (j));
+        uj1      : constant Long_Block_type := Long_Block_type (u.blk (j - 1));
+        uj2      : constant Long_Block_type := Long_Block_type (u.blk (j - 2));
+        ujL, rmL : Long_Block_type;
       begin
         ujL := Shift_Left (uj, Block_type_bits) + uj1;
         Div_Rem (ujL, v1L, guess, rmL);

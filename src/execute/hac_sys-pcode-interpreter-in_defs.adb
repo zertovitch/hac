@@ -111,8 +111,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
 
   procedure Post_Mortem_Dump (CD : Co_Defs.Compiler_Data; ND : In_Defs.Interpreter_Data) is
     use Ada.Text_IO, Co_Defs, Defs.IIO, Defs.RIO;
-    BLKCNT : Integer;
-    H1, H2, H3 : Integer;
+    BLKCNT, H1, H2, H3 : Integer;
     --  !! Should use a file for dump !!
   begin
     New_Line;

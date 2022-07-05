@@ -23,21 +23,21 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
   --  =======================================================================
   --  Translated from interdef.pas on 28-Jun-2022 by (New) P2Ada v. 28-Oct-2009
   --
-  function  Calc_Priority (t : TRange) return Float is
-    Result_Calc_Priority : Float;
-              cp, p1, p2 : Float;
-                      et : Eptr;
-    --  Convert integer user priority to real range [0.0,1.0]
-    function  CVTR (upri : Integer)  return  Float is
-    begin  --  upri is in range [0,PriMax]
+  function Calc_Priority (t : TRange) return Float is
+    Result_Calc_Priority, p1, p2 : Float;
+                              et : Eptr;
+    --  Convert integer user priority to real range [0.0, 1.0]
+    function  CVTR (upri : Integer) return Float is
+    begin  --  upri is in range [0, PriMax]
       return Float (upri) / Float (Defs.PriMax);
     end CVTR;
 
     --  Scheduling fairness adjustment to be added to static priority
-    function  Fairness (t : TRange)  return  Float is
+    function Fairness (t : TRange) return Float is
       use Ada.Calendar;
     begin  --  Adjustment is directly prop. to elapsed time since last run
-      return Float (Clock - ND.TCB (t).LASTRUN) / 20000.0;  --  20000.0 for tuning
+      return
+        Float (Clock - ND.TCB (t).LASTRUN) / 20000.0;  --  20000.0 for tuning
     end Fairness;
 
   begin
@@ -51,7 +51,7 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
           while et /= null loop
             --  Calc Priority, RECURSIVE
             p2 := Calc_Priority (et.all.Task_Index);
-            if  p2 > p1 then
+            if p2 > p1 then
               p1 := p2;  --  Keep maximum priority
             end if;
             et := et.all.Next;  --  Next task in queue
@@ -59,21 +59,14 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
         end if;
       end loop;
       Result_Calc_Priority := p1;
+    elsif ND.TCB (t).InRendzv /= NilTask then  --  In Rendezvous with some task
+      --  Compare task t pri. with task in rendezvous with, use max.
+      p1 := CVTR (ND.TCB (t).Pcontrol.UPRI) + Fairness (t);  --  task t
+      p2 := Calc_Priority (ND.TCB (t).InRendzv);             --  task t's caller
+      Result_Calc_Priority := Float'Max (p1, p2);
     else
-      if ND.TCB (t).InRendzv /= NilTask then  --  In Rendezvous with some task
-        --  Compare task t pri. with task in rendezvous with, use max.
-        p1 := CVTR (ND.TCB (t).Pcontrol.UPRI) + Fairness (t);  --  task t
-        p2 := Calc_Priority (ND.TCB (t).InRendzv);       --  task t's caller
-        if  p1 > p2 then
-          cp := p1;
-        else
-          cp := p2;  --  Return max
-        end if;
-        Result_Calc_Priority := cp;
-      else
-        --  Not inheriting and not in rendezvous, simplest case.
-        Result_Calc_Priority := CVTR (ND.TCB (t).Pcontrol.UPRI) + Fairness (t);
-      end if;
+      --  Not inheriting and not in rendezvous, simplest case.
+      Result_Calc_Priority := CVTR (ND.TCB (t).Pcontrol.UPRI) + Fairness (t);
     end if;
     return Result_Calc_Priority;
   end Calc_Priority;
@@ -142,9 +135,8 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
   --              Amr El-Kadi    Fall 1990
 
   procedure  Scheduler_1 (NextTask : in out Integer;  PS : in out Processor_State) is
-                   nready : Integer;
-                allcomplete : Boolean;
-                      dummy : Boolean;
+    nready             : Integer;
+    allcomplete, dummy : Boolean;
   begin
     if ND.TCB (NextTask).TS /= Ready then
       --  If the task was running, it becomes ready now
@@ -188,9 +180,8 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
   --                      Amr El-Kadi    Fall 1990
 
   procedure  Scheduler_2 (NextTask : in out Integer; PS : in out Processor_State) is
-                     nready : Integer;
-                allcomplete : Boolean;
-                      dummy : Boolean;
+    nready             : Integer;
+    allcomplete, dummy : Boolean;
   begin
     ND.TCB (NextTask).QUANTUM := ND.TCB (NextTask).QUANTUM - 1.0;  --  decrement time given
     if ND.TCB (NextTask).QUANTUM < 0.0 or ND.TCB (NextTask).TS /= Ready then  --  Time slice was exhausted
@@ -291,9 +282,8 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
   --                      Amr El-Kadi    Fall 1990
 
   procedure  Scheduler_4 (NextTask : in out  Integer;  PS : in out  Processor_State) is
-           nready : Integer;
-      allcomplete : Boolean;
-            dummy : Boolean;
+    nready             : Integer;
+    allcomplete, dummy : Boolean;
   begin
     ND.TCB (NextTask).QUANTUM := ND.TCB (NextTask).QUANTUM - 1.0;  --  decrement time given
     if ND.TCB (NextTask).QUANTUM < 0.0 or ND.TCB (NextTask).TS /= Ready then  --  Time slice was exhausted
@@ -336,9 +326,8 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
   --                      Amr El-Kadi    Fall 1990
 
   procedure  Scheduler_5 (NextTask : in out Integer;  PS : in out  Processor_State) is
-                   tt, nready : Integer;
-                allcomplete : Boolean;
-                      dummy : Boolean;
+    tt, nready         : Integer;
+    allcomplete, dummy : Boolean;
   begin
     ND.TCB (NextTask).QUANTUM := ND.TCB (NextTask).QUANTUM - 1.0;  --  decrement time given
     --  If the task was running, it becomes ready now
@@ -389,9 +378,8 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
   --                      Amr El-Kadi    Fall 1990
 
   procedure  Scheduler_6 (NextTask : in out Integer; PS : in out Processor_State) is
-                     nready : Integer;
-                allcomplete : Boolean;
-                      dummy : Boolean;
+    nready             : Integer;
+    allcomplete, dummy : Boolean;
   begin
     ND.TCB (NextTask).QUANTUM := ND.TCB (NextTask).QUANTUM - 1.0; --  decrement time given
     if ND.TCB (NextTask).TS /= Ready then

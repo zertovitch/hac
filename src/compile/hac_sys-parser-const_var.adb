@@ -101,13 +101,11 @@ package body HAC_Sys.Parser.Const_Var is
     end Initialized_Constant_or_Variable;
     --
     procedure Single_Var_Declaration is
-      T0, T1, Sz, T0i           : Integer;
-      xTyp                      : Exact_Subtyp;
-      is_constant, is_typed,
-      is_untyped_constant       : Boolean;
-      C                         : Constant_Rec;
-      Dummy_First               : HAC_Integer;
-      Dummy_Last                : HAC_Integer;
+      T0, T1, Sz, T0i                            : Integer;
+      xTyp                                       : Exact_Subtyp;
+      is_constant, is_typed, is_untyped_constant : Boolean;
+      C                                          : Constant_Rec;
+      Dummy_First, Dummy_Last                    : HAC_Integer;
     begin
       T0 := CD.Id_Count;
       Enter_Variables (CD, Block_Data.level, True);

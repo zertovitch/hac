@@ -68,11 +68,9 @@ package body HAC_Sys.Parser.Type_Def is
       String_Constrained_Subtype :     Boolean
     )
     is
-      Element_Exact_Subtyp : Exact_Subtyp;
-      Element_Size         : Integer;
-      Lower_Bound          : Constant_Rec;
-      Higher_Bound         : Constant_Rec;
-      Index_Exact_Subtyp   : Exact_Subtyp;
+      Element_Exact_Subtyp, Index_Exact_Subtyp : Exact_Subtyp;
+      Element_Size                             : Integer;
+      Lower_Bound, Higher_Bound                : Constant_Rec;
       use Ranges;
     begin
       Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
@@ -142,8 +140,6 @@ package body HAC_Sys.Parser.Type_Def is
     procedure Record_Typ is
       Field_Exact_Subtyp : Exact_Subtyp;
       Field_Size, Offset, T0, T1 : Integer;
-      Dummy_First : HAC_Integer;
-      Dummy_Last  : HAC_Integer;
     begin
       InSymbol;  --  Consume RECORD symbol.
       Enter_Block (CD, CD.Id_Count);

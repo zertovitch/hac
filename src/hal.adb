@@ -102,11 +102,8 @@ package body HAL is
   function HAC_Image (I : Integer) return String is
     Im : constant String := Integer'Image (I);
   begin
-    if I < 0 then
-      return Im;
-    else
-      return Im (Im'First + 1 .. Im'Last);
-    end if;
+    --  Return image without leading ' ' on non-negative values.
+    return (if I < 0 then Im else Im (Im'First + 1 .. Im'Last));
   end HAC_Image;
 
   function HAC_Image (T : Ada.Calendar.Time) return String is
@@ -144,23 +141,17 @@ package body HAL is
       --
       function Optional_seconds return String is
       begin
-        if Seconds then
-          return ':' & ssc (ssc'Last - 1 .. ssc'Last);
-        else
-          return "";
-        end if;
+        return (if Seconds then ':' & ssc (ssc'Last - 1 .. ssc'Last) else "");
       end Optional_seconds;
       --
       function Optional_intra_day return String is
       begin
-        if Intra_day then
-          return
-            "  " &
-            shr (shr'Last - 1 .. shr'Last) & ':' &
-            smn (smn'Last - 1 .. smn'Last) & Optional_seconds;
-        else
-          return "";
-        end if;
+        return
+         (if Intra_day then
+            "  " & shr (shr'Last - 1 .. shr'Last) & ':' &
+            smn (smn'Last - 1 .. smn'Last) & Optional_seconds
+          else
+            "");
       end Optional_intra_day;
 
     begin
@@ -264,11 +255,7 @@ package body HAL is
   function Head_Before_Match (Source : VString; Pattern : VString) return VString is
     i : constant Natural := Index (Source, Pattern);
   begin
-    if i = 0 then
-      return Null_VString;
-    else
-      return Slice (Source, 1, i - 1);
-    end if;
+    return (if i = 0 then Null_VString else Slice (Source, 1, i - 1));
   end Head_Before_Match;
 
   function Tail_After_Match (Source : VString; Pattern : Character) return VString is
@@ -456,11 +443,8 @@ package body HAL is
   function Image (D : Duration) return VString is
     Im : constant String := Duration'Image (D);
   begin
-    if D < 0.0 then
-      return +Im;
-    else
-      return +Im (Im'First + 1 .. Im'Last);  --  Remove the leading ' '.
-    end if;
+    --  Return image without leading ' ' on non-negative values.
+    return (if D < 0.0 then +Im else +Im (Im'First + 1 .. Im'Last));
   end Image;
 
   function Integer_Value (V : VString) return Integer is
@@ -678,11 +662,9 @@ package body HAL is
   function Get_Env (Name : String) return VString is
     use Ada.Environment_Variables;
   begin
-    if Ada.Environment_Variables.Exists (Name) then
-      return +Value (Name);
-    else
-      return Null_VString;
-    end if;
+    return
+      (if Ada.Environment_Variables.Exists (Name) then +Value (Name)
+       else Null_VString);
   end Get_Env;
 
   function Get_Env (Name : VString) return VString is
@@ -724,11 +706,9 @@ package body HAL is
     cur : constant String_Maps.Cursor := global_VM_variables.Find (Name);
     use String_Maps;
   begin
-    if cur = String_Maps.No_Element then
-      return Null_VString;
-    else
-      return String_Maps.Element (cur);
-    end if;
+    return
+      (if cur = String_Maps.No_Element then Null_VString
+       else String_Maps.Element (cur));
   end Get_VM_Variable;
 
   procedure Set_VM_Variable (Name : String;  Value : String) is
@@ -831,11 +811,8 @@ package body HAL is
   function HAC_Generic_Image (I : Abstract_Integer) return String is
     Im : constant String := Abstract_Integer'Image (I);
   begin
-    if I < 0 then
-      return Im;
-    else
-      return Im (Im'First + 1 .. Im'Last);  --  Remove the leading ' '.
-    end if;
+    --  Return image without leading ' ' on non-negative values.
+    return (if I < 0 then Im else Im (Im'First + 1 .. Im'Last));
   end HAC_Generic_Image;
 
   largest_without_exponent : constant := 10.0 ** (Real'Digits - 1);

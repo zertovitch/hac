@@ -23,7 +23,6 @@ package body HAC_Sys.Parser.Statements is
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
     X, Y  : Exact_Subtyp;
-    F     : Opcode;
     X_Len : Natural;
     procedure Issue_Type_Mismatch_Error is
     begin
@@ -32,12 +31,12 @@ package body HAC_Sys.Parser.Statements is
   begin
     pragma Assert (CD.IdTab (Var_Id_Index).entity = Variable);
     X := CD.IdTab (Var_Id_Index).xtyp;
-    if CD.IdTab (Var_Id_Index).normal then
-      F := k_Push_Address;         --  Normal variable, we push its address
-    else
-      F := k_Push_Discrete_Value;  --  The value is a reference, we want that address.
-    end if;
-    Emit_2 (CD, F,
+    Emit_2
+     (CD,
+      (if CD.IdTab (Var_Id_Index).normal then
+         k_Push_Address           --  Normal variable, we push its address
+       else
+         k_Push_Discrete_Value),  --  The value is a reference, we want that address.
       Operand_1_Type (CD.IdTab (Var_Id_Index).lev),
       Operand_2_Type (CD.IdTab (Var_Id_Index).adr_or_sz));
     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
@@ -128,9 +127,8 @@ package body HAC_Sys.Parser.Statements is
         end if;
       elsif X.TYP = VStrings
         and then
-          (Y.TYP = String_Literals
-             or else Y.TYP = Strings_as_VStrings
-             or else Is_Char_Array (CD, Y))
+          (Y.TYP in String_Literals | Strings_as_VStrings
+           or else Is_Char_Array (CD, Y))
       then
         Error (CD, err_string_to_vstring_assignment);
       elsif X.TYP = NOTYP then
@@ -309,7 +307,6 @@ package body HAC_Sys.Parser.Statements is
     procedure RETURN_Statement is           -- Hathorn
       --  Generate a procedure or function return Statement, calculate return value if req'D.
       X, Y : Exact_Subtyp;
-      F    : Opcode;
       procedure Issue_Type_Mismatch_Error is
       begin
         Type_Mismatch (CD, err_type_of_return_statement_doesnt_match, Found => Y, Expected => X);
@@ -331,12 +328,14 @@ package body HAC_Sys.Parser.Statements is
             "err_procedures_cannot_return_a_value.";
         end if;
         X := CD.IdTab (Block_Data.block_id_index).xtyp;
-        if CD.IdTab (Block_Data.block_id_index).normal then
-          F := k_Push_Address;
-        else
-          F := k_Push_Value;
-        end if;
-        Emit_2 (CD, F, Operand_1_Type (CD.IdTab (Block_Data.block_id_index).lev + 1), 0);
+        Emit_2
+          (CD,
+           (if CD.IdTab (Block_Data.block_id_index).normal then
+              k_Push_Address
+            else
+              k_Push_Value),
+          Operand_1_Type (CD.IdTab (Block_Data.block_id_index).lev + 1),
+          0);
         --
         Expression (CD, Block_Data.level, Semicolon_Set, Y);
         if X.TYP = Y.TYP then
@@ -683,7 +682,7 @@ package body HAC_Sys.Parser.Statements is
           else
             Skip (CD, Semicolon, err_semicolon_missing);
           end if;
-          if not (CD.Sy = OR_Symbol or else CD.Sy = ELSE_Symbol) then
+          if CD.Sy not in OR_Symbol | ELSE_Symbol then
             Sequence_of_Statements (CD, ELSE_OR, Block_Data);
           end if;
           if CD.Sy = OR_Symbol then  --  =====================> Timed Entry Call

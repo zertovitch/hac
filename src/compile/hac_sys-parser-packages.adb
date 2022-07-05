@@ -163,12 +163,13 @@ package body HAC_Sys.Parser.Packages is
     package_name           : constant Alfa    := CD.Id;
     package_name_with_case : constant Alfa    := CD.Id_with_case;
     previous_pkg_prefix    : constant VString := CD.pkg_prefix;
+    --
     last_id : constant Defs.Index := CD.Blocks_Table (CD.Display (block_data.level)).Last_Id_Idx;
-    subprogram_kind : Declaration_Kind;
-    pkg_spec_index : Natural;
-    subpkg_needs_body : Boolean;
-    subpackage_body : Boolean;
-    subpkg_kind : Entity_Kind;
+    --
+    subprogram_kind                    : Declaration_Kind;
+    pkg_spec_index                     : Natural;
+    subpkg_needs_body, subpackage_body : Boolean;
+    subpkg_kind                        : Entity_Kind;
   begin
     Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);

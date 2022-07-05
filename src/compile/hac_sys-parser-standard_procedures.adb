@@ -41,7 +41,6 @@ package body HAC_Sys.Parser.Standard_Procedures is
       --  Parse Get & Co including an eventual File parameter
       Found : Exact_Subtyp;
       with_file : Boolean;
-      Code_2 : PCode.SP_Code := Code;
       String_Length_Encoding : Operand_2_Type := 0;
       use type Operand_2_Type;
     begin
@@ -58,13 +57,6 @@ package body HAC_Sys.Parser.Standard_Procedures is
       if Found.TYP = NOTYP then
         null;  --  Error(s) already appeared in the parsing.
       elsif Text_IO_Get_Item_Set (Found.TYP) then
-        if with_file then
-          if Code = SP_Get_Line then
-            Code_2 := SP_Get_Line_F;
-          else
-            Code_2 := SP_Get_F;
-          end if;
-        end if;
         if Found.TYP = Arrays then
           --  Array: it must be a fixed-sized String here.
           if Is_Char_Array (CD, Found) then
@@ -74,7 +66,9 @@ package body HAC_Sys.Parser.Standard_Procedures is
             Error (CD, err_illegal_parameters_to_Get);
           end if;
         end if;
-        HAL_Procedure_Call (Code_2, Typen'Pos (Found.TYP) + String_Length_Encoding);
+        HAL_Procedure_Call
+          ((if with_file then (if Code = SP_Get_Line then SP_Get_Line_F else SP_Get_F) else Code),
+           Typen'Pos (Found.TYP) + String_Length_Encoding);
       else
         Error (CD, err_illegal_parameters_to_Get);
       end if;
@@ -86,7 +80,6 @@ package body HAC_Sys.Parser.Standard_Procedures is
       Item_Typ, Format_Param_Typ : Exact_Subtyp;
       Format_Params : Natural := 0;
       with_file : Boolean;
-      Code_2 : PCode.SP_Code := Code;
     begin
       Need (CD, LParent, err_missing_an_opening_parenthesis);
       Expression (CD, Level, FSys + Colon_Comma_RParent, Item_Typ);
@@ -98,7 +91,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       --
       --  Here we have tha actual thing to "Put": a character, (v)string, a number.
       --
-      if Item_Typ.TYP in Standard_Typ or else Item_Typ.TYP in Special_Strings then
+      if Item_Typ.TYP in Standard_Typ | Special_Strings then
         null;  --  Good, Put[_Line] can do it all "as is"!
       elsif Is_Char_Array (CD, Item_Typ) then
         --  Address is already pushed; we need to push the string's length.
@@ -138,14 +131,9 @@ package body HAC_Sys.Parser.Standard_Procedures is
         --  to have an idea on how everybody is retrieved from the stack.
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (def_param (Item_Typ.TYP, Param)));
       end loop;
-      if with_file then
-        if Code = SP_Put_Line then
-          Code_2 := SP_Put_Line_F;
-        else
-          Code_2 := SP_Put_F;
-        end if;
-      end if;
-      HAL_Procedure_Call (Code_2, Typen'Pos (Item_Typ.TYP));
+      HAL_Procedure_Call
+       ((if with_file then (if Code = SP_Put_Line then SP_Put_Line_F else SP_Put_F) else Code),
+        Typen'Pos (Item_Typ.TYP));
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Puts;
     --

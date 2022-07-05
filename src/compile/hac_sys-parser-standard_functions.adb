@@ -176,11 +176,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         when SF_Min_Max_Int =>
           Return_Typ := Actual (1);
           if Actual (1).TYP = Floats then
-            if Code = SF_Min_Int then
-              Code_Adjusted := SF_Min_Float;
-            else
-              Code_Adjusted := SF_Max_Float;
-            end if;
+            Code_Adjusted := (if Code = SF_Min_Int then SF_Min_Float else SF_Max_Float);
           end if;
           if Actual (2).TYP /= Actual (1).TYP then
             Type_Mismatch (CD, err_parameter_types_do_not_match, Actual (2), Actual (1));

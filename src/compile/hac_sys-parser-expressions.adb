@@ -195,7 +195,6 @@ package body HAC_Sys.Parser.Expressions is
       end loop;
     end Array_Coordinates_Selector;
     --
-    err : Compile_Error;
   begin
     pragma Assert (Selector_Symbol_Loose (CD.Sy));  --  '.' or '(' or (wrongly) '['
     loop
@@ -222,12 +221,9 @@ package body HAC_Sys.Parser.Expressions is
       exit when not Selector_Symbol_Loose (CD.Sy);
     end loop;
     --
-    if FSys = Semicolon_Set then
-      err := err_semicolon_missing;
-    else
-      err := err_incorrectly_used_symbol;
-    end if;
-    Test (CD, FSys, Empty_Symset, err);
+    Test
+      (CD, FSys, Empty_Symset,
+       (if FSys = Semicolon_Set then err_semicolon_missing else err_incorrectly_used_symbol));
   end Selector;
 
   logical_operator : constant Symset :=             --  RM 4.5 (2)
@@ -455,7 +451,6 @@ package body HAC_Sys.Parser.Expressions is
       procedure Factor (FSys_Fact : Symset; X : out Exact_Subtyp) is     --  RM 4.4 (6)
 
         procedure Primary (FSys_Prim : Symset; X : out Exact_Subtyp) is  --  RM 4.4 (7)
-          F : Opcode;
           LC_Mem : Integer;
         begin
           X := Undefined;
@@ -491,12 +486,14 @@ package body HAC_Sys.Parser.Expressions is
                     X := r.xtyp;
                     LC_Mem := CD.LC;
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-                      if r.normal then
-                        F := k_Push_Address;         --  Composite: push "v'Access".
-                      else
-                        F := k_Push_Discrete_Value;  --  Composite: push "(a.all)'Access", that is, a.
-                      end if;
-                      Emit_2 (CD, F, Operand_1_Type (r.lev), Operand_2_Type (r.adr_or_sz));
+                      Emit_2
+                        (CD,
+                         (if r.normal then
+                            k_Push_Address           --  Composite: push "v'Access".
+                          else
+                            k_Push_Discrete_Value),  --  Composite: push "(a.all)'Access", that is, a.
+                         Operand_1_Type (r.lev),
+                         Operand_2_Type (r.adr_or_sz));
                       Selector (CD, Level, FSys_Prim + Apostrophe, X);
                       if Standard_or_Enum_Typ (X.TYP) then
                         --  We are at a leaf point of composite type selection,
@@ -506,22 +503,22 @@ package body HAC_Sys.Parser.Expressions is
                       end if;
                     else
                       --  No selector.
-                      if Standard_or_Enum_Typ (X.TYP) then
-                        if r.normal then
-                          if Discrete_Typ (r.xtyp.TYP) then
-                            F := k_Push_Discrete_Value;  --  Push variable v's discrete value.
+                      Emit_2
+                        (CD,
+                         (if Standard_or_Enum_Typ (X.TYP) then
+                           (if r.normal then
+                             (if Discrete_Typ (r.xtyp.TYP) then
+                                k_Push_Discrete_Value   --  Push variable v's discrete value.
+                              else
+                                k_Push_Value)           --  Push variable v's value.
+                            else
+                              k_Push_Indirect_Value)    --  Push "a.all" (a is an access).
+                          elsif r.normal then
+                            k_Push_Address              --  Composite: push "v'Access".
                           else
-                            F := k_Push_Value;           --  Push variable v's value.
-                          end if;
-                        else
-                          F := k_Push_Indirect_Value;    --  Push "a.all" (a is an access).
-                        end if;
-                      elsif r.normal then
-                        F := k_Push_Address;         --  Composite: push "v'Access".
-                      else
-                        F := k_Push_Discrete_Value;  --  Composite: push "(a.all)'Access, that is, a.
-                      end if;
-                      Emit_2 (CD, F, Operand_1_Type (r.lev), Operand_2_Type (r.adr_or_sz));
+                            k_Push_Discrete_Value),     --  Composite: push "(a.all)'Access, that is, a.
+                         Operand_1_Type (r.lev),
+                         Operand_2_Type (r.adr_or_sz));
                     end if;
                     if CD.Sy = Apostrophe then
                       InSymbol (CD);
@@ -531,7 +528,6 @@ package body HAC_Sys.Parser.Expressions is
                   when TypeMark =>
                     X := r.xtyp;
                     Subtype_Prefixed_Expression (CD, Level, FSys_Prim, Ident_Index, X);
-                    --  !!  Keep subtype information, could be useful for optimizing out checks  !!
                   when Prozedure | Prozedure_Intrinsic =>
                     Error (CD, err_expected_constant_function_variable_or_subtype);
                   when Funktion =>
@@ -557,11 +553,7 @@ package body HAC_Sys.Parser.Expressions is
                 Emit_Push_Float_Literal (CD, CD.RNum);
               else
                 --  Here we have a discrete literal
-                if CD.Sy = CharCon then
-                  X.Construct_Root (Chars);
-                else
-                  X.Construct_Root (Ints);
-                end if;
+                X.Construct_Root (if CD.Sy = CharCon then Chars else Ints);
                 Emit_1 (CD, k_Push_Discrete_Literal, CD.INum);
                 --  The local subtype for the value V is the range V .. V.
                 Ranges.Set_Singleton_Range (X, CD.INum);

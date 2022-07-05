@@ -77,10 +77,7 @@ procedure HAC is
     return "";
   end Search_File;
 
-  command_line_source_path : HAL.VString;
-
-  asm_dump_file_name : HAL.VString;
-  cmp_dump_file_name : HAL.VString;
+  command_line_source_path, asm_dump_file_name, cmp_dump_file_name : HAL.VString;
 
   procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
     use HAC_Sys.PCode.Interpreter;
@@ -169,12 +166,13 @@ procedure HAC is
       Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
     end Failure;
     --
-    f : Ada.Text_IO.File_Type;
-    t1, t2 : Ada.Calendar.Time;
-    BD : HAC_Sys.Builder.Build_Data;
-    post_mortem : Post_Mortem_Data;
+    f               : Ada.Text_IO.File_Type;
+    t1, t2          : Ada.Calendar.Time;
+    BD              : HAC_Sys.Builder.Build_Data;
+    post_mortem     : Post_Mortem_Data;
     unhandled_found : Boolean;
-    shebang_offset : Natural;
+    shebang_offset  : Natural;
+
     trace : constant HAC_Sys.Co_Defs.Compilation_Trace_Parameters :=
       (pipe         => null,
        progress     => HAC_Sys.Builder.Unrestricted (Compilation_Feedback'Address),
@@ -238,16 +236,13 @@ procedure HAC is
     t2 := Clock;
     unhandled_found := Is_Exception_Raised (post_mortem.Unhandled);
     if verbosity >= 2 then
-      if unhandled_found then
-        Put_Line (
-          HAC_margin_3 & "VM interpreter stopped execution of " &
-            Ada_file_name & " due to an unhandled exception.");
-      else
-        Put_Line (
-          HAC_margin_3 & "VM interpreter done after" &
-          Duration'Image (t2 - t1) & " seconds."
-        );
-      end if;
+      Put_Line
+        (HAC_margin_3 &
+           (if unhandled_found then
+              "VM interpreter stopped execution of " &
+              Ada_file_name & " due to an unhandled exception."
+            else
+              "VM interpreter done after" & Duration'Image (t2 - t1) & " seconds."));
     end if;
     if unhandled_found then
       PLCE ("HAC VM: raised " & Image (post_mortem.Unhandled));

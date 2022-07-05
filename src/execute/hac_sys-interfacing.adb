@@ -89,11 +89,11 @@ package body HAC_Sys.Interfacing is
     cur : constant Builder.String_Maps.Cursor := BD.global_VM_variables.Find (HAL.To_VString (Name));
     use Builder.String_Maps;
   begin
-    if cur = Builder.String_Maps.No_Element then
-      return "";
-    else
-      return HAL.To_String (Builder.String_Maps.Element (cur));
-    end if;
+    return
+      (if cur = Builder.String_Maps.No_Element then
+         ""
+       else
+         HAL.To_String (Builder.String_Maps.Element (cur)));
   end Get_VM_Variable;
 
   procedure Set_VM_Variable (BD : in out Builder.Build_Data; Name : String; Value : String) is

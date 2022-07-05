@@ -206,18 +206,11 @@ package body HAC_Sys.Parser.Helpers is
   end Nice_Image;
 
   function Enum_Name (CD : Compiler_Data; E_Ref : Index) return String is
-  begin
-    return A2S (CD.IdTab (E_Ref).name_with_case);
-  end Enum_Name;
+    (A2S (CD.IdTab (E_Ref).name_with_case));
 
   function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ'Class) return String is
-  begin
-    if xT.TYP = Enums then
-      return Nice_Image (xT.TYP) & " (" & Enum_Name (CD, xT.Ref) & ')';
-    else
-      return Nice_Image (xT.TYP);
-    end if;
-  end Nice_Exact_Image;
+    (Nice_Image (xT.TYP) &
+      (if xT.TYP = Enums then " (" & Enum_Name (CD, xT.Ref) & ')' else ""));
 
   procedure Type_Mismatch (
     CD               : in out Compiler_Data;
