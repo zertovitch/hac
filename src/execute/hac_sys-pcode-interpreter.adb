@@ -84,7 +84,7 @@ package body HAC_Sys.PCode.Interpreter is
           ND.S (Curr_TCB.T).I := HAC_Integer (System_Calls.Argument_Count);
         when SF_Command_Name =>
           Push;  --  Niladic function, needs to push a new item (their own result).
-          ND.S (Curr_TCB.T) := GR_VString (HAL.To_VString (System_Calls.Command_Name));
+          ND.S (Curr_TCB.T) := GR_VString (System_Calls.Command_Name);
         when SF_Directory_Separator =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := Character'Pos (System_Calls.Directory_Separator);

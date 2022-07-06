@@ -338,7 +338,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_VString_Int_Concat =>
         Pop (ND);
         Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
-        ND.S (Curr_TCB.T).V := ND.S (Curr_TCB.T).V & HAL.To_VString (HAC_Image (ND.S (Curr_TCB.T + 1).I));
+        HAL.VStr_Pkg.Append (ND.S (Curr_TCB.T).V, HAC_Image (ND.S (Curr_TCB.T + 1).I));
       when SF_Int_VString_Concat =>
         Pop (ND);
         Check_Discriminant_Type (ND.S (Curr_TCB.T + 1), Defs.VStrings);
@@ -346,7 +346,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_VString_Float_Concat =>
         Pop (ND);
         Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
-        ND.S (Curr_TCB.T).V := HAL."&" (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).R);
+        HAL.VStr_Pkg.Append (ND.S (Curr_TCB.T).V, HAL.HAC_Image (ND.S (Curr_TCB.T + 1).R));
       when SF_Float_VString_Concat =>
         Pop (ND);
         Check_Discriminant_Type (ND.S (Curr_TCB.T + 1), Defs.VStrings);
@@ -355,7 +355,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_VString_Duration_Concat =>
         Pop (ND);
         Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
-        ND.S (Curr_TCB.T).V := HAL."&" (ND.S (Curr_TCB.T).V, ND.S (Curr_TCB.T + 1).Dur);
+        HAL.VStr_Pkg.Append (ND.S (Curr_TCB.T).V, HAL.Image (ND.S (Curr_TCB.T + 1).Dur));
       when SF_Duration_VString_Concat =>
         Pop (ND);
         Check_Discriminant_Type (ND.S (Curr_TCB.T + 1), Defs.VStrings);
@@ -399,15 +399,16 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             "Slice: High is larger than Length (Source). See RM A.4.4 (101)", True);
         end if;
         --  [T] := Slice ([T], [T+1], [T+2]) :
-        ND.S (Curr_TCB.T).V := HAL.To_VString (HAL.VStr_Pkg.Slice (ND.S (Curr_TCB.T).V, From, To));
+        HAL.VStr_Pkg.Set_Unbounded_String
+          (ND.S (Curr_TCB.T).V, HAL.VStr_Pkg.Slice (ND.S (Curr_TCB.T).V, From, To));
       when SF_To_Lower_Char =>
         Top_Item.I := Character'Pos (HAL.To_Lower (Character'Val (Top_Item.I)));
       when SF_To_Upper_Char =>
         Top_Item.I := Character'Pos (HAL.To_Upper (Character'Val (Top_Item.I)));
       when SF_To_Lower_VStr =>
-        Top_Item.V := HAL.To_VString (HAL.ACH.To_Lower (HAL.VStr_Pkg.To_String (Top_Item.V)));
+        HAL.VStr_Pkg.Set_Unbounded_String (Top_Item.V, HAL.ACH.To_Lower (HAL.VStr_Pkg.To_String (Top_Item.V)));
       when SF_To_Upper_VStr =>
-        Top_Item.V := HAL.To_VString (HAL.ACH.To_Upper (HAL.VStr_Pkg.To_String (Top_Item.V)));
+        HAL.VStr_Pkg.Set_Unbounded_String (Top_Item.V, HAL.ACH.To_Upper (HAL.VStr_Pkg.To_String (Top_Item.V)));
       when SF_Index | SF_Index_Backward =>
         Going := (if Code = SF_Index then Forward else Backward);
         Pop (ND, 2);
@@ -580,7 +581,8 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_File_Exists      => Top_Item.I := Boolean'Pos (HAL.File_Exists (Top_Item.V));
       when SF_Get_Env          => Top_Item.V := HAL.Get_Env (Top_Item.V);
       when SF_Get_VM_Variable  =>
-        Top_Item.V := HAL.To_VString (Interfacing.Get_VM_Variable (BD, HAL.To_String (Top_Item.V)));
+        HAL.VStr_Pkg.Set_Unbounded_String
+          (Top_Item.V, Interfacing.Get_VM_Variable (BD, HAL.To_String (Top_Item.V)));
       --
       when SF_Niladic =>
         --  NILADIC functions need to push a new item (their own result).

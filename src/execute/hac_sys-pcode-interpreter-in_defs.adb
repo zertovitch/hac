@@ -33,7 +33,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     for F of ND.Files loop
       if F /= null then
         if Is_Open (F.all) then
-          --  We close for the distracted programmer
+          --  We close, for the distracted programmer,
           --  all files that are still open.
           --  In that respect, we do more than required by the RM (A.7(6)):
           --     "The language does not define what happens to external files

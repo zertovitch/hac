@@ -2,7 +2,7 @@ with HAC_Sys.Defs, HAC_Sys.Errors;
 
 with HAL;
 
-with Ada.Strings.Unbounded, Ada.Text_IO;
+with Ada.Text_IO;
 
 package body HAC_Sys.Scanner is
 
@@ -505,12 +505,12 @@ package body HAC_Sys.Scanner is
         when 'A' .. 'Z' |   --  Identifier or keyword
              'a' .. 'z' =>
           K := 0;
-          CD.Id_with_case := Null_VString;
+          HAL.VStr_Pkg.Set_Unbounded_String (CD.Id_with_case, "");
           loop
             if K < max_identifier_length then
               K := K + 1;
-              Ada.Strings.Unbounded.Append (CD.Id_with_case, CD.CUD.c);
-              if K > 1 and then Slice (CD.Id_with_case, K - 1, K) = "__" then
+              HAL.VStr_Pkg.Append (CD.Id_with_case, CD.CUD.c);
+              if K > 1 and then HAL.VStr_Pkg.Slice (CD.Id_with_case, K - 1, K) = "__" then
                 Error
                   (CD, err_double_underline_not_permitted, severity => major);
               end if;
@@ -526,7 +526,8 @@ package body HAC_Sys.Scanner is
               (CD, err_identifier_cannot_end_with_underline, severity => major);
           end if;
           --
-          CD.Id := To_Upper (CD.Id_with_case);
+          HAL.VStr_Pkg.Set_Unbounded_String
+            (CD.Id, HAL.ACH.To_Upper (To_String (CD.Id_with_case)));
           --
           I := 1;
           J := AdaKeyW'Last;  --  Binary Search
