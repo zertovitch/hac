@@ -3,9 +3,10 @@
 --  For a small version, see HAC_Mini (hac_mini.adb).
 --
 
+with HAC_Pkg;
+
 with HAC_Sys.Builder,
      HAC_Sys.Co_Defs,
-     HAC_Sys.Librarian,
      HAC_Sys.PCode.Interpreter.In_Defs;
 
 with HAL;
@@ -21,15 +22,6 @@ with Ada.Calendar,
 
 procedure HAC is
 
-  verbosity : Natural := 0;
-  caveat       : constant String := "Caution: HAC is not a complete Ada compiler.";
-  version_info : constant String :=
-    "Compiler version: " & HAC_Sys.version & " dated " & HAC_Sys.reference & '.';
-
-  HAC_margin_1 : constant String := "*******[ HAC ]*******   ";
-  HAC_margin_2 : constant String := ". . . .[ HAC ]. . . .   ";
-  HAC_margin_3 : constant String := "-------[ HAC ]-------   ";
-
   procedure PLCE (s : String) is
     use Ada.Text_IO;
   begin
@@ -42,102 +34,13 @@ procedure HAC is
     New_Line (Current_Error);
   end NLCE;
 
-  procedure Compilation_Feedback (message : String) is
-  begin
-    case verbosity is
-      when 0      => null;
-      when 1      => HAL.Put_Line (message);
-      when others => HAL.Put_Line (HAC_margin_2 & message);
-    end case;
-  end Compilation_Feedback;
+  asm_dump_file_name, cmp_dump_file_name : HAL.VString;
 
-  function Search_File (simple_file_name, path : String) return String is
-    sep_pos : Natural := path'First - 1;
-    new_sep_pos : Natural;
-  begin
-    for i in path'Range loop
-      new_sep_pos := sep_pos;
-      if path (i) = ',' or path (i) = ';' then
-        new_sep_pos := i;
-      elsif i = path'Last then
-        new_sep_pos := i + 1;
-      end if;
-      if new_sep_pos > sep_pos then
-        declare
-          full_file_name : constant String :=
-            path (sep_pos + 1 .. new_sep_pos - 1) & HAL.Directory_Separator & simple_file_name;
-        begin
-          if HAL.Exists (full_file_name) then
-            return full_file_name;
-          end if;
-        end;
-      end if;
-      sep_pos := new_sep_pos;
-    end loop;
-    return "";
-  end Search_File;
-
-  command_line_source_path, asm_dump_file_name, cmp_dump_file_name : HAL.VString;
+  use HAC_Pkg;
 
   procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
     use HAC_Sys.PCode.Interpreter;
     use Ada.Calendar, Ada.Command_Line, Ada.Containers, Ada.Text_IO;
-
-    function Search_Source_File (simple_file_name : String) return String is
-      --  Search order: same as GNAT's,
-      --  cf. 4.2.2 Search Paths and the Run-Time Library (RTL).
-    begin
-      --  1) The directory containing the source file of the main unit
-      --     being compiled (the file name on the command line).
-      declare
-        fn : constant String :=
-          Ada.Directories.Containing_Directory (Ada_file_name) &
-          HAL.Directory_Separator &
-          simple_file_name;
-      begin
-        if HAL.Exists (fn) then
-          return fn;
-        end if;
-      end;
-      --  2) Each directory named by an -I switch given on the
-      --     hac command line, in the order given.
-      declare
-        fn : constant String :=
-          Search_File (simple_file_name, HAL.To_String (command_line_source_path));
-      begin
-        if fn /= "" then
-          return fn;
-        end if;
-      end;
-      --  3) Omitted.
-      --  4) Each of the directories listed in the value of the ADA_INCLUDE_PATH environment variable.
-      declare
-        fn : constant String :=
-          Search_File (simple_file_name, HAL.To_String (HAL.Get_Env ("ADA_INCLUDE_PATH")));
-      begin
-        if fn /= "" then
-          return fn;
-        end if;
-      end;
-      return "";
-    end Search_Source_File;
-
-    function Exists_Source (simple_file_name : String) return Boolean is
-    begin
-      return Search_Source_File (simple_file_name) /= "";
-    end Exists_Source;
-
-    procedure Open_Source (simple_file_name : String; stream : out HAC_Sys.Co_Defs.Source_Stream_Access) is
-      full_file_name : constant String := Search_Source_File (simple_file_name);
-    begin
-      HAC_Sys.Librarian.default_open_file (full_file_name, stream);
-    end Open_Source;
-
-    procedure Close_Source (simple_file_name : String) is
-      full_file_name : constant String := Search_Source_File (simple_file_name);
-    begin
-      HAC_Sys.Librarian.default_close_file (full_file_name);
-    end Close_Source;
 
     procedure Show_Line_Information (
       File_Name   : String;   --  Example: hac-pcode-interpreter.adb
@@ -175,10 +78,11 @@ procedure HAC is
 
     trace : constant HAC_Sys.Co_Defs.Compilation_Trace_Parameters :=
       (pipe         => null,
-       progress     => HAC_Sys.Builder.Unrestricted (Compilation_Feedback'Address),
+       progress     => Compilation_Feedback'Access,
        detail_level => verbosity);
 
   begin
+    main_Ada_file_name := HAL.To_VString (Ada_file_name);
     if verbosity > 1 then
       New_Line;
       Put_Line (HAC_margin_1 & version_info);
@@ -190,9 +94,9 @@ procedure HAC is
     BD.Set_Main_Source_Stream (Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     BD.Set_Message_Feedbacks (trace);
     BD.LD.Set_Source_Access
-      (Exists_Source'Unrestricted_Access,
-       Open_Source'Unrestricted_Access,
-       Close_Source'Unrestricted_Access);
+      (Exists_Source'Access,
+       Open_Source'Access,
+       Close_Source'Access);
     t1 := Clock;
     BD.Build_Main;
     t2 := Clock;
@@ -236,13 +140,26 @@ procedure HAC is
     t2 := Clock;
     unhandled_found := Is_Exception_Raised (post_mortem.Unhandled);
     if verbosity >= 2 then
-      Put_Line
-        (HAC_margin_3 &
-           (if unhandled_found then
-              "VM interpreter stopped execution of " &
-              Ada_file_name & " due to an unhandled exception."
-            else
-              "VM interpreter done after" & Duration'Image (t2 - t1) & " seconds."));
+      --  The "if expression" commented out here confuses ObjectAda 10.4.
+      --
+      --  Put_Line
+      --    (HAC_margin_3 &
+      --       (if unhandled_found then
+      --          "VM interpreter stopped execution of " &
+      --          Ada_file_name & " due to an unhandled exception."
+      --        else
+      --          "VM interpreter done after" & Duration'Image (t2 - t1) & " seconds."));
+      --
+      if unhandled_found then
+        Put_Line (
+          HAC_margin_3 & "VM interpreter stopped execution of " &
+            Ada_file_name & " due to an unhandled exception.");
+      else
+        Put_Line (
+          HAC_margin_3 & "VM interpreter done after" &
+          Duration'Image (t2 - t1) & " seconds."
+        );
+      end if;
     end if;
     if unhandled_found then
       PLCE ("HAC VM: raised " & Image (post_mortem.Unhandled));
@@ -341,9 +258,9 @@ procedure HAC is
       end if;
       case opt (opt'First) is
         when 'a' =>
-          asm_dump_file_name := HAL.To_VString (assembler_output_name);
+          asm_dump_file_name := To_VString (assembler_output_name);
         when 'd' =>
-          cmp_dump_file_name := HAL.To_VString (compiler_dump_name);
+          cmp_dump_file_name := To_VString (compiler_dump_name);
         when 'h' =>
           if opt'Length > 1 and then opt (opt'First + 1) = '2' then
             help_level := 2;
@@ -354,7 +271,7 @@ procedure HAC is
             command_line_source_path := command_line_source_path & ';';
           end if;
           command_line_source_path :=
-            command_line_source_path & HAL.To_VString (opt (opt'First + 1 .. opt'Last));
+            command_line_source_path & To_VString (opt (opt'First + 1 .. opt'Last));
         when 'v' =>
           verbosity := 1;
           if opt'Length > 1 and then opt (opt'First + 1) = '2' then

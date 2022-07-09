@@ -30,22 +30,31 @@ package body HAC_Sys.Multi_Precision_Integers is
 
   function Shift_Left
     (Value  : Block_type;
-     Amount : Natural) return Block_type;
+     Amount : Natural) return Block_type is
+  begin
+    return Value * (2 ** Amount);
+  end Shift_Left;
 
   function Shift_Right
     (Value  : Block_type;
-     Amount : Natural) return Block_type;
+     Amount : Natural) return Block_type is
+  begin
+    return Value / (2 ** Amount);
+  end Shift_Right;
 
   function Shift_Left
     (Value  : Long_Block_type;
-     Amount : Natural) return Long_Block_type;
+     Amount : Natural) return Long_Block_type is
+  begin
+    return Value * (2 ** Amount);
+  end Shift_Left;
 
   function Shift_Right
     (Value  : Long_Block_type;
-     Amount : Natural) return Long_Block_type;
-
-  pragma Import (Intrinsic, Shift_Left);
-  pragma Import (Intrinsic, Shift_Right);
+     Amount : Natural) return Long_Block_type is
+  begin
+    return Value / (2 ** Amount);
+  end Shift_Right;
 
   --  Internal_error: exception;
   --  Not_done: exception;
@@ -107,6 +116,7 @@ package body HAC_Sys.Multi_Precision_Integers is
     negs                           : constant Boolean := small < 0;
     Conversion_overflow : exception;
   begin
+    abs_long := 0;
     long := Long_Block_type_signed (small);
     case_first_value := long = Long_Block_type_signed'First;
     if case_first_value then
@@ -183,8 +193,10 @@ package body HAC_Sys.Multi_Precision_Integers is
     type Same_as_Basic_natural is mod 2 ** Basic_Int'Size;
     function Shift_Left
       (Value  : Same_as_Basic_natural;
-       Amount : Natural) return Same_as_Basic_natural;
-    pragma Import (Intrinsic, Shift_Left);
+       Amount : Natural) return Same_as_Basic_natural is
+    begin
+      return Value * (2 ** Amount);
+    end Shift_Left;
     result : Same_as_Basic_natural;
     block_value : Block_type;
     type Huge_int is mod System.Max_Binary_Modulus;

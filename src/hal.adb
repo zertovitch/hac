@@ -144,14 +144,29 @@ package body HAL is
         return (if Seconds then ':' & ssc (ssc'Last - 1 .. ssc'Last) else "");
       end Optional_seconds;
       --
+      --  The "if expression" version of that function
+      --  confuses ObjectAda 10.4.
+      --
+      --  function Optional_intra_day return String is
+      --  begin
+      --    return
+      --     (if Intra_day then
+      --        "  " & shr (shr'Last - 1 .. shr'Last) & ':' &
+      --        smn (smn'Last - 1 .. smn'Last) & Optional_seconds
+      --      else
+      --        "");
+      --  end Optional_intra_day;
+
       function Optional_intra_day return String is
       begin
-        return
-         (if Intra_day then
-            "  " & shr (shr'Last - 1 .. shr'Last) & ':' &
-            smn (smn'Last - 1 .. smn'Last) & Optional_seconds
-          else
-            "");
+        if Intra_day then
+          return
+            "  " &
+            shr (shr'Last - 1 .. shr'Last) & ':' &
+            smn (smn'Last - 1 .. smn'Last) & Optional_seconds;
+        else
+          return "";
+        end if;
       end Optional_intra_day;
 
     begin

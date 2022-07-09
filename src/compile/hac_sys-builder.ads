@@ -23,8 +23,6 @@ with Ada.Containers.Hashed_Maps,
      Ada.Text_IO,
      Ada.Unchecked_Conversion;
 
-with System;
-
 package HAC_Sys.Builder is
 
   type Compiler_Data_Access is access Co_Defs.Compiler_Data;
@@ -79,10 +77,6 @@ package HAC_Sys.Builder is
     BD           : in out Build_Data;
     trace_params : in     Co_Defs.Compilation_Trace_Parameters
   );
-
-  --  Emulate GNAT's Unrestricted_Access attribute
-  function Unrestricted is
-    new Ada.Unchecked_Conversion (System.Address, Co_Defs.Compilation_Feedback);
 
   function Build_Successful (BD : Build_Data) return Boolean;
   function Total_Compiled_Lines (BD : Build_Data) return Natural;
