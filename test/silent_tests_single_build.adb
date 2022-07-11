@@ -7,7 +7,6 @@
 with HAL;
 
 with Attributes_Test,
-     Barnes,
      Case_Statement,
      Constants,
      Declarations,
@@ -33,8 +32,6 @@ begin
              "and throughfully testing HAC (actual regression test).");
   New_Line;
   Put_Line ("Attributes_Test");   Attributes_Test;
-  Set_Env ("compiler_test_value_1", "3816547290");
-  Put_Line ("Barnes");            Barnes;
   Put_Line ("Case_Statement");    Case_Statement;
   Put_Line ("Constants");         Constants;
   Put_Line ("Declarations");      Declarations;

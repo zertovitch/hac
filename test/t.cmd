@@ -1,7 +1,9 @@
 @echo off
 
-REM  This script is basically the command "hac -v2 all_silent_tests.adb"
-REM  preceded by a potential rebuild of the hac executable.
+rem  HAC regression test
+rem  -------------------
+rem  This script is basically the command "hac -v2 all_silent_tests.adb"
+rem  preceded by a potential rebuild of the hac executable.
 
 echo (Re-)building HAC
 cd..
