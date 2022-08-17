@@ -3,11 +3,11 @@
 --  This HAC script detects changes between two commits and
 --  saves the repository's modified files into a Zip-ball.
 
-with HAL;
+with HAT;
 
 procedure Save_Modif is
 
-  use HAL;
+  use HAT;
 
   function Nice_Date (with_intraday : Boolean) return VString is
     t1 : constant Time := Clock;

@@ -16,11 +16,11 @@
 --    Explorer: double-click / hit Return on "save.hac".
 --    Cmd / PowerShell: type "save.hac" and hit Return.
 
-with HAL;
+with HAT;
 
 procedure Save is
 
-  use HAL;
+  use HAT;
 
   function Nice_Date (with_intraday : Boolean) return VString is
     t1 : constant Time := Clock;

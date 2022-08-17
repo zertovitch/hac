@@ -7,7 +7,7 @@ project AoC_2020 is
 
    for Source_Dirs use (
      ".",
-     "../../../src"   --  GNAT's access to the HAL package.
+     "../../../src"   --  GNAT's access to the HAT package.
    );
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";
@@ -49,7 +49,7 @@ project AoC_2020 is
      "aoc_2020_07_full_ada_vectors_2x.adb",
      "aoc_2020_06.adb",
      "aoc_2020_06_full_ada.adb",
-     "aoc_2020_06_full_ada_using_hal.adb",
+     "aoc_2020_06_full_ada_using_hat.adb",
      "aoc_2020_05.adb",
      "aoc_2020_04.adb",
      "aoc_2020_04_b_full_ada.adb",

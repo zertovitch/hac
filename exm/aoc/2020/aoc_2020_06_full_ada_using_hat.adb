@@ -8,7 +8,7 @@
 --
 with HAT; use HAT;  --  in ../../../src
 
-procedure AoC_2020_06_Full_Ada_using_HAL is
+procedure AoC_2020_06_Full_Ada_using_HAT is
   total : Integer;
   new_group : Boolean;
   subtype Answer_Range is Character range 'a' .. 'z';
@@ -54,4 +54,4 @@ begin
     --  Part 2: officially validated by AoC: 3427
     Close (f);
   end loop;
-end AoC_2020_06_Full_Ada_using_HAL;
+end AoC_2020_06_Full_Ada_using_HAT;
