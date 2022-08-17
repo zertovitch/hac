@@ -266,11 +266,11 @@ package body HAC_Sys.Librarian is
       Built_In_Packages.Define_and_Register_Interfaces (CD, LD);
     elsif Upper_Name = HAT_Name then
       Built_In_Packages.Define_and_Register_HAT (CD, LD);
-    elsif Upper_Name = "HAC_PACK" then
+    elsif Upper_Name = "HAC_PACK" or else Upper_Name = "HAL" then
       Error (
         CD,
         err_library_error,
-        "the new name of HAC_Pack is " & HAT_Name,
+        "the new name of " & Upper_Name & " is " & HAT_Name,
         major
       );
     else
