@@ -1,4 +1,4 @@
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Shell_Test is
 

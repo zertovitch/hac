@@ -7,7 +7,7 @@
 
 with Ada.Text_IO;
 
-with HAL; use HAL;  --  in ../../../src
+with HAT; use HAT;  --  in ../../../src
 
 procedure AoC_2020_19_full_Ada is
   --  n : constant := 6; fn : constant String := "mini.txt";

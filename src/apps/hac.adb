@@ -9,7 +9,7 @@ with HAC_Sys.Builder,
      HAC_Sys.Co_Defs,
      HAC_Sys.PCode.Interpreter.In_Defs;
 
-with HAL;
+with HAT;
 
 with Show_License;
 
@@ -34,7 +34,7 @@ procedure HAC is
     New_Line (Current_Error);
   end NLCE;
 
-  asm_dump_file_name, cmp_dump_file_name : HAL.VString;
+  asm_dump_file_name, cmp_dump_file_name : HAT.VString;
 
   use HAC_Pkg;
 
@@ -58,13 +58,13 @@ procedure HAC is
     procedure CIO_Trace_Back is new Show_Trace_Back (Show_Line_Information);
     --
     procedure Failure is
-      use HAL;
+      use HAT;
     begin
       if Ends_With (+Ada_file_name, ".hac") then
         --  Main has the "HAC script extension", possibly run
         --  from Explorer, Nautilus, etc.
-        HAL.Put ("Failure in " & Ada_file_name & ", press Return");
-        HAL.Skip_Line;
+        HAT.Put ("Failure in " & Ada_file_name & ", press Return");
+        HAT.Skip_Line;
       end if;
       Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
     end Failure;
@@ -82,7 +82,7 @@ procedure HAC is
        detail_level => verbosity);
 
   begin
-    main_Ada_file_name := HAL.To_VString (Ada_file_name);
+    main_Ada_file_name := HAT.To_VString (Ada_file_name);
     if verbosity > 1 then
       New_Line;
       Put_Line (HAC_margin_1 & version_info);
@@ -90,7 +90,7 @@ procedure HAC is
     end if;
     Open (f, In_File, Ada_file_name);
     HAC_Sys.Builder.Skip_Shebang (f, shebang_offset);
-    BD.Set_Diagnostic_File_Names (HAL.To_String (asm_dump_file_name), HAL.To_String (cmp_dump_file_name));
+    BD.Set_Diagnostic_File_Names (HAT.To_String (asm_dump_file_name), HAT.To_String (cmp_dump_file_name));
     BD.Set_Main_Source_Stream (Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     BD.Set_Message_Feedbacks (trace);
     BD.LD.Set_Source_Access
@@ -183,7 +183,7 @@ procedure HAC is
         Put_Line ("List of files that were left open during execution:");
         for ofd of post_mortem.Open_Files loop
           Put_Line
-           ("  Name: " & HAL.To_String (ofd.Name) &
+           ("  Name: " & HAT.To_String (ofd.Name) &
             ", mode: " & File_Mode'Image (ofd.Mode));
         end loop;
       end if;
@@ -247,7 +247,7 @@ procedure HAC is
 
   procedure Process_Argument (arg : String; arg_pos : Positive) is
     opt : constant String := arg (arg'First + 1 .. arg'Last);
-    use HAL;
+    use HAT;
   begin
     if arg (arg'First) = '-' then
       if opt'Length = 0 then

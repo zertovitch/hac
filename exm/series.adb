@@ -1,7 +1,7 @@
-with HAL;
+with HAT;
 
 procedure Series is
-  use HAL;
+  use HAT;
   max_x : constant := 30;
   sum : Real := 0.0;
   x : constant Real := 0.8;

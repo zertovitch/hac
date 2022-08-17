@@ -3,7 +3,7 @@
 --  http://rosettacode.org/wiki/Mutual_recursion#Ada
 --
 
-with HAL;
+with HAT;
 
 procedure Hofstadter is
 
@@ -47,7 +47,7 @@ procedure Hofstadter is
   is_fibo : array (0 .. n_max) of Boolean;
   fn : Integer;
 
-  use HAL;
+  use HAT;
 
 begin
   Put_Line ("Hofstadter Female and Male sequences (mutual recursion)");

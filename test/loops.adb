@@ -1,10 +1,10 @@
 --  Output should be empty if the compiler is correct.
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Loops is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 begin
   Ident_For :
   for i in 1 .. 10 loop

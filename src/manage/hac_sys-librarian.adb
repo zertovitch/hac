@@ -34,19 +34,19 @@ package body HAC_Sys.Librarian is
   )
   is
     use Librarian.Library_Name_Mapping;
-    UVFN : constant HAL.VString := HAL.To_Upper (Descriptor.full_name);
+    UVFN : constant HAT.VString := HAT.To_Upper (Descriptor.full_name);
     is_new : Boolean;
   begin
     is_new := LD.Map.Find (UVFN) = No_Element;
     if not is_new then
       raise Program_Error with
         "Duplicate registration for unit " &
-        HAL.To_String (Descriptor.full_name) &
+        HAT.To_String (Descriptor.full_name) &
         ". This case should be handled by Apply_WITH";
     end if;
     LD.Library.Append (Descriptor);
     LD.Map.Insert (UVFN, LD.Library.Last_Index);
-    --  HAL.PUT_LINE ("Registering: " & Full_Name);
+    --  HAT.PUT_LINE ("Registering: " & Full_Name);
   end Register_Unit;
 
   procedure Change_Unit_Details (
@@ -55,7 +55,7 @@ package body HAC_Sys.Librarian is
   )
   is
     use Library_Name_Mapping;
-    UVFN : constant HAL.VString := HAL.To_Upper (Descriptor.full_name);
+    UVFN : constant HAT.VString := HAT.To_Upper (Descriptor.full_name);
     c : Cursor;
     book_nr : Positive;
   begin
@@ -158,7 +158,7 @@ package body HAC_Sys.Librarian is
     unit_idx : Natural;
     upper_name_alfa : constant Alfa := S2A (Upper_Name);
   begin
-    --  HAL.PUT_LINE ("WITH: Activating " & Upper_Name);
+    --  HAT.PUT_LINE ("WITH: Activating " & Upper_Name);
     --  Activate the unit itself:
     unit_idx := Parser.Helpers.Locate_Identifier
       (CD, upper_name_alfa, Level => 0, Level_0_Filter => False);
@@ -191,7 +191,7 @@ package body HAC_Sys.Librarian is
     as_specification, needs_body : Boolean;
     --
     unit : Library_Unit :=
-      (full_name     => HAL.To_VString (Upper_Name),
+      (full_name     => HAT.To_VString (Upper_Name),
        kind          => Package_Declaration,  --  Temporary value
        status        => In_Progress,          --  Temporary value.
        id_index      => Co_Defs.No_Id,        --  Temporary value.
@@ -248,14 +248,14 @@ package body HAC_Sys.Librarian is
     Upper_Name : in     String
   )
   is
-    use Ada.Exceptions, Defs, HAL, Errors;
+    use Ada.Exceptions, Defs, HAT, Errors;
     UVN : constant VString := To_VString (Upper_Name);
   begin
     if LD.Map.Contains (UVN) then
       --  Definition is already somewhere in CD (from the compilation
       --  of another unit), we just need to reactivate it.
       --  This situation includes the duplicate WITH case (not nice but correct).
-      --  Packages Standard and HAL are also reactivated on second WITH (implicitly for Standard).
+      --  Packages Standard and HAT are also reactivated on second WITH (implicitly for Standard).
       if LD.Library.Element (LD.Map.Element (UVN)).status = In_Progress then
         raise Circular_Unit_Dependency with Upper_Name;
       end if;
@@ -264,13 +264,13 @@ package body HAC_Sys.Librarian is
       Built_In_Packages.Define_and_Register_Standard (CD, LD);
     elsif Upper_Name = "INTERFACES" then
       Built_In_Packages.Define_and_Register_Interfaces (CD, LD);
-    elsif Upper_Name = HAL_Name then
-      Built_In_Packages.Define_and_Register_HAL (CD, LD);
+    elsif Upper_Name = HAT_Name then
+      Built_In_Packages.Define_and_Register_HAT (CD, LD);
     elsif Upper_Name = "HAC_PACK" then
       Error (
         CD,
         err_library_error,
-        "the new name of HAC_Pack is " & HAL_Name,
+        "the new name of HAC_Pack is " & HAT_Name,
         major
       );
     else

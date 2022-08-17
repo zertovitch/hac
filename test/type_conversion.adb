@@ -2,11 +2,11 @@
 --
 --  4.6 Type Conversions
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Type_Conversion is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   function To_Int (x : Real) return Integer is
   begin

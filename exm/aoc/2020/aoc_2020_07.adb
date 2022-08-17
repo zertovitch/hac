@@ -11,7 +11,7 @@
 --    *     I/O with enums, at least 'Image and 'Value. [Solved with HAC v.0.099]
 --    *     "=" for composite types ( ` rules (ri).contains (cti).col = c  `)
 --
-with HAL; use HAL;  --  in ../../../src
+with HAT; use HAT;  --  in ../../../src
 
 procedure AoC_2020_07 is
 

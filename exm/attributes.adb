@@ -1,4 +1,4 @@
-with HAL;
+with HAT;
 
 procedure Attributes is
 
@@ -7,7 +7,7 @@ procedure Attributes is
 
   d : constant Duration := 123.456;
   i : constant Integer := 123;
-  r : constant HAL.Real := HAL.Pi;
+  r : constant HAT.Real := HAT.Pi;
   b : constant Boolean := True;
   c : constant Character := 'x';
   e : constant Enum := dd;
@@ -18,13 +18,13 @@ procedure Attributes is
   dummy_e : Enum;
   dummy_i, sum : Integer;
 
-  type A is array (Sub_Enum) of HAL.Real;
+  type A is array (Sub_Enum) of HAT.Real;
 
   type M is array (-5 .. -2, bb .. dd) of Integer;
 
   mm : M;
 
-  use HAL;
+  use HAT;
 
 begin
   ---------------------------------------------------
@@ -39,7 +39,7 @@ begin
   --
 
   Put_Line ("Attributes      S = Standard subtype, indicated with '*'");
-  Put_Line ("==========        or     HAL subtype, indicated with '#'");
+  Put_Line ("==========        or     HAT subtype, indicated with '#'");
   New_Line;
   Put_Line ("S'First and S'Last attributes for scalar subtype S");
   Put_Line ("--------------------------------------------------");
@@ -101,7 +101,7 @@ begin
   Put_Line ("  e'Image      : [" & e'Image & ']');
   New_Line;
   Put_Line ("S'Value attribute, re-displayed via S'Image for Enum and,");
-  Put_Line (" otherwise, via ""nice"" HAL.Image and VString concatenation");
+  Put_Line (" otherwise, via ""nice"" HAT.Image and VString concatenation");
   Put_Line ("------------------------------------------------------------");
   New_Line;
   Put_Line (+"  * Integer'Value (""1e3"")     : [" & Integer'Value ("1e3") & ']');
@@ -112,7 +112,7 @@ begin
   Put_Line (+"    Enum'Value (""dd"")         : [" & Enum'Image (Enum'Value ("dd")) & ']');
 
   New_Line;
-  --  Test Strings_as_VStrings on some operators and HAL overloaded subprograms.
+  --  Test Strings_as_VStrings on some operators and HAT overloaded subprograms.
   for x in Enum loop
     Set_Env (Enum'Image (x), +"Set_to_" & Enum'Image (x));
   end loop;

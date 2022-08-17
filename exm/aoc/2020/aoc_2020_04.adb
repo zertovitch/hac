@@ -14,10 +14,10 @@
 --    *   "and then", "or else" (solved in HAC 0.098)
 --    *   'Image attribute for enumerated types
 --
-with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;  --  For a build with "full Ada": files HAT*.ad* are in ../../../src
 
 procedure AoC_2020_04 is
-  use HAL;
+  use HAT;
   --
   function Val_Num (s : VString; hexa : Boolean) return Integer is
     c : Character;

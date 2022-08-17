@@ -1,6 +1,6 @@
 --  This example contains a feature that is missing in HAC (at least v.0.01)
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Overloading is
 

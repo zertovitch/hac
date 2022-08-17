@@ -1,7 +1,7 @@
-with HAL;
+with HAT;
 
 procedure Digitz is
-  use HAL;
+  use HAT;
 
   procedure Smalls is
     --  Check accuracy of decimal image without exponent ("E...")

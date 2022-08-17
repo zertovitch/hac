@@ -2,11 +2,11 @@
 --  The order of the declarations is a bit random, it is on purpose.
 --  Especially we want to detect eventual memory corruption (buggy compilers).
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Constants is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   n1, n2 : constant := 9.0;  --  Numeric constant (universal float)
   n3 : constant := 1.0;

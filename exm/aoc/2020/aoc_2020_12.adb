@@ -7,10 +7,10 @@
 --  Compute destination of a ship following navigation
 --  instructions (interpreted in two different ways).
 --
-with HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;  --  For a build with "full Ada": files HAT*.ad* are in ../../../src
 
 procedure AoC_2020_12 is
-  use HAL;
+  use HAT;
   --
   function D2R (a : Real) return Real is
   begin

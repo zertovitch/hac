@@ -34,7 +34,7 @@ package body Pkg_1 is
     end Spec_which_needs_a_body_2;
 
     package body Spec_which_needs_a_body_2 is
-      procedure Ho2 is begin HAL.Put ("[Ho2] "); end Ho2;
+      procedure Ho2 is begin HAT.Put ("[Ho2] "); end Ho2;
     end Spec_which_needs_a_body_2;
 
     --  !! HAC bug: doesn't check for missing body !!
@@ -60,11 +60,11 @@ package body Pkg_1 is
     null;
   end Proc_in_body;
 
-  procedure Proc_1 (par_1 : Integer; par_2 : out HAL.Real) is
+  procedure Proc_1 (par_1 : Integer; par_2 : out HAT.Real) is
     x, y : PB;
 
     package Inner_pkg is
-      use HAL;
+      use HAT;
       procedure Ho_ho_ho;
       public_message : constant VString := +"This is public";
     private
@@ -84,7 +84,7 @@ package body Pkg_1 is
     some_garbage_2 : Integer;
 
     use Inner_pkg;
-    use HAL;
+    use HAT;
 
   begin
     Inner_pkg.Ho_ho_ho;
@@ -105,7 +105,7 @@ package body Pkg_1 is
 
     procedure Proc_2 (message : VString) is
     begin
-      HAL.Put_Line ("Hello from Sub_Pkg_2.Proc_2: " & message);
+      HAT.Put_Line ("Hello from Sub_Pkg_2.Proc_2: " & message);
     end Proc_2;
 
   end Sub_Pkg_2;

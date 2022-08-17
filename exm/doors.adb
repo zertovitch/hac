@@ -16,7 +16,7 @@
 --   Alternate: As noted in https://rosettacode.org/wiki/Talk:100_doors
 --     the only doors that remain open are those whose numbers are perfect squares."
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Doors is
   type Door_State is (Closed, Open);

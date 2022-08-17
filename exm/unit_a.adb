@@ -1,13 +1,13 @@
-with Unit_B, Unit_C, HAL;
+with Unit_B, Unit_C, HAT;
 
 --  GNAT compilation: gnatmake unit_a -I..\src
---  "src" is for getting the HAL package.
+--  "src" is for getting the HAT package.
 
 procedure Unit_A is
   v : Integer;
-  a_msg : HAL.VString;
+  a_msg : HAT.VString;
 
-  use HAL;
+  use HAT;
 
   procedure X is
   begin
@@ -27,15 +27,15 @@ begin
   Put_Line ("----[begin]----");
   v := 10101;
   a_msg := +"a";
-  HAL.Put (+"(a" & a_msg & ">");
+  HAT.Put (+"(a" & a_msg & ">");
   for i in 1 .. 2 loop
     Put (Image (Unit_C (+"u", +"U", v)));
   end loop;
   X;
   Unit_B (v, +"b", +"B");
   X;
-  HAL.Put (v, 0);
-  HAL.Put ("<A" & a_msg & ")");
+  HAT.Put (v, 0);
+  HAT.Put ("<A" & a_msg & ")");
   New_Line;
   Put_Line ("----[end]------");
 end Unit_A;

@@ -12,11 +12,11 @@
 --  N :                      1 1 1
 --       0 1 2 3 4 5 6 7 8 9 0 1 2
 --
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Forward is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   function M (N : Integer) return Integer;  --  Forward declaration of M.
 

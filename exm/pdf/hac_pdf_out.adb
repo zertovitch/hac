@@ -1,6 +1,6 @@
 package body HAC_PDF_Out is
 
-  use HAL, Interfaces;
+  use HAT, Interfaces;
 
   procedure Set_A4_portrait (r : out Rectangle) is
   begin
@@ -49,7 +49,7 @@ package body HAC_PDF_Out is
 
   procedure W (pdf : in out PDF_Out_File; s : VString) is
   begin
-    HAL.Put (pdf.pdf_file, s);
+    HAT.Put (pdf.pdf_file, s);
     pdf.file_index := pdf.file_index + Length (s);
   end W;
 
@@ -89,11 +89,11 @@ package body HAC_PDF_Out is
 
   function Img_I (p : Integer) return VString is
   begin
-    return HAL.Image (p);
+    return HAT.Image (p);
   end Img_I;
 
   function Img_R (x : Real) return VString is
-    im : VString := HAL.Image (x);
+    im : VString := HAT.Image (x);
   begin
     if Slice (im, 1, 2) = "0." then
       im := Slice (im, 2, Length (im));
@@ -861,7 +861,7 @@ package body HAC_PDF_Out is
   is
   begin
     Reset (pdf, PDF_1_3);
-    HAL.Create (pdf.pdf_file, file_name);
+    HAT.Create (pdf.pdf_file, file_name);
     pdf.file_name := file_name;
     Write_PDF_header (pdf);
   end Create;
@@ -870,13 +870,13 @@ package body HAC_PDF_Out is
   begin
     Finish (pdf);
     if pdf.file_name /= "nul" then  --  Test needed for OA 7.2.2 (Close raises Use_Error)
-      HAL.Close (pdf.pdf_file);
+      HAT.Close (pdf.pdf_file);
     end if;
   end Close;
 
   function Is_Open (pdf : in PDF_Out_File) return Boolean is
   begin
-    return HAL.Is_Open (pdf.pdf_file);
+    return HAT.Is_Open (pdf.pdf_file);
   end Is_Open;
 
   function one_cm   return Real is begin return 28.346456692913385826771653543307; end one_cm; -- = 72.0 / 2.54;

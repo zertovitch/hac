@@ -10,7 +10,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
-with HAL;
+with HAT;
 
 package body HAC_Sys.Parser is
 
@@ -221,8 +221,8 @@ package body HAC_Sys.Parser is
       end if;
     end Function_Result_Profile;
 
-    Restore_Block_ID : constant HAL.VString := CD.Full_Block_Id;
-    use HAL;
+    Restore_Block_ID : constant HAT.VString := CD.Full_Block_Id;
+    use HAT;
 
     procedure Check_ident_after_END is
       full_name : VString;

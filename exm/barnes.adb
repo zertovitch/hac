@@ -12,11 +12,11 @@
 --  Solution by J-P Rosen, adapted to the HAC subset and added to HAC's regression suite.
 --  The original solution is reproduced as a comment at the bottom of this procedure.
 
-with HAL;
+with HAT;
 with Interfaces;
 
 procedure Barnes is
-   use HAL, Interfaces;
+   use HAT, Interfaces;
 
    subtype My_Int is Interfaces.Integer_64 range 0 .. 1e11;
    subtype Digit_Range is My_Int range 1 .. 10;

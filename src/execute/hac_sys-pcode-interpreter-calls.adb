@@ -35,7 +35,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     trace_display : constant Boolean := False;
 
     procedure Show_Display (D : Co_Defs.Display_Type; L_Max : Nesting_level; T : String) is
-      use HAL;
+      use HAT;
     begin
       if trace_display then
         New_Line;

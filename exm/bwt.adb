@@ -8,7 +8,7 @@
 --
 --  See "!!" for improvements to be done in HAC.
 --
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure BWT is
 

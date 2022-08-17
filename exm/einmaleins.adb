@@ -1,7 +1,7 @@
 --  Example of use, just written "live" using the
 --  LEA editor, during a homeschooling session.
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Einmaleins is
   x, y : Integer;

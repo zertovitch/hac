@@ -1,7 +1,7 @@
 --  We launch new instances of HAC (possibly from HAC itself, too).
 --  Usage: hac gallery.adb
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Gallery is
 

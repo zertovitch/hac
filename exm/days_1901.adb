@@ -4,7 +4,7 @@
 --  [2]: http://l-e-a.sf.net/
 --  [3]: http://excel-writer.sf.net/
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Days_1901 is
 

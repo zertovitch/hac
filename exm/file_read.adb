@@ -1,7 +1,7 @@
 --  This demo reads a text file (itself) and displays
 --  its contents on the console.
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure File_Read is
   s : VString;

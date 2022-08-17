@@ -1,7 +1,7 @@
 --  Testing library-level packages.
 --  We create the packages for Pkg_Demo.
 
-with HAL;
+with HAT;
 
 procedure Pkg_Demo_Gen is
 
@@ -10,7 +10,7 @@ procedure Pkg_Demo_Gen is
   --
   type Test_Mode is (all_in_spec, mixed, all_in_bodies);
 
-  use HAL;
+  use HAT;
 
   max_depth : constant := 2;
   children  : constant := 3;
@@ -52,7 +52,7 @@ procedure Pkg_Demo_Gen is
         end if;
         if not is_body then
           New_Line (f);
-          Put_Line (f, "with HAL; use HAL;");
+          Put_Line (f, "with HAT; use HAT;");
         end if;
         New_Line (f);
         Put (f, "package ");

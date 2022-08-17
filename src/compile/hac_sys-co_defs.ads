@@ -13,7 +13,7 @@
 with HAC_Sys.Defs,
      HAC_Sys.PCode;
 
-with HAL;
+with HAT;
 
 with Ada.Containers.Hashed_Maps,
      Ada.Containers.Indefinite_Hashed_Maps,
@@ -209,12 +209,12 @@ package HAC_Sys.Co_Defs is
     (Key_Type        => Alfa,
      Element_Type    => Positive,
      Hash            => Ada.Strings.Unbounded.Hash,
-     Equivalent_Keys => HAL."=");
+     Equivalent_Keys => HAT."=");
 
   type Current_Unit_Data is record
     --  Current source code information and scanner data
     compiler_stream  : Source_Stream_Access;
-    source_file_name : HAL.VString;         --  Indicative, for error messages
+    source_file_name : HAT.VString;         --  Indicative, for error messages
     --  Parsing
     line_count       : Natural;             --  Source line counter, used for listing
     input_line       : Source_Line_String;
@@ -271,7 +271,7 @@ package HAC_Sys.Co_Defs is
     INum             : HAC_Integer;        --  Integer from InSymbol
     RNum             : HAC_Float;          --  FLOAT Number from InSymbol
     SLeng            : Integer;            --  String Length
-    pkg_prefix       : HAL.VString;        --  Prefix of package being currently parsed.
+    pkg_prefix       : HAT.VString;        --  Prefix of package being currently parsed.
     --  Compiler tables. Floats and Strings are used by interpreter at run-time.
     Arrays_Table            : Arrays_Table_Type;  --  NB: only static-sized arrays so far.
     Blocks_Table            : Blocks_Table_Type;
@@ -301,7 +301,7 @@ package HAC_Sys.Co_Defs is
     folded_instructions      : Natural;
     specialized_instructions : Natural;
     --  Information about source code
-    Full_Block_Id             : HAL.VString;         --  Full block's Id (P1.P2.F3.P4)
+    Full_Block_Id             : HAT.VString;         --  Full block's Id (P1.P2.F3.P4)
     Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
     Main_Program_ID_with_case : Alfa := Empty_Alfa;
     Exported_Procedures       : Exported_Procedure_Mapping.Map;
@@ -333,7 +333,7 @@ package HAC_Sys.Co_Defs is
   --
   function Size_of (CD : Compiler_Data; Id_Index : Natural) return Positive;
 
-  Universe : constant HAL.VString := HAL.To_VString ("[-- The Universe --]");
+  Universe : constant HAT.VString := HAT.To_VString ("[-- The Universe --]");
 
   type CASE_Label_Value is record
     value_1, value_2 : HAC_Integer;  --  value of a choice in a CASE statement

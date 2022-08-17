@@ -1,4 +1,4 @@
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Din_SM is
     task SCREEN is

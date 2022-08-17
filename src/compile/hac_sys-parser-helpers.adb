@@ -14,7 +14,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
-with HAL;
+with HAT;
 
 package body HAC_Sys.Parser.Helpers is
 
@@ -93,7 +93,7 @@ package body HAC_Sys.Parser.Helpers is
     N             : Compile_Error;
     stop_on_error : Boolean := False)
   is
-    use HAL;
+    use HAT;
   begin
     if not S1 (CD.Sy) then
       declare
@@ -111,9 +111,9 @@ package body HAC_Sys.Parser.Helpers is
         end loop;
         hint := "Found: " & KeyWSymbol'Image (CD.Sy) & "; expected: " & hint;
         if stop_on_error then
-          Error (CD, N, HAL.VStr_Pkg.To_String (hint), major);
+          Error (CD, N, HAT.VStr_Pkg.To_String (hint), major);
         end if;
-        Skip (CD, S1 + S2, N, HAL.VStr_Pkg.To_String (hint));
+        Skip (CD, S1 + S2, N, HAT.VStr_Pkg.To_String (hint));
       end;
     end if;
   end Test;
@@ -243,7 +243,7 @@ package body HAC_Sys.Parser.Helpers is
   )
   is
     function Types_List (TS : Typ_Set) return String is
-      use HAL;
+      use HAT;
       hint  : VString;
       first : Boolean := True;
     begin
@@ -256,7 +256,7 @@ package body HAC_Sys.Parser.Helpers is
           hint := hint & Nice_Image (s);
         end if;
       end loop;
-      return HAL.VStr_Pkg.To_String (hint);
+      return HAT.VStr_Pkg.To_String (hint);
     end Types_List;
   begin
     Error (
@@ -398,7 +398,7 @@ package body HAC_Sys.Parser.Helpers is
     is_name_matched : Boolean;
     dot_pos : Integer;
     l0_def : Id_Maps.Cursor;
-    use HAL, Id_Maps;
+    use HAT, Id_Maps;
   begin
     L := Level;
     --  Scan all Id's on level L down to 0:

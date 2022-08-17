@@ -1,8 +1,8 @@
 with HAC_PDF_Out;
-with HAL;
+with HAT;
 
 procedure PDF_Hello is
-  use HAC_PDF_Out, HAL;
+  use HAC_PDF_Out, HAT;
 
   pdf : PDF_Out_File;
 

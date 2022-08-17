@@ -8,7 +8,7 @@ with HAC_Sys.Builder,
      HAC_Sys.Defs,
      HAC_Sys.PCode.Interpreter;
 
-with HAL;
+with HAT;
 
 with Ada.Calendar,
      Ada.Command_Line,
@@ -57,9 +57,9 @@ procedure HAC_Multi is
            (Ada.Command_Line.Argument_Count,
             Ada.Command_Line.Argument,
             Ada.Command_Line.Command_Name,    --  Wrong but not used anyway in this demo.
-            HAL.Shell_Execute,
-            HAL.Shell_Execute,                --  This profile has an Output parameter.
-            HAL.Directory_Separator
+            HAT.Shell_Execute,
+            HAT.Shell_Execute,                --  This profile has an Output parameter.
+            HAT.Directory_Separator
            );
 
       use Ada.Calendar, Ada.Numerics.Float_Random, Ada.Streams.Stream_IO;

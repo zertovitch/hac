@@ -14,14 +14,14 @@
 --
 --    *     ` cc_match := (others => (others => True)); `
 --
-with HAL;
---  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  ^ For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2020.gpr .
 
 with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_16 is
-  use HAL, Interfaces;
+  use HAT, Interfaces;
 
   criteria : constant := 20;
   subtype Criteria_Range is Positive range 1 .. criteria;

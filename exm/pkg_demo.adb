@@ -10,7 +10,7 @@
 --      X_Pkg_Test_S1 depends on X_Pkg_Test_S11, X_Pkg_Test_S12, ...
 --      ...
 
-with HAL;
+with HAT;
 
 with X_Pkg_Demo_S,  --  Dependencies always declared in specs
      X_Pkg_Demo_M,  --  Dependencies declared in specs or bodies (randomly)
@@ -18,7 +18,7 @@ with X_Pkg_Demo_S,  --  Dependencies always declared in specs
 
 procedure Pkg_Demo is
 
-  use HAL;
+  use HAT;
 
   procedure Failure (Msg : VString) is
   begin

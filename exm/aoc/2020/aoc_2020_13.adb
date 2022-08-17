@@ -4,14 +4,14 @@
 --
 --  https://adventofcode.com/2020/day/13
 --
-with HAL;
---  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  ^ For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2020.gpr .
 
 with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_13 is
-  use HAL, Interfaces;
+  use HAT, Interfaces;
 
   --  Taken from MathPaqs (Euclidean_Ring_Tools, de-generic-ized for HAC):
 

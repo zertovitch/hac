@@ -8,14 +8,14 @@
 --
 --  https://adventofcode.com/2020/day/3
 --
-with HAL;
---  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  ^ For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2020.gpr .
 
 with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_03 is
-  use HAL, Interfaces;
+  use HAT, Interfaces;
 
   i_max : constant := 323;  --  1-based
   j_max : constant := 30;   --  0-based

@@ -12,7 +12,7 @@
 with HAC_Sys.Co_Defs,
      HAC_Sys.Defs;
 
-with HAL;
+with HAT;
 
 with Ada.Containers.Hashed_Maps,
      Ada.Containers.Vectors,
@@ -52,7 +52,7 @@ package HAC_Sys.Librarian is
   subtype Subprogram_Unit is Unit_Kind range Procedure_Unit .. Function_Unit;
 
   type Library_Unit is record
-    full_name     : HAL.VString;  --  Full unit name, like "Ada.Strings.Fixed"
+    full_name     : HAT.VString;  --  Full unit name, like "Ada.Strings.Fixed"
     kind          : Unit_Kind;
     status        : Compilation_Status;
     id_index      : Natural;
@@ -63,7 +63,7 @@ package HAC_Sys.Librarian is
   package Library_Unit_Vectors is new Ada.Containers.Vectors (Positive, Library_Unit);
 
   package Library_Name_Mapping is new Ada.Containers.Hashed_Maps
-    (Key_Type        => HAL.VString,  --  Upper case of full unit name
+    (Key_Type        => HAT.VString,  --  Upper case of full unit name
      Element_Type    => Positive,     --  Index in the library
      Hash            => Ada.Strings.Unbounded.Hash,
      Equivalent_Keys => Ada.Strings.Unbounded."=");
@@ -85,7 +85,7 @@ package HAC_Sys.Librarian is
 
   --  Default `Extended_Exists` is just looking for a physical
   --  file in the current directory.
-  default_exists : constant Extended_Exists := HAL.Exists'Access;
+  default_exists : constant Extended_Exists := HAT.Exists'Access;
 
   type Extended_Open is access
     procedure (Simple_Name : String; Stream : out Co_Defs.Source_Stream_Access);
@@ -125,7 +125,7 @@ package HAC_Sys.Librarian is
 
   -----------------------------------------------------
   --  Apply WITH clause for any unit, including the  --
-  --  Standard package and the special HAL package.  --
+  --  Standard package and the special HAT package.  --
   -----------------------------------------------------
 
   procedure Apply_WITH (

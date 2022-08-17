@@ -4,11 +4,11 @@
 --  This version is adapted to HAC's Ada subset.
 
 with HAC_PDF_Out;
-with HAL;
+with HAT;
 
 procedure Koch_Curve is
 
-   use HAC_PDF_Out, HAL;
+   use HAC_PDF_Out, HAT;
 
    subtype My_Real is HAC_PDF_Out.Real;
    subtype Angle_Deg  is My_Real;

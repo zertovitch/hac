@@ -5,14 +5,14 @@
 --  https://adventofcode.com/2021/day/10
 --  Copy of questions in: aoc_2021_10_questions.txt
 --
-with HAL;
---  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
 with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2021_10 is
-  use HAL, Interfaces;
+  use HAT, Interfaces;
   --
   input : constant VString := +"aoc_2021_10.txt";
   --

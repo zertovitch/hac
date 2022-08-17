@@ -4,7 +4,7 @@
 --        `silent_tests_single_build.adb`.
 --    - Reversely, All_Silent_Tests calls specifically HAC for individual tests.
 
-with HAL;
+with HAT;
 
 with Attributes_Test,
      Case_Statement,
@@ -23,7 +23,7 @@ with Attributes_Test,
 
 procedure Silent_Tests_Single_Build is
 
-  use HAL;
+  use HAT;
 
 begin
   Put_Line ("Silent_Tests_Single_Build can be used for testing any Ada compiler.");

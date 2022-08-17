@@ -17,7 +17,7 @@ Objectives
         programming-compiling-binding-linking-running cycles).
     - Stay Ada-compatible (HAC programs can be compiled
         and run by other Ada compilers, currently through
-        the compatibility package HAL).
+        the compatibility package HAT).
 
   HAC will most probably never be a complete compiler.
 
@@ -62,7 +62,7 @@ Getting started
 Directories
 ===========
 
-   src        sources of HAC, plus the compatibility package HAL
+   src        sources of HAC, plus the compatibility package HAT
    doc        documentation
    exm        examples
    exm/aoc    Advent of Code solutions - also used for regression testing
@@ -150,7 +150,7 @@ Language subset
         but you will be surprised how far you can go without pointers!
     - Subprograms names cannot be overloaded, although some *predefined*
         subprograms, including operators, of the Standard or the
-        HAL package, are overloaded many times, like
+        HAT package, are overloaded many times, like
         "Put", "Get", "+", "&", ...
     - Programmable modularity (packages or subprograms that you
         can "with") is implemented.
@@ -162,9 +162,9 @@ Language subset
         work on SmallAda). See in exm/tasking for what is working
         and exm/not_working for what is not.
     - Small parts of the standard Ada library are available indirectly
-        through the HAL, Interfaces and Standard built-in packages.
-        You can see the currently available HAL items in its
-        specification, src/hal.ads .
+        through the HAT, Interfaces and Standard built-in packages.
+        You can see the currently available HAT items in its
+        specification, src/hat.ads .
 
   A systematic testing is done in the "test" directory, via
   the all_silent_tests.adb test suite.

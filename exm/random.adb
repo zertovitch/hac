@@ -1,6 +1,6 @@
 --  Pseudo-Random Generation: Rand (discrete) and Rnd (continuous)
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Random is
 

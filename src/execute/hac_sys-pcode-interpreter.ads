@@ -40,7 +40,7 @@ package HAC_Sys.PCode.Interpreter is
   ------------------------
 
   type Open_File_Data is record
-    Name : HAL.VString;
+    Name : HAT.VString;
     Mode : Ada.Text_IO.File_Mode;
   end record;
 
@@ -124,7 +124,7 @@ package HAC_Sys.PCode.Interpreter is
     with function Command_Name return String;
     --  Shell execution, Directory_Separator, ... are also abstracted.
     with procedure Shell_Execute (Command : String; Result : out Integer);
-    with procedure Shell_Execute_Output (Command : String; Result : out Integer; Output : out HAL.VString);
+    with procedure Shell_Execute_Output (Command : String; Result : out Integer; Output : out HAT.VString);
     with function Directory_Separator return Character;
   package System_Calls_Traits is
   end System_Calls_Traits;
@@ -181,7 +181,7 @@ private
   type Exception_Propagation_Data is record
     Currently_Raised  : Exception_Identity;
     ST_Message        : Stack_Trace_Message;
-    Exception_Message : HAL.VString;
+    Exception_Message : HAT.VString;
   end record;
 
 end HAC_Sys.PCode.Interpreter;

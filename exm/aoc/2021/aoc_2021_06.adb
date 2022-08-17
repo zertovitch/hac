@@ -5,8 +5,8 @@
 --  https://adventofcode.com/2021/day/6
 --  Copy of questions in: aoc_2021_06_questions.txt
 --
-with HAL;
---  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
 with Interfaces;  --  Needed for GNAT (Integer_64).
@@ -14,7 +14,7 @@ with Interfaces;  --  Needed for GNAT (Integer_64).
 procedure AoC_2021_06 is
   timer_max : constant := 8;
   subtype Timer_Range is Integer range 0 .. timer_max;
-  use HAL, Interfaces;
+  use HAT, Interfaces;
   type Lanternfish_Population is array (Timer_Range) of Integer_64;
   pop_init, pop : Lanternfish_Population;
   pop_0 : Integer_64;

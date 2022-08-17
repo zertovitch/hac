@@ -1,7 +1,7 @@
-with HAL;
+with HAT;
 
 procedure Test_Tail_After_Match is
-  use HAL;
+  use HAT;
   Path : VString := +"/etc/genesix/gnx-startup";
 begin
   Put_Line (Tail_After_Match (Path,  '/'));                         --  returns "gnx-startup"

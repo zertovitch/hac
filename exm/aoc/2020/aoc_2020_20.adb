@@ -6,14 +6,14 @@
 --
 --  Part 1 only
 --
-with HAL;
---  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  ^ For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2020.gpr .
 
 with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_20 is
-  use HAL, Interfaces;
+  use HAT, Interfaces;
   size : constant := 144;
   name : constant VString := +"aoc_2020_20.txt";
 

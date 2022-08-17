@@ -1,6 +1,6 @@
-with HAL;
+with HAT;
 
 procedure Hello is
 begin
-  HAL.Put ("Hello world!");
+  HAT.Put ("Hello world!");
 end Hello;

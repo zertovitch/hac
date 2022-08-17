@@ -265,7 +265,7 @@ package body HAC_Sys.PCode is
     package Code_Pos_IO is new Integer_IO (Natural);
     package Operand1_IO is new Integer_IO (Operand_1_Type);
     package Operand2_IO is new Integer_IO (Operand_2_Type);
-    function HAC_Image is new HAL.HAC_Generic_Image (Defs.HAC_Integer);
+    function HAC_Image is new HAT.HAC_Generic_Image (Defs.HAC_Integer);
     SF_C : SF_Code;
     SP_C : SP_Code;
     Old_X1, Old_X2 : Operand_1_Type := 0;
@@ -316,20 +316,20 @@ package body HAC_Sys.PCode is
       end case;
       Put (Text, "; ");
       Code_Pos_IO.Put (Text, OC (i).D.Line_Number);
-      Put (Text, "  " & HAL.VStr_Pkg.To_String (OC (i).D.Full_Block_Id));
+      Put (Text, "  " & HAT.VStr_Pkg.To_String (OC (i).D.Full_Block_Id));
       case OC (i).F is  --  Show extra information
         when k_Push_Float_Literal =>
-          Put (Text, "; " & HAL.HAC_Image (Flt_Const (Integer (OC (i).Y))));
+          Put (Text, "; " & HAT.HAC_Image (Flt_Const (Integer (OC (i).Y))));
         when k_Push_Float_First =>
-          Put (Text, "; HAL.Real'First: " & HAC_Float'Image (HAL.Real'First));
+          Put (Text, "; HAT.Real'First: " & HAC_Float'Image (HAT.Real'First));
         when k_Push_Float_Last =>
-          Put (Text, "; HAL.Real'Last: " & HAC_Float'Image (HAL.Real'Last));
+          Put (Text, "; HAT.Real'Last: " & HAC_Float'Image (HAT.Real'Last));
         when k_Variable_Initialization =>
           Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
-        when k_HAL_Function =>
+        when k_HAT_Function =>
           SF_C := SF_Code'Val (OC (i).Y);
           Put (Text, "; " & SF_Code'Image (SF_C));
-        when k_HAL_Procedure =>
+        when k_HAT_Procedure =>
           SP_C := SP_Code'Val (OC (i).X);
           Put (Text, "; " & SP_Code'Image (SP_C));
           case SP_C is

@@ -11,14 +11,14 @@
 with HAC_Sys.Co_Defs,
      HAC_Sys.Defs;
 
-with HAL;
+with HAT;
 
 package HAC_Sys.Errors is
 
   has_new_line : constant array (Defs.Repair_Kind_Type) of Boolean :=
     (Defs.insert_line => True, others => False);
 
-  nothing_to_repair : constant Defs.Repair_Kit := (Defs.none, HAL.Null_VString);
+  nothing_to_repair : constant Defs.Repair_Kit := (Defs.none, HAT.Null_VString);
 
   type Error_Severity is (
     minor,   --  Extra ';', ')', value out of range, etc.: we can continue the

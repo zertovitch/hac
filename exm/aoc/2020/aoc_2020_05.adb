@@ -9,7 +9,7 @@
 --    F means "front", B means "back",
 --    L means "left", and R means "right".
 --
-with HAL; use HAL;  --  in ../../../src
+with HAT; use HAT;  --  in ../../../src
 
 procedure AoC_2020_05 is
   f : File_Type;

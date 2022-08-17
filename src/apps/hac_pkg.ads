@@ -2,7 +2,7 @@
 --  HAC command-line application.
 
 with HAC_Sys.Co_Defs;
-with HAL;
+with HAT;
 
 package HAC_Pkg is
 
@@ -16,7 +16,7 @@ package HAC_Pkg is
   HAC_margin_2 : constant String := ". . . .[ HAC ]. . . .   ";
   HAC_margin_3 : constant String := "-------[ HAC ]-------   ";
 
-  command_line_source_path, main_Ada_file_name : HAL.VString;
+  command_line_source_path, main_Ada_file_name : HAT.VString;
 
   procedure Compilation_Feedback (message : String);
 

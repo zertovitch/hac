@@ -1,4 +1,4 @@
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Shell is
   type OS_Kind is (Nixux, Windoze);

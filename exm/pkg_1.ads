@@ -1,4 +1,4 @@
-with HAL;
+with HAT;
 
 package Pkg_1 is
 
@@ -17,17 +17,17 @@ package Pkg_1 is
 
   subtype E is Sub_Pkg_1.D range 2 .. 10;
 
-  procedure Proc_1 (par_1 : Integer; par_2 : out HAL.Real);
+  procedure Proc_1 (par_1 : Integer; par_2 : out HAT.Real);
 
   package Sub_Pkg_2 is
 
-    use HAL;
+    use HAT;
 
     procedure Proc_2 (message : VString);
 
   end Sub_Pkg_2;
 
-  subtype VS is HAL.VString;
+  subtype VS is HAT.VString;
 
 private
 
@@ -35,7 +35,7 @@ private
 
   type PB is record
     field_1 : PA;
-    field_2 : HAL.VString;
+    field_2 : HAT.VString;
   end record;
 
 end Pkg_1;

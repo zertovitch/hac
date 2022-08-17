@@ -1,6 +1,6 @@
-with HAL;
+with HAT;
 
-use HAL;
+use HAT;
 
 function Unit_C (title_1, title_2 : VString; n : Integer) return Real is
   c_msg : VString;

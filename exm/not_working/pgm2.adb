@@ -1,4 +1,4 @@
-with HAL; use HAL;
+with HAT; use HAT;
 
 PROCEDURE PGM2 IS
 

@@ -5,12 +5,12 @@
 --  https://adventofcode.com/2021/day/1
 --  Copy of questions in: aoc_2021_01_questions.txt
 --
-with HAL;
---  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
 procedure AoC_2021_01 is
-  use HAL;
+  use HAT;
   f : File_Type;
   depth, depth_p1, depth_p2, inc_a, inc_b, row, sum, sum_p1 : Integer;
   --

@@ -34,7 +34,7 @@
 --    - no flights: L_{W,I}, L_{W,C}, ... = 0
 --    - zoonotic force = 0.
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure COVID_19_S is
 

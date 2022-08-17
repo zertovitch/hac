@@ -8,7 +8,7 @@ with Ada.Containers.Hashed_Maps,
 
 with Interfaces;
 
-package body HAL is
+package body HAT is
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions (Real);
 
@@ -440,7 +440,7 @@ package body HAL is
 
   function Image (I : Integer) return VString is
     function HAC_Image_for_Integer is
-      new HAL.HAC_Generic_Image (Abstract_Integer => Integer);
+      new HAT.HAC_Generic_Image (Abstract_Integer => Integer);
   begin
     return +HAC_Image_for_Integer (I);
   end Image;
@@ -706,8 +706,8 @@ package body HAL is
     (Key_Type        => VString,
      Element_Type    => VString,
      Hash            => Ada.Strings.Unbounded.Hash,
-     Equivalent_Keys => HAL."=",
-     "="             => HAL."=");
+     Equivalent_Keys => HAT."=",
+     "="             => HAT."=");
 
   --  We emulate here the pool of VM variables attached to the HAC VM.
   global_VM_variables : String_Maps.Map;
@@ -1009,6 +1009,6 @@ package body HAL is
 begin
   pragma Assert
     (Real'Digits >= Interfaces.IEEE_Float_64'Digits,
-     "HAL.Real must have at least the precision of IEEE Double Precision");
+     "HAT.Real must have at least the precision of IEEE Double Precision");
   Ada.Numerics.Float_Random.Reset (gen);  --  Randomize.
-end HAL;
+end HAT;

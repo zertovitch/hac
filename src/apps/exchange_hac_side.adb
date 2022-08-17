@@ -7,13 +7,13 @@
 --  This file is meant to be compiled by the HAC compiler which is
 --  embedded in Exchange_Native_Side (exchange_native_side.adb).
 
-with HAL;
+with HAT;
 
 with Exchange_Common;
 
 procedure Exchange_HAC_Side is
 
-  use HAL;
+  use HAT;
 
   procedure Demo_Parameterless is
     procedure Parameterless_Callback with Import => True;
@@ -58,7 +58,7 @@ procedure Exchange_HAC_Side is
   end Demo_Data_Bidirectional;
 
   procedure Demo_Composite is
-    type Matrix is array (1 .. 2, 1 .. 2) of HAL.Real;
+    type Matrix is array (1 .. 2, 1 .. 2) of HAT.Real;
     type Some_Record is record
       i : Integer;
       v : VString;

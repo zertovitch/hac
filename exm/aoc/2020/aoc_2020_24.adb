@@ -9,8 +9,8 @@
 --      As an hommage to John Conway, there are three
 --      "Game of Life" puzzles: Day 11, 17, 24.
 --
-with HAL;
---  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  ^ For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2020.gpr .
 
 procedure AoC_2020_24 is
@@ -147,7 +147,7 @@ procedure AoC_2020_24 is
     move (ne).y :=  1;
   end Init_Move;
 
-  use HAL;
+  use HAT;
 
   procedure Read_Data (m : out Map_Type) is
     --  Initializations are just for removing warnings

@@ -20,7 +20,7 @@
 --
 --    *     ` map (0) := (others => (others =>  (others => (others => False)); `
 --
-with HAL; use HAL;  --  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT; use HAT;  --  For a build with "full Ada": files HAT*.ad* are in ../../../src
 
 procedure AoC_2020_17 is
   --

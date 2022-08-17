@@ -6,7 +6,7 @@ with HAC_Sys.Errors,
      HAC_Sys.Parser.Type_Def,
      HAC_Sys.Scanner;
 
-with HAL;
+with HAT;
 
 package body HAC_Sys.Parser.Packages is
 
@@ -21,7 +21,7 @@ package body HAC_Sys.Parser.Packages is
     needs_body :    out Boolean
   )
   is
-    use Co_Defs, Defs, Errors, HAL, Helpers;
+    use Co_Defs, Defs, Errors, HAT, Helpers;
     use type HAC_Integer;
     package_name           : constant Alfa    := CD.Id;
     package_name_with_case : constant Alfa    := CD.Id_with_case;
@@ -158,7 +158,7 @@ package body HAC_Sys.Parser.Packages is
     block_data : in out Block_Data_Type
   )
   is
-    use Co_Defs, Defs, Errors, HAL, Helpers;
+    use Co_Defs, Defs, Errors, HAT, Helpers;
     use type HAC_Integer;
     package_name           : constant Alfa    := CD.Id;
     package_name_with_case : constant Alfa    := CD.Id_with_case;
@@ -305,7 +305,7 @@ package body HAC_Sys.Parser.Packages is
     end if;
     --  The package specification's definitions begins immediately after the
     --  package's identifier.
-    --  E.g. HAL: PAQUETAGE; HAL.File_Type: TYPEMARK; ...
+    --  E.g. HAT: PAQUETAGE; HAT.File_Type: TYPEMARK; ...
     --
     pkg_table_index := CD.IdTab (Pkg_Idx).block_or_pkg_ref;
     --
@@ -366,7 +366,7 @@ package body HAC_Sys.Parser.Packages is
                 else
                   --  Re-activate definition at zero level (context clause).
                   CD.CUD.level_0_def.Include (Short_Id, Id_Alias);
-                  --  HAL.PUT_LINE ("Activate USEd item: " & Short_Id_str);
+                  --  HAT.PUT_LINE ("Activate USEd item: " & Short_Id_str);
                 end if;
               end if;
             end if;

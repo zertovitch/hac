@@ -5,12 +5,12 @@
 --  https://adventofcode.com/2021/day/15
 --  Copy of questions in: aoc_2021_15_questions.txt
 --
-with HAL;
---  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
 procedure AoC_2021_15 is
-  use HAL;
+  use HAT;
   sx_max : constant := 500;
   sy_max : constant := 500;
   map : array (1 .. sx_max, 1 .. sy_max) of Natural;

@@ -27,14 +27,14 @@ package body HAC_Sys.Parser.Standard_Procedures is
   )
   is
 
-    procedure HAL_Procedure_Call (FIO_Code : SP_Code; Param : Operand_2_Type := 0) is
+    procedure HAT_Procedure_Call (FIO_Code : SP_Code; Param : Operand_2_Type := 0) is
     begin
-      Emit_2 (CD, k_HAL_Procedure, SP_Code'Pos (FIO_Code), Param);
-    end HAL_Procedure_Call;
+      Emit_2 (CD, k_HAT_Procedure, SP_Code'Pos (FIO_Code), Param);
+    end HAT_Procedure_Call;
     --
     procedure Set_Abstract_Console is
     begin
-      HAL_Procedure_Call (SP_Push_Abstract_Console);
+      HAT_Procedure_Call (SP_Push_Abstract_Console);
     end Set_Abstract_Console;
     --
     procedure Parse_Gets (Code : PCode.SP_Code) is
@@ -66,7 +66,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
             Error (CD, err_illegal_parameters_to_Get);
           end if;
         end if;
-        HAL_Procedure_Call
+        HAT_Procedure_Call
           ((if with_file then (if Code = SP_Get_Line then SP_Get_Line_F else SP_Get_F) else Code),
            Typen'Pos (Found.TYP) + String_Length_Encoding);
       else
@@ -131,7 +131,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         --  to have an idea on how everybody is retrieved from the stack.
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (def_param (Item_Typ.TYP, Param)));
       end loop;
-      HAL_Procedure_Call
+      HAT_Procedure_Call
        ((if with_file then (if Code = SP_Put_Line then SP_Put_Line_F else SP_Put_F) else Code),
         Typen'Pos (Item_Typ.TYP));
       Need (CD, RParent, err_closing_parenthesis_missing);
@@ -175,7 +175,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
           Set_Abstract_Console;
           Emit_1 (CD, k_Push_Discrete_Literal, 1);  --  Push default value, Spacing := 1
         end if;
-        HAL_Procedure_Call (Code);
+        HAT_Procedure_Call (Code);
 
       when SP_Wait | SP_Signal =>
         if CD.Sy /= LParent then
@@ -208,7 +208,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
             Expression (CD, Level, FSys + Colon_Comma_RParent, X);
             Check_any_String_and_promote_to_VString (CD, X, False);
           end if;
-          HAL_Procedure_Call (Code);
+          HAT_Procedure_Call (Code);
           Need (CD, RParent, err_closing_parenthesis_missing);
         else
           Error (CD, err_missing_an_opening_parenthesis);
@@ -278,14 +278,14 @@ package body HAC_Sys.Parser.Standard_Procedures is
             Need (CD, Comma, err_COMMA_missing);
           end if;
         end loop;
-        HAL_Procedure_Call (Code);
+        HAT_Procedure_Call (Code);
         Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Delete_File | SP_Set_Directory =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expression (CD, Level, RParent_Set, X);  --  We push the argument in the stack.
         Check_any_String_and_promote_to_VString (CD, X, False);
-        HAL_Procedure_Call (Code);
+        HAT_Procedure_Call (Code);
         Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Shell_Execute =>
@@ -299,20 +299,20 @@ package body HAC_Sys.Parser.Standard_Procedures is
           case Y.TYP is
             when VStrings =>
               --  Shell_Execute (cmd, output);
-              HAL_Procedure_Call (SP_Shell_Execute_Output);
+              HAT_Procedure_Call (SP_Shell_Execute_Output);
             when Ints =>
               if CD.Sy = Comma then
                 InSymbol (CD);
                 Push_by_Reference_Parameter (CD, Level, RParent_Set, Z);
                 --  Shell_Execute (cmd, result, output);
-                HAL_Procedure_Call (SP_Shell_Execute_Result_Output);
+                HAT_Procedure_Call (SP_Shell_Execute_Result_Output);
                 if Z.TYP /= VStrings then
                   Type_Mismatch (CD, err_parameter_types_do_not_match,
                     Found => Z, Expected => VStrings_Set);
                 end if;
               else
                 --  Shell_Execute (cmd, result);
-                HAL_Procedure_Call (SP_Shell_Execute_with_Result);
+                HAT_Procedure_Call (SP_Shell_Execute_with_Result);
               end if;
             when others =>
               Type_Mismatch (CD, err_parameter_types_do_not_match,
@@ -320,7 +320,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
           end case;
         else
           --  Shell_Execute (cmd);
-          HAL_Procedure_Call (SP_Shell_Execute_without_Result);
+          HAT_Procedure_Call (SP_Shell_Execute_without_Result);
         end if;
         Need (CD, RParent, err_closing_parenthesis_missing);
 
@@ -330,7 +330,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         if X.TYP /= Ints then
           Skip (CD, Semicolon, err_parameter_must_be_Integer);
         end if;
-        HAL_Procedure_Call (SP_Set_Exit_Status);
+        HAT_Procedure_Call (SP_Set_Exit_Status);
         Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Push_Abstract_Console =>

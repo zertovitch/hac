@@ -17,7 +17,7 @@
 --    *     ` aaa : constant Character := 'a';`
 --                       HAC should detect an expression as a static (compile-time-known) value
 --
-with HAL; use HAL;  --  in ../../../src
+with HAT; use HAT;  --  in ../../../src
 
 procedure AoC_2020_11 is
   w : constant := 10;  h : constant := 10;  name : constant VString := +"aoc_2020_11_mini.txt";

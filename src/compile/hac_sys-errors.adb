@@ -267,7 +267,7 @@ package body HAC_Sys.Errors is
 
   ----------------------------------------------------------------------------
 
-  function "+" (S : String) return HAL.VString renames HAL."+";
+  function "+" (S : String) return HAT.VString renames HAT."+";
 
   --  The "[...]" are replaced by the correct identifier.
 
@@ -335,8 +335,8 @@ package body HAC_Sys.Errors is
     end Show_to_comp_dump;
     --
     updated_repair_kit : Repair_Kit := repair_table (code);
-    ub_hint : constant HAL.VString := HAL.To_VString (hint);
-    use HAL.VStr_Pkg;
+    ub_hint : constant HAT.VString := HAT.To_VString (hint);
+    use HAT.VStr_Pkg;
     use Ada.Strings, Ada.Strings.Fixed;
     diagnostic : Diagnostic_Kit;
   begin

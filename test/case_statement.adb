@@ -1,8 +1,8 @@
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Case_Statement is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   after_int_case : Boolean := False;
 

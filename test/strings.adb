@@ -1,8 +1,8 @@
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Strings is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   s1, s2, s3, s4, s4_s4 : VString;
   Planck   : constant Real := 6.62607015e-34;
@@ -128,7 +128,7 @@ begin
     Failure (+"String <-> VString, #1");
   end if;
   --
-  --  Testing HAL functions
+  --  Testing HAT functions
   --
   Assert (not Starts_With (+"package",  "proc"), +"SW_1");
   Assert (not Starts_With (+"package", +"proc"), +"SW_2");

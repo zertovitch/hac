@@ -4,14 +4,14 @@
 --
 --  https://adventofcode.com/2020/day/10
 --
-with HAL;
---  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  ^ For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2020.gpr .
 
 with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_10 is
-  use HAL, Interfaces;
+  use HAT, Interfaces;
 
   subtype Jolt is Natural;
   --  ^ Full Ada: it's better to define an incompatible

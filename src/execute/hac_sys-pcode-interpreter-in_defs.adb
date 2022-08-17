@@ -40,7 +40,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
           --      after the completion of the main program and all the library
           --      tasks (in particular, if corresponding files have
           --      not been closed)."
-          open_file.Name := HAL.To_VString (Name (F.all));
+          open_file.Name := HAT.To_VString (Name (F.all));
           open_file.Mode := Mode (F.all);
           Open_Files.Append (open_file);
           Ada.Text_IO.Close (F.all);
@@ -83,10 +83,10 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
 
   function GR_VString (S : String) return General_Register is
   begin
-    return (Special => Defs.VStrings, I => 0, V => HAL.To_VString (S));
+    return (Special => Defs.VStrings, I => 0, V => HAT.To_VString (S));
   end GR_VString;
 
-  function GR_VString (V : HAL.VString) return General_Register is
+  function GR_VString (V : HAT.VString) return General_Register is
   begin
     return (Special => Defs.VStrings, I => 0, V => V);
   end GR_VString;

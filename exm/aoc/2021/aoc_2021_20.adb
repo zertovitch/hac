@@ -14,12 +14,12 @@
 --    *     Detect an expression as a static (compile-time-known) value
 --            ->  Good for arithmetic in number declaration
 --
-with HAL;
---  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
 procedure AoC_2021_20 is
-  use HAL;
+  use HAT;
 
   iter_max : constant :=   50;
   margin   : constant :=  101;  --  "full Ada": iter_max * 2 + 1

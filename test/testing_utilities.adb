@@ -1,6 +1,6 @@
 package body Testing_Utilities is
 
-  use HAL;
+  use HAT;
 
   function OK_Code return Integer is
   begin

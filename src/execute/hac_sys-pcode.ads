@@ -12,7 +12,7 @@
 
 with HAC_Sys.Defs;
 
-with HAL;
+with HAT;
 
 with Ada.Text_IO;  --  Only used for file descriptors
 
@@ -164,8 +164,8 @@ package HAC_Sys.PCode is
     k_NAND_Boolean,
     k_NOR_Boolean,
     --
-    k_HAL_Procedure,
-    k_HAL_Function,
+    k_HAT_Procedure,
+    k_HAT_Function,
     --
     --
     k_Halt_Interpreter,                 --  Switch off the processor's running loop
@@ -225,9 +225,9 @@ package HAC_Sys.PCode is
     --  Line number in the source code.
     Line_Number   : Positive;
     --  Current block's path (if any). Example: hac-pcode-interpreter.adb.
-    Full_Block_Id : HAL.VString;
+    Full_Block_Id : HAT.VString;
     --  Source code file name.         Example: HAC.PCode.Interpreter.Do_Write_Formatted.
-    File_Name     : HAL.VString;
+    File_Name     : HAT.VString;
   end record;
 
   --  PCode instruction record (stores a compiled PCode instruction)
@@ -393,10 +393,10 @@ package HAC_Sys.PCode is
     SF_Day,
     SF_Seconds,
     --
-    SF_Image_Ints,              --  HAL.Image without the nasty ' ' before non-negative values
-    SF_Image_Floats,            --  HAL.Image with a human-readable formatting whenever possible
-    SF_Image_Times,             --  HAL.Image
-    SF_Image_Durations,         --  HAL.Image
+    SF_Image_Ints,              --  HAT.Image without the nasty ' ' before non-negative values
+    SF_Image_Floats,            --  HAT.Image with a human-readable formatting whenever possible
+    SF_Image_Times,             --  HAT.Image
+    SF_Image_Durations,         --  HAT.Image
     --
     SF_Integer_Value,
     SF_Float_Value,

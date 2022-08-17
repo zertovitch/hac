@@ -1,4 +1,4 @@
-with HAL; use HAL;  -- CS159-10 - FAll/1990 - ARthur Vargas Lopes
+with HAT; use HAT;  -- CS159-10 - FAll/1990 - ARthur Vargas Lopes
 
 procedure Shell_Sort is
 

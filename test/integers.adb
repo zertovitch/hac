@@ -1,10 +1,10 @@
 --  Output should be empty if the compiler is correct.
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Integers is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   x1 : Integer;
   x2 : Integer;
@@ -65,6 +65,6 @@ begin
   --
   Test_Patching;
   --
-  Assert (Max (1, 2) = 2, +"HAL.Max");
-  Assert (Min (1, 2) = 1, +"HAL.Min");
+  Assert (Max (1, 2) = 2, +"HAT.Max");
+  Assert (Min (1, 2) = 1, +"HAT.Min");
 end Integers;

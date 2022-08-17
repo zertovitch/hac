@@ -1,10 +1,10 @@
 --  Files f and g are left open (not closed) during the variables lifetime.
 --  `hac -v1 open_files.adb` will show their names.
 
-with HAL;
+with HAT;
 
 procedure Open_Files is
-  use HAL;
+  use HAT;
   procedure Sub is
     g : File_Type;
   begin

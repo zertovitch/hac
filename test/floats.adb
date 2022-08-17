@@ -1,10 +1,10 @@
 --  Output should be empty if the compiler is correct.
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Floats is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   procedure Test_Exp_Log is
     scale : constant := 500.0;
@@ -319,6 +319,6 @@ begin
   Base_Test;
   Three_Lakes_S;
   --
-  Assert (Max (1.0, 2.0) = 2.0, +"HAL.Max");
-  Assert (Min (1.0, 2.0) = 1.0, +"HAL.Min");
+  Assert (Max (1.0, 2.0) = 2.0, +"HAT.Max");
+  Assert (Min (1.0, 2.0) = 1.0, +"HAT.Min");
 end Floats;

@@ -22,7 +22,7 @@ package body HAC_Sys.Builder is
   procedure Compile_Pending_Bodies_Single_Round
     (BD : in out Build_Data; num_pending : out Natural)
   is
-    use HAL, Librarian;
+    use HAT, Librarian;
     pending : Library_Unit_Vectors.Vector;
     previous_context : Co_Defs.Id_Maps.Map;
     needs_body_dummy : Boolean;
@@ -78,7 +78,7 @@ package body HAC_Sys.Builder is
   end Compile_Pending_Bodies_Single_Round;
 
   procedure Build_Main (BD : in out Build_Data) is
-    use Librarian, HAL.VStr_Pkg, Ada.Exceptions, Ada.Text_IO;
+    use Librarian, HAT.VStr_Pkg, Ada.Exceptions, Ada.Text_IO;
     num_pending : Natural;
     main_unit : Library_Unit :=
       (full_name     => BD.main_name_hint,
@@ -162,7 +162,7 @@ package body HAC_Sys.Builder is
     var_map_file_name  :        String  := ""   --  Output of variables (map)
   )
   is
-    use HAL;
+    use HAT;
   begin
     BD.asm_dump_file_name := To_VString (asm_dump_file_name);
     BD.cmp_dump_file_name := To_VString (cmp_dump_file_name);
@@ -196,7 +196,7 @@ package body HAC_Sys.Builder is
     then
       last_dot := main_name_guess'Last + 1;
     end if;
-    BD.main_name_hint := HAL.To_VString (main_name_guess (last_slash + 1 .. last_dot - 1));
+    BD.main_name_hint := HAT.To_VString (main_name_guess (last_slash + 1 .. last_dot - 1));
   end Set_Main_Source_Stream;
 
   procedure Set_Message_Feedbacks (

@@ -21,14 +21,14 @@
 --            is always 32 bits)
 --
 --
-with HAL;
---  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
 with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2021_22 is
-  use HAL, Interfaces;
+  use HAT, Interfaces;
 
   dim_max : constant := 3;
   subtype Dimension_Range is Integer range 1 .. dim_max;

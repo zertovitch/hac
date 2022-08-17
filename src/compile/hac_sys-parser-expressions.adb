@@ -720,7 +720,7 @@ package body HAC_Sys.Parser.Expressions is
 
     function VString_Concatenation return Boolean is
     begin
-      --  !!  Check if HAL is "use"-visible  !!
+      --  !!  Check if HAT is "use"-visible  !!
       --
       --  RM References are about Unbounded_String (A.4.5).
       if X.TYP /= VStrings and y.TYP /= VStrings then
@@ -759,7 +759,7 @@ package body HAC_Sys.Parser.Expressions is
       elsif X.TYP = Chars then                                    --  'x' & v  A.4.5 (19)
         Emit_Std_Funct (CD, SF_Char_VString_Concat);
       --
-      --  Hereafter, we have "&" operators on VString provided only by HAL
+      --  Hereafter, we have "&" operators on VString provided only by HAT
       --  and not by Ada.Unbounded_Strings
       --
       elsif y.TYP = Ints then      Emit_Std_Funct (CD, SF_VString_Int_Concat);       --  v & 123

@@ -1,7 +1,7 @@
-with HAL;
+with HAT;
 
 procedure Hello_Big is
-  use HAL;
+  use HAT;
   f : Real := 0.0;
 begin
   Put ("Hello");

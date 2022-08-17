@@ -1,11 +1,11 @@
 --  We launch new instances of HAC (possibly from HAC itself, too).
 --  Usage:  hac all_noisy_tests.adb
 
-with HAL;
+with HAT;
 
 procedure All_Noisy_Tests is
 
-  use HAL;
+  use HAT;
 
   procedure Launch_Tests is
 

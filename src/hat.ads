@@ -1,18 +1,18 @@
---  HAL - HAC Ada Library
+--  HAT - HAC Ada Toolbox
 -------------------------
 --
---  The HAL package and possible children contains definitions
+--  The HAT package and possible children contains definitions
 --  that are useful for HAC in its minimal operating mode.
 --
---  HAL is compilable by a "full Ada" compiler like GNAT or ObjectAda,
+--  HAT is compilable by a "full Ada" compiler like GNAT or ObjectAda,
 --  so the HAC programs can be run on both HAC and a full Ada system.
 --
 --  Another purpose of this specification is to have a document,
 --  automatically verified by "full Ada" systems, of the standard types
 --  and subprograms available in HAC.
 --
---  Furthermore, some items of HAL are used in the HAC virtual machine.
---  See occurrences of "HAL" in HAC.PCode.Interpreter's body.
+--  Furthermore, some items of HAT are used in the HAC virtual machine.
+--  See occurrences of "HAT" in HAC.PCode.Interpreter's body.
 ------------------------
 --
 --  Legal licensing note:
@@ -56,7 +56,7 @@ with System;
 --  Disable GNAT warning: declaration of "=" hides predefined operator.
 pragma Warnings ("H");
 
-package HAL is
+package HAT is
 
   -----------------------------------------
   --  Floating-point numeric type: Real  --
@@ -476,10 +476,10 @@ package HAL is
   ---------------------------------
   --  The following part is formally public, but can only be directly
   --  used by the HAC system itself (HAC_Sys) or other "full Ada"
-  --  programs using HAL (HAC programs cannot, so far, return String's
+  --  programs using HAT (HAC programs cannot, so far, return String's
   --  or use generics).
   --  Those "private" items avoid code duplication or incompatibilities
-  --  between HAL (as compatibility package) and the HAC run-time system
+  --  between HAT (as compatibility package) and the HAC run-time system
   --  itself.
 
   generic
@@ -494,4 +494,4 @@ private
 
   --  type       SEMAPHORE is new INTEGER;
 
-end HAL;
+end HAT;

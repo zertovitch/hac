@@ -1,11 +1,11 @@
 --  Test object initialization,
 --  implicit or explicit.
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Object_Init is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   procedure Test_Atomics is
 

@@ -1,6 +1,6 @@
 --  Demo of modularity with packages.
 
-with HAL;
+with HAT;
 with Pkg_1, Pkg_2;
 with Cross_A, Cross_B;
 
@@ -15,9 +15,9 @@ procedure Prc is
 
   t : constant Pkg_2.G := Pkg_2.G'Last;
 
-  r : HAL.Real;
+  r : HAT.Real;
 
-  use HAL;
+  use HAT;
 
   package Local_Namespace is
     procedure Hi;

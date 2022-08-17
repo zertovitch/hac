@@ -34,10 +34,10 @@ private package HAC_Sys.Librarian.Built_In_Packages is
   );
 
   ----------------------------------------
-  --  Enter "manually" the HAL package  --
+  --  Enter "manually" the HAT package  --
   ----------------------------------------
 
-  procedure Define_and_Register_HAL (
+  procedure Define_and_Register_HAT (
     CD : in out Co_Defs.Compiler_Data;
     LD : in out Library_Data
   );

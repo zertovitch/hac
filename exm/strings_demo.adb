@@ -1,4 +1,4 @@
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Strings_demo is
   s1, s2, s4, s4_s4 : VString;

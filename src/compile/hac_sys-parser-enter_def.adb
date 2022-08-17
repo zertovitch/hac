@@ -1,7 +1,7 @@
 with HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
-with HAL;
+with HAT;
 
 package body HAC_Sys.Parser.Enter_Def is
 
@@ -44,7 +44,7 @@ package body HAC_Sys.Parser.Enter_Def is
     last_id : constant Index :=
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
     J : Integer := last_id;
-    use HAL;
+    use HAT;
     prefixed_Id           : constant Alfa := CD.pkg_prefix & Id;
     prefixed_Id_with_case : constant Alfa := CD.pkg_prefix & Id_with_case;
   begin
@@ -150,7 +150,7 @@ package body HAC_Sys.Parser.Enter_Def is
       end if;
     end Enter_Variable;
     --
-    use HAL;
+    use HAT;
     need_prefix_mem : constant Boolean :=
       (not Prefixed) and then Length (CD.pkg_prefix) > 0;
     prefix_mem : VString;

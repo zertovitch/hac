@@ -1,6 +1,6 @@
 --  https://stackoverflow.com/questions/61719343/storing-and-using-strings-of-varying-length-ada
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Names_in_Boxes is
 

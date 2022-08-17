@@ -11,7 +11,7 @@
 --  This package contains constants and types for the
 --  compiler and the p-code interpreter.
 
-with HAL;
+with HAT;
 
 with Ada.Characters.Handling,
      Ada.Strings.Unbounded,
@@ -21,22 +21,22 @@ with Interfaces;
 
 package HAC_Sys.Defs is
 
-  HAL_Name : constant String := "HAL";  --  Stands for:  HAC Ada Library.
+  HAT_Name : constant String := "HAT";  --  Stands for:  HAC Ada Toolbox (was: Library).
 
   subtype HAC_Integer is Interfaces.Integer_64;
   HAC_Integer_Name       : constant String := "Integer";
   HAC_Integer_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Integer_Name);
-  function HAC_Image is new HAL.HAC_Generic_Image (Abstract_Integer => HAC_Integer);
+  function HAC_Image is new HAT.HAC_Generic_Image (Abstract_Integer => HAC_Integer);
 
   --  HAC's default floating-point type is double-precision
-  --  and is called "Real" in HAC's HAL package.
+  --  and is called "Real" in HAC's HAT package.
   --  There is *no* Float in HAC's Standard package.
   --  Float is commonly assumed to be single-precision -> no practical use and would
   --  complicate the parsing in HAC by having multiple possible
   --  floating-point type expressions.
   --  On top of that a universal float would be probably needed.
   --
-  subtype HAC_Float is HAL.Real;
+  subtype HAC_Float is HAT.Real;
   HAC_Float_Name       : constant String := "Real";
   HAC_Float_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Float_Name);
 
@@ -228,10 +228,10 @@ package HAC_Sys.Defs is
   -- Identifiers --
   -----------------
 
-  subtype Alfa is HAL.VString;  --  Originally, Alfa was a space-padded fixed string.
-  Empty_Alfa : Alfa renames HAL.Null_VString;
-  function A2S (a : Alfa) return String renames HAL.To_String;
-  function S2A (s : String) return Alfa renames HAL.To_VString;
+  subtype Alfa is HAT.VString;  --  Originally, Alfa was a space-padded fixed string.
+  Empty_Alfa : Alfa renames HAT.Null_VString;
+  function A2S (a : Alfa) return String renames HAT.To_String;
+  function S2A (s : String) return Alfa renames HAT.To_VString;
 
   --  Data types in HAC. We call them "Typ" (with an Akzent ;-) ) to avoid
   --  confusion with the types of the HAC code itself.

@@ -6,7 +6,7 @@
 --
 --  Full Ada version.
 --
-with HAL; use HAL;  --  in ../../../src
+with HAT; use HAT;  --  in ../../../src
 
 procedure AoC_2020_11_full_Ada is
 

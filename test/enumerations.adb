@@ -1,10 +1,10 @@
 --  Output should be empty if the compiler is correct.
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Enumerations is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   type E1 is (a);
   type E2 is (b, c);

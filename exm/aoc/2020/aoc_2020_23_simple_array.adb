@@ -15,7 +15,7 @@
 --  The linked list version takes 0.58 second on the same configuration.
 --  Then, the linked list version is more than 17,000 times faster!
 
-with HAL; use HAL;  --  in ../../../src
+with HAT; use HAT;  --  in ../../../src
 
 procedure AoC_2020_23_Simple_Array is
 

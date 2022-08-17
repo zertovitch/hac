@@ -14,7 +14,7 @@ with HAC_Sys.Defs,
      HAC_Sys.Parser.Packages,
      HAC_Sys.PCode;
 
-with HAL;
+with HAT;
 with Interfaces;
 
 package body HAC_Sys.Librarian.Built_In_Packages is
@@ -27,7 +27,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
   is
     use Co_Defs, Defs;
     unit : Library_Unit :=
-        (full_name     => HAL.To_VString (name),
+        (full_name     => HAT.To_VString (name),
          kind          => Package_Declaration,
          status        => Done,
          id_index      => No_Id,
@@ -98,166 +98,166 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     CD.Packages_Table (CD.Packages_Count).last_public_declaration := CD.Id_Count;
   end Define_and_Register_Interfaces;
 
-  procedure Define_and_Register_HAL (
+  procedure Define_and_Register_HAT (
     CD : in out Co_Defs.Compiler_Data;
     LD : in out Library_Data
   )
   is
     use Co_Defs, Defs, PCode;
 
-    procedure Enter_HAL_Const (Name : String; Value : HAC_Float) is
+    procedure Enter_HAT_Const (Name : String; Value : HAC_Float) is
       Float_Index : Integer;
     begin
       Compiler.PCode_Emit.Enter_or_find_Float (CD, Value, Float_Index);
       Enter_Library_Level_Def
-        (CD, HAL_Name & '.' & Name,
+        (CD, HAT_Name & '.' & Name,
          Declared_Number_or_Enum_Item, Floats, Float_Index);
-    end Enter_HAL_Const;
+    end Enter_HAT_Const;
 
-    procedure Enter_HAL_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
+    procedure Enter_HAT_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, HAL_Name & '.' & Name, TypeMark, T, 1, First, Last);
-    end Enter_HAL_Typ;
+      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, TypeMark, T, 1, First, Last);
+    end Enter_HAT_Typ;
 
-    procedure Enter_HAL_Funct (Name : String; T : Typen; Code : PCode.SF_Code) is
+    procedure Enter_HAT_Funct (Name : String; T : Typen; Code : PCode.SF_Code) is
     begin
-      Enter_Library_Level_Def (CD, HAL_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
-    end Enter_HAL_Funct;
+      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
+    end Enter_HAT_Funct;
 
-    procedure Enter_HAL_Proc (Name : String; Code : PCode.SP_Code) is
+    procedure Enter_HAT_Proc (Name : String; Code : PCode.SP_Code) is
     begin
-      Enter_Library_Level_Def (CD, HAL_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
-    end Enter_HAL_Proc;
+      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
+    end Enter_HAT_Proc;
 
   begin
-    Enter_and_Register_Built_In_Package (CD, LD, HAL_Name);
+    Enter_and_Register_Built_In_Package (CD, LD, HAT_Name);
     --
-    Enter_HAL_Typ ("File_Type",    Text_Files, 0, 0);  --  2020.05.17
-    Enter_HAL_Typ (HAC_Float_Name, Floats, 0, 0);      --  Moved from Std 2021.12.26
-    Enter_HAL_Typ ("Semaphore",    Ints, 0, 0);
-    Enter_HAL_Typ ("Time",         Times, 0, 0);
-    Enter_HAL_Typ ("VString",      VStrings, 0, 0);    --  2020.05.02
+    Enter_HAT_Typ ("File_Type",    Text_Files, 0, 0);  --  2020.05.17
+    Enter_HAT_Typ (HAC_Float_Name, Floats, 0, 0);      --  Moved from Std 2021.12.26
+    Enter_HAT_Typ ("Semaphore",    Ints, 0, 0);
+    Enter_HAT_Typ ("Time",         Times, 0, 0);
+    Enter_HAT_Typ ("VString",      VStrings, 0, 0);    --  2020.05.02
     --
     --  Standard functions
     --
-    Enter_HAL_Funct ("Chr",                 Chars,  SF_T_Val);    --  S'Val : RM 3.5.5 (5)
-    Enter_HAL_Funct ("Ord",                 Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)
-    Enter_HAL_Funct ("Succ",                Chars,  SF_T_Succ);   --  S'Succ : RM 3.5 (22)
-    Enter_HAL_Funct ("Pred",                Chars,  SF_T_Pred);   --  S'Pred : RM 3.5 (25)
+    Enter_HAT_Funct ("Chr",                 Chars,  SF_T_Val);    --  S'Val : RM 3.5.5 (5)
+    Enter_HAT_Funct ("Ord",                 Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)
+    Enter_HAT_Funct ("Succ",                Chars,  SF_T_Succ);   --  S'Succ : RM 3.5 (22)
+    Enter_HAT_Funct ("Pred",                Chars,  SF_T_Pred);   --  S'Pred : RM 3.5 (25)
     --
-    Enter_HAL_Funct ("Round",               Ints,   SF_Round_Float_to_Int);
-    Enter_HAL_Funct ("Trunc",               Ints,   SF_Trunc_Float_to_Int);
+    Enter_HAT_Funct ("Round",               Ints,   SF_Round_Float_to_Int);
+    Enter_HAT_Funct ("Trunc",               Ints,   SF_Trunc_Float_to_Int);
     --
-    Enter_HAL_Funct ("Min",                 Ints,   SF_Min_Int);  --  Overloaded for float
-    Enter_HAL_Funct ("Max",                 Ints,   SF_Max_Int);  --  Overloaded for float
+    Enter_HAT_Funct ("Min",                 Ints,   SF_Min_Int);  --  Overloaded for float
+    Enter_HAT_Funct ("Max",                 Ints,   SF_Max_Int);  --  Overloaded for float
     --
-    Enter_HAL_Const ("Pi",                  HAL.Pi);
-    Enter_HAL_Funct ("Sin",                 Floats, SF_Sin);
-    Enter_HAL_Funct ("Cos",                 Floats, SF_Cos);
-    Enter_HAL_Funct ("Exp",                 Floats, SF_Exp);
-    Enter_HAL_Funct ("Log",                 Floats, SF_Log);
-    Enter_HAL_Funct ("Sqrt",                Floats, SF_Sqrt);
-    Enter_HAL_Funct ("Arctan",              Floats, SF_Arctan);
+    Enter_HAT_Const ("Pi",                  HAT.Pi);
+    Enter_HAT_Funct ("Sin",                 Floats, SF_Sin);
+    Enter_HAT_Funct ("Cos",                 Floats, SF_Cos);
+    Enter_HAT_Funct ("Exp",                 Floats, SF_Exp);
+    Enter_HAT_Funct ("Log",                 Floats, SF_Log);
+    Enter_HAT_Funct ("Sqrt",                Floats, SF_Sqrt);
+    Enter_HAT_Funct ("Arctan",              Floats, SF_Arctan);
     --
-    Enter_HAL_Funct ("Rand",                Ints,   SF_Random_Int);
-    Enter_HAL_Funct ("Rnd",                 Floats, SF_Random_Float);
-    Enter_HAL_Funct ("Clock",               Times,  SF_Clock);
+    Enter_HAT_Funct ("Rand",                Ints,   SF_Random_Int);
+    Enter_HAT_Funct ("Rnd",                 Floats, SF_Random_Float);
+    Enter_HAT_Funct ("Clock",               Times,  SF_Clock);
     --
-    Enter_HAL_Funct ("Null_VString",        VStrings,            SF_Null_VString);
-    Enter_HAL_Funct ("Element",             Chars,               SF_Element);
-    Enter_HAL_Funct ("Index",               Ints,                SF_Index);
-    Enter_HAL_Funct ("Index_Backward",      Ints,                SF_Index_Backward);
-    Enter_HAL_Funct ("Length",              Ints,                SF_Length);
-    Enter_HAL_Funct ("Slice",               VStrings,            SF_Slice);
-    Enter_HAL_Funct ("To_Lower",            Chars,               SF_To_Lower_Char);
-    Enter_HAL_Funct ("To_Upper",            Chars,               SF_To_Upper_Char);
-    Enter_HAL_Funct ("To_VString",          VStrings,            SF_Literal_to_VString);
-    Enter_HAL_Funct ("To_String",           Strings_as_VStrings, SF_VString_to_String);
+    Enter_HAT_Funct ("Null_VString",        VStrings,            SF_Null_VString);
+    Enter_HAT_Funct ("Element",             Chars,               SF_Element);
+    Enter_HAT_Funct ("Index",               Ints,                SF_Index);
+    Enter_HAT_Funct ("Index_Backward",      Ints,                SF_Index_Backward);
+    Enter_HAT_Funct ("Length",              Ints,                SF_Length);
+    Enter_HAT_Funct ("Slice",               VStrings,            SF_Slice);
+    Enter_HAT_Funct ("To_Lower",            Chars,               SF_To_Lower_Char);
+    Enter_HAT_Funct ("To_Upper",            Chars,               SF_To_Upper_Char);
+    Enter_HAT_Funct ("To_VString",          VStrings,            SF_Literal_to_VString);
+    Enter_HAT_Funct ("To_String",           Strings_as_VStrings, SF_VString_to_String);
     --
-    Enter_HAL_Funct ("Trim_Left",           VStrings, SF_Trim_Left);
-    Enter_HAL_Funct ("Trim_Right",          VStrings, SF_Trim_Right);
-    Enter_HAL_Funct ("Trim_Both",           VStrings, SF_Trim_Both);
+    Enter_HAT_Funct ("Trim_Left",           VStrings, SF_Trim_Left);
+    Enter_HAT_Funct ("Trim_Right",          VStrings, SF_Trim_Right);
+    Enter_HAT_Funct ("Trim_Both",           VStrings, SF_Trim_Both);
     --
-    Enter_HAL_Funct ("Head",                VStrings, SF_Head);
-    Enter_HAL_Funct ("Head_Before_Match",   VStrings, SF_Head_Before_Match);
-    Enter_HAL_Funct ("Tail",                VStrings, SF_Tail);
-    Enter_HAL_Funct ("Tail_After_Match",    VStrings, SF_Tail_After_Match);
-    Enter_HAL_Funct ("Starts_With",         Bools,    SF_Starts_With);
-    Enter_HAL_Funct ("Ends_With",           Bools,    SF_Ends_With);
+    Enter_HAT_Funct ("Head",                VStrings, SF_Head);
+    Enter_HAT_Funct ("Head_Before_Match",   VStrings, SF_Head_Before_Match);
+    Enter_HAT_Funct ("Tail",                VStrings, SF_Tail);
+    Enter_HAT_Funct ("Tail_After_Match",    VStrings, SF_Tail_After_Match);
+    Enter_HAT_Funct ("Starts_With",         Bools,    SF_Starts_With);
+    Enter_HAT_Funct ("Ends_With",           Bools,    SF_Ends_With);
     --
     --  Ada.Calendar-like functions
     --
-    Enter_HAL_Funct ("Year",                Ints,      SF_Year);
-    Enter_HAL_Funct ("Month",               Ints,      SF_Month);
-    Enter_HAL_Funct ("Day",                 Ints,      SF_Day);
-    Enter_HAL_Funct ("Seconds",             Durations, SF_Seconds);
+    Enter_HAT_Funct ("Year",                Ints,      SF_Year);
+    Enter_HAT_Funct ("Month",               Ints,      SF_Month);
+    Enter_HAT_Funct ("Day",                 Ints,      SF_Day);
+    Enter_HAT_Funct ("Seconds",             Durations, SF_Seconds);
     --
     --  Attribute-like functions
     --
-    Enter_HAL_Funct ("Image",               VStrings, SF_Image_Ints);
-    Enter_HAL_Funct ("Integer_Value",       Ints,     SF_Integer_Value);
-    Enter_HAL_Funct ("Float_Value",         Floats,   SF_Float_Value);
+    Enter_HAT_Funct ("Image",               VStrings, SF_Image_Ints);
+    Enter_HAT_Funct ("Integer_Value",       Ints,     SF_Integer_Value);
+    Enter_HAT_Funct ("Float_Value",         Floats,   SF_Float_Value);
     --
     --  Ada.Command_Line & Ada.Environment_Variables - like functions
     --
-    Enter_HAL_Funct ("Argument_Count",      Ints,     SF_Argument_Count);
-    Enter_HAL_Funct ("Argument",            VStrings, SF_Argument);
-    Enter_HAL_Funct ("Command_Name",        VStrings, SF_Command_Name);
-    Enter_HAL_Funct ("Get_Env",             VStrings, SF_Get_Env);
-    Enter_HAL_Funct ("Get_VM_Variable",     VStrings, SF_Get_VM_Variable);
+    Enter_HAT_Funct ("Argument_Count",      Ints,     SF_Argument_Count);
+    Enter_HAT_Funct ("Argument",            VStrings, SF_Argument);
+    Enter_HAT_Funct ("Command_Name",        VStrings, SF_Command_Name);
+    Enter_HAT_Funct ("Get_Env",             VStrings, SF_Get_Env);
+    Enter_HAT_Funct ("Get_VM_Variable",     VStrings, SF_Get_VM_Variable);
     --
     --  Ada.Directories-like functions
     --
-    Enter_HAL_Funct ("Current_Directory",   VStrings, SF_Current_Directory);
-    Enter_HAL_Funct ("Directory_Exists",    Bools,    SF_Directory_Exists);
-    Enter_HAL_Funct ("Exists",              Bools,    SF_Exists);
-    Enter_HAL_Funct ("File_Exists",         Bools,    SF_File_Exists);
+    Enter_HAT_Funct ("Current_Directory",   VStrings, SF_Current_Directory);
+    Enter_HAT_Funct ("Directory_Exists",    Bools,    SF_Directory_Exists);
+    Enter_HAT_Funct ("Exists",              Bools,    SF_Exists);
+    Enter_HAT_Funct ("File_Exists",         Bools,    SF_File_Exists);
     --  This one is *not* in Ada.Directories:
-    Enter_HAL_Funct ("Directory_Separator", Chars,    SF_Directory_Separator);
+    Enter_HAT_Funct ("Directory_Separator", Chars,    SF_Directory_Separator);
     --
-    Enter_HAL_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
+    Enter_HAT_Funct ("Get_Needs_Skip_Line", Bools, SF_Get_Needs_Skip_Line);
     --
     --  Ada.Text_IO-like subprograms
     --
-    Enter_HAL_Proc ("Create",         SP_Create);
-    Enter_HAL_Proc ("Open",           SP_Open);
-    Enter_HAL_Proc ("Append",         SP_Append);
-    Enter_HAL_Proc ("Close",          SP_Close);
-    Enter_HAL_Proc ("Get",            SP_Get);
-    Enter_HAL_Proc ("Get_Immediate",  SP_Get_Immediate);
-    Enter_HAL_Proc ("Get_Line",       SP_Get_Line);
-    Enter_HAL_Proc ("Skip_Line",      SP_Skip_Line);
-    Enter_HAL_Proc ("Put",            SP_Put);
-    Enter_HAL_Proc ("Put_Line",       SP_Put_Line);
-    Enter_HAL_Proc ("New_Line",       SP_New_Line);
-    Enter_HAL_Funct ("End_Of_File",   Bools, SF_EOF);
-    Enter_HAL_Funct ("End_Of_Line",   Bools, SF_EOLN);
-    Enter_HAL_Funct ("Is_Open",       Bools, SF_Is_Open);
+    Enter_HAT_Proc ("Create",         SP_Create);
+    Enter_HAT_Proc ("Open",           SP_Open);
+    Enter_HAT_Proc ("Append",         SP_Append);
+    Enter_HAT_Proc ("Close",          SP_Close);
+    Enter_HAT_Proc ("Get",            SP_Get);
+    Enter_HAT_Proc ("Get_Immediate",  SP_Get_Immediate);
+    Enter_HAT_Proc ("Get_Line",       SP_Get_Line);
+    Enter_HAT_Proc ("Skip_Line",      SP_Skip_Line);
+    Enter_HAT_Proc ("Put",            SP_Put);
+    Enter_HAT_Proc ("Put_Line",       SP_Put_Line);
+    Enter_HAT_Proc ("New_Line",       SP_New_Line);
+    Enter_HAT_Funct ("End_Of_File",   Bools, SF_EOF);
+    Enter_HAT_Funct ("End_Of_Line",   Bools, SF_EOLN);
+    Enter_HAT_Funct ("Is_Open",       Bools, SF_Is_Open);
     --
     --  Ada.Environment_Variables-like procedures
     --
-    Enter_HAL_Proc ("Set_Env",         SP_Set_Env);
-    Enter_HAL_Proc ("Set_VM_Variable", SP_Set_VM_Variable);
+    Enter_HAT_Proc ("Set_Env",         SP_Set_Env);
+    Enter_HAT_Proc ("Set_VM_Variable", SP_Set_VM_Variable);
     --
     --  Ada.Directories-like procedures
     --
-    Enter_HAL_Proc ("Copy_File",      SP_Copy_File);
-    Enter_HAL_Proc ("Delete_File",    SP_Delete_File);
-    Enter_HAL_Proc ("Rename",         SP_Rename);
-    Enter_HAL_Proc ("Set_Directory",  SP_Set_Directory);
+    Enter_HAT_Proc ("Copy_File",      SP_Copy_File);
+    Enter_HAT_Proc ("Delete_File",    SP_Delete_File);
+    Enter_HAT_Proc ("Rename",         SP_Rename);
+    Enter_HAT_Proc ("Set_Directory",  SP_Set_Directory);
     --
-    Enter_HAL_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
-    Enter_HAL_Proc ("Set_Exit_Status", SP_Set_Exit_Status);
+    Enter_HAT_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
+    Enter_HAT_Proc ("Set_Exit_Status", SP_Set_Exit_Status);
     --
     --  Tasking related (from SmallAda)
     --
-    Enter_HAL_Proc ("Wait",           SP_Wait);
-    Enter_HAL_Proc ("Signal",         SP_Signal);
-    Enter_HAL_Proc ("Quantum",        SP_Quantum);
-    Enter_HAL_Proc ("Priority",       SP_Priority);
-    Enter_HAL_Proc ("InheritP",       SP_InheritP);
+    Enter_HAT_Proc ("Wait",           SP_Wait);
+    Enter_HAT_Proc ("Signal",         SP_Signal);
+    Enter_HAT_Proc ("Quantum",        SP_Quantum);
+    Enter_HAT_Proc ("Priority",       SP_Priority);
+    Enter_HAT_Proc ("InheritP",       SP_InheritP);
     --
     CD.Packages_Table (CD.Packages_Count).last_public_declaration := CD.Id_Count;
-  end Define_and_Register_HAL;
+  end Define_and_Register_HAT;
 
 end HAC_Sys.Librarian.Built_In_Packages;

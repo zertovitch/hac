@@ -1,8 +1,8 @@
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Attributes_Test is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   type Enum is (aa, bb, cc, dd);
   subtype Sub_Enum is Enum range bb .. cc;
@@ -10,7 +10,7 @@ procedure Attributes_Test is
   dummy_e : Enum;
   dummy_i, sum : Integer;
 
-  type A is array (Sub_Enum) of HAL.Real;
+  type A is array (Sub_Enum) of HAT.Real;
   type M is array (-5 .. -2, bb .. dd) of Integer;
   mm : M;
 

@@ -2,12 +2,12 @@
 
 with Cross_B;
 
-with HAL;
+with HAT;
 
 package body Cross_A is
 
   procedure A (n : Natural) is
-    use HAL;
+    use HAT;
   begin
     if n > 0 then
       Put_Line ("A: " & Image (n));

@@ -8,7 +8,7 @@ with HAC_Sys.Co_Defs,
      HAC_Sys.PCode.Interpreter.Operators,
      HAC_Sys.PCode.Interpreter.Tasking;
 
-with HAL;
+with HAT;
 
 with Ada.Characters.Handling,
      Ada.Command_Line,
@@ -45,7 +45,7 @@ package body HAC_Sys.PCode.Interpreter is
       Post_Mortem.Max_Stack_Usage := 0;
     end Start_Interpreter;
 
-    procedure Do_HAL_Function is
+    procedure Do_HAT_Function is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       Top_Item : General_Register renames ND.S (Curr_TCB.T);
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
@@ -63,9 +63,9 @@ package body HAC_Sys.PCode.Interpreter is
           else
             case SF_File_or_Console_Information (Code) is
               when SF_EOF =>
-                ND.S (Curr_TCB.T).I := Boolean'Pos (HAL.End_Of_File (ND.S (Curr_TCB.T).Txt.all));
+                ND.S (Curr_TCB.T).I := Boolean'Pos (HAT.End_Of_File (ND.S (Curr_TCB.T).Txt.all));
               when SF_EOLN =>
-                ND.S (Curr_TCB.T).I := Boolean'Pos (HAL.End_Of_Line (ND.S (Curr_TCB.T).Txt.all));
+                ND.S (Curr_TCB.T).I := Boolean'Pos (HAT.End_Of_Line (ND.S (Curr_TCB.T).Txt.all));
             end case;
           end if;
         when SF_Argument =>
@@ -90,14 +90,14 @@ package body HAC_Sys.PCode.Interpreter is
           ND.S (Curr_TCB.T).I := Character'Pos (System_Calls.Directory_Separator);
         when SF_Current_Directory =>
           Push;  --  Niladic function, needs to push a new item (their own result).
-          ND.S (Curr_TCB.T) := GR_VString (HAL.Current_Directory);
+          ND.S (Curr_TCB.T) := GR_VString (HAT.Current_Directory);
         when SF_Get_Needs_Skip_Line =>
           Push;  --  Niladic function, needs to push a new item (their own result).
           ND.S (Curr_TCB.T).I := Boolean'Pos (Console.Get_Needs_Skip_Line);
         when others =>
           Operators.Do_SF_Operator (BD, ND);  --  Doesn't need generic stuff.
       end case;
-    end Do_HAL_Function;
+    end Do_HAT_Function;
 
     procedure Do_Text_Read (Code : SP_Code) is
       CH : Character;
@@ -202,7 +202,7 @@ package body HAC_Sys.PCode.Interpreter is
           when Bools               => Console.Put (Boolean'Val (Item.I), Field (Format_1));
           when Chars               => Console.Put (Character'Val (Item.I));
           when VStrings |
-               Strings_as_VStrings => Console.Put (HAL.VStr_Pkg.To_String (Item.V));
+               Strings_as_VStrings => Console.Put (HAT.VStr_Pkg.To_String (Item.V));
           when String_Literals     => Console.Put (
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
@@ -220,13 +220,13 @@ package body HAC_Sys.PCode.Interpreter is
           when Ints                => IIO.Put (FP.all, Item.I, Field (Format_1), Number_Base (Format_2));
           when Floats              => RIO.Put (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
           when Bools               => BIO.Put (FP.all, Boolean'Val (Item.I), Field (Format_1));
-          when Chars               => HAL.Put (FP.all, Character'Val (Item.I));
+          when Chars               => HAT.Put (FP.all, Character'Val (Item.I));
           when VStrings |
-               Strings_as_VStrings => HAL.Put (FP.all, HAL.VStr_Pkg.To_String (Item.V));
-          when String_Literals     => HAL.Put (FP.all,
+               Strings_as_VStrings => HAT.Put (FP.all, HAT.VStr_Pkg.To_String (Item.V));
+          when String_Literals     => HAT.Put (FP.all,
               CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
             );
-          when Arrays              => HAL.Put (FP.all,
+          when Arrays              => HAT.Put (FP.all,
               Get_String_from_Stack (ND, Integer (Item.I), Format_1));
           when others =>
             null;
@@ -245,19 +245,19 @@ package body HAC_Sys.PCode.Interpreter is
       Var_Addr : constant Index := Index (ND.S (Curr_TCB.T).I);
     begin
       case Typen'Val (ND.IR.Y) is
-        when VStrings   => ND.S (Var_Addr) := GR_VString (HAL.Null_VString);
+        when VStrings   => ND.S (Var_Addr) := GR_VString (HAT.Null_VString);
         when Text_Files => Allocate_Text_File (ND, ND.S (Var_Addr));
         when others     => null;
       end case;
       Pop;
     end Do_Code_for_Automatic_Initialization;
 
-    procedure Do_HAL_Procedure is
+    procedure Do_HAT_Procedure is
       Code : constant SP_Code := SP_Code'Val (ND.IR.X);
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       Top_Item       : General_Register renames ND.S (Curr_TCB.T);
       Below_Top_Item : General_Register renames ND.S (Curr_TCB.T - 1);
-      use HAL.VStr_Pkg;
+      use HAT.VStr_Pkg;
       use type Defs.Typen;
       Lines : Ada.Text_IO.Positive_Count;
       Shell_Exec_Result : Integer;
@@ -278,28 +278,28 @@ package body HAC_Sys.PCode.Interpreter is
       end Switch_to_Text_Files;
     begin
       case Code is
-        when SP_Set_Env         => HAL.Set_Env   (Below_Top_Item.V, Top_Item.V);
+        when SP_Set_Env         => HAT.Set_Env   (Below_Top_Item.V, Top_Item.V);
         when SP_Set_VM_Variable =>
           Interfacing.Set_VM_Variable
             (BD, To_String (Below_Top_Item.V), To_String (Top_Item.V));
-        when SP_Copy_File       => HAL.Copy_File (Below_Top_Item.V, Top_Item.V);
-        when SP_Rename          => HAL.Rename    (Below_Top_Item.V, Top_Item.V);
-        when SP_Delete_File     => HAL.Delete_File (Top_Item.V);
-        when SP_Set_Directory   => HAL.Set_Directory (Top_Item.V);
-        when SP_Set_Exit_Status => HAL.Set_Exit_Status (Integer (Top_Item.I));
+        when SP_Copy_File       => HAT.Copy_File (Below_Top_Item.V, Top_Item.V);
+        when SP_Rename          => HAT.Rename    (Below_Top_Item.V, Top_Item.V);
+        when SP_Delete_File     => HAT.Delete_File (Top_Item.V);
+        when SP_Set_Directory   => HAT.Set_Directory (Top_Item.V);
+        when SP_Set_Exit_Status => HAT.Set_Exit_Status (Integer (Top_Item.I));
         --
         when SP_Create =>
           Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
-          HAL.Create (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+          HAT.Create (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
         when SP_Open =>
           Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
-          HAL.Open (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+          HAT.Open (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
         when SP_Append =>
           Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
-          HAL.Append (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+          HAT.Append (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
         when SP_Close =>
           Check_Discriminant_Type (ND.S (Defs.Index (Top_Item.I)), Defs.Text_Files);
-          HAL.Close (ND.S (Defs.Index (Top_Item.I)).Txt.all);
+          HAT.Close (ND.S (Defs.Index (Top_Item.I)).Txt.all);
         when SP_Push_Abstract_Console =>
           Push;
           ND.S (Curr_TCB.T) := GR_Abstract_Console;
@@ -312,17 +312,17 @@ package body HAC_Sys.PCode.Interpreter is
           if Below_Top_Item.Txt = Abstract_Console then
             Console.New_Line (Lines);
           else
-            HAL.New_Line (Below_Top_Item.Txt.all, Lines);
+            HAT.New_Line (Below_Top_Item.Txt.all, Lines);
           end if;
         when SP_Skip_Line =>
           Lines := Ada.Text_IO.Positive_Count (Top_Item.I);
           if Below_Top_Item.Txt = Abstract_Console then
             --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
             Console.Skip_Line (Lines);
-          elsif HAL.End_Of_File (Below_Top_Item.Txt.all) then
+          elsif HAT.End_Of_File (Below_Top_Item.Txt.all) then
             raise VM_End_Error;
           else
-            HAL.Skip_Line (Below_Top_Item.Txt.all, Lines);
+            HAT.Skip_Line (Below_Top_Item.Txt.all, Lines);
           end if;
         when SP_Shell_Execute_without_Result =>
           declare
@@ -342,7 +342,7 @@ package body HAC_Sys.PCode.Interpreter is
           declare
             Command           : constant String     := To_String (Below_Top_Item.V);
             Output_Address    : constant Defs.Index := Defs.Index (Top_Item.I);
-            Shell_Exec_Output : HAL.VString;
+            Shell_Exec_Output : HAT.VString;
           begin
             System_Calls.Shell_Execute_Output (Command, Shell_Exec_Result, Shell_Exec_Output);
             ND.S (Output_Address) := GR_VString (Shell_Exec_Output);
@@ -352,7 +352,7 @@ package body HAC_Sys.PCode.Interpreter is
             Command           : constant String     := To_String (ND.S (Curr_TCB.T - 2).V);
             Result_Address    : constant Defs.Index := Defs.Index (Below_Top_Item.I);
             Output_Address    : constant Defs.Index := Defs.Index (Top_Item.I);
-            Shell_Exec_Output : HAL.VString;
+            Shell_Exec_Output : HAT.VString;
           begin
             System_Calls.Shell_Execute_Output (Command, Shell_Exec_Result, Shell_Exec_Output);
             ND.S (Result_Address).I := Defs.HAC_Integer (Shell_Exec_Result);
@@ -404,12 +404,12 @@ package body HAC_Sys.PCode.Interpreter is
           when others =>
             Raise_Standard (ND, VME_Use_Error, Stop_Current_Instruction => True);
         end case;
-    end Do_HAL_Procedure;
+    end Do_HAT_Procedure;
 
     procedure Add_Stack_Trace_Line (Offset : Natural) is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       D : Debug_Info renames CD.ObjCode (Curr_TCB.PC - Offset).D;
-      use HAL.VStr_Pkg;
+      use HAT.VStr_Pkg;
     begin
       if D.Full_Block_Id /= Universe then
         ND.TCB (ND.CurTask).Exception_Info.ST_Message.Append (D);
@@ -577,8 +577,8 @@ package body HAC_Sys.PCode.Interpreter is
         when k_Check_Upper_Bound => Check_Upper (IR.X, Typen'Val (IR.Y), Index (IR.Z));
         --
         when k_Variable_Initialization => Do_Code_for_Automatic_Initialization;
-        when k_HAL_Procedure           => Do_HAL_Procedure;
-        when k_HAL_Function            => Do_HAL_Function;
+        when k_HAT_Procedure           => Do_HAT_Procedure;
+        when k_HAT_Function            => Do_HAT_Function;
         --
         when k_Pop =>
           Pop;
@@ -775,8 +775,8 @@ package body HAC_Sys.PCode.Interpreter is
           Defs.IIO.Put,
           Defs.RIO.Put,
           Defs.BIO.Put,
-          HAL.Put,
-          HAL.Put,
+          HAT.Put,
+          HAT.Put,
           Ada.Text_IO.New_Line
          );
 
@@ -785,9 +785,9 @@ package body HAC_Sys.PCode.Interpreter is
          (Shifted_Argument_Count,
           Shifted_Argument,
           Custom_Command_Name,
-          HAL.Shell_Execute,
-          HAL.Shell_Execute,  --  This profile has an Output parameter.
-          HAL.Directory_Separator
+          HAT.Shell_Execute,
+          HAT.Shell_Execute,  --  This profile has an Output parameter.
+          HAT.Directory_Separator
          );
 
     procedure Interpret_on_Current_IO_Instance is new
@@ -821,7 +821,7 @@ package body HAC_Sys.PCode.Interpreter is
 
   function Message (E : Exception_Propagation_Data) return String is
   begin
-    return HAL.To_String (E.Exception_Message);
+    return HAT.To_String (E.Exception_Message);
   end Message;
 
   function Is_Exception_Raised (E : Exception_Propagation_Data) return Boolean is
@@ -833,8 +833,8 @@ package body HAC_Sys.PCode.Interpreter is
   begin
     for STL of E.ST_Message loop
       Show_Line_Information (
-        HAL.To_String (STL.File_Name),
-        HAL.To_String (STL.Full_Block_Id),
+        HAT.To_String (STL.File_Name),
+        HAT.To_String (STL.Full_Block_Id),
         STL.Line_Number
       );
     end loop;

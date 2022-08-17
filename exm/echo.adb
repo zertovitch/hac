@@ -1,6 +1,6 @@
 --  Example from command-line:  hac echo.adb <echo.adb >echo.txt
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Echo is
   s : VString;

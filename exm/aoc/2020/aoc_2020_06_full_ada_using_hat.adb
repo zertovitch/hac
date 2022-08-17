@@ -4,9 +4,9 @@
 --
 --  https://adventofcode.com/2020/day/6
 --
---  Full Ada version, using the HAL package.
+--  Full Ada version, using the HAT package.
 --
-with HAL; use HAL;  --  in ../../../src
+with HAT; use HAT;  --  in ../../../src
 
 procedure AoC_2020_06_Full_Ada_using_HAL is
   total : Integer;

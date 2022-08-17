@@ -69,7 +69,7 @@
 --
 --------------------------------------------------------------------------
 
-with HAL;
+with HAT;
 with Interfaces;
 
 package HAC_PDF_Out is
@@ -78,7 +78,7 @@ package HAC_PDF_Out is
     PDF_1_3 -- PDF 1.3
   );
 
-  subtype Real is HAL.Real;
+  subtype Real is HAT.Real;
 
   type Point is record
     x, y : Real;
@@ -143,9 +143,9 @@ package HAC_PDF_Out is
   --  !! Should be private (in a future version of HAC)
 
   type PDF_Out_File is record
-    pdf_file       : HAL.File_Type;
+    pdf_file       : HAT.File_Type;
     file_index     : Natural;
-    file_name      : HAL.VString;
+    file_name      : HAT.VString;
     start_index    : Natural;
     is_created     : Boolean;
     is_closed      : Boolean;
@@ -161,16 +161,16 @@ package HAC_PDF_Out is
     page_margins   : Margins_Type;
     objects        : PDF_Index_Type;
     object_offset  : Offset_table;
-    stream_obj_buf : HAL.VString;
+    stream_obj_buf : HAT.VString;
     current_font   : Font_Type;
     font_size      : Real;
     line_spacing   : Real;
-    ext_font_name  : HAL.VString;
-    doc_title      : HAL.VString;  --  Document information (14.3.3)
-    doc_author     : HAL.VString;  --  Document information (14.3.3)
-    doc_subject    : HAL.VString;  --  Document information (14.3.3)
-    doc_keywords   : HAL.VString;  --  Document information (14.3.3)
-    doc_creator    : HAL.VString;  --  Document information (14.3.3) : creator application
+    ext_font_name  : HAT.VString;
+    doc_title      : HAT.VString;  --  Document information (14.3.3)
+    doc_author     : HAT.VString;  --  Document information (14.3.3)
+    doc_subject    : HAT.VString;  --  Document information (14.3.3)
+    doc_keywords   : HAT.VString;  --  Document information (14.3.3)
+    doc_creator    : HAT.VString;  --  Document information (14.3.3) : creator application
   end record;
 
   procedure Init (pdf : in out PDF_Out_File);
@@ -185,9 +185,9 @@ package HAC_PDF_Out is
   procedure Put_Int (pdf   : in out PDF_Out_File;
                      num   : in Integer
             );
-  procedure Put_Str (pdf : in out PDF_Out_File; str : HAL.VString);
+  procedure Put_Str (pdf : in out PDF_Out_File; str : HAT.VString);
   --
-  procedure Put_Line (pdf : in out PDF_Out_File; str : HAL.VString);
+  procedure Put_Line (pdf : in out PDF_Out_File; str : HAT.VString);
   --
   procedure New_Line (pdf : in out PDF_Out_File);
   procedure New_Page (pdf : in out PDF_Out_File);
@@ -197,7 +197,7 @@ package HAC_PDF_Out is
   procedure Finish_Page (pdf : in out PDF_Out_File);
   --
   procedure Text_XY (pdf : in out PDF_Out_File; x, y : Real);
-  procedure Put_XY (pdf : in out PDF_Out_File; x, y : Real; str : HAL.VString);
+  procedure Put_XY (pdf : in out PDF_Out_File; x, y : Real; str : HAT.VString);
 
   function Col (pdf : in PDF_Out_File) return Positive;
   function Line (pdf : in PDF_Out_File) return Positive;
@@ -290,24 +290,24 @@ package HAC_PDF_Out is
   --  use the Insert_Graphics_PDF_Code below. For text-related stuff,
   --  use Insert_Text_PDF_Code.
   --
-  procedure Insert_PDF_Code (pdf : in out PDF_Out_File; code : HAL.VString);
+  procedure Insert_PDF_Code (pdf : in out PDF_Out_File; code : HAT.VString);
 
   --  This is for direct text PDF code insertion (text-writing mode
   --  will be switched on). In PDF language these are the T... commands.
   --
-  procedure Insert_Text_PDF_Code (pdf : in out PDF_Out_File; code : HAL.VString);
+  procedure Insert_Text_PDF_Code (pdf : in out PDF_Out_File; code : HAT.VString);
 
   --  This is for direct graphics PDF code insertion (text-writing mode
   --  will be switched off for the graphics output).
   --
-  procedure Insert_Graphics_PDF_Code (pdf : in out PDF_Out_File; code : HAL.VString);
+  procedure Insert_Graphics_PDF_Code (pdf : in out PDF_Out_File; code : HAT.VString);
 
   --  Document information
-  procedure Title (pdf : in out PDF_Out_File; s : HAL.VString);
-  procedure Author (pdf : in out PDF_Out_File; s : HAL.VString);
-  procedure Subject (pdf : in out PDF_Out_File; s : HAL.VString);
-  procedure Keywords (pdf : in out PDF_Out_File; s : HAL.VString);
-  procedure Creator_Application (pdf : in out PDF_Out_File; s : HAL.VString);
+  procedure Title (pdf : in out PDF_Out_File; s : HAT.VString);
+  procedure Author (pdf : in out PDF_Out_File; s : HAT.VString);
+  procedure Subject (pdf : in out PDF_Out_File; s : HAT.VString);
+  procedure Keywords (pdf : in out PDF_Out_File; s : HAT.VString);
+  procedure Creator_Application (pdf : in out PDF_Out_File; s : HAT.VString);
 
   ------------------
   --  Page layout --
@@ -347,7 +347,7 @@ package HAC_PDF_Out is
 
   procedure Create (
     pdf        : in out PDF_Out_File;
-    file_name  :        HAL.VString
+    file_name  :        HAT.VString
   );
 
   procedure Close (pdf : in out PDF_Out_File);
@@ -356,8 +356,8 @@ package HAC_PDF_Out is
 
 private
 
-  function Image_name (i : Positive) return HAL.VString;
+  function Image_name (i : Positive) return HAT.VString;
   procedure New_object (pdf : in out PDF_Out_File);
-  procedure WL (pdf : in out PDF_Out_File; s : HAL.VString);
+  procedure WL (pdf : in out PDF_Out_File; s : HAT.VString);
 
 end HAC_PDF_Out;

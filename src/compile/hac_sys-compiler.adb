@@ -7,7 +7,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
-with HAL;
+with HAT;
 
 with Ada.Integer_Text_IO,
      Ada.Strings.Fixed,
@@ -76,7 +76,7 @@ package body HAC_Sys.Compiler is
     Scanner.InSymbol (CD);
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009
-    CD.pkg_prefix := HAL.Null_VString;
+    CD.pkg_prefix := HAT.Null_VString;
   end Init;
 
   --  Print_Tables is for debugging purposes.
@@ -284,9 +284,9 @@ package body HAC_Sys.Compiler is
 
     map_file : File_Type;
 
-    full_main_Id : HAL.VString;
+    full_main_Id : HAT.VString;
     main_block : Parser.Block_Data_Type;
-    main_file_name : constant String := HAL.VStr_Pkg.To_String (CD.CUD.source_file_name);
+    main_file_name : constant String := HAT.VStr_Pkg.To_String (CD.CUD.source_file_name);
 
   begin  --  Compile_Main
     if CD.trace.detail_level >= 1 then
@@ -326,7 +326,7 @@ package body HAC_Sys.Compiler is
       full_main_Id := full_main_Id & '.';
     end loop;
     CD.Main_Program_ID_with_case := full_main_Id;
-    CD.Main_Program_ID           := HAL.To_Upper (full_main_Id);
+    CD.Main_Program_ID           := HAT.To_Upper (full_main_Id);
     if CD.Main_Program_ID /= main_name_hint then
       Error (CD, err_library_error,
         ": unit name """ & main_name_hint & """ expected in this file, found: """ &
@@ -473,7 +473,7 @@ package body HAC_Sys.Compiler is
       when Name_Error =>
         Error (CD, err_library_error, "file " & file_name & Spec_or_Body & " not found", major);
     end;
-    --  HAL.PUT_LINE("Compiling unit " & upper_name);
+    --  HAT.PUT_LINE("Compiling unit " & upper_name);
     Set_Source_Stream (CD.CUD, src_stream, file_name, 0);
     --  Reset scanner data (line counter etc.) and
     --  library-level visible declarations (processed WITH of caller's compilation)
@@ -488,7 +488,7 @@ package body HAC_Sys.Compiler is
     --  We define Standard, or activate if this is not the first unit compiled.
     --
     Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
-    --  HAL.PUT_LINE("Unit " & upper_name & " sees and uses Standard");
+    --  HAT.PUT_LINE("Unit " & upper_name & " sees and uses Standard");
 
     Scanner.InSymbol (CD);
     Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.

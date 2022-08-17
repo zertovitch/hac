@@ -1,7 +1,7 @@
 --  https://en.wikipedia.org/wiki/Ackermann_function
 --  https://rosettacode.org/wiki/Ackermann_function#Ada
 
-with HAL;
+with HAT;
 
 procedure Ackermann is
 
@@ -16,7 +16,7 @@ procedure Ackermann is
     end if;
   end A;
 
-  use HAL;
+  use HAT;
 
 begin
   Put_Line ("Ackermann function");

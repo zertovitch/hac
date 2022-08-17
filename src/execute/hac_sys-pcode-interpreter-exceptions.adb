@@ -10,7 +10,7 @@ package body HAC_Sys.PCode.Interpreter.Exceptions is
     EI : Exception_Propagation_Data renames ND.TCB (ND.CurTask).Exception_Info;
   begin
     EI.Currently_Raised  := (SE, 0);
-    EI.Exception_Message := HAL.To_VString (Msg);
+    EI.Exception_Message := HAT.To_VString (Msg);
     ND.PS := In_Defs.Exception_Raised;
     if Stop_Current_Instruction then
       --  Skip the rest of what the current instruction

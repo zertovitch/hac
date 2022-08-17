@@ -1,11 +1,11 @@
 --  Silent versions of merge_sort.adb and shell_sort.adb.
 --  We check the result. No output <=> compiler is correct.
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Sorting_Tests is
-  use HAL;
+  use HAT;
 
   expected_result : constant String (1 .. 26) := "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 

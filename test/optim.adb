@@ -3,7 +3,7 @@
 --
 --  We check here some optimizations, such as the removal of unnecessary range checks.
 
-with HAL;
+with HAT;
 
 procedure Optim is
 
@@ -36,8 +36,8 @@ procedure Optim is
     i : Insect;
   begin
     x := y;  --  Low bound check is optimized out, high check remains.
-    HAL.Put_Line (Animal'Image (Animal'Last));
-    HAL.Put_Line (Animal'Image (Insect'Last));
+    HAT.Put_Line (Animal'Image (Animal'Last));
+    HAT.Put_Line (Animal'Image (Insect'Last));
     a := cat;
     i := a;  --  HAC: run-time error on upper bound check.
              --  GNAT issues even a compile-time error!
@@ -82,10 +82,10 @@ procedure Optim is
   m5 : constant := -5;
 
 begin
-  HAL.Put_Line (1 + (2 + (3 + 4)));          --  Add_Multiple instruction
-  HAL.Put_Line (1.0 + (2.0 + (3.0 + 4.0)));  --  Add_Multiple instruction
-  HAL.Put_Line (1 + 2 * 3);          --  Mult_then_Add instruction
-  HAL.Put_Line (1.0 + 2.0 * 3.0);    --  Mult_then_Add instruction
+  HAT.Put_Line (1 + (2 + (3 + 4)));          --  Add_Multiple instruction
+  HAT.Put_Line (1.0 + (2.0 + (3.0 + 4.0)));  --  Add_Multiple instruction
+  HAT.Put_Line (1 + 2 * 3);          --  Mult_then_Add instruction
+  HAT.Put_Line (1.0 + 2.0 * 3.0);    --  Mult_then_Add instruction
   p := -m5;
   p := -(-5);
   i := 0;

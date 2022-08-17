@@ -1,11 +1,11 @@
 --  We check numerical recursive functions (and also a bit the
 --  correctness of array operations, and nested subprograms too).
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure Recursion is
-  use HAL, Testing_Utilities;
+  use HAT, Testing_Utilities;
 
   function Fibonacci (P : Natural) return Positive is
   begin

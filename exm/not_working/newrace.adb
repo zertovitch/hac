@@ -1,4 +1,4 @@
-with HAL; use HAL;   -- CS159-10 Instructor: Arthur Vargas Lopes
+with HAT; use HAT;   -- CS159-10 Instructor: Arthur Vargas Lopes
                      -- Fall 1990
 procedure newrace is
 task SCREEN is

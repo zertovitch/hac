@@ -10,8 +10,8 @@
 --    *     Exiting multiple nested loops
 --    *     aggregates, like ` hits := (others => (others => 0)); `
 --
-with HAL;
---  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
 with Interfaces;  --  Needed for GNAT (Integer_64).
@@ -148,7 +148,7 @@ procedure AoC_2021_21 is
     if res (2) > res (1) then r (2) := res (2); end if;
   end Play_Part_2;
 
-  use HAL;
+  use HAT;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   T0 : constant Time := Clock;

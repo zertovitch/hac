@@ -1,12 +1,12 @@
 --  We launch new instances of HAC (possibly from HAC itself, too).
 --  Usage:  hac all_silent_tests.adb
 
-with HAL;
+with HAT;
 with Testing_Utilities;
 
 procedure All_Silent_Tests is
 
-  use HAL;
+  use HAT;
 
   procedure Launch_Tests is
 

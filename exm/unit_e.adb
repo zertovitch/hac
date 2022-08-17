@@ -1,8 +1,8 @@
 with Unit_C;
-with HAL;
+with HAT;
 
 procedure Unit_E is
-  use HAL;
+  use HAT;
 begin
   Put (Unit_C
     (+"Unit_C called from Unit_E",

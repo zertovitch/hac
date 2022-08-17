@@ -1,16 +1,16 @@
 --  Was originally Test2 in SmallAda
 
-with HAL;
+with HAT;
 
 procedure Tasks_02 is
 
-  compiler_regression_test_mode : constant Boolean := HAL.Argument_Count > 0;
+  compiler_regression_test_mode : constant Boolean := HAT.Argument_Count > 0;
   verbose : constant Boolean := not compiler_regression_test_mode;
 
-  procedure Selective_Put_Line (M : HAL.VString) is
+  procedure Selective_Put_Line (M : HAT.VString) is
   begin
     if verbose then
-      HAL.Put_Line (M);
+      HAT.Put_Line (M);
     end if;
   end Selective_Put_Line;
 
@@ -22,7 +22,7 @@ procedure Tasks_02 is
 
   the_answer : constant := 42;
 
-  use HAL;
+  use HAT;
 
   task body T1 is
     Iii : Integer;

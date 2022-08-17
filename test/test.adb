@@ -5,7 +5,7 @@
 --
 --  The official regression test for HAC is `all_silent_tests.adb`.
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure Test is
   --

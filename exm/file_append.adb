@@ -1,6 +1,6 @@
 --  This demo creates a file in multiple steps, via the Append procedure.
 
-with HAL; use HAL;
+with HAT; use HAT;
 
 procedure File_Append is
   f : File_Type;

@@ -15,8 +15,8 @@
 --    *     Comparison (equality operators) "=", "/=" of composite types (arrays and records)
 --    *     Detect an expression as a static (compile-time-known) value
 --
-with HAL;
---  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
 procedure AoC_2021_19 is
@@ -26,7 +26,7 @@ procedure AoC_2021_19 is
   subtype Cube_Face is Integer range 1 .. 6;
   subtype Plane_Rotation is Integer range 1 .. 4;
 
-  use HAL;
+  use HAT;
 
   procedure Rotate (v : in out Vector; face : Cube_Face; spin : Plane_Rotation) is
     w : Vector;

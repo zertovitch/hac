@@ -1,6 +1,6 @@
 with HAC_Sys.Defs;
 
-with HAL;
+with HAT;
 
 with Ada.Characters.Handling;
 with Ada.Unchecked_Conversion;
@@ -8,7 +8,7 @@ with System;
 
 package body HAC_Sys.Interfacing is
 
-  use HAL, Defs;
+  use HAT, Defs;
 
   function To_HAC (Data : Integer) return HAC_Element is
     new_element : HAC_Element;
@@ -19,7 +19,7 @@ package body HAC_Sys.Interfacing is
 
   function To_HAC (Data : Long_Float) return HAC_Element is
   begin
-    return GR_Real (HAL.Real (Data));
+    return GR_Real (HAT.Real (Data));
   end To_HAC;
 
   function To_HAC (Data : String) return HAC_Element is
@@ -43,7 +43,7 @@ package body HAC_Sys.Interfacing is
 
   function To_HAC_Any_Float (Data : Any_Float) return HAC_Element is
   begin
-    return GR_Real (HAL.Real (Data));
+    return GR_Real (HAT.Real (Data));
   end To_HAC_Any_Float;
 
   function To_Native (Data : HAC_Element) return Integer is
@@ -56,7 +56,7 @@ package body HAC_Sys.Interfacing is
     if Data.Special = Floats then
       return Long_Float (Data.R);
     end if;
-    raise HAC_Type_Error with "Expected a HAL.Real, found Integer or " & Typen'Image (Data.Special);
+    raise HAC_Type_Error with "Expected a HAT.Real, found Integer or " & Typen'Image (Data.Special);
   end To_Native;
 
   function To_Native (Data : HAC_Element) return String is
@@ -82,23 +82,23 @@ package body HAC_Sys.Interfacing is
     if Data.Special = Floats then
       return Any_Float (Data.R);
     end if;
-    raise HAC_Type_Error with "Expected a HAL.Real, found Integer or " & Typen'Image (Data.Special);
+    raise HAC_Type_Error with "Expected a HAT.Real, found Integer or " & Typen'Image (Data.Special);
   end To_Native_Any_Float;
 
   function Get_VM_Variable (BD : Builder.Build_Data; Name : String) return String is
-    cur : constant Builder.String_Maps.Cursor := BD.global_VM_variables.Find (HAL.To_VString (Name));
+    cur : constant Builder.String_Maps.Cursor := BD.global_VM_variables.Find (HAT.To_VString (Name));
     use Builder.String_Maps;
   begin
     return
       (if cur = Builder.String_Maps.No_Element then
          ""
        else
-         HAL.To_String (Builder.String_Maps.Element (cur)));
+         HAT.To_String (Builder.String_Maps.Element (cur)));
   end Get_VM_Variable;
 
   procedure Set_VM_Variable (BD : in out Builder.Build_Data; Name : String; Value : String) is
   begin
-    BD.global_VM_variables.Include (HAL.To_VString (Name), HAL.To_VString (Value));
+    BD.global_VM_variables.Include (HAT.To_VString (Name), HAT.To_VString (Value));
   end Set_VM_Variable;
 
   procedure Register

@@ -11,8 +11,8 @@ package body HAC_Pkg is
   begin
     case verbosity is
       when 0      => null;
-      when 1      => HAL.Put_Line (message);
-      when others => HAL.Put_Line (HAC_margin_2 & message);
+      when 1      => HAT.Put_Line (message);
+      when others => HAT.Put_Line (HAC_margin_2 & message);
     end case;
   end Compilation_Feedback;
 
@@ -30,9 +30,9 @@ package body HAC_Pkg is
       if new_sep_pos > sep_pos then
         declare
           full_file_name : constant String :=
-            path (sep_pos + 1 .. new_sep_pos - 1) & HAL.Directory_Separator & simple_file_name;
+            path (sep_pos + 1 .. new_sep_pos - 1) & HAT.Directory_Separator & simple_file_name;
         begin
-          if HAL.Exists (full_file_name) then
+          if HAT.Exists (full_file_name) then
             return full_file_name;
           end if;
         end;
@@ -50,11 +50,11 @@ package body HAC_Pkg is
     --     being compiled (the file name on the command line).
     declare
       fn : constant String :=
-        Ada.Directories.Containing_Directory (HAL.To_String (main_Ada_file_name)) &
-        HAL.Directory_Separator &
+        Ada.Directories.Containing_Directory (HAT.To_String (main_Ada_file_name)) &
+        HAT.Directory_Separator &
         simple_file_name;
     begin
-      if HAL.Exists (fn) then
+      if HAT.Exists (fn) then
         return fn;
       end if;
     end;
@@ -62,7 +62,7 @@ package body HAC_Pkg is
     --     hac command line, in the order given.
     declare
       fn : constant String :=
-        Search_File (simple_file_name, HAL.To_String (command_line_source_path));
+        Search_File (simple_file_name, HAT.To_String (command_line_source_path));
     begin
       if fn /= "" then
         return fn;
@@ -72,7 +72,7 @@ package body HAC_Pkg is
     --  4) Each of the directories listed in the value of the ADA_INCLUDE_PATH environment variable.
     declare
       fn : constant String :=
-        Search_File (simple_file_name, HAL.To_String (HAL.Get_Env ("ADA_INCLUDE_PATH")));
+        Search_File (simple_file_name, HAT.To_String (HAT.Get_Env ("ADA_INCLUDE_PATH")));
     begin
       if fn /= "" then
         return fn;

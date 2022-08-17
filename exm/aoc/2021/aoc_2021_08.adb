@@ -12,12 +12,12 @@
 --    *     Logical operators on arrays of Boolean
 --
 --
-with HAL;
---  For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
 
 procedure AoC_2021_08 is
-  use HAL;
+  use HAT;
   --
   input : constant VString := +"aoc_2021_08.txt";
   --

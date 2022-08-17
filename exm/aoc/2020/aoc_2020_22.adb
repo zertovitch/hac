@@ -8,12 +8,12 @@
 --
 --    *     comparison (equality operators) "=", "/=" of composite types (arrays and records)
 
-with HAL;
---  ^ For a build with "full Ada": files hal*.ad* are in ../../../src
+with HAT;
+--  ^ For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2020.gpr .
 
 procedure AoC_2020_22 is
-  use HAL;
+  use HAT;
 
   max_deck : constant := 50;
 
