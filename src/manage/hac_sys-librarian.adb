@@ -208,7 +208,7 @@ package body HAC_Sys.Librarian is
       Error (
         CD,
         err_library_error,
-        "no file found matching the name " & GNAT_Naming (Upper_Name) & ".ad*",
+        "no file found matching the name """ & GNAT_Naming (Upper_Name) & ".ad*""",
         major
       );
     else
@@ -270,7 +270,7 @@ package body HAC_Sys.Librarian is
       Error (
         CD,
         err_library_error,
-        "the new name of " & Upper_Name & " is " & HAT_Name,
+        "the new name of """ & Upper_Name & """ is """ & HAT_Name & '"',
         major
       );
     else
