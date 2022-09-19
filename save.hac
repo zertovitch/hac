@@ -70,6 +70,7 @@ begin
               root & "/exm/e.cmd "  &
               root & "/exm/not_working/*.ad* " &
               root & "/exm/pdf/*.ad* " &
+              root & "/exm/tasking/*.ad* " &
               --
               root & "/exm/aoc/2020/aoc*.ad* " &
               root & "/exm/aoc/2020/aoc*.txt " &
@@ -83,7 +84,9 @@ begin
 
   tests    := root & "/test/*.ad* " &
               root & "/test/*.gpr " & root & "/test/*.prj " &
-              root & "/test/t.cmd " & root & "/test/*.aru " &
+              root & "/test/t.cmd " &
+              root & "/test/tf.cmd " &
+              root & "/test/*.aru " &
               root & "/test/future/*.ad* ";
 
   files := root & "/src/*.ad* " &

@@ -1,4 +1,4 @@
---  Here is the simplest case of tasking you can image: just
+--  Here is the simplest case of tasking you can imagine: just
 --  a bunch of tasks running in parallel, without communication
 --  between them.
 
