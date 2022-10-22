@@ -58,6 +58,7 @@ package body HAC_Sys.Compiler is
     --
     CD.Main_Program_ID           := Empty_Alfa;
     CD.Main_Program_ID_with_case := Empty_Alfa;
+    CD.Main_Proc_Id_Index := 0;
     --
     --  Current unit data
     --
