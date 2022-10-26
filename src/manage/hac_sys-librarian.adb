@@ -110,20 +110,6 @@ package body HAC_Sys.Librarian is
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper, CD.Id_Count);
   end Enter_Library_Level_Def;
 
-  --  GNAT_Naming returns the file name that GNAT expects for a unit
-  --  with the name Unit_Name.
-
-  function GNAT_Naming (Unit_Name : String) return String is
-    result : String := Ada.Characters.Handling.To_Lower (Unit_Name);
-  begin
-    for c of result loop
-      if c = '.' then
-        c := '-';
-      end if;
-    end loop;
-    return result;
-  end GNAT_Naming;
-
   procedure Set_Source_Access
     (LD          : in out Library_Data;
      exists       : Extended_Exists;
@@ -295,6 +281,17 @@ package body HAC_Sys.Librarian is
       Parser.Helpers.Locate_Identifier (CD, Defs.S2A ("STANDARD"), 0)
     );
   end Apply_WITH_USE_Standard;
+
+  function GNAT_Naming (Unit_Name : String) return String is
+    result : String := Ada.Characters.Handling.To_Lower (Unit_Name);
+  begin
+    for c of result loop
+      if c = '.' then
+        c := '-';
+      end if;
+    end loop;
+    return result;
+  end GNAT_Naming;
 
   --  Here we have the default behaviour for Library_Data's open source
   --  and close source routines.

@@ -330,7 +330,7 @@ package body HAC_Sys.Compiler is
     CD.Main_Program_ID           := HAT.To_Upper (full_main_Id);
     if CD.Main_Program_ID /= main_name_hint then
       Error (CD, err_library_error,
-        ": unit name """ & main_name_hint & """ expected in this file, found: """ &
+        "unit name """ & main_name_hint & """ expected in this file, found: """ &
         A2S (CD.Main_Program_ID) & '"',
         major
       );

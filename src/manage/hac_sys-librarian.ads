@@ -171,6 +171,13 @@ package HAC_Sys.Librarian is
     --    unit named Descriptor.Full_Name.
   );
 
+  ----------------------------------------------------------------------
+  --  GNAT_Naming returns the file name that GNAT expects for a unit  --
+  --  with the name Unit_Name.                                        --
+  ----------------------------------------------------------------------
+
+  function GNAT_Naming (Unit_Name : String) return String;
+
 private
 
   procedure default_open_file_proc (Name : String; Stream : out Co_Defs.Source_Stream_Access);
