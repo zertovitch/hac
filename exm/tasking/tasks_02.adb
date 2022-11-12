@@ -25,38 +25,38 @@ procedure Tasks_02 is
   use HAT;
 
   task body T1 is
-    Iii : Integer;
+    iii : Integer;
   begin
-    Selective_Put_Line (5 * "Task T1 .. ");
-    Iii := the_answer;
-    Selective_Put_Line (+"iii = " & Iii);
-    T2.Hereza_Num (Iii);
+    Selective_Put_Line (5 * "Task T1 starting... ");
+    iii := the_answer;
+    Selective_Put_Line (+"iii = " & iii);
+    T2.Hereza_Num (iii);
   end T1;
 
   task body T2 is
-    Jjj : Integer;
+    jjj : Integer;
   begin
-    Selective_Put_Line (5 * "Task T2 .. ");
-    Jjj := 0;
-    Selective_Put_Line (+"jjj = " & Jjj);
+    Selective_Put_Line (5 * "Task T2 starting... ");
+    jjj := 0;
+    Selective_Put_Line (+"jjj = " & jjj);
     accept Hereza_Num (V1 : Integer) do
-      Jjj := V1;
+      jjj := V1;
     end Hereza_Num;
-    Selective_Put_Line (+"jjj = " & Jjj);
+    Selective_Put_Line (+"jjj = " & jjj);
     accept Gimmea_Num (V2 : out Integer) do
-      V2 := Jjj;
+      V2 := jjj;
     end Gimmea_Num;
   end T2;
 
   Mmm : Integer := 99;
 
 begin
-  Selective_Put_Line (+"Test with Tasks.");
-  Selective_Put_Line (+"[point 1] mmm = " & Mmm);
-  Selective_Put_Line (5 * "Main ");
+  Selective_Put_Line (+"[Main] ---------- Test with Tasks.");
+  Selective_Put_Line (+"[Main] [point 1] mmm = " & Mmm);
   T2.Gimmea_Num (Mmm);
-  Selective_Put_Line (+"[point 2] mmm = " & Mmm);
-  Selective_Put_Line (+"Done.");
+  Selective_Put_Line (+"[Main] ---------- At this point, tasks are done.");
+  Selective_Put_Line (+"[Main] [point 2] mmm = " & Mmm);
+  Selective_Put_Line (+"[Main] Done.");
   if compiler_regression_test_mode and then Mmm /= the_answer then
     Put_Line ("   ----> Compiler test failed.");
     Set_Exit_Status (1);
