@@ -23,6 +23,7 @@ package HAC_Sys.PCode.Interpreter is
   type Exception_Propagation_Data is private;
 
   function Is_Exception_Raised (E : Exception_Propagation_Data) return Boolean;
+  function Is_User_Abort (E : Exception_Propagation_Data) return Boolean;
 
   function Image (E : Exception_Propagation_Data) return String;
   function Message (E : Exception_Propagation_Data) return String;

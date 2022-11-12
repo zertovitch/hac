@@ -829,6 +829,11 @@ package body HAC_Sys.PCode.Interpreter is
     return E.Currently_Raised.Ex_Typ /= No_Exception;
   end Is_Exception_Raised;
 
+  function Is_User_Abort (E : Exception_Propagation_Data) return Boolean is
+  begin
+    return E.Currently_Raised.Ex_Typ = VME_User_Abort;
+  end Is_User_Abort;
+
   procedure Show_Trace_Back (E : Exception_Propagation_Data) is
   begin
     for STL of E.ST_Message loop
