@@ -291,7 +291,7 @@ package body HAC_Sys.Compiler is
 
   begin  --  Compile_Main
     if CD.trace.detail_level >= 1 then
-      Progress_Message (CD, "Compiling main: " & main_file_name);
+      Progress_Message (CD, "HAC Ada Compiler. Compiling main: " & main_file_name);
     end if;
 
     Init (CD);
