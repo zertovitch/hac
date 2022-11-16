@@ -238,18 +238,29 @@ package body HAC_Sys.Librarian is
     UVN : constant VString := To_VString (Upper_Name);
   begin
     if LD.Map.Contains (UVN) then
-      --  Definition is already somewhere in CD (from the compilation
-      --  of another unit), we just need to reactivate it.
-      --  This situation includes the duplicate WITH case (not nice but correct).
-      --  Packages Standard and HAT are also reactivated on second WITH (implicitly for Standard).
       if LD.Library.Element (LD.Map.Element (UVN)).status = In_Progress then
         raise Circular_Unit_Dependency with Upper_Name;
       end if;
+      --  Definition is already somewhere in CD (from the compilation
+      --  of another unit), we just need to reactivate it.
+      --  This situation includes the duplicate WITH case (not nice but correct).
+      --  Packages Standard, Interfaces and HAT are also reactivated on
+      --  second WITH (implicitly for Standard).
       Activate_Unit (CD, Upper_Name);
     elsif Upper_Name = "STANDARD" then
       Built_In_Packages.Define_and_Register_Standard (CD, LD);
     elsif Upper_Name = "INTERFACES" then
       Built_In_Packages.Define_and_Register_Interfaces (CD, LD);
+    elsif Upper_Name = "ADA"
+      or else (Upper_Name'Length > 3
+               and then Upper_Name (Upper_Name'First .. Upper_Name'First + 3) = "ADA.")
+    then
+      Error (
+        CD,
+        err_library_error,
+        "Ada package (and children) are not yet part of HAC's predefined library.",
+        major
+      );
     elsif Upper_Name = HAT_Name then
       Built_In_Packages.Define_and_Register_HAT (CD, LD);
     elsif Upper_Name = "HAC_PACK" or else Upper_Name = "HAL" then

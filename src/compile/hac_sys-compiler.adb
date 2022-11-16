@@ -291,7 +291,9 @@ package body HAC_Sys.Compiler is
 
   begin  --  Compile_Main
     if CD.trace.detail_level >= 1 then
-      Progress_Message (CD, "HAC Ada Compiler. Compiling main: " & main_file_name);
+      Progress_Message
+        (CD, "HAC Ada Compiler version " & version & ", " & reference);
+      Progress_Message (CD, "Compiling main: " & main_file_name);
     end if;
 
     Init (CD);
@@ -466,7 +468,7 @@ package body HAC_Sys.Compiler is
       if CD.trace.detail_level >= 2 then
         indent := CD.recursion;
       end if;
-      Progress_Message (CD, indent * '.' & "Compiling: " & file_name & Spec_or_Body);
+      Progress_Message (CD, indent * '.' & "Compiling.... : " & file_name & Spec_or_Body);
     end if;
     begin
       LD.open_source (file_name, src_stream);
