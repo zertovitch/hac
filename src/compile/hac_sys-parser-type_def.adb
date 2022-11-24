@@ -15,6 +15,8 @@ with HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
+with Ada.Characters.Handling;
+
 package body HAC_Sys.Parser.Type_Def is
 
   use Co_Defs, Defs, Enter_Def, Helpers, Errors;
@@ -248,8 +250,18 @@ package body HAC_Sys.Parser.Type_Def is
     end Sub_Typ;
 
   begin
-    xTP   := Undefined;
-    Size  := 0;
+    xTP  := Undefined;
+    Size := 0;
+    if CD.Sy in
+      ABSTRACT_Symbol | ACCESS_Symbol |
+      LIMITED_Symbol | PRIVATE_Symbol |
+      TAGGED_Symbol
+    then
+      Error
+        (CD, err_syntax_error,
+         ": " & Ada.Characters.Handling.To_Lower (A2S (CD.Id)) &
+         " types are not yet supported", major);
+    end if;
     Test (CD, Type_Begin_Symbol, FSys_TD, err_missing_ARRAY_RECORD_or_ident);
     if Type_Begin_Symbol (CD.Sy) then
       case CD.Sy is
