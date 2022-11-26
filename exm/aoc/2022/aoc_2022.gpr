@@ -1,0 +1,91 @@
+--  This is a GNAT, GCC or GNAT Studio project file
+--  for the Advent of Code 2021 examples.
+--  Some programs work with both HAC and "full Ada" compilers like,
+--  GNAT some (titled *_full_ada.adb) work only with "full Ada".
+--  
+project AoC_2022 is
+
+   for Source_Dirs use (
+     ".",
+     "../../../src"   --  GNAT's access to the HAT package.
+   );
+   for Exec_Dir use ".";
+   for Create_Missing_Dirs use "True";
+
+   type AoC_Build_Mode_Type is
+      ("Debug",
+       "Fast"
+      );
+   AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
+
+   for Main use (
+     "aoc_2022_xx.adb"
+   );
+   
+   case AoC_Build_Mode is
+      when "Debug" =>
+         for Object_Dir use "obj_debug";
+      when "Fast" =>
+         for Object_Dir use "obj_fast";
+   end case;
+
+   Common_Options := (
+     "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
+     "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
+     "-gnatwCijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
+     "-gnatf",  --  Full errors. Verbose details, all undefined references
+     "-gnatq",  --  Don't quit, try semantics, even if parse errors
+     "-gnatQ",  --  Don't quit, write ali/tree file even if compile errors
+     --
+     "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
+     "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
+     "-gnatyx",       --  Style: check x:no extra parens
+     "-gnatye",       --  Style: check e:end/exit labels present
+     "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
+   );
+
+   Fast_Options := (
+     "-O3",
+     "-funroll-loops", "-fpeel-loops", "-funswitch-loops",
+     "-ftracer", "-fweb", "-frename-registers",
+     "-ftree-vectorize", "-fipa-cp-clone", "-fgcse-after-reload"
+   );
+
+   Debug_Options  := (
+     --  "-gnateV",  --  Validity check for parameters, GNAT > 4.6, redundant with -gnatVim ?
+     "-gnatVa",  --  Turn on all validity checking options
+     "-gnato",   --  Enable overflow checking in STRICT (-gnato1) mode
+     "-g", 
+     "-fno-inline", "-fstack-check"
+   );
+
+   package Compiler is
+      case AoC_Build_Mode is
+         when "Debug" =>
+            for Default_Switches ("ada") use Common_Options & Debug_Options ;
+         when "Fast" =>
+            for Default_Switches ("ada") use Common_Options & Fast_Options & ("-gnatpn", "-ffunction-sections");
+      end case;
+   end Compiler;
+
+   package Linker is
+      case AoC_Build_Mode is
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-g");
+         when "Fast" =>
+            for Default_Switches ("ada") use ("-g", "-s", "-Wl,--gc-sections");
+      end case;
+   end Linker;
+
+   package Binder is
+      --  -Es: Store tracebacks in exception occurrences, and enable symbolic tracebacks
+      for Default_Switches ("ada") use ("-Es");
+   end Binder;
+
+   package Builder is
+      --   "If -j0 is used, then the maximum number of simultaneous compilation
+      --    jobs is the number of core processors on the platform."
+      for Default_Switches ("ada") use ("-j0");
+   end Builder;
+
+end AoC_2022;
