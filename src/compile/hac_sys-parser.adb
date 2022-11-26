@@ -155,7 +155,9 @@ package body HAC_Sys.Parser is
             Enter (CD, block_data.level, CD.Id, CD.Id_with_case, pkg_kind, pkg_spec_index);
             if is_body then
               if pkg_spec_index = No_Id then
-                Error (CD, err_syntax_error, ": missing specification for package body", major);
+                Error
+                  (CD, err_syntax_error,
+                   ": missing specification for package body", severity => major);
               end if;
               CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.IdTab (pkg_spec_index).block_or_pkg_ref;
               Parser.Packages.Package_Body (CD, Empty_Symset, block_data);
@@ -243,11 +245,12 @@ package body HAC_Sys.Parser is
         Error
           (CD, err_incorrect_name_after_END,
            hint => A2S (Block_Id_with_case),
-           previous_symbol => True,
-           --  ^ Ideally we would enclose the whole wrong full name, possibly on several lines.
-           --  But it is correct on a single wrong identifier, the most frequent case.
-           severity => minor
-          );
+           severity => minor,
+           previous_symbol => True);
+           --  ^ Ideally we would enclose the whole wrong full name (x.y.z),
+           --    possibly spanning on several lines.
+           --    But the method is correct on a single wrong identifier,
+           --    the most frequent case.
       end if;
     end Check_ident_after_END;
 

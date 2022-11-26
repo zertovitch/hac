@@ -69,7 +69,7 @@ package body HAC_Sys.Parser.Packages is
               (CD,
                err_not_yet_implemented,
                "variables and constants in packages at library level",
-             major);
+               severity => major);
           end if;
           Const_Var.Var_Declaration (CD, FSys, block_data);
           Mark_Last_Declaration;
@@ -88,7 +88,7 @@ package body HAC_Sys.Parser.Packages is
             Error
               (CD, err_syntax_error,
                ": subprogram body not allowed in package specification",
-               major);
+               severity => major);
           end if;
           if block_data.level = 0 then
             Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
@@ -103,7 +103,7 @@ package body HAC_Sys.Parser.Packages is
               Error
                 (CD, err_syntax_error,
                  ": subpackage body not allowed in package specification",
-                 major);
+                 severity => major);
             when IDent =>
               null;  --  Good!
             when others =>
@@ -188,7 +188,7 @@ package body HAC_Sys.Parser.Packages is
               (CD,
                err_not_yet_implemented,
                "variables and constants in packages at library level",
-             major);
+               severity => major);
           end if;
           Const_Var.Var_Declaration (CD, FSys, block_data);
         when TYPE_Symbol |
@@ -221,7 +221,9 @@ package body HAC_Sys.Parser.Packages is
           Enter_Def.Enter (CD, block_data.level, CD.Id, CD.Id_with_case, subpkg_kind, pkg_spec_index);
           if subpackage_body then
             if pkg_spec_index = No_Id then
-              Error (CD, err_syntax_error, ": missing specification for package body", major);
+              Error
+                (CD, err_syntax_error,
+                 ": missing specification for package body", severity => major);
             end if;
             CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.IdTab (pkg_spec_index).block_or_pkg_ref;
             Package_Body (CD, FSys, block_data);
@@ -241,7 +243,7 @@ package body HAC_Sys.Parser.Packages is
       exit when CD.Sy = BEGIN_Symbol or CD.Sy = END_Symbol;
     end loop;
     if CD.Sy = BEGIN_Symbol then
-      Error (CD, err_not_yet_implemented, "initialisation part in packages", major);
+      Error (CD, err_not_yet_implemented, "initialisation part in packages", severity => major);
     end if;
     Scanner.InSymbol (CD);  --  Absorb END symbol
     if CD.Sy = IDent then
@@ -301,7 +303,7 @@ package body HAC_Sys.Parser.Packages is
   begin
     pragma Assert (Pkg_Idx > No_Id);
     if CD.IdTab (Pkg_Idx).entity /= Paquetage then
-      Error (CD, err_syntax_error, ": package name expected", major);
+      Error (CD, err_syntax_error, ": package name expected", severity => major);
     end if;
     --  The package specification's definitions begins immediately after the
     --  package's identifier.

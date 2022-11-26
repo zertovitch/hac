@@ -5,7 +5,11 @@ package body HAC_Sys.Errors is
 
   use Defs;
 
-  function Error_String (code : Defs.Compile_Error; hint : String := "") return String is
+  function Error_String
+    (code   : Defs.Compile_Error;
+     hint   : String := "";
+     hint_2 : String := "") return String
+  is
   begin
     case code is
       when err_undefined_identifier =>
@@ -243,6 +247,10 @@ package body HAC_Sys.Errors is
         return "fixed-size string lengths do not match: " & hint;
       when err_library_error =>
         return "library error: " & hint;
+      when err_wrong_unit_name =>
+        return "unit name """ & hint & """ expected in this file, found: """ & hint_2 & '"';
+      when err_obsolete_hat_name =>
+        return "the new name of """ & hint_2 & """ is """ & hint & '"';
       when err_object_used_before_end_own_declaration =>
         return "attempt to use object " & hint & "before end of its own declaration";
       when err_attribute_prefix_invalid =>
@@ -289,9 +297,11 @@ package body HAC_Sys.Errors is
       err_missing_closing_IF          => (insert,        +" if"),
       err_RECORD_missing              => (insert,        +" record"),
       err_closing_parenthesis_missing => (insert,        +")"),
-      err_incorrect_name_after_END    => (replace_token, +"[...]"),
-      err_END_LOOP_ident_missing      => (insert,        +"[...]"),
-      err_END_LOOP_ident_wrong        => (replace_token, +"[...]"),
+      err_END_LOOP_ident_missing      => (insert,        +"[ something... ]"),
+      err_incorrect_name_after_END |
+      err_END_LOOP_ident_wrong     |
+      err_wrong_unit_name          |
+      err_obsolete_hat_name           => (replace_token, +"[ something... ]"),
       err_EQUALS_instead_of_BECOMES   => (replace_token, +":="),
       err_duplicate_semicolon         => (replace_token, +""),
       err_extra_right_parenthesis     => (replace_token, +""),
@@ -302,18 +312,15 @@ package body HAC_Sys.Errors is
     CD              : in out Co_Defs.Compiler_Data;
     code            :        Defs.Compile_Error;
     hint            :        String         := "";
+    hint_2          :        String         := "";
     severity        :        Error_Severity := medium;
     previous_symbol :        Boolean        := False
   )
   is
-    use Ada.Text_IO;
+    use Ada.Strings, Ada.Strings.Fixed, Ada.Text_IO;
     line, col_start, col_stop : Integer;
     --
-    procedure Show_to_comp_dump (
-       srcNumber, charStart, charEnd, objNumber : Integer;
-       hint_for_dump : String
-    )
-    is
+    procedure Show_to_comp_dump (srcNumber, charStart, charEnd, objNumber : Integer) is
     begin
       if CD.comp_dump_requested then
         Put_Line
@@ -321,7 +328,7 @@ package body HAC_Sys.Errors is
           " Error code = " &
           Defs.Compile_Error'Image (code) &
           " (" &
-          Error_String (code, hint_for_dump) &
+          Error_String (code, hint, hint_2) &
           ") " &
           " srcNumber=" &
           Integer'Image (srcNumber) &
@@ -337,7 +344,6 @@ package body HAC_Sys.Errors is
     updated_repair_kit : Repair_Kit := repair_table (code);
     ub_hint : constant HAT.VString := HAT.To_VString (hint);
     use HAT.VStr_Pkg;
-    use Ada.Strings, Ada.Strings.Fixed;
     diagnostic : Diagnostic_Kit;
   begin
     if previous_symbol then
@@ -349,7 +355,7 @@ package body HAC_Sys.Errors is
       col_start := CD.syStart;
       col_stop  := CD.syEnd;
     end if;
-    Show_to_comp_dump (line, col_start, col_stop, -1, hint);
+    Show_to_comp_dump (line, col_start, col_stop, -1);
     CD.errs (code) := True;
     if severity = minor then
       CD.minor_error_count := CD.minor_error_count + 1;
@@ -357,31 +363,33 @@ package body HAC_Sys.Errors is
       CD.error_count := CD.error_count + 1;
     end if;
     if CD.trace.pipe = null then
-      Put_Line (
-        Current_Error,
-        To_String (CD.CUD.source_file_name) & ": " &
-        Trim (Integer'Image (line),      Left) & ':' &
-        Trim (Integer'Image (col_start), Left) & '-' &
-        Trim (Integer'Image (col_stop),  Left) & ": " &
-        Error_String (code, hint)
-      );
+      Put_Line
+        (Current_Error,
+         To_String (CD.CUD.source_file_name) & ": " &
+         Trim (Integer'Image (line),      Left) & ':' &
+         Trim (Integer'Image (col_start), Left) & '-' &
+         Trim (Integer'Image (col_stop),  Left) & ": " &
+         Error_String (code, hint));
     else
       case code is
         when err_incorrect_name_after_END =>
           if hint = "" then
             updated_repair_kit.repair_kind := none;
           else
-            updated_repair_kit.insert_or_replace := ub_hint;
+            updated_repair_kit.alternative := ub_hint;
           end if;
         when err_END_LOOP_ident_missing =>
-          updated_repair_kit.insert_or_replace := ' ' & ub_hint;
-        when err_END_LOOP_ident_wrong =>
-          updated_repair_kit.insert_or_replace := ub_hint;
+          updated_repair_kit.alternative := ' ' & ub_hint;
+        when err_END_LOOP_ident_wrong |
+             err_wrong_unit_name |
+             err_obsolete_hat_name
+          =>
+          updated_repair_kit.alternative := ub_hint;
         when others =>
           null;
       end case;
       Repair_Kit (diagnostic) := updated_repair_kit;
-      diagnostic.message   := To_Unbounded_String (Error_String (code, hint));
+      diagnostic.message   := To_Unbounded_String (Error_String (code, hint, hint_2));
       diagnostic.file_name := To_Unbounded_String (Co_Defs.Get_Source_Name (CD.CUD));
       diagnostic.line      := line;
       diagnostic.column_a  := col_start;
@@ -443,11 +451,11 @@ package body HAC_Sys.Errors is
     for K in CD.errs'Range loop
       if CD.errs (K) then
         if CD.comp_dump_requested then
-          Put_Line (CD.comp_dump, Defs.Compile_Error'Image (K) & ":  " & Error_String (K, ""));
+          Put_Line (CD.comp_dump, Defs.Compile_Error'Image (K) & ":  " & Error_String (K));
           --  Should be Error_hint(K,n) !!
         end if;
         if CD.listing_requested then
-          Put_Line (CD.listing, Defs.Compile_Error'Image (K) & "  " & Error_String (K, ""));
+          Put_Line (CD.listing, Defs.Compile_Error'Image (K) & "  " & Error_String (K));
           --  Should be Error_hint(K,n) !!
         end if;
       end if;

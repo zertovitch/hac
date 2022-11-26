@@ -34,12 +34,11 @@ package HAC_Sys.Librarian is
 
   --  HAC Compiled Unit files have the .hcu extension. Some may be stored in .zip library files.
 
-  type Compilation_Status is (
-    In_Progress,     --  Specification or body-only is in progress.
-    Body_Postponed,  --  Specification done, body will be done later.
-    Spec_Only,       --  Specification-only is done, but we need to check absence of body.
-    Done             --  Specification done; eventual body is done or its absence is checked.
-  );
+  type Compilation_Status is
+    (In_Progress,     --  Specification or body-only is in progress.
+     Body_Postponed,  --  Specification done, body will be done later.
+     Spec_Only,       --  Specification-only is done, but we need to check absence of body.
+     Done);           --  Specification done; eventual body is done or its absence is checked.
 
   subtype Spec_Done is Compilation_Status range Body_Postponed .. Spec_Only;
 
@@ -128,48 +127,43 @@ package HAC_Sys.Librarian is
   --  Standard package and the special HAT package.  --
   -----------------------------------------------------
 
-  procedure Apply_WITH (
-    CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Library_Data;
-    Upper_Name : in     String
-  );
+  procedure Apply_WITH
+    (CD         : in out Co_Defs.Compiler_Data;
+     LD         : in out Library_Data;
+     Upper_Name : in     String);
 
   ----------------------------------------------------------
   --  Apply the invisible "with Standard; use Standard;"  --
   ----------------------------------------------------------
 
-  procedure Apply_WITH_USE_Standard (
-    CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Library_Data
-  );
+  procedure Apply_WITH_USE_Standard
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Library_Data);
 
   ----------------------------------------------------------------------
   --  Add a new definition to the identifier table, at library level  --
   ----------------------------------------------------------------------
 
-  procedure Enter_Library_Level_Def (
-    CD             : in out Co_Defs.Compiler_Data;
-    Full_Ident     : in     String;  --  "Main", "Standard.False", ...
-    New_Entity     : in     Co_Defs.Entity_Kind;
-    Base_Type      : in     Defs.Typen;
-    Size           : in     Integer;
-    Discrete_First : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
-    Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last
-  );
+  procedure Enter_Library_Level_Def
+    (CD             : in out Co_Defs.Compiler_Data;
+     Full_Ident     : in     String;  --  "Main", "Standard.False", ...
+     New_Entity     : in     Co_Defs.Entity_Kind;
+     Base_Type      : in     Defs.Typen;
+     Size           : in     Integer;
+     Discrete_First : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
+     Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last);
 
   Circular_Unit_Dependency : exception;
 
-  procedure Register_Unit (
-    LD         : in out Library_Data;
-    Descriptor : in     Library_Unit
-  );
+  procedure Register_Unit
+    (LD         : in out Library_Data;
+     Descriptor : in     Library_Unit);
 
-  procedure Change_Unit_Details (
-    LD         : in out Library_Data;
-    Descriptor : in     Library_Unit
-    --  ^ Changes in the library the details for
-    --    unit named Descriptor.Full_Name.
-  );
+  procedure Change_Unit_Details
+    (LD         : in out Library_Data;
+     Descriptor : in     Library_Unit);
+     --  ^ Changes in the library the details for
+     --    unit named Descriptor.Full_Name.
 
   ----------------------------------------------------------------------
   --  GNAT_Naming returns the file name that GNAT expects for a unit  --

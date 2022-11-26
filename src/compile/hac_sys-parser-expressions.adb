@@ -106,7 +106,7 @@ package body HAC_Sys.Parser.Expressions is
           Field_Id := CD.IdTab (Field_Id).link;
         end loop;
         if Field_Id = No_Id then
-          Error (CD, err_undefined_identifier, A2S (CD.Id_with_case), major);
+          Error (CD, err_undefined_identifier, A2S (CD.Id_with_case), severity => major);
         end if;
         V            := CD.IdTab (Field_Id).xtyp;
         Field_Offset := CD.IdTab (Field_Id).adr_or_sz;
@@ -183,7 +183,7 @@ package body HAC_Sys.Parser.Expressions is
                          ATE.Index_xTyp.Discrete_Last,
                          ATE.Index_xTyp.TYP,
                          ATE.Index_xTyp.Ref),
-                      minor);
+                      severity => minor);
               end if;
             end if;
             V := ATE.Element_xTyp;
@@ -543,7 +543,7 @@ package body HAC_Sys.Parser.Expressions is
                 if X.TYP = NOTYP and then CD.error_count = 0 then
                   Error
                     (CD, err_object_used_before_end_own_declaration,
-                     '"' & A2S (r.name_with_case) & """ ", major);
+                     '"' & A2S (r.name_with_case) & """ ", severity => major);
                 end if;
               end;
               --
@@ -962,7 +962,7 @@ package body HAC_Sys.Parser.Expressions is
       when Apostrophe =>  --  S'First, S'Image, ...
         Attributes.Subtype_Attribute (CD, Level, FSys, Typ_ID_Index, X);
       when others =>
-        Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", major);
+        Error (CD, err_syntax_error, ": expected ""'"" or ""("" here", severity => major);
     end case;
   end Subtype_Prefixed_Expression;
 

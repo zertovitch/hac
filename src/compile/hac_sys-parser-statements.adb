@@ -83,7 +83,7 @@ package body HAC_Sys.Parser.Statements is
                 Discrete_Range_Image (CD, Y.Discrete_First, Y.Discrete_Last, X.TYP, X.Ref)) &
              ") is out the destination's range, " &
              Discrete_Range_Image (CD, X.Discrete_First, X.Discrete_Last, X.TYP, X.Ref),
-             minor);
+             severity => minor);
         end if;
       end if;
       if X.TYP in Standard_Typ then
@@ -122,7 +122,7 @@ package body HAC_Sys.Parser.Statements is
           Error (CD, err_string_lengths_do_not_match,
             "variable has length" & Integer'Image (X_Len) &
             ", literal has length" & Integer'Image (CD.SLeng),
-            minor
+            severity => minor
           );
         end if;
       elsif X.TYP = VStrings
@@ -513,7 +513,7 @@ package body HAC_Sys.Parser.Statements is
              (if difference > 99 then ""
               elsif Equal (difference, 1) then ": one case is missing"
               else ":" & Basic_Int'Image (Basic (difference)) & " cases are missing"),
-             minor);
+             severity => minor);
         end if;
       end Check_Coverage;
 
@@ -972,7 +972,7 @@ package body HAC_Sys.Parser.Statements is
     begin
       Enter (CD, Block_Data.level, new_ident_for_statement, CD.Id_with_case, Label, dummy_idx);
       if CD.Sy /= Colon then
-        Error (CD, err_colon_missing_for_named_statement, A2S (CD.Id_with_case), major);
+        Error (CD, err_colon_missing_for_named_statement, A2S (CD.Id_with_case), severity => major);
       end if;
       InSymbol;  --  Consume ':' symbol.
       case CD.Sy is
@@ -1012,11 +1012,11 @@ package body HAC_Sys.Parser.Statements is
                 Assignment (CD, FSys_St, Block_Data.level, I_Statement, Check_read_only => True);
               when Declared_Number_or_Enum_Item =>
                 Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
-                       major);
+                       severity => major);
               when TypeMark =>
-                Error (CD, err_illegal_statement_start_symbol, "type name", major);
+                Error (CD, err_illegal_statement_start_symbol, "type name", severity => major);
               when Funktion | Funktion_Intrinsic =>
-                Error (CD, err_illegal_statement_start_symbol, "function name", major);
+                Error (CD, err_illegal_statement_start_symbol, "function name", severity => major);
               when aTask =>
                 Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Entry_Call);
               when Prozedure =>
@@ -1029,11 +1029,11 @@ package body HAC_Sys.Parser.Statements is
                 Test (CD, Colon_Set, FSys_St, err_colon_missing);
                 InSymbol;
               when Paquetage =>
-                Error (CD, err_illegal_statement_start_symbol, "package name", major);
+                Error (CD, err_illegal_statement_start_symbol, "package name", severity => major);
               when others =>
                 Error
                   (CD, err_syntax_error,
-                   ". Entity found: " & Entity_Kind'Image (CD.IdTab (I_Statement).entity), major);
+                   ". Entity found: " & Entity_Kind'Image (CD.IdTab (I_Statement).entity), severity => major);
             end case;
           end if;  --  end IDent
         when ACCEPT_Symbol =>

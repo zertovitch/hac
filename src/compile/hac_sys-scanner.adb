@@ -232,10 +232,9 @@ package body HAC_Sys.Scanner is
             NextCh (CD);
             Sign := -1;
           else
-            Error (
-              CD, err_negative_exponent_for_integer_literal,
-              HAC_Integer'Image (CD.INum) & ".0e- ..."
-            );
+            Error
+              (CD, err_negative_exponent_for_integer_literal,
+               HAC_Integer'Image (CD.INum) & ".0e- ...");
           end if;
         when others =>
           null;
@@ -257,13 +256,12 @@ package body HAC_Sys.Scanner is
       D, T : HAC_Float;
     begin
       if K + e > EMax then
-        Error (
-          CD, err_number_too_large,
-          Integer'Image (K) & " +" &
-          Integer'Image (e) & " =" &
-          Integer'Image (K + e) & " > Max =" &
-          Integer'Image (EMax)
-        );
+        Error
+          (CD, err_number_too_large,
+           Integer'Image (K) & " +" &
+           Integer'Image (e) & " =" &
+           Integer'Image (K + e) & " > Max =" &
+           Integer'Image (EMax));
       elsif K + e < EMin then
         CD.RNum := 0.0;
       else
@@ -357,8 +355,9 @@ package body HAC_Sys.Scanner is
         e := 0;
         while CharacterTypes (CD.CUD.c) = Number loop
           e := e - 1;
-          CD.RNum := 10.0 * CD.RNum +
-                  HAC_Float (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
+          CD.RNum :=
+            10.0 * CD.RNum +
+            HAC_Float (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
           NextCh (CD);
           Skip_eventual_underscore;
         end loop;
@@ -398,11 +397,10 @@ package body HAC_Sys.Scanner is
           when '.' =>
             NextCh (CD);
             if K > KMax then
-              Error (
-                CD, err_number_too_large,
-                Integer'Image (K) & " > Max =" &
-                Integer'Image (KMax)
-              );
+              Error
+                (CD, err_number_too_large,
+                 Integer'Image (K) & " > Max =" &
+                 Integer'Image (KMax));
               CD.INum := 0;
               K       := 0;
             end if;
@@ -590,7 +588,9 @@ package body HAC_Sys.Scanner is
               CD.Sy := Range_Double_Dot_Symbol;
               NextCh (CD);
             when '0' .. '9' =>
-              Error (CD, err_syntax_error, ": numeric literal cannot start with point", minor);
+              Error
+                (CD, err_syntax_error,
+                 ": numeric literal cannot start with point", severity => minor);
               Scan_Number (skip_leading_integer => True);
             when others =>
               CD.Sy := Period;
@@ -619,12 +619,11 @@ package body HAC_Sys.Scanner is
               K := 0;  --  END OF InpLine
               CD.syStart := 1;
               CD.syEnd   := 1;
-              Error (
-                CD,
-                err_syntax_error,
-                ": missing closing quote on previous line ",
-                major
-              );
+              Error
+                (CD,
+                 err_syntax_error,
+                 ": missing closing quote on previous line ",
+                 severity => major);
             else
               null;  --  Continue
             end if;
@@ -699,11 +698,11 @@ package body HAC_Sys.Scanner is
         Put (CD.comp_dump, '.');
       end loop;
       Put_Line (CD.comp_dump, "^");
-      Put (CD.comp_dump,
-        '[' & Integer'Image (CD.CUD.line_count) & ':' &
-              Integer'Image (CD.CUD.CC) & ":] " &
-        KeyWSymbol'Image (CD.Sy)
-      );
+      Put
+        (CD.comp_dump,
+         '[' & Integer'Image (CD.CUD.line_count) & ':' &
+               Integer'Image (CD.CUD.CC) & ":] " &
+         KeyWSymbol'Image (CD.Sy));
       case CD.Sy is
         when IDent =>
           Put (CD.comp_dump, ": " & A2S (CD.Id));

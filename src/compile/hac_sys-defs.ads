@@ -14,7 +14,6 @@
 with HAT;
 
 with Ada.Characters.Handling,
-     Ada.Strings.Unbounded,
      Ada.Text_IO;
 
 with Interfaces;
@@ -412,7 +411,6 @@ package HAC_Sys.Defs is
     err_membership_test_type_mismatch,
     err_string_not_supported_as_parameter,
     err_string_lengths_do_not_match,
-    err_library_error,
     err_object_used_before_end_own_declaration,  --  2021-12-11
     err_attribute_prefix_invalid,                --  2021-12-26
     err_attribute_prefix_must_be_discrete_type,  --  2021-12-26
@@ -421,27 +419,28 @@ package HAC_Sys.Defs is
     err_incomplete_declaration,                  --  2022-01-22
     err_non_public_entity,                       --  2022-04-02
     err_choices_not_covered,
-    err_choice_out_of_range
+    err_choice_out_of_range,
+    err_library_error,
+    err_wrong_unit_name,
+    err_obsolete_hat_name
   );
 
   type Error_set is array (Compile_Error) of Boolean;
   error_free : constant Error_set := (others => False);
 
-  use Ada.Strings.Unbounded;
-
   type Repair_Kind_Type is (none, insert, insert_line, replace_token);
 
   type Repair_Kit is tagged record
-    repair_kind       : Repair_Kind_Type := none;
-    insert_or_replace : Unbounded_String := Null_Unbounded_String;
+    repair_kind : Repair_Kind_Type := none;
+    alternative : HAT.VString      := HAT.Null_VString;
   end record;
 
   type Diagnostic_Kind_Type is (error, warning, note, style);
 
   type Diagnostic_Kit is new Repair_Kit with record
     diagnostic_kind : Diagnostic_Kind_Type := error;  --  Error, or warning, or ? ...
-    message         : Unbounded_String     := Null_Unbounded_String;
-    file_name       : Unbounded_String     := Null_Unbounded_String;
+    message         : HAT.VString          := HAT.Null_VString;
+    file_name       : HAT.VString          := HAT.Null_VString;
     line            : Natural              := 0;
     column_a        : Natural              := 0;  --  Before first selected character. Can be 0.
     column_z        : Natural              := 0;

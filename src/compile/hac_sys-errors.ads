@@ -32,6 +32,7 @@ package HAC_Sys.Errors is
     CD              : in out Co_Defs.Compiler_Data;
     code            :        Defs.Compile_Error;
     hint            :        String         := "";
+    hint_2          :        String         := "";
     severity        :        Error_Severity := medium;
     previous_symbol :        Boolean        := False
   );
@@ -56,7 +57,5 @@ package HAC_Sys.Errors is
   Internal_error : exception;
   Failure_1_0 : exception;
   Compilation_abandoned : exception;
-
-  function Error_String (code : Defs.Compile_Error; hint : String := "") return String;
 
 end HAC_Sys.Errors;

@@ -29,7 +29,7 @@ package body HAC_Sys.Parser.Attributes is
     Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
   exception
     when Constraint_Error =>
-      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, major);
+      Error (CD, err_syntax_error, ": unknown attribute: " & attr_ID, severity => major);
   end Which_Attribute;
 
   procedure Array_Subtype_Attribute (
@@ -58,7 +58,7 @@ package body HAC_Sys.Parser.Attributes is
       Need (CD, RParent, err_closing_parenthesis_missing);
     end if;
     if N.I < 1 then
-      Error (CD, err_invalid_dimension_number, "minimum is 1", major);
+      Error (CD, err_invalid_dimension_number, "minimum is 1", severity => major);
     end if;
     --
     Jump_to_next_Dimension :
@@ -67,7 +67,7 @@ package body HAC_Sys.Parser.Attributes is
         A := CD.Arrays_Table (A.Element_xTyp.Ref);
       else
         Error (CD, err_invalid_dimension_number, "maximum is" &
-          HAC_Integer'Image (Skip_Dim - 1), major);
+          HAC_Integer'Image (Skip_Dim - 1), severity => major);
       end if;
     end loop Jump_to_next_Dimension;
     --
@@ -89,7 +89,7 @@ package body HAC_Sys.Parser.Attributes is
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High - Low + 1));
         Construct_Root (xSubtyp_of_Result, Ints);
       when others =>
-        Error (CD, err_syntax_error, ": attribute not defined for this type", major);
+        Error (CD, err_syntax_error, ": attribute not defined for this type", severity => major);
     end case;
   end Array_Subtype_Attribute;
 
@@ -116,7 +116,7 @@ package body HAC_Sys.Parser.Attributes is
         --  of the first item, `a`, in the identifier table.
         Emit_Std_Funct (CD, SF_Image_Attribute_Enums, Operand_1_Type (S.Ref + 1));
       when others =>
-        Error (CD, err_attribute_prefix_invalid, "Image", major);
+        Error (CD, err_attribute_prefix_invalid, "Image", severity => major);
     end case;
     --  The result subtype is a VString disguised as a String.
     Construct_Root (xSubtyp_of_Result, Strings_as_VStrings);
@@ -145,7 +145,7 @@ package body HAC_Sys.Parser.Attributes is
           CD.LC := LC_before_Object;
           Array_Subtype_Attribute (CD, Level, FSys + RParent, Object_xSubtyp.Ref, attr, xSubtyp_of_Result);
         else
-          Error (CD, err_syntax_error, ": attribute not defined for this object", major);
+          Error (CD, err_syntax_error, ": attribute not defined for this object", severity => major);
         end if;
     end case;
   end Object_Attribute;
@@ -253,12 +253,13 @@ package body HAC_Sys.Parser.Attributes is
               null;  --  Already in error
             when Floats =>
               --  !! To do !!
-              Error (CD, err_not_yet_implemented, "attribute " & attr_ID & " for this subtype", major);
+              Error
+                (CD, err_not_yet_implemented, "attribute " & attr_ID & " for this subtype", severity => major);
             when others =>
               if Discrete_Typ (S.TYP) then
                 Pred_Succ_Discrete;
               else
-                Error (CD, err_attribute_prefix_invalid, attr_ID, major);
+                Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
               end if;
           end case;
         else
@@ -285,7 +286,7 @@ package body HAC_Sys.Parser.Attributes is
           end if;
           Need (CD, RParent, err_closing_parenthesis_missing);
         else
-          Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, major);
+          Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, severity => major);
         end if;
       end Pos;
       --
@@ -304,7 +305,7 @@ package body HAC_Sys.Parser.Attributes is
           end if;
           Helpers.Need (CD, RParent, err_closing_parenthesis_missing);
         else
-          Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, major);
+          Error (CD, err_attribute_prefix_must_be_discrete_type, attr_ID, severity => major);
         end if;
       end Val;
       --
@@ -368,7 +369,7 @@ package body HAC_Sys.Parser.Attributes is
             Emit_Std_Funct (CD, SF_Value_Attribute_Enums, Operand_1_Type (S.Ref));
             xSubtyp_of_Result := S;
           when others =>
-            Error (CD, err_attribute_prefix_invalid, attr_ID, major);
+            Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
         end case;
         Need (CD, RParent, err_closing_parenthesis_missing);
       end Value;
@@ -383,12 +384,11 @@ package body HAC_Sys.Parser.Attributes is
         when Image        => Image;
         when Value        => Value;
         when others =>
-          Error (
-            CD,
-            err_syntax_error,
-            ": attribute not defined for this type",
-            major
-          );
+          Error
+            (CD,
+             err_syntax_error,
+             ": attribute not defined for this type",
+             severity => major);
       end case;
     end Scalar_Subtype_Attribute;
     --
@@ -401,10 +401,10 @@ package body HAC_Sys.Parser.Attributes is
     elsif Arrays_Set (S.TYP) then
       Array_Subtype_Attribute (CD, Level, FSys + RParent, S.Ref, attr, xSubtyp_of_Result);
     else
-      Error (CD, err_syntax_error,
-        ": no attribute defined for this type: " &
-        A2S (Typ_ID.name_with_case), major
-      );
+      Error
+        (CD, err_syntax_error,
+         ": no attribute defined for this type: " &
+         A2S (Typ_ID.name_with_case), severity => major);
     end if;
   end Subtype_Attribute;
 

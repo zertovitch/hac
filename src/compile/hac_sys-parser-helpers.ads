@@ -24,42 +24,39 @@ package HAC_Sys.Parser.Helpers is
   --  the programmer may have written instead of S.
   --  For instance '[' instead of '('.
   --
-  procedure Need (
-    CD      : in out Compiler_Data;
-    S       : KeyWSymbol;
-    E       : Compile_Error;
-    Forgive : KeyWSymbol := Dummy_Symbol
-  );
+  procedure Need
+    (CD      : in out Compiler_Data;
+     S       :        KeyWSymbol;
+     E       :        Compile_Error;
+     Forgive :        KeyWSymbol := Dummy_Symbol);
 
   --  Issue error N, then skip all subsequent symbols
   --  that are not in the FSys set.
   --
-  procedure Skip (
-    CD   : in out Compiler_Data;
-    FSys : Symset;
-    N    : Compile_Error;
-    hint : String := ""
-  );
+  procedure Skip
+    (CD   : in out Compiler_Data;
+     FSys :        Symset;
+     N    :        Compile_Error;
+     hint :        String := "");
 
   --  Issue error N, then skip all subsequent symbols
   --  that are not equal to S.
   --
-  procedure Skip (
-    CD   : in out Compiler_Data;
-    S    : KeyWSymbol;
-    N    : Compile_Error;
-    hint : String := ""
-  );
+  procedure Skip
+    (CD   : in out Compiler_Data;
+     S    :        KeyWSymbol;
+     N    :        Compile_Error;
+     hint :        String := "");
 
   --  Test if current symbol is in the S1 set, otherwise
   --  issue error N. If stop_on_error = False, we skip
   --  subsequent symbols that are not in the union (S1 + S2).
   --
-  procedure Test (
-    CD            : in out Compiler_Data;
-    S1, S2        : Symset;
-    N             : Compile_Error;
-    stop_on_error : Boolean := False);
+  procedure Test
+    (CD            : in out Compiler_Data;
+     S1, S2        :        Symset;
+     N             :        Compile_Error;
+     stop_on_error :        Boolean := False);
 
   procedure Need_Semicolon_after_Declaration (CD : in out Compiler_Data; FSys : Symset);
 
@@ -79,40 +76,35 @@ package HAC_Sys.Parser.Helpers is
 
   function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ'Class) return String;
 
-  procedure Type_Mismatch (
-    CD               : in out Compiler_Data;
-    Err              :        Compile_Error;
-    Found, Expected  :        Exact_Typ'Class
-  );
+  procedure Type_Mismatch
+    (CD               : in out Compiler_Data;
+     Err              :        Compile_Error;
+     Found, Expected  :        Exact_Typ'Class);
 
-  procedure Type_Mismatch (
-    CD       : in out Compiler_Data;
-    Err      :        Compile_Error;
-    Found    :        Exact_Subtyp;
-    Expected :        Typ_Set
-  );
+  procedure Type_Mismatch
+    (CD       : in out Compiler_Data;
+     Err      :        Compile_Error;
+     Found    :        Exact_Subtyp;
+     Expected :        Typ_Set);
 
-  procedure Operator_Undefined (
-    CD          : in out Compiler_Data;
-    Operator    :        KeyWSymbol;
-    Left, Right :        Exact_Subtyp
-  );
+  procedure Operator_Undefined
+    (CD          : in out Compiler_Data;
+     Operator    :        KeyWSymbol;
+     Left, Right :        Exact_Subtyp);
 
   --  https://en.wikipedia.org/wiki/Type_conversion#Implicit_type_conversion
   --  One of the most useful feature of Ada is the absence of type coercion.
   --  Note from the Python 2.5 doc:
   --  "In Python 3.0, coercion will not be supported."
   --
-  procedure Forbid_Type_Coercion (
-    CD          : in out Compiler_Data;
-    Operator    :        KeyWSymbol;
-    Left, Right :        Exact_Subtyp
-  );
+  procedure Forbid_Type_Coercion
+    (CD          : in out Compiler_Data;
+     Operator    :        KeyWSymbol;
+     Left, Right :        Exact_Subtyp);
 
-  procedure Forbid_Type_Coercion (
-    CD              : in out Compiler_Data;
-    Found, Expected :        Exact_Subtyp
-  );
+  procedure Forbid_Type_Coercion
+    (CD              : in out Compiler_Data;
+     Found, Expected :        Exact_Subtyp);
 
   ------------------------------------
   --  Symbol sets used for parsing  --
@@ -346,15 +338,14 @@ package HAC_Sys.Parser.Helpers is
   --       parser will parse "Pkg.Child_Pkg.Sub_pkg.Var.X" until the
   --       non-package entity: "Var".
   --
-  function Locate_Identifier (
-    CD               : in out Compiler_Data;
-    Id               : in     Alfa;
-    Level            : in     Defs.Nesting_level;
-    Fail_when_No_Id  : in     Boolean := True;
-    Alias_Resolution : in     Boolean := True;
-    Level_0_Filter   : in     Boolean := True;
-    Public_Filter    : in     Index   := Index'Last
-  )
+  function Locate_Identifier
+    (CD               : in out Compiler_Data;
+     Id               : in     Alfa;
+     Level            : in     Defs.Nesting_level;
+     Fail_when_No_Id  : in     Boolean := True;
+     Alias_Resolution : in     Boolean := True;
+     Level_0_Filter   : in     Boolean := True;
+     Public_Filter    : in     Index   := Index'Last)
   return Natural;
 
   procedure Check_Duplicate_Specification

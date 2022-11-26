@@ -225,7 +225,9 @@ package body HAC_Sys.Parser.Type_Def is
         InSymbol;
         Ranges.Explicit_Static_Range (CD, Level, FSys_TD, err_range_constraint_error, Low, High);
         if Exact_Typ (Low.TP) /= Exact_Typ (xTP) then
-          Error (CD, err_range_constraint_error, "type of bounds don't match with the parent type", major);
+          Error
+            (CD, err_range_constraint_error,
+             "type of bounds don't match with the parent type", severity => major);
         elsif Low.I not in xTP.Discrete_First .. xTP.Discrete_Last then
           Error
             (CD,
@@ -233,7 +235,7 @@ package body HAC_Sys.Parser.Type_Def is
              "lower bound, " & Discrete_Image (CD, Low.I, xTP.TYP, xTP.Ref) &
              ", is out of parent type's range, " &
              Discrete_Range_Image (CD, xTP.Discrete_First, xTP.Discrete_Last, xTP.TYP, xTP.Ref),
-             major);
+             severity => major);
         elsif High.I not in xTP.Discrete_First .. xTP.Discrete_Last then
           Error
             (CD,
@@ -241,7 +243,7 @@ package body HAC_Sys.Parser.Type_Def is
              "higher bound, " & Discrete_Image (CD, High.I, xTP.TYP, xTP.Ref) &
              ", is out of parent type's range, " &
              Discrete_Range_Image (CD, xTP.Discrete_First, xTP.Discrete_Last, xTP.TYP, xTP.Ref),
-             major);
+             severity => major);
         else
           xTP.Discrete_First := Low.I;
           xTP.Discrete_Last  := High.I;
@@ -260,7 +262,8 @@ package body HAC_Sys.Parser.Type_Def is
       Error
         (CD, err_syntax_error,
          ": " & Ada.Characters.Handling.To_Lower (A2S (CD.Id)) &
-         " types are not yet supported", major);
+         " types are not yet supported",
+         severity => major);
     end if;
     Test (CD, Type_Begin_Symbol, FSys_TD, err_missing_ARRAY_RECORD_or_ident);
     if Type_Begin_Symbol (CD.Sy) then

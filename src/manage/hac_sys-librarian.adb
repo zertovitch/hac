@@ -28,10 +28,9 @@ package body HAC_Sys.Librarian is
   --  Introduce a new unit into the library  --
   ---------------------------------------------
 
-  procedure Register_Unit (
-    LD         : in out Library_Data;
-    Descriptor : in     Library_Unit
-  )
+  procedure Register_Unit
+    (LD         : in out Library_Data;
+     Descriptor : in     Library_Unit)
   is
     use Librarian.Library_Name_Mapping;
     UVFN : constant HAT.VString := HAT.To_Upper (Descriptor.full_name);
@@ -49,10 +48,9 @@ package body HAC_Sys.Librarian is
     --  HAT.PUT_LINE ("Registering: " & Full_Name);
   end Register_Unit;
 
-  procedure Change_Unit_Details (
-    LD         : in out Library_Data;
-    Descriptor : in     Library_Unit
-  )
+  procedure Change_Unit_Details
+    (LD         : in out Library_Data;
+     Descriptor : in     Library_Unit)
   is
     use Library_Name_Mapping;
     UVFN : constant HAT.VString := HAT.To_Upper (Descriptor.full_name);
@@ -67,15 +65,14 @@ package body HAC_Sys.Librarian is
     LD.Library.Replace_Element (book_nr, Descriptor);
   end Change_Unit_Details;
 
-  procedure Enter_Library_Level_Def (
-    CD             : in out Co_Defs.Compiler_Data;
-    Full_Ident     : in     String;  --  "Main", "Standard.False", ...
-    New_Entity     : in     Co_Defs.Entity_Kind;
-    Base_Type      : in     Defs.Typen;
-    Size           : in     Integer;
-    Discrete_First : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
-    Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last
-  )
+  procedure Enter_Library_Level_Def
+    (CD             : in out Co_Defs.Compiler_Data;
+     Full_Ident     : in     String;  --  "Main", "Standard.False", ...
+     New_Entity     : in     Co_Defs.Entity_Kind;
+     Base_Type      : in     Defs.Typen;
+     Size           : in     Integer;
+     Discrete_First : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
+     Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last)
   is
     use Ada.Characters.Handling, Defs;
     use type Nesting_level;
@@ -191,12 +188,11 @@ package body HAC_Sys.Librarian is
     Register_Unit (LD, unit);
     --
     if fn = "" then
-      Error (
-        CD,
-        err_library_error,
-        "no file found matching the name """ & GNAT_Naming (Upper_Name) & ".ad*""",
-        major
-      );
+      Error
+        (CD,
+         err_library_error,
+         "no file found matching the name """ & GNAT_Naming (Upper_Name) & ".ad*""",
+         severity => major);
     else
       as_specification := fn (fn'Last) = 's';
       Compiler.Compile_Unit
@@ -228,11 +224,10 @@ package body HAC_Sys.Librarian is
     end if;
   end Compile_WITHed_Unit;
 
-  procedure Apply_WITH (
-    CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Library_Data;
-    Upper_Name : in     String
-  )
+  procedure Apply_WITH
+    (CD         : in out Co_Defs.Compiler_Data;
+     LD         : in out Library_Data;
+     Upper_Name : in     String)
   is
     use Ada.Exceptions, Defs, HAT, Errors;
     UVN : constant VString := To_VString (Upper_Name);
@@ -255,21 +250,20 @@ package body HAC_Sys.Librarian is
       or else (Upper_Name'Length > 3
                and then Upper_Name (Upper_Name'First .. Upper_Name'First + 3) = "ADA.")
     then
-      Error (
-        CD,
-        err_library_error,
-        "Ada package (and children) are not yet part of HAC's predefined library.",
-        major
-      );
+      Error
+        (CD,
+         err_library_error,
+         "Ada package (and children) are not yet part of HAC's predefined library.",
+         severity => major);
     elsif Upper_Name = HAT_Name then
       Built_In_Packages.Define_and_Register_HAT (CD, LD);
     elsif Upper_Name = "HAC_PACK" or else Upper_Name = "HAL" then
-      Error (
-        CD,
-        err_library_error,
-        "the new name of """ & Upper_Name & """ is """ & HAT_Name & '"',
-        major
-      );
+      Error
+        (CD,
+         err_obsolete_hat_name,
+         HAT_Name,
+         Upper_Name,
+         severity => major);
     else
       begin
         Compile_WITHed_Unit (CD, LD, Upper_Name);
@@ -280,17 +274,15 @@ package body HAC_Sys.Librarian is
     end if;
   end Apply_WITH;
 
-  procedure Apply_WITH_USE_Standard (
-    CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Library_Data
-  )
+  procedure Apply_WITH_USE_Standard
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Library_Data)
   is
   begin
     Apply_WITH (CD, LD, "STANDARD");
-    Parser.Packages.Apply_USE_Clause (
-      CD, Library_Level,
-      Parser.Helpers.Locate_Identifier (CD, Defs.S2A ("STANDARD"), 0)
-    );
+    Parser.Packages.Apply_USE_Clause
+      (CD, Library_Level,
+       Parser.Helpers.Locate_Identifier (CD, Defs.S2A ("STANDARD"), 0));
   end Apply_WITH_USE_Standard;
 
   function GNAT_Naming (Unit_Name : String) return String is

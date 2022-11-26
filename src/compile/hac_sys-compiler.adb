@@ -17,10 +17,9 @@ package body HAC_Sys.Compiler is
 
   use Defs;
 
-  procedure Set_Message_Feedbacks (
-    CD           : in out Compiler_Data;
-    trace_params : in     Compilation_Trace_Parameters
-  )
+  procedure Set_Message_Feedbacks
+    (CD           : in out Compiler_Data;
+     trace_params : in     Compilation_Trace_Parameters)
   is
   begin
     CD.trace := trace_params;
@@ -271,14 +270,13 @@ package body HAC_Sys.Compiler is
     Close (asm_dump);
   end Dump_Asm;
 
-  procedure Compile_Main (
-    CD                 : in out Co_Defs.Compiler_Data;
-    LD                 : in out Librarian.Library_Data;
-    main_name_hint     :        String;  --  This is used for circular unit dependency detection
-    cmp_dump_file_name :        String  := "";  --  Compiler dump
-    listing_file_name  :        String  := "";  --  Listing of source code with details
-    var_map_file_name  :        String  := ""   --  Output of variables (map)
-  )
+  procedure Compile_Main
+    (CD                 : in out Co_Defs.Compiler_Data;
+     LD                 : in out Librarian.Library_Data;
+     main_name_hint     :        String;
+     cmp_dump_file_name :        String  := "";   --  Compiler dump
+     listing_file_name  :        String  := "";   --  Listing of source code with details
+     var_map_file_name  :        String  := "")
   is
     use Ada.Text_IO, Parser.Helpers, PCode, Errors;
     use type HAC_Integer, Alfa;
@@ -331,15 +329,14 @@ package body HAC_Sys.Compiler is
     CD.Main_Program_ID_with_case := full_main_Id;
     CD.Main_Program_ID           := HAT.To_Upper (full_main_Id);
     if CD.Main_Program_ID /= main_name_hint then
-      Error (CD, err_library_error,
-        "unit name """ & main_name_hint & """ expected in this file, found: """ &
-        A2S (CD.Main_Program_ID) & '"',
-        major
-      );
+      Error
+        (CD, err_wrong_unit_name,
+         main_name_hint, A2S (CD.Main_Program_ID),
+         major, True);
     end if;
     if CD.Sy /= IS_Symbol then
       --  procedure Name IS
-      Error (CD, err_syntax_error, ": main procedure should be parameterless", major);
+      Error (CD, err_syntax_error, ": main procedure should be parameterless", severity => major);
     end if;
 
     if CD.comp_dump_requested then
@@ -439,19 +436,18 @@ package body HAC_Sys.Compiler is
   --  !! Massively "W.I.P." state here !!
   --
 
-  procedure Compile_Unit (
-    CD                     : in out Co_Defs.Compiler_Data;
-    LD                     : in out Librarian.Library_Data;
-    upper_name             :        String;
-    file_name              :        String;
-    as_specification       :        Boolean;
-    specification_id_index :        Natural;
-    new_id_index           :    out Natural;
-    unit_context           : in out Co_Defs.Id_Maps.Map;  --  in : empty for spec, spec's context for body
-                                                          --  out: spec's context or body's full context.
-    kind                   :    out Librarian.Unit_Kind;  --  The unit kind is discovered during parsing.
-    needs_body             :    out Boolean
-  )
+  procedure Compile_Unit
+    (CD                     : in out Co_Defs.Compiler_Data;
+     LD                     : in out Librarian.Library_Data;
+     upper_name             :        String;
+     file_name              :        String;
+     as_specification       :        Boolean;
+     specification_id_index :        Natural;
+     new_id_index           :    out Natural;
+     unit_context           : in out Co_Defs.Id_Maps.Map;  --  in : empty for spec, spec's context for body
+                                                           --  out: spec's context or body's full context.
+     kind                   :    out Librarian.Unit_Kind;  --  The unit kind is discovered during parsing.
+     needs_body             :    out Boolean)
   is
     use Ada.Strings.Fixed, Ada.Text_IO, Librarian, Errors, Parser.Helpers, PCode;
     --  Save state of unit currently parsed (within a WITH clause).
@@ -474,7 +470,9 @@ package body HAC_Sys.Compiler is
       LD.open_source (file_name, src_stream);
     exception
       when Name_Error =>
-        Error (CD, err_library_error, "file " & file_name & Spec_or_Body & " not found", major);
+        Error
+          (CD, err_library_error,
+           "file " & file_name & Spec_or_Body & " not found", severity => major);
     end;
     --  HAT.PUT_LINE("Compiling unit " & upper_name);
     Set_Source_Stream (CD.CUD, src_stream, file_name, 0);
@@ -502,12 +500,16 @@ package body HAC_Sys.Compiler is
           Scanner.InSymbol (CD);  --  Absorb the BODY symbol.
           kind := Package_Body;
           if as_specification then
-            Error (CD, err_library_error, "specification expected in this file; found body", major);
+            Error
+              (CD, err_library_error,
+               "specification expected in this file; found body", severity => major);
           end if;
         else
           kind := Package_Declaration;
           if not as_specification then
-            Error (CD, err_library_error, "body expected in this file; found specification", major);
+            Error
+              (CD, err_library_error,
+               "body expected in this file; found specification", severity => major);
           end if;
         end if;
       when FUNCTION_Symbol =>
@@ -518,13 +520,15 @@ package body HAC_Sys.Compiler is
         Scanner.InSymbol (CD);
       when others =>
         kind := Package_Declaration;  --  Useless, but this removes an ObjectAda warning.
-        Error (CD, err_syntax_error, ": `package`, `procedure` or `function` expected here", major);
+        Error
+          (CD, err_syntax_error,
+           ": `package`, `procedure` or `function` expected here", severity => major);
     end case;
     if CD.Sy /= IDent then
       Error (CD, err_identifier_missing, severity => major);
     end if;
     if A2S (CD.Id) /= upper_name then
-      Error (CD, err_library_error, "unit name """ & upper_name & """ expected in this file", major);
+      Error (CD, err_wrong_unit_name, upper_name, A2S (CD.Id), major);
     end if;
     --
     --  Enter the identifier:
@@ -539,13 +543,17 @@ package body HAC_Sys.Compiler is
       when Package_Declaration =>
         Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), Paquetage, NOTYP, 0);
       when Package_Body =>
-        null;  --  Library-level package body doesn't need an entry in the identifier table.
+        --  Library-level package body doesn't need an entry in the identifier table:
+        null;
     end case;
     new_id_index := CD.Id_Count;
     case kind is
       when Subprogram_Unit =>
-        Scanner.InSymbol (CD);  --  Absorb the identifier symbol.
-        --  Here the symbol should be: ";", "IS", "(", or "RETURN" for a parameterless function.
+        --  Absorb the identifier symbol:
+        Scanner.InSymbol (CD);
+        --
+        --  At this point, the current symbol should be: ";", "IS", "(",
+        --  or "RETURN" for a parameterless function.
         --
         unit_block.level                         := 1;
         unit_block.block_id_index                := new_id_index;
@@ -562,7 +570,9 @@ package body HAC_Sys.Compiler is
         case Split_Declaration_Kind (CD.IdTab (unit_block.block_id_index).decl_kind) is
           when complete =>
             if as_specification then
-              Error (CD, err_library_error, "specification expected in this file; found body", major);
+              Error
+                (CD, err_library_error,
+                 "specification expected in this file; found body", severity => major);
             end if;
             if kind = Function_Unit then
               PCode_Emit.Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
@@ -571,7 +581,9 @@ package body HAC_Sys.Compiler is
             end if;
           when spec_unresolved =>
             if not as_specification then
-              Error (CD, err_library_error, "body expected in this file; found specification", major);
+              Error
+                (CD, err_library_error,
+                 "body expected in this file; found specification", severity => major);
             end if;
           when spec_resolved =>
             raise Program_Error with "Unexpected case: spec_resolved";

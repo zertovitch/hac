@@ -76,7 +76,7 @@ package body HAC_Sys.Parser.Enter_Def is
          A2S (prefixed_Id)
          --  & ", previous is a " & CD.IdTab (J).entity'Image
          ,
-         major);
+         severity => major);
     end if;
     --  Enter identifier in table IdTab
     CD.Id_Count            := CD.Id_Count + 1;
@@ -110,18 +110,18 @@ package body HAC_Sys.Parser.Enter_Def is
   is
   begin
     if Index_STP.Discrete_First > Index_STP.Discrete_Last then
-      Error (CD,
-        err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)", -- !!
-        major
-      );
+      Error
+        (CD,
+         err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)", -- !!
+         severity => major);
     end if;
     if   Index_STP.Discrete_First < -HAC_Integer (XMax)
       or Index_STP.Discrete_Last  >  HAC_Integer (XMax)
     then
-      Error (CD,
-        err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",
-        major
-      );
+      Error
+        (CD,
+         err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",
+         severity => major);
     end if;
     if CD.Arrays_Count = AMax then
       Fatal (ARRAYS);  --  Exception is raised there.

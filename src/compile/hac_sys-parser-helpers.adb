@@ -21,12 +21,11 @@ package body HAC_Sys.Parser.Helpers is
   use Scanner, Errors;
   use type HAC_Integer;
 
-  procedure Need (
-    CD      : in out Compiler_Data;
-    S       : KeyWSymbol;
-    E       : Compile_Error;
-    Forgive : KeyWSymbol := Dummy_Symbol
-  )
+  procedure Need
+    (CD      : in out Compiler_Data;
+     S       :        KeyWSymbol;
+     E       :        Compile_Error;
+     Forgive :        KeyWSymbol := Dummy_Symbol)
   is
     severity : Error_Severity := medium;
   begin
@@ -36,19 +35,18 @@ package body HAC_Sys.Parser.Helpers is
       if Forgive = Dummy_Symbol then
         severity := major;
       end if;
-      Error (CD, E, ": " & KeyWSymbol'Image (S) & " expected", severity);
+      Error (CD, E, ": " & KeyWSymbol'Image (S) & " expected", severity => severity);
       if CD.Sy = Forgive then
         InSymbol (CD);
       end if;
     end if;
   end Need;
 
-  procedure Skip (
-    CD   : in out Compiler_Data;
-    FSys : Symset;
-    N    : Compile_Error;
-    hint : String := ""
-  )
+  procedure Skip
+    (CD   : in out Compiler_Data;
+     FSys :        Symset;
+     N    :        Compile_Error;
+     hint :        String := "")
   is
 
     function StopMe return Boolean is
@@ -76,22 +74,21 @@ package body HAC_Sys.Parser.Helpers is
     end if;
   end Skip;
 
-  procedure Skip (
-    CD   : in out Compiler_Data;
-    S    : KeyWSymbol;
-    N    : Compile_Error;
-    hint : String := ""
-  )
+  procedure Skip
+    (CD   : in out Compiler_Data;
+     S    :        KeyWSymbol;
+     N    :        Compile_Error;
+     hint :        String := "")
   is
   begin
     Skip (CD, Singleton (S), N, hint);
   end Skip;
 
-  procedure Test (
-    CD            : in out Compiler_Data;
-    S1, S2        : Symset;
-    N             : Compile_Error;
-    stop_on_error : Boolean := False)
+  procedure Test
+    (CD            : in out Compiler_Data;
+     S1, S2        :        Symset;
+     N             :        Compile_Error;
+     stop_on_error :        Boolean := False)
   is
     use HAT;
   begin
@@ -111,7 +108,7 @@ package body HAC_Sys.Parser.Helpers is
         end loop;
         hint := "Found: " & KeyWSymbol'Image (CD.Sy) & "; expected: " & hint;
         if stop_on_error then
-          Error (CD, N, HAT.VStr_Pkg.To_String (hint), major);
+          Error (CD, N, HAT.VStr_Pkg.To_String (hint), severity => major);
         end if;
         Skip (CD, S1 + S2, N, HAT.VStr_Pkg.To_String (hint));
       end;
@@ -212,11 +209,10 @@ package body HAC_Sys.Parser.Helpers is
     (Nice_Image (xT.TYP) &
       (if xT.TYP = Enums then " (" & Enum_Name (CD, xT.Ref) & ')' else ""));
 
-  procedure Type_Mismatch (
-    CD               : in out Compiler_Data;
-    Err              :        Compile_Error;
-    Found, Expected  :        Exact_Typ'Class
-  )
+  procedure Type_Mismatch
+    (CD               : in out Compiler_Data;
+     Err              :        Compile_Error;
+     Found, Expected  :        Exact_Typ'Class)
   is
   begin
     if Found.TYP /= Expected.TYP then
@@ -235,12 +231,11 @@ package body HAC_Sys.Parser.Helpers is
     end if;
   end Type_Mismatch;
 
-  procedure Type_Mismatch (
-    CD       : in out Compiler_Data;
-    Err      :        Compile_Error;
-    Found    :        Exact_Subtyp;
-    Expected :        Typ_Set
-  )
+  procedure Type_Mismatch
+    (CD       : in out Compiler_Data;
+     Err      :        Compile_Error;
+     Found    :        Exact_Subtyp;
+     Expected :        Typ_Set)
   is
     function Types_List (TS : Typ_Set) return String is
       use HAT;
@@ -259,12 +254,11 @@ package body HAC_Sys.Parser.Helpers is
       return HAT.VStr_Pkg.To_String (hint);
     end Types_List;
   begin
-    Error (
-      CD, Err,
-      "found: "      & Nice_Exact_Image (CD, Found) &
-      ", expected: " & Types_List (Expected),
-      major
-    );
+    Error
+      (CD, Err,
+       "found: "      & Nice_Exact_Image (CD, Found) &
+       ", expected: " & Types_List (Expected),
+       severity => major);
   end Type_Mismatch;
 
   function Op_Hint (OP : KeyWSymbol) return Character is
@@ -280,11 +274,10 @@ package body HAC_Sys.Parser.Helpers is
     end case;
   end Op_Hint;
 
-  procedure Operator_Undefined (
-    CD          : in out Compiler_Data;
-    Operator    :        KeyWSymbol;
-    Left, Right :        Exact_Subtyp
-  )
+  procedure Operator_Undefined
+    (CD          : in out Compiler_Data;
+     Operator    :        KeyWSymbol;
+     Left, Right :        Exact_Subtyp)
   is
   begin
     if Left.TYP /= Right.TYP then
@@ -307,33 +300,31 @@ package body HAC_Sys.Parser.Helpers is
     end if;
   end Operator_Undefined;
 
-  procedure Forbid_Type_Coercion (
-    CD          : in out Compiler_Data;
-    Operator    :        KeyWSymbol;
-    Left, Right :        Exact_Subtyp
-  )
+  procedure Forbid_Type_Coercion
+    (CD          : in out Compiler_Data;
+     Operator    :        KeyWSymbol;
+     Left, Right :        Exact_Subtyp)
   is
   begin
-    Error (CD,
-      err_numeric_type_coercion_operator,
-      Op_Hint (Operator) &
-        "left is "    & Nice_Exact_Image (CD, Left) &
-        ", right is " & Nice_Exact_Image (CD, Right),
-      major
-    );
+    Error
+      (CD,
+       err_numeric_type_coercion_operator,
+       Op_Hint (Operator) &
+         "left is "    & Nice_Exact_Image (CD, Left) &
+         ", right is " & Nice_Exact_Image (CD, Right),
+       severity => major);
   end Forbid_Type_Coercion;
 
-  procedure Forbid_Type_Coercion (
-    CD              : in out Compiler_Data;
-    Found, Expected :        Exact_Subtyp
-  )
+  procedure Forbid_Type_Coercion
+    (CD              : in out Compiler_Data;
+     Found, Expected :        Exact_Subtyp)
   is
   begin
-    Error (CD, err_numeric_type_coercion,
-      "found "    & Nice_Exact_Image (CD, Found) &
-      ", expected " & Nice_Exact_Image (CD, Expected),
-      major
-    );
+    Error
+      (CD, err_numeric_type_coercion,
+       "found "    & Nice_Exact_Image (CD, Found) &
+       ", expected " & Nice_Exact_Image (CD, Expected),
+       severity => major);
   end Forbid_Type_Coercion;
 
   function Singleton (s : KeyWSymbol) return Symset is
@@ -381,15 +372,14 @@ package body HAC_Sys.Parser.Helpers is
 
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-
-  function Locate_Identifier (
-    CD               : in out Compiler_Data;
-    Id               : in     Alfa;
-    Level            : in     Defs.Nesting_level;
-    Fail_when_No_Id  : in     Boolean := True;
-    Alias_Resolution : in     Boolean := True;
-    Level_0_Filter   : in     Boolean := True;
-    Public_Filter    : in     Index   := Index'Last
-  )
+  function Locate_Identifier
+    (CD               : in out Compiler_Data;
+     Id               : in     Alfa;
+     Level            : in     Defs.Nesting_level;
+     Fail_when_No_Id  : in     Boolean := True;
+     Alias_Resolution : in     Boolean := True;
+     Level_0_Filter   : in     Boolean := True;
+     Public_Filter    : in     Index   := Index'Last)
   return Natural
   is
     L : Defs.Nesting_level'Base;
@@ -464,7 +454,7 @@ package body HAC_Sys.Parser.Helpers is
       if not Fail_when_No_Id then
         return No_Id;
       end if;
-      Error (CD, err_undefined_identifier, A2S (Id), major);  --  Exception raised here.
+      Error (CD, err_undefined_identifier, A2S (Id), severity => major);  --  Exception is raised here.
     end if;
     --
     --  From this point, the identifier ID is matched with
@@ -478,7 +468,7 @@ package body HAC_Sys.Parser.Helpers is
     end loop;
 
     if J > Public_Filter then
-      Error (CD, err_non_public_entity, A2S (Id), major);
+      Error (CD, err_non_public_entity, A2S (Id), severity => major);
     end if;
 
     --  Prefixed package resolution: `Pkg.Item`, `Pkg.Child_1.Item`, ...
@@ -515,7 +505,8 @@ package body HAC_Sys.Parser.Helpers is
     if old_id_idx = No_Id then
       return;  --  First occurrence of the specification.
     end if;
-    Error (CD, err_duplicate_identifier, "specification of " & A2S (id_current), major);
+    Error
+      (CD, err_duplicate_identifier, "specification of " & A2S (id_current), severity => major);
   end Check_Duplicate_Specification;
 
   procedure Check_Subprogram_Spec_Body_Consistency
@@ -547,11 +538,11 @@ package body HAC_Sys.Parser.Helpers is
     if sub_sub_params > forward_params then
       Error (CD, err_number_of_parameters_do_not_match,
              ": specification of " & A2S (id_current) & " has less parameters",
-             major);
+             severity => major);
     elsif sub_sub_params < forward_params then
       Error (CD, err_number_of_parameters_do_not_match,
              ": specification of " & A2S (id_current) & " has more parameters",
-             major);
+             severity => major);
     end if;
     --  Check the formal parameter list:
     f := old_id_idx + 1;
@@ -560,13 +551,13 @@ package body HAC_Sys.Parser.Helpers is
       if CD.IdTab (s).name /= CD.IdTab (f).name then
         Error (CD, err_spec_body_mismatch,
                "parameter #" & Integer'Image (count) & " has a different name",
-             major);
+               severity => major);
         exit;
       end if;
       if CD.IdTab (s).xtyp /= CD.IdTab (f).xtyp then
         Error (CD, err_spec_body_mismatch,
                "parameter #" & Integer'Image (count) & " has a different type",
-             major);
+               severity => major);
         exit;
       end if;
       f := f + 1;
@@ -576,7 +567,7 @@ package body HAC_Sys.Parser.Helpers is
       and then CD.IdTab (new_id_idx).xtyp /= CD.IdTab (old_id_idx).xtyp
     then
       Error (CD, err_spec_body_mismatch, "result type is different",
-             major);
+             severity => major);
     end if;
   end Check_Subprogram_Spec_Body_Consistency;
 
