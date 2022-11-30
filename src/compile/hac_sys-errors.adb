@@ -308,14 +308,13 @@ package body HAC_Sys.Errors is
       others                          => nothing_to_repair
     );
 
-  procedure Error (
-    CD              : in out Co_Defs.Compiler_Data;
-    code            :        Defs.Compile_Error;
-    hint            :        String         := "";
-    hint_2          :        String         := "";
-    severity        :        Error_Severity := medium;
-    previous_symbol :        Boolean        := False
-  )
+  procedure Error
+    (CD              : in out Co_Defs.Compiler_Data;
+     code            :        Defs.Compile_Error;
+     hint            :        String         := "";
+     hint_2          :        String         := "";
+     severity        :        Error_Severity := medium;
+     previous_symbol :        Boolean        := False)
   is
     use Ada.Strings, Ada.Strings.Fixed, Ada.Text_IO;
     line, col_start, col_stop : Integer;
@@ -369,7 +368,7 @@ package body HAC_Sys.Errors is
          Trim (Integer'Image (line),      Left) & ':' &
          Trim (Integer'Image (col_start), Left) & '-' &
          Trim (Integer'Image (col_stop),  Left) & ": " &
-         Error_String (code, hint));
+         Error_String (code, hint, hint_2));
     else
       case code is
         when err_incorrect_name_after_END =>

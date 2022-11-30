@@ -20,22 +20,20 @@ package HAC_Sys.Errors is
 
   nothing_to_repair : constant Defs.Repair_Kit := (Defs.none, HAT.Null_VString);
 
-  type Error_Severity is (
-    minor,   --  Extra ';', ')', value out of range, etc.: we can continue the
-             --     compilation normally for catching other eventual errors.
-    medium,  --  Compilation is shortened at some points in order to avoid
-             --     infinite loops in the parser. Tricky!
-    major    --  In this case, the best choice is to STOP the compilation immediately.
-  );
+  type Error_Severity is
+    (minor,   --  Extra ';', ')', value out of range, etc.: we can continue the
+              --     compilation normally for catching other eventual errors.
+     medium,  --  Compilation is shortened at some points in order to avoid
+              --     infinite loops in the parser. Tricky!
+     major);  --  In this case, the best choice is to STOP the compilation immediately.
 
-  procedure Error (
-    CD              : in out Co_Defs.Compiler_Data;
-    code            :        Defs.Compile_Error;
-    hint            :        String         := "";
-    hint_2          :        String         := "";
-    severity        :        Error_Severity := medium;
-    previous_symbol :        Boolean        := False
-  );
+  procedure Error
+    (CD              : in out Co_Defs.Compiler_Data;
+     code            :        Defs.Compile_Error;
+     hint            :        String         := "";
+     hint_2          :        String         := "";
+     severity        :        Error_Severity := medium;
+     previous_symbol :        Boolean        := False);
 
   procedure Compilation_Errors_Summary (CD : Co_Defs.Compiler_Data);
 

@@ -6,12 +6,12 @@
 --  Copy of questions in: aoc_2021_$$_questions.txt
 --
 
---  For building this program with "full Ada":
+--  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
 with HAT;
 
---  Interfaces is needed for compiling on both HAC and
---  GNAT (64-bit integer: Integer_64):
+--  Interfaces is needed for compiling on both
+--  HAC and GNAT (64-bit integer: Integer_64):
 with Interfaces;
 
 procedure AOC_2022_XX is
@@ -65,8 +65,8 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: : " & i);
-    Put_Line (+"Part 2: : " & i);
+    Put_Line (+"Part 1: bla bla: " & Integer_64'Image (r (1)));
+    Put_Line (+"Part 2: bli bli: " & Integer_64'Image (r (2)));
     --  Part 1: validated by AoC:
     --  Part 2: validated by AoC:
   end if;
