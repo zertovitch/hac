@@ -1,10 +1,9 @@
---  Solution to Advent of Code 2022, Day $$
--------------------------------------------
---  $ puzzle title here! $
+--  Solution to Advent of Code 2022, Day 1
+------------------------------------------
+--  Calorie Counting
 --
---  https://adventofcode.com/2022/day/$
---  Copy of questions in: aoc_2021_$$_questions.txt
---
+--  https://adventofcode.com/2022/day/1
+--  Copy of questions in: aoc_2022_01_questions.txt
 
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
@@ -12,11 +11,9 @@ with HAT;
 
 procedure AOC_2022_01 is
   use HAT;
-  --
   f : File_Type;
   s : VString;
   input : constant VString := +"aoc_2022_01.txt";
-  --
   sum, m1, m2, m3 : Integer := 0;
 
   procedure Add_To_Top_3 is
@@ -34,7 +31,6 @@ procedure AOC_2022_01 is
   end Add_To_Top_3;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
-  --  verbose : constant Boolean := True;
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer;
 begin

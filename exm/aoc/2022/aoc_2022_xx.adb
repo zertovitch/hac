@@ -3,8 +3,7 @@
 --  $ puzzle title here! $
 --
 --  https://adventofcode.com/2022/day/$
---  Copy of questions in: aoc_2021_$$_questions.txt
---
+--  Copy of questions in: aoc_2022_$$_questions.txt
 
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
@@ -67,7 +66,7 @@ begin
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: bla bla: " & Integer_64'Image (r (1)));
     Put_Line (+"Part 2: bli bli: " & Integer_64'Image (r (2)));
-    --  Part 1: validated by AoC:
-    --  Part 2: validated by AoC:
+    --  Part 1: validated by AoC: 
+    --  Part 2: validated by AoC: 
   end if;
 end AOC_2022_XX;
