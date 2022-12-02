@@ -13,9 +13,14 @@ with HAT;
 --  HAC and GNAT (64-bit integer: Integer_64):
 with Interfaces;
 
-procedure AOC_2022_XX is
+procedure AoC_2022_XX is
   use HAT, Interfaces;
 
+  compiler_test_mode : constant Boolean := Argument_Count >= 2;
+  verbose : constant Boolean := True;
+  T0 : constant Time := Clock;
+  r : array (1 .. 2) of Integer_64;
+  
   c, sep : Character;
   asm : String (1 .. 3);
   i : Integer;
@@ -41,21 +46,20 @@ procedure AOC_2022_XX is
   input : constant VString := +"mini.txt";
   --  input : constant VString := +"aoc_2022_$$.txt";
   --
-  compiler_test_mode : constant Boolean := Argument_Count >= 2;
-  verbose : constant Boolean := True;
-  T0 : constant Time := Clock;
-  r : array (1 .. 2) of Integer_64;
 begin
-  Open (f, input);
-  while not End_Of_File (f) loop
-    Get (f, asm);
-    Get (f, i);
-    Get (f, sep);
-    Get (f, c);
-    Get (f, sep);
-    Get_Line (f, s);
+  for round in 1 .. 2 loop
+    Open (f, input);
+    while not End_Of_File (f) loop
+      Get (f, asm);
+      Get (f, i);
+      Get (f, sep);
+      Get (f, c);
+      Get (f, sep);
+      Get_Line (f, s);
+    end loop;
+    Close (f);
+    r (round) := 0;
   end loop;
-  Close (f);
   if compiler_test_mode then
    if r (1) /= Integer_64'Value (To_String (Argument (1))) or
       r (2) /= Integer_64'Value (To_String (Argument (2)))
@@ -69,4 +73,4 @@ begin
     --  Part 1: validated by AoC: 
     --  Part 2: validated by AoC: 
   end if;
-end AOC_2022_XX;
+end AoC_2022_XX;

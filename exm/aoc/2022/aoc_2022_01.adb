@@ -9,24 +9,24 @@
 --  files hat*.ad* are in ../../../src
 with HAT;
 
-procedure AOC_2022_01 is
+procedure AoC_2022_01 is
   use HAT;
   f : File_Type;
   s : VString;
   input : constant VString := +"aoc_2022_01.txt";
-  sum, m1, m2, m3 : Integer := 0;
+  sum, max_1, max_2, max_3 : Integer := 0;
 
   procedure Add_To_Top_3 is
   begin
-    if sum > m1 then
-      m3 := m2;
-      m2 := m1;
-      m1 := sum;
-    elsif sum > m2 then
-      m3 := m2;
-      m2 := sum;
-    elsif sum > m3 then
-      m3 := sum;
+    if sum > max_1 then
+      max_3 := max_2;
+      max_2 := max_1;
+      max_1 := sum;
+    elsif sum > max_2 then
+      max_3 := max_2;
+      max_2 := sum;
+    elsif sum > max_3 then
+      max_3 := sum;
     end if;
   end Add_To_Top_3;
 
@@ -46,8 +46,8 @@ begin
   end loop;
   Add_To_Top_3;
   Close (f);
-  r (1) := m1;
-  r (2) := m1 + m2 + m3;
+  r (1) := max_1;
+  r (2) := max_1 + max_2 + max_3;
   if compiler_test_mode then
    if r (1) /= Integer'Value (To_String (Argument (1))) or
       r (2) /= Integer'Value (To_String (Argument (2)))
@@ -65,4 +65,4 @@ begin
     --  Part 1: validated by AoC: 68442
     --  Part 2: validated by AoC: 204837
   end if;
-end AOC_2022_01;
+end AoC_2022_01;
