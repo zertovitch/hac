@@ -169,6 +169,9 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2021", +"16", +"927 1725277876501");            --  Packet Decoder
     Launch_AoC (+"2021", +"21", +"684495 152587196649184");       --  Dirac Dice
     --
+    Launch_AoC (+"2022", +"01", +"68442 204837");                 --  Calorie Counting
+    Launch_AoC (+"2022", +"02", +"14531 11258");                  --  Rock Paper Scissors
+    --
     New_Line (2);
     Put_Line ("----> Done.");
     if failures = 0 then
