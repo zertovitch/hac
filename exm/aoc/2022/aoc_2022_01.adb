@@ -13,7 +13,6 @@ procedure AoC_2022_01 is
   use HAT;
   f : File_Type;
   s : VString;
-  input : constant VString := +"aoc_2022_01.txt";
   sum, max_1, max_2, max_3 : Integer := 0;
 
   procedure Add_To_Top_3 is
@@ -34,7 +33,7 @@ procedure AoC_2022_01 is
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer;
 begin
-  Open (f, input);
+  Open (f, "aoc_2022_01.txt");
   while not End_Of_File (f) loop
     Get_Line (f, s);
     if s = "" then
@@ -46,6 +45,7 @@ begin
   end loop;
   Add_To_Top_3;
   Close (f);
+  --
   r (1) := max_1;
   r (2) := max_1 + max_2 + max_3;
   if compiler_test_mode then
