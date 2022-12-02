@@ -470,6 +470,9 @@ package HAC_Sys.PCode is
     SP_Put_Line_F,
     SP_New_Line,
     --
+    SP_Randomize,
+    SP_Random_Seed,
+    --
     SP_Wait,
     SP_Signal,
     --

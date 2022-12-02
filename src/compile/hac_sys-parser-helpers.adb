@@ -149,11 +149,17 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Check_Boolean (CD : in out Compiler_Data; T : Typen) is
   begin
-    --  NB: T = NOTYP was admitted in SmallAda.
     if T /= Bools then
       Error (CD, err_expecting_a_boolean_expression);
     end if;
   end Check_Boolean;
+
+  procedure Check_Integer (CD : in out Compiler_Data; T : Typen) is
+  begin
+    if T /= Ints then
+      Error (CD, err_parameter_must_be_Integer);
+    end if;
+  end Check_Integer;
 
   procedure Ignore_Extra_Semicolons (CD : in out Compiler_Data) is
   begin

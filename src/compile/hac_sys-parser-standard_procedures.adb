@@ -177,20 +177,27 @@ package body HAC_Sys.Parser.Standard_Procedures is
         end if;
         HAT_Procedure_Call (Code);
 
+      when SP_Randomize =>
+        HAT_Procedure_Call (Code);
+
+      when SP_Random_Seed =>
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Expression (CD, Level, Comma_RParent, X);  --  We push the argument in the stack.
+        Check_Integer (CD, X.TYP);
+        HAT_Procedure_Call (Code);
+        Need (CD, RParent, err_closing_parenthesis_missing);
+
       when SP_Wait | SP_Signal =>
         if CD.Sy /= LParent then
           Error (CD, err_missing_an_opening_parenthesis);
         else
           InSymbol (CD);
           Push_by_Reference_Parameter (CD, Level, FSys, X);
-          if X.TYP = Ints then
-            if Code = SP_Wait then
-              Emit (CD, k_Wait_Semaphore);
-            else
-              Emit (CD, k_Signal_Semaphore);
-            end if;
+          Check_Integer (CD, X.TYP);
+          if Code = SP_Wait then
+            Emit (CD, k_Wait_Semaphore);
           else
-            Error (CD, err_parameter_must_be_Integer);
+            Emit (CD, k_Signal_Semaphore);
           end if;
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
@@ -239,9 +246,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         else
           InSymbol (CD);
           Expression (CD, Level, RParent_Set, X);
-          if X.TYP /= Ints then
-            Skip (CD, Semicolon, err_parameter_must_be_Integer);
-          end if;
+          Check_Integer (CD, X.TYP);
           if CD.Sy /= RParent then
             Skip (CD, Semicolon, err_closing_parenthesis_missing);
           else

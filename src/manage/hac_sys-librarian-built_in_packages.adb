@@ -161,6 +161,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     Enter_HAT_Funct ("Rand",                Ints,   SF_Random_Int);
     Enter_HAT_Funct ("Rnd",                 Floats, SF_Random_Float);
+    Enter_HAT_Proc  ("Randomize",           SP_Randomize);
+    Enter_HAT_Proc  ("Random_Seed",         SP_Random_Seed);
     Enter_HAT_Funct ("Clock",               Times,  SF_Clock);
     --
     Enter_HAT_Funct ("Null_VString",        VStrings,            SF_Null_VString);

@@ -106,13 +106,22 @@ package HAT is
   function   Log       (F : Real)      return Real;
   function   Exp       (F : Real)      return Real;
 
-  --  Random number in the real range [0, I+1[ , truncated to lowest integer.
-  --  For example, Rand (10) returns equiprobable integer values
+  -----------------------------
+  --  Pseudo-random numbers  --
+  -----------------------------
+
+  --  Pseudo-random number in the real range [0, I+1[ , truncated to lowest
+  --  integer. For example, Rand (10) returns equiprobable integer values
   --  from 0 to 10 (so, there are 11 possible values).
   function Rand (I : Integer) return Integer;
 
-  --  Random number from 0 to 1, uniform.
+  --  Pseudo-random number from 0 to 1, uniform.
   function Rnd return Real;
+
+  procedure Randomize;
+  procedure Random_Seed (New_Seed : Positive);
+
+  --
 
   package IIO is new Ada.Text_IO.Integer_IO (Integer);
   package BIO is new Ada.Text_IO.Enumeration_IO (Boolean);

@@ -99,6 +99,16 @@ package body HAT is
     return Real (Ada.Numerics.Float_Random.Random (gen));
   end Rnd;
 
+  procedure Randomize is
+  begin
+    Ada.Numerics.Float_Random.Reset (gen);
+  end Randomize;
+
+  procedure Random_Seed (New_Seed : Positive) is
+  begin
+    Ada.Numerics.Float_Random.Reset (gen, New_Seed);
+  end Random_Seed;
+
   function HAC_Image (I : Integer) return String is
     Im : constant String := Integer'Image (I);
   begin

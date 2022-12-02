@@ -259,6 +259,7 @@ package body HAC_Sys.PCode.Interpreter is
       Below_Top_Item : General_Register renames ND.S (Curr_TCB.T - 1);
       use HAT.VStr_Pkg;
       use type Defs.Typen;
+      use type Defs.HAC_Integer;
       Lines : Ada.Text_IO.Positive_Count;
       Shell_Exec_Result : Integer;
       --
@@ -358,17 +359,24 @@ package body HAC_Sys.PCode.Interpreter is
             ND.S (Result_Address).I := Defs.HAC_Integer (Shell_Exec_Result);
             ND.S (Output_Address)   := GR_VString (Shell_Exec_Output);
           end;
+        when SP_Randomize =>
+          HAT.Randomize;
+        when SP_Random_Seed =>
+          HAT.Random_Seed (Integer (Top_Item.I mod (2 ** (Integer'Size - 1))));
         when SP_Wait | SP_Signal | SP_Priority | SP_InheritP | SP_Quantum =>
           null;
       end case;
       --  Release the stack:
       case Code is
         when SP_Close | SP_Delete_File | SP_Set_Directory | SP_Set_Exit_Status |
-             SP_Shell_Execute_without_Result =>
+             SP_Shell_Execute_without_Result |
+             SP_Random_Seed
+        =>
           Pop;
         when SP_Open | SP_Append | SP_Create | SP_Set_Env | SP_Copy_File |
              SP_Rename | SP_New_Line | SP_Skip_Line |
-             SP_Shell_Execute_with_Result | SP_Shell_Execute_Output =>
+             SP_Shell_Execute_with_Result | SP_Shell_Execute_Output
+        =>
           Pop (2);
         when SP_Shell_Execute_Result_Output =>
           Pop (3);

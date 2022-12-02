@@ -6,7 +6,6 @@ with HAT;
 
 with Ada.Calendar,
      Ada.Exceptions,
-     Ada.Numerics.Float_Random,
      Ada.Strings.Fixed;
 
 package body HAC_Sys.PCode.Interpreter.Operators is
@@ -213,14 +212,11 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     CD : Co_Defs.Compiler_Data renames BD.CD.all;
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     Top_Item : General_Register renames ND.S (Curr_TCB.T);
-    temp : Defs.HAC_Float;
-    temp_I : Defs.HAC_Integer;
     Idx, Len, From, To : Integer;
     C : Character;
     Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
     use Defs, Exceptions;
-    use Ada.Numerics.Float_Random,
-        Ada.Strings;
+    use Ada.Strings;
     use type Defs.HAC_Float, Defs.HAC_Integer, HAT.Time, HAT.VString;
     Going : Direction;
     --
@@ -264,21 +260,13 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         Top_Item := GR_Duration (Duration (Top_Item.I));
       when SF_Duration_to_Int =>
         Top_Item.I := HAC_Integer (Top_Item.Dur);
-      when SF_Sin =>    Top_Item.R := HAT.Sin (Top_Item.R);
-      when SF_Cos =>    Top_Item.R := HAT.Cos (Top_Item.R);
-      when SF_Exp =>    Top_Item.R := HAT.Exp (Top_Item.R);
-      when SF_Log =>    Top_Item.R := HAT.Log (Top_Item.R);
-      when SF_Sqrt =>   Top_Item.R := HAT.Sqrt (Top_Item.R);
-      when SF_Arctan => Top_Item.R := HAT.Arctan (Top_Item.R);
-      when SF_Random_Int =>
-        loop
-          temp := Defs.HAC_Float (Random (ND.Gen)) *
-                  Defs.HAC_Float ((Top_Item.I + 1));
-          temp_I := HAC_Integer (Defs.HAC_Float'Floor (temp));
-          exit when temp_I < Top_Item.I + 1;
-          --  ^ In extremely rare cases we have = Top_Item.I + 1.
-        end loop;
-        Top_Item.I := temp_I;
+      when SF_Sin        => Top_Item.R := HAT.Sin (Top_Item.R);
+      when SF_Cos        => Top_Item.R := HAT.Cos (Top_Item.R);
+      when SF_Exp        => Top_Item.R := HAT.Exp (Top_Item.R);
+      when SF_Log        => Top_Item.R := HAT.Log (Top_Item.R);
+      when SF_Sqrt       => Top_Item.R := HAT.Sqrt (Top_Item.R);
+      when SF_Arctan     => Top_Item.R := HAT.Arctan (Top_Item.R);
+      when SF_Random_Int => Top_Item.I := HAC_Integer (HAT.Rand (Integer (Top_Item.I)));
       when SF_Min_Int =>
         Pop (ND);
         --  [T] := Min ([T], [T+1]) :
@@ -591,7 +579,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           when SF_Clock =>
             ND.S (Curr_TCB.T) := GR_Time (Ada.Calendar.Clock);
           when SF_Random_Float =>
-            ND.S (Curr_TCB.T) := GR_Real (Defs.HAC_Float (Random (ND.Gen)));
+            ND.S (Curr_TCB.T) := GR_Real (Defs.HAC_Float (HAT.Rnd));
           when SF_Null_VString =>
             ND.S (Curr_TCB.T) := GR_VString (HAT.Null_VString);
           when SF_Argument_Count | SF_Directory_Separator |

@@ -72,6 +72,8 @@ package HAC_Sys.Parser.Helpers is
 
   procedure Check_Boolean (CD : in out Compiler_Data; T : Typen);
 
+  procedure Check_Integer (CD : in out Compiler_Data; T : Typen);
+
   procedure Argument_Type_Not_Supported (CD : in out Compiler_Data);
 
   function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ'Class) return String;
