@@ -1,3 +1,5 @@
+with HAC_Sys.Librarian;
+
 with Ada.Strings.Fixed,
      Ada.Text_IO;
 
@@ -380,10 +382,12 @@ package body HAC_Sys.Errors is
         when err_END_LOOP_ident_missing =>
           updated_repair_kit.alternative := ' ' & ub_hint;
         when err_END_LOOP_ident_wrong |
-             err_wrong_unit_name |
              err_obsolete_hat_name
           =>
           updated_repair_kit.alternative := ub_hint;
+        when err_wrong_unit_name =>
+          updated_repair_kit.alternative :=
+            HAT.To_VString (Librarian.Ada_RM_Casing (HAT.To_String (ub_hint)));
         when others =>
           null;
       end case;

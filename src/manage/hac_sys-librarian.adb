@@ -123,7 +123,7 @@ package body HAC_Sys.Librarian is
      Unit_Name : String)
   return String
   is
-    GNAT_prefix : constant String := GNAT_Naming (Unit_Name);
+    GNAT_prefix : constant String := GNAT_File_Naming (Unit_Name);
     spec_fn : constant String := GNAT_prefix & ".ads";
     body_fn : constant String := GNAT_prefix & ".adb";
   begin
@@ -191,7 +191,7 @@ package body HAC_Sys.Librarian is
       Error
         (CD,
          err_library_error,
-         "no file found matching the name """ & GNAT_Naming (Upper_Name) & ".ad*""",
+         "no file found matching the name """ & GNAT_File_Naming (Upper_Name) & ".ad*""",
          severity => major);
     else
       as_specification := fn (fn'Last) = 's';
@@ -285,7 +285,7 @@ package body HAC_Sys.Librarian is
        Parser.Helpers.Locate_Identifier (CD, Defs.S2A ("STANDARD"), 0));
   end Apply_WITH_USE_Standard;
 
-  function GNAT_Naming (Unit_Name : String) return String is
+  function GNAT_File_Naming (Unit_Name : String) return String is
     result : String := Ada.Characters.Handling.To_Lower (Unit_Name);
   begin
     for c of result loop
@@ -294,7 +294,21 @@ package body HAC_Sys.Librarian is
       end if;
     end loop;
     return result;
-  end GNAT_Naming;
+  end GNAT_File_Naming;
+
+  function Ada_RM_Casing (Identifier : String) return String is
+    use Ada.Characters.Handling;
+    copy : String := To_Lower (Identifier);
+    first_letter : Boolean := True;
+  begin
+    for i in copy'Range loop
+      if first_letter then
+        copy (i) := To_Upper (copy (i));
+      end if;
+      first_letter := copy (i) = '_';
+    end loop;
+    return copy;
+  end Ada_RM_Casing;
 
   --  Here we have the default behaviour for Library_Data's open source
   --  and close source routines.

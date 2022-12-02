@@ -166,11 +166,13 @@ package HAC_Sys.Librarian is
      --    unit named Descriptor.Full_Name.
 
   ----------------------------------------------------------------------
-  --  GNAT_Naming returns the file name that GNAT expects for a unit  --
-  --  with the name Unit_Name.                                        --
+  --  GNAT_File_Naming returns the file name that GNAT expects for    --
+  --  a unit with the name Unit_Name.                                 --
   ----------------------------------------------------------------------
 
-  function GNAT_Naming (Unit_Name : String) return String;
+  function GNAT_File_Naming (Unit_Name : String) return String;
+
+  function Ada_RM_Casing (Identifier : String) return String;
 
 private
 
