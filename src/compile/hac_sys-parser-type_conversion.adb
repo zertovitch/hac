@@ -13,7 +13,6 @@ procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
 )
 is
   use Defs, Helpers, PCode, Errors;
-  use type HAC_Integer;
   type Type_Conversion_Kind is (To_Float, To_Integer, To_Duration, Unknown);
   kind : Type_Conversion_Kind;
   T_Expr : Co_Defs.Exact_Subtyp;
@@ -55,14 +54,8 @@ begin
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;
-      if X.Discrete_First > HAC_Integer'First then
-        Compiler.PCode_Emit.Emit_3
-          (CD, k_Check_Lower_Bound, X.Discrete_First, Typen'Pos (X.TYP), Operand_3_Type (X.Ref));
-      end if;
-      if X.Discrete_Last < HAC_Integer'Last then
-        Compiler.PCode_Emit.Emit_3
-          (CD, k_Check_Upper_Bound, X.Discrete_Last, Typen'Pos (X.TYP), Operand_3_Type (X.Ref));
-      end if;
+      Compiler.PCode_Emit.Emit_Lower_Bound_Check (CD, X);
+      Compiler.PCode_Emit.Emit_Upper_Bound_Check (CD, X);
       --
     when To_Duration =>
       case T_Expr.TYP is

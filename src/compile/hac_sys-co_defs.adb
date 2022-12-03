@@ -63,9 +63,17 @@ package body HAC_Sys.Co_Defs is
       when Ints  => return HAC_Image (value);
       when Bools => return Boolean'Image (Boolean'Val (value));
       when Chars => return Character'Image (Character'Val (value));
-      when Enums => return A2S (CD.IdTab (Ref + 1 + Integer (value)).name_with_case);
+      when Enums =>
+        if value in 0 .. CD.IdTab (Ref).xtyp.Discrete_Last then
+          return A2S (CD.IdTab (Ref + 1 + Integer (value)).name_with_case);
+        else
+          return "[invalid position: " &  HAC_Image (value) & ']';
+        end if;
       when others => raise Program_Error with "Non-discrete type";
     end case;
+  exception
+    when Constraint_Error =>
+      return "[invalid position: " &  HAC_Image (value) & ']';
   end Discrete_Image;
 
   function Discrete_Range_Image

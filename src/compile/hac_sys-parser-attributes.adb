@@ -223,19 +223,11 @@ package body HAC_Sys.Parser.Attributes is
         if attr = Pred then
           --  !!  overflow check here if arg = hac_integer'first.
           Emit (CD, k_SUBTRACT_Integer);
-          if S.Discrete_First > HAC_Integer'First then
-            Emit_3
-              (CD, k_Check_Lower_Bound,
-               S.Discrete_First, Typen'Pos (S.TYP), Operand_3_Type (S.Ref));
-          end if;
+          Emit_Lower_Bound_Check (CD, S);
         else
           --  !!  overflow check here if arg = hac_integer'first.
           Emit (CD, k_ADD_Integer);
-          if S.Discrete_Last < HAC_Integer'Last then
-            Emit_3
-              (CD, k_Check_Upper_Bound,
-               S.Discrete_Last, Typen'Pos (S.TYP), Operand_3_Type (S.Ref));
-          end if;
+          Emit_Upper_Bound_Check (CD, S);
         end if;
       end Pred_Succ_Discrete;
       --
@@ -297,8 +289,12 @@ package body HAC_Sys.Parser.Attributes is
           Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
           Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
           if type_of_argument.TYP = Ints then
-            --  Just set the desired subtype, and that's it - no VM instruction!
+            --  Just set the desired subtype, and that's it - no VM instruction for
+            --  the conversion itself!
             xSubtyp_of_Result := S;
+            --  ...but we need to add a range check.
+            Emit_Lower_Bound_Check (CD, S);
+            Emit_Upper_Bound_Check (CD, S);
           else
             Helpers.Type_Mismatch
               (CD, err_parameter_types_do_not_match, type_of_argument, Helpers.Standard_Integer);

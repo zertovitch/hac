@@ -80,4 +80,8 @@ package HAC_Sys.Compiler.PCode_Emit is
     RNum_Index :    out Natural
   );
 
+  procedure Emit_Lower_Bound_Check (CD : in out Compiler_Data; S : Exact_Subtyp);
+
+  procedure Emit_Upper_Bound_Check (CD : in out Compiler_Data; S : Exact_Subtyp);
+
 end HAC_Sys.Compiler.PCode_Emit;

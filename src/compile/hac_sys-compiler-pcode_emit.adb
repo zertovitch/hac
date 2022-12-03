@@ -200,4 +200,24 @@ package body HAC_Sys.Compiler.PCode_Emit is
     end if;
   end Enter_or_find_Float;
 
+  procedure Emit_Lower_Bound_Check (CD : in out Compiler_Data; S : Exact_Subtyp) is
+    use type HAC_Integer;
+  begin
+    if S.Discrete_First > HAC_Integer'First then
+      Emit_3
+        (CD, k_Check_Lower_Bound,
+         S.Discrete_First, Typen'Pos (S.TYP), Operand_3_Type (S.Ref));
+    end if;
+  end Emit_Lower_Bound_Check;
+
+  procedure Emit_Upper_Bound_Check (CD : in out Compiler_Data; S : Exact_Subtyp) is
+    use type HAC_Integer;
+  begin
+    if S.Discrete_Last < HAC_Integer'Last then
+      Emit_3
+        (CD, k_Check_Upper_Bound,
+         S.Discrete_Last, Typen'Pos (S.TYP), Operand_3_Type (S.Ref));
+    end if;
+  end Emit_Upper_Bound_Check;
+
 end HAC_Sys.Compiler.PCode_Emit;

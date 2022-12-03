@@ -29,7 +29,19 @@ procedure AoC_2022_XX is
   bits : constant := 5;
   subtype Bit_Range is Integer range 1 .. bits;
   stat_ones : array (Bit_Range) of Natural;
-  --
+  type Set is array (Character) of Boolean;
+
+  group : array (0 .. 2) of Set;
+
+  procedure Reset is
+  begin
+    for i in group'Range loop
+      for c in Character loop
+        group (i)(c) := False;
+      end loop;
+    end loop;
+  end Reset;
+
   function D2R (a : Real) return Real is
   begin
     return (Pi / 180.0) * a;
@@ -42,7 +54,7 @@ procedure AoC_2022_XX is
     y  := Sin (a) * x + Cos (a) * y;
     x  := nx;
   end Rotate;
-  --
+
   input : constant VString := +"mini.txt";
   --  input : constant VString := +"aoc_2022_$$.txt";
   --
@@ -68,8 +80,8 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: bla bla: " & Integer_64'Image (r (1)));
-    Put_Line (+"Part 2: bli bli: " & Integer_64'Image (r (2)));
+    Put_Line (+"Part 1: bla bla:" & Integer_64'Image (r (1)));
+    Put_Line (+"Part 2: bli bli:" & Integer_64'Image (r (2)));
     --  Part 1: validated by AoC: 
     --  Part 2: validated by AoC: 
   end if;

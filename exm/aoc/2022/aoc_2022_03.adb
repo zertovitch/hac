@@ -32,7 +32,6 @@ procedure AoC_2022_03 is
   end Score;
 
   type Set is array (Character) of Boolean;
-  item : Set;
   group : array (0 .. 2) of Set;
 
   procedure Reset is
@@ -46,14 +45,15 @@ procedure AoC_2022_03 is
 
   line, t1, t2 : Natural := 0;
   count : Natural;
+  item : Set;
 
 begin
   Reset;
   Open (f, "aoc_2022_03.txt");
   while not End_Of_File (f) loop
     Get_Line (f, s);
-    --  Part 1's job: add the priority of the item that
-    --                is on both halves of each sack.
+    --  Part 1's job:   Add priority of the item that
+    -----------------   is on both halves of each sack.
     for c in Character loop
       item (c) := False;
     end loop;
@@ -67,8 +67,8 @@ begin
         exit;
       end if;
     end loop;
-    --  Part 2's job: add priority of the item that is on
-    --                each sack of a group of three.
+    --  Part 2's job:   Add priority of the item that is
+    -----------------   on each sack of a group of three.
     for i in 1 .. Length (s) loop
       group (line mod 3)(Element (s, i)) := True;
     end loop;
@@ -97,7 +97,7 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Priorities of item present in ...");
+    Put_Line (+"Priorities of items present in ...");
     Put_Line (+" (part 1) both half-sacks . . . . . . . : " & Image (t1));
     Put_Line (+" (part 2) all sacks of a group of three : " & Image (t2));
     --  Part 1: validated by AoC: 8185
