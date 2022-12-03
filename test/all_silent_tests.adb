@@ -171,6 +171,7 @@ procedure All_Silent_Tests is
     --
     Launch_AoC (+"2022", +"01", +"68442 204837");                 --  Calorie Counting
     Launch_AoC (+"2022", +"02", +"14531 11258");                  --  Rock Paper Scissors
+    Launch_AoC (+"2022", +"03", +"8185 2817");                    --  Rucksack Reorganization
     --
     New_Line (2);
     Put_Line ("----> Done.");
