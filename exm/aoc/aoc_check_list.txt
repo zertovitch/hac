@@ -2,7 +2,7 @@ https://adventofcode.com/
 
  1 coffee
  2 prepare aoc_20xx_yy.adb in LEA
- 3 prepare aoc_20xx.gpr in case GNAT if needed
+ 3 prepare aoc_20xx.gpr in case GNAT is needed
  4 prepare empty mini.txt in Notepad++
  ----- Start! -----
  5 open today's aoc web page

@@ -54,14 +54,11 @@ procedure AoC_2022_XX is
     x  := nx;
   end Rotate;
 
-  input : constant VString := +"mini.txt";
-  --  input : constant VString := +"aoc_2022_$$.txt";
-  --
 begin
   r (1) := 0;
   r (2) := 0;
   for part in 1 .. 2 loop
-    Open (f, input);
+    Open (f, "mini.txt");  --  "input.txt");  --  aoc_2022_$$.txt
     while not End_Of_File (f) loop
       Get (f, asm);
       Get (f, i);
