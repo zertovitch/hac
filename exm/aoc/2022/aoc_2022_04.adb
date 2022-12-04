@@ -30,14 +30,17 @@ begin
     Get (f, sep3);
     Get (f, u2);
     if (l1 >= l2 and u1 <= u2) or (l2 >= l1 and u2 <= u1) then
-      --  Count redundancies:
+      --  Count redundancies (one set contained in the other one):
       t1 := t1 + 1;
     end if;
-    if l1 in l2 .. u2 or l2 in l1 .. u1 or
-       u1 in l2 .. u2 or u2 in l1 .. u1
-    then
+    if u1 >= l2 and u2 >= l1 then
       --  Count overlaps:
       t2 := t2 + 1;
+      -- The sets are separated when and only when u1 < l2 or u2 < l1.
+      -- Thus the condition for an overlap is:
+      --     not (u1 < l2 or u2 < l1)
+      -- which is equivalent to:
+      --     u1 >= l2 and u2 >= l1
     end if;
   end loop;
   Close (f);

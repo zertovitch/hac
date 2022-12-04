@@ -1,0 +1,13 @@
+https://adventofcode.com/
+
+ 1 coffee
+ 2 prepare aoc_20xx_yy.adb in LEA
+ 3 prepare aoc_20xx.gpr in case GNAT if needed
+ 4 prepare empty mini.txt in Notepad++
+ ----- Start! -----
+ 5 open today's aoc web page
+ 6 download input.txt and have a glimpse on it
+ 7 read the instructions as quickly as possible...
+ 8 paste the example into mini.txt
+ 9 code and train with mini.txt
+10 run with input.txt
