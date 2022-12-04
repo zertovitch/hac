@@ -16,7 +16,6 @@ with Interfaces;
 procedure AoC_2022_XX is
   use HAT, Interfaces;
 
-  compiler_test_mode : constant Boolean := Argument_Count >= 2;
   verbose : constant Boolean := True;
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer_64;
@@ -59,6 +58,8 @@ procedure AoC_2022_XX is
   --  input : constant VString := +"aoc_2022_$$.txt";
   --
 begin
+  r (1) := 0;
+  r (2) := 0;
   for part in 1 .. 2 loop
     Open (f, input);
     while not End_Of_File (f) loop
@@ -72,9 +73,10 @@ begin
     Close (f);
     r (part) := 0;
   end loop;
-  if compiler_test_mode then
-   if r (1) /= Integer_64'Value (To_String (Argument (1))) or
-      r (2) /= Integer_64'Value (To_String (Argument (2)))
+  if Argument_Count >= 2 then
+    --  Compiler test mode.
+    if r (1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;

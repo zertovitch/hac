@@ -12,7 +12,6 @@ with HAT;
 procedure AoC_2022_03 is
   use HAT;
 
-  compiler_test_mode : constant Boolean := Argument_Count >= 2;
   T0 : constant Time := Clock;
 
   si : Character;
@@ -89,7 +88,8 @@ begin
     end if;
   end loop;
   Close (f);
-  if compiler_test_mode then
+  if Argument_Count >= 2 then
+    --  Compiler test mode.
     if t1 /= Integer'Value (To_String (Argument (1))) or
        t2 /= Integer'Value (To_String (Argument (2)))
     then

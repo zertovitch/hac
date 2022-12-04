@@ -29,7 +29,6 @@ procedure AoC_2022_01 is
     end if;
   end Add_To_Top_3;
 
-  compiler_test_mode : constant Boolean := Argument_Count >= 2;
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer;
 begin
@@ -48,9 +47,10 @@ begin
   --
   r (1) := max_1;
   r (2) := max_1 + max_2 + max_3;
-  if compiler_test_mode then
-   if r (1) /= Integer'Value (To_String (Argument (1))) or
-      r (2) /= Integer'Value (To_String (Argument (2)))
+  if Argument_Count >= 2 then
+    --  Compiler test mode.
+    if r (1) /= Integer'Value (To_String (Argument (1))) or
+       r (2) /= Integer'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;

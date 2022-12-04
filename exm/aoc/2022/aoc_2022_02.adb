@@ -15,7 +15,6 @@ procedure AoC_2022_02 is
   c, sep : Character;
   f : File_Type;
   --
-  compiler_test_mode : constant Boolean := Argument_Count >= 2;
   verbose : constant Boolean := False;
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer;
@@ -88,9 +87,10 @@ begin
     --
     r (part) := total;
   end loop;
-  if compiler_test_mode then
-   if r (1) /= Integer'Value (To_String (Argument (1))) or
-      r (2) /= Integer'Value (To_String (Argument (2)))
+  if Argument_Count >= 2 then
+    --  Compiler test mode.
+    if r (1) /= Integer'Value (To_String (Argument (1))) or
+       r (2) /= Integer'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
