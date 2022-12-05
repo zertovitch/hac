@@ -9,16 +9,17 @@
 --  files hat*.ad* are in ../../../src
 with HAT;
 
---  Interfaces is needed for compiling on both
---  HAC and GNAT (64-bit integer: Integer_64):
-with Interfaces;
+--  --  Interfaces is needed for compiling on both
+--  --  HAC and GNAT (64-bit integer: Integer_64):
+--  with Interfaces;
 
 procedure AoC_2022_XX is
-  use HAT, Interfaces;
+  --  use HAT, Interfaces;
+  use HAT;
 
   verbose : constant Boolean := True;
   T0 : constant Time := Clock;
-  r : array (1 .. 2) of Integer_64;
+  r : array (1 .. 2) of Integer;
 
   c, sep : Character;
   asm : String (1 .. 3);
@@ -28,8 +29,8 @@ procedure AoC_2022_XX is
   bits : constant := 5;
   subtype Bit_Range is Integer range 1 .. bits;
   stat_ones : array (Bit_Range) of Natural;
+  
   type Set is array (Character) of Boolean;
-
   group : array (0 .. 2) of Set;
 
   procedure Reset is
@@ -40,6 +41,15 @@ procedure AoC_2022_XX is
       end loop;
     end loop;
   end Reset;
+
+  type Storage is array (1..100) of Character;
+  
+  type Stack is record
+    top : Natural;
+    s   : Storage;
+  end record;
+  
+  sT : array (1 .. 9) of Stack;
 
   function D2R (a : Real) return Real is
   begin
@@ -72,15 +82,15 @@ begin
   end loop;
   if Argument_Count >= 2 then
     --  Compiler test mode.
-    if r (1) /= Integer_64'Value (To_String (Argument (1))) or
-       r (2) /= Integer_64'Value (To_String (Argument (2)))
+    if r (1) /= Integer'Value (To_String (Argument (1))) or
+       r (2) /= Integer'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: bla bla:" & Integer_64'Image (r (1)));
-    Put_Line (+"Part 2: bli bli:" & Integer_64'Image (r (2)));
+    Put_Line (+"Part 1: bla bla:" & Integer'Image (r (1)));
+    Put_Line (+"Part 2: bli bli:" & Integer'Image (r (2)));
     --  Part 1: validated by AoC: 
     --  Part 2: validated by AoC: 
   end if;
