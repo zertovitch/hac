@@ -67,6 +67,7 @@ procedure AoC_2022_XX is
 begin
   r (1) := 0;
   r (2) := 0;
+Parts :
   for part in 1 .. 2 loop
     Open (f, "mini.txt");  --  "input.txt");  --  aoc_2022_$$.txt
     while not End_Of_File (f) loop
@@ -79,7 +80,8 @@ begin
     end loop;
     Close (f);
     r (part) := 0;
-  end loop;
+  end loop Parts;
+  --
   if Argument_Count >= 2 then
     --  Compiler test mode.
     if r (1) /= Integer'Value (To_String (Argument (1))) or

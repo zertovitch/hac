@@ -43,6 +43,7 @@ procedure AoC_2022_02 is
   score, total : Integer;
 
 begin
+Parts :
   for part in 1 .. 2 loop
     total := 0;
     Open (f, "aoc_2022_02.txt");
@@ -86,7 +87,8 @@ begin
     Close (f);
     --
     r (part) := total;
-  end loop;
+  end loop Parts;
+  --
   if Argument_Count >= 2 then
     --  Compiler test mode.
     if r (1) /= Integer'Value (To_String (Argument (1))) or

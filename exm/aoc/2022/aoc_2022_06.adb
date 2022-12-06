@@ -17,21 +17,24 @@ procedure AoC_2022_06 is
 
   f : File_Type;
   s : VString;
-  c : Character;
-  cc : array (Character) of Natural;
+  s_i : Character;
+  count : array (Character) of Natural;
   marker_length : Positive;
   ok : Boolean;
 begin
   Open (f, "aoc_2022_06.txt");
   Get_Line (f, s);
   Close (f);
+Parts :
   for part in 1 .. 2 loop
     for c in Character loop
-      cc (c) := 0;
+      count (c) := 0;
     end loop;
+    --
     for i in 1 .. Length (s) loop
-      c := Element (s, i);
-      cc (c) := cc (c) + 1;
+      s_i := Element (s, i);
+      --  Count character at position i.
+      count (s_i) := count (s_i) + 1;
       case part is
         when 1 => marker_length := 4;
         when 2 => marker_length := 14;
@@ -39,20 +42,21 @@ begin
       if i >= marker_length then
         if i > marker_length then
           --  Forget older occurrences.
-          c := Element (s, i - marker_length);
-          cc (c) := cc (c) - 1;
+          s_i := Element (s, i - marker_length);
+          count (s_i) := count (s_i) - 1;
         end if;
         ok := True;
         for c in Character loop
-          ok := ok and cc (c) < 2;
+          ok := ok and count (c) < 2;
         end loop;
         if ok then
           r (part) := i;
-          exit;
+          exit;  --  Leave after first match.
         end if;
       end if;
     end loop;
-  end loop;
+  end loop Parts;
+  --
   if Argument_Count >= 2 then
     --  Compiler test mode.
     if r (1) /= Integer'Value (To_String (Argument (1))) or

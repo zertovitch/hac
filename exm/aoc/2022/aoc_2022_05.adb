@@ -74,6 +74,7 @@ begin
   end loop;
   Close (f);
   --
+Parts :
   for part in 1 .. 2 loop
     for x in s'Range loop
       s (x).top := 0;
@@ -131,7 +132,8 @@ begin
     for x in s'Range loop
       r (part)(x) := s (x).s (s (x).top);
     end loop;
-  end loop;
+  end loop Parts;
+  --
   if compiler_test_mode then
     if +r (1) /= Argument (1) or +r (2) /= Argument (2) then
       Set_Exit_Status (1);  --  Compiler test failed.
