@@ -1,6 +1,6 @@
 --  Solution to Advent of Code 2022, Day $$
 -------------------------------------------
---  $ puzzle title here! $
+--  $ puzzle title here!
 --
 --  https://adventofcode.com/2022/day/$
 --  Copy of questions in: aoc_2022_$$_questions.txt

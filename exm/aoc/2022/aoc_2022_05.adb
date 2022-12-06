@@ -19,7 +19,9 @@ procedure AoC_2022_05 is
     s   : Storage;
   end record;
 
-  s : array (1 .. 9) of Stack;
+  subtype Crane_Range is Integer range 1 .. 9;
+
+  s : array (Crane_Range) of Stack;
 
   procedure Show (title : VString) is
     empty : Boolean;
@@ -47,7 +49,7 @@ procedure AoC_2022_05 is
   end Show;
 
   T0 : constant Time := Clock;
-  r : array (1 .. 2) of String (1 .. 9);
+  r : array (1 .. 2) of String (Crane_Range);
 
   c, sep, bra, ket : Character;
   move : String (1 .. 4);
@@ -109,9 +111,11 @@ begin
       for count in 1 .. n loop
         case part is
           when 1 =>
+            --  CrateMover 9000
             --  Move one by one, taking each crate `c` from the top, downwards:
             c := s (a).s (s (a).top - count + 1);
           when 2 =>
+            --  CrateMover 9001
             --  Move the crates "stack-wise":
             c := s (a).s (s (a).top - n + count);
         end case;

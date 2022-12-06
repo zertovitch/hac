@@ -174,6 +174,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"03", +"8185 2817");                    --  Rucksack Reorganization
     Launch_AoC (+"2022", +"04", +"657 938");                      --  Camp Cleanup
     Launch_AoC (+"2022", +"05", +"VQZNJMWTR NLCDCLVMQ");          --  Supply Stacks
+    Launch_AoC (+"2022", +"06", +"1802 3551");                    --  Tuning Trouble
     --
     New_Line (2);
     Put_Line ("----> Done.");
