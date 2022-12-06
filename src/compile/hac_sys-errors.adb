@@ -300,6 +300,8 @@ package body HAC_Sys.Errors is
       err_RECORD_missing              => (insert,        +" record"),
       err_closing_parenthesis_missing => (insert,        +")"),
       err_END_LOOP_ident_missing      => (insert,        +"[ something... ]"),
+      err_choices_not_covered         =>
+        (insert,        +"\twhen others => null;  --  Use with caution...\n"),
       err_incorrect_name_after_END |
       err_END_LOOP_ident_wrong     |
       err_wrong_unit_name          |

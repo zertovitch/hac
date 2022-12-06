@@ -428,7 +428,7 @@ package HAC_Sys.Defs is
   type Error_set is array (Compile_Error) of Boolean;
   error_free : constant Error_set := (others => False);
 
-  type Repair_Kind_Type is (none, insert, insert_line, replace_token);
+  type Repair_Kind_Type is (none, insert, replace_token);
 
   type Repair_Kit is tagged record
     repair_kind : Repair_Kind_Type := none;

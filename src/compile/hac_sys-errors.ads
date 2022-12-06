@@ -15,9 +15,6 @@ with HAT;
 
 package HAC_Sys.Errors is
 
-  has_new_line : constant array (Defs.Repair_Kind_Type) of Boolean :=
-    (Defs.insert_line => True, others => False);
-
   nothing_to_repair : constant Defs.Repair_Kit := (Defs.none, HAT.Null_VString);
 
   type Error_Severity is

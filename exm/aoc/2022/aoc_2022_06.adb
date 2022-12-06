@@ -33,7 +33,7 @@ Parts :
     --
     for i in 1 .. Length (s) loop
       s_i := Element (s, i);
-      --  Count character at position i.
+      --  Count occurrences of the character at position i.
       count (s_i) := count (s_i) + 1;
       case part is
         when 1 => marker_length := 4;
@@ -41,7 +41,8 @@ Parts :
       end case;
       if i >= marker_length then
         if i > marker_length then
-          --  Forget older occurrences.
+          --  Forget occurrence of the character that has
+          --  just disappeared from the marker candidate.
           s_i := Element (s, i - marker_length);
           count (s_i) := count (s_i) - 1;
         end if;
