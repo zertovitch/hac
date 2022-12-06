@@ -20,7 +20,7 @@ procedure AoC_2022_06 is
   s_i : Character;
   count : array (Character) of Natural;
   marker_length : Positive;
-  ok : Boolean;
+  duplicates : Natural;
 begin
   Open (f, "aoc_2022_06.txt");
   Get_Line (f, s);
@@ -30,11 +30,15 @@ Parts :
     for c in Character loop
       count (c) := 0;
     end loop;
+    duplicates := 0;
     --
     for i in 1 .. Length (s) loop
       s_i := Element (s, i);
       --  Count occurrences of the character at position i.
       count (s_i) := count (s_i) + 1;
+      if count (s_i) = 2 then
+        duplicates := duplicates + 1;
+      end if;
       case part is
         when 1 => marker_length := 4;
         when 2 => marker_length := 14;
@@ -45,12 +49,11 @@ Parts :
           --  just disappeared from the marker candidate.
           s_i := Element (s, i - marker_length);
           count (s_i) := count (s_i) - 1;
+          if count (s_i) = 1 then
+            duplicates := duplicates - 1;
+          end if;
         end if;
-        ok := True;
-        for c in Character loop
-          ok := ok and count (c) < 2;
-        end loop;
-        if ok then
+        if duplicates = 0 then
           r (part) := i;
           exit;  --  Leave after first match.
         end if;
