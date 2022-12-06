@@ -60,7 +60,7 @@ project HAC_Test is
 
    Common_Compiler_Options := (
      "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
-     "-gnatwcijkmopruvz.c.n.p.t.w.x",  --  Warnings switches (run "gnatmake" for full list)
+     "-gnatwcijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
      "-gnatwCKMUV",                    --  Warnings switches (turn off some irrelevant for the tests)
      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
      "-gnatf",  --  Full errors. Verbose details, all undefined references

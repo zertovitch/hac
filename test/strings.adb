@@ -10,6 +10,7 @@ procedure Strings is
   Avogadro : constant Real := 6.02214076e023;
   r : Real;
   fs_1 : String (4 .. 6);
+  c : Character := '!';
 
   type Enum is (U, V, W);
 
@@ -116,14 +117,33 @@ begin
   --
   --  Strings_as_VStrings
   --
-  if Enum'Image (V) /= "V" then Failure (+"Strings_as_VStrings, #1"); end if;
-  --  Concatenation between various String internal types or with Character:
-  if Enum'Image (U) & fs_1 /= "Udef" then Failure (+"Strings_as_VStrings, #2"); end if;
-  if Enum'Image (W) & "aw" /= "Waw"  then Failure (+"Strings_as_VStrings, #3"); end if;
-  if fs_1 & Enum'Image (W) /= "defW" then Failure (+"Strings_as_VStrings, #4"); end if;
-  if "UB" & Enum'Image (U) /= "UBU"  then Failure (+"Strings_as_VStrings, #5"); end if;
-  if 'U' & Enum'Image (V) /= "UV"    then Failure (+"Strings_as_VStrings, #6"); end if;
-  if Enum'Image (U) & 'V' /= "UV"    then Failure (+"Strings_as_VStrings, #7"); end if;
+  if Enum'Image (V) /= "V" then Failure (+"Strings_as_VStrings"); end if;
+  --
+  --  Concatenation between the three String internal types or with Character.
+  --  Codes in brackets like [12] are explained in String_Concatenation,
+  --  HAC_Sys.Parser.Expressions.
+  --
+  Assert (Enum'Image (U) & Enum'Image (V) = "UV", +"SVS_Concat, [11]");
+  Assert (Enum'Image (U) & fs_1 = "Udef",         +"SVS_Concat, [12]");
+  Assert (Enum'Image (W) & "aw" = "Waw",          +"SVS_Concat, [13]");
+  Assert (Enum'Image (U) & 'V' = "UV",            +"SVS_Concat, [14]");
+  --
+  Assert (fs_1 & Enum'Image (W) = "defW",         +"SVS_Concat, [21]");
+  Assert ("UB" & Enum'Image (U) = "UBU",          +"SVS_Concat, [31]");
+  Assert ('U' & Enum'Image (V) = "UV",            +"SVS_Concat, [41]");
+  --  Combinations without any Strings_as_VStrings.
+  Assert (fs_1 & fs_1  = "defdef",                +"SVS_Concat, [22]");
+  Assert (fs_1 & "xyz" = "defxyz",                +"SVS_Concat, [23]");
+  Assert (fs_1 & '$'   = "def$",                  +"SVS_Concat, [24]");
+  --
+  Assert ("hac" & fs_1  & c = "hacdef!",          +"SVS_Concat, [32]");
+  Assert ("hac" & "xyz" & c = "hacxyz!",          +"SVS_Concat, [33]");
+  Assert ("hac" & '$'   & c = "hac$!",            +"SVS_Concat, [34]");
+  --
+  Assert ('%' & fs_1  & c = "%def!",              +"SVS_Concat, [42]");
+  Assert ('%' & "xyz" & c = "%xyz!",              +"SVS_Concat, [43]");
+  Assert ('%' & '$'   & c = "%$!",                +"SVS_Concat, [44]");
+  --
   if To_String (To_VString ("abcd") & (+"ef")) /= "abcdef" then
     Failure (+"String <-> VString, #1");
   end if;

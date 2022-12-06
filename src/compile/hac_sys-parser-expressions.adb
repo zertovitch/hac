@@ -778,43 +778,101 @@ package body HAC_Sys.Parser.Expressions is
     end VString_Concatenation;
 
     function String_Concatenation return Boolean is
-    begin
       --  Arguments can be one of the three internal representations of String:
-      --      - sv : VString (the parser sees the TYP Strings_as_VStrings)
-      --      - sc : constrained array of character
-      --      - "x": literal string
+      --      1)  sv  : VString (the parser sees the TYP Strings_as_VStrings)
+      --      2)  sc  : constrained array of character
+      --      3) "xy" : literal string
       --  Additionally, we can have a character:
-      --      - 'x': character (value or literal)
-      --  So, it makes 16 argument combinations. Not all are implemented.
+      --      4)  'x' : character (value or literal)
+      --
+      --  So, it makes 16 argument combinations. We note them [ab].
+      --  For example, a concatenation of a Strings_as_VStrings and a Literal
+      --  is noted [13].
       --
       --  Result is always Strings_as_VStrings.
       --  RM Reference: the predefined "&" operator 4.5.3(3), applied to String.
-      --
-      if X.TYP = Strings_as_VStrings and y.TYP = Strings_as_VStrings then     --  sv1 & sv2
-        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-      elsif X.TYP = Strings_as_VStrings and then Is_Char_Array (CD, y) then   --  sv1 & sc2
-        Emit_Std_Funct (CD,
-          SF_String_to_VString,
-          Operand_1_Type (CD.Arrays_Table (y.Ref).Array_Size)
-        );
-        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-      elsif Is_Char_Array (CD, X) and then y.TYP = Strings_as_VStrings then   --  sc1 & sv2
-        Emit (CD, k_Swap);   --  sc2, then sv1 on the stack
-        Emit_Std_Funct (CD,  --  sc1 -> To_VString (sc1)
-          SF_String_to_VString,
-          Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
-        );
-        Emit (CD, k_Swap);   --  To_VString (sc1), then sv2 on the stack
-        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-      elsif X.TYP = Strings_as_VStrings and y.TYP = String_Literals then      --  sv & "x"
-        Emit_Std_Funct (CD, SF_Literal_to_VString);
-        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
-      elsif X.TYP = String_Literals and y.TYP = Strings_as_VStrings then      --  "x" & sv
-        Emit_Std_Funct (CD, SF_LStr_VString_Concat);
-      elsif X.TYP = Strings_as_VStrings and y.TYP = Chars then                --  sv & 'x'
-        Emit_Std_Funct (CD, SF_VString_Char_Concat);
-      elsif X.TYP = Chars and y.TYP = Strings_as_VStrings then                --  'x' & sv
-        Emit_Std_Funct (CD, SF_Char_VString_Concat);
+
+      procedure Emit_sc1_amp_sv2 is  --  Emit code for: sc1 & sv2
+      begin
+        Emit (CD, k_Swap);   --  sv2, then sc1 on the stack
+        Emit_Std_Funct
+          (CD,  --  sv1 := To_VString (sc1)
+           SF_String_to_VString,
+           Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size));
+        Emit (CD, k_Swap);   --  sv1, then sv2 on the stack
+        Emit_Std_Funct (CD, SF_Two_VStrings_Concat);  --  sv1 & sv2
+      end Emit_sc1_amp_sv2;
+
+      procedure Emit_sc2_to_sv2 is
+      begin
+        Emit_Std_Funct
+          (CD,  --  sv2 := To_VString (sc2)
+           SF_String_to_VString,
+           Operand_1_Type (CD.Arrays_Table (y.Ref).Array_Size));
+      end Emit_sc2_to_sv2;
+
+    begin
+      if X.TYP = Strings_as_VStrings then
+        if y.TYP = Strings_as_VStrings then     --  [11] sv1 & sv2
+          Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+        elsif Is_Char_Array (CD, y) then        --  [12] sv1 & sc2
+          Emit_sc2_to_sv2;
+          --  Back to case [11]:
+          Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+        elsif y.TYP = String_Literals then      --  [13] sv1 & "xy"
+          Emit_Std_Funct (CD, SF_Literal_to_VString);
+          --  Back to case [11]:
+          Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
+        elsif y.TYP = Chars then                --  [14] sv1 & 'x'
+          Emit_Std_Funct (CD, SF_VString_Char_Concat);
+        else
+          return False;
+        end if;
+      elsif Is_Char_Array (CD, X) then
+        if y.TYP = Strings_as_VStrings then     --  [21] sc1 & sv2
+          Emit_sc1_amp_sv2;
+        elsif Is_Char_Array (CD, y) then        --  [22] sc1 & sc2
+          Emit_sc2_to_sv2;
+          Emit_sc1_amp_sv2;
+        elsif y.TYP = String_Literals then      --  [23] sc1 & "xy"
+          Emit_Std_Funct (CD, SF_Literal_to_VString);
+          Emit_sc1_amp_sv2;
+        elsif y.TYP = Chars then                --  [24] sc1 & 'x'
+          Emit_Std_Funct (CD, SF_Char_to_VString);
+          Emit_sc1_amp_sv2;
+        else
+          return False;
+        end if;
+      elsif X.TYP = String_Literals then
+        if y.TYP = Strings_as_VStrings then     --  [31] "xy" & sv2
+          Emit_Std_Funct (CD, SF_LStr_VString_Concat);
+        elsif Is_Char_Array (CD, y) then        --  [32] "xy" & sc2
+          Emit_sc2_to_sv2;
+          Emit_Std_Funct (CD, SF_LStr_VString_Concat);
+        elsif y.TYP = String_Literals then      --  [33] "ab" & "cd"
+          Emit_Std_Funct (CD, SF_Literal_to_VString);
+          Emit_Std_Funct (CD, SF_LStr_VString_Concat);
+        elsif y.TYP = Chars then                --  [34] "ab" & 'c'
+          Emit_Std_Funct (CD, SF_Char_to_VString);
+          Emit_Std_Funct (CD, SF_LStr_VString_Concat);
+        else
+          return False;
+        end if;
+      elsif X.TYP = Chars then
+        if y.TYP = Strings_as_VStrings then     --  [41] 'x' & sv2
+          Emit_Std_Funct (CD, SF_Char_VString_Concat);
+        elsif Is_Char_Array (CD, y) then        --  [42] 'x' & sc2
+          Emit_sc2_to_sv2;
+          Emit_Std_Funct (CD, SF_Char_VString_Concat);
+        elsif y.TYP = String_Literals then      --  [43] 'a' & "bc"
+          Emit_Std_Funct (CD, SF_Literal_to_VString);
+          Emit_Std_Funct (CD, SF_Char_VString_Concat);
+        elsif y.TYP = Chars then                --  [34] 'a' & 'b'
+          Emit_Std_Funct (CD, SF_Char_to_VString);
+          Emit_Std_Funct (CD, SF_Char_VString_Concat);
+        else
+          return False;
+        end if;
       else
         return False;
       end if;
