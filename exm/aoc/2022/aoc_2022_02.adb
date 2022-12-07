@@ -47,6 +47,7 @@ Parts :
   for part in 1 .. 2 loop
     total := 0;
     Open (f, "aoc_2022_02.txt");
+  Read_Data :
     while not End_Of_File (f) loop
       Get (f, c);
       them := Object'Val (Character'Pos (c) - Character'Pos ('A'));
@@ -83,7 +84,7 @@ Parts :
         Put_Line (+them'Image & ' ' & you'Image & ' ' & score);
       end if;
       total := total + score;
-    end loop;
+    end loop Read_Data;
     Close (f);
     --
     r (part) := total;

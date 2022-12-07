@@ -33,6 +33,7 @@ procedure AoC_2022_01 is
   r : array (1 .. 2) of Integer;
 begin
   Open (f, "aoc_2022_01.txt");
+Read_Data :
   while not End_Of_File (f) loop
     Get_Line (f, s);
     if s = "" then
@@ -41,10 +42,10 @@ begin
     else
       sum := sum + Integer_Value (s);
     end if;
-  end loop;
+  end loop Read_Data;
   Add_To_Top_3;
   Close (f);
-  --
+
   r (1) := max_1;
   r (2) := max_1 + max_2 + max_3;
   if Argument_Count >= 2 then

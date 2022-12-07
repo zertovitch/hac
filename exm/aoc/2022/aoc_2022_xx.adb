@@ -70,6 +70,7 @@ begin
 Parts :
   for part in 1 .. 2 loop
     Open (f, "mini.txt");  --  "input.txt");  --  aoc_2022_$$.txt
+  Read_Data :
     while not End_Of_File (f) loop
       Get (f, asm);
       Get (f, i);
@@ -77,7 +78,7 @@ Parts :
       Get (f, c);
       Get (f, sep);
       Get_Line (f, s);
-    end loop;
+    end loop Read_Data;
     Close (f);
     r (part) := 0;
   end loop Parts;

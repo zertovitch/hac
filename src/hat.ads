@@ -65,46 +65,46 @@ package HAT is
   type Real is digits System.Max_Digits;
   package RIO is new Ada.Text_IO.Float_IO (Real);
 
-  function   "**" (F1, F2 : Real)  return Real;
+  function "**" (F1, F2 : Real) return Real;
 
   --  Square Root
-  function   Sqrt (I : Integer) return Real;
-  function   Sqrt (F : Real)    return Real;
+  function Sqrt  (I : Integer) return Real;
+  function Sqrt  (F : Real)    return Real;
 
-  --  Integer to Character
-  function   Chr       (I : Integer)   return Character;
+  --  Integer to Character (equivalent to Character'Val (I))
+  function Chr   (I : Integer)   return Character;
 
-  --  Character to Integer
-  function   Ord       (C : Character) return Integer;
+  --  Character to Integer (equivalent to Character'Pos (C))
+  function Ord   (C : Character) return Integer;
 
-  --  Next Character
-  function   Succ      (C : Character) return Character;
+  --  Next Character (equivalent to Character'Succ (C))
+  function Succ  (C : Character) return Character;
 
-  --  Previous Character
-  function   Pred      (C : Character) return Character;
+  --  Previous Character (equivalent to Character'Pred (C))
+  function Pred  (C : Character) return Character;
 
-  --  Round to an Integer
-  function   Round     (F : Real)      return Integer;
+  --  Round to an Integer (equivalent to Integer (F))
+  function Round (F : Real) return Integer;
 
   --  Truncate
-  function   Trunc     (F : Real)      return Integer;
+  function Trunc (F : Real) return Integer;
 
   --  Min & Max
-  function   Min       (I, J : Integer)   return Integer renames Integer'Min;
-  function   Max       (I, J : Integer)   return Integer renames Integer'Max;
-  function   Min       (F, G : Real)      return Real renames Real'Min;
-  function   Max       (F, G : Real)      return Real renames Real'Max;
+  function Min (I, J : Integer) return Integer renames Integer'Min;
+  function Max (I, J : Integer) return Integer renames Integer'Max;
+  function Min (F, G : Real)    return Real renames Real'Min;
+  function Max (F, G : Real)    return Real renames Real'Max;
 
   Pi : constant := Ada.Numerics.Pi;
 
   --  Trigonometric Functions     w/ arguments in radians
-  function   Sin       (F : Real)      return Real;
-  function   Cos       (F : Real)      return Real;
-  function   Arctan    (F : Real)      return Real;
+  function Sin    (F : Real) return Real;
+  function Cos    (F : Real) return Real;
+  function Arctan (F : Real) return Real;
 
-  --  Exponential Functions
-  function   Log       (F : Real)      return Real;
-  function   Exp       (F : Real)      return Real;
+  --  Logarithmic / Exponential Functions
+  function Log (F : Real) return Real;
+  function Exp (F : Real) return Real;
 
   -----------------------------
   --  Pseudo-random numbers  --

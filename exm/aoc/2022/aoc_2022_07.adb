@@ -12,34 +12,35 @@ with HAT;
 procedure AoC_2022_07 is
   use HAT;
 
+  root : constant := -1;
+  subtype Cat_Entry_Range is Integer range root .. 1000;
+
   type Dir_Info is record
     name   : VString;
-    parent : Natural;
+    parent : Cat_Entry_Range;
     size   : Natural;
   end record;
 
-  subtype Cat_Entry_Range is Integer range 0 .. 1000;
-
   cat : array (Cat_Entry_Range) of Dir_Info;
 
-  cur, up, tot, i_min : Cat_Entry_Range := 0;
+  current, up, last, i_min : Cat_Entry_Range := root;
 
-  size, size_cumul_small_dirs, best_new_size, new_size : Natural;
+  size, new_disk_size,
+  size_cumul_small_dirs, best_new_size : Natural := 0;
 
-  root : constant := 0;
+  f : File_Type;
+  s : VString;
 
   verbose : constant Boolean := False;
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer;
 
-  f : File_Type;
-  s : VString;
-
 begin
   Open (f, "aoc_2022_07.txt");
   cat (root).name   := +"/";
-  cat (root).parent := 0;
+  cat (root).parent := root;
   cat (root).size   := 0;
+Read_Data :
   while not End_Of_File (f) loop
     Get_Line (f, s);
     s := s & ' ';
@@ -51,59 +52,72 @@ begin
             --  "cd":
             case Element (s, 6) is
               when '.' =>
-                cur := cat (cur).parent;
+                current := cat (current).parent;
               when '/' =>
-                cur := root;
+                current := root;
               when others =>
-                --  Subdirectory (hopefully new...):
-                tot := tot + 1;
-                cat (tot).name :=
-                  cat (cur).name & Slice (s, 6, Index (s, ' ', 6) - 1) & '/';
-                cat (tot).parent := cur;
-                cur := tot;
+                --  Subdirectory (hopefully unseen so far...):
+                last := last + 1;
+                cat (last).name :=
+                  cat (current).name &
+                  Slice (s, 6, Index (s, ' ', 6) - 1) & '/';
+                cat (last).parent := current;
+                cat (last).size   := 0;
+                current := last;
             end case;
             if verbose then
-              Put_Line (+"New dir " & cat (cur).name);
+              Put_Line (+"New dir " & cat (current).name);
             end if;
           when others => null;
         end case;
+
       when '0' .. '9' =>
         size := Integer_Value (Slice (s, 1, Index (s, ' ') - 1));
         if verbose then
-          Put_Line (+" file size -->" & size);
+          Put_Line (+"  File size : " & size);
         end if;
-        up := cur;
+        up := current;
         loop
           cat (up).size := cat (up).size + size;
           if verbose then
             Put_Line
-              (+"  new total size -> " & cat (up).name & ": " & cat (up).size);
+              (+"    New total size for " &
+               cat (up).name & " : " & cat (up).size);
           end if;
-          exit when up = 0;
+          exit when up = root;
           up := cat (up).parent;
         end loop;
+
       when others =>
         --  Any other information, unused.
         null;
     end case;
-  end loop;
+  end loop Read_Data;
   Close (f);
-  size_cumul_small_dirs := 0;
-  best_new_size := 0;
-  i_min := 0;
-  for i in 0 .. tot loop
+
+  for i in root .. last loop
+    --
+    --  We sum up the size of all directories with total sizes up to 100_000.
+    --  Sub-directories are double-counted.
+    --
     if cat (i).size <= 100_000 then
       size_cumul_small_dirs := size_cumul_small_dirs + cat (i).size;
     end if;
-    new_size := cat (0).size - cat (i).size;
-    if new_size > best_new_size and then new_size <= 40_000_000 then
-      best_new_size := new_size;
+    --
+    --  We look for removing the smallest possible directory,
+    --  which means getting the largest possible new disk size,
+    --  as long as the new disk size is up to 40_000_000.
+    --
+    new_disk_size := cat (root).size - cat (i).size;
+    if new_disk_size > best_new_size and then new_disk_size <= 40_000_000 then
+      best_new_size := new_disk_size;
       i_min := i;
     end if;
   end loop;
+
   r (1) := size_cumul_small_dirs;
   r (2) := cat (i_min).size;
-  --
+
   if Argument_Count >= 2 then
     --  Compiler test mode.
     if r (1) /= Integer'Value (To_String (Argument (1))) or
@@ -113,8 +127,8 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: sum of total sizes of at most 100_000 : " & Image (r (1)));
-    Put_Line (+"Part 2: smallest directory to delete          : " & Image (r (2)));
+    Put_Line (+"Part 1: sum of total sizes of at most 100_000 : " & r (1));
+    Put_Line (+"Part 2: smallest directory to delete          : " & r (2));
     --  Part 1: validated by AoC: 1749646
     --  Part 2: validated by AoC: 1498966
   end if;

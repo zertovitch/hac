@@ -49,6 +49,7 @@ procedure AoC_2022_03 is
 begin
   Reset;
   Open (f, "aoc_2022_03.txt");
+Read_Data :
   while not End_Of_File (f) loop
     Get_Line (f, s);
     --  Part 1's job:   Add priority of the item that
@@ -86,8 +87,9 @@ begin
       end loop;
       Reset;
     end if;
-  end loop;
+  end loop Read_Data;
   Close (f);
+
   if Argument_Count >= 2 then
     --  Compiler test mode.
     if t1 /= Integer'Value (To_String (Argument (1))) or
@@ -98,8 +100,8 @@ begin
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Priorities of items present in ...");
-    Put_Line (+" (part 1) both half-sacks . . . . . . . : " & Image (t1));
-    Put_Line (+" (part 2) all sacks of a group of three : " & Image (t2));
+    Put_Line (+" (part 1) both half-sacks . . . . . . . : " & t1);
+    Put_Line (+" (part 2) all sacks of a group of three : " & t2);
     --  Part 1: validated by AoC: 8185
     --  Part 2: validated by AoC: 2817
   end if;

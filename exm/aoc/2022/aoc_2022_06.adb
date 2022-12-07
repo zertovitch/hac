@@ -72,8 +72,8 @@ Parts :
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Number of characters that need to be " &
                " processed before the first...");
-    Put_Line (+"  (part 1) start-of-packet marker . . . : " & Image (r (1)));
-    Put_Line (+"  (part 2) start-of-message marker  . . : " & Image (r (2)));
+    Put_Line (+"  (part 1) start-of-packet marker . . . : " & r (1));
+    Put_Line (+"  (part 2) start-of-message marker  . . : " & r (2));
     --  Part 1: validated by AoC: 1802
     --  Part 2: validated by AoC: 3551
   end if;

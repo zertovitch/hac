@@ -20,6 +20,7 @@ procedure AoC_2022_04 is
 
 begin
   Open (f, "aoc_2022_04.txt");
+Read_Data :
   while not End_Of_File (f) loop
     --  Read data in the form: "2-4,6-8":
     Get (f, l1);
@@ -36,13 +37,13 @@ begin
     if u1 >= l2 and u2 >= l1 then
       --  Count overlaps:
       t2 := t2 + 1;
-      -- The sets are separated when and only when u1 < l2 or u2 < l1.
-      -- Thus the condition for an overlap is:
+      --  The sets are separated when and only when u1 < l2 or u2 < l1.
+      --  Thus the condition for an overlap is:
       --     not (u1 < l2 or u2 < l1)
-      -- which is equivalent to:
+      --  which is equivalent to:
       --     u1 >= l2 and u2 >= l1
     end if;
-  end loop;
+  end loop Read_Data;
   Close (f);
 
   if Argument_Count >= 2 then
@@ -54,8 +55,8 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: pairs with redundancies . . : " & Image (t1));
-    Put_Line (+"Part 2: pairs with overlaps . . . . : " & Image (t2));
+    Put_Line (+"Part 1: pairs with redundancies . . : " & t1);
+    Put_Line (+"Part 2: pairs with overlaps . . . . : " & t2);
     --  Part 1: validated by AoC: 657
     --  Part 2: validated by AoC: 938
   end if;
