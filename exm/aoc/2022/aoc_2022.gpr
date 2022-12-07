@@ -19,6 +19,7 @@ project AoC_2022 is
    AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
    for Main use (
+     "aoc_2022_07.adb",
      "aoc_2022_06.adb",
      "aoc_2022_05.adb",
      "aoc_2022_04.adb",
