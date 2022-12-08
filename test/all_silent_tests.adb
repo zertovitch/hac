@@ -176,6 +176,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"05", +"VQZNJMWTR NLCDCLVMQ");          --  Supply Stacks
     Launch_AoC (+"2022", +"06", +"1802 3551");                    --  Tuning Trouble
     Launch_AoC (+"2022", +"07", +"1749646 1498966");              --  No Space Left On Device
+    Launch_AoC (+"2022", +"08", +"1843 180000");                  --  Treetop Tree House
     --
     New_Line (2);
     Put_Line ("----> Done.");
