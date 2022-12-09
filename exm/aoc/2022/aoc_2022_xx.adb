@@ -82,7 +82,7 @@ Parts :
     Close (f);
     r (part) := 0;
   end loop Parts;
-  --
+
   if Argument_Count >= 2 then
     --  Compiler test mode.
     if r (1) /= Integer'Value (To_String (Argument (1))) or

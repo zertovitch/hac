@@ -48,7 +48,7 @@ project AoC_2022 is
      "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
      "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
      "-gnatyx",       --  Style: check x:no extra parens
-     "-gnatye",       --  Style: check e:end/exit labels present
+     --  "-gnatye",   --  Style: check e:end/exit labels present
      "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
    );
 
