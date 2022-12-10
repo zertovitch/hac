@@ -12,30 +12,44 @@ with HAT;
 procedure AoC_2022_09 is
   use HAT;
 
-  verbose : constant Boolean := True;
-  T0 : constant Time := Clock;
-  res : array (1 .. 2) of Integer;
+  mx : constant := 300;
+  my : constant := 1000;
+  type Column is array (1 .. my) of Boolean;
+  empty : Column;
+  map : array (1 .. mx) of Column;
 
-  c : Character;
-  total, steps : Integer;
-  f : File_Type;
-
-  m : constant := 1000;
-  map : array (1 .. m, 1 .. m) of Boolean;
-
-  procedure Show is
+  --  PPM output adapted from AoC_2022_08.
+  --
+  procedure Dump_PPM (title : VString) is
+    subtype Color_Range is Natural range 0 .. 255;
+    type Pixel is record
+      R, G, B : Color_Range;
+    end record;
+    d : File_Type;
+    px : Pixel;
+    min_x : constant := 1;
+    max_x : constant := mx;  --  200;
+    min_y : constant := 1;   --  401;
+    max_y : constant := my;  --  990;
   begin
-    for y in reverse 1 .. m loop
-      for x in 1 .. m loop
-        if map (x, y) then
-        Put ('#');
-        else
-        Put (' ');
-        end if;
+    Create (d, title & ".ppm");
+    Put (d, "P6" & Chr (10));
+    Put (d, max_x - min_x + 1); Put (d, ' ');
+    Put (d, max_y - min_y + 1); Put (d, Chr (10));
+    Put (d, "255" & Chr (10));
+    for y in reverse min_y .. max_y loop
+      for x in min_x .. max_x loop
+        case map (x)(y) is
+          when False => px.R := 16#ff#; px.G := 16#ff#; px.B := 16#cc#;
+          when True  => px.R := 16#66#; px.G := 16#00#; px.B := 16#66#;
+        end case;
+        Put (d, Chr (px.R));
+        Put (d, Chr (px.G));
+        Put (d, Chr (px.B));
       end loop;
-      New_Line;
     end loop;
-  end;
+    Close (d);
+  end Dump_PPM;
 
   type Movement is (L, R, U, D);
 
@@ -45,54 +59,61 @@ procedure AoC_2022_09 is
     x, y : Natural;
   end record;
 
+  type Rope_Type is array (0 .. 9) of Pos;
+
+  rope, old_rope : Rope_Type;
+
+  len : Positive;
+
+  type Method_for_following is (use_previous_position, reduce_distance);
+
+  meth : constant Method_for_following := reduce_distance;
+
+  verbose : constant Boolean := False;
+  T0 : constant Time := Clock;
+  res : array (1 .. 2) of Integer;
+
+  c : Character;
+  total, steps : Integer;
+  f : File_Type;
+
   function Dist (a, b : Pos) return Natural is
   begin
     return
       Max (abs (a.x - b.x), abs (a.y - b.y));
-  end;
+  end Dist;
 
-  H, old_H : Pos;
-
-  type Big_Rope is array (1 .. 9) of Pos;
-
-  T, old_T : Big_Rope;
-
-  len : Positive;
-
-  type Follow_Method is (meth_1, meth_2);
-
-  meth : constant Follow_Method := meth_2;
-
-  procedure Follow_2 (a : Pos; b : in out Pos) is
-    dx, dy : Integer := 0;
+  procedure Follow_Geometrically (head : in Pos; tail : in out Pos) is
+    function Sign (I : Integer) return Integer is
+    begin
+      if I > 0 then
+        return 1;
+      elsif I < 0 then
+        return -1;
+      else
+        return 0;
+      end if;
+    end Sign;
   begin
-    if a.x = b.x and then abs (a.y - b.y) > 1 then
-      if a.y > b.y then dy := 1; else dy := -1; end if;
-    elsif a.y = b.y and then abs (a.x - b.x) > 1 then
-      if a.x > b.x then dx := 1; else dx := -1; end if;
-    elsif abs (a.y - b.y) + abs (a.x - b.x) > 2 then
-      if a.x > b.x then dx := 1; else dx := -1; end if;
-      if a.y > b.y then dy := 1; else dy := -1; end if;
-    end if;
-    b.x := b.x + dx;
-    b.y := b.y + dy;
-  end;
+    --  The tail follows the head with a step of maximum 1 in each dimension.
+    tail.x := tail.x + Sign (head.x - tail.x);
+    tail.y := tail.y + Sign (head.y - tail.y);
+  end Follow_Geometrically;
 
 begin
+  for y in Column'Range loop
+    empty (y) := False;
+  end loop;
 
 Parts :
   for part in 1 .. 2 loop
-    H.x := m / 2;
-    H.y := m / 2;
-    for i in T'Range loop
-      T (i) := H;
+    for i in rope'Range loop
+      rope (i).x := mx / 2;
+      rope (i).y := my / 2;
     end loop;
-    for x in 1 .. m loop
-      for y in 1 .. m loop
-        map (x, y) := False;
-      end loop;
+    for x in map'Range loop
+      map (x) := empty;
     end loop;
-    map (H.x, H.y) := True;
     case part is
       when 1 => len := 1;
       when 2 => len := 9;
@@ -105,44 +126,40 @@ Parts :
       Get (f, steps);
       move := Movement'Value (c & "");
       for count in 1 .. steps loop
-        old_H := H;
+        old_rope := rope;
+        --  Move the head of the rope:
         case move is
-          when L => H.x := H.x - 1;
-          when R => H.x := H.x + 1;
-          when D => H.y := H.y - 1;
-          when U => H.y := H.y + 1;
+          when L => rope (0).x := rope (0).x - 1;
+          when R => rope (0).x := rope (0).x + 1;
+          when D => rope (0).y := rope (0).y - 1;
+          when U => rope (0).y := rope (0).y + 1;
         end case;
-        if Dist (H, T (1)) < 2 then
-          null;
-        else
-          T (1) := old_H;
-        end if;
-        for i in 2 .. len loop
-          old_T := T;
-          case meth is
-            when meth_1 =>
-              if Dist (T (i - 1), T (i)) < 2 then
-                null;
-              else
-                T (i) := old_T (i - 1);
-              end if;
-            when meth_2 =>
-              Follow_2 (T (i - 1), T (i));
-          end case;
+        for i in 1 .. len loop
+          if Dist (rope (i - 1), rope (i)) > 1 then
+            case meth is
+              when use_previous_position =>
+                rope (i) := old_rope (i - 1);
+              when reduce_distance =>
+                Follow_Geometrically (rope (i - 1), rope (i));
+            end case;
+          end if;
         end loop;
-        map (T (len).x, T (len).y) := True;
+        map (rope (len).x)(rope (len).y) := True;
       end loop;
     end loop Read_Data;
     Close (f);
 
-    if verbose and then m < 100 then
-      Show;
+    if verbose then
+      Dump_PPM
+        (To_Lower
+           (+"length_" & Image (len) & '_' &
+            Method_for_following'Image (meth)));
     end if;
 
     total := 0;
-    for x in 1 .. m loop
-      for y in 1 .. m loop
-        if map (x, y) then total := total + 1; end if;
+    for x in 1 .. mx loop
+      for y in 1 .. my loop
+        if map (x)(y) then total := total + 1; end if;
       end loop;
     end loop;
 
@@ -158,8 +175,10 @@ Parts :
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: visited points of tail . . . . . : " & res (1));
-    Put_Line (+"Part 2: visited points of tail of rope . : " & res (2));
+    Put_Line (+"Method for following: " & To_Lower (+Method_for_following'Image (meth)));
+    Put_Line (+"Number of visited points tail for a rope of...");
+    Put_Line (+"  (part 1) length 1: " & res (1));
+    Put_Line (+"  (part 2) length 9: " & res (2));
     --  Part 1: validated by AoC: 6314
     --  Part 2: validated by AoC: 2504
   end if;

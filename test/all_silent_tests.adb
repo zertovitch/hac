@@ -178,6 +178,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"07", +"1749646 1498966");              --  No Space Left On Device
     Launch_AoC (+"2022", +"08", +"1843 180000");                  --  Treetop Tree House
     Launch_AoC (+"2022", +"09", +"6314 2504");                    --  Rope Bridge
+    Launch_AoC (+"2022", +"10", +"12880");                        --  Cathode-Ray Tube
     --
     New_Line (2);
     Put_Line ("----> Done.");

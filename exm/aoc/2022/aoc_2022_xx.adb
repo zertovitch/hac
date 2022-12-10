@@ -64,6 +64,23 @@ procedure AoC_2022_XX is
     x  := nx;
   end Rotate;
 
+  m : constant := 1000;
+  map : array (1 .. m, 1 .. m) of Boolean;
+
+  procedure Show is
+  begin
+    for y in reverse 1 .. m loop
+      for x in 1 .. m loop
+        if map (x, y) then
+        Put ('#');
+        else
+        Put (' ');
+        end if;
+      end loop;
+      New_Line;
+    end loop;
+  end;
+
 begin
   r (1) := 0;
   r (2) := 0;
