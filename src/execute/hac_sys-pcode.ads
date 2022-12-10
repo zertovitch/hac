@@ -330,6 +330,8 @@ package HAC_Sys.PCode is
     SF_Log,
     SF_Sqrt,
     SF_Arctan,
+    SF_Sgn_Int,
+    SF_Sgn_Float,
     SF_EOF,
     SF_EOLN,
     SF_Is_Open,

@@ -84,20 +84,10 @@ procedure AoC_2022_09 is
   end Dist;
 
   procedure Follow_Geometrically (head : in Pos; tail : in out Pos) is
-    function Sign (I : Integer) return Integer is
-    begin
-      if I > 0 then
-        return 1;
-      elsif I < 0 then
-        return -1;
-      else
-        return 0;
-      end if;
-    end Sign;
   begin
     --  The tail follows the head with a step of maximum 1 in each dimension.
-    tail.x := tail.x + Sign (head.x - tail.x);
-    tail.y := tail.y + Sign (head.y - tail.y);
+    tail.x := tail.x + Sgn (head.x - tail.x);
+    tail.y := tail.y + Sgn (head.y - tail.y);
   end Follow_Geometrically;
 
 begin

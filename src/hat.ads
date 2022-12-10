@@ -65,29 +65,29 @@ package HAT is
   type Real is digits System.Max_Digits;
   package RIO is new Ada.Text_IO.Float_IO (Real);
 
-  function "**" (F1, F2 : Real) return Real;
+  function "**" (F1, F2 : Real) return Real with Inline;
 
   --  Square Root
-  function Sqrt  (I : Integer) return Real;
-  function Sqrt  (F : Real)    return Real;
+  function Sqrt (I : Integer) return Real with Inline;
+  function Sqrt (F : Real)    return Real with Inline;
 
   --  Integer to Character (equivalent to Character'Val (I))
-  function Chr   (I : Integer)   return Character;
+  function Chr (I : Integer)   return Character with Inline;
 
   --  Character to Integer (equivalent to Character'Pos (C))
-  function Ord   (C : Character) return Integer;
+  function Ord (C : Character) return Integer with Inline;
 
   --  Next Character (equivalent to Character'Succ (C))
-  function Succ  (C : Character) return Character;
+  function Succ (C : Character) return Character with Inline;
 
   --  Previous Character (equivalent to Character'Pred (C))
-  function Pred  (C : Character) return Character;
+  function Pred (C : Character) return Character with Inline;
 
   --  Round to an Integer (equivalent to Integer (F))
-  function Round (F : Real) return Integer;
+  function Round (F : Real) return Integer with Inline;
 
   --  Truncate
-  function Trunc (F : Real) return Integer;
+  function Trunc (F : Real) return Integer with Inline;
 
   --  Min & Max
   function Min (I, J : Integer) return Integer renames Integer'Min;
@@ -97,14 +97,18 @@ package HAT is
 
   Pi : constant := Ada.Numerics.Pi;
 
-  --  Trigonometric Functions     w/ arguments in radians
-  function Sin    (F : Real) return Real;
-  function Cos    (F : Real) return Real;
-  function Arctan (F : Real) return Real;
+  --  Trigonometric functions w/ arguments in radians
+  function Sin    (F : Real) return Real with Inline;
+  function Cos    (F : Real) return Real with Inline;
+  function Arctan (F : Real) return Real with Inline;
 
-  --  Logarithmic / Exponential Functions
-  function Log (F : Real) return Real;
-  function Exp (F : Real) return Real;
+  --  Logarithmic / Exponential functions
+  function Log (F : Real) return Real with Inline;
+  function Exp (F : Real) return Real with Inline;
+
+  --  Sign function
+  function Sgn (I : Integer) return Integer with Inline;
+  function Sgn (F : Real)    return Real with Inline;
 
   -----------------------------
   --  Pseudo-random numbers  --

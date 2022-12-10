@@ -148,8 +148,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAT_Funct ("Round",               Ints,   SF_Round_Float_to_Int);
     Enter_HAT_Funct ("Trunc",               Ints,   SF_Trunc_Float_to_Int);
     --
-    Enter_HAT_Funct ("Min",                 Ints,   SF_Min_Int);  --  Overloaded for float
-    Enter_HAT_Funct ("Max",                 Ints,   SF_Max_Int);  --  Overloaded for float
+    Enter_HAT_Funct ("Min",                 Ints,   SF_Min_Int);  --  Overloaded for floats
+    Enter_HAT_Funct ("Max",                 Ints,   SF_Max_Int);  --  Overloaded for floats
     --
     Enter_HAT_Const ("Pi",                  HAT.Pi);
     Enter_HAT_Funct ("Sin",                 Floats, SF_Sin);
@@ -158,6 +158,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAT_Funct ("Log",                 Floats, SF_Log);
     Enter_HAT_Funct ("Sqrt",                Floats, SF_Sqrt);
     Enter_HAT_Funct ("Arctan",              Floats, SF_Arctan);
+    Enter_HAT_Funct ("Sgn",                 Ints,   SF_Sgn_Int);  --  Overloaded for floats
     --
     Enter_HAT_Funct ("Rand",                Ints,   SF_Random_Int);
     Enter_HAT_Funct ("Rnd",                 Floats, SF_Random_Float);

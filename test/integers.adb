@@ -65,6 +65,13 @@ begin
   --
   Test_Patching;
   --
-  Assert (Max (1, 2) = 2, +"HAT.Max");
-  Assert (Min (1, 2) = 1, +"HAT.Min");
+  Assert (HAT.Max (1, 2) = 2, +"HAT.Max [1]");
+  Assert (HAT.Max (2, 1) = 2, +"HAT.Max [2]");
+  --
+  Assert (HAT.Min (1, 2) = 1, +"HAT.Min [1]");
+  Assert (HAT.Min (2, 1) = 1, +"HAT.Min [2]");
+  --
+  Assert (HAT.Sgn (123)  =  1, +"HAT.Sgn [1]");
+  Assert (HAT.Sgn (0)    =  0, +"HAT.Sgn [2]");
+  Assert (HAT.Sgn (-123) = -1, +"HAT.Sgn [3]");
 end Integers;

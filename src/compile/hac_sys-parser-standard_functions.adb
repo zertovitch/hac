@@ -59,7 +59,8 @@ package body HAC_Sys.Parser.Standard_Functions is
         when SF_T_Succ | SF_T_Pred =>  -- S'Succ, S'Pred : RM 3.5 (22, 25)
           Expected (1) := Discrete_Typ;
         when SF_Round_Float_to_Int | SF_Trunc_Float_to_Int |
-             SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan
+             SF_Sin | SF_Cos | SF_Exp | SF_Log | SF_Sqrt | SF_Arctan |
+             SF_Sgn_Int
           =>
           Expected (1) := Numeric_Typ_Set;
         when SF_Image_Ints =>
@@ -180,6 +181,11 @@ package body HAC_Sys.Parser.Standard_Functions is
           end if;
           if Actual (2).TYP /= Actual (1).TYP then
             Type_Mismatch (CD, err_parameter_types_do_not_match, Actual (2), Actual (1));
+          end if;
+        when SF_Sgn_Int =>
+          Return_Typ := Actual (1);
+          if Actual (1).TYP = Floats then
+            Code_Adjusted := SF_Sgn_Float;
           end if;
         when SF_Image_Ints =>
           case Actual (1).TYP is

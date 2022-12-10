@@ -50,31 +50,31 @@ procedure Floats is
 
   neg_float_value : constant := -5.07;
 
+  function Almost_equal (x, y : Real) return Boolean is
+    eps : constant := 1.0e-14;  --  = 9.99999... * 10**(-Real'Digits).
+    --  2.22044604925031E-16 = Real'Base'Model_Epsilon
+    tol : Real := eps;
+    z, ax, ay, ma : Real;
+    eq : Boolean;
+  begin
+    z := abs (x - y);
+    ax := abs x;
+    ay := abs y;
+    ma := ax;
+    if ay < ma then ma := ay; end if;
+    --  ma is the minimum of absolute values of x and y.
+    tol := tol * ma;  --  Relative tolerance
+    eq := z <= tol;
+    Assert (eq,
+             +"Issue on equality test: x=" &
+             Real'Image (x) & ", y=" &
+             Real'Image (y) & ", x-y=" &
+             Real'Image (x - y) & ", tol=" &
+             Real'Image (tol) & "]  ");
+    return eq;
+  end Almost_equal;
+
   procedure Base_Test is
-    --
-    function Almost_equal (x, y : Real) return Boolean is
-      eps : constant := 1.0e-14;  --  = 9.99999... * 10**(-Real'Digits).
-      --  2.22044604925031E-16 = Real'Base'Model_Epsilon
-      tol : Real := eps;
-      z, ax, ay, ma : Real;
-      eq : Boolean;
-    begin
-      z := abs (x - y);
-      ax := abs x;
-      ay := abs y;
-      ma := ax;
-      if ay < ma then ma := ay; end if;
-      --  ma is the minimum of absolute values of x and y.
-      tol := tol * ma;  --  Relative tolerance
-      eq := z <= tol;
-      Assert (eq,
-               +"Bug [Base_Test " &
-               Real'Image (x) & ", " &
-               Real'Image (y) & ", " &
-               Real'Image (x - y) & ", " &
-               Real'Image (tol) & "]  ");
-      return eq;
-    end Almost_equal;
   begin
     --  Even with the same Real'Image, the difference in parsing (HAC for 10-base numbers,
     --  GNAT otherwise) induces differences which are beyond Real's precision, but large
@@ -319,6 +319,13 @@ begin
   Base_Test;
   Three_Lakes_S;
   --
-  Assert (Max (1.0, 2.0) = 2.0, +"HAT.Max");
-  Assert (Min (1.0, 2.0) = 1.0, +"HAT.Min");
+  Assert (Almost_Equal (HAT.Max (1.0, 2.0) ,  2.0), +"HAT.Max [1]");
+  Assert (Almost_Equal (HAT.Max (2.0, 1.0) ,  2.0), +"HAT.Max [2]");
+  --
+  Assert (Almost_Equal (HAT.Min (1.0, 2.0) ,  1.0), +"HAT.Min [1]");
+  Assert (Almost_Equal (HAT.Min (2.0, 1.0) ,  1.0), +"HAT.Min [2]");
+  --
+  Assert (Almost_Equal (HAT.Sgn (123.0)    ,  1.0), +"HAT.Sgn [1]");
+  Assert (Almost_Equal (HAT.Sgn (0.0)      ,  0.0), +"HAT.Sgn [2]");
+  Assert (Almost_Equal (HAT.Sgn (-123.0)   , -1.0), +"HAT.Sgn [3]");
 end Floats;

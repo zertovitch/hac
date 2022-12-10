@@ -85,8 +85,7 @@ procedure HAC is
     main_Ada_file_name := HAT.To_VString (Ada_file_name);
     if verbosity > 1 then
       New_Line;
-      Put_Line (HAC_margin_1 & version_info);
-      Put_Line (HAC_margin_1 & caveat & " Type ""hac"" for license.");
+      Put_Line (HAC_margin_1 & "HAC is free and open-source. Type ""hac"" for license.");
     end if;
     Open (f, In_File, Ada_file_name);
     HAC_Sys.Builder.Skip_Shebang (f, shebang_offset);
@@ -220,7 +219,6 @@ procedure HAC is
     PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
     PLCE ("         -h2    : show more help about options");
     NLCE;
-    PLCE (caveat);
     PLCE ("Note: HAC (this command-line tool) accepts source files with shebang's,");
     PLCE ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
     Show_License (Current_Error, "hac_sys.ads");

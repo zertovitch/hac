@@ -82,6 +82,16 @@ package body HAT is
     return REF.Exp (F);
   end Exp;
 
+  function Sgn (I : Integer) return Integer is
+  begin
+    return (if I > 0 then 1 elsif I < 0 then -1 else 0);
+  end Sgn;
+
+  function Sgn (F : Real) return Real is
+  begin
+    return (if F > 0.0 then 1.0 elsif F < 0.0 then -1.0 else 0.0);
+  end Sgn;
+
   function Rand (I : Integer) return Integer is
     res : Integer;
   begin

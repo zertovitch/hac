@@ -8,7 +8,6 @@ package HAC_Pkg is
 
   verbosity : Natural := 0;
 
-  caveat       : constant String := "Caution: HAC is not a complete Ada compiler.";
   version_info : constant String :=
     "Compiler version: " & HAC_Sys.version & " dated " & HAC_Sys.reference & '.';
 

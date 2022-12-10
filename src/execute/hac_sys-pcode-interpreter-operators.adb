@@ -266,6 +266,8 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_Log        => Top_Item.R := HAT.Log (Top_Item.R);
       when SF_Sqrt       => Top_Item.R := HAT.Sqrt (Top_Item.R);
       when SF_Arctan     => Top_Item.R := HAT.Arctan (Top_Item.R);
+      when SF_Sgn_Int    => Top_Item.I := (if Top_Item.I > 0 then 1 elsif Top_Item.I < 0 then -1 else 0);
+      when SF_Sgn_Float  => Top_Item.R := (if Top_Item.R > 0.0 then 1.0 elsif Top_Item.R < 0.0 then -1.0 else 0.0);
       when SF_Random_Int => Top_Item.I := HAC_Integer (HAT.Rand (Integer (Top_Item.I)));
       when SF_Min_Int =>
         Pop (ND);
