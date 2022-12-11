@@ -65,9 +65,17 @@ procedure AoC_2022_09 is
 
   len : Positive;
 
-  type Method_for_following is (use_previous_position, reduce_distance);
+  type Method_for_following is
+    (use_previous_position,
+     --  ^ When needed for preserving the distance, a tail knot goes
+     --    into the head knot's previous position.
+     --    This method is correct but doesn't deliver the result
+     --    expected by Advent of Code...
+     reduce_distance);
+     --  ^ We move the tail knot by at most one in each dimension
+     --    towards the head knot.
 
-  meth : constant Method_for_following := reduce_distance;
+  method : constant Method_for_following := reduce_distance;
 
   verbose : constant Boolean := False;
   T0 : constant Time := Clock;
@@ -126,7 +134,7 @@ Parts :
         end case;
         for i in 1 .. len loop
           if Dist (rope (i - 1), rope (i)) > 1 then
-            case meth is
+            case method is
               when use_previous_position =>
                 rope (i) := old_rope (i - 1);
               when reduce_distance =>
@@ -143,7 +151,7 @@ Parts :
       Dump_PPM
         (To_Lower
            (+"length_" & Image (len) & '_' &
-            Method_for_following'Image (meth)));
+            Method_for_following'Image (method)));
     end if;
 
     total := 0;
@@ -165,7 +173,7 @@ Parts :
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Method for following: " & To_Lower (+Method_for_following'Image (meth)));
+    Put_Line (+"Method for following: " & To_Lower (+Method_for_following'Image (method)));
     Put_Line (+"Number of visited points tail for a rope of...");
     Put_Line (+"  (part 1) length 1: " & res (1));
     Put_Line (+"  (part 2) length 9: " & res (2));
