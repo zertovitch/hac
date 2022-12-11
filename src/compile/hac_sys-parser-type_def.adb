@@ -287,7 +287,7 @@ package body HAC_Sys.Parser.Type_Def is
         when others =>
           null;
       end case;  --  CD.Sy
-      Test (CD, FSys_TD, Empty_Symset, err_incorrectly_used_symbol);
+      Test (CD, FSys_TD, empty_symset, err_incorrectly_used_symbol);
     end if;
     if CD.error_count = 0 then
       pragma Assert (Level = Initial_Level);

@@ -334,9 +334,16 @@ package body HAC_Sys.Parser.Helpers is
   end Forbid_Type_Coercion;
 
   function Singleton (s : KeyWSymbol) return Symset is
-    res : Symset := Empty_Symset;
+    res : Symset := empty_symset;
   begin
     res (s) := True;
+    return res;
+  end Singleton;
+
+  function Singleton (t : Typen) return Typ_Set is
+    res : Typ_Set := empty_typ_set;
+  begin
+    res (t) := True;
     return res;
   end Singleton;
 

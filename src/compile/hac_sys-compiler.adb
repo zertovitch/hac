@@ -594,10 +594,10 @@ package body HAC_Sys.Compiler is
         CD.IdTab (new_id_index).decl_kind := spec_resolved;
         --  Why spec_resolved ? missing bodies for eventual suprograms
         --  in that package are checked anyway.
-        Parser.Packages.Package_Declaration (CD, Empty_Symset, unit_block, needs_body);
+        Parser.Packages.Package_Declaration (CD, empty_symset, unit_block, needs_body);
       when Package_Body =>
         unit_block.level := 0;  --  Actually, not a block.
-        Parser.Packages.Package_Body (CD, Empty_Symset, unit_block);
+        Parser.Packages.Package_Body (CD, empty_symset, unit_block);
         needs_body := False;
     end case;
     LD.close_source (file_name);

@@ -114,8 +114,7 @@ package HAC_Sys.Parser.Helpers is
 
   --  Singletons:
 
-  function Singleton (s : KeyWSymbol) return Symset;
-  pragma Inline (Singleton);
+  function Singleton (s : KeyWSymbol) return Symset with Inline;
 
   --  Specific singletons:
 
@@ -292,6 +291,8 @@ package HAC_Sys.Parser.Helpers is
   ------------------
   --  Types sets  --
   ------------------
+
+  function Singleton (t : Typen) return Typ_Set with Inline;
 
   Numeric_Typ_Set  : constant Typ_Set := (Numeric_Typ         => True, others => False);
   Bools_Set        : constant Typ_Set := (Bools               => True, others => False);

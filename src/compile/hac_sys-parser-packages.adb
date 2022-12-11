@@ -58,7 +58,7 @@ package body HAC_Sys.Parser.Packages is
     loop
       Test (
         CD, Declaration_Symbol + END_Symbol + PRIVATE_Symbol,
-        Empty_Symset,
+        empty_symset,
         err_incorrectly_used_symbol,
         stop_on_error => True  --  Exception is raised there if there is an error.
       );
@@ -142,7 +142,7 @@ package body HAC_Sys.Parser.Packages is
     --  Test semicolon but don't absorb it (we might be at the end of the stream).
     Test
        (CD, Semicolon_Set,
-        Empty_Symset,
+        empty_symset,
         err_incorrectly_used_symbol,
         stop_on_error => True);  --  Exception is raised there if there is an error.
     CD.pkg_prefix := previous_pkg_prefix;
@@ -177,7 +177,7 @@ package body HAC_Sys.Parser.Packages is
     loop
       Test (
         CD, Declaration_Symbol + BEGIN_Symbol + END_Symbol + PRIVATE_Symbol,
-        Empty_Symset,
+        empty_symset,
         err_incorrectly_used_symbol,
         stop_on_error => True  --  Exception is raised there if there is an error.
       );
@@ -260,7 +260,7 @@ package body HAC_Sys.Parser.Packages is
     --  Test semicolon but don't absorb it (we might be at the end of the stream).
     Test
        (CD, Semicolon_Set,
-        Empty_Symset,
+        empty_symset,
         err_incorrectly_used_symbol,
         stop_on_error => True);  --  Exception is raised there if there is an error.
 

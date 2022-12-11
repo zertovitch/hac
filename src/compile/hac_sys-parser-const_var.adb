@@ -125,7 +125,7 @@ package body HAC_Sys.Parser.Const_Var is
         is_typed := True;
         Type_Def.Type_Definition (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
       end if;
-      Test (CD, Becomes_EQL_Semicolon, Empty_Symset, err_incorrectly_used_symbol);
+      Test (CD, Becomes_EQL_Semicolon, empty_symset, err_incorrectly_used_symbol);
       --
       if CD.Sy = EQL then
         --  Common mistake by BASIC or C programmers.
@@ -182,7 +182,7 @@ package body HAC_Sys.Parser.Const_Var is
       end if;
       if is_constant and is_typed then
         --  For typed constants, the ":=" is required and consumed with the Assignment below.
-        Test (CD, Becomes_Set, Empty_Symset, err_BECOMES_missing);
+        Test (CD, Becomes_Set, empty_symset, err_BECOMES_missing);
       end if;
       --
       if not is_untyped_constant then

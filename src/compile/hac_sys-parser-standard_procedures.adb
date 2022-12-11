@@ -134,8 +134,49 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Typen'Pos (Item_Typ.TYP));
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Puts;
-    --
+
+    type Param_Mode is (by_value, by_reference);
+
+    type Param is record
+      mode : Param_Mode;
+      typ  : Typen;
+    end record;
+
+    type Param_List is array (Positive range <>) of Param;
+
+    procedure Parse_Single_Profile (pl : Param_List) is
+      --  This fits non-overloaded procedures.
+      X : Exact_Subtyp;
+    begin
+      if pl'Length = 0 then
+        return;  --  No parameter
+      else
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        for i in pl'Range loop
+          --  Parse the passed parameter's variable (when by reference)
+          --  or expression (when by value) and emit corresponding VM code
+          --  that will have in fine an address or a value pushed on the stack.
+          case pl (i).mode is
+            when by_reference => Push_by_Reference_Parameter (CD, Level, FSys, X);
+            when by_value     => Expression (CD, Level, Comma_RParent, X);
+          end case;
+          --  Check the base type.
+          if X.TYP /= pl (i).typ then
+            Type_Mismatch
+              (CD, err_parameter_types_do_not_match,
+               Found => X, Expected => Singleton (pl (i).typ));
+          end if;
+          --  Parse the comma separating current parameter from next one.
+          if i < pl'Last then
+            Need (CD, Comma, err_COMMA_missing);
+          end if;
+        end loop;
+        Need (CD, RParent, err_closing_parenthesis_missing);
+      end if;
+    end Parse_Single_Profile;
+
     X, Y, Z : Exact_Subtyp;
+
   begin
     case Code is
       when SP_Get | SP_Get_Immediate | SP_Get_Line =>
@@ -177,22 +218,16 @@ package body HAC_Sys.Parser.Standard_Procedures is
         HAT_Procedure_Call (Code);
 
       when SP_Random_Seed =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expression (CD, Level, Comma_RParent, X);  --  We push the argument in the stack.
-        Check_Integer (CD, X.TYP);
+        Parse_Single_Profile ((1 => (by_value, Ints)));
         HAT_Procedure_Call (Code);
-        Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Wait | SP_Signal =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Push_by_Reference_Parameter (CD, Level, FSys, X);
-        Check_Integer (CD, X.TYP);
+        Parse_Single_Profile ((1 => (by_value, Ints)));
         if Code = SP_Wait then
           Emit (CD, k_Wait_Semaphore);
         else
           Emit (CD, k_Signal_Semaphore);
         end if;
-        Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Open | SP_Create | SP_Append | SP_Close =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
@@ -211,27 +246,17 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
       when SP_Quantum =>
         --  Cramer
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expression (CD, Level, RParent_Set, X);
-        if X.TYP /= Floats then
-          Error_then_Skip (CD, Semicolon, err_parameter_must_be_of_type_Float);
-        end if;
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Parse_Single_Profile ((1 => (by_value, Floats)));
         Emit (CD, k_Set_Quantum_Task);
 
       when SP_Priority =>
         --  Cramer
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expression (CD, Level, RParent_Set, X);
-        Check_Integer (CD, X.TYP);
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Parse_Single_Profile ((1 => (by_value, Ints)));
         Emit (CD, k_Set_Task_Priority);
 
       when SP_InheritP =>
         --  Cramer
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Boolean_Expression (CD, Level, RParent_Set, X);
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Parse_Single_Profile ((1 => (by_value, Bools)));
         Emit (CD, k_Set_Task_Priority_Inheritance);
         --
       when SP_Set_Env | SP_Set_VM_Variable | SP_Copy_File | SP_Rename =>
@@ -294,26 +319,14 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Set_Exit_Status =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expression (CD, Level, Comma_RParent, X);  --  We push the argument in the stack.
-        Check_Integer (CD, X.TYP);
-        HAT_Procedure_Call (SP_Set_Exit_Status);
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Parse_Single_Profile ((1 => (by_value, Ints)));  --  Exit code
+        HAT_Procedure_Call (Code);
 
       when SP_Delete =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Push_by_Reference_Parameter (CD, Level, FSys, X);  --  Source
-        if X.TYP /= VStrings then
-          Type_Mismatch (CD, err_parameter_types_do_not_match,
-            Found => X, Expected => VStrings_Set);
-        end if;
-        Need (CD, Comma, err_COMMA_missing);
-        Expression (CD, Level, Comma_RParent, X);          --  From
-        Check_Integer (CD, X.TYP);
-        Need (CD, Comma, err_COMMA_missing);
-        Expression (CD, Level, Comma_RParent, X);          --  Trough
-        Check_Integer (CD, X.TYP);
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Parse_Single_Profile
+          (((by_reference, VStrings),  --  Source
+            (by_value,     Ints),      --  From
+            (by_value,     Ints)));    --  Through
         HAT_Procedure_Call (Code);
 
       when SP_Push_Abstract_Console =>

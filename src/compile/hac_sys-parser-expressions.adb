@@ -82,7 +82,7 @@ package body HAC_Sys.Parser.Expressions is
           Error_then_Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
       end case;
     end if;
-    Test (CD, FSys_ND, Empty_Symset, err_incorrectly_used_symbol);
+    Test (CD, FSys_ND, empty_symset, err_incorrectly_used_symbol);
   end Static_Scalar_Expression;
 
   ------------------------------------------------------------------
@@ -222,7 +222,7 @@ package body HAC_Sys.Parser.Expressions is
     end loop;
     --
     Test
-      (CD, FSys, Empty_Symset,
+      (CD, FSys, empty_symset,
        (if FSys = Semicolon_Set then err_semicolon_missing else err_incorrectly_used_symbol));
   end Selector;
 

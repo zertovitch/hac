@@ -221,7 +221,7 @@ package HAC_Sys.Defs is
   function "+" (a : Symset; b : KeyWSymbol) return Symset;
   function "-" (a, b : Symset) return Symset;
   function "-" (a : Symset; b : KeyWSymbol) return Symset;
-  Empty_Symset : constant Symset := (others => False);
+  empty_symset : constant Symset := (others => False);
 
   -----------------
   -- Identifiers --
@@ -267,6 +267,8 @@ package HAC_Sys.Defs is
   for Typen'Size use 8;
 
   type Typ_Set is array (Typen) of Boolean;
+
+  empty_typ_set : constant Typ_Set := (others => False);
 
   subtype Standard_Typ is Typen range NOTYP .. Text_Files;
 

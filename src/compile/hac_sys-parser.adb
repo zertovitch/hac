@@ -128,7 +128,7 @@ package body HAC_Sys.Parser is
       loop
         Test (  --  Added 17-Apr-2018 to avoid infinite loop on erroneous code
           CD, Declaration_Symbol + BEGIN_Symbol,
-          Empty_Symset,
+          empty_symset,
           err_incorrectly_used_symbol,
           stop_on_error => True  --  Exception is raised there if there is an error.
         );
@@ -160,12 +160,12 @@ package body HAC_Sys.Parser is
                    ": missing specification for package body", severity => major);
               end if;
               CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.IdTab (pkg_spec_index).block_or_pkg_ref;
-              Parser.Packages.Package_Body (CD, Empty_Symset, block_data);
+              Parser.Packages.Package_Body (CD, empty_symset, block_data);
             else
               CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
               --  Why spec_resolved ? missing bodies for eventual suprograms
               --  in that package are checked anyway.
-              Parser.Packages.Package_Declaration (CD, Empty_Symset, block_data, ignored_needs_body);
+              Parser.Packages.Package_Declaration (CD, empty_symset, block_data, ignored_needs_body);
             end if;
             InSymbol;  --  Absorb ';'
           when others => null;
@@ -370,7 +370,7 @@ package body HAC_Sys.Parser is
         --  or BEGIN or, if it's a package, END  .
         Test (
           CD, FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
-          Empty_Symset,
+          empty_symset,
           err_incorrectly_used_symbol
         );
       end if;
