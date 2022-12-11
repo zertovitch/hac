@@ -17,26 +17,11 @@ with Interfaces;
 procedure AoC_2022_11 is
   use HAT, Interfaces;
 
-  c, space : Character;
-  idx, idx_comma : Integer;
-  starting_items_string : String (1 .. 18);
-  operation_string      : String (1 .. 23);
-  test_string           : String (1 .. 21);
-  monkey_true_string    : String (1 .. 28);
-  monkey_false_string   : String (1 .. 29);
-  i : Integer_64;
-  f : File_Type;
-  s : VString;
-
   subtype Monkey_Range is Integer range 0 .. 9;
-
-  last_id : Integer;
-
   type Operation_Type is (plus, times, square);
-
   type Item_Worry_List is array (1 .. 100) of Integer_64;
 
-  type Stack is record
+  type Monkey_Data is record
     top       : Natural;
     s         : Item_Worry_List;
     operation : Operation_Type;
@@ -47,37 +32,36 @@ procedure AoC_2022_11 is
     inspected : Natural;
   end record;
 
-  mm : array (Monkey_Range) of Stack;
+  mm : array (Monkey_Range) of Monkey_Data;
 
-  dest : Monkey_Range;
-  top, top_1, rounds : Positive;
   product_of_divisors : Integer_64;
+  last_id : Integer;
 
   verbose : constant Boolean := False;
-  compiler_test_mode : constant Boolean := Argument_Count >= 1;
-  T0 : constant Time := Clock;
-  r : array (1 .. 2) of Integer_64;
 
-begin
-Parts :
-  for part in 1 .. 2 loop
-    case part is
-      when 1 =>
-        rounds := 20;
-      when 2 =>
-        rounds := 10_000;
-    end case;
+  procedure Data_Acquisition is
+    c, space : Character;
+    idx, idx_comma : Integer;
+    starting_items_string : String (1 .. 18);  --  "  Starting items: "
+    operation_string      : String (1 .. 23);  --  "  Operation: new = old "
+    test_string           : String (1 .. 21);  --  "  Test: divisible by"
+    monkey_true_string    : String (1 .. 28);  --  "    If true: throw to monkey"
+    monkey_false_string   : String (1 .. 29);  --  "    If false: throw to monkey"
+    f : File_Type;
+    s : VString;
+  begin
     product_of_divisors := 1;
     last_id := -1;
     Open (f, "aoc_2022_11.txt");
   Read_Data :
     loop
       last_id := last_id + 1;
-      Skip_Line (f);
+      Skip_Line (f);  --  "Monkey [last_id]:"
       mm (last_id).top := 0;
       mm (last_id).inspected := 0;
       Get (f, starting_items_string);
       Get_Line (f, s);
+    Parse_Worries :
       loop
         idx_comma := Index (s, ',');
         if idx_comma > 0 then
@@ -90,7 +74,7 @@ Parts :
           Integer_64 (Integer_Value (Slice (s, 1, idx)));
         exit when idx_comma = 0;
         s := Slice (s, idx_comma + 1, Length (s));
-      end loop;
+      end loop Parse_Worries;
       Get (f, operation_string);
       Get (f, c);
       case c is
@@ -112,7 +96,8 @@ Parts :
       end case;
       Get (f, test_string);
       Get (f, mm (last_id).divisor);
-      product_of_divisors := product_of_divisors * Integer_64 (mm (last_id).divisor);
+      product_of_divisors :=
+        product_of_divisors * Integer_64 (mm (last_id).divisor);
       Get (f, monkey_true_string);
       Get (f, mm (last_id).if_true);
       Get (f, monkey_false_string);
@@ -121,8 +106,16 @@ Parts :
       Skip_Line (f, 2);
     end loop Read_Data;
     Close (f);
+  end Data_Acquisition;
 
-    for simulation in 1 .. rounds loop
+  rounds : array (1 .. 2) of Positive;
+
+  function Simulation (part : Positive) return Integer_64 is
+    i : Integer_64;
+    dest : Monkey_Range;
+    top, top_1 : Positive;
+  begin
+    for round in 1 .. rounds (part) loop
       for m in 0 .. last_id loop
         if verbose then
           Put_Line (+"Monkey " & m);
@@ -149,13 +142,12 @@ Parts :
                 Put (+"  Square");
               end if;
           end case;
-          case part is
-            when 1 =>
-              i := i / 3;
-            when 2 =>
-              i := i mod product_of_divisors;
-              --  ^ i mod divisor = (i mod product_of_divisors) mod divisor.
-          end case;
+          if part = 1 then
+            i := i / 3;
+          else
+            i := i mod product_of_divisors;
+            --  ^ i mod divisor = (i mod product_of_divisors) mod divisor.
+          end if;
           if i mod Integer_64 (mm (m).divisor) = 0 then
             dest := mm (m).if_true;
           else
@@ -187,8 +179,21 @@ Parts :
         top_1 := mm (m).inspected;
       end if;
     end loop;
-    r (part) := Integer_64 (top) * Integer_64 (top_1);
-    exit when compiler_test_mode;  --  We skip part 2 on compiler test.
+    return Integer_64 (top) * Integer_64 (top_1);
+  end Simulation;
+
+  compiler_test_mode : constant Boolean := Argument_Count >= 1;
+  T0 : constant Time := Clock;
+  r : array (1 .. 2) of Integer_64;
+
+begin
+  rounds (1) := 20;
+  rounds (2) := 10_000;
+Parts :
+  for part in 1 .. 2 loop
+    Data_Acquisition;
+    r (part) := Simulation (part);
+    exit when compiler_test_mode;  --  Skip part 2.
   end loop Parts;
 
   if compiler_test_mode then

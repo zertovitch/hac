@@ -70,7 +70,8 @@ procedure AoC_2022_09 is
      --  ^ When needed for preserving the distance, a tail knot goes
      --    into the head knot's previous position.
      --    This method is correct but doesn't deliver the result
-     --    expected by Advent of Code...
+     --    expected by Advent of Code - the rules represent a rare
+     --    case of ambiguity in AoC...
      reduce_distance);
      --  ^ We move the tail knot by at most one in each dimension
      --    towards the head knot.
