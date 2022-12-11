@@ -79,7 +79,7 @@ package body HAC_Sys.Parser.Expressions is
           C.R  := HAC_Float (Sign) * CD.RNum;
           InSymbol;
         when others =>
-          Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
+          Error_then_Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
       end case;
     end if;
     Test (CD, FSys_ND, Empty_Symset, err_incorrectly_used_symbol);

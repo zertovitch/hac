@@ -294,7 +294,7 @@ package body HAC_Sys.Parser.Statements is
       if CD.Sy = LOOP_Symbol then
         InSymbol;
       else
-        Skip (CD, Statement_Begin_Symbol, err_missing_closing_IF);
+        Error_then_Skip (CD, Statement_Begin_Symbol, err_missing_closing_IF);
       end if;
       Sequence_of_Statements (CD, END_Set, Block_Data);
       Emit_1 (CD, FCT_Loop_End, Operand_2_Type (B));
@@ -366,7 +366,7 @@ package body HAC_Sys.Parser.Statements is
     begin
       InSymbol;
       if CD.Sy = Semicolon then
-        Skip (CD, Semicolon, err_missing_expression_for_delay);
+        Error_then_Skip (CD, Semicolon, err_missing_expression_for_delay);
       else
         Expression (CD, Block_Data.level, Semicolon_Set, Y);
         if Y.TYP /= Floats and Y.TYP /= Durations then
@@ -621,7 +621,7 @@ package body HAC_Sys.Parser.Statements is
           Integer'Max (Block_Data.max_data_allocation_index, Block_Data.data_allocation_index);
         CD.Blocks_Table (CD.Display (Block_Data.level)).VSize := Block_Data.max_data_allocation_index;
       else
-        Skip (CD, Fail_after_FOR + FSys_St, err_identifier_missing);
+        Error_then_Skip (CD, Fail_after_FOR + FSys_St, err_identifier_missing);
       end if;
       --
       Emit_2 (CD, k_Push_Address,
@@ -654,7 +654,7 @@ package body HAC_Sys.Parser.Statements is
     procedure Select_Statement is
       procedure Select_Error (N : Compile_Error) is
       begin
-        Skip (CD, Semicolon, N);
+        Error_then_Skip (CD, Semicolon, N);
       end Select_Error;
 
       --  Either a Timed or Conditional Entry Call.
@@ -680,7 +680,7 @@ package body HAC_Sys.Parser.Statements is
           if CD.Sy = Semicolon then
             InSymbol;
           else
-            Skip (CD, Semicolon, err_semicolon_missing);
+            Error_then_Skip (CD, Semicolon, err_semicolon_missing);
           end if;
           if CD.Sy not in OR_Symbol | ELSE_Symbol then
             Sequence_of_Statements (CD, ELSE_OR, Block_Data);
@@ -700,7 +700,7 @@ package body HAC_Sys.Parser.Statements is
                 if Y.TYP /= Floats then
                   Select_Error (err_wrong_type_in_DELAY);
                 else        --  end of timed Entry select ObjCode, do patching
-                  CD.ObjCode (patch (1)).Y := Operand_2_Type (CD.LC);  --  if Entry not made, Skip rest
+                  CD.ObjCode (patch (1)).Y := Operand_2_Type (CD.LC);  --  if Entry not made, skip rest
                   J                      := patch (3) - patch (2) + 1;
                   IStart                 := patch (0);
                   IEnd                   := CD.LC - 1;
@@ -864,7 +864,7 @@ package body HAC_Sys.Parser.Statements is
               --  Generate a Task delay, calculate return value if req'D
               InSymbol;
               if CD.Sy = Semicolon then
-                Skip (CD, Semicolon, err_missing_expression_for_delay);
+                Error_then_Skip (CD, Semicolon, err_missing_expression_for_delay);
               else          -- calculate return value
                 Expression (CD, Block_Data.level, Semicolon_Set, Y);
                 Emit_2 (CD, k_Selective_Wait, 4, Operand_2_Type (CD.LC + 2));  --  Update delay time

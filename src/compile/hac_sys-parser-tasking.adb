@@ -101,7 +101,7 @@ package body HAC_Sys.Parser.Tasking is
         if CD.Sy = IDent and CD.Id = TaskID then
           InSymbol;
         else
-          Skip (CD, Semicolon, err_incorrect_name_after_END);
+          Error_then_Skip (CD, Semicolon, err_incorrect_name_after_END);
         end if;
         Need_Semicolon_after_Declaration (CD, FSys);
       end if;

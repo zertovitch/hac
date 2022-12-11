@@ -184,10 +184,10 @@ package body HAC_Sys.Parser.Calls is
         InSymbol (CD);
         Subprogram_or_Entry_Call (CD, Level, FSys, Addr, CallType);
       else
-        Skip (CD, Semicolon, err_identifier_missing);
+        Error_then_Skip (CD, Semicolon, err_identifier_missing);
       end if;
     else
-      Skip (CD, Semicolon, err_incorrectly_used_symbol);
+      Error_then_Skip (CD, Semicolon, err_incorrectly_used_symbol);
     end if;
   end Entry_Call;
 

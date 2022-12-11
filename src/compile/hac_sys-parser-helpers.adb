@@ -42,7 +42,7 @@ package body HAC_Sys.Parser.Helpers is
     end if;
   end Need;
 
-  procedure Skip
+  procedure Error_then_Skip
     (CD   : in out Compiler_Data;
      FSys :        Symset;
      N    :        Compile_Error;
@@ -72,17 +72,17 @@ package body HAC_Sys.Parser.Helpers is
     if StopMe then
       raise Failure_1_0;
     end if;
-  end Skip;
+  end Error_then_Skip;
 
-  procedure Skip
+  procedure Error_then_Skip
     (CD   : in out Compiler_Data;
      S    :        KeyWSymbol;
      N    :        Compile_Error;
      hint :        String := "")
   is
   begin
-    Skip (CD, Singleton (S), N, hint);
-  end Skip;
+    Error_then_Skip (CD, Singleton (S), N, hint);
+  end Error_then_Skip;
 
   procedure Test
     (CD            : in out Compiler_Data;
@@ -110,7 +110,7 @@ package body HAC_Sys.Parser.Helpers is
         if stop_on_error then
           Error (CD, N, HAT.VStr_Pkg.To_String (hint), severity => major);
         end if;
-        Skip (CD, S1 + S2, N, HAT.VStr_Pkg.To_String (hint));
+        Error_then_Skip (CD, S1 + S2, N, HAT.VStr_Pkg.To_String (hint));
       end;
     end if;
   end Test;
@@ -143,7 +143,7 @@ package body HAC_Sys.Parser.Helpers is
     if CD.Sy = END_Symbol then
       InSymbol (CD);
     else
-      Skip (CD, Semicolon, err_END_missing);
+      Error_then_Skip (CD, Semicolon, err_END_missing);
     end if;
   end Need_END_Symbol;
 

@@ -108,9 +108,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         --    Fore, Aft, Exp for Put ([F,] R [, Fore[, Aft[, Exp]]]);
         --    Width          for Put ([F,] B [, Width]);
         Expression (CD, Level, FSys + Colon_Comma_RParent, Format_Param_Typ);
-        if Format_Param_Typ.TYP /= Ints then
-          Error (CD, err_parameter_must_be_Integer);
-        end if;
+        Check_Integer (CD, Format_Param_Typ.TYP);
       end loop;
       --  Check given / default parameters (nice short common solution, isn't it ?)
       for Param in 1 .. Format_Params loop
@@ -156,9 +154,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
                 --  "New_Line (File, Spacing);"
                 InSymbol (CD);
                 Expression (CD, Level, FSys + RParent, Y);
-                if Y.TYP /= Ints then
-                  Type_Mismatch (CD, err_syntax_error, Found => Y, Expected => Ints_Set);
-                end if;
+                Check_Integer (CD, Y.TYP);
               else
                 --  "New_Line (File);"
                 Emit_1 (CD, k_Push_Discrete_Literal, 1);  --  Push default value, Spacing := 1
@@ -188,87 +184,55 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Wait | SP_Signal =>
-        if CD.Sy /= LParent then
-          Error (CD, err_missing_an_opening_parenthesis);
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Push_by_Reference_Parameter (CD, Level, FSys, X);
+        Check_Integer (CD, X.TYP);
+        if Code = SP_Wait then
+          Emit (CD, k_Wait_Semaphore);
         else
-          InSymbol (CD);
-          Push_by_Reference_Parameter (CD, Level, FSys, X);
-          Check_Integer (CD, X.TYP);
-          if Code = SP_Wait then
-            Emit (CD, k_Wait_Semaphore);
-          else
-            Emit (CD, k_Signal_Semaphore);
-          end if;
-          Need (CD, RParent, err_closing_parenthesis_missing);
+          Emit (CD, k_Signal_Semaphore);
         end if;
+        Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Open | SP_Create | SP_Append | SP_Close =>
-        if CD.Sy = LParent then
-          InSymbol (CD);
-          Push_by_Reference_Parameter (CD, Level, FSys + Colon_Comma_RParent, X);
-          if X.TYP /= Text_Files then
-            Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
-          end if;
-          if Code = SP_Open or Code = SP_Create or Code = SP_Append then
-            --  Parse file name.
-            Need (CD, Comma, err_COMMA_missing);
-            Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-            Check_any_String_and_promote_to_VString (CD, X, False);
-          end if;
-          HAT_Procedure_Call (Code);
-          Need (CD, RParent, err_closing_parenthesis_missing);
-        else
-          Error (CD, err_missing_an_opening_parenthesis);
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Push_by_Reference_Parameter (CD, Level, FSys + Colon_Comma_RParent, X);
+        if X.TYP /= Text_Files then
+          Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
         end if;
+        if Code = SP_Open or Code = SP_Create or Code = SP_Append then
+          --  Parse file name.
+          Need (CD, Comma, err_COMMA_missing);
+          Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+          Check_any_String_and_promote_to_VString (CD, X, False);
+        end if;
+        HAT_Procedure_Call (Code);
+        Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Quantum =>
         --  Cramer
-        if CD.Sy /= LParent then
-          Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
-        else
-          InSymbol (CD);
-          Expression (CD, Level, RParent_Set, X);
-          if X.TYP /= Floats then
-            Skip (CD, Semicolon, err_parameter_must_be_of_type_Float);
-          end if;
-          if CD.Sy /= RParent then
-            Skip (CD, Semicolon, err_closing_parenthesis_missing);
-          else
-            Emit (CD, k_Set_Quantum_Task);
-            InSymbol (CD);
-          end if;
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Expression (CD, Level, RParent_Set, X);
+        if X.TYP /= Floats then
+          Error_then_Skip (CD, Semicolon, err_parameter_must_be_of_type_Float);
         end if;
+        Need (CD, RParent, err_closing_parenthesis_missing);
+        Emit (CD, k_Set_Quantum_Task);
 
       when SP_Priority =>
         --  Cramer
-        if CD.Sy /= LParent then
-          Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
-        else
-          InSymbol (CD);
-          Expression (CD, Level, RParent_Set, X);
-          Check_Integer (CD, X.TYP);
-          if CD.Sy /= RParent then
-            Skip (CD, Semicolon, err_closing_parenthesis_missing);
-          else
-            Emit (CD, k_Set_Task_Priority);
-            InSymbol (CD);
-          end if;
-        end if;
-        --
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Expression (CD, Level, RParent_Set, X);
+        Check_Integer (CD, X.TYP);
+        Need (CD, RParent, err_closing_parenthesis_missing);
+        Emit (CD, k_Set_Task_Priority);
+
       when SP_InheritP =>
         --  Cramer
-        if CD.Sy /= LParent then
-          Skip (CD, Semicolon, err_missing_an_opening_parenthesis);
-        else
-          InSymbol (CD);
-          Boolean_Expression (CD, Level, RParent_Set, X);
-          if CD.Sy /= RParent then
-            Skip (CD, Semicolon, err_closing_parenthesis_missing);
-          else
-            Emit (CD, k_Set_Task_Priority_Inheritance);
-            InSymbol (CD);
-          end if;
-        end if;
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Boolean_Expression (CD, Level, RParent_Set, X);
+        Need (CD, RParent, err_closing_parenthesis_missing);
+        Emit (CD, k_Set_Task_Priority_Inheritance);
         --
       when SP_Set_Env | SP_Set_VM_Variable | SP_Copy_File | SP_Rename =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
@@ -332,9 +296,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       when SP_Set_Exit_Status =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expression (CD, Level, Comma_RParent, X);  --  We push the argument in the stack.
-        if X.TYP /= Ints then
-          Skip (CD, Semicolon, err_parameter_must_be_Integer);
-        end if;
+        Check_Integer (CD, X.TYP);
         HAT_Procedure_Call (SP_Set_Exit_Status);
         Need (CD, RParent, err_closing_parenthesis_missing);
 

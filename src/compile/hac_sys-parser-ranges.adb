@@ -185,7 +185,7 @@ package body HAC_Sys.Parser.Ranges is
       end if;
       Range_Typ.Discrete_Last := Upper_Bound_Typ.Discrete_Last;
     else
-      Skip (CD, END_LOOP_Semicolon + FSys, err_expecting_double_dot);
+      Error_then_Skip (CD, END_LOOP_Semicolon + FSys, err_expecting_double_dot);
     end if;
   end Dynamic_Range;
 

@@ -33,7 +33,7 @@ package HAC_Sys.Parser.Helpers is
   --  Issue error N, then skip all subsequent symbols
   --  that are not in the FSys set.
   --
-  procedure Skip
+  procedure Error_then_Skip
     (CD   : in out Compiler_Data;
      FSys :        Symset;
      N    :        Compile_Error;
@@ -42,7 +42,7 @@ package HAC_Sys.Parser.Helpers is
   --  Issue error N, then skip all subsequent symbols
   --  that are not equal to S.
   --
-  procedure Skip
+  procedure Error_then_Skip
     (CD   : in out Compiler_Data;
      S    :        KeyWSymbol;
      N    :        Compile_Error;
