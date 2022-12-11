@@ -338,6 +338,22 @@ package body HAC_Sys.Parser.Standard_Procedures is
         HAT_Procedure_Call (SP_Set_Exit_Status);
         Need (CD, RParent, err_closing_parenthesis_missing);
 
+      when SP_Delete =>
+        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Push_by_Reference_Parameter (CD, Level, FSys, X);  --  Source
+        if X.TYP /= VStrings then
+          Type_Mismatch (CD, err_parameter_types_do_not_match,
+            Found => X, Expected => VStrings_Set);
+        end if;
+        Need (CD, Comma, err_COMMA_missing);
+        Expression (CD, Level, Comma_RParent, X);          --  From
+        Check_Integer (CD, X.TYP);
+        Need (CD, Comma, err_COMMA_missing);
+        Expression (CD, Level, Comma_RParent, X);          --  Trough
+        Check_Integer (CD, X.TYP);
+        Need (CD, RParent, err_closing_parenthesis_missing);
+        HAT_Procedure_Call (Code);
+
       when SP_Push_Abstract_Console =>
         null;  --  Internal: used by Get, Put, etc. without file parameter.
       when SP_Get_F | SP_Get_Line_F |

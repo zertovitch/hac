@@ -341,7 +341,7 @@ package HAC_Sys.PCode is
     SF_Min_Float,
     SF_Max_Float,
     --
-    --  VString functions
+    --  VString functions (Ada.Strings.Unbounded-like)
     --
     SF_String_to_VString,        --  +s        (s is a fixed-size string)
     SF_Literal_to_VString,       --  +"Hello"
@@ -494,6 +494,10 @@ package HAC_Sys.PCode is
     SP_Rename,
     SP_Set_Directory,
     SP_Set_Exit_Status,
+    --
+    --  VString procedures (Ada.Strings.Unbounded-like)
+    --
+    SP_Delete,
     --
     --  Other system procedures
     --

@@ -288,6 +288,11 @@ package body HAC_Sys.PCode.Interpreter is
         when SP_Delete_File     => HAT.Delete_File (Top_Item.V);
         when SP_Set_Directory   => HAT.Set_Directory (Top_Item.V);
         when SP_Set_Exit_Status => HAT.Set_Exit_Status (Integer (Top_Item.I));
+        when SP_Delete =>
+          HAT.Delete
+            (Source  => ND.S (Defs.Index (ND.S (Curr_TCB.T - 2).I)).V,
+             From    => Integer (Below_Top_Item.I),
+             Through => Integer (Top_Item.I));
         --
         when SP_Create =>
           Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
@@ -378,9 +383,10 @@ package body HAC_Sys.PCode.Interpreter is
              SP_Shell_Execute_with_Result | SP_Shell_Execute_Output
         =>
           Pop (2);
-        when SP_Shell_Execute_Result_Output =>
+        when SP_Shell_Execute_Result_Output | SP_Delete =>
           Pop (3);
-        when others => null;
+        when others =>
+          null;
       end case;
       ND.SWITCH := True;  --  give up control when doing I/O
     exception

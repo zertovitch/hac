@@ -73,7 +73,7 @@ procedure AoC_2022_11 is
         mm (last_id).s (mm (last_id).top) :=
           Integer_64 (Integer_Value (Slice (s, 1, idx)));
         exit when idx_comma = 0;
-        s := Slice (s, idx_comma + 1, Length (s));
+        Delete (s, 1, idx_comma);
       end loop Parse_Worries;
       Get (f, operation_string);
       Get (f, c);

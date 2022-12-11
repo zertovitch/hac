@@ -142,6 +142,7 @@ package HAT is
   function To_String (V : VString) return String renames VStr_Pkg.To_String;
   package ACH renames Ada.Characters.Handling;
   --
+  procedure Delete (Source : in out VString; From : Positive; Through : Natural) renames VStr_Pkg.Delete;
   function Element (Source : VString; Index : Positive) return Character renames VStr_Pkg.Element;
   function Ends_With (Item : VString; Pattern : Character) return Boolean;
   function Ends_With (Item : VString; Pattern : String) return Boolean;

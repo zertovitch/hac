@@ -4,7 +4,7 @@ with Testing_Utilities;
 procedure Strings is
   use HAT, Testing_Utilities;
 
-  s1, s2, s3, s4, s4_s4 : VString;
+  s1, s2, s3, s4, s4_s4, s4_s4_copy : VString;
   Planck   : constant Real := 6.62607015e-34;
   Pi_9_dgt : constant Real := 3.141592653;
   Avogadro : constant Real := 6.02214076e023;
@@ -95,6 +95,9 @@ begin
   then
     Failure (+"Index_Backward, From");
   end if;
+  s4_s4_copy := s4_s4;  --  "abcdefabcdef"
+  Delete (s4_s4_copy, 4, 6);
+  Assert (s4_s4_copy = "abcabcdef", +"Delete");
   --
   if  0 * 'x' /= +""                       then Failure (+"""*"", #1"); end if;
   if 10 * 'x' /= +"xxxxxxxxxx"             then Failure (+"""*"", #2"); end if;

@@ -252,6 +252,10 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAT_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
     Enter_HAT_Proc ("Set_Exit_Status", SP_Set_Exit_Status);
     --
+    --  Ada.Strings.Unbounded-like procedures
+    --
+    Enter_HAT_Proc ("Delete", SP_Delete);
+    --
     --  Tasking related (from SmallAda)
     --
     Enter_HAT_Proc ("Wait",           SP_Wait);
