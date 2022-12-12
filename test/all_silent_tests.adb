@@ -180,6 +180,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"09", +"6314 2504");                    --  Rope Bridge
     Launch_AoC (+"2022", +"10", +"12880");                        --  Cathode-Ray Tube
     Launch_AoC (+"2022", +"11", +"102399 23641658401");           --  Monkey in the Middle
+    Launch_AoC (+"2022", +"12", +"440 439");                      --  Hill Climbing Algorithm
     --
     New_Line (2);
     Put_Line ("----> Done.");
