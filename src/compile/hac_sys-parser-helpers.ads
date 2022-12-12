@@ -89,7 +89,7 @@ package HAC_Sys.Parser.Helpers is
      Found    :        Exact_Subtyp;
      Expected :        Typ_Set);
 
-  procedure Operator_Undefined
+  procedure Issue_Undefined_Operator_Error
     (CD          : in out Compiler_Data;
      Operator    :        KeyWSymbol;
      Left, Right :        Exact_Subtyp);

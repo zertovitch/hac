@@ -267,44 +267,53 @@ package body HAC_Sys.Parser.Helpers is
        severity => major);
   end Type_Mismatch;
 
-  function Op_Hint (OP : KeyWSymbol) return Character is
+  function Op_Hint (OP : KeyWSymbol) return String is
   --  Displayed as "operator (+) is not defined..."
   begin
     case OP is
-      when Plus             => return '+';
-      when Minus            => return '-';
-      when Times            => return '*';
-      when Divide           => return '/';
-      when Ampersand_Symbol => return '&';
-      when others           => return '?';
+      when Plus             => return "+";
+      when Minus            => return "-";
+      when Times            => return "*";
+      when Divide           => return "/";
+      when Ampersand_Symbol => return "&";
+      when EQL              => return "=";
+      when NEQ              => return "/=";
+      when GTR              => return ">";
+      when GEQ              => return ">=";
+      when LSS              => return "<";
+      when LEQ              => return "<=";
+      when others           => return "?";
     end case;
   end Op_Hint;
 
-  procedure Operator_Undefined
+  procedure Issue_Undefined_Operator_Error
     (CD          : in out Compiler_Data;
      Operator    :        KeyWSymbol;
      Left, Right :        Exact_Subtyp)
   is
   begin
     if Left.TYP /= Right.TYP then
-      Error (CD, err_operator_not_defined_for_types,
-        Op_Hint (Operator) &
-        "left is "    & Nice_Exact_Image (CD, Left) &
-        ", right is " & Nice_Exact_Image (CD, Right));
+      Error
+        (CD, err_operator_not_defined_for_types,
+         Op_Hint (Operator),
+         "left is "    & Nice_Exact_Image (CD, Left) &
+         ", right is " & Nice_Exact_Image (CD, Right));
     elsif Left.TYP = Enums then
-      Error (CD, err_operator_not_defined_for_types,
-        Op_Hint (Operator) &
-        "left is "    & Enum_Name (CD, Left.Ref) &
-        ", right is " & Enum_Name (CD, Right.Ref));
+      Error
+        (CD, err_operator_not_defined_for_types,
+         Op_Hint (Operator),
+         "left is "    & Enum_Name (CD, Left.Ref) &
+         ", right is " & Enum_Name (CD, Right.Ref));
     else
-      Error (CD, err_operator_not_defined_for_types,
-        Op_Hint (Operator) &
-        "not exactly the same " & Nice_Image (Left.TYP));
-        --  !! TBD: find the eventual array or record
-        --     names using X.Ref, Y.Ref ... if they have names!
-        --     (same for Type_Mismatch)
+      Error
+        (CD, err_operator_not_defined_for_types,
+         Op_Hint (Operator),
+         Nice_Image (Left.TYP));
+         --  !! TBD: find the eventual array or record
+         --     names using X.Ref, Y.Ref ... if they have names!
+         --     (same for Type_Mismatch)
     end if;
-  end Operator_Undefined;
+  end Issue_Undefined_Operator_Error;
 
   procedure Forbid_Type_Coercion
     (CD          : in out Compiler_Data;
@@ -315,10 +324,10 @@ package body HAC_Sys.Parser.Helpers is
     Error
       (CD,
        err_numeric_type_coercion_operator,
-       Op_Hint (Operator) &
-         "left is "    & Nice_Exact_Image (CD, Left) &
-         ", right is " & Nice_Exact_Image (CD, Right),
-       severity => major);
+       Op_Hint (Operator),
+       "left is "    & Nice_Exact_Image (CD, Left) &
+       ", right is " & Nice_Exact_Image (CD, Right),
+       major);
   end Forbid_Type_Coercion;
 
   procedure Forbid_Type_Coercion

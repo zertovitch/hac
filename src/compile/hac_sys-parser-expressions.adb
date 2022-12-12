@@ -245,15 +245,6 @@ package body HAC_Sys.Parser.Expressions is
     (ABS_Symbol | NOT_Symbol | Power => True,
      others => False);
 
-  procedure Issue_Undefined_Operator_Error (
-    CD       : in out Co_Defs.Compiler_Data;
-    Undef_OP :        KeyWSymbol;
-    X, Y     :        Exact_Subtyp)
-  is
-  begin
-    Operator_Undefined (CD, Undef_OP, X, Y);
-  end Issue_Undefined_Operator_Error;
-
   Internally_VString_Set : constant Typ_Set := VStrings_Set or Str_as_VStr_Set;
 
   ------------------------------------------------------------------
@@ -290,25 +281,17 @@ package body HAC_Sys.Parser.Expressions is
           Rel_OP := CD.Sy;
           InSymbol (CD);
           Simple_Expression (CD, Level, FSys_Rel, Y);
-          if X.TYP = Ints and Y.TYP = Floats then
-            Forbid_Type_Coercion (CD, Rel_OP, X, Y);
-            X.TYP := Floats;
-            Emit_1 (CD, k_Integer_to_Float, 1);
-          elsif X.TYP = Floats and Y.TYP = Ints then
-            Forbid_Type_Coercion (CD, Rel_OP, X, Y);
-            Y.TYP := Floats;
-            Emit_1 (CD, k_Integer_to_Float, 0);
-          elsif X.TYP = Enums and Y.TYP = Enums and X.Ref /= Y.Ref then
-            Issue_Comparison_Type_Mismatch_Error;
-          elsif Internally_VString_Set (X.TYP) and Y.TYP = String_Literals then  --  E.g., X < "World"
-            --  Y is on top of the stack, we turn it into a VString.
-            --  If this becomes a perfomance issue we could consider
-            --  a new Standard Function (SF_Code) for (VStr op Lit_Str).
-            Emit_Std_Funct (CD, SF_Literal_to_VString);            --  Now we have X < +"World".
-            Emit_Comparison_Instruction (CD, Rel_OP, VStrings);    --  Emit "<" (X, +Y).
-          elsif Internally_VString_Set (X.TYP) and Internally_VString_Set (Y.TYP) then
+          if Internally_VString_Set (X.TYP) and Internally_VString_Set (Y.TYP) then
             --  The internal type is actually a VString on both sides.
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
+          elsif X.TYP = Y.TYP then
+            if X.TYP = Enums and X.Ref /= Y.Ref then
+              Issue_Comparison_Type_Mismatch_Error;
+            elsif PCode_Atomic_Typ (X.TYP) then
+              Emit_Comparison_Instruction (CD, Rel_OP, X.TYP);
+            else
+              Issue_Undefined_Operator_Error (CD, Rel_OP, X, Y);
+            end if;
           elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
             --  We needs convert the literal before anything else,
             --  since it takes two elements on the stack.
@@ -320,12 +303,20 @@ package body HAC_Sys.Parser.Expressions is
             );
             Emit (CD, k_Swap);
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
-          elsif X.TYP = Y.TYP then
-            if PCode_Atomic_Typ (X.TYP) then
-              Emit_Comparison_Instruction (CD, Rel_OP, X.TYP);
-            else
-              Issue_Undefined_Operator_Error (CD, Rel_OP, X, Y);
-            end if;
+          elsif Internally_VString_Set (X.TYP) and Y.TYP = String_Literals then  --  E.g., X < "World"
+            --  Y is on top of the stack, we turn it into a VString.
+            --  If this becomes a perfomance issue we could consider
+            --  a new Standard Function (SF_Code) for (VStr op Lit_Str).
+            Emit_Std_Funct (CD, SF_Literal_to_VString);            --  Now we have X < +"World".
+            Emit_Comparison_Instruction (CD, Rel_OP, VStrings);    --  Emit "<" (X, +Y).
+          elsif X.TYP = Ints and Y.TYP = Floats then
+            Forbid_Type_Coercion (CD, Rel_OP, X, Y);
+            X.TYP := Floats;
+            Emit_1 (CD, k_Integer_to_Float, 1);
+          elsif X.TYP = Floats and Y.TYP = Ints then
+            Forbid_Type_Coercion (CD, Rel_OP, X, Y);
+            Y.TYP := Floats;
+            Emit_1 (CD, k_Integer_to_Float, 0);
           else
             Issue_Comparison_Type_Mismatch_Error;
           end if;

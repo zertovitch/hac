@@ -244,7 +244,7 @@ package body HAC_Sys.Parser is
       if full_name /= Block_Id then
         Error
           (CD, err_incorrect_name_after_END,
-           hint => A2S (Block_Id_with_case),
+           hint_1 => A2S (Block_Id_with_case),
            severity => minor,
            previous_symbol => True);
            --  ^ Ideally we would enclose the whole wrong full name (x.y.z),
@@ -349,7 +349,7 @@ package body HAC_Sys.Parser is
           Check_ident_after_END;
         elsif Is_a_block_statement and Block_Id /= Empty_Alfa then
           --  No identifier after "end", but "end [label]" is required in this case.
-          Error (CD, err_incorrect_name_after_END, hint => A2S (Block_Id_with_case));
+          Error (CD, err_incorrect_name_after_END, hint_1 => A2S (Block_Id_with_case));
         end if;
       end if;
       --

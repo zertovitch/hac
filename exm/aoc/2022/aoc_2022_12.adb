@@ -83,9 +83,7 @@ procedure AoC_2022_12 is
   current, explored : Natural;  --  0 <= current <= explored
 
   function Dijkstra_Algorithm (start : Point; part : Positive) return Natural is
-    --
-    --  `Visit` is similar to the `Search_Recursive` above, but not recursive.
-    --
+
     procedure Visit (x, y, len_from, node_from : Integer; c_from : Character) is
       len_to, ins : Integer;
       ok_step : Boolean;
@@ -337,7 +335,6 @@ begin
   end if;
 
   if compiler_test_mode then
-    --  Compiler test mode.
     if r (1) /= Integer'Value (To_String (Argument (1))) or
        r (2) /= Integer'Value (To_String (Argument (2)))
     then

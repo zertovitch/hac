@@ -144,7 +144,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
     type Param_List is array (Positive range <>) of Param;
 
-    procedure Parse_Single_Profile (pl : Param_List) is
+    procedure Parse_Call_to_Single_Profile_Procedure (pl : Param_List) is
       --  This fits non-overloaded procedures.
       X : Exact_Subtyp;
     begin
@@ -173,7 +173,13 @@ package body HAC_Sys.Parser.Standard_Procedures is
         end loop;
         Need (CD, RParent, err_closing_parenthesis_missing);
       end if;
-    end Parse_Single_Profile;
+    end Parse_Call_to_Single_Profile_Procedure;
+
+    procedure Parse_Call_to_Single_Profile_HAT_Procedure (pl : Param_List) is
+    begin
+      Parse_Call_to_Single_Profile_Procedure (pl);
+      HAT_Procedure_Call (Code);
+    end Parse_Call_to_Single_Profile_HAT_Procedure;
 
     X, Y, Z : Exact_Subtyp;
 
@@ -218,11 +224,10 @@ package body HAC_Sys.Parser.Standard_Procedures is
         HAT_Procedure_Call (Code);
 
       when SP_Random_Seed =>
-        Parse_Single_Profile ((1 => (by_value, Ints)));
-        HAT_Procedure_Call (Code);
+        Parse_Call_to_Single_Profile_HAT_Procedure ((1 => (by_value, Ints)));
 
       when SP_Wait | SP_Signal =>
-        Parse_Single_Profile ((1 => (by_value, Ints)));
+        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, Ints)));
         if Code = SP_Wait then
           Emit (CD, k_Wait_Semaphore);
         else
@@ -235,7 +240,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         if X.TYP /= Text_Files then
           Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
         end if;
-        if Code = SP_Open or Code = SP_Create or Code = SP_Append then
+        if Code in SP_Open | SP_Create | SP_Append then
           --  Parse file name.
           Need (CD, Comma, err_COMMA_missing);
           Expression (CD, Level, FSys + Colon_Comma_RParent, X);
@@ -246,17 +251,17 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
       when SP_Quantum =>
         --  Cramer
-        Parse_Single_Profile ((1 => (by_value, Floats)));
+        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, Floats)));
         Emit (CD, k_Set_Quantum_Task);
 
       when SP_Priority =>
         --  Cramer
-        Parse_Single_Profile ((1 => (by_value, Ints)));
+        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, Ints)));
         Emit (CD, k_Set_Task_Priority);
 
       when SP_InheritP =>
         --  Cramer
-        Parse_Single_Profile ((1 => (by_value, Bools)));
+        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, Bools)));
         Emit (CD, k_Set_Task_Priority_Inheritance);
         --
       when SP_Set_Env | SP_Set_VM_Variable | SP_Copy_File | SP_Rename =>
@@ -319,15 +324,14 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Set_Exit_Status =>
-        Parse_Single_Profile ((1 => (by_value, Ints)));  --  Exit code
-        HAT_Procedure_Call (Code);
+        Parse_Call_to_Single_Profile_HAT_Procedure
+          ((1 => (by_value, Ints)));  --  Exit code
 
       when SP_Delete =>
-        Parse_Single_Profile
+        Parse_Call_to_Single_Profile_HAT_Procedure
           (((by_reference, VStrings),  --  Source
             (by_value,     Ints),      --  From
             (by_value,     Ints)));    --  Through
-        HAT_Procedure_Call (Code);
 
       when SP_Push_Abstract_Console =>
         null;  --  Internal: used by Get, Put, etc. without file parameter.

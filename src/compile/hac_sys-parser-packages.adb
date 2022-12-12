@@ -133,7 +133,7 @@ package body HAC_Sys.Parser.Packages is
       if CD.Id /= package_name then
         Error
           (CD, err_incorrect_name_after_END,
-           hint => A2S (package_name_with_case),
+           hint_1 => A2S (package_name_with_case),
            severity => minor
           );
       end if;
@@ -251,7 +251,7 @@ package body HAC_Sys.Parser.Packages is
       if CD.Id /= package_name then
         Error
           (CD, err_incorrect_name_after_END,
-           hint => A2S (package_name_with_case),
+           hint_1 => A2S (package_name_with_case),
            severity => minor
           );
       end if;

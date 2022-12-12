@@ -928,7 +928,7 @@ package body HAC_Sys.Parser.Statements is
     begin
       Error (
         CD, err_not_yet_implemented,
-        hint => "Block statements don't work yet",
+        hint_1 => "Block statements don't work yet",
         severity => major
       );
       --
@@ -952,19 +952,21 @@ package body HAC_Sys.Parser.Statements is
     procedure Named_Statement is
       --  Block_Statement or loop, named by "name: loop"
       new_ident_for_statement           : constant Alfa := CD.Id;
-      new_ident_for_statement_with_case : constant Alfa := CD.Id_with_case;
       --
       procedure Check_ID_after_END_LOOP is  --  RM 5.5 (5)
+        procedure Boom (err : Compile_Error) is
+          new_ident_for_statement_with_case : constant Alfa := CD.Id_with_case;
+        begin
+          Error (CD, err, A2S (new_ident_for_statement_with_case));
+        end Boom;
       begin
         if CD.Sy = IDent then
           if CD.Id /= new_ident_for_statement then
-            Error (CD, err_END_LOOP_ident_wrong,
-                   hint => A2S (new_ident_for_statement_with_case));
+            Boom (err_END_LOOP_ident_wrong);
           end if;
           InSymbol;  --  Consume identifier.
         else
-          Error (CD, err_END_LOOP_ident_missing,
-                 hint => A2S (new_ident_for_statement_with_case));
+          Boom (err_END_LOOP_ident_missing);
         end if;
       end Check_ID_after_END_LOOP;
       --

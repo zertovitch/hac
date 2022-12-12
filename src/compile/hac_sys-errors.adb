@@ -9,29 +9,29 @@ package body HAC_Sys.Errors is
 
   function Error_String
     (code   : Defs.Compile_Error;
-     hint   : String := "";
+     hint_1 : String := "";
      hint_2 : String := "") return String
   is
   begin
     case code is
       when err_undefined_identifier =>
-        return "undefined identifier" & (if hint = "" then "" else ": " & hint);
+        return "undefined identifier" & (if hint_1 = "" then "" else ": " & hint_1);
       when err_duplicate_identifier =>
-        return "duplicate identifier: " & hint;
+        return "duplicate identifier: " & hint_1;
       when err_identifier_missing =>
         return "missing an identifier";
       when err_missing_a_procedure_declaration =>
-        return "missing a procedure declaration" & hint;
+        return "missing a procedure declaration" & hint_1;
       when err_closing_parenthesis_missing =>
         return "missing closing parenthesis "")""";
       when err_colon_missing =>
         return "missing a colon "":""";
       when err_colon_missing_for_named_statement =>
         return
-          "undefined identifier (" & hint & ");" &
+          "undefined identifier (" & hint_1 & ");" &
           " if a named statement is meant, a colon "":"" would be expected here";
       when err_incorrectly_used_symbol =>
-        return "incorrectly used symbol [" & hint & ']';
+        return "incorrectly used symbol [" & hint_1 & ']';
       when err_missing_OF =>
         return "missing ""of""";
       when err_missing_an_opening_parenthesis =>
@@ -53,25 +53,25 @@ package body HAC_Sys.Errors is
       when err_bad_result_type_for_a_function =>
         return "bad result type for a function";
       when err_type_of_return_statement_doesnt_match =>
-        return "type of expression in return statement doesn't match: " & hint;
+        return "type of expression in return statement doesn't match: " & hint_1;
       when err_illegal_statement_start_symbol =>
-        return "statement cannot start with a " & hint;
+        return "statement cannot start with a " & hint_1;
       when err_expecting_a_boolean_expression =>
         return "expecting a Boolean expression";
       when err_control_variable_of_the_wrong_type =>
-        return "control variable must be discrete; found: " & hint;
+        return "control variable must be discrete; found: " & hint_1;
       when err_bounds_type_mismatch =>
         return "bounds in range must be of the same type";
       when err_IS_missing =>
         return "missing ""is""";
       when err_number_too_large =>
-        return "number is too large: total actual exponent is " & hint;
+        return "number is too large: total actual exponent is " & hint_1;
       when err_illegal_character_in_number =>
-        return "illegal character in number" & hint;
+        return "illegal character in number" & hint_1;
       when err_negative_exponent_for_integer_literal =>
-        return "integer literal with negative exponent; suggestion: a float with "".0"" such as" & hint;
+        return "integer literal with negative exponent; suggestion: a float with "".0"" such as" & hint_1;
       when err_incorrect_name_after_END =>
-        return """end " & hint & ";"" expected here";
+        return """end " & hint_1 & ";"" expected here";
       when err_bad_type_for_a_case_statement =>
         return "bad type for a case statement";
       when err_illegal_character =>
@@ -79,9 +79,9 @@ package body HAC_Sys.Errors is
       when err_illegal_constant_or_constant_identifier =>
         return "illegal constant or constant identifier";
       when err_illegal_array_subscript =>
-        return "type mismatch in array subscript: " & hint;
+        return "type mismatch in array subscript: " & hint_1;
       when err_illegal_array_bounds =>
-        return "illegal bounds for an array index: " & hint;
+        return "illegal bounds for an array index: " & hint_1;
       when err_indexed_variable_must_be_an_array =>
         return "indexed variable must be an array";
       when err_missing_a_type_identifier =>
@@ -97,16 +97,16 @@ package body HAC_Sys.Errors is
       when err_mod_requires_integer_arguments =>
         return """mod"" requires integer arguments";
       when err_incompatible_types_for_comparison =>
-        return "incompatible types for comparison: " & hint;
+        return "incompatible types for comparison: " & hint_1;
       when err_parameter_types_do_not_match =>
-        return "parameter types do not match: " & hint;
+        return "parameter types do not match: " & hint_1;
       when err_variable_missing =>
         return "missing a variable";
       when err_character_zero_chars =>
         return "a character literal is of the form 'x'; " &
                "strings are delimited by double quote character";
       when err_number_of_parameters_do_not_match =>
-        return "number of parameters do not match" & hint;
+        return "number of parameters do not match" & hint_1;
       when err_illegal_parameters_to_Get =>
         return "illegal parameters to ""Get""";
       when err_illegal_parameters_to_Put =>
@@ -118,13 +118,13 @@ package body HAC_Sys.Errors is
       when err_expected_constant_function_variable_or_subtype =>
         return "expected a constant, function, variable or subtype name";
       when err_types_of_assignment_must_match =>
-        return "types must match in an assignment: " & hint;
+        return "types must match in an assignment: " & hint_1;
       when err_case_label_not_same_type_as_case_clause =>
         return "case label not of same type as case clause";
       when err_duplicate_case_choice_value =>
         return "duplicate choice value in ""case"" instruction";
       when err_argument_to_std_function_of_wrong_type =>
-        return "wrong type of argument to operator or standard function: " & hint;
+        return "wrong type of argument to operator or standard function: " & hint_1;
       when err_stack_size =>
         return "the program requires too much storage";
       when err_illegal_symbol_for_a_number_declaration =>
@@ -200,76 +200,73 @@ package body HAC_Sys.Errors is
       when err_statement_expected =>
         return "statement expected, can be ""null""";
       when err_duplicate_label =>
-        return "label already defined: " & hint;
+        return "label already defined: " & hint_1;
       when err_invalid_power_operands =>
         return "invalid operand types for the ""**"" operator";
       when err_unexpected_end_of_text =>
         return "unexpected end of text";
       when err_not_yet_implemented =>
-        return "construct not yet correctly implemented or supported by HAC: " & hint;
+        return "construct not yet correctly implemented or supported by HAC: " & hint_1;
       when err_type_conversion_not_supported =>
-        return "this type conversion is not supported: " & hint;
+        return "this type conversion is not supported: " & hint_1;
       when err_numeric_type_coercion =>
-        return "numeric types don't match: " & hint & " - please use explicit conversion";
+        return "numeric types don't match: " & hint_1 & " - please use explicit conversion";
       when err_numeric_type_coercion_operator =>
-        return "numeric types don't match (" &
-               hint (hint'First) & "): " & hint (hint'First + 1 .. hint'Last) &
-               " - please use explicit conversion";
+        return "numeric types don't match (" & hint_1 & "): " &
+               hint_2 & " - please use explicit conversion";
       when err_operator_not_defined_for_types =>
-        return "operator (" & hint (hint'First) &
-               ") is not defined for those operand types: " &
-               hint (hint'First + 1 .. hint'Last);
+        return "operator (" & hint_1 & ") is not defined for those operand types: " & hint_2;
       when err_no_null_functions =>
         return "a function cannot be null; only a procedure can";
       when err_digit_expected =>
         return "digit expected";
       when err_cannot_modify_constant_or_in_parameter =>
-        return "cannot modify a constant or a ""in"" parameter" & hint;
+        return "cannot modify a constant or a ""in"" parameter" & hint_1;
       when err_case_others_alone_last =>
         return "the ""others"" choice must appear alone and in the last choice list (RM 5.4 (5))";
       when err_END_LOOP_ident_missing =>
-        return """end loop " & hint & ";"" expected (RM 5.5 (5))";
+        return """end loop " & hint_1 & ";"" expected (RM 5.5 (5))";
       when err_END_LOOP_ident_wrong =>
-        return "wrong loop identifier: ""end loop " & hint & ";"" expected";
+        return "wrong loop identifier: ""end loop " & hint_1 & ";"" expected";
       when err_syntax_error =>
-        return "syntax error" & hint;
+        return "syntax error" & hint_1;
       when err_string_to_vstring_assignment =>
         return "fixed string assigned to a variable string;" &
                " put a ""+"" in front of the fixed string";
       when err_range_constraint_error =>
-        return "error in range constraint: " & hint;
+        return "error in range constraint: " & hint_1;
       when err_discrete_type_expected =>
         return "discrete type expected";
       when err_membership_test_type_mismatch =>
-        return "incompatible types in membership test: " & hint;
+        return "incompatible types in membership test: " & hint_1;
       when err_string_not_supported_as_parameter =>
         return "string not supported as parameter" &
           " - define a constrained ""subtype S2 is String (1..2)"" or use a VString";
       when err_string_lengths_do_not_match =>
-        return "fixed-size string lengths do not match: " & hint;
+        return "fixed-size string lengths do not match: " & hint_1;
       when err_library_error =>
-        return "library error: " & hint;
+        return "library error: " & hint_1;
       when err_wrong_unit_name =>
-        return "unit name """ & hint & """ expected in this file, found: """ & hint_2 & '"';
+        return "unit name """ & hint_1 & """ expected in this file, found: """ & hint_2 & '"';
       when err_obsolete_hat_name =>
-        return "the new name of """ & hint_2 & """ is """ & hint & '"';
+        return "the new name of """ & hint_2 & """ is """ & hint_1 & '"';
       when err_object_used_before_end_own_declaration =>
-        return "attempt to use object " & hint & "before end of its own declaration";
+        return "attempt to use object " & hint_1 & "before end of its own declaration";
       when err_attribute_prefix_invalid =>
-        return "invalid prefix for """ & hint & """ attribute";
+        return "invalid prefix for """ & hint_1 & """ attribute";
       when err_attribute_prefix_must_be_discrete_type =>
-        return "prefix of """ & hint & """ attribute must be discrete type";
+        return "prefix of """ & hint_1 & """ attribute must be discrete type";
       when err_invalid_dimension_number =>
-        return "invalid dimension number for array type, " & hint;
+        return "invalid dimension number for array type, " & hint_1;
       when err_spec_body_mismatch =>
-        return "specification vs. body mismatch: " & hint;
+        return "specification vs. body mismatch: " & hint_1;
       when err_incomplete_declaration =>
-        return "missing body or full declaration for " & hint;
+        return "missing body or full declaration for " & hint_1;
       when err_non_public_entity =>
-        return '"' & hint & """ is not a public entity of the package in prefix";
+        return '"' & hint_1 & """ is not a public entity of the package in prefix";
       when err_choices_not_covered =>
         return "all case values shall be covered, either explicitly " &
-               "or by ""others"" (RM 5.4 (6))" & hint;
+               "or by ""others"" (RM 5.4 (6))" & hint_1;
       when err_choice_out_of_range =>
         return "choice(s) out of range of case expression";
     end case;
@@ -315,7 +312,7 @@ package body HAC_Sys.Errors is
   procedure Error
     (CD              : in out Co_Defs.Compiler_Data;
      code            :        Defs.Compile_Error;
-     hint            :        String         := "";
+     hint_1          :        String         := "";
      hint_2          :        String         := "";
      severity        :        Error_Severity := medium;
      previous_symbol :        Boolean        := False)
@@ -331,7 +328,7 @@ package body HAC_Sys.Errors is
           " Error code = " &
           Defs.Compile_Error'Image (code) &
           " (" &
-          Error_String (code, hint, hint_2) &
+          Error_String (code, hint_1, hint_2) &
           ") " &
           " srcNumber=" &
           Integer'Image (srcNumber) &
@@ -345,7 +342,7 @@ package body HAC_Sys.Errors is
     end Show_to_comp_dump;
     --
     updated_repair_kit : Repair_Kit := repair_table (code);
-    ub_hint : constant HAT.VString := HAT.To_VString (hint);
+    ub_hint : constant HAT.VString := HAT.To_VString (hint_1);
     use HAT.VStr_Pkg;
     diagnostic : Diagnostic_Kit;
   begin
@@ -372,11 +369,11 @@ package body HAC_Sys.Errors is
          Trim (Integer'Image (line),      Left) & ':' &
          Trim (Integer'Image (col_start), Left) & '-' &
          Trim (Integer'Image (col_stop),  Left) & ": " &
-         Error_String (code, hint, hint_2));
+         Error_String (code, hint_1, hint_2));
     else
       case code is
         when err_incorrect_name_after_END =>
-          if hint = "" then
+          if hint_1 = "" then
             updated_repair_kit.repair_kind := none;
           else
             updated_repair_kit.alternative := ub_hint;
@@ -394,7 +391,7 @@ package body HAC_Sys.Errors is
           null;
       end case;
       Repair_Kit (diagnostic) := updated_repair_kit;
-      diagnostic.message   := To_Unbounded_String (Error_String (code, hint, hint_2));
+      diagnostic.message   := To_Unbounded_String (Error_String (code, hint_1, hint_2));
       diagnostic.file_name := To_Unbounded_String (Co_Defs.Get_Source_Name (CD.CUD));
       diagnostic.line      := line;
       diagnostic.column_a  := col_start;

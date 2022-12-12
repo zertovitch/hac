@@ -18,10 +18,13 @@ package body HAC_Sys.Parser.Calls is
   is
     X : Exact_Subtyp;
   begin
-    --  Expression does all the job of parsing and
-    --  emitting the right "push" instructions.
+    --  Expression does all the job of parsing and, for
+    --  atomic types, emitting the right "push" instructions.
     Expression (CD, Level, FSys + Colon_Comma_RParent, X);
-    --  We just need to check types:
+    --  What is left is:
+    --    - checking types
+    --    - for composite types, emit an instruction for pushing
+    --        the contents on the stack.
     if X.TYP = Expected.TYP then
       if X.Ref /= Expected.Ref then
         Type_Mismatch (CD, err_parameter_types_do_not_match, X, Expected);

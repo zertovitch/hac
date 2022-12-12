@@ -51,18 +51,18 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
     procedure Do_Array_Index_Any_Size_No_Check is new Do_Array_Index (size_1 => False, range_check => False);
 
     procedure Do_Load_Block is
-      H1, H2 : Index;
+      idx, new_top : Index;
     begin
-      H1 := Index (ND.S (Curr_TCB.T).I);  --  Pull source address
+      idx := Index (ND.S (Curr_TCB.T).I);      --  Pull source address
       Pop (ND);
-      H2 := Index (IR.Y) + Curr_TCB.T;    --  Stack top after pushing block
-      if H2 > Curr_TCB.STACKSIZE then
+      new_top := Index (IR.Y) + Curr_TCB.T;    --  Stack top after pushing block
+      if new_top > Curr_TCB.STACKSIZE then
         raise VM_Stack_Overflow;
       end if;
-      while Curr_TCB.T < H2 loop
+      while Curr_TCB.T < new_top loop
         Curr_TCB.T := Curr_TCB.T + 1;
-        ND.S (Curr_TCB.T) := ND.S (H1);
-        H1 := H1 + 1;
+        ND.S (Curr_TCB.T) := ND.S (idx);
+        idx := idx + 1;
       end loop;
     end Do_Load_Block;
 
