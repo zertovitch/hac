@@ -25,7 +25,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         Integer (CD.Blocks_Table (CD.IdTab (Integer (IR.Y)).block_or_pkg_ref).VSize);
     begin
       if Curr_TCB.T + VSize > Curr_TCB.STACKSIZE then
-        raise VM_Stack_Overflow;
+        raise Exceptions.VM_Stack_Overflow;
       end if;
       Curr_TCB.T := Curr_TCB.T + Co_Defs.fixed_area_size;  --  Make room for fixed area
       ND.S (Curr_TCB.T - 1).I := HAC_Integer (VSize - 1);
@@ -150,7 +150,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         when Defs.Normal_Procedure_Call =>
           new_address := CD.IdTab (Ident_Index_of_Called).adr_or_sz;
           if new_address < 0 then
-            raise VM_Subprogram_Spec;
+            raise Exceptions.VM_Subprogram_Spec;
           end if;
           Curr_TCB.PC := new_address;  --  Jump to subprogram start.
         when Defs.Normal_Entry_Call =>
@@ -245,7 +245,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       Curr_TCB.B  := Integer (ND.S (Curr_TCB.B + 3).I);
       --
       if IR.Y = Defs.End_Function_without_Return and then ND.PS /= Exception_Raised then
-        raise VM_Function_End_without_Return;
+        raise Exceptions.VM_Function_End_without_Return;
       end if;
     end Do_Exit_Function;
 

@@ -1,3 +1,5 @@
+with HAC_Sys.PCode.Interpreter.Exceptions;
+
 package body HAC_Sys.PCode.Interpreter.In_Defs is
 
   procedure Allocate_Text_File (
@@ -58,7 +60,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     for i in Res'Range loop
       Number := ND.S (Idx + i - 1).I;
       if Number not in Defs.OrdMinChar .. Defs.OrdMaxChar then
-        raise VM_Out_of_Range
+        raise Exceptions.VM_Out_of_Range
           with ": invalid data: element not in Character's range";
       end if;
       Res (i) := Character'Val (Number);
@@ -96,7 +98,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
   begin
     Curr_TCB_Top := Curr_TCB_Top - Amount;
     if Curr_TCB_Top < ND.S'First then
-      raise VM_Stack_Underflow;
+      raise Exceptions.VM_Stack_Underflow;
     end if;
   end Pop;
 
@@ -105,7 +107,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
   begin
     Curr_TCB.T := Curr_TCB.T + Amount;
     if Curr_TCB.T > Curr_TCB.STACKSIZE then
-      raise VM_Stack_Overflow;
+      raise Exceptions.VM_Stack_Overflow;
     end if;
   end Push;
 
@@ -186,7 +188,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     use Defs;
   begin
     if X.Special /= Y then
-      raise VM_Invalid_Data;
+      raise Exceptions.VM_Invalid_Data;
     end if;
   end Check_Discriminant_Type;
 

@@ -25,7 +25,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when k_Unary_MINUS_Float    => X.R := -X.R;
       when k_Unary_MINUS_Integer =>
         if X.I = Defs.HAC_Integer'First then
-          raise VM_Overflow_Error;
+          raise Exceptions.VM_Overflow_Error;
         end if;
         X.I := -X.I;
       when k_Integer_to_Float =>
@@ -46,7 +46,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     pragma Inline (Check_X_Float);
     begin
       if X.Special /= Defs.Floats then
-        raise VM_Invalid_Data;
+        raise Exceptions.VM_Invalid_Data;
       end if;
     end Check_X_Float;
     --
@@ -54,7 +54,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     pragma Inline (Check_X_Y_Float);
     begin
       if X.Special /= Defs.Floats or else Y.Special /= Defs.Floats then
-        raise VM_Invalid_Data;
+        raise Exceptions.VM_Invalid_Data;
       end if;
     end Check_X_Y_Float;
     use HAT.VStr_Pkg;
@@ -90,13 +90,13 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when k_SUBTRACT_Integer => X.I := X.I - Y.I;
       when k_MULT_Integer     => X.I := X.I * Y.I;
       when k_DIV_Integer      =>
-        if Y.I = 0 then raise VM_Division_by_0 with "/"; end if;
+        if Y.I = 0 then raise Exceptions.VM_Division_by_0 with "/"; end if;
         X.I := X.I / Y.I;
       when k_MOD_Integer      =>
-        if Y.I = 0 then raise VM_Division_by_0 with "mod"; end if;
+        if Y.I = 0 then raise Exceptions.VM_Division_by_0 with "mod"; end if;
         X.I := X.I mod Y.I;
       when k_REM_Integer      =>
-        if Y.I = 0 then raise VM_Division_by_0 with "rem"; end if;
+        if Y.I = 0 then raise Exceptions.VM_Division_by_0 with "rem"; end if;
         X.I := X.I rem Y.I;
       when k_Power_Integer    => X.I := X.I ** Natural (Y.I);
       --
@@ -108,6 +108,10 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when k_Power_Float_Integer => Check_X_Float;   X.R := X.R ** Natural (Y.I);
     end case;
     Pop (ND);
+  exception
+    when E : Constraint_Error =>
+      Exceptions.Raise_VM_Exception_from_Constraint_Error
+        (Ada.Exceptions.Exception_Message (E));
   end Do_Binary_Operator;
 
   procedure Do_Multiple_Operator (ND : in out In_Defs.Interpreter_Data) is
@@ -127,7 +131,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when k_ADD_Float_Multiple =>
         for cell in 0 .. terms - 1 loop
           if ND.S (result_pos + cell).Special /= Defs.Floats then
-            raise VM_Invalid_Data;
+            raise Exceptions.VM_Invalid_Data;
           end if;
         end loop;
         for term in 2 .. terms loop
@@ -135,6 +139,10 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         end loop;
     end case;
     Pop (ND, terms - 1);
+  exception
+    when E : Constraint_Error =>
+      Exceptions.Raise_VM_Exception_from_Constraint_Error
+        (Ada.Exceptions.Exception_Message (E));
   end Do_Multiple_Operator;
 
   procedure Do_Special_Operator (ND : in out In_Defs.Interpreter_Data) is
@@ -149,7 +157,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     pragma Inline (Check_Y_Z_Float);
     begin
       if Y.Special /= Defs.Floats or else Z.Special /= Defs.Floats then
-        raise VM_Invalid_Data;
+        raise Exceptions.VM_Invalid_Data;
       end if;
     end Check_Y_Z_Float;
   begin
@@ -160,7 +168,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when k_MULT_then_ADD_Float =>
         for cell in 0 .. 2 loop
           if ND.S (Top - cell).Special /= Defs.Floats then
-            raise VM_Invalid_Data;
+            raise Exceptions.VM_Invalid_Data;
           end if;
         end loop;
         X.R := X.R + Y.R * Z.R;
@@ -186,7 +194,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           when k_SUBTRACT_Integer_Literal => Z.I := Z.I - ND.IR.Y;
           when k_MULT_Integer_Literal     => Z.I := Z.I * ND.IR.Y;
           when k_DIV_Integer_Literal      =>
-            if ND.IR.Y = 0 then raise VM_Division_by_0 with "/"; end if;
+            if ND.IR.Y = 0 then raise Exceptions.VM_Division_by_0 with "/"; end if;
             Z.I := Z.I / ND.IR.Y;
           when Compare_Integer_Literal_Opcode =>
             case Compare_Integer_Literal_Opcode (ND.IR.F) is
@@ -205,6 +213,10 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         Y.I := Boolean'Pos (not (Boolean'Val (Y.I) or Boolean'Val (Z.I)));
         Pop (ND);
     end case;
+  exception
+    when E : Constraint_Error =>
+      Exceptions.Raise_VM_Exception_from_Constraint_Error
+        (Ada.Exceptions.Exception_Message (E));
   end Do_Special_Operator;
 
   procedure Do_SF_Operator (BD : Builder.Build_Data; ND : in out In_Defs.Interpreter_Data) is

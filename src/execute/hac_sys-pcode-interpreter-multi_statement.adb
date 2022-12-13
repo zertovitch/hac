@@ -1,3 +1,5 @@
+with HAC_Sys.PCode.Interpreter.Exceptions;
+
 package body HAC_Sys.PCode.Interpreter.Multi_Statement is
 
   procedure Do_Multi_Statement_Operation (CD : Compiler_Data; ND : in out Interpreter_Data) is
@@ -21,7 +23,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
           --  We hit the end of (k_CASE_Choice_Data, k_CASE_Match_Jump) pairs.
           --  This means that Value, or OTHERS, were not found so far.
           --  This situation should not happen; it should be caught at compile-time.
-          raise VM_Case_Check_Error;
+          raise Exceptions.VM_Case_Check_Error;
         end if;
         case CASE_Any_Choice (CD.ObjCode (H2).F) is
           when k_CASE_Choice_Value => jump := Value = CD.ObjCode (H2).Y;

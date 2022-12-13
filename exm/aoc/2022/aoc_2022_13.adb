@@ -120,7 +120,6 @@ procedure AoC_2022_13 is
     end loop;
   end Compare_List;
 
-  --  
   function One_if_lesser (s1, s2 : VString) return Natural is
   begin
     if Compare_List (s1, s2) = correct then

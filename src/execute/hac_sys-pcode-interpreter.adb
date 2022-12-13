@@ -632,6 +632,8 @@ package body HAC_Sys.PCode.Interpreter is
     exception
       when VM_Case_Check_Error =>
         Raise_Standard (ND, VME_Program_Error, "CASE Statement doesn't cover all cases");
+      when VM_Constraint_Error =>
+        Raise_Standard (ND, VME_Constraint_Error);
       when VM_Subprogram_Spec =>
         Raise_Standard (ND, VME_Program_Error, "(HAC bug) Unlinked subprogram specification");
       when E : VM_Division_by_0 =>
@@ -645,7 +647,7 @@ package body HAC_Sys.PCode.Interpreter is
       when E : VM_Out_of_Range  =>
         Raise_Standard (ND, VME_Constraint_Error, "Out of range" & Exception_Message (E));
       when VM_Overflow_Error =>
-        Raise_Standard (ND, VME_Constraint_Error, "Overflow error");
+        Raise_Standard (ND, VME_Constraint_Error, "Overflow check failed");
       when VM_Stack_Overflow  =>
         Raise_Standard (ND, VME_Storage_Error, "Stack overflow");
       when VM_Stack_Underflow =>

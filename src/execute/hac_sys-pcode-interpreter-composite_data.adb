@@ -1,3 +1,5 @@
+with HAC_Sys.PCode.Interpreter.Exceptions;
+
 package body HAC_Sys.PCode.Interpreter.Composite_Data is
 
   procedure Do_Composite_Data_Operation (CD : Compiler_Data; ND : in out Interpreter_Data) is
@@ -32,9 +34,9 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
     begin
       if range_check then
         if Idx < Low then
-          raise VM_Out_of_Range with Out_Message (Low, "below lower");
+          raise Exceptions.VM_Out_of_Range with Out_Message (Low, "below lower");
         elsif Idx > High then
-          raise VM_Out_of_Range with Out_Message (High, "above upper");
+          raise Exceptions.VM_Out_of_Range with Out_Message (High, "above upper");
         end if;
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.
@@ -57,7 +59,7 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       Pop (ND);
       new_top := Index (IR.Y) + Curr_TCB.T;    --  Stack top after pushing block
       if new_top > Curr_TCB.STACKSIZE then
-        raise VM_Stack_Overflow;
+        raise Exceptions.VM_Stack_Overflow;
       end if;
       while Curr_TCB.T < new_top loop
         Curr_TCB.T := Curr_TCB.T + 1;
