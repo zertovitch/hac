@@ -64,22 +64,55 @@ procedure AoC_2022_XX is
     x  := nx;
   end Rotate;
 
-  m : constant := 1000;
-  map : array (1 .. m, 1 .. m) of Boolean;
+  type Point is record
+    x, y : Integer;
+  end record;
+
+  function Dist_Max (a, b : Point) return Natural is
+  begin
+    return
+      Max (abs (a.x - b.x), abs (a.y - b.y));
+  end Dist_Max;
+
+  function Dist_L1 (a, b : Point) return Natural is
+  begin
+    return
+      abs (a.x - b.x) + abs (a.y - b.y);
+  end Dist_L1;
+
+  procedure Maximize (p : in out Point; using: Point) is
+  begin
+    p.x := Max (p.x, using.x);
+    p.y := Max (p.y, using.y);
+  end Maximize;
+
+  procedure Minimize (p : in out Point; using: Point) is
+  begin
+    p.x := Min (p.x, using.x);
+    p.y := Min (p.y, using.y);
+  end Minimize;
+
+  nx_max : constant := 500;
+  ny_max : constant := 500;
+
+  origin : constant := 0;
+
+  subtype Range_x is Integer range origin .. nx_max;
+  subtype Range_y is Integer range origin .. ny_max;
+
+  map   : array (Range_x, Range_y) of Character;
+
+  m, n : Point;
 
   procedure Show is
   begin
-    for y in reverse 1 .. m loop
-      for x in 1 .. m loop
-        if map (x, y) then
-        Put ('#');
-        else
-        Put (' ');
-        end if;
+    for y in Range_y'First .. n.y loop
+      for x in Range_x'First .. n.x loop
+        Put (map (x, y));
       end loop;
       New_Line;
     end loop;
-  end;
+  end Show;
 
 begin
   r (1) := 0;
