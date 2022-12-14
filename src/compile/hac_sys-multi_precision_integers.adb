@@ -1487,12 +1487,11 @@ package body HAC_Sys.Multi_Precision_Integers is
 
     --  On a les cas avec "#", o\`u i1 et i2 ont le meme signe
 
-    if i1.neg then
-      return not (Compare_absolute (i1, i2) = greater);
-    else
-      return     (Compare_absolute (i1, i2) = greater);
-    end if;
-
+    return (if i1.neg then
+              not (Compare_absolute (i1, i2) = greater)
+            else
+              (Compare_absolute (i1, i2) = greater)
+           );
   end ">";
 
   function ">" (i1 : Multi_int; i2 : Basic_Int) return Boolean is
