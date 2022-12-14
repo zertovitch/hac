@@ -179,14 +179,11 @@ package body HAT is
 
       function Optional_intra_day return String is
       begin
-        if Intra_day then
-          return
-            "  " &
-            shr (shr'Last - 1 .. shr'Last) & ':' &
-            smn (smn'Last - 1 .. smn'Last) & Optional_seconds;
-        else
-          return "";
-        end if;
+        return
+         (if Intra_day then
+           "  " & shr (shr'Last - 1 .. shr'Last) & ':' &
+           smn (smn'Last - 1 .. smn'Last) & Optional_seconds
+          else "");
       end Optional_intra_day;
 
     begin

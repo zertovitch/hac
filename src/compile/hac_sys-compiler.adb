@@ -89,11 +89,10 @@ package body HAC_Sys.Compiler is
     function Cut_name (n : String; l : Natural) return String is
       dots : constant String := "...";
     begin
-      if n'Length > l then
-        return dots & n (n'Last - (l - 1) + dots'Length .. n'Last);
-      else
-        return n;
-      end if;
+      return
+       (if n'Length > l then
+         dots & n (n'Last - (l - 1) + dots'Length .. n'Last)
+        else n);
     end Cut_name;
     --
     procedure Show_Padded (n : String; t : Positive) is

@@ -221,11 +221,9 @@ package body HAC_Sys.Parser.Ranges is
       Errors.Error (CD, err_range_constraint_error, ": overflow on applying ""-""");
     end if;
     temp := X.Discrete_Last;
-    if X.Discrete_First = HAC_Integer'First then  --  Compile-time overflow if we negate that!
-      X.Discrete_Last := HAC_Integer'Last;  -- one off
-    else
-      X.Discrete_Last := -X.Discrete_First;
-    end if;
+    X.Discrete_Last :=
+     (if X.Discrete_First = HAC_Integer'First then HAC_Integer'Last
+      else -X.Discrete_First);
     X.Discrete_First := -temp;
   end Negate_Range;
 

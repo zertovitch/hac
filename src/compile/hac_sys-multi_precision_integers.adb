@@ -62,10 +62,14 @@ package body HAC_Sys.Multi_Precision_Integers is
   type compar is (smaller, equal, greater);
 
   function Min (a, b : Index_Int) return Index_Int is
-  begin if a < b then return a; else return b; end if; end Min;
+  begin
+    return (if a < b then a else b);
+  end Min;
 
   function Max (a, b : Index_Int) return Index_Int is
-  begin if a > b then return a; else return b; end if; end Max;
+  begin
+    return (if a > b then a else b);
+  end Max;
 
   procedure Reduce_last_nonzero (n : in out Multi_int) is
     old_last : constant Index_Int := n.last_used;
@@ -239,11 +243,7 @@ package body HAC_Sys.Multi_Precision_Integers is
       end if;
       result := result + Same_as_Basic_natural (large.blk (b));
     end loop;
-    if large.neg then
-      return -Basic_Int (result);
-    else
-      return Basic_Int (result);
-    end if;
+    return (if large.neg then -Basic_Int (result) else Basic_Int (result));
   end Basic;
 
   --  14-Feb-2002: "zero" bug fixed by Duncan Sands
@@ -405,16 +405,10 @@ package body HAC_Sys.Multi_Precision_Integers is
 
     --  (1) Soustraction avec retenue
     for ind in 0 .. max_ind loop
-      if ind <= l1 then
-        ai := Long_Block_type (i1.blk (ind));
-      else
-        ai := 0;
-      end if;
-      if ind <= l2 then
-        bi := Long_Block_type (i2.blk (ind)) + Long_Block_type (s);
-      else
-        bi := Long_Block_type (s);
-      end if;
+      ai := (if ind <= l1 then Long_Block_type (i1.blk (ind)) else 0);
+      bi :=
+       (if ind <= l2 then Long_Block_type (i2.blk (ind)) + Long_Block_type (s)
+        else Long_Block_type (s));
 
       if ai < bi then
         ai := ai + cardblock;
@@ -605,11 +599,9 @@ package body HAC_Sys.Multi_Precision_Integers is
           exit when sum_carry = 0; -- nothing more to add
           prod := 0;
         end if;
-        if copy then
-          rk := Long_Block_type (res (k));
-        else
-          rk := Long_Block_type (i3.blk (k));
-        end if;
+        rk :=
+         (if copy then Long_Block_type (res (k))
+          else Long_Block_type (i3.blk (k)));
         sum_carry := rk + prod + sum_carry;
         if copy then
           res (k) := Block_type (sum_carry and maxblock); -- somme
@@ -689,11 +681,9 @@ package body HAC_Sys.Multi_Precision_Integers is
       sum_carry := 0;
       prod := Long_Block_type (i1.blk (j)) * i2a;
       loop
-        if copy then
-          rk := Long_Block_type (res (k));
-        else
-          rk := Long_Block_type (i3.blk (k));
-        end if;
+        rk :=
+         (if copy then Long_Block_type (res (k))
+          else Long_Block_type (i3.blk (k)));
         sum_carry := rk + prod + sum_carry;
         if copy then
           res (k) := Block_type (sum_carry and maxblock); -- somme
@@ -1300,11 +1290,7 @@ package body HAC_Sys.Multi_Precision_Integers is
     --  (9) A = B*N + (A mod B)
 
     Div_Rem (i1, i2, q, r);
-    if r.zero or else i2.neg = r.neg then  --  (A rem B) est nul ou
-      return r;     -- a le meme signe que B, donc (A mod B) = (A rem B)
-    else  -- signe opposes
-      return i2 + r;  -- alors (B + (A rem B)) est le bon candidat
-    end if;
+    return (if r.zero or else i2.neg = r.neg then r else i2 + r);
   end "mod";
 
   function "mod" (i1 : Multi_int; i2 : Basic_Int) return Multi_int is
@@ -1313,11 +1299,7 @@ package body HAC_Sys.Multi_Precision_Integers is
   function "mod" (i1 : Multi_int; i2 : Basic_Int) return Basic_Int is
     r : constant Basic_Int := i1 rem i2;
   begin
-    if r = 0 or else (i2 < 0) = (r < 0) then  --  (A rem B) est nul ou
-      return r;     -- a le meme signe que B, donc (A mod B) = (A rem B)
-    else  -- signe opposes
-      return i2 + r;  -- alors (B + (A rem B)) est le bon candidat
-    end if;
+    return (if r = 0 or else (i2 < 0) = (r < 0) then r else i2 + r);
   end "mod";
 
 ----- End of DIVISION part ------
@@ -1437,17 +1419,12 @@ package body HAC_Sys.Multi_Precision_Integers is
 
   function Equal (i1, i2 : Multi_int) return Boolean is
   begin
-    if i1.zero and then i2.zero then
-      return True;
-    end if;
-
-      return (if i1.zero = i2.zero and then
-              i1.neg  = i2.neg  and then
-              i1.last_used = i2.last_used
-              then
-                 i1.blk (0 .. i1.last_used) = i2.blk (0 .. i2.last_used)
-              else
-                 False);
+    return
+     i1.zero and then i2.zero
+     or else
+     (i1.zero = i2.zero and then i1.neg = i2.neg
+      and then i1.last_used = i2.last_used
+      and then i1.blk (0 .. i1.last_used) = i2.blk (0 .. i2.last_used));
   end Equal;
 
   function Equal (i1 : Multi_int; i2 : Basic_Int) return Boolean is
@@ -1458,40 +1435,34 @@ package body HAC_Sys.Multi_Precision_Integers is
   function ">" (i1, i2 : Multi_int) return Boolean is
   begin
     --  (1) Cas \'evident o\`u:         i1 <= i2
-    if (i1.zero or i1.neg) and then             -- i1 <= 0 et
-       (i2.zero or not i2.neg)                  -- i2 >= 0
+    if
+     (i1.zero or
+      i1.neg) and then             -- i1 <= 0 et
+
+     (i2.zero or not i2.neg)                  -- i2 >= 0
     then
-        return False;
+      return False;
     end if;
 
     --  (2.1) Cas \'evident o\`u:       i1 > i2
-    if ((not i1.zero) and not i1.neg) and then  -- i1 > 0 et
-       (i2.zero or i2.neg)                      -- i2 <= 0
+    if
+     ((not i1.zero) and
+      not i1.neg) and then  -- i1 > 0 et
+
+     (i2.zero or i2.neg)                      -- i2 <= 0
     then
-        return True;
+      return True;
     end if;
 
     --  (2.2) Cas \'evident o\`u:       i1 > i2
-    if (i1.zero or not i1.neg) and then         -- i1 >= 0 et
-       ((not i2.zero) and i2.neg)               -- i2 < 0
-    then
-        return True;
-    end if;
+    return
+     (i1.zero or
+      not i1.neg) and then         -- i1 >= 0 et
 
-    --  Cas faciles resolus:
-    --  i1 > i2  -  0  +
-    -------------------
-    --  -       #  F  F
-    --  0       T  F  F
-    --  +       T  T  #
-
-    --  On a les cas avec "#", o\`u i1 et i2 ont le meme signe
-
-    return (if i1.neg then
-              not (Compare_absolute (i1, i2) = greater)
-            else
-              (Compare_absolute (i1, i2) = greater)
-           );
+     ((not i2.zero) and i2.neg)
+     or else
+     (if i1.neg then (Compare_absolute (i1, i2) /= greater)
+      else (Compare_absolute (i1, i2) = greater));
   end ">";
 
   function ">" (i1 : Multi_int; i2 : Basic_Int) return Boolean is

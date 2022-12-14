@@ -149,16 +149,13 @@ procedure HAC is
       --        else
       --          "VM interpreter done after" & Duration'Image (t2 - t1) & " seconds."));
       --
-      if unhandled_found then
-        Put_Line (
+      Put_Line
+       (
+        (if unhandled_found then
           HAC_margin_3 & "VM interpreter stopped execution of " &
-            Ada_file_name & " due to an unhandled exception.");
-      else
-        Put_Line (
-          HAC_margin_3 & "VM interpreter done after" &
-          Duration'Image (t2 - t1) & " seconds."
-        );
-      end if;
+          Ada_file_name & " due to an unhandled exception."
+         else HAC_margin_3 & "VM interpreter done after" &
+          Duration'Image (t2 - t1) & " seconds."));
     end if;
     if unhandled_found then
       PLCE ("HAC VM: raised " & Image (post_mortem.Unhandled));

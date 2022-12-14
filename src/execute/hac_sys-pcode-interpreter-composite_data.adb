@@ -38,11 +38,10 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
         end if;
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.
-      if size_1 then
-        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer (Idx - Low);
-      else
-        ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + HAC_Integer ((Idx - Low) * ATE.Element_Size);
-      end if;
+      ND.S (Curr_TCB.T).I :=
+       ND.S (Curr_TCB.T).I +
+       (if size_1 then HAC_Integer (Idx - Low)
+        else HAC_Integer ((Idx - Low) * ATE.Element_Size));
     end Do_Array_Index;
 
     procedure Do_Array_Index_Size_1 is            new Do_Array_Index (size_1 => True,  range_check => True);
@@ -84,11 +83,7 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       H2 := Index (ND.S (Curr_TCB.T).I);      --  Index to string table
       H3 := Index (IR.Y);                     --  Size of array
       H4 := Index (ND.S (Curr_TCB.T - 1).I);  --  Length of string
-      if H3 < H4 then
-        H5 := H1 + H3;    --  H5 is H1 + min of H3, H4
-      else
-        H5 := H1 + H4;
-      end if;
+      H5 := H1 + (if H3 < H4 then H3 else H4);
       while H1 < H5 loop
         --  Copy H5-H1 characters to the stack
         ND.S (H1).I := Character'Pos (CD.Strings_Constants_Table (H2));

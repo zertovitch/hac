@@ -380,11 +380,9 @@ package body HAC_Sys.Parser is
     if CD.error_count > 0 then
       return;
     end if;
-    if CD.Full_Block_Id = Universe then
-      CD.Full_Block_Id := Block_Id_with_case;
-    else
-      CD.Full_Block_Id := CD.Full_Block_Id & '.' & Block_Id_with_case;
-    end if;
+    CD.Full_Block_Id :=
+     (if CD.Full_Block_Id = Universe then Block_Id_with_case
+      else CD.Full_Block_Id & '.' & Block_Id_with_case);
     block_data.data_allocation_index := fixed_area_size;  --  Fixed area of the subprogram activation record.
     block_data.initialization_object_code_size := 0;
     if Is_a_block_statement then

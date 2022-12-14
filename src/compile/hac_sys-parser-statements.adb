@@ -669,11 +669,10 @@ package body HAC_Sys.Parser.Statements is
         if CD.IdTab (I).entity = aTask then
           InSymbol;
           Entry_Call (CD, Block_Data.level, FSys_St, I, -1);
-          if CD.ObjCode (CD.LC - 2).F = k_Call then  --  Need to patch CallType later
-            patch (0) := CD.LC - 2;
-          else
-            patch (0) := CD.LC - 3;
-          end if;       -- LC-1 must be OP=3, update Display
+          patch (0) :=
+           (if CD.ObjCode (CD.LC - 2).F = k_Call then CD.LC - 2
+            else CD.LC -
+             3);       -- LC-1 must be OP=3, update Display
           patch (1) := CD.LC;  --  Need to patch in JMPC address later
           Emit_1 (CD, k_Jump_If_Zero_With_Pop, dummy_address_if);  --  JMPC, address patched in after ELSE
                                     --  or OR

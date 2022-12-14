@@ -33,11 +33,9 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     ix, val : Integer;
   begin
     ix := EIndex (CD, Entry_Index);
-    if ND.EList (ix).First = null then
-      val := -1;
-    else
-      val := ND.EList (ix).First.Task_Index;
-    end if;
+    val :=
+     (if ND.EList (ix).First = null then -1
+      else ND.EList (ix).First.Task_Index);
     return val;
   end First_Caller;
 

@@ -119,16 +119,13 @@ procedure HAC_Multi is
            Integer'Image (task_id) & sep &
            " successful compilation. Running the VM.");
         Interpret_for_Multi (BD, post_mortem);
-        if Image (post_mortem.Unhandled) = "User_Abort" then
-          Put_Line
-            ("A2" & sep & " Task" & sep &
-             Integer'Image (task_id) & sep &
-             " got ""User_Abort"" exception from HAC VM.");
-        else
-          Put_Line
-            ("D" & sep & " Task" & sep &
-             Integer'Image (task_id) & sep & " is done.");
-        end if;
+        Put_Line
+         (
+          (if Image (post_mortem.Unhandled) = "User_Abort" then
+            "A2" & sep & " Task" & sep & Integer'Image (task_id) & sep &
+            " got ""User_Abort"" exception from HAC VM."
+           else "D" & sep & " Task" & sep & Integer'Image (task_id) & sep &
+            " is done."));
       end if;
     end HAC_Instance;
 
