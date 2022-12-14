@@ -1441,14 +1441,13 @@ package body HAC_Sys.Multi_Precision_Integers is
       return True;
     end if;
 
-    if i1.zero = i2.zero and then
-       i1.neg  = i2.neg  and then
-       i1.last_used = i2.last_used
-    then
-      return i1.blk (0 .. i1.last_used) = i2.blk (0 .. i2.last_used);
-    else
-      return False;
-    end if;
+      return (if i1.zero = i2.zero and then
+              i1.neg  = i2.neg  and then
+              i1.last_used = i2.last_used
+              then
+                 i1.blk (0 .. i1.last_used) = i2.blk (0 .. i2.last_used)
+              else
+                 False);
   end Equal;
 
   function Equal (i1 : Multi_int; i2 : Basic_Int) return Boolean is
