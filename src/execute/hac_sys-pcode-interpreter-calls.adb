@@ -157,8 +157,11 @@ package body HAC_Sys.PCode.Interpreter.Calls is
           Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
           Curr_TCB.TS  := WaitRendzv;
           Task_Entered := CD.IdTab (Ident_Index_of_Called).adr_or_sz;  --  Task being entered
-          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
-             (ND.TCB (Task_Entered).TS = TimedWait)
+          if
+           ((ND.TCB (Task_Entered).TS = WaitRendzv)
+            and then
+            (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
+           (ND.TCB (Task_Entered).TS = TimedWait)
           then
             --  wake accepting task if necessary
             ND.TCB (Task_Entered).TS      := Ready;
@@ -170,33 +173,45 @@ package body HAC_Sys.PCode.Interpreter.Calls is
           Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
           Task_Entered := CD.IdTab (Ident_Index_of_Called).adr_or_sz;  --  Task being entered
           --
-          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
-             (ND.TCB (Task_Entered).TS = TimedWait)
+          if
+           ((ND.TCB (Task_Entered).TS = WaitRendzv)
+            and then
+            (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
+           (ND.TCB (Task_Entered).TS = TimedWait)
           then
             --  wake accepting task if necessary
-            Curr_TCB.TS := WaitRendzv;     --  suspend self
+            Curr_TCB.TS                   := WaitRendzv;     --  suspend self
             ND.TCB (Task_Entered).TS := Ready;       --  wake accepting task
             ND.TCB (Task_Entered).SUSPEND := 0;
           else
-            Curr_TCB.TS := TimedRendz;          --  Timed Wait For Rendezvous
-            Curr_TCB.R1.I := 1;                 --  Init R1 to specify NO timeout
-            Curr_TCB.R2.I := HAC_Integer (Ident_Index_of_Called);  --  Save address of queue for purge
-            ND.SYSCLOCK := Clock;               --  update System Clock
+            Curr_TCB.TS   := TimedRendz;          --  Timed Wait For Rendezvous
+            Curr_TCB.R1.I :=
+             1;                 --  Init R1 to specify NO timeout
+            Curr_TCB.R2.I :=
+             HAC_Integer
+              (Ident_Index_of_Called);  --  Save address of queue for purge
+            ND.SYSCLOCK       := Clock;               --  update System Clock
             Curr_TCB.WAKETIME := ND.SYSCLOCK + Duration (F1);
           end if;
           ND.SWITCH := True;       --  give up control
 
         when Defs.Conditional_Entry_Call =>
           Task_Entered := CD.IdTab (Ident_Index_of_Called).adr_or_sz;              --  Task being entered
-          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
-             (ND.TCB (Task_Entered).TS = TimedWait)
+          if
+           ((ND.TCB (Task_Entered).TS = WaitRendzv)
+            and then
+            (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
+           (ND.TCB (Task_Entered).TS = TimedWait)
           then
-            Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
-            Curr_TCB.R1.I := 1;        --  Indicate entry successful
-            Curr_TCB.TS := WaitRendzv;
-            ND.TCB (Task_Entered).TS      := Ready;  --  wake accepting task if required
+            Tasking.Queue
+             (CD, ND, Ident_Index_of_Called,
+              ND.CurTask);  --  put self on entry queue
+            Curr_TCB.R1.I            := 1;        --  Indicate entry successful
+            Curr_TCB.TS              := WaitRendzv;
+            ND.TCB (Task_Entered).TS :=
+             Ready;  --  wake accepting task if required
             ND.TCB (Task_Entered).SUSPEND := 0;
-            ND.SWITCH              := True;   --  give up control
+            ND.SWITCH                     := True;   --  give up control
           else
             --  can't wait, forget about entry call
             Curr_TCB.R1.I := 0;   --  Indicate entry failed in R1 1
@@ -223,14 +238,17 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       else
         --  Set back base of caller:
         Curr_TCB.B := Integer (ND.S (Curr_TCB.B + 3).I);
-        if IR.Y = Defs.Timed_Entry_Call or IR.Y = Defs.Conditional_Entry_Call then
-          if IR.Y = Defs.Timed_Entry_Call and Curr_TCB.R1.I = 0 then
+        if IR.Y = Defs.Timed_Entry_Call
+         or else IR.Y = Defs.Conditional_Entry_Call
+        then
+          if IR.Y = Defs.Timed_Entry_Call and then Curr_TCB.R1.I = 0 then
             Push (ND);
           end if;
           --  A JMPC instruction always follows (?)
           --  timed and conditional entry call
           --  returns (32).  Push entry call
-          ND.S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
+          ND.S (Curr_TCB.T).I :=
+           Curr_TCB.R1.I;    --  success indicator for JMPC.
         end if;
       end if;
     end Do_Exit_Call;

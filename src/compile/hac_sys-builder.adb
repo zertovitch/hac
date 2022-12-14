@@ -108,11 +108,11 @@ package body HAC_Sys.Builder is
     end if;
     for round in Positive loop
       Compile_Pending_Bodies_Single_Round (BD, num_pending);
-      if num_pending > 0 and BD.CD.trace.detail_level >= 2 then
+      if num_pending > 0 and then BD.CD.trace.detail_level >= 2 then
         Compiler.Progress_Message
-          (BD.CD.all,
-           "--  Round" & Integer'Image (round) &
-           ", compiled bodies:" & Integer'Image (num_pending));
+         (BD.CD.all,
+          "--  Round" & Integer'Image (round) & ", compiled bodies:" &
+          Integer'Image (num_pending));
       end if;
       exit when num_pending = 0;
     end loop;

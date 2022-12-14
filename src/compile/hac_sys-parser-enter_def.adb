@@ -115,13 +115,12 @@ package body HAC_Sys.Parser.Enter_Def is
          err_illegal_array_bounds, "Low > High. NB: legal in Ada (empty array)", -- !!
          severity => major);
     end if;
-    if   Index_STP.Discrete_First < -HAC_Integer (XMax)
-      or Index_STP.Discrete_Last  >  HAC_Integer (XMax)
+    if Index_STP.Discrete_First < -HAC_Integer (XMax)
+     or else Index_STP.Discrete_Last > HAC_Integer (XMax)
     then
       Error
-        (CD,
-         err_illegal_array_bounds, "absolute value of a bound exceeds maximum value",
-         severity => major);
+       (CD, err_illegal_array_bounds,
+        "absolute value of a bound exceeds maximum value", severity => major);
     end if;
     if CD.Arrays_Count = AMax then
       Fatal (ARRAYS);  --  Exception is raised there.

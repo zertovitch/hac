@@ -115,7 +115,7 @@ package body HAC_Sys.Parser.Packages is
           --  in that package are checked anyway.
           Package_Declaration (CD, FSys, block_data, subpkg_needs_body);
           Need_Semicolon_after_Declaration (CD, FSys);
-          needs_body := needs_body or subpkg_needs_body;
+          needs_body := needs_body or else subpkg_needs_body;
           Mark_Last_Declaration;
         when PRIVATE_Symbol =>
           Scanner.InSymbol (CD);

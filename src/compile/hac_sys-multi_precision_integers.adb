@@ -315,12 +315,12 @@ package body HAC_Sys.Multi_Precision_Integers is
 
   function Even (i : Multi_int) return Boolean is
   begin
-    return i.zero or i.blk (0) mod 2 = 0;
+    return i.zero or else i.blk (0) mod 2 = 0;
   end Even;
 
   function Odd (i : Multi_int) return Boolean is
   begin
-    return (not i.zero) and i.blk (0) mod 2 = 1;
+    return (not i.zero) and then i.blk (0) mod 2 = 1;
   end Odd;
 
   ----------------------------
@@ -460,22 +460,22 @@ package body HAC_Sys.Multi_Precision_Integers is
     sgn : Boolean;
   begin
     --  (1) Les cas o\`u i1 ou i2 = 0
-    if i1.zero and i2.zero then
+    if i1.zero and then i2.zero then
       i3.zero := True;
     elsif i1.zero then
       Fill (i3, i2);
     elsif i2.zero then
       Fill (i3, i1);
-    --  (2) Maintenant: i1 /= 0 et i2 /= 0; on regarde les signes
-    --  (2.1) Facile: i1 et i2 de m\^eme signe
+      --  (2) Maintenant: i1 /= 0 et i2 /= 0; on regarde les signes
+      --  (2.1) Facile: i1 et i2 de m\^eme signe
     elsif i1.neg = i2.neg then
       Add_absolute (i1, i2, i3); -- On fait comme si i1>0 et i2>0
       i3.neg := i1.neg;           -- et on met le bon signe
-    --  (2.2) i1 < 0, i2 > 0, donc i3 = i2 - abs(i1)
-    elsif i1.neg and not i2.neg then
+      --  (2.2) i1 < 0, i2 > 0, donc i3 = i2 - abs(i1)
+    elsif i1.neg and then not i2.neg then
       Sub_absolute (i2, i1, i3, sgn);
-    --  (2.3) i1 > 0, i2 < 0, donc i3 = i1 - abs(i2)
-    elsif i2.neg and not i1.neg then
+      --  (2.3) i1 > 0, i2 < 0, donc i3 = i1 - abs(i2)
+    elsif i2.neg and then not i1.neg then
       Sub_absolute (i1, i2, i3, sgn);
     end if;
   end Add;
@@ -491,31 +491,35 @@ package body HAC_Sys.Multi_Precision_Integers is
     sgn : Boolean;
   begin
     --  (1) Les cas o\`u i1 ou i2 = 0
-    if    i1.zero and i2.zero then i3.zero := True;
-    elsif i1.zero then Fill (i3, i2); i3.neg := not i2.neg;
-    elsif i2.zero then Fill (i3, i1);
+    if i1.zero and then i2.zero then
+      i3.zero := True;
+    elsif i1.zero then
+      Fill (i3, i2);
+      i3.neg := not i2.neg;
+    elsif i2.zero then
+      Fill (i3, i1);
 
-    --  (2) Maintenant: i1 /= 0 et i2 /= 0; on regarde les signes
+      --  (2) Maintenant: i1 /= 0 et i2 /= 0; on regarde les signes
 
-    --  (2.1) Facile: i1 et i2 de m\^eme signe
+      --  (2.1) Facile: i1 et i2 de m\^eme signe
     elsif i1.neg = i2.neg then
       Sub_absolute (i1, i2, i3, sgn); -- On fait comme si i1>0 et i2>0
-                                      --  et on met le bon signe
-    i3.neg := i1.neg xor sgn;
-    --  26-Mar-2002: equivalent a:
-    --      if i1.neg then
-    --        i3.neg:= NOT sgn;
-    --      else
-    --        i3.neg:= sgn;
-    --      end if;
+      --  et on met le bon signe
+      i3.neg := i1.neg xor sgn;
+      --  26-Mar-2002: equivalent a:
+      --      if i1.neg then
+      --        i3.neg:= NOT sgn;
+      --      else
+      --        i3.neg:= sgn;
+      --      end if;
 
-    --  (2.2) i1 < 0, i2 > 0, donc i3 = i1-i2 = - (abs(i1) + abs(i2))
-    elsif i1.neg and not i2.neg then
+      --  (2.2) i1 < 0, i2 > 0, donc i3 = i1-i2 = - (abs(i1) + abs(i2))
+    elsif i1.neg and then not i2.neg then
       Add_absolute (i1, i2, i3);
       i3.neg := True;
 
-    --  (2.3) i1 > 0, i2 < 0, donc i3 = i1-i2 = i1 + (-i2) = i1 + abs(i2)
-    elsif i2.neg and not i1.neg then
+      --  (2.3) i1 > 0, i2 < 0, donc i3 = i1-i2 = i1 + (-i2) = i1 + abs(i2)
+    elsif i2.neg and then not i1.neg then
       Add_absolute (i1, i2, i3);
     end if;
 
@@ -570,7 +574,7 @@ package body HAC_Sys.Multi_Precision_Integers is
     --  res: buffer used in the "copy" variant to avoid
     --  problems with Multiply(i,j,i) or Multiply(j,i,i)
   begin
-    if i1.zero or i2.zero then
+    if i1.zero or else i2.zero then
       i3.zero := True;
       return;
     end if;
@@ -661,7 +665,7 @@ package body HAC_Sys.Multi_Precision_Integers is
     --  res: buffer used in the "copy" variant to avoid
     --  problems with Multiply(i,j,i) or Multiply(j,i,i)
   begin
-    if i1.zero or i2 = 0 then
+    if i1.zero or else i2 = 0 then
       i3.zero := True;
       return;
     end if;
@@ -768,7 +772,7 @@ package body HAC_Sys.Multi_Precision_Integers is
 
   function "*" (i1, i2 : Multi_int) return Multi_int is
   begin
-    if i1.zero or i2.zero then
+    if i1.zero or else i2.zero then
       return zero;
     else
       declare
@@ -782,7 +786,7 @@ package body HAC_Sys.Multi_Precision_Integers is
 
   function "*" (i1 : Multi_int; i2 : Basic_Int) return Multi_int is
   begin
-    if i1.zero or i2 = 0 then
+    if i1.zero or else i2 = 0 then
       return zero;
     else
       declare
@@ -796,7 +800,7 @@ package body HAC_Sys.Multi_Precision_Integers is
 
   function "*" (i1 : Basic_Int; i2 : Multi_int) return Multi_int is
   begin
-    if i2.zero or i1 = 0 then
+    if i2.zero or else i1 = 0 then
       return zero;
     else
       declare
@@ -983,18 +987,18 @@ package body HAC_Sys.Multi_Precision_Integers is
   begin
     --  Invariant: i1= i2*q+r   on cherche (pos) = (pos)*(pos)+(pos)
 
-    if i1n and i2n then        -- i1<0;  i2<0  (-i1) = (-i2) *  q  + (-r)
+    if i1n and then i2n then        -- i1<0;  i2<0  (-i1) = (-i2) *  q  + (-r)
       qn := False; -- Quotient > 0
-    --      rn:= True;  -- Reste    < 0
+      --      rn:= True;  -- Reste    < 0
     elsif i1n then             -- i1<0;  i2>0  (-i1) =   i2  *(-q) + (-r)
       qn := True;  -- Quotient < 0
-    --      rn:= True;  -- Reste    < 0
+      --      rn:= True;  -- Reste    < 0
     elsif i2n then             -- i1>0;  i2<0    i1  = (-i2) *(-q) +   r
       qn := True;  -- Quotient < 0
-    --      rn:= False; -- Reste    > 0
+      --      rn:= False; -- Reste    > 0
     else                       -- i1>0;  i2>0    i1  =   i2  *  q  +   r
       qn := False; -- Quotient > 0
-    --      rn:= False; -- Reste    > 0
+      --      rn:= False; -- Reste    > 0
     end if;
     --  on observe que... "(A rem B) has the sign of A " ARM 4.5.5
     --  en effet on peut mettre:
@@ -1392,7 +1396,7 @@ package body HAC_Sys.Multi_Precision_Integers is
      raise Power_negative;
     end if;
 
-    if modulo.zero or else (i.neg or modulo.neg) then
+    if modulo.zero or else (i.neg or else modulo.neg) then
       raise Power_modulo_non_positive;
     end if;
 
@@ -1459,24 +1463,33 @@ package body HAC_Sys.Multi_Precision_Integers is
   function ">" (i1, i2 : Multi_int) return Boolean is
   begin
     --  (1) Cas \'evident o\`u:         i1 <= i2
-    if (i1.zero or i1.neg) and then             -- i1 <= 0 et
-       (i2.zero or not i2.neg)                  -- i2 >= 0
+    if
+     (i1.zero
+      or else i1.neg) and then             -- i1 <= 0 et
+
+     (i2.zero or else not i2.neg)                  -- i2 >= 0
     then
-        return False;
+      return False;
     end if;
 
     --  (2.1) Cas \'evident o\`u:       i1 > i2
-    if ((not i1.zero) and not i1.neg) and then  -- i1 > 0 et
-       (i2.zero or i2.neg)                      -- i2 <= 0
+    if
+     ((not i1.zero)
+      and then not i1.neg) and then  -- i1 > 0 et
+
+     (i2.zero or else i2.neg)                      -- i2 <= 0
     then
-        return True;
+      return True;
     end if;
 
     --  (2.2) Cas \'evident o\`u:       i1 > i2
-    if (i1.zero or not i1.neg) and then         -- i1 >= 0 et
-       ((not i2.zero) and i2.neg)               -- i2 < 0
+    if
+     (i1.zero
+      or else not i1.neg) and then         -- i1 >= 0 et
+
+     ((not i2.zero) and then i2.neg)               -- i2 < 0
     then
-        return True;
+      return True;
     end if;
 
     --  Cas faciles resolus:

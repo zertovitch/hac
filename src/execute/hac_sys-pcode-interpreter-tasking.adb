@@ -20,7 +20,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
   begin
     e := -1;
     i := 1;
-    while i <= CD.Entries_Count and e = -1 loop
+    while i <= CD.Entries_Count and then e = -1 loop
       if Entry_Index = CD.Entries_Table (i) then
         e := i;
       end if;
@@ -182,7 +182,9 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
           end if;
           --  AVL -- TERMINATE
           --  IS THE PARENT TASK COMPLETED?
-          if ND.TCB (0).TS = Completed and ND.CurTask /= 0 and IR.X /= 6 then
+          if ND.TCB (0).TS = Completed and then ND.CurTask /= 0
+           and then IR.X /= 6
+          then
             ND.Nb_Callers := 0; --  LET'S SEE IF THERE ARE CALLERS
             for ITERM in 1 .. CD.Entries_Count loop
               if ND.EList (ITERM).First /= null then
@@ -201,9 +203,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
                   if ND.TCB (ITERM).TS = Curr_TCB.TS then
                     ND.Nb_Complete := ND.Nb_Complete + 1;
                   else
-                    if ND.TCB (ITERM).TS = Ready and
-                      Curr_TCB.TS = Running
-                    then
+                    if ND.TCB (ITERM).TS = Ready and Curr_TCB.TS = Running then
                       ND.Nb_Complete := ND.Nb_Complete + 1;
                     end if;
                   end if;
@@ -238,12 +238,13 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       Pop (ND);
       H2 := CD.Tasks_Definitions_Count + 1;
       H3 := Integer (Random (ND.Gen) * Float (H2));
-      while H2 >= 0 and ND.TCB (H3).TS /= WaitSem and ND.TCB (H3).SUSPEND /= H1
+      while H2 >= 0 and ND.TCB (H3).TS /= WaitSem
+       and then ND.TCB (H3).SUSPEND /= H1
       loop
         H3 := (H3 + 1) mod (Defs.TaskMax + 1);
         H2 := H2 - 1;
       end loop;
-      if H2 < 0 or ND.S (H1).I < 0 then
+      if H2 < 0 or else ND.S (H1).I < 0 then
         ND.S (H1).I := ND.S (H1).I + 1;
       else
         ND.TCB (H3).SUSPEND := 0;
@@ -493,11 +494,10 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     use type Ada.Calendar.Time;
   begin
     for t in 0 .. CD.Tasks_Definitions_Count loop
-      if (ND.TCB (t).TS = Delayed or
-          ND.TCB (t).TS = TimedRendz or
-          ND.TCB (t).TS = TimedWait)
-        and
-          ND.SYSCLOCK >= ND.TCB (t).WAKETIME
+      if
+       (ND.TCB (t).TS = Delayed or ND.TCB (t).TS = TimedRendz or
+        ND.TCB (t).TS = TimedWait)
+       and then ND.SYSCLOCK >= ND.TCB (t).WAKETIME
       then
         if ND.TCB (t).TS = TimedRendz then
           ND.TCB (t).R1.I := 0; --  timeout on rendezvous
@@ -507,7 +507,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
           ND.TCB (t).PC := Defs.Index (ND.TCB (t).R1.I); --  t.out on accept
         end if;
         ND.TCB (t).TS := Ready;
-        count := count + 1;
+        count         := count + 1;
       end if;
     end loop;
     Result := count > 0;
@@ -532,9 +532,8 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       end if;
     else
       Wake_Tasks (CD, ND, were_tasks_awakened);
-      if ND.SWITCH or       --  ------------> Voluntary release of control
-         ND.SYSCLOCK >= ND.TIMER or   --  ---> Time slice exceeded
-         were_tasks_awakened      --  ------> Awakened task causes switch
+      if ND.SWITCH or else ND.SYSCLOCK >= ND.TIMER
+       or else were_tasks_awakened      --  ------> Awakened task causes switch
       then
         if ND.CurTask >= 0 then
           ND.TCB (ND.CurTask).LASTRUN := ND.SYSCLOCK;
@@ -559,9 +558,9 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
           return;
         end if;
         --
-        ND.TIMER := ND.SYSCLOCK + ND.TCB (ND.CurTask).QUANTUM;
+        ND.TIMER               := ND.SYSCLOCK + ND.TCB (ND.CurTask).QUANTUM;
         ND.TCB (ND.CurTask).TS := Running;
-        ND.SWITCH := False;
+        ND.SWITCH              := False;
         if ND.Snap then
           SnapShot;
         end if;

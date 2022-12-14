@@ -133,7 +133,7 @@ package body HAC_Sys.Parser.Const_Var is
         CD.Sy := Becomes;
       end if;
       --
-      is_untyped_constant := is_constant and not is_typed;
+      is_untyped_constant := is_constant and then not is_typed;
       --
       if is_untyped_constant then
         --  Numeric constant: we parse the number here ("k : constant := 123.0").
@@ -146,7 +146,8 @@ package body HAC_Sys.Parser.Const_Var is
       end if;
       --
       T0i := T0;
-      if is_constant or is_typed then  --  All correct cases: untyped variables were caught.
+      if is_constant or else is_typed
+      then  --  All correct cases: untyped variables were caught.
         --  Update identifier table
         while T0 < T1 loop
           T0 := T0 + 1;
@@ -155,7 +156,8 @@ package body HAC_Sys.Parser.Const_Var is
           begin
             r.read_only := is_constant;
             if is_untyped_constant then
-              r.entity := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
+              r.entity :=
+               Declared_Number_or_Enum_Item;  --  r was initially a Variable.
               r.xtyp := C.TP;
               case C.TP.TYP is
                 when Floats =>
@@ -168,19 +170,20 @@ package body HAC_Sys.Parser.Const_Var is
                   r.adr_or_sz := Integer (C.I);
               end case;
             else  --  A variable or a typed constant
-              r.xtyp      := xTyp;
+              r.xtyp                           := xTyp;
               r.adr_or_sz := Block_Data.data_allocation_index;
-              Block_Data.data_allocation_index := Block_Data.data_allocation_index + Sz;
+              Block_Data.data_allocation_index :=
+               Block_Data.data_allocation_index + Sz;
             end if;
           end;
         end loop;  --  While T0 < T1
       end if;
       --
-      if CD.Sy = EQL and not is_untyped_constant then
+      if CD.Sy = EQL and then not is_untyped_constant then
         Error (CD, err_EQUALS_instead_of_BECOMES);
         CD.Sy := Becomes;
       end if;
-      if is_constant and is_typed then
+      if is_constant and then is_typed then
         --  For typed constants, the ":=" is required and consumed with the Assignment below.
         Test (CD, Becomes_Set, empty_symset, err_BECOMES_missing);
       end if;

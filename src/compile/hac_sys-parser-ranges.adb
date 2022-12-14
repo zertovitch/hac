@@ -232,7 +232,7 @@ package body HAC_Sys.Parser.Ranges is
   function Do_Ranges_Overlap (X_min, X_max, Y_min, Y_max : Defs.HAC_Integer) return Boolean is
     use type Defs.HAC_Integer;
   begin
-    pragma Assert (X_min <= X_max and Y_min <= Y_max);
+    pragma Assert (X_min <= X_max and then Y_min <= Y_max);
     --
     --  The following is logically identical to: "not (Y_max < X_min or X_max < Y_min)",
     --  which means we don't have this situation:

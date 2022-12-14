@@ -105,8 +105,8 @@ package body HAC_Sys.PCode is
         (prev_old_value, prev_new_value : Opcode) is
       pragma Inline (Simple_Substitution);
       begin
-        if (not folded) and old.F = prev_old_value then
-          old.F := prev_new_value;
+        if (not folded) and then old.F = prev_old_value then
+          old.F  := prev_new_value;
           folded := True;
         end if;
       end Simple_Substitution;

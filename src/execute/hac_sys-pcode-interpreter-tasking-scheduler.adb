@@ -232,7 +232,9 @@ procedure Scheduler (CD : Compiler_Data; ND : in out Interpreter_Data) is
   begin
     t := 0;
     for i in 0 .. TCount loop
-      if ND.TCB (i).TS = Ready and ND.TCB (i).Pcontrol.UPRI > ND.TCB (t).Pcontrol.UPRI then
+      if ND.TCB (i).TS = Ready
+       and then ND.TCB (i).Pcontrol.UPRI > ND.TCB (t).Pcontrol.UPRI
+      then
         t := i;
       end if;
     end loop;

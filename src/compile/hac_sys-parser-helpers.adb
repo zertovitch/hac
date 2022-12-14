@@ -379,7 +379,7 @@ package body HAC_Sys.Parser.Helpers is
       );
     elsif X.TYP = VStrings or X.TYP = Strings_as_VStrings then
       null;  --  Already a VString.
-    elsif X.TYP = Chars and include_characters then
+    elsif X.TYP = Chars and then include_characters then
       Emit_Std_Funct (CD, SF_Char_to_VString);
     else
       Type_Mismatch (
@@ -470,7 +470,7 @@ package body HAC_Sys.Parser.Helpers is
         J := CD.IdTab (J).link;  --  Skip this identifier.
       end loop;
       L := L - 1;  --  Decrease nesting level.
-      exit when L < 0 or J /= No_Id;
+      exit when L < 0 or else J /= No_Id;
     end loop;
     if J = No_Id then
       if not Fail_when_No_Id then

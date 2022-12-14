@@ -295,20 +295,20 @@ package body HAC_Sys.Scanner is
         l := l + 1;
         s (l) := CD.CUD.c;
         exit when CD.CUD.c = '#';  --  Second '#'.
-        has_point := has_point or CD.CUD.c = '.';
+        has_point := has_point or else CD.CUD.c = '.';
       end loop;
       NextCh (CD);
-      if CD.CUD.c = 'E' or CD.CUD.c = 'e' then
+      if CD.CUD.c = 'E' or else CD.CUD.c = 'e' then
         --  Exponent. Special case because of eventual '+' or '-' which
         --  are not operators (e.g. 8#123#e+5 vs. 8#123#+5, = 8#123# + 5)...
         --  Otherwise we could have done it all in the previous loop.
         for c in 1 .. 2 loop
-          l := l + 1;
+          l     := l + 1;
           s (l) := CD.CUD.c;  --  We concatenate "e+", "e-", "e5".
           NextCh (CD);
         end loop;
         while CD.CUD.c in '0' .. '9' loop
-          l := l + 1;
+          l     := l + 1;
           s (l) := CD.CUD.c;  --  We concatenate the rest of the exponent.
           NextCh (CD);
         end loop;
@@ -364,7 +364,7 @@ package body HAC_Sys.Scanner is
         if e = 0 then
           Error (CD, err_illegal_character_in_number, "; expected digit after '.'");
         end if;
-        if CD.CUD.c = 'E' or CD.CUD.c = 'e' then
+        if CD.CUD.c = 'E' or else CD.CUD.c = 'e' then
           Read_Scale (True);
         end if;
         if e /= 0 then
@@ -454,7 +454,7 @@ package body HAC_Sys.Scanner is
       --  We peek the next character without moving.
       --  Possible since CD.CC < CD.LL .
       C2 := CD.CUD.input_line (CD.CUD.CC + 1);
-      if C1 = ''' and C2 /= ''' then  --  Case (6)
+      if C1 = ''' and then C2 /= ''' then  --  Case (6)
         Error (CD, err_character_zero_chars, severity => major);
       end if;
       --  Until now, case (5) to (9) are treated.

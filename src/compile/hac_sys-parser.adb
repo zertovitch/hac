@@ -317,7 +317,7 @@ package body HAC_Sys.Parser is
         return;
       end if;
       --
-      if CD.Sy = NULL_Symbol and not Is_a_block_statement then
+      if CD.Sy = NULL_Symbol and then not Is_a_block_statement then
         --  RM 6.7 Null Procedures (Ada 2005)
         --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;"
         InSymbol;  --  Consume NULL symbol.
@@ -345,11 +345,14 @@ package body HAC_Sys.Parser is
           return;
         end if;
         --
-        if CD.Sy = IDent then  --  Verify that the name after "end" matches the unit name.
+        if CD.Sy = IDent
+        then  --  Verify that the name after "end" matches the unit name.
           Check_ident_after_END;
-        elsif Is_a_block_statement and Block_Id /= Empty_Alfa then
+        elsif Is_a_block_statement and then Block_Id /= Empty_Alfa then
           --  No identifier after "end", but "end [label]" is required in this case.
-          Error (CD, err_incorrect_name_after_END, hint_1 => A2S (Block_Id_with_case));
+          Error
+           (CD, err_incorrect_name_after_END,
+            hint_1 => A2S (Block_Id_with_case));
         end if;
       end if;
       --
@@ -358,9 +361,9 @@ package body HAC_Sys.Parser is
         return;
       end if;
       --
-      if block_data.level <= 1 or Is_a_block_statement then
+      if block_data.level <= 1 or else Is_a_block_statement then
         --  Time to count the minor errors as errors.
-        CD.error_count := CD.error_count + CD.minor_error_count;
+        CD.error_count       := CD.error_count + CD.minor_error_count;
         CD.minor_error_count := 0;
       else
         InSymbol;  --  Consume ';' symbol after END [Subprogram_Id].
@@ -368,11 +371,9 @@ package body HAC_Sys.Parser is
         --
         --  Now we have either another declaration,
         --  or BEGIN or, if it's a package, END  .
-        Test (
-          CD, FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
-          empty_symset,
-          err_incorrectly_used_symbol
-        );
+        Test
+         (CD, FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
+          empty_symset, err_incorrectly_used_symbol);
       end if;
     end Process_Body;
 
@@ -413,7 +414,7 @@ package body HAC_Sys.Parser is
     CD.Blocks_Table (subprogram_block_index).Last_Param_Id_Idx := CD.Id_Count;
     CD.Blocks_Table (subprogram_block_index).PSize := block_data.data_allocation_index;
     --
-    if block_data.entity = Funktion and not Is_a_block_statement then
+    if block_data.entity = Funktion and then not Is_a_block_statement then
       Function_Result_Profile;
     end if;
     --
