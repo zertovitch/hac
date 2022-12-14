@@ -22,7 +22,7 @@ package body HAC_Pkg is
   begin
     for i in path'Range loop
       new_sep_pos := sep_pos;
-      if path (i) = ',' or else path (i) = ';' then
+      if path (i) in ',' | ';' then
         new_sep_pos := i;
       elsif i = path'Last then
         new_sep_pos := i + 1;

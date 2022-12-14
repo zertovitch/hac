@@ -257,13 +257,9 @@ package body HAC_Sys.Librarian is
          severity => major);
     elsif Upper_Name = HAT_Name then
       Built_In_Packages.Define_and_Register_HAT (CD, LD);
-    elsif Upper_Name = "HAC_PACK" or else Upper_Name = "HAL" then
+    elsif Upper_Name in "HAC_PACK" | "HAL" then
       Error
-        (CD,
-         err_obsolete_hat_name,
-         HAT_Name,
-         Upper_Name,
-         severity => major);
+       (CD, err_obsolete_hat_name, HAT_Name, Upper_Name, severity => major);
     else
       begin
         Compile_WITHed_Unit (CD, LD, Upper_Name);
