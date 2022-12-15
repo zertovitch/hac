@@ -5,6 +5,8 @@
 --  https://adventofcode.com/2022/day/$
 --  Copy of questions in: aoc_2022_$$_questions.txt
 
+with AoC_Toolbox;
+
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
 with HAT;
@@ -15,7 +17,7 @@ with HAT;
 
 procedure AoC_2022_XX is
   --  use HAT, Interfaces;
-  use HAT;
+  use AoC_Toolbox, HAT;
 
   verbose : constant Boolean := True;
   T0 : constant Time := Clock;
@@ -63,22 +65,6 @@ procedure AoC_2022_XX is
     y  := Sin (a) * x + Cos (a) * y;
     x  := nx;
   end Rotate;
-
-  type Point is record
-    x, y : Integer;
-  end record;
-
-  function Dist_Max (a, b : Point) return Natural is
-  begin
-    return
-      Max (abs (a.x - b.x), abs (a.y - b.y));
-  end Dist_Max;
-
-  function Dist_L1 (a, b : Point) return Natural is
-  begin
-    return
-      abs (a.x - b.x) + abs (a.y - b.y);
-  end Dist_L1;
 
   procedure Maximize (p : in out Point; using: Point) is
   begin

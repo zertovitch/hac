@@ -5,29 +5,21 @@
 --  https://adventofcode.com/2022/day/14
 --  Copy of questions in: aoc_2022_14_questions.txt
 
+with AoC_Toolbox;
+
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
 with HAT;
 
 procedure AoC_2022_14 is
-  use HAT;
+  use HAT, AoC_Toolbox;
 
   subtype Range_x is Integer range 300 .. 800;
   subtype Range_y is Integer range   0 .. 200;
 
   map : array (Range_x, Range_y) of Character;
 
-  type Point is record
-    x, y : Integer;
-  end record;
-
   m, n : Point;
-
-  function Dist_L1 (a, b : Point) return Natural is
-  begin
-    return
-      abs (a.x - b.x) + abs (a.y - b.y);
-  end Dist_L1;
 
   procedure Adapt_Top_Left_Corner (using : Point) is
   begin
@@ -113,23 +105,24 @@ procedure AoC_2022_14 is
     end if;
   end Data_Acquisition;
 
-  procedure Simulate_Sand_Unit (overflow : out Boolean) is
-    p : Point;
+  pouring_point : Point;
+  full_or_blocked : Boolean;
+
+  procedure Simulate_Sand_Unit is
+    p : Point := pouring_point;
   begin
-    p.x := 500;
-    p.y := Range_y'First;
-    overflow := False;
+    full_or_blocked := False;
     if map (p.x, p.y) = 'o' then
       --  Source is blocked!
-      overflow := True;
+      full_or_blocked := True;
       return;
     end if;
     loop
       if map (p.x, p.y + 1) = '.' then
-        --  Fall further.
+        --  Cell below is free -> fall further.
         p.y := p.y + 1;
       else
-        --  Obstacle
+        --  Obstacle.
         if map (p.x - 1, p.y + 1) = '.' then
           --  Move diagonally (left).
           p.x := p.x - 1;
@@ -139,14 +132,16 @@ procedure AoC_2022_14 is
           p.x := p.x + 1;
           p.y := p.y + 1;
         else
+          --  Sand unit cannot move anymore.
           map (p.x, p.y) := 'o';
-          Adapt_Top_Left_Corner (p);  --  Displayed portion of the map may increase.
+          --  Displayed portion of the map may increase:
+          Adapt_Top_Left_Corner (p);
           exit;
         end if;
       end if;
       if p.y = n.y then
         --  Reach floor level: will "fall into the endless void".
-        overflow := True;
+        full_or_blocked := True;
         exit;
       end if;
     end loop;
@@ -157,9 +152,9 @@ procedure AoC_2022_14 is
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer;
 
-  overflow : Boolean;
-
 begin
+  pouring_point.x := 500;
+  pouring_point.y :=   0;
 Parts :
   for part in 1 .. 2 loop
     Data_Acquisition (part = 2);
@@ -167,11 +162,11 @@ Parts :
       Show (+"Initial:");
     end if;
     for step in Positive loop
-      Simulate_Sand_Unit (overflow);
+      Simulate_Sand_Unit;
       if verbose and then n.y < 100 then
         Show (+"Sand unit #" & step & ':');
       end if;
-      if overflow then
+      if full_or_blocked then
         r (part) := step - 1;
         --  ^ "- 1" is because "How many units of sand come to rest
         --    *before* sand starts flowing into the abyss below"
