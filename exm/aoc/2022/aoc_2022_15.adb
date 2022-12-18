@@ -47,8 +47,9 @@ procedure AoC_2022_15 is
   --  sensor delimited by the distance to the next beacon, then
   --  it is beacon-free [2] unless it is the point where
   --  the beacon is [1].
-  --  NB: the puzzle seems to politely exclude *two* beacons
-  --  at the same distance of a sensor...
+  --  NB: the puzzle kindly excludes *two* beacons
+  --  at the same distance of a sensor ("There is never a tie where
+  --  two beacons are the same distance to a sensor").
   --
   function Beacon_Free (x, y : Integer) return Boolean is
     p : Point;
@@ -116,7 +117,8 @@ procedure AoC_2022_15 is
     --
     --  Since there is only one possible point where the beacon is,
     --  it is surrounded by beacon-free zones, which are the topological
-    --  discs (geometrically, squares with diagonal edges) around a sensor.
+    --  discs (geometrically, squares with diagonally-oriented edges)
+    --  around a sensor.
     --  So it is sufficient to search the point right outside the squares.
     --
     --  Idea from Maxim Reznik,

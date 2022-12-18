@@ -161,11 +161,17 @@ into the abyss below?
 
 --- Part Two ---
 
-You realize you misread the scan. There isn't an endless void at the bottom of the scan - there's floor, and you're standing on it!
+You realize you misread the scan. There isn't an endless void at the
+bottom of the scan - there's floor, and you're standing on it!
 
-You don't have time to scan the floor, so assume the floor is an infinite horizontal line with a y coordinate equal to two plus the highest y coordinate of any point in your scan.
+You don't have time to scan the floor, so assume the floor is an
+infinite horizontal line with a y coordinate equal to two plus the
+highest y coordinate of any point in your scan.
 
-In the example above, the highest y coordinate of any point is 9, and so the floor is at y=11. (This is as if your scan contained one extra rock path like -infinity,11 -> infinity,11.) With the added floor, the example above now looks like this:
+In the example above, the highest y coordinate of any point is 9,
+and so the floor is at y=11. (This is as if your scan contained one
+extra rock path like -infinity,11 -> infinity,11.)
+With the added floor, the example above now looks like this:
 
         ...........+........
         ....................
@@ -180,7 +186,11 @@ In the example above, the highest y coordinate of any point is 9, and so the flo
         ....................
 <-- etc #################### etc -->
 
-To find somewhere safe to stand, you'll need to simulate falling sand until a unit of sand comes to rest at 500,0, blocking the source entirely and stopping the flow of sand into the cave. In the example above, the situation finally looks like this after 93 units of sand come to rest:
+To find somewhere safe to stand, you'll need to simulate falling sand
+until a unit of sand comes to rest at 500,0, blocking the source
+entirely and stopping the flow of sand into the cave.
+In the example above, the situation finally looks like
+this after 93 units of sand come to rest:
 
 ............o............
 ...........ooo...........
@@ -195,4 +205,5 @@ To find somewhere safe to stand, you'll need to simulate falling sand until a un
 ..ooooo.......ooooooooo..
 #########################
 
-Using your scan, simulate the falling sand until the source of the sand becomes blocked. How many units of sand come to rest?
+Using your scan, simulate the falling sand until the source of the
+sand becomes blocked. How many units of sand come to rest?

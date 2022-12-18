@@ -19,7 +19,15 @@ project AoC_2022 is
       );
    AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
+   type AoC_Styles_Checks_Type is
+      ("Off",
+       "On",
+       "Extra"
+      );
+   AoC_Styles_Checks : AoC_Styles_Checks_Type := external ("AoC_Styles_Checks", "On");
+
    for Main use (
+     "aoc_2022_16.adb",
      "aoc_2022_15.adb",
      "aoc_2022_14.adb",
      "aoc_2022_13.adb",
@@ -49,16 +57,25 @@ project AoC_2022 is
      "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
      "-gnatwCijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
-     "-gnatf",  --  Full errors. Verbose details, all undefined references
-     "-gnatq",  --  Don't quit, try semantics, even if parse errors
-     "-gnatQ",  --  Don't quit, write ali/tree file even if compile errors
-     --
-     "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
-     "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
-     "-gnatyx",       --  Style: check x:no extra parens
-     --  "-gnatye",   --  Style: check e:end/exit labels present
-     "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
-   );
+     "-gnatf",   --  Full errors. Verbose details, all undefined references
+     "-gnatq",   --  Don't quit, try semantics, even if parse errors
+     "-gnatQ");  --  Don't quit, write ali/tree file even if compile errors
+    
+   Style_Checks_1 := 
+     ("-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
+      "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
+      "-gnatyx",       --  Style: check x:no extra parens
+      --  "-gnatye",   --  Style: check e:end/exit labels present
+      "-gnatytc");     --  Style: check t:token separation rules, c:comment format (two spaces)
+
+   Style_Checks_2 := 
+     ("-gnatye");      --  Style: check e:end/exit labels present
+
+   case AoC_Styles_Checks is
+      when "Off"   => null;
+      when "On"    => Common_Options := Common_Options & Style_Checks_1;
+      when "Extra" => Common_Options := Common_Options & Style_Checks_1 & Style_Checks_2;
+   end case;
 
    Fast_Options := (
      "-O3",
