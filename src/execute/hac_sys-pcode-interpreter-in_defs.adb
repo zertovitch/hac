@@ -152,9 +152,9 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
           if P2Ada_Var_7.entity = Variable then
             if Defs.Standard_or_Enum_Typ (P2Ada_Var_7.xtyp.TYP) then
               if P2Ada_Var_7.normal then
-                H3 := H1 + P2Ada_Var_7.adr_or_sz;
+                H3 := H1 + Integer (P2Ada_Var_7.adr_or_sz);
               else
-                H3 := Integer (ND.S (H1 + P2Ada_Var_7.adr_or_sz).I);
+                H3 := Integer (ND.S (H1 + Integer (P2Ada_Var_7.adr_or_sz)).I);
               end if;
               Put ("  " & A2S (P2Ada_Var_7.name) & " = ");
               case P2Ada_Var_7.xtyp.TYP is

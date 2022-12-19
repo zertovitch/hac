@@ -613,7 +613,7 @@ package body HAC_Sys.Parser.Statements is
               block_or_pkg_ref => 0,
               normal           => True,
               lev              => Block_Data.level,
-              adr_or_sz        => Block_Data.data_allocation_index
+              adr_or_sz        => HAC_Integer (Block_Data.data_allocation_index)
              );
         CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx  := CD.Id_Count;
         Block_Data.data_allocation_index := Block_Data.data_allocation_index + 1;

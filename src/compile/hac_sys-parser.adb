@@ -79,7 +79,7 @@ package body HAC_Sys.Parser is
             elsif X /= No_Id then
               if CD.IdTab (X).entity = TypeMark then
                 xTP := CD.IdTab (X).xtyp;
-                Sz := (if ValParam then CD.IdTab (X).adr_or_sz else 1);
+                Sz := Integer (if ValParam then CD.IdTab (X).adr_or_sz else 1);
               else
                 Error (CD, err_missing_a_type_identifier, severity => major);
               end if;
@@ -97,7 +97,7 @@ package body HAC_Sys.Parser is
               r.normal    := ValParam;
               r.read_only := ValParam;
               r.decl_kind := param_kind;
-              r.adr_or_sz := block_data.data_allocation_index;
+              r.adr_or_sz := HAC_Integer (block_data.data_allocation_index);
               r.lev       := block_data.level;
               block_data.data_allocation_index := block_data.data_allocation_index + Sz;
             end;
@@ -179,7 +179,7 @@ package body HAC_Sys.Parser is
     procedure Statements_Part_Setup is
     begin
       block_data.max_data_allocation_index := block_data.data_allocation_index;
-      CD.IdTab (block_data.block_id_index).adr_or_sz := CD.LC;
+      CD.IdTab (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
       Link_Forward_Declaration (CD, block_data.previous_declaration_id_index, block_data.block_id_index);
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
       for Init_Code_Idx in reverse CD.CMax + 1 .. CD.CMax + block_data.initialization_object_code_size loop
@@ -264,7 +264,7 @@ package body HAC_Sys.Parser is
           Need (CD, Finger, err_syntax_error);
           if CD.Id = "TRUE" then
             InSymbol;  --  Consume True
-            CD.IdTab (block_data.block_id_index).adr_or_sz := CD.LC;
+            CD.IdTab (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
             CD.IdTab (block_data.block_id_index).decl_kind := spec_resolved;
             Emit_1 (CD, k_Exchange_with_External, Operand_2_Type (block_data.block_id_index));
             Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);

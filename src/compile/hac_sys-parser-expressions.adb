@@ -58,9 +58,9 @@ package body HAC_Sys.Parser.Expressions is
             if CD.IdTab (X).entity = Declared_Number_or_Enum_Item then
               C.TP := CD.IdTab (X).xtyp;
               if C.TP.TYP = Floats then
-                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (CD.IdTab (X).adr_or_sz);
+                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (Integer (CD.IdTab (X).adr_or_sz));
               else
-                C.I := Sign * HAC_Integer (CD.IdTab (X).adr_or_sz);
+                C.I := Sign * CD.IdTab (X).adr_or_sz;
                 if signed and then C.TP.TYP not in Numeric_Typ then
                   Error (CD, err_numeric_constant_expected);
                 end if;
@@ -109,7 +109,7 @@ package body HAC_Sys.Parser.Expressions is
           Error (CD, err_undefined_identifier, A2S (CD.Id_with_case), severity => major);
         end if;
         V            := CD.IdTab (Field_Id).xtyp;
-        Field_Offset := CD.IdTab (Field_Id).adr_or_sz;
+        Field_Offset := Integer (CD.IdTab (Field_Id).adr_or_sz);
         if Field_Offset /= 0 then
           Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
         end if;
@@ -470,7 +470,7 @@ package body HAC_Sys.Parser.Expressions is
                       --  Here the address is actually the immediate (discrete) value.
                       Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.adr_or_sz));
                       --  The local subtype for the value V is the range V .. V.
-                      Ranges.Set_Singleton_Range (X, HAC_Integer (r.adr_or_sz));
+                      Ranges.Set_Singleton_Range (X, r.adr_or_sz);
                     end if;
                     --
                   when Variable =>

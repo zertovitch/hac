@@ -101,7 +101,7 @@ package body HAC_Sys.Librarian is
       block_or_pkg_ref => 0,
       normal           => True,
       lev              => 0,
-      adr_or_sz        => Size
+      adr_or_sz        => HAC_Integer (Size)
     );
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper, CD.Id_Count);

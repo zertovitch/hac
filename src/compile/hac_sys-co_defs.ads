@@ -165,7 +165,7 @@ package HAC_Sys.Co_Defs is
     block_or_pkg_ref : Index;                --  Reference in the block or package tables.
     normal           : Boolean;              --  value param?
     lev              : Nesting_level;
-    adr_or_sz        : Integer;
+    adr_or_sz        : HAC_Integer;
   end record;
 
   --  Entity                        Meaning of Adr_or_Sz

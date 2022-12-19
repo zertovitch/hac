@@ -351,12 +351,12 @@ package body HAC_Sys.Parser.Packages is
                S2A (Full_Name (Start .. Full_Name'Last)),
                Alias,
                dummy_id_idx);
-            CD.IdTab (CD.Id_Count).adr_or_sz := i;  --  i = Aliased entity's index.
+            CD.IdTab (CD.Id_Count).adr_or_sz := HAC_Integer (i);  --  i = Aliased entity's index.
           else
             --  Here we have found an identical and
             --  visible short identifier at the same level.
             if CD.IdTab (Id_Alias).entity = Alias
-              and then CD.IdTab (Id_Alias).adr_or_sz = i
+              and then CD.IdTab (Id_Alias).adr_or_sz = HAC_Integer (i)
             then
               --  Here we have an identical alias (same name and points
               --  to the same definition).

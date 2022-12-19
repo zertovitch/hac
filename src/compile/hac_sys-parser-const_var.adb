@@ -159,17 +159,17 @@ package body HAC_Sys.Parser.Const_Var is
               r.xtyp := C.TP;
               case C.TP.TYP is
                 when Floats =>
-                  Enter_or_find_Float (CD, C.R, r.adr_or_sz);
+                  Enter_or_find_Float (CD, C.R, Integer (r.adr_or_sz));
                 when Ints =>
-                  r.adr_or_sz := Integer (C.I);
+                  r.adr_or_sz := C.I;
                 when others =>
                   Error (CD, err_numeric_constant_expected);
                   --  "boo : constant := True;" or "x: constant := 'a';" are wrong in Ada.
-                  r.adr_or_sz := Integer (C.I);
+                  r.adr_or_sz := C.I;
               end case;
             else  --  A variable or a typed constant
               r.xtyp      := xTyp;
-              r.adr_or_sz := Block_Data.data_allocation_index;
+              r.adr_or_sz := HAC_Integer (Block_Data.data_allocation_index);
               Block_Data.data_allocation_index := Block_Data.data_allocation_index + Sz;
             end if;
           end;

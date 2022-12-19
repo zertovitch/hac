@@ -486,7 +486,7 @@ package body HAC_Sys.Parser.Helpers is
     --  Name aliasing resolution (brought by a use clause
     --  or a simple renames clause):
     while Alias_Resolution and then CD.IdTab (J).entity = Alias loop
-      J := CD.IdTab (J).adr_or_sz;  --  E.g. True -> Standard.True
+      J := Integer (CD.IdTab (J).adr_or_sz);  --  E.g. True -> Standard.True
     end loop;
 
     if J > Public_Filter then

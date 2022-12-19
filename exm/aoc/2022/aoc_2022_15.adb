@@ -4,7 +4,11 @@
 --
 --  https://adventofcode.com/2022/day/15
 --  Copy of questions in: aoc_2022_15_questions.txt
-
+--
+--  Note: this solution takes an insane amount of time with HAC.
+--  Fortunately, you can compile it with GNAT and
+--  the total run-time is there 1.17 seconds on an i7 machine.
+--
 with AoC_Toolbox;
 
 --  For building this program with "full Ada",

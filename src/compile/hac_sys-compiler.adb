@@ -159,7 +159,7 @@ package body HAC_Sys.Compiler is
         Put (CD.comp_dump,
              ' ' & A2S (CD.IdTab (CD.Entries_Table (I)).name) & " in Task " &
              A2S (CD.IdTab (
-               CD.Tasks_Definitions_Table (CD.IdTab (CD.Entries_Table (I)).adr_or_sz)
+               CD.Tasks_Definitions_Table (Integer (CD.IdTab (CD.Entries_Table (I)).adr_or_sz))
              ).name)
         );
         New_Line (CD.comp_dump);
@@ -406,7 +406,7 @@ package body HAC_Sys.Compiler is
       for Blk of CD.IdTab (CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count) loop
         if Blk.entity = Variable then
           if Blk.xtyp.TYP /= NOTYP then
-            Ada.Integer_Text_IO.Put (map_file, Blk.adr_or_sz, 4);
+            Ada.Integer_Text_IO.Put (map_file, Integer (Blk.adr_or_sz), 4);
             Put (map_file, A2S (Blk.name) & "   ");
           end if;
           if Blk.lev = 1 then

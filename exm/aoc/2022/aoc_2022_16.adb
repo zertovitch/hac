@@ -4,6 +4,10 @@
 --
 --  https://adventofcode.com/2022/day/16
 --  Copy of questions in: aoc_2022_16_questions.txt
+--
+--  Note: this solution takes an insane amount of time with HAC.
+--  Fortunately, you can compile it with GNAT and
+--  the total run-time is there 0.94 seconds on an i7 machine.
 
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
@@ -295,18 +299,9 @@ begin
   Fill_Laziness_Filter_Affine_Function (2270, 20);
   r (2) := Visit_Two_Agents (AA, nil, AA, nil, 26, 0);
 
-  if Argument_Count >= 2 then
-    --  Compiler test mode.
-    if r (1) /= Integer'Value (To_String (Argument (1))) or
-       r (2) /= Integer'Value (To_String (Argument (2)))
-    then
-      Set_Exit_Status (1);  --  Compiler test failed.
-    end if;
-  else
-    Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: maximum pressure release . . . . . . . . : " & r (1));
-    Put_Line (+"Part 2: maximum pressure release (2 players) . . : " & r (2));
-    --  Part 1: validated by AoC: 1728
-    --  Part 2: validated by AoC: 2304
-  end if;
+  Put_Line (+"Done in: " & (Clock - T0) & " seconds");
+  Put_Line (+"Part 1: maximum pressure release . . . . . . . . : " & r (1));
+  Put_Line (+"Part 2: maximum pressure release (2 players) . . : " & r (2));
+  --  Part 1: validated by AoC: 1728
+  --  Part 2: validated by AoC: 2304
 end AoC_2022_16;

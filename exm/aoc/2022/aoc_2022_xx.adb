@@ -66,18 +66,6 @@ procedure AoC_2022_XX is
     x  := nx;
   end Rotate;
 
-  procedure Maximize (p : in out Point; using: Point) is
-  begin
-    p.x := Max (p.x, using.x);
-    p.y := Max (p.y, using.y);
-  end Maximize;
-
-  procedure Minimize (p : in out Point; using: Point) is
-  begin
-    p.x := Min (p.x, using.x);
-    p.y := Min (p.y, using.y);
-  end Minimize;
-
   nx_max : constant := 500;
   ny_max : constant := 500;
 
@@ -88,12 +76,24 @@ procedure AoC_2022_XX is
 
   map   : array (Range_x, Range_y) of Character;
 
-  m, n : Point;
+  lowest, highest : Point;
+
+  procedure Adapt_Lowest_Value_Point (using : Point) is
+  begin
+    lowest.x := Min (lowest.x, using.x);
+    lowest.y := Min (lowest.y, using.y);
+  end Adapt_Lowest_Value_Point;
+
+  procedure Adapt_Highest_Value_Point (using : Point) is
+  begin
+    highest.x := Max (highest.x, using.x);
+    highest.y := Max (highest.y, using.y);
+  end Adapt_Highest_Value_Point;
 
   procedure Show is
   begin
-    for y in Range_y'First .. n.y loop
-      for x in Range_x'First .. n.x loop
+    for y in lowest.y .. highest.y loop
+      for x in lowest.x .. highest.x loop
         Put (map (x, y));
       end loop;
       New_Line;
