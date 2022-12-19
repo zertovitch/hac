@@ -183,6 +183,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"12", +"440 439");                      --  Hill Climbing Algorithm
     Launch_AoC (+"2022", +"13", +"6568 19493");                   --  Distress Signal
     Launch_AoC (+"2022", +"14", +"964 32041");                    --  Regolith Reservoir
+    Launch_AoC (+"2022", +"17", +"3193 1577650429835");           --  Pyroclastic Flow
     --
     New_Line (2);
     Put_Line ("----> Done.");
