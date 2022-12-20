@@ -16,27 +16,10 @@ procedure AoC_2022_18 is
 
   type Big_Cube is array (The_Range, The_Range, The_Range) of Natural;
 
+  space : Big_Cube;
+
   air   : constant := 0;
   lava  : constant := 1;
-
-  procedure Clear (bc : in out Big_Cube) is
-  begin
-    for x in Big_Cube'Range (1) loop
-      for y in Big_Cube'Range (2) loop
-        for z in Big_Cube'Range (3) loop
-          bc (x, y, z) := air;
-        end loop;
-      end loop;
-    end loop;
-  end Clear;
-
-  cubes_lava, contacts_lava : Natural := 0;
-  cubes_air, inner_faces_air : Natural := 0;
-
-  x, y, z : Natural;
-  surface_area_lava, surface_area_air : Natural;
-
-  space : Big_Cube;
 
   procedure Flood_Fill (x, y, z : Integer) is
   begin
@@ -57,14 +40,22 @@ procedure AoC_2022_18 is
 
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer;
-  c1, c2 : Character;
   f : File_Type;
+  c1, c2 : Character;
+  x, y, z : Natural;
+  cubes_lava, contacts_lava, cubes_air, inner_faces_air : Natural := 0;
+  surface_area_lava, surface_area_air : Natural;
 
 begin
-  r (1) := 0;
-  r (2) := 0;
-  Clear (space);
-  Open (f, "aoc_2022_18.txt");  -- aoc_2022_18
+  for x in Big_Cube'Range (1) loop
+    for y in Big_Cube'Range (2) loop
+      for z in Big_Cube'Range (3) loop
+        space (x, y, z) := air;
+      end loop;
+    end loop;
+  end loop;
+
+  Open (f, "aoc_2022_18.txt");
 Read_Data :
   while not End_Of_File (f) loop
     Get (f, x);
@@ -72,9 +63,6 @@ Read_Data :
     Get (f, y);
     Get (f, c2);
     Get (f, z);
-    if space (x, y, z) = lava then
-      Put ("Duplicate!");
-    end if;
     space (x, y, z) := lava;
     cubes_lava := cubes_lava + 1;
     --  Count the faces of each lava cube that is

@@ -9,6 +9,7 @@ with AoC_Toolbox;
 
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
+--  See also the GNAT project file aoc_2020.gpr .
 with HAT;
 
 --  --  Interfaces is needed for compiling on both
@@ -19,7 +20,7 @@ procedure AoC_2022_XX is
   --  use HAT, Interfaces;
   use AoC_Toolbox, HAT;
 
-  verbose : constant Boolean := True;
+  verbose : constant Natural := 0;
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer;
 
@@ -44,7 +45,7 @@ procedure AoC_2022_XX is
     end loop;
   end Reset;
 
-  type Storage is array (1..100) of Character;
+  type Storage is array (1 .. 100) of Character;
   
   type Stack is record
     top : Natural;
@@ -104,7 +105,7 @@ begin
   r (1) := 0;
   r (2) := 0;
 Parts :
-  for part in 1 .. 2 loop
+  for part in 1 .. 1 loop
     Open (f, "mini.txt");  --  "input.txt");  --  aoc_2022_$$.txt
   Read_Data :
     while not End_Of_File (f) loop
@@ -116,6 +117,9 @@ Parts :
       Get_Line (f, s);
     end loop Read_Data;
     Close (f);
+    if verbose > 0 then
+      Put_Line (+"bzz bzz ");
+    end if;
     r (part) := 0;
   end loop Parts;
 

@@ -27,6 +27,7 @@ project AoC_2022 is
    AoC_Styles_Checks : AoC_Styles_Checks_Type := external ("AoC_Styles_Checks", "On");
 
    for Main use (
+     "aoc_2022_20.adb",
      "aoc_2022_18.adb",
      "aoc_2022_17.adb",
      "aoc_2022_16.adb",

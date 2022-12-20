@@ -11,17 +11,23 @@
 --      0.58 second (GNAT AoC_Build_Mode_Type = "Fast", i5-9400 @ 2.9 GHz).
 --    324.75 seconds (HAC, fastest build, same machine...).
 
-with HAT; use HAT;
---  ^ For a build with "full Ada": files HAT*.ad* are in ../../../src
+--  For building this program with "full Ada",
+--  files hat*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2020.gpr .
+with HAT;
+
+--  Interfaces is needed for compiling on both
+--  HAC and GNAT (64-bit integer: Integer_64):
+with Interfaces;
 
 procedure AoC_2020_23 is
+  use HAT, Interfaces;
 
-  max : constant := 9;
-  subtype Cup_Range is Positive range 1 .. max;
+  max_cup_pos : constant := 9;
+  subtype Cup_Range is Positive range 1 .. max_cup_pos;
   type Cup_Array is array (Cup_Range) of Cup_Range;
 
-  function Play (c_init : Cup_Array; part : Positive) return Integer is
+  function Play (c_init : Cup_Array; part : Positive) return Integer_64 is
     big_max : constant := 1_000_000;
 
     subtype Big_Cup_Range is Positive range 1 .. big_max;
@@ -44,17 +50,17 @@ procedure AoC_2020_23 is
     dest_label : Integer;
     found : Boolean;
     part_max, rounds : Positive;
-    res : Natural := 0;
+    res : Integer_64 := 0;
   begin
     if part = 1 then
-      part_max := max;
+      part_max := max_cup_pos;
       rounds   := 100;
     else
       part_max := big_max;
       rounds   := 10_000_000;
     end if;
     for i in 1 .. part_max loop
-      if i <= max then
+      if i <= max_cup_pos then
         c (i).label := c_init (i);
         index_from_label (c (i).label) := i;
       else
@@ -104,7 +110,7 @@ procedure AoC_2020_23 is
         dest_label := dest_label - 1;
       end loop;
       --
-      if dest_label <= max then
+      if dest_label <= max_cup_pos then
         dest_index := index_from_label (dest_label);
       else
         dest_index := dest_label;
@@ -120,12 +126,12 @@ procedure AoC_2020_23 is
     end loop Game;
     --
     if part = 1 then
-      for i in 1 .. max loop
+      for i in 1 .. max_cup_pos loop
         if c (i).label = 1 then
           cursor := i;
-          for count in 1 .. max - 1 loop
+          for count in 1 .. max_cup_pos - 1 loop
             cursor := c (cursor).next;
-            res := 10 * res + c (cursor).label;
+            res := 10 * res + Integer_64 (c (cursor).label);
           end loop;
         end if;
       end loop;
@@ -134,13 +140,12 @@ procedure AoC_2020_23 is
         if c (i).label = 1 then
           cursor := i;
           cursor := c (cursor).next;
+          res := Integer_64 (c (cursor).label);
           Put (c (cursor).label, 0);
           Put (", ");
           cursor := c (cursor).next;
           Put (c (cursor).label, 0);
-          res := 0;
-          --  ^ We could put there the product if we
-          --    could prove Integer is 64 bit like with HAC.
+          res := res * Integer_64 (c (cursor).label);
           exit;
         end if;
       end loop;
@@ -149,7 +154,7 @@ procedure AoC_2020_23 is
   end Play;
 
   exm, inp : Cup_Array;
-  res : Integer;
+  res : Integer_64;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
 
@@ -181,8 +186,8 @@ begin
   --
   for part in 1 .. 2 loop
     if compiler_test_mode then
-      if Play (exm, part) /= Integer_Value (Argument (1)) or
-         Play (inp, part) /= Integer_Value (Argument (2))
+      if Play (exm, part) /= Integer_64'Value (To_String (Argument (1))) or
+         Play (inp, part) /= Integer_64'Value (To_String (Argument (2)))
       then
         Set_Exit_Status (1);  --  Compiler test failed.
       end if;
@@ -197,16 +202,16 @@ begin
       end if;
       Put ("  From example : ");
       res := Play (exm, part);
-      if res > 0 then Put (res, 0); end if;
+      if res > 0 then Put (Integer_64'Image (res)); end if;
       New_Line;
-      --  Part 1: from AoC site:    67384529
-      --  Part 2: from AoC site:    149245887792 = 934001 * 159792
+      --  Example, part 1: from AoC site:    67384529
+      --  Example, part 2: from AoC site:    149245887792 = 934001 * 159792
       Put ("  From input   : ");
       res := Play (inp, part);
-      if res > 0 then Put (res, 0); end if;
+      if res > 0 then Put (Integer_64'Image (res)); end if;
       New_Line;
-      --  Part 1: validated by AoC: 49576328
-      --  Part 2: validated by AoC: 511780369955 = 760147 * 673265
+      --  Input, part 1: validated by AoC: 49576328
+      --  Input, part 2: validated by AoC: 511780369955 = 760147 * 673265
     end if;
   end loop;
 end AoC_2020_23;
