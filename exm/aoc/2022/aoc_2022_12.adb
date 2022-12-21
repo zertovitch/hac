@@ -223,7 +223,7 @@ procedure AoC_2022_12 is
       pink.R := 255;
       pink.G := 174;
       pink.B := 201;
-    end;
+    end Init;
 
     procedure Show_Map is
       height, value : Real;

@@ -151,40 +151,41 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2020", +"23", +"67384529 49576328");            --  Crab Cups
     Launch_AoC (+"2020", +"24", +"341 285");                      --  Lobby Layout
     --
-    Launch_AoC (+"2021", +"01", +"1154 1127");                    --  Sonar Sweep
-    Launch_AoC (+"2021", +"02", +"2187380 2086357770");           --  Dive!
-    Launch_AoC (+"2021", +"03", +"3549854 3765399");              --  Binary Diagnostic
-    Launch_AoC (+"2021", +"04", +"39984 8468");                   --  Giant Squid
-    Launch_AoC (+"2021", +"05", +"6225 22116");                   --  Hydrothermal Venture
-    Launch_AoC (+"2021", +"06", +"388419 1740449478328");         --  Lanternfish
-    Launch_AoC (+"2021", +"07", +"340052 92948968");              --  The Treachery of Whales
-    Launch_AoC (+"2021", +"08", +"440 1046281");                  --  Seven Segment Search
-    Launch_AoC (+"2021", +"09", +"423 1198704");                  --  Smoke Basin
-    Launch_AoC (+"2021", +"10", +"388713 3539961434");            --  Syntax Scoring
-    Launch_AoC (+"2021", +"11", +"1679 519");                     --  Dumbo Octopus
-    Launch_AoC (+"2021", +"12", +"3497");                         --  Passage Pathing
-    Launch_AoC (+"2021", +"13", +"602");                          --  Transparent Origami
-    Launch_AoC (+"2021", +"14", +"2345 2432786807053");           --  Extended Polymerization
-    Launch_AoC (+"2021", +"15", +"656");                          --  Chiton
-    Launch_AoC (+"2021", +"16", +"927 1725277876501");            --  Packet Decoder
-    Launch_AoC (+"2021", +"21", +"684495 152587196649184");       --  Dirac Dice
+    Launch_AoC (+"2021", +"01", +"1154 1127");               --  Sonar Sweep
+    Launch_AoC (+"2021", +"02", +"2187380 2086357770");      --  Dive!
+    Launch_AoC (+"2021", +"03", +"3549854 3765399");         --  Binary Diagnostic
+    Launch_AoC (+"2021", +"04", +"39984 8468");              --  Giant Squid
+    Launch_AoC (+"2021", +"05", +"6225 22116");              --  Hydrothermal Venture
+    Launch_AoC (+"2021", +"06", +"388419 1740449478328");    --  Lanternfish
+    Launch_AoC (+"2021", +"07", +"340052 92948968");         --  The Treachery of Whales
+    Launch_AoC (+"2021", +"08", +"440 1046281");             --  Seven Segment Search
+    Launch_AoC (+"2021", +"09", +"423 1198704");             --  Smoke Basin
+    Launch_AoC (+"2021", +"10", +"388713 3539961434");       --  Syntax Scoring
+    Launch_AoC (+"2021", +"11", +"1679 519");                --  Dumbo Octopus
+    Launch_AoC (+"2021", +"12", +"3497");                    --  Passage Pathing
+    Launch_AoC (+"2021", +"13", +"602");                     --  Transparent Origami
+    Launch_AoC (+"2021", +"14", +"2345 2432786807053");      --  Extended Polymerization
+    Launch_AoC (+"2021", +"15", +"656");                     --  Chiton
+    Launch_AoC (+"2021", +"16", +"927 1725277876501");       --  Packet Decoder
+    Launch_AoC (+"2021", +"21", +"684495 152587196649184");  --  Dirac Dice
     --
-    Launch_AoC (+"2022", +"01", +"68442 204837");                 --  Calorie Counting
-    Launch_AoC (+"2022", +"02", +"14531 11258");                  --  Rock Paper Scissors
-    Launch_AoC (+"2022", +"03", +"8185 2817");                    --  Rucksack Reorganization
-    Launch_AoC (+"2022", +"04", +"657 938");                      --  Camp Cleanup
-    Launch_AoC (+"2022", +"05", +"VQZNJMWTR NLCDCLVMQ");          --  Supply Stacks
-    Launch_AoC (+"2022", +"06", +"1802 3551");                    --  Tuning Trouble
-    Launch_AoC (+"2022", +"07", +"1749646 1498966");              --  No Space Left On Device
-    Launch_AoC (+"2022", +"08", +"1843 180000");                  --  Treetop Tree House
-    Launch_AoC (+"2022", +"09", +"6314 2504");                    --  Rope Bridge
-    Launch_AoC (+"2022", +"10", +"12880");                        --  Cathode-Ray Tube
-    Launch_AoC (+"2022", +"11", +"102399 23641658401");           --  Monkey in the Middle
-    Launch_AoC (+"2022", +"12", +"440 439");                      --  Hill Climbing Algorithm
-    Launch_AoC (+"2022", +"13", +"6568 19493");                   --  Distress Signal
-    Launch_AoC (+"2022", +"14", +"964 32041");                    --  Regolith Reservoir
-    Launch_AoC (+"2022", +"17", +"3193 1577650429835");           --  Pyroclastic Flow
-    Launch_AoC (+"2022", +"18", +"3374 2010");                    --  Boiling Boulders
+    Launch_AoC (+"2022", +"01", +"68442 204837");                   --  Calorie Counting
+    Launch_AoC (+"2022", +"02", +"14531 11258");                    --  Rock Paper Scissors
+    Launch_AoC (+"2022", +"03", +"8185 2817");                      --  Rucksack Reorganization
+    Launch_AoC (+"2022", +"04", +"657 938");                        --  Camp Cleanup
+    Launch_AoC (+"2022", +"05", +"VQZNJMWTR NLCDCLVMQ");            --  Supply Stacks
+    Launch_AoC (+"2022", +"06", +"1802 3551");                      --  Tuning Trouble
+    Launch_AoC (+"2022", +"07", +"1749646 1498966");                --  No Space Left On Device
+    Launch_AoC (+"2022", +"08", +"1843 180000");                    --  Treetop Tree House
+    Launch_AoC (+"2022", +"09", +"6314 2504");                      --  Rope Bridge
+    Launch_AoC (+"2022", +"10", +"12880");                          --  Cathode-Ray Tube
+    Launch_AoC (+"2022", +"11", +"102399 23641658401");             --  Monkey in the Middle
+    Launch_AoC (+"2022", +"12", +"440 439");                        --  Hill Climbing Algorithm
+    Launch_AoC (+"2022", +"13", +"6568 19493");                     --  Distress Signal
+    Launch_AoC (+"2022", +"14", +"964 32041");                      --  Regolith Reservoir
+    Launch_AoC (+"2022", +"17", +"3193 1577650429835");             --  Pyroclastic Flow
+    Launch_AoC (+"2022", +"18", +"3374 2010");                      --  Boiling Boulders
+    Launch_AoC (+"2022", +"21", +"286698846151845 3759566892642");  --  Boiling Boulders
     --
     New_Line (2);
     Put_Line ("----> Done.");

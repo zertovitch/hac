@@ -26,14 +26,14 @@ procedure AoC_2022_15 is
 
   procedure Adapt_Lowest_Value_Point (using : Point) is
   begin
-    lowest.x := HAT.Min (lowest.x, using.x);
-    lowest.y := HAT.Min (lowest.y, using.y);
+    lowest.x := Min (lowest.x, using.x);
+    lowest.y := Min (lowest.y, using.y);
   end Adapt_Lowest_Value_Point;
 
   procedure Adapt_Highest_Value_Point (using : Point) is
   begin
-    highest.x := HAT.Max (highest.x, using.x);
-    highest.y := HAT.Max (highest.y, using.y);
+    highest.x := Max (highest.x, using.x);
+    highest.y := Max (highest.y, using.y);
   end Adapt_Highest_Value_Point;
 
   type Observation is record
@@ -107,6 +107,7 @@ procedure AoC_2022_15 is
   procedure Search_Undetected_Beacon is
     sensor_i : Point;
     distance_i : Integer;
+
     procedure Check (x, y : Integer) is
     begin
       if x in 0 .. lim_p2
@@ -115,7 +116,8 @@ procedure AoC_2022_15 is
       then
         tuning_frequency := Integer_64 (x) * 4_000_000 + Integer_64 (y);
       end if;
-    end;
+    end Check;
+
   begin
     tuning_frequency := 0;
     --

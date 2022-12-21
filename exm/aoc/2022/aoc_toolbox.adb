@@ -25,4 +25,16 @@ package body AoC_Toolbox is
     end loop;
   end Skip_till_Space;
 
+  function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64 is
+    use Interfaces;
+  begin
+    if i > 0 then
+      return 1;
+    elsif i < 0 then
+      return -1;
+    else
+      return 0;
+    end if;
+  end Sgn_64;
+
 end AoC_Toolbox;

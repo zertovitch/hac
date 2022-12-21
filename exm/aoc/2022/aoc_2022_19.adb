@@ -7,7 +7,6 @@
 
 --  !!! Only part 1 (in a reasonable time) so far !!!
 
-
 with AoC_Toolbox;
 
 --  For building this program with "full Ada",
@@ -27,7 +26,7 @@ procedure AoC_2022_19 is
   r : array (1 .. 2) of Integer;
 
   f : File_Type;
-  
+
   --  Parseable copy of the example (part after '|'):
   --
   --  |Blueprint 1:
@@ -41,7 +40,6 @@ procedure AoC_2022_19 is
   --  | Each clay robot costs 3 ore.
   --  | Each obsidian robot costs 3 ore and 8 clay.
   --  | Each geode robot costs 3 ore and 12 obsidian.
-  
 
   type Resource_Type is (ore, clay, obsidian, geode);
 
@@ -72,7 +70,7 @@ procedure AoC_2022_19 is
           return portfolio (geode);
 
         --  Some recursion breakers on desperately unefficient scenarios
-        when 1 => 
+        when 1 =>
           if robot (geode) = 0 then
             --  There is not even a single geode-breaking robot in the last minute.
             return 0;
@@ -113,9 +111,52 @@ procedure AoC_2022_19 is
         when 4 =>
           if robot (obsidian) = 0 then
             if portfolio (clay) + robot (clay) < clay_cost_obsidian_robot then
-              --  Not enough clay to construct the first obsidian-collecting robot.
+              --  Not enough clay to construct the first obsidian-collecting
+              --  robot in the last possible minute.
               return 0;
             end if;
+          end if;
+          if robot (geode) = 0 then
+            case robot (obsidian) is
+              when 0 =>
+                if portfolio (obsidian) < obsidian_cost_geode_robot - 1 then
+                  return 0;
+                end if;
+              when 1 =>
+                if portfolio (obsidian) < obsidian_cost_geode_robot - 3 then
+                  return 0;
+                end if;
+              when 2 =>
+                if portfolio (obsidian) < obsidian_cost_geode_robot - 6 then
+                  return 0;
+                end if;
+              when others =>
+                null;
+            end case;
+          end if;
+        when 5 =>
+          if robot (geode) = 0 then
+            case robot (obsidian) is
+              when 0 =>
+                --  Best case : one more obsidian robot is constructed at each
+                --  subsequent time step, allowing for constructin a geode robot.
+                if portfolio (obsidian) < obsidian_cost_geode_robot - 3 then
+                  return 0;
+                end if;
+              when 1 =>
+                if portfolio (obsidian) < obsidian_cost_geode_robot - 7 then
+                  return 0;
+                end if;
+              when others =>
+                null;
+            end case;
+          end if;
+        when 6 =>
+          if robot (geode) = 0
+            and then robot (obsidian) = 0
+            and then portfolio (obsidian) < obsidian_cost_geode_robot - 6
+          then
+            return 0;
           end if;
         when others =>
           null;
@@ -205,23 +246,23 @@ Read_Data :
     Skip_till_Space (f, 1);
   end loop Read_Data;
   Close (f);
-   
+
   r (1) := 0;
   for b in 1 .. last loop
     best := Best_Geode_Opening (blueprint (b), 24);
     if verbose > 0 then
       Put_Line
-        (+"In 24 steps (minutes), " & b & ": " & best & " geodes cracked, T=  " & (Clock - T0));
+        (+"In 24 steps (minutes), blueprint #" & b & ": " & best & " geodes cracked, T = " & (Clock - T0));
     end if;
     r (1) := r (1) + b * best;
   end loop;
-  
+
   r (2) := 1;
   for b in 1 .. Min (3, last) loop
     best := Best_Geode_Opening (blueprint (b), 32);
     if verbose > 0 then
       Put_Line
-        (+"In 32 steps (minutes), " & b & ": " & best & " geodes cracked, T=  " & (Clock - T0));
+        (+"In 32 steps (minutes), blueprint #" & b & ": " & best & " geodes cracked, T = " & (Clock - T0));
     end if;
     r (2) := r (2) * best;
   end loop;
@@ -238,6 +279,6 @@ Read_Data :
     Put_Line (+"Part 1: bla bla:" & Integer'Image (r (1)));
     Put_Line (+"Part 2: bli bli:" & Integer'Image (r (2)));
     --  Part 1: validated by AoC: 1192
-    --  Part 2: validated by AoC: 
+    --  Part 2: validated by AoC:
   end if;
 end AoC_2022_19;

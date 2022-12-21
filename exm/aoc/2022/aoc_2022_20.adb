@@ -98,36 +98,38 @@ Parts :
         rounds := 10;
         decryption_key := 811589153;
     end case;
+  Multiple_Rounds :
     for round in 1 .. rounds loop
-    for i in 0 .. last loop
-      --  Remove node i:
-      o (o (i).prev).next := o (i).next;
-      o (o (i).next).prev := o (i).prev;
-      --  Find the new neighbours for node i:
-      new_prev := o (i).prev;
-      skip := Integer_64 (o (i).label);
-      if part = 2 then
-        skip := skip * decryption_key;
-      end if;
-      skip := skip mod Integer_64 (total - 1);
-      --  ^ Banana skin: "mod (total - 1)" and not
-      --    "mod total", because we have one node less!
-      for count in 1 .. skip loop
-        new_prev := o (new_prev).next;
-      end loop;
-      new_next := o (new_prev).next;
-      --  Relink node i:
-      o (i).next := new_next;
-      o (i).prev := new_prev;
-      --  Insert node i:
-      o (new_prev).next := i;
-      o (new_next).prev := i;
-      --  Display:
-      if verbose > 0 then
-        Show;
-      end if;
-    end loop;
-    end loop;
+    Single_Round :
+      for i in 0 .. last loop
+        --  Remove node i:
+        o (o (i).prev).next := o (i).next;
+        o (o (i).next).prev := o (i).prev;
+        --  Find the new neighbours for node i:
+        new_prev := o (i).prev;
+        skip := Integer_64 (o (i).label);
+        if part = 2 then
+          skip := skip * decryption_key;
+        end if;
+        skip := skip mod Integer_64 (total - 1);
+        --  ^ Banana skin here: "mod (total - 1)" and not
+        --    "mod total", because we have one node less!
+        for count in 1 .. skip loop
+          new_prev := o (new_prev).next;
+        end loop;
+        new_next := o (new_prev).next;
+        --  Relink node i:
+        o (i).next := new_next;
+        o (i).prev := new_prev;
+        --  Insert node i:
+        o (new_prev).next := i;
+        o (new_next).prev := i;
+        --  Display:
+        if verbose > 0 then
+          Show;
+        end if;
+      end loop Single_Round;
+    end loop Multiple_Rounds;
     cursor := zero_position;
     r (part) := 0;
     for thousands in 1 .. 3 loop

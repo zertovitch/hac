@@ -1,4 +1,4 @@
-with HAT;
+with HAT, Interfaces;
 
 package AoC_Toolbox is
 
@@ -19,5 +19,11 @@ package AoC_Toolbox is
   -----------------------
 
   procedure Skip_till_Space (f : in out HAT.File_Type; times : Positive);
+
+  --------------------
+  --  Miscellaneous --
+  --------------------
+
+  function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64;
 
 end AoC_Toolbox;

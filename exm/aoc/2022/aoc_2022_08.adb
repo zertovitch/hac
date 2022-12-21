@@ -30,7 +30,7 @@ procedure AoC_2022_08 is
       New_Line (d);
     end loop;
     Close (d);
-  end;
+  end Dump_CSV;
 
   --  PPM output. Sources:
   --  https://codeberg.org/rommudoh/aoc2022-Ada/src/branch/main/src/day08.adb
