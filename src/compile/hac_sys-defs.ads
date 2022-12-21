@@ -60,7 +60,7 @@ package HAC_Sys.Defs is
   AMax                  : constant := 1_000;    --  Size OF ARRAY-TABLE
   BMax                  : constant := 10_000;   --  Size OF Block-TABLE
   Float_Const_Table_Max : constant := 200;
-  Cases_Max             : constant := 300;      --  Max number of cases in a CASE statement
+  Cases_Max             : constant := 2000;     --  Max number of cases in a CASE statement
   CDMax                 : constant := 100_000;  --  Size OF ObjCode
   EntryMax              : constant := 30;       --  Maximum Number of Entry Statements
   FMax                  : constant := 20;       --  Maximum Number of files for I/O
