@@ -9,7 +9,7 @@ with AoC_Toolbox;
 
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
---  See also the GNAT project file aoc_2020.gpr .
+--  See also the GNAT project file aoc_2022.gpr .
 with HAT;
 
 --  --  Interfaces is needed for compiling on both
@@ -21,8 +21,6 @@ procedure AoC_2022_XX is
   use AoC_Toolbox, HAT;
 
   verbose : constant Natural := 0;
-  T0 : constant Time := Clock;
-  r : array (1 .. 2) of Integer;
 
   c, sep : Character;
   asm : String (1 .. 3);
@@ -54,18 +52,7 @@ procedure AoC_2022_XX is
   
   sT : array (1 .. 9) of Stack;
 
-  function D2R (a : Real) return Real is
-  begin
-    return (Pi / 180.0) * a;
-  end D2R;
   --
-  procedure Rotate (x, y : in out Real; a : Real) is
-    nx : Real;
-  begin
-    nx := Cos (a) * x - Sin (a) * y;
-    y  := Sin (a) * x + Cos (a) * y;
-    x  := nx;
-  end Rotate;
 
   nx_max : constant := 500;
   ny_max : constant := 500;
@@ -101,11 +88,14 @@ procedure AoC_2022_XX is
     end loop;
   end Show;
 
+  T0 : constant Time := Clock;
+  r : array (Part_Type) of Integer;
+
 begin
-  r (1) := 0;
-  r (2) := 0;
+  r (part_1) := 0;
+  r (part_2) := 0;
 Parts :
-  for part in 1 .. 1 loop
+  for part in part_1 .. part_1 loop
     Open (f, "mini.txt");  --  "input.txt");  --  aoc_2022_$$.txt
   Read_Data :
     while not End_Of_File (f) loop
@@ -125,15 +115,15 @@ Parts :
 
   if Argument_Count >= 2 then
     --  Compiler test mode.
-    if r (1) /= Integer'Value (To_String (Argument (1))) or
-       r (2) /= Integer'Value (To_String (Argument (2)))
+    if r (part_1) /= Integer'Value (To_String (Argument (1))) or
+       r (part_2) /= Integer'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: bla bla:" & Integer'Image (r (1)));
-    Put_Line (+"Part 2: bli bli:" & Integer'Image (r (2)));
+    Put_Line (+"Part 1: bla bla:" & (r (part_1)'Image));
+    Put_Line (+"Part 2: bli bli:" & (r (part_2)'Image));
     --  Part 1: validated by AoC: 
     --  Part 2: validated by AoC: 
   end if;

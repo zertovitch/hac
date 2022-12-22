@@ -185,7 +185,8 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"14", +"964 32041");                      --  Regolith Reservoir
     Launch_AoC (+"2022", +"17", +"3193 1577650429835");             --  Pyroclastic Flow
     Launch_AoC (+"2022", +"18", +"3374 2010");                      --  Boiling Boulders
-    Launch_AoC (+"2022", +"21", +"286698846151845 3759566892642");  --  Boiling Boulders
+    Launch_AoC (+"2022", +"21", +"286698846151845 3759566892642");  --  Monkey Math
+    Launch_AoC (+"2022", +"22", +"26558 110400");                   --  Monkey Map
     --
     New_Line (2);
     Put_Line ("----> Done.");

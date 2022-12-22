@@ -1,10 +1,9 @@
+with AoC_Toolbox;
 with Interfaces;
 
 package AoC_2022_21_Pkg is
 
-  use Interfaces;
-
-  type Part_Type is (part_1, part_2);
+  use AoC_Toolbox, Interfaces;
 
   type Monkey_Mini is
     (root_m,

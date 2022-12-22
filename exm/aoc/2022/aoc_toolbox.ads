@@ -2,6 +2,14 @@ with HAT, Interfaces;
 
 package AoC_Toolbox is
 
+  ----------------
+  --  AoC game  --
+  ----------------
+
+  type Part_Type is (part_1, part_2);
+
+  type Data_Type is (mini, input);
+
   ----------------------
   --  Plane Geometry  --
   ----------------------
@@ -25,5 +33,9 @@ package AoC_Toolbox is
   --------------------
 
   function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64;
+
+  procedure Rotate (x, y : in out HAT.Real; a : HAT.Real);
+
+  function Deg_2_Rad (a : HAT.Real) return HAT.Real;
 
 end AoC_Toolbox;

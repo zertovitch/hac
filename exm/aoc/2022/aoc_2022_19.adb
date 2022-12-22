@@ -53,21 +53,23 @@ procedure AoC_2022_19 is
   function Best_Geode_Opening
     (blueprint : Blueprint_Type; total_time : Positive) return Natural
   is
-    robot : array (Resource_Type) of Natural;
-    portfolio : Portfolio_Type;
+    robot : Portfolio_Type;
+    resource : Portfolio_Type;
 
-    obsidian_cost_geode_robot, clay_cost_obsidian_robot : Positive;
+    obsidian_cost_geode_robot, clay_cost_obsidian_robot : Positive;    
+    min_time_to_collect_enough_obsidian : Positive;
+    min_time_to_collect_enough_clay : Positive;
 
     function Visit (time_left : Natural) return Natural is
       enough : Boolean;
       score_build_robot : array (Resource_Type) of Natural;
       score_same_robots : Natural;
-      mem_portfolio : Portfolio_Type;
+      mem_resource : Portfolio_Type;
       result : Natural;
     begin
       case time_left is
         when 0 =>
-          return portfolio (geode);
+          return resource (geode);
 
         --  Some recursion breakers on desperately unefficient scenarios
         when 1 =>
@@ -84,7 +86,7 @@ procedure AoC_2022_19 is
           end if;
           if robot (geode) = 0 then
             --  No geode-breaking robot? Fair enough, we contruct one.
-            if portfolio (obsidian) < obsidian_cost_geode_robot then
+            if resource (obsidian) < obsidian_cost_geode_robot then
               --  There is not enough obsidian to construct the
               --  first geode-breaking robot.
               return 0;
@@ -96,13 +98,13 @@ procedure AoC_2022_19 is
             return 0;
           end if;
           if robot (obsidian) = 0 then
-            if portfolio (clay) < clay_cost_obsidian_robot then
+            if resource (clay) < clay_cost_obsidian_robot then
               --  Not enough clay to construct the first obsidian-collecting robot.
               return 0;
             end if;
           end if;
           if robot (geode) = 0 then
-            if portfolio (obsidian) + robot (obsidian) < obsidian_cost_geode_robot then
+            if resource (obsidian) + robot (obsidian) < obsidian_cost_geode_robot then
               --  There won't be not enough obsidian on next step to construct the
               --  first geode-breaking robot.
               return 0;
@@ -110,7 +112,7 @@ procedure AoC_2022_19 is
           end if;
         when 4 =>
           if robot (obsidian) = 0 then
-            if portfolio (clay) + robot (clay) < clay_cost_obsidian_robot then
+            if resource (clay) + robot (clay) < clay_cost_obsidian_robot then
               --  Not enough clay to construct the first obsidian-collecting
               --  robot in the last possible minute.
               return 0;
@@ -119,15 +121,15 @@ procedure AoC_2022_19 is
           if robot (geode) = 0 then
             case robot (obsidian) is
               when 0 =>
-                if portfolio (obsidian) < obsidian_cost_geode_robot - 1 then
+                if resource (obsidian) < obsidian_cost_geode_robot - 1 then
                   return 0;
                 end if;
               when 1 =>
-                if portfolio (obsidian) < obsidian_cost_geode_robot - 3 then
+                if resource (obsidian) < obsidian_cost_geode_robot - 3 then
                   return 0;
                 end if;
               when 2 =>
-                if portfolio (obsidian) < obsidian_cost_geode_robot - 6 then
+                if resource (obsidian) < obsidian_cost_geode_robot - 6 then
                   return 0;
                 end if;
               when others =>
@@ -140,11 +142,11 @@ procedure AoC_2022_19 is
               when 0 =>
                 --  Best case : one more obsidian robot is constructed at each
                 --  subsequent time step, allowing for constructin a geode robot.
-                if portfolio (obsidian) < obsidian_cost_geode_robot - 3 then
+                if resource (obsidian) < obsidian_cost_geode_robot - 3 then
                   return 0;
                 end if;
               when 1 =>
-                if portfolio (obsidian) < obsidian_cost_geode_robot - 7 then
+                if resource (obsidian) < obsidian_cost_geode_robot - 7 then
                   return 0;
                 end if;
               when others =>
@@ -154,7 +156,7 @@ procedure AoC_2022_19 is
         when 6 =>
           if robot (geode) = 0
             and then robot (obsidian) = 0
-            and then portfolio (obsidian) < obsidian_cost_geode_robot - 6
+            and then resource (obsidian) < obsidian_cost_geode_robot - 6
           then
             return 0;
           end if;
@@ -162,38 +164,51 @@ procedure AoC_2022_19 is
           null;
       end case;
 
+      if robot (obsidian) = 0
+        and then time_left < 2 + min_time_to_collect_enough_obsidian
+      then
+        return 0;
+      end if;
+
+      if robot (clay) = 0
+        and then time_left < 2 + min_time_to_collect_enough_obsidian
+                               + min_time_to_collect_enough_clay
+      then
+        return 0;
+      end if;
+
       for new_robot in Resource_Type loop
         score_build_robot (new_robot) := 0;
         enough := True;
         --  Are costs covered?
         for res in Resource_Type loop
-          enough := enough and then portfolio (res) >= blueprint (new_robot)(res);
+          enough := enough and then resource (res) >= blueprint (new_robot)(res);
           exit when not enough;
         end loop;
         if enough then
-          mem_portfolio := portfolio;
+          mem_resource := resource;
           --  Pay for the new robot
           for res in Resource_Type loop
-            portfolio (res) := portfolio (res) - blueprint (new_robot)(res);
+            resource (res) := resource (res) - blueprint (new_robot)(res);
           end loop;
           --  Earn new resources
           for res in Resource_Type loop
-            portfolio (res) := portfolio (res) + robot (res);
+            resource (res) := resource (res) + robot (res);
           end loop;
           robot (new_robot) := robot (new_robot) + 1;
           score_build_robot (new_robot) := Visit (time_left - 1);
           robot (new_robot) := robot (new_robot) - 1;
-          portfolio := mem_portfolio;
+          resource := mem_resource;
         end if;
       end loop;
       --  Variant without constructing a new robot.
-      mem_portfolio := portfolio;
+      mem_resource := resource;
       --  Earn new resources
       for res in Resource_Type loop
-        portfolio (res) := portfolio (res) + robot (res);
+        resource (res) := resource (res) + robot (res);
       end loop;
       score_same_robots := Visit (time_left - 1);
-      portfolio := mem_portfolio;
+      resource := mem_resource;
       --  Find max:
       result := score_same_robots;
       for res in Resource_Type loop
@@ -202,15 +217,38 @@ procedure AoC_2022_19 is
       return result;
     end Visit;
 
+    any_res : Natural := 0;
+
   begin
     for r in Resource_Type loop
       robot (r) := 0;
-      portfolio (r) := 0;
+      resource (r) := 0;
     end loop;
     robot (ore) := 1;
     obsidian_cost_geode_robot := blueprint (geode)(obsidian);
     clay_cost_obsidian_robot  := blueprint (obsidian)(clay);
-
+    
+    for n in 1 .. 100 loop
+      any_res := any_res + n;
+      --  The steepest production of any new resource
+      --  is by constructing a new robot every minute.
+      --  Then the cumulative resource is the
+      --  triangualar suite: 1, 3, 6, 10, 15, 21, ...
+      if any_res >= obsidian_cost_geode_robot then
+        min_time_to_collect_enough_obsidian := n;
+        exit;
+      end if;
+    end loop;
+    for n in 1 .. 100 loop
+      any_res := any_res + n;
+      if any_res >= clay_cost_obsidian_robot then
+        min_time_to_collect_enough_clay := n;
+        exit;
+      end if;
+    end loop;
+    --  put(min_time_to_collect_enough_obsidian);
+    --  put(min_time_to_collect_enough_clay);
+    --  new_line;
     return Visit (total_time);
   end Best_Geode_Opening;
 

@@ -37,4 +37,18 @@ package body AoC_Toolbox is
     end if;
   end Sgn_64;
 
+  procedure Rotate (x, y : in out HAT.Real; a : HAT.Real) is
+    use HAT;
+    nx : Real;
+  begin
+    nx := Cos (a) * x - Sin (a) * y;
+    y  := Sin (a) * x + Cos (a) * y;
+    x  := nx;
+  end Rotate;
+
+  function Deg_2_Rad (a : HAT.Real) return HAT.Real is
+  begin
+    return (HAT.Pi / 180.0) * a;
+  end Deg_2_Rad;
+
 end AoC_Toolbox;

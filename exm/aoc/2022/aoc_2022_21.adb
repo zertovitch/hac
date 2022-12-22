@@ -10,7 +10,7 @@ with AoC_Toolbox;
 
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
---  See also the GNAT project file aoc_2020.gpr .
+--  See also the GNAT project file aoc_2022.gpr .
 with HAT;
 
 --  Interfaces is needed for compiling on both
@@ -19,7 +19,8 @@ with Interfaces;
 
 procedure AoC_2022_21 is
 
-  use AoC_2022_21_Pkg, HAT, Interfaces;
+  use AoC_2022_21_Pkg, AoC_Toolbox;
+  use HAT, Interfaces;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   verbose : constant Boolean := not compiler_test_mode;
@@ -27,9 +28,7 @@ procedure AoC_2022_21 is
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer_64;
 
-  type Data_Choice is (mini, input);
-
-  function Search (choice : Data_Choice) return Integer_64 is
+  function Search (choice : Data_Type) return Integer_64 is
 
     function f (x : Integer_64) return Integer_64 is
     begin
