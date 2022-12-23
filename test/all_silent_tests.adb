@@ -1,5 +1,16 @@
---  We launch new instances of HAC (possibly from HAC itself, too).
---  Usage:  hac all_silent_tests.adb
+--  This program runs a series of more than 70 regression tests to check
+--  the correct operation of the HAC compiler.
+--  The failures and success are accounted and the sums are shown at the end.
+--
+--  NB: the individual tests, or this program itself, can actually be used
+--  for testing any Ada compiler. For that, all you have to do is to
+--  customize the procedure Launch_HAC below.
+--
+--  For each test we launch, possibly from HAC itself, a new instance of
+--  the HAC command-line tool (`hac` or `hac.exe`), which will build the
+--  test sources as a virtual machine executable and run it.
+--
+--  Usage (if run from `hac` or `hac.exe`):  hac all_silent_tests.adb
 
 with HAT;
 with Testing_Utilities;
@@ -187,6 +198,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"18", +"3374 2010");                      --  Boiling Boulders
     Launch_AoC (+"2022", +"21", +"286698846151845 3759566892642");  --  Monkey Math
     Launch_AoC (+"2022", +"22", +"26558 110400");                   --  Monkey Map
+    Launch_AoC (+"2022", +"23", +"3689 965");                       --  Unstable Diffusion
     --
     New_Line (2);
     Put_Line ("----> Done.");

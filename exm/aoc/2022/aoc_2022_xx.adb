@@ -20,7 +20,7 @@ procedure AoC_2022_XX is
   --  use HAT, Interfaces;
   use AoC_Toolbox, HAT;
 
-  verbose : constant Natural := 0;
+  verbosity_level : constant Natural := 0;
 
   c, sep : Character;
   asm : String (1 .. 3);
@@ -54,15 +54,8 @@ procedure AoC_2022_XX is
 
   --
 
-  nx_max : constant := 500;
-  ny_max : constant := 500;
-
-  origin : constant := 0;
-
-  subtype Range_x is Integer range origin .. nx_max;
-  subtype Range_y is Integer range origin .. ny_max;
-
-  map   : array (Range_x, Range_y) of Character;
+  subtype Range_x is Integer range 0 .. 500;
+  subtype Range_y is Integer range 0 .. 500;
 
   lowest, highest : Point;
 
@@ -78,15 +71,26 @@ procedure AoC_2022_XX is
     highest.y := Max (highest.y, using.y);
   end Adapt_Highest_Value_Point;
 
+  map   : array (Range_x, Range_y) of Character;
+
   procedure Show is
   begin
-    for y in lowest.y .. highest.y loop
+    for y in lowest.y .. highest.y loop  --  y axis appears top -> down.
       for x in lowest.x .. highest.x loop
         Put (map (x, y));
       end loop;
       New_Line;
     end loop;
   end Show;
+
+  procedure Clear is
+  begin
+    for y in Range_y loop
+      for x in Range_x loop
+        map (x, y) := ' ';
+      end loop;
+    end loop;
+  end Clear;
 
   T0 : constant Time := Clock;
   r : array (Part_Type) of Integer;
@@ -96,6 +100,11 @@ begin
   r (part_2) := 0;
 Parts :
   for part in part_1 .. part_1 loop
+    Clear;
+    lowest.x := 1;
+    lowest.y := 0;
+    highest.x := 1;
+    highest.y := 0;
     Open (f, "mini.txt");  --  "input.txt");  --  aoc_2022_$$.txt
   Read_Data :
     while not End_Of_File (f) loop
@@ -107,7 +116,7 @@ Parts :
       Get_Line (f, s);
     end loop Read_Data;
     Close (f);
-    if verbose > 0 then
+    if verbosity_level > 0 then
       Put_Line (+"bzz bzz ");
     end if;
     r (part) := 0;
@@ -122,8 +131,8 @@ Parts :
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: bla bla:" & (r (part_1)'Image));
-    Put_Line (+"Part 2: bli bli:" & (r (part_2)'Image));
+    Put_Line (+"Part 1: bla bla:" & r (part_1)'Image);
+    Put_Line (+"Part 2: bli bli:" & r (part_2)'Image);
     --  Part 1: validated by AoC: 
     --  Part 2: validated by AoC: 
   end if;

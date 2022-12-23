@@ -47,8 +47,9 @@ package body AoC_Toolbox is
   end Rotate;
 
   function Deg_2_Rad (a : HAT.Real) return HAT.Real is
+    use HAT;
   begin
-    return (HAT.Pi / 180.0) * a;
+    return (Pi / 180.0) * a;
   end Deg_2_Rad;
 
 end AoC_Toolbox;

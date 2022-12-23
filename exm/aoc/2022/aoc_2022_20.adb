@@ -15,7 +15,7 @@
 
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
---  See also the GNAT project file aoc_2020.gpr .
+--  See also the GNAT project file aoc_2022.gpr .
 with HAT;
 
 --  Interfaces is needed for compiling on both

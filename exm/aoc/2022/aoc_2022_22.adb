@@ -272,7 +272,7 @@ procedure AoC_2022_22 is
           when mini =>
             case Locate_Cube_Face (p, data) is
               when 1 => From_Right (6);   np.y := Inv (rp.y);
-              when 4 => From_Top (6);     np.x := Inv (rp.y);
+              when 4 => From_Top   (6);   np.x := Inv (rp.y);
               when 6 => From_Right (1);   np.y := Inv (rp.y);
               when others =>
                 null;
