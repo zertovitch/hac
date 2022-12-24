@@ -12,12 +12,7 @@ with AoC_Toolbox;
 --  See also the GNAT project file aoc_2022.gpr .
 with HAT;
 
---  --  Interfaces is needed for compiling on both
---  --  HAC and GNAT (64-bit integer: Integer_64):
---  with Interfaces;
-
 procedure AoC_2022_23 is
-  --  use HAT, Interfaces;
   use AoC_Toolbox, HAT;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
@@ -199,7 +194,7 @@ procedure AoC_2022_23 is
                   end case;
                   Extend_Boundaries (dest);
                   if half = 1 then
-                    --  Consider the move:
+                    --  Consider a move in chosen direction:
                     case map (dest.x, dest.y) is
                       when '.' => map (dest.x, dest.y) := '1';
                       when '1' => map (dest.x, dest.y) := '2';
@@ -209,10 +204,11 @@ procedure AoC_2022_23 is
                         Put ("Bug : " & map (dest.x, dest.y));
                     end case;
                   else
-                    --  Move:
+                    --  Move... but only if there is no other
+                    --          Elf planning to move there.
                     if map (dest.x, dest.y) = '1' then
                       any_move := True;
-                      map (x, y) := 'x';
+                      map (x, y)           := elf_before_move;
                       map (dest.x, dest.y) := elf_after_move;
                       --  We don't put immediately `elf` on
                       --  destination cell.

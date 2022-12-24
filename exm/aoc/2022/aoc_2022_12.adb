@@ -84,20 +84,23 @@ procedure AoC_2022_12 is
 
   function Dijkstra_Algorithm (start : Point; part : Positive) return Natural is
 
-    procedure Visit (x, y, len_from, node_from : Integer; c_from : Character) is
+    cur_len : Natural;
+    cur_c   : Character;
+
+    procedure Visit (x, y : Integer) is
       len_to, ins : Integer;
       ok_step : Boolean;
     begin
       if x in 1 .. n.x and then y in 1 .. n.y then
         if part = 1 then
           --  We avoid ascending more than one unit.
-          ok_step := map (x, y) <= Succ (c_from);
+          ok_step := map (x, y) <= Succ (cur_c);
         else
           --  We avoid descending more than one unit (reverse walk).
-          ok_step := map (x, y) >= Pred (c_from);
+          ok_step := map (x, y) >= Pred (cur_c);
         end if;
         if ok_step then
-          len_to := len_from + 1;
+          len_to := cur_len + 1;
           if len_to < best (x, y) then
             --  Improvement on cell (x, y).
             best (x, y) := len_to;
@@ -119,7 +122,7 @@ procedure AoC_2022_12 is
             list (ins).len := len_to;
             list (ins).pt.x := x;
             list (ins).pt.y := y;
-            list (ins).pred := node_from;
+            list (ins).pred := current;
             explored := explored + 1;
           end if;
         end if;
@@ -127,8 +130,6 @@ procedure AoC_2022_12 is
     end Visit;
     --
     cur_pt  : Point;
-    cur_len : Natural;
-    cur_c   : Character;
   begin
     current  := 0;
     explored := 0;
@@ -144,17 +145,17 @@ procedure AoC_2022_12 is
     loop
       cur_len := best (cur_pt.x, cur_pt.y);
       cur_c := map (cur_pt.x, cur_pt.y);
-      Visit (cur_pt.x - 1, cur_pt.y, cur_len, current, cur_c);
-      Visit (cur_pt.x + 1, cur_pt.y, cur_len, current, cur_c);
-      Visit (cur_pt.x, cur_pt.y - 1, cur_len, current, cur_c);
-      Visit (cur_pt.x, cur_pt.y + 1, cur_len, current, cur_c);
+      Visit (cur_pt.x - 1, cur_pt.y);
+      Visit (cur_pt.x + 1, cur_pt.y);
+      Visit (cur_pt.x, cur_pt.y - 1);
+      Visit (cur_pt.x, cur_pt.y + 1);
       --
       --  Switch to the next best explored point.
       --
       current := current + 1;
       if current > explored then
         Put_Line ("No way found.");
-        return inf;
+        return inf; 
       end if;
       cur_pt := list (current).pt;
       if part = 1 then
