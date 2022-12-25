@@ -49,7 +49,7 @@ procedure AoC_2022_16 is
 
   next : array (Valve, 1 .. 5) of Valve;
 
-  verbose : constant Natural := 0;
+  verbosity_level : constant Natural := 0;
 
   procedure Data_Acquisition is
     c1, c2, sep : Character;
@@ -72,12 +72,12 @@ procedure AoC_2022_16 is
       Get (f, c1);
       Get (f, c2);
       val := Valve'Value (c1 & c2);
-      if verbose > 0 then
+      if verbosity_level > 0 then
         Put (val'Image & ": ");
       end if;
       Get (f, has_flow_rate);
       Get (f, flow (val));
-      if verbose > 0 then
+      if verbosity_level > 0 then
         Put (flow (val), 3);
         Put ("  -> ");
       end if;
@@ -91,13 +91,13 @@ procedure AoC_2022_16 is
         end if;
         Get (f, c2);
         next (val, j) := Valve'Value (c1 & c2);
-        if verbose > 0 then
+        if verbosity_level > 0 then
           Put ("  " & next (val, j)'Image);
         end if;
         exit when End_Of_Line (f);
         Get (f, sep);
       end loop;
-      if verbose > 0 then
+      if verbosity_level > 0 then
         New_Line;
       end if;
     end loop Read_Data;
@@ -146,7 +146,7 @@ procedure AoC_2022_16 is
     next_valve : Valve;
   begin
     if time_left = 0 then
-      if verbose > 1 then
+      if verbosity_level > 1 then
         Put_Line ("Time exhausted!");
         for v in Valve loop
           if flow (v) > 0 then

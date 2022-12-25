@@ -4,9 +4,10 @@
 --  NB: for copying a file (of any kind) with a single command,
 --  you can use Copy_File. See binary copy at the end of this demo.
 
-with HAT; use HAT;
+with HAT;
 
 procedure File_Copy is
+  use HAT;
   s : VString;
   f1, f2 : File_Type;
 begin

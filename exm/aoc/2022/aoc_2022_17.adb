@@ -20,7 +20,7 @@ with Interfaces;
 procedure AoC_2022_17 is
   use AoC_Toolbox, HAT, Interfaces;
 
-  verbose : constant Natural := 0;
+  verbosity_level : constant Natural := 0;
 
   subtype Range_x is Integer range 0 ..    8;
   subtype Range_y is Integer range 0 .. 8000;
@@ -169,7 +169,7 @@ procedure AoC_2022_17 is
           rest := (tera - n_rock) mod rocks_per_cycle;
           target_rock := n_rock + rest;
           cycles := (tera - n_rock) / rocks_per_cycle;
-          if verbose > 0 then
+          if verbosity_level > 0 then
             Put_Line
               (+"After rock nb " & Integer_64'Image (n_rock - 1) &
                 " heap is height " & highest.y &
@@ -278,7 +278,7 @@ begin
   old_n_rock := 0;
   for rock_count in 1 .. 6000 loop
     Simulate_Rock (Integer_64 (rock_count));
-    if verbose > 0 and then rock_count <= 5 then
+    if verbosity_level > 0 and then rock_count <= 5 then
       Put_Line (rock_count, 0);
       Show;
     end if;

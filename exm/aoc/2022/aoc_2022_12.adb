@@ -155,7 +155,7 @@ procedure AoC_2022_12 is
       current := current + 1;
       if current > explored then
         Put_Line ("No way found.");
-        return inf; 
+        return inf;
       end if;
       cur_pt := list (current).pt;
       if part = 1 then

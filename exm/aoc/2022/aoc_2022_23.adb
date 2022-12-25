@@ -318,7 +318,7 @@ Parts :
         Put_Line
           ("===== Stable state after" & last_round'Image &
            " rounds =====");
-        Show; 
+        Show;
       end if;
       r (part_2) := last_round;
     end if;

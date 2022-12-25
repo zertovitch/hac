@@ -52,7 +52,7 @@ procedure AoC_2022_22 is
 
   function Locate_Cube_Face (p : Point; data : Data_Type) return Natural is
     q : Point;
-    side : constant Positive := Cube_Side (data);
+    side : constant Positive := cube_side (data);
   begin
     q.x := (p.x - 1) / side;
     q.y := (p.y - 1) / side;
@@ -130,7 +130,7 @@ procedure AoC_2022_22 is
   end Blocks_to_Origin;
 
   procedure Relative_to_Face (p : in out Point; face_id : Cube_Face_ID; data : Data_Type; way : Integer) is
-    side_length : constant Positive := Cube_Side (data);
+    side_length : constant Positive := cube_side (data);
     bo : Point;
   begin
     Blocks_to_Origin (bo, face_id, data);
@@ -143,7 +143,7 @@ procedure AoC_2022_22 is
     Relative_to_Face (p, Locate_Cube_Face (p, data), data, 1);
   end Relative_to_current_Face;
 
-  verbose : constant Natural := 0;
+  verbosity_level : constant Natural := 0;
 
   procedure Run
     (part     :     Part_Type;
@@ -156,7 +156,7 @@ procedure AoC_2022_22 is
     walking_steps : Integer;
     c, co : Character;
     p, left, right, up, down : Point;
-    side_length : constant Positive := Cube_Side (data);
+    side_length : constant Positive := cube_side (data);
 
     function Inv (coord : Positive) return Positive is
     begin
@@ -351,14 +351,14 @@ procedure AoC_2022_22 is
       if walking_steps = 0 then
         return;
       end if;
-      if verbose > 0 then
+      if verbosity_level > 0 then
         Put (p.x, 3); Put (","); Put (p.y, 3); Put ("  -> (");
         Put (walking_steps, 0); Put (") -> ");
       end if;
       d.x := +Integer (dxr);
       d.y := -Integer (dyr);  --  top down geometry...
       loop
-        if verbose > 0 then
+        if verbosity_level > 0 then
           Put ('.');
         end if;
         nd := d;
@@ -410,7 +410,7 @@ procedure AoC_2022_22 is
       end loop;
       dxr := Real (+d.x);
       dyr := Real (-d.y);
-      if verbose > 0 then
+      if verbosity_level > 0 then
          Put (p.x, 3); Put (","); Put (p.y, 3); New_Line;
       end if;
     end Go;
@@ -426,7 +426,7 @@ procedure AoC_2022_22 is
     up.y := -1;
     down.x :=  0;
     down.y := +1;
-    if verbose > 1 then
+    if verbosity_level > 1 then
       Put_Line (+"highest.x: " & highest.x'Image);
       Put_Line (+"highest.y: " & highest.y'Image);
       Put_Line (+"side: " & side_length'Image);
@@ -493,7 +493,7 @@ procedure AoC_2022_22 is
       Adapt_Highest_Value_Point (p);
     end loop Read_Data;
     Get_Line (f, data_line);
-    if verbose > 0 then
+    if verbosity_level > 0 then
       Show;
     end if;
     Close (f);
@@ -513,7 +513,7 @@ begin
 
 Parts :
   for part in Part_Type loop
-    if verbose > 0 then
+    if verbosity_level > 0 then
       Put_Line (part'Image);
     end if;
     Run (part, data, data_line, start, dir, final);
@@ -522,7 +522,7 @@ Parts :
     if dir.x < 0 then facing := 2; end if;
     if dir.y < 0 then facing := 3; end if;
     r (part) := 1000 * final.y + 4 * final.x + facing;
-    if verbose > 0 then
+    if verbosity_level > 0 then
       Put_Line (r (part)'Image);
     end if;
   end loop Parts;

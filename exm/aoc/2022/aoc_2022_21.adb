@@ -40,8 +40,6 @@ procedure AoC_2022_21 is
 
     x1, x2, x, y1, y2, y : Integer_64;
 
-    use AoC_Toolbox;
-
     procedure Show is
     begin
       Put_Line

@@ -21,7 +21,7 @@ with HAT;
 procedure AoC_2022_19 is
   use AoC_Toolbox, HAT;
 
-  verbose : constant Natural := 1;
+  verbosity_level : constant Natural := 1;
   T0 : constant Time := Clock;
   r : array (1 .. 2) of Integer;
 
@@ -56,7 +56,7 @@ procedure AoC_2022_19 is
     robot : Portfolio_Type;
     resource : Portfolio_Type;
 
-    obsidian_cost_geode_robot, clay_cost_obsidian_robot : Positive;    
+    obsidian_cost_geode_robot, clay_cost_obsidian_robot : Positive;
     min_time_to_collect_enough_obsidian : Positive;
     min_time_to_collect_enough_clay : Positive;
 
@@ -227,7 +227,7 @@ procedure AoC_2022_19 is
     robot (ore) := 1;
     obsidian_cost_geode_robot := blueprint (geode)(obsidian);
     clay_cost_obsidian_robot  := blueprint (obsidian)(clay);
-    
+
     for n in 1 .. 100 loop
       any_res := any_res + n;
       --  The steepest production of any new resource
@@ -288,7 +288,7 @@ Read_Data :
   r (1) := 0;
   for b in 1 .. last loop
     best := Best_Geode_Opening (blueprint (b), 24);
-    if verbose > 0 then
+    if verbosity_level > 0 then
       Put_Line
         (+"In 24 steps (minutes), blueprint #" & b & ": " & best & " geodes cracked, T = " & (Clock - T0));
     end if;
@@ -298,7 +298,7 @@ Read_Data :
   r (2) := 1;
   for b in 1 .. Min (3, last) loop
     best := Best_Geode_Opening (blueprint (b), 32);
-    if verbose > 0 then
+    if verbosity_level > 0 then
       Put_Line
         (+"In 32 steps (minutes), blueprint #" & b & ": " & best & " geodes cracked, T = " & (Clock - T0));
     end if;

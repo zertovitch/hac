@@ -25,7 +25,7 @@ with Interfaces;
 procedure AoC_2022_20 is
   use HAT, Interfaces;
 
-  verbose : constant Natural := 0;
+  verbosity_level : constant Natural := 0;
 
   info_max : constant := 5000;
 
@@ -82,7 +82,7 @@ Read_Data :
   data (0).prev := last;
   data (last).next := 0;
   total := last + 1;
-  if verbose > 0 then
+  if verbosity_level > 0 then
     Show;
   end if;
 
@@ -125,7 +125,7 @@ Parts :
         o (new_prev).next := i;
         o (new_next).prev := i;
         --  Display:
-        if verbose > 0 then
+        if verbosity_level > 0 then
           Show;
         end if;
       end loop Single_Round;
