@@ -1,5 +1,35 @@
 package body AoC_Toolbox is
 
+  procedure GCD_and_Bezout (a, b : in Integer; s, t, the_gcd : out Integer) is
+    --  Finds the GCD and s, t for the
+    --  ` GCD (a, b) = a * s + b * t ` factorization (Bezout theorem).
+    --  Program 1.8, Introduction to number theory, RBJT Allenby & EJ Redfern
+    ta, tb : array (1 .. 3) of Integer;
+    q, r : Integer;
+  begin
+    ta (1) := 1;         tb (1) := 0;
+    ta (2) := 0;         tb (2) := 1;
+    ta (3) := a;         tb (3) := b;
+    while tb (3) /= 0 loop
+      q := ta (3) / tb (3);
+      for i in 1 .. 3 loop
+        r := ta (i) - q * tb (i);
+        ta (i) := tb (i);
+        tb (i) := r;
+      end loop;
+    end loop;
+    s :=       ta (1);
+    t :=       ta (2);
+    the_gcd := ta (3);
+  end GCD_and_Bezout;
+
+  function GCD (a, b : Integer) return Integer is
+    s, t, the_gcd : Integer;
+  begin
+    GCD_and_Bezout (a, b, s, t, the_gcd);
+    return the_gcd;
+  end GCD;
+
   function Dist_L1 (a, b : Point) return Natural is
   begin
     return

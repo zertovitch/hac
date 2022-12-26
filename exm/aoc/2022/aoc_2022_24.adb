@@ -31,51 +31,23 @@ procedure AoC_2022_24 is
 
   inf : constant Natural := Integer'Last / 4;
 
-  procedure GCD_and_Bezout (a, b : in Integer; s, t, the_gcd : out Integer) is
-    --  Finds the GCD and s, t for the
-    --  ` GCD (a, b) = a * s + b * t ` factorization (Bezout theorem).
-    --  Program 1.8, Introduction to number theory, RBJT Allenby & EJ Redfern
-    ta, tb : array (1 .. 3) of Integer;
-    q, r : Integer;
-  begin
-    ta (1) := 1;         tb (1) := 0;
-    ta (2) := 0;         tb (2) := 1;
-    ta (3) := a;         tb (3) := b;
-    while tb (3) /= 0 loop
-      q := ta (3) / tb (3);
-      for i in 1 .. 3 loop
-        r := ta (i) - q * tb (i);
-        ta (i) := tb (i);
-        tb (i) := r;
-      end loop;
-    end loop;
-    s :=       ta (1);
-    t :=       ta (2);
-    the_gcd := ta (3);
-  end GCD_and_Bezout;
-
-  function GCD (a, b : Integer) return Integer is
-    s, t, the_gcd : Integer;
-  begin
-    GCD_and_Bezout (a, b, s, t, the_gcd);
-    return the_gcd;
-  end GCD;
-
   --  Convention: 0-based, y axis appears top -> down.
 
   type Blizzard is array (Range_x, Range_y) of Boolean;
 
-  lb, ub, rb, db : Blizzard;
+  leftward_blizzard, upward_blizzard,
+  rightward_blizzard, downward_blizzard : Blizzard;
+
   best : array (Range_x, Range_y, Range_t) of Natural;
 
   procedure Show (time_step : Natural) is
   begin
     for y in lowest.y .. highest.y loop  --  y axis appears top -> down.
       for x in lowest.x .. highest.x loop
-        if    lb ((x + time_step) mod (highest.x + 1), y) then Put ('<');
-        elsif ub (x, (y + time_step) mod (highest.y + 1)) then Put ('^');
-        elsif rb ((x - time_step) mod (highest.x + 1), y) then Put ('>');
-        elsif db (x, (y - time_step) mod (highest.y + 1)) then Put ('v');
+        if    leftward_blizzard  ((x + time_step) mod (highest.x + 1), y) then Put ('<');
+        elsif upward_blizzard    (x, (y + time_step) mod (highest.y + 1)) then Put ('^');
+        elsif rightward_blizzard ((x - time_step) mod (highest.x + 1), y) then Put ('>');
+        elsif downward_blizzard  (x, (y - time_step) mod (highest.y + 1)) then Put ('v');
         else Put ('.');
         end if;
       end loop;
@@ -101,89 +73,98 @@ procedure AoC_2022_24 is
   subtype List_Range is Integer range 1 .. list_length_max;
 
   type Node is record
-    len  : Natural;  --  Length in space-time
-    pt   : Point;    --  dimensions: x, y
-    t    : Natural;  --  dimension:  t
-    pred : Natural;  --  This is just for displaying the path.
+    len  : Natural;   --  Length in space-time
+    pt   : Point_3D;  --  dimensions: x, y, t
+    pred : Natural;   --  This is just for displaying the path.
   end record;
-
-  function Node_Image (n : Node) return VString is
-  begin
-    return
-      +" x = " & n.pt.x & ", y = " & n.pt.y & ", t = " & n.t;
-  end Node_Image;
 
   list : array (List_Range) of Node;
   current, explored : Natural;  --  0 <= current <= explored
 
-  function Dijkstra_Algorithm (start : Point; time_start : Natural; part : Part_Type) return Natural is
+  stats : constant Boolean := True;
+  stats_first_visit      : Natural := 0;
+  stats_added_revisit    : Natural := 0;
+  stats_rejected_revisit : Natural := 0;
+
+  function Dijkstra_Algorithm (start : Point_3D; part : Part_Type) return Natural is
 
     blizzard_cycle : Positive;
-    cur_pt  : Point;
+    cur_pt  : Point_3D;
     cur_len : Natural;
-
-    time_step : Natural := time_start;
 
     procedure Visit (x, y : Integer) is
       len_to, ins, t : Integer;
-      ok_step : Boolean;
     begin
-      t := time_step + 1;
-      if (x in 0 .. highest.x and then y in 0 .. highest.y)
-        or else (x = 0 and then y = -1)                     --  The starting block.
-        or else (x = highest.x and then y = highest.y + 1)  --  The end (and new start...).
+      t := cur_pt.z + 1;
+      if         (x in 0 .. highest.x    --  The valley.
+         and then y in 0 .. highest.y
+         and then not
+                  (leftward_blizzard  ((x + t) mod (highest.x + 1), y)
+           or else rightward_blizzard ((x - t) mod (highest.x + 1), y)
+           or else upward_blizzard    (x, (y + t) mod (highest.y + 1))
+           or else downward_blizzard  (x, (y - t) mod (highest.y + 1))))
+
+        or else (x = 0 and then y = -1)  --  The "starting block".
+        or else
+                  (x = highest.x         --  The end (and new start...).
+          and then y = highest.y + 1)
       then
-        ok_step := y = -1
-           or else y = highest.y + 1
-           or else
-             not         (lb ((x + t) mod (highest.x + 1), y)
-                  or else rb ((x - t) mod (highest.x + 1), y)
-                  or else ub (x, (y + t) mod (highest.y + 1))
-                  or else db (x, (y - t) mod (highest.y + 1)));
-        if ok_step then
-          len_to := cur_len + 1;
+        len_to := cur_len + 1;
+        if verbosity_level > 1 then
+          Put (+"x: " & x & ", y: " & y &
+               ", t: " & t & "  cur_len = " & cur_len);
+          if best (x, y, t mod blizzard_cycle) < inf then
+            Put
+              (+"  old best (x, y, time_step) = " &
+               best (x, y, t mod blizzard_cycle) & ", ");
+          else
+            Put ("  not visited, ");
+          end if;
+        end if;
+        if len_to < best (x, y, t mod blizzard_cycle) then
+          --  Improvement on cell (x, y).
+          best (x, y, t mod blizzard_cycle) := len_to;
+          --
+          --  Insert in a sorted way.
+          --
+          ins := explored + 1;
+          for i in current + 1 .. explored loop
+            if current < list (i).len then
+              ins := i;  --  Insert here.
+              --  Optional: remove another node
+              --  with the same (x, y) and a larger length.
+              exit;
+            end if;
+          end loop;
+          for i in reverse ins .. explored loop
+            list (i + 1) := list (i);
+          end loop;
+          list (ins).len := len_to;
+          list (ins).pt.x := x;
+          list (ins).pt.y := y;
+          list (ins).pt.z := t;
+          list (ins).pred := current;
+          explored := explored + 1;
           if verbosity_level > 1 then
-            Put (+"x: " & x & ", y: " & y &
-                 ", t: " & t & "  cur_len = " & cur_len);
+            Put_Line (" ->   added");
+          end if;
+          if stats then
             if best (x, y, t mod blizzard_cycle) < inf then
-              Put
-                (+"  old best (x, y, time_step) = " &
-                 best (x, y, t mod blizzard_cycle) & ", ");
+              stats_first_visit := stats_first_visit + 1;
             else
-              Put ("  not visited, ");
+              stats_added_revisit := stats_added_revisit + 1;
             end if;
           end if;
-          if len_to < best (x, y, t mod blizzard_cycle) then
-            --  Improvement on cell (x, y).
-            best (x, y, t mod blizzard_cycle) := len_to;
-            --
-            --  Insert in a sorted way.
-            --
-            ins := explored + 1;
-            for i in current + 1 .. explored loop
-              if current < list (i).len then
-                ins := i;  --  Insert here.
-                --  Optional: remove another node
-                --  with the same (x, y) and a larger length.
-                exit;
-              end if;
-            end loop;
-            for i in reverse ins .. explored loop
-              list (i + 1) := list (i);
-            end loop;
-            list (ins).len := len_to;
-            list (ins).pt.x := x;
-            list (ins).pt.y := y;
-            list (ins).t    := t;
-            list (ins).pred := current;
-            explored := explored + 1;
-            if verbosity_level > 1 then
-              Put_Line (" ->   added");
+        else
+          if stats then
+            if best (x, y, t mod blizzard_cycle) < inf then
+              stats_rejected_revisit := stats_rejected_revisit + 1;
+            else
+              put ("Uh (rejected but = inf) ?");
             end if;
-          else
-            if verbosity_level > 1 then
-              Put_Line (" ->   NOT added");
-            end if;
+          end if;
+          if verbosity_level > 1 then
+            Put_Line (" ->   NOT added");
           end if;
         end if;
       end if;
@@ -206,10 +187,10 @@ procedure AoC_2022_24 is
       end loop;
     end loop;
 
-    best (start.x, start.y, time_step mod blizzard_cycle) := 0;
     cur_pt := start;
+    best (cur_pt.x, cur_pt.y, cur_pt.z mod blizzard_cycle) := 0;
     loop
-      cur_len := best (cur_pt.x, cur_pt.y, time_step mod blizzard_cycle);
+      cur_len := best (cur_pt.x, cur_pt.y, cur_pt.z mod blizzard_cycle);
       Visit (cur_pt.x,     cur_pt.y);  --  Wait in place.
       Visit (cur_pt.x - 1, cur_pt.y);
       Visit (cur_pt.x + 1, cur_pt.y);
@@ -224,32 +205,28 @@ procedure AoC_2022_24 is
         return inf;
       end if;
       cur_pt := list (current).pt;
-      time_step := list (current).t;
-      if verbosity_level > 0 then
-        Put_Line
-          (+" === > Current: [" & Node_Image (list (current)) &
-           "], current = " & current);
-      end if;
       case part is
         when part_1 =>
-          exit when cur_pt.x = highest.x and then cur_pt.y = highest.y;
+          exit when cur_pt.x = highest.x
+           and then cur_pt.y = highest.y;
         when part_2 =>
-          exit when cur_pt.x = 0 and then cur_pt.y = 0;
+          exit when cur_pt.x = 0
+           and then cur_pt.y = 0;
       end case;
     end loop;
-    return time_step + 1;
+    return cur_pt.z + 1;
   end Dijkstra_Algorithm;
 
   T0 : constant Time := Clock;
   r : array (Part_Type) of Integer;
 
-  start : Point;
+  start : Point_3D;
 
 begin
-    Clear (lb);
-    Clear (ub);
-    Clear (rb);
-    Clear (db);
+    Clear (leftward_blizzard);
+    Clear (upward_blizzard);
+    Clear (rightward_blizzard);
+    Clear (downward_blizzard);
     lowest.x := 0;
     lowest.y := 0;
     Open (f, "aoc_2022_24.txt");
@@ -264,10 +241,10 @@ begin
       for i in 2 .. Length (s) - 1 loop
         case Element (s, i) is
           when '.' => null;
-          when '<' => lb (i - 2, highest.y) := True;
-          when '^' => ub (i - 2, highest.y) := True;
-          when '>' => rb (i - 2, highest.y) := True;
-          when 'v' => db (i - 2, highest.y) := True;
+          when '<' => leftward_blizzard (i - 2, highest.y) := True;
+          when '^' => upward_blizzard (i - 2, highest.y) := True;
+          when '>' => rightward_blizzard (i - 2, highest.y) := True;
+          when 'v' => downward_blizzard (i - 2, highest.y) := True;
           when others => Put ("Whut?");
         end case;
       end loop;
@@ -284,13 +261,16 @@ begin
 
     start.x := 0;
     start.y := -1;
-    r (part_1) := Dijkstra_Algorithm (start, 0, part_1);
+    start.z := 0;
+    r (part_1) := Dijkstra_Algorithm (start, part_1);
     start.x := highest.x;
     start.y := highest.y + 1;
-    r (part_2) := Dijkstra_Algorithm (start, r (part_1), part_2);
+    start.z := r (part_1);
+    r (part_2) := Dijkstra_Algorithm (start, part_2);
     start.x := 0;
     start.y := -1;
-    r (part_2) := Dijkstra_Algorithm (start, r (part_2), part_1);
+    start.z := r (part_2);
+    r (part_2) := Dijkstra_Algorithm (start, part_1);
 
   if Argument_Count >= 2 then
     --  Compiler test mode.
@@ -301,6 +281,11 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
+    if stats then
+      Put_Line (+"Firstly visited cells    : " & stats_first_visit);
+      Put_Line (+"Added revisited cells    : " & stats_added_revisit);
+      Put_Line (+"Rejected revisited cells : " & stats_rejected_revisit);
+    end if;
     Put_Line (+"Shortest time for...");
     Put_Line (+"  (part 1) one trip . . . . :" & r (part_1)'Image);
     Put_Line (+"  (part 2) three trips  . . :" & r (part_2)'Image);

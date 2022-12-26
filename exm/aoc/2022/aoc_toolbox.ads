@@ -10,6 +10,14 @@ package AoC_Toolbox is
 
   type Data_Type is (mini, input);
 
+  ---------------
+  --  Algebra  --
+  ---------------
+
+  procedure GCD_and_Bezout (a, b : in Integer; s, t, the_gcd : out Integer);
+
+  function GCD (a, b : Integer) return Integer;
+
   ----------------------
   --  Plane Geometry  --
   ----------------------
@@ -22,6 +30,16 @@ package AoC_Toolbox is
 
   function Dist_Max (a, b : Point) return Natural;
 
+  procedure Rotate (x, y : in out HAT.Real; a : HAT.Real);
+
+  -------------------
+  --  3D Geometry  --
+  -------------------
+
+  type Point_3D is record
+    x, y, z : Integer;
+  end record;
+
   -----------------------
   --  Text processing  --
   -----------------------
@@ -33,8 +51,6 @@ package AoC_Toolbox is
   --------------------
 
   function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64;
-
-  procedure Rotate (x, y : in out HAT.Real; a : HAT.Real);
 
   function Deg_2_Rad (a : HAT.Real) return HAT.Real;
 
