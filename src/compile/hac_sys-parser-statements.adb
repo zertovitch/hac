@@ -950,12 +950,14 @@ package body HAC_Sys.Parser.Statements is
     end Block_Statement;
 
     procedure Named_Statement is
-      --  Block_Statement or loop, named by "name: loop"
+      --  Block_Statement or loop, named by a label, like this:
+      --    "name : loop".
+      --  We remember the identifier for checking purposes.
       new_ident_for_statement           : constant Alfa := CD.Id;
+      new_ident_for_statement_with_case : constant Alfa := CD.Id_with_case;
       --
       procedure Check_ID_after_END_LOOP is  --  RM 5.5 (5)
         procedure Boom (err : Compile_Error) is
-          new_ident_for_statement_with_case : constant Alfa := CD.Id_with_case;
         begin
           Error (CD, err, A2S (new_ident_for_statement_with_case));
         end Boom;
@@ -972,9 +974,13 @@ package body HAC_Sys.Parser.Statements is
       --
       dummy_idx : Natural;
     begin
-      Enter (CD, Block_Data.level, new_ident_for_statement, CD.Id_with_case, Label, dummy_idx);
+      Enter
+        (CD, Block_Data.level, new_ident_for_statement,
+         CD.Id_with_case, Label, dummy_idx);
       if CD.Sy /= Colon then
-        Error (CD, err_colon_missing_for_named_statement, A2S (CD.Id_with_case), severity => major);
+        Error
+          (CD, err_colon_missing_for_named_statement,
+           A2S (CD.Id_with_case), severity => major);
       end if;
       InSymbol;  --  Consume ':' symbol.
       case CD.Sy is
@@ -1006,7 +1012,7 @@ package body HAC_Sys.Parser.Statements is
           I_Statement := Locate_Identifier (CD, CD.Id, Block_Data.level, Fail_when_No_Id => False);
           InSymbol;
           if I_Statement = No_Id then
-            --  New identifier: must be an identifier for a named Block_Statement or loop.
+            --  Unknown identifier: must be an identifier for a named Block_Statement or loop.
             Named_Statement;
           else
             case CD.IdTab (I_Statement).entity is
