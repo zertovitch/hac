@@ -7,16 +7,18 @@
 
 with AoC_Toolbox;
 
---  Note: this solution takes a large amount of time
---  with GNAT and an even larger one with HAC.
---  See AoC_2022_19_Full_Ada for a fast solution.
+--  Note: this solution uses a cache for "memoizing"
+--  the nodes which were already computed.
+--  Total run time with GNAT: 84 seconds.
 
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2022.gpr .
 with HAT;
 
-procedure AoC_2022_19 is
+with Ada.Containers.Hashed_Maps;
+
+procedure AoC_2022_19_Full_Ada is
   use AoC_Toolbox, HAT;
 
   verbosity_level : constant Natural := 1;
@@ -44,9 +46,25 @@ procedure AoC_2022_19 is
   type Portfolio_Type is array (Resource_Type) of Natural;
 
   type State_Type is record
-    resource : Portfolio_Type;
-    robot    : Portfolio_Type;
+    resource  : Portfolio_Type;
+    robot     : Portfolio_Type;
+    time_left : Natural;
   end record;
+
+  function State_Hash (s : State_Type) return Ada.Containers.Hash_Type with Inline is
+    use Ada.Containers;
+    x : Hash_Type := 0;
+    multiplier : constant := 37;  --  Can be any value: Hash_Type does not overflow.
+  begin
+    for res in Resource_Type loop
+      x := x * multiplier + Hash_Type (s.robot (res));
+      x := x * multiplier + Hash_Type (s.resource (res));
+    end loop;
+    return x * multiplier + Hash_Type (s.time_left);
+  end State_Hash;
+
+  package State_Maps is
+    new Ada.Containers.Hashed_Maps (State_Type, Natural, State_Hash, "=");
 
   subtype Cost_Type is Portfolio_Type;
 
@@ -62,18 +80,21 @@ procedure AoC_2022_19 is
 
     greedy : constant Boolean := True;
 
-    procedure Visit (state : State_Type; time_left : Natural; geodes : out Natural) is
+    cache : State_Maps.Map;
+
+    procedure Visit (state : State_Type; geodes : out Natural) is
       robot_creation_possible, any_possible : Boolean;
       score_build_robot : array (Resource_Type) of Natural;
       score_same_robots : Natural;
       new_state : State_Type;
       result : Natural;
+      cursor : State_Maps.Cursor;
+      use State_Maps;
     begin
-      case time_left is
+      case state.time_left is
         when 0 =>
           geodes := state.resource (geode);
           return;
-
         --  Some recursion breakers on desperately unefficient scenarios
         when 1 =>
           if state.robot (geode) = 0 then
@@ -119,66 +140,15 @@ procedure AoC_2022_19 is
               return;
             end if;
           end if;
-        when 4 =>
-          if state.robot (obsidian) = 0 then
-            if state.resource (clay) + state.robot (clay) < clay_cost_obsidian_robot then
-              --  Not enough clay to construct the first obsidian-collecting
-              --  robot in the last possible minute.
-              geodes := 0;
-              return;
-            end if;
-          end if;
-          if state.robot (geode) = 0 then
-            case state.robot (obsidian) is
-              when 0 =>
-                if state.resource (obsidian) < obsidian_cost_geode_robot - 1 then
-                  geodes := 0;
-                  return;
-                end if;
-              when 1 =>
-                if state.resource (obsidian) < obsidian_cost_geode_robot - 3 then
-                  geodes := 0;
-                  return;
-                end if;
-              when 2 =>
-                if state.resource (obsidian) < obsidian_cost_geode_robot - 6 then
-                  geodes := 0;
-                  return;
-                end if;
-              when others =>
-                null;
-            end case;
-          end if;
-        when 5 =>
-          if state.robot (geode) = 0 then
-            case state.robot (obsidian) is
-              when 0 =>
-                --  Best case : one more obsidian robot is constructed at each
-                --  subsequent time step, allowing for constructin a geode robot.
-                if state.resource (obsidian) < obsidian_cost_geode_robot - 3 then
-                  geodes := 0;
-                  return;
-                end if;
-              when 1 =>
-                if state.resource (obsidian) < obsidian_cost_geode_robot - 7 then
-                  geodes := 0;
-                  return;
-                end if;
-              when others =>
-                null;
-            end case;
-          end if;
-        when 6 =>
-          if state.robot (geode) = 0
-            and then state.robot (obsidian) = 0
-            and then state.resource (obsidian) < obsidian_cost_geode_robot - 6
-          then
-            geodes := 0;
-            return;
-          end if;
         when others =>
           null;
       end case;
+
+      cursor := cache.Find (state);
+      if cursor /= No_Element then
+        geodes := Element (cursor);
+        return;
+      end if;
 
       any_possible := False;
       for new_robot in Resource_Type loop
@@ -212,7 +182,8 @@ procedure AoC_2022_19 is
             new_state.resource (res) := new_state.resource (res) + new_state.robot (res);
           end loop;
           new_state.robot (new_robot) := new_state.robot (new_robot) + 1;
-          Visit (new_state, time_left - 1, score_build_robot (new_robot));
+          new_state.time_left := new_state.time_left - 1;
+          Visit (new_state, score_build_robot (new_robot));
         end if;
         any_possible := any_possible or robot_creation_possible;
       end loop;
@@ -226,7 +197,8 @@ procedure AoC_2022_19 is
         for res in Resource_Type loop
           new_state.resource (res) := new_state.resource (res) + new_state.robot (res);
         end loop;
-        Visit (new_state, time_left - 1, score_same_robots);
+        new_state.time_left := new_state.time_left - 1;
+        Visit (new_state, score_same_robots);
       end if;
       --  Find max:
       result := score_same_robots;
@@ -234,6 +206,7 @@ procedure AoC_2022_19 is
         result := Max (result, score_build_robot (res));
       end loop;
       geodes := result;
+      cache.Insert (state, result);
     end Visit;
 
     max_geodes : Natural;
@@ -244,13 +217,14 @@ procedure AoC_2022_19 is
       initial.resource (r) := 0;
     end loop;
     initial.robot (ore) := 1;
+    initial.time_left := total_time;
     obsidian_cost_geode_robot := blueprint (geode)(obsidian);
     clay_cost_obsidian_robot  := blueprint (obsidian)(clay);
 
     --  put(min_time_to_collect_enough_obsidian);
     --  put(min_time_to_collect_enough_clay);
     --  new_line;
-    Visit (initial, total_time, max_geodes);
+    Visit (initial, max_geodes);
     return max_geodes;
   end Best_Geode_Opening;
 
@@ -265,7 +239,7 @@ begin
 Read_Data :
   while not End_Of_File (f) loop
     Skip_till_Space (f, 6);
-    exit when End_Of_File (f);
+    exit Read_Data when End_Of_File (f);
     last := last + 1;
     for robot in Resource_Type loop
       for cost in Resource_Type loop
@@ -320,4 +294,4 @@ Read_Data :
     --  Part 1: validated by AoC: 1192
     --  Part 2: validated by AoC: 14725
   end if;
-end AoC_2022_19;
+end AoC_2022_19_Full_Ada;
