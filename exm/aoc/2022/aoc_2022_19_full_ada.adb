@@ -9,7 +9,7 @@ with AoC_Toolbox;
 
 --  Note: this solution uses a cache for "memoizing"
 --  the nodes which were already computed.
---  Total run time with GNAT: 84 seconds.
+--  Total run time with GNAT: 58 seconds.
 
 --  For building this program with "full Ada",
 --  files hat*.ad* are in ../../../src

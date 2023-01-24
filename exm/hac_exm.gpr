@@ -50,6 +50,7 @@ project HAC_Exm is
      "shell_sort.adb",
      "shell.adb",
      "strings_demo.adb",
+     "sudoku.adb",
      "tasks_01.adb",
      "tasks_02.adb",
      "three_lakes_s.adb",
