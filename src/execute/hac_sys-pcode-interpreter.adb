@@ -277,6 +277,9 @@ package body HAC_Sys.PCode.Interpreter is
           Allocate_Text_File (ND, M);
         end if;
       end Switch_to_Text_Files;
+
+      through : Integer;
+
     begin
       case Code is
         when SP_Set_Env         => HAT.Set_Env   (Below_Top_Item.V, Top_Item.V);
@@ -289,10 +292,17 @@ package body HAC_Sys.PCode.Interpreter is
         when SP_Set_Directory   => HAT.Set_Directory (Top_Item.V);
         when SP_Set_Exit_Status => HAT.Set_Exit_Status (Integer (Top_Item.I));
         when SP_Delete =>
+          through := Integer (Top_Item.I);
+          if through > HAT.Length (ND.S (Defs.Index (ND.S (Curr_TCB.T - 2).I)).V) then
+            Raise_Standard
+              (ND, VME_Index_Error,
+              "Delete: Through, " & through'Image &
+              ", is larger than Length (Source)", True);
+          end if;
           HAT.Delete
             (Source  => ND.S (Defs.Index (ND.S (Curr_TCB.T - 2).I)).V,
              From    => Integer (Below_Top_Item.I),
-             Through => Integer (Top_Item.I));
+             Through => through);
         --
         when SP_Create =>
           Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));

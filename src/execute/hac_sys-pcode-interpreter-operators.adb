@@ -224,16 +224,16 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     CD : Co_Defs.Compiler_Data renames BD.CD.all;
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     Top_Item : General_Register renames ND.S (Curr_TCB.T);
-    Idx, Len, From, To : Integer;
-    C : Character;
-    Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
+    idx, len, from, to : Integer;
+    c : Character;
+    code : constant SF_Code := SF_Code'Val (ND.IR.Y);
     use Defs, Exceptions;
     use Ada.Strings;
     use type Defs.HAC_Float, Defs.HAC_Integer, HAT.Time, HAT.VString;
     Going : Direction;
     --
   begin
-    case Code is
+    case code is
       when SF_Abs_Int   => Top_Item.I := abs (Top_Item.I);
       when SF_Abs_Float => Top_Item.R := abs (Top_Item.R);
       when SF_T_Val =>   --  Ord = Character'Val : RM 3.5.5 (5,7)
@@ -298,14 +298,14 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         --  [T] := Max ([T], [T+1]) :
         ND.S (Curr_TCB.T).R := HAC_Float'Max (ND.S (Curr_TCB.T).R, ND.S (Curr_TCB.T + 1).R);
       when SF_String_to_VString =>   --  Unary "+", equivalent to the call To_VString (S)
-        Idx := Integer (ND.S (Curr_TCB.T).I);      --  Index in the stack
-        Len := Integer (ND.IR.X);                  --  Length of string
-        ND.S (Curr_TCB.T) := GR_VString (Get_String_from_Stack (ND, Idx, Len));
+        idx := Integer (ND.S (Curr_TCB.T).I);      --  Index in the stack
+        len := Integer (ND.IR.X);                  --  Length of string
+        ND.S (Curr_TCB.T) := GR_VString (Get_String_from_Stack (ND, idx, len));
       when SF_Literal_to_VString =>  --  Unary "+", equivalent to the call To_VString ("abc")
         Pop (ND);
-        Len := Integer (ND.S (Curr_TCB.T).I);      --  Length of string
-        Idx := Integer (ND.S (Curr_TCB.T + 1).I);  --  Index to string table
-        ND.S (Curr_TCB.T) := GR_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1));
+        len := Integer (ND.S (Curr_TCB.T).I);      --  Length of string
+        idx := Integer (ND.S (Curr_TCB.T + 1).I);  --  Index to string table
+        ND.S (Curr_TCB.T) := GR_VString (CD.Strings_Constants_Table (idx .. idx + len - 1));
       when SF_VString_to_String =>
         --  The type has just changed to Strings_as_VStrings at parser level.
         --  For the VM, it's a VString one way or the other.
@@ -332,11 +332,11 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_LStr_VString_Concat =>
         --  Literal: 2 items, VString: 1 item. Total, 3 items folded into 1 item.
         Pop (ND, 2);
-        Len := Integer (ND.S (Curr_TCB.T).I);      --  Length of string
-        Idx := Integer (ND.S (Curr_TCB.T + 1).I);  --  Index to string table
+        len := Integer (ND.S (Curr_TCB.T).I);      --  Length of string
+        idx := Integer (ND.S (Curr_TCB.T + 1).I);  --  Index to string table
         Check_Discriminant_Type (ND.S (Curr_TCB.T + 2), Defs.VStrings);
         ND.S (Curr_TCB.T) :=
-          GR_VString (CD.Strings_Constants_Table (Idx .. Idx + Len - 1) & ND.S (Curr_TCB.T + 2).V);
+          GR_VString (CD.Strings_Constants_Table (idx .. idx + len - 1) & ND.S (Curr_TCB.T + 2).V);
       when SF_VString_Int_Concat =>
         Pop (ND);
         Check_Discriminant_Type (ND.S (Curr_TCB.T), Defs.VStrings);
@@ -373,36 +373,44 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_Element =>
         Pop (ND);
         --  [T] := Element ([T], [T+1]) :
-        C := HAT.Element (ND.S (Curr_TCB.T).V, Integer (ND.S (Curr_TCB.T + 1).I));
-        ND.S (Curr_TCB.T).I := Character'Pos (C);
+        idx := Integer (ND.S (Curr_TCB.T + 1).I);
+        len := HAT.Length (ND.S (Curr_TCB.T).V);
+        if idx < 1 then
+          Raise_Standard (ND, VME_Index_Error, "Element: Index not positive", True);
+        elsif idx > len then
+          Raise_Standard
+            (ND, VME_Index_Error,
+             "Element: Index," & idx'Image &
+             ", is larger than Length (Source)," & len'Image, True);
+        end if;
+        c := HAT.Element (ND.S (Curr_TCB.T).V, idx);
+        ND.S (Curr_TCB.T).I := Character'Pos (c);
       when SF_Length =>
         --  [T] := Length ([T]) :
-        Len := HAT.Length (Top_Item.V);
-        Top_Item.I := HAC_Integer (Len);
+        len := HAT.Length (Top_Item.V);
+        Top_Item.I := HAC_Integer (len);
       when SF_Slice =>
         Pop (ND, 2);
-        From := Integer (ND.S (Curr_TCB.T + 1).I);
-        To   := Integer (ND.S (Curr_TCB.T + 2).I);
-        if From < 1 then
+        from := Integer (ND.S (Curr_TCB.T + 1).I);
+        to   := Integer (ND.S (Curr_TCB.T + 2).I);
+        if from < 1 then
           Raise_Standard (ND, VME_Constraint_Error, "Slice: Low is not positive:" &
-            Integer'Image (From), True);
-        end if;
-        if To < 0 then
+            Integer'Image (from), True);
+        elsif to < 0 then
           Raise_Standard (ND, VME_Constraint_Error, "Slice: High is negative: " &
-            Integer'Image (To), True);
+            Integer'Image (to), True);
         end if;
-        Len := HAT.Length (ND.S (Curr_TCB.T).V);
-        if From > Len + 1 then
+        len := HAT.Length (ND.S (Curr_TCB.T).V);
+        if from > len + 1 then
           Raise_Standard (ND, VME_Index_Error,
             "Slice: Low is larger than Length (Source) + 1. See RM A.4.4 (101)", True);
-        end if;
-        if To > Len then
+        elsif to > len then
           Raise_Standard (ND, VME_Index_Error,
             "Slice: High is larger than Length (Source). See RM A.4.4 (101)", True);
         end if;
         --  [T] := Slice ([T], [T+1], [T+2]) :
         HAT.VStr_Pkg.Set_Unbounded_String
-          (ND.S (Curr_TCB.T).V, HAT.VStr_Pkg.Slice (ND.S (Curr_TCB.T).V, From, To));
+          (ND.S (Curr_TCB.T).V, HAT.VStr_Pkg.Slice (ND.S (Curr_TCB.T).V, from, to));
       when SF_To_Lower_Char =>
         Top_Item.I := Character'Pos (HAT.To_Lower (Character'Val (Top_Item.I)));
       when SF_To_Upper_Char =>
@@ -412,17 +420,17 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_To_Upper_VStr =>
         HAT.VStr_Pkg.Set_Unbounded_String (Top_Item.V, HAT.ACH.To_Upper (HAT.VStr_Pkg.To_String (Top_Item.V)));
       when SF_Index | SF_Index_Backward =>
-        Going := (if Code = SF_Index then Forward else Backward);
+        Going := (if code = SF_Index then Forward else Backward);
         Pop (ND, 2);
-        From := Integer (ND.S (Curr_TCB.T + 2).I);
+        from := Integer (ND.S (Curr_TCB.T + 2).I);
         ND.S (Curr_TCB.T).I :=
           HAC_Integer
-           (if From >= 1 then
+           (if from >= 1 then
               --  [T] := Index (Source: [T], Pattern: [T+1], From: [T+2], Going) :
               HAT.VStr_Pkg.Index
                 (ND.S (Curr_TCB.T).V,
                  HAT.VStr_Pkg.To_String (ND.S (Curr_TCB.T + 1).V),
-                 From,
+                 from,
                  Going)
             else
               --  [T] := Index (Source: [T], Pattern: [T+1], Going) :
@@ -589,7 +597,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_Niladic =>
         --  NILADIC functions need to push a new item (their own result).
         Push (ND);
-        case SF_Niladic (Code) is
+        case SF_Niladic (code) is
           when SF_Clock =>
             ND.S (Curr_TCB.T) := GR_Time (Ada.Calendar.Clock);
           when SF_Random_Float =>

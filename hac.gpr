@@ -10,16 +10,11 @@
 --  
 project HAC is
 
-   type HAC_Build_Mode_Type is
-      ( "Debug",
-        "Fast",
-        "Small"
-      );
+   type HAC_Build_Mode_Type is ("Debug", "Fast", "Small");
 
    HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
 
-   type HAC_OS_Kind is
-      ("Any", "Linux", "MacOSX", "Win32", "Win64");
+   type HAC_OS_Kind is ("Any", "Linux", "MacOSX", "Win32", "Win64");
 
    HAC_OS : HAC_OS_Kind := external ("HAC_OS", "Any");
 
@@ -43,40 +38,52 @@ project HAC is
       for Default_Switches ("ada") use ("-i2");
    end Pretty_Printer;
 
-   Common_Compiler_Options := (
-     "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
-     "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
-     "-gnatwcijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
-     "-gnatf",  --  Full errors. Verbose details, all undefined references
-     "-gnatq",  --  Don't quit, try semantics, even if parse errors
-     "-gnatQ",  --  Don't quit, write ali/tree file even if compile errors
-     --
-     "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
-     "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
-     "-gnatyx",       --  Style: check x:no extra parens
-     "-gnatye",       --  Style: check e:end/exit labels present
-     "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
-   );
+   type HAC_Styles_Checks_Type is ("Off", "On");
 
-   Debug_Options := (
-     "-gnata",         --  Assertions enabled
-     "-gnato",         --  Enable overflow checking in STRICT mode
-     "-gnatVa",        --  Enable all validity checking options
-     "-fstack-check",
-     "-fno-inline",
-     --
-     "-g"              --  Generate debugging information
-   );
+   HAC_Styles_Checks : HAC_Styles_Checks_Type := external ("HAC_Styles_Checks", "On");
 
-   Fast_Options := (
-     "-O2",
-     "-gnatpn", 
-     "-fipa-cp-clone", "-fgcse-after-reload", 
-     "-funroll-loops", "-fpeel-loops", "-funswitch-loops", 
-     "-ftracer", "-fweb", "-ftree-vectorize",
-     "-frename-registers", "-ffunction-sections",
-     "-g"     
-   );
+   Common_Compiler_Options :=
+     ("-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
+      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
+      "-gnatwcijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
+      "-gnatf",   --  Full errors. Verbose details, all undefined references
+      "-gnatq",   --  Don't quit, try semantics, even if parse errors
+      "-gnatQ");  --  Don't quit, write ali/tree file even if compile errors
+
+   Style_Checks := 
+     ("-gnatyaknpr",  --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
+      "-gnatybfhiu",  --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
+      "-gnatyx",      --  Style: check x:no extra parens
+      "-gnatye",      --  Style: check e:end/exit labels present
+      "-gnatytc");    --  Style: check t:token separation rules, c:comment format (two spaces)
+
+   case HAC_Styles_Checks is
+      when "Off" => null;
+      when "On"  => Common_Compiler_Options := Common_Compiler_Options & Style_Checks;
+   end case;
+
+   Debug_Options :=
+     ("-gnata",         --  Assertions enabled
+      "-gnato",         --  Enable overflow checking in STRICT mode
+      "-gnatVa",        --  Enable all validity checking options
+      "-fstack-check",
+      "-fno-inline",
+      --
+      "-g");            --  Generate debugging information
+
+   Fast_Options :=
+     ("-O2",
+      "-gnatpn", 
+      "-fipa-cp-clone",
+      "-fgcse-after-reload", 
+      "-funroll-loops",
+      "-fpeel-loops", 
+      "-funswitch-loops", 
+      "-ftracer", "-fweb",
+      "-ftree-vectorize",
+      "-frename-registers",
+      "-ffunction-sections",
+      "-g");
    
    package Compiler is
       case HAC_Build_Mode is
