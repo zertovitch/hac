@@ -424,7 +424,8 @@ package HAC_Sys.Defs is
     err_choice_out_of_range,
     err_library_error,
     err_wrong_unit_name,
-    err_obsolete_hat_name
+    err_obsolete_hat_name,
+    err_scanner_space_missing_after_number
   );
 
   type Error_set is array (Compile_Error) of Boolean;

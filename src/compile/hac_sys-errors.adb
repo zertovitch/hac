@@ -269,6 +269,10 @@ package body HAC_Sys.Errors is
                "or by ""others"" (RM 5.4 (6))" & hint_1;
       when err_choice_out_of_range =>
         return "choice(s) out of range of case expression";
+      when err_scanner_space_missing_after_number =>
+        return
+          "space missing here; " &
+          "if an identifier was meant, it cannot start with a number";
     end case;
   end Error_String;
 
@@ -281,41 +285,43 @@ package body HAC_Sys.Errors is
   repair_table : constant array (Compile_Error) of Repair_Kit :=
     (
       err_missing_a_procedure_declaration
-                                      => (insert,        +"procedure "),
-      err_colon_missing               => (insert,        +": "),
-      err_semicolon_missing           => (insert,        +"; "),
-      err_RETURN_missing              => (insert,        +"return "),
-      err_statement_expected          => (insert,        +"null;"),
-      err_IN_missing                  => (insert,        +"in "),
-      err_IS_missing                  => (insert,        +"is "),
-      err_OF_instead_of_IS            => (replace_token, +"is"),
-      err_THEN_instead_of_Arrow       => (replace_token, +"=>"),
-      err_FINGER_missing              => (insert,        +" => "),
-      err_closing_LOOP_missing        => (insert,        +" loop"),
-      err_missing_closing_CASE        => (insert,        +" case"),
-      err_missing_closing_IF          => (insert,        +" if"),
-      err_RECORD_missing              => (insert,        +" record"),
-      err_closing_parenthesis_missing => (insert,        +")"),
-      err_END_LOOP_ident_missing      => (insert,        +"[ something... ]"),
-      err_choices_not_covered         =>
+                                             => (insert,        +"procedure "),
+      err_colon_missing                      => (insert,        +": "),
+      err_semicolon_missing                  => (insert,        +"; "),
+      err_RETURN_missing                     => (insert,        +"return "),
+      err_statement_expected                 => (insert,        +"null;"),
+      err_IN_missing                         => (insert,        +"in "),
+      err_IS_missing                         => (insert,        +"is "),
+      err_OF_instead_of_IS                   => (replace_token, +"is"),
+      err_THEN_instead_of_Arrow              => (replace_token, +"=>"),
+      err_FINGER_missing                     => (insert,        +" => "),
+      err_closing_LOOP_missing               => (insert,        +" loop"),
+      err_missing_closing_CASE               => (insert,        +" case"),
+      err_missing_closing_IF                 => (insert,        +" if"),
+      err_RECORD_missing                     => (insert,        +" record"),
+      err_closing_parenthesis_missing        => (insert,        +")"),
+      err_END_LOOP_ident_missing             => (insert,        +"[ something... ]"),
+      err_scanner_space_missing_after_number => (insert,        +" "),
+      err_choices_not_covered =>
         (insert,        +"\twhen others => null;  --  Use with caution...\n"),
       err_incorrect_name_after_END |
       err_END_LOOP_ident_wrong     |
       err_wrong_unit_name          |
-      err_obsolete_hat_name           => (replace_token, +"[ something... ]"),
-      err_EQUALS_instead_of_BECOMES   => (replace_token, +":="),
-      err_duplicate_semicolon         => (replace_token, +""),
-      err_extra_right_parenthesis     => (replace_token, +""),
-      others                          => nothing_to_repair
+      err_obsolete_hat_name         => (replace_token, +"[ something... ]"),
+      err_EQUALS_instead_of_BECOMES => (replace_token, +":="),
+      err_duplicate_semicolon       => (replace_token, +""),
+      err_extra_right_parenthesis   => (replace_token, +""),
+      others                        => nothing_to_repair
     );
 
   procedure Error
-    (CD              : in out Co_Defs.Compiler_Data;
-     code            :        Defs.Compile_Error;
-     hint_1          :        String         := "";
-     hint_2          :        String         := "";
-     severity        :        Error_Severity := medium;
-     previous_symbol :        Boolean        := False)
+    (CD                  : in out Co_Defs.Compiler_Data;
+     code                :        Defs.Compile_Error;
+     hint_1              :        String         := "";
+     hint_2              :        String         := "";
+     severity            :        Error_Severity := medium;
+     previous_symbol     :        Boolean        := False;
+     shift_one_character :        Boolean        := False)
   is
     use Ada.Strings, Ada.Strings.Fixed, Ada.Text_IO;
     line, col_start, col_stop : Integer;
@@ -354,6 +360,10 @@ package body HAC_Sys.Errors is
       line      := CD.CUD.line_count;
       col_start := CD.syStart;
       col_stop  := CD.syEnd;
+      if shift_one_character then
+        col_start := col_start + 1;
+        col_stop  := col_stop + 1;
+      end if;
     end if;
     Show_to_comp_dump (line, col_start, col_stop, -1);
     CD.errs (code) := True;

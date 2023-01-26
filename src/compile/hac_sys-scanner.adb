@@ -24,22 +24,18 @@ package body HAC_Sys.Scanner is
     '&'    => Ampersand_Symbol,
     others => NULL_Symbol);
 
-  type CHTP is (Letter, LowCase, Number, Special, Illegal);
+  type CHTP is (Letter, Number, Special, Illegal);
 
   type Set_of_CHTP is array (CHTP) of Boolean;
 
   special_or_illegal : constant Set_of_CHTP :=
-   (Letter   |
-    LowCase  |
-    Number   => False,
-    Special  |
-    Illegal  => True);
+   (Letter  |  Number  => False,
+    Special | Illegal  => True);
 
   c128 : constant Character := Character'Val (128);
 
-  CharacterTypes : constant array (Character) of CHTP :=
-       ('A' .. 'Z' => Letter,
-        'a' .. 'z' => LowCase,
+  Character_Types : constant array (Character) of CHTP :=
+       ('A' .. 'Z' | 'a' .. 'z' => Letter,
         '0' .. '9' => Number,
         '#' |
         '+' | '-' | '*' | '/' |
@@ -336,7 +332,7 @@ package body HAC_Sys.Scanner is
         NextCh (CD);
         if CD.CUD.c = '_' then
           Error (CD, err_double_underline_not_permitted, severity => major);
-        elsif CharacterTypes (CD.CUD.c) /= Number then
+        elsif Character_Types (CD.CUD.c) /= Number then
           Error (CD, err_digit_expected, severity => major);
         end if;
       end if;
@@ -353,7 +349,7 @@ package body HAC_Sys.Scanner is
         CD.Sy := FloatCon;
         CD.RNum := HAC_Float (CD.INum);
         e := 0;
-        while CharacterTypes (CD.CUD.c) = Number loop
+        while Character_Types (CD.CUD.c) = Number loop
           e := e - 1;
           CD.RNum :=
             10.0 * CD.RNum +
@@ -380,8 +376,9 @@ package body HAC_Sys.Scanner is
       CD.INum := 0;
       CD.Sy   := IntCon;
       if skip_leading_integer then
-        --  A naughty person has put ".123" in his/her code.
-        --  An error is already emmitted at this point but we continue the scanning and parsing.
+        --  Example: a naughty person has put ".123" in his/her code.
+        --  An error is already emmitted at this point but we continue
+        --  the scanning and parsing.
         Read_Decimal_Float;
       else
         --  Scan the integer part of the number.
@@ -390,7 +387,7 @@ package body HAC_Sys.Scanner is
           K := K + 1;
           NextCh (CD);
           Skip_eventual_underscore;
-          exit when CharacterTypes (CD.CUD.c) /= Number;
+          exit when Character_Types (CD.CUD.c) /= Number;
         end loop;
         --  Integer part is read (CD.INum).
         case CD.CUD.c is
@@ -417,6 +414,13 @@ package body HAC_Sys.Scanner is
           when others =>
             null;  --  Number was an integer in base 10.
         end case;
+      end if;
+      if Character_Types (CD.CUD.c) = Letter then
+        Error
+          (CD,
+           err_scanner_space_missing_after_number,
+           severity => minor,
+           shift_one_character =>  True);
       end if;
     end Scan_Number;
 
@@ -483,7 +487,7 @@ package body HAC_Sys.Scanner is
         Skip_Blanks (CD);
 
         CD.syStart := CD.CUD.CC - 1;
-        exit Small_loop when CharacterTypes (CD.CUD.c) /= Illegal;
+        exit Small_loop when Character_Types (CD.CUD.c) /= Illegal;
         Error (CD, err_illegal_character);
         if CD.comp_dump_requested then
           Put_Line
@@ -517,7 +521,7 @@ package body HAC_Sys.Scanner is
             end if;
             NextCh (CD);
             exit when CD.CUD.c /= '_'
-                     and then special_or_illegal (CharacterTypes (CD.CUD.c));
+                     and then special_or_illegal (Character_Types (CD.CUD.c));
           end loop;
           if K > 0 and then Element (CD.Id_with_case, K) = '_' then
             Error
