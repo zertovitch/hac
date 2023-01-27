@@ -197,10 +197,10 @@ package body HAC_Sys.Scanner is
     CD.CUD.c := CD.CUD.input_line (CD.CUD.CC);
     --  Manuel : Change tabs for spaces
     if Character'Pos (CD.CUD.c) = 9 then
-      CD.CUD.c := ' '; -- IdTab for space
+      CD.CUD.c := ' ';  --  IdTab for space
     end if;
     if Character'Pos (CD.CUD.c) < Character'Pos (' ') then
-      Error (CD, err_control_character);
+      Error (CD, err_scanner_control_character);
     end if;
   end NextCh;
 
@@ -229,14 +229,17 @@ package body HAC_Sys.Scanner is
             Sign := -1;
           else
             Error
-              (CD, err_negative_exponent_for_integer_literal,
+              (CD, err_scanner_negative_exponent_for_integer_literal,
                HAC_Integer'Image (CD.INum) & ".0e- ...");
           end if;
         when others =>
           null;
       end case;
       if CD.CUD.c not in '0' .. '9' then
-        Error (CD, err_illegal_character_in_number, "; expected digit after 'E'");
+        Error
+          (CD,
+           err_scanner_illegal_character_in_number,
+           "; expected digit after 'E'");
       else
         loop
           S := 10 * S + Character'Pos (CD.CUD.c) - Character'Pos ('0');
@@ -253,7 +256,7 @@ package body HAC_Sys.Scanner is
     begin
       if K + e > EMax then
         Error
-          (CD, err_number_too_large,
+          (CD, err_scanner_number_too_large,
            Integer'Image (K) & " +" &
            Integer'Image (e) & " =" &
            Integer'Image (K + e) & " > Max =" &
@@ -322,7 +325,7 @@ package body HAC_Sys.Scanner is
         end if;
       exception
         when others =>
-          Error (CD, err_illegal_character_in_number);
+          Error (CD, err_scanner_illegal_character_in_number);
       end;
     end Read_with_Sharp;
 
@@ -331,9 +334,12 @@ package body HAC_Sys.Scanner is
       if CD.CUD.c = '_' then
         NextCh (CD);
         if CD.CUD.c = '_' then
-          Error (CD, err_double_underline_not_permitted, severity => major);
+          Error
+            (CD,
+             err_scanner_double_underline_not_permitted,
+             severity => major);
         elsif Character_Types (CD.CUD.c) /= Number then
-          Error (CD, err_digit_expected, severity => major);
+          Error (CD, err_scanner_digit_expected, severity => major);
         end if;
       end if;
     end Skip_eventual_underscore;
@@ -358,7 +364,10 @@ package body HAC_Sys.Scanner is
           Skip_eventual_underscore;
         end loop;
         if e = 0 then
-          Error (CD, err_illegal_character_in_number, "; expected digit after '.'");
+          Error
+            (CD,
+             err_scanner_illegal_character_in_number,
+             "; expected digit after '.'");
         end if;
         if CD.CUD.c = 'E' or CD.CUD.c = 'e' then
           Read_Scale (True);
@@ -395,7 +404,7 @@ package body HAC_Sys.Scanner is
             NextCh (CD);
             if K > KMax then
               Error
-                (CD, err_number_too_large,
+                (CD, err_scanner_number_too_large,
                  Integer'Image (K) & " > Max =" &
                  Integer'Image (KMax));
               CD.INum := 0;
@@ -419,8 +428,8 @@ package body HAC_Sys.Scanner is
         Error
           (CD,
            err_scanner_space_missing_after_number,
-           severity => minor,
-           shift_one_character =>  True);
+           severity            => minor,
+           shift_one_character => True);
       end if;
     end Scan_Number;
 
@@ -442,7 +451,7 @@ package body HAC_Sys.Scanner is
       --      *  9 '        (end of a line after last non-blank)
       --
       if CD.CUD.CC = CD.CUD.LL then  --  Case (9) above
-        Error (CD, err_character_zero_chars, severity => major);
+        Error (CD, err_scanner_character_zero_chars, severity => major);
       end if;
       NextCh (CD);
       C1 := CD.CUD.c;
@@ -453,13 +462,13 @@ package body HAC_Sys.Scanner is
           return;
         end if;
         --  Case (7), (8)
-        Error (CD, err_character_zero_chars, severity => major);
+        Error (CD, err_scanner_character_zero_chars, severity => major);
       end if;
       --  We peek the next character without moving.
       --  Possible since CD.CC < CD.LL .
       C2 := CD.CUD.input_line (CD.CUD.CC + 1);
       if C1 = ''' and C2 /= ''' then  --  Case (6)
-        Error (CD, err_character_zero_chars, severity => major);
+        Error (CD, err_scanner_character_zero_chars, severity => major);
       end if;
       --  Until now, case (5) to (9) are treated.
       if C2 = ''' then  --  Cases (1), (2)
@@ -488,7 +497,7 @@ package body HAC_Sys.Scanner is
 
         CD.syStart := CD.CUD.CC - 1;
         exit Small_loop when Character_Types (CD.CUD.c) /= Illegal;
-        Error (CD, err_illegal_character);
+        Error (CD, err_scanner_illegal_character);
         if CD.comp_dump_requested then
           Put_Line
            (CD.comp_dump,
@@ -514,10 +523,12 @@ package body HAC_Sys.Scanner is
               HAT.VStr_Pkg.Append (CD.Id_with_case, CD.CUD.c);
               if K > 1 and then HAT.VStr_Pkg.Slice (CD.Id_with_case, K - 1, K) = "__" then
                 Error
-                  (CD, err_double_underline_not_permitted, severity => major);
+                  (CD,
+                   err_scanner_double_underline_not_permitted,
+                   severity => major);
               end if;
             else
-              Error (CD, err_identifier_too_long);
+              Error (CD, err_scanner_identifier_too_long);
             end if;
             NextCh (CD);
             exit when CD.CUD.c /= '_'
@@ -525,7 +536,9 @@ package body HAC_Sys.Scanner is
           end loop;
           if K > 0 and then Element (CD.Id_with_case, K) = '_' then
             Error
-              (CD, err_identifier_cannot_end_with_underline, severity => major);
+              (CD,
+               err_scanner_identifier_cannot_end_with_underline,
+               severity => major);
           end if;
           --
           HAT.VStr_Pkg.Set_Unbounded_String
@@ -675,7 +688,7 @@ package body HAC_Sys.Scanner is
           end if;
 
         when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' | '#' =>
-          Error (CD, err_illegal_character);
+          Error (CD, err_scanner_illegal_character);
           if CD.comp_dump_requested then
             Put_Line (CD.comp_dump, " [ $!@\^_?%# ]");
           end if;

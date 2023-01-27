@@ -64,17 +64,17 @@ package body HAC_Sys.Errors is
         return "bounds in range must be of the same type";
       when err_IS_missing =>
         return "missing ""is""";
-      when err_number_too_large =>
+      when err_scanner_number_too_large =>
         return "number is too large: total actual exponent is " & hint_1;
-      when err_illegal_character_in_number =>
+      when err_scanner_illegal_character_in_number =>
         return "illegal character in number" & hint_1;
-      when err_negative_exponent_for_integer_literal =>
+      when err_scanner_negative_exponent_for_integer_literal =>
         return "integer literal with negative exponent; suggestion: a float with "".0"" such as" & hint_1;
       when err_incorrect_name_after_END =>
         return """end " & hint_1 & ";"" expected here";
       when err_bad_type_for_a_case_statement =>
         return "bad type for a case statement";
-      when err_illegal_character =>
+      when err_scanner_illegal_character =>
         return "illegal character";
       when err_illegal_constant_or_constant_identifier =>
         return "illegal constant or constant identifier";
@@ -102,7 +102,7 @@ package body HAC_Sys.Errors is
         return "parameter types do not match: " & hint_1;
       when err_variable_missing =>
         return "missing a variable";
-      when err_character_zero_chars =>
+      when err_scanner_character_zero_chars =>
         return "a character literal is of the form 'x'; " &
                "strings are delimited by double quote character";
       when err_number_of_parameters_do_not_match =>
@@ -145,7 +145,7 @@ package body HAC_Sys.Errors is
         return "expected ""("", or: name, number, string, ... (RM 4.4 (7), 4.5(8))";
       when err_RETURN_missing =>
         return "missing ""return""";
-      when err_control_character =>
+      when err_scanner_control_character =>
         return "control character present in source ";
       when err_RECORD_missing =>
         return "missing ""record""";
@@ -189,13 +189,13 @@ package body HAC_Sys.Errors is
         return "found ""="", should be "":=""";
       when err_numeric_constant_expected =>
         return "numeric constant expected";
-      when err_identifier_too_long =>
+      when err_scanner_identifier_too_long =>
         return
           "identifier is too long; max =" &
           Integer'Image (max_identifier_length) & " characters";
-      when err_identifier_cannot_end_with_underline =>
+      when err_scanner_identifier_cannot_end_with_underline =>
         return "identifier cannot end with underline";
-      when err_double_underline_not_permitted =>
+      when err_scanner_double_underline_not_permitted =>
         return "double underline not permitted";
       when err_statement_expected =>
         return "statement expected, can be ""null""";
@@ -218,7 +218,7 @@ package body HAC_Sys.Errors is
         return "operator (" & hint_1 & ") is not defined for those operand types: " & hint_2;
       when err_no_null_functions =>
         return "a function cannot be null; only a procedure can";
-      when err_digit_expected =>
+      when err_scanner_digit_expected =>
         return "digit expected";
       when err_cannot_modify_constant_or_in_parameter =>
         return "cannot modify a constant or a ""in"" parameter" & hint_1;
