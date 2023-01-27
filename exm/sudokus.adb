@@ -436,9 +436,7 @@ package body Sudokus is
     end loop;
   end Show_Detailed_Possibilities;
 
-  procedure Convert_Data (s : in Sudostrings; data : out Grid) is
-
-    full, empty : Sudoset;
+  procedure Convert_Data (s : in Sudostrings; pack : in out Sudopack) is
 
     use HAT;
 
@@ -449,12 +447,12 @@ package body Sudokus is
         c := Element (s, j);
         case c is
           when ' ' =>
-            data (i, j).solved := False;
-            data (i, j).set := full;
+            pack.u (i, j).solved := False;
+            pack.u (i, j).set := pack.full;
           when '1' .. '9' =>
-            data (i, j).solved := True;
-            data (i, j).set := empty;
-            data (i, j).value  := Ord (c) - Ord ('0');
+            pack.u (i, j).solved := True;
+            pack.u (i, j).set := pack.empty;
+            pack.u (i, j).value := Ord (c) - Ord ('0');
           when others =>
             Put_Line ("Data Error!");  --  !! Full Ada: raise some exception
         end case;
@@ -462,13 +460,18 @@ package body Sudokus is
     end Convert_String;
 
   begin
-    for num in Sudigit loop
-      full (num) := True;
-      empty (num) := False;
-    end loop;
+    Initialize (pack);
     for i in Sudigit loop
       Convert_String (i, s (i));
     end loop;
   end Convert_Data;
+
+  procedure Initialize (pack : out Sudopack) is
+  begin
+    for num in Sudigit loop
+      pack.full (num) := True;
+      pack.empty (num) := False;
+    end loop;
+  end Initialize;
 
 end Sudokus;

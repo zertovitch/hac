@@ -86,6 +86,14 @@ package Sudokus is
 
   type Sudostrings is array (Sudigit) of HAT.VString;
 
-  procedure Convert_Data (s : in Sudostrings; data : out Grid);
+  type Sudopack is record
+    u     : Grid;
+    full  : Sudoset;
+    empty : Sudoset;
+  end record;
+
+  procedure Initialize (pack : out Sudopack);
+
+  procedure Convert_Data (s : in Sudostrings; pack : in out Sudopack);
 
 end Sudokus;

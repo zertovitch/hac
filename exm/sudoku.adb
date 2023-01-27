@@ -8,7 +8,7 @@ procedure Sudoku is
   procedure Solve (s : Sudostrings; name : HAT.VString; verbosity_level : Natural) is
     use HAT;
 
-    u : Grid;
+    p : Sudopack;
 
     stalling : Boolean := False;
 
@@ -16,21 +16,21 @@ procedure Sudoku is
       naked_singles_found, hidden_single_found,
       locked_cells_outside_boxes, locked_cells_inside_boxes : Natural := 0;
     begin
-      Handle_Naked_Singles (u, naked_singles_found);
+      Handle_Naked_Singles (p.u, naked_singles_found);
       --  We search more complicated possibilities,
       --  only when none for the less complicated was found.
       if naked_singles_found = 0 then
-        Handle_Hidden_Singles (u, hidden_single_found);
+        Handle_Hidden_Singles (p.u, hidden_single_found);
         if hidden_single_found = 0 then
-          Handle_Locked_Cells_Outside_Boxes (u, locked_cells_outside_boxes);
+          Handle_Locked_Cells_Outside_Boxes (p.u, locked_cells_outside_boxes);
           if locked_cells_outside_boxes = 0 then
-            Handle_Locked_Cells_Inside_Boxes (u, locked_cells_inside_boxes);
+            Handle_Locked_Cells_Inside_Boxes (p.u, locked_cells_inside_boxes);
           end if;
         end if;
       end if;
       if verbosity_level > 0 then
-        if verbosity_level > 1 or else Is_Solved (u) then
-          Show (u, +"After round " & round & " for " & name);
+        if verbosity_level > 1 or else Is_Solved (p.u) then
+          Show (p.u, +"After round " & round & " for " & name);
         end if;
         if verbosity_level > 1 then
           if naked_singles_found + hidden_single_found +
@@ -57,23 +57,23 @@ procedure Sudoku is
     end Do_Round;
 
   begin
-    Convert_Data (s, u);
-    Adapt_All_Sets (u);
+    Convert_Data (s, p);
+    Adapt_All_Sets (p.u);
     New_Line;
-    Show (u, ">>>>> Initial board for: " & name);
-    if not Is_Valid (u) then
+    Show (p.u, ">>>>> Initial board for: " & name);
+    if not Is_Valid (p.u) then
       Put_Line ("Initial board is invalid!");
       return;
     end if;
 
     for round in 1 .. Sudigit'Last * Sudigit'Last loop
       Do_Round (round);
-      exit when stalling or else Is_Solved (u);
+      exit when stalling or else Is_Solved (p.u);
     end loop;
     if stalling then
-      Show_Detailed_Possibilities (u);
+      Show_Detailed_Possibilities (p.u);
     end if;
-    if not Is_Valid (u) then
+    if not Is_Valid (p.u) then
       Put_Line ("Solution or current state is invalid!");
       return;
     end if;
