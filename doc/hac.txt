@@ -81,7 +81,8 @@ Documentation
 =============
 
    hac.txt                             this file
-   HAC Ada Compiler User Manual.pdf    an 80+ pages user manual
+   HAC Ada Compiler User Manual.pdf    an 80+ pages user manual; source here:
+                                         https://github.com/sowebio/hac-doc
    hac_work.xls                        Excel workbook containing, notably,
                                          a bug list and a "to-do" list and
                                          a "done" (history) list
