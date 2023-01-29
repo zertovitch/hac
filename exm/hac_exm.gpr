@@ -21,6 +21,7 @@ project HAC_Exm is
      "anti_primes.adb",
      "attributes.adb",
      "barnes.adb",                 --  John Barnes' Ada-Europe 2022 puzzle
+     "binomials.adb",
      "bwt.adb",
      "console_io.adb",
      "covid_19_s.adb",
