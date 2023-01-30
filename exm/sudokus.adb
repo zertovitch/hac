@@ -364,16 +364,91 @@ package body Sudokus is
 
   procedure Handle_Multiples_Single_Cell
     (u     : in out Grid;
-     i, j  :        Sudigit;
+     i, j  : in     Sudigit;
+     multi : in     Sudigit;
      h     : in out Sudo_Help;
      found : in out Natural)
   is
+    base_i, base_j : Sudigit;
+    procedure Check_Sequence (s : Sequence_Type) is
+      --  Example: we check if the triple {2, 5, 6}
+      --  appears only in three cells in a house,
+      --  possibly with other digits. In that case,
+      --  the said other digits can be removed as
+      --  possibilities in those three cells.
+      count_full, count_partial_or_full : Natural;
+      ok_full, ok_partial_or_full : Boolean;
+      has_multiple : Sudoset;
+      mask : Sudoset := h.empty;
+      is_set, is_set_new : Boolean;
+      something_removed : Boolean;
+    begin
+      for seq in 1 .. multi loop
+        mask (s (seq)) := True;
+      end loop;
+      --  Check row
+      count_full := 0;
+      count_partial_or_full := 0;
+      has_multiple := h.empty;
+      for jj in Sudigit loop
+        ok_full := True;
+        ok_partial_or_full := False;
+        for seq in 1 .. multi loop
+          is_set := u (i, jj).set (s (seq));
+          ok_full := ok_full and is_set;
+          ok_partial_or_full := ok_partial_or_full or is_set;
+        end loop;
+        if ok_full then
+          count_full := count_full + 1;
+          has_multiple (jj) := True;
+        end if;
+        if ok_partial_or_full then
+          count_partial_or_full := count_partial_or_full + 1;
+        end if;
+      end loop;
+      if count_full = multi  --  Example: double candidate appears twice;
+        and then count_partial_or_full = multi  --  digits of the double don't appear elsewhere.
+      then
+        for jj in Sudigit loop
+          if has_multiple (jj) then
+            something_removed := False;
+            --  Here we keep only the digits of the multiple
+            --  and remove the other digits.
+            for d in Sudigit loop
+              is_set := u (i, jj).set (d);
+              is_set_new := is_set and mask (d);
+              u (i, jj).set (d) := is_set_new;
+              if is_set_new /= is_set then
+                something_removed := True;
+              end if;
+            end loop;
+            if something_removed then
+              found := found + 1;
+              --  if i = 1 then
+              --    HAT.Put ("Found double at pos ");
+              --    HAT.Put (i, 2);
+              --    HAT.Put (jj, 2);
+              --    HAT.Put (": digits ");
+              --    for seq in 1 .. multi loop
+              --      HAT.Put (s (seq), 2);
+              --    end loop;
+              --    HAT.New_Line;
+              --  end if;
+            end if;
+          end if;
+        end loop;
+      end if;
+    end Check_Sequence;
   begin
-    null;
+    Find_Box_Base (i, j, base_i, base_j);
+    for combi in 1 .. h.max_combi (multi) loop
+      Check_Sequence (h.table (multi, combi));
+    end loop;
   end Handle_Multiples_Single_Cell;
-  
+
   procedure Handle_Multiples
     (u     : in out Grid;
+     multi : in     Sudigit;
      h     : in out Sudo_Help;
      found :    out Natural)
   is
@@ -382,7 +457,7 @@ package body Sudokus is
     for i in Sudigit loop
       for j in Sudigit loop
         if not u (i, j).solved then
-          Handle_Multiples_Single_Cell (u, i, j, h, found);
+          Handle_Multiples_Single_Cell (u, i, j, multi, h, found);
         end if;
       end loop;
     end loop;
@@ -396,6 +471,7 @@ package body Sudokus is
       when hidden_single           => return +"hidden single(s)";
       when locked_cell_outside_box => return +"locked cell(s), outside boxe(s)";
       when locked_cell_inside_box  => return +"locked cell(s), inside boxe(s)";
+      when double                  => return +"double(s)";
     end case;
   end Technique_Image;
 
@@ -440,6 +516,10 @@ package body Sudokus is
         return;
       end if;
       Handle_Locked_Cells_Inside_Boxes (pack.u, found (locked_cell_inside_box));
+      if found (locked_cell_inside_box) > 0 then
+        return;
+      end if;
+      Handle_Multiples (pack.u, 2, help, found (double));
     end Handle_Techniques;
 
     use HAT;
@@ -516,13 +596,12 @@ package body Sudokus is
     end if;
     if verbosity_level = 1 then
       if pack.stalling then
-        Put ("** stalling **, algorithm not smart enough!");
+        Put_Line ("** stalling **, algorithm not smart enough!");
       elsif Is_Solved (pack.u) then
-        Put ("solved and checked.");
+        Put_Line ("solved and checked.");
       else
-        Put ("Neither solved nor unsolved ?!");
+        Put_Line ("Neither solved nor unsolved ?!");
       end if;
-      Put_Line (" Increase verbosity_level for details.");
     end if;
   end Solve;
 
@@ -649,7 +728,7 @@ package body Sudokus is
       help.max_combi (num) := 0;
     end loop;
     --
-    for i in 1 .. 510 loop
+    for i in 1 .. (2 ** Sudigit'Last) - 1 loop
       i_shifted := i;
       bits_1 := 0;
       for d in Sudigit loop
@@ -676,20 +755,22 @@ package body Sudokus is
     --  Some table outputs:
     --
     --  HAT.Put_Line ("Combinations:");
-    --  for d in 1 .. 8 loop
+    --  for d in 1 .. Sudigit'Last - 1 loop
     --    HAT.Put ("For");
     --    HAT.Put (d, 2);
     --    HAT.Put_Line (help.max_combi (d));  --  = Binomial (9, d)
     --  end loop;
+    --
     --  HAT.Put_Line ("All doubles:");
-    --  for i in 1 .. 36 loop
+    --  for i in 1 .. help.max_combi (2) loop
     --    for j in 1 .. 2 loop
     --      HAT.Put (help.table (2, i)(j), 2);
     --    end loop;
     --    HAT.New_Line;
     --  end loop;
+    --
     --  HAT.Put_Line ("All triples:");
-    --  for i in 1 .. 84 loop
+    --  for i in 1 .. help.max_combi (3) loop
     --    for j in 1 .. 3 loop
     --      HAT.Put (help.table (3, i)(j), 2);
     --    end loop;

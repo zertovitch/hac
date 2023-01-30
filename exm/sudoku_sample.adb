@@ -1,7 +1,7 @@
 with Sudokus;
 with HAT;
 
-procedure Sudoku is
+procedure Sudoku_Sample is
 
   use Sudokus;
 
@@ -19,6 +19,9 @@ procedure Sudoku is
   use HAT;
 
 begin
+  Put_Line ("Increase verbosity_level for getting more details.");
+  New_Line;
+
   --  Spotting only naked singles is sufficient on this one.
   easy_1 (1) := +"1   83 57";
   easy_1 (2) := +"9 27     ";
@@ -44,6 +47,7 @@ begin
   easy_2 (9) := +"9 4  7513";
   Solve_from_Strings (easy_2, +"Easy 2      ", 1);
 
+  --  One round needs to spot doubles on rows.
   less_easy_1 (1) := +"7 8  4  3";
   less_easy_1 (2) := +"   8   9 ";
   less_easy_1 (3) := +"   7  8 2";
@@ -56,6 +60,8 @@ begin
   Solve_from_Strings (less_easy_1, +"Less easy 1a", 1);
 
   --  Same but filled a bit more...
+  --  No multiple spotting is needed for
+  --  solving it.
   less_easy_1 (1) := +"7 8  4 53";
   Solve_from_Strings (less_easy_1, +"Less easy 1b", 1);
 
@@ -71,4 +77,4 @@ begin
 
   --
   Solve_from_Strings (less_easy_2, +"Less easy 2 ", 1);
-end Sudoku;
+end Sudoku_Sample;

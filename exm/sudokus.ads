@@ -122,12 +122,14 @@ package Sudokus is
 
   procedure Handle_Multiples_Single_Cell
     (u     : in out Grid;
-     i, j  :        Sudigit;
+     i, j  : in     Sudigit;
+     multi : in     Sudigit;
      h     : in out Sudo_Help;
      found : in out Natural);
-  
+
   procedure Handle_Multiples
     (u     : in out Grid;
+     multi : in     Sudigit;
      h     : in out Sudo_Help;
      found :    out Natural);
 
@@ -139,7 +141,8 @@ package Sudokus is
     (naked_single,
      hidden_single,
      locked_cell_outside_box,
-     locked_cell_inside_box);
+     locked_cell_inside_box,
+     double);
 
   function Technique_Image (t : Resolution_Technique) return HAT.VString;
 
