@@ -362,6 +362,170 @@ package body Sudokus is
     end loop;
   end Handle_Locked_Cells_Inside_Boxes;
 
+  procedure Handle_Multiples_Single_Cell
+    (u     : in out Grid;
+     i, j  :        Sudigit;
+     h     : in out Sudo_Help;
+     found : in out Natural)
+  is
+  begin
+    null;
+  end Handle_Multiples_Single_Cell;
+  
+  procedure Handle_Multiples
+    (u     : in out Grid;
+     h     : in out Sudo_Help;
+     found :    out Natural)
+  is
+  begin
+    found := 0;
+    for i in Sudigit loop
+      for j in Sudigit loop
+        if not u (i, j).solved then
+          Handle_Multiples_Single_Cell (u, i, j, h, found);
+        end if;
+      end loop;
+    end loop;
+  end Handle_Multiples;
+
+  function Technique_Image (t : Resolution_Technique) return HAT.VString is
+    use HAT;
+  begin
+    case t is
+      when naked_single            => return +"naked single(s)";
+      when hidden_single           => return +"hidden single(s)";
+      when locked_cell_outside_box => return +"locked cell(s), outside boxe(s)";
+      when locked_cell_inside_box  => return +"locked cell(s), inside boxe(s)";
+    end case;
+  end Technique_Image;
+
+  procedure Zero (count : out Technique_Count) is
+  begin
+    for t in Resolution_Technique loop
+      count (t) := 0;
+    end loop;
+  end Zero;
+
+  function Sum (count : Technique_Count) return Natural is
+    s : Natural := 0;
+  begin
+    for t in Resolution_Technique loop
+      s := s + count (t);
+    end loop;
+    return s;
+  end Sum;
+
+  procedure Resolution_Round
+    (pack            : in out Sudo_Pack;
+     help            : in out Sudo_Help;
+     title           : in     HAT.VString;
+     verbosity_level : in     Natural)
+  is
+    found : Technique_Count;
+
+    procedure Handle_Techniques is
+    begin
+      Handle_Naked_Singles (pack.u, found (naked_single));
+      if found (naked_single) > 0 then
+        return;
+      end if;
+      --  We search more complicated possibilities,
+      --  only when none for the less complicated was found.
+      Handle_Hidden_Singles (pack.u, found (hidden_single));
+      if found (hidden_single) > 0 then
+        return;
+      end if;
+      Handle_Locked_Cells_Outside_Boxes (pack.u, found (locked_cell_outside_box));
+      if found (locked_cell_outside_box) > 0 then
+        return;
+      end if;
+      Handle_Locked_Cells_Inside_Boxes (pack.u, found (locked_cell_inside_box));
+    end Handle_Techniques;
+
+    use HAT;
+
+  begin
+    Zero (found);
+    Handle_Techniques;
+    pack.stalling := Sum (found) = 0;
+    if verbosity_level > 1 then
+      if pack.stalling then
+        Put_Line ("Stalling. Search abandoned.");
+        if verbosity_level > 2 then
+          Show_Detailed_Possibilities (pack.u);
+        end if;
+      end if;
+      if verbosity_level > 2 or else Is_Solved (pack.u) then
+        Show (pack.u, title);
+      end if;
+      if verbosity_level > 2 then
+        for t in Resolution_Technique loop
+          if found (t) > 0 then
+            Put_Line (+"Found: " & found (t) & ' ' & Technique_Image (t));
+          end if;
+        end loop;
+        New_Line;
+      end if;
+    end if;
+    for t in Resolution_Technique loop
+      pack.total (t) := pack.total (t) + found (t);
+    end loop;
+  end Resolution_Round;
+
+  procedure Solve
+    (pack            : in out Sudo_Pack;
+     help            : in out Sudo_Help;
+     name            : in     HAT.VString;
+     verbosity_level : in     Natural)
+  is
+    use HAT;
+  begin
+    Adapt_All_Sets (pack.u);
+    case verbosity_level is
+      when 0 =>
+        null;  --  Completely silent, except for errors.
+      when 1 =>
+        Put ("Puzzle: " & name & " - ");
+      when others =>
+        New_Line;
+        Show (pack.u, ">>>>> Initial board for: " & name);
+    end case;
+    if not Is_Valid (pack.u) then
+      Put_Line ("Initial board is invalid!");
+      return;
+    end if;
+    --
+    for round in 1 .. Sudigit'Last * Sudigit'Last loop
+      Resolution_Round
+        (pack, help, +"After round " & round & " for " & name, verbosity_level);
+      exit when pack.stalling or else Is_Solved (pack.u);
+    end loop;
+    --
+    if verbosity_level > 2 then
+      Put_Line ("Totals of techniques used:");
+      for t in Resolution_Technique loop
+        if pack.total (t) > 0 then
+          Put_Line (+"   found: " & pack.total (t) & ' ' & Technique_Image (t));
+        end if;
+      end loop;
+      New_Line;
+    end if;
+    if not Is_Valid (pack.u) then
+      Put_Line ("Solution or current state is invalid!");
+      return;
+    end if;
+    if verbosity_level = 1 then
+      if pack.stalling then
+        Put ("** stalling **, algorithm not smart enough!");
+      elsif Is_Solved (pack.u) then
+        Put ("solved and checked.");
+      else
+        Put ("Neither solved nor unsolved ?!");
+      end if;
+      Put_Line (" Increase verbosity_level for details.");
+    end if;
+  end Solve;
+
   procedure Show (u : Grid; title : HAT.VString) is
     min_poss : Natural := Natural'Last;
     poss : Natural;
@@ -436,22 +600,24 @@ package body Sudokus is
     end loop;
   end Show_Detailed_Possibilities;
 
-  procedure Convert_Data (s : in Sudostrings; pack : in out Sudopack) is
-
-    use HAT;
-
-    procedure Convert_String (i : Sudigit; s : VString) is
+  procedure Convert_Data
+    (s    : in     Sudo_Strings;
+     pack : in out Sudo_Pack;
+     help : in out Sudo_Help)
+  is
+    procedure Convert_String (i : Sudigit; s : HAT.VString) is
       c : Character;
+      use HAT;
     begin
       for j in Sudigit loop
         c := Element (s, j);
         case c is
           when ' ' =>
             pack.u (i, j).solved := False;
-            pack.u (i, j).set := pack.full;
+            pack.u (i, j).set := help.full;
           when '1' .. '9' =>
             pack.u (i, j).solved := True;
-            pack.u (i, j).set := pack.empty;
+            pack.u (i, j).set := help.empty;
             pack.u (i, j).value := Ord (c) - Ord ('0');
           when others =>
             Put_Line ("Data Error!");  --  !! Full Ada: raise some exception
@@ -461,17 +627,74 @@ package body Sudokus is
 
   begin
     Initialize (pack);
+    Initialize_Helper (help);
     for i in Sudigit loop
       Convert_String (i, s (i));
     end loop;
   end Convert_Data;
 
-  procedure Initialize (pack : out Sudopack) is
+  procedure Initialize (pack : out Sudo_Pack) is
+  begin
+    Zero (pack.total);
+    pack.stalling := False;
+  end Initialize;
+
+  procedure Initialize_Helper (help : out Sudo_Help) is
+    i_shifted, bits_1 : Natural;
+    comb_index : Positive;
   begin
     for num in Sudigit loop
-      pack.full (num) := True;
-      pack.empty (num) := False;
+      help.full (num) := True;
+      help.empty (num) := False;
+      help.max_combi (num) := 0;
     end loop;
-  end Initialize;
+    --
+    for i in 1 .. 510 loop
+      i_shifted := i;
+      bits_1 := 0;
+      for d in Sudigit loop
+        if i_shifted mod 2 = 1 then
+          bits_1 := bits_1 + 1;
+        end if;
+        i_shifted := i_shifted / 2;
+      end loop;
+      --  For bits_1 = 3 (say), we have found a new
+      --  combination with 3 digits which correspond to
+      --  then position of the bit in the binary
+      --  representation of i.
+      help.max_combi (bits_1) := help.max_combi (bits_1) + 1;
+      i_shifted := i;
+      comb_index := 1;
+      for d in Sudigit loop
+        if i_shifted mod 2 = 1 then
+          help.table (bits_1, help.max_combi (bits_1))(comb_index) := d;
+          comb_index := comb_index + 1;
+        end if;
+        i_shifted := i_shifted / 2;
+      end loop;
+    end loop;
+    --  Some table outputs:
+    --
+    --  HAT.Put_Line ("Combinations:");
+    --  for d in 1 .. 8 loop
+    --    HAT.Put ("For");
+    --    HAT.Put (d, 2);
+    --    HAT.Put_Line (help.max_combi (d));  --  = Binomial (9, d)
+    --  end loop;
+    --  HAT.Put_Line ("All doubles:");
+    --  for i in 1 .. 36 loop
+    --    for j in 1 .. 2 loop
+    --      HAT.Put (help.table (2, i)(j), 2);
+    --    end loop;
+    --    HAT.New_Line;
+    --  end loop;
+    --  HAT.Put_Line ("All triples:");
+    --  for i in 1 .. 84 loop
+    --    for j in 1 .. 3 loop
+    --      HAT.Put (help.table (3, i)(j), 2);
+    --    end loop;
+    --    HAT.New_Line;
+    --  end loop;
+  end Initialize_Helper;
 
 end Sudokus;
