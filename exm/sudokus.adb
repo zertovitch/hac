@@ -151,90 +151,85 @@ package body Sudokus is
   --  Singles  --
   ---------------
 
-  procedure Handle_Naked_Single
-    (u : in out Grid; i, j : Sudigit; found : in out Natural) is
-  begin
-    if Count (u (i, j).set) = 1 then
-      found := found + 1;
-      for num in Sudigit loop
-        if u (i, j).set (num) then
-          Mark_Solution (u, i, j, num);
-          exit;
-        end if;
-      end loop;
-    end if;
-  end Handle_Naked_Single;
-
   procedure Handle_Naked_Singles (u : in out Grid; found : out Natural) is
+    procedure Handle_Naked_Single (i, j : Sudigit) is
+    begin
+      if Count (u (i, j).set) = 1 then
+        found := found + 1;
+        for num in Sudigit loop
+          if u (i, j).set (num) then
+            Mark_Solution (u, i, j, num);
+            exit;
+          end if;
+        end loop;
+      end if;
+    end Handle_Naked_Single;
   begin
     found := 0;
     for i in Sudigit loop
       for j in Sudigit loop
         if not u (i, j).solved then
-          Handle_Naked_Single (u, i, j, found);
+          Handle_Naked_Single (i, j);
         end if;
       end loop;
     end loop;
   end Handle_Naked_Singles;
 
-  procedure Handle_Hidden_Single
-    (u : in out Grid; i, j : Sudigit; found : in out Natural)
-  is
-    base_i, base_j : Sudigit;
-    ok : Boolean;
-  begin
-    Find_Box_Base (i, j, base_i, base_j);
-    for num in Sudigit loop
-      if u (i, j).set (num) then
-        --  Check row:
-        ok := True;
-        for jj in Sudigit loop
-          if jj /= j then
-            --  Check that the digit is NOT possible elsewhere on the row.
-            ok := ok and not u (i, jj).set (num);
-            exit when not ok;
-          end if;
-        end loop;
-        if not ok then
-          --  Check column:
+  procedure Handle_Hidden_Singles (u : in out Grid; found : out Natural) is
+    procedure Handle_Hidden_Single (i, j : Sudigit) is
+      base_i, base_j : Sudigit;
+      ok : Boolean;
+    begin
+      Find_Box_Base (i, j, base_i, base_j);
+      for num in Sudigit loop
+        if u (i, j).set (num) then
+          --  Check row:
           ok := True;
-          for ii in Sudigit loop
-            if ii /= i then
-              --  Check that the digit is NOT possible elsewhere on the column.
-              ok := ok and not u (ii, j).set (num);
+          for jj in Sudigit loop
+            if jj /= j then
+              --  Check that the digit is NOT possible elsewhere on the row.
+              ok := ok and not u (i, jj).set (num);
               exit when not ok;
             end if;
           end loop;
-        end if;
-        if not ok then
-          --  Check box:
-          ok := True;
-          for ii in base_i .. base_i + 2 loop
-            for jj in base_j .. base_j + 2 loop
-              if ii /= i or else j /= jj then
-                --  Check that the digit is NOT possible elsewhere in the box.
-                ok := ok and not u (ii, jj).set (num);
+          if not ok then
+            --  Check column:
+            ok := True;
+            for ii in Sudigit loop
+              if ii /= i then
+                --  Check that the digit is NOT possible elsewhere on the column.
+                ok := ok and not u (ii, j).set (num);
                 exit when not ok;
               end if;
             end loop;
-          end loop;
+          end if;
+          if not ok then
+            --  Check box:
+            ok := True;
+            for ii in base_i .. base_i + 2 loop
+              for jj in base_j .. base_j + 2 loop
+                if ii /= i or else j /= jj then
+                  --  Check that the digit is NOT possible elsewhere in the box.
+                  ok := ok and not u (ii, jj).set (num);
+                  exit when not ok;
+                end if;
+              end loop;
+            end loop;
+          end if;
+          if ok then
+            found := found + 1;
+            Mark_Solution (u, i, j, num);
+            exit;
+          end if;
         end if;
-        if ok then
-          found := found + 1;
-          Mark_Solution (u, i, j, num);
-          exit;
-        end if;
-      end if;
-    end loop;
-  end Handle_Hidden_Single;
-
-  procedure Handle_Hidden_Singles (u : in out Grid; found : out Natural) is
+      end loop;
+    end Handle_Hidden_Single;
   begin
     found := 0;
     for i in Sudigit loop
       for j in Sudigit loop
         if not u (i, j).solved then
-          Handle_Hidden_Single (u, i, j, found);
+          Handle_Hidden_Single (i, j);
         end if;
       end loop;
     end loop;
@@ -244,224 +239,338 @@ package body Sudokus is
   --  Locked cells  --
   --------------------
 
-  procedure Handle_Locked_Cells_Outside_A_Box
-    (u : in out Grid; i, j : Sudigit; found : in out Natural)
+  procedure Handle_Locked_Cells_Outside_Boxes
+    (u : in out Grid; found : out Natural)
   is
-    base_i, base_j : Sudigit;
-    ok_row, ok_col : Boolean;
-  begin
-    Find_Box_Base (i, j, base_i, base_j);
-    for num in Sudigit loop
-      if u (i, j).set (num) then
-        --  Check if `num` is only on a row / column within its box:
-        ok_row := True;
-        ok_col := True;
-        for ii in base_i .. base_i + 2 loop
-          for jj in base_j .. base_j + 2 loop
-            if u (ii, jj).set (num) then
-              ok_col := ok_col and jj = j;
-              ok_row := ok_row and ii = i;
-            end if;
+    procedure Handle_Locked_Cells_Outside_A_Box (i, j : Sudigit) is
+      base_i, base_j : Sudigit;
+      ok_row, ok_col : Boolean;
+    begin
+      Find_Box_Base (i, j, base_i, base_j);
+      for num in Sudigit loop
+        if u (i, j).set (num) then
+          --  Check if `num` is only on a row / column within its box:
+          ok_row := True;
+          ok_col := True;
+          for ii in base_i .. base_i + 2 loop
+            for jj in base_j .. base_j + 2 loop
+              if u (ii, jj).set (num) then
+                ok_col := ok_col and jj = j;
+                ok_row := ok_row and ii = i;
+              end if;
+            end loop;
           end loop;
-        end loop;
-        --  We have found that `num` is possible only on a row within the box.
-        --  Then, it cannot be on that row outside the box.
-        if ok_row then
-          for jj in Sudigit loop
-            if jj not in base_j .. base_j + 2 and then u (i, jj).set (num) then
-              found := found + 1;
-              u (i, jj).set (num) := False;
-            end if;
-          end loop;
+          --  We have found that `num` is possible only on a row within the box.
+          --  Then, it cannot be on that row outside the box.
+          if ok_row then
+            for jj in Sudigit loop
+              if jj not in base_j .. base_j + 2 and then u (i, jj).set (num) then
+                found := found + 1;
+                u (i, jj).set (num) := False;
+              end if;
+            end loop;
+          end if;
+          --  We have found that `num` is possible only on a column within the box.
+          --  Then, it cannot be on that column outside the box.
+          if ok_col then
+            for ii in Sudigit loop
+              if ii not in base_i .. base_i + 2 and then u (ii, j).set (num)  then
+                found := found + 1;
+                u (ii, j).set (num) := False;
+              end if;
+            end loop;
+          end if;
         end if;
-        --  We have found that `num` is possible only on a column within the box.
-        --  Then, it cannot be on that column outside the box.
-        if ok_col then
-          for ii in Sudigit loop
-            if ii not in base_i .. base_i + 2 and then u (ii, j).set (num)  then
-              found := found + 1;
-              u (ii, j).set (num) := False;
-            end if;
-          end loop;
-        end if;
-      end if;
-    end loop;
-  end Handle_Locked_Cells_Outside_A_Box;
-
-  procedure Handle_Locked_Cells_Outside_Boxes (u : in out Grid; found : out Natural) is
+      end loop;
+    end Handle_Locked_Cells_Outside_A_Box;
   begin
     found := 0;
     for i in Sudigit loop
       for j in Sudigit loop
         if not u (i, j).solved then
-          Handle_Locked_Cells_Outside_A_Box (u, i, j, found);
+          Handle_Locked_Cells_Outside_A_Box (i, j);
         end if;
       end loop;
     end loop;
   end Handle_Locked_Cells_Outside_Boxes;
 
-  procedure Handle_Locked_Cells_Inside_A_Box
-    (u : in out Grid; i, j : Sudigit; found : in out Natural)
+  procedure Handle_Locked_Cells_Inside_Boxes
+    (u : in out Grid; found : out Natural)
   is
-    base_i, base_j : Sudigit;
-    ok_row, ok_col : Boolean;
-  begin
-    Find_Box_Base (i, j, base_i, base_j);
-    for num in Sudigit loop
-      if u (i, j).set (num) then
-        --  Check if `num` is only on a row / column within its box:
-        ok_row := True;
-        for jj in Sudigit loop
-          if jj not in base_j .. base_j + 2 then
-            --  Row i, but outside the box
-            if u (i, jj).set (num) then
-              ok_row := False;
-              exit;
-            end if;
-          end if;
-        end loop;
-        ok_col := True;
-        for ii in Sudigit loop
-          if ii not in base_i .. base_i + 2 then
-            --  Column j, but outside the box
-            if u (ii, j).set (num) then
-              ok_col := False;
-              exit;
-            end if;
-          end if;
-        end loop;
-        for ii in base_i .. base_i + 2 loop
-          for jj in base_j .. base_j + 2 loop
-            --  We have found that on the whole row, `num` is possible only within the box.
-            --  Then, it cannot be on another row inside the box.
-            if ok_row and then i /= ii and then u (ii, jj).set (num) then
-              found := found + 1;
-              u (ii, jj).set (num) := False;
-            end if;
-            --  We have found that on the whole column, `num` is possible only within the box.
-            --  Then, it cannot be on another column inside the box.
-            if ok_col and then j /= jj and then u (ii, jj).set (num) then
-              found := found + 1;
-              u (ii, jj).set (num) := False;
+    procedure Handle_Locked_Cells_Inside_A_Box (i, j : Sudigit) is
+      base_i, base_j : Sudigit;
+      ok_row, ok_col : Boolean;
+    begin
+      Find_Box_Base (i, j, base_i, base_j);
+      for num in Sudigit loop
+        if u (i, j).set (num) then
+          --  Check if `num` is only on a row / column within its box:
+          ok_row := True;
+          for jj in Sudigit loop
+            if jj not in base_j .. base_j + 2 then
+              --  Row i, but outside the box
+              if u (i, jj).set (num) then
+                ok_row := False;
+                exit;
+              end if;
             end if;
           end loop;
-        end loop;
-      end if;
-    end loop;
-  end Handle_Locked_Cells_Inside_A_Box;
-
-  procedure Handle_Locked_Cells_Inside_Boxes (u : in out Grid; found : out Natural) is
+          ok_col := True;
+          for ii in Sudigit loop
+            if ii not in base_i .. base_i + 2 then
+              --  Column j, but outside the box
+              if u (ii, j).set (num) then
+                ok_col := False;
+                exit;
+              end if;
+            end if;
+          end loop;
+          for ii in base_i .. base_i + 2 loop
+            for jj in base_j .. base_j + 2 loop
+              --  We have found that on the whole row, `num` is possible only within the box.
+              --  Then, it cannot be on another row inside the box.
+              if ok_row and then i /= ii and then u (ii, jj).set (num) then
+                found := found + 1;
+                u (ii, jj).set (num) := False;
+              end if;
+              --  We have found that on the whole column, `num` is possible only within the box.
+              --  Then, it cannot be on another column inside the box.
+              if ok_col and then j /= jj and then u (ii, jj).set (num) then
+                found := found + 1;
+                u (ii, jj).set (num) := False;
+              end if;
+            end loop;
+          end loop;
+        end if;
+      end loop;
+    end Handle_Locked_Cells_Inside_A_Box;
   begin
     found := 0;
     for i in Sudigit loop
       for j in Sudigit loop
         if not u (i, j).solved then
-          Handle_Locked_Cells_Inside_A_Box (u, i, j, found);
+          Handle_Locked_Cells_Inside_A_Box (i, j);
         end if;
       end loop;
     end loop;
   end Handle_Locked_Cells_Inside_Boxes;
 
-  procedure Handle_Multiples_Single_Cell
-    (u     : in out Grid;
-     i, j  : in     Sudigit;
-     multi : in     Sudigit;
-     h     : in out Sudo_Help;
-     found : in out Natural)
-  is
-    base_i, base_j : Sudigit;
-    procedure Check_Sequence (s : Sequence_Type) is
-      --  Example: we check if the triple {2, 5, 6}
-      --  appears only in three cells in a house,
-      --  possibly with other digits. In that case,
-      --  the said other digits can be removed as
-      --  possibilities in those three cells.
-      count_full, count_partial_or_full : Natural;
-      ok_full, ok_partial_or_full : Boolean;
-      has_multiple : Sudoset;
-      mask : Sudoset := h.empty;
-      is_set, is_set_new : Boolean;
-      something_removed : Boolean;
-    begin
-      for seq in 1 .. multi loop
-        mask (s (seq)) := True;
-      end loop;
-      --  Check row
-      count_full := 0;
-      count_partial_or_full := 0;
-      has_multiple := h.empty;
-      for jj in Sudigit loop
-        ok_full := True;
-        ok_partial_or_full := False;
-        for seq in 1 .. multi loop
-          is_set := u (i, jj).set (s (seq));
-          ok_full := ok_full and is_set;
-          ok_partial_or_full := ok_partial_or_full or is_set;
-        end loop;
-        if ok_full then
-          count_full := count_full + 1;
-          has_multiple (jj) := True;
-        end if;
-        if ok_partial_or_full then
-          count_partial_or_full := count_partial_or_full + 1;
-        end if;
-      end loop;
-      if count_full = multi  --  Example: double candidate appears twice;
-        and then count_partial_or_full = multi  --  digits of the double don't appear elsewhere.
-      then
-        for jj in Sudigit loop
-          if has_multiple (jj) then
-            something_removed := False;
-            --  Here we keep only the digits of the multiple
-            --  and remove the other digits.
-            for d in Sudigit loop
-              is_set := u (i, jj).set (d);
-              is_set_new := is_set and mask (d);
-              u (i, jj).set (d) := is_set_new;
-              if is_set_new /= is_set then
-                something_removed := True;
-              end if;
-            end loop;
-            if something_removed then
-              found := found + 1;
-              --  if i = 1 then
-              --    HAT.Put ("Found double at pos ");
-              --    HAT.Put (i, 2);
-              --    HAT.Put (jj, 2);
-              --    HAT.Put (": digits ");
-              --    for seq in 1 .. multi loop
-              --      HAT.Put (s (seq), 2);
-              --    end loop;
-              --    HAT.New_Line;
-              --  end if;
-            end if;
-          end if;
-        end loop;
-      end if;
-    end Check_Sequence;
-  begin
-    Find_Box_Base (i, j, base_i, base_j);
-    for combi in 1 .. h.max_combi (multi) loop
-      Check_Sequence (h.table (multi, combi));
-    end loop;
-  end Handle_Multiples_Single_Cell;
-
-  procedure Handle_Multiples
+  procedure Handle_Hidden_Multiples
     (u     : in out Grid;
      multi : in     Sudigit;
      h     : in out Sudo_Help;
      found :    out Natural)
   is
+    procedure Single_Row (i : Sudigit) is
+      procedure Check_Sequence (s : Sequence_Type) is
+        --  Example: we check if the *triple* {2, 5, 6}
+        --  appears, partially or fully, only in *three*
+        --  cells in a house, possibly with other digits.
+        --  In that case, the said other digits can be
+        --  removed as possibilities in those three cells.
+        match_count : Natural;
+        ok : Boolean;
+        has_multiple : Sudoset;
+        mask, appears : Sudoset := h.empty;
+        is_set, is_set_new : Boolean;
+        something_removed : Boolean;
+        selected_digit : Sudigit;
+      begin
+        for seq in 1 .. multi loop
+          mask (s (seq)) := True;
+        end loop;
+        match_count := 0;
+        has_multiple := h.empty;
+        for jj in Sudigit loop
+          ok := False;
+          for seq in 1 .. multi loop
+            selected_digit := s (seq);
+            if u (i, jj).set (selected_digit) then
+              appears (selected_digit) := True;
+              ok := True;
+            end if;
+          end loop;
+          if ok then
+            match_count := match_count + 1;
+            has_multiple (jj) := True;
+          end if;
+        end loop;
+        if match_count <= multi
+          and then Count (appears) = multi  --  Ensure all considered digits appear at least once
+        then
+          for j in Sudigit loop
+            if has_multiple (j) then
+              something_removed := False;
+              --  Here we keep only the digits of the multiple
+              --  and remove the other digits.
+              for d in Sudigit loop
+                is_set := u (i, j).set (d);
+                is_set_new := is_set and mask (d);
+                u (i, j).set (d) := is_set_new;
+                if is_set_new /= is_set then
+                  something_removed := True;
+                end if;
+              end loop;
+              if something_removed then
+                found := found + 1;
+                --  if i = 1 then
+                --    HAT.Put ("Found double at pos ");
+                --    HAT.Put (i, 2);
+                --    HAT.Put (j, 2);
+                --    HAT.Put (": digits ");
+                --    for seq in 1 .. multi loop
+                --      HAT.Put (s (seq), 2);
+                --    end loop;
+                --    HAT.New_Line;
+                --  end if;
+              end if;
+            end if;
+          end loop;
+        end if;
+      end Check_Sequence;
+
+    begin
+      --  Check all sequences. E.g., for multi = 2:
+      --  {1, 2}, {1, 3}, {2, 3}, {1, 4}, {2, 4}, {3, 4}, ...
+      for combi in 1 .. h.max_combi (multi) loop
+        Check_Sequence (h.table (multi, combi));
+      end loop;
+    end Single_Row;
+
+    procedure Single_Column (j : Sudigit) is
+      procedure Check_Sequence (s : Sequence_Type) is
+        match_count : Natural;
+        ok : Boolean;
+        has_multiple : Sudoset;
+        mask, appears : Sudoset := h.empty;
+        is_set, is_set_new : Boolean;
+        something_removed : Boolean;
+        selected_digit : Sudigit;
+      begin
+        for seq in 1 .. multi loop
+          mask (s (seq)) := True;
+        end loop;
+        match_count := 0;
+        has_multiple := h.empty;
+        for i in Sudigit loop
+          ok := False;
+          for seq in 1 .. multi loop
+            selected_digit := s (seq);
+            if u (i, j).set (selected_digit) then
+              appears (selected_digit) := True;
+              ok := True;
+            end if;
+          end loop;
+          if ok then
+            match_count := match_count + 1;
+            has_multiple (i) := True;
+          end if;
+        end loop;
+        if match_count <= multi
+          and then Count (appears) = multi
+        then
+          for i in Sudigit loop
+            if has_multiple (i) then
+              something_removed := False;
+              for d in Sudigit loop
+                is_set := u (i, j).set (d);
+                is_set_new := is_set and mask (d);
+                u (i, j).set (d) := is_set_new;
+                if is_set_new /= is_set then
+                  something_removed := True;
+                end if;
+              end loop;
+              if something_removed then
+                found := found + 1;
+              end if;
+            end if;
+          end loop;
+        end if;
+      end Check_Sequence;
+
+    begin
+      for combi in 1 .. h.max_combi (multi) loop
+        Check_Sequence (h.table (multi, combi));
+      end loop;
+    end Single_Column;
+
+    procedure Single_Box (base_i, base_j : Sudigit) is
+      procedure Check_Sequence (s : Sequence_Type) is
+        match_count : Natural;
+        ok : Boolean;
+        has_multiple : array (0 .. 2, 0 .. 2) of Boolean;
+        mask, appears : Sudoset := h.empty;
+        is_set, is_set_new : Boolean;
+        something_removed : Boolean;
+        selected_digit : Sudigit;
+      begin
+        for seq in 1 .. multi loop
+          mask (s (seq)) := True;
+        end loop;
+        match_count := 0;
+        for i in has_multiple'Range (1) loop
+          for j in has_multiple'Range (2) loop
+            has_multiple (i, j) := False;
+          end loop;
+        end loop;
+        for i in base_i .. base_i + 2 loop
+          for j in base_j .. base_j + 2 loop
+            ok := False;
+            for seq in 1 .. multi loop
+              selected_digit := s (seq);
+              if u (i, j).set (selected_digit) then
+                appears (selected_digit) := True;
+                ok := True;
+              end if;
+            end loop;
+            if ok then
+              match_count := match_count + 1;
+              has_multiple (i - base_i, j - base_j) := True;
+            end if;
+          end loop;
+        end loop;
+        if match_count <= multi
+          and then Count (appears) = multi
+        then
+          for i in base_i .. base_i + 2 loop
+            for j in base_j .. base_j + 2 loop
+              if has_multiple (i - base_i, j - base_j) then
+                something_removed := False;
+                for d in Sudigit loop
+                  is_set := u (i, j).set (d);
+                  is_set_new := is_set and mask (d);
+                  u (i, j).set (d) := is_set_new;
+                  if is_set_new /= is_set then
+                    something_removed := True;
+                  end if;
+                end loop;
+                if something_removed then
+                  found := found + 1;
+                end if;
+              end if;
+            end loop;
+          end loop;
+        end if;
+      end Check_Sequence;
+
+    begin
+      for combi in 1 .. h.max_combi (multi) loop
+        Check_Sequence (h.table (multi, combi));
+      end loop;
+    end Single_Box;
+
   begin
     found := 0;
-    for i in Sudigit loop
-      for j in Sudigit loop
-        if not u (i, j).solved then
-          Handle_Multiples_Single_Cell (u, i, j, multi, h, found);
-        end if;
+    for ij in Sudigit loop
+      Single_Row (ij);
+      Single_Column (ij);
+    end loop;
+    for box_i in 0 .. 2 loop
+      for box_j in 0 .. 2 loop
+        Single_Box (box_i * 3 + 1, box_j * 3 + 1);
       end loop;
     end loop;
-  end Handle_Multiples;
+  end Handle_Hidden_Multiples;
 
   function Technique_Image (t : Resolution_Technique) return HAT.VString is
     use HAT;
@@ -471,7 +580,13 @@ package body Sudokus is
       when hidden_single           => return +"hidden single(s)";
       when locked_cell_outside_box => return +"locked cell(s), outside boxe(s)";
       when locked_cell_inside_box  => return +"locked cell(s), inside boxe(s)";
-      when double                  => return +"double(s)";
+      when hidden_double           => return +"hidden double(s)";
+      when hidden_triple           => return +"hidden triple(s)";
+      when hidden_quadruple        => return +"hidden quadruple(s)";
+      when hidden_quintuple        => return +"hidden quintuple(s)";
+      when hidden_sextuple         => return +"hidden sextuple(s)";
+      when hidden_septuple         => return +"hidden septuple(s)";
+      when hidden_octuple          => return +"hidden octuple(s)";
     end case;
   end Technique_Image;
 
@@ -490,6 +605,28 @@ package body Sudokus is
     end loop;
     return s;
   end Sum;
+
+  procedure Cumulate
+    (total      : in out Technique_Count;
+     additional :        Technique_Count)
+  is
+  begin
+    for t in Resolution_Technique loop
+      total (t) := total (t) + additional (t);
+    end loop;
+  end Cumulate;
+
+  procedure Show_Total (total : Technique_Count; title : HAT.VString) is
+    use HAT;
+  begin
+    Put_Line (title);
+    for t in Resolution_Technique loop
+      if total (t) > 0 then
+        Put_Line (+"   found: " & total (t) & ' ' & Technique_Image (t));
+      end if;
+    end loop;
+    New_Line;
+  end Show_Total;
 
   procedure Resolution_Round
     (pack            : in out Sudo_Pack;
@@ -519,7 +656,17 @@ package body Sudokus is
       if found (locked_cell_inside_box) > 0 then
         return;
       end if;
-      Handle_Multiples (pack.u, 2, help, found (double));
+      for t in hidden_double .. hidden_octuple loop
+        Handle_Hidden_Multiples
+          (pack.u,
+           2 + Resolution_Technique'Pos (t)
+             - Resolution_Technique'Pos (hidden_double),
+           help,
+           found (t));
+        if found (t) > 0 then
+          return;
+        end if;
+      end loop;
     end Handle_Techniques;
 
     use HAT;
@@ -537,19 +684,15 @@ package body Sudokus is
       end if;
       if verbosity_level > 2 or else Is_Solved (pack.u) then
         Show (pack.u, title);
+        if verbosity_level > 3 then
+          Show_Detailed_Possibilities (pack.u);
+        end if;
       end if;
       if verbosity_level > 2 then
-        for t in Resolution_Technique loop
-          if found (t) > 0 then
-            Put_Line (+"Found: " & found (t) & ' ' & Technique_Image (t));
-          end if;
-        end loop;
-        New_Line;
+        Show_Total (found, +"Techniques used in theis round:");
       end if;
     end if;
-    for t in Resolution_Technique loop
-      pack.total (t) := pack.total (t) + found (t);
-    end loop;
+    Cumulate (pack.total, found);
   end Resolution_Round;
 
   procedure Solve
@@ -581,14 +724,8 @@ package body Sudokus is
       exit when pack.stalling or else Is_Solved (pack.u);
     end loop;
     --
-    if verbosity_level > 2 then
-      Put_Line ("Totals of techniques used:");
-      for t in Resolution_Technique loop
-        if pack.total (t) > 0 then
-          Put_Line (+"   found: " & pack.total (t) & ' ' & Technique_Image (t));
-        end if;
-      end loop;
-      New_Line;
+    if verbosity_level > 1 then
+      Show_Total (pack.total, +"Totals of techniques used:");
     end if;
     if not Is_Valid (pack.u) then
       Put_Line ("Solution or current state is invalid!");

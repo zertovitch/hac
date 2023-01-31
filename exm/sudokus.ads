@@ -48,31 +48,19 @@ package Sudokus is
   --  has only one possible digit. Note that for humans, this case
   --  is not easily identifiable visually.
   --
-  procedure Handle_Naked_Single
-    (u : in out Grid; i, j : Sudigit; found : in out Natural);
-
   procedure Handle_Naked_Singles (u : in out Grid; found : out Natural);
 
   --  A "hidden single" is not the only left on its cell but
   --  the only possible in one of the houses (row, column, box)
   --  the cells belongs to.
   --
-  procedure Handle_Hidden_Single
-    (u : in out Grid; i, j : Sudigit; found : in out Natural);
-
   procedure Handle_Hidden_Singles (u : in out Grid; found : out Natural);
 
   --------------------
   --  Locked cells  --
   --------------------
 
-  procedure Handle_Locked_Cells_Outside_A_Box
-    (u : in out Grid; i, j : Sudigit; found : in out Natural);
-
   procedure Handle_Locked_Cells_Outside_Boxes (u : in out Grid; found : out Natural);
-
-  procedure Handle_Locked_Cells_Inside_A_Box
-    (u : in out Grid; i, j : Sudigit; found : in out Natural);
 
   procedure Handle_Locked_Cells_Inside_Boxes (u : in out Grid; found : out Natural);
 
@@ -120,14 +108,7 @@ package Sudokus is
     max_combi : Max_Combinations_Type;
   end record;
 
-  procedure Handle_Multiples_Single_Cell
-    (u     : in out Grid;
-     i, j  : in     Sudigit;
-     multi : in     Sudigit;
-     h     : in out Sudo_Help;
-     found : in out Natural);
-
-  procedure Handle_Multiples
+  procedure Handle_Hidden_Multiples
     (u     : in out Grid;
      multi : in     Sudigit;
      h     : in out Sudo_Help;
@@ -142,13 +123,25 @@ package Sudokus is
      hidden_single,
      locked_cell_outside_box,
      locked_cell_inside_box,
-     double);
+     hidden_double,
+     hidden_triple,
+     hidden_quadruple,
+     hidden_quintuple,
+     hidden_sextuple,
+     hidden_septuple,
+     hidden_octuple);
 
   function Technique_Image (t : Resolution_Technique) return HAT.VString;
 
   type Technique_Count is array (Resolution_Technique) of Natural;
 
   procedure Zero (count : out Technique_Count);
+
+  procedure Cumulate
+    (total      : in out Technique_Count;
+     additional :        Technique_Count);
+
+  procedure Show_Total (total : Technique_Count; title : HAT.VString);
 
   --  Output of a grid on console.
 
