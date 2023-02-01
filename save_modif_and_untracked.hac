@@ -1,14 +1,14 @@
 --  #!/usr/bin/env hac
 
 --  This HAC script detects changes between two commits and
---  saves the repository's modified files into a Zip-ball.
+--  saves the repository's modified and untracked files into a Zip-ball.
 --
 --  Version Control Systems supported:
 --  git, hg (mercurial), svn (subversion)
 
 with HAT;
 
-procedure Save_Modif is
+procedure Save_Modif_and_Untracked is
 
   use HAT;
 
@@ -82,19 +82,19 @@ begin
   Put_Line ("Version Control System: " & VCS_Type'Image (vcs));
   Put_Line ("-----");
   root := Tail_After_Match (Current_Directory, sep);
-  files := root & sep & log_name;
+  --  files := root & sep & log_name;
 
   case vcs is
     when Git        => Shell_Execute (+"git status -s -uno >" & log_name); col_name := 4;
-    when Mercurial  => Shell_Execute (+"hg  status    -q   >" & log_name); col_name := 3;
-    when Subversion => Shell_Execute (+"svn status    -q   >" & log_name); col_name := 9;
+    when Mercurial  => Shell_Execute (+"hg  status         >" & log_name); col_name := 3;
+    when Subversion => Shell_Execute (+"svn status         >" & log_name); col_name := 9;
     when None       => return;
   end case;
 
   Open (f, log_name);
   while not End_Of_File (f) loop
     Get_Line (f, line);
-    if Length (line) > 3 and then not Ends_With (line, ".out") then
+    if Length (line) > 3 then
       add_line := False;
       for col_tag in 1 .. 2 loop  --  Git tags are on two columns
         case Element (line, col_tag) is
@@ -122,13 +122,14 @@ begin
 
   nd := Nice_Date (True);
 
-  mod_zip := root & sep & root & "-modif-" & Abbreviation (vcs) & '-' & nd & ".zip";
+  mod_zip := root & sep & root & "-modif-untracked-" & Abbreviation (vcs) & '-' & nd & ".zip";
 
   Set_Directory ("..");
   Shell_Execute ("zipada -ep2 " & mod_zip & ' ' & files);
+  --  Shell_Execute ("7z t " & mod_zip);
   Set_Directory (root);
-  --  Delete_File (log_name);
+  Delete_File (log_name);
 
   Put ("Press Return ");
   Skip_Line;
-end Save_Modif;
+end Save_Modif_and_Untracked;

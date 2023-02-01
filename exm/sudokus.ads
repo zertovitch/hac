@@ -30,44 +30,6 @@ package Sudokus is
 
   procedure Adapt_All_Sets (u : in out Grid);
 
-  ------------------------------------
-  --  ===  Solving techniques  ===  --
-  ------------------------------------
-
-  ---------------------------------------------------------------
-  --  Singles. Some cells have only one possibility.           --
-  --  This case is called "single". It can be either "naked",  --
-  --  when the only possibility is alone, or "hidden" when     --
-  --  the possibility in question is not alone in its cell     --
-  --  but is nowhere else in a house (row, column or box).     --
-  --  When a single is found, the cell is solved.              --
-  ---------------------------------------------------------------
-
-  --  The "naked single" case is the most simple case to solve when
-  --  the possibilities for each cell are counted: the cell (i, j)
-  --  has only one possible digit. Note that for humans, this case
-  --  is not easily identifiable visually.
-  --
-  procedure Handle_Naked_Singles (u : in out Grid; found : out Natural);
-
-  --  A "hidden single" is not the only left on its cell but
-  --  the only possible in one of the houses (row, column, box)
-  --  the cells belongs to.
-  --
-  procedure Handle_Hidden_Singles (u : in out Grid; found : out Natural);
-
-  --------------------
-  --  Locked cells  --
-  --------------------
-
-  procedure Handle_Locked_Cells_Outside_Boxes (u : in out Grid; found : out Natural);
-
-  procedure Handle_Locked_Cells_Inside_Boxes (u : in out Grid; found : out Natural);
-
-  ------------------------------
-  --  Multiple possibilities  --
-  ------------------------------
-
   --  Internals - for build with HAC, this stuff stays public.
   --  We associate combinations of possible Sudigits
   --  with the binary representation of numbers.
@@ -107,6 +69,46 @@ package Sudokus is
     table     : Combination_Table;
     max_combi : Max_Combinations_Type;
   end record;
+
+  ------------------------------------
+  --  ===  Solving techniques  ===  --
+  ------------------------------------
+
+  ---------------------------------------------------------------
+  --  Singles. Some cells have only one possibility.           --
+  --  This case is called "single". It can be either "naked",  --
+  --  when the only possibility is alone, or "hidden" when     --
+  --  the possibility in question is not alone in its cell     --
+  --  but is nowhere else in a house (row, column or box).     --
+  --  When a single is found, the cell is solved.              --
+  ---------------------------------------------------------------
+
+  --  The "naked single" case is the most simple case to solve when
+  --  the possibilities for each cell are counted: the cell (i, j)
+  --  has only one possible digit. Note that for humans, this case
+  --  is not easily identifiable visually.
+  --
+  procedure Handle_Naked_Singles (u : in out Grid; found : out Natural);
+
+  --  A "hidden single" is not the only left on its cell but
+  --  the only possible in one of the houses (row, column, box)
+  --  the cells belongs to.
+  --
+  procedure Handle_Hidden_Singles (u : in out Grid; found : out Natural);
+
+  --------------------
+  --  Locked cells  --
+  --------------------
+
+  procedure Handle_Locked_Cells_Outside_Boxes (u : in out Grid; found : out Natural);
+
+  procedure Handle_Locked_Cells_Inside_Boxes (u : in out Grid; found : out Natural);
+
+  ------------------------------
+  --  Multiple possibilities  --
+  ------------------------------
+
+  --  TBD: Handle_Naked_Multiples
 
   procedure Handle_Hidden_Multiples
     (u     : in out Grid;

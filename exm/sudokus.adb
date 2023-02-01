@@ -401,7 +401,8 @@ package body Sudokus is
           for j in Sudigit loop
             if has_multiple (j) then
               something_removed := False;
-              --  Here we keep only the digits of the multiple
+              --  In the cells containing the hidden multiple,
+              --  we keep only the digits of the multiple
               --  and remove the other digits.
               for d in Sudigit loop
                 is_set := u (i, j).set (d);
