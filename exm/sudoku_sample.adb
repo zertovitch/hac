@@ -17,7 +17,7 @@ procedure Sudoku_Sample is
   end Solve_from_Strings;
 
   easy_1, easy_2,
-  less_easy_1, less_easy_2, less_easy_3,
+  less_easy_1, less_easy_2, less_easy_3, less_easy_4,
   hard_1, hard_2, hard_3,
   hidden_double_1,
   very_hard_1 : Sudo_Strings;
@@ -93,6 +93,19 @@ begin
   less_easy_3 (8) := +" 64  8   ";
   less_easy_3 (9) := +"     6  7";
   Solve_from_Strings (less_easy_3, +"Less easy 3    ", 1);
+
+  --  This one has a {13} {13} hidden
+  --  double on first row at round 6.
+  less_easy_4 (1) := +" 7    2 6";
+  less_easy_4 (2) := +" 9  16  4";
+  less_easy_4 (3) := +"5  3    7";
+  less_easy_4 (4) := +"      4  ";
+  less_easy_4 (5) := +"9  6 1  8";
+  less_easy_4 (6) := +"  3      ";
+  less_easy_4 (7) := +"6    7  1";
+  less_easy_4 (8) := +"7  58  4 ";
+  less_easy_4 (9) := +"2 9    7 ";
+  Solve_from_Strings (less_easy_4, +"Less easy 4    ", 1);
 
   --  https://www.youtube.com/watch?v=8dNHOyzH-gc
   hard_1 (1) := +" 2      5";
