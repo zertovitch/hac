@@ -253,7 +253,8 @@ package body HAC_Sys.Librarian is
       Error
         (CD,
          err_library_error,
-         "Ada package (and children) are not yet part of HAC's predefined library.",
+         "Ada package (and children) are not yet part of" &
+         " HAC's predefined library. Consider the " & HAT_Name & " package.",
          severity => major);
     elsif Upper_Name = HAT_Name then
       Built_In_Packages.Define_and_Register_HAT (CD, LD);

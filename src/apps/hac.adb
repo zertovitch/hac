@@ -208,6 +208,8 @@ procedure HAC is
     PLCE ("HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
     PLCE (version_info);
     PLCE ("URL: " & HAC_Sys.web);
+    PLCE ("  Sources, site #1: " & HAC_Sys.web2);
+    PLCE ("  Sources, site #2: " & HAC_Sys.web3);
     NLCE;
     PLCE ("Usage: hac [options] main.adb [command-line parameters for main]");
     NLCE;
