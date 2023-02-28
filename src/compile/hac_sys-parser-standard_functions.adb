@@ -103,7 +103,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         when SF_File_or_Console_Information =>
           null;  --  Arguments are parsed separately.
         when SF_Is_Open =>
-          Expected (1) := Txt_Fil_Set;
+          Expected (1) := Text_Files_Set;
         when others =>
           null;
           --  Here we have functions that are never parsed
@@ -146,7 +146,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         InSymbol (CD);
         Expression (CD, Level, FSys + RParent + Comma, X);
         if X.TYP /= Text_Files then
-          Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Txt_Fil_Set);
+          Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Text_Files_Set);
         end if;
         file_parameter := True;
         Need (CD, RParent, err_closing_parenthesis_missing);

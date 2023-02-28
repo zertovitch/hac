@@ -303,13 +303,14 @@ package HAC_Sys.Parser.Helpers is
   VStrings_Set     : constant Typ_Set := (VStrings            => True, others => False);
   Times_Set        : constant Typ_Set := (Times               => True, others => False);
   Durations_Set    : constant Typ_Set := (Durations           => True, others => False);
-  Txt_Fil_Set      : constant Typ_Set := (Text_Files          => True, others => False);
+  Text_Files_Set   : constant Typ_Set := (Text_Files          => True, others => False);
   Str_Lit_Set      : constant Typ_Set := (String_Literals     => True, others => False);
   Str_as_VStr_Set  : constant Typ_Set := (Strings_as_VStrings => True, others => False);
 
-  PCode_Atomic_Typ         : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set or VStrings_Set;
-  Standard_Set             : constant Typ_Set := (Standard_Typ => True, others => False);
-  Text_IO_Get_Item_Set     : constant Typ_Set := (Standard_Set and not Bools_Set) or Arrays_Set;
+  Standard_Set                : constant Typ_Set := (Standard_Typ => True, others => False);
+  PCode_Atomic_Comparable_Typ : constant Typ_Set := Discrete_Typ or Numeric_Typ_Set or VStrings_Set;
+  PCode_Atomic_Nonlimited_Typ : constant Typ_Set := (Standard_Set or Discrete_Typ) and not Text_Files_Set;
+  Text_IO_Get_Item_Set        : constant Typ_Set := (Standard_Set and not Bools_Set) or Arrays_Set;
 
   --  RM 3.2 (3):
   Scalar_Set : constant Typ_Set :=

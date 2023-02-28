@@ -209,7 +209,7 @@ package body HAC_Sys.Parser is
           if I_Res_Type /= 0 then
             if CD.IdTab (I_Res_Type).entity /= TypeMark then
               Error (CD, err_missing_a_type_identifier, severity => major);
-            elsif Standard_or_Enum_Typ (CD.IdTab (I_Res_Type).xtyp.TYP) then
+            elsif PCode_Atomic_Nonlimited_Typ (CD.IdTab (I_Res_Type).xtyp.TYP) then
               CD.IdTab (block_data.block_id_index).xtyp := CD.IdTab (I_Res_Type).xtyp;
             else
               Error (CD, err_bad_result_type_for_a_function, severity => major);

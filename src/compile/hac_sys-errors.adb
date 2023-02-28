@@ -51,7 +51,8 @@ package body HAC_Sys.Errors is
       when err_extra_right_parenthesis =>
         return "extra ')' ignored";
       when err_bad_result_type_for_a_function =>
-        return "bad result type for a function";
+        return "this type is not supported for a function's result; " &
+               "try a procedure with an ""out"" parameter";
       when err_type_of_return_statement_doesnt_match =>
         return "type of expression in return statement doesn't match: " & hint_1;
       when err_illegal_statement_start_symbol =>

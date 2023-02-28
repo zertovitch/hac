@@ -287,7 +287,7 @@ package body HAC_Sys.Parser.Expressions is
           elsif X.TYP = Y.TYP then
             if X.TYP = Enums and X.Ref /= Y.Ref then
               Issue_Comparison_Type_Mismatch_Error;
-            elsif PCode_Atomic_Typ (X.TYP) then
+            elsif PCode_Atomic_Comparable_Typ (X.TYP) then
               Emit_Comparison_Instruction (CD, Rel_OP, X.TYP);
             else
               Issue_Undefined_Operator_Error (CD, Rel_OP, X, Y);
