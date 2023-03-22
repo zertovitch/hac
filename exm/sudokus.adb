@@ -690,7 +690,7 @@ package body Sudokus is
         end if;
       end if;
       if verbosity_level > 2 then
-        Show_Total (found, +"Techniques used in theis round:");
+        Show_Total (found, +"Techniques used in this round:");
       end if;
     end if;
     Cumulate (pack.total, found);

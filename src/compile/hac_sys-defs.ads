@@ -130,7 +130,7 @@ package HAC_Sys.Defs is
     Finger,
     Becomes,
     IDent,
-    Dummy_Symbol,       --  Symbol that is never parsed.
+    Dummy_Symbol,       --  Symbol that is never scanned.
     Ampersand_Symbol,
     --                  Ada keywords
     ABORT_Symbol,
@@ -141,6 +141,7 @@ package HAC_Sys.Defs is
     ALIASED_Symbol,
     ALL_Symbol,
     AND_Symbol,
+    AND_THEN_Symbol,  --  This symbol is never scanned as such.
     ARRAY_Symbol,
     AT_Symbol,
     BEGIN_Symbol,
@@ -174,6 +175,7 @@ package HAC_Sys.Defs is
     NULL_Symbol,
     OF_Symbol,
     OR_Symbol,
+    OR_ELSE_Symbol,  --  This symbol is never scanned as such.
     OTHERS_Symbol,
     OUT_Symbol,
     OVERRIDING_Symbol,
@@ -425,6 +427,7 @@ package HAC_Sys.Defs is
      err_non_public_entity,                       --  2022-04-02
      err_choices_not_covered,
      err_choice_out_of_range,
+     err_mixed_logical_operators,
      err_library_error,
      err_wrong_unit_name,
      err_obsolete_hat_name);

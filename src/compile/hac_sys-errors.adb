@@ -270,6 +270,9 @@ package body HAC_Sys.Errors is
                "or by ""others"" (RM 5.4 (6))" & hint_1;
       when err_choice_out_of_range =>
         return "choice(s) out of range of case expression";
+      when err_mixed_logical_operators =>
+        return "mixed logical operators in expression (RM 4.4 (2)) - " &
+               "clarify by using parentheses";
       when err_scanner_space_missing_after_number =>
         return
           "space missing here; " &

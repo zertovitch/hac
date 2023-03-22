@@ -164,7 +164,7 @@ begin
   hard (8) := +" 6  85   ";
   hard (9) := +"   2  1  ";
   Solve_from_Strings (hard, +"Hard 3         ", 1);
-  
+
   hidden_double_1 (1) := +"    6    ";  --  {47} {47}:  hidden double
   hidden_double_1 (2) := +"    42736";  --  in the first two cells
   hidden_double_1 (3) := +"  673  4 ";

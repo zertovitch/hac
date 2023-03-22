@@ -226,7 +226,7 @@ package body HAC_Sys.Parser.Expressions is
        (if FSys = Semicolon_Set then err_semicolon_missing else err_incorrectly_used_symbol));
   end Selector;
 
-  logical_operator : constant Symset :=             --  RM 4.5 (2)
+  is_logical_operator : constant Symset :=          --  RM 4.5 (2)
     (AND_Symbol | OR_Symbol | XOR_Symbol => True,
      others => False);
 
@@ -351,10 +351,11 @@ package body HAC_Sys.Parser.Expressions is
       end case;
     end Relation;
 
-    Logical_OP    : KeyWSymbol;
-    Y             : Exact_Subtyp;
-    short_circuit : Boolean;
-    LC_Cond_Jump  : Integer;
+    logical_operator  : KeyWSymbol;
+    previous_operator : KeyWSymbol;
+    Y                 : Exact_Subtyp;
+    short_circuit     : Boolean;
+    LC_Cond_Jump      : Integer;
 
     procedure Process_Short_Circuit (Cond_Jump : Opcode) is
     begin
@@ -366,19 +367,20 @@ package body HAC_Sys.Parser.Expressions is
     end Process_Short_Circuit;
 
   begin  --  Expression
-    Relation (FSys + logical_operator, X);
+    Relation (FSys + is_logical_operator, X);
     --
     --  RM 4.4 (2): we collect here eventual relations, connected by
     --              logical operators: X {and Y}.
     --
-    while logical_operator (CD.Sy) loop
-      Logical_OP := CD.Sy;
+    previous_operator := Dummy_Symbol;
+    while is_logical_operator (CD.Sy) loop
+      logical_operator := CD.Sy;
       InSymbol (CD);
       --
       --  Short-circuit forms of AND, OR.
       --
       short_circuit := False;
-      if Logical_OP = AND_Symbol and CD.Sy = THEN_Symbol then
+      if logical_operator = AND_Symbol and CD.Sy = THEN_Symbol then
         Process_Short_Circuit (k_Jump_If_Zero_No_Pop);
         --
         --    Jump on X = False (i.e. 0). If X = True, then X and Y = Y.
@@ -389,7 +391,8 @@ package body HAC_Sys.Parser.Expressions is
         --                         /      /    |      |
         --       X and Y    :    0      0      0      1
         --
-      elsif Logical_OP = OR_Symbol and CD.Sy = ELSE_Symbol then
+        logical_operator := AND_THEN_Symbol;
+      elsif logical_operator = OR_Symbol and CD.Sy = ELSE_Symbol then
         Process_Short_Circuit (k_Jump_If_Non_Zero_No_Pop);
         --
         --    Jump on X = True (i.e. 1). If X = False, then X or Y = Y.
@@ -400,11 +403,15 @@ package body HAC_Sys.Parser.Expressions is
         --                       |      |        /      /
         --       X or Y     :    0      1      1      1
         --
+        logical_operator := OR_ELSE_Symbol;
+      end if;
+      if previous_operator /= Dummy_Symbol and then logical_operator /= previous_operator then
+        Error (CD, err_mixed_logical_operators, severity => minor);
       end if;
       --
       --  Right side of the logical operator.
       --
-      Relation (FSys + logical_operator, Y);
+      Relation (FSys + is_logical_operator, Y);
       --
       if X.TYP = Bools and Y.TYP = Bools then
         if short_circuit then
@@ -412,7 +419,7 @@ package body HAC_Sys.Parser.Expressions is
           --  right after the evaluation of relation Y:
           CD.ObjCode (LC_Cond_Jump).Y := Operand_2_Type (CD.LC);
         else
-          case Logical_OP is
+          case logical_operator is
             when AND_Symbol => Emit (CD, k_AND_Boolean);
             when OR_Symbol  => Emit (CD, k_OR_Boolean);
             when XOR_Symbol => Emit (CD, k_XOR_Boolean);
@@ -423,6 +430,7 @@ package body HAC_Sys.Parser.Expressions is
         Error (CD, err_resulting_type_should_be_Boolean);
         X.TYP := NOTYP;
       end if;
+      previous_operator := logical_operator;
     end loop;
     if X.TYP = NOTYP and then CD.error_count = 0 then
       Error (CD, err_object_used_before_end_own_declaration, severity => major);
