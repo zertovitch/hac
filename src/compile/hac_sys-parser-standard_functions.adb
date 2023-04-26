@@ -44,10 +44,10 @@ package body HAC_Sys.Parser.Standard_Functions is
     --
     procedure Prepare_Accepted_Parameter_Types is
       VString_or_Chars_Set     : constant Typ_Set := VStrings_Set or Chars_Set;
-      Any_String_Set           : constant Typ_Set :=
-        VStrings_Set or Arrays_Set or Str_Lit_Set or Str_as_VStr_Set;
+      Strings_Set              : constant Typ_Set := Arrays_Set or Str_Lit_Set or Str_as_VStr_Set;
+      Any_String_Set           : constant Typ_Set := VStrings_Set or Strings_Set;
       Any_String_or_Chars_Set  : constant Typ_Set := Any_String_Set or Chars_Set;
-      Chars_or_Strings_Set     : constant Typ_Set := Chars_Set or Arrays_Set or Str_Lit_Set;
+      Chars_or_Strings_Set     : constant Typ_Set := Chars_Set or Strings_Set;
     begin
       case Code is
         when SF_Abs_Int =>

@@ -712,7 +712,10 @@ package body Sudokus is
         Put ("Puzzle: " & name & " - ");
       when others =>
         New_Line;
-        Show (pack.u, ">>>>> Initial board for: " & name);
+        Show (pack.u, "> > > > Initial board for: " & name);
+        if verbosity_level > 3 then
+          Show_Detailed_Possibilities (pack.u);
+        end if;
     end case;
     if not Is_Valid (pack.u) then
       Put_Line ("Initial board is invalid!");

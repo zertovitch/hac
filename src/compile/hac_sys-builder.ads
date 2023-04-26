@@ -20,8 +20,7 @@ with Ada.Containers.Hashed_Maps,
      Ada.Finalization,
      Ada.Streams,
      Ada.Strings.Unbounded.Hash,
-     Ada.Text_IO,
-     Ada.Unchecked_Conversion;
+     Ada.Text_IO;
 
 package HAC_Sys.Builder is
 
