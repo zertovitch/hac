@@ -225,6 +225,12 @@ package body HAC_Sys.Errors is
         return "cannot modify a constant or a ""in"" parameter" & hint_1;
       when err_case_others_alone_last =>
         return "the ""others"" choice must appear alone and in the last choice list (RM 5.4 (5))";
+      when err_no_CASE_for_END_CASE =>
+        return "no ""case"" for this ""end case""";
+      when err_no_IF_for_END_IF =>
+        return "no ""if"" for this ""end if""";
+      when err_no_LOOP_for_END_LOOP =>
+        return "no ""loop"" for this ""end loop""";
       when err_END_LOOP_ident_missing =>
         return """end loop " & hint_1 & ";"" expected (RM 5.5 (5))";
       when err_END_LOOP_ident_wrong =>

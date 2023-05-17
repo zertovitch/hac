@@ -345,12 +345,21 @@ package body HAC_Sys.Parser is
           return;
         end if;
         --
-        if CD.Sy = IDent then  --  Verify that the name after "end" matches the unit name.
-          Check_ident_after_END;
-        elsif Is_a_block_statement and Block_Id /= Empty_Alfa then
-          --  No identifier after "end", but "end [label]" is required in this case.
-          Error (CD, err_incorrect_name_after_END, hint_1 => A2S (Block_Id_with_case));
-        end if;
+        case CD.Sy is
+          when IDent =>  --  Verify that the name after "end" matches the unit name.
+            Check_ident_after_END;
+          when CASE_Symbol =>
+            Error (CD, err_no_CASE_for_END_CASE, severity => major);
+          when IF_Symbol =>
+            Error (CD, err_no_IF_for_END_IF, severity => major);
+          when LOOP_Symbol =>
+            Error (CD, err_no_LOOP_for_END_LOOP, severity => major);
+          when others =>
+            if Is_a_block_statement and Block_Id /= Empty_Alfa then
+              --  No identifier after "end", but "end [label]" is required in this case.
+              Error (CD, err_incorrect_name_after_END, hint_1 => A2S (Block_Id_with_case));
+            end if;
+        end case;
       end if;
       --
       if CD.Sy /= Semicolon then
