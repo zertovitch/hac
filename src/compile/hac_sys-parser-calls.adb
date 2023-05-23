@@ -45,6 +45,7 @@ package body HAC_Sys.Parser.Calls is
     CD       : in out Co_Defs.Compiler_Data;
     Level    :        Defs.Nesting_level;
     FSys     :        Defs.Symset;
+    Name     :        String;
     Found    :    out Co_Defs.Exact_Subtyp  --  Funny note: Found is itself pushed by reference...
   )
   is
@@ -57,7 +58,7 @@ package body HAC_Sys.Parser.Calls is
       if K = No_Id then
         null;  --  Error already issued due to undefined identifier
       elsif CD.IdTab (K).entity /= Variable then
-        Error (CD, err_variable_missing);
+        Error (CD, err_variable_missing, Name, severity => major);
       elsif CD.IdTab (K).read_only then
         Error (
           CD, err_cannot_modify_constant_or_in_parameter,
@@ -79,7 +80,7 @@ package body HAC_Sys.Parser.Calls is
         end if;
       end if;
     else
-      Error (CD, err_identifier_missing);
+      Error (CD, err_variable_missing, Name, severity => major);
     end if;
   end Push_by_Reference_Parameter;
 
@@ -128,7 +129,8 @@ package body HAC_Sys.Parser.Calls is
             --  Variable (Name) parameter (IN OUT, OUT)  --
             --  This is passed by reference              --
             -----------------------------------------------
-            Push_by_Reference_Parameter (CD, Level, FSys, found);
+            Push_by_Reference_Parameter
+              (CD, Level, FSys, A2S (CD.IdTab (current_param).name_with_case), found);
             if Exact_Typ (found) /= Exact_Typ (expected) then
               Type_Mismatch (CD, err_parameter_types_do_not_match, found, expected);
             end if;

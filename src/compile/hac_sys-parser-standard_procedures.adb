@@ -45,12 +45,12 @@ package body HAC_Sys.Parser.Standard_Procedures is
       use type Operand_2_Type;
     begin
       Need (CD, LParent, err_missing_an_opening_parenthesis);
-      Push_by_Reference_Parameter (CD, Level, FSys, Found);
+      Push_by_Reference_Parameter (CD, Level, FSys, "File", Found);
       with_file := Found.TYP = Text_Files;
       if with_file then
         Emit (CD, k_Dereference);  --  File handle's value on the stack.
         Need (CD, Comma, err_COMMA_missing);
-        Push_by_Reference_Parameter (CD, Level, FSys, Found);
+        Push_by_Reference_Parameter (CD, Level, FSys, "", Found);
       end if;
       --  The "out" variable for Get, Get_Immediate, Get_Line
       --  has been pushed by reference now.
@@ -157,7 +157,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
           --  or expression (when by value) and emit corresponding VM code
           --  that will have in fine an address or a value pushed on the stack.
           case pl (i).mode is
-            when by_reference => Push_by_Reference_Parameter (CD, Level, FSys, X);
+            when by_reference => Push_by_Reference_Parameter (CD, Level, FSys, "", X);
             when by_value     => Expression (CD, Level, Comma_RParent, X);
           end case;
           --  Check the base type.
@@ -236,7 +236,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
       when SP_Open | SP_Create | SP_Append | SP_Close =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Push_by_Reference_Parameter (CD, Level, FSys + Colon_Comma_RParent, X);
+        Push_by_Reference_Parameter (CD, Level, FSys + Colon_Comma_RParent, "File", X);
         if X.TYP /= Text_Files then
           Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Text_Files_Set);
         end if;
@@ -294,7 +294,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         --  ` Shell_Execute (cmd `  has been parsed at this point.
         if CD.Sy = Comma then
           InSymbol (CD);
-          Push_by_Reference_Parameter (CD, Level, RParent_Set, Y);
+          Push_by_Reference_Parameter (CD, Level, RParent_Set, "Command", Y);
           case Y.TYP is
             when VStrings =>
               --  Shell_Execute (cmd, output);
@@ -302,7 +302,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
             when Ints =>
               if CD.Sy = Comma then
                 InSymbol (CD);
-                Push_by_Reference_Parameter (CD, Level, RParent_Set, Z);
+                Push_by_Reference_Parameter (CD, Level, RParent_Set, "Result", Z);
                 --  Shell_Execute (cmd, result, output);
                 HAT_Procedure_Call (SP_Shell_Execute_Result_Output);
                 if Z.TYP /= VStrings then

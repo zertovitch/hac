@@ -102,7 +102,11 @@ package body HAC_Sys.Errors is
       when err_parameter_types_do_not_match =>
         return "parameter types do not match: " & hint_1;
       when err_variable_missing =>
-        return "missing a variable";
+        if hint_1 = "" then
+          return "variable expected here";
+        else
+          return "variable expected as actual for """ & hint_1 & '"';
+        end if;
       when err_scanner_character_zero_chars =>
         return "a character literal is of the form 'x'; " &
                "strings are delimited by double quote character";
