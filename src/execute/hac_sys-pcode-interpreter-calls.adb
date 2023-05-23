@@ -3,6 +3,7 @@ with HAC_Sys.Interfacing,
      HAC_Sys.PCode.Interpreter.Tasking;
 
 with Ada.Calendar,
+     Ada.Exceptions,
      Ada.Unchecked_Conversion;
 
 with System;
@@ -112,7 +113,16 @@ package body HAC_Sys.PCode.Interpreter.Calls is
           (ND, VME_Program_Error,
            "Import name """ & proc_name & """ not found. Was it registered ?");
       else
-        Convert (Element (cur)) (data);  --  Call to external procedure
+        begin
+          Convert (Element (cur)) (data);  --  Call to external procedure
+        exception
+          when E : others =>
+            Exceptions.Raise_Standard
+              (ND,
+               VME_Program_Error,
+               "Exception raised in callback, message: " &
+               Ada.Exceptions.Exception_Message (E));
+        end;
       end if;
       --  Data exchange after call (in out, out)
       Data_Exchange (before_call => False);
