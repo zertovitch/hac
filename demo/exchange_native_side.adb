@@ -44,7 +44,7 @@ begin
   Put_Line ("Exchange_Native_Side is started.");
   New_Line;
   Exchange_Native_Side_Pkg.Register_All_Callbacks (BD);
-  Exchange_Native_Side_Pkg.Set_Global (BD);
+  Exchange_Native_Side_Pkg.Set_Global_VM_Variable (BD);
   Ada.Directories.Set_Directory ("src/apps");
   Build;
   if BD.Build_Successful then
@@ -53,7 +53,7 @@ begin
       Run;
       Put_Line
         ("Native: Run #" & Integer'Image (i) &
-         ". Global string variable is: " & Exchange_Native_Side_Pkg.Get_Global (BD));
+         ". Global string variable is: " & Exchange_Native_Side_Pkg.Get_Global_VM_Variable (BD));
       New_Line;
     end loop;
   end if;

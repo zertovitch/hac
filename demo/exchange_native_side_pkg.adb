@@ -139,14 +139,14 @@ package body Exchange_Native_Side_Pkg is
     Register (BD, Composite_Callback'Access,     "Composite_Callback");
   end Register_All_Callbacks;
 
-  procedure Set_Global (BD : in out HAC_Sys.Builder.Build_Data) is
+  procedure Set_Global_VM_Variable (BD : in out HAC_Sys.Builder.Build_Data) is
   begin
     Set_VM_Variable (BD, "Demo_Variable", "Native... ");
-  end Set_Global;
+  end Set_Global_VM_Variable;
 
-  function Get_Global (BD : HAC_Sys.Builder.Build_Data) return String is
+  function Get_Global_VM_Variable (BD : HAC_Sys.Builder.Build_Data) return String is
   begin
     return Get_VM_Variable (BD, "Demo_Variable");
-  end Get_Global;
+  end Get_Global_VM_Variable;
 
 end Exchange_Native_Side_Pkg;
