@@ -19,10 +19,11 @@ project HAC is
    HAC_OS : HAC_OS_Kind := external ("HAC_OS", "Any");
 
    for Main use
-     ("hac.adb",                      --  Principal command-line tool
-      "hac_mini.adb",                 --  Minimal version of hac.adb
-      "hac_multi.adb",                --  Parallel demo with many compilations
-      "exchange_native_side.adb");    --  Data exchange demo between HAC and "full Ada" - "full Ada" (native) side
+     ("hac.adb",                           --  Principal command-line tool
+      "hac_mini.adb",                      --  Minimal version of hac.adb
+      "hac_multi.adb",                     --  Parallel demo with many compilations
+      "exchange_native_side.adb",          --  Data exchange demo between HAC and "full Ada" - "full Ada" (native) side
+      "exchange_native_side_simple.adb");  --  Data exchange demo between HAC and "full Ada" - "full Ada" (native) side, simple version
 
    case HAC_Build_Mode is
       when "Debug" => for Object_Dir use "obj/debug";

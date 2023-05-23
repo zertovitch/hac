@@ -14,21 +14,14 @@ with Ada.Directories,
 with HAC_Sys.Builder,
      HAC_Sys.PCode.Interpreter;
 
-with Exchange_Native_Side_Pkg;
+with Exchange_Native_Side_Pkg_Simple;
 
-procedure Exchange_Native_Side is
+procedure Exchange_Native_Side_Simple is
   use Ada.Text_IO;
   use HAC_Sys.PCode.Interpreter;
+  use Exchange_Native_Side_Pkg_Simple;
 
   BD : HAC_Sys.Builder.Build_Data;
-
-  procedure Build is
-    hac_program_name : constant String := "exchange_hac_side.adb";
-  begin
-    Put_Line ("Native: building a HAC program: " & hac_program_name);
-    New_Line;
-    BD.Build_Main_from_File (hac_program_name);
-  end Build;
 
   procedure Run is
     post_mortem : Post_Mortem_Data;
@@ -41,20 +34,24 @@ procedure Exchange_Native_Side is
   end Run;
 
 begin
-  Put_Line ("Exchange_Native_Side is started.");
-  New_Line;
-  Exchange_Native_Side_Pkg.Register_All_Callbacks (BD);
-  Exchange_Native_Side_Pkg.Set_Global_VM_Variable (BD);
-  Ada.Directories.Set_Directory ("demo/data_exchange");
-  Build;
-  if BD.Build_Successful then
-    for i in 1 .. 2 loop
-      Put_Line ("Native: Run #" & Integer'Image (i));
+  Register_All_Callbacks (BD);
+  Ada.Directories.Set_Directory ("demo/data_exchange_simple");
+  for i in Positive loop
+    New_Line;
+    Put_Line
+      ("Native: Run #" & i'Image &
+       "   --------------------------------------------------------");
+    BD.Build_Main_from_File ("exchange_hac_side_simple.adb");
+    if BD.Build_Successful then
+      Set_Global_VM_Variable (BD, "String from Native");
+      Put_Line
+        ("Native: VM variable (pre vitam) is: " &
+         Get_Global_VM_Variable (BD));
       Run;
       Put_Line
-        ("Native: Run #" & Integer'Image (i) &
-         ". Global string variable is: " & Exchange_Native_Side_Pkg.Get_Global_VM_Variable (BD));
-      New_Line;
-    end loop;
-  end if;
-end Exchange_Native_Side;
+        ("Native: VM variable (post mortem) is: " &
+         Get_Global_VM_Variable (BD));
+    end if;
+    delay 1.0;
+  end loop;
+end Exchange_Native_Side_Simple;
