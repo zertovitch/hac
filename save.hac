@@ -53,7 +53,7 @@ procedure Save is
     end if;
   end Nice_Date;
 
-  root, examples, files, tests : VString;
+  root, demos, examples, files, tests : VString;
   zip_res : Integer;
   sep : constant Character := Directory_Separator;
 
@@ -64,6 +64,11 @@ begin
   root := Tail_After_Match (Current_Directory, sep);
 
   Set_Directory ("..");
+
+  demos := root & "/demo/data_exchange/*.ad* " &
+           root & "/demo/data_exchange_simple/*.ad* " &
+           root & "/demo/*.gpr " &
+           root & "/demo/*.prj ";
 
   examples := root & "/exm/*.ad* "  &
               root & "/exm/*.gpr  " & root & "/exm/*.prj  " &
@@ -109,7 +114,7 @@ begin
            root & "/obj/debug/create_dir.txt " &
            root & "/obj/fast/create_dir.txt ";
 
-  files := files & ' ' & examples & ' ' & tests;
+  files := files & ' ' & demos & ' ' & examples & ' ' & tests;
 
   --  The ZipAda command-line tool can be built or downloaded
   --  from the project Zip-Ada @

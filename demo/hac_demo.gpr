@@ -1,0 +1,109 @@
+--  This is a GNAT, GCC or GNAT Studio project file
+--  for the demos of the HAC project ( https://sf.net/projects/hacadacompiler/ ).
+--
+--  Build me with "gprbuild -P hac_demo", or open me with GNAT Studio.
+--  
+
+project HAC_Demo is
+
+   type HAC_Build_Mode_Type is ("Debug", "Fast", "Small");
+
+   HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
+
+   for Main use 
+     ("exchange_native_side.adb",          --  Data exchange demo between HAC and "full Ada" - "full Ada" (native) side
+      "exchange_native_side_simple.adb");  --  Data exchange demo between HAC and "full Ada" - "full Ada" (native) side, simple version
+
+   case HAC_Build_Mode is
+      when "Debug" => for Object_Dir use "../obj/debug";
+      when "Fast"  => for Object_Dir use "../obj/fast";
+      when "Small" => for Object_Dir use "../obj/small";
+   end case;
+
+   for Source_Dirs use
+     ("../src", "../src/compile", "../src/execute", "../src/manage",
+      ".", "./data_exchange", "./data_exchange_simple");
+   for Exec_Dir use ".";
+   for Create_Missing_Dirs use "True";  --  Flips by default the "-p" switch
+
+   package Pretty_Printer is
+      for Default_Switches ("ada") use ("-i2");
+   end Pretty_Printer;
+
+   Common_Compiler_Options := (
+     "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
+     "-gnatwcijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
+     "-gnatwCKMUV",                    --  Warnings switches (turn off some irrelevant for the tests)
+     "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
+     "-gnatf",  --  Full errors. Verbose details, all undefined references
+     "-gnatq",  --  Don't quit, try semantics, even if parse errors
+     "-gnatQ",  --  Don't quit, write ali/tree file even if compile errors
+     --
+     "-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
+     "-gnatybfhiu",   --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
+     "-gnatyx",       --  Style: check x:no extra parens
+     --  "-gnatye",       --  Style: check e:end/exit labels present
+     "-gnatytc"       --  Style: check t:token separation rules, c:comment format (two spaces)
+   );
+
+   Debug_Options := (
+     "-gnata",         --  Assertions enabled
+     "-gnato",         --  Enable overflow checking in STRICT mode
+     "-gnatVa",        --  Enable all validity checking options
+     "-fstack-check",
+     "-fno-inline",
+     --
+     "-g"              --  Generate debugging information
+   );
+
+   Fast_Options :=
+     ("-O2",
+      "-gnatpn", 
+      "-fipa-cp-clone",
+      "-fgcse-after-reload", 
+      "-funroll-loops",
+      "-fpeel-loops", 
+      "-funswitch-loops", 
+      "-ftracer", "-fweb",
+      "-ftree-vectorize",
+      "-frename-registers",
+      "-ffunction-sections",
+      "-g");
+   
+   package Compiler is
+      case HAC_Build_Mode is
+         when "Debug" =>
+           for Default_Switches ("ada") use Common_Compiler_Options & Debug_Options;
+           for Local_Configuration_Pragmas use project'Project_Dir & "../debug.pra";
+         when "Fast"  => for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options;
+         when "Small" => for Default_Switches ("ada") use Common_Compiler_Options & "-Os";
+      end case;
+   end Compiler;
+
+   Common_Binder_Options := ();
+
+   package Binder is
+      case HAC_Build_Mode is
+         when "Small" => for Default_Switches ("ada") use Common_Binder_Options;
+         --  -Es: Store tracebacks in exception occurrences, and enable symbolic tracebacks
+         when others  => for Default_Switches ("ada") use Common_Binder_Options & ("-Es");
+      end case;
+   end Binder;
+
+   Common_Linker_Options := ();
+
+   package Linker is
+      case HAC_Build_Mode is
+         when "Debug" => for Default_Switches ("ada") use Common_Linker_Options & ("-g");
+         when "Fast"  => for Default_Switches ("ada") use Common_Linker_Options & ("-g", "-Wl,--gc-sections");
+         when "Small" => for Default_Switches ("ada") use Common_Linker_Options & (      "-Wl,--gc-sections");
+      end case;
+   end Linker;
+
+   package Builder is
+      --   "If -j0 is used, then the maximum number of simultaneous compilation
+      --    jobs is the number of core processors on the platform."
+      for Default_Switches ("ada") use ("-g", "-j0");
+   end Builder;
+
+end HAC_Demo;

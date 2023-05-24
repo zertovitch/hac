@@ -35,7 +35,7 @@ procedure Exchange_Native_Side_Simple is
 
 begin
   Register_All_Callbacks (BD);
-  Ada.Directories.Set_Directory ("demo/data_exchange_simple");
+  Ada.Directories.Set_Directory ("data_exchange_simple");
   for i in Positive loop
     New_Line;
     Put_Line
@@ -52,6 +52,6 @@ begin
         ("Native: VM variable (post mortem) is: " &
          Get_Global_VM_Variable (BD));
     end if;
-    delay 1.0;
+    delay 3.0;
   end loop;
 end Exchange_Native_Side_Simple;

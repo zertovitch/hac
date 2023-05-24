@@ -45,7 +45,7 @@ begin
   New_Line;
   Exchange_Native_Side_Pkg.Register_All_Callbacks (BD);
   Exchange_Native_Side_Pkg.Set_Global_VM_Variable (BD);
-  Ada.Directories.Set_Directory ("demo/data_exchange");
+  Ada.Directories.Set_Directory ("data_exchange");
   Build;
   if BD.Build_Successful then
     for i in 1 .. 2 loop

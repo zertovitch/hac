@@ -16,7 +16,7 @@ Objectives
     - Have a tool for script-like jobs (avoid long
         programming-compiling-binding-linking-running cycles).
     - Stay Ada-compatible (HAC programs can be compiled
-        and run by other Ada compilers, currently through
+        and run by other Ada compilers, through
         the compatibility package HAT).
 
   HAC will most probably never be a complete compiler.
@@ -67,6 +67,7 @@ Directories
    exm        examples
    exm/aoc    Advent of Code solutions - also used for regression testing
    exm/pdf    demos of Acrobat (tm) PDF documents produced by HAC
+   demo       demos of applications embedding HAC
    test       testing (notably, the all_silent_tests.adb regression test suite)
 
 Key files in the main directory
