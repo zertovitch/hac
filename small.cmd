@@ -1,6 +1,8 @@
 @echo off
 echo Build...
-gprbuild -P hac -XHAC_Build_Mode=Small -largs obj/hac_icon.rbj
+gprbuild -P hac           -XHAC_Build_Mode=Small -largs obj/hac_icon.rbj
+gprbuild -P demo/hac_demo -XHAC_Build_Mode=Small -largs obj/hac_icon.rbj
+
 for %%I in (hac.exe) do echo %%~zI
 echo Strip...
 strip -s hac.exe

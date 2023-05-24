@@ -52,6 +52,6 @@ begin
         ("Native: VM variable (post mortem) is: " &
          Get_Global_VM_Variable (BD));
     end if;
-    delay 3.0;
+    delay 1.5;
   end loop;
 end Exchange_Native_Side_Simple;
