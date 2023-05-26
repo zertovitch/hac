@@ -356,10 +356,11 @@ package body Sudokus is
   end Handle_Locked_Cells_Inside_Boxes;
 
   procedure Handle_Hidden_Multiples
-    (u     : in out Grid;
-     multi : in     Sudigit;
-     h     : in out Sudo_Help;
-     found :    out Natural)
+    (u       : in out Grid;
+     multi   : in     Sudigit;
+     h       : in out Sudo_Help;
+     verbose : in     Boolean;
+     found   :    out Natural)
   is
     procedure Single_Row (i : Sudigit) is
       procedure Check_Sequence (s : Sequence_Type) is
@@ -376,7 +377,7 @@ package body Sudokus is
         something_removed : Boolean;
         selected_digit : Sudigit;
       begin
-        for seq in 1 .. multi loop
+        for seq in 1 .. multi loop  --  ex.: (2, 5, 6 => True, others => False)
           mask (s (seq)) := True;
         end loop;
         match_count := 0;
@@ -414,16 +415,20 @@ package body Sudokus is
               end loop;
               if something_removed then
                 found := found + 1;
-                --  if i = 1 then
-                --    HAT.Put ("Found double at pos ");
-                --    HAT.Put (i, 2);
-                --    HAT.Put (j, 2);
-                --    HAT.Put (": digits ");
-                --    for seq in 1 .. multi loop
-                --      HAT.Put (s (seq), 2);
-                --    end loop;
-                --    HAT.New_Line;
-                --  end if;
+                if verbose then
+                  HAT.Put ("Found hidden multiple on a row at pos");
+                  HAT.Put (i, 2);
+                  HAT.Put (j, 2);
+                  HAT.Put (": digits:");
+                  for seq in 1 .. multi loop
+                    if u (i, j).set (s (seq)) then
+                      HAT.Put (s (seq), 2);
+                    else
+                      HAT.Put (+" (" & s (seq) & ')');
+                    end if;
+                  end loop;
+                  HAT.New_Line;
+                end if;
               end if;
             end if;
           end loop;
@@ -483,6 +488,20 @@ package body Sudokus is
               end loop;
               if something_removed then
                 found := found + 1;
+                if verbose then
+                  HAT.Put ("Found hidden multiple on a column at pos");
+                  HAT.Put (i, 2);
+                  HAT.Put (j, 2);
+                  HAT.Put (": digits:");
+                  for seq in 1 .. multi loop
+                    if u (i, j).set (s (seq)) then
+                      HAT.Put (s (seq), 2);
+                    else
+                      HAT.Put (+" (" & s (seq) & ')');
+                    end if;
+                  end loop;
+                  HAT.New_Line;
+                end if;
               end if;
             end if;
           end loop;
@@ -547,6 +566,20 @@ package body Sudokus is
                 end loop;
                 if something_removed then
                   found := found + 1;
+                  if verbose then
+                    HAT.Put ("Found hidden multiple in a box at pos");
+                    HAT.Put (i, 2);
+                    HAT.Put (j, 2);
+                    HAT.Put (": digits:");
+                    for seq in 1 .. multi loop
+                      if u (i, j).set (s (seq)) then
+                        HAT.Put (s (seq), 2);
+                      else
+                        HAT.Put (+" (" & s (seq) & ')');
+                      end if;
+                    end loop;
+                    HAT.New_Line;
+                  end if;
                 end if;
               end if;
             end loop;
@@ -663,6 +696,7 @@ package body Sudokus is
            2 + Resolution_Technique'Pos (t)
              - Resolution_Technique'Pos (hidden_double),
            help,
+           verbosity_level > 4,
            found (t));
         if found (t) > 0 then
           return;

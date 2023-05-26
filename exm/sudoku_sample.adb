@@ -129,6 +129,18 @@ begin
   less_easy (9) := +" 7 5 9  8";
   Solve_from_Strings (less_easy, +"Less easy 6    ", 1);
 
+  --  This one is tricky near the end.
+  less_easy (1) := +"81 5 4 72";
+  less_easy (2) := +"   1 7 48";
+  less_easy (3) := +"   8 3195";
+  less_easy (4) := +"298741563";
+  less_easy (5) := +"   239481";
+  less_easy (6) := +"1  685927";
+  less_easy (7) := +"981376254";
+  less_easy (8) := +" 2 958716";
+  less_easy (9) := +"576412839";
+  Solve_from_Strings (less_easy, +"Less easy 7    ", 1);
+
   --  https://www.youtube.com/watch?v=8dNHOyzH-gc
   hard (1) := +" 2      5";
   hard (2) := +"  4 7   1";

@@ -111,10 +111,11 @@ package Sudokus is
   --  TBD: Handle_Naked_Multiples
 
   procedure Handle_Hidden_Multiples
-    (u     : in out Grid;
-     multi : in     Sudigit;
-     h     : in out Sudo_Help;
-     found :    out Natural);
+    (u       : in out Grid;
+     multi   : in     Sudigit;
+     h       : in out Sudo_Help;
+     verbose : in     Boolean;
+     found   :    out Natural);
 
   -------------------------------------------------------
   --  Organization of different resolution techniques  --
