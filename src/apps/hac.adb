@@ -11,7 +11,7 @@ with HAC_Sys.Builder,
 
 with HAT;
 
-with Show_License;
+with Show_MIT_License;
 
 with Ada.Calendar,
      Ada.Command_Line,
@@ -223,7 +223,7 @@ procedure HAC is
     NLCE;
     PLCE ("Note: HAC (this command-line tool) accepts source files with shebang's,");
     PLCE ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
-    Show_License (Current_Error, "hac_sys.ads");
+    Show_MIT_License (Current_Error, "hac_sys.ads");
     if level > 1 then
       PLCE ("Extended help for HAC");
       PLCE ("---------------------");
