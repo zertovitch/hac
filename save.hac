@@ -85,7 +85,15 @@ begin
               root & "/exm/aoc/2021/aoc*.ad* " &
               root & "/exm/aoc/2021/aoc*.txt " &
               root & "/exm/aoc/2021/aoc*.gpr " &
-              root & "/exm/aoc/2021/aoc*.prj ";
+              root & "/exm/aoc/2021/aoc*.prj " &
+              --
+              root & "/exm/aoc/2022/aoc*.ad* " &
+              root & "/exm/aoc/2022/aoc*.txt " &
+              root & "/exm/aoc/2022/aoc*.gpr " &
+              root & "/exm/aoc/2022/aoc*.prj " &
+
+              root & "/exm/mathe_kal/2022/m*.ad* " &
+              root & "/exm/mathe_kal/2022/m*.gpr ";
 
   tests    := root & "/test/*.ad* " &
               root & "/test/*.gpr " & root & "/test/*.prj " &

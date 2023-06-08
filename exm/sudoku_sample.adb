@@ -25,7 +25,9 @@ procedure Sudoku_Sample is
   use HAT;
 
 begin
-  Put_Line ("Increase verbosity_level for getting more details.");
+  Put_Line
+    ("Increase parameter `verbosity_level` for getting more details about " &
+     "the Sudoku resolution.");
   New_Line;
 
   Zero (grand_total);

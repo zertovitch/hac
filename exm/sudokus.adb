@@ -376,6 +376,7 @@ package body Sudokus is
         is_set, is_set_new : Boolean;
         something_removed : Boolean;
         selected_digit : Sudigit;
+        use HAT;
       begin
         for seq in 1 .. multi loop  --  ex.: (2, 5, 6 => True, others => False)
           mask (s (seq)) := True;
@@ -416,18 +417,18 @@ package body Sudokus is
               if something_removed then
                 found := found + 1;
                 if verbose then
-                  HAT.Put ("Found hidden multiple on a row at pos");
-                  HAT.Put (i, 2);
-                  HAT.Put (j, 2);
-                  HAT.Put (": digits:");
+                  Put ("Found hidden multiple on a row at pos");
+                  Put (i, 2);
+                  Put (j, 2);
+                  Put (": digits:");
                   for seq in 1 .. multi loop
                     if u (i, j).set (s (seq)) then
-                      HAT.Put (s (seq), 2);
+                      Put (s (seq), 2);
                     else
-                      HAT.Put (+" (" & s (seq) & ')');
+                      Put (+" (" & s (seq) & ')');
                     end if;
                   end loop;
-                  HAT.New_Line;
+                  New_Line;
                 end if;
               end if;
             end if;
@@ -452,6 +453,7 @@ package body Sudokus is
         is_set, is_set_new : Boolean;
         something_removed : Boolean;
         selected_digit : Sudigit;
+        use HAT;
       begin
         for seq in 1 .. multi loop
           mask (s (seq)) := True;
@@ -489,18 +491,18 @@ package body Sudokus is
               if something_removed then
                 found := found + 1;
                 if verbose then
-                  HAT.Put ("Found hidden multiple on a column at pos");
-                  HAT.Put (i, 2);
-                  HAT.Put (j, 2);
-                  HAT.Put (": digits:");
+                  Put ("Found hidden multiple on a column at pos");
+                  Put (i, 2);
+                  Put (j, 2);
+                  Put (": digits:");
                   for seq in 1 .. multi loop
                     if u (i, j).set (s (seq)) then
-                      HAT.Put (s (seq), 2);
+                      Put (s (seq), 2);
                     else
-                      HAT.Put (+" (" & s (seq) & ')');
+                      Put (+" (" & s (seq) & ')');
                     end if;
                   end loop;
-                  HAT.New_Line;
+                  New_Line;
                 end if;
               end if;
             end if;
@@ -523,6 +525,7 @@ package body Sudokus is
         is_set, is_set_new : Boolean;
         something_removed : Boolean;
         selected_digit : Sudigit;
+        use HAT;
       begin
         for seq in 1 .. multi loop
           mask (s (seq)) := True;
@@ -567,18 +570,18 @@ package body Sudokus is
                 if something_removed then
                   found := found + 1;
                   if verbose then
-                    HAT.Put ("Found hidden multiple in a box at pos");
-                    HAT.Put (i, 2);
-                    HAT.Put (j, 2);
-                    HAT.Put (": digits:");
+                    Put ("Found hidden multiple in a box at pos");
+                    Put (i, 2);
+                    Put (j, 2);
+                    Put (": digits:");
                     for seq in 1 .. multi loop
                       if u (i, j).set (s (seq)) then
-                        HAT.Put (s (seq), 2);
+                        Put (s (seq), 2);
                       else
-                        HAT.Put (+" (" & s (seq) & ')');
+                        Put (+" (" & s (seq) & ')');
                       end if;
                     end loop;
-                    HAT.New_Line;
+                    New_Line;
                   end if;
                 end if;
               end if;

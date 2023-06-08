@@ -105,7 +105,7 @@ procedure HAC is
         HAC_margin_2 & "Build finished in" &
         Duration'Image (t2 - t1) &
         " seconds." &
-        Integer'Image (BD.Total_Compiled_Lines) & " lines compiled."
+        Integer'Image (BD.Total_Compiled_Lines) & " lines compiled in total."
       );
     end if;
     --
@@ -128,6 +128,9 @@ procedure HAC is
           " instructions specialized");
       end if;
       Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
+    end if;
+    if verbosity >= 1 then
+      New_Line;
     end if;
     t1 := Clock;
     Interpret_on_Current_IO (
@@ -274,8 +277,8 @@ procedure HAC is
             command_line_source_path & To_VString (opt (opt'First + 1 .. opt'Last));
         when 'v' =>
           verbosity := 1;
-          if opt'Length > 1 and then opt (opt'First + 1) = '2' then
-            verbosity := 2;
+          if opt'Length > 1 and then opt (opt'First + 1) in '0' .. '9' then
+            verbosity := Character'Pos (opt (opt'First + 1)) - Character'Pos ('0');
           end if;
         when others =>
           PLCE ("Unknown option: """ & arg & '"');
