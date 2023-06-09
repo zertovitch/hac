@@ -62,10 +62,14 @@ package body HAC_Sys.Multi_Precision_Integers is
   type compar is (smaller, equal, greater);
 
   function Min (a, b : Index_Int) return Index_Int is
-  begin if a < b then return a; else return b; end if; end Min;
+  begin
+    return (if a < b then a else b);
+  end Min;
 
   function Max (a, b : Index_Int) return Index_Int is
-  begin if a > b then return a; else return b; end if; end Max;
+  begin
+    return (if a > b then a else b);
+  end Max;
 
   procedure Reduce_last_nonzero (n : in out Multi_int) is
     old_last : constant Index_Int := n.last_used;
@@ -1437,18 +1441,13 @@ package body HAC_Sys.Multi_Precision_Integers is
 
   function Equal (i1, i2 : Multi_int) return Boolean is
   begin
-    if i1.zero and then i2.zero then
-      return True;
-    end if;
-
-    if i1.zero = i2.zero and then
-       i1.neg  = i2.neg  and then
-       i1.last_used = i2.last_used
-    then
-      return i1.blk (0 .. i1.last_used) = i2.blk (0 .. i2.last_used);
-    else
-      return False;
-    end if;
+    return
+      (i1.zero and then i2.zero)
+      or else
+        (i1.zero = i2.zero and then
+         i1.neg  = i2.neg  and then
+         i1.last_used = i2.last_used and then
+         i1.blk (0 .. i1.last_used) = i2.blk (0 .. i2.last_used));
   end Equal;
 
   function Equal (i1 : Multi_int; i2 : Basic_Int) return Boolean is
