@@ -35,6 +35,7 @@ procedure HAC is
   end NLCE;
 
   asm_dump_file_name, cmp_dump_file_name : HAT.VString;
+  compile_only : Boolean := False;
 
   use HAC_Pkg;
 
@@ -127,7 +128,13 @@ procedure HAC is
         Put_Line (HAC_margin_2 & "  " & Natural'Image (BD.Specialized_Instructions) &
           " instructions specialized");
       end if;
+      if compile_only then
+        return;
+      end if;
       Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
+    end if;
+    if compile_only then
+      return;
     end if;
     if verbosity >= 1 then
       New_Line;
@@ -216,13 +223,14 @@ procedure HAC is
     NLCE;
     PLCE ("Usage: hac [options] main.adb [command-line parameters for main]");
     NLCE;
-    PLCE ("Options: -h     : this help");
+    PLCE ("Options: -a     : assembler output in " & assembler_output_name);
+    PLCE ("         -c     : compile only");
+    PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
+    PLCE ("         -h     : this help");
+    PLCE ("         -h2    : show more help about options");
     PLCE ("         -I     : specify source files search path");
     PLCE ("         -v, v1 : verbose");
     PLCE ("         -v2    : very verbose");
-    PLCE ("         -a     : assembler output in " & assembler_output_name);
-    PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
-    PLCE ("         -h2    : show more help about options");
     NLCE;
     PLCE ("Note: HAC (this command-line tool) accepts source files with shebang's,");
     PLCE ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
@@ -262,6 +270,8 @@ procedure HAC is
       case opt (opt'First) is
         when 'a' =>
           asm_dump_file_name := To_VString (assembler_output_name);
+        when 'c' =>
+          compile_only := True;
         when 'd' =>
           cmp_dump_file_name := To_VString (compiler_dump_name);
         when 'h' =>
