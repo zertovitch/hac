@@ -319,12 +319,12 @@ package body HAC_Sys.Multi_Precision_Integers is
 
   function Even (i : Multi_int) return Boolean is
   begin
-    return i.zero or i.blk (0) mod 2 = 0;
+    return i.zero or else i.blk (0) mod 2 = 0;
   end Even;
 
   function Odd (i : Multi_int) return Boolean is
   begin
-    return (not i.zero) and i.blk (0) mod 2 = 1;
+    return (not i.zero) and then i.blk (0) mod 2 = 1;
   end Odd;
 
   ----------------------------

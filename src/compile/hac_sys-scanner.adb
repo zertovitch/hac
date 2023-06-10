@@ -297,7 +297,7 @@ package body HAC_Sys.Scanner is
         has_point := has_point or CD.CUD.c = '.';
       end loop;
       NextCh (CD);
-      if CD.CUD.c = 'E' or CD.CUD.c = 'e' then
+      if CD.CUD.c in 'E' | 'e' then
         --  Exponent. Special case because of eventual '+' or '-' which
         --  are not operators (e.g. 8#123#e+5 vs. 8#123#+5, = 8#123# + 5)...
         --  Otherwise we could have done it all in the previous loop.
@@ -369,7 +369,7 @@ package body HAC_Sys.Scanner is
              err_scanner_illegal_character_in_number,
              "; expected digit after '.'");
         end if;
-        if CD.CUD.c = 'E' or CD.CUD.c = 'e' then
+        if CD.CUD.c in 'E' | 'e' then
           Read_Scale (True);
         end if;
         if e /= 0 then

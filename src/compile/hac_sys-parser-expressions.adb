@@ -141,8 +141,8 @@ package body HAC_Sys.Parser.Expressions is
             else
               if Ranges.Do_Ranges_Overlap (Array_Index_Typ,  ATE.Index_xTyp) then
                 range_check_needed :=
-                     Array_Index_Typ.Discrete_First < ATE.Index_xTyp.Discrete_First
-                  or Array_Index_Typ.Discrete_Last  > ATE.Index_xTyp.Discrete_Last;
+                  Array_Index_Typ.Discrete_First < ATE.Index_xTyp.Discrete_First or else
+                  Array_Index_Typ.Discrete_Last  > ATE.Index_xTyp.Discrete_Last;
                 --
                 if ATE.Element_Size = 1 then
                   if range_check_needed then
@@ -245,8 +245,6 @@ package body HAC_Sys.Parser.Expressions is
     (ABS_Symbol | NOT_Symbol | Power => True,
      others => False);
 
-  Internally_VString_Set : constant Typ_Set := VStrings_Set or Str_as_VStr_Set;
-
   ------------------------------------------------------------------
   -------------------------------------------------------Expression-
   procedure Expression (
@@ -281,11 +279,11 @@ package body HAC_Sys.Parser.Expressions is
           Rel_OP := CD.Sy;
           InSymbol (CD);
           Simple_Expression (CD, Level, FSys_Rel, Y);
-          if Internally_VString_Set (X.TYP) and Internally_VString_Set (Y.TYP) then
+          if Internally_VString_Set (X.TYP) and then Internally_VString_Set (Y.TYP) then
             --  The internal type is actually a VString on both sides.
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
           elsif X.TYP = Y.TYP then
-            if X.TYP = Enums and X.Ref /= Y.Ref then
+            if X.TYP = Enums and then X.Ref /= Y.Ref then
               Issue_Comparison_Type_Mismatch_Error;
             elsif PCode_Atomic_Comparable_Typ (X.TYP) then
               Emit_Comparison_Instruction (CD, Rel_OP, X.TYP);
@@ -297,13 +295,14 @@ package body HAC_Sys.Parser.Expressions is
             --  since it takes two elements on the stack.
             Emit_Std_Funct (CD, SF_Literal_to_VString);
             Emit (CD, k_Swap);
-            Emit_Std_Funct (CD,
-              SF_String_to_VString,
-              Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
-            );
+            Emit_Std_Funct
+              (CD,
+               SF_String_to_VString,
+               Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size));
             Emit (CD, k_Swap);
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
-          elsif Internally_VString_Set (X.TYP) and Y.TYP = String_Literals then  --  E.g., X < "World"
+          elsif Internally_VString_Set (X.TYP) and then Y.TYP = String_Literals then
+            --  E.g., X < "World".
             --  Y is on top of the stack, we turn it into a VString.
             --  If this becomes a perfomance issue we could consider
             --  a new Standard Function (SF_Code) for (VStr op Lit_Str).
@@ -728,7 +727,7 @@ package body HAC_Sys.Parser.Expressions is
       if X.TYP /= VStrings and y.TYP /= VStrings then
         return False;
         --  Below this line, at least X or Y is a VString.
-      elsif Internally_VString_Set (X.TYP) and Internally_VString_Set (y.TYP) then
+      elsif Internally_VString_Set (X.TYP) and then Internally_VString_Set (y.TYP) then
         --  v1 & v2              A.4.5 (15)
         --  v & Enum'Image (x)   A.4.5 (16),
         --  Enum'Image (x) & v   A.4.5 (17)

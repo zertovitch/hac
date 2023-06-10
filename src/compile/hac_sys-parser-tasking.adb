@@ -98,7 +98,7 @@ package body HAC_Sys.Parser.Tasking is
 
         Level := Level - 1;
         Need_END_Symbol (CD);
-        if CD.Sy = IDent and CD.Id = TaskID then
+        if CD.Sy = IDent and then CD.Id = TaskID then
           InSymbol;
         else
           Error_then_Skip (CD, Semicolon, err_incorrect_name_after_END);

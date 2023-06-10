@@ -377,17 +377,16 @@ package body HAC_Sys.Parser.Helpers is
         SF_String_to_VString,
         Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
       );
-    elsif X.TYP = VStrings or X.TYP = Strings_as_VStrings then
+    elsif Internally_VString_Set (X.TYP) then
       null;  --  Already a VString.
-    elsif X.TYP = Chars and include_characters then
+    elsif include_characters and then X.TYP = Chars then
       Emit_Std_Funct (CD, SF_Char_to_VString);
     else
-      Type_Mismatch (
-        CD,
-        err_parameter_types_do_not_match,
-        Found    => X,
-        Expected => expected_set
-      );
+      Type_Mismatch
+        (CD,
+         err_parameter_types_do_not_match,
+         Found    => X,
+         Expected => expected_set);
     end if;
     X.Construct_Root (VStrings);
   end Check_any_String_and_promote_to_VString;

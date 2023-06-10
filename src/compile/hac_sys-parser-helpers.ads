@@ -316,6 +316,8 @@ package HAC_Sys.Parser.Helpers is
   Scalar_Set : constant Typ_Set :=
     (Ints | Floats | Durations | Chars | Bools | Enums => True, others => False);
 
+  Internally_VString_Set : constant Typ_Set := VStrings_Set or Str_as_VStr_Set;
+
   ------------------
   --  Base types  --
   ------------------

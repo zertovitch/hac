@@ -167,8 +167,10 @@ package body HAC_Sys.PCode.Interpreter.Calls is
           Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
           Curr_TCB.TS  := WaitRendzv;
           Task_Entered := Integer (CD.IdTab (Ident_Index_of_Called).adr_or_sz);  --  Task being entered
-          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
-             (ND.TCB (Task_Entered).TS = TimedWait)
+          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and then
+              (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called))
+             or else
+               ND.TCB (Task_Entered).TS = TimedWait
           then
             --  wake accepting task if necessary
             ND.TCB (Task_Entered).TS      := Ready;
@@ -198,8 +200,9 @@ package body HAC_Sys.PCode.Interpreter.Calls is
 
         when Defs.Conditional_Entry_Call =>
           Task_Entered := Integer (CD.IdTab (Ident_Index_of_Called).adr_or_sz);              --  Task being entered
-          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
-             (ND.TCB (Task_Entered).TS = TimedWait)
+          if ((ND.TCB (Task_Entered).TS = WaitRendzv) and then
+              (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or else
+             ND.TCB (Task_Entered).TS = TimedWait
           then
             Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
             Curr_TCB.R1.I := 1;        --  Indicate entry successful
@@ -233,8 +236,8 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       else
         --  Set back base of caller:
         Curr_TCB.B := Integer (ND.S (Curr_TCB.B + 3).I);
-        if IR.Y = Defs.Timed_Entry_Call or IR.Y = Defs.Conditional_Entry_Call then
-          if IR.Y = Defs.Timed_Entry_Call and Curr_TCB.R1.I = 0 then
+        if IR.Y = Defs.Timed_Entry_Call or else IR.Y = Defs.Conditional_Entry_Call then
+          if IR.Y = Defs.Timed_Entry_Call and then Curr_TCB.R1.I = 0 then
             Push (ND);
           end if;
           --  A JMPC instruction always follows (?)

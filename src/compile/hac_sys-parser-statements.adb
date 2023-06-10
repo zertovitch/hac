@@ -172,7 +172,7 @@ package body HAC_Sys.Parser.Statements is
     else
       loop
         Statement (CD, statement_or_sentinel, Block_Data);
-        exit when Sentinel (CD.Sy) or CD.error_count > 0;
+        exit when Sentinel (CD.Sy) or else CD.error_count > 0;
       end loop;
     end if;
   end Sequence_of_Statements;
