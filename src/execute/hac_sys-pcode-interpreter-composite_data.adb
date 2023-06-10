@@ -41,8 +41,9 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       end if;
       Pop (ND);  --  Pull array index, then adjust array element pointer.
       ND.S (Curr_TCB.T).I :=
-        (if size_1 then ND.S (Curr_TCB.T).I + HAC_Integer (Idx - Low)
-                   else ND.S (Curr_TCB.T).I + HAC_Integer ((Idx - Low) * ATE.Element_Size));
+        ND.S (Curr_TCB.T).I +
+          (if size_1 then HAC_Integer  (Idx - Low)
+                     else HAC_Integer ((Idx - Low) * ATE.Element_Size));
     end Do_Array_Index;
 
     procedure Do_Array_Index_Size_1 is            new Do_Array_Index (size_1 => True,  range_check => True);
