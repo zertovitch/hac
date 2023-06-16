@@ -121,78 +121,105 @@ package body HAC_Sys.Parser.Expressions is
     --
     procedure Array_Coordinates_Selector is
       Array_Index_Typ : Exact_Subtyp;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
-      range_check_needed : Boolean;
       use type HAC_Integer;
+
+      procedure Emit_Index_Instructions (ATI : Integer; ATE : ATabEntry) is
+        range_check_needed : constant Boolean :=
+          Array_Index_Typ.Discrete_First < ATE.Index_xTyp.Discrete_First or else
+          Array_Index_Typ.Discrete_Last  > ATE.Index_xTyp.Discrete_Last;
+      begin
+        if ATE.Element_Size = 1 then
+          if range_check_needed then
+            Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
+          else
+            Emit_1 (CD, k_Array_Index_No_Check_Element_Size_1, Operand_2_Type (ATI));
+          end if;
+        else
+          if range_check_needed then
+            Emit_1 (CD, k_Array_Index, Operand_2_Type (ATI));
+          else
+            Emit_1 (CD, k_Array_Index_No_Check, Operand_2_Type (ATI));
+          end if;
+        end if;
+      end Emit_Index_Instructions;
+
+      procedure Show_Range_Error (ATE : ATabEntry) is
+      begin
+        Error
+          (CD, err_range_constraint_error,
+           "value of index (" &
+           (if Ranges.Is_Singleton_Range (Array_Index_Typ) then
+              --  More understandable message part for a single value
+              Discrete_Image
+               (CD,
+                Array_Index_Typ.Discrete_First,
+                ATE.Index_xTyp.TYP,
+                ATE.Index_xTyp.Ref)
+            else
+              "range: " &
+              Discrete_Range_Image
+                (CD,
+                 Array_Index_Typ.Discrete_First,
+                 Array_Index_Typ.Discrete_Last,
+                 ATE.Index_xTyp.TYP,
+                 ATE.Index_xTyp.Ref)) &
+              ") is out of the array's range, " &
+              Discrete_Range_Image
+                (CD,
+                 ATE.Index_xTyp.Discrete_First,
+                 ATE.Index_xTyp.Discrete_Last,
+                 ATE.Index_xTyp.TYP,
+                 ATE.Index_xTyp.Ref),
+              severity => minor);
+      end Show_Range_Error;
+
+      procedure Show_Type_Mismatch_Error (ATE : ATabEntry) is
+      begin
+        Type_Mismatch
+          (CD,
+           err_wrong_type_for_array_index,
+           Found    => Array_Index_Typ,
+           Expected => ATE.Index_xTyp);
+      end Show_Type_Mismatch_Error;
+
+      indices : Natural := 0;
+      first_dimension : Boolean := True;
+      dims : Integer;
+
     begin
+      Array_Indices :
       loop
         InSymbol (CD);  --  Consume '(' or ',' symbol.
         Expression (CD, Level, FSys + Comma_RParent + RBrack, Array_Index_Typ);
+        indices := indices + 1;
         if V.TYP = Arrays then
           declare
             ATI : constant Integer := V.Ref;
             ATE : ATabEntry renames CD.Arrays_Table (ATI);
           begin
+            if first_dimension then
+              dims := ATE.dimensions;
+              first_dimension := False;
+            end if;
             if Exact_Typ (ATE.Index_xTyp) /= Exact_Typ (Array_Index_Typ) then
-              Type_Mismatch (
-                CD, err_illegal_array_subscript,
-                Found    => Array_Index_Typ,
-                Expected => ATE.Index_xTyp
-              );
+              Show_Type_Mismatch_Error (ATE);
+            elsif Ranges.Do_Ranges_Overlap (Array_Index_Typ,  ATE.Index_xTyp) then
+              Emit_Index_Instructions (ATI, ATE);
             else
-              if Ranges.Do_Ranges_Overlap (Array_Index_Typ,  ATE.Index_xTyp) then
-                range_check_needed :=
-                  Array_Index_Typ.Discrete_First < ATE.Index_xTyp.Discrete_First or else
-                  Array_Index_Typ.Discrete_Last  > ATE.Index_xTyp.Discrete_Last;
-                --
-                if ATE.Element_Size = 1 then
-                  if range_check_needed then
-                    Emit_1 (CD, k_Array_Index_Element_Size_1, Operand_2_Type (ATI));
-                  else
-                    Emit_1 (CD, k_Array_Index_No_Check_Element_Size_1, Operand_2_Type (ATI));
-                  end if;
-                else
-                  if range_check_needed then
-                    Emit_1 (CD, k_Array_Index, Operand_2_Type (ATI));
-                  else
-                    Emit_1 (CD, k_Array_Index_No_Check, Operand_2_Type (ATI));
-                  end if;
-                end if;
-              else
-                Error
-                  (CD, err_range_constraint_error,
-                   "value of index (" &
-                   (if Ranges.Is_Singleton_Range (Array_Index_Typ) then
-                      --  More understandable message part for a single value
-                      Discrete_Image
-                       (CD,
-                        Array_Index_Typ.Discrete_First,
-                        ATE.Index_xTyp.TYP,
-                        ATE.Index_xTyp.Ref)
-                    else
-                      "range: " &
-                      Discrete_Range_Image
-                        (CD,
-                         Array_Index_Typ.Discrete_First,
-                         Array_Index_Typ.Discrete_Last,
-                         ATE.Index_xTyp.TYP,
-                         ATE.Index_xTyp.Ref)) &
-                      ") is out of the array's range, " &
-                      Discrete_Range_Image
-                        (CD,
-                         ATE.Index_xTyp.Discrete_First,
-                         ATE.Index_xTyp.Discrete_Last,
-                         ATE.Index_xTyp.TYP,
-                         ATE.Index_xTyp.Ref),
-                      severity => minor);
-              end if;
+              Show_Range_Error (ATE);
             end if;
             V := ATE.Element_xTyp;
           end;
         else
           Error (CD, err_indexed_variable_must_be_an_array);
         end if;
-        exit when CD.Sy /= Comma;
-      end loop;
+        exit Array_Indices when CD.Sy /= Comma;
+      end loop Array_Indices;
+      if indices < dims then
+        Error (CD, err_too_few_array_indices, indices'Image, dims'Image);
+      elsif indices > dims then
+        Error (CD, err_too_many_array_indices, indices'Image, dims'Image);
+      end if;
     end Array_Coordinates_Selector;
     --
   begin

@@ -79,8 +79,12 @@ package body HAC_Sys.Errors is
         return "illegal character";
       when err_illegal_constant_or_constant_identifier =>
         return "illegal constant or constant identifier";
-      when err_illegal_array_subscript =>
-        return "type mismatch in array subscript: " & hint_1;
+      when err_wrong_type_for_array_index =>
+        return "type mismatch in array index: " & hint_1;
+      when err_too_few_array_indices =>
+        return "too few indices in array reference: found" & hint_1 & ", needed" & hint_2;
+      when err_too_many_array_indices =>
+        return "too many indices in array reference: found" & hint_1 & ", needed" & hint_2;
       when err_illegal_array_bounds =>
         return "illegal bounds for an array index: " & hint_1;
       when err_indexed_variable_must_be_an_array =>

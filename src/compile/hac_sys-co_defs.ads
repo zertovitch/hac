@@ -71,13 +71,14 @@ package HAC_Sys.Co_Defs is
   --  the compiler and ignored by the interpreter):
   --
   type ATabEntry is record
-    Index_xTyp   : Exact_Subtyp;  --  C  Type of the index
-    Element_Size : Index;         --  Size of an element
+    Index_xTyp   : Exact_Subtyp;  --  C  Type of the index.
+    Element_Size : Index;         --     Size of an element.
     Element_xTyp : Exact_Subtyp;  --  C  Subtype of the elements of the array.
                                   --     If the elements of the array are themselves
                                   --     arrays, Element_xTYP.Ref is an index to an
                                   --     entry in Arrays_Table (it's not a special case).
-    Array_Size   : Index;         --  C  Total size of the array
+    Array_Size   : Index;         --  C  Total size of the array.
+    dimensions   : Positive;      --  C  Total dimensions of the array.
   end record;
 
   -------------------------------------------------------------------------

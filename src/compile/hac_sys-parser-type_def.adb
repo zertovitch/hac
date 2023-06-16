@@ -65,13 +65,13 @@ package body HAC_Sys.Parser.Type_Def is
     --
     --  constrained_array_definition 3.6 (5)
     --
-    procedure Array_Typ (
-      Arr_Tab_Ref, Arr_Size      : out Integer;
-      String_Constrained_Subtype :     Boolean
-    )
+    procedure Array_Typ
+      (arr_tab_ref, arr_size, arr_dimensions : out Integer;
+       string_constrained_subtype            :     Boolean)
     is
       Element_Exact_Subtyp, Index_Exact_Subtyp : Exact_Subtyp;
       Element_Size                             : Integer;
+      recursive_dimensions                     : Natural := 0;
       Lower_Bound, Higher_Bound                : Constant_Rec;
       use Ranges;
     begin
@@ -80,8 +80,8 @@ package body HAC_Sys.Parser.Type_Def is
       Index_Exact_Subtyp.Discrete_First := Lower_Bound.I;
       Index_Exact_Subtyp.Discrete_Last  := Higher_Bound.I;
       Enter_Array (CD, Index_Exact_Subtyp);
-      Arr_Tab_Ref := CD.Arrays_Count;
-      if String_Constrained_Subtype then
+      arr_tab_ref := CD.Arrays_Count;
+      if string_constrained_subtype then
         --  We define String (L .. H) exactly as an "array (L .. H) of Character".
         Construct_Root (Element_Exact_Subtyp, Chars);
         Element_Exact_Subtyp.Discrete_First := 0;
@@ -92,20 +92,22 @@ package body HAC_Sys.Parser.Type_Def is
         --  Multidimensional array is equivalant to:  array (range_1) of array (range_2,...).
         InSymbol;  --  Consume ',' symbol.
         Construct_Root (Element_Exact_Subtyp, Arrays);  --  Recursion for next array dimension.
-        Array_Typ (Element_Exact_Subtyp.Ref, Element_Size, False);
+        Array_Typ (Element_Exact_Subtyp.Ref, Element_Size, recursive_dimensions, False);
       else
         Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
         Need (CD, OF_Symbol, err_missing_OF);         --  "of"  in  "array (...) of Some_Type"
         Type_Definition (CD, Level, FSys_TD, Element_Exact_Subtyp, Element_Size);
       end if;
-      Arr_Size := (Integer (Higher_Bound.I) - Integer (Lower_Bound.I) + 1) * Element_Size;
+      arr_size := (Integer (Higher_Bound.I) - Integer (Lower_Bound.I) + 1) * Element_Size;
+      arr_dimensions := 1 + recursive_dimensions;
       declare
-        New_A : ATabEntry renames CD.Arrays_Table (Arr_Tab_Ref);
+        New_A : ATabEntry renames CD.Arrays_Table (arr_tab_ref);
       begin
         --  New_A.Index_xTyp already set by Enter_Array.
-        New_A.Array_Size   := Arr_Size;
+        New_A.Array_Size   := arr_size;
         New_A.Element_xTyp := Element_Exact_Subtyp;
         New_A.Element_Size := Element_Size;
+        New_A.dimensions   := arr_dimensions;
       end;
     end Array_Typ;
 
@@ -186,6 +188,8 @@ package body HAC_Sys.Parser.Type_Def is
       Level := Level - 1;
     end Record_Typ;
 
+    dummy_dims : Natural;
+
     procedure String_Sub_Typ is
       --  Prototype of constraining an array type: String -> String (1 .. 26)
       --  We need to implement general constraints one day...
@@ -193,7 +197,7 @@ package body HAC_Sys.Parser.Type_Def is
       InSymbol;
       Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
       Construct_Root (xTP, Arrays);
-      Array_Typ (xTP.Ref, Size, String_Constrained_Subtype => True);
+      Array_Typ (xTP.Ref, Size, dummy_dims, string_constrained_subtype => True);
     end String_Sub_Typ;
 
     Ident_Index : Integer;
@@ -279,7 +283,7 @@ package body HAC_Sys.Parser.Type_Def is
           InSymbol;
           Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
           Construct_Root (xTP, Arrays);
-          Array_Typ (xTP.Ref, Size, String_Constrained_Subtype => False);
+          Array_Typ (xTP.Ref, Size, dummy_dims, string_constrained_subtype => False);
         when RECORD_Symbol =>
           Record_Typ;
         when LParent =>

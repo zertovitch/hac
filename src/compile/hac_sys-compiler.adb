@@ -187,9 +187,12 @@ package body HAC_Sys.Compiler is
     if CD.Arrays_Count = 0 then
       Put_Line (CD.comp_dump, " Arrays: none");
     else
-      Put_Line (CD.comp_dump,
-        " Array   | Index: typ_________  Element: typ_______ref    Low___High   El. Size Ar. Size"
-      );
+      Put_Line
+        (CD.comp_dump,
+         " Array   | Index: typ_________ " &
+         " Element: typ_______ref   " &
+         " Low___High   El. Size Ar. Size Dims");
+      --
       for i in 1 .. CD.Arrays_Count loop
         declare
           r : ATabEntry renames CD.Arrays_Table (i);
@@ -207,6 +210,7 @@ package body HAC_Sys.Compiler is
           Put (CD.comp_dump, r.Index_xTyp.Discrete_Last,  7);
           Put (CD.comp_dump, r.Element_Size, 11);
           Put (CD.comp_dump, r.Array_Size,    9);
+          Put (CD.comp_dump, r.dimensions,    5);
         end;
         New_Line (CD.comp_dump);
       end loop;
