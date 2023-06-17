@@ -346,14 +346,20 @@ package body HAC_Sys.Parser is
         end if;
         --
         case CD.Sy is
-          when IDent =>  --  Verify that the name after "end" matches the unit name.
+          when IDent =>
+            --  Verify that the name after "end" matches the unit name.
             Check_ident_after_END;
-          when CASE_Symbol =>
-            Error (CD, err_no_CASE_for_END_CASE, severity => major);
-          when IF_Symbol =>
-            Error (CD, err_no_IF_for_END_IF, severity => major);
-          when LOOP_Symbol =>
-            Error (CD, err_no_LOOP_for_END_LOOP, severity => major);
+          when CASE_Symbol | IF_Symbol | LOOP_Symbol =>
+            --  An extra END CASE, END IF, or END LOOP was found.
+            Error
+              (CD,
+               err_no_X_for_END_X,
+               (case CD.Sy is
+                  when CASE_Symbol => "case",
+                  when IF_Symbol   => "if",
+                  when LOOP_Symbol => "loop",
+                  when others      => ""),
+               severity => major);
           when others =>
             if Is_a_block_statement and Block_Id /= Empty_Alfa then
               --  No identifier after "end", but "end [label]" is required in this case.
