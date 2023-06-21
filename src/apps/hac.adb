@@ -226,7 +226,7 @@ procedure HAC is
     PLCE ("Options: -a     : assembler output in " & assembler_output_name);
     PLCE ("         -c     : compile only");
     PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
-    PLCE ("         -h     : this help");
+    PLCE ("         -h, h1 : this help");
     PLCE ("         -h2    : show more help about options");
     PLCE ("         -I     : specify source files search path");
     PLCE ("         -v, v1 : verbose");
@@ -250,6 +250,8 @@ procedure HAC is
       PLCE ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
       PLCE ("         environment variable.");
     end if;
+    Ada.Text_IO.Put ("Press Return.");
+    Ada.Text_IO.Skip_Line;
   end Help;
 
   hac_ing    : Boolean  := False;

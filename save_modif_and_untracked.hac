@@ -88,7 +88,10 @@ begin
     when Git        => Shell_Execute (+"git status -s -uno >" & log_name); col_name := 4;
     when Mercurial  => Shell_Execute (+"hg  status         >" & log_name); col_name := 3;
     when Subversion => Shell_Execute (+"svn status         >" & log_name); col_name := 9;
-    when None       => return;
+    when None =>
+      Put ("Nothing to do! Press Return.");
+      Skip_Line;
+      return;
   end case;
 
   Open (f, log_name);
