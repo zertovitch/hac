@@ -241,7 +241,11 @@ package body HAC_Sys.Errors is
       when err_END_LOOP_ident_wrong =>
         return "wrong loop identifier: ""end loop " & hint_1 & ";"" expected";
       when err_syntax_error =>
-        return "syntax error" & hint_1;
+        if hint_1 = "" then
+          return "syntax error";
+        else
+          return hint_1;  --  The message is the hint.
+        end if;
       when err_string_to_vstring_assignment =>
         return "fixed string assigned to a variable string;" &
                " put a ""+"" in front of the fixed string";

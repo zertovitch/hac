@@ -607,7 +607,7 @@ package body HAC_Sys.Scanner is
             when '0' .. '9' =>
               Error
                 (CD, err_syntax_error,
-                 ": numeric literal cannot start with point", severity => minor);
+                 "numeric literal cannot start with point", severity => minor);
               Scan_Number (skip_leading_integer => True);
             when others =>
               CD.Sy := Period;
@@ -639,7 +639,7 @@ package body HAC_Sys.Scanner is
               Error
                 (CD,
                  err_syntax_error,
-                 ": missing closing quote on previous line ",
+                 "missing closing quote on previous line ",
                  severity => major);
             else
               null;  --  Continue

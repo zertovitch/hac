@@ -131,17 +131,22 @@ package body HAC_Sys.Parser.Const_Var is
         is_typed := True;
         case CD.Sy is
           when IDent =>
-            Type_Def.Subtype_Indication (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
+            Type_Def.Subtype_Indication
+              (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
           when ARRAY_Symbol =>
             --  Anonymous array type in "v : array (1 .. 5) of Integer;"
-            Type_Def.Type_Definition (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
+            Type_Def.Type_Definition
+              (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
           when ACCESS_Symbol =>
-            Error (CD, err_not_yet_implemented, "access types");
+            Error (CD, err_not_yet_implemented, "access types", severity => major);
           when others =>
             Error
               (CD,
                err_syntax_error,
-               ": this kind of anonymous type definition is not allowed here");
+               "this kind of anonymous type definition is not allowed here");
+            --  Recovery:
+            Type_Def.Type_Definition
+              (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
         end case;
       end if;
       Test (CD, Becomes_EQL_Semicolon, empty_symset, err_incorrectly_used_symbol);

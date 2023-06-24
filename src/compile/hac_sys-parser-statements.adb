@@ -212,7 +212,7 @@ package body HAC_Sys.Parser.Statements is
       InSymbol;
       I_Entry := Locate_Identifier (CD, CD.Id, Block_Data.level);
       if CD.IdTab (I_Entry).entity /= aEntry then
-        Error (CD, err_syntax_error, ": an entry name is expected here");
+        Error (CD, err_syntax_error, "an entry name is expected here");
       end if;
       InSymbol;
       Accept_Call;
@@ -1040,8 +1040,9 @@ package body HAC_Sys.Parser.Statements is
                 Error (CD, err_illegal_statement_start_symbol, "package name", severity => major);
               when others =>
                 Error
-                  (CD, err_syntax_error,
-                   ". Entity found: " & Entity_Kind'Image (CD.IdTab (I_Statement).entity), severity => major);
+                  (CD, err_illegal_statement_start_symbol,
+                   ". Entity found: " &
+                   Entity_Kind'Image (CD.IdTab (I_Statement).entity), severity => major);
             end case;
           end if;  --  end IDent
         when ACCEPT_Symbol =>

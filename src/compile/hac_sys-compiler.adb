@@ -340,7 +340,7 @@ package body HAC_Sys.Compiler is
     end if;
     if CD.Sy /= IS_Symbol then
       --  procedure Name IS
-      Error (CD, err_syntax_error, ": main procedure should be parameterless", severity => major);
+      Error (CD, err_syntax_error, "main procedure should be parameterless", severity => major);
     end if;
 
     if CD.comp_dump_requested then
@@ -525,8 +525,9 @@ package body HAC_Sys.Compiler is
       when others =>
         kind := Package_Declaration;  --  Useless, but this removes an ObjectAda warning.
         Error
-          (CD, err_syntax_error,
-           ": `package`, `procedure` or `function` expected here", severity => major);
+          (CD,
+           err_syntax_error,
+           "`package`, `procedure` or `function` expected here", severity => major);
     end case;
     if CD.Sy /= IDent then
       Error (CD, err_identifier_missing, severity => major);
