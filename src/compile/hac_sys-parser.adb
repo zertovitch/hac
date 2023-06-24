@@ -135,7 +135,7 @@ package body HAC_Sys.Parser is
         case CD.Sy is
           when IDent              => Const_Var.Var_Declaration (CD, FSys, block_data);
           when TYPE_Symbol |
-               SUBTYPE_Symbol     => Type_Def.Type_Declaration (CD, block_data.level, FSys);
+               SUBTYPE_Symbol     => Type_Def.Type_or_Subtype_Declaration (CD, block_data.level, FSys);
           when TASK_Symbol        => Tasking.Task_Declaration (CD, FSys, block_data.level);
           when USE_Symbol         => Packages.Use_Clause (CD, block_data.level);
           when PROCEDURE_Symbol |

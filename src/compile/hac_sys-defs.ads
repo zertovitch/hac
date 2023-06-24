@@ -328,7 +328,7 @@ package HAC_Sys.Defs is
      err_missing_an_opening_parenthesis,
      err_left_bracket_instead_of_parenthesis,
      err_right_bracket_instead_of_parenthesis,
-     err_missing_ARRAY_RECORD_or_ident,
+     err_missing_type_begin_symbol,
      err_expecting_double_dot,
      err_semicolon_missing,
      err_duplicate_semicolon,

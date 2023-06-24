@@ -75,7 +75,7 @@ package body HAC_Sys.Parser.Packages is
           Mark_Last_Declaration;
         when TYPE_Symbol |
              SUBTYPE_Symbol =>
-          Type_Def.Type_Declaration (CD, block_data.level, FSys + END_Symbol);
+          Type_Def.Type_or_Subtype_Declaration (CD, block_data.level, FSys + END_Symbol);
           Mark_Last_Declaration;
         when TASK_Symbol =>
           Tasking.Task_Declaration (CD, FSys, block_data.level);
@@ -193,7 +193,7 @@ package body HAC_Sys.Parser.Packages is
           Const_Var.Var_Declaration (CD, FSys, block_data);
         when TYPE_Symbol |
              SUBTYPE_Symbol =>
-          Type_Def.Type_Declaration (CD, block_data.level, FSys + END_Symbol);
+          Type_Def.Type_or_Subtype_Declaration (CD, block_data.level, FSys + END_Symbol);
         when TASK_Symbol =>
           Tasking.Task_Declaration (CD, FSys, block_data.level);
         when USE_Symbol =>

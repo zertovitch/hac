@@ -112,7 +112,11 @@ package body HAC_Sys.Parser.Const_Var is
       Need (CD, Colon, err_colon_missing);  --  ':'   in   "x, y : Integer;"
       T1 := CD.Id_Count;
       --
-      Test (CD, Type_Begin_Symbol + CONSTANT_Symbol, Semicolon_Set, err_incorrectly_used_symbol);
+      Test
+        (CD,
+         Type_Begin_Symbol + Subtype_Begin_Symbol + CONSTANT_Symbol,
+         Semicolon_Set,
+         err_incorrectly_used_symbol);
       --
       is_constant := False;
       if CD.Sy = CONSTANT_Symbol then  --  Consume "constant" in "x : constant ...;"
@@ -121,9 +125,24 @@ package body HAC_Sys.Parser.Const_Var is
       end if;
       --
       is_typed := False;
-      if Type_Begin_Symbol (CD.Sy) then  --  Here, a type name or an anonymous type definition
+      if Type_Begin_Symbol (CD.Sy) or CD.Sy = IDent then
+        --  Here, a type name or an anonymous type definition (array or access)
+        --  See Object Declaration.
         is_typed := True;
-        Type_Def.Type_Definition (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
+        case CD.Sy is
+          when IDent =>
+            Type_Def.Subtype_Indication (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
+          when ARRAY_Symbol =>
+            --  Anonymous array type in "v : array (1 .. 5) of Integer;"
+            Type_Def.Type_Definition (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
+          when ACCESS_Symbol =>
+            Error (CD, err_not_yet_implemented, "access types");
+          when others =>
+            Error
+              (CD,
+               err_syntax_error,
+               ": this kind of anonymous type definition is not allowed here");
+        end case;
       end if;
       Test (CD, Becomes_EQL_Semicolon, empty_symset, err_incorrectly_used_symbol);
       --

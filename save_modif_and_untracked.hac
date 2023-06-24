@@ -89,7 +89,7 @@ begin
     when Mercurial  => Shell_Execute (+"hg  status         >" & log_name); col_name := 3;
     when Subversion => Shell_Execute (+"svn status         >" & log_name); col_name := 9;
     when None =>
-      Put ("Nothing to do! Press Return.");
+      Put ("Nothing to do! Press Return");
       Skip_Line;
       return;
   end case;

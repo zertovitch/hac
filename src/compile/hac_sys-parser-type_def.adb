@@ -22,94 +22,112 @@ package body HAC_Sys.Parser.Type_Def is
   use Co_Defs, Defs, Enter_Def, Helpers, Errors;
   use type HAC_Integer;
 
-  procedure Type_Declaration (
-    CD         : in out Co_Defs.Compiler_Data;
-    Level      : in     Defs.Nesting_level;
-    FSys_NTD   : in     Defs.Symset
-  )
+  procedure Type_or_Subtype_Declaration
+    (CD         : in out Co_Defs.Compiler_Data;
+     Level      : in     Defs.Nesting_level;
+     FSys_NTD   : in     Defs.Symset)
   is
     T1 : Integer;
     forward_id_idx : Natural;
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+    is_subtype : constant Boolean := CD.Sy = SUBTYPE_Symbol;
   begin
-    InSymbol;  --  Consume TYPE or SUBTYPE symbol.
+    Scanner.InSymbol (CD);  --  Consume TYPE or SUBTYPE symbol.
     Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
     Enter (CD, Level, CD.Id, CD.Id_with_case, TypeMark, forward_id_idx);
     T1 := CD.Id_Count;
-    InSymbol;
+    Scanner.InSymbol (CD);
     Need (CD, IS_Symbol, err_IS_missing);
     declare
       New_T : IdTabEntry renames CD.IdTab (T1);
     begin
-      Type_Definition (
-        CD, Level,
-        FSys_TD => Comma_IDent_Semicolon + FSys_NTD,
-        xTP     => New_T.xtyp,
-        Size    => Integer (New_T.adr_or_sz)
-      );
+      if is_subtype then
+        Subtype_Indication
+          (CD, Level,
+           FSys_TD => Comma_IDent_Semicolon + FSys_NTD,
+           xTP     => New_T.xtyp,
+           Size    => Integer (New_T.adr_or_sz));
+      else
+        Type_Definition
+          (CD, Level,
+           FSys_TD => Comma_IDent_Semicolon + FSys_NTD,
+           xTP     => New_T.xtyp,
+           Size    => Integer (New_T.adr_or_sz));
+      end if;
     end;
     --
     Need_Semicolon_after_Declaration (CD, FSys_NTD);
-  end Type_Declaration;
+  end Type_or_Subtype_Declaration;
 
-  procedure Type_Definition (
-    CD            : in out Compiler_Data;
-    Initial_Level : in     Defs.Nesting_level;
-    FSys_TD       : in     Defs.Symset;
-    xTP           :    out Exact_Subtyp;
-    Size          :    out Integer
-  )
+  --  constrained_array_definition 3.6 (5) : "array (1 .. 2, 3 .. 4) of Integer;"
+  --  index_constraint 3.6.1 (2)           : "Matrix (1 .. 2, 3 .. 4);"
+  --
+  procedure Array_Typ
+    (CD            : in out Co_Defs.Compiler_Data;
+     Level : in     Defs.Nesting_level;
+     FSys_TD       : in     Defs.Symset;
+     arr_tab_ref, arr_size, arr_dimensions : out Integer;
+     string_constrained_subtype            :     Boolean)
+  is
+    Element_Exact_Subtyp, Index_Exact_Subtyp : Exact_Subtyp;
+    Element_Size                             : Integer;
+    recursive_dimensions                     : Natural := 0;
+    Lower_Bound, Higher_Bound                : Constant_Rec;
+    use Ranges;
+  begin
+    Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
+    Index_Exact_Subtyp := Lower_Bound.TP;
+    Index_Exact_Subtyp.Discrete_First := Lower_Bound.I;
+    Index_Exact_Subtyp.Discrete_Last  := Higher_Bound.I;
+    Enter_Array (CD, Index_Exact_Subtyp);
+    arr_tab_ref := CD.Arrays_Count;
+    if string_constrained_subtype then
+      --  We define String (L .. H) exactly as an "array (L .. H) of Character".
+      Construct_Root (Element_Exact_Subtyp, Chars);
+      Element_Exact_Subtyp.Discrete_First := 0;
+      Element_Exact_Subtyp.Discrete_Last  := 255;
+      Element_Size := 1;
+      Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
+    elsif CD.Sy = Comma then
+      --  Multidimensional array is equivalant to:  array (range_1) of array (range_2,...).
+      Scanner.InSymbol (CD);  --  Consume ',' symbol.
+      Construct_Root (Element_Exact_Subtyp, Arrays);  --  Recursion for next array dimension.
+      Array_Typ (CD, Level, FSys_TD, Element_Exact_Subtyp.Ref, Element_Size, recursive_dimensions, False);
+    else
+      Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
+      Need (CD, OF_Symbol, err_missing_OF);         --  "of"  in  "array (...) of Some_Type"
+      if Type_Begin_Symbol (CD.Sy) then
+        Error (CD, err_syntax_error, ": anonymous definition not permitted here");
+        --  Recovery:
+        Type_Definition (CD, Level, FSys_TD, Element_Exact_Subtyp, Element_Size);
+      else
+        --  RM 3.6 (2)
+        --  Here is a component_definition, which is a
+        --  subtype indication (possibly aliased).
+        Subtype_Indication (CD, Level, FSys_TD, Element_Exact_Subtyp, Element_Size);
+      end if;
+    end if;
+    arr_size := (Integer (Higher_Bound.I) - Integer (Lower_Bound.I) + 1) * Element_Size;
+    arr_dimensions := 1 + recursive_dimensions;
+    declare
+      New_A : ATabEntry renames CD.Arrays_Table (arr_tab_ref);
+    begin
+      --  New_A.Index_xTyp already set by Enter_Array.
+      New_A.Array_Size   := arr_size;
+      New_A.Element_xTyp := Element_Exact_Subtyp;
+      New_A.Element_Size := Element_Size;
+      New_A.dimensions   := arr_dimensions;
+    end;
+  end Array_Typ;
+
+  procedure Type_Definition
+    (CD            : in out Co_Defs.Compiler_Data;
+     Initial_Level : in     Defs.Nesting_level;
+     FSys_TD       : in     Defs.Symset;
+     xTP           :    out Co_Defs.Exact_Subtyp;
+     Size          :    out Integer)
   is
     Level : Nesting_level := Initial_Level;
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
-    --
-    --  constrained_array_definition 3.6 (5)
-    --
-    procedure Array_Typ
-      (arr_tab_ref, arr_size, arr_dimensions : out Integer;
-       string_constrained_subtype            :     Boolean)
-    is
-      Element_Exact_Subtyp, Index_Exact_Subtyp : Exact_Subtyp;
-      Element_Size                             : Integer;
-      recursive_dimensions                     : Natural := 0;
-      Lower_Bound, Higher_Bound                : Constant_Rec;
-      use Ranges;
-    begin
-      Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
-      Index_Exact_Subtyp := Lower_Bound.TP;
-      Index_Exact_Subtyp.Discrete_First := Lower_Bound.I;
-      Index_Exact_Subtyp.Discrete_Last  := Higher_Bound.I;
-      Enter_Array (CD, Index_Exact_Subtyp);
-      arr_tab_ref := CD.Arrays_Count;
-      if string_constrained_subtype then
-        --  We define String (L .. H) exactly as an "array (L .. H) of Character".
-        Construct_Root (Element_Exact_Subtyp, Chars);
-        Element_Exact_Subtyp.Discrete_First := 0;
-        Element_Exact_Subtyp.Discrete_Last  := 255;
-        Element_Size := 1;
-        Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-      elsif CD.Sy = Comma then
-        --  Multidimensional array is equivalant to:  array (range_1) of array (range_2,...).
-        InSymbol;  --  Consume ',' symbol.
-        Construct_Root (Element_Exact_Subtyp, Arrays);  --  Recursion for next array dimension.
-        Array_Typ (Element_Exact_Subtyp.Ref, Element_Size, recursive_dimensions, False);
-      else
-        Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-        Need (CD, OF_Symbol, err_missing_OF);         --  "of"  in  "array (...) of Some_Type"
-        Type_Definition (CD, Level, FSys_TD, Element_Exact_Subtyp, Element_Size);
-      end if;
-      arr_size := (Integer (Higher_Bound.I) - Integer (Lower_Bound.I) + 1) * Element_Size;
-      arr_dimensions := 1 + recursive_dimensions;
-      declare
-        New_A : ATabEntry renames CD.Arrays_Table (arr_tab_ref);
-      begin
-        --  New_A.Index_xTyp already set by Enter_Array.
-        New_A.Array_Size   := arr_size;
-        New_A.Element_xTyp := Element_Exact_Subtyp;
-        New_A.Element_Size := Element_Size;
-        New_A.dimensions   := arr_dimensions;
-      end;
-    end Array_Typ;
 
     procedure Enumeration_Typ is  --  RM 3.5.1 Enumeration Types
       enum_count : Natural := 0;
@@ -141,7 +159,7 @@ package body HAC_Sys.Parser.Type_Def is
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Enumeration_Typ;
 
-    procedure Record_Typ is
+    procedure Record_Typ is  --  RM 3.8
       Field_Exact_Subtyp : Exact_Subtyp;
       Field_Size, Offset, T0, T1 : Integer;
     begin
@@ -163,10 +181,20 @@ package body HAC_Sys.Parser.Type_Def is
           Enter_Variables (CD, Level, False);
           Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
           T1 := CD.Id_Count;
-          Type_Definition (
-            CD, Level, FSys_TD + Comma_END_IDent_Semicolon,
-            Field_Exact_Subtyp, Field_Size
-          );
+          if Type_Begin_Symbol (CD.Sy) then
+            Error (CD, err_syntax_error, ": anonymous definition not permitted here");
+            --  Recovery:
+            Type_Definition
+              (CD, Level, FSys_TD + Comma_END_IDent_Semicolon,
+               Field_Exact_Subtyp, Field_Size);
+          else
+            --  RM 3.6 (2)
+            --  Here is a component_definition, which is a
+            --  subtype indication (possibly aliased).
+            Subtype_Indication
+              (CD, Level, FSys_TD + Comma_END_IDent_Semicolon,
+               Field_Exact_Subtyp, Field_Size);
+          end if;
           while T0 < T1 loop
             T0                      := T0 + 1;
             CD.IdTab (T0).xtyp      := Field_Exact_Subtyp;
@@ -189,6 +217,56 @@ package body HAC_Sys.Parser.Type_Def is
     end Record_Typ;
 
     dummy_dims : Natural;
+  begin
+    xTP  := Undefined;
+    Size := 0;
+    if CD.Sy in
+      ABSTRACT_Symbol | ACCESS_Symbol |
+      DIGITS_Symbol | DELTA_Symbol |
+      INTERFACE_Symbol | LIMITED_Symbol |
+      NOT_Symbol | NEW_Symbol |
+      PRIVATE_Symbol | PROTECTED_Symbol |
+      RANGE_Keyword_Symbol | SYNCHRONIZED_Symbol |
+      TASK_Symbol | TAGGED_Symbol
+    then
+      Error
+        (CD, err_not_yet_implemented,
+         ": type definitions starting with """ &
+         Ada.Characters.Handling.To_Lower (A2S (CD.Id)) & '"',
+         severity => major);
+    end if;
+    Test (CD, Type_Begin_Symbol, FSys_TD, err_missing_type_begin_symbol);
+    if Type_Begin_Symbol (CD.Sy) then
+      case CD.Sy is
+        when ARRAY_Symbol =>
+          InSymbol;
+          Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
+          Construct_Root (xTP, Arrays);
+          Array_Typ (CD, Level, FSys_TD, xTP.Ref, Size, dummy_dims, string_constrained_subtype => False);
+        when RECORD_Symbol =>
+          Record_Typ;
+        when LParent =>
+          Enumeration_Typ;
+        when others =>
+          null;
+      end case;
+      Test (CD, FSys_TD, empty_symset, err_incorrectly_used_symbol);
+    end if;
+    if CD.error_count = 0 then
+      pragma Assert (Level = Initial_Level);
+    end if;
+  end Type_Definition;
+
+  procedure Subtype_Indication
+    (CD      : in out Co_Defs.Compiler_Data;
+     Level   : in     Defs.Nesting_level;
+     FSys_TD : in     Defs.Symset;
+     xTP     :    out Co_Defs.Exact_Subtyp;
+     Size    :    out Integer)
+  is
+    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+
+    dummy_dims : Natural;
 
     procedure String_Sub_Typ is
       --  Prototype of constraining an array type: String -> String (1 .. 26)
@@ -197,12 +275,12 @@ package body HAC_Sys.Parser.Type_Def is
       InSymbol;
       Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
       Construct_Root (xTP, Arrays);
-      Array_Typ (xTP.Ref, Size, dummy_dims, string_constrained_subtype => True);
+      Array_Typ (CD, Level, FSys_TD, xTP.Ref, Size, dummy_dims, string_constrained_subtype => True);
     end String_Sub_Typ;
 
     Ident_Index : Integer;
 
-    --  Here we are sitting on `Character` in `subtype My_Chars is Character` [range 'a' .. 'z']
+    --  Here we are sitting, say, on `Character` in `subtype My_Chars is Character` [range 'a' .. 'z']
     --
     procedure Sub_Typ is
       Low, High : Constant_Rec;
@@ -258,44 +336,25 @@ package body HAC_Sys.Parser.Type_Def is
   begin
     xTP  := Undefined;
     Size := 0;
-    if CD.Sy in
-      ABSTRACT_Symbol | ACCESS_Symbol |
-      LIMITED_Symbol | PRIVATE_Symbol |
-      TAGGED_Symbol
-    then
+    if CD.Sy = NOT_Symbol then
       Error
-        (CD, err_syntax_error,
-         ": " & Ada.Characters.Handling.To_Lower (A2S (CD.Id)) &
-         " types are not yet supported",
+        (CD, err_not_yet_implemented,
+         ": subtype indications starting with """ &
+         Ada.Characters.Handling.To_Lower (A2S (CD.Id)) & '"',
          severity => major);
     end if;
-    Test (CD, Type_Begin_Symbol, FSys_TD, err_missing_ARRAY_RECORD_or_ident);
-    if Type_Begin_Symbol (CD.Sy) then
-      case CD.Sy is
-        when IDent =>
-          Ident_Index := Locate_Identifier (CD, CD.Id, Level);
-          if Ident_Index = CD.String_Id_Index then
-            String_Sub_Typ;
-          else
-            Sub_Typ;
-          end if;
-        when ARRAY_Symbol =>
-          InSymbol;
-          Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
-          Construct_Root (xTP, Arrays);
-          Array_Typ (xTP.Ref, Size, dummy_dims, string_constrained_subtype => False);
-        when RECORD_Symbol =>
-          Record_Typ;
-        when LParent =>
-          Enumeration_Typ;
-        when others =>
-          null;
-      end case;  --  CD.Sy
-      Test (CD, FSys_TD, empty_symset, err_incorrectly_used_symbol);
+    Test (CD, Subtype_Begin_Symbol, FSys_TD, err_identifier_missing);
+    if CD.Sy /= IDent then
+      --  Normally this case should have been filtered out before.
+      Error (CD, err_syntax_error, severity => major);
     end if;
-    if CD.error_count = 0 then
-      pragma Assert (Level = Initial_Level);
+    Ident_Index := Locate_Identifier (CD, CD.Id, Level);
+    if Ident_Index = CD.String_Id_Index then
+      String_Sub_Typ;
+    else
+      Sub_Typ;
     end if;
-  end Type_Definition;
+    Test (CD, FSys_TD, empty_symset, err_incorrectly_used_symbol);
+  end Subtype_Indication;
 
 end HAC_Sys.Parser.Type_Def;

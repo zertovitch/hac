@@ -281,12 +281,22 @@ package HAC_Sys.Parser.Helpers is
      others => False);
 
   Type_Begin_Symbol : constant Symset :=
-   (IDent                |
-    ARRAY_Symbol         |
-    RECORD_Symbol        |
-    RANGE_Keyword_Symbol |
-    LParent              => True,
+   (ABSTRACT_Symbol | ACCESS_Symbol | ARRAY_Symbol |
+    DIGITS_Symbol | DELTA_Symbol |
+    INTERFACE_Symbol | LIMITED_Symbol |
+    NOT_Symbol |  --  For "not null" (null_exclusion)
+    NEW_Symbol |
+    PRIVATE_Symbol | PROTECTED_Symbol |
+    RANGE_Keyword_Symbol | RECORD_Symbol |
+    SYNCHRONIZED_Symbol |
+    TASK_Symbol | TAGGED_Symbol |
+    LParent        => True,
     others         => False);
+
+  Subtype_Begin_Symbol : constant Symset :=
+   (IDent      |
+    NOT_Symbol => True,  --  For "not null" (null_exclusion)
+    others     => False);
 
   ------------------
   --  Types sets  --

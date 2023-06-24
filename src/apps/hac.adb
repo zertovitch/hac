@@ -217,9 +217,10 @@ procedure HAC is
   begin
     PLCE ("HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
     PLCE (version_info);
-    PLCE ("URL: " & HAC_Sys.web);
+    PLCE ("Main URL: "           & HAC_Sys.web);
     PLCE ("  Sources, site #1: " & HAC_Sys.web2);
     PLCE ("  Sources, site #2: " & HAC_Sys.web3);
+    PLCE ("  Alire Crate: "      & HAC_Sys.web4);
     NLCE;
     PLCE ("Usage: hac [options] main.adb [command-line parameters for main]");
     NLCE;
@@ -250,7 +251,7 @@ procedure HAC is
       PLCE ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
       PLCE ("         environment variable.");
     end if;
-    Ada.Text_IO.Put ("Press Return.");
+    Ada.Text_IO.Put ("Press Return");
     Ada.Text_IO.Skip_Line;
   end Help;
 

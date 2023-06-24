@@ -40,8 +40,9 @@ package body HAC_Sys.Errors is
         return "found '[' instead of '('";
       when err_right_bracket_instead_of_parenthesis =>
         return "found ']' instead of ')'";
-      when err_missing_ARRAY_RECORD_or_ident =>
-        return "missing identifer, ""array"" or ""record""";
+      when err_missing_type_begin_symbol =>
+        --  We only show the supported symbols for starting a type definition.
+        return "missing ""("", ""array"" or ""record""";
       when err_expecting_double_dot =>
         return "expecting double dot symbol: ""..""";
       when err_semicolon_missing =>
@@ -215,7 +216,7 @@ package body HAC_Sys.Errors is
       when err_unexpected_end_of_text =>
         return "unexpected end of text";
       when err_not_yet_implemented =>
-        return "construct not yet correctly implemented or supported by HAC: " & hint_1;
+        return "construct not yet implemented or supported by HAC: " & hint_1;
       when err_type_conversion_not_supported =>
         return "this type conversion is not supported: " & hint_1;
       when err_numeric_type_coercion =>
