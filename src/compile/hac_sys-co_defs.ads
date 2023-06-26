@@ -184,20 +184,26 @@ package HAC_Sys.Co_Defs is
   --  Label                         ?
   --  Alias                         Index into the Identifier table of the aliased entity.
 
+  type Loop_Info is record
+    label_Id    : Natural;  --  No_Id : no label
+    is_for_loop : Boolean;  --  Emit n * k_FOR_Release_Stack_After_End when exiting n FOR loops
+  end record;
+
   subtype Source_Line_String is String (1 .. 1000);  --  Must be at least 200 (RM 2.2 (15))
 
   -----------------------
   --  Compiler tables  --
   -----------------------
 
-  type    Arrays_Table_Type            is array (1 .. AMax)         of ATabEntry;
-  type    Blocks_Table_Type            is array (0 .. BMax)         of BTabEntry;
-  type    Display_Type                 is array (Nesting_level)     of Integer;
-  type    Entries_Table_Type           is array (0 .. EntryMax)     of Index;
-  type    Identifier_Table_Type        is array (0 .. Id_Table_Max) of IdTabEntry;
-  type    Packages_Table_Type          is array (0 .. PMax)         of Package_Table_Entry;
+  type    Arrays_Table_Type            is array (1 .. AMax)             of ATabEntry;
+  type    Blocks_Table_Type            is array (0 .. BMax)             of BTabEntry;
+  type    Display_Type                 is array (Nesting_level)         of Integer;
+  type    Entries_Table_Type           is array (0 .. EntryMax)         of Index;
+  type    Identifier_Table_Type        is array (0 .. Id_Table_Max)     of IdTabEntry;
+  type    Nested_Loop_Table_Type       is array (1 .. loop_nesting_max) of Loop_Info;
+  type    Packages_Table_Type          is array (0 .. PMax)             of Package_Table_Entry;
   subtype Strings_Constants_Table_Type is String (1 .. SMax);
-  type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)      of Index;
+  type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)          of Index;
   --      ^ Task #0 is main task.
 
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
@@ -280,6 +286,7 @@ package HAC_Sys.Co_Defs is
     Entries_Table           : Entries_Table_Type;
     Float_Constants_Table   : Float_Constants_Table_Type;
     IdTab                   : Identifier_Table_Type;
+    Nested_Loop_Table       : Nested_Loop_Table_Type;
     Packages_Table          : Packages_Table_Type;
     Strings_Constants_Table : Strings_Constants_Table_Type;
     Tasks_Definitions_Table : Tasks_Definitions_Table_Type;
@@ -289,6 +296,7 @@ package HAC_Sys.Co_Defs is
     Entries_Count           : Natural;
     Float_Constants_Count   : Natural;
     Id_Count                : Natural;
+    loop_nesting_level      : Natural;
     Main_Proc_Id_Index      : Natural;
     Packages_Count          : Natural;
     String_Id_Index         : Natural;

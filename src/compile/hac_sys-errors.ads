@@ -41,6 +41,7 @@ package HAC_Sys.Errors is
      FLOAT_CONSTANTS,
      ARRAYS,
      LEVELS,
+     Loop_Nesting_Levels,
      Object_Code,
      Case_Labels,
      STRING_CONSTANTS,

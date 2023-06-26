@@ -38,6 +38,7 @@ package body HAC_Sys.Compiler is
     CD.Arrays_Count          := 0;
     CD.Blocks_Count          := 0;
     CD.Float_Constants_Count := 0;
+    CD.loop_nesting_level    := 0;
     CD.Packages_Count        := 0;
     --  Identifiers
     CD.Id_Count := 0;

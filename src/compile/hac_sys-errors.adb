@@ -446,7 +446,7 @@ package body HAC_Sys.Errors is
       case N is
         when FLOAT_CONSTANTS  => Put (Current_Error, "Float Constants");
         when STRING_CONSTANTS => Put (Current_Error, "Strings Constants");
-        when Object_Code          => Put (Current_Error, "Object Code");
+        when Object_Code      => Put (Current_Error, "Object Code");
         when PATCHING         => Put (Current_Error, "ObjCode PATCHING");
         when others           => Put (Current_Error, Table_OverFlow_Error'Image (N));
       end case;
