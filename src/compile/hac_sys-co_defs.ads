@@ -186,7 +186,8 @@ package HAC_Sys.Co_Defs is
 
   type Loop_Info is record
     label_Id    : Natural;  --  No_Id : no label
-    is_for_loop : Boolean;  --  Emit n * k_FOR_Release_Stack_After_End when exiting n FOR loops
+    is_FOR_loop : Boolean;  --  Emit k_FOR_Release_Stack_After_End for each exited FOR loop
+    start_line  : Natural;
   end record;
 
   subtype Source_Line_String is String (1 .. 1000);  --  Must be at least 200 (RM 2.2 (15))

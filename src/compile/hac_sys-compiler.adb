@@ -42,6 +42,7 @@ package body HAC_Sys.Compiler is
     CD.Packages_Count        := 0;
     --  Identifiers
     CD.Id_Count := 0;
+    CD.IdTab (CD.Id_Count).name := Empty_Alfa;
     --  Strings literals
     CD.Strings_Table_Top := CD.Strings_Constants_Table'First;
     --  Tasks, Entries

@@ -106,8 +106,9 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
       when k_FOR_Forward_End    => Do_FOR_Forward_End;
       when k_FOR_Reverse_Begin  => Do_FOR_Reverse_Begin;
       when k_FOR_Reverse_End    => Do_FOR_Reverse_End;
-      when k_FOR_Release_Stack_After_End  =>
-        Pop (ND, 3);  --  Destack parameter and bounds that are used by the FOR loop.
+      when k_FOR_Release_Stack_After_Loops =>
+        --  Destack parameter and bounds that are used by the FOR loops:
+        Pop (ND, 3 * Natural (ND.IR.Y));  --  Pop 3 elements per FOR loop.
     end case;
   end Do_Multi_Statement_Operation;
 

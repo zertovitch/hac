@@ -537,6 +537,13 @@ package body HAC_Sys.PCode.Interpreter is
         end if;
       end Check_Upper;
       --
+      procedure Do_Jump is
+      begin
+        if IR.Y < 0 then
+          raise Abnormal_Termination with "Unpatched jump address";
+        end if;
+        Curr_TCB.PC := Index (IR.Y);
+      end Do_Jump;
     begin
       case ND.IR.F is
         when k_Store =>  --  [T-1].all := [T], then pop 2x.
@@ -581,20 +588,20 @@ package body HAC_Sys.PCode.Interpreter is
         when Tasking_Opcode           => Tasking.Do_Tasking_Operation (CD, ND);
         --
         when k_Jump =>
-          Curr_TCB.PC := Index (IR.Y);
+          Do_Jump;
         when k_Jump_If_Zero_With_Pop =>
           --  NB: this is the original conditional jump in Pascal-S.
-          if ND.S (Curr_TCB.T).I = 0 then   --  if False, then ...
-            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
+          if ND.S (Curr_TCB.T).I = 0 then
+            Do_Jump;
           end if;
           Pop;  --  NB: the popping happens regardless of the branch.
         when k_Jump_If_Zero_No_Pop =>
-          if ND.S (Curr_TCB.T).I = 0 then   --  if False, then ...
-            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
+          if ND.S (Curr_TCB.T).I = 0 then
+            Do_Jump;
           end if;
         when k_Jump_If_Non_Zero_No_Pop =>
-          if ND.S (Curr_TCB.T).I /= 0 then  --  if True, then ...
-            Curr_TCB.PC := Index (IR.Y);    --    ... Jump.
+          if ND.S (Curr_TCB.T).I /= 0 then
+            Do_Jump;
           end if;
         --
         when k_Check_Lower_Bound => Check_Lower (IR.X, Typen'Val (IR.Y), Index (IR.Z));

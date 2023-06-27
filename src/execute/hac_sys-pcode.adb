@@ -75,6 +75,8 @@ package body HAC_Sys.PCode is
     use type Defs.HAC_Integer;
     FCT_corr : Opcode := FCT;
     --
+    --  Replace an instruction by a more specialized instruction.
+    --
     procedure Try_Specialization is
       procedure Specialize (new_value : Opcode) with Inline is
       begin
@@ -308,7 +310,8 @@ package body HAC_Sys.PCode is
         when k_Pop |
           k_Push_Float_First .. k_Push_Float_Last |
           Binary_Operator_Opcode |
-          Special_Operator_Opcode
+          k_ADD_Integer_Multiple .. k_MULT_Float_then_Store |
+          k_NAND_Boolean | k_NOR_Boolean
         =>
           Put (Text, "                    ");
         when others =>
@@ -342,7 +345,7 @@ package body HAC_Sys.PCode is
             when others =>
               null;
           end case;
-        when k_FOR_Release_Stack_After_End =>
+        when k_FOR_Release_Stack_After_Loops =>
           Put (Text, "; Cleanup after END LOOP of a FOR loop");
         when k_CASE_Switch =>
           Put (Text, "; (CASE) Jump to the switch block");

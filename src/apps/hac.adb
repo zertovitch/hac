@@ -199,7 +199,7 @@ procedure HAC is
     end if;
   exception
     when E : Abnormal_Termination =>
-      PLCE (Ada.Exceptions.Exception_Message (E));
+      PLCE ("Abnormal Termination (VM): " & Ada.Exceptions.Exception_Message (E));
       Failure;
     when Name_Error =>
       PLCE
