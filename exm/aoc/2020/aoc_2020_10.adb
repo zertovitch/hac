@@ -28,7 +28,6 @@ procedure AoC_2020_10 is
 
   procedure Search (result : out Integer) is
     c : Jolt := 0;
-    found : Boolean;
     diff_1, diff_3 : Natural := 0;
     seen : array (Adapter_Range) of Boolean;
     --
@@ -46,7 +45,6 @@ procedure AoC_2020_10 is
       seen (i) := False;
     end loop;
     while c < jmax loop
-      found := False;
       Steps :
       for step in 1 .. 3 loop
         for i in 1 .. top loop
@@ -55,7 +53,6 @@ procedure AoC_2020_10 is
               if step = 1 then diff_1 := diff_1 + 1; end if;
               if step = 3 then diff_3 := diff_3 + 1; end if;
               seen (i) := True;
-              found := True;
               if verbose then
                 Put_Line (
                   +"current " & c &

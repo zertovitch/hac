@@ -9,8 +9,8 @@
 --
 --  HAC 0.098 "nice to have"'s detected in this exercise:
 --
---    *     Exiting multiple nested loops
---    *     `EXIT [Label]`
+--    *     Exiting multiple nested loops  [Solved with HAC 0.26]
+--    *     `EXIT [Label]`                 [Solved with HAC 0.26]
 --    *     Performance: large "in" parameters passed as reference
 --    *     Comparison (equality operators) "=", "/=" of composite types (arrays and records)
 --    *     Detect an expression as a static (compile-time-known) value
@@ -121,7 +121,6 @@ procedure AoC_2021_19 is
   procedure Align is
     vs_1, vs_2, vs_1_to_2, vs_2_o, v_test : Vector;
     aligned : Natural;
-    found : Boolean;
     threshold : constant := 12;  --  This is given.
   begin
     for s_1 in 1 .. scanners loop
@@ -150,7 +149,6 @@ procedure AoC_2021_19 is
                   --  Now, try to align all data
                   --  between scanner s_1 and scanner s_2
                   aligned := 0;
-                  found := False;
                   --
                   --  Try matching any data of scanner 2 with any data of scanner 1.
                   --
@@ -165,27 +163,23 @@ procedure AoC_2021_19 is
                     end loop;
                   end loop;
                   --
-                  found := aligned >= threshold;
-                  if found then
+                  if aligned >= threshold then
                     info (s_1, s_2).paired := True;
                     info (s_1, s_2).face   := face;
                     info (s_1, s_2).spin   := spin;
                     info (s_1, s_2).shift  := vs_1_to_2;
+                    if verbose > 0 then
+                      Put_Line
+                        (+"aligned: " & aligned &
+                          " beacons between scanners " & (s_1 - 1) & " and " & (s_2 - 1) &
+                          " translation vector: " &
+                          vs_1_to_2 (1) & ", " & vs_1_to_2 (2) & ", " & vs_1_to_2 (3));
+                    end if;
+                    exit Scanner_Loop_2;
                   end if;
-                  if verbose > 0 and found then
-                    Put_Line (
-                      +"aligned: " & aligned &
-                       " beacons between scanners " & (s_1 - 1) & " and " & (s_2 - 1) &
-                       " translation vector: " &
-                       vs_1_to_2 (1) & ", " & vs_1_to_2 (2) & ", " & vs_1_to_2 (3));
-                  end if;
-                  exit when found;  --  We could do a multiple loop exit, but HAC 0.098 can't yet.
                 end loop Aligned_Beacon_2_Search;
-                exit when found;    --  We could do a multiple loop exit, but HAC 0.098 can't yet.
               end loop Rotation_Face;
-              exit when found;      --  We could do a multiple loop exit, but HAC 0.098 can't yet.
             end loop Rotation_Cube;
-            exit when found;        --  We could do a multiple loop exit, but HAC 0.098 can't yet.
           end if;
         end loop Scanner_Loop_2;
       end loop Aligned_Beacon_1_Search;

@@ -7,7 +7,6 @@
 --
 --  HAC 0.098 "nice to have"'s detected in this exercise:
 --
---    *     Exiting multiple nested loops
 --    *     aggregates, like ` hits := (others => (others => 0)); `
 --
 with HAT;
@@ -32,7 +31,6 @@ procedure AoC_2021_21 is
     score : array (Player_Range) of Natural;
     start : array (Player_Range) of Cell_Range;
     space, rolls : Natural;
-    done : Boolean := False;
     win_score : constant := 1000;
   begin
     score (0) := 0;
@@ -44,13 +42,11 @@ procedure AoC_2021_21 is
         space := 1 + (start (playing) + 9 * round ** 2 + (9 * playing - 3) * round) mod cells;
         score (playing) := score (playing) + space;
         if score (playing) >= 1000 then
-          done := True;
           rolls := 3 * (1 + (round - 1) * 2 + playing);
           r (1) := Interfaces.Integer_64 (score (1 - playing) * rolls);
-          exit;
+          return;
         end if;
       end loop;
-      exit when done;
     end loop;
   end Play_Part_1;
 
