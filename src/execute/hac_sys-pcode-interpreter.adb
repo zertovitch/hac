@@ -537,13 +537,14 @@ package body HAC_Sys.PCode.Interpreter is
         end if;
       end Check_Upper;
       --
-      procedure Do_Jump is
+      procedure Do_Jump with Inline is
       begin
         if IR.Y < 0 then
           raise Abnormal_Termination with "Unpatched jump address";
         end if;
         Curr_TCB.PC := Index (IR.Y);
       end Do_Jump;
+      --
     begin
       case ND.IR.F is
         when k_Store =>  --  [T-1].all := [T], then pop 2x.

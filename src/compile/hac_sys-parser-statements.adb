@@ -240,9 +240,9 @@ package body HAC_Sys.Parser.Statements is
     procedure Exit_Statement is  --  RM 5.7
       --  Generate an absolute branch statement with a dummy end loop address
       X : Exact_Subtyp;
-      exit_level : Operand_2_Type := Operand_2_Type (CD.loop_nesting_level);
+      exit_level : Natural := CD.loop_nesting_level;
       label_found : Boolean;
-      count_FOR_loops_above : Natural := 0;
+      count_FOR_loops : Natural := 0;
       landing_after_jump : Integer;
       conditional : Boolean := False;
     begin
@@ -251,18 +251,18 @@ package body HAC_Sys.Parser.Statements is
       end if;
       pragma Assert (CD.Sy = EXIT_Symbol);
       InSymbol;  --  Consume EXIT symbol.
-      --  Possible label:
+      --  Possible name:
       if CD.Sy = IDent then
         label_found := False;
         for level in reverse 1 .. CD.loop_nesting_level loop
-          if CD.Id = CD.IdTab (CD.Nested_Loop_Table (level).label_Id).name then
-            for level_above in level + 1 .. CD.loop_nesting_level loop
-              if CD.Nested_Loop_Table (level_above).is_FOR_loop then
-                count_FOR_loops_above := count_FOR_loops_above + 1;
-              end if;
-            end loop;
+          if CD.Nested_Loop_Table (level).is_FOR_loop then
+            count_FOR_loops := count_FOR_loops + 1;
+          end if;
+          if CD.Nested_Loop_Table (level).label_Id /= No_Id
+            and then CD.Id = CD.IdTab (CD.Nested_Loop_Table (level).label_Id).name
+          then
             label_found := True;
-            exit_level := Operand_2_Type (level);
+            exit_level := level;
             exit;
           end if;
         end loop;
@@ -270,12 +270,17 @@ package body HAC_Sys.Parser.Statements is
           Error (CD, err_syntax_error, "loop label not matched: " & A2S (CD.Id_with_case));
         end if;
         InSymbol;  --  Consume the identifier.
+      else
+        --  EXIT without a name.
+        if CD.Nested_Loop_Table (CD.loop_nesting_level).is_FOR_loop then
+          count_FOR_loops := 1;
+        end if;
       end if;
       if CD.Sy = WHEN_Symbol then  --  Conditional Exit
         InSymbol;  --  Consume WHEN symbol.
         Boolean_Expression (CD, Block_Data.level, Semicolon_Set, X);
         --  On False, conditional jump around Exit:
-        if count_FOR_loops_above = 0 then
+        if count_FOR_loops = 0 then
           landing_after_jump := CD.LC + 2;
         else
           landing_after_jump := CD.LC + 3;
@@ -283,12 +288,12 @@ package body HAC_Sys.Parser.Statements is
         Emit_1 (CD, k_Jump_If_Zero_With_Pop, Operand_2_Type (landing_after_jump));
         conditional := True;
       end if;
-      --  De-stacking for all FOR loops except the one being explicitly exited.
-      if count_FOR_loops_above > 0 then
-        Emit_1 (CD, k_FOR_Release_Stack_After_Loops, Operand_2_Type (count_FOR_loops_above));
+      --  De-stacking for all FOR loops.
+      if count_FOR_loops > 0 then
+        Emit_1 (CD, k_FOR_Release_Stack, Operand_2_Type (count_FOR_loops));
       end if;
       --  Unconditional jump with dummy address to be patched:
-      Emit_1 (CD, k_Jump, dummy_address_loop - exit_level);
+      Emit_1 (CD, k_Jump, dummy_address_loop - Operand_2_Type (exit_level));
       pragma Assert ((not conditional) or else CD.LC = landing_after_jump);
     end Exit_Statement;
 
@@ -703,8 +708,6 @@ package body HAC_Sys.Parser.Statements is
       CD.Id_Count := CD.Id_Count - 1;
       CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx := Previous_Last;
       Block_Data.data_allocation_index := Block_Data.data_allocation_index - 1;
-      --  The VM must also de-stack the data pushed on the stack for the FOR loop:
-      Emit_1 (CD, k_FOR_Release_Stack_After_Loops, 1);
     end FOR_Statement;
 
     procedure Select_Statement is

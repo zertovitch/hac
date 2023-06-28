@@ -47,6 +47,7 @@ procedure AoC_2020_10 is
     end loop;
     while c < jmax loop
       found := False;
+      Steps :
       for step in 1 .. 3 loop
         for i in 1 .. top loop
           if not seen (i) then
@@ -64,12 +65,11 @@ procedure AoC_2020_10 is
                 );
               end if;
               c := j (i);
-              exit;
+              exit Steps;
             end if;
           end if;
         end loop;
-        exit when found;
-      end loop;
+      end loop Steps;
     end loop;
     if not Check_all_used then
       Put_Line ("Nooo - some adapters are not used!");

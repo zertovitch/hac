@@ -186,7 +186,7 @@ package HAC_Sys.Co_Defs is
 
   type Loop_Info is record
     label_Id    : Natural;  --  No_Id : no label
-    is_FOR_loop : Boolean;  --  Emit k_FOR_Release_Stack_After_End for each exited FOR loop
+    is_FOR_loop : Boolean;  --  Emit k_FOR_Release_Stack for each exited FOR loop
     start_line  : Natural;
   end record;
 

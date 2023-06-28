@@ -24,29 +24,31 @@ begin
       Get (f, mem (i));
     end loop;
     n := 0;
+    File_Read :
     while not End_Of_File (f) loop
       Get (f, last_data);
       found := False;
       if part = 1 then
         --  Find a pair of numbers in the recent data whose
         --  sum is the number read just now (last_data).
+        Scan_Mem :
         for j in Mem_Range loop
           for k in j + 1 .. mem_max loop
             if last_data = mem (j) + mem (k) then
               found := True;
-              exit;
+              exit Scan_Mem;
             end if;
           end loop;
-          exit when found;
-        end loop;
+        end loop Scan_Mem;
         if not found then
           res_no_pair := last_data;
-          exit;
+          exit File_Read;
         end if;
       else
         --  Find a contiguous set of at least two numbers in the list
         --  which sum to the invalid number from part 1.
         contig_max := n + mem_max;
+        Contig_Scan:
         for j in n .. contig_max loop
           for k in j + 1 .. contig_max loop
             t := 0;
@@ -60,17 +62,14 @@ begin
             end loop;
             if t = res_no_pair then
               weakness := min + max;
-              found := True;
-              exit;
+              exit File_Read;
             end if;
           end loop;
-          exit when found;
-        end loop;
-        exit when found;
+        end loop Contig_Scan;
       end if;
       mem (n) := last_data;
       n := (n + 1) mod (mem_max + 1);
-    end loop;
+    end loop File_Read;
     Close (f);
   end loop;
   if test_mode then

@@ -42,31 +42,34 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
       end loop;
     end Do_CASE_Switch_1;
 
+    stack_elements_used_by_FOR_loop : constant := 3;
+
     procedure Do_FOR_Forward_Begin is  --  Start of a FOR loop, forward direction
       FOR_Param_Addr : constant Defs.Index       := Defs.Index (ND.S (Curr_TCB.T - 2).I);
       Lower_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
       Upper_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
     begin
       if Lower_Bound <= Upper_Bound then
-        --  We can start the loop with the first value
+        --  The range is not empty -> we can start the loop with the first value.
         ND.S (FOR_Param_Addr).I := Lower_Bound;
       else
         --  Empty range -> we don't enter the loop at all -> Jump after loop's end.
         Curr_TCB.PC := Defs.Index (IR.Y);
+        Pop (ND, stack_elements_used_by_FOR_loop);
       end if;
     end Do_FOR_Forward_Begin;
 
     procedure Do_FOR_Forward_End is  --  End of a FOR loop, forward direction
       FOR_Param_Addr : constant Defs.Index       := Defs.Index (ND.S (Curr_TCB.T - 2).I);
       Upper_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
-      Next_Value : Defs.HAC_Integer;
+      Next_Value     :          Defs.HAC_Integer;
     begin
       Next_Value := ND.S (FOR_Param_Addr).I + 1;  --  !! Overflow check before here
       if Next_Value <= Upper_Bound then
         ND.S (FOR_Param_Addr).I := Next_Value;
         Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump back to loop's begin
       else
-        null;  --  Leave loop (just go to next instruction, k_FOR_Release_Stack_After_End)
+        Pop (ND, stack_elements_used_by_FOR_loop);  --  Leave loop (just go to next instruction)
       end if;
     end Do_FOR_Forward_End;
 
@@ -76,25 +79,26 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
       Upper_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T).I;
     begin
       if Lower_Bound <= Upper_Bound then
-        --  We can start the loop with the first value
+        --  The range is not empty -> we can start the loop with the first value.
         ND.S (FOR_Param_Addr).I := Upper_Bound;
       else
         --  Empty range -> we don't enter the loop at all -> Jump after loop's end.
         Curr_TCB.PC := Defs.Index (IR.Y);
+        Pop (ND, stack_elements_used_by_FOR_loop);
       end if;
     end Do_FOR_Reverse_Begin;
 
     procedure Do_FOR_Reverse_End is  --  End of a FOR loop, reverse direction
       FOR_Param_Addr : constant Defs.Index       := Defs.Index (ND.S (Curr_TCB.T - 2).I);
       Lower_Bound    : constant Defs.HAC_Integer := ND.S (Curr_TCB.T - 1).I;
-      Next_Value : Defs.HAC_Integer;
+      Next_Value     :          Defs.HAC_Integer;
     begin
       Next_Value := ND.S (FOR_Param_Addr).I - 1;  --  !! Overflow check before here
       if Next_Value >= Lower_Bound then
         ND.S (FOR_Param_Addr).I := Next_Value;
         Curr_TCB.PC := Defs.Index (IR.Y);  --  Jump back to loop's begin
       else
-        null;  --  Leave loop (just go to next instruction, k_FOR_Release_Stack_After_End)
+        Pop (ND, stack_elements_used_by_FOR_loop);  --  Leave loop (just go to next instruction)
       end if;
     end Do_FOR_Reverse_End;
 
@@ -106,9 +110,7 @@ package body HAC_Sys.PCode.Interpreter.Multi_Statement is
       when k_FOR_Forward_End    => Do_FOR_Forward_End;
       when k_FOR_Reverse_Begin  => Do_FOR_Reverse_Begin;
       when k_FOR_Reverse_End    => Do_FOR_Reverse_End;
-      when k_FOR_Release_Stack_After_Loops =>
-        --  Destack parameter and bounds that are used by the FOR loops:
-        Pop (ND, 3 * Natural (ND.IR.Y));  --  Pop 3 elements per FOR loop.
+      when k_FOR_Release_Stack  => Pop (ND, stack_elements_used_by_FOR_loop * Natural (ND.IR.Y));
     end case;
   end Do_Multi_Statement_Operation;
 

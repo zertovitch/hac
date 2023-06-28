@@ -345,8 +345,8 @@ package body HAC_Sys.PCode is
             when others =>
               null;
           end case;
-        when k_FOR_Release_Stack_After_Loops =>
-          Put (Text, "; Cleanup after END LOOP of a FOR loop");
+        when k_FOR_Release_Stack =>
+          Put (Text, "; Release stack used by FOR loop(s)");
         when k_CASE_Switch =>
           Put (Text, "; (CASE) Jump to the switch block");
         when k_CASE_Choice_Value =>
