@@ -89,7 +89,12 @@ package HAC_Sys.Parser.Helpers is
      Found    :        Exact_Subtyp;
      Expected :        Typ_Set);
 
-  procedure Issue_Undefined_Operator_Error
+  procedure Issue_Undefined_Operator_Error  --  Unary
+    (CD       : in out Compiler_Data;
+     Operator :        KeyWSymbol;
+     Right    :        Exact_Subtyp);
+
+  procedure Issue_Undefined_Operator_Error  --  Binary
     (CD          : in out Compiler_Data;
      Operator    :        KeyWSymbol;
      Left, Right :        Exact_Subtyp);
@@ -248,8 +253,8 @@ package HAC_Sys.Parser.Helpers is
      END_Symbol              => True,
      others => False);
 
-  Plus_Minus : constant Symset :=
-    (Plus | Minus => True, others => False);
+  Plus_Minus_Set : constant Symset :=
+    (Plus_Minus => True, others => False);
 
   Selector_Symbol : constant Symset :=
     (LParent | Period => True, others => False);

@@ -192,19 +192,19 @@ package body HAC_Sys.Parser.Helpers is
   begin
     case T is
       when NOTYP               => return "(undefined type)";
-      when Ints                => return "integer type";
-      when Chars               => return "Character type";        -- "the" Character type
-      when Bools               => return "Boolean type";          -- "the" Boolean type
-      when Floats              => return "floating-point type";
-      when Arrays              => return "array type";
-      when Records             => return "record type";
-      when Enums               => return "enumeration type";
-      when String_Literals     => return "String type [literal]";
-      when Strings_as_VStrings => return "String type [pseudo-unconstrained]";
-      when VStrings            => return "VString type";
-      when Times               => return "Time type";             --  "the" Time type
-      when Durations           => return "Duration type";         --  "the" Duration type
-      when Text_Files          => return "text file type";
+      when Ints                => return "an integer type";
+      when Chars               => return "Character";        -- "the" Character type
+      when Bools               => return "Boolean";          -- "the" Boolean type
+      when Floats              => return "a floating-point type";
+      when Arrays              => return "an array type";
+      when Records             => return "a record type";
+      when Enums               => return "an enumeration type";
+      when String_Literals     => return "String [literal]";
+      when Strings_as_VStrings => return "String [pseudo-unconstrained]";
+      when VStrings            => return "VString";
+      when Times               => return "Time";             --  "the" Time type
+      when Durations           => return "Duration";         --  "the" Duration type
+      when Text_Files          => return "File_Type";
     end case;
   end Nice_Image;
 
@@ -275,6 +275,7 @@ package body HAC_Sys.Parser.Helpers is
       when Minus            => return "-";
       when Times            => return "*";
       when Divide           => return "/";
+      when Power            => return "**";
       when Ampersand_Symbol => return "&";
       when EQL              => return "=";
       when NEQ              => return "/=";
@@ -285,6 +286,25 @@ package body HAC_Sys.Parser.Helpers is
       when others           => return "?";
     end case;
   end Op_Hint;
+
+  procedure Issue_Undefined_Operator_Error
+    (CD       : in out Compiler_Data;
+     Operator :        KeyWSymbol;
+     Right    :        Exact_Subtyp)
+  is
+  begin
+    if Right.TYP = Enums then
+      Error
+        (CD, err_operator_not_defined_for_types,
+         Op_Hint (Operator),
+         Enum_Name (CD, Right.Ref));
+    else
+      Error
+        (CD, err_operator_not_defined_for_types,
+         Op_Hint (Operator),
+         Nice_Image (Right.TYP));
+    end if;
+  end Issue_Undefined_Operator_Error;
 
   procedure Issue_Undefined_Operator_Error
     (CD          : in out Compiler_Data;
@@ -299,11 +319,18 @@ package body HAC_Sys.Parser.Helpers is
          "left is "    & Nice_Exact_Image (CD, Left) &
          ", right is " & Nice_Exact_Image (CD, Right));
     elsif Left.TYP = Enums then
-      Error
-        (CD, err_operator_not_defined_for_types,
-         Op_Hint (Operator),
-         "left is "    & Enum_Name (CD, Left.Ref) &
-         ", right is " & Enum_Name (CD, Right.Ref));
+      if Left.Ref = Right.Ref then
+        Error
+          (CD, err_operator_not_defined_for_types,
+           Op_Hint (Operator),
+           Enum_Name (CD, Left.Ref));
+      else
+        Error
+          (CD, err_operator_not_defined_for_types,
+           Op_Hint (Operator),
+           "left is "    & Enum_Name (CD, Left.Ref) &
+           ", right is " & Enum_Name (CD, Right.Ref));
+      end if;
     else
       Error
         (CD, err_operator_not_defined_for_types,

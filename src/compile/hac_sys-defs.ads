@@ -211,6 +211,7 @@ package HAC_Sys.Defs is
     XOR_Symbol
   );
 
+  subtype Plus_Minus is KeyWSymbol range Plus .. Minus;
   subtype Comparison_Operator is KeyWSymbol range EQL .. LEQ;
   subtype Arithmetic_Binary_Operator is KeyWSymbol range Plus .. Power;
 
@@ -402,7 +403,6 @@ package HAC_Sys.Defs is
      err_numeric_constant_expected,
      err_statement_expected,
      err_duplicate_label,
-     err_invalid_power_operands,                  --  2018-03-18
      err_unexpected_end_of_text,                  --  2018-04-01
      err_not_yet_implemented,                     --  2019-03-24
      err_type_conversion_not_supported,           --  2020-03-31

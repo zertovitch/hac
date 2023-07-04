@@ -42,7 +42,7 @@ package body HAC_Sys.Parser.Expressions is
       InSymbol;
     else
       Sign := 1;
-      if Plus_Minus (CD.Sy) then
+      if CD.Sy in Plus_Minus then
         signed := True;
         if CD.Sy = Minus then
           Sign := -1;
@@ -635,7 +635,7 @@ package body HAC_Sys.Parser.Expressions is
               elsif X.TYP = Floats and Y.TYP = Ints then
                 Emit (CD, k_Power_Float_Integer);
               else
-                Error (CD, err_invalid_power_operands);
+                Issue_Undefined_Operator_Error (CD, Power, X, Y);
               end if;
               X.Construct_Root (X.TYP);  --  Forget subtype bounds
             end if;
@@ -743,8 +743,8 @@ package body HAC_Sys.Parser.Expressions is
       end loop;
     end Term;
 
-    Adding_OP : KeyWSymbol;
-    y         : Exact_Subtyp;
+    additive_operator : KeyWSymbol;
+    y                : Exact_Subtyp;
 
     function VString_Concatenation return Boolean is
     begin
@@ -909,33 +909,52 @@ package body HAC_Sys.Parser.Expressions is
     end String_Concatenation;
 
   begin  --  Simple_Expression
-    if Plus_Minus (CD.Sy) then
+    if CD.Sy in Plus_Minus then
       --
       --  Unary + , -      RM 4.5 (5), 4.4 (4)
       --
-      Adding_OP := CD.Sy;
+      additive_operator := CD.Sy;
       InSymbol (CD);
-      Term (FSys + Plus_Minus, X);
+      Term (FSys + Plus_Minus_Set, X);
       --  At this point we have consumed "+X" or "-X".
-      if Adding_OP = Plus and X.TYP = String_Literals then         --  +"Hello"
-        Emit_Std_Funct (CD, SF_Literal_to_VString);
-        Construct_Root (X, VStrings);
-      elsif Adding_OP = Plus and X.TYP = Strings_as_VStrings then  --  +Enum'Image (x)
-        Construct_Root (X, VStrings);
-      elsif Adding_OP = Plus and X.TYP = Chars then                --  +'H'
-        Emit_Std_Funct (CD, SF_Char_to_VString);
-        Construct_Root (X, VStrings);
-      elsif Adding_OP = Plus and then Is_Char_Array (CD, X) then   --  +S
-        Emit_Std_Funct (CD,
-          SF_String_to_VString,
-          Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size)
-        );
-        Construct_Root (X, VStrings);
-      elsif Adding_OP = Minus and X.TYP = VStrings then            --  -v
-        Construct_Root (X, Strings_as_VStrings);
+      if X.TYP in String_Literals | Strings_as_VStrings | Chars | VStrings
+        or else Is_Char_Array (CD, X)
+      then
+        --  !!  Check if HAT is "use"-visible  !!
+        case Plus_Minus (additive_operator) is
+          when Plus =>
+            case X.TYP is
+              when String_Literals =>                              --  +"Hello"
+                Emit_Std_Funct (CD, SF_Literal_to_VString);
+              when Strings_as_VStrings =>                          --  +Enum'Image (x)
+                --  Nothing to do, except setting X's
+                --  subtype as an "official" VString.
+                null;
+              when Chars =>                                        --  +'H'
+                Emit_Std_Funct (CD, SF_Char_to_VString);
+              when Arrays =>
+                if Is_Char_Array (CD, X) then                      --  +S
+                  Emit_Std_Funct
+                    (CD,
+                     SF_String_to_VString,
+                     Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size));
+                else
+                  Issue_Undefined_Operator_Error (CD, additive_operator, X);
+                end if;
+              when others =>
+                Issue_Undefined_Operator_Error (CD, additive_operator, X);
+            end case;
+            Construct_Root (X, VStrings);
+          when Minus =>
+            if X.TYP = VStrings then                               --  -v
+              Construct_Root (X, Strings_as_VStrings);
+            else
+              Issue_Undefined_Operator_Error (CD, additive_operator, X);
+            end if;
+        end case;
       elsif X.TYP not in Numeric_Typ then
         Error (CD, err_illegal_type_for_arithmetic_expression);
-      elsif Adding_OP = Minus then
+      elsif additive_operator = Minus then
         Emit_Unary_Minus (CD, X.TYP);
         if X.TYP = Ints then
           Ranges.Negate_Range (CD, X);
@@ -948,13 +967,13 @@ package body HAC_Sys.Parser.Expressions is
     --  We collect here eventual terms: a {+ b}      RM 4.4 (4)
     --
     while binary_adding_operator (CD.Sy) loop
-      Adding_OP := CD.Sy;
+      additive_operator := CD.Sy;
       InSymbol (CD);
       Term (FSys + binary_adding_operator, y);
       if X.TYP = NOTYP or y.TYP = NOTYP then
         null;  --  Something is already wrong at this point; nothing to check or emit.
       else
-        case Adding_OP is
+        case additive_operator is
           when OR_Symbol =>
             if X.TYP = Bools and y.TYP = Bools then
               Emit (CD, k_OR_Boolean);
@@ -972,9 +991,9 @@ package body HAC_Sys.Parser.Expressions is
           when Plus | Minus =>
             if X.TYP in Numeric_Typ and then y.TYP in Numeric_Typ then
               if X.TYP = y.TYP then
-                Emit_Arithmetic_Binary_Instruction (CD, Adding_OP, X.TYP);
+                Emit_Arithmetic_Binary_Instruction (CD, additive_operator, X.TYP);
               else
-                Forbid_Type_Coercion (CD, Adding_OP, X, y);
+                Forbid_Type_Coercion (CD, additive_operator, X, y);
               end if;
               if X.TYP = Ints then
                 if Ranges.Is_Singleton_Range (y, 0) then
@@ -984,7 +1003,7 @@ package body HAC_Sys.Parser.Expressions is
                   X.Construct_Root (X.TYP);  --  Forget subtype bounds
                 end if;
               end if;
-            elsif X.TYP = Times and y.TYP = Times and Adding_OP = Minus then
+            elsif X.TYP = Times and y.TYP = Times and additive_operator = Minus then
               Emit_Std_Funct (CD, SF_Time_Subtract);  --  T2 - T1
               Construct_Root (X, Durations);
             elsif X.TYP = Durations then
@@ -995,20 +1014,20 @@ package body HAC_Sys.Parser.Expressions is
                 Construct_Root (y, Durations);  --  Now X and Y have the type Duration.
               end if;
               if y.TYP = Durations then
-                if Adding_OP = Plus then
+                if additive_operator = Plus then
                   Emit_Std_Funct (CD, SF_Duration_Add);
                 else
                   Emit_Std_Funct (CD, SF_Duration_Subtract);
                 end if;
               else
-                Issue_Undefined_Operator_Error (CD, Adding_OP, X, y);
+                Issue_Undefined_Operator_Error (CD, additive_operator, X, y);
               end if;
             else
-              Issue_Undefined_Operator_Error (CD, Adding_OP, X, y);
+              Issue_Undefined_Operator_Error (CD, additive_operator, X, y);
             end if;
           when Ampersand_Symbol =>
             if not (VString_Concatenation or else String_Concatenation) then
-              Issue_Undefined_Operator_Error (CD, Adding_OP, X, y);
+              Issue_Undefined_Operator_Error (CD, additive_operator, X, y);
             end if;
           when others =>
             --  Doesn't happen: Binary_Adding_Operators(OP) is True.

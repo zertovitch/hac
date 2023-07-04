@@ -211,8 +211,6 @@ package body HAC_Sys.Errors is
         return "statement expected, can be ""null""";
       when err_duplicate_label =>
         return "label already defined: " & hint_1;
-      when err_invalid_power_operands =>
-        return "invalid operand types for the ""**"" operator";
       when err_unexpected_end_of_text =>
         return "unexpected end of text";
       when err_not_yet_implemented =>
@@ -225,7 +223,7 @@ package body HAC_Sys.Errors is
         return "numeric types don't match (" & hint_1 & "): " &
                hint_2 & " - please use explicit conversion";
       when err_operator_not_defined_for_types =>
-        return "operator (" & hint_1 & ") is not defined for those operand types: " & hint_2;
+        return "operator (" & hint_1 & ") is not defined for that type(s) of operand(s): " & hint_2;
       when err_no_null_functions =>
         return "a function cannot be null; only a procedure can";
       when err_scanner_digit_expected =>
