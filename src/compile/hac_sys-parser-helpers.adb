@@ -393,14 +393,15 @@ package body HAC_Sys.Parser.Helpers is
 
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-
-  function Locate_Identifier
+  function Locate_Identifier  --  Internal version
     (CD               : in out Compiler_Data;
      Id               : in     Alfa;
+     Prefix_Id        : in     Alfa;
      Level            : in     Defs.Nesting_level;
-     Fail_when_No_Id  : in     Boolean := True;
-     Alias_Resolution : in     Boolean := True;
-     Level_0_Filter   : in     Boolean := True;
-     Public_Filter    : in     Index   := Index'Last)
+     Fail_when_No_Id  : in     Boolean;
+     Alias_Resolution : in     Boolean;
+     Level_0_Filter   : in     Boolean;
+     Public_Filter    : in     Index)
   return Natural
   is
     L : Defs.Nesting_level'Base;
@@ -413,6 +414,7 @@ package body HAC_Sys.Parser.Helpers is
   begin
     L := Level;
     --  Scan all Id's on level L down to 0:
+    Scan :
     loop
       if L = 0 and then Level_0_Filter then
         l0_def := CD.CUD.level_0_def.Find (Id);
@@ -420,7 +422,7 @@ package body HAC_Sys.Parser.Helpers is
           --  In this case there is no point
           --  doing a tedious linear search :-) .
           J := Element (l0_def);
-          exit;
+          exit Scan;
         end if;
       end if;
       J := CD.Blocks_Table (CD.Display (L)).Last_Id_Idx;
@@ -429,6 +431,19 @@ package body HAC_Sys.Parser.Helpers is
         exit when J = No_Id;  --  Beginning of ID table reached.
         if CD.IdTab (J).entity /= Paquetage_Body then
           --  ^ A package body is invisible as a declaration.
+          if CD.IdTab (J).entity = Paquetage
+            and then Length (Prefix_Id) > 0
+            and then Prefix_Id = CD.IdTab (J).name
+          then
+            --  We have reached the defining package.
+            --  Example: we are looking for HAT.PUT, but we just hit a
+            --  local HAT package's specification. Logically that local HAT
+            --  doesn't contain a PUT item, otherwise we would have found
+            --  it already.
+            --  Other packages with the same name at upper levels are hidden.
+            J := No_Id;
+            exit Scan;
+          end if;
           dot_pos := Length (CD.pkg_prefix);
           if dot_pos = 0 then
             is_name_matched := CD.IdTab (J).name = Id;
@@ -469,8 +484,8 @@ package body HAC_Sys.Parser.Helpers is
         J := CD.IdTab (J).link;  --  Skip this identifier.
       end loop;
       L := L - 1;  --  Decrease nesting level.
-      exit when L < 0 or J /= No_Id;
-    end loop;
+      exit Scan when L < 0 or J /= No_Id;
+    end loop Scan;
     if J = No_Id then
       if not Fail_when_No_Id then
         return No_Id;
@@ -501,20 +516,42 @@ package body HAC_Sys.Parser.Helpers is
         InSymbol (CD);  --  Consume prefix package identifier.
         Need (CD, Period, err_syntax_error);  --  Accept "Pkg.", reject "Pkg.."
         if CD.Sy = IDent then
-          return Locate_Identifier (
-            CD,
-            ID_Copy & '.' & CD.Id,
-            Level,
-            Fail_when_No_Id,
-            Alias_Resolution,
-            Level_0_Filter,
-            CD.Packages_Table (CD.IdTab (J).block_or_pkg_ref).last_public_declaration
-          );
+          return Locate_Identifier
+            (CD,
+             ID_Copy & '.' & CD.Id,
+             ID_Copy,
+             Level,
+             Fail_when_No_Id,
+             Alias_Resolution,
+             Level_0_Filter,
+             CD.Packages_Table (CD.IdTab (J).block_or_pkg_ref).last_public_declaration);
         end if;
         Error (CD, err_identifier_missing, severity => major);
       end if;
     end if;
     return J;
+  end Locate_Identifier;
+
+  function Locate_Identifier
+    (CD               : in out Compiler_Data;
+     Id               : in     Alfa;
+     Level            : in     Defs.Nesting_level;
+     Fail_when_No_Id  : in     Boolean := True;
+     Alias_Resolution : in     Boolean := True;
+     Level_0_Filter   : in     Boolean := True;
+     Public_Filter    : in     Index   := Index'Last)
+  return Natural
+  is
+  begin
+    return Locate_Identifier
+      (CD               => CD,
+       Id               => Id,
+       Prefix_Id        => Empty_Alfa,
+       Level            => Level,
+       Fail_when_No_Id  => Fail_when_No_Id,
+       Alias_Resolution => Alias_Resolution,
+       Level_0_Filter   => Level_0_Filter,
+       Public_Filter    => Public_Filter);
   end Locate_Identifier;
 
   procedure Check_Duplicate_Specification
