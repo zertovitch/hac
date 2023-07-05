@@ -481,6 +481,101 @@ package body HAC_Sys.Scanner is
       end if;
     end Scan_Apostrophe_or_Character;
 
+    procedure Scan_String_Literal is
+      ST : String renames CD.Strings_Constants_Table;
+      lit_len : Integer;
+
+      procedure Try_String_Folding is
+        trace_folding : constant Boolean := False;
+        first_char : constant Character := ST (CD.Strings_Table_Top + 1);
+        len : Positive;
+      begin
+        pragma Assert (lit_len > 0);
+        for past_start in
+          Integer'Max
+            (Strings_Constants_Table_Type'First,
+             CD.Strings_Table_Top - string_folding_scan_limit)
+          ..
+          CD.Strings_Table_Top
+        loop
+          len := Integer'Min (lit_len, CD.Strings_Table_Top - past_start + 1);
+          --  NB: from the upper bound of the loop, we know that
+          --  CD.Strings_Table_Top >= past_start.
+          --  We also have assumed above that lit_len > 0.
+          --  Then len is always >= 0.
+          if ST (past_start) = first_char
+            and then
+              ST (past_start .. past_start + len - 1) =
+              ST (CD.Strings_Table_Top + 1 .. CD.Strings_Table_Top + len)
+          then
+            CD.INum  := HAC_Integer (past_start);
+            if trace_folding then
+              Put ("Matched... [" & ST (past_start .. past_start + len - 1) & "] ");
+              if len = lit_len then
+                Put_Line ("Full match");
+                --  Entire new string was found in the existing string table.
+                --  CD.Strings_Table_Top won't be changed.
+              else
+                pragma Assert (len < lit_len);
+                Put_Line
+                  ("Partial match; rest is: [" &
+                   ST (CD.Strings_Table_Top + len + 1 .. CD.Strings_Table_Top + lit_len) &
+                   ']');
+                 --  A partial match makes sense only from the first characters
+                 --  rightwards and if the right limit is on CD.Strings_Table_Top.
+                 --  Then the table can be completed to the full string.
+              end if;
+            end if;
+            --  Partial match: append rest to last string in the table.
+            for i in 1 .. lit_len - len loop
+              ST (CD.Strings_Table_Top + i) :=      --  Extension.
+              ST (CD.Strings_Table_Top + i + len);  --  Rest of the newly scanned string
+            end loop;
+            --  We will extend the known part of the table only for `lit_len - len` characters.
+            --  In any case `len` is the "compression" gain.
+            lit_len := lit_len - len;
+            exit;
+          end if;
+        end loop;
+      end Try_String_Folding;
+    begin
+      lit_len := 0;
+      loop
+        NextCh (CD);
+        if CD.CUD.c = '"' then
+          NextCh (CD);
+          if CD.CUD.c /= '"' then  --  The ""x case
+            exit;
+          end if;
+        end if;
+        lit_len := lit_len + 1;
+        if CD.Strings_Table_Top + lit_len = SMax then
+          Fatal (STRING_CONSTANTS);
+        end if;
+        ST (CD.Strings_Table_Top + lit_len) := CD.CUD.c;
+        if CD.CUD.CC = 1 then
+          lit_len := 0;  --  END OF InpLine
+          CD.syStart := 1;
+          CD.syEnd   := 1;
+          Error
+            (CD,
+             err_syntax_error,
+             "missing closing quote on previous line ",
+             severity => major);
+        else
+          null;  --  Continue
+        end if;
+      end loop;
+      CD.Sy    := StrCon;
+      CD.SLeng := lit_len;
+      CD.INum  := HAC_Integer (CD.Strings_Table_Top + 1);
+      --
+      if lit_len > 0 then
+        Try_String_Folding;
+        CD.Strings_Table_Top := CD.Strings_Table_Top + lit_len;
+      end if;
+    end Scan_String_Literal;
+
     exit_big_loop : Boolean;
 
   begin  --  InSymbol
@@ -559,8 +654,9 @@ package body HAC_Sys.Scanner is
           --
           CD.Sy := (if I - 1 > J then AdaKeyW (K).sy else IDent);
 
-        when '0' .. '9' =>
-          Scan_Number (skip_leading_integer => False);
+        when '0' .. '9' => Scan_Number (skip_leading_integer => False);
+        when '"'        => Scan_String_Literal;
+        when '''        => Scan_Apostrophe_or_Character;
 
         when ':' =>
           NextCh (CD);
@@ -616,45 +712,6 @@ package body HAC_Sys.Scanner is
         when c128 =>  --  Hathorn
           CD.Sy := Range_Double_Dot_Symbol;
           NextCh (CD);
-
-        when '"' =>
-          K := 0;
-          loop
-            NextCh (CD);
-            if CD.CUD.c = '"' then
-              NextCh (CD);
-              if CD.CUD.c /= '"' then  --  The ""x case
-                exit;
-              end if;
-            end if;
-            if CD.Strings_Table_Top + K = SMax then
-              Fatal (STRING_CONSTANTS);
-            end if;
-            CD.Strings_Constants_Table (CD.Strings_Table_Top + K) := CD.CUD.c;
-            K := K + 1;
-            if CD.CUD.CC = 1 then
-              K := 0;  --  END OF InpLine
-              CD.syStart := 1;
-              CD.syEnd   := 1;
-              Error
-                (CD,
-                 err_syntax_error,
-                 "missing closing quote on previous line ",
-                 severity => major);
-            else
-              null;  --  Continue
-            end if;
-          end loop;
-          CD.Sy    := StrCon;
-          CD.INum  := HAC_Integer (CD.Strings_Table_Top);
-          CD.SLeng := K;
-          CD.Strings_Table_Top := CD.Strings_Table_Top + K;
-          --  TBD: we could compress this information by searching already existing strings
-          --       in the table! (Quick search as for Lempel-Ziv string matchers - cf LZ77
-          --       package in the Zip-Ada project.
-
-        when ''' =>
-          Scan_Apostrophe_or_Character;
 
         when '-' =>
           NextCh (CD);

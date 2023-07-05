@@ -44,7 +44,7 @@ package body HAC_Sys.Compiler is
     CD.Id_Count := 0;
     CD.IdTab (CD.Id_Count).name := Empty_Alfa;
     --  Strings literals
-    CD.Strings_Table_Top := CD.Strings_Constants_Table'First;
+    CD.Strings_Table_Top := Strings_Constants_Table_Type'First - 1;
     --  Tasks, Entries
     CD.Tasks_Definitions_Count := 0;
     CD.Entries_Count := 0;
@@ -250,6 +250,16 @@ package body HAC_Sys.Compiler is
         Defs.Index'Image (CD.IdTab (CD.Main_Proc_Id_Index).block_or_pkg_ref));
     end if;
 
+    New_Line (CD.comp_dump);
+    Put_Line (CD.comp_dump, "String table. Length:" & CD.Strings_Table_Top'Image);
+    Put_Line (CD.comp_dump, "----");
+    for i in Strings_Constants_Table_Type'First .. CD.Strings_Table_Top loop
+      Put (CD.comp_dump, CD.Strings_Constants_Table (i));
+      if i mod 70 = 0 or else i = CD.Strings_Table_Top then
+        New_Line (CD.comp_dump);
+      end if;
+    end loop;
+    Put_Line (CD.comp_dump, "----");
   end Print_Tables;
 
   ---------------------------------------------------------------------------

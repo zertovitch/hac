@@ -85,6 +85,8 @@ package HAC_Sys.Defs is
   SMax       : constant := 100_000;       --  Size of String table
   TaskMax    : constant := 12;            --  Max # of concurrent tasks
 
+  string_folding_scan_limit : constant := 1000;
+
   Wind_Size    : constant := TaskMax + 2;    --  SnapShot window size
   Id_Table_Max : constant := 10_000;         --  Size of identifier table
   XMax         : constant Integer := MaxINT;
