@@ -98,4 +98,19 @@ package body HAC_Sys.Co_Defs is
     end case;
   end Size_of;
 
+  procedure Increment_Nesting_or_Descending_Level (CD : in out Compiler_Data) is
+  begin
+    CD.CUD.use_hat_stack_top := CD.CUD.use_hat_stack_top + 1;
+    if CD.CUD.use_hat_stack_top > 0 then
+      --  "Inherit" the USE clause for HAT.
+      CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) :=
+        CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top - 1);
+    end if;
+  end Increment_Nesting_or_Descending_Level;
+
+  procedure Decrement_Nesting_or_Descending_Level (CD : in out Compiler_Data) is
+  begin
+    CD.CUD.use_hat_stack_top := CD.CUD.use_hat_stack_top - 1;
+  end Decrement_Nesting_or_Descending_Level;
+
 end HAC_Sys.Co_Defs;

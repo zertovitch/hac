@@ -54,6 +54,7 @@ package body HAC_Sys.Parser.Packages is
     Need (CD, IS_Symbol, err_IS_missing);
     --  Set new prefix, support also eventual subpackages:
     CD.pkg_prefix := CD.pkg_prefix & A2S (package_name) & '.';
+    Increment_Nesting_or_Descending_Level (CD);
     needs_body := False;
     loop
       Test (
@@ -146,6 +147,7 @@ package body HAC_Sys.Parser.Packages is
         err_incorrectly_used_symbol,
         stop_on_error => True);  --  Exception is raised there if there is an error.
     CD.pkg_prefix := previous_pkg_prefix;
+    Decrement_Nesting_or_Descending_Level (CD);
   end Package_Declaration;
 
   --------------------
@@ -174,6 +176,7 @@ package body HAC_Sys.Parser.Packages is
     Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);
     CD.pkg_prefix := CD.pkg_prefix & A2S (package_name) & '.';
+    Increment_Nesting_or_Descending_Level (CD);
     loop
       Test (
         CD, Declaration_Symbol + BEGIN_Symbol + END_Symbol + PRIVATE_Symbol,
@@ -267,6 +270,7 @@ package body HAC_Sys.Parser.Packages is
     CD.pkg_prefix := previous_pkg_prefix;
     --  Make body's declarations unreachable in identifier chain.
     CD.Blocks_Table (CD.Display (block_data.level)).Last_Id_Idx := last_id;
+    Decrement_Nesting_or_Descending_Level (CD);
   end Package_Body;
 
   procedure Use_Clause (
@@ -304,6 +308,10 @@ package body HAC_Sys.Parser.Packages is
     pragma Assert (Pkg_Idx > No_Id);
     if CD.IdTab (Pkg_Idx).entity /= Paquetage then
       Error (CD, err_syntax_error, "package name expected", severity => major);
+    end if;
+    if CD.IdTab (Pkg_Idx).lev = 0 and then Pkg_UName = HAT_Name then
+      --  We are USE-ing the HAT package, thus opening the visibility of operators.
+      CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) := True;
     end if;
     --  The package specification's definitions begins immediately after the
     --  package's identifier.

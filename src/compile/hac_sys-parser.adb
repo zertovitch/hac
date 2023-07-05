@@ -395,6 +395,7 @@ package body HAC_Sys.Parser is
     if CD.error_count > 0 then
       return;
     end if;
+    Increment_Nesting_or_Descending_Level (CD);
     if CD.Full_Block_Id = Universe then
       CD.Full_Block_Id := Block_Id_with_case;
     else
@@ -439,6 +440,7 @@ package body HAC_Sys.Parser is
       Process_Body;
     end if;
     CD.Full_Block_Id := Restore_Block_ID;
+    Decrement_Nesting_or_Descending_Level (CD);
     if CD.error_count = 0 then
       pragma Assert (block_data.level = Initial_Block_Data.level);
     end if;

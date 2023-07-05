@@ -743,12 +743,25 @@ package body HAC_Sys.Parser.Expressions is
       end loop;
     end Term;
 
+    procedure Check_HAT_Operator_Visibility (op : KeyWSymbol) is
+    begin
+      if not CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) then
+        --  HAT is not USE-visible
+        Error
+          (CD,
+           err_syntax_error,
+           "operator (" & Op_Hint (op) &
+           ") not visible (missing a ""use " & HAT_Name & """ clause)",
+           severity => major);
+      end if;
+    end Check_HAT_Operator_Visibility;
+
     additive_operator : KeyWSymbol;
-    y                : Exact_Subtyp;
+    y                 : Exact_Subtyp;
 
     function VString_Concatenation return Boolean is
     begin
-      --  !!  Check if HAT is "use"-visible  !!
+      Check_HAT_Operator_Visibility (Ampersand_Symbol);
       --
       --  RM References are about Unbounded_String (A.4.5).
       if X.TYP /= VStrings and y.TYP /= VStrings then
@@ -920,7 +933,7 @@ package body HAC_Sys.Parser.Expressions is
       if X.TYP in String_Literals | Strings_as_VStrings | Chars | VStrings
         or else Is_Char_Array (CD, X)
       then
-        --  !!  Check if HAT is "use"-visible  !!
+        Check_HAT_Operator_Visibility (additive_operator);
         case Plus_Minus (additive_operator) is
           when Plus =>
             case X.TYP is

@@ -166,7 +166,7 @@ package HAC_Sys.Co_Defs is
     block_or_pkg_ref : Index;                --  Reference in the block or package tables.
     normal           : Boolean;              --  value param?
     lev              : Nesting_level;
-    adr_or_sz        : HAC_Integer;
+    adr_or_sz        : HAC_Integer;          --  Address, Size; index of aliased entity (USE) !! rather use block_or_pkg_ref ?!
   end record;
 
   --  Entity                        Meaning of Adr_or_Sz
@@ -207,6 +207,8 @@ package HAC_Sys.Co_Defs is
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)          of Index;
   --      ^ Task #0 is main task.
 
+  type    Use_HAT_Stack_Type           is array (0 .. nesting_and_descending_max) of Boolean;
+
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 
   No_Id : constant := 0;
@@ -221,16 +223,18 @@ package HAC_Sys.Co_Defs is
 
   type Current_Unit_Data is record
     --  Current source code information and scanner data
-    compiler_stream  : Source_Stream_Access;
-    source_file_name : HAT.VString;         --  Indicative, for error messages
+    compiler_stream   : Source_Stream_Access;
+    source_file_name  : HAT.VString;         --  Indicative, for error messages
     --  Parsing
-    line_count       : Natural;             --  Source line counter, used for listing
-    input_line       : Source_Line_String;
-    c                : Character;           --  Character read from source program
-    CC               : Integer;             --  Character counter (=column in current line)
-    LL               : Natural;             --  Length of current line
+    line_count        : Natural;             --  Source line counter, used for listing
+    input_line        : Source_Line_String;
+    c                 : Character;           --  Character read from source program
+    CC                : Integer;             --  Character counter (=column in current line)
+    LL                : Natural;             --  Length of current line
     --  Level 0 definitions visible to currently compiled unit:
-    level_0_def      : Id_Maps.Map;
+    level_0_def       : Id_Maps.Map;
+    Use_HAT_Stack     : Use_HAT_Stack_Type;
+    use_hat_stack_top : Natural;
   end record;
 
   --  Set current source stream (file, editor data, zipped file,...)
@@ -342,6 +346,9 @@ package HAC_Sys.Co_Defs is
   --  Size of a variable or subprogram parameter
   --
   function Size_of (CD : Compiler_Data; Id_Index : Natural) return Positive;
+
+  procedure Increment_Nesting_or_Descending_Level (CD : in out Compiler_Data);
+  procedure Decrement_Nesting_or_Descending_Level (CD : in out Compiler_Data);
 
   Universe : constant HAT.VString := HAT.To_VString ("[-- The Universe --]");
 

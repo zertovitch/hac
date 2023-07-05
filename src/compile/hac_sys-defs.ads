@@ -66,10 +66,13 @@ package HAC_Sys.Defs is
   FMax                  : constant := 20;       --  Maximum Number of files for I/O
   KMax                  : constant := HAC_Float'Digits;
   PMax                  : constant := 10_000;   --  Size of Package table
+
   loop_nesting_max      : constant := 100;
 
   Nesting_Level_Max     : constant := 20;
   subtype Nesting_level is HAC_Integer range 0 .. Nesting_Level_Max;
+
+  nesting_and_descending_max : constant := 40;  --  subprograms, subpackages and child packages
 
   End_Function_without_Return : constant := -1;
 

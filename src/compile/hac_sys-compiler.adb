@@ -31,6 +31,8 @@ package body HAC_Sys.Compiler is
     CUD.CC := 0;
     CUD.LL := 0;
     CUD.level_0_def.Clear;
+    CUD.use_hat_stack_top := 0;
+    CUD.Use_HAT_Stack (CUD.use_hat_stack_top) := False;
   end Init;
 
   procedure Init (CD : out Compiler_Data) is
@@ -474,6 +476,25 @@ package body HAC_Sys.Compiler is
     src_stream : Co_Defs.Source_Stream_Access;
     function Spec_or_Body return String is
       (" (" & (if as_specification then "specification)" else "body)"));
+    --
+    procedure Reactivate_USE_HAT is
+      some_stuff_in_HAT_str : constant String := "VSTRING";
+      some_stuff_in_HAT     : constant Alfa := S2A (some_stuff_in_HAT_str);
+      stuff_index : Integer;
+    begin
+      if unit_context.Contains (some_stuff_in_HAT) then
+        stuff_index := unit_context (some_stuff_in_HAT);
+        if CD.IdTab (stuff_index).entity = Alias then
+          --  Get the real item behind the alias (VSTRING -> HAT.VSTRING):
+          stuff_index := Integer (CD.IdTab (stuff_index).adr_or_sz);
+          if  A2S (CD.IdTab (stuff_index).name) = HAT_Name & '.' & some_stuff_in_HAT_str then
+            --  Normally, HAT.VSTRING (unless HAT_Name has been customized).
+            CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) := True;
+          end if;
+        end if;
+      end if;
+    end Reactivate_USE_HAT;
+    --
   begin
     CD.recursion := CD.recursion + 1;
     if CD.trace.detail_level >= 1 then
@@ -500,7 +521,7 @@ package body HAC_Sys.Compiler is
     --    - the package's declarations, incuding the private part.
     --  Basically the body is a continuation of the spec, possibly in another file.
     CD.CUD.level_0_def := unit_context;
-
+    Reactivate_USE_HAT;
     --
     --  We define Standard, or activate if this is not the first unit compiled.
     --

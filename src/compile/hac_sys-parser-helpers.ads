@@ -89,6 +89,8 @@ package HAC_Sys.Parser.Helpers is
      Found    :        Exact_Subtyp;
      Expected :        Typ_Set);
 
+  function Op_Hint (OP : KeyWSymbol) return String;
+
   procedure Issue_Undefined_Operator_Error  --  Unary
     (CD       : in out Compiler_Data;
      Operator :        KeyWSymbol;

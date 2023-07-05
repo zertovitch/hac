@@ -502,7 +502,8 @@ package body HAC_Sys.Scanner is
           --  NB: from the upper bound of the loop, we know that
           --  CD.Strings_Table_Top >= past_start.
           --  We also have assumed above that lit_len > 0.
-          --  Then len is always >= 0.
+          --  Then, len is always > 0 (the substring to match is
+          --  at least one character long).
           if ST (past_start) = first_char
             and then
               ST (past_start .. past_start + len - 1) =
