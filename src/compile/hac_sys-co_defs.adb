@@ -102,7 +102,7 @@ package body HAC_Sys.Co_Defs is
   begin
     CD.CUD.use_hat_stack_top := CD.CUD.use_hat_stack_top + 1;
     if CD.CUD.use_hat_stack_top > 0 then
-      --  "Inherit" the USE clause for HAT.
+      --  "Inherit" the possible presence of a USE clause for HAT.
       CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) :=
         CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top - 1);
     end if;

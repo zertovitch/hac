@@ -244,7 +244,7 @@ package body HAC_Sys.Parser.Attributes is
             when NOTYP =>
               null;  --  Already in error
             when Floats =>
-              --  !! To do !!
+              --  !! To do
               Error
                 (CD, err_not_yet_implemented, "attribute " & attr_ID & " for this subtype", severity => major);
             when others =>

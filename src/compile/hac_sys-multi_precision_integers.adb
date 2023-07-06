@@ -17,8 +17,6 @@
 --  15-Feb-2002: "zero" and 1st index in Divide_absolute_normalized
 --                 bugs fixed by Duncan Sands (D.S.)
 
---  To-do/bug symbol: !!
-
 pragma Warnings (".P");
 pragma Warnings (".I");
 pragma Warnings ("C");
@@ -560,8 +558,8 @@ package body HAC_Sys.Multi_Precision_Integers is
 
   --  To do: implement a faster algorithm.
   --  1) Karatsuba's algorithm
-  --  Ada code for string arithm exists !!
-  --  http://www.csc.liv.ac.uk/~ped/teachadmin/algor/karatsuba.ada
+  --     Ada code for string arithm exists
+  --     http://www.csc.liv.ac.uk/~ped/teachadmin/algor/karatsuba.ada
   --  2) Better: Schönhage-Strassen algorithm (no Ada code)
 
   procedure Multiply_internal_m_m (i1, i2 : in Multi_int; i3 : in out Multi_int) is

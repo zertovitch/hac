@@ -481,11 +481,9 @@ package body HAC_Sys.Errors is
       if CD.errs (K) then
         if CD.comp_dump_requested then
           Put_Line (CD.comp_dump, Defs.Compile_Error'Image (K) & ":  " & Error_String (K));
-          --  Should be Error_hint(K,n) !!
         end if;
         if CD.listing_requested then
           Put_Line (CD.listing, Defs.Compile_Error'Image (K) & "  " & Error_String (K));
-          --  Should be Error_hint(K,n) !!
         end if;
       end if;
     end loop;

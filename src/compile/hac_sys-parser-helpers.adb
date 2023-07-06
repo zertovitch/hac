@@ -231,9 +231,9 @@ package body HAC_Sys.Parser.Helpers is
         ", expected " & Enum_Name (CD, Expected.Ref));
     else
       Error (CD, Err, "not exactly the same " & Nice_Image (Found.TYP));
-        --  !! TBD: find the eventual array or record
-        --     names using X.Ref, Y.Ref ... if they have names!
-        --     (same for Operator_Undefined)
+      --  Possible improvement: find the eventual array or record
+      --  names using X.Ref, Y.Ref ... if they have names!
+      --  (same for Issue_Undefined_Operator_Error)
     end if;
   end Type_Mismatch;
 
@@ -336,9 +336,9 @@ package body HAC_Sys.Parser.Helpers is
         (CD, err_operator_not_defined_for_types,
          Op_Hint (Operator),
          Nice_Image (Left.TYP));
-         --  !! TBD: find the eventual array or record
-         --     names using X.Ref, Y.Ref ... if they have names!
-         --     (same for Type_Mismatch)
+         --  Possible improvement: find the eventual array or record
+         --  names using X.Ref, Y.Ref ... if they have names!
+         --  (same for Type_Mismatch)
     end if;
   end Issue_Undefined_Operator_Error;
 

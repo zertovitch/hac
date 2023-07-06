@@ -23,7 +23,7 @@ package body HAC_Sys.Parser.Tasking is
     saveLineCount : constant Integer := CD.CUD.line_count;  --  Source line where Task appeared
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
     I, T0  : Integer;
-    TaskID : Alfa;
+    TaskID, TaskID_with_case : Alfa;
     task_block : Block_Data_Type;
     forward_id_idx : Natural;
     use type Alfa;
@@ -31,8 +31,9 @@ package body HAC_Sys.Parser.Tasking is
     InSymbol;
     if CD.Sy = BODY_Symbol then  --  Task Body
       InSymbol;
-      I      := Locate_Identifier (CD, CD.Id, Level);
-      TaskID := CD.IdTab (I).name;
+      I                := Locate_Identifier (CD, CD.Id, Level);
+      TaskID           := CD.IdTab (I).name;
+      TaskID_with_case := CD.IdTab (I).name_with_case;
       CD.Blocks_Table (CD.IdTab (I).block_or_pkg_ref).SrcFrom := saveLineCount;  --  (* Manuel *)
       InSymbol;
       task_block.level                         := Level + 1;
@@ -40,20 +41,23 @@ package body HAC_Sys.Parser.Tasking is
       task_block.entity                        := aEntry;
       task_block.is_main                       := False;
       task_block.previous_declaration_id_index := No_Id;
-      Block (CD, FSys, False, task_block, TaskID, TaskID);  --  !! up/low case
+      Block (CD, FSys, False, task_block, TaskID, TaskID_with_case);
       Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
     else                         --  Task Specification
       if CD.Sy = IDent then
-        TaskID := CD.Id;
+        TaskID           := CD.Id;
+        TaskID_with_case := CD.Id_with_case;
       else
         Error (CD, err_identifier_missing);
-        CD.Id := Empty_Alfa;
+        CD.Id            := Empty_Alfa;
+        TaskID           := Empty_Alfa;
+        TaskID_with_case := Empty_Alfa;
       end if;
       CD.Tasks_Definitions_Count := CD.Tasks_Definitions_Count + 1;
       if CD.Tasks_Definitions_Count > TaskMax then
         Fatal (TASKS);  --  Exception is raised there.
       end if;
-      Enter (CD, Level, TaskID, TaskID, aTask, forward_id_idx);  --  !! casing
+      Enter (CD, Level, TaskID, TaskID_with_case, aTask, forward_id_idx);
       CD.Tasks_Definitions_Table (CD.Tasks_Definitions_Count) := CD.Id_Count;
       Enter_Block (CD, CD.Id_Count);
       CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.Blocks_Count;

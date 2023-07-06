@@ -76,7 +76,7 @@ package body HAC_Sys.Parser.Const_Var is
             Emit_1 (CD, k_Variable_Initialization, Typen'Pos (Var.xtyp.TYP));
           end if;
           --  !!  TBD: Must handle composite types (arrays or records) containing
-          --           initialized types, too...
+          --           initialized types, too... Bug #2
         end loop;
       end if;
       --

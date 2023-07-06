@@ -40,7 +40,7 @@ package HAC_Sys.Defs is
   HAC_Float_Name_Upper : constant String := Ada.Characters.Handling.To_Upper (HAC_Float_Name);
 
   --  Max & Min Exponents. IEEE Double Precision.
-  --  TBD: find the attribute, applied on HAC_Float, that matches this value.
+  --  TBD: !! find the attribute, applied on HAC_Float, that matches this value.
   EMax : constant :=  308;
   EMin : constant := -308;
 

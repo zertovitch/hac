@@ -34,7 +34,7 @@ begin
     when To_Float =>
       case T_Expr.TYP is
         when Floats =>
-          null;  --  !! Spot useless conversions !!
+          null;  --  !! Spot useless conversions -> issue warning
         when Ints =>
           Compiler.PCode_Emit.Emit_1 (CD, k_Integer_to_Float, 0);
         when Durations =>
@@ -50,7 +50,7 @@ begin
         when Durations =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Duration_to_Int);
         when Ints =>
-          null;  --  !! Spot useless conversions (identical range) !!
+          null;  --  !! Spot useless conversions (identical range) -> issue warning
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;
@@ -64,7 +64,7 @@ begin
         when Ints =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Int_to_Duration);
         when Durations =>
-          null;  --  !! Spot useless conversions !!
+          null;  --  !! Spot useless conversions -> issue warning
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;

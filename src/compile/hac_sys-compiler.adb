@@ -478,6 +478,9 @@ package body HAC_Sys.Compiler is
       (" (" & (if as_specification then "specification)" else "body)"));
     --
     procedure Reactivate_USE_HAT is
+      --  Detect a directly visible item of the HAT package.
+      --  It that case, it proves that a "USE HAT" was in the context
+      --  clause of the specification.
       some_stuff_in_HAT_str : constant String := "VSTRING";
       some_stuff_in_HAT     : constant Alfa := S2A (some_stuff_in_HAT_str);
       stuff_index : Integer;
@@ -485,10 +488,12 @@ package body HAC_Sys.Compiler is
       if unit_context.Contains (some_stuff_in_HAT) then
         stuff_index := unit_context (some_stuff_in_HAT);
         if CD.IdTab (stuff_index).entity = Alias then
-          --  Get the real item behind the alias (VSTRING -> HAT.VSTRING):
+          --  Item named VSTRING from a USE clause was detected.
+          --  Get the real item behind the alias (VSTRING -> ?.VSTRING):
           stuff_index := Integer (CD.IdTab (stuff_index).adr_or_sz);
-          if  A2S (CD.IdTab (stuff_index).name) = HAT_Name & '.' & some_stuff_in_HAT_str then
-            --  Normally, HAT.VSTRING (unless HAT_Name has been customized).
+          if A2S (CD.IdTab (stuff_index).name) = HAT_Name & '.' & some_stuff_in_HAT_str then
+            --  Now we are sure the item stems from the HAT package.
+            --  Normally, the full name is "HAT.VSTRING", unless HAT_Name has been customized.
             CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) := True;
           end if;
         end if;
