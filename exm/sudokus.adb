@@ -147,10 +147,24 @@ package body Sudokus is
     end loop;
   end Mark_Solution;
 
-  ---------------
-  --  Singles  --
-  ---------------
+  ------------------------------------
+  --  ===  Solving techniques  ===  --
+  ------------------------------------
 
+  ---------------------------------------------------------------
+  --  Singles. Some cells have only one possibility.           --
+  --  This case is called "single". It can be either "naked",  --
+  --  when the only possibility is alone, or "hidden" when     --
+  --  the possibility in question is not alone in its cell     --
+  --  but is nowhere else in a house (row, column or box).     --
+  --  When a single is found, the cell is solved.              --
+  ---------------------------------------------------------------
+
+  --  The "naked single" case is the most simple case to solve when
+  --  the possibilities for each cell are counted: the cell (i, j)
+  --  has only one possible digit. Note that for humans, this case
+  --  is not easily identifiable visually.
+  --
   procedure Handle_Naked_Singles (u : in out Grid; found : out Natural) is
     procedure Handle_Naked_Single (i, j : Sudigit) is
     begin
@@ -354,6 +368,12 @@ package body Sudokus is
       end loop;
     end loop;
   end Handle_Locked_Cells_Inside_Boxes;
+
+  ------------------------------
+  --  Multiple possibilities  --
+  ------------------------------
+
+  --  TBD: Handle_Naked_Multiples
 
   procedure Handle_Hidden_Multiples
     (u       : in out Grid;
@@ -665,6 +685,80 @@ package body Sudokus is
     New_Line;
   end Show_Total;
 
+  procedure Show (u : Grid; title : HAT.VString) is
+    min_poss : Natural := Natural'Last;
+    poss : Natural;
+    use HAT;
+  begin
+    Put_Line (title);
+    Put_Line (Length (title) * '=');
+    New_Line;
+    Put_Line (+"Grid, " & Count_Solved (u) & " digits set         Possibilities");
+    New_Line;
+    for i in Sudigit loop
+      for j in Sudigit loop
+        if j mod 3 = 1 then
+          Put ('|');
+        else
+          Put (' ');
+        end if;
+        if u (i, j).solved then
+          Put (u (i, j).value, 0);
+        else
+          Put ('_');
+        end if;
+      end loop;
+      Put ("|         ");
+      for j in Sudigit loop
+        if j mod 3 = 1 then
+          Put ('|');
+        else
+          Put (' ');
+        end if;
+        if u (i, j).solved then
+          Put ('_');
+        else
+          poss := Count (u (i, j).set);
+          Put (poss, 0);
+          min_poss := Min (min_poss, poss);
+        end if;
+      end loop;
+      Put_Line ('|');
+      if i = 3 or else i = 6 then
+        Put_Line (":-----+-----+-----:         :-----+-----+-----:");
+      end if;
+    end loop;
+    New_Line;
+    if min_poss in Sudigit then
+      Put_Line (+"                            Minimum: " & min_poss);
+    end if;
+  end Show;
+
+  procedure Show_Detailed_Possibilities (u : Grid) is
+    use HAT;
+  begin
+    for i in Sudigit loop
+      for j in Sudigit loop
+        for num in Sudigit loop
+          if u (i, j).set (num) then
+            Put (num, 0);
+          else
+            Put ('.');
+          end if;
+        end loop;
+        if j mod 3 = 0 then
+          Put ('|');
+        else
+          Put (' ');
+        end if;
+      end loop;
+      New_Line;
+      if i mod 3 = 0 then
+        Put_Line (90 * '-');
+      end if;
+    end loop;
+  end Show_Detailed_Possibilities;
+
   procedure Resolution_Round
     (pack            : in out Sudo_Pack;
      help            : in out Sudo_Help;
@@ -783,113 +877,6 @@ package body Sudokus is
     end if;
   end Solve;
 
-  procedure Show (u : Grid; title : HAT.VString) is
-    min_poss : Natural := Natural'Last;
-    poss : Natural;
-    use HAT;
-  begin
-    Put_Line (title);
-    Put_Line (Length (title) * '=');
-    New_Line;
-    Put_Line (+"Grid, " & Count_Solved (u) & " digits set         Possibilities");
-    New_Line;
-    for i in Sudigit loop
-      for j in Sudigit loop
-        if j mod 3 = 1 then
-          Put ('|');
-        else
-          Put (' ');
-        end if;
-        if u (i, j).solved then
-          Put (u (i, j).value, 0);
-        else
-          Put ('_');
-        end if;
-      end loop;
-      Put ("|         ");
-      for j in Sudigit loop
-        if j mod 3 = 1 then
-          Put ('|');
-        else
-          Put (' ');
-        end if;
-        if u (i, j).solved then
-          Put ('_');
-        else
-          poss := Count (u (i, j).set);
-          Put (poss, 0);
-          min_poss := Min (min_poss, poss);
-        end if;
-      end loop;
-      Put_Line ('|');
-      if i = 3 or else i = 6 then
-        Put_Line (":-----+-----+-----:         :-----+-----+-----:");
-      end if;
-    end loop;
-    New_Line;
-    if min_poss in Sudigit then
-      Put_Line (+"                            Minimum: " & min_poss);
-    end if;
-  end Show;
-
-  procedure Show_Detailed_Possibilities (u : Grid) is
-    use HAT;
-  begin
-    for i in Sudigit loop
-      for j in Sudigit loop
-        for num in Sudigit loop
-          if u (i, j).set (num) then
-            Put (num, 0);
-          else
-            Put ('.');
-          end if;
-        end loop;
-        if j mod 3 = 0 then
-          Put ('|');
-        else
-          Put (' ');
-        end if;
-      end loop;
-      New_Line;
-      if i mod 3 = 0 then
-        Put_Line (90 * '-');
-      end if;
-    end loop;
-  end Show_Detailed_Possibilities;
-
-  procedure Convert_Data
-    (s    : in     Sudo_Strings;
-     pack : in out Sudo_Pack;
-     help : in out Sudo_Help)
-  is
-    procedure Convert_String (i : Sudigit; s : HAT.VString) is
-      c : Character;
-      use HAT;
-    begin
-      for j in Sudigit loop
-        c := Element (s, j);
-        case c is
-          when ' ' =>
-            pack.u (i, j).solved := False;
-            pack.u (i, j).set := help.full;
-          when '1' .. '9' =>
-            pack.u (i, j).solved := True;
-            pack.u (i, j).set := help.empty;
-            pack.u (i, j).value := Ord (c) - Ord ('0');
-          when others =>
-            Put_Line ("Data Error!");  --  !! Full Ada: raise some exception
-        end case;
-      end loop;
-    end Convert_String;
-
-  begin
-    Initialize (pack);
-    Initialize_Helper (help);
-    for i in Sudigit loop
-      Convert_String (i, s (i));
-    end loop;
-  end Convert_Data;
-
   procedure Initialize (pack : out Sudo_Pack) is
   begin
     Zero (pack.total);
@@ -955,5 +942,38 @@ package body Sudokus is
     --    HAT.New_Line;
     --  end loop;
   end Initialize_Helper;
+
+  procedure Convert_Data
+    (s    : in     Sudo_Strings;
+     pack : in out Sudo_Pack;
+     help : in out Sudo_Help)
+  is
+    procedure Convert_String (i : Sudigit; s : HAT.VString) is
+      c : Character;
+      use HAT;
+    begin
+      for j in Sudigit loop
+        c := Element (s, j);
+        case c is
+          when ' ' =>
+            pack.u (i, j).solved := False;
+            pack.u (i, j).set := help.full;
+          when '1' .. '9' =>
+            pack.u (i, j).solved := True;
+            pack.u (i, j).set := help.empty;
+            pack.u (i, j).value := Ord (c) - Ord ('0');
+          when others =>
+            Put_Line ("Data Error!");  --  !! Full Ada: raise some exception
+        end case;
+      end loop;
+    end Convert_String;
+
+  begin
+    Initialize (pack);
+    Initialize_Helper (help);
+    for i in Sudigit loop
+      Convert_String (i, s (i));
+    end loop;
+  end Convert_Data;
 
 end Sudokus;

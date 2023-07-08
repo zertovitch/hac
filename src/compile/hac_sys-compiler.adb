@@ -500,13 +500,22 @@ package body HAC_Sys.Compiler is
       end if;
     end Reactivate_USE_HAT;
     --
+    function Indent_String (starting : Boolean) return String is
+      ((if indent = 1 then
+          "|"
+        else
+          (indent - 1) * ' ' &
+          (if starting then '\' else '/')));
   begin
     CD.recursion := CD.recursion + 1;
     if CD.trace.detail_level >= 1 then
       if CD.trace.detail_level >= 2 then
         indent := CD.recursion;
       end if;
-      Progress_Message (CD, indent * '.' & "Compiling.... : " & file_name & Spec_or_Body);
+      Progress_Message
+        (CD,
+         Indent_String (True) & " Compiling " &
+         file_name & Spec_or_Body);
     end if;
     begin
       LD.open_source (file_name, src_stream);
@@ -645,9 +654,10 @@ package body HAC_Sys.Compiler is
     end case;
     LD.close_source (file_name);
     if CD.trace.detail_level >= 2 then
-      Progress_Message (CD,
-       indent * '.' &
-       "Compilation of " & file_name & " completed");
+      Progress_Message
+        (CD,
+         Indent_String (False) &
+         "           " & file_name & ": done.");
     end if;
     --  Export library-level context, possibly needed later by a body:
     unit_context := CD.CUD.level_0_def;

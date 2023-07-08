@@ -30,7 +30,6 @@ package Sudokus is
 
   procedure Adapt_All_Sets (u : in out Grid);
 
-  --  Internals - for build with HAC, this stuff stays public.
   --  We associate combinations of possible Sudigits
   --  with the binary representation of numbers.
   --  Example: if we want to consider digits 2 and 4,
@@ -70,53 +69,6 @@ package Sudokus is
     max_combi : Max_Combinations_Type;
   end record;
 
-  ------------------------------------
-  --  ===  Solving techniques  ===  --
-  ------------------------------------
-
-  ---------------------------------------------------------------
-  --  Singles. Some cells have only one possibility.           --
-  --  This case is called "single". It can be either "naked",  --
-  --  when the only possibility is alone, or "hidden" when     --
-  --  the possibility in question is not alone in its cell     --
-  --  but is nowhere else in a house (row, column or box).     --
-  --  When a single is found, the cell is solved.              --
-  ---------------------------------------------------------------
-
-  --  The "naked single" case is the most simple case to solve when
-  --  the possibilities for each cell are counted: the cell (i, j)
-  --  has only one possible digit. Note that for humans, this case
-  --  is not easily identifiable visually.
-  --
-  procedure Handle_Naked_Singles (u : in out Grid; found : out Natural);
-
-  --  A "hidden single" is not the only left on its cell but
-  --  the only possible in one of the houses (row, column, box)
-  --  the cells belongs to.
-  --
-  procedure Handle_Hidden_Singles (u : in out Grid; found : out Natural);
-
-  --------------------
-  --  Locked cells  --
-  --------------------
-
-  procedure Handle_Locked_Cells_Outside_Boxes (u : in out Grid; found : out Natural);
-
-  procedure Handle_Locked_Cells_Inside_Boxes (u : in out Grid; found : out Natural);
-
-  ------------------------------
-  --  Multiple possibilities  --
-  ------------------------------
-
-  --  TBD: Handle_Naked_Multiples
-
-  procedure Handle_Hidden_Multiples
-    (u       : in out Grid;
-     multi   : in     Sudigit;
-     h       : in out Sudo_Help;
-     verbose : in     Boolean;
-     found   :    out Natural);
-
   -------------------------------------------------------
   --  Organization of different resolution techniques  --
   -------------------------------------------------------
@@ -148,8 +100,6 @@ package Sudokus is
 
   --  Output of a grid on console.
 
-  procedure Show (u : Grid; title : HAT.VString);
-
   procedure Show_Detailed_Possibilities (u : Grid);
 
   type Sudo_Pack is record
@@ -169,10 +119,6 @@ package Sudokus is
      help            : in out Sudo_Help;
      name            : in     HAT.VString;
      verbosity_level : in     Natural);
-
-  procedure Initialize (pack : out Sudo_Pack);
-
-  procedure Initialize_Helper (help : out Sudo_Help);
 
   --  Input of puzzles as strings.
 

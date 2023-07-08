@@ -104,15 +104,16 @@ package body HAC_Sys.Builder is
 
     if BD.CD.trace.detail_level >= 2 then
       Compiler.Progress_Message
-        (BD.CD.all, "--  Compilation of eventual with'ed unit's bodies  --");
+        (BD.CD.all,
+         "------  Compilation of eventual with'ed unit's bodies  ------");
     end if;
     for round in Positive loop
       Compile_Pending_Bodies_Single_Round (BD, num_pending);
       if num_pending > 0 and then BD.CD.trace.detail_level >= 2 then
         Compiler.Progress_Message
           (BD.CD.all,
-           "--  Round" & round'Image &
-           ", compiled bodies:" & num_pending'Image);
+           "------  End of Round" & round'Image &
+           ", compiled bodies:" & num_pending'Image & "  ------");
       end if;
       exit when num_pending = 0;
     end loop;

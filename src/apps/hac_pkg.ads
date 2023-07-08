@@ -12,7 +12,7 @@ package HAC_Pkg is
     "Compiler version: " & HAC_Sys.version & " dated " & HAC_Sys.reference & '.';
 
   HAC_margin_1 : constant String := "*******[ HAC ]*******   ";
-  HAC_margin_2 : constant String := ". . . .[ HAC ]. . . .   ";
+  HAC_margin_2 : constant String := "       [ HAC ]          ";
   HAC_margin_3 : constant String := "-------[ HAC ]-------   ";
 
   command_line_source_path, main_Ada_file_name : HAT.VString;
