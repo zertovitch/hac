@@ -246,11 +246,16 @@ package body HAC_Sys.Parser.Statements is
       landing_after_jump : Integer;
       conditional : Boolean := False;
     begin
-      if CD.loop_nesting_level = 0 then
-        Error (CD, err_syntax_error, """exit"" without a ""loop"" - was ""return"" intended?");
-      end if;
       pragma Assert (CD.Sy = EXIT_Symbol);
       InSymbol;  --  Consume EXIT symbol.
+      if CD.loop_nesting_level = 0 then
+        Error
+          (CD,
+           err_syntax_error,
+           """exit"" without a ""loop"" - was ""return"" intended?",
+           severity => major);
+        --  Exception raised, compilation stopped.
+      end if;
       --  Possible name:
       if CD.Sy = IDent then
         label_found := False;
