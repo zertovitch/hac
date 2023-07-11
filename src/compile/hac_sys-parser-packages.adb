@@ -304,6 +304,7 @@ package body HAC_Sys.Parser.Packages is
     Pkg_UName : constant String := A2S (CD.IdTab (Pkg_Idx).name);
     Id_Alias, dummy_id_idx : Natural;
     pkg_table_index : Positive;
+    pkg_level : Nesting_level;
   begin
     pragma Assert (Pkg_Idx > No_Id);
     if CD.IdTab (Pkg_Idx).entity /= Paquetage then
@@ -313,6 +314,7 @@ package body HAC_Sys.Parser.Packages is
       --  We are USE-ing the HAT package, thus opening the visibility of operators.
       CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) := True;
     end if;
+    pkg_level := CD.IdTab (Pkg_Idx).lev;
     --  The package specification's definitions begins immediately after the
     --  package's identifier.
     --  E.g. HAT: PAQUETAGE; HAT.File_Type: TYPEMARK; ...
@@ -322,67 +324,71 @@ package body HAC_Sys.Parser.Packages is
     for i in CD.Packages_Table (pkg_table_index).first_public_declaration ..
              CD.Packages_Table (pkg_table_index).last_public_declaration
     loop
-      declare
-        Full_UName : constant String := A2S (CD.IdTab (i).name);
-        Full_Name  : String (Full_UName'Range);
-        Start : Positive;
-      begin
-        --  We have spotted an item with the correct prefix.
-        --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
-        --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
-        Start := Full_UName'First + Pkg_UName'Length + 1;
-        Full_Name := A2S (CD.IdTab (i).name_with_case);
+      if CD.IdTab (i).lev = pkg_level then
+        --  Subprogram parameters are not declarations of
+        --  the package and have a higher nesting level.
         declare
-          Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
-          Short_Id     : constant Alfa := S2A (Short_Id_str);  --  Id as visible after USE.
+          Full_UName : constant String := A2S (CD.IdTab (i).name);
+          Full_Name  : String (Full_UName'Range);
+          Start : Positive;
         begin
-          --  Check if there is already this identifier, even as
-          --  a library level invisible definition.
-          --  If not, we do a "FROM Pkg IMPORT Short_Id" (as it would be in Modula-2/Python
-          --  style).
-          Id_Alias := Parser.Helpers.Locate_Identifier (
-            CD               => CD,
-            Id               => Short_Id,
-            Level            => Level,
-            Fail_when_No_Id  => False,
-            Alias_Resolution => False,
-            Level_0_Filter   => False
-            --  ^ We search any matching name, including hidden at library level.
-          );
-          if Id_Alias = No_Id or else CD.IdTab (Id_Alias).lev < Level then
-            --  Name was not found or defined at a lower nesting level.
-            --  We enter, e.g. the "FALSE", "False" pair.
-            Enter
-              (CD,
-               Level,
-               Short_Id,
-               S2A (Full_Name (Start .. Full_Name'Last)),
-               Alias,
-               dummy_id_idx);
-            CD.IdTab (CD.Id_Count).adr_or_sz := HAC_Integer (i);  --  i = Aliased entity's index.
-          else
-            --  Here we have found an identical and
-            --  visible short identifier at the same level.
-            if CD.IdTab (Id_Alias).entity = Alias
-              and then CD.IdTab (Id_Alias).adr_or_sz = HAC_Integer (i)
-            then
-              --  Here we have an identical alias (same name and points
-              --  to the same definition).
-              if Level > 0 then
-                null;  --  Just a duplicate "use" (we could emit a warning for that).
-              else
-                if CD.CUD.level_0_def.Contains (Short_Id) then
+          --  We have spotted an item with the correct prefix.
+          --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
+          --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
+          Start := Full_UName'First + Pkg_UName'Length + 1;
+          Full_Name := A2S (CD.IdTab (i).name_with_case);
+          declare
+            Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
+            Short_Id     : constant Alfa := S2A (Short_Id_str);  --  Id as visible after USE.
+          begin
+            --  Check if there is already this identifier, even as
+            --  a library level invisible definition.
+            --  If not, we do a "FROM Pkg IMPORT Short_Id" (as it would be in Modula-2/Python
+            --  style).
+            Id_Alias := Parser.Helpers.Locate_Identifier (
+              CD               => CD,
+              Id               => Short_Id,
+              Level            => Level,
+              Fail_when_No_Id  => False,
+              Alias_Resolution => False,
+              Level_0_Filter   => False
+              --  ^ We search any matching name, including hidden at library level.
+            );
+            if Id_Alias = No_Id or else CD.IdTab (Id_Alias).lev < Level then
+              --  Name was not found or defined at a lower nesting level.
+              --  We enter, e.g. the "FALSE", "False" pair.
+              Enter
+                (CD,
+                 Level,
+                 Short_Id,
+                 S2A (Full_Name (Start .. Full_Name'Last)),
+                 Alias,
+                 dummy_id_idx);
+              CD.IdTab (CD.Id_Count).adr_or_sz := HAC_Integer (i);  --  i = Aliased entity's index.
+            else
+              --  Here we have found an identical and
+              --  visible short identifier at the same level.
+              if CD.IdTab (Id_Alias).entity = Alias
+                and then CD.IdTab (Id_Alias).adr_or_sz = HAC_Integer (i)
+              then
+                --  Here we have an identical alias (same name and points
+                --  to the same definition).
+                if Level > 0 then
                   null;  --  Just a duplicate "use" (we could emit a warning for that).
                 else
-                  --  Re-activate definition at zero level (context clause).
-                  CD.CUD.level_0_def.Include (Short_Id, Id_Alias);
-                  --  HAT.PUT_LINE ("Activate USEd item: " & Short_Id_str);
+                  if CD.CUD.level_0_def.Contains (Short_Id) then
+                    null;  --  Just a duplicate "use" (we could emit a warning for that).
+                  else
+                    --  Re-activate definition at zero level (context clause).
+                    CD.CUD.level_0_def.Include (Short_Id, Id_Alias);
+                    --  HAT.PUT_LINE ("Activate USEd item: " & Short_Id_str);
+                  end if;
                 end if;
               end if;
             end if;
-          end if;
+          end;
         end;
-      end;
+      end if;
     end loop;
   end Apply_USE_Clause;
 
