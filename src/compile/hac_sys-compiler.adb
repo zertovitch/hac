@@ -501,11 +501,11 @@ package body HAC_Sys.Compiler is
     end Reactivate_USE_HAT;
     --
     function Indent_String (starting : Boolean) return String is
-      ((if indent = 1 then
-          "|"
-        else
-          (indent - 1) * ' ' &
-          (if starting then '\' else '/')));
+      (if indent = 1 then
+         "|"
+       else
+         (indent - 1) * ' ' &
+         (if starting then '\' else '/'));
   begin
     CD.recursion := CD.recursion + 1;
     if CD.trace.detail_level >= 1 then
