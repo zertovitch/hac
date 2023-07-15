@@ -69,7 +69,7 @@ package body HAC_Sys.Errors is
       when err_scanner_exponent_too_large =>
         return "total actual exponent is too large:" & hint_1;
       when err_scanner_integer_literal_too_large =>
-        return "integer part of number literal is too large; max =" & KMax'Image & " digits";
+        return "integer part of number literal is too large; max =" & integer_digits_max'Image & " digits";
       when err_scanner_illegal_character_in_number =>
         return "illegal character in number" & hint_1;
       when err_scanner_negative_exponent_for_integer_literal =>

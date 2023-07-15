@@ -57,19 +57,21 @@ package HAC_Sys.Defs is
 
   MaxINT     : constant Integer := Integer'Last - 1;
 
-  AMax                  : constant := 1_000;    --  Size OF ARRAY-TABLE
-  BMax                  : constant := 10_000;   --  Size OF Block-TABLE
-  Float_Const_Table_Max : constant := 200;
-  Cases_Max             : constant := 2000;     --  Max number of cases in a CASE statement
-  CDMax                 : constant := 100_000;  --  Size OF ObjCode
-  EntryMax              : constant := 30;       --  Maximum Number of Entry Statements
-  FMax                  : constant := 20;       --  Maximum Number of files for I/O
-  KMax                  : constant := 18;       --  Maximum digits for an integer literal.
-  PMax                  : constant := 10_000;   --  Size of Package table
+  AMax               : constant := 1_000;    --  Size OF ARRAY-TABLE
+  BMax               : constant := 10_000;   --  Size OF Block-TABLE
+  Float_Const_Table_Max
+                     : constant := 200;
+  Cases_Max          : constant := 2000;     --  Max number of cases in a CASE statement
+  CDMax              : constant := 100_000;  --  Size OF ObjCode
+  EntryMax           : constant := 30;       --  Maximum Number of Entry Statements
+  FMax               : constant := 20;       --  Maximum Number of files for I/O
+  integer_digits_max : constant := 18;       --  Maximum digits for an integer literal:
+                                             --  decimal representation of 2**63, minus 1 digit.
+  PMax               : constant := 10_000;   --  Size of Package table
 
-  loop_nesting_max      : constant := 100;
+  loop_nesting_max   : constant := 100;
 
-  Nesting_Level_Max     : constant := 20;
+  Nesting_Level_Max  : constant := 20;
   subtype Nesting_level is HAC_Integer range 0 .. Nesting_Level_Max;
 
   nesting_and_descending_max : constant := 40;  --  subprograms, subpackages and child packages

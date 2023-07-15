@@ -244,12 +244,12 @@ package body HAC_Sys.Scanner is
            "; expected digit after 'E'");
       else
         loop
-          if digit_count = KMax then
+          if digit_count = integer_digits_max then
             Error
               (CD,
                err_scanner_integer_literal_too_large,
                severity => minor);  --  minor -> scanning & parsing go on unhindered.
-          elsif digit_count > KMax then
+          elsif digit_count > integer_digits_max then
             null;  --  The insult was already issued on digit_count = KMax...
           else
             S := S * 10 + Character'Pos (CD.CUD.c) - Character'Pos ('0');
@@ -407,7 +407,7 @@ package body HAC_Sys.Scanner is
       else
         --  Scan the integer part of the number.
         loop
-          if K = KMax then
+          if K = integer_digits_max then
             --  To do: read a multiprecision integer here, so the limitation
             --         is not applied to floating-point numbers.
             --         Challenge: convert accurately the multiprecision integer
@@ -416,7 +416,7 @@ package body HAC_Sys.Scanner is
               (CD,
                err_scanner_integer_literal_too_large,
                severity => minor);  --  minor -> scanning & parsing go on unhindered.
-          elsif K > KMax then
+          elsif K > integer_digits_max then
             null;  --  The insult was already issued on K = KMax...
           else
             CD.INum := CD.INum * 10 + (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
@@ -437,13 +437,13 @@ package body HAC_Sys.Scanner is
             Read_Scale (allow_minus => False);
             --  NB: a negative exponent issues an error, then e is set to 0.
             if e > 0 then
-              if K + e > KMax then
+              if K + e > integer_digits_max then
                 Error
                   (CD, err_scanner_exponent_too_large,
                    Integer'Image (K) & " +" &
                    Integer'Image (e) & " =" &
                    Integer'Image (K + e) & " > Max =" &
-                   Integer'Image (KMax),
+                   integer_digits_max'Image,
                    severity => minor);  --  minor -> scanning & parsing go on unhindered.
               else
                 CD.INum := CD.INum * 10 ** e;
