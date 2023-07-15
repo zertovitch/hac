@@ -64,7 +64,7 @@ package HAC_Sys.Defs is
   CDMax                 : constant := 100_000;  --  Size OF ObjCode
   EntryMax              : constant := 30;       --  Maximum Number of Entry Statements
   FMax                  : constant := 20;       --  Maximum Number of files for I/O
-  KMax                  : constant := HAC_Float'Digits;
+  KMax                  : constant := 18;       --  Maximum digits for an integer literal.
   PMax                  : constant := 10_000;   --  Size of Package table
 
   loop_nesting_max      : constant := 100;
@@ -320,7 +320,8 @@ package HAC_Sys.Defs is
      err_scanner_illegal_character,
      err_scanner_illegal_character_in_number,
      err_scanner_negative_exponent_for_integer_literal,
-     err_scanner_number_too_large,
+     err_scanner_exponent_too_large,
+     err_scanner_integer_literal_too_large,
      err_scanner_space_missing_after_number,
      --  Errors that may occur during parsing:
      err_undefined_identifier,

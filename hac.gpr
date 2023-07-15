@@ -96,7 +96,7 @@ project HAC is
    package Compiler is
       case HAC_Build_Mode is
          when "Fast"      => for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options;
-         when "Small"     => for Default_Switches ("ada") use Common_Compiler_Options & "-Os";
+         when "Small"     => for Default_Switches ("ada") use Common_Compiler_Options & ("-Os", "-gnatp");
          when "Profiling" => for Default_Switches ("ada") use Common_Compiler_Options & Profiling_Options;
          when "Debug"     =>
            for Default_Switches ("ada") use Common_Compiler_Options & Debug_Options;

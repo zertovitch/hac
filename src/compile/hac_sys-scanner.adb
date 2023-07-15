@@ -216,6 +216,7 @@ package body HAC_Sys.Scanner is
 
     procedure Read_Scale (allow_minus : Boolean) is
       S, Sign : Integer;
+      digit_count : Natural := 0;
     begin
       NextCh (CD);
       Sign := 1;
@@ -224,13 +225,14 @@ package body HAC_Sys.Scanner is
         when '+' =>
           NextCh (CD);
         when '-' =>
+          NextCh (CD);
           if allow_minus then
-            NextCh (CD);
             Sign := -1;
           else
             Error
               (CD, err_scanner_negative_exponent_for_integer_literal,
-               HAC_Integer'Image (CD.INum) & ".0e- ...");
+               CD.INum'Image & ".0e- ...",
+               severity => minor);  --  minor -> scanning & parsing go on unhindered.
           end if;
         when others =>
           null;
@@ -242,7 +244,17 @@ package body HAC_Sys.Scanner is
            "; expected digit after 'E'");
       else
         loop
-          S := 10 * S + Character'Pos (CD.CUD.c) - Character'Pos ('0');
+          if digit_count = KMax then
+            Error
+              (CD,
+               err_scanner_integer_literal_too_large,
+               severity => minor);  --  minor -> scanning & parsing go on unhindered.
+          elsif digit_count > KMax then
+            null;  --  The insult was already issued on digit_count = KMax...
+          else
+            S := S * 10 + Character'Pos (CD.CUD.c) - Character'Pos ('0');
+          end if;
+          digit_count := digit_count + 1;
           NextCh (CD);
           exit when CD.CUD.c not in '0' .. '9';
         end loop;
@@ -256,11 +268,12 @@ package body HAC_Sys.Scanner is
     begin
       if K + e > EMax then
         Error
-          (CD, err_scanner_number_too_large,
+          (CD, err_scanner_exponent_too_large,
            Integer'Image (K) & " +" &
            Integer'Image (e) & " =" &
            Integer'Image (K + e) & " > Max =" &
-           Integer'Image (EMax));
+           Integer'Image (EMax),
+           severity => minor);  --  minor -> scanning & parsing go on unhindered.
       elsif K + e < EMin then
         CD.RNum := 0.0;
       else
@@ -348,33 +361,35 @@ package body HAC_Sys.Scanner is
     begin
       --  Floating-point number 123.456
       --  Cursor is here -----------^
-      if CD.CUD.c = '.' then  --  Double dot.
+      if CD.CUD.c = '.' then
+        --  After all, this is not a number with a decimal point,
+        --  but a double dot, like 123..456.
         CD.CUD.c := c128;
-      else
-        --  Read decimal part.
-        CD.Sy := FloatCon;
-        CD.RNum := HAC_Float (CD.INum);
-        e := 0;
-        while Character_Types (CD.CUD.c) = Number loop
-          e := e - 1;
-          CD.RNum :=
-            10.0 * CD.RNum +
+        return;
+      end if;
+      --  Read decimal part.
+      CD.Sy := FloatCon;
+      CD.RNum := HAC_Float (CD.INum);
+      e := 0;
+      while Character_Types (CD.CUD.c) = Number loop
+        e := e - 1;
+        CD.RNum :=
+          10.0 * CD.RNum +
             HAC_Float (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
-          NextCh (CD);
-          Skip_eventual_underscore;
-        end loop;
-        if e = 0 then
-          Error
-            (CD,
-             err_scanner_illegal_character_in_number,
-             "; expected digit after '.'");
-        end if;
-        if CD.CUD.c in 'E' | 'e' then
-          Read_Scale (True);
-        end if;
-        if e /= 0 then
-          Adjust_Scale;
-        end if;
+        NextCh (CD);
+        Skip_eventual_underscore;
+      end loop;
+      if e = 0 then
+        Error
+          (CD,
+           err_scanner_illegal_character_in_number,
+           "; expected digit after '.'");
+      end if;
+      if CD.CUD.c in 'E' | 'e' then
+        Read_Scale (allow_minus => True);
+      end if;
+      if e /= 0 then
+        Adjust_Scale;
       end if;
     end Read_Decimal_Float;
 
@@ -392,7 +407,20 @@ package body HAC_Sys.Scanner is
       else
         --  Scan the integer part of the number.
         loop
-          CD.INum := CD.INum * 10 + (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
+          if K = KMax then
+            --  To do: read a multiprecision integer here, so the limitation
+            --         is not applied to floating-point numbers.
+            --         Challenge: convert accurately the multiprecision integer
+            --         to a floating-point number.
+            Error
+              (CD,
+               err_scanner_integer_literal_too_large,
+               severity => minor);  --  minor -> scanning & parsing go on unhindered.
+          elsif K > KMax then
+            null;  --  The insult was already issued on K = KMax...
+          else
+            CD.INum := CD.INum * 10 + (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
+          end if;
           K := K + 1;
           NextCh (CD);
           Skip_eventual_underscore;
@@ -402,21 +430,24 @@ package body HAC_Sys.Scanner is
         case CD.CUD.c is
           when '.' =>
             NextCh (CD);
-            if K > KMax then
-              Error
-                (CD, err_scanner_number_too_large,
-                 Integer'Image (K) & " > Max =" &
-                 Integer'Image (KMax));
-              CD.INum := 0;
-              K       := 0;
-            end if;
             Read_Decimal_Float;
           when 'E' | 'e' =>
             --  Integer with exponent: 123e4.
             e := 0;
-            Read_Scale (False);
-            if e /= 0 then
-              CD.INum := CD.INum * 10 ** e;
+            Read_Scale (allow_minus => False);
+            --  NB: a negative exponent issues an error, then e is set to 0.
+            if e > 0 then
+              if K + e > KMax then
+                Error
+                  (CD, err_scanner_exponent_too_large,
+                   Integer'Image (K) & " +" &
+                   Integer'Image (e) & " =" &
+                   Integer'Image (K + e) & " > Max =" &
+                   Integer'Image (KMax),
+                   severity => minor);  --  minor -> scanning & parsing go on unhindered.
+              else
+                CD.INum := CD.INum * 10 ** e;
+              end if;
             end if;
           when '#' =>
             Read_with_Sharp;
@@ -428,7 +459,7 @@ package body HAC_Sys.Scanner is
         Error
           (CD,
            err_scanner_space_missing_after_number,
-           severity            => minor,
+           severity            => minor,  --  scanning & parsing go on unhindered.
            shift_one_character => True);
       end if;
     end Scan_Number;

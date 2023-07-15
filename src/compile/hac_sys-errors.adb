@@ -66,12 +66,14 @@ package body HAC_Sys.Errors is
         return "bounds in range must be of the same type";
       when err_IS_missing =>
         return "missing ""is""";
-      when err_scanner_number_too_large =>
-        return "number is too large: total actual exponent is " & hint_1;
+      when err_scanner_exponent_too_large =>
+        return "total actual exponent is too large:" & hint_1;
+      when err_scanner_integer_literal_too_large =>
+        return "integer part of number literal is too large; max =" & KMax'Image & " digits";
       when err_scanner_illegal_character_in_number =>
         return "illegal character in number" & hint_1;
       when err_scanner_negative_exponent_for_integer_literal =>
-        return "integer literal with negative exponent; suggestion: a float with "".0"" such as" & hint_1;
+        return "integer literal with negative exponent; possible: a float with "".0"" such as" & hint_1;
       when err_incorrect_name_after_END =>
         return """end " & hint_1 & ";"" expected here";
       when err_bad_type_for_a_case_statement =>
