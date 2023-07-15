@@ -24,7 +24,7 @@ package body HAC_Sys.Parser.Type_Def is
 
   procedure Type_or_Subtype_Declaration
     (CD         : in out Co_Defs.Compiler_Data;
-     Level      : in     Defs.Nesting_level;
+     Level      : in     Defs.Nesting_Level;
      FSys_NTD   : in     Defs.Symset)
   is
     T1 : Integer;
@@ -63,7 +63,7 @@ package body HAC_Sys.Parser.Type_Def is
   --
   procedure Array_Typ
     (CD            : in out Co_Defs.Compiler_Data;
-     Level : in     Defs.Nesting_level;
+     Level : in     Defs.Nesting_Level;
      FSys_TD       : in     Defs.Symset;
      arr_tab_ref, arr_size, arr_dimensions : out Integer;
      string_constrained_subtype            :     Boolean)
@@ -121,12 +121,12 @@ package body HAC_Sys.Parser.Type_Def is
 
   procedure Type_Definition
     (CD            : in out Co_Defs.Compiler_Data;
-     Initial_Level : in     Defs.Nesting_level;
+     Initial_Level : in     Defs.Nesting_Level;
      FSys_TD       : in     Defs.Symset;
      xTP           :    out Co_Defs.Exact_Subtyp;
      Size          :    out Integer)
   is
-    Level : Nesting_level := Initial_Level;
+    Level : Nesting_Level := Initial_Level;
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
     procedure Enumeration_Typ is  --  RM 3.5.1 Enumeration Types
@@ -167,7 +167,7 @@ package body HAC_Sys.Parser.Type_Def is
       Enter_Block (CD, CD.Id_Count);
       Construct_Root (xTP, Records);
       xTP.Ref := CD.Blocks_Count;
-      if Level = Nesting_Level_Max then
+      if Level = nesting_level_max then
         Fatal (LEVELS);  --  Exception is raised there.
       end if;
       Level              := Level + 1;
@@ -259,7 +259,7 @@ package body HAC_Sys.Parser.Type_Def is
 
   procedure Subtype_Indication
     (CD      : in out Co_Defs.Compiler_Data;
-     Level   : in     Defs.Nesting_level;
+     Level   : in     Defs.Nesting_Level;
      FSys_TD : in     Defs.Symset;
      xTP     :    out Co_Defs.Exact_Subtyp;
      Size    :    out Integer)

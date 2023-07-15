@@ -165,7 +165,7 @@ package HAC_Sys.Co_Defs is
     xtyp             : Exact_Subtyp;         --  Subtype identification
     block_or_pkg_ref : Index;                --  Reference in the block or package tables.
     normal           : Boolean;              --  value param?
-    lev              : Nesting_level;
+    lev              : Nesting_Level;
     adr_or_sz        : HAC_Integer;          --  Address, Size; index of aliased entity (USE) !! rather use block_or_pkg_ref ?!
   end record;
 
@@ -198,11 +198,11 @@ package HAC_Sys.Co_Defs is
 
   type    Arrays_Table_Type            is array (1 .. AMax)             of ATabEntry;
   type    Blocks_Table_Type            is array (0 .. BMax)             of BTabEntry;
-  type    Display_Type                 is array (Nesting_level)         of Integer;
-  type    Entries_Table_Type           is array (0 .. EntryMax)         of Index;
+  type    Display_Type                 is array (Nesting_Level)         of Integer;
+  type    Entries_Table_Type           is array (0 .. entry_table_max)  of Index;
   type    Identifier_Table_Type        is array (0 .. Id_Table_Max)     of IdTabEntry;
   type    Nested_Loop_Table_Type       is array (1 .. loop_nesting_max) of Loop_Info;
-  type    Packages_Table_Type          is array (0 .. PMax)             of Package_Table_Entry;
+  type    Packages_Table_Type          is array (0 .. package_table_max)             of Package_Table_Entry;
   subtype Strings_Constants_Table_Type is String (1 .. SMax);
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)          of Index;
   --      ^ Task #0 is main task.

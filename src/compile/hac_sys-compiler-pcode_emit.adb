@@ -186,7 +186,7 @@ package body HAC_Sys.Compiler.PCode_Emit is
     use Errors;
     use type HAC_Float;
   begin
-    if CD.Float_Constants_Count = Float_Const_Table_Max - 1 then
+    if CD.Float_Constants_Count = float_const_table_max - 1 then
       Fatal (FLOAT_CONSTANTS);  --  Exception is raised there.
     end if;
     --  We add X's value as an extra item: potential new item *and* sentinel value.

@@ -59,20 +59,16 @@ package HAC_Sys.Defs is
 
   AMax               : constant := 1_000;    --  Size OF ARRAY-TABLE
   BMax               : constant := 10_000;   --  Size OF Block-TABLE
-  Float_Const_Table_Max
+  float_const_table_max
                      : constant := 200;
   Cases_Max          : constant := 2000;     --  Max number of cases in a CASE statement
   CDMax              : constant := 100_000;  --  Size OF ObjCode
-  EntryMax           : constant := 30;       --  Maximum Number of Entry Statements
-  FMax               : constant := 20;       --  Maximum Number of files for I/O
-  integer_digits_max : constant := 18;       --  Maximum digits for an integer literal:
+  entry_table_max    : constant := 30;       --  Maximum Number of Entries
+  integer_digits_max : constant := 18;       --  Maximum digits for an integer literal, was KMAX:
                                              --  decimal representation of 2**63, minus 1 digit.
-  PMax               : constant := 10_000;   --  Size of Package table
-
+  package_table_max  : constant := 10_000;   --  Size of Package table
   loop_nesting_max   : constant := 100;
-
-  Nesting_Level_Max  : constant := 20;
-  subtype Nesting_level is HAC_Integer range 0 .. Nesting_Level_Max;
+  nesting_level_max  : constant := 20;       --  Maximum subprogram nesting level, was LMAX.
 
   nesting_and_descending_max : constant := 40;  --  subprograms, subpackages and child packages
 
@@ -97,6 +93,8 @@ package HAC_Sys.Defs is
   XMax         : constant Integer := MaxINT;
 
   Patch_Max : constant := 100;
+
+  identifier_length_max : constant := 200;
 
   --------------------
   --  Global types  --
@@ -303,9 +301,9 @@ package HAC_Sys.Defs is
 
   subtype Index is Integer range -XMax .. +XMax;
 
-  type Float_Constants_Table_Type is array (1 .. Float_Const_Table_Max) of HAC_Float;
+  type Float_Constants_Table_Type is array (1 .. float_const_table_max) of HAC_Float;
 
-  max_identifier_length : constant := 200;
+  subtype Nesting_Level is HAC_Integer range 0 .. nesting_level_max;
 
   ------------------------------
   --  Compilation error type  --

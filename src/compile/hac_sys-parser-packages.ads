@@ -47,7 +47,7 @@ package HAC_Sys.Parser.Packages is
 
   procedure Use_Clause (
     CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level
+    Level :        Defs.Nesting_Level
   );
 
   -------------------------------------------------
@@ -56,7 +56,7 @@ package HAC_Sys.Parser.Packages is
 
   procedure Apply_USE_Clause (
     CD       : in out Co_Defs.Compiler_Data;
-    Level    : in     Defs.Nesting_level;
+    Level    : in     Defs.Nesting_Level;
     Pkg_Idx  : in     Natural  --  Index in the identifier table for USEd package.
   );
 

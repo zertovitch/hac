@@ -275,7 +275,7 @@ package body HAC_Sys.Parser.Packages is
 
   procedure Use_Clause (
     CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level
+    Level :        Defs.Nesting_Level
   )
   is  --  8.4 (2)
     use Defs, Scanner, Errors;
@@ -295,16 +295,16 @@ package body HAC_Sys.Parser.Packages is
 
   procedure Apply_USE_Clause (
     CD       : in out Co_Defs.Compiler_Data;
-    Level    : in     Defs.Nesting_level;
+    Level    : in     Defs.Nesting_Level;
     Pkg_Idx  : in     Natural  --  Index in the identifier table for USEd package.
   )
   is
     use Co_Defs, Defs, Parser.Enter_Def, Errors;
-    use type Nesting_level;
+    use type Nesting_Level;
     Pkg_UName : constant String := A2S (CD.IdTab (Pkg_Idx).name);
     Id_Alias, dummy_id_idx : Natural;
     pkg_table_index : Positive;
-    pkg_level : Nesting_level;
+    pkg_level : Nesting_Level;
   begin
     pragma Assert (Pkg_Idx > No_Id);
     if CD.IdTab (Pkg_Idx).entity /= Paquetage then

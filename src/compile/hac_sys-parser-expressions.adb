@@ -15,7 +15,7 @@ package body HAC_Sys.Parser.Expressions is
 
   procedure Static_Scalar_Expression (
     CD      : in out Co_Defs.Compiler_Data;
-    Level   : in     Defs.Nesting_level;
+    Level   : in     Defs.Nesting_Level;
     FSys_ND : in     Defs.Symset;
     C       :    out Co_Defs.Constant_Rec
   )
@@ -89,7 +89,7 @@ package body HAC_Sys.Parser.Expressions is
   ---------------------------------------------------------Selector-
   procedure Selector (
     CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level;
+    Level :        Defs.Nesting_Level;
     FSys  :        Defs.Symset;
     V     : in out Co_Defs.Exact_Subtyp
   )
@@ -276,7 +276,7 @@ package body HAC_Sys.Parser.Expressions is
   -------------------------------------------------------Expression-
   procedure Expression (
     CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level;
+    Level :        Defs.Nesting_Level;
     FSys  :        Defs.Symset;
     X     :    out Co_Defs.Exact_Subtyp
   )
@@ -465,7 +465,7 @@ package body HAC_Sys.Parser.Expressions is
 
   procedure Simple_Expression (
     CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level;
+    Level :        Defs.Nesting_Level;
     FSys  :        Defs.Symset;
     X     :    out Co_Defs.Exact_Subtyp
   )
@@ -1052,7 +1052,7 @@ package body HAC_Sys.Parser.Expressions is
 
   procedure Boolean_Expression (
     CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_level;
+    Level :        Defs.Nesting_Level;
     FSys  :        Defs.Symset;
     X     :    out Co_Defs.Exact_Subtyp
   )
@@ -1064,7 +1064,7 @@ package body HAC_Sys.Parser.Expressions is
 
   procedure Subtype_Prefixed_Expression (
     CD           : in out Co_Defs.Compiler_Data;
-    Level        : in     Defs.Nesting_level;
+    Level        : in     Defs.Nesting_Level;
     FSys         : in     Defs.Symset;
     Typ_ID_Index : in     Natural;
     X            : in out Co_Defs.Exact_Subtyp

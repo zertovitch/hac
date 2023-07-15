@@ -74,7 +74,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
       H3 := Integer (CD.IdTab (H1).lev);  --  level of accepting entry
       if H2 >= 0 then
         --  start rendzv if call is waiting
-        Curr_TCB.DISPLAY (Defs.Nesting_level (H3 + 1)) := ND.TCB (H2).B; --  address callers
+        Curr_TCB.DISPLAY (Defs.Nesting_Level (H3 + 1)) := ND.TCB (H2).B; --  address callers
         --  parms
         Curr_TCB.InRendzv := H2;  --  indicate that task is in Rendzv
         if ND.TCB (H2).TS = TimedRendz then
@@ -129,7 +129,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     end Do_End_Rendezvous;
 
     procedure Do_Selective_Wait is
-      use type Defs.HAC_Float, Defs.Nesting_level, Ada.Calendar.Time;
+      use type Defs.HAC_Float, Defs.Nesting_Level, Ada.Calendar.Time;
       H1, H2, H3 : Integer;
     begin
       case IR.X is
@@ -145,7 +145,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
           H2 := First_Caller (CD, ND, H1);    --  first waiting task
           H3 := Integer (CD.IdTab (H1).lev);     --  level of accepting entry
           if H2 >= 0 then
-            Curr_TCB.DISPLAY (Defs.Nesting_level (H3 + 1)) := ND.TCB (H2).B;
+            Curr_TCB.DISPLAY (Defs.Nesting_Level (H3 + 1)) := ND.TCB (H2).B;
               --  address callers parms
             Curr_TCB.InRendzv := H2;             --  indicate task InRendz
             if ND.TCB (H2).TS = TimedRendz then  --  turn off entry timeout

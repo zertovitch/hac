@@ -250,7 +250,7 @@ package body HAC_Sys.Scanner is
                err_scanner_integer_literal_too_large,
                severity => minor);  --  minor -> scanning & parsing go on unhindered.
           elsif digit_count > integer_digits_max then
-            null;  --  The insult was already issued on digit_count = KMax...
+            null;  --  The insult was already issued on digit_count = integer_digits_max...
           else
             S := S * 10 + Character'Pos (CD.CUD.c) - Character'Pos ('0');
           end if;
@@ -417,7 +417,7 @@ package body HAC_Sys.Scanner is
                err_scanner_integer_literal_too_large,
                severity => minor);  --  minor -> scanning & parsing go on unhindered.
           elsif K > integer_digits_max then
-            null;  --  The insult was already issued on K = KMax...
+            null;  --  The insult was already issued on K = integer_digits_max...
           else
             CD.INum := CD.INum * 10 + (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
           end if;
@@ -645,7 +645,7 @@ package body HAC_Sys.Scanner is
           K := 0;
           HAT.VStr_Pkg.Set_Unbounded_String (CD.Id_with_case, "");
           loop
-            if K < max_identifier_length then
+            if K < identifier_length_max then
               K := K + 1;
               HAT.VStr_Pkg.Append (CD.Id_with_case, CD.CUD.c);
               if K > 1 and then HAT.VStr_Pkg.Slice (CD.Id_with_case, K - 1, K) = "__" then

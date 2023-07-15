@@ -5,7 +5,7 @@
 
 private procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
   CD      : in out Co_Defs.Compiler_Data;
-  Level   :        Defs.Nesting_level;
+  Level   :        Defs.Nesting_Level;
   FSys    :        Defs.Symset;
   Typ_ID  : in     Co_Defs.IdTabEntry;
   X       : in     Co_Defs.Exact_Subtyp

@@ -15,7 +15,7 @@ with HAC_Sys.Co_Defs,
 package HAC_Sys.Parser is
 
   type Block_Data_Type is record
-    level                           : Defs.Nesting_level;   --  When level = 0, the rest of
+    level                           : Defs.Nesting_Level;   --  When level = 0, the rest of
                                                             --    this record is garbage.
     entity                          : Co_Defs.Entity_Kind;  --  Procedure, function or entry.
     is_main                         : Boolean;
@@ -53,7 +53,7 @@ package HAC_Sys.Parser is
   procedure Subprogram_Declaration_or_Body (
     CD            : in out Co_Defs.Compiler_Data;
     FSys          : in     Defs.Symset;
-    current_level : in     Defs.Nesting_level;
+    current_level : in     Defs.Nesting_Level;
     kind          :    out Co_Defs.Declaration_Kind
   );
 

@@ -432,7 +432,7 @@ package body HAC_Sys.Compiler is
           else
             Put (map_file, " Local (");
           end if;
-          Put (map_file, Nesting_level'Image (Blk.lev));
+          Put (map_file, Nesting_Level'Image (Blk.lev));
           Put (map_file, ')');
           New_Line (map_file);
         end if;

@@ -75,7 +75,7 @@ package body HAC_Sys.Librarian is
      Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last)
   is
     use Ada.Characters.Handling, Defs;
-    use type Nesting_level;
+    use type Nesting_Level;
     Alfa_Ident       : constant Alfa := S2A (Full_Ident);
     Alfa_Ident_Upper : constant Alfa := S2A (To_Upper (Full_Ident));
     last : Index := CD.Id_Count;

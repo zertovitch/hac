@@ -465,7 +465,7 @@ package body HAC_Sys.PCode.Interpreter is
       use type HAC_Integer;
       --
       procedure Do_Atomic_Data_Push_Operation with Inline is
-        Base                : constant Index := Curr_TCB.DISPLAY (Nesting_level (IR.X));
+        Base                : constant Index := Curr_TCB.DISPLAY (Nesting_Level (IR.X));
         Address_of_Variable : constant Index := Base + Index (IR.Y);
       begin
         Push;

@@ -22,7 +22,7 @@ private package HAC_Sys.Parser.Type_Def is  --  Package around type definitions.
   --
   procedure Type_or_Subtype_Declaration
     (CD         : in out Co_Defs.Compiler_Data;
-     Level      : in     Defs.Nesting_level;
+     Level      : in     Defs.Nesting_Level;
      FSys_NTD   : in     Defs.Symset);
 
   ------------------------------------------------------------------
@@ -30,7 +30,7 @@ private package HAC_Sys.Parser.Type_Def is  --  Package around type definitions.
   --
   procedure Type_Definition
     (CD            : in out Co_Defs.Compiler_Data;
-     Initial_Level : in     Defs.Nesting_level;
+     Initial_Level : in     Defs.Nesting_Level;
      FSys_TD       : in     Defs.Symset;
      xTP           :    out Co_Defs.Exact_Subtyp;
      Size          :    out Integer);
@@ -40,7 +40,7 @@ private package HAC_Sys.Parser.Type_Def is  --  Package around type definitions.
   --
   procedure Subtype_Indication
     (CD      : in out Co_Defs.Compiler_Data;
-     Level   : in     Defs.Nesting_level;
+     Level   : in     Defs.Nesting_Level;
      FSys_TD : in     Defs.Symset;
      xTP     :    out Co_Defs.Exact_Subtyp;
      Size    :    out Integer);

@@ -124,7 +124,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     Last : Eptr;   --  ptr to last  node in rendzv queue
   end record;
 
-  type Entry_Queue is array (1 .. Defs.EntryMax) of EHeader;
+  type Entry_Queue is array (1 .. Defs.entry_table_max) of EHeader;
 
   package File_Vectors is new Ada.Containers.Vectors (Positive, File_Ptr);
 

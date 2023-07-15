@@ -35,7 +35,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
 
     trace_display : constant Boolean := False;
 
-    procedure Show_Display (D : Co_Defs.Display_Type; L_Max : Nesting_level; T : String) is
+    procedure Show_Display (D : Co_Defs.Display_Type; L_Max : Nesting_Level; T : String) is
       use HAT;
     begin
       if trace_display then
@@ -133,7 +133,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       F1 : HAC_Float;    --  Internal float registers
       Activation_Record_Base, Ident_Index_of_Called,
       New_Stack_Top, new_address : Index;
-      Called_Level : Nesting_level;
+      Called_Level : Nesting_Level;
       Task_Entered : Integer;
     begin
       --  Procedure and task entry CALL  --  Cramer
@@ -269,14 +269,14 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       --  defined at the same level L: when Q calls P, Q's block level
       --  is L + 1, so it's calling P of level L and the update is
       --  needed after the call.
-      Low_Level  : constant Nesting_level := Nesting_level (ND.IR.X);  --  Called.
-      High_Level : constant Nesting_level := Nesting_level (ND.IR.Y);  --  Caller.
+      Low_Level  : constant Nesting_Level := Nesting_Level (ND.IR.X);  --  Called.
+      High_Level : constant Nesting_Level := Nesting_Level (ND.IR.Y);  --  Caller.
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       New_Base : Defs.Index := Curr_TCB.B;
       --  ^ initial value: stack base of caller (dynamic link) after call exit.
       Address_Base_Lower_Level : Defs.Index;
       New_Base_Value : HAC_Integer;
-      L : Nesting_level := High_Level;
+      L : Nesting_Level := High_Level;
     begin
       pragma Assert (Low_Level < High_Level);
       loop

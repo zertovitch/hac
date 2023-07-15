@@ -14,7 +14,7 @@ package HAC_Sys.Parser.Statements is
   procedure Assignment
     (CD              : in out Co_Defs.Compiler_Data;
      FSys            :        Defs.Symset;
-     Level           :        Defs.Nesting_level;
+     Level           :        Defs.Nesting_Level;
      Var_Id_Index    :        Integer;
      Check_read_only :        Boolean);
 

@@ -34,7 +34,7 @@ package body HAC_Sys.Parser.Attributes is
 
   procedure Array_Subtype_Attribute (
     CD                : in out Co_Defs.Compiler_Data;
-    Level             : in     Defs.Nesting_level;
+    Level             : in     Defs.Nesting_Level;
     FSys              : in     Defs.Symset;
     Array_Index       : in     Natural;
     attr              : in     Attribute;
@@ -124,7 +124,7 @@ package body HAC_Sys.Parser.Attributes is
 
   procedure Object_Attribute (
     CD                : in out Co_Defs.Compiler_Data;
-    Level             : in     Defs.Nesting_level;
+    Level             : in     Defs.Nesting_Level;
     FSys              : in     Defs.Symset;
     Object_xSubtyp    : in     Co_Defs.Exact_Subtyp;
     LC_before_Object  : in     Integer;
@@ -152,7 +152,7 @@ package body HAC_Sys.Parser.Attributes is
 
   procedure Subtype_Attribute (
     CD                : in out Co_Defs.Compiler_Data;
-    Level             : in     Defs.Nesting_level;
+    Level             : in     Defs.Nesting_Level;
     FSys              : in     Defs.Symset;
     Typ_ID_Index      : in     Natural;
     xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp

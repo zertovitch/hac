@@ -16,10 +16,10 @@ package body HAC_Sys.Parser.Tasking is
   procedure Task_Declaration (
     CD            : in out Co_Defs.Compiler_Data;
     FSys          :        Defs.Symset;
-    Initial_Level :        Defs.Nesting_level
+    Initial_Level :        Defs.Nesting_Level
   )
   is
-    Level : Nesting_level := Initial_Level;
+    Level : Nesting_Level := Initial_Level;
     saveLineCount : constant Integer := CD.CUD.line_count;  --  Source line where Task appeared
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
     I, T0  : Integer;
@@ -66,7 +66,7 @@ package body HAC_Sys.Parser.Tasking is
         InSymbol;  --  Task with no entries
       else  --  Parsing the Entry specs
         Need (CD, IS_Symbol, err_IS_missing);
-        if Level = Nesting_Level_Max then
+        if Level = nesting_level_max then
           Fatal (LEVELS);  --  Exception is raised there.
         end if;
         Level              := Level + 1;
@@ -78,7 +78,7 @@ package body HAC_Sys.Parser.Tasking is
             CD.Id := Empty_Alfa;
           end if;
           CD.Entries_Count := CD.Entries_Count + 1;
-          if CD.Entries_Count > EntryMax then
+          if CD.Entries_Count > entry_table_max then
             Fatal (ENTRIES);  --  Exception is raised there.
           end if;
           Enter (CD, Level, CD.Id, CD.Id_with_case, aEntry, forward_id_idx);

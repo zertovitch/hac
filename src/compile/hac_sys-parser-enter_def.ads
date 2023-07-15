@@ -20,7 +20,7 @@ package HAC_Sys.Parser.Enter_Def is
 
   procedure Enter (
     CD               : in out Co_Defs.Compiler_Data;
-    Level            :        Defs.Nesting_level;
+    Level            :        Defs.Nesting_Level;
     Id, Id_with_case :        Defs.Alfa;
     K                :        Co_Defs.Entity_Kind;
     Forward_Decl_Id  :    out Natural
@@ -33,7 +33,7 @@ package HAC_Sys.Parser.Enter_Def is
 
   procedure Enter_Variables (
     CD       : in out Co_Defs.Compiler_Data;
-    Level    :        Defs.Nesting_level;
+    Level    :        Defs.Nesting_Level;
     Prefixed :        Boolean
   );
 

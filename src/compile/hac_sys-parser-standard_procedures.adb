@@ -21,7 +21,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
   procedure Standard_Procedure (
     CD      : in out Co_Defs.Compiler_Data;
-    Level   :        Defs.Nesting_level;
+    Level   :        Defs.Nesting_Level;
     FSys    :        Defs.Symset;
     Code    :        PCode.SP_Code
   )

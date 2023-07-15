@@ -424,14 +424,14 @@ package body HAC_Sys.Parser.Helpers is
     (CD               : in out Compiler_Data;
      Id               : in     Alfa;
      Prefix_Id        : in     Alfa;
-     Level            : in     Defs.Nesting_level;
+     Level            : in     Defs.Nesting_Level;
      Fail_when_No_Id  : in     Boolean;
      Alias_Resolution : in     Boolean;
      Level_0_Filter   : in     Boolean;
      Public_Filter    : in     Index)
   return Natural
   is
-    L : Defs.Nesting_level'Base;
+    L : Defs.Nesting_Level'Base;
     J : Integer := 0;
     ID_Copy : Alfa;
     is_name_matched : Boolean;
@@ -562,7 +562,7 @@ package body HAC_Sys.Parser.Helpers is
   function Locate_Identifier
     (CD               : in out Compiler_Data;
      Id               : in     Alfa;
-     Level            : in     Defs.Nesting_level;
+     Level            : in     Defs.Nesting_Level;
      Fail_when_No_Id  : in     Boolean := True;
      Alias_Resolution : in     Boolean := True;
      Level_0_Filter   : in     Boolean := True;
@@ -674,7 +674,7 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Check_Incomplete_Definitions
     (CD    : in out Co_Defs.Compiler_Data;
-     Level :        Defs.Nesting_level)
+     Level :        Defs.Nesting_Level)
   is
     i : Integer := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
   begin

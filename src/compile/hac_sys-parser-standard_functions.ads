@@ -7,7 +7,7 @@ private package HAC_Sys.Parser.Standard_Functions is
 
   procedure Standard_Function (
     CD          : in out Co_Defs.Compiler_Data;
-    Level       :        Defs.Nesting_level;
+    Level       :        Defs.Nesting_Level;
     FSys        :        Defs.Symset;
     Ident_Index :        Integer;
     Code        :        PCode.SF_Code;

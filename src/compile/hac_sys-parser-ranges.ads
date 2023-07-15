@@ -50,7 +50,7 @@ private package HAC_Sys.Parser.Ranges is
   --
   procedure Explicit_Static_Range (
     CD             : in out Co_Defs.Compiler_Data;
-    Level          : in     Defs.Nesting_level;
+    Level          : in     Defs.Nesting_Level;
     FSys           : in     Defs.Symset;
     Specific_Error : in     Defs.Compile_Error;
     Lower_Bound    :    out Co_Defs.Constant_Rec;
@@ -65,7 +65,7 @@ private package HAC_Sys.Parser.Ranges is
   --
   procedure Static_Range (
     CD             : in out Co_Defs.Compiler_Data;
-    Level          : in     Defs.Nesting_level;
+    Level          : in     Defs.Nesting_Level;
     FSys           : in     Defs.Symset;
     Specific_Error : in     Defs.Compile_Error;
     Lower_Bound    :    out Co_Defs.Constant_Rec;
@@ -84,7 +84,7 @@ private package HAC_Sys.Parser.Ranges is
 
   procedure Dynamic_Range (
     CD                 : in out Co_Defs.Compiler_Data;
-    Level              : in     Defs.Nesting_level;
+    Level              : in     Defs.Nesting_Level;
     FSys               : in     Defs.Symset;
     Non_Discrete_Error : in     Defs.Compile_Error;
     Range_Typ          :    out Co_Defs.Exact_Subtyp

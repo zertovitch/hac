@@ -17,7 +17,7 @@ package body HAC_Sys.Parser.Statements is
   procedure Assignment
     (CD              : in out Co_Defs.Compiler_Data;
      FSys            :        Defs.Symset;
-     Level           :        Defs.Nesting_level;
+     Level           :        Defs.Nesting_Level;
      Var_Id_Index    :        Integer;
      Check_read_only :        Boolean)
   is
@@ -218,7 +218,7 @@ package body HAC_Sys.Parser.Statements is
       Accept_Call;
       Emit_1 (CD, k_Accept_Rendezvous, Operand_2_Type (I_Entry));
       if CD.Sy = DO_Symbol then
-        if Block_Data.level = Nesting_Level_Max then
+        if Block_Data.level = nesting_level_max then
           Fatal (LEVELS);  --  Exception is raised there.
         end if;
         Block_Data.level := Block_Data.level + 1;
@@ -846,7 +846,7 @@ package body HAC_Sys.Parser.Statements is
           Emit_2 (CD, k_Selective_Wait, 3, Operand_2_Type (CD.LC));  --  ACCEPT IF Ready ELSE Skip To LC
           --  CONDITIONAL ACCEPT MUST BE ATOMIC
           if CD.Sy = DO_Symbol then
-            if Block_Data.level = Nesting_Level_Max then
+            if Block_Data.level = nesting_level_max then
               Fatal (LEVELS);  --  Exception is raised there.
             end if;
             Block_Data.level := Block_Data.level + 1;

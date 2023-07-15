@@ -449,7 +449,7 @@ package body HAC_Sys.Parser is
   procedure Subprogram_Declaration_or_Body (
     CD            : in out Co_Defs.Compiler_Data;
     FSys          : in     Defs.Symset;
-    current_level : in     Defs.Nesting_level;
+    current_level : in     Defs.Nesting_Level;
     kind          :    out Co_Defs.Declaration_Kind
   )
   is

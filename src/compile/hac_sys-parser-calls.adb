@@ -11,7 +11,7 @@ package body HAC_Sys.Parser.Calls is
 
   procedure Push_and_Check_by_Value_Parameter (
     CD       : in out Co_Defs.Compiler_Data;
-    Level    :        Defs.Nesting_level;
+    Level    :        Defs.Nesting_Level;
     FSys     :        Defs.Symset;
     Expected :        Co_Defs.Exact_Subtyp
   )
@@ -43,7 +43,7 @@ package body HAC_Sys.Parser.Calls is
 
   procedure Push_by_Reference_Parameter (
     CD       : in out Co_Defs.Compiler_Data;
-    Level    :        Defs.Nesting_level;
+    Level    :        Defs.Nesting_Level;
     FSys     :        Defs.Symset;
     Name     :        String;
     Found    :    out Co_Defs.Exact_Subtyp  --  Funny note: Found is itself pushed by reference...
@@ -88,7 +88,7 @@ package body HAC_Sys.Parser.Calls is
   -----------------------------------------Subprogram_or_Entry_Call-
   procedure Subprogram_or_Entry_Call (
     CD          : in out Co_Defs.Compiler_Data;
-    Level       :        Defs.Nesting_level;
+    Level       :        Defs.Nesting_Level;
     FSys        :        Defs.Symset;
     Ident_Index :        Integer;
     CallType    :        PCode.Operand_1_Type
@@ -163,7 +163,7 @@ package body HAC_Sys.Parser.Calls is
   -------------------------------------------------------Entry_Call-
   procedure Entry_Call (
     CD          : in out Co_Defs.Compiler_Data;
-    Level       :        Defs.Nesting_level;
+    Level       :        Defs.Nesting_Level;
     FSys        :        Defs.Symset;
     I           :        Integer;
     CallType    :        PCode.Operand_1_Type

@@ -364,7 +364,7 @@ package HAC_Sys.Parser.Helpers is
   function Locate_Identifier
     (CD               : in out Compiler_Data;
      Id               : in     Alfa;
-     Level            : in     Defs.Nesting_level;
+     Level            : in     Defs.Nesting_Level;
      Fail_when_No_Id  : in     Boolean := True;
      Alias_Resolution : in     Boolean := True;
      Level_0_Filter   : in     Boolean := True;
@@ -389,6 +389,6 @@ package HAC_Sys.Parser.Helpers is
 
   procedure Check_Incomplete_Definitions
     (CD    : in out Co_Defs.Compiler_Data;
-     Level :        Defs.Nesting_level);
+     Level :        Defs.Nesting_Level);
 
 end HAC_Sys.Parser.Helpers;
