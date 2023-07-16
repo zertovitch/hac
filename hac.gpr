@@ -10,7 +10,12 @@
 --  
 project HAC is
 
-   type HAC_Build_Mode_Type is ("Debug", "Fast", "Small", "Profiling");
+   type HAC_Build_Mode_Type is
+     ("Debug",
+      "Fast",
+      "Small",
+      "Small_Unchecked",  --  Smallest size, at the price of less safety. Not for the release binary!
+      "Profiling");
 
    HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
 
@@ -24,10 +29,11 @@ project HAC is
       "hac_multi.adb");  --  Parallel demo with many compilations
 
    case HAC_Build_Mode is
-      when "Debug"     => for Object_Dir use "obj/debug";
-      when "Fast"      => for Object_Dir use "obj/fast";
-      when "Small"     => for Object_Dir use "obj/small";
-      when "Profiling" => for Object_Dir use "obj/profiling";
+      when "Debug"           => for Object_Dir use "obj/debug";
+      when "Fast"            => for Object_Dir use "obj/fast";
+      when "Small"           => for Object_Dir use "obj/small";
+      when "Small_Unchecked" => for Object_Dir use "obj/small_unchecked";
+      when "Profiling"       => for Object_Dir use "obj/profiling";
    end case;
 
    for Source_Dirs use
@@ -95,10 +101,11 @@ project HAC is
    
    package Compiler is
       case HAC_Build_Mode is
-         when "Fast"      => for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options;
-         when "Small"     => for Default_Switches ("ada") use Common_Compiler_Options & ("-Os", "-gnatp");
-         when "Profiling" => for Default_Switches ("ada") use Common_Compiler_Options & Profiling_Options;
-         when "Debug"     =>
+         when "Fast"            => for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options;
+         when "Small"           => for Default_Switches ("ada") use Common_Compiler_Options & ("-Os");
+         when "Small_Unchecked" => for Default_Switches ("ada") use Common_Compiler_Options & ("-Os", "-gnatp");
+         when "Profiling"       => for Default_Switches ("ada") use Common_Compiler_Options & Profiling_Options;
+         when "Debug"           =>
            for Default_Switches ("ada") use Common_Compiler_Options & Debug_Options;
            for Local_Configuration_Pragmas use project'Project_Dir & "debug.pra";
       end case;
@@ -114,7 +121,7 @@ project HAC is
 
    package Binder is
       case HAC_Build_Mode is
-         when "Small" => for Default_Switches ("ada") use Common_Binder_Options;
+         when "Small" | "Small_Unchecked" => for Default_Switches ("ada") use Common_Binder_Options;
          --  -Es: Store tracebacks in exception occurrences, and enable symbolic tracebacks
          when others  => for Default_Switches ("ada") use Common_Binder_Options & ("-Es");
       end case;
@@ -130,10 +137,10 @@ project HAC is
 
    package Linker is
       case HAC_Build_Mode is
-         when "Debug"     => for Default_Switches ("ada") use Common_Linker_Options & ("-g");
-         when "Profiling" => for Default_Switches ("ada") use Common_Linker_Options & ("-g", "-Wl,--gc-sections", "-pg");
-         when "Fast"      => for Default_Switches ("ada") use Common_Linker_Options & ("-g", "-Wl,--gc-sections");
-         when "Small"     => for Default_Switches ("ada") use Common_Linker_Options & (      "-Wl,--gc-sections");
+         when "Debug"                     => for Default_Switches ("ada") use Common_Linker_Options & ("-g");
+         when "Profiling"                 => for Default_Switches ("ada") use Common_Linker_Options & ("-g", "-Wl,--gc-sections", "-pg");
+         when "Fast"                      => for Default_Switches ("ada") use Common_Linker_Options & ("-g", "-Wl,--gc-sections");
+         when "Small" | "Small_Unchecked" => for Default_Switches ("ada") use Common_Linker_Options & (      "-Wl,--gc-sections");
       end case;
    end Linker;
 
