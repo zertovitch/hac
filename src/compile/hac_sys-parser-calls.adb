@@ -114,7 +114,11 @@ package body HAC_Sys.Parser.Calls is
       loop
         InSymbol (CD);
         if current_param >= last_param then
-          Error (CD, err_number_of_parameters_do_not_match, ": too many actual parameters");
+          Error
+            (CD,
+             err_number_of_parameters_do_not_match,
+             ": too many actual parameters",
+             severity => major);
         else
           current_param := current_param + 1;
           expected := CD.IdTab (current_param).xtyp;
@@ -142,7 +146,11 @@ package body HAC_Sys.Parser.Calls is
       Need (CD, RParent, err_closing_parenthesis_missing);
     end if;
     if current_param < last_param then
-      Error (CD, err_number_of_parameters_do_not_match, ": too few actual parameters");
+      Error
+        (CD,
+         err_number_of_parameters_do_not_match,
+         ": too few actual parameters",
+         severity => major);
     end if;
     --
     Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (Ident_Index).block_or_pkg_ref).PSize - 1));
