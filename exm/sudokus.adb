@@ -165,17 +165,28 @@ package body Sudokus is
   --  has only one possible digit. Note that for humans, this case
   --  is not easily identifiable visually.
   --
-  procedure Handle_Naked_Singles (u : in out Grid; found : out Natural) is
+  procedure Handle_Naked_Singles
+    (u       : in out Grid;
+     verbose : in     Boolean;
+     found   :    out Natural) is
     procedure Handle_Naked_Single (i, j : Sudigit) is
+      the_number : Sudigit;
+      use HAT;
     begin
       if Count (u (i, j).set) = 1 then
         found := found + 1;
         for num in Sudigit loop
           if u (i, j).set (num) then
             Mark_Solution (u, i, j, num);
+            the_number := num;
             exit;
           end if;
         end loop;
+        if verbose then
+          Put_Line
+            (+"Found naked single at pos " &
+             i & ',' & j  & ": digit: " & the_number);
+        end if;
       end if;
     end Handle_Naked_Single;
   begin
@@ -437,10 +448,9 @@ package body Sudokus is
               if something_removed then
                 found := found + 1;
                 if verbose then
-                  Put ("Found hidden multiple on a row at pos");
-                  Put (i, 2);
-                  Put (j, 2);
-                  Put (": digits:");
+                  Put
+                    (+"Found hidden multiple on a row at pos " &
+                     i & ',' & j  & ": digits:");
                   for seq in 1 .. multi loop
                     if u (i, j).set (s (seq)) then
                       Put (s (seq), 2);
@@ -511,10 +521,9 @@ package body Sudokus is
               if something_removed then
                 found := found + 1;
                 if verbose then
-                  Put ("Found hidden multiple on a column at pos");
-                  Put (i, 2);
-                  Put (j, 2);
-                  Put (": digits:");
+                  Put
+                    (+"Found hidden multiple on a column at pos " &
+                     i & ',' & j  & ": digits:");
                   for seq in 1 .. multi loop
                     if u (i, j).set (s (seq)) then
                       Put (s (seq), 2);
@@ -590,10 +599,9 @@ package body Sudokus is
                 if something_removed then
                   found := found + 1;
                   if verbose then
-                    Put ("Found hidden multiple in a box at pos");
-                    Put (i, 2);
-                    Put (j, 2);
-                    Put (": digits:");
+                    Put
+                      (+"Found hidden multiple in a box at pos " &
+                       i & ',' & j  & ": digits:");
                     for seq in 1 .. multi loop
                       if u (i, j).set (s (seq)) then
                         Put (s (seq), 2);
@@ -769,7 +777,7 @@ package body Sudokus is
 
     procedure Handle_Techniques is
     begin
-      Handle_Naked_Singles (pack.u, found (naked_single));
+      Handle_Naked_Singles (pack.u, verbosity_level > 4, found (naked_single));
       if found (naked_single) > 0 then
         return;
       end if;
