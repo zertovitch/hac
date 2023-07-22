@@ -1,5 +1,4 @@
 with HAC_Sys.Compiler.PCode_Emit,
-     HAC_Sys.Multi_Precision_Integers,
      HAC_Sys.Parser.Calls,
      HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Expressions,
@@ -7,6 +6,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Ranges,
      HAC_Sys.PCode,
      HAC_Sys.Parser.Standard_Procedures,
+     HAC_Sys.Parser.Statements.CASE_Statement,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
@@ -443,194 +443,6 @@ package body HAC_Sys.Parser.Statements is
       end if;
       Emit (CD, k_Delay);
     end Delay_Statement;
-
-    procedure CASE_Statement is  --  Ada RM 5.4
-      X         : Exact_Subtyp;
-      I, J, LC1 : Integer;
-      CaseTab : array (1 .. Cases_Max) of CASE_Label_Value;
-      ExitTab : array (1 .. Cases_Max) of Integer;
-      others_flag : Boolean := False;
-      use Multi_Precision_Integers;
-      subtype Choice_Count_Type is Multi_Int (4);
-      parsed_choices : Choice_Count_Type;
-
-      function Count_Choices (Low, High : HAC_Integer) return Choice_Count_Type is
-        result : Choice_Count_Type;
-      begin
-        pragma Assert (Low <= High);
-        Fill (result, Multi (High) - Multi (Low) + 1);
-        return result;
-      end Count_Choices;
-
-      procedure Discrete_Choice is  --  Ada RM 3.8.1 (5)
-        label_1, label_2 : Constant_Rec;
-        K : Integer;
-        choice_symbol_set : constant Symset := FSys_St + Alt_Finger_THEN + Range_Double_Dot_Symbol;
-      begin
-        Static_Scalar_Expression (CD, Block_Data.level, choice_symbol_set, label_1);
-        if CD.Sy = Range_Double_Dot_Symbol then
-          --  !!  To do: non-explicit ranges, like a subtype name, a 'Range, ... .
-          --      Ranges.Static_Range.
-          InSymbol;
-          Static_Scalar_Expression (CD, Block_Data.level, choice_symbol_set, label_2);
-          if label_2.TP /= label_1.TP then
-            Type_Mismatch (
-              CD, err_case_label_not_same_type_as_case_clause,
-              Found    => label_2.TP,
-              Expected => label_1.TP
-            );
-          end if;
-        else
-          label_2 := label_1;
-        end if;
-        if Exact_Typ (label_1.TP) /= Exact_Typ (X) then
-          Type_Mismatch (
-            CD, err_case_label_not_same_type_as_case_clause,
-            Found    => label_1.TP,
-            Expected => X
-          );
-        elsif I = Cases_Max then
-          Fatal (Case_Labels);  --  Exception is raised there.
-        else
-          if        (label_1.I not in X.Discrete_First .. X.Discrete_Last)
-            or else (label_2.I not in X.Discrete_First .. X.Discrete_Last)
-          then
-            Error (CD, err_choice_out_of_range, severity => minor);
-          end if;
-          I := I + 1;
-          CaseTab (I) := (value_1 => label_1.I, value_2 => label_2.I, LC => CD.LC, Is_others => False);
-          K := 0;
-          loop
-            K := K + 1;
-            --  Detect any range overlap.
-            exit when
-              Ranges.Do_Ranges_Overlap (label_1.I, label_2.I, CaseTab (K).value_1, CaseTab (K).value_2);
-          end loop;
-          if K < I then
-            Error (CD, err_duplicate_case_choice_value);
-          end if;
-          --  Since single choices or ranges do not overlap,
-          --  we can simply add the number of covered values in order to check
-          --  at the end that everything is covered.
-          Fill (parsed_choices, parsed_choices + Count_Choices (label_1.I, label_2.I));
-        end if;
-      end Discrete_Choice;
-
-      procedure WHEN_Discrete_Choice_List is
-      begin
-        pragma Assert (CD.Sy = WHEN_Symbol);  --  One_Case called only on WHEN_Symbol.
-        InSymbol;  --  Consume `WHEN`
-        --  Here, a discrete_choice_list (Ada RM 3.8.1 (4)) following WHEN.
-        if Constant_Definition_Begin_Symbol (CD.Sy) then
-          if others_flag then  --  Normal choice list *atfer* the "others" choice.
-            Error (CD, err_case_others_alone_last);
-          end if;
-          Discrete_Choice;
-          while CD.Sy = Alt loop
-            InSymbol;  --  Consume '|' symbol.
-            if CD.Sy = OTHERS_Symbol then  --  "others" mixed with normal choices.
-              Error (CD, err_case_others_alone_last);
-            else
-              Discrete_Choice;
-            end if;
-          end loop;
-        elsif CD.Sy = OTHERS_Symbol then        -- Hathorn
-          if others_flag then  --  Duplicate "others".
-            Error (CD, err_case_others_alone_last);
-          end if;
-          others_flag := True;
-          if I = Cases_Max then
-            Fatal (Case_Labels);  --  Exception is raised there.
-          end if;
-          I := I + 1;
-          CaseTab (I) := (value_1 | value_2 => 0, LC => CD.LC, Is_others => True);
-          InSymbol;
-        end if;
-        if CD.Sy = THEN_Symbol then  --  Mistake happens when converting IF statements to CASE.
-          Error (CD, err_THEN_instead_of_Arrow, severity => major);
-          InSymbol;
-        else
-          Need (CD, Finger, err_FINGER_missing);
-        end if;
-        Sequence_of_Statements (CD, END_WHEN, Block_Data);
-        J := J + 1;
-        ExitTab (J) := CD.LC;
-        Emit (CD, k_Jump);
-      end WHEN_Discrete_Choice_List;
-
-      procedure Check_Coverage is
-        expected_choices, difference : Choice_Count_Type;
-      begin
-        pragma Assert (Choice_Count_Type'Size >= HAC_Integer'Size);
-        if others_flag then
-          return;
-        end if;
-        Fill (expected_choices, Count_Choices (X.Discrete_First, X.Discrete_Last));
-        Fill (difference, expected_choices - parsed_choices);
-        --  When difference < 0, choices are out of
-        --  range (error detected on parsing).
-        if difference > 0 then
-          Error
-            (CD, err_choices_not_covered,
-             (if difference > 99 then ""
-              elsif Equal (difference, 1) then ": one case is missing"
-              else ":" & Basic_Int'Image (Basic (difference)) & " cases are missing"),
-             severity => minor);
-        end if;
-      end Check_Coverage;
-
-    begin  --  CASE_Statement
-      Fill (parsed_choices, 0);
-      InSymbol;
-      I := 0;
-      J := 0;
-      Expression (CD, Block_Data.level, FSys_St + Colon_Comma_IS_OF, X);
-      if not Discrete_Typ (X.TYP) then
-        Error (CD, err_bad_type_for_a_case_statement);
-      end if;
-      LC1 := CD.LC;
-      Emit (CD, k_CASE_Switch);
-      --  OF_Symbol was expected here in SmallAda! I.e. "case x OF when 1 => ..."
-      case CD.Sy is
-        when IS_Symbol =>
-          InSymbol;
-        when OF_Symbol =>
-          Error (CD, err_OF_instead_of_IS);  --  Common mistake by Pascal programmers
-          InSymbol;
-        when others =>
-          Error (CD, err_IS_missing);
-      end case;
-      if CD.Sy /= WHEN_Symbol then
-        Error (CD, err_WHEN_missing, severity => major);
-      end if;
-      loop  --  All cases are parsed here.
-        WHEN_Discrete_Choice_List;
-        exit when CD.Sy /= WHEN_Symbol;
-      end loop;
-      Check_Coverage;
-      CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
-      --  Set correct address for k_CASE_Switch above.
-      --  This is the address of the following bunch of
-      --  (CASE_Any_Choice, k_CASE_Match_Jump) pairs.
-      for K in 1 .. I loop
-        if CaseTab (K).Is_others then
-          Emit (CD, k_CASE_Choice_Others);
-        elsif CaseTab (K).value_1 = CaseTab (K).value_2 then
-          Emit_1 (CD, k_CASE_Choice_Value, CaseTab (K).value_1);
-        else
-          Emit_2 (CD, k_CASE_Choice_Range, CaseTab (K).value_1, CaseTab (K).value_2);
-        end if;
-        Emit_1 (CD, k_CASE_Match_Jump, Operand_2_Type (CaseTab (K).LC));
-      end loop;
-      --  This is for having the interpreter exiting the k_CASE_Choice_Data loop.
-      Emit (CD, k_CASE_No_Choice_Found);
-      --
-      for K in 1 .. J loop
-        CD.ObjCode (ExitTab (K)).Y := Operand_2_Type (CD.LC);  --  Patch k_Jump addresses to after "END CASE;".
-      end loop;
-      Need (CD, END_Symbol,  err_END_missing);           --  END (CASE)
-      Need (CD, CASE_Symbol, err_missing_closing_CASE);  --  (END) CASE
-    end CASE_Statement;
 
     procedure WHILE_Statement (label_Id : Natural) is  --  RM 5.5 (8)
       X : Exact_Subtyp;
@@ -1132,7 +944,7 @@ package body HAC_Sys.Parser.Statements is
           --  Anonymous Block Statement
           Block_Statement (Empty_Alfa);
         when CASE_Symbol =>
-          CASE_Statement;
+          CASE_Statement (CD, FSys_St, Block_Data);
         when DELAY_Symbol =>
           Delay_Statement;
         when EXIT_Symbol =>

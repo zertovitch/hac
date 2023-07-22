@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 
-package HAC_Sys.Parser.Statements is
+private package HAC_Sys.Parser.Statements is
 
   procedure Assignment
     (CD              : in out Co_Defs.Compiler_Data;

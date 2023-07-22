@@ -55,7 +55,8 @@ project HAC is
       "-gnatwcijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
       "-gnatf",   --  Full errors. Verbose details, all undefined references
       "-gnatq",   --  Don't quit, try semantics, even if parse errors
-      "-gnatQ");  --  Don't quit, write ali/tree file even if compile errors
+      "-gnatQ",   --  Don't quit, write ali/tree file even if compile errors
+      "-g");      --  Generate debugging information
 
    Style_Checks := 
      ("-gnatyaknpr",  --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
@@ -74,9 +75,7 @@ project HAC is
       "-gnato",         --  Enable overflow checking in STRICT mode
       "-gnatVa",        --  Enable all validity checking options
       "-fstack-check",
-      "-fno-inline",
-      --
-      "-g");            --  Generate debugging information
+      "-fno-inline");
 
    Fast_Options :=
      ("-O2",
@@ -89,15 +88,13 @@ project HAC is
       "-ftracer", "-fweb",
       "-ftree-vectorize",
       "-frename-registers",
-      "-ffunction-sections",
-      "-g");
+      "-ffunction-sections");
       
    Profiling_Options :=
      ("-O2",
       "-gnatp",
-      --  "-fno-inline",
-      "-pg",
-      "-g");
+      "-fno-inline",
+      "-pg");
    
    package Compiler is
       case HAC_Build_Mode is
@@ -127,7 +124,7 @@ project HAC is
       end case;
    end Binder;
 
-   Common_Linker_Options := ();
+   Common_Linker_Options := ("-g");
 
    case HAC_OS is
       when "Linux" =>
@@ -137,10 +134,10 @@ project HAC is
 
    package Linker is
       case HAC_Build_Mode is
-         when "Debug"                     => for Default_Switches ("ada") use Common_Linker_Options & ("-g");
-         when "Profiling"                 => for Default_Switches ("ada") use Common_Linker_Options & ("-g", "-Wl,--gc-sections", "-pg");
-         when "Fast"                      => for Default_Switches ("ada") use Common_Linker_Options & ("-g", "-Wl,--gc-sections");
-         when "Small" | "Small_Unchecked" => for Default_Switches ("ada") use Common_Linker_Options & (      "-Wl,--gc-sections");
+         when "Debug"                     => for Default_Switches ("ada") use Common_Linker_Options;
+         when "Profiling"                 => for Default_Switches ("ada") use Common_Linker_Options & ("-Wl,--gc-sections", "-pg");
+         when "Fast"                      => for Default_Switches ("ada") use Common_Linker_Options & ("-Wl,--gc-sections");
+         when "Small" | "Small_Unchecked" => for Default_Switches ("ada") use Common_Linker_Options & ("-Wl,--gc-sections");
       end case;
    end Linker;
 
