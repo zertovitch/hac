@@ -16,14 +16,25 @@ procedure HAC_Sys.Parser.Statements.CASE_Statement  --  Ada RM 5.4
 is
   use Defs, Co_Defs, Compiler.PCode_Emit, Errors, Expressions, Helpers, PCode;
   use type HAC_Integer;
-  X         : Exact_Subtyp;
-  I, J, LC1 : Integer;
+
+  type CASE_Label_Value is record
+    value_1, value_2 : HAC_Integer;  --  value of a choice in a CASE statement
+    LC               : Index;        --  instruction address
+    Is_others        : Boolean;
+  end record;
+
   CaseTab : array (1 .. Cases_Max) of CASE_Label_Value;
   ExitTab : array (1 .. Cases_Max) of Integer;
+
+  X : Exact_Subtyp;
+  choice_counter, exit_counter : Integer := 0;
+  LC1 : Integer;
   others_flag : Boolean := False;
+
   use Multi_Precision_Integers;
   subtype Choice_Count_Type is Multi_Int (4);
   parsed_choices : Choice_Count_Type;
+
   procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
   function Count_Choices (Low, High : HAC_Integer) return Choice_Count_Type is
@@ -61,7 +72,7 @@ is
         Found    => label_1.TP,
         Expected => X
       );
-    elsif I = Cases_Max then
+    elsif choice_counter = Cases_Max then
       Fatal (Case_Labels);  --  Exception is raised there.
     else
       if        (label_1.I not in X.Discrete_First .. X.Discrete_Last)
@@ -69,16 +80,20 @@ is
       then
         Error (CD, err_choice_out_of_range, severity => minor);
       end if;
-      I := I + 1;
-      CaseTab (I) := (value_1 => label_1.I, value_2 => label_2.I, LC => CD.LC, Is_others => False);
+      choice_counter := choice_counter + 1;
+      CaseTab (choice_counter) :=
+        (value_1   => label_1.I,
+         value_2   => label_2.I,
+         LC        => CD.LC,
+         Is_others => False);
       K := 0;
       loop
         K := K + 1;
-        --  Detect any range overlap.
+        --  Detect any range overlap:
         exit when
           Ranges.Do_Ranges_Overlap (label_1.I, label_2.I, CaseTab (K).value_1, CaseTab (K).value_2);
       end loop;
-      if K < I then
+      if K < choice_counter then
         Error (CD, err_duplicate_case_choice_value);
       end if;
       --  Since single choices or ranges do not overlap,
@@ -90,7 +105,7 @@ is
 
   procedure WHEN_Discrete_Choice_List is
   begin
-    pragma Assert (CD.Sy = WHEN_Symbol);  --  One_Case called only on WHEN_Symbol.
+    pragma Assert (CD.Sy = WHEN_Symbol);  --  This subprogram is called only on WHEN_Symbol.
     InSymbol;  --  Consume `WHEN`
     --  Here, a discrete_choice_list (Ada RM 3.8.1 (4)) following WHEN.
     if Constant_Definition_Begin_Symbol (CD.Sy) then
@@ -111,11 +126,14 @@ is
         Error (CD, err_case_others_alone_last);
       end if;
       others_flag := True;
-      if I = Cases_Max then
+      if choice_counter = Cases_Max then
         Fatal (Case_Labels);  --  Exception is raised there.
       end if;
-      I := I + 1;
-      CaseTab (I) := (value_1 | value_2 => 0, LC => CD.LC, Is_others => True);
+      choice_counter := choice_counter + 1;
+      CaseTab (choice_counter) :=
+        (value_1 | value_2 => 0,
+         LC                => CD.LC,
+         Is_others         => True);
       InSymbol;
     end if;
     if CD.Sy = THEN_Symbol then  --  Mistake happens when converting IF statements to CASE.
@@ -125,8 +143,8 @@ is
       Need (CD, Finger, err_FINGER_missing);
     end if;
     Sequence_of_Statements (CD, END_WHEN, Block_Data);
-    J := J + 1;
-    ExitTab (J) := CD.LC;
+    exit_counter := exit_counter + 1;
+    ExitTab (exit_counter) := CD.LC;
     Emit (CD, k_Jump);
   end WHEN_Discrete_Choice_List;
 
@@ -152,10 +170,9 @@ is
   end Check_Coverage;
 
 begin  --  CASE_Statement
+  pragma Assert (CD.Sy = CASE_Symbol);
   Fill (parsed_choices, 0);
   InSymbol;
-  I := 0;
-  J := 0;
   Expression (CD, Block_Data.level, FSys_St + Colon_Comma_IS_OF, X);
   if not Discrete_Typ (X.TYP) then
     Error (CD, err_bad_type_for_a_case_statement);
@@ -186,7 +203,7 @@ begin  --  CASE_Statement
   --  Set correct address for k_CASE_Switch above.
   --  This is the address of the following bunch of
   --  (CASE_Any_Choice, k_CASE_Match_Jump) pairs.
-  for K in 1 .. I loop
+  for K in 1 .. choice_counter loop
     if CaseTab (K).Is_others then
       Emit (CD, k_CASE_Choice_Others);
     elsif CaseTab (K).value_1 = CaseTab (K).value_2 then
@@ -197,10 +214,13 @@ begin  --  CASE_Statement
     Emit_1 (CD, k_CASE_Match_Jump, Operand_2_Type (CaseTab (K).LC));
   end loop;
   --  This is for having the interpreter exiting the k_CASE_Choice_Data loop.
+  --  Note: the k_CASE_No_Choice_Found allowed to check a missing "when others"
+  --  at run-time. Now this check is done at compile-time by Check_Coverage.
   Emit (CD, k_CASE_No_Choice_Found);
   --
-  for K in 1 .. J loop
-    CD.ObjCode (ExitTab (K)).Y := Operand_2_Type (CD.LC);  --  Patch k_Jump addresses to after "END CASE;".
+  for K in 1 .. exit_counter loop
+    --  Patch k_Jump addresses to the instruction coming after "END CASE;" :
+    CD.ObjCode (ExitTab (K)).Y := Operand_2_Type (CD.LC);
   end loop;
   Need (CD, END_Symbol,  err_END_missing);           --  END (CASE)
   Need (CD, CASE_Symbol, err_missing_closing_CASE);  --  (END) CASE

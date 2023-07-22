@@ -117,11 +117,8 @@ project HAC is
    end case;
 
    package Binder is
-      case HAC_Build_Mode is
-         when "Small" | "Small_Unchecked" => for Default_Switches ("ada") use Common_Binder_Options;
-         --  -Es: Store tracebacks in exception occurrences, and enable symbolic tracebacks
-         when others  => for Default_Switches ("ada") use Common_Binder_Options & ("-Es");
-      end case;
+      --  -Es: Store tracebacks in exception occurrences, and enable symbolic tracebacks
+      for Default_Switches ("ada") use Common_Binder_Options & ("-Es");
    end Binder;
 
    Common_Linker_Options := ("-g");

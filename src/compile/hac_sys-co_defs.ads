@@ -352,12 +352,6 @@ package HAC_Sys.Co_Defs is
 
   Universe : constant HAT.VString := HAT.To_VString ("[-- The Universe --]");
 
-  type CASE_Label_Value is record
-    value_1, value_2 : HAC_Integer;  --  value of a choice in a CASE statement
-    LC               : Index;        --  instruction address
-    Is_others        : Boolean;
-  end record;
-
   type Constant_Rec is record
     TP : Exact_Subtyp;
     I  : HAC_Integer;  --  Includes Character and enumeration types (including Boolean)
