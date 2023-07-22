@@ -27,7 +27,8 @@ is
   ExitTab : array (1 .. Cases_Max) of Integer;
 
   X : Exact_Subtyp;
-  choice_counter, exit_counter : Integer := 0;
+  choice_counter : Integer := 0;  --  This counts the various choices separated by '|'.
+  exit_counter   : Integer := 0;  --  This will correspond to the number of "=>".
   LC1 : Integer;
   others_flag : Boolean := False;
 
@@ -37,13 +38,13 @@ is
 
   procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
-  function Count_Choices (Low, High : HAC_Integer) return Choice_Count_Type is
+  function Count_Choice_Values (Low, High : HAC_Integer) return Choice_Count_Type is
     result : Choice_Count_Type;
   begin
     pragma Assert (Low <= High);
     Fill (result, Multi (High) - Multi (Low) + 1);
     return result;
-  end Count_Choices;
+  end Count_Choice_Values;
 
   procedure Discrete_Choice is  --  Ada RM 3.8.1 (5)
     label_1, label_2 : Constant_Rec;
@@ -99,7 +100,7 @@ is
       --  Since single choices or ranges do not overlap,
       --  we can simply add the number of covered values in order to check
       --  at the end that everything is covered.
-      Fill (parsed_choices, parsed_choices + Count_Choices (label_1.I, label_2.I));
+      Fill (parsed_choices, parsed_choices + Count_Choice_Values (label_1.I, label_2.I));
     end if;
   end Discrete_Choice;
 
@@ -155,7 +156,7 @@ is
     if others_flag then
       return;
     end if;
-    Fill (expected_choices, Count_Choices (X.Discrete_First, X.Discrete_Last));
+    Fill (expected_choices, Count_Choice_Values (X.Discrete_First, X.Discrete_Last));
     Fill (difference, expected_choices - parsed_choices);
     --  When difference < 0, choices are out of
     --  range (error detected on parsing).
@@ -200,9 +201,12 @@ begin  --  CASE_Statement
   end loop;
   Check_Coverage;
   CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
-  --  Set correct address for k_CASE_Switch above.
+  --  ^ Set correct address for k_CASE_Switch above.
   --  This is the address of the following bunch of
-  --  (CASE_Any_Choice, k_CASE_Match_Jump) pairs.
+  --  instructions.
+
+  --  Output the case table as (CASE_Any_Choice, k_CASE_Match_Jump)
+  --  instruction pairs:
   for K in 1 .. choice_counter loop
     if CaseTab (K).Is_others then
       Emit (CD, k_CASE_Choice_Others);
@@ -213,7 +217,7 @@ begin  --  CASE_Statement
     end if;
     Emit_1 (CD, k_CASE_Match_Jump, Operand_2_Type (CaseTab (K).LC));
   end loop;
-  --  This is for having the interpreter exiting the k_CASE_Choice_Data loop.
+  --  The following is for having the interpreter exiting the k_CASE_Choice_Data loop.
   --  Note: the k_CASE_No_Choice_Found allowed to check a missing "when others"
   --  at run-time. Now this check is done at compile-time by Check_Coverage.
   Emit (CD, k_CASE_No_Choice_Found);
