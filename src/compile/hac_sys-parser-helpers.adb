@@ -222,15 +222,22 @@ package body HAC_Sys.Parser.Helpers is
   is
   begin
     if Found.TYP /= Expected.TYP then
-      Error (CD, Err,
+      Error (CD,
+        Err,
         "found "      & Nice_Exact_Image (CD, Found) &
-        ", expected " & Nice_Exact_Image (CD, Expected));
+        ", expected " & Nice_Exact_Image (CD, Expected),
+        severity => major);
     elsif Found.TYP = Enums then
-      Error (CD, Err,
-        "found "      & Enum_Name (CD, Found.Ref) &
-        ", expected " & Enum_Name (CD, Expected.Ref));
+      Error (CD,
+        Err,
+        "found """        & Enum_Name (CD, Found.Ref) &
+        """, expected """ & Enum_Name (CD, Expected.Ref) & '"',
+        severity => major);
     else
-      Error (CD, Err, "not exactly the same " & Nice_Image (Found.TYP));
+      Error (CD,
+        Err,
+        "not exactly the same " & Nice_Image (Found.TYP),
+        severity => major);
       --  Possible improvement: find the eventual array or record
       --  names using X.Ref, Y.Ref ... if they have names!
       --  (same for Issue_Undefined_Operator_Error)

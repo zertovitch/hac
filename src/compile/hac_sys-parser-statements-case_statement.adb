@@ -199,7 +199,9 @@ begin  --  CASE_Statement
     WHEN_Discrete_Choice_List;
     exit when CD.Sy /= WHEN_Symbol;
   end loop;
-  Check_Coverage;
+  if CD.error_count + CD.minor_error_count = 0 then
+    Check_Coverage;
+  end if;
   CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
   --  ^ Set correct address for k_CASE_Switch above.
   --  This is the address of the following bunch of
