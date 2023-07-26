@@ -314,10 +314,10 @@ package body HAC_Sys.Parser.Packages is
         --  We still choose to do the USE because some unit bodies
         --  may not have a spec.
         null;
-      elsif CD.warnings (warn_redundant_construct) then
-        Warning
+      elsif CD.remarks (note_redundant_construct) then
+        Note
           (CD,
-           warn_redundant_construct,
+           note_redundant_construct,
            """use"" clause already applied earlier for package """ &
            A2S (CD.IdTab (Pkg_Idx).name_with_case) & '"');
       end if;

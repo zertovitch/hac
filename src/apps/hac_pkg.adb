@@ -130,7 +130,7 @@ package body HAC_Pkg is
     PLCE ("         -I     : specify source files search path (hac -h2 for details)");
     PLCE ("         -v, v1 : verbose");
     PLCE ("         -v2    : very verbose");
-    PLCE ("         -wx    : enable / disable kinds of warnings (hac -h2 for details)");
+    PLCE ("         -wx    : enable / disable warnings or notes (hac -h2 for details)");
     NLCE;
     PLCE ("Note: HAC (this command-line tool) accepts source files with shebang's,");
     PLCE ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
@@ -150,10 +150,10 @@ package body HAC_Pkg is
       PLCE ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
       PLCE ("         environment variable.");
       NLCE;
-      PLCE ("Option -wx : enable warnings of kind x");
-      PLCE ("       -wX : disable warnings of kind x");
+      PLCE ("Option -wx : enable warnings or notes of kind x");
+      PLCE ("       -wX : disable warnings or notes of kind x");
       PLCE ("             x =");
-      PLCE ("                 r   warnings for redundant constructs");
+      PLCE ("                 r   notes for redundant constructs");
       NLCE;
     end if;
     Ada.Text_IO.Put ("Press Return");

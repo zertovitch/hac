@@ -292,7 +292,7 @@ package body HAC_Sys.Errors is
         return
           "space missing here; " &
           "if an identifier was meant, it cannot start with a number";
-      when warn_redundant_construct =>
+      when note_redundant_construct =>
         return hint_1;
     end case;
   end Diagnostic_String;
@@ -382,11 +382,13 @@ package body HAC_Sys.Errors is
     --
     function Diagnostic_Suffix return String is
       (case diagnostic.diagnostic_kind is
-         when warning => " [-w" & warning_letter (code) & ']',
-         when others  => "");
+         when warning | note => " [-w" & remark_letter (code) & ']',
+         when others         => "");
   begin
     if code in Compile_Warning then
       diagnostic.diagnostic_kind := warning;
+    elsif code in Compile_Note then
+      diagnostic.diagnostic_kind := note;
     end if;
     if previous_symbol then
       line      := CD.prev_sy_line;
@@ -468,6 +470,18 @@ package body HAC_Sys.Errors is
     --  Just call "Error" (severity does nothing for warnings).
     Error (CD, code, hint_1, hint_2, minor, previous_symbol, shift_one_character);
   end Warning;
+
+  procedure Note
+    (CD                  : in out Co_Defs.Compiler_Data;
+     code                :        Defs.Compile_Note;
+     hint_1              :        String         := "";
+     hint_2              :        String         := "";
+     previous_symbol     :        Boolean        := False;
+     shift_one_character :        Boolean        := False) is
+  begin
+    --  Just call "Error" (severity does nothing for warnings).
+    Error (CD, code, hint_1, hint_2, minor, previous_symbol, shift_one_character);
+  end Note;
 
   ----------------------------------------------------------------------------
 

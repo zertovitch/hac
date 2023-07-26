@@ -38,7 +38,7 @@ package HAC_Sys.Builder is
     CD                  : Compiler_Data_Access := new Co_Defs.Compiler_Data;
     LD                  : Librarian.Library_Data;
     global_VM_variables : String_Maps.Map;
-    global_warnings     : Defs.Warning_Set := Defs.default_warnings;
+    global_remarks     : Defs.Remark_Set := Defs.default_remarks;
     main_name_hint      : HAT.VString;  --  This is used for circular unit dependency detection
     asm_dump_file_name  : HAT.VString;  --  Assembler output of compiled object code
     cmp_dump_file_name  : HAT.VString;  --  Compiler dump
@@ -66,9 +66,9 @@ package HAC_Sys.Builder is
     var_map_file_name  :        String  := ""   --  Output of variables (map)
   );
 
-  procedure Set_Warnings_Set
+  procedure Set_Remark_Set
     (BD  : in out Build_Data;
-     set : in     Defs.Warning_Set);
+     set : in     Defs.Remark_Set);
 
   --  Set current main source stream (file, editor data, zipped file,...)
   procedure Set_Main_Source_Stream (

@@ -23,7 +23,7 @@ procedure HAC is
 
   asm_dump_file_name, cmp_dump_file_name : HAT.VString;
   compile_only : Boolean := False;
-  warnings : HAC_Sys.Defs.Warning_Set := HAC_Sys.Defs.default_warnings;
+  remarks : HAC_Sys.Defs.Remark_Set := HAC_Sys.Defs.default_remarks;
 
   use HAC_Pkg;
 
@@ -79,7 +79,7 @@ procedure HAC is
     Open (f, In_File, Ada_file_name);
     HAC_Sys.Builder.Skip_Shebang (f, shebang_offset);
     BD.Set_Diagnostic_File_Names (HAT.To_String (asm_dump_file_name), HAT.To_String (cmp_dump_file_name));
-    BD.Set_Warnings_Set (warnings);
+    BD.Set_Remark_Set (remarks);
     BD.Set_Main_Source_Stream (Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     BD.Set_Message_Feedbacks (trace);
     BD.LD.Set_Source_Access
@@ -234,20 +234,20 @@ procedure HAC is
           quit := True;
         when 'w' =>
           if opt'Length = 1 then
-            Argument_Error ("Missing warning switch");
+            Argument_Error ("Missing warning / note switch");
           else
             unknown_warning := True;
-            for w in HAC_Sys.Defs.Compile_Warning loop
-              if HAC_Sys.Defs.warning_letter (w) = opt (opt'First + 1) then
-                warnings (w) := True;
+            for w in HAC_Sys.Defs.Compile_Remark loop
+              if HAC_Sys.Defs.remark_letter (w) = opt (opt'First + 1) then
+                remarks (w) := True;
                 unknown_warning := False;
-              elsif To_Upper (HAC_Sys.Defs.warning_letter (w)) = opt (opt'First + 1) then
-                warnings (w) := False;
+              elsif To_Upper (HAC_Sys.Defs.remark_letter (w)) = opt (opt'First + 1) then
+                remarks (w) := False;
                 unknown_warning := False;
               end if;
             end loop;
             if unknown_warning then
-              Argument_Error ("Unknown warning switch '" & opt (opt'First + 1) & ''');
+              Argument_Error ("Unknown warning / note switch '" & opt (opt'First + 1) & ''');
             end if;
           end if;
         when 'I' =>

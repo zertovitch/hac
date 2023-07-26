@@ -52,7 +52,7 @@ package body HAC_Sys.Builder is
           when Body_Postponed =>
             previous_context :=
               BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
-            BD.CD.warnings := BD.global_warnings;
+            BD.CD.remarks := BD.global_remarks;
             Compiler.Compile_Unit
               (BD.CD.all, BD.LD, upper_name, fn, False,
                lu.id_index,
@@ -91,7 +91,7 @@ package body HAC_Sys.Builder is
     BD.LD.Library.Clear;
     BD.LD.Map.Clear;
     Librarian.Register_Unit (BD.LD, main_unit);
-    BD.CD.warnings := BD.global_warnings;
+    BD.CD.remarks := BD.global_remarks;
     Compiler.Compile_Main (
       BD.CD.all,
       BD.LD,
@@ -172,12 +172,12 @@ package body HAC_Sys.Builder is
     BD.var_map_file_name  := To_VString (var_map_file_name);
   end Set_Diagnostic_File_Names;
 
-  procedure Set_Warnings_Set
+  procedure Set_Remark_Set
     (BD  : in out Build_Data;
-     set : in     Defs.Warning_Set) is
+     set : in     Defs.Remark_Set) is
   begin
-    BD.global_warnings := set;
-  end Set_Warnings_Set;
+    BD.global_remarks := set;
+  end Set_Remark_Set;
 
   --  Set current main source stream (file, editor data, zipped file,...)
   procedure Set_Main_Source_Stream (

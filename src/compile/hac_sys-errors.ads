@@ -41,6 +41,14 @@ package HAC_Sys.Errors is
      previous_symbol     :        Boolean        := False;
      shift_one_character :        Boolean        := False);
 
+  procedure Note
+    (CD                  : in out Co_Defs.Compiler_Data;
+     code                :        Defs.Compile_Note;
+     hint_1              :        String         := "";
+     hint_2              :        String         := "";
+     previous_symbol     :        Boolean        := False;
+     shift_one_character :        Boolean        := False);
+
   procedure Compilation_Diagnostics_Summary (CD : Co_Defs.Compiler_Data);
 
   type Table_OverFlow_Error is

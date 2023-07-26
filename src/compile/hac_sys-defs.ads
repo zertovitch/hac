@@ -442,20 +442,29 @@ package HAC_Sys.Defs is
      err_wrong_unit_name,
      err_obsolete_hat_name,
      --
-     warn_redundant_construct);
+     note_redundant_construct);
+
+  --  A Remark is either a Warning (about something potentially dangerous)
+  --  or a Note (about something harmless but typically superfluous).
+  subtype Compile_Remark is Compile_Diagnostic
+    range note_redundant_construct .. note_redundant_construct;
 
   subtype Compile_Warning is Compile_Diagnostic
-    range warn_redundant_construct .. warn_redundant_construct;
+    range Compile_Diagnostic'Succ (err_obsolete_hat_name) .. err_obsolete_hat_name;
+    --  ^ Fake, just, currently, an empty range!
 
-  type Warning_Set is array (Compile_Warning) of Boolean;
-  default_warnings : constant Warning_Set := (others => False);
+  subtype Compile_Note is Compile_Diagnostic
+    range note_redundant_construct .. note_redundant_construct;
 
-  warning_letter : constant array (Compile_Warning) of Character :=
-    (warn_redundant_construct => 'r');
+  type Remark_Set is array (Compile_Remark) of Boolean;
+  default_remarks : constant Remark_Set := (others => False);
+
+  remark_letter : constant array (Compile_Remark) of Character :=
+    (note_redundant_construct => 'r');
 
   subtype Compile_Error is Compile_Diagnostic
     range Compile_Diagnostic'First ..
-          Compile_Diagnostic'Pred (Compile_Warning'First);
+          Compile_Diagnostic'Pred (Compile_Remark'First);
 
   type Diagnostic_Set is array (Compile_Diagnostic) of Boolean;
   no_diagnostic : constant Diagnostic_Set := (others => False);

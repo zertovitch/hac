@@ -35,7 +35,7 @@ begin
     when To_Float =>
       case T_Expr.TYP is
         when Floats =>
-          null;  --  Possibly useless conversion if we have the same named subtype
+          null;  --  Useless conversion if we have the same named subtype
         when Ints =>
           Compiler.PCode_Emit.Emit_1 (CD, k_Integer_to_Float, 0);
         when Durations =>
@@ -51,7 +51,7 @@ begin
         when Durations =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Duration_to_Int);
         when Ints =>
-          null;  --  Possibly useless conversion if we have the same named subtype
+          null;  --  Useless conversion if we have the same named subtype
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;
@@ -65,14 +65,14 @@ begin
         when Ints =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Int_to_Duration);
         when Durations =>
-          null;  --  Possibly useless conversion if we have the same named subtype
+          null;  --  Useless conversion if we have the same named subtype
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;
     when To_Bools =>
       if T_Expr.TYP = Bools then
-        if CD.warnings (warn_redundant_construct) then
-          Warning (CD, warn_redundant_construct, "redundant conversion to type ""Boolean""");
+        if CD.remarks (note_redundant_construct) then
+          Note (CD, note_redundant_construct, "redundant conversion to type ""Boolean""");
         end if;
       else
         Argument_Type_Not_Supported (CD);
