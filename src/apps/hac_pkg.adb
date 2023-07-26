@@ -1,9 +1,9 @@
---  This package contains call-backs for the
---  HAC command-line application.
-
 with HAC_Sys.Librarian;
 
-with Ada.Directories;
+with Show_MIT_License;
+
+with Ada.Directories,
+     Ada.Text_IO;
 
 package body HAC_Pkg is
 
@@ -97,5 +97,67 @@ package body HAC_Pkg is
   begin
     HAC_Sys.Librarian.default_close_file (full_file_name);
   end Close_Source;
+
+  procedure PLCE (s : String) is
+    use Ada.Text_IO;
+  begin
+    Put_Line (Current_Error, s);
+  end PLCE;
+
+  procedure NLCE is
+    use Ada.Text_IO;
+  begin
+    New_Line (Current_Error);
+  end NLCE;
+
+  procedure Help (level : Positive) is
+    use Ada.Text_IO;
+  begin
+    PLCE ("HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
+    PLCE (version_info);
+    PLCE ("Main URL: "           & HAC_Sys.web);
+    PLCE ("  Sources, site #1: " & HAC_Sys.web2);
+    PLCE ("  Sources, site #2: " & HAC_Sys.web3);
+    PLCE ("  Alire Crate: "      & HAC_Sys.web4);
+    NLCE;
+    PLCE ("Usage: hac [options] main.adb [command-line parameters for main]");
+    NLCE;
+    PLCE ("Options: -a     : assembler output in " & assembler_output_name);
+    PLCE ("         -c     : compile only");
+    PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
+    PLCE ("         -h, h1 : this help");
+    PLCE ("         -h2    : show more help about options");
+    PLCE ("         -I     : specify source files search path (hac -h2 for details)");
+    PLCE ("         -v, v1 : verbose");
+    PLCE ("         -v2    : very verbose");
+    PLCE ("         -wx    : enable / disable kinds of warnings (hac -h2 for details)");
+    NLCE;
+    PLCE ("Note: HAC (this command-line tool) accepts source files with shebang's,");
+    PLCE ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
+    Show_MIT_License (Current_Error, "hac_sys.ads");
+    if level > 1 then
+      PLCE ("Extended help for HAC (command: hac -h2)");
+      PLCE ("----------------------------------------");
+      NLCE;
+      PLCE ("Option -I : specify source files search path");
+      NLCE;
+      PLCE ("  The search path is a list of directories separated by commas (,) or semicolons (;).");
+      PLCE ("  HAC searches Ada source files in the following order:");
+      PLCE ("    1) The directory containing the source file of the main unit");
+      PLCE ("         being compiled (the file name on the command line).");
+      PLCE ("    2) Each directory named by an -I switch given on the");
+      PLCE ("         hac command line, in the order given.");
+      PLCE ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
+      PLCE ("         environment variable.");
+      NLCE;
+      PLCE ("Option -wx : enable warnings of kind x");
+      PLCE ("       -wX : disable warnings of kind x");
+      PLCE ("             x =");
+      PLCE ("                 r   warnings for redundant constructs");
+      NLCE;
+    end if;
+    Ada.Text_IO.Put ("Press Return");
+    Ada.Text_IO.Skip_Line;
+  end Help;
 
 end HAC_Pkg;

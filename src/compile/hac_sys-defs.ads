@@ -309,7 +309,7 @@ package HAC_Sys.Defs is
   --  Compilation error type  --
   ------------------------------
 
-  type Compile_Error is
+  type Compile_Diagnostic is
      --  Errors that may occur during the scanning of symbols (tokens):
     (err_scanner_character_zero_chars,
      err_scanner_control_character,
@@ -440,10 +440,25 @@ package HAC_Sys.Defs is
      err_mixed_logical_operators,
      err_library_error,
      err_wrong_unit_name,
-     err_obsolete_hat_name);
+     err_obsolete_hat_name,
+     --
+     warn_redundant_construct);
 
-  type Error_set is array (Compile_Error) of Boolean;
-  error_free : constant Error_set := (others => False);
+  subtype Compile_Warning is Compile_Diagnostic
+    range warn_redundant_construct .. warn_redundant_construct;
+
+  type Warning_Set is array (Compile_Warning) of Boolean;
+  default_warnings : constant Warning_Set := (others => False);
+
+  warning_letter : constant array (Compile_Warning) of Character :=
+    (warn_redundant_construct => 'r');
+
+  subtype Compile_Error is Compile_Diagnostic
+    range Compile_Diagnostic'First ..
+          Compile_Diagnostic'Pred (Compile_Warning'First);
+
+  type Diagnostic_Set is array (Compile_Diagnostic) of Boolean;
+  no_diagnostic : constant Diagnostic_Set := (others => False);
 
   type Repair_Kind_Type is (none, insert, replace_token);
 
@@ -455,7 +470,7 @@ package HAC_Sys.Defs is
   type Diagnostic_Kind_Type is (error, warning, note, style);
 
   type Diagnostic_Kit is new Repair_Kit with record
-    diagnostic_kind : Diagnostic_Kind_Type := error;  --  Error, or warning, or ? ...
+    diagnostic_kind : Diagnostic_Kind_Type := error;
     message         : HAT.VString          := HAT.Null_VString;
     file_name       : HAT.VString          := HAT.Null_VString;
     line            : Natural              := 0;

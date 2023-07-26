@@ -7,11 +7,10 @@ with HAC_Pkg;
 
 with HAC_Sys.Builder,
      HAC_Sys.Co_Defs,
+     HAC_Sys.Defs,
      HAC_Sys.PCode.Interpreter.In_Defs;
 
 with HAT;
-
-with Show_MIT_License;
 
 with Ada.Calendar,
      Ada.Command_Line,
@@ -22,20 +21,9 @@ with Ada.Calendar,
 
 procedure HAC is
 
-  procedure PLCE (s : String) is
-    use Ada.Text_IO;
-  begin
-    Put_Line (Current_Error, s);
-  end PLCE;
-
-  procedure NLCE is
-    use Ada.Text_IO;
-  begin
-    New_Line (Current_Error);
-  end NLCE;
-
   asm_dump_file_name, cmp_dump_file_name : HAT.VString;
   compile_only : Boolean := False;
+  warnings : HAC_Sys.Defs.Warning_Set := HAC_Sys.Defs.default_warnings;
 
   use HAC_Pkg;
 
@@ -91,6 +79,7 @@ procedure HAC is
     Open (f, In_File, Ada_file_name);
     HAC_Sys.Builder.Skip_Shebang (f, shebang_offset);
     BD.Set_Diagnostic_File_Names (HAT.To_String (asm_dump_file_name), HAT.To_String (cmp_dump_file_name));
+    BD.Set_Warnings_Set (warnings);
     BD.Set_Main_Source_Stream (Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     BD.Set_Message_Feedbacks (trace);
     BD.LD.Set_Source_Access
@@ -209,65 +198,26 @@ procedure HAC is
       Failure;
   end Compile_and_interpret_file;
 
-  assembler_output_name : constant String := "asm_dump.pca";       --  PCA = PCode Assembler
-  compiler_dump_name    : constant String := "compiler_dump.lst";
-
-  procedure Help (level : Positive) is
-    use Ada.Text_IO;
-  begin
-    PLCE ("HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
-    PLCE (version_info);
-    PLCE ("Main URL: "           & HAC_Sys.web);
-    PLCE ("  Sources, site #1: " & HAC_Sys.web2);
-    PLCE ("  Sources, site #2: " & HAC_Sys.web3);
-    PLCE ("  Alire Crate: "      & HAC_Sys.web4);
-    NLCE;
-    PLCE ("Usage: hac [options] main.adb [command-line parameters for main]");
-    NLCE;
-    PLCE ("Options: -a     : assembler output in " & assembler_output_name);
-    PLCE ("         -c     : compile only");
-    PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
-    PLCE ("         -h, h1 : this help");
-    PLCE ("         -h2    : show more help about options");
-    PLCE ("         -I     : specify source files search path");
-    PLCE ("         -v, v1 : verbose");
-    PLCE ("         -v2    : very verbose");
-    NLCE;
-    PLCE ("Note: HAC (this command-line tool) accepts source files with shebang's,");
-    PLCE ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
-    Show_MIT_License (Current_Error, "hac_sys.ads");
-    if level > 1 then
-      PLCE ("Extended help for HAC");
-      PLCE ("---------------------");
-      NLCE;
-      PLCE ("Option -I : specify source files search path");
-      NLCE;
-      PLCE ("  The search path is a list of directories separated by commas (,) or semicolons (;).");
-      PLCE ("  HAC searches Ada source files in the following order:");
-      PLCE ("    1) The directory containing the source file of the main unit");
-      PLCE ("         being compiled (the file name on the command line).");
-      PLCE ("    2) Each directory named by an -I switch given on the");
-      PLCE ("         hac command line, in the order given.");
-      PLCE ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
-      PLCE ("         environment variable.");
-    end if;
-    Ada.Text_IO.Put ("Press Return");
-    Ada.Text_IO.Skip_Line;
-  end Help;
-
   hac_ing    : Boolean  := False;
   quit       : Boolean  := False;
   help_level : Positive := 1;
 
+  procedure Argument_Error (msg : String) is
+  begin
+    PLCE (msg);
+    NLCE;
+    quit := True;
+    delay 1.0;
+  end Argument_Error;
+
   procedure Process_Argument (arg : String; arg_pos : Positive) is
     opt : constant String := arg (arg'First + 1 .. arg'Last);
+    unknown_warning : Boolean;
     use HAT;
   begin
     if arg (arg'First) = '-' then
       if opt'Length = 0 then
-        PLCE ("Missing option code: ""-""");
-        NLCE;
-        quit := True;
+        Argument_Error ("Missing option code after '-'");
         return;
       end if;
       case opt (opt'First) is
@@ -282,6 +232,24 @@ procedure HAC is
             help_level := 2;
           end if;
           quit := True;
+        when 'w' =>
+          if opt'Length = 1 then
+            Argument_Error ("Missing warning switch");
+          else
+            unknown_warning := True;
+            for w in HAC_Sys.Defs.Compile_Warning loop
+              if HAC_Sys.Defs.warning_letter (w) = opt (opt'First + 1) then
+                warnings (w) := True;
+                unknown_warning := False;
+              elsif To_Upper (HAC_Sys.Defs.warning_letter (w)) = opt (opt'First + 1) then
+                warnings (w) := False;
+                unknown_warning := False;
+              end if;
+            end loop;
+            if unknown_warning then
+              Argument_Error ("Unknown warning switch '" & opt (opt'First + 1) & ''');
+            end if;
+          end if;
         when 'I' =>
           if command_line_source_path /= "" then
             command_line_source_path := command_line_source_path & ';';
@@ -294,9 +262,7 @@ procedure HAC is
             verbosity := Character'Pos (opt (opt'First + 1)) - Character'Pos ('0');
           end if;
         when others =>
-          PLCE ("Unknown option: """ & arg & '"');
-          NLCE;
-          quit := True;
+          Argument_Error ("Unknown option: """ & arg & '"');
       end case;
     else
       Compile_and_interpret_file (arg, arg_pos);

@@ -527,7 +527,7 @@ package body HAC_Sys.Parser.Statements is
     end FOR_Statement;
 
     procedure Select_Statement is
-      procedure Select_Error (N : Compile_Error) is
+      procedure Select_Error (N : Compile_Diagnostic) is
       begin
         Error_then_Skip (CD, Semicolon, N);
       end Select_Error;
@@ -832,7 +832,7 @@ package body HAC_Sys.Parser.Statements is
       new_ident_for_statement_with_case : constant Alfa := CD.Id_with_case;
       --
       procedure Check_ID_after_END_LOOP is  --  RM 5.5 (5)
-        procedure Boom (err : Compile_Error) is
+        procedure Boom (err : Compile_Diagnostic) is
         begin
           Error (CD, err, A2S (new_ident_for_statement_with_case));
         end Boom;

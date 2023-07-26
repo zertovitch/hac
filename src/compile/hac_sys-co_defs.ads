@@ -326,7 +326,8 @@ package HAC_Sys.Co_Defs is
     comp_dump : Ada.Text_IO.File_Type;
     --
     error_count, minor_error_count : Natural;
-    errs         : Error_set;
+    warnings     : Warning_Set := default_warnings;
+    diags        : Diagnostic_Set;
     total_lines  : Natural;
     trace        : Compilation_Trace_Parameters;
     --  On `WITH X`, we start the recursive compilation of X,

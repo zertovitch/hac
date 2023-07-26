@@ -24,7 +24,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Need
     (CD      : in out Compiler_Data;
      S       :        KeyWSymbol;
-     E       :        Compile_Error;
+     E       :        Compile_Diagnostic;
      Forgive :        KeyWSymbol := Dummy_Symbol)
   is
     severity : Error_Severity := medium;
@@ -45,7 +45,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Error_then_Skip
     (CD   : in out Compiler_Data;
      FSys :        Symset;
-     N    :        Compile_Error;
+     N    :        Compile_Diagnostic;
      hint :        String := "")
   is
 
@@ -77,7 +77,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Error_then_Skip
     (CD   : in out Compiler_Data;
      S    :        KeyWSymbol;
-     N    :        Compile_Error;
+     N    :        Compile_Diagnostic;
      hint :        String := "")
   is
   begin
@@ -87,7 +87,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Test
     (CD            : in out Compiler_Data;
      S1, S2        :        Symset;
-     N             :        Compile_Error;
+     N             :        Compile_Diagnostic;
      stop_on_error :        Boolean := False)
   is
     use HAT;
@@ -217,7 +217,7 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Type_Mismatch
     (CD               : in out Compiler_Data;
-     Err              :        Compile_Error;
+     Err              :        Compile_Diagnostic;
      Found, Expected  :        Exact_Typ'Class)
   is
   begin
@@ -246,7 +246,7 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Type_Mismatch
     (CD       : in out Compiler_Data;
-     Err      :        Compile_Error;
+     Err      :        Compile_Diagnostic;
      Found    :        Exact_Subtyp;
      Expected :        Typ_Set)
   is

@@ -305,6 +305,23 @@ package body HAC_Sys.Parser.Packages is
     Id_Alias, dummy_id_idx : Natural;
     pkg_table_index : Positive;
     pkg_level : Nesting_Level;
+    --
+    procedure Issue_Duplicate_Use_Warning is
+    begin
+      if Pkg_UName = "STANDARD" then
+        --  For a unit's body, a "USE Standard" is applied while it
+        --  was already applied for its spec (so it is superfluous).
+        --  We still choose to do the USE because some unit bodies
+        --  may not have a spec.
+        null;
+      elsif CD.warnings (warn_redundant_construct) then
+        Warning
+          (CD,
+           warn_redundant_construct,
+           """use"" clause already applied earlier for package """ &
+           A2S (CD.IdTab (Pkg_Idx).name_with_case) & '"');
+      end if;
+    end Issue_Duplicate_Use_Warning;
   begin
     pragma Assert (Pkg_Idx > No_Id);
     if CD.IdTab (Pkg_Idx).entity /= Paquetage then
@@ -374,10 +391,13 @@ package body HAC_Sys.Parser.Packages is
                 --  Here we have an identical alias (same name and points
                 --  to the same definition).
                 if Level > 0 then
-                  null;  --  Just a duplicate "use" (we could emit a warning for that).
+                  Issue_Duplicate_Use_Warning;
+                  exit;
                 else
+                  --  Level 0 here.
                   if CD.CUD.level_0_def.Contains (Short_Id) then
-                    null;  --  Just a duplicate "use" (we could emit a warning for that).
+                    Issue_Duplicate_Use_Warning;
+                    exit;
                   else
                     --  Re-activate definition at zero level (context clause).
                     CD.CUD.level_0_def.Include (Short_Id, Id_Alias);

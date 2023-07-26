@@ -4,16 +4,16 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.PCode,
      HAC_Sys.Errors;
 
-procedure HAC_Sys.Parser.Type_Conversion (  --  Ada RM 4.6
-  CD      : in out Co_Defs.Compiler_Data;
-  Level   :        Defs.Nesting_Level;
-  FSys    :        Defs.Symset;
-  Typ_ID  : in     Co_Defs.IdTabEntry;
-  X       : in     Co_Defs.Exact_Subtyp
-)
+procedure HAC_Sys.Parser.Type_Conversion  --  Ada RM 4.6
+  (CD      : in out Co_Defs.Compiler_Data;
+   Level   :        Defs.Nesting_Level;
+   FSys    :        Defs.Symset;
+   Typ_ID  : in     Co_Defs.IdTabEntry;
+   X       : in     Co_Defs.Exact_Subtyp)
 is
   use Defs, Helpers, PCode, Errors;
-  type Type_Conversion_Kind is (To_Float, To_Integer, To_Duration, Unknown);
+  type Type_Conversion_Kind is
+    (To_Float, To_Integer, To_Duration, To_Bools, Unknown);
   kind : Type_Conversion_Kind;
   T_Expr : Co_Defs.Exact_Subtyp;
 begin
@@ -23,6 +23,7 @@ begin
     when Floats    => kind := To_Float;
     when Ints      => kind := To_Integer;
     when Durations => kind := To_Duration;
+    when Bools     => kind := To_Bools;
     when others    => kind := Unknown;
   end case;
   --
@@ -34,7 +35,7 @@ begin
     when To_Float =>
       case T_Expr.TYP is
         when Floats =>
-          null;  --  !! Spot useless conversions -> issue warning
+          null;  --  Possibly useless conversion if we have the same named subtype
         when Ints =>
           Compiler.PCode_Emit.Emit_1 (CD, k_Integer_to_Float, 0);
         when Durations =>
@@ -50,7 +51,7 @@ begin
         when Durations =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Duration_to_Int);
         when Ints =>
-          null;  --  !! Spot useless conversions (identical range) -> issue warning
+          null;  --  Possibly useless conversion if we have the same named subtype
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;
@@ -64,10 +65,18 @@ begin
         when Ints =>
           Compiler.PCode_Emit.Emit_Std_Funct (CD, SF_Int_to_Duration);
         when Durations =>
-          null;  --  !! Spot useless conversions -> issue warning
+          null;  --  Possibly useless conversion if we have the same named subtype
         when others =>
           Argument_Type_Not_Supported (CD);
       end case;
+    when To_Bools =>
+      if T_Expr.TYP = Bools then
+        if CD.warnings (warn_redundant_construct) then
+          Warning (CD, warn_redundant_construct, "redundant conversion to type ""Boolean""");
+        end if;
+      else
+        Argument_Type_Not_Supported (CD);
+      end if;
     when Unknown =>
       Error (
         CD,

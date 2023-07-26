@@ -58,7 +58,7 @@ package body HAC_Sys.Parser.Ranges is
     CD             : in out Co_Defs.Compiler_Data;
     Level          : in     Defs.Nesting_Level;
     FSys           : in     Defs.Symset;
-    Specific_Error : in     Defs.Compile_Error;
+    Specific_Error : in     Defs.Compile_Diagnostic;
     Lower_Bound    :    out Co_Defs.Constant_Rec;
     Higher_Bound   :    out Co_Defs.Constant_Rec
   )
@@ -91,7 +91,7 @@ package body HAC_Sys.Parser.Ranges is
     CD             : in out Co_Defs.Compiler_Data;
     Level          : in     Defs.Nesting_Level;
     FSys           : in     Defs.Symset;
-    Specific_Error : in     Defs.Compile_Error;
+    Specific_Error : in     Defs.Compile_Diagnostic;
     Lower_Bound    :    out Co_Defs.Constant_Rec;
     Higher_Bound   :    out Co_Defs.Constant_Rec
   )
@@ -121,7 +121,7 @@ package body HAC_Sys.Parser.Ranges is
     CD                 : in out Co_Defs.Compiler_Data;
     Level              : in     Defs.Nesting_Level;
     FSys               : in     Defs.Symset;
-    Non_Discrete_Error : in     Defs.Compile_Error;
+    Non_Discrete_Error : in     Defs.Compile_Diagnostic;
     Range_Typ          :    out Co_Defs.Exact_Subtyp
   )
   is

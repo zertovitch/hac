@@ -27,7 +27,7 @@ package HAC_Sys.Parser.Helpers is
   procedure Need
     (CD      : in out Compiler_Data;
      S       :        KeyWSymbol;
-     E       :        Compile_Error;
+     E       :        Compile_Diagnostic;
      Forgive :        KeyWSymbol := Dummy_Symbol);
 
   --  Issue error N, then skip all subsequent symbols
@@ -36,7 +36,7 @@ package HAC_Sys.Parser.Helpers is
   procedure Error_then_Skip
     (CD   : in out Compiler_Data;
      FSys :        Symset;
-     N    :        Compile_Error;
+     N    :        Compile_Diagnostic;
      hint :        String := "");
 
   --  Issue error N, then skip all subsequent symbols
@@ -45,7 +45,7 @@ package HAC_Sys.Parser.Helpers is
   procedure Error_then_Skip
     (CD   : in out Compiler_Data;
      S    :        KeyWSymbol;
-     N    :        Compile_Error;
+     N    :        Compile_Diagnostic;
      hint :        String := "");
 
   --  Test if current symbol is in the S1 set, otherwise
@@ -55,7 +55,7 @@ package HAC_Sys.Parser.Helpers is
   procedure Test
     (CD            : in out Compiler_Data;
      S1, S2        :        Symset;
-     N             :        Compile_Error;
+     N             :        Compile_Diagnostic;
      stop_on_error :        Boolean := False);
 
   procedure Need_Semicolon_after_Declaration (CD : in out Compiler_Data; FSys : Symset);
@@ -80,12 +80,12 @@ package HAC_Sys.Parser.Helpers is
 
   procedure Type_Mismatch
     (CD               : in out Compiler_Data;
-     Err              :        Compile_Error;
+     Err              :        Compile_Diagnostic;
      Found, Expected  :        Exact_Typ'Class);
 
   procedure Type_Mismatch
     (CD       : in out Compiler_Data;
-     Err      :        Compile_Error;
+     Err      :        Compile_Diagnostic;
      Found    :        Exact_Subtyp;
      Expected :        Typ_Set);
 

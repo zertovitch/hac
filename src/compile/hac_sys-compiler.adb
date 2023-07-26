@@ -75,7 +75,7 @@ package body HAC_Sys.Compiler is
     CD.prev_sy_line      := 0;
     CD.error_count       := 0;
     CD.minor_error_count := 0;
-    CD.errs              := error_free;
+    CD.diags             := no_diagnostic;
     CD.total_lines       := 0;
     Scanner.InSymbol (CD);
     --
@@ -410,8 +410,8 @@ package body HAC_Sys.Compiler is
       Close (CD.listing);
     end if;
 
-    if CD.errs /= error_free then
-      Compilation_Errors_Summary (CD);
+    if CD.diags /= no_diagnostic then
+      Compilation_Diagnostics_Summary (CD);
     end if;
 
     if var_map_file_name /= "" then

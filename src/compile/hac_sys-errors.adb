@@ -7,8 +7,8 @@ package body HAC_Sys.Errors is
 
   use Defs;
 
-  function Error_String
-    (code   : Defs.Compile_Error;
+  function Diagnostic_String
+    (code   : Defs.Compile_Diagnostic;
      hint_1 : String := "";
      hint_2 : String := "") return String
   is
@@ -292,8 +292,10 @@ package body HAC_Sys.Errors is
         return
           "space missing here; " &
           "if an identifier was meant, it cannot start with a number";
+      when warn_redundant_construct =>
+        return hint_1;
     end case;
-  end Error_String;
+  end Diagnostic_String;
 
   ----------------------------------------------------------------------------
 
@@ -301,7 +303,7 @@ package body HAC_Sys.Errors is
 
   --  The "[...]" are replaced by the correct identifier.
 
-  repair_table : constant array (Compile_Error) of Repair_Kit :=
+  repair_table : constant array (Compile_Diagnostic) of Repair_Kit :=
     (
       err_missing_a_procedure_declaration
                                              => (insert,        +"procedure "),
@@ -335,7 +337,7 @@ package body HAC_Sys.Errors is
 
   procedure Error
     (CD                  : in out Co_Defs.Compiler_Data;
-     code                :        Defs.Compile_Error;
+     code                :        Defs.Compile_Diagnostic;
      hint_1              :        String         := "";
      hint_2              :        String         := "";
      severity            :        Error_Severity := medium;
@@ -351,9 +353,9 @@ package body HAC_Sys.Errors is
         Put_Line
          (CD.comp_dump,
           " Error code = " &
-          Defs.Compile_Error'Image (code) &
+          Defs.Compile_Diagnostic'Image (code) &
           " (" &
-          Error_String (code, hint_1, hint_2) &
+          Diagnostic_String (code, hint_1, hint_2) &
           ") " &
           " srcNumber=" &
           Integer'Image (srcNumber) &
@@ -370,7 +372,22 @@ package body HAC_Sys.Errors is
     ub_hint : constant HAT.VString := HAT.To_VString (hint_1);
     use HAT.VStr_Pkg;
     diagnostic : Diagnostic_Kit;
+    --
+    function Diagnostic_Prefix return String is
+      (case diagnostic.diagnostic_kind is
+         when error   => "",
+         when warning => "warning: ",
+         when note    => "note: ",
+         when style   => "style: ");
+    --
+    function Diagnostic_Suffix return String is
+      (case diagnostic.diagnostic_kind is
+         when warning => " [-w" & warning_letter (code) & ']',
+         when others  => "");
   begin
+    if code in Compile_Warning then
+      diagnostic.diagnostic_kind := warning;
+    end if;
     if previous_symbol then
       line      := CD.prev_sy_line;
       col_start := CD.prev_sy_start;
@@ -385,11 +402,13 @@ package body HAC_Sys.Errors is
       end if;
     end if;
     Show_to_comp_dump (line, col_start, col_stop, -1);
-    CD.errs (code) := True;
-    if severity = minor then
-      CD.minor_error_count := CD.minor_error_count + 1;
-    else
-      CD.error_count := CD.error_count + 1;
+    CD.diags (code) := True;
+    if code in Compile_Error then
+      if severity = minor then
+        CD.minor_error_count := CD.minor_error_count + 1;
+      else
+        CD.error_count := CD.error_count + 1;
+      end if;
     end if;
     if CD.trace.pipe = null then
       Put_Line
@@ -398,7 +417,9 @@ package body HAC_Sys.Errors is
          Trim (Integer'Image (line),      Left) & ':' &
          Trim (Integer'Image (col_start), Left) & '-' &
          Trim (Integer'Image (col_stop),  Left) & ": " &
-         Error_String (code, hint_1, hint_2));
+         Diagnostic_Prefix &
+         Diagnostic_String (code, hint_1, hint_2) &
+         Diagnostic_Suffix);
     else
       case code is
         when err_incorrect_name_after_END =>
@@ -420,7 +441,7 @@ package body HAC_Sys.Errors is
           null;
       end case;
       Repair_Kit (diagnostic) := updated_repair_kit;
-      diagnostic.message   := To_Unbounded_String (Error_String (code, hint_1, hint_2));
+      diagnostic.message   := To_Unbounded_String (Diagnostic_String (code, hint_1, hint_2));
       diagnostic.file_name := To_Unbounded_String (Co_Defs.Get_Source_Name (CD.CUD));
       diagnostic.line      := line;
       diagnostic.column_a  := col_start;
@@ -431,10 +452,22 @@ package body HAC_Sys.Errors is
     --  Uncomment the next line for getting a nice trace-back of 1st error.
     --  raise Constraint_Error;
     --
-    if severity = major then
+    if code in Compile_Error and then severity = major then
       raise Compilation_abandoned;
     end if;
   end Error;
+
+  procedure Warning
+    (CD                  : in out Co_Defs.Compiler_Data;
+     code                :        Defs.Compile_Warning;
+     hint_1              :        String         := "";
+     hint_2              :        String         := "";
+     previous_symbol     :        Boolean        := False;
+     shift_one_character :        Boolean        := False) is
+  begin
+    --  Just call "Error" (severity does nothing for warnings).
+    Error (CD, code, hint_1, hint_2, minor, previous_symbol, shift_one_character);
+  end Warning;
 
   ----------------------------------------------------------------------------
 
@@ -468,27 +501,29 @@ package body HAC_Sys.Errors is
 
   ----------------------------------------------------------------------------
 
-  procedure Compilation_Errors_Summary (CD : Co_Defs.Compiler_Data) is
+  procedure Compilation_Diagnostics_Summary (CD : Co_Defs.Compiler_Data) is
     use Ada.Text_IO;
+    procedure Summary_Line (s : String) is
+    begin
+      if CD.comp_dump_requested then
+        Put_Line (CD.comp_dump, s);
+      end if;
+      if CD.listing_requested then
+        Put_Line (CD.listing, s);
+      end if;
+    end Summary_Line;
   begin
-    if CD.comp_dump_requested then
-      New_Line (CD.comp_dump);
-      Put_Line (CD.comp_dump, "==== Error MESSAGE(S) ====");
-    end if;
-    if CD.listing_requested then
-      New_Line (CD.listing);
-      Put_Line (CD.listing, "==== Error MESSAGE(S) ====");
-    end if;
-    for K in CD.errs'Range loop
-      if CD.errs (K) then
-        if CD.comp_dump_requested then
-          Put_Line (CD.comp_dump, Defs.Compile_Error'Image (K) & ":  " & Error_String (K));
-        end if;
-        if CD.listing_requested then
-          Put_Line (CD.listing, Defs.Compile_Error'Image (K) & "  " & Error_String (K));
-        end if;
+    Summary_Line ("");
+    for K in CD.diags'Range loop
+      if K = Compile_Error'First then
+        Summary_Line ("==== Error Message(s) ====");
+      elsif K = Compile_Warning'First then
+        Summary_Line ("==== Warning(s) ==========");
+      end if;
+      if CD.diags (K) then
+        Summary_Line (K'Image & ":  " & Diagnostic_String (K));
       end if;
     end loop;
-  end Compilation_Errors_Summary;
+  end Compilation_Diagnostics_Summary;
 
 end HAC_Sys.Errors;

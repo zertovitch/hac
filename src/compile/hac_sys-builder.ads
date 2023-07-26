@@ -12,6 +12,7 @@
 --  virtual machine) from Ada sources (a main procedure and eventual depending units).
 
 with HAC_Sys.Co_Defs,
+     HAC_Sys.Defs,
      HAC_Sys.Librarian;
 
 with HAT;
@@ -37,6 +38,7 @@ package HAC_Sys.Builder is
     CD                  : Compiler_Data_Access := new Co_Defs.Compiler_Data;
     LD                  : Librarian.Library_Data;
     global_VM_variables : String_Maps.Map;
+    global_warnings     : Defs.Warning_Set := Defs.default_warnings;
     main_name_hint      : HAT.VString;  --  This is used for circular unit dependency detection
     asm_dump_file_name  : HAT.VString;  --  Assembler output of compiled object code
     cmp_dump_file_name  : HAT.VString;  --  Compiler dump
@@ -63,6 +65,10 @@ package HAC_Sys.Builder is
     listing_file_name  :        String  := "";  --  Listing of source code with details
     var_map_file_name  :        String  := ""   --  Output of variables (map)
   );
+
+  procedure Set_Warnings_Set
+    (BD  : in out Build_Data;
+     set : in     Defs.Warning_Set);
 
   --  Set current main source stream (file, editor data, zipped file,...)
   procedure Set_Main_Source_Stream (

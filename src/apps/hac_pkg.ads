@@ -1,5 +1,5 @@
 --  This package contains call-backs for the
---  HAC command-line application.
+--  HAC command-line application, as well as various helpers.
 
 with HAC_Sys.Co_Defs;
 with HAT;
@@ -22,5 +22,13 @@ package HAC_Pkg is
   function Exists_Source (simple_file_name : String) return Boolean;
   procedure Open_Source (simple_file_name : String; stream : out HAC_Sys.Co_Defs.Source_Stream_Access);
   procedure Close_Source (simple_file_name : String);
+
+  assembler_output_name : constant String := "asm_dump.pca";       --  PCA = PCode Assembler
+  compiler_dump_name    : constant String := "compiler_dump.lst";
+
+  procedure PLCE (s : String);  --  Put_Line on Current Error
+  procedure NLCE;               --  New_Line on Current Error
+
+  procedure Help (level : Positive);
 
 end HAC_Pkg;

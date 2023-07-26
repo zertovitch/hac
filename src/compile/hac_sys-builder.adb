@@ -1,5 +1,4 @@
 with HAC_Sys.Compiler,
-     HAC_Sys.Defs,
      HAC_Sys.Errors,
      HAC_Sys.Parser.Helpers;
 
@@ -53,6 +52,7 @@ package body HAC_Sys.Builder is
           when Body_Postponed =>
             previous_context :=
               BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
+            BD.CD.warnings := BD.global_warnings;
             Compiler.Compile_Unit
               (BD.CD.all, BD.LD, upper_name, fn, False,
                lu.id_index,
@@ -91,6 +91,7 @@ package body HAC_Sys.Builder is
     BD.LD.Library.Clear;
     BD.LD.Map.Clear;
     Librarian.Register_Unit (BD.LD, main_unit);
+    BD.CD.warnings := BD.global_warnings;
     Compiler.Compile_Main (
       BD.CD.all,
       BD.LD,
@@ -130,7 +131,7 @@ package body HAC_Sys.Builder is
   exception
     when Errors.Compilation_abandoned =>
       --  Just too many errors...
-      Errors.Compilation_Errors_Summary (BD.CD.all);
+      Errors.Compilation_Diagnostics_Summary (BD.CD.all);
       if BD.CD.comp_dump_requested then
         Compiler.Print_Tables (BD.CD.all);
         Close (BD.CD.comp_dump);
@@ -170,6 +171,13 @@ package body HAC_Sys.Builder is
     BD.listing_file_name  := To_VString (listing_file_name);
     BD.var_map_file_name  := To_VString (var_map_file_name);
   end Set_Diagnostic_File_Names;
+
+  procedure Set_Warnings_Set
+    (BD  : in out Build_Data;
+     set : in     Defs.Warning_Set) is
+  begin
+    BD.global_warnings := set;
+  end Set_Warnings_Set;
 
   --  Set current main source stream (file, editor data, zipped file,...)
   procedure Set_Main_Source_Stream (
