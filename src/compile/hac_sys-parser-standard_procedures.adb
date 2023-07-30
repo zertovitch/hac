@@ -67,7 +67,9 @@ package body HAC_Sys.Parser.Standard_Procedures is
           end if;
         end if;
         HAT_Procedure_Call
-          ((if with_file then (if Code = SP_Get_Line then SP_Get_Line_F else SP_Get_F) else Code),
+          ((if with_file then
+              (if Code = SP_Get_Line then SP_Get_Line_File else SP_Get_File)
+            else Code),
            Typen'Pos (Found.TYP) + String_Length_Encoding);
       else
         Error (CD, err_illegal_parameters_to_Get);
@@ -130,7 +132,9 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (def_param (Item_Typ.TYP, Param)));
       end loop;
       HAT_Procedure_Call
-       ((if with_file then (if Code = SP_Put_Line then SP_Put_Line_F else SP_Put_F) else Code),
+       ((if with_file then
+           (if Code = SP_Put_Line then SP_Put_Line_File else SP_Put_File)
+         else Code),
         Typen'Pos (Item_Typ.TYP));
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Puts;
@@ -335,9 +339,11 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
       when SP_Push_Abstract_Console =>
         null;  --  Internal: used by Get, Put, etc. without file parameter.
-      when SP_Get_F | SP_Get_Line_F |
-           SP_Put_F | SP_Put_Line_F =>
-        null;  --  "Fronted" by SP_Get, SP_Get_Line,... Used by VM.
+      when SP_Get_File | SP_Get_Line_File |
+           SP_Put_File | SP_Put_Line_File =>
+        --  Theses cases are "fronted" by SP_Get, SP_Get_Line,...
+        --  They are used by the VM.
+        null;
     end case;
   end Standard_Procedure;
 

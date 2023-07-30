@@ -462,14 +462,14 @@ package HAC_Sys.PCode is
     SP_Get,
     SP_Get_Immediate,
     SP_Get_Line,
-    SP_Get_F,
-    SP_Get_Line_F,
+    SP_Get_File,
+    SP_Get_Line_File,
     SP_Skip_Line,
     --
     SP_Put,
     SP_Put_Line,
-    SP_Put_F,
-    SP_Put_Line_F,
+    SP_Put_File,
+    SP_Put_Line_File,
     SP_New_Line,
     --
     SP_Randomize,

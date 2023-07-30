@@ -172,7 +172,7 @@ package body HAC_Sys.PCode.Interpreter is
           when others =>
             null;
         end case;
-        if Code = SP_Get_Line_F and Typ /= VStrings then
+        if Code = SP_Get_Line_File and Typ /= VStrings then
           Ada.Text_IO.Skip_Line (FP.all);
         end if;
         Pop (2);
@@ -231,7 +231,7 @@ package body HAC_Sys.PCode.Interpreter is
           when others =>
             null;
         end case;
-        if Code = SP_Put_Line_F then
+        if Code = SP_Put_Line_File then
           Ada.Text_IO.New_Line (FP.all);
         end if;
         Pop (5);
@@ -319,9 +319,9 @@ package body HAC_Sys.PCode.Interpreter is
         when SP_Push_Abstract_Console =>
           Push;
           ND.S (Curr_TCB.T) := GR_Abstract_Console;
-        when SP_Get | SP_Get_Immediate | SP_Get_Line | SP_Get_F | SP_Get_Line_F =>
+        when SP_Get | SP_Get_Immediate | SP_Get_Line | SP_Get_File | SP_Get_Line_File =>
           Do_Text_Read (Code);
-        when SP_Put | SP_Put_Line | SP_Put_F | SP_Put_Line_F =>
+        when SP_Put .. SP_Put_Line_File =>
           Do_Write_Formatted (Code);
         when SP_New_Line =>
           Lines := Ada.Text_IO.Positive_Count (Top_Item.I);
