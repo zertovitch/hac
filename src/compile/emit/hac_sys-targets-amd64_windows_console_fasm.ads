@@ -8,27 +8,32 @@
 --
 -------------------------------------------------------------------------------------
 
---  Here is the HAC Virtual Machine ("p-code") code emission
+with HAT;
 
-with HAC_Sys.Co_Defs;
+package HAC_Sys.Targets.AMD64_Windows_Console_FASM is
 
-package HAC_Sys.Targets.HAC_Virtual_Machine is
-
-  type Machine is new Abstract_Machine with record
-    CD : Co_Defs.Compiler_Data_Access;
-    --  ^ In the future the instruction table and other items
-    --    will be stored here and we can remove CD.
+  type Machine is limited new Abstract_Machine with record
+    asm_file : HAT.File_Type;
   end record;
 
   --------------------
   --  Informations  --
   --------------------
 
-  overriding function Name (m : Machine) return String is ("HAC Virtual Machine");
-  overriding function Is_HAC_VM (m : Machine) return Boolean is (True);
-  overriding function CPU (m : Machine) return String is ("HAC VM");
-  overriding function OS (m : Machine) return String is ("Any");
-  overriding function Null_Terminated_String_Literals (m : Machine) return Boolean is (False);
+  overriding function Name (m : Machine) return String is ("Windows 64 Console");
+  overriding function Is_HAC_VM (m : Machine) return Boolean is (False);
+  overriding function CPU (m : Machine) return String is ("AMD64");
+  overriding function OS (m : Machine) return String is ("Windows");
+  overriding function Null_Terminated_String_Literals (m : Machine) return Boolean is (True);
+
+  -------------------------------------------
+  --  Initialize & Finalize Code Emission  --
+  -------------------------------------------
+
+  overriding procedure Initialize_Code_Emission (m : in out Machine);
+  overriding procedure Finalize_Code_Emission
+    (m       : in out Machine;
+     strings :        String);
 
   ----------------------------
   --  Machine Instructions  --
@@ -51,4 +56,4 @@ package HAC_Sys.Targets.HAC_Virtual_Machine is
      builtin_proc :        Defs.SP_Code;
      parameter    :        Defs.HAC_Integer);
 
-end HAC_Sys.Targets.HAC_Virtual_Machine;
+end HAC_Sys.Targets.AMD64_Windows_Console_FASM;

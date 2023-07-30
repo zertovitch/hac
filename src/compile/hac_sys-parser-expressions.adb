@@ -483,9 +483,8 @@ package body HAC_Sys.Parser.Expressions is
           case CD.Sy is
             when StrCon =>
               Construct_Root (X, String_Literals);
-              Emit_2
-                (CD, k_Push_Two_Discrete_Literals,
-                 Operand_1_Type (CD.SLeng),  --  String Literal Length
+              CD.target.Emit_Push_Discrete_Literals
+                (Operand_1_Type (CD.SLeng),  --  String Literal Length
                  Operand_2_Type (CD.INum));  --  Index To String IdTab
               InSymbol (CD);
             when IDent =>

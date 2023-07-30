@@ -13,7 +13,8 @@
 
 with HAC_Sys.Co_Defs,
      HAC_Sys.Defs,
-     HAC_Sys.Librarian;
+     HAC_Sys.Librarian,
+     HAC_Sys.Targets;
 
 with HAT;
 
@@ -36,12 +37,13 @@ package HAC_Sys.Builder is
     CD                  : Co_Defs.Compiler_Data_Access := new Co_Defs.Compiler_Data;
     LD                  : Librarian.Library_Data;
     global_VM_variables : String_Maps.Map;
-    global_remarks     : Defs.Remark_Set := Defs.default_remarks;
+    global_remarks      : Defs.Remark_Set := Defs.default_remarks;
     main_name_hint      : HAT.VString;  --  This is used for circular unit dependency detection
     asm_dump_file_name  : HAT.VString;  --  Assembler output of compiled object code
     cmp_dump_file_name  : HAT.VString;  --  Compiler dump
     listing_file_name   : HAT.VString;  --  Listing of source code with details
     var_map_file_name   : HAT.VString;  --  Output of variables (map)
+    target              : Targets.Abstract_Machine_Reference := null;
   end record;
 
   overriding procedure Finalize (BD : in out Build_Data);
@@ -80,6 +82,10 @@ package HAC_Sys.Builder is
     BD           : in out Build_Data;
     trace_params : in     Co_Defs.Compilation_Trace_Parameters
   );
+
+  procedure Set_Target
+    (BD         : in out Build_Data;
+     new_target :        Targets.Abstract_Machine_Reference);
 
   function Build_Successful (BD : Build_Data) return Boolean;
   function Total_Compiled_Lines (BD : Build_Data) return Natural;

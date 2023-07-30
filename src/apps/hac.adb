@@ -82,6 +82,7 @@ procedure HAC is
     BD.Set_Remark_Set (remarks);
     BD.Set_Main_Source_Stream (Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     BD.Set_Message_Feedbacks (trace);
+    BD.Set_Target (target);
     BD.LD.Set_Source_Access
       (Exists_Source'Access,
        Open_Source'Access,
@@ -105,7 +106,9 @@ procedure HAC is
       return;
     end if;
     if verbosity >= 2 then
-      Put_Line (HAC_margin_2 & "Target: " & BD.CD.target.Name);
+      Put_Line (HAC_margin_2 & "Target . : " & BD.CD.target.Name);
+      Put_Line (HAC_margin_2 & "CPU  . . : " & BD.CD.target.CPU);
+      Put_Line (HAC_margin_2 & "OS . . . : " & BD.CD.target.OS);
       --
       if BD.CD.target.Is_HAC_VM then
         Put_Line
@@ -245,6 +248,19 @@ procedure HAC is
             help_level := 2;
           end if;
           quit := True;
+        when 't' =>
+          if opt'Length = 1 then
+            Argument_Error ("Missing target");
+          else
+            declare
+              new_target_name : constant String := opt (opt'First + 1 .. opt'Last);
+            begin
+              Set_Target (new_target_name);
+            exception
+              when Constraint_Error =>
+                Argument_Error ("Unknown target " & new_target_name);
+            end;
+          end if;
         when 'w' =>
           if opt'Length = 1 then
             Argument_Error ("Missing warning / note switch");

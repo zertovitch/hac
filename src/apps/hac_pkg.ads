@@ -1,7 +1,9 @@
 --  This package contains call-backs for the
 --  HAC command-line application, as well as various helpers.
 
-with HAC_Sys.Co_Defs;
+with HAC_Sys.Co_Defs,
+     HAC_Sys.Targets;
+
 with HAT;
 
 package HAC_Pkg is
@@ -17,6 +19,8 @@ package HAC_Pkg is
 
   command_line_source_path, main_Ada_file_name : HAT.VString;
 
+  target : HAC_Sys.Targets.Abstract_Machine_Reference := null;
+
   procedure Compilation_Feedback (message : String);
 
   function Exists_Source (simple_file_name : String) return Boolean;
@@ -30,5 +34,7 @@ package HAC_Pkg is
   procedure NLCE;               --  New_Line on Current Error
 
   procedure Help (level : Positive);
+
+  procedure Set_Target (name : String);
 
 end HAC_Pkg;

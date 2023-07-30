@@ -81,6 +81,8 @@ package body HAC_Sys.Compiler is
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009
     CD.pkg_prefix := HAT.Null_VString;
+    --
+    CD.target.Initialize_Code_Emission;
   end Init;
 
   --  Print_Tables is for debugging purposes.
@@ -296,7 +298,7 @@ package body HAC_Sys.Compiler is
      listing_file_name  :        String  := "";   --  Listing of source code with details
      var_map_file_name  :        String  := "")
   is
-    use Ada.Text_IO, Parser.Helpers, PCode, Errors;
+    use Ada.Text_IO, Parser.Helpers, Errors;
     use type HAC_Integer, Alfa;
 
     map_file : File_Type;
@@ -388,9 +390,8 @@ package body HAC_Sys.Compiler is
       CD.Main_Program_ID_with_case
     );
     CD.total_lines := CD.total_lines + CD.CUD.line_count;  --  Add line count of main program.
-    --  Main procedure is parsed. Block did not emit a final "exit",
-    --  then we can opt for halting the machine instead.
-    PCode_Emit.Emit (CD, k_Halt_Interpreter);
+    --  Main procedure is parsed.
+    CD.target.Emit_Halt;
 
     if CD.Sy /= Semicolon then
       if CD.comp_dump_requested then

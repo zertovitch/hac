@@ -130,7 +130,8 @@ package body HAC_Sys.Parser.Standard_Procedures is
         --  In order to have a fixed number of parameters in all cases,
         --  we push also the "invalid" ones. See Do_Write_Formatted
         --  to have an idea on how everybody is retrieved from the stack.
-        Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (def_param (Item_Typ.TYP, Param)));
+        CD.target.Emit_Push_Discrete_Literal
+          (Operand_2_Type (def_param (Item_Typ.TYP, Param)));
       end loop;
       HAT_Procedure_Call
        ((if with_file then

@@ -495,6 +495,8 @@ package HAC_Sys.Defs is
 
   --  package REF is new Ada.Numerics.Generic_Elementary_Functions (HAC_Float);
 
+  subtype Strings_Constants_Table_Type is String (1 .. SMax);
+
   ------------------------------------
   --  Standard function operations  --
   ------------------------------------

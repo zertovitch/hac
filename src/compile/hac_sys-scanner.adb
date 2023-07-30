@@ -603,7 +603,15 @@ package body HAC_Sys.Scanner is
       CD.INum  := HAC_Integer (CD.Strings_Table_Top + 1);
       --
       if lit_len > 0 then
-        Try_String_Folding;
+        if CD.target.Null_Terminated_String_Literals then
+          lit_len := lit_len + 1;
+          if CD.Strings_Table_Top + lit_len = SMax then
+            Fatal (STRING_CONSTANTS);
+          end if;
+          ST (CD.Strings_Table_Top + lit_len) := Character'Val (0);
+        else
+          Try_String_Folding;
+        end if;
         CD.Strings_Table_Top := CD.Strings_Table_Top + lit_len;
       end if;
     end Scan_String_Literal;

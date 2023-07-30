@@ -1,4 +1,5 @@
-with HAC_Sys.Librarian;
+with HAC_Sys.Librarian,
+     HAC_Sys.Targets.AMD64_Windows_Console_FASM;
 
 with Show_MIT_License;
 
@@ -128,6 +129,7 @@ package body HAC_Pkg is
     PLCE ("         -h, h1 : this help");
     PLCE ("         -h2    : show more help about options");
     PLCE ("         -I     : specify source files search path (hac -h2 for details)");
+    PLCE ("         -tx    : target machine (default: HAC VM; hac -h2 for details)");
     PLCE ("         -v, v1 : verbose");
     PLCE ("         -v2    : very verbose");
     PLCE ("         -wx    : enable / disable warnings or notes (hac -h2 for details)");
@@ -150,6 +152,10 @@ package body HAC_Pkg is
       PLCE ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
       PLCE ("         environment variable.");
       NLCE;
+      PLCE ("Option -tx : set target machine to x");
+      PLCE ("             x =");
+      PLCE ("                 amd64_windows_console_fasm");
+      NLCE;
       PLCE ("Option -wx : enable warnings or notes of kind x");
       PLCE ("       -wX : disable warnings or notes of kind x");
       PLCE ("             x =");
@@ -159,5 +165,15 @@ package body HAC_Pkg is
     Ada.Text_IO.Put ("Press Return");
     Ada.Text_IO.Skip_Line;
   end Help;
+
+  procedure Set_Target (name : String) is
+    type Target_List is
+      (amd64_windows_console_fasm);
+  begin
+    case Target_List'Value (name) is
+      when amd64_windows_console_fasm =>
+        target := new HAC_Sys.Targets.AMD64_Windows_Console_FASM.Machine;
+    end case;
+  end Set_Target;
 
 end HAC_Pkg;

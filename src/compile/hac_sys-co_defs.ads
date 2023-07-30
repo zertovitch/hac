@@ -205,7 +205,6 @@ package HAC_Sys.Co_Defs is
   type    Identifier_Table_Type        is array (0 .. Id_Table_Max)     of IdTabEntry;
   type    Nested_Loop_Table_Type       is array (1 .. loop_nesting_max) of Loop_Info;
   type    Packages_Table_Type          is array (0 .. package_table_max)             of Package_Table_Entry;
-  subtype Strings_Constants_Table_Type is String (1 .. SMax);
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)          of Index;
   --      ^ Task #0 is main task.
 

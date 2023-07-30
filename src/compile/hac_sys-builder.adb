@@ -22,7 +22,7 @@ package body HAC_Sys.Builder is
   procedure Compile_Pending_Bodies_Single_Round
     (BD : in out Build_Data; num_pending : out Natural)
   is
-    use HAT, Librarian;
+    use HAT, Librarian, Targets;
     pending : Library_Unit_Vectors.Vector;
     previous_context : Co_Defs.Id_Maps.Map;
     needs_body_dummy : Boolean;
@@ -54,8 +54,15 @@ package body HAC_Sys.Builder is
             previous_context :=
               BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
             BD.CD.remarks := BD.global_remarks;
+            if BD.target /= null then
+              BD.CD.target  := BD.target;
+            end if;
             Compiler.Compile_Unit
-              (BD.CD.all, BD.LD, upper_name, fn, False,
+              (BD.CD.all,
+               BD.LD,
+               upper_name,
+               fn,
+               False,
                lu.id_index,
                lu.id_body_index,
                previous_context,
@@ -79,7 +86,8 @@ package body HAC_Sys.Builder is
   end Compile_Pending_Bodies_Single_Round;
 
   procedure Build_Main (BD : in out Build_Data) is
-    use Librarian, HAT.VStr_Pkg, Ada.Exceptions, Ada.Text_IO;
+    use Librarian, HAT.VStr_Pkg, Targets;
+    use Ada.Exceptions, Ada.Text_IO;
     num_pending : Natural;
     main_unit : Library_Unit :=
       (full_name     => BD.main_name_hint,
@@ -93,14 +101,16 @@ package body HAC_Sys.Builder is
     BD.LD.Map.Clear;
     Librarian.Register_Unit (BD.LD, main_unit);
     BD.CD.remarks := BD.global_remarks;
-    Compiler.Compile_Main (
-      BD.CD.all,
-      BD.LD,
-      To_String (BD.main_name_hint),
-      To_String (BD.cmp_dump_file_name),
-      To_String (BD.listing_file_name),
-      To_String (BD.var_map_file_name)
-    );
+    if BD.target /= null then
+      BD.CD.target := BD.target;
+    end if;
+    Compiler.Compile_Main
+      (BD.CD.all,
+       BD.LD,
+       To_String (BD.main_name_hint),
+       To_String (BD.cmp_dump_file_name),
+       To_String (BD.listing_file_name),
+       To_String (BD.var_map_file_name));
     main_unit.id_index := BD.CD.Main_Proc_Id_Index;
     Librarian.Change_Unit_Details (BD.LD, main_unit);
 
@@ -119,6 +129,12 @@ package body HAC_Sys.Builder is
       end if;
       exit when num_pending = 0;
     end loop;
+    --
+    --  Build is finished.
+    --
+    BD.CD.target.Finalize_Code_Emission
+      (BD.CD.Strings_Constants_Table (1 .. BD.CD.Strings_Table_Top));
+    --
     if BD.CD.error_count = 0 then
       Parser.Helpers.Check_Incomplete_Definitions (BD.CD.all, 0);
     end if;
@@ -217,6 +233,17 @@ package body HAC_Sys.Builder is
   begin
     Compiler.Set_Message_Feedbacks (BD.CD.all, trace_params);
   end Set_Message_Feedbacks;
+
+  procedure Set_Target
+    (BD         : in out Build_Data;
+     new_target :        Targets.Abstract_Machine_Reference)
+  is
+    use Targets;
+  begin
+    if new_target /= null then
+      BD.target := new_target;
+    end if;
+  end Set_Target;
 
   function Build_Successful (BD : Build_Data) return Boolean is
   begin

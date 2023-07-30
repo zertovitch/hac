@@ -62,8 +62,8 @@ package body HAC_Sys.Co_Defs is
 
   overriding procedure Initialize (CD : in out Compiler_Data) is
   begin
-    CD.target := new Targets.HAC_Virtual_Machine.HAC_VM;
-    Targets.HAC_Virtual_Machine.HAC_VM (CD.target.all).CD := CD'Unchecked_Access;
+    CD.target := new Targets.HAC_Virtual_Machine.Machine;
+    Targets.HAC_Virtual_Machine.Machine (CD.target.all).CD := CD'Unchecked_Access;
   end Initialize;
 
   overriding procedure Finalize (CD : in out Compiler_Data) is
