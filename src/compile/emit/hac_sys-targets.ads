@@ -27,6 +27,9 @@ package HAC_Sys.Targets is
   type Abstract_Machine is interface;
   type Abstract_Machine_Reference is access Abstract_Machine'Class;
 
+  function Name (m : Abstract_Machine) return String is abstract;
+  function Is_HAC_VM (m : Abstract_Machine) return Boolean is abstract;
+
   procedure Initialize_Code_Emission (m : in out Abstract_Machine) is null;
   procedure Finalize_Code_Emission (m : in out Abstract_Machine) is null;
 

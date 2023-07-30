@@ -20,7 +20,10 @@ package HAC_Sys.Targets.HAC_Virtual_Machine is
     --    will be stored here and we can remove CD.
   end record;
 
-  procedure Emit_HAT_Builtin_Procedure
+  overriding function Name (m : HAC_VM) return String is ("HAC Virtual Machine");
+  overriding function Is_HAC_VM (m : HAC_VM) return Boolean is (True);
+
+  overriding procedure Emit_HAT_Builtin_Procedure
     (m            : in out HAC_VM;
      builtin_proc :        Defs.SP_Code;
      parameter    :        Defs.HAC_Integer);

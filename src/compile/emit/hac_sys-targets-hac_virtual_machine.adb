@@ -5,7 +5,7 @@ package body HAC_Sys.Targets.HAC_Virtual_Machine is
 
   use Compiler.PCode_Emit, PCode;
 
-  procedure Emit_HAT_Builtin_Procedure
+  overriding procedure Emit_HAT_Builtin_Procedure
     (m            : in out HAC_VM;
      builtin_proc :        Defs.SP_Code;
      parameter    :        Defs.HAC_Integer)

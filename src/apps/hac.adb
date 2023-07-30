@@ -105,36 +105,49 @@ procedure HAC is
       return;
     end if;
     if verbosity >= 2 then
-      Put_Line (HAC_margin_2 & "Object code size:" &
-                Natural'Image (BD.Object_Code_Size) &
-                " of" &
-                Natural'Image (HAC_Sys.Builder.Maximum_Object_Code_Size) &
-                " Virtual Machine instructions.");
-      if BD.Folded_Instructions + BD.Specialized_Instructions > 0 then
-        Put_Line (HAC_margin_2 & "Code optimization:");
-        Put_Line (HAC_margin_2 & "  " & Natural'Image (BD.Folded_Instructions) &
-          " instructions folded");
-        Put_Line (HAC_margin_2 & "  " & Natural'Image (BD.Specialized_Instructions) &
-          " instructions specialized");
+      Put_Line (HAC_margin_2 & "Target: " & BD.CD.target.Name);
+      --
+      if BD.CD.target.Is_HAC_VM then
+        Put_Line
+          (HAC_margin_2 & "Object code size:" &
+             Natural'Image (BD.Object_Code_Size) &
+             " of" &
+             Natural'Image (HAC_Sys.Builder.Maximum_Object_Code_Size) &
+             " Virtual Machine instructions.");
+        if BD.Folded_Instructions + BD.Specialized_Instructions > 0 then
+          Put_Line (HAC_margin_2 & "Code optimization:");
+          Put_Line
+            (HAC_margin_2 & "  " & Natural'Image (BD.Folded_Instructions) &
+               " instructions folded");
+          Put_Line
+            (HAC_margin_2 & "  " & Natural'Image (BD.Specialized_Instructions) &
+               " instructions specialized");
+        end if;
       end if;
-      if compile_only then
-        return;
-      end if;
-      Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
     end if;
     if compile_only then
       return;
+    end if;
+    if verbosity >= 2 then
+      if BD.CD.target.Is_HAC_VM then
+        Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
+      else
+        Put_Line (HAC_margin_2 & "Running native (if native = target)");
+      end if;
     end if;
     if verbosity >= 1 then
       New_Line;
     end if;
     t1 := Clock;
-    Interpret_on_Current_IO (
-      BD,
-      arg_pos,
-      Ada.Directories.Full_Name (Ada_file_name),
-      post_mortem
-    );
+    if BD.CD.target.Is_HAC_VM then
+      Interpret_on_Current_IO
+        (BD,
+         arg_pos,
+         Ada.Directories.Full_Name (Ada_file_name),
+         post_mortem);
+    else
+      null; --  !!
+    end if;
     t2 := Clock;
     unhandled_found := Is_Exception_Raised (post_mortem.Unhandled);
     if verbosity >= 2 then
