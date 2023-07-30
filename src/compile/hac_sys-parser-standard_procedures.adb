@@ -2,6 +2,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Calls,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
+     HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
@@ -23,7 +24,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
     CD      : in out Co_Defs.Compiler_Data;
     Level   :        Defs.Nesting_Level;
     FSys    :        Defs.Symset;
-    Code    :        PCode.SP_Code
+    Code    :        Defs.SP_Code
   )
   is
 
@@ -37,7 +38,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       HAT_Procedure_Call (SP_Push_Abstract_Console);
     end Set_Abstract_Console;
     --
-    procedure Parse_Gets (Code : PCode.SP_Code) is
+    procedure Parse_Gets (Code : SP_Code) is
       --  Parse Get & Co including an eventual File parameter
       Found : Exact_Subtyp;
       with_file : Boolean;
@@ -77,7 +78,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Parse_Gets;
     --
-    procedure Parse_Puts (Code : PCode.SP_Code) is
+    procedure Parse_Puts (Code : SP_Code) is
       --  Parse Put & Co including an eventual File parameter
       Item_Typ, Format_Param_Typ : Exact_Subtyp;
       Format_Params : Natural := 0;

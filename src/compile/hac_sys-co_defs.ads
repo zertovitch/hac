@@ -11,12 +11,14 @@
 --  Co_Defs: Compiler Definitions
 
 with HAC_Sys.Defs,
-     HAC_Sys.PCode;
+     HAC_Sys.PCode,
+     HAC_Sys.Targets;
 
 with HAT;
 
 with Ada.Containers.Hashed_Maps,
      Ada.Containers.Indefinite_Hashed_Maps,
+     Ada.Finalization,
      Ada.Streams,
      Ada.Strings.Hash,
      Ada.Strings.Unbounded.Hash,
@@ -270,7 +272,7 @@ package HAC_Sys.Co_Defs is
   --  Compiler_Data  --
   ---------------------
 
-  type Compiler_Data is record
+  type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
     CUD : Current_Unit_Data;
     --  Scanning & Parsing
     Sy, prev_sy      : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
@@ -308,6 +310,8 @@ package HAC_Sys.Co_Defs is
     Strings_Table_Top       : Natural;
     Tasks_Definitions_Count : Natural;
     --  Object code
+    --  Mostly for HAC VM / p-code -> will be moved to HAC_Sys.Targets.HAC_Virtual_Machine)
+    target                  : Targets.Abstract_Machine_Reference;
     ObjCode                 : PCode.Object_Code_Table (0 .. CDMax);
     LC                      : Integer;  --  Location counter in the Object_Code_Table
     CMax                    : Integer;  --  Top of available ObjCode table;
@@ -335,6 +339,11 @@ package HAC_Sys.Co_Defs is
     --  recursion level for the fun of it.
     recursion    : Natural := 0;
   end record;
+
+  overriding procedure Initialize (CD : in out Compiler_Data);
+  overriding procedure Finalize (CD : in out Compiler_Data);
+
+  type Compiler_Data_Access is access Co_Defs.Compiler_Data;
 
   --  Image function for compilation errors or out-of-range exception messages.
   --

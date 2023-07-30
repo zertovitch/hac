@@ -1,3 +1,7 @@
+with HAC_Sys.Targets.HAC_Virtual_Machine;
+
+with Ada.Unchecked_Deallocation;
+
 package body HAC_Sys.Co_Defs is
 
   procedure Construct_Root (Root : out Exact_Typ; Typ : Typen) is
@@ -55,6 +59,21 @@ package body HAC_Sys.Co_Defs is
   begin
     return HAT.VStr_Pkg.To_String (SD.source_file_name);
   end Get_Source_Name;
+
+  overriding procedure initialize (CD : in out Compiler_Data) is
+  begin
+    CD.target := new Targets.HAC_Virtual_Machine.HAC_VM;
+  end initialize;
+
+  overriding procedure Finalize (CD : in out Compiler_Data) is
+
+    procedure Unchecked_Free is
+      new Ada.Unchecked_Deallocation
+        (Targets.Abstract_Machine'Class, Targets.Abstract_Machine_Reference);
+
+  begin
+    Unchecked_Free (CD.target);
+  end Finalize;
 
   function Discrete_Image
     (CD : Compiler_Data; value : HAC_Integer; Typ : Typen; Ref : Index) return String is

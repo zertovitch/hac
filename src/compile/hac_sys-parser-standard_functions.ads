@@ -1,5 +1,3 @@
-with HAC_Sys.PCode;
-
 private package HAC_Sys.Parser.Standard_Functions is
 
   --  NB: Some of the supplied subprograms may disappear when modularity,
@@ -10,7 +8,7 @@ private package HAC_Sys.Parser.Standard_Functions is
     Level       :        Defs.Nesting_Level;
     FSys        :        Defs.Symset;
     Ident_Index :        Integer;
-    Code        :        PCode.SF_Code;
+    Code        :        Defs.SF_Code;
     Return_Typ  :    out Co_Defs.Exact_Subtyp
   );
 

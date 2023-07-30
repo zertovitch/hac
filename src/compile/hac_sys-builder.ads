@@ -25,8 +25,6 @@ with Ada.Containers.Hashed_Maps,
 
 package HAC_Sys.Builder is
 
-  type Compiler_Data_Access is access Co_Defs.Compiler_Data;
-
   package String_Maps is new Ada.Containers.Hashed_Maps
     (Key_Type        => HAT.VString,
      Element_Type    => HAT.VString,
@@ -35,7 +33,7 @@ package HAC_Sys.Builder is
      "="             => HAT."=");
 
   type Build_Data is new Ada.Finalization.Limited_Controlled with record
-    CD                  : Compiler_Data_Access := new Co_Defs.Compiler_Data;
+    CD                  : Co_Defs.Compiler_Data_Access := new Co_Defs.Compiler_Data;
     LD                  : Librarian.Library_Data;
     global_VM_variables : String_Maps.Map;
     global_remarks     : Defs.Remark_Set := Defs.default_remarks;

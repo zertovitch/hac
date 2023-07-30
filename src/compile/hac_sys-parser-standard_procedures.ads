@@ -1,5 +1,3 @@
-with HAC_Sys.PCode;
-
 private package HAC_Sys.Parser.Standard_Procedures is
 
   --  NB: Some of the supplied subprograms may disappear when modularity,
@@ -9,7 +7,7 @@ private package HAC_Sys.Parser.Standard_Procedures is
     CD      : in out Co_Defs.Compiler_Data;
     Level   :        Defs.Nesting_Level;
     FSys    :        Defs.Symset;
-    Code    :        PCode.SP_Code
+    Code    :        Defs.SP_Code
   );
 
 end HAC_Sys.Parser.Standard_Procedures;

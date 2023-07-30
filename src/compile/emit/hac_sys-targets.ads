@@ -20,7 +20,7 @@
 --  ! There will be likely hundreds of such methods in the end.
 --  ! This will be done progressively. Be patient (or contribute)!
 
---  with HAC_Sys.Co_Defs;
+with HAC_Sys.Defs;
 
 package HAC_Sys.Targets is
 
@@ -36,7 +36,7 @@ package HAC_Sys.Targets is
 
   procedure Emit_HAT_Builtin_Procedure
     (m            : in out Abstract_Machine;
-     builtin_proc :        Integer;
-     parameter    :        Integer) is abstract;  --  Types subject to change!!
+     builtin_proc :        Defs.SP_Code;
+     parameter    :        Defs.HAC_Integer) is abstract;
 
 end HAC_Sys.Targets;

@@ -21,7 +21,7 @@ project HAC_Demo is
    end case;
 
    for Source_Dirs use
-     ("../src", "../src/compile", "../src/execute", "../src/manage",
+     ("../src", "../src/compile", "../src/compile/emit", "../src/execute", "../src/manage",
       ".", "./data_exchange", "./data_exchange_simple");
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";  --  Flips by default the "-p" switch

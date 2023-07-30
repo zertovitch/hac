@@ -220,16 +220,16 @@ package body HAC_Sys.PCode.Interpreter.Operators is
   end Do_Special_Operator;
 
   procedure Do_SF_Operator (BD : Builder.Build_Data; ND : in out In_Defs.Interpreter_Data) is
-    use In_Defs;
+    use Defs, In_Defs;
     CD : Co_Defs.Compiler_Data renames BD.CD.all;
     Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
     Top_Item : General_Register renames ND.S (Curr_TCB.T);
     idx, len, from, to : Integer;
     c : Character;
     code : constant SF_Code := SF_Code'Val (ND.IR.Y);
-    use Defs, Exceptions;
+    use Exceptions;
     use Ada.Strings;
-    use type Defs.HAC_Float, Defs.HAC_Integer, HAT.Time, HAT.VString;
+    use type HAC_Integer, HAC_Float, HAT.Time, HAT.VString;
     Going : Direction;
     --
   begin

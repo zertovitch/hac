@@ -12,7 +12,8 @@ package body HAC_Sys.Builder is
   overriding procedure Finalize (BD : in out Build_Data) is
 
     procedure Unchecked_Free is
-      new Ada.Unchecked_Deallocation (Co_Defs.Compiler_Data, Compiler_Data_Access);
+      new Ada.Unchecked_Deallocation
+        (Co_Defs.Compiler_Data, Co_Defs.Compiler_Data_Access);
 
   begin
     Unchecked_Free (BD.CD);

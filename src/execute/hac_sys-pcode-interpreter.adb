@@ -25,7 +25,7 @@ package body HAC_Sys.PCode.Interpreter is
     ND : In_Defs.Interpreter_Data;
     CD : Co_Defs.Compiler_Data renames BD.CD.all;
 
-    use Co_Defs, In_Defs, Exceptions;
+    use Co_Defs, Defs, In_Defs, Exceptions;
 
     procedure Pop (Amount : Positive := 1) is  begin Pop (ND, Amount); end Pop;
     procedure Push (Amount : Positive := 1) is begin Push (ND, Amount); end Push;
@@ -49,7 +49,6 @@ package body HAC_Sys.PCode.Interpreter is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       Top_Item : General_Register renames ND.S (Curr_TCB.T);
       Code : constant SF_Code := SF_Code'Val (ND.IR.Y);
-      use Defs;
       use type Operand_1_Type;
     begin
       case Code is
@@ -102,7 +101,6 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Do_Text_Read (Code : SP_Code) is
       CH : Character;
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-      use Defs;
       Out_Param : constant Index := Index (ND.S (Curr_TCB.T).I);
       Typ : Typen;
       Immediate : constant Boolean := Code = SP_Get_Immediate;
@@ -193,7 +191,7 @@ package body HAC_Sys.PCode.Interpreter is
       Format_2 : constant      Integer := Integer (ND.S (Curr_TCB.T - 1).I);
       Format_3 : constant      Integer := Integer (ND.S (Curr_TCB.T).I);
       --  Valid parameters used: see def_param in HAC.Parser.Standard_Procedures.
-      use Defs, Ada.Text_IO;
+      use Ada.Text_IO;
     begin
       if Code in SP_Put .. SP_Put_Line then
         case Typen'Val (ND.IR.Y) is
@@ -241,7 +239,6 @@ package body HAC_Sys.PCode.Interpreter is
 
     procedure Do_Code_for_Automatic_Initialization is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-      use Defs;
       Var_Addr : constant Index := Index (ND.S (Curr_TCB.T).I);
     begin
       case Typen'Val (ND.IR.Y) is
@@ -461,7 +458,6 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Execute_Current_Instruction is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       IR : Order renames ND.IR;
-      use Defs;
       use type HAC_Integer;
       --
       procedure Do_Atomic_Data_Push_Operation with Inline is

@@ -495,4 +495,210 @@ package HAC_Sys.Defs is
 
   --  package REF is new Ada.Numerics.Generic_Elementary_Functions (HAC_Float);
 
+  ------------------------------------
+  --  Standard function operations  --
+  ------------------------------------
+
+  type SF_Code is (
+    SF_Abs_Int,
+    SF_Abs_Float,
+    SF_T_Val,                   --  S'Val  : RM 3.5.5 (5)
+    SF_T_Pos,                   --  S'Pos  : RM 3.5.5 (2)
+    SF_T_Succ,                  --  S'Succ : RM 3.5 (22)
+    SF_T_Pred,                  --  S'Pred : RM 3.5 (25)
+    SF_in_discrete_Interval,
+    SF_not_in_discrete_Interval,
+    --  Numerical functions
+    SF_Round_Float_to_Int,
+    SF_Trunc_Float_to_Int,
+    SF_Float_to_Duration,
+    SF_Duration_to_Float,
+    SF_Int_to_Duration,
+    SF_Duration_to_Int,
+    SF_Sin,
+    SF_Cos,
+    SF_Exp,
+    SF_Log,
+    SF_Sqrt,
+    SF_Arctan,
+    SF_Sgn_Int,
+    SF_Sgn_Float,
+    SF_EOF,
+    SF_EOLN,
+    SF_Is_Open,
+    SF_Random_Int,
+    SF_Min_Int,
+    SF_Max_Int,
+    SF_Min_Float,
+    SF_Max_Float,
+    --
+    --  VString functions (Ada.Strings.Unbounded-like)
+    --
+    SF_String_to_VString,        --  +s        (s is a fixed-size string)
+    SF_Literal_to_VString,       --  +"Hello"
+    SF_VString_to_String,        --  -v
+    SF_Char_to_VString,          --  +'x'
+    SF_Two_VStrings_Concat,      --  v1 & v2
+    SF_VString_Char_Concat,      --  v & 'x'
+    SF_Char_VString_Concat,      --  'x' & v
+    SF_LStr_VString_Concat,      --  "Hello " & v
+    --
+    SF_VString_Int_Concat,       --  v & 123
+    SF_Int_VString_Concat,       --  123 & v
+    SF_VString_Float_Concat,     --  v & 3.14159
+    SF_Float_VString_Concat,     --  3.14159 & v
+    SF_VString_Duration_Concat,  --  v & (Time_1 - Time_0)
+    SF_Duration_VString_Concat,  --  (Time_1 - Time_0) & v
+    SF_VString_Boolean_Concat,   --  v & is_found
+    SF_Boolean_VString_Concat,   --  is_found & v
+    --
+    SF_Element,
+    SF_Length,
+    SF_Slice,
+    --
+    SF_To_Lower_Char,
+    SF_To_Upper_Char,
+    SF_To_Lower_VStr,
+    SF_To_Upper_VStr,
+    SF_Index,
+    SF_Index_Backward,
+    SF_Int_Times_Char,
+    SF_Int_Times_VStr,
+    --
+    SF_Trim_Left,
+    SF_Trim_Right,
+    SF_Trim_Both,
+    --
+    SF_Head,
+    SF_Head_Before_Match,
+    SF_Tail,
+    SF_Tail_After_Match,
+    SF_Starts_With,
+    SF_Ends_With,
+    --
+    --  Ada.Calendar-like functions
+    --
+    SF_Time_Subtract,    --  T2 - T1 -> Duration
+    SF_Duration_Add,
+    SF_Duration_Subtract,
+    SF_Year,
+    SF_Month,
+    SF_Day,
+    SF_Seconds,
+    --
+    SF_Image_Ints,              --  HAT.Image without the nasty ' ' before non-negative values
+    SF_Image_Floats,            --  HAT.Image with a human-readable formatting whenever possible
+    SF_Image_Times,             --  HAT.Image
+    SF_Image_Durations,         --  HAT.Image
+    --
+    SF_Integer_Value,
+    SF_Float_Value,
+    --  'Image attribute "as is" from Ada:
+    SF_Image_Attribute_Ints,
+    SF_Image_Attribute_Floats,
+    SF_Image_Attribute_Bools,
+    SF_Image_Attribute_Chars,
+    SF_Image_Attribute_Durs,
+    SF_Image_Attribute_Enums,
+    --  'Value attribute "as is" from Ada:
+    SF_Value_Attribute_Ints,
+    SF_Value_Attribute_Floats,
+    SF_Value_Attribute_Bools,
+    SF_Value_Attribute_Chars,
+    SF_Value_Attribute_Durs,
+    SF_Value_Attribute_Enums,
+    --
+    SF_Argument,
+    --  Ada.Directories-like
+    SF_Directory_Exists,
+    SF_Exists,
+    SF_File_Exists,
+    --  Ada.Environment_Variables-like
+    SF_Get_Env,
+    SF_Get_VM_Variable,
+    --
+    --  Niladic functions (they have no arguments).
+    --
+    SF_Clock,
+    SF_Random_Float,
+    SF_Null_VString,
+    SF_Argument_Count,
+    SF_Command_Name,
+    SF_Directory_Separator,
+    SF_Current_Directory,  --  Ada.Directories-like
+    --
+    SF_Get_Needs_Skip_Line  --  Informs whether Get from console needs Skip_Line
+  );
+
+  subtype SF_Niladic is SF_Code range SF_Clock .. SF_Get_Needs_Skip_Line;
+
+  subtype SF_Min_Max_Int is SF_Code range SF_Min_Int .. SF_Max_Int;
+
+  subtype SF_File_or_Console_Information is SF_Code range SF_EOF .. SF_EOLN;
+
+  subtype SF_Index_Any_Direction is SF_Code range SF_Index .. SF_Index_Backward;
+
+  -------------------------------------
+  --  Standard procedure operations  --
+  -------------------------------------
+
+  type SP_Code is (
+    SP_Create,
+    SP_Open,
+    SP_Append,
+    SP_Close,
+    --
+    SP_Push_Abstract_Console,
+    --
+    SP_Get,
+    SP_Get_Immediate,
+    SP_Get_Line,
+    SP_Get_File,
+    SP_Get_Line_File,
+    SP_Skip_Line,
+    --
+    SP_Put,
+    SP_Put_Line,
+    SP_Put_File,
+    SP_Put_Line_File,
+    SP_New_Line,
+    --
+    SP_Randomize,
+    SP_Random_Seed,
+    --
+    SP_Wait,
+    SP_Signal,
+    --
+    SP_Quantum,
+    SP_Priority,
+    SP_InheritP,
+    --
+    --  Ada.Environment_Variables-like procedures
+    --
+    SP_Set_Env,
+    SP_Set_VM_Variable,
+    --
+    --  Ada.Directories-like procedures
+    --
+    SP_Copy_File,
+    SP_Delete_File,
+    SP_Rename,
+    SP_Set_Directory,
+    SP_Set_Exit_Status,
+    --
+    --  VString procedures (Ada.Strings.Unbounded-like)
+    --
+    SP_Delete,
+    --
+    --  Other system procedures
+    --
+    SP_Shell_Execute_without_Result,  --  Result: no,  Output no
+    SP_Shell_Execute_with_Result,     --  Result: yes, Output no
+    SP_Shell_Execute_Output,          --  Result: no,  Output yes
+    SP_Shell_Execute_Result_Output    --  Result: yes, Output yes
+  );
+
+  subtype SP_Shell_Execute is SP_Code
+    range SP_Shell_Execute_without_Result .. SP_Shell_Execute_Result_Output;
+
 end HAC_Sys.Defs;

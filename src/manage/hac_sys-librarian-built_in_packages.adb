@@ -11,8 +11,7 @@
 
 with HAC_Sys.Defs,
      HAC_Sys.Compiler.PCode_Emit,
-     HAC_Sys.Parser.Packages,
-     HAC_Sys.PCode;
+     HAC_Sys.Parser.Packages;
 
 with HAT;
 with Interfaces;
@@ -103,7 +102,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     LD : in out Library_Data
   )
   is
-    use Co_Defs, Defs, PCode;
+    use Co_Defs, Defs;
 
     procedure Enter_HAT_Const (Name : String; Value : HAC_Float) is
       Float_Index : Integer;
@@ -119,14 +118,14 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, TypeMark, T, 1, First, Last);
     end Enter_HAT_Typ;
 
-    procedure Enter_HAT_Funct (Name : String; T : Typen; Code : PCode.SF_Code) is
+    procedure Enter_HAT_Funct (Name : String; T : Typen; Code : Defs.SF_Code) is
     begin
-      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, Funktion_Intrinsic, T, PCode.SF_Code'Pos (Code));
+      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, Funktion_Intrinsic, T, Defs.SF_Code'Pos (Code));
     end Enter_HAT_Funct;
 
-    procedure Enter_HAT_Proc (Name : String; Code : PCode.SP_Code) is
+    procedure Enter_HAT_Proc (Name : String; Code : Defs.SP_Code) is
     begin
-      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, PCode.SP_Code'Pos (Code));
+      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, Prozedure_Intrinsic, NOTYP, Defs.SP_Code'Pos (Code));
     end Enter_HAT_Proc;
 
   begin

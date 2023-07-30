@@ -262,7 +262,7 @@ package body HAC_Sys.PCode is
     Text      : Ada.Text_IO.File_Type
   )
   is
-    use Ada.Strings.Fixed, Ada.Text_IO;
+    use Ada.Strings.Fixed, Ada.Text_IO, Defs;
     package Opcode_IO   is new Enumeration_IO (Opcode);
     package Code_Pos_IO is new Integer_IO (Natural);
     package Operand1_IO is new Integer_IO (Operand_1_Type);
