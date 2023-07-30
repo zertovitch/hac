@@ -24,12 +24,8 @@ with HAC_Sys.Defs;
 
 package HAC_Sys.Targets is
 
-  --  use HAC_Sys.Co_Defs;
-
   type Abstract_Machine is interface;
   type Abstract_Machine_Reference is access Abstract_Machine'Class;
-
-  --  Some methods may need this... CD : in out Compiler_Data
 
   procedure Initialize_Code_Emission (m : in out Abstract_Machine) is null;
   procedure Finalize_Code_Emission (m : in out Abstract_Machine) is null;

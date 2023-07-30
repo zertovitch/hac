@@ -60,10 +60,11 @@ package body HAC_Sys.Co_Defs is
     return HAT.VStr_Pkg.To_String (SD.source_file_name);
   end Get_Source_Name;
 
-  overriding procedure initialize (CD : in out Compiler_Data) is
+  overriding procedure Initialize (CD : in out Compiler_Data) is
   begin
     CD.target := new Targets.HAC_Virtual_Machine.HAC_VM;
-  end initialize;
+    Targets.HAC_Virtual_Machine.HAC_VM (CD.target.all).CD := CD'Unchecked_Access;
+  end Initialize;
 
   overriding procedure Finalize (CD : in out Compiler_Data) is
 

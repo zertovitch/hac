@@ -279,7 +279,6 @@ package body HAC_Sys.PCode is
       Opcode_IO.Put (s, o);
       return s;
     end Padded_Opcode;
-    use Defs;
     use type Operand_2_Type;
   begin
     Put_Line

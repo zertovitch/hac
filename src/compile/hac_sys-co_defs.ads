@@ -343,7 +343,7 @@ package HAC_Sys.Co_Defs is
   overriding procedure Initialize (CD : in out Compiler_Data);
   overriding procedure Finalize (CD : in out Compiler_Data);
 
-  type Compiler_Data_Access is access Co_Defs.Compiler_Data;
+  type Compiler_Data_Access is access all Co_Defs.Compiler_Data;
 
   --  Image function for compilation errors or out-of-range exception messages.
   --

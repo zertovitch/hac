@@ -30,7 +30,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
     procedure HAT_Procedure_Call (FIO_Code : SP_Code; Param : Operand_2_Type := 0) is
     begin
-      Emit_2 (CD, k_HAT_Procedure, SP_Code'Pos (FIO_Code), Param);
+      CD.target.Emit_HAT_Builtin_Procedure (FIO_Code, Param);
     end HAT_Procedure_Call;
     --
     procedure Set_Abstract_Console is
