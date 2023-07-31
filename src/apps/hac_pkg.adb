@@ -312,7 +312,11 @@ package body HAC_Pkg is
        ' ' &
        main_base_name &
        ".exe");
-    Shell_Execute (main_base_name & ' ' & Remaining_Arguments (arg_pos));
+    if Get_Env ("OS") = "Windows_NT" then
+      Shell_Execute (main_base_name & ' ' & Remaining_Arguments (arg_pos));
+    else
+      Put_Line ("No run: target /= native");
+    end if;
   end Run_amd64_windows_console_fasm;
 
   procedure Run (BD : in out HAC_Sys.Builder.Build_Data; arg_pos : Positive) is
@@ -322,8 +326,11 @@ package body HAC_Pkg is
       if BD.CD.Is_HAC_VM then
         Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       else
-        Put_Line (HAC_margin_2 & "Running native (if native = target)");
+        Put_Line (HAC_margin_2 & "Running native (if target = native)");
       end if;
+    end if;
+    if target_choice /= hac_vm then
+      Put_Line ("*** Caution *** Native code generation is experimental and incomplete !");
     end if;
     case target_choice is
       when hac_vm                     => Run_HAC_VM (BD, arg_pos);
