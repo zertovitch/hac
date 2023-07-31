@@ -168,7 +168,8 @@ package body Sudokus is
   procedure Handle_Naked_Singles
     (u       : in out Grid;
      verbose : in     Boolean;
-     found   :    out Natural) is
+     found   :    out Natural)
+  is
     procedure Handle_Naked_Single (i, j : Sudigit) is
       the_number : Sudigit;
       use HAT;
@@ -200,10 +201,15 @@ package body Sudokus is
     end loop;
   end Handle_Naked_Singles;
 
-  procedure Handle_Hidden_Singles (u : in out Grid; found : out Natural) is
+  procedure Handle_Hidden_Singles
+    (u       : in out Grid;
+     verbose : in     Boolean;
+     found   :    out Natural)
+  is
     procedure Handle_Hidden_Single (i, j : Sudigit) is
       base_i, base_j : Sudigit;
       ok : Boolean;
+      use HAT;
     begin
       Find_Box_Base (i, j, base_i, base_j);
       for num in Sudigit loop
@@ -217,7 +223,13 @@ package body Sudokus is
               exit when not ok;
             end if;
           end loop;
-          if not ok then
+          if ok then
+            if verbose then
+              Put_Line
+                (+"Found hidden single (row) at pos " &
+                 i & ',' & j  & ": digit: " & num);
+            end if;
+          else
             --  Check column:
             ok := True;
             for ii in Sudigit loop
@@ -227,19 +239,34 @@ package body Sudokus is
                 exit when not ok;
               end if;
             end loop;
+            if ok then
+              if verbose then
+                Put_Line
+                  (+"Found hidden single (column) at pos " &
+                   i & ',' & j  & ": digit: " & num);
+              end if;
+            end if;
           end if;
           if not ok then
             --  Check box:
             ok := True;
+            Box_Row:
             for ii in base_i .. base_i + 2 loop
               for jj in base_j .. base_j + 2 loop
                 if ii /= i or else j /= jj then
                   --  Check that the digit is NOT possible elsewhere in the box.
                   ok := ok and not u (ii, jj).set (num);
-                  exit when not ok;
+                  exit when not ok;  -- exit Box_Row !!
                 end if;
               end loop;
-            end loop;
+            end loop Box_Row;
+            if ok then
+              if verbose then
+                Put_Line
+                  (+"Found hidden single (box) at pos " &
+                   i & ',' & j  & ": digit: " & num);
+              end if;
+            end if;
           end if;
           if ok then
             found := found + 1;
@@ -783,7 +810,7 @@ package body Sudokus is
       end if;
       --  We search more complicated possibilities,
       --  only when none for the less complicated was found.
-      Handle_Hidden_Singles (pack.u, found (hidden_single));
+      Handle_Hidden_Singles (pack.u, verbosity_level > 4, found (hidden_single));
       if found (hidden_single) > 0 then
         return;
       end if;
