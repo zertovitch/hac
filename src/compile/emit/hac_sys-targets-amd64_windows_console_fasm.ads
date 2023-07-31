@@ -12,7 +12,7 @@ with HAT;
 
 package HAC_Sys.Targets.AMD64_Windows_Console_FASM is
 
-  type Machine is limited new Abstract_Machine with record
+  type Machine is limited new Targets.Machine with record
     asm_file : HAT.File_Type;
   end record;
 
@@ -21,7 +21,6 @@ package HAC_Sys.Targets.AMD64_Windows_Console_FASM is
   --------------------
 
   overriding function Name (m : Machine) return String is ("Windows 64 Console");
-  overriding function Is_HAC_VM (m : Machine) return Boolean is (False);
   overriding function CPU (m : Machine) return String is ("AMD64");
   overriding function OS (m : Machine) return String is ("Windows");
   overriding function Null_Terminated_String_Literals (m : Machine) return Boolean is (True);
@@ -55,5 +54,11 @@ package HAC_Sys.Targets.AMD64_Windows_Console_FASM is
     (m            : in out Machine;
      builtin_proc :        Defs.SP_Code;
      parameter    :        Defs.HAC_Integer);
+
+  -------------
+  --  Misc.  --
+  -------------
+
+  function Assembler_File_Name (m : Machine) return String;
 
 end HAC_Sys.Targets.AMD64_Windows_Console_FASM;

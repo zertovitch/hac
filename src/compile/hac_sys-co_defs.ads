@@ -310,7 +310,7 @@ package HAC_Sys.Co_Defs is
     Tasks_Definitions_Count : Natural;
     --  Object code
     --  Mostly for HAC VM / p-code -> will be moved to HAC_Sys.Targets.HAC_Virtual_Machine)
-    target                  : Targets.Abstract_Machine_Reference;
+    target                  : Targets.Abstract_Machine_Reference := null;
     ObjCode                 : PCode.Object_Code_Table (0 .. CDMax);
     LC                      : Integer;  --  Location counter in the Object_Code_Table
     CMax                    : Integer;  --  Top of available ObjCode table;
@@ -341,6 +341,11 @@ package HAC_Sys.Co_Defs is
 
   overriding procedure Initialize (CD : in out Compiler_Data);
   overriding procedure Finalize (CD : in out Compiler_Data);
+
+  function Is_HAC_VM (CD : Compiler_Data) return Boolean;
+
+  procedure Set_Target
+    (CD : in out Compiler_Data; new_target : Targets.Abstract_Machine_Reference);
 
   type Compiler_Data_Access is access all Co_Defs.Compiler_Data;
 

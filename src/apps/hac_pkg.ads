@@ -1,7 +1,8 @@
 --  This package contains call-backs for the
 --  HAC command-line application, as well as various helpers.
 
-with HAC_Sys.Co_Defs,
+with HAC_Sys.Builder,
+     HAC_Sys.Co_Defs,
      HAC_Sys.Targets;
 
 with HAT;
@@ -36,5 +37,9 @@ package HAC_Pkg is
   procedure Help (level : Positive);
 
   procedure Set_Target (name : String);
+
+  procedure Failure;
+
+  procedure Run (BD : in out HAC_Sys.Builder.Build_Data; arg_pos : Positive);
 
 end HAC_Pkg;

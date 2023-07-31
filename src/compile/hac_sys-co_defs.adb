@@ -60,18 +60,42 @@ package body HAC_Sys.Co_Defs is
     return HAT.VStr_Pkg.To_String (SD.source_file_name);
   end Get_Source_Name;
 
+  procedure Unchecked_Free is
+    new Ada.Unchecked_Deallocation
+      (Targets.Machine'Class, Targets.Abstract_Machine_Reference);
+
+  function Is_HAC_VM (CD : Compiler_Data) return Boolean
+  is
+    use Targets;
+  begin
+    return CD.target /= null
+      and then CD.target.all in HAC_Virtual_Machine.Machine'Class;
+  end Is_HAC_VM;
+
+  procedure Set_Target
+    (CD : in out Compiler_Data; new_target : Targets.Abstract_Machine_Reference)
+  is
+    use Targets;
+  begin
+    if new_target /= null then
+      if CD.target /= null then
+        Unchecked_Free (CD.target);
+      end if;
+      CD.target := new_target;
+      --  Special case for the HAC VM:
+      if new_target.all in HAC_Virtual_Machine.Machine'Class then
+        HAC_Virtual_Machine.Machine (new_target.all).CD := CD'Unchecked_Access;
+      end if;
+    end if;
+  end Set_Target;
+
   overriding procedure Initialize (CD : in out Compiler_Data) is
   begin
-    CD.target := new Targets.HAC_Virtual_Machine.Machine;
-    Targets.HAC_Virtual_Machine.Machine (CD.target.all).CD := CD'Unchecked_Access;
+    --  Ensure the CD has a valid target from the beginning:
+    CD.Set_Target (new Targets.HAC_Virtual_Machine.Machine);
   end Initialize;
 
   overriding procedure Finalize (CD : in out Compiler_Data) is
-
-    procedure Unchecked_Free is
-      new Ada.Unchecked_Deallocation
-        (Targets.Abstract_Machine'Class, Targets.Abstract_Machine_Reference);
-
   begin
     Unchecked_Free (CD.target);
   end Finalize;

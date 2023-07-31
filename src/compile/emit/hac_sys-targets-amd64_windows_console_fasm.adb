@@ -133,4 +133,6 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
     end case;
   end Emit_HAT_Builtin_Procedure;
 
+  function Assembler_File_Name (m : Machine) return String is (asm_name);
+
 end HAC_Sys.Targets.AMD64_Windows_Console_FASM;

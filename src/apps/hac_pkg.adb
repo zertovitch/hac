@@ -1,9 +1,13 @@
-with HAC_Sys.Librarian,
+with HAC_Sys.PCode.Interpreter,
+     HAC_Sys.Librarian,
      HAC_Sys.Targets.AMD64_Windows_Console_FASM;
 
 with Show_MIT_License;
 
-with Ada.Directories,
+with Ada.Command_Line,
+     Ada.Containers,
+     Ada.Directories,
+     Ada.Exceptions,
      Ada.Text_IO;
 
 package body HAC_Pkg is
@@ -166,14 +170,165 @@ package body HAC_Pkg is
     Ada.Text_IO.Skip_Line;
   end Help;
 
+  type Target_List is
+    (hac_vm, amd64_windows_console_fasm);
+
+  target_choice : Target_List := hac_vm;
+
   procedure Set_Target (name : String) is
-    type Target_List is
-      (amd64_windows_console_fasm);
   begin
-    case Target_List'Value (name) is
+    target_choice := Target_List'Value (name);
+    case target_choice is
+      when hac_vm =>
+        null;  --  Actual target in BD.CD is already initialized.
       when amd64_windows_console_fasm =>
         target := new HAC_Sys.Targets.AMD64_Windows_Console_FASM.Machine;
     end case;
   end Set_Target;
+
+  procedure Failure is
+    use HAT;
+  begin
+    if Ends_With (main_Ada_file_name, ".hac") then
+      --  Main has the "HAC script extension", possibly run
+      --  from Explorer, Nautilus, etc.
+      Put ("Failure in " & main_Ada_file_name & ", press Return");
+      Skip_Line;
+    end if;
+    Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
+  end Failure;
+
+  procedure Run_HAC_VM (BD : in out HAC_Sys.Builder.Build_Data; arg_pos : Positive) is
+    use HAC_Sys.PCode.Interpreter, HAT;
+    use Ada.Containers;
+    --
+    procedure Show_Line_Information (
+      File_Name   : String;   --  Example: hac-pcode-interpreter.adb
+      Block_Name  : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
+      Line_Number : Positive
+    )
+    is
+    begin
+      PLCE
+        (File_Name & ": " &
+         Block_Name & " at line" &
+         Integer'Image (Line_Number));
+    end Show_Line_Information;
+    --
+    procedure CIO_Trace_Back is new Show_Trace_Back (Show_Line_Information);
+    --
+    post_mortem     : Post_Mortem_Data;
+    unhandled_found : Boolean;
+    t1, t2          : Time;
+  begin
+    if verbosity >= 1 then
+      New_Line;
+    end if;
+    t1 := Clock;
+    Interpret_on_Current_IO
+      (BD,
+       arg_pos,
+       Ada.Directories.Full_Name (To_String (main_Ada_file_name)),
+       post_mortem);
+    t2 := Clock;
+    unhandled_found := Is_Exception_Raised (post_mortem.Unhandled);
+    if verbosity >= 2 then
+      --  The "if expression" commented out here confuses ObjectAda 10.4.
+      --
+      --  Put_Line
+      --    (HAC_margin_3 &
+      --       (if unhandled_found then
+      --          "VM interpreter stopped execution of " &
+      --          Ada_file_name & " due to an unhandled exception."
+      --        else
+      --          "VM interpreter done after" & Duration'Image (t2 - t1) & " seconds."));
+      --
+      if unhandled_found then
+        Put_Line (
+          HAC_margin_3 & "VM interpreter stopped execution of " &
+            main_Ada_file_name & " due to an unhandled exception.");
+      else
+        Put_Line (
+          HAC_margin_3 & "VM interpreter done after" &
+          Duration'Image (t2 - t1) & " seconds."
+        );
+      end if;
+    end if;
+    if unhandled_found then
+      PLCE ("HAC VM: raised " & Image (post_mortem.Unhandled));
+      PLCE (Message (post_mortem.Unhandled));
+      PLCE ("Trace-back: approximate location");
+      CIO_Trace_Back (post_mortem.Unhandled);
+      Failure;
+    elsif verbosity >= 1 then
+      Put_Line ("Execution of " & main_Ada_file_name & " completed.");
+    end if;
+    if verbosity >= 2 then
+      Put_Line (
+        "Maximum stack usage:" &
+        Integer'Image (post_mortem.Max_Stack_Usage) & " of" &
+        Integer'Image (post_mortem.Stack_Size) & " memory units, around" &
+        Integer'Image (100 * post_mortem.Max_Stack_Usage / post_mortem.Stack_Size) & "%."
+      );
+    end if;
+    if verbosity >= 1 then
+      if post_mortem.Open_Files.Length > 0 then
+        Put_Line ("List of files that were left open during execution:");
+        for ofd of post_mortem.Open_Files loop
+          Put_Line
+           ("  Name: " & HAT.To_String (ofd.Name) &
+            ", mode: " & Ada.Text_IO.File_Mode'Image (ofd.Mode));
+        end loop;
+      end if;
+    end if;
+  exception
+    when E : Abnormal_Termination =>
+      PLCE ("Abnormal Termination (VM): " & Ada.Exceptions.Exception_Message (E));
+      Failure;
+    when Ada.Text_IO.Name_Error =>
+      PLCE
+        (HAC_margin_3 &
+         "Error: file """ & To_String (main_Ada_file_name) &
+         """ not found (perhaps in exm or test subdirectory ?)");
+      Failure;
+  end Run_HAC_VM;
+
+  function Remaining_Arguments (arg_pos : Positive) return String is
+  (if arg_pos <= Ada.Command_Line.Argument_Count then
+     Ada.Command_Line.Argument (arg_pos) & Remaining_Arguments (arg_pos + 1)
+   else
+     "");
+
+  procedure Run_amd64_windows_console_fasm
+    (BD : HAC_Sys.Builder.Build_Data; arg_pos : Positive)
+  is
+    use HAT;
+    use Ada.Directories;
+    main_base_name : constant String := Base_Name (To_String (main_Ada_file_name));
+  begin
+    Shell_Execute
+      ("fasm " &
+       BD.target.Assembler_File_Name &
+       ' ' &
+       main_base_name &
+       ".exe");
+    Shell_Execute (main_base_name & ' ' & Remaining_Arguments (arg_pos));
+  end Run_amd64_windows_console_fasm;
+
+  procedure Run (BD : in out HAC_Sys.Builder.Build_Data; arg_pos : Positive) is
+    use HAT;
+  begin
+    if verbosity >= 2 then
+      if BD.CD.Is_HAC_VM then
+        Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
+      else
+        Put_Line (HAC_margin_2 & "Running native (if native = target)");
+      end if;
+    end if;
+    case target_choice is
+      when hac_vm                     => Run_HAC_VM (BD, arg_pos);
+      when amd64_windows_console_fasm => Run_amd64_windows_console_fasm (BD, arg_pos);
+    end case;
+  end Run;
 
 end HAC_Pkg;

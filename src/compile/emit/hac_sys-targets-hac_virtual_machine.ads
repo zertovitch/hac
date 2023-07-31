@@ -14,9 +14,9 @@ with HAC_Sys.Co_Defs;
 
 package HAC_Sys.Targets.HAC_Virtual_Machine is
 
-  type Machine is new Abstract_Machine with record
+  type Machine is new Targets.Machine with record
     CD : Co_Defs.Compiler_Data_Access;
-    --  ^ In the future the instruction table and other items
+    --  ^ In the future, the instruction table and other items
     --    will be stored here and we can remove CD.
   end record;
 
@@ -25,7 +25,6 @@ package HAC_Sys.Targets.HAC_Virtual_Machine is
   --------------------
 
   overriding function Name (m : Machine) return String is ("HAC Virtual Machine");
-  overriding function Is_HAC_VM (m : Machine) return Boolean is (True);
   overriding function CPU (m : Machine) return String is ("HAC VM");
   overriding function OS (m : Machine) return String is ("Any");
   overriding function Null_Terminated_String_Literals (m : Machine) return Boolean is (False);
@@ -50,5 +49,11 @@ package HAC_Sys.Targets.HAC_Virtual_Machine is
     (m            : in out Machine;
      builtin_proc :        Defs.SP_Code;
      parameter    :        Defs.HAC_Integer);
+
+  -------------
+  --  Misc.  --
+  -------------
+
+  function Assembler_File_Name (m : Machine) return String is ("");
 
 end HAC_Sys.Targets.HAC_Virtual_Machine;

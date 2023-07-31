@@ -14,9 +14,6 @@ with HAT;
 
 with Ada.Calendar,
      Ada.Command_Line,
-     Ada.Containers,
-     Ada.Directories,
-     Ada.Exceptions,
      Ada.Text_IO.Text_Streams;
 
 procedure HAC is
@@ -28,41 +25,11 @@ procedure HAC is
   use HAC_Pkg;
 
   procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
-    use HAC_Sys.PCode.Interpreter;
-    use Ada.Calendar, Ada.Command_Line, Ada.Containers, Ada.Text_IO;
+    use Ada.Calendar, Ada.Text_IO;
 
-    procedure Show_Line_Information (
-      File_Name   : String;   --  Example: hac-pcode-interpreter.adb
-      Block_Name  : String;   --  Example: HAC.PCode.Interpreter.Do_Write_Formatted
-      Line_Number : Positive
-    )
-    is
-    begin
-      PLCE
-        (File_Name & ": " &
-         Block_Name & " at line" &
-         Integer'Image (Line_Number));
-    end Show_Line_Information;
-    --
-    procedure CIO_Trace_Back is new Show_Trace_Back (Show_Line_Information);
-    --
-    procedure Failure is
-      use HAT;
-    begin
-      if Ends_With (+Ada_file_name, ".hac") then
-        --  Main has the "HAC script extension", possibly run
-        --  from Explorer, Nautilus, etc.
-        HAT.Put ("Failure in " & Ada_file_name & ", press Return");
-        HAT.Skip_Line;
-      end if;
-      Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
-    end Failure;
-    --
     f               : Ada.Text_IO.File_Type;
     t1, t2          : Ada.Calendar.Time;
     BD              : HAC_Sys.Builder.Build_Data;
-    post_mortem     : Post_Mortem_Data;
-    unhandled_found : Boolean;
     shebang_offset  : Natural;
 
     trace : constant HAC_Sys.Co_Defs.Compilation_Trace_Parameters :=
@@ -102,7 +69,7 @@ procedure HAC is
     --
     if not BD.Build_Successful then
       PLCE ("Errors found, build failed.");
-      Failure;
+      HAC_Pkg.Failure;
       return;
     end if;
     if verbosity >= 2 then
@@ -110,7 +77,7 @@ procedure HAC is
       Put_Line (HAC_margin_2 & "CPU  . . : " & BD.CD.target.CPU);
       Put_Line (HAC_margin_2 & "OS . . . : " & BD.CD.target.OS);
       --
-      if BD.CD.target.Is_HAC_VM then
+      if BD.CD.Is_HAC_VM then
         Put_Line
           (HAC_margin_2 & "Object code size:" &
              Natural'Image (BD.Object_Code_Size) &
@@ -131,87 +98,14 @@ procedure HAC is
     if compile_only then
       return;
     end if;
-    if verbosity >= 2 then
-      if BD.CD.target.Is_HAC_VM then
-        Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
-      else
-        Put_Line (HAC_margin_2 & "Running native (if native = target)");
-      end if;
-    end if;
-    if verbosity >= 1 then
-      New_Line;
-    end if;
-    t1 := Clock;
-    if BD.CD.target.Is_HAC_VM then
-      Interpret_on_Current_IO
-        (BD,
-         arg_pos,
-         Ada.Directories.Full_Name (Ada_file_name),
-         post_mortem);
-    else
-      null; --  !!
-    end if;
-    t2 := Clock;
-    unhandled_found := Is_Exception_Raised (post_mortem.Unhandled);
-    if verbosity >= 2 then
-      --  The "if expression" commented out here confuses ObjectAda 10.4.
-      --
-      --  Put_Line
-      --    (HAC_margin_3 &
-      --       (if unhandled_found then
-      --          "VM interpreter stopped execution of " &
-      --          Ada_file_name & " due to an unhandled exception."
-      --        else
-      --          "VM interpreter done after" & Duration'Image (t2 - t1) & " seconds."));
-      --
-      if unhandled_found then
-        Put_Line (
-          HAC_margin_3 & "VM interpreter stopped execution of " &
-            Ada_file_name & " due to an unhandled exception.");
-      else
-        Put_Line (
-          HAC_margin_3 & "VM interpreter done after" &
-          Duration'Image (t2 - t1) & " seconds."
-        );
-      end if;
-    end if;
-    if unhandled_found then
-      PLCE ("HAC VM: raised " & Image (post_mortem.Unhandled));
-      PLCE (Message (post_mortem.Unhandled));
-      PLCE ("Trace-back: approximate location");
-      CIO_Trace_Back (post_mortem.Unhandled);
-      Failure;
-    elsif verbosity >= 1 then
-      Put_Line ("Execution of " & Ada_file_name & " completed.");
-    end if;
-    if verbosity >= 2 then
-      Put_Line (
-        "Maximum stack usage:" &
-        Integer'Image (post_mortem.Max_Stack_Usage) & " of" &
-        Integer'Image (post_mortem.Stack_Size) & " memory units, around" &
-        Integer'Image (100 * post_mortem.Max_Stack_Usage / post_mortem.Stack_Size) & "%."
-      );
-    end if;
-    if verbosity >= 1 then
-      if post_mortem.Open_Files.Length > 0 then
-        Put_Line ("List of files that were left open during execution:");
-        for ofd of post_mortem.Open_Files loop
-          Put_Line
-           ("  Name: " & HAT.To_String (ofd.Name) &
-            ", mode: " & File_Mode'Image (ofd.Mode));
-        end loop;
-      end if;
-    end if;
+    Run (BD, arg_pos);
   exception
-    when E : Abnormal_Termination =>
-      PLCE ("Abnormal Termination (VM): " & Ada.Exceptions.Exception_Message (E));
-      Failure;
     when Name_Error =>
       PLCE
         (HAC_margin_3 &
          "Error: file """ & Ada_file_name &
          """ not found (perhaps in exm or test subdirectory ?)");
-      Failure;
+      HAC_Pkg.Failure;
   end Compile_and_interpret_file;
 
   hac_ing    : Boolean  := False;
