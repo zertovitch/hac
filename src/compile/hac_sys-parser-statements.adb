@@ -461,7 +461,8 @@ package body HAC_Sys.Parser.Statements is
     procedure FOR_Statement (label_Id : Natural) is  --  RM 5.5 (9)
       FOR_Begin_Instruction : Opcode; --  Forward  or  Reverse
       LC_FOR_Begin,
-      Previous_Last : Index;
+      loop_param_id,
+      previous_last : Index;
       line_number : constant Natural := CD.CUD.line_count;
     begin
       --
@@ -476,12 +477,13 @@ package body HAC_Sys.Parser.Statements is
           Fatal (IDENTIFIERS);  --  Exception is raised there.
         end if;
         --  Declare local loop control Variable  --  added Hathorn
-        Previous_Last := CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx;
+        previous_last := CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx;
         CD.Id_Count := CD.Id_Count + 1;
-        CD.IdTab (CD.Id_Count) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
+        loop_param_id := CD.Id_Count;
+        CD.IdTab (loop_param_id) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
              (name             => CD.Id,
               name_with_case   => CD.Id_with_case,
-              link             => Previous_Last,
+              link             => previous_last,
               entity           => Variable,
               read_only        => True,
               decl_kind        => complete,
@@ -491,7 +493,7 @@ package body HAC_Sys.Parser.Statements is
               lev              => Block_Data.level,
               adr_or_sz        => HAC_Integer (Block_Data.data_allocation_index)
              );
-        CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx  := CD.Id_Count;
+        CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx  := loop_param_id;
         Block_Data.data_allocation_index := Block_Data.data_allocation_index + 1;
         Block_Data.max_data_allocation_index :=
           Integer'Max (Block_Data.max_data_allocation_index, Block_Data.data_allocation_index);
@@ -501,8 +503,8 @@ package body HAC_Sys.Parser.Statements is
       end if;
       --
       Emit_2 (CD, k_Push_Address,
-        Operand_1_Type (CD.IdTab (CD.Id_Count).lev),
-        Operand_2_Type (CD.IdTab (CD.Id_Count).adr_or_sz)
+        Operand_1_Type (CD.IdTab (loop_param_id).lev),
+        Operand_2_Type (CD.IdTab (loop_param_id).adr_or_sz)
       );
       InSymbol;
       FOR_Begin_Instruction := k_FOR_Forward_Begin;
@@ -513,17 +515,22 @@ package body HAC_Sys.Parser.Statements is
       end if;
       Ranges.Dynamic_Range (CD, Block_Data.level, FSys_St,
         err_control_variable_of_the_wrong_type,
-        CD.IdTab (CD.Id_Count).xtyp  --  Set the subtype of "C" in "for C in Red .. Blue loop"
+        CD.IdTab (loop_param_id).xtyp  --  Set the subtype of "C" in "for C in Red .. Blue loop"
       );
       LC_FOR_Begin := CD.LC;
       Emit (CD, FOR_Begin_Instruction);
       LOOP_Statement
         (For_END_Instruction (FOR_Begin_Instruction), CD.LC, (label_Id, True, line_number));
-      CD.ObjCode (LC_FOR_Begin).Y := Operand_2_Type (CD.LC);  --  Address of the code just after the loop's end.
-      --  Forget the loop parameter (the "iterator variable"):
-      CD.Id_Count := CD.Id_Count - 1;
-      CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx := Previous_Last;
+      --  Patch the loop control exit address; points to the code
+      --  just after the loop's end:
+      CD.ObjCode (LC_FOR_Begin).Y := Operand_2_Type (CD.LC);
       Block_Data.data_allocation_index := Block_Data.data_allocation_index - 1;
+      --
+      --  Make the loop parameter unusable. The .name_with_case is still
+      --  visible for the compiler dump. Previously, the identifier counter
+      --  was decreased, but that method conflicted with the necessity of
+      --  keeping all loop names within a block.
+      CD.IdTab (loop_param_id).name := Empty_Alfa;
     end FOR_Statement;
 
     procedure Select_Statement is
@@ -926,9 +933,7 @@ package body HAC_Sys.Parser.Statements is
                 Standard_Procedures.Standard_Procedure
                   (CD, Block_Data.level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).adr_or_sz));
               when Loop_Identifier =>
-                Error (CD, err_duplicate_label, A2S (CD.Id));
-                Test (CD, Colon_Set, FSys_St, err_colon_missing);
-                InSymbol;
+                Error (CD, err_duplicate_loop_identifier, A2S (CD.Id), severity => major);
               when Paquetage =>
                 Error (CD, err_illegal_statement_start_symbol, "package name", severity => major);
               when others =>

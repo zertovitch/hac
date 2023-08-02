@@ -211,8 +211,8 @@ package body HAC_Sys.Errors is
         return "double underline not permitted";
       when err_statement_expected =>
         return "statement expected, can be ""null""";
-      when err_duplicate_label =>
-        return "label already defined: " & hint_1;
+      when err_duplicate_loop_identifier =>
+        return "loop identifier already defined above: " & hint_1;
       when err_unexpected_end_of_text =>
         return "unexpected end of text";
       when err_not_yet_implemented =>

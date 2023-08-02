@@ -408,7 +408,7 @@ package HAC_Sys.Defs is
      err_EQUALS_instead_of_BECOMES,
      err_numeric_constant_expected,
      err_statement_expected,
-     err_duplicate_label,
+     err_duplicate_loop_identifier,
      err_unexpected_end_of_text,                  --  2018-04-01
      err_not_yet_implemented,                     --  2019-03-24
      err_type_conversion_not_supported,           --  2020-03-31
