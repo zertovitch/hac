@@ -137,7 +137,7 @@ package body HAC_Sys.Parser is
           when TYPE_Symbol |
                SUBTYPE_Symbol     => Type_Def.Type_or_Subtype_Declaration (CD, block_data.level, FSys);
           when TASK_Symbol        => Tasking.Task_Declaration (CD, FSys, block_data.level);
-          when USE_Symbol         => Packages.Use_Clause (CD, block_data.level);
+          when USE_Symbol         => Packages.Use_Clause (CD, block_data.level, False);
           when PROCEDURE_Symbol |
                FUNCTION_Symbol    => Subprogram_Declaration_or_Body (CD, FSys, block_data.level, ignored_kind);
           when PACKAGE_Symbol =>
@@ -152,7 +152,7 @@ package body HAC_Sys.Parser is
             if CD.Sy /= IDent then
               Error (CD, err_identifier_missing, severity => major);
             end if;
-            Enter (CD, block_data.level, CD.Id, CD.Id_with_case, pkg_kind, pkg_spec_index);
+            Enter_Prefixed (CD, block_data.level, CD.Id, CD.Id_with_case, pkg_kind, pkg_spec_index);
             if is_body then
               if pkg_spec_index = No_Id then
                 Error
@@ -469,7 +469,7 @@ package body HAC_Sys.Parser is
       id_subprog           : constant Alfa := CD.Id;
       id_subprog_with_case : constant Alfa := CD.Id_with_case;
     begin
-      Enter
+      Enter_Prefixed
         (CD,
          current_level,
          CD.Id,

@@ -57,7 +57,7 @@ package body HAC_Sys.Parser.Tasking is
       if CD.Tasks_Definitions_Count > TaskMax then
         Fatal (TASKS);  --  Exception is raised there.
       end if;
-      Enter (CD, Level, TaskID, TaskID_with_case, aTask, forward_id_idx);
+      Enter_Prefixed (CD, Level, TaskID, TaskID_with_case, aTask, forward_id_idx);
       CD.Tasks_Definitions_Table (CD.Tasks_Definitions_Count) := CD.Id_Count;
       Enter_Block (CD, CD.Id_Count);
       CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.Blocks_Count;
@@ -81,7 +81,7 @@ package body HAC_Sys.Parser.Tasking is
           if CD.Entries_Count > entry_table_max then
             Fatal (ENTRIES);  --  Exception is raised there.
           end if;
-          Enter (CD, Level, CD.Id, CD.Id_with_case, aEntry, forward_id_idx);
+          Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, aEntry, forward_id_idx);
           CD.Entries_Table (CD.Entries_Count) := CD.Id_Count;  --  point to identifier table location
           T0                                  := CD.Id_Count;  --  of TaskID
           InSymbol;

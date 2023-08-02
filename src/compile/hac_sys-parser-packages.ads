@@ -42,23 +42,23 @@ package HAC_Sys.Parser.Packages is
   ----------------------------------------------------------------------
   --  Parse Use clause.                                               --
   --  It is either part of a context clause, or a local declaration.  --
-  --  8.4 (2)
+  --  RM 8.4 (2)                                                      --
   ----------------------------------------------------------------------
 
-  procedure Use_Clause (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_Level
-  );
+  procedure Use_Clause
+    (CD       : in out Co_Defs.Compiler_Data;
+     Level    :        Defs.Nesting_Level;
+     prefixed :        Boolean);
 
   -------------------------------------------------
   --  Apply the USE clause at any nesting level  --
   -------------------------------------------------
 
-  procedure Apply_USE_Clause (
-    CD       : in out Co_Defs.Compiler_Data;
-    Level    : in     Defs.Nesting_Level;
-    Pkg_Idx  : in     Natural  --  Index in the identifier table for USEd package.
-  );
+  procedure Apply_USE_Clause
+    (CD       : in out Co_Defs.Compiler_Data;
+     Level    : in     Defs.Nesting_Level;
+     prefixed :        Boolean;
+     Pkg_Idx  : in     Natural);  --  Index in the identifier table for USEd package.
 
   ------------------------------------------
   --  Feed the compiler's packages table  --

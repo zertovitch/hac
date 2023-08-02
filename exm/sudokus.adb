@@ -256,7 +256,7 @@ package body Sudokus is
                 if ii /= i or else j /= jj then
                   --  Check that the digit is NOT possible elsewhere in the box.
                   ok := ok and not u (ii, jj).set (num);
-                  exit when not ok;  -- exit Box_Row !!
+                  exit Box_Row when not ok;
                 end if;
               end loop;
             end loop Box_Row;

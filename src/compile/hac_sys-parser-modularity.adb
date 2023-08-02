@@ -35,7 +35,7 @@ package body HAC_Sys.Parser.Modularity is
     loop
       case CD.Sy is
         when WITH_Symbol => With_Clause (CD, LD);
-        when USE_Symbol  => Packages.Use_Clause (CD, Library_Level);
+        when USE_Symbol  => Packages.Use_Clause (CD, Library_Level, False);
         when others => exit;
       end case;
     end loop;

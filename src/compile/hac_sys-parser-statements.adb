@@ -241,7 +241,7 @@ package body HAC_Sys.Parser.Statements is
       --  Generate an absolute branch statement with a dummy end loop address
       X : Exact_Subtyp;
       exit_level : Natural := CD.loop_nesting_level;
-      label_found : Boolean;
+      id_found : Boolean;
       count_FOR_loops : Natural := 0;
       landing_after_jump : Integer;
       conditional : Boolean := False;
@@ -258,21 +258,21 @@ package body HAC_Sys.Parser.Statements is
       end if;
       --  Possible name:
       if CD.Sy = IDent then
-        label_found := False;
+        id_found := False;
         for level in reverse 1 .. CD.loop_nesting_level loop
           if CD.Nested_Loop_Table (level).is_FOR_loop then
             count_FOR_loops := count_FOR_loops + 1;
           end if;
-          if CD.Nested_Loop_Table (level).label_Id /= No_Id
-            and then CD.Id = CD.IdTab (CD.Nested_Loop_Table (level).label_Id).name
+          if CD.Nested_Loop_Table (level).loop_Id /= No_Id
+            and then CD.Id = CD.IdTab (CD.Nested_Loop_Table (level).loop_Id).name
           then
-            label_found := True;
+            id_found := True;
             exit_level := level;
             exit;
           end if;
         end loop;
-        if not label_found then
-          Error (CD, err_syntax_error, "loop label not matched: " & A2S (CD.Id_with_case));
+        if not id_found then
+          Error (CD, err_syntax_error, "loop name not matched: " & A2S (CD.Id_with_case));
         end if;
         InSymbol;  --  Consume the identifier.
       else
@@ -444,7 +444,7 @@ package body HAC_Sys.Parser.Statements is
       Emit (CD, k_Delay);
     end Delay_Statement;
 
-    procedure WHILE_Statement (label_Id : Natural) is  --  RM 5.5 (8)
+    procedure WHILE_Statement (loop_Id : Natural) is  --  RM 5.5 (8)
       X : Exact_Subtyp;
       LC_Cond_Eval, LC_Cond_Jump : Integer;
       line_number : constant Natural := CD.CUD.line_count;
@@ -454,7 +454,7 @@ package body HAC_Sys.Parser.Statements is
       Boolean_Expression (CD, Block_Data.level, FSys_St + DO_LOOP, X);
       LC_Cond_Jump := CD.LC;
       Emit (CD, k_Jump_If_Zero_With_Pop);
-      LOOP_Statement (k_Jump, LC_Cond_Eval, (label_Id, False, line_number));
+      LOOP_Statement (k_Jump, LC_Cond_Eval, (loop_Id, False, line_number));
       CD.ObjCode (LC_Cond_Jump).Y := Operand_2_Type (CD.LC);
     end WHILE_Statement;
 
@@ -849,12 +849,12 @@ package body HAC_Sys.Parser.Statements is
       --
       dummy_idx : Natural;
     begin
-      Enter
+      Enter_Simple
         (CD,
          Block_Data.level,
          new_ident_for_statement,
          new_ident_for_statement_with_case,
-         Label,
+         Loop_Identifier,
          dummy_idx);
       if CD.Sy /= Colon then
         Error
@@ -925,7 +925,7 @@ package body HAC_Sys.Parser.Statements is
               when Prozedure_Intrinsic =>
                 Standard_Procedures.Standard_Procedure
                   (CD, Block_Data.level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).adr_or_sz));
-              when Label =>
+              when Loop_Identifier =>
                 Error (CD, err_duplicate_label, A2S (CD.Id));
                 Test (CD, Colon_Set, FSys_St, err_colon_missing);
                 InSymbol;

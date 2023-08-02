@@ -82,7 +82,7 @@ package body HAC_Sys.Parser.Packages is
           Tasking.Task_Declaration (CD, FSys, block_data.level);
           Mark_Last_Declaration;
         when USE_Symbol =>
-          Use_Clause (CD, block_data.level);
+          Use_Clause (CD, block_data.level, True);
         when PROCEDURE_Symbol | FUNCTION_Symbol =>
           Subprogram_Declaration_or_Body (CD, FSys, block_data.level, subprogram_kind);
           if subprogram_kind = complete then
@@ -110,7 +110,7 @@ package body HAC_Sys.Parser.Packages is
             when others =>
               Error (CD, err_identifier_missing, severity => major);
           end case;
-          Enter_Def.Enter (CD, block_data.level, CD.Id, CD.Id_with_case, Paquetage, dummy_forward);
+          Enter_Def.Enter_Prefixed (CD, block_data.level, CD.Id, CD.Id_with_case, Paquetage, dummy_forward);
           CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
           --  Why spec_resolved ? missing bodies for eventual suprograms
           --  in that package are checked anyway.
@@ -200,7 +200,7 @@ package body HAC_Sys.Parser.Packages is
         when TASK_Symbol =>
           Tasking.Task_Declaration (CD, FSys, block_data.level);
         when USE_Symbol =>
-          Use_Clause (CD, block_data.level);
+          Use_Clause (CD, block_data.level, False);
         when PROCEDURE_Symbol | FUNCTION_Symbol =>
           Subprogram_Declaration_or_Body (CD, FSys, block_data.level, subprogram_kind);
           if block_data.level = 0 then
@@ -221,7 +221,7 @@ package body HAC_Sys.Parser.Packages is
           if CD.Sy /= IDent then
             Error (CD, err_identifier_missing, severity => major);
           end if;
-          Enter_Def.Enter (CD, block_data.level, CD.Id, CD.Id_with_case, subpkg_kind, pkg_spec_index);
+          Enter_Def.Enter_Prefixed (CD, block_data.level, CD.Id, CD.Id_with_case, subpkg_kind, pkg_spec_index);
           if subpackage_body then
             if pkg_spec_index = No_Id then
               Error
@@ -273,10 +273,10 @@ package body HAC_Sys.Parser.Packages is
     Decrement_Nesting_or_Descending_Level (CD);
   end Package_Body;
 
-  procedure Use_Clause (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_Level
-  )
+  procedure Use_Clause
+    (CD       : in out Co_Defs.Compiler_Data;
+     Level    :        Defs.Nesting_Level;
+     prefixed :        Boolean)
   is  --  8.4 (2)
     use Defs, Scanner, Errors;
   begin
@@ -285,7 +285,7 @@ package body HAC_Sys.Parser.Packages is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, severity => major);
       end if;
-      Apply_USE_Clause (CD, Level, Helpers.Locate_Identifier (CD, CD.Id, Level));
+      Apply_USE_Clause (CD, Level, prefixed, Helpers.Locate_Identifier (CD, CD.Id, Level));
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
       Helpers.Need (CD, Comma, err_syntax_error);
@@ -293,11 +293,11 @@ package body HAC_Sys.Parser.Packages is
     InSymbol (CD);  --  Consume the ';'.
   end Use_Clause;
 
-  procedure Apply_USE_Clause (
-    CD       : in out Co_Defs.Compiler_Data;
-    Level    : in     Defs.Nesting_Level;
-    Pkg_Idx  : in     Natural  --  Index in the identifier table for USEd package.
-  )
+  procedure Apply_USE_Clause
+    (CD       : in out Co_Defs.Compiler_Data;
+     Level    : in     Defs.Nesting_Level;
+     prefixed :        Boolean;
+     Pkg_Idx  : in     Natural)  --  Index in the identifier table for USEd package.
   is
     use Co_Defs, Defs, Parser.Enter_Def, Errors;
     use type Nesting_Level;
@@ -377,6 +377,7 @@ package body HAC_Sys.Parser.Packages is
               Enter
                 (CD,
                  Level,
+                 prefixed,
                  Short_Id,
                  S2A (Full_Name (Start .. Full_Name'Last)),
                  Alias,

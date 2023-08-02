@@ -138,7 +138,7 @@ package HAC_Sys.Co_Defs is
       aTask,
       aEntry,
       --
-      Label,
+      Loop_Identifier,
       Alias   --  Short name of another entity ("use" clause).
   );
 
@@ -187,7 +187,7 @@ package HAC_Sys.Co_Defs is
   --  Alias                         Index into the Identifier table of the aliased entity.
 
   type Loop_Info is record
-    label_Id    : Natural;  --  No_Id : no label
+    loop_Id     : Natural;  --  No_Id : no identifier
     is_FOR_loop : Boolean;  --  Emit k_FOR_Release_Stack for each exited FOR loop
     start_line  : Natural;
   end record;

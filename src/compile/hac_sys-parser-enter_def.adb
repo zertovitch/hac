@@ -33,28 +33,25 @@ package body HAC_Sys.Parser.Enter_Def is
 
   ------------------------------------------------------------------
   ------------------------------------------------------------Enter-
-  procedure Enter (
-    CD               : in out Co_Defs.Compiler_Data;
-    Level            :        Defs.Nesting_Level;
-    Id, Id_with_case :        Defs.Alfa;
-    K                :        Entity_Kind;
-    Forward_Decl_Id  :    out Natural
-  )
+  procedure Enter_Simple
+    (CD               : in out Co_Defs.Compiler_Data;
+     Level            :        Defs.Nesting_Level;
+     Id, Id_with_case :        Defs.Alfa;
+     K                :        Co_Defs.Entity_Kind;
+     Forward_Decl_Id  :    out Natural)
   is
     last_id : constant Index :=
       CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
     J : Integer := last_id;
     use HAT;
-    prefixed_Id           : constant Alfa := CD.pkg_prefix & Id;
-    prefixed_Id_with_case : constant Alfa := CD.pkg_prefix & Id_with_case;
   begin
     Forward_Decl_Id := No_Id;
     if CD.Id_Count = Id_Table_Max then
       Fatal (IDENTIFIERS);  --  Exception is raised there.
     end if;
-    CD.IdTab (No_Id).name := prefixed_Id;  --  Sentinel
+    CD.IdTab (No_Id).name := Id;  --  Sentinel
     --  Follow the chain of identifiers for current Level:
-    while CD.IdTab (J).name /= prefixed_Id loop
+    while CD.IdTab (J).name /= Id loop
       J := CD.IdTab (J).link;
     end loop;
     if J = No_Id then
@@ -73,7 +70,7 @@ package body HAC_Sys.Parser.Enter_Def is
       Error
         (CD,
          err_duplicate_identifier,
-         A2S (prefixed_Id)
+         A2S (Id)
          --  & ", previous is a " & CD.IdTab (J).entity'Image
          ,
          severity => major);
@@ -81,8 +78,8 @@ package body HAC_Sys.Parser.Enter_Def is
     --  Enter identifier in table IdTab
     CD.Id_Count            := CD.Id_Count + 1;
     CD.IdTab (CD.Id_Count) :=
-      (name             => prefixed_Id,
-       name_with_case   => prefixed_Id_with_case,
+      (name             => Id,
+       name_with_case   => Id_with_case,
        link             => last_id,
        entity           => K,
        read_only        => False,
@@ -96,7 +93,37 @@ package body HAC_Sys.Parser.Enter_Def is
     --  Update start of identifier chain:
     CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
     if Level = 0 then
-      CD.CUD.level_0_def.Include (prefixed_Id, CD.Id_Count);
+      CD.CUD.level_0_def.Include (Id, CD.Id_Count);
+    end if;
+  end Enter_Simple;
+
+  procedure Enter_Prefixed
+    (CD               : in out Co_Defs.Compiler_Data;
+     Level            :        Defs.Nesting_Level;
+     Id, Id_with_case :        Defs.Alfa;
+     K                :        Co_Defs.Entity_Kind;
+     Forward_Decl_Id  :    out Natural)
+  is
+    use HAT;
+    prefixed_Id           : constant Alfa := CD.pkg_prefix & Id;
+    prefixed_Id_with_case : constant Alfa := CD.pkg_prefix & Id_with_case;
+  begin
+    Enter_Simple (CD, Level, prefixed_Id, prefixed_Id_with_case, K, Forward_Decl_Id);
+  end Enter_Prefixed;
+
+  procedure Enter
+    (CD               : in out Co_Defs.Compiler_Data;
+     Level            :        Defs.Nesting_Level;
+     prefixed         :        Boolean;
+     Id, Id_with_case :        Defs.Alfa;
+     K                :        Co_Defs.Entity_Kind;
+     Forward_Decl_Id  :    out Natural)
+  is
+  begin
+    if prefixed then
+      Enter_Prefixed (CD, Level, Id, Id_with_case, K, Forward_Decl_Id);
+    else
+      Enter_Simple (CD, Level, Id, Id_with_case, K, Forward_Decl_Id);
     end if;
   end Enter;
 
@@ -133,41 +160,28 @@ package body HAC_Sys.Parser.Enter_Def is
   ------------------------------------------------------------------
   --------------------------------------------------Enter_Variables-
 
-  procedure Enter_Variables (
-    CD       : in out Co_Defs.Compiler_Data;
-    Level    :        Defs.Nesting_Level;
-    Prefixed :        Boolean
-  )
+  procedure Enter_Variables
+    (CD       : in out Co_Defs.Compiler_Data;
+     Level    :        Defs.Nesting_Level;
+     prefixed :        Boolean)
   is
     procedure Enter_Variable is
       dummy_id_idx : Natural;
     begin
       if CD.Sy = IDent then
-        Enter (CD, Level, CD.Id, CD.Id_with_case, Variable, dummy_id_idx);
+        Enter (CD, Level, prefixed, CD.Id, CD.Id_with_case, Variable, dummy_id_idx);
         Scanner.InSymbol (CD);
       else
         Error (CD, err_identifier_missing);
       end if;
     end Enter_Variable;
     --
-    use HAT;
-    need_prefix_mem : constant Boolean :=
-      (not Prefixed) and then Length (CD.pkg_prefix) > 0;
-    prefix_mem : VString;
   begin
-    if need_prefix_mem then
-      --  For instance, fields in a record must be non-prefixed.
-      prefix_mem := CD.pkg_prefix;
-      CD.pkg_prefix := Null_VString;
-    end if;
     Enter_Variable;
     while CD.Sy = Comma loop  --  ','  in  "a, b, c : Integer;"
       Scanner.InSymbol (CD);
       Enter_Variable;
     end loop;
-    if need_prefix_mem then
-      CD.pkg_prefix := prefix_mem;
-    end if;
   end Enter_Variables;
 
 end HAC_Sys.Parser.Enter_Def;

@@ -282,7 +282,9 @@ package body HAC_Sys.Librarian is
   begin
     Apply_WITH (CD, LD, "STANDARD");
     Parser.Packages.Apply_USE_Clause
-      (CD, Library_Level,
+      (CD,
+       Library_Level,
+       False,
        Parser.Helpers.Locate_Identifier (CD, Defs.S2A ("STANDARD"), 0));
   end Apply_WITH_USE_Standard;
 
