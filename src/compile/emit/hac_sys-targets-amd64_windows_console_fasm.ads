@@ -7,6 +7,9 @@
 --  Copyright, license, etc. : see top package.
 --
 -------------------------------------------------------------------------------------
+--
+--  This target is AMD64, Windows, using the Flat Assembler (FASM).
+--  https://flatassembler.net/
 
 with HAT;
 
@@ -20,7 +23,7 @@ package HAC_Sys.Targets.AMD64_Windows_Console_FASM is
   --  Informations  --
   --------------------
 
-  overriding function Name (m : Machine) return String is ("Windows 64 Console");
+  overriding function Name (m : Machine) return String is ("Windows 64 Console via FASM");
   overriding function CPU (m : Machine) return String is ("AMD64");
   overriding function OS (m : Machine) return String is ("Windows");
   overriding function Null_Terminated_String_Literals (m : Machine) return Boolean is (True);
@@ -37,6 +40,11 @@ package HAC_Sys.Targets.AMD64_Windows_Console_FASM is
   ----------------------------
   --  Machine Instructions  --
   ----------------------------
+
+  overriding procedure Emit_Arithmetic_Binary_Instruction
+    (m         : in out Machine;
+     operator  :        Defs.Arithmetic_Binary_Operator;
+     base_typ  :        Defs.Numeric_Typ);
 
   overriding procedure Emit_Halt (m : in out Machine);
 

@@ -8,6 +8,8 @@
 --
 -------------------------------------------------------------------------------------
 --
+--  This package facilitates the code emission for the HAC VM, but will
+--  shrink in the future in favour of HAC_Sys.Targets.HAC_Virtual_Machine.
 
 with HAC_Sys.Defs,
      HAC_Sys.PCode;
@@ -60,12 +62,6 @@ package HAC_Sys.Compiler.PCode_Emit is
 
   procedure Emit_Unary_Minus (
     CD        : in out Compiler_Data;
-    Base_Typ  :        Numeric_Typ
-  );
-
-  procedure Emit_Arithmetic_Binary_Instruction (
-    CD        : in out Compiler_Data;
-    Operator  :        Arithmetic_Binary_Operator;
     Base_Typ  :        Numeric_Typ
   );
 

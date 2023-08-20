@@ -51,6 +51,11 @@ package HAC_Sys.Targets is
   --  Machine Instructions  --
   ----------------------------
 
+  procedure Emit_Arithmetic_Binary_Instruction
+    (m         : in out Machine;
+     operator  :        Defs.Arithmetic_Binary_Operator;
+     base_typ  :        Defs.Numeric_Typ) is abstract;
+
   procedure Emit_Halt (m : in out Machine) is abstract;
 
   procedure Emit_Push_Discrete_Literal

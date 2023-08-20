@@ -139,33 +139,6 @@ package body HAC_Sys.Compiler.PCode_Emit is
     end case;
   end Emit_Unary_Minus;
 
-  procedure Emit_Arithmetic_Binary_Instruction (
-    CD        : in out Compiler_Data;
-    Operator  :        Arithmetic_Binary_Operator;
-    Base_Typ  :        Numeric_Typ
-  )
-  is
-  begin
-    case Base_Typ is
-      when Floats =>
-        case Operator is
-          when Plus    => Emit (CD, k_ADD_Float);
-          when Minus   => Emit (CD, k_SUBTRACT_Float);
-          when Times   => Emit (CD, k_MULT_Float);
-          when Divide  => Emit (CD, k_DIV_Float);
-          when Power   => Emit (CD, k_Power_Float);
-        end case;
-      when Ints   =>
-        case Operator is
-          when Plus    => Emit (CD, k_ADD_Integer);
-          when Minus   => Emit (CD, k_SUBTRACT_Integer);
-          when Times   => Emit (CD, k_MULT_Integer);
-          when Divide  => Emit (CD, k_DIV_Integer);
-          when Power   => Emit (CD, k_Power_Integer);
-        end case;
-    end case;
-  end Emit_Arithmetic_Binary_Instruction;
-
   procedure Emit_Push_Float_Literal (
     CD : in out Compiler_Data;
     X  :        HAC_Float

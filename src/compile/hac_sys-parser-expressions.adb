@@ -571,14 +571,14 @@ package body HAC_Sys.Parser.Expressions is
                 end if;
               end;
               --
-            when CharCon | IntCon | FloatCon =>
+            when CharCon | IntCon | FloatCon =>  --  Literal character, integer or float.
               if CD.Sy = FloatCon then
                 X.Construct_Root (Floats);
                 Emit_Push_Float_Literal (CD, CD.RNum);
               else
-                --  Here we have a discrete literal
+                --  Here we have a discrete literal: character or integer.
                 X.Construct_Root (if CD.Sy = CharCon then Chars else Ints);
-                Emit_1 (CD, k_Push_Discrete_Literal, CD.INum);
+                CD.target.Emit_Push_Discrete_Literal (CD.INum);
                 --  The local subtype for the value V is the range V .. V.
                 Ranges.Set_Singleton_Range (X, CD.INum);
               end if;
@@ -630,7 +630,7 @@ package body HAC_Sys.Parser.Expressions is
               InSymbol (CD);
               Primary (FSys_Fact, Y);
               if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
-                Emit_Arithmetic_Binary_Instruction (CD, Power, X.TYP);
+                CD.target.Emit_Arithmetic_Binary_Instruction (Power, X.TYP);
               elsif X.TYP = Floats and Y.TYP = Ints then
                 Emit (CD, k_Power_Float_Integer);
               else
@@ -660,7 +660,7 @@ package body HAC_Sys.Parser.Expressions is
             when Times =>     --  *
               if X.TYP in Numeric_Typ and then Y.TYP in Numeric_Typ then
                 if X.TYP = Y.TYP then
-                  Emit_Arithmetic_Binary_Instruction (CD, Mult_OP, X.TYP);
+                  CD.target.Emit_Arithmetic_Binary_Instruction (Times, X.TYP);
                 else
                   Forbid_Type_Coercion (CD, Mult_OP, X, Y);
                 end if;
@@ -708,7 +708,7 @@ package body HAC_Sys.Parser.Expressions is
               end if;
             when Divide =>    --  /
               if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
-                Emit_Arithmetic_Binary_Instruction (CD, Mult_OP, X.TYP);
+                CD.target.Emit_Arithmetic_Binary_Instruction (Divide, X.TYP);
                 X.Construct_Root (X.TYP);  --  Forget subtype bounds
               else
                 if X.TYP = Ints then
@@ -1003,7 +1003,7 @@ package body HAC_Sys.Parser.Expressions is
           when Plus | Minus =>
             if X.TYP in Numeric_Typ and then y.TYP in Numeric_Typ then
               if X.TYP = y.TYP then
-                Emit_Arithmetic_Binary_Instruction (CD, additive_operator, X.TYP);
+                CD.target.Emit_Arithmetic_Binary_Instruction (additive_operator, X.TYP);
               else
                 Forbid_Type_Coercion (CD, additive_operator, X, y);
               end if;

@@ -33,6 +33,11 @@ package HAC_Sys.Targets.HAC_Virtual_Machine is
   --  Machine Instructions  --
   ----------------------------
 
+  overriding procedure Emit_Arithmetic_Binary_Instruction
+    (m         : in out Machine;
+     operator  :        Defs.Arithmetic_Binary_Operator;
+     base_typ  :        Defs.Numeric_Typ);
+
   overriding procedure Emit_Halt (m : in out Machine);
 
   overriding procedure Emit_Push_Discrete_Literal

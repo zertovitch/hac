@@ -50,9 +50,9 @@ package HAC_Sys.PCode is
     k_Check_Upper_Bound,
     --
     k_Jump,
-    k_Jump_If_Zero_With_Pop,            --  Jump if [T].I = 0, always pop
-    k_Jump_If_Zero_No_Pop,              --  Jump if [T].I = 0, no pop
-    k_Jump_If_Non_Zero_No_Pop,          --  Jump if [T].I /= 0, no pop
+    k_Jump_If_Zero_With_Pop,            --  Jump if [T].I = 0, always pop  -> general use
+    k_Jump_If_Zero_No_Pop,              --  Jump if [T].I = 0, no pop      -> for "and then"
+    k_Jump_If_Non_Zero_No_Pop,          --  Jump if [T].I /= 0, no pop     -> for "or else"
     --
     k_CASE_Switch,
     k_CASE_Choice_Value,
