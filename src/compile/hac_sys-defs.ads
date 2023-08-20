@@ -421,7 +421,7 @@ package HAC_Sys.Defs is
      err_no_X_for_END_X,
      err_END_LOOP_ident_missing,
      err_END_LOOP_ident_wrong,
-     err_syntax_error,                            --  A classic one. "Too long to explain more..."
+     err_general_error,                           --  Default (without hint): the classic "syntax error"
      err_string_to_vstring_assignment,
      err_range_constraint_error,
      err_discrete_type_expected,

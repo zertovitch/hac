@@ -548,7 +548,7 @@ package body HAC_Sys.Parser.Helpers is
         ID_Copy := Id;
         --  Here some parsing: entity is a package and there is a dot waiting.
         InSymbol (CD);  --  Consume prefix package identifier.
-        Need (CD, Period, err_syntax_error);  --  Accept "Pkg.", reject "Pkg.."
+        Need (CD, Period, err_general_error);  --  Accept "Pkg.", reject "Pkg.."
         if CD.Sy = IDent then
           return Locate_Identifier
             (CD,

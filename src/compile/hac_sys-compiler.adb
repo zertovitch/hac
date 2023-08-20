@@ -1,11 +1,12 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Defs,
+     HAC_Sys.Errors,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Modularity,
      HAC_Sys.Parser.Packages,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
-     HAC_Sys.Errors;
+     HAC_Sys.Targets.HAC_Virtual_Machine;
 
 with HAT;
 
@@ -356,7 +357,7 @@ package body HAC_Sys.Compiler is
     end if;
     if CD.Sy /= IS_Symbol then
       --  procedure Name IS
-      Error (CD, err_syntax_error, "main procedure should be parameterless", severity => major);
+      Error (CD, err_general_error, "main procedure should be parameterless", severity => major);
     end if;
 
     if CD.comp_dump_requested then
@@ -392,6 +393,15 @@ package body HAC_Sys.Compiler is
     CD.total_lines := CD.total_lines + CD.CUD.line_count;  --  Add line count of main program.
     --  Main procedure is parsed.
     CD.target.Emit_Halt;
+    if CD.LC > CD.ObjCode'First
+      and then CD.target.all not in Targets.HAC_Virtual_Machine.Machine'Class
+    then
+      --  Some machine code was emitted for the HAC VM instead of the alternative target.
+      Error
+        (CD,
+         err_general_error,
+         "Code generation for alternative target (non-HAC-VM) is incomplete");
+    end if;
 
     if CD.Sy /= Semicolon then
       if CD.comp_dump_requested then
@@ -575,7 +585,7 @@ package body HAC_Sys.Compiler is
         kind := Package_Declaration;  --  Useless, but this removes an ObjectAda warning.
         Error
           (CD,
-           err_syntax_error,
+           err_general_error,
            "`package`, `procedure` or `function` expected here", severity => major);
     end case;
     if CD.Sy /= IDent then

@@ -142,7 +142,7 @@ package body HAC_Sys.Parser.Const_Var is
           when others =>
             Error
               (CD,
-               err_syntax_error,
+               err_general_error,
                "this kind of anonymous type definition is not allowed here");
             --  Recovery:
             Type_Def.Type_Definition

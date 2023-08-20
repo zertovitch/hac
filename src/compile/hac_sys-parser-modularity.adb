@@ -20,7 +20,7 @@ package body HAC_Sys.Parser.Modularity is
       Librarian.Apply_WITH (CD, LD, A2S (CD.Id));
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
-      Helpers.Need (CD, Comma, err_syntax_error);
+      Helpers.Need (CD, Comma, err_general_error);
     end loop;
     InSymbol (CD);  --  Consume the ';'.
   end With_Clause;

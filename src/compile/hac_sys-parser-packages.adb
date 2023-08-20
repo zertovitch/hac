@@ -87,7 +87,7 @@ package body HAC_Sys.Parser.Packages is
           Subprogram_Declaration_or_Body (CD, FSys, block_data.level, subprogram_kind);
           if subprogram_kind = complete then
             Error
-              (CD, err_syntax_error,
+              (CD, err_general_error,
                "subprogram body not allowed in package specification",
                severity => major);
           end if;
@@ -102,7 +102,7 @@ package body HAC_Sys.Parser.Packages is
           case CD.Sy is
             when BODY_Symbol =>
               Error
-                (CD, err_syntax_error,
+                (CD, err_general_error,
                  "subpackage body not allowed in package specification",
                  severity => major);
             when IDent =>
@@ -121,7 +121,7 @@ package body HAC_Sys.Parser.Packages is
         when PRIVATE_Symbol =>
           Scanner.InSymbol (CD);
           if in_private then
-            Error (CD, err_syntax_error, "only one private part allowed per package");
+            Error (CD, err_general_error, "only one private part allowed per package");
           end if;
           in_private := True;
         when others => null;
@@ -225,7 +225,7 @@ package body HAC_Sys.Parser.Packages is
           if subpackage_body then
             if pkg_spec_index = No_Id then
               Error
-                (CD, err_syntax_error,
+                (CD, err_general_error,
                  "missing specification for package body", severity => major);
             end if;
             CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.IdTab (pkg_spec_index).block_or_pkg_ref;
@@ -239,7 +239,7 @@ package body HAC_Sys.Parser.Packages is
           --  !!  Do something with subpkg_needs_body ...
           Need_Semicolon_after_Declaration (CD, FSys);
         when PRIVATE_Symbol =>
-          Error (CD, err_syntax_error, """private"" belongs to specification");
+          Error (CD, err_general_error, """private"" belongs to specification");
           Scanner.InSymbol (CD);
         when others => null;
       end case;
@@ -288,7 +288,7 @@ package body HAC_Sys.Parser.Packages is
       Apply_USE_Clause (CD, Level, prefixed, Helpers.Locate_Identifier (CD, CD.Id, Level));
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
-      Helpers.Need (CD, Comma, err_syntax_error);
+      Helpers.Need (CD, Comma, err_general_error);
     end loop;
     InSymbol (CD);  --  Consume the ';'.
   end Use_Clause;
@@ -325,7 +325,7 @@ package body HAC_Sys.Parser.Packages is
   begin
     pragma Assert (Pkg_Idx > No_Id);
     if CD.IdTab (Pkg_Idx).entity /= Paquetage then
-      Error (CD, err_syntax_error, "package name expected", severity => major);
+      Error (CD, err_general_error, "package name expected", severity => major);
     end if;
     if CD.IdTab (Pkg_Idx).lev = 0 and then Pkg_UName = HAT_Name then
       --  We are USE-ing the HAT package, thus opening the visibility of operators.

@@ -147,7 +147,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         InSymbol (CD);
         Expression (CD, Level, FSys + RParent + Comma, X);
         if X.TYP /= Text_Files then
-          Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Text_Files_Set);
+          Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files_Set);
         end if;
         file_parameter := True;
         Need (CD, RParent, err_closing_parenthesis_missing);

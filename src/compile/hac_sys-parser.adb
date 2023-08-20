@@ -156,7 +156,7 @@ package body HAC_Sys.Parser is
             if is_body then
               if pkg_spec_index = No_Id then
                 Error
-                  (CD, err_syntax_error,
+                  (CD, err_general_error,
                    "missing specification for package body", severity => major);
               end if;
               CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.IdTab (pkg_spec_index).block_or_pkg_ref;
@@ -261,7 +261,7 @@ package body HAC_Sys.Parser is
       if CD.Sy = IDent then
         if CD.Id = "IMPORT" then
           InSymbol;    --  Consume Import
-          Need (CD, Finger, err_syntax_error);
+          Need (CD, Finger, err_general_error);
           if CD.Id = "TRUE" then
             InSymbol;  --  Consume True
             CD.IdTab (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
@@ -269,11 +269,11 @@ package body HAC_Sys.Parser is
             Emit_1 (CD, k_Exchange_with_External, Operand_2_Type (block_data.block_id_index));
             Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
           else
-            Error (CD, err_syntax_error, "value True expected here");
+            Error (CD, err_general_error, "value True expected here");
           end if;
         end if;
       else
-        Error (CD, err_syntax_error);
+        Error (CD, err_general_error);
       end if;
     end Subprogram_Aspect;
 

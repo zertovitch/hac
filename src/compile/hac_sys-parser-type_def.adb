@@ -96,7 +96,7 @@ package body HAC_Sys.Parser.Type_Def is
       Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
       Need (CD, OF_Symbol, err_missing_OF);         --  "of"  in  "array (...) of Some_Type"
       if Type_Begin_Symbol (CD.Sy) then
-        Error (CD, err_syntax_error, "anonymous definition not permitted here");
+        Error (CD, err_general_error, "anonymous definition not permitted here");
         --  Recovery:
         Type_Definition (CD, Level, FSys_TD, Element_Exact_Subtyp, Element_Size);
       else
@@ -182,7 +182,7 @@ package body HAC_Sys.Parser.Type_Def is
           Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
           T1 := CD.Id_Count;
           if Type_Begin_Symbol (CD.Sy) then
-            Error (CD, err_syntax_error, "anonymous definition not permitted here");
+            Error (CD, err_general_error, "anonymous definition not permitted here");
             --  Recovery:
             Type_Definition
               (CD, Level, FSys_TD + Comma_END_IDent_Semicolon,
@@ -346,7 +346,7 @@ package body HAC_Sys.Parser.Type_Def is
     Test (CD, Subtype_Begin_Symbol, FSys_TD, err_identifier_missing);
     if CD.Sy /= IDent then
       --  Normally this case should have been filtered out before.
-      Error (CD, err_syntax_error, severity => major);
+      Error (CD, err_general_error, severity => major);
     end if;
     Ident_Index := Locate_Identifier (CD, CD.Id, Level);
     if Ident_Index = CD.String_Id_Index then

@@ -748,7 +748,7 @@ package body HAC_Sys.Parser.Expressions is
         --  HAT is not USE-visible
         Error
           (CD,
-           err_syntax_error,
+           err_general_error,
            "operator (" & Op_Hint (op) &
            ") not visible (missing a ""use " & HAT_Name & """ clause)",
            severity => major);
@@ -1079,7 +1079,7 @@ package body HAC_Sys.Parser.Expressions is
       when Apostrophe =>  --  S'First, S'Image, ...
         Attributes.Subtype_Attribute (CD, Level, FSys, Typ_ID_Index, X);
       when others =>
-        Error (CD, err_syntax_error, "expected ""'"" or ""("" here", severity => major);
+        Error (CD, err_general_error, "expected ""'"" or ""("" here", severity => major);
     end case;
   end Subtype_Prefixed_Expression;
 

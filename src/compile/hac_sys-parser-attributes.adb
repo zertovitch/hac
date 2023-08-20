@@ -29,7 +29,7 @@ package body HAC_Sys.Parser.Attributes is
     Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
   exception
     when Constraint_Error =>
-      Error (CD, err_syntax_error, "unknown attribute: " & attr_ID, severity => major);
+      Error (CD, err_general_error, "unknown attribute: " & attr_ID, severity => major);
   end Which_Attribute;
 
   procedure Array_Subtype_Attribute (
@@ -89,7 +89,7 @@ package body HAC_Sys.Parser.Attributes is
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High - Low + 1));
         Construct_Root (xSubtyp_of_Result, Ints);
       when others =>
-        Error (CD, err_syntax_error, "attribute not defined for this type", severity => major);
+        Error (CD, err_general_error, "attribute not defined for this type", severity => major);
     end case;
   end Array_Subtype_Attribute;
 
@@ -145,7 +145,7 @@ package body HAC_Sys.Parser.Attributes is
           CD.LC := LC_before_Object;
           Array_Subtype_Attribute (CD, Level, FSys + RParent, Object_xSubtyp.Ref, attr, xSubtyp_of_Result);
         else
-          Error (CD, err_syntax_error, "attribute not defined for this object", severity => major);
+          Error (CD, err_general_error, "attribute not defined for this object", severity => major);
         end if;
     end case;
   end Object_Attribute;
@@ -382,7 +382,7 @@ package body HAC_Sys.Parser.Attributes is
         when others =>
           Error
             (CD,
-             err_syntax_error,
+             err_general_error,
              "attribute not defined for this type",
              severity => major);
       end case;
@@ -398,7 +398,7 @@ package body HAC_Sys.Parser.Attributes is
       Array_Subtype_Attribute (CD, Level, FSys + RParent, S.Ref, attr, xSubtyp_of_Result);
     else
       Error
-        (CD, err_syntax_error,
+        (CD, err_general_error,
          "no attribute defined for this type: " &
          A2S (Typ_ID.name_with_case), severity => major);
     end if;

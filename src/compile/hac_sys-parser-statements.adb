@@ -212,7 +212,7 @@ package body HAC_Sys.Parser.Statements is
       InSymbol;
       I_Entry := Locate_Identifier (CD, CD.Id, Block_Data.level);
       if CD.IdTab (I_Entry).entity /= aEntry then
-        Error (CD, err_syntax_error, "an entry name is expected here");
+        Error (CD, err_general_error, "an entry name is expected here");
       end if;
       InSymbol;
       Accept_Call;
@@ -251,7 +251,7 @@ package body HAC_Sys.Parser.Statements is
       if CD.loop_nesting_level = 0 then
         Error
           (CD,
-           err_syntax_error,
+           err_general_error,
            """exit"" without a ""loop"" - was ""return"" intended?",
            severity => major);
         --  Exception raised, compilation stopped.
@@ -272,7 +272,7 @@ package body HAC_Sys.Parser.Statements is
           end if;
         end loop;
         if not id_found then
-          Error (CD, err_syntax_error, "loop name not matched: " & A2S (CD.Id_with_case));
+          Error (CD, err_general_error, "loop name not matched: " & A2S (CD.Id_with_case));
         end if;
         InSymbol;  --  Consume the identifier.
       else
@@ -656,7 +656,7 @@ package body HAC_Sys.Parser.Statements is
           InSymbol;
           I := Locate_Identifier (CD, CD.Id, Block_Data.level);
           if CD.IdTab (I).entity /= aEntry then
-            Select_Error (err_syntax_error);
+            Select_Error (err_general_error);
           end if;
           InSymbol;
           Accept_Call_2;
@@ -884,7 +884,7 @@ package body HAC_Sys.Parser.Statements is
           WHILE_Statement (CD.Id_Count);
           Check_ID_after_END_LOOP;
         when others =>
-          Error (CD, err_syntax_error);
+          Error (CD, err_general_error);
       end case;
     end Named_Statement;
 
@@ -892,7 +892,7 @@ package body HAC_Sys.Parser.Statements is
     begin
       if CD.Sy = IDent then
         Error
-          (CD, err_syntax_error,
+          (CD, err_general_error,
            "loop starting at line" &
            CD.Nested_Loop_Table (CD.loop_nesting_level + 1).start_line'Image &
            " has no name");

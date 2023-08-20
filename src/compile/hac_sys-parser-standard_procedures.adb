@@ -217,7 +217,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
               Set_Abstract_Console;
               Emit (CD, k_Swap);  --  File (the console) has to be before Spacing on the stack.
             when others =>
-              Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Text_Files_Set or Ints_Set);
+              Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files_Set or Ints_Set);
           end case;
           Need (CD, RParent, err_closing_parenthesis_missing);
         else  --  "New_Line;"
@@ -244,7 +244,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Push_by_Reference_Parameter (CD, Level, FSys + Colon_Comma_RParent, "File", X);
         if X.TYP /= Text_Files then
-          Type_Mismatch (CD, err_syntax_error, Found => X, Expected => Text_Files_Set);
+          Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files_Set);
         end if;
         if Code in SP_Open | SP_Create | SP_Append then
           --  Parse file name.

@@ -240,7 +240,7 @@ package body HAC_Sys.Errors is
         return """end loop " & hint_1 & ";"" expected (RM 5.5 (5))";
       when err_END_LOOP_ident_wrong =>
         return "wrong loop identifier: ""end loop " & hint_1 & ";"" expected";
-      when err_syntax_error =>
+      when err_general_error =>
         if hint_1 = "" then
           return "syntax error";
         else
