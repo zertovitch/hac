@@ -212,4 +212,5 @@ begin
   for s in Scenario loop
     Simulation (s);
   end loop;
+  Put_Line ("Done");
 end COVID_19_S;

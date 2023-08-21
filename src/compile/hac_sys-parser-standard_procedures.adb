@@ -10,15 +10,16 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
   use Calls, Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
 
-  type Def_param_type is array (Typen, 1 .. 3) of Integer;
+  type Default_Extra_Put_Parameter_Type is array (Typen, 1 .. 3) of Integer;
 
   invalid : constant := -1;
 
-  def_param : constant Def_param_type :=
+  default_extra_put_param : constant Default_Extra_Put_Parameter_Type :=
     (Ints    =>  (IIO.Default_Width,   IIO.Default_Base,   invalid),
      Floats  =>  (RIO.Default_Fore,    RIO.Default_Aft,    RIO.Default_Exp),
      Bools   =>  (BIO.Default_Width,   invalid,            invalid),
      others  =>  (others => invalid));
+  --  NB: for String_Literals on the target HAC VM, two values are pushed on the stack.
 
   procedure Standard_Procedure (
     CD      : in out Co_Defs.Compiler_Data;
@@ -117,7 +118,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       for Param in 1 .. Format_Params loop
         --  First we check if the programmer didn't put too many
         --  (then, undefined) parameters.
-        if def_param (Item_Typ.TYP, Param) = invalid then
+        if default_extra_put_param (Item_Typ.TYP, Param) = invalid then
           Error (CD, err_illegal_parameters_to_Put);
         end if;
       end loop;
@@ -127,11 +128,12 @@ package body HAC_Sys.Parser.Standard_Procedures is
       end if;
       for Param in Format_Params + 1 .. 3 loop
         --  Send default parameters to the stack.
-        --  In order to have a fixed number of parameters in all cases,
-        --  we push also the "invalid" ones. See Do_Write_Formatted
-        --  to have an idea on how everybody is retrieved from the stack.
+        exit when default_extra_put_param (Item_Typ.TYP, Param) = invalid;
+        --  See Do_Write_Formatted on HAC VM or the code associated with SP_Put on
+        --  other targets via Emit_HAT_Builtin_Procedure to have an idea on how
+        --  everybody is retrieved from the stack.
         CD.target.Emit_Push_Discrete_Literal
-          (Operand_2_Type (def_param (Item_Typ.TYP, Param)));
+          (Operand_2_Type (default_extra_put_param (Item_Typ.TYP, Param)));
       end loop;
       HAT_Procedure_Call
        ((if with_file then

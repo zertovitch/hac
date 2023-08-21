@@ -184,56 +184,106 @@ package body HAC_Sys.PCode.Interpreter is
     end Do_Text_Read;
 
     procedure Do_Write_Formatted (Code : SP_Code) is
-      Curr_TCB : Task_Control_Block renames   ND.TCB (ND.CurTask);
+      Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       FP       : File_Ptr;
-      Item     : General_Register renames ND.S (Curr_TCB.T - 3);
-      Format_1 : constant      Integer := Integer (ND.S (Curr_TCB.T - 2).I);
-      Format_2 : constant      Integer := Integer (ND.S (Curr_TCB.T - 1).I);
-      Format_3 : constant      Integer := Integer (ND.S (Curr_TCB.T).I);
-      --  Valid parameters used: see def_param in HAC.Parser.Standard_Procedures.
+      item_typ : constant Typen := Typen'Val (ND.IR.Y);
+      --  Parameters used: see default_extra_put_param in HAC.Parser.Standard_Procedures.
+      all_params : Positive;
+      pos, len : Natural;
       use Ada.Text_IO;
     begin
+      case item_typ is
+        when Ints            => all_params := 3;
+        when Floats          => all_params := 4;
+        when Bools           => all_params := 2;
+        when String_Literals => all_params := 2;  --  Position and length
+                                pos := Integer (ND.S (Curr_TCB.T).I);
+                                len := Integer (ND.S (Curr_TCB.T - 1).I);
+        when Arrays          => all_params := 2;  --  Address and size
+        when others          => all_params := 1;  --  Chars, VStrings, ...
+      end case;
       if Code in SP_Put .. SP_Put_Line then
-        case Typen'Val (ND.IR.Y) is
-          when Ints                => Console.Put (Item.I, Field (Format_1), Number_Base (Format_2));
-          when Floats              => Console.Put (Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
-          when Bools               => Console.Put (Boolean'Val (Item.I), Field (Format_1));
-          when Chars               => Console.Put (Character'Val (Item.I));
+        case item_typ is
+          when Ints =>
+            Console.Put
+              (I     =>              ND.S (Curr_TCB.T - 2).I,
+               Width => Field       (ND.S (Curr_TCB.T - 1).I),
+               Base  => Number_Base (ND.S (Curr_TCB.T).I));
+          when Floats =>
+            Console.Put
+              (F    =>        ND.S (Curr_TCB.T - 3).R,
+               Fore => Field (ND.S (Curr_TCB.T - 2).I),
+               Aft  => Field (ND.S (Curr_TCB.T - 1).I),
+               Exp  => Field (ND.S (Curr_TCB.T).I));
+          when Bools =>
+            Console.Put
+              (B     => Boolean'Val (ND.S (Curr_TCB.T - 1).I),
+               Width => Field       (ND.S (Curr_TCB.T).I));
+               --  !! But there is also a "Set" parameter.
+          when Chars =>
+            Console.Put (Character'Val (ND.S (Curr_TCB.T).I));
           when VStrings |
-               Strings_as_VStrings => Console.Put (HAT.VStr_Pkg.To_String (Item.V));
-          when String_Literals     => Console.Put (
-              CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
-            );
-          when Arrays              => Console.Put (Get_String_from_Stack (ND, Integer (Item.I), Format_1));
+               Strings_as_VStrings =>
+            Console.Put (HAT.VStr_Pkg.To_String (ND.S (Curr_TCB.T).V));
+          when String_Literals =>
+            Console.Put (CD.Strings_Constants_Table (pos .. pos + len - 1));
+          when Arrays =>
+            Console.Put
+              (Get_String_from_Stack
+                (ND,
+                 Integer (ND.S (Curr_TCB.T - 1).I),
+                 Integer (ND.S (Curr_TCB.T).I)));
           when others =>
             null;
         end case;
         if Code = SP_Put_Line then
           Console.New_Line;
         end if;
-        Pop (4);
       else
-        FP := ND.S (Curr_TCB.T - 4).Txt;
-        case Typen'Val (ND.IR.Y) is
-          when Ints                => IIO.Put (FP.all, Item.I, Field (Format_1), Number_Base (Format_2));
-          when Floats              => RIO.Put (FP.all, Item.R, Field (Format_1), Field (Format_2), Field (Format_3));
-          when Bools               => BIO.Put (FP.all, Boolean'Val (Item.I), Field (Format_1));
-          when Chars               => HAT.Put (FP.all, Character'Val (Item.I));
+        FP := ND.S (Curr_TCB.T - all_params).Txt;
+        case item_typ is
+          when Ints =>
+            IIO.Put
+              (FP.all,
+               Item  =>              ND.S (Curr_TCB.T - 2).I,
+               Width => Field       (ND.S (Curr_TCB.T - 1).I),
+               Base  => Number_Base (ND.S (Curr_TCB.T).I));
+          when Floats =>
+            RIO.Put
+              (FP.all,
+               Item =>        ND.S (Curr_TCB.T - 3).R,
+               Fore => Field (ND.S (Curr_TCB.T - 2).I),
+               Aft  => Field (ND.S (Curr_TCB.T - 1).I),
+               Exp  => Field (ND.S (Curr_TCB.T).I));
+          when Bools =>
+            BIO.Put
+              (FP.all,
+               Item  => Boolean'Val (ND.S (Curr_TCB.T - 1).I),
+               Width => Field       (ND.S (Curr_TCB.T).I));
+               --  !! But there is also a "Set" parameter.
+          when Chars =>
+            HAT.Put (FP.all, Character'Val (ND.S (Curr_TCB.T).I));
           when VStrings |
-               Strings_as_VStrings => HAT.Put (FP.all, HAT.VStr_Pkg.To_String (Item.V));
-          when String_Literals     => HAT.Put (FP.all,
-              CD.Strings_Constants_Table (Format_1 .. Format_1 + Integer (Item.I) - 1)
-            );
-          when Arrays              => HAT.Put (FP.all,
-              Get_String_from_Stack (ND, Integer (Item.I), Format_1));
+               Strings_as_VStrings =>
+            HAT.Put (FP.all, HAT.VStr_Pkg.To_String (ND.S (Curr_TCB.T).V));
+          when String_Literals     =>
+            HAT.Put (FP.all, CD.Strings_Constants_Table (pos .. pos + len - 1));
+          when Arrays =>
+            HAT.Put
+              (FP.all,
+               Get_String_from_Stack
+                 (ND,
+                  Integer (ND.S (Curr_TCB.T - 1).I),
+                  Integer (ND.S (Curr_TCB.T).I)));
           when others =>
             null;
         end case;
         if Code = SP_Put_Line_File then
           Ada.Text_IO.New_Line (FP.all);
         end if;
-        Pop (5);
+        all_params := all_params + 1;  --  Count the file parameter for popping.
       end if;
+      Pop (all_params);
       ND.SWITCH := True;  --  give up control when doing I/O
     end Do_Write_Formatted;
 
@@ -255,7 +305,6 @@ package body HAC_Sys.PCode.Interpreter is
       Top_Item       : General_Register renames ND.S (Curr_TCB.T);
       Below_Top_Item : General_Register renames ND.S (Curr_TCB.T - 1);
       use HAT.VStr_Pkg;
-      use type Defs.Typen;
       use type Defs.HAC_Integer;
       Lines : Ada.Text_IO.Positive_Count;
       Shell_Exec_Result : Integer;

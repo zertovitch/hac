@@ -153,19 +153,16 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
     case builtin_proc is
       when SP_Put .. SP_Put_Line =>
         case Defs.Typen'Val (parameter) is
-          --  Register numbering reflects
+          --  Register numbering is parameter position, plus 10.
           when String_Literals =>
-            Instruction (m, "pop", "r14");  --  Unused
-            Instruction (m, "pop", "r13");  --  Unused
-            Instruction (m, "pop", "r12");  --  Position in the strings pool
-            Instruction (m, "pop", "r11");  --  Length, discarded
+            Instruction (m, "pop", "r12");  --  String Position in the strings pool
             Instruction (m, "add", "r12, _hac_strings_pool");
+            Instruction (m, "pop", "r11");  --  String Length, discarded
             Instruction (m, "ccall", "[printf], r12");
           when Ints =>
-            Instruction (m, "pop", "r14");
             Instruction (m, "pop", "r13");  --  Base  - support it !!
             Instruction (m, "pop", "r12");  --  Width - support it !!
-            Instruction (m, "pop", "r11");
+            Instruction (m, "pop", "r11");  --  Integer value
             Instruction (m, "ccall", "[printf], _hac_decimal_format, r11");
           when others =>
             raise combination_not_supported;

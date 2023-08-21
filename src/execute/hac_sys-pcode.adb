@@ -270,8 +270,8 @@ package body HAC_Sys.PCode is
     function HAC_Image is new HAT.HAC_Generic_Image (Defs.HAC_Integer);
     SF_C : SF_Code;
     SP_C : SP_Code;
-    Old_X1, Old_X2 : Operand_1_Type := 0;
-    Old_Y1, Old_Y2 : Operand_2_Type := 0;
+    Old_X1 : Operand_1_Type := 0;
+    Old_Y1 : Operand_2_Type := 0;
     --
     function Padded_Opcode (o : Opcode) return String is
       s : String (1 .. Opcode'Width);
@@ -339,7 +339,14 @@ package body HAC_Sys.PCode is
               Put (Text, "; " & Defs.Typen'Image (Defs.Typen'Val (OC (i).Y)));
             when SP_Put .. SP_Put_Line =>
               if Defs.Typen'Val (OC (i).Y) = Defs.String_Literals then
-                Put (Text, "; """ & Str_Const (Integer (Old_Y2) .. Integer (Old_Y2 + Old_X2 - 1)) & '"');
+                --  We know that a string literal was pushed just before,
+                --  as a pair of discrete literals (CD.target.Emit_Push_Discrete_Literals).
+                Put
+                  (Text,
+                   "; """ &
+                   Str_Const
+                     (Integer (Old_Y1) .. Integer (Old_Y1 +  Old_X1 - 1)) &
+                   '"');
               end if;
             when others =>
               null;
@@ -368,10 +375,7 @@ package body HAC_Sys.PCode is
       end case;
       New_Line (Text);
       --
-      Old_X2 := Old_X1;
       Old_X1 := OC (i).X;
-      --
-      Old_Y2 := Old_Y1;
       Old_Y1 := OC (i).Y;
     end loop;
   end Dump;
