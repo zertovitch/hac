@@ -1,18 +1,12 @@
 package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
 
+  --  Technical quotations are from:
+  --  AMD64 Architecture Programmer's Manual
+  --  24594 - Rev. 3.35 - June 2023
+
   use Defs, HAT;
 
   asm_name : constant String := "hac_generated.asm";
-
-  procedure Instruction
-    (m        : Machine;
-     instr    : String;
-     operands : String)
-  is
-  begin
-    Put_Line
-      (m.asm_file, "         " & instr & (20 - instr'Length) * ' ' & operands);
-  end Instruction;
 
   overriding procedure Initialize_Code_Emission (m : in out Machine) is
   begin
@@ -94,6 +88,99 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
     Close (m.asm_file);
   end Finalize_Code_Emission;
 
+  procedure Output (m : Machine; asm : Assembler_Line) is
+    instr_img : constant String :=
+      (case asm.instr is
+       when push_immediate => "push",
+       when xor_i          => "xor",
+       when others         => asm.instr'Image);
+  begin
+    Put_Line
+      (m.asm_file,
+       asm.label & Integer'Max (0, 9 - Length (asm.label)) * ' ' &
+       To_Lower (+instr_img) & (20 - instr_img'Length) * ' ' &
+       asm.operand_1 &
+       (if asm.operand_2 = "" then +"" else ", " & asm.operand_2));
+  end Output;
+
+  procedure Peephole_Optimization (m : in out Machine) is
+  procedure Pass is
+    lines : Natural := Integer (m.asm_buf.Length);
+    current : Positive := 1;
+    aux_line : Assembler_Line;
+    --
+    procedure Replace_Pair is
+    begin
+      m.asm_buf.Delete (current);
+      m.asm_buf (current) := aux_line;
+      lines := lines - 1;
+    end Replace_Pair;
+    --
+    procedure Swap_Pair is
+    begin
+      aux_line := m.asm_buf (current);
+      m.asm_buf (current) := m.asm_buf (current + 1);
+      m.asm_buf (current + 1) := aux_line;
+    end Swap_Pair;
+  begin
+    while current <= lines loop
+      if current < lines
+        and then  m.asm_buf (current + 1).label = ""
+      then
+        --  Optimization involving this line and the next one.
+        case m.asm_buf (current).instr is
+          when push_immediate =>
+            case m.asm_buf (current + 1).instr is
+              when pop =>
+                aux_line :=
+                  (label => m.asm_buf (current).label,
+                   instr => mov,
+                   operand_1 => m.asm_buf (current + 1).operand_1,
+                   operand_2 => m.asm_buf (current).operand_1);
+                Replace_Pair;
+              when mov | add | sub | imul | idiv =>
+                --  !!  check it is not an operation on the stack pointer !!
+                --  Move the "push" one line further. Perhaps it meets a "pop"...
+                Swap_Pair;
+              when others =>
+                null;
+            end case;
+          when others =>
+            null;
+        end case;
+      end if;
+      current := current + 1;
+    end loop;
+    end Pass;
+  begin
+    for pass_count in 1 .. 10 loop
+      Pass;
+    end loop;
+  end Peephole_Optimization;
+
+  procedure Flush_Assembler (m : in out Machine) is
+  begin
+    Peephole_Optimization (m);
+    for l of m.asm_buf loop
+      Output (m, l);
+    end loop;
+  end Flush_Assembler;
+
+  procedure Emit
+    (m         : in out Machine;
+     instr     :        Instruction;
+     operand_1 :        String := "";
+     operand_2 :        String := "";
+     label     :        String := "")
+  is
+  begin
+    m.asm_buf.Append
+      ((label     => +label,
+        instr     => instr,
+        operand_1 => +operand_1,
+        operand_2 => +operand_2));
+  end Emit;
+
   overriding procedure Emit_Arithmetic_Binary_Instruction
     (m         : in out Machine;
      operator  :        Defs.Arithmetic_Binary_Operator;
@@ -102,46 +189,50 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
   begin
     case base_typ is
       when Floats =>
-        case operator is
-          when Plus    => raise combination_not_supported;
-          when Minus   => raise combination_not_supported;
-          when Times   => raise combination_not_supported;
-          when Divide  => raise combination_not_supported;
-          when Power   => raise combination_not_supported;
-        end case;
+        --  case operator is
+        --    when Plus    => raise combination_not_supported;
+        --    when Minus   => raise combination_not_supported;
+        --    when Times   => raise combination_not_supported;
+        --    when Divide  => raise combination_not_supported;
+        --    when Power   => raise combination_not_supported;
+        --  end case;
+        raise combination_not_supported with base_typ'Image & ' ' & operator'Image;
       when Ints   =>
-        Instruction (m, "pop", "r11");  --  Right
-        Instruction (m, "pop", "rax");  --  Left
+        Emit (m, pop, "r11");  --  Right
+        Emit (m, pop, "rax");  --  Left
         case operator is
-          when Plus    => Instruction (m, "add",  "rax, r11");
-          when Minus   => Instruction (m, "sub",  "rax, r11");
-          when Times   => Instruction (m, "imul", "rax, r11");
+          when Plus    => Emit (m, add,  "rax", "r11");
+          when Minus   => Emit (m, sub,  "rax", "r11");
+          when Times   => Emit (m, imul, "rax", "r11");
           when Divide  =>
-            Instruction (m, "xor", "rdx, rdx");
-            Instruction (m, "idiv", "r11");
-          when Power   => raise combination_not_supported;
+            Emit (m, xor_i, "rdx, rdx");
+            Emit (m, idiv, "r11");
+          when Power   => raise combination_not_supported with base_typ'Image & ' ' & operator'Image;
         end case;
-        Instruction (m, "push", "rax");
+        Emit (m, push, "rax");
     end case;
   end Emit_Arithmetic_Binary_Instruction;
 
   overriding procedure Emit_Halt (m : in out Machine) is
   begin
-    Instruction (m, "stdcall", "[ExitProcess],0");
+    Emit (m, stdcall, "[ExitProcess], 0");
+    Flush_Assembler (m);
     New_Line (m.asm_file);
   end Emit_Halt;
 
   overriding procedure Emit_Push_Discrete_Literal
     (m : in out Machine; x : Defs.HAC_Integer) is
   begin
-    Instruction (m, "push", HAC_Image (x));
+    --  P.327: "In 64-bit mode, the operand size of all
+    --          PUSH instructions defaults to 64 bits"
+    Emit (m, push_immediate, HAC_Image (x));
   end Emit_Push_Discrete_Literal;
 
   overriding procedure Emit_Push_Discrete_Literals
     (m : in out Machine; x, y : Defs.HAC_Integer) is
   begin
-    Instruction (m, "push", HAC_Image (x));
-    Instruction (m, "push", HAC_Image (y));
+    Emit (m, push_immediate, HAC_Image (x));
+    Emit (m, push_immediate, HAC_Image (y));
   end Emit_Push_Discrete_Literals;
 
   overriding procedure Emit_HAT_Builtin_Procedure
@@ -155,15 +246,15 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
         case Defs.Typen'Val (parameter) is
           --  Register numbering is parameter position, plus 10.
           when String_Literals =>
-            Instruction (m, "pop", "r12");  --  String Position in the strings pool
-            Instruction (m, "add", "r12, _hac_strings_pool");
-            Instruction (m, "pop", "r11");  --  String Length, discarded
-            Instruction (m, "ccall", "[printf], r12");
+            Emit (m, pop, "r12");  --  String Position in the strings pool
+            Emit (m, add, "r12, _hac_strings_pool");
+            Emit (m, pop, "r11");  --  String Length, discarded
+            Emit (m, ccall, "[printf], r12");
           when Ints =>
-            Instruction (m, "pop", "r13");  --  Base  - support it !!
-            Instruction (m, "pop", "r12");  --  Width - support it !!
-            Instruction (m, "pop", "r11");  --  Integer value
-            Instruction (m, "ccall", "[printf], _hac_decimal_format, r11");
+            Emit (m, pop, "r13");  --  Base  - support it !!
+            Emit (m, pop, "r12");  --  Width - support it !!
+            Emit (m, pop, "r11");  --  Integer value
+            Emit (m, ccall, "[printf], _hac_decimal_format, r11");
           when others =>
             raise combination_not_supported;
         end case;
@@ -171,7 +262,7 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
           m.Emit_HAT_Builtin_Procedure (SP_New_Line, 0);
         end if;
       when SP_New_Line =>
-        Instruction (m, "ccall", "[printf], _hac_end_of_line");
+        Emit (m, ccall, "[printf], _hac_end_of_line");
       when others =>
         raise combination_not_supported;
     end case;

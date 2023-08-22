@@ -903,7 +903,9 @@ package body Sudokus is
     end if;
     if verbosity_level = 1 then
       if pack.stalling then
-        Put_Line ("** stalling **, algorithm not smart enough!");
+        Put_Line
+          ("** stalling **, algorithm not smart enough," &
+           " or too few digits set in puzzle!");
       elsif Is_Solved (pack.u) then
         Put_Line ("solved and checked.");
       else

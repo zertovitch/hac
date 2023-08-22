@@ -11,13 +11,12 @@
 --  This target is AMD64, Windows, using the Flat Assembler (FASM).
 --  https://flatassembler.net/
 
+with Ada.Containers.Vectors;
 with HAT;
 
 package HAC_Sys.Targets.AMD64_Windows_Console_FASM is
 
-  type Machine is limited new Targets.Machine with record
-    asm_file : HAT.File_Type;
-  end record;
+  type Machine is limited new Targets.Machine with private;
 
   --------------------
   --  Informations  --
@@ -68,5 +67,34 @@ package HAC_Sys.Targets.AMD64_Windows_Console_FASM is
   -------------
 
   function Assembler_File_Name (m : Machine) return String;
+
+private
+
+  type Instruction is
+    (add,
+     ccall,
+     idiv,
+     imul,
+     mov,
+     pop,
+     push,
+     push_immediate,
+     stdcall,
+     sub,
+     xor_i);
+
+  type Assembler_Line is record
+    label     : HAT.VString := HAT.Null_VString;
+    instr     : Instruction;
+    operand_1 : HAT.VString := HAT.Null_VString;
+    operand_2 : HAT.VString := HAT.Null_VString;
+  end record;
+
+  package Assembler_Buffers is new Ada.Containers.Vectors (Positive, Assembler_Line);
+
+  type Machine is limited new Targets.Machine with record
+    asm_file : HAT.File_Type;
+    asm_buf  : Assembler_Buffers.Vector;
+  end record;
 
 end HAC_Sys.Targets.AMD64_Windows_Console_FASM;

@@ -13,7 +13,7 @@ procedure Record_Code_Gen is
       when a => return ints;
       when b => return floats;
     end case;
-  end;
+  end Typ_Of;
   --
   f_ada : File_Type;
   t : Typ;
@@ -31,5 +31,6 @@ begin
   Close (f_ada);
   --
   --  Here, other forms: C header, records in records vs.
-  --  flat representation, record of arrays, ...
+  --  flat representation, record of arrays, conversion functions
+  --  for the records, ...
 end Record_Code_Gen;
