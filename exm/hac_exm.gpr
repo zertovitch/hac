@@ -47,6 +47,7 @@ project HAC_Exm is
      "pdf_hello.adb",              --  PDF demo
      "prc.adb",
      "random.adb",
+     "record_code_gen.adb",
      "series.adb",
      "shell_sort.adb",
      "shell.adb",
