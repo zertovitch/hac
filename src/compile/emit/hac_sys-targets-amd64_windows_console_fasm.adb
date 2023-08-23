@@ -104,53 +104,73 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
   end Output;
 
   procedure Peephole_Optimization (m : in out Machine) is
-  procedure Pass is
-    lines : Natural := Integer (m.asm_buf.Length);
-    current : Positive := 1;
     aux_line : Assembler_Line;
     --
-    procedure Replace_Pair is
+    procedure Pass is
+      lines : Natural := Integer (m.asm_buf.Length);
+      current : Positive := 1;
+      cur_instr : Instruction;
+      --
+      procedure Replace_Pair is
+      begin
+        m.asm_buf.Delete (current);
+        m.asm_buf (current) := aux_line;
+        lines := lines - 1;
+      end Replace_Pair;
+      --
+      procedure Swap_Pair is
+      begin
+        aux_line := m.asm_buf (current);
+        m.asm_buf (current) := m.asm_buf (current + 1);
+        m.asm_buf (current + 1) := aux_line;
+      end Swap_Pair;
+      --
     begin
-      m.asm_buf.Delete (current);
-      m.asm_buf (current) := aux_line;
-      lines := lines - 1;
-    end Replace_Pair;
-    --
-    procedure Swap_Pair is
-    begin
-      aux_line := m.asm_buf (current);
-      m.asm_buf (current) := m.asm_buf (current + 1);
-      m.asm_buf (current + 1) := aux_line;
-    end Swap_Pair;
-  begin
-    while current <= lines loop
-      if current < lines
-        and then  m.asm_buf (current + 1).label = ""
-      then
-        --  Optimization involving this line and the next one.
-        case m.asm_buf (current).instr is
-          when push_immediate =>
-            case m.asm_buf (current + 1).instr is
-              when pop =>
-                aux_line :=
-                  (label => m.asm_buf (current).label,
-                   instr => mov,
-                   operand_1 => m.asm_buf (current + 1).operand_1,
-                   operand_2 => m.asm_buf (current).operand_1);
-                Replace_Pair;
-              when mov | add | sub | imul | idiv =>
-                --  !!  check it is not an operation on the stack pointer !!
-                --  Move the "push" one line further. Perhaps it meets a "pop"...
-                Swap_Pair;
-              when others =>
-                null;
-            end case;
-          when others =>
-            null;
-        end case;
-      end if;
-      current := current + 1;
-    end loop;
+      while current <= lines loop
+        cur_instr := m.asm_buf (current).instr;
+        if current < lines
+          and then  m.asm_buf (current + 1).label = ""
+        then
+          --  Optimization involving this line and the next one.
+          case cur_instr is
+            when push | push_immediate =>
+              --  Displace or simplify PUSH instruction.
+              if cur_instr = push_immediate
+                or else m.asm_buf (current).operand_1 = "rax"
+              then
+                case m.asm_buf (current + 1).instr is
+                  when pop =>
+                    --  Fold "push x; pop y;" into "mov y, x"
+                    aux_line :=
+                      (label     => m.asm_buf (current).label,
+                       instr     => mov,
+                       operand_1 => m.asm_buf (current + 1).operand_1,
+                       operand_2 => m.asm_buf (current).operand_1);
+                    Replace_Pair;
+                  when mov | add | sub | imul | idiv | xor_i =>
+                    --  !!  check it is not an operation involving the stack pointer !!
+                    --  Move the "push" one line further. Perhaps it meets a "pop"...
+                    if m.asm_buf (current).operand_1 = "rax"
+                      and then
+                        (m.asm_buf (current + 1).operand_1 = "rax"
+                         or else m.asm_buf (current + 1).instr = idiv)
+                    then
+                      --  The pushed register *** is modified on next instruction,
+                      --  so we can't displace the current "push *** " instrction after it.
+                      null;
+                    else
+                      Swap_Pair;
+                    end if;
+                  when others =>
+                    null;
+                end case;
+              end if;
+            when others =>
+              null;
+          end case;
+        end if;
+        current := current + 1;
+      end loop;
     end Pass;
   begin
     for pass_count in 1 .. 10 loop
@@ -164,6 +184,7 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
     for l of m.asm_buf loop
       Output (m, l);
     end loop;
+    m.asm_buf.Clear;
   end Flush_Assembler;
 
   procedure Emit
@@ -196,7 +217,9 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
         --    when Divide  => raise combination_not_supported;
         --    when Power   => raise combination_not_supported;
         --  end case;
-        raise combination_not_supported with base_typ'Image & ' ' & operator'Image;
+        raise
+          combination_not_supported
+            with base_typ'Image & ' ' & operator'Image;
       when Ints   =>
         Emit (m, pop, "r11");  --  Right
         Emit (m, pop, "rax");  --  Left
@@ -207,7 +230,10 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
           when Divide  =>
             Emit (m, xor_i, "rdx, rdx");
             Emit (m, idiv, "r11");
-          when Power   => raise combination_not_supported with base_typ'Image & ' ' & operator'Image;
+          when Power   =>
+            raise
+              combination_not_supported
+                with base_typ'Image & ' ' & operator'Image;
         end case;
         Emit (m, push, "rax");
     end case;
@@ -264,7 +290,7 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
       when SP_New_Line =>
         Emit (m, ccall, "[printf], _hac_end_of_line");
       when others =>
-        raise combination_not_supported;
+        raise combination_not_supported with builtin_proc'Image;
     end case;
   end Emit_HAT_Builtin_Procedure;
 
