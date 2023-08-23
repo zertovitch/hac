@@ -31,6 +31,8 @@ package HAC_Pkg is
   assembler_output_name : constant String := "asm_dump.pca";       --  PCA = PCode Assembler
   compiler_dump_name    : constant String := "compiler_dump.lst";
 
+  compile_only : Boolean := False;
+
   procedure PLCE (s : String);  --  Put_Line on Current Error
   procedure NLCE;               --  New_Line on Current Error
 
@@ -39,6 +41,8 @@ package HAC_Pkg is
   procedure Set_Target (name : String);
 
   procedure Failure;
+
+  procedure Post_Build (BD : in out HAC_Sys.Builder.Build_Data);
 
   procedure Run (BD : in out HAC_Sys.Builder.Build_Data; arg_pos : Positive);
 

@@ -19,7 +19,6 @@ with Ada.Calendar,
 procedure HAC is
 
   asm_dump_file_name, cmp_dump_file_name : HAT.VString;
-  compile_only : Boolean := False;
   remarks : HAC_Sys.Defs.Remark_Set := HAC_Sys.Defs.default_remarks;
 
   use HAC_Pkg;
@@ -95,6 +94,7 @@ procedure HAC is
         end if;
       end if;
     end if;
+    Post_Build (BD);
     if compile_only then
       return;
     end if;

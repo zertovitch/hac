@@ -299,8 +299,8 @@ package body HAC_Pkg is
    else
      "");
 
-  procedure Run_amd64_windows_console_fasm
-    (BD : HAC_Sys.Builder.Build_Data; arg_pos : Positive)
+  procedure Post_Build_amd64_windows_console_fasm
+    (BD : HAC_Sys.Builder.Build_Data)
   is
     use HAT;
     use Ada.Directories;
@@ -312,12 +312,28 @@ package body HAC_Pkg is
        ' ' &
        main_base_name &
        ".exe");
+  end Post_Build_amd64_windows_console_fasm;
+
+  procedure Run_amd64_windows_console_fasm (arg_pos : Positive)
+  is
+    use HAT;
+    use Ada.Directories;
+    main_base_name : constant String := Base_Name (To_String (main_Ada_file_name));
+  begin
     if Get_Env ("OS") = "Windows_NT" then
       Shell_Execute (main_base_name & ' ' & Remaining_Arguments (arg_pos));
     else
-      Put_Line ("No run: target /= native");
+      Put_Line ("No run: build target (AMD64/Windows) is different than this system");
     end if;
   end Run_amd64_windows_console_fasm;
+
+  procedure Post_Build (BD : in out HAC_Sys.Builder.Build_Data) is
+  begin
+    case target_choice is
+      when hac_vm                     => null;
+      when amd64_windows_console_fasm => Post_Build_amd64_windows_console_fasm (BD);
+    end case;
+  end Post_Build;
 
   procedure Run (BD : in out HAC_Sys.Builder.Build_Data; arg_pos : Positive) is
     use HAT;
@@ -334,7 +350,7 @@ package body HAC_Pkg is
     end if;
     case target_choice is
       when hac_vm                     => Run_HAC_VM (BD, arg_pos);
-      when amd64_windows_console_fasm => Run_amd64_windows_console_fasm (BD, arg_pos);
+      when amd64_windows_console_fasm => Run_amd64_windows_console_fasm (arg_pos);
     end case;
   end Run;
 
