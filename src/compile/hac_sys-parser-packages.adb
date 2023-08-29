@@ -351,7 +351,8 @@ package body HAC_Sys.Parser.Packages is
         begin
           --  We have spotted an item with the correct prefix.
           --  E.g. "STANDARD.FALSE" has the matching prefix "STANDARD.",
-          --  or we have the item "ADA.STRINGS.FIXED.INDEX" and the prefix "ADA.STRINGS.FIXED.".
+          --  or we have the item "ADA.STRINGS.FIXED.INDEX" and
+          --  the prefix "ADA.STRINGS.FIXED.".
           Start := Full_UName'First + Pkg_UName'Length + 1;
           Full_Name := A2S (CD.IdTab (i).name_with_case);
           declare
@@ -360,8 +361,8 @@ package body HAC_Sys.Parser.Packages is
           begin
             --  Check if there is already this identifier, even as
             --  a library level invisible definition.
-            --  If not, we do a "FROM Pkg IMPORT Short_Id" (as it would be in Modula-2/Python
-            --  style).
+            --  If not, we do a "FROM Pkg IMPORT Short_Id" as you
+            --  would do in Modula-2 or Python.
             Id_Alias := Parser.Helpers.Locate_Identifier (
               CD               => CD,
               Id               => Short_Id,
@@ -369,10 +370,11 @@ package body HAC_Sys.Parser.Packages is
               Fail_when_No_Id  => False,
               Alias_Resolution => False,
               Level_0_Filter   => False
-              --  ^ We search any matching name, including hidden at library level.
+              --  ^ We search any matching name, including an inactive
+              --    name at library level.
             );
             if Id_Alias = No_Id or else CD.IdTab (Id_Alias).lev < Level then
-              --  Name was not found or defined at a lower nesting level.
+              --  Name was not found, or was defined at a lower nesting level.
               --  We enter, e.g. the "FALSE", "False" pair.
               Enter
                 (CD,
@@ -382,14 +384,15 @@ package body HAC_Sys.Parser.Packages is
                  S2A (Full_Name (Start .. Full_Name'Last)),
                  Alias,
                  dummy_id_idx);
-              CD.IdTab (CD.Id_Count).adr_or_sz := HAC_Integer (i);  --  i = Aliased entity's index.
+              CD.IdTab (CD.Id_Count).adr_or_sz := HAC_Integer (i);
+              --  ^ i = Aliased entity's index.
             else
               --  Here we have found an identical and
               --  visible short identifier at the same level.
               if CD.IdTab (Id_Alias).entity = Alias
                 and then CD.IdTab (Id_Alias).adr_or_sz = HAC_Integer (i)
               then
-                --  Here we have an identical alias (same name and points
+                --  Here we have an identical alias (same name, and points
                 --  to the same definition).
                 if Level > 0 then
                   Issue_Duplicate_Use_Warning;

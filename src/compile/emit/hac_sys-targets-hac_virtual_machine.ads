@@ -8,7 +8,8 @@
 --
 -------------------------------------------------------------------------------------
 
---  Here is the HAC Virtual Machine ("p-code") code emission
+--  Here is the code emission for the original HAC target, the
+--  HAC Virtual Machine ("p-code").
 
 with HAC_Sys.Co_Defs;
 

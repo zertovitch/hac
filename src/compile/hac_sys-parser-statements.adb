@@ -888,6 +888,45 @@ package body HAC_Sys.Parser.Statements is
       end case;
     end Named_Statement;
 
+    procedure Statement_starting_with_an_Identifier is
+      I_Statement : constant Integer :=
+        Locate_Identifier (CD, CD.Id, Block_Data.level, Fail_when_No_Id => False);
+    begin
+      InSymbol;
+      if I_Statement = No_Id then
+        --  Unknown identifier: must be an identifier for a named Block_Statement or loop.
+        Named_Statement;
+      else
+        case CD.IdTab (I_Statement).entity is
+          when Variable =>
+            Assignment (CD, FSys_St, Block_Data.level, I_Statement, Check_read_only => True);
+          when Declared_Number_or_Enum_Item =>
+            Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
+                   severity => major);
+          when TypeMark =>
+            Error (CD, err_illegal_statement_start_symbol, "type name", severity => major);
+          when Funktion | Funktion_Intrinsic =>
+            Error (CD, err_illegal_statement_start_symbol, "function name", severity => major);
+          when aTask =>
+            Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Entry_Call);
+          when Prozedure =>
+            Subprogram_or_Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Procedure_Call);
+          when Prozedure_Intrinsic =>
+            Standard_Procedures.Standard_Procedure
+              (CD, Block_Data.level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).adr_or_sz));
+          when Loop_Identifier =>
+            Error (CD, err_duplicate_loop_identifier, A2S (CD.Id), severity => major);
+          when Paquetage =>
+            Error (CD, err_illegal_statement_start_symbol, "package name", severity => major);
+          when others =>
+            Error
+              (CD, err_illegal_statement_start_symbol,
+               ". Entity found: " &
+               Entity_Kind'Image (CD.IdTab (I_Statement).entity), severity => major);
+        end case;
+      end if;
+    end Statement_starting_with_an_Identifier;
+
     procedure Process_Name_for_Unnamed_Loop is
     begin
       if CD.Sy = IDent then
@@ -900,8 +939,6 @@ package body HAC_Sys.Parser.Statements is
       end if;
     end Process_Name_for_Unnamed_Loop;
 
-    I_Statement : Integer;
-
   begin  --  Statement
     if CD.error_count > 0 then
       return;
@@ -909,40 +946,7 @@ package body HAC_Sys.Parser.Statements is
     if Statement_Begin_Symbol (CD.Sy) then
       case CD.Sy is
         when IDent =>
-          I_Statement := Locate_Identifier (CD, CD.Id, Block_Data.level, Fail_when_No_Id => False);
-          InSymbol;
-          if I_Statement = No_Id then
-            --  Unknown identifier: must be an identifier for a named Block_Statement or loop.
-            Named_Statement;
-          else
-            case CD.IdTab (I_Statement).entity is
-              when Variable =>
-                Assignment (CD, FSys_St, Block_Data.level, I_Statement, Check_read_only => True);
-              when Declared_Number_or_Enum_Item =>
-                Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
-                       severity => major);
-              when TypeMark =>
-                Error (CD, err_illegal_statement_start_symbol, "type name", severity => major);
-              when Funktion | Funktion_Intrinsic =>
-                Error (CD, err_illegal_statement_start_symbol, "function name", severity => major);
-              when aTask =>
-                Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Entry_Call);
-              when Prozedure =>
-                Subprogram_or_Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Procedure_Call);
-              when Prozedure_Intrinsic =>
-                Standard_Procedures.Standard_Procedure
-                  (CD, Block_Data.level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).adr_or_sz));
-              when Loop_Identifier =>
-                Error (CD, err_duplicate_loop_identifier, A2S (CD.Id), severity => major);
-              when Paquetage =>
-                Error (CD, err_illegal_statement_start_symbol, "package name", severity => major);
-              when others =>
-                Error
-                  (CD, err_illegal_statement_start_symbol,
-                   ". Entity found: " &
-                   Entity_Kind'Image (CD.IdTab (I_Statement).entity), severity => major);
-            end case;
-          end if;  --  end IDent
+          Statement_starting_with_an_Identifier;
         when ACCEPT_Symbol =>
           Accept_Statement;
         when BEGIN_Symbol | DECLARE_Symbol =>
