@@ -142,8 +142,8 @@ package body HAC_Sys.Builder is
       Compiler.Print_Tables (BD.CD.all);
       Close (BD.CD.comp_dump);
     end if;
-    if BD.asm_dump_file_name /= "" then
-      Compiler.Dump_Asm (BD.CD.all, To_String (BD.asm_dump_file_name));
+    if BD.asm_dump then
+      Compiler.Dump_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
     end if;
   exception
     when Errors.Compilation_abandoned =>
@@ -153,7 +153,9 @@ package body HAC_Sys.Builder is
         Compiler.Print_Tables (BD.CD.all);
         Close (BD.CD.comp_dump);
       end if;
-      Compiler.Dump_Asm (BD.CD.all, To_String (BD.asm_dump_file_name));
+      if BD.asm_dump then
+        Compiler.Dump_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
+      end if;
     when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
       Errors.Error
         (BD.CD.all,
@@ -173,21 +175,20 @@ package body HAC_Sys.Builder is
     Close (f);
   end Build_Main_from_File;
 
-  procedure Set_Diagnostic_File_Names (
-    BD                 : in out Build_Data;
-    asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
-    cmp_dump_file_name :        String  := "";  --  Compiler dump
-    listing_file_name  :        String  := "";  --  Listing of source code with details
-    var_map_file_name  :        String  := ""   --  Output of variables (map)
-  )
+  procedure Set_Diagnostic_Parameters
+    (BD                 : in out Build_Data;
+     asm_dump           :        Boolean := False;  --  Assembler output of compiled object code
+     cmp_dump_file_name :        String  := "";     --  Compiler dump
+     listing_file_name  :        String  := "";     --  Listing of source code with details
+     var_map_file_name  :        String  := "")     --  Output of variables (map)
   is
     use HAT;
   begin
-    BD.asm_dump_file_name := To_VString (asm_dump_file_name);
+    BD.asm_dump           := asm_dump;
     BD.cmp_dump_file_name := To_VString (cmp_dump_file_name);
     BD.listing_file_name  := To_VString (listing_file_name);
     BD.var_map_file_name  := To_VString (var_map_file_name);
-  end Set_Diagnostic_File_Names;
+  end Set_Diagnostic_Parameters;
 
   procedure Set_Remark_Set
     (BD  : in out Build_Data;

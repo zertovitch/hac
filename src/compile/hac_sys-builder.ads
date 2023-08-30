@@ -39,7 +39,7 @@ package HAC_Sys.Builder is
     global_VM_variables : String_Maps.Map;
     global_remarks      : Defs.Remark_Set := Defs.default_remarks;
     main_name_hint      : HAT.VString;  --  This is used for circular unit dependency detection
-    asm_dump_file_name  : HAT.VString;  --  Assembler output of compiled object code
+    asm_dump            : Boolean;      --  Assembler output of compiled object code
     cmp_dump_file_name  : HAT.VString;  --  Compiler dump
     listing_file_name   : HAT.VString;  --  Listing of source code with details
     var_map_file_name   : HAT.VString;  --  Output of variables (map)
@@ -58,13 +58,12 @@ package HAC_Sys.Builder is
 
   procedure Build_Main_from_File (BD : in out Build_Data; File_Name : String);
 
-  procedure Set_Diagnostic_File_Names (
-    BD                 : in out Build_Data;
-    asm_dump_file_name :        String  := "";  --  Assembler output of compiled object code
-    cmp_dump_file_name :        String  := "";  --  Compiler dump
-    listing_file_name  :        String  := "";  --  Listing of source code with details
-    var_map_file_name  :        String  := ""   --  Output of variables (map)
-  );
+  procedure Set_Diagnostic_Parameters
+    (BD                 : in out Build_Data;
+     asm_dump           :        Boolean := False;  --  Assembler output of compiled object code
+     cmp_dump_file_name :        String  := "";     --  Compiler dump
+     listing_file_name  :        String  := "";     --  Listing of source code with details
+     var_map_file_name  :        String  := "");    --  Output of variables (map)
 
   procedure Set_Remark_Set
     (BD  : in out Build_Data;

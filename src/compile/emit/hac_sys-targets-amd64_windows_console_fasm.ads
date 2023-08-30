@@ -66,7 +66,7 @@ package HAC_Sys.Targets.AMD64_Windows_Console_FASM is
   --  Misc.  --
   -------------
 
-  function Assembler_File_Name (m : Machine) return String;
+  overriding function Assembler_File_Name (m : Machine) return String;
 
 private
 

@@ -28,7 +28,6 @@ package HAC_Pkg is
   procedure Open_Source (simple_file_name : String; stream : out HAC_Sys.Co_Defs.Source_Stream_Access);
   procedure Close_Source (simple_file_name : String);
 
-  assembler_output_name : constant String := "asm_dump.pca";       --  PCA = PCode Assembler
   compiler_dump_name    : constant String := "compiler_dump.lst";
 
   compile_only : Boolean := False;

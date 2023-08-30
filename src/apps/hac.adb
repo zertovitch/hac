@@ -18,7 +18,8 @@ with Ada.Calendar,
 
 procedure HAC is
 
-  asm_dump_file_name, cmp_dump_file_name : HAT.VString;
+  cmp_dump_file_name : HAT.VString;
+  asm_dump : Boolean := False;
   remarks : HAC_Sys.Defs.Remark_Set := HAC_Sys.Defs.default_remarks;
 
   use HAC_Pkg;
@@ -44,7 +45,7 @@ procedure HAC is
     end if;
     Open (f, In_File, Ada_file_name);
     HAC_Sys.Builder.Skip_Shebang (f, shebang_offset);
-    BD.Set_Diagnostic_File_Names (HAT.To_String (asm_dump_file_name), HAT.To_String (cmp_dump_file_name));
+    BD.Set_Diagnostic_Parameters (asm_dump, HAT.To_String (cmp_dump_file_name));
     BD.Set_Remark_Set (remarks);
     BD.Set_Main_Source_Stream (Text_Streams.Stream (f), Ada_file_name, shebang_offset);
     BD.Set_Message_Feedbacks (trace);
@@ -132,7 +133,7 @@ procedure HAC is
       end if;
       case opt (opt'First) is
         when 'a' =>
-          asm_dump_file_name := To_VString (assembler_output_name);
+          asm_dump := True;
         when 'c' =>
           compile_only := True;
         when 'd' =>

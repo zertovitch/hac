@@ -79,6 +79,10 @@ package HAC_Sys.Targets is
 
   function Assembler_File_Name (m : Machine) return String is abstract;
 
+  procedure Mark_Declaration (m : Machine) is null;
+
+  procedure Mark_Reference (m : Machine) is null;
+
   combination_not_supported : exception;
 
 end HAC_Sys.Targets;

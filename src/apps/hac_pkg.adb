@@ -127,7 +127,7 @@ package body HAC_Pkg is
     NLCE;
     PLCE ("Usage: hac [options] main.adb [command-line parameters for main]");
     NLCE;
-    PLCE ("Options: -a     : assembler output in " & assembler_output_name);
+    PLCE ("Options: -a     : assembler output");
     PLCE ("         -c     : compile only");
     PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
     PLCE ("         -h, h1 : this help");

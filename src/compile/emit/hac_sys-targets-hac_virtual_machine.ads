@@ -15,10 +15,12 @@ with HAC_Sys.Co_Defs;
 
 package HAC_Sys.Targets.HAC_Virtual_Machine is
 
-  type Machine is new Targets.Machine with record
+  type Machine is limited new Targets.Machine with record
     CD : Co_Defs.Compiler_Data_Access;
     --  ^ In the future, the instruction table and other items
     --    will be stored here and we can remove CD.
+    --    As long as CD exists, we keep this field public for
+    --    convenience (it is needed in method Set_Target in Co_Defs).
   end record;
 
   --------------------
@@ -60,6 +62,7 @@ package HAC_Sys.Targets.HAC_Virtual_Machine is
   --  Misc.  --
   -------------
 
-  function Assembler_File_Name (m : Machine) return String is ("");
+  overriding function Assembler_File_Name (m : Machine) return String is ("asm_dump.pca");
+  --  PCA = PCode Assembler
 
 end HAC_Sys.Targets.HAC_Virtual_Machine;

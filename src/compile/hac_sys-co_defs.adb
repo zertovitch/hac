@@ -1,4 +1,5 @@
-with HAC_Sys.Targets.HAC_Virtual_Machine;
+with HAC_Sys.Targets.HAC_Virtual_Machine,
+     HAC_Sys.Targets.Semantics;
 
 with Ada.Unchecked_Deallocation;
 
@@ -82,9 +83,12 @@ package body HAC_Sys.Co_Defs is
         Unchecked_Free (CD.target);
       end if;
       CD.target := new_target;
-      --  Special case for the HAC VM:
+      --  Special case for special targets: the HAC VM
+      --  and the semantics analyser.
       if new_target.all in HAC_Virtual_Machine.Machine'Class then
         HAC_Virtual_Machine.Machine (new_target.all).CD := CD'Unchecked_Access;
+      elsif new_target.all in Semantics.Machine'Class then
+        Semantics.Machine (new_target.all).CD := CD'Unchecked_Access;
       end if;
     end if;
   end Set_Target;
