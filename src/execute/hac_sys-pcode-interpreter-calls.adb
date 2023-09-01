@@ -6,8 +6,6 @@ with Ada.Calendar,
      Ada.Exceptions,
      Ada.Unchecked_Conversion;
 
-with System;
-
 package body HAC_Sys.PCode.Interpreter.Calls is
 
   procedure Do_Calling_Operation (
@@ -102,7 +100,8 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       end Data_Exchange;
       --
       function Convert is
-        new Ada.Unchecked_Conversion (System.Address, Interfacing.Exported_Procedure);
+        new Ada.Unchecked_Conversion
+          (Co_Defs.Dummy_Procedure_Access, Interfacing.Exported_Procedure);
       cur : constant Cursor := CD.Exported_Procedures.Find (proc_name);
     begin
       --  Data exchange before call (in, in out)

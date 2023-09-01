@@ -1,10 +1,10 @@
-with HAC_Sys.Defs;
+with HAC_Sys.Co_Defs,
+     HAC_Sys.Defs;
 
 with HAT;
 
-with Ada.Characters.Handling;
-with Ada.Unchecked_Conversion;
-with System;
+with Ada.Characters.Handling,
+     Ada.Unchecked_Conversion;
 
 package body HAC_Sys.Interfacing is
 
@@ -104,7 +104,9 @@ package body HAC_Sys.Interfacing is
   procedure Register
     (BD : Builder.Build_Data; Callback : Exported_Procedure; Name : String)
   is
-    function Convert is new Ada.Unchecked_Conversion (Exported_Procedure, System.Address);
+    function Convert is
+      new Ada.Unchecked_Conversion
+        (Exported_Procedure, Co_Defs.Dummy_Procedure_Access);
     use Ada.Characters.Handling;
   begin
     if Callback /= null then
