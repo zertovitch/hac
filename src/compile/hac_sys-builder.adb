@@ -96,6 +96,11 @@ package body HAC_Sys.Builder is
        id_index      => Co_Defs.No_Id,  --  Temporary value.
        id_body_index => Co_Defs.No_Id,  --  Temporary value.
        spec_context  => Co_Defs.Id_Maps.Empty_Map);
+    procedure Finalize_Target is
+    begin
+      BD.CD.target.Finalize_Code_Emission
+        (BD.CD.Strings_Constants_Table (1 .. BD.CD.Strings_Table_Top));
+    end Finalize_Target;
   begin
     BD.LD.Library.Clear;
     BD.LD.Map.Clear;
@@ -113,6 +118,9 @@ package body HAC_Sys.Builder is
        To_String (BD.var_map_file_name));
     main_unit.id_index := BD.CD.Main_Proc_Id_Index;
     Librarian.Change_Unit_Details (BD.LD, main_unit);
+    --
+    --  Build of Main unit is finished (with or without minor or medium errors).
+    --
 
     if BD.CD.trace.detail_level >= 2 then
       Compiler.Progress_Message
@@ -130,10 +138,9 @@ package body HAC_Sys.Builder is
       exit when num_pending = 0;
     end loop;
     --
-    --  Build is finished.
+    --  Build is finished (with or without minor or medium errors).
     --
-    BD.CD.target.Finalize_Code_Emission
-      (BD.CD.Strings_Constants_Table (1 .. BD.CD.Strings_Table_Top));
+    Finalize_Target;
     --
     if BD.CD.error_count = 0 then
       Parser.Helpers.Check_Incomplete_Definitions (BD.CD.all, 0);
@@ -147,7 +154,8 @@ package body HAC_Sys.Builder is
     end if;
   exception
     when Errors.Compilation_abandoned =>
-      --  Just too many errors...
+      --  Hit a severe error...
+      Finalize_Target;  --  Needed even on incomplete compilation.
       Errors.Compilation_Diagnostics_Summary (BD.CD.all);
       if BD.CD.comp_dump_requested then
         Compiler.Print_Tables (BD.CD.all);

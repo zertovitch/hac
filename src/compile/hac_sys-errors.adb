@@ -455,6 +455,8 @@ package body HAC_Sys.Errors is
     --  raise Constraint_Error;
     --
     if code in Compile_Error and then severity = major then
+      --  Useless to continue compiling, the source is FUBAR
+      --  and the compiler close to total confusion!
       raise Compilation_abandoned;
     end if;
   end Error;

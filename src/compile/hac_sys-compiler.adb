@@ -26,6 +26,7 @@ package body HAC_Sys.Compiler is
     CD.trace := trace_params;
   end Set_Message_Feedbacks;
 
+  --  Initialize the compiler for a new unit.
   procedure Init (CUD : out Current_Unit_Data) is
   begin
     CUD.c := ' ';
@@ -36,6 +37,7 @@ package body HAC_Sys.Compiler is
     CUD.Use_HAT_Stack (CUD.use_hat_stack_top) := False;
   end Init;
 
+  --  Initialize the compiler for an entire build.
   procedure Init (CD : out Compiler_Data) is
   begin
     CD.Arrays_Count          := 0;
