@@ -111,7 +111,7 @@ package HAC_Sys.Targets.Semantics is
 
   overriding function Assembler_File_Name (m : Machine) return String is ("");
 
-  overriding procedure Mark_Declaration (m : in out Machine);
+  overriding procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean);
 
   overriding procedure Mark_Reference (m : in out Machine; located_id : Natural);
 

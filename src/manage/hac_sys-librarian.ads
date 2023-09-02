@@ -152,7 +152,7 @@ package HAC_Sys.Librarian is
      Size           : in     Integer;
      Discrete_First : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
      Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last;
-     built_in       : in     Boolean := False);
+     is_built_in    : in     Boolean := False);
 
   Circular_Unit_Dependency : exception;
 

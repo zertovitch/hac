@@ -38,11 +38,11 @@ package HAC_Sys.Builder is
     LD                  : Librarian.Library_Data;
     global_VM_variables : String_Maps.Map;
     global_remarks      : Defs.Remark_Set := Defs.default_remarks;
-    main_name_hint      : HAT.VString;  --  This is used for circular unit dependency detection
-    asm_dump            : Boolean;      --  Assembler output of compiled object code
-    cmp_dump_file_name  : HAT.VString;  --  Compiler dump
-    listing_file_name   : HAT.VString;  --  Listing of source code with details
-    var_map_file_name   : HAT.VString;  --  Output of variables (map)
+    main_name_hint      : HAT.VString;       --  This is used for circular unit dependency detection
+    asm_dump            : Boolean := False;  --  Assembler output of compiled object code
+    cmp_dump_file_name  : HAT.VString;       --  Compiler dump
+    listing_file_name   : HAT.VString;       --  Listing of source code with details
+    var_map_file_name   : HAT.VString;       --  Output of variables (map)
     target              : Targets.Abstract_Machine_Reference := null;
   end record;
 

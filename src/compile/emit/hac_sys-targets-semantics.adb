@@ -19,12 +19,16 @@ package body HAC_Sys.Targets.Semantics is
     m.busy := False;
   end Finalize_Code_Emission;
 
-  overriding procedure Mark_Declaration (m : in out Machine) is
+  overriding procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is
   begin
-    m.decl_map (m.CD.Id_Count) :=
-      (file_name => m.CD.CUD.source_file_name,
-       line      => m.CD.CUD.line_count,
-       column    => m.CD.syStart);
+    m.decl_map (m.CD.Id_Count).is_built_in := is_built_in;
+    if not is_built_in then
+      m.decl_map (m.CD.Id_Count) :=
+        (is_built_in => False,
+         file_name   => m.CD.CUD.source_file_name,
+         line        => m.CD.CUD.line_count,
+         column      => m.CD.syStart + 1);
+    end if;
   end Mark_Declaration;
 
   overriding procedure Mark_Reference (m : in out Machine; located_id : Natural) is
@@ -35,7 +39,7 @@ package body HAC_Sys.Targets.Semantics is
          --  Example: "c:\files\source.adb 130 12"
          m.CD.CUD.source_file_name &
          m.CD.CUD.line_count'Image &
-         m.CD.syStart'Image,
+         Integer'Image (m.CD.syStart + 1),
        New_Item =>
          located_id);
   end Mark_Reference;

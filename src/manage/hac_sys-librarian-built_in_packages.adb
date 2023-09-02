@@ -33,7 +33,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
          id_body_index => No_Id,
          spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
-    Enter_Library_Level_Def (CD, name, Paquetage, NOTYP, 0, built_in => True);
+    Enter_Library_Level_Def (CD, name, Paquetage, NOTYP, 0, is_built_in => True);
     Parser.Packages.Feed_Packages_Table (CD);
     --  Feed library:
     unit.id_index := CD.Id_Count;
@@ -55,8 +55,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     Enter_and_Register_Built_In_Package (CD, LD, "Standard");
     --
-    Enter_Library_Level_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0, built_in => True);
-    Enter_Library_Level_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1, built_in => True);
+    Enter_Library_Level_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0, is_built_in => True);
+    Enter_Library_Level_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1, is_built_in => True);
     --
     Enter_Std_Typ ("Character",      Chars, 0, 255);
     Enter_Std_Typ ("Boolean",        Bools, 0, 1);
@@ -110,7 +110,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Compiler.PCode_Emit.Enter_or_find_Float (CD, Value, Float_Index);
       Enter_Library_Level_Def
         (CD, HAT_Name & '.' & Name,
-         Declared_Number_or_Enum_Item, Floats, Float_Index, built_in => True);
+         Declared_Number_or_Enum_Item, Floats, Float_Index, is_built_in => True);
     end Enter_HAT_Const;
 
     procedure Enter_HAT_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
@@ -126,7 +126,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
          Funktion_Intrinsic,
          T,
          Defs.SF_Code'Pos (Code),
-         built_in => True);
+         is_built_in => True);
     end Enter_HAT_Funct;
 
     procedure Enter_HAT_Proc (Name : String; Code : Defs.SP_Code) is
@@ -137,7 +137,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
          Prozedure_Intrinsic,
          NOTYP,
          Defs.SP_Code'Pos (Code),
-         built_in => True);
+         is_built_in => True);
     end Enter_HAT_Proc;
 
   begin

@@ -81,13 +81,14 @@ package HAC_Sys.Targets is
 
   function Assembler_File_Name (m : Machine) return String is abstract;
 
-  procedure Mark_Declaration (m : in out Machine) is null;
+  procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is null;
 
   procedure Mark_Reference (m : in out Machine; located_id : Natural) is null;
 
   type Declaration_Point is record
+    is_built_in  : Boolean;
     file_name    : HAT.VString;
-    line, column : Positive;
+    line, column : Integer;
   end record;
 
   procedure Find_Declaration
