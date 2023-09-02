@@ -658,7 +658,7 @@ package body HAC_Sys.Compiler is
       when Package_Declaration =>
         unit_block.level := 0;  --  Actually, not a block.
         CD.IdTab (new_id_index).decl_kind := spec_resolved;
-        --  Why spec_resolved ? missing bodies for eventual suprograms
+        --  Why spec_resolved ? missing bodies for possible suprograms
         --  in that package are checked anyway.
         Parser.Packages.Package_Declaration (CD, empty_symset, unit_block, needs_body);
       when Package_Body =>

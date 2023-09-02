@@ -238,7 +238,7 @@ package body HAC_Sys.Parser.Helpers is
         Err,
         "not exactly the same " & Nice_Image (Found.TYP),
         severity => major);
-      --  Possible improvement: find the eventual array or record
+      --  Possible improvement: find the possible array or record
       --  names using X.Ref, Y.Ref ... if they have names!
       --  (same for Issue_Undefined_Operator_Error)
     end if;
@@ -343,7 +343,7 @@ package body HAC_Sys.Parser.Helpers is
         (CD, err_operator_not_defined_for_types,
          Op_Hint (Operator),
          Nice_Image (Left.TYP));
-         --  Possible improvement: find the eventual array or record
+         --  Possible improvement: find the possible array or record
          --  names using X.Ref, Y.Ref ... if they have names!
          --  (same for Type_Mismatch)
     end if;
@@ -507,7 +507,7 @@ package body HAC_Sys.Parser.Helpers is
           if is_name_matched then
             --  Reasons to consider the matched identifier:
             --    * Not library-level: we have a local subprogram
-            --        identifier (eventually wrapped in a local package):
+            --        identifier (possibly wrapped in a local package):
             exit when L > 0;
             --    * Filter for library-level definition is disabled:
             exit when not Level_0_Filter;
@@ -563,6 +563,11 @@ package body HAC_Sys.Parser.Helpers is
         Error (CD, err_identifier_missing, severity => major);
       end if;
     end if;
+
+    if J /= No_Id then
+      CD.target.Mark_Reference (J);
+    end if;
+
     return J;
   end Locate_Identifier;
 

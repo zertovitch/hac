@@ -19,7 +19,7 @@ package HAC_Sys.Errors is
 
   type Error_Severity is
     (minor,   --  Extra ';', ')', value out of range, etc.: we can continue the
-              --     compilation normally for catching other eventual errors.
+              --     compilation normally for catching other possible errors.
      medium,  --  Compilation is shortened at some points in order to avoid
               --     infinite loops in the parser. Tricky!
      major);  --  In this case, the best choice is to STOP the compilation immediately.

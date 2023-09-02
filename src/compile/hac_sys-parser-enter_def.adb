@@ -90,6 +90,7 @@ package body HAC_Sys.Parser.Enter_Def is
        lev              => Level,
        adr_or_sz        => 0
       );
+    CD.target.Mark_Declaration;
     --  Update start of identifier chain:
     CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
     if Level = 0 then

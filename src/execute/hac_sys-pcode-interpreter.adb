@@ -612,7 +612,7 @@ package body HAC_Sys.PCode.Interpreter is
           --  No validity check: the value is discrete.
           --  Range-checked at compile-time (in current version of HAC
           --  where all ranges & subtypes are static).
-          --  Future versions: eventual range checks would be between
+          --  Future versions: possible range checks would be between
           --  k_Push_Discrete_Literal and k_Store; then, no folding
           --  into k_Store_Discrete_Literal.
           ND.S (Index (ND.S (Curr_TCB.T).I)).I := IR.Y;

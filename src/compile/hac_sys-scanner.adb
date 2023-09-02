@@ -311,7 +311,7 @@ package body HAC_Sys.Scanner is
       end loop;
       NextCh (CD);
       if CD.CUD.c in 'E' | 'e' then
-        --  Exponent. Special case because of eventual '+' or '-' which
+        --  Exponent. Special case because of possible '+' or '-' which
         --  are not operators (e.g. 8#123#e+5 vs. 8#123#+5, = 8#123# + 5)...
         --  Otherwise we could have done it all in the previous loop.
         for c in 1 .. 2 loop
@@ -342,7 +342,7 @@ package body HAC_Sys.Scanner is
       end;
     end Read_with_Sharp;
 
-    procedure Skip_eventual_underscore is
+    procedure Skip_possible_underscore is
     begin
       if CD.CUD.c = '_' then
         NextCh (CD);
@@ -355,7 +355,7 @@ package body HAC_Sys.Scanner is
           Error (CD, err_scanner_digit_expected, severity => major);
         end if;
       end if;
-    end Skip_eventual_underscore;
+    end Skip_possible_underscore;
 
     procedure Read_Decimal_Float is
     begin
@@ -377,7 +377,7 @@ package body HAC_Sys.Scanner is
           10.0 * CD.RNum +
             HAC_Float (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
         NextCh (CD);
-        Skip_eventual_underscore;
+        Skip_possible_underscore;
       end loop;
       if e = 0 then
         Error
@@ -423,7 +423,7 @@ package body HAC_Sys.Scanner is
           end if;
           K := K + 1;
           NextCh (CD);
-          Skip_eventual_underscore;
+          Skip_possible_underscore;
           exit when Character_Types (CD.CUD.c) /= Number;
         end loop;
         --  Integer part is read (CD.INum).

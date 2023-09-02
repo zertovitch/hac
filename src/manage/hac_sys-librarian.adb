@@ -72,7 +72,8 @@ package body HAC_Sys.Librarian is
      Base_Type      : in     Defs.Typen;
      Size           : in     Integer;
      Discrete_First : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
-     Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last)
+     Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last;
+     built_in       : in     Boolean := False)
   is
     use Ada.Characters.Handling, Defs;
     use type Nesting_Level;
@@ -103,6 +104,9 @@ package body HAC_Sys.Librarian is
       lev              => 0,
       adr_or_sz        => HAC_Integer (Size)
     );
+    if not built_in then
+      CD.target.Mark_Declaration;
+    end if;
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper, CD.Id_Count);
   end Enter_Library_Level_Def;

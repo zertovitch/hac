@@ -163,7 +163,7 @@ package body HAC_Sys.Parser is
               Parser.Packages.Package_Body (CD, empty_symset, block_data);
             else
               CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
-              --  Why spec_resolved ? missing bodies for eventual suprograms
+              --  Why spec_resolved ? missing bodies for possible suprograms
               --  in that package are checked anyway.
               Parser.Packages.Package_Declaration (CD, empty_symset, block_data, ignored_needs_body);
             end if;
@@ -477,7 +477,7 @@ package body HAC_Sys.Parser is
          (if IsFun then Funktion else Prozedure),
          old_id_idx);
       --  NB: now old_id_idx, if different than No_Id, points to the
-      --  eventual previous declaration of the subprogram with that name.
+      --  possible previous declaration of the subprogram with that name.
       Scanner.InSymbol (CD);
       sub_sub_prog_block_data.level                         := current_level + 1;
       sub_sub_prog_block_data.block_id_index                := CD.Id_Count;

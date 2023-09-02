@@ -395,7 +395,7 @@ package body HAC_Sys.Parser.Expressions is
   begin  --  Expression
     Relation (FSys + is_logical_operator, X);
     --
-    --  RM 4.4 (2): we collect here eventual relations, connected by
+    --  RM 4.4 (2): we collect here possible relations, connected by
     --              logical operators: X {and Y}.
     --
     previous_operator := Dummy_Symbol;
@@ -647,7 +647,7 @@ package body HAC_Sys.Parser.Expressions is
     begin  --  Term
       Factor (FSys_Term + multiplying_operator, X);
       --
-      --  We collect here eventual factors: a {* b}
+      --  We collect here possible factors: a {* b}
       --
       while multiplying_operator (CD.Sy) loop
         Mult_OP := CD.Sy;
@@ -976,7 +976,7 @@ package body HAC_Sys.Parser.Expressions is
       Term (FSys + binary_adding_operator, X);
     end if;
     --
-    --  We collect here eventual terms: a {+ b}      RM 4.4 (4)
+    --  We collect here possible terms: a {+ b}      RM 4.4 (4)
     --
     while binary_adding_operator (CD.Sy) loop
       additive_operator := CD.Sy;

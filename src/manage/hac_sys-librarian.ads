@@ -38,7 +38,7 @@ package HAC_Sys.Librarian is
     (In_Progress,     --  Specification or body-only is in progress.
      Body_Postponed,  --  Specification done, body will be done later.
      Spec_Only,       --  Specification-only is done, but we need to check absence of body.
-     Done);           --  Specification done; eventual body is done or its absence is checked.
+     Done);           --  Specification done; possible body is done or its absence is checked.
 
   subtype Spec_Done is Compilation_Status range Body_Postponed .. Spec_Only;
 
@@ -151,7 +151,8 @@ package HAC_Sys.Librarian is
      Base_Type      : in     Defs.Typen;
      Size           : in     Integer;
      Discrete_First : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
-     Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last);
+     Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last;
+     built_in       : in     Boolean := False);
 
   Circular_Unit_Dependency : exception;
 

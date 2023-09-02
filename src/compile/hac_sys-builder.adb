@@ -125,7 +125,7 @@ package body HAC_Sys.Builder is
     if BD.CD.trace.detail_level >= 2 then
       Compiler.Progress_Message
         (BD.CD.all,
-         "------  Compilation of eventual with'ed unit's bodies  ------");
+         "------  Compilation of possible with'ed unit's bodies  ------");
     end if;
     for round in Positive loop
       Compile_Pending_Bodies_Single_Round (BD, num_pending);
@@ -165,6 +165,7 @@ package body HAC_Sys.Builder is
         Compiler.Dump_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
       end if;
     when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
+      Finalize_Target;  --  Needed even on incomplete compilation.
       Errors.Error
         (BD.CD.all,
          Defs.err_library_error,

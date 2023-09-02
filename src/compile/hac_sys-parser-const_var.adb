@@ -87,7 +87,7 @@ package body HAC_Sys.Parser.Const_Var is
       --
       --  This buffering is needed for having the initialization code placed
       --  right after the "BEGIN" of current block (see Statements_Part_Setup).
-      --  Nested subprograms have their own code and their eventual own
+      --  Nested subprograms have their own code and their possible own
       --  initialization code coming before in the object code table.
       Block_Data.initialization_object_code_size := Block_Data.initialization_object_code_size + (LC1 - LC0);  --  Size of initialization ObjCode
       if LC0 + Block_Data.initialization_object_code_size >= CD.CMax - Block_Data.initialization_object_code_size then

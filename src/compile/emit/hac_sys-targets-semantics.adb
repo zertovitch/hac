@@ -5,6 +5,7 @@ package body HAC_Sys.Targets.Semantics is
   begin
     m.busy := True;
     m.started := Clock;
+    m.ref_map.Clear;
   end Initialize_Code_Emission;
 
   overriding procedure Finalize_Code_Emission
@@ -18,22 +19,48 @@ package body HAC_Sys.Targets.Semantics is
     m.busy := False;
   end Finalize_Code_Emission;
 
-  ----------------------
-  -- Mark_Declaration --
-  ----------------------
-
-  overriding procedure Mark_Declaration (m : Machine) is
+  overriding procedure Mark_Declaration (m : in out Machine) is
   begin
-    null;
+    m.decl_map (m.CD.Id_Count) :=
+      (file_name => m.CD.CUD.source_file_name,
+       line      => m.CD.CUD.line_count,
+       column    => m.CD.syStart);
   end Mark_Declaration;
 
-  --------------------
-  -- Mark_Reference --
-  --------------------
-
-  overriding procedure Mark_Reference (m : Machine) is
+  overriding procedure Mark_Reference (m : in out Machine; located_id : Natural) is
+    use HAT;
   begin
-    null;
+    m.ref_map.Insert
+      (Key =>
+         --  Example: "c:\files\source.adb 130 12"
+         m.CD.CUD.source_file_name &
+         m.CD.CUD.line_count'Image &
+         m.CD.syStart'Image,
+       New_Item =>
+         located_id);
   end Mark_Reference;
+
+  overriding procedure Find_Declaration
+    (m          : in out Machine;
+     point      : in out Declaration_Point;  --  in: reference; out: declaration
+     located_id :    out Integer;
+     found      :    out Boolean)
+
+  is
+    curs : Reference_Mapping.Cursor;
+    use HAT, Reference_Mapping;
+  begin
+    curs :=
+      m.ref_map.Find
+        (point.file_name & point.line'Image & point.column'Image);
+    if curs = No_Element then
+      located_id := -1;
+      found := False;
+    else
+      located_id := Element (curs);
+      point := m.decl_map (located_id);
+      found := True;
+    end if;
+  end Find_Declaration;
 
 end HAC_Sys.Targets.Semantics;

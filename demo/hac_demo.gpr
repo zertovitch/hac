@@ -58,7 +58,7 @@ project HAC_Demo is
 
    Fast_Options :=
      ("-O2",
-      "-gnatpn", 
+      "-gnatn", 
       "-fipa-cp-clone",
       "-fgcse-after-reload", 
       "-funroll-loops",

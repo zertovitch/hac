@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 --  Builder: *the* entry point for building an executable (possibly for the p-code
---  virtual machine) from Ada sources (a main procedure and eventual depending units).
+--  virtual machine) from Ada sources (a main procedure and possible depending units).
 
 with HAC_Sys.Co_Defs,
      HAC_Sys.Defs,
@@ -97,7 +97,7 @@ package HAC_Sys.Builder is
   --  Various utilities  --
   -------------------------
 
-  --  Skip an eventual "shebang", e.g.: #!/usr/bin/env hac, in a text file.
+  --  Skip an possible "shebang", e.g.: #!/usr/bin/env hac, in a text file.
   --  The Ada source begins from next line.
   --
   procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural);

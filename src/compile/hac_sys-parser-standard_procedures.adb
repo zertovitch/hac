@@ -40,7 +40,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
     end Set_Abstract_Console;
     --
     procedure Parse_Gets (Code : SP_Code) is
-      --  Parse Get & Co including an eventual File parameter
+      --  Parse Get & Co including an possible File parameter
       Found : Exact_Subtyp;
       with_file : Boolean;
       String_Length_Encoding : Operand_2_Type := 0;
@@ -80,7 +80,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
     end Parse_Gets;
     --
     procedure Parse_Puts (Code : SP_Code) is
-      --  Parse Put & Co including an eventual File parameter
+      --  Parse Put & Co including an possible File parameter
       Item_Typ, Format_Param_Typ : Exact_Subtyp;
       Format_Params : Natural := 0;
       with_file : Boolean;

@@ -52,7 +52,7 @@ package body HAC_Sys.Parser.Packages is
     --
     Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);
-    --  Set new prefix, support also eventual subpackages:
+    --  Set new prefix, support also possible subpackages:
     CD.pkg_prefix := CD.pkg_prefix & A2S (package_name) & '.';
     Increment_Nesting_or_Descending_Level (CD);
     needs_body := False;
@@ -112,7 +112,7 @@ package body HAC_Sys.Parser.Packages is
           end case;
           Enter_Def.Enter_Prefixed (CD, block_data.level, CD.Id, CD.Id_with_case, Paquetage, dummy_forward);
           CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
-          --  Why spec_resolved ? missing bodies for eventual suprograms
+          --  Why spec_resolved ? missing bodies for possible suprograms
           --  in that package are checked anyway.
           Package_Declaration (CD, FSys, block_data, subpkg_needs_body);
           Need_Semicolon_after_Declaration (CD, FSys);
@@ -232,7 +232,7 @@ package body HAC_Sys.Parser.Packages is
             Package_Body (CD, FSys, block_data);
           else
             CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
-            --  Why spec_resolved ? missing bodies for eventual suprograms
+            --  Why spec_resolved ? missing bodies for possible suprograms
             --  in that package are checked anyway.
             Package_Declaration (CD, FSys, block_data, subpkg_needs_body);
           end if;

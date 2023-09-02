@@ -22,11 +22,13 @@
 
 with HAC_Sys.Defs;
 
+with HAT;
+
 package HAC_Sys.Targets is
 
   type Machine is limited interface;
 
-  type Abstract_Machine_Reference is access Machine'Class;
+  type Abstract_Machine_Reference is access all Machine'Class;
 
   --------------------
   --  Informations  --
@@ -79,9 +81,21 @@ package HAC_Sys.Targets is
 
   function Assembler_File_Name (m : Machine) return String is abstract;
 
-  procedure Mark_Declaration (m : Machine) is null;
+  procedure Mark_Declaration (m : in out Machine) is null;
 
-  procedure Mark_Reference (m : Machine) is null;
+  procedure Mark_Reference (m : in out Machine; located_id : Natural) is null;
+
+  type Declaration_Point is record
+    file_name    : HAT.VString;
+    line, column : Positive;
+  end record;
+
+  procedure Find_Declaration
+    (m          : in out Machine;
+     point      : in out Declaration_Point;  --  in: reference; out: declaration
+     located_id :    out Integer;
+     found      :    out Boolean)
+    is null;
 
   combination_not_supported : exception;
 

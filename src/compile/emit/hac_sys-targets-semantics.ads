@@ -41,11 +41,6 @@ package HAC_Sys.Targets.Semantics is
   --  ===                  =====
   --  index in Id Table    file_name, i, j of declaration
 
-  type Declaration_Point is record
-    file_name : HAT.VString;
-    i, j      : Positive;
-  end record;
-
   type Declaration_Point_Array is
     array (Co_Defs.Identifier_Table_Type'Range) of Declaration_Point;
 
@@ -57,9 +52,7 @@ package HAC_Sys.Targets.Semantics is
   --
 
   type Machine is limited new Targets.Machine with record
-    CD : Co_Defs.Compiler_Data_Access;
-    --    ^ We keep this field public for convenience (it is
-    --      needed in method Set_Target in Co_Defs).
+    CD         : Co_Defs.Compiler_Data_Access;
     ref_map    : Reference_Mapping.Map;
     decl_map   : Declaration_Point_Array;
     busy       : Boolean  := False with Volatile;
@@ -118,8 +111,14 @@ package HAC_Sys.Targets.Semantics is
 
   overriding function Assembler_File_Name (m : Machine) return String is ("");
 
-  overriding procedure Mark_Declaration (m : Machine);
+  overriding procedure Mark_Declaration (m : in out Machine);
 
-  overriding procedure Mark_Reference (m : Machine);
+  overriding procedure Mark_Reference (m : in out Machine; located_id : Natural);
+
+  overriding procedure Find_Declaration
+    (m          : in out Machine;
+     point      : in out Declaration_Point;  --  in: reference; out: declaration
+     located_id :    out Integer;
+     found      :    out Boolean);
 
 end HAC_Sys.Targets.Semantics;
