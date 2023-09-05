@@ -25,7 +25,7 @@ package body HAC_Sys.Parser.Ranges is
     if CD.Sy /= IDent then
       return;  --  Perhaps we have a number like "1" in "1 .. 3", or something wrong.
     end if;
-    Idx := Locate_Identifier (CD, CD.Id, Level);
+    Idx := Locate_CD_Id (CD, Level);
     if Idx /= No_Id then
       declare
         Id_T : IdTabEntry renames CD.IdTab (Idx);

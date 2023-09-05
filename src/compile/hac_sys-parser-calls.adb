@@ -53,7 +53,7 @@ package body HAC_Sys.Parser.Calls is
   begin
     Found := Undefined;
     if CD.Sy = IDent then
-      K := Locate_Identifier (CD, CD.Id, Level);
+      K := Locate_CD_Id (CD, Level);
       InSymbol (CD);
       if K = No_Id then
         null;  --  Error already issued due to undefined identifier

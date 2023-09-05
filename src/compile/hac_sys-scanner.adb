@@ -678,6 +678,7 @@ package body HAC_Sys.Scanner is
           --
           HAT.VStr_Pkg.Set_Unbounded_String
             (CD.Id, HAT.ACH.To_Upper (To_String (CD.Id_with_case)));
+          CD.Id_location := No_Id_Cache;
           --
           I := 1;
           J := AdaKeyW'Last;  --  Binary Search

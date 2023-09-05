@@ -210,7 +210,8 @@ package HAC_Sys.Co_Defs is
 
   --  Display: keeps track of addressing by nesting level. See Ben-Ari Appendix A.
 
-  No_Id : constant := 0;
+  No_Id       : constant :=  0;
+  No_Id_Cache : constant := -1;
 
   type Source_Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
 
@@ -286,6 +287,7 @@ package HAC_Sys.Co_Defs is
     prev_sy_line     : Integer;
     Id               : Alfa;               --  Identifier from InSymbol
     Id_with_case     : Alfa;               --  Same as Id, but with casing.
+    Id_location      : Integer;            --  Cache for Locate_CD_Id
     INum             : HAC_Integer;        --  Integer from InSymbol
     RNum             : HAC_Float;          --  FLOAT Number from InSymbol
     SLeng            : Integer;            --  String Length

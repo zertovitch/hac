@@ -43,7 +43,7 @@ package HAC_Sys.Builder is
     cmp_dump_file_name  : HAT.VString;       --  Compiler dump
     listing_file_name   : HAT.VString;       --  Listing of source code with details
     var_map_file_name   : HAT.VString;       --  Output of variables (map)
-    target              : Targets.Abstract_Machine_Reference := null;
+    target              : Targets.Abstract_Machine_Reference := null;  --  Always heap-allocated!
   end record;
 
   overriding procedure Finalize (BD : in out Build_Data);

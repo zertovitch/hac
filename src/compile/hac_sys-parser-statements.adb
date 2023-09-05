@@ -210,7 +210,7 @@ package body HAC_Sys.Parser.Statements is
       I_Entry : Integer;
     begin  --  Accept_Statement
       InSymbol;
-      I_Entry := Locate_Identifier (CD, CD.Id, Block_Data.level);
+      I_Entry := Locate_CD_Id (CD, Block_Data.level);
       if CD.IdTab (I_Entry).entity /= aEntry then
         Error (CD, err_general_error, "an entry name is expected here");
       end if;
@@ -500,7 +500,7 @@ package body HAC_Sys.Parser.Statements is
           Integer'Max (Block_Data.max_data_allocation_index, Block_Data.data_allocation_index);
         CD.Blocks_Table (CD.Display (Block_Data.level)).VSize := Block_Data.max_data_allocation_index;
       else
-        Error_then_Skip (CD, Fail_after_FOR + FSys_St, err_identifier_missing);
+        Error (CD, err_identifier_missing, severity => major);
       end if;
       --
       Emit_2 (CD, k_Push_Address,
@@ -548,7 +548,7 @@ package body HAC_Sys.Parser.Statements is
         O                  : Order;
         Y                  : Exact_Subtyp;
       begin
-        I := Locate_Identifier (CD, CD.Id, Block_Data.level);
+        I := Locate_CD_Id (CD, Block_Data.level);
         if CD.IdTab (I).entity = aTask then
           InSymbol;
           Entry_Call (CD, Block_Data.level, FSys_St, I, -1);
@@ -655,7 +655,7 @@ package body HAC_Sys.Parser.Statements is
           I : Integer;
         begin         -- Accept_Statment_2
           InSymbol;
-          I := Locate_Identifier (CD, CD.Id, Block_Data.level);
+          I := Locate_CD_Id (CD, Block_Data.level);
           if CD.IdTab (I).entity /= aEntry then
             Select_Error (err_general_error);
           end if;
@@ -891,7 +891,7 @@ package body HAC_Sys.Parser.Statements is
 
     procedure Statement_starting_with_an_Identifier is
       I_Statement : constant Integer :=
-        Locate_Identifier (CD, CD.Id, Block_Data.level, Fail_when_No_Id => False);
+        Locate_CD_Id (CD, Block_Data.level, Fail_when_No_Id => False);
     begin
       InSymbol;
       if I_Statement = No_Id then

@@ -427,9 +427,11 @@ package body HAC_Sys.Parser.Helpers is
 
   ------------------------------------------------------------------
   ------------------------------------------------Locate_Identifier-
-  function Locate_Identifier  --  Internal version
+
+  function Locate_Identifier_Internal
     (CD               : in out Compiler_Data;
      Id               : in     Alfa;
+     using_parsed_Id  : in     Boolean;
      Prefix_Id        : in     Alfa;
      Level            : in     Defs.Nesting_Level;
      Fail_when_No_Id  : in     Boolean;
@@ -439,7 +441,7 @@ package body HAC_Sys.Parser.Helpers is
   return Natural
   is
     L : Defs.Nesting_Level'Base;
-    J : Integer := 0;
+    J : Integer;
     ID_Copy : Alfa;
     is_name_matched : Boolean;
     dot_pos : Integer;
@@ -490,7 +492,7 @@ package body HAC_Sys.Parser.Helpers is
             --  For entry `Pkg.Child_1.Subpackage_2.Item` in the identifier
             --  table, `Item` is visible, as well as `Subpackage_2[.Item]`
             --  `Child_1[.Subpackage_2[.Item]]`.
-            --  NB : the stuff with [] is resolved at the end of Locate_Identifier.
+            --  NB : the stuff with [] is resolved at the end of Locate_Identifier_Internal.
             loop
               is_name_matched :=
                 CD.IdTab (J).name =
@@ -542,7 +544,7 @@ package body HAC_Sys.Parser.Helpers is
     end if;
 
     --  Prefixed package resolution: `Pkg.Item`, `Pkg.Child_1.Item`, ...
-    if CD.IdTab (J).entity = Paquetage then
+    if using_parsed_Id and then CD.IdTab (J).entity = Paquetage then
       Skip_Blanks (CD);
       if CD.CUD.c = '.' then  --  We sneak a look at the next symbol.
         ID_Copy := Id;
@@ -550,9 +552,10 @@ package body HAC_Sys.Parser.Helpers is
         InSymbol (CD);  --  Consume prefix package identifier.
         Need (CD, Period, err_general_error);  --  Accept "Pkg.", reject "Pkg.."
         if CD.Sy = IDent then
-          return Locate_Identifier
+          return Locate_Identifier_Internal
             (CD,
              ID_Copy & '.' & CD.Id,
+             True,
              ID_Copy,
              Level,
              Fail_when_No_Id,
@@ -569,7 +572,7 @@ package body HAC_Sys.Parser.Helpers is
     end if;
 
     return J;
-  end Locate_Identifier;
+  end Locate_Identifier_Internal;
 
   function Locate_Identifier
     (CD               : in out Compiler_Data;
@@ -582,16 +585,55 @@ package body HAC_Sys.Parser.Helpers is
   return Natural
   is
   begin
-    return Locate_Identifier
-      (CD               => CD,
-       Id               => Id,
-       Prefix_Id        => Empty_Alfa,
-       Level            => Level,
-       Fail_when_No_Id  => Fail_when_No_Id,
-       Alias_Resolution => Alias_Resolution,
-       Level_0_Filter   => Level_0_Filter,
-       Public_Filter    => Public_Filter);
+    return
+      Locate_Identifier_Internal
+        (CD               => CD,
+         Id               => Id,
+         using_parsed_Id  => False,       --  Extra parameter
+         Prefix_Id        => Empty_Alfa,  --  Extra parameter
+         Level            => Level,
+         Fail_when_No_Id  => Fail_when_No_Id,
+         Alias_Resolution => Alias_Resolution,
+         Level_0_Filter   => Level_0_Filter,
+         Public_Filter    => Public_Filter);
   end Locate_Identifier;
+
+  function Locate_CD_Id
+    (CD               : in out Compiler_Data;
+     Level            : in     Defs.Nesting_Level;
+     Fail_when_No_Id  : in     Boolean := True;
+     Alias_Resolution : in     Boolean := True;
+     Level_0_Filter   : in     Boolean := True;
+     Public_Filter    : in     Index   := Index'Last)
+  return Natural
+  is
+  begin
+    if CD.Id_location = No_Id_Cache then
+      CD.Id_location :=
+        --  Note that the following call might consume several
+        --  identifiers in the case of, e.g., Pkg_1.Sub_Pkg_2.Item.
+        Locate_Identifier_Internal
+          (CD               => CD,
+           Id               => CD.Id,       --  Here we use the Id just parsed.
+           using_parsed_Id  => True,        --  Extra parameter
+           Prefix_Id        => Empty_Alfa,  --  Extra parameter
+           Level            => Level,
+           Fail_when_No_Id  => Fail_when_No_Id,
+           Alias_Resolution => Alias_Resolution,
+           Level_0_Filter   => Level_0_Filter,
+           Public_Filter    => Public_Filter);
+    else
+      --  In some cases, the same identifier token, at the same location in
+      --  source text, is parsed twice or more times.
+      --  Example:
+      --    "for i in some_array'Range loop": some_array is checked for
+      --     begin a subtype (in Static_Subtype_Indication) then for being
+      --     a variable (in Simple_Expression). Finally, a pair of values
+      --     are detected via the 'Range attribute.
+      null;
+    end if;
+    return CD.Id_location;
+  end Locate_CD_Id;
 
   procedure Check_Duplicate_Specification
     (CD         : in out Compiler_Data;

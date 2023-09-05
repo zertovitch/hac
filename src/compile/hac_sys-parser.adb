@@ -69,7 +69,7 @@ package body HAC_Sys.Parser is
             ValParam := True;
           end if;
           if CD.Sy = IDent then
-            X := Locate_Identifier (CD, CD.Id, block_data.level);
+            X := Locate_CD_Id (CD, block_data.level);
             InSymbol;
             if X = CD.String_Id_Index then
               --  We could pass string literals as "in" parameter
@@ -204,7 +204,7 @@ package body HAC_Sys.Parser is
       if CD.Sy = RETURN_Symbol then
         InSymbol;  --  FUNCTION TYPE
         if CD.Sy = IDent then
-          I_Res_Type := Locate_Identifier (CD, CD.Id, block_data.level);
+          I_Res_Type := Locate_CD_Id (CD, block_data.level);
           InSymbol;
           if I_Res_Type /= 0 then
             if CD.IdTab (I_Res_Type).entity /= TypeMark then

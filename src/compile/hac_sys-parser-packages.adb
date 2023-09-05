@@ -285,7 +285,7 @@ package body HAC_Sys.Parser.Packages is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, severity => major);
       end if;
-      Apply_USE_Clause (CD, Level, prefixed, Helpers.Locate_Identifier (CD, CD.Id, Level));
+      Apply_USE_Clause (CD, Level, prefixed, Helpers.Locate_CD_Id (CD, Level));
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
       Helpers.Need (CD, Comma, err_general_error);
@@ -363,16 +363,16 @@ package body HAC_Sys.Parser.Packages is
             --  a library level invisible definition.
             --  If not, we do a "FROM Pkg IMPORT Short_Id" as you
             --  would do in Modula-2 or Python.
-            Id_Alias := Parser.Helpers.Locate_Identifier (
-              CD               => CD,
-              Id               => Short_Id,
-              Level            => Level,
-              Fail_when_No_Id  => False,
-              Alias_Resolution => False,
-              Level_0_Filter   => False
+            Id_Alias := Parser.Helpers.Locate_Identifier
+              (CD               => CD,
+               Id               => Short_Id,
+               Level            => Level,
+               Fail_when_No_Id  => False,
+               Alias_Resolution => False,
+               Level_0_Filter   => False);
               --  ^ We search any matching name, including an inactive
               --    name at library level.
-            );
+
             if Id_Alias = No_Id or else CD.IdTab (Id_Alias).lev < Level then
               --  Name was not found, or was defined at a lower nesting level.
               --  We enter, e.g. the "FALSE", "False" pair.

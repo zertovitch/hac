@@ -371,6 +371,15 @@ package HAC_Sys.Parser.Helpers is
      Public_Filter    : in     Index   := Index'Last)
   return Natural;
 
+  function Locate_CD_Id
+    (CD               : in out Compiler_Data;
+     Level            : in     Defs.Nesting_Level;
+     Fail_when_No_Id  : in     Boolean := True;
+     Alias_Resolution : in     Boolean := True;
+     Level_0_Filter   : in     Boolean := True;
+     Public_Filter    : in     Index   := Index'Last)
+  return Natural;
+
   procedure Check_Duplicate_Specification
     (CD         : in out Compiler_Data;
      old_id_idx :        Natural;

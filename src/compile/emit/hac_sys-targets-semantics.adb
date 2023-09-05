@@ -33,15 +33,21 @@ package body HAC_Sys.Targets.Semantics is
 
   overriding procedure Mark_Reference (m : in out Machine; located_id : Natural) is
     use HAT;
+    admit_duplicates : constant Boolean := True;
+    key : constant VString :=
+      --  Example: "c:\files\source.adb 130 12"
+      m.CD.CUD.source_file_name &
+      m.CD.CUD.line_count'Image &
+      Integer'Image (m.CD.syStart + 1);
   begin
-    m.ref_map.Insert
-      (Key =>
-         --  Example: "c:\files\source.adb 130 12"
-         m.CD.CUD.source_file_name &
-         m.CD.CUD.line_count'Image &
-         Integer'Image (m.CD.syStart + 1),
-       New_Item =>
-         located_id);
+    if admit_duplicates then
+      m.ref_map.Include (key, located_id);
+    else
+      m.ref_map.Insert (key, located_id);
+    end if;
+  exception
+    when Constraint_Error =>
+      raise Constraint_Error with "Duplicate reference key: " & To_String (key);
   end Mark_Reference;
 
   overriding procedure Find_Declaration

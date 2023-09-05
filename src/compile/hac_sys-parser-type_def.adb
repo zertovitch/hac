@@ -348,7 +348,7 @@ package body HAC_Sys.Parser.Type_Def is
       --  Normally this case should have been filtered out before.
       Error (CD, err_general_error, severity => major);
     end if;
-    Ident_Index := Locate_Identifier (CD, CD.Id, Level);
+    Ident_Index := Locate_CD_Id (CD, Level);
     if Ident_Index = CD.String_Id_Index then
       String_Sub_Typ;
     else

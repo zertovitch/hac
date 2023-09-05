@@ -31,7 +31,7 @@ package body HAC_Sys.Parser.Tasking is
     InSymbol;
     if CD.Sy = BODY_Symbol then  --  Task Body
       InSymbol;
-      I                := Locate_Identifier (CD, CD.Id, Level);
+      I                := Locate_CD_Id (CD, Level);
       TaskID           := CD.IdTab (I).name;
       TaskID_with_case := CD.IdTab (I).name_with_case;
       CD.Blocks_Table (CD.IdTab (I).block_or_pkg_ref).SrcFrom := saveLineCount;  --  (* Manuel *)

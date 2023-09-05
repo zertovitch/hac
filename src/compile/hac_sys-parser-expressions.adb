@@ -53,7 +53,7 @@ package body HAC_Sys.Parser.Expressions is
         when IDent =>
           --  Number defined using another one: "minus_pi : constant := -pi;"
           --  ... or, we have an enumeration item.
-          X := Locate_Identifier (CD, CD.Id, Level);
+          X := Locate_CD_Id (CD, Level);
           if X /= 0 then
             if CD.IdTab (X).entity = Declared_Number_or_Enum_Item then
               C.TP := CD.IdTab (X).xtyp;
@@ -489,7 +489,7 @@ package body HAC_Sys.Parser.Expressions is
               InSymbol (CD);
             when IDent =>
               declare
-                Ident_Index : constant Integer := Locate_Identifier (CD, CD.Id, Level);
+                Ident_Index : constant Integer := Locate_CD_Id (CD, Level);
                 r : IdTabEntry renames CD.IdTab (Ident_Index);
               begin
                 InSymbol (CD);
