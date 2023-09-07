@@ -107,11 +107,13 @@ package body HAC_Sys.Parser.Expressions is
         end loop;
         if Field_Id = No_Id then
           Error (CD, err_undefined_identifier, A2S (CD.Id_with_case), severity => major);
-        end if;
-        V            := CD.IdTab (Field_Id).xtyp;
-        Field_Offset := Integer (CD.IdTab (Field_Id).adr_or_sz);
-        if Field_Offset /= 0 then
-          Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
+        else
+          CD.target.Mark_Reference (Field_Id);
+          V            := CD.IdTab (Field_Id).xtyp;
+          Field_Offset := Integer (CD.IdTab (Field_Id).adr_or_sz);
+          if Field_Offset /= 0 then
+            Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
+          end if;
         end if;
       else
         Error (CD, err_var_with_field_selector_must_be_record);
@@ -226,6 +228,7 @@ package body HAC_Sys.Parser.Expressions is
     pragma Assert (Selector_Symbol_Loose (CD.Sy));  --  '.' or '(' or (wrongly) '['
     loop
       if CD.Sy = Period then
+        --  Record field selector.
         InSymbol (CD);  --  Consume '.' symbol.
         if CD.Sy = IDent then
           Record_Field_Selector;
@@ -233,6 +236,7 @@ package body HAC_Sys.Parser.Expressions is
           Error (CD, err_identifier_missing);
         end if;
       else
+        --  Array element selector.
         if CD.Sy = LBrack then  --  '['
           --  Common mistake by Pascal, Python or R programmers.
           Error (CD, err_left_bracket_instead_of_parenthesis);
