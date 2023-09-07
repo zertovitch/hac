@@ -231,6 +231,7 @@ package body HAC_Sys.Parser is
       --  ^ It can be a library unit name, like: "Parent_1.Child_3.Grandchild_5".
     begin
       pragma Assert (CD.Sy = IDent);
+      CD.target.Mark_Reference (Initial_Block_Data.block_id_index);
       loop
         full_name := full_name & CD.Id;
         InSymbol;
