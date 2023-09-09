@@ -21,15 +21,13 @@ package body HAC_Sys.Targets.Semantics is
 
   overriding procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is
   begin
-    m.decl_map (m.CD.Id_Count).is_built_in := is_built_in;
-    if not is_built_in then
-      m.decl_map (m.CD.Id_Count) :=
-        (is_built_in => False,
-         file_name   => m.CD.CUD.source_file_name,
-         line        => m.CD.CUD.line_count,
-         column      => m.CD.syStart + 1,
-         id_index    => m.CD.Id_Count);
-    end if;
+    m.decl_map (m.CD.Id_Count) :=
+      (file_name   => m.CD.CUD.source_file_name,
+       line        => m.CD.CUD.line_count,
+       column      => m.CD.syStart + 1,
+       --  NB: if is_built_in = False, the information above is garbage.
+       is_built_in => is_built_in,
+       id_index    => m.CD.Id_Count);
   end Mark_Declaration;
 
   overriding procedure Mark_Reference (m : in out Machine; located_id : Natural) is
@@ -67,7 +65,7 @@ package body HAC_Sys.Targets.Semantics is
       decl.id_index := -1;
       was_found := False;
     else
-      decl  := Declaration_Point'Class (m.decl_map (Element (curs)));
+      decl := Declaration_Point'Class (m.decl_map (Element (curs)));
       was_found := True;
     end if;
   end Find_Declaration;
