@@ -22,10 +22,9 @@ package body HAC_Sys.Targets.Semantics is
   overriding procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is
   begin
     m.decl_map (m.CD.Id_Count) :=
-      (file_name   => m.CD.CUD.source_file_name,
-       line        => m.CD.CUD.line_count,
-       column      => m.CD.syStart + 1,
-       --  NB: if is_built_in = False, the information above is garbage.
+      (file_name   => (if is_built_in then HAT.Null_VString else m.CD.CUD.source_file_name),
+       line        => (if is_built_in then -1               else m.CD.CUD.line_count),
+       column      => (if is_built_in then -1               else m.CD.syStart + 1),
        is_built_in => is_built_in,
        id_index    => m.CD.Id_Count);
   end Mark_Declaration;
