@@ -27,7 +27,8 @@ package body HAC_Sys.Targets.Semantics is
         (is_built_in => False,
          file_name   => m.CD.CUD.source_file_name,
          line        => m.CD.CUD.line_count,
-         column      => m.CD.syStart + 1);
+         column      => m.CD.syStart + 1,
+         id_index    => m.CD.Id_Count);
     end if;
   end Mark_Declaration;
 
@@ -51,25 +52,23 @@ package body HAC_Sys.Targets.Semantics is
   end Mark_Reference;
 
   overriding procedure Find_Declaration
-    (m          : in out Machine;
-     point      : in out Declaration_Point;  --  in: reference; out: declaration
-     located_id :    out Integer;
-     found      :    out Boolean)
-
+    (m         : in out Machine;
+     ref       : in     Reference_Point'Class;
+     decl      :    out Declaration_Point'Class;
+     was_found :    out Boolean)
   is
     curs : Reference_Mapping.Cursor;
     use HAT, Reference_Mapping;
   begin
     curs :=
       m.ref_map.Find
-        (point.file_name & point.line'Image & point.column'Image);
+        (ref.file_name & ref.line'Image & ref.column'Image);
     if curs = No_Element then
-      located_id := -1;
-      found := False;
+      decl.id_index := -1;
+      was_found := False;
     else
-      located_id := Element (curs);
-      point := m.decl_map (located_id);
-      found := True;
+      decl  := Declaration_Point'Class (m.decl_map (Element (curs)));
+      was_found := True;
     end if;
   end Find_Declaration;
 
