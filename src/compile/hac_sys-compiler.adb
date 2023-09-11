@@ -280,18 +280,20 @@ package body HAC_Sys.Compiler is
     end if;
   end Progress_Message;
 
-  procedure Dump_Asm (CD : Co_Defs.Compiler_Data; file_name : String) is
+  procedure Dump_HAC_VM_Asm (CD : Co_Defs.Compiler_Data; file_name : String) is
     use Ada.Text_IO;
     asm_dump : File_Type;
   begin
-    Create (asm_dump, Out_File, file_name);
-    PCode.Dump
-      (CD.ObjCode (CD.ObjCode'First .. CD.LC - 1),  --  Dump only compiled part.
-       CD.Strings_Constants_Table,
-       CD.Float_Constants_Table,
-       asm_dump);
-    Close (asm_dump);
-  end Dump_Asm;
+    if CD.Is_HAC_VM then
+      Create (asm_dump, Out_File, file_name);
+      PCode.Dump
+        (CD.ObjCode (CD.ObjCode'First .. CD.LC - 1),  --  Dump only compiled part.
+         CD.Strings_Constants_Table,
+         CD.Float_Constants_Table,
+         asm_dump);
+      Close (asm_dump);
+    end if;
+  end Dump_HAC_VM_Asm;
 
   procedure Compile_Main
     (CD                 : in out Co_Defs.Compiler_Data;

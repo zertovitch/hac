@@ -45,8 +45,8 @@ package HAC_Sys is
   --------------------------------------------------------------
 
   version   : constant String := "0.26";
-  reference : constant String := "31-Jul-2023";
-  --  Hopefully the latest version is at one of those URLs:
+  reference : constant String := "10-Sep-2023";
+  --  Hopefully the latest version is reachable at one of those URLs:
   web       : constant String := "https://hacadacompiler.sourceforge.io/";
   web2      : constant String := "https://sourceforge.net/projects/hacadacompiler/";
   web3      : constant String := "https://github.com/zertovitch/hac";

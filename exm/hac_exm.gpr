@@ -44,6 +44,7 @@ project HAC_Exm is
      "maze_gen.adb",
      "merge_sort.adb",
      "names_in_boxes.adb",
+     "native.adb",                 --  Example that works also for native targets.
      "pdf_hello.adb",              --  PDF demo
      "prc.adb",
      "random.adb",

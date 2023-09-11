@@ -53,7 +53,7 @@ package HAC_Sys.Compiler is
 
   procedure Print_Tables (CD : in Compiler_Data);
   procedure Progress_Message (CD : Co_Defs.Compiler_Data; msg : String);
-  procedure Dump_Asm (CD : Co_Defs.Compiler_Data; file_name : String);
+  procedure Dump_HAC_VM_Asm (CD : Co_Defs.Compiler_Data; file_name : String);
 
   function Unit_Compilation_Successful (CD : Compiler_Data) return Boolean;
   function Unit_Object_Code_Size (CD : Compiler_Data) return Natural;

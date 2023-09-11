@@ -150,7 +150,7 @@ package body HAC_Sys.Builder is
       Close (BD.CD.comp_dump);
     end if;
     if BD.asm_dump then
-      Compiler.Dump_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
+      Compiler.Dump_HAC_VM_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
     end if;
   exception
     when Errors.Compilation_abandoned =>
@@ -162,7 +162,7 @@ package body HAC_Sys.Builder is
         Close (BD.CD.comp_dump);
       end if;
       if BD.asm_dump then
-        Compiler.Dump_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
+        Compiler.Dump_HAC_VM_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
       end if;
     when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
       Finalize_Target;  --  Needed even on incomplete compilation.
