@@ -396,8 +396,8 @@ package body HAC_Sys.Errors is
       col_stop  := CD.prev_sy_end;
     else
       line      := CD.CUD.line_count;
-      col_start := CD.syStart;
-      col_stop  := CD.syEnd;
+      col_start := CD.CUD.sy_start;
+      col_stop  := CD.CUD.sy_end;
       if shift_one_character then
         col_start := col_start + 1;
         col_stop  := col_stop + 1;

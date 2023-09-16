@@ -5,10 +5,9 @@ with HAC_Sys.Parser.Helpers,
 
 package body HAC_Sys.Parser.Modularity is
 
-  procedure With_Clause (  --  10.1.2 (4)
-    CD : in out Co_Defs.Compiler_Data;
-    LD : in out Librarian.Library_Data
-  )
+  procedure With_Clause   --  10.1.2 (4)
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Librarian.Library_Data)
   is
     use Defs, Scanner, Errors;
   begin
@@ -17,6 +16,10 @@ package body HAC_Sys.Parser.Modularity is
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, severity => major);
       end if;
+      --
+      --  TBD: parse '.' for child units, like Locate_Identifier_Internal
+      --  with `using_parsed_Id` = True
+      --
       Librarian.Apply_WITH (CD, LD, A2S (CD.Id));
       InSymbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
@@ -25,10 +28,9 @@ package body HAC_Sys.Parser.Modularity is
     InSymbol (CD);  --  Consume the ';'.
   end With_Clause;
 
-  procedure Context_Clause (
-    CD : in out Co_Defs.Compiler_Data;
-    LD : in out Librarian.Library_Data
-  )
+  procedure Context_Clause
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Librarian.Library_Data)
   is
     use Defs, Librarian;
   begin

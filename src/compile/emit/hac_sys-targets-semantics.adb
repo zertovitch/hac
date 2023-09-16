@@ -1,3 +1,5 @@
+with HAC_Sys.Defs;
+
 package body HAC_Sys.Targets.Semantics is
 
   overriding procedure Initialize_Code_Emission (m : in out Machine) is
@@ -19,12 +21,14 @@ package body HAC_Sys.Targets.Semantics is
     m.busy := False;
   end Finalize_Code_Emission;
 
+  trace : constant Boolean := False;
+
   overriding procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is
   begin
     m.decl_map (m.CD.Id_Count) :=
       (file_name   => (if is_built_in then HAT.Null_VString else m.CD.CUD.source_file_name),
        line        => (if is_built_in then -1               else m.CD.CUD.line_count),
-       column      => (if is_built_in then -1               else m.CD.syStart + 1),
+       column      => (if is_built_in then -1               else m.CD.CUD.sy_start + 1),
        is_built_in => is_built_in,
        id_index    => m.CD.Id_Count);
   end Mark_Declaration;
@@ -36,8 +40,14 @@ package body HAC_Sys.Targets.Semantics is
       --  Example: "c:\files\source.adb 130 12"
       m.CD.CUD.source_file_name &
       m.CD.CUD.line_count'Image &
-      Integer'Image (m.CD.syStart + 1);
+      Integer'Image (m.CD.CUD.sy_start + 1);
   begin
+    if trace then
+      HAT.Put_Line
+        ("Mark_Reference, key = [" & key &
+         "] for Id" & located_id'Image & ", " &
+         Defs.A2S (m.CD.IdTab (located_id).name_with_case));
+    end if;
     if admit_duplicates then
       m.ref_map.Include (key, located_id);
     else

@@ -20,9 +20,8 @@ package HAC_Sys.Parser.Modularity is
   --  Referenced units (specifications or body-only) are compiled if
   --  necessary, or reactivated as library level definitions.
   --
-  procedure Context_Clause (
-    CD : in out Co_Defs.Compiler_Data;
-    LD : in out Librarian.Library_Data
-  );
+  procedure Context_Clause
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Librarian.Library_Data);
 
 end HAC_Sys.Parser.Modularity;

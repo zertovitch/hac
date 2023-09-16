@@ -30,8 +30,10 @@ package body HAC_Sys.Compiler is
   procedure Init (CUD : out Current_Unit_Data) is
   begin
     CUD.c := ' ';
-    CUD.CC := 0;
-    CUD.LL := 0;
+    CUD.CC       := 0;
+    CUD.LL       := 0;
+    CUD.sy_start := 1;
+    CUD.sy_end   := 1;
     CUD.level_0_def.Clear;
     CUD.use_hat_stack_top := 0;
     CUD.Use_HAT_Stack (CUD.use_hat_stack_top) := False;
@@ -71,8 +73,6 @@ package body HAC_Sys.Compiler is
     Init (CD.CUD);
     --  Scanner data
     CD.Sy                := Dummy_Symbol;
-    CD.syStart           := 1;
-    CD.syEnd             := 1;
     CD.prev_sy_start     := 1;
     CD.prev_sy_end       := 1;
     CD.prev_sy_line      := 0;
@@ -483,8 +483,12 @@ package body HAC_Sys.Compiler is
      needs_body             :    out Boolean)
   is
     use Ada.Strings.Fixed, Ada.Text_IO, Librarian, Errors, Parser.Helpers, PCode;
-    --  Save state of unit currently parsed (within a WITH clause).
+    --
+    --  Save state of unit currently being parsed (within a WITH clause).
+    --  That compilation is frozen until the point where `mem` is copied
+    --  back to CD.CUD.
     mem : constant Current_Unit_Data := CD.CUD;
+    --
     Unit_Id_with_case : Alfa;
     unit_block : Parser.Block_Data_Type;
     indent : Natural := 0;
@@ -678,8 +682,8 @@ package body HAC_Sys.Compiler is
     --  Export library-level context, possibly needed later by a body:
     unit_context := CD.CUD.level_0_def;
     CD.total_lines := CD.total_lines + CD.CUD.line_count;
-    --  Forget about the compilation just completed, back to the ongoing
-    --  compilation that triggered a call to Compile_Unit via a WITH:
+    --  Forget about the compilation just completed, and go back to the
+    --  ongoing compilation that triggered a call to Compile_Unit via a WITH:
     CD.CUD := mem;
     CD.recursion := CD.recursion - 1;
   exception

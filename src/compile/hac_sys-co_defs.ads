@@ -231,6 +231,7 @@ package HAC_Sys.Co_Defs is
     c                 : Character;           --  Character read from source program
     CC                : Integer;             --  Character counter (=column in current line)
     LL                : Natural;             --  Length of current line
+    sy_start, sy_end  : Integer;             --  Start and end on line for the current symbol
     --  Level 0 definitions visible to currently compiled unit:
     level_0_def       : Id_Maps.Map;
     Use_HAT_Stack     : Use_HAT_Stack_Type;
@@ -281,7 +282,6 @@ package HAC_Sys.Co_Defs is
     CUD : Current_Unit_Data;
     --  Scanning & Parsing
     Sy, prev_sy      : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
-    syStart, syEnd   : Integer;            --  Start and end on line for the symbol in Sy
     prev_sy_start,
     prev_sy_end,
     prev_sy_line     : Integer;

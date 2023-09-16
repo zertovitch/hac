@@ -587,8 +587,8 @@ package body HAC_Sys.Scanner is
         ST (CD.Strings_Table_Top + lit_len) := CD.CUD.c;
         if CD.CUD.CC = 1 then
           lit_len := 0;  --  END OF InpLine
-          CD.syStart := 1;
-          CD.syEnd   := 1;
+          CD.CUD.sy_start := 1;
+          CD.CUD.sy_end   := 1;
           Error
             (CD,
              err_general_error,
@@ -620,8 +620,8 @@ package body HAC_Sys.Scanner is
 
   begin  --  InSymbol
     CD.prev_sy       := CD.Sy;
-    CD.prev_sy_start := CD.syStart;
-    CD.prev_sy_end   := CD.syEnd;
+    CD.prev_sy_start := CD.CUD.sy_start;
+    CD.prev_sy_end   := CD.CUD.sy_end;
     CD.prev_sy_line  := CD.CUD.line_count;
 
     Big_loop :
@@ -630,7 +630,7 @@ package body HAC_Sys.Scanner is
       loop
         Skip_Blanks (CD);
 
-        CD.syStart := CD.CUD.CC - 1;
+        CD.CUD.sy_start := CD.CUD.CC - 1;
         exit Small_loop when Character_Types (CD.CUD.c) /= Illegal;
         Error (CD, err_scanner_illegal_character);
         if CD.comp_dump_requested then
@@ -805,7 +805,7 @@ package body HAC_Sys.Scanner is
       exit Big_loop when exit_big_loop;
     end loop Big_loop;
 
-    CD.syEnd := CD.CUD.CC - 1;
+    CD.CUD.sy_end := CD.CUD.CC - 1;
 
     if CD.comp_dump_requested then
       Put_Line (CD.comp_dump, CD.CUD.input_line (1 .. CD.CUD.LL));
