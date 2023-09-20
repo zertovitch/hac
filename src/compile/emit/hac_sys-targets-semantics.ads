@@ -24,6 +24,11 @@ package HAC_Sys.Targets.Semantics is
   --  Reference map
   --  =============
   --
+  --  This container holds all references to variables, functions,
+  --  types, etc. The search key is the exact position of the first
+  --  letter of the identifier.
+
+  --
   --  Key                  Value
   --  ===                  =====
   --  [file_name i j]      index in the Id Table
@@ -34,8 +39,12 @@ package HAC_Sys.Targets.Semantics is
      Hash            => Ada.Strings.Unbounded.Hash,
      Equivalent_Keys => Ada.Strings.Unbounded."=");
 
-  --  Declarations map
-  --  ================
+  --  Declaration array
+  --  =================
+  --
+  --  This container holds the exact position of the declarations.
+  --  It is a simple array; the element #i corresponds to
+  --  the identifer #i in the compiler's identifier table.
   --
   --  Key                  Value
   --  ===                  =====
@@ -51,14 +60,27 @@ package HAC_Sys.Targets.Semantics is
   --      modification in the editor (keystroke, cut, paste, ...)
   --
 
+  --  Declaration localization
+  --  ========================
+  --
+  --  This container enables the localization of the index of the last
+  --  identifier at a given point in a source code file. From that index
+  --  it is possible to gather all the identifiers visible at that point.
+  --  Due to nesting, that overall list is not simply growing along
+  --  the text, so the list of visible identifiers it is a part of a
+  --  declaration tree. You build it by going from a leaf (index of
+  --  the lat identifier) to the root.
+
+  --  !!  Here the declarations...
+
   type Machine is limited new Targets.Machine with record
     CD         : Co_Defs.Compiler_Data_Access;
     ref_map    : Reference_Mapping.Map;
-    decl_map   : Declaration_Point_Array;
-    busy       : Boolean  := False with Volatile;
+    decl_array : Declaration_Point_Array;
     started    : HAT.Time;
     finished   : HAT.Time;
     total_time : Duration := 0.0;
+    busy       : Boolean  := False with Volatile;
   end record;
 
   --------------------

@@ -25,7 +25,7 @@ package body HAC_Sys.Targets.Semantics is
 
   overriding procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is
   begin
-    m.decl_map (m.CD.Id_Count) :=
+    m.decl_array (m.CD.Id_Count) :=
       (file_name   => (if is_built_in then HAT.Null_VString else m.CD.CUD.source_file_name),
        line        => (if is_built_in then -1               else m.CD.CUD.line_count),
        column      => (if is_built_in then -1               else m.CD.CUD.sy_start + 1),
@@ -74,7 +74,7 @@ package body HAC_Sys.Targets.Semantics is
       decl.id_index := -1;
       was_found := False;
     else
-      decl := Declaration_Point'Class (m.decl_map (Element (curs)));
+      decl := Declaration_Point'Class (m.decl_array (Element (curs)));
       was_found := True;
     end if;
   end Find_Declaration;

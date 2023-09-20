@@ -102,6 +102,16 @@ package HAC_Sys.Targets is
      was_found :    out Boolean)
     is null;
 
+  --  This is for "auto-complete" purposes.
+  procedure Find_Possible_Declarations
+    (m                 : in out Machine;
+     ref               : in     Reference_Point'Class;
+     prefix            : in     String;
+     max_list_length   : in     Positive;
+     max_search_length : in     Positive;
+     list              :    out HAT.VString)  --  separated by spaces
+    is null;
+
   combination_not_supported : exception;
 
 end HAC_Sys.Targets;
