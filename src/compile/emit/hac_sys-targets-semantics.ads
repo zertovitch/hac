@@ -21,6 +21,16 @@ with HAT;
 
 package HAC_Sys.Targets.Semantics is
 
+  type Reference_Point is tagged record
+    file_name    : HAT.VString;
+    line, column : Integer;
+  end record;
+
+  type Declaration_Point is new Reference_Point with record
+    is_built_in : Boolean;
+    id_index    : Integer;
+  end record;
+
   --  Reference map
   --  =============
   --
@@ -83,6 +93,8 @@ package HAC_Sys.Targets.Semantics is
     busy       : Boolean  := False with Volatile;
   end record;
 
+  type Semantics_Machine_Reference is access all Machine'Class;
+
   --------------------
   --  Informations  --
   --------------------
@@ -137,10 +149,19 @@ package HAC_Sys.Targets.Semantics is
 
   overriding procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean);
 
-  overriding procedure Find_Declaration
-    (m         : in out Machine;
+  procedure Find_Declaration
+    (m         : in     Machine;
      ref       : in     Reference_Point'Class;
      decl      :    out Declaration_Point'Class;
      was_found :    out Boolean);
+
+  --  This is for "auto-complete" purposes.
+  --  The list of identifiers is sorted, separated by spaces.
+  function Find_Possible_Declarations
+    (m         : in     Machine;
+     ref       : in     Reference_Point'Class;
+     prefix    : in     String) return String is ("");
+
+  --  !! Build identifier list.
 
 end HAC_Sys.Targets.Semantics;

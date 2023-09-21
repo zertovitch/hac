@@ -58,8 +58,8 @@ package body HAC_Sys.Targets.Semantics is
       raise Constraint_Error with "Duplicate reference key: " & To_String (key);
   end Mark_Reference;
 
-  overriding procedure Find_Declaration
-    (m         : in out Machine;
+  procedure Find_Declaration
+    (m         : in     Machine;
      ref       : in     Reference_Point'Class;
      decl      :    out Declaration_Point'Class;
      was_found :    out Boolean)

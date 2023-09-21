@@ -22,8 +22,6 @@
 
 with HAC_Sys.Defs;
 
-with HAT;
-
 package HAC_Sys.Targets is
 
   type Machine is limited interface;
@@ -84,33 +82,6 @@ package HAC_Sys.Targets is
   procedure Mark_Reference (m : in out Machine; located_id : Natural) is null;
 
   procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is null;
-
-  type Reference_Point is tagged record
-    file_name    : HAT.VString;
-    line, column : Integer;
-  end record;
-
-  type Declaration_Point is new Reference_Point with record
-    is_built_in : Boolean;
-    id_index    : Integer;
-  end record;
-
-  procedure Find_Declaration
-    (m         : in out Machine;
-     ref       : in     Reference_Point'Class;
-     decl      :    out Declaration_Point'Class;
-     was_found :    out Boolean)
-    is null;
-
-  --  This is for "auto-complete" purposes.
-  procedure Find_Possible_Declarations
-    (m                 : in out Machine;
-     ref               : in     Reference_Point'Class;
-     prefix            : in     String;
-     max_list_length   : in     Positive;
-     max_search_length : in     Positive;
-     list              :    out HAT.VString)  --  separated by spaces
-    is null;
 
   combination_not_supported : exception;
 
