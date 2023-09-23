@@ -57,8 +57,9 @@ package body HAC_Sys.Targets.Semantics is
       else
         line_map_a := Element (curs);
       end if;
-      --  2) Insert the infos for the declaration into the line map.
-      line_map_a.Insert (m.CD.CUD.line_count, m.CD.Id_Count);
+      --  2) Insert the infos for the declaration into the line map,
+      --     possibly replacing a value for the same line number.
+      line_map_a.Include (m.CD.CUD.line_count, m.CD.Id_Count);
     end if;
   end Mark_Declaration;
 
