@@ -22,9 +22,12 @@
 
 with HAC_Sys.Defs;
 
+with Ada.Finalization;
+
 package HAC_Sys.Targets is
 
-  type Machine is limited interface;
+  type Machine is
+    abstract new Ada.Finalization.Limited_Controlled with null record;
 
   type Abstract_Machine_Reference is access all Machine'Class;
 
