@@ -382,7 +382,7 @@ package body HAC_Sys.Errors is
     --
     function Diagnostic_Suffix return String is
       (case diagnostic.diagnostic_kind is
-         when warning | note => " [-w" & remark_letter (code) & ']',
+         when warning | note => " [-r" & remark_letter (code) & ']',
          when others         => "");
   begin
     if code in Compile_Warning then

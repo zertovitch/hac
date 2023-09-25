@@ -123,7 +123,7 @@ procedure HAC is
 
   procedure Process_Argument (arg : String; arg_pos : Positive) is
     opt : constant String := arg (arg'First + 1 .. arg'Last);
-    unknown_warning : Boolean;
+    unknown_remark : Boolean;
     use HAT;
   begin
     if arg (arg'First) = '-' then
@@ -156,22 +156,22 @@ procedure HAC is
                 Argument_Error ("Unknown target " & new_target_name);
             end;
           end if;
-        when 'w' =>
+        when 'r' =>
           if opt'Length = 1 then
-            Argument_Error ("Missing warning / note switch");
+            Argument_Error ("Missing remark switch");
           else
-            unknown_warning := True;
-            for w in HAC_Sys.Defs.Compile_Remark loop
-              if HAC_Sys.Defs.remark_letter (w) = opt (opt'First + 1) then
-                remarks (w) := True;
-                unknown_warning := False;
-              elsif To_Upper (HAC_Sys.Defs.remark_letter (w)) = opt (opt'First + 1) then
-                remarks (w) := False;
-                unknown_warning := False;
+            unknown_remark := True;
+            for r in HAC_Sys.Defs.Compile_Remark loop
+              if HAC_Sys.Defs.remark_letter (r) = opt (opt'First + 1) then
+                remarks (r) := True;
+                unknown_remark := False;
+              elsif To_Upper (HAC_Sys.Defs.remark_letter (r)) = opt (opt'First + 1) then
+                remarks (r) := False;
+                unknown_remark := False;
               end if;
             end loop;
-            if unknown_warning then
-              Argument_Error ("Unknown warning / note switch '" & opt (opt'First + 1) & ''');
+            if unknown_remark then
+              Argument_Error ("Unknown remark switch '" & opt (opt'First + 1) & ''');
             end if;
           end if;
         when 'I' =>
