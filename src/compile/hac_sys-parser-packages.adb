@@ -318,8 +318,8 @@ package body HAC_Sys.Parser.Packages is
         Note
           (CD,
            note_redundant_construct,
-           """use"" clause already applied earlier for package """ &
-           A2S (CD.IdTab (Pkg_Idx).name_with_case) & '"');
+           """use"" clause already applied, in same declarative part, for" &
+           " package """ & A2S (CD.IdTab (Pkg_Idx).name_with_case) & '"');
       end if;
     end Issue_Duplicate_Use_Warning;
   begin

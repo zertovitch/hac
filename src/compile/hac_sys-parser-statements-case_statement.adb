@@ -30,7 +30,7 @@ is
   choice_counter : Integer := 0;  --  This counts the various choices separated by '|'.
   exit_counter   : Integer := 0;  --  This will correspond to the number of "=>".
   LC1 : Integer;
-  others_flag : Boolean := False;
+  WHEN_OTHERS_flag : Boolean := False;
 
   use Multi_Precision_Integers;
   subtype Choice_Count_Type is Multi_Int (4);
@@ -110,7 +110,7 @@ is
     InSymbol;  --  Consume `WHEN`
     --  Here, a discrete_choice_list (Ada RM 3.8.1 (4)) following WHEN.
     if Constant_Definition_Begin_Symbol (CD.Sy) then
-      if others_flag then  --  Normal choice list *atfer* the "others" choice.
+      if WHEN_OTHERS_flag then  --  Normal choice list *atfer* the "others" choice.
         Error (CD, err_case_others_alone_last);
       end if;
       Discrete_Choice;
@@ -123,10 +123,10 @@ is
         end if;
       end loop;
     elsif CD.Sy = OTHERS_Symbol then        -- Hathorn
-      if others_flag then  --  Duplicate "others".
+      if WHEN_OTHERS_flag then  --  Duplicate "others".
         Error (CD, err_case_others_alone_last);
       end if;
-      others_flag := True;
+      WHEN_OTHERS_flag := True;
       if choice_counter = Cases_Max then
         Fatal (Case_Labels);  --  Exception is raised there.
       end if;
@@ -153,20 +153,33 @@ is
     expected_choices, difference : Choice_Count_Type;
   begin
     pragma Assert (Choice_Count_Type'Size >= HAC_Integer'Size);
-    if others_flag then
-      return;
-    end if;
     Fill (expected_choices, Count_Choice_Values (X.Discrete_First, X.Discrete_Last));
     Fill (difference, expected_choices - parsed_choices);
-    --  When difference < 0, choices are out of
-    --  range (error detected on parsing).
-    if difference > 0 then
-      Error
-        (CD, err_choices_not_covered,
-         (if difference > 99 then ""
-          elsif Equal (difference, 1) then ": one case is missing"
-          else ":" & Basic_Int'Image (Basic (difference)) & " cases are missing"),
-         severity => minor);
+    if Equal (difference, 0) then
+      if WHEN_OTHERS_flag then
+        if CD.remarks (note_redundant_construct) then
+          Note
+            (CD,
+             note_redundant_construct,
+             """when others"" is redundant here: all values" &
+             " are already explicitly covered");
+        end if;
+      end if;
+    else
+      pragma Assert (difference > 0);
+      --  ^ NB: if the difference was negative, there would be more parsed
+      --    choices than possible choices. Thus at least one choice
+      --    would be out of range. But that error would have been detected
+      --    on parsing and this procedure would not have been called.
+      if not WHEN_OTHERS_flag then
+        Error
+          (CD, err_choices_not_covered,
+           (if difference > 99 then ""  --  Too many omissions for display...
+            elsif Equal (difference, 1) then ": one case is missing"
+            else ":" & Basic_Int'Image (Basic (difference)) &
+              " cases are missing"),
+           severity => minor);
+      end if;
     end if;
   end Check_Coverage;
 
@@ -195,7 +208,8 @@ begin  --  CASE_Statement
   if CD.Sy /= WHEN_Symbol then
     Error (CD, err_WHEN_missing, severity => major);
   end if;
-  loop  --  All cases are parsed here.
+  loop
+    --  All cases are parsed in this loop.
     WHEN_Discrete_Choice_List;
     exit when CD.Sy /= WHEN_Symbol;
   end loop;
