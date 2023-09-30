@@ -121,23 +121,23 @@ package HAC_Sys.Co_Defs is
   (
       --  Declared number: untyped constant, like
       --  "pi : constant := 3.1415927"; (RM 3.3.2).
-      Declared_Number_or_Enum_Item,
+      declared_number_or_enum_item,
       --
-      Variable,
-      TypeMark,
+      variable,
+      typemark,
       --
-      Paquetage,
-      Paquetage_Body,
-      Prozedure,
-      Prozedure_Intrinsic,
-      Funktion,
-      Funktion_Intrinsic,
+      paquetage,
+      paquetage_body,
+      prozedure,
+      prozedure_intrinsic,
+      funktion,
+      funktion_intrinsic,
       --
       aTask,
       aEntry,
       --
-      Loop_Identifier,
-      Alias   --  Short name of another entity ("use" clause).
+      loop_identifier,
+      alias   --  Short name of another entity ("use" clause).
   );
 
   type Declaration_Kind is

@@ -110,7 +110,7 @@ package body HAC_Sys.Parser.Packages is
             when others =>
               Error (CD, err_identifier_missing, severity => major);
           end case;
-          Enter_Def.Enter_Prefixed (CD, block_data.level, CD.Id, CD.Id_with_case, Paquetage, dummy_forward);
+          Enter_Def.Enter_Prefixed (CD, block_data.level, CD.Id, CD.Id_with_case, paquetage, dummy_forward);
           CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
           --  Why spec_resolved ? missing bodies for possible suprograms
           --  in that package are checked anyway.
@@ -212,11 +212,11 @@ package body HAC_Sys.Parser.Packages is
           --  a spec defined in the parent package...
           Scanner.InSymbol (CD);
           subpackage_body := False;
-          subpkg_kind := Paquetage;
+          subpkg_kind := paquetage;
           if CD.Sy = BODY_Symbol then
             Scanner.InSymbol (CD);
             subpackage_body := True;
-            subpkg_kind := Paquetage_Body;
+            subpkg_kind := paquetage_body;
           end if;
           if CD.Sy /= IDent then
             Error (CD, err_identifier_missing, severity => major);
@@ -324,7 +324,7 @@ package body HAC_Sys.Parser.Packages is
     end Issue_Duplicate_Use_Warning;
   begin
     pragma Assert (Pkg_Idx > No_Id);
-    if CD.IdTab (Pkg_Idx).entity /= Paquetage then
+    if CD.IdTab (Pkg_Idx).entity /= paquetage then
       Error (CD, err_general_error, "package name expected", severity => major);
     end if;
     if CD.IdTab (Pkg_Idx).lev = 0 and then Pkg_UName = HAT_Name then
@@ -382,14 +382,14 @@ package body HAC_Sys.Parser.Packages is
                  prefixed,
                  Short_Id,
                  S2A (Full_Name (Start .. Full_Name'Last)),
-                 Alias,
+                 alias,
                  dummy_id_idx);
               CD.IdTab (CD.Id_Count).adr_or_sz := HAC_Integer (i);
               --  ^ i = Aliased entity's index.
             else
               --  Here we have found an identical and
               --  visible short identifier at the same level.
-              if CD.IdTab (Id_Alias).entity = Alias
+              if CD.IdTab (Id_Alias).entity = alias
                 and then CD.IdTab (Id_Alias).adr_or_sz = HAC_Integer (i)
               then
                 --  Here we have an identical alias (same name, and points

@@ -55,7 +55,7 @@ package body HAC_Sys.Parser.Expressions is
           --  ... or, we have an enumeration item.
           X := Locate_CD_Id (CD, Level);
           if X /= 0 then
-            if CD.IdTab (X).entity = Declared_Number_or_Enum_Item then
+            if CD.IdTab (X).entity = declared_number_or_enum_item then
               C.TP := CD.IdTab (X).xtyp;
               if C.TP.TYP = Floats then
                 C.R := HAC_Float (Sign) * CD.Float_Constants_Table (Integer (CD.IdTab (X).adr_or_sz));
@@ -498,7 +498,7 @@ package body HAC_Sys.Parser.Expressions is
               begin
                 InSymbol (CD);
                 case r.entity is
-                  when Declared_Number_or_Enum_Item =>
+                  when declared_number_or_enum_item =>
                     X := r.xtyp;
                     if X.TYP = Floats then
                       --  Address is an index in the float constants table.
@@ -510,7 +510,7 @@ package body HAC_Sys.Parser.Expressions is
                       Ranges.Set_Singleton_Range (X, r.adr_or_sz);
                     end if;
                     --
-                  when Variable =>
+                  when variable =>
                     X := r.xtyp;
                     LC_Mem := CD.LC;
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
@@ -553,16 +553,16 @@ package body HAC_Sys.Parser.Expressions is
                       Attributes.Object_Attribute (CD, Level, FSys_Prim, X, LC_Mem, X);
                     end if;
                     --
-                  when TypeMark =>
+                  when typemark =>
                     X := r.xtyp;
                     Subtype_Prefixed_Expression (CD, Level, FSys_Prim, Ident_Index, X);
-                  when Prozedure | Prozedure_Intrinsic =>
+                  when prozedure | prozedure_intrinsic =>
                     Error (CD, err_expected_constant_function_variable_or_subtype);
-                  when Funktion =>
+                  when funktion =>
                     X := r.xtyp;
                     Calls.Subprogram_or_Entry_Call
                       (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
-                  when Funktion_Intrinsic =>
+                  when funktion_intrinsic =>
                     Standard_Functions.Standard_Function
                       (CD, Level, FSys_Prim, Ident_Index, SF_Code'Val (r.adr_or_sz), X);
                   when others =>
@@ -1075,7 +1075,7 @@ package body HAC_Sys.Parser.Expressions is
   is
     Mem_Sy : constant KeyWSymbol := CD.Sy;
   begin
-    pragma Assert (CD.IdTab (Typ_ID_Index).entity = TypeMark);
+    pragma Assert (CD.IdTab (Typ_ID_Index).entity = typemark);
     InSymbol (CD);
     case Mem_Sy is
       when LParent    =>  --  S (...)

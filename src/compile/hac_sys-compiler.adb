@@ -368,7 +368,7 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, "Compiler: main procedure is " & A2S (CD.Main_Program_ID));
     end if;
 
-    Librarian.Enter_Library_Level_Def (CD, A2S (CD.Main_Program_ID_with_case), Prozedure, NOTYP, 0);
+    Librarian.Enter_Library_Level_Def (CD, A2S (CD.Main_Program_ID_with_case), prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  Task Table Entry for main task.
 
@@ -384,7 +384,7 @@ package body HAC_Sys.Compiler is
 
     main_block.level                         := 1;
     main_block.block_id_index                := CD.Id_Count;
-    main_block.entity                        := Prozedure;
+    main_block.entity                        := prozedure;
     main_block.is_main                       := True;
     main_block.previous_declaration_id_index := No_Id;
     --  Start Compiling of Main
@@ -437,7 +437,7 @@ package body HAC_Sys.Compiler is
       Put_Line (map_file, "------------------------");
       New_Line (map_file);
       for Blk of CD.IdTab (CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count) loop
-        if Blk.entity = Variable then
+        if Blk.entity = variable then
           if Blk.xtyp.TYP /= NOTYP then
             Ada.Integer_Text_IO.Put (map_file, Integer (Blk.adr_or_sz), 4);
             Put (map_file, A2S (Blk.name) & "   ");
@@ -506,7 +506,7 @@ package body HAC_Sys.Compiler is
     begin
       if unit_context.Contains (some_stuff_in_HAT) then
         stuff_index := unit_context (some_stuff_in_HAT);
-        if CD.IdTab (stuff_index).entity = Alias then
+        if CD.IdTab (stuff_index).entity = alias then
           --  Item named VSTRING from a USE clause was detected.
           --  Get the real item behind the alias (VSTRING -> ?.VSTRING):
           stuff_index := Integer (CD.IdTab (stuff_index).adr_or_sz);
@@ -608,12 +608,12 @@ package body HAC_Sys.Compiler is
     Unit_Id_with_case := CD.Id_with_case;
     case kind is
       when Procedure_Unit =>
-        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), Prozedure, NOTYP, 0);
+        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), prozedure, NOTYP, 0);
       when Function_Unit =>
-        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), Funktion, NOTYP, 0);
+        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), funktion, NOTYP, 0);
         --  The type of the return value is adjusted by Block.Function_Result_Profile.
       when Package_Declaration =>
-        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), Paquetage, NOTYP, 0);
+        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), paquetage, NOTYP, 0);
       when Package_Body =>
         --  Library-level package body doesn't need an entry in the identifier table:
         null;
@@ -629,7 +629,7 @@ package body HAC_Sys.Compiler is
         --
         unit_block.level                         := 1;
         unit_block.block_id_index                := new_id_index;
-        unit_block.entity                        := (if kind = Function_Unit then Funktion else Prozedure);
+        unit_block.entity                        := (if kind = Function_Unit then funktion else prozedure);
         unit_block.is_main                       := False;
         unit_block.previous_declaration_id_index := specification_id_index;
         Parser.Block (

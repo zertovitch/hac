@@ -57,11 +57,11 @@ package body HAC_Sys.Parser.Enter_Def is
     if J = No_Id then
       null;  --  All good: the identifier is new at this nesting level.
     elsif
-       ((K = Prozedure or K = Funktion)
+       ((K = prozedure or K = funktion)
         and then K = CD.IdTab (J).entity
         and then CD.IdTab (J).decl_kind = spec_unresolved)
       or else
-       (K = Paquetage_Body and then CD.IdTab (J).entity = Paquetage)
+       (K = paquetage_body and then CD.IdTab (J).entity = paquetage)
     then
       --  No duplicate in those cases: J is a spec., new declaration
       --  is the corresponding body.
@@ -173,7 +173,7 @@ package body HAC_Sys.Parser.Enter_Def is
       dummy_id_idx : Natural;
     begin
       if CD.Sy = IDent then
-        Enter (CD, Level, prefixed, CD.Id, CD.Id_with_case, Variable, dummy_id_idx);
+        Enter (CD, Level, prefixed, CD.Id, CD.Id_with_case, variable, dummy_id_idx);
         Scanner.InSymbol (CD);
       else
         Error (CD, err_identifier_missing);

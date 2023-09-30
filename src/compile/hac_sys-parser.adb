@@ -59,7 +59,7 @@ package body HAC_Sys.Parser is
             InSymbol;
             in_keyword := True;
           end if;
-          if block_data.entity = Funktion then  --  If I am a function, no In Out params allowed
+          if block_data.entity = funktion then  --  If I am a function, no In Out params allowed
             ValParam := True;
           elsif CD.Sy = OUT_Symbol then
             InSymbol;
@@ -77,7 +77,7 @@ package body HAC_Sys.Parser is
               --  the string length and the index into the string table.
               Error (CD, err_string_not_supported_as_parameter, severity => major);
             elsif X /= No_Id then
-              if CD.IdTab (X).entity = TypeMark then
+              if CD.IdTab (X).entity = typemark then
                 xTP := CD.IdTab (X).xtyp;
                 Sz := Integer (if ValParam then CD.IdTab (X).adr_or_sz else 1);
               else
@@ -147,10 +147,10 @@ package body HAC_Sys.Parser is
             --  Local package (local to a block or subprogram).
             InSymbol;
             is_body := CD.Sy = BODY_Symbol;
-            pkg_kind := Paquetage;
+            pkg_kind := paquetage;
             if is_body then
               InSymbol;
-              pkg_kind := Paquetage_Body;
+              pkg_kind := paquetage_body;
             end if;
             if CD.Sy /= IDent then
               Error (CD, err_identifier_missing, severity => major);
@@ -210,7 +210,7 @@ package body HAC_Sys.Parser is
           I_Res_Type := Locate_CD_Id (CD, block_data.level);
           InSymbol;
           if I_Res_Type /= 0 then
-            if CD.IdTab (I_Res_Type).entity /= TypeMark then
+            if CD.IdTab (I_Res_Type).entity /= typemark then
               Error (CD, err_missing_a_type_identifier, severity => major);
             elsif PCode_Atomic_Nonlimited_Typ (CD.IdTab (I_Res_Type).xtyp.TYP) then
               CD.IdTab (block_data.block_id_index).xtyp := CD.IdTab (I_Res_Type).xtyp;
@@ -326,7 +326,7 @@ package body HAC_Sys.Parser is
         --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;"
         InSymbol;  --  Consume NULL symbol.
         Statements_Part_Setup;
-        if block_data.entity = Funktion then
+        if block_data.entity = funktion then
           --  There are no null functions: what would be the result?
           Error (CD, err_no_null_functions);
         else
@@ -433,7 +433,7 @@ package body HAC_Sys.Parser is
     CD.Blocks_Table (subprogram_block_index).Last_Param_Id_Idx := CD.Id_Count;
     CD.Blocks_Table (subprogram_block_index).PSize := block_data.data_allocation_index;
     --
-    if block_data.entity = Funktion and not Is_a_block_statement then
+    if block_data.entity = funktion and not Is_a_block_statement then
       Function_Result_Profile;
     end if;
     --
@@ -478,14 +478,14 @@ package body HAC_Sys.Parser is
          current_level,
          CD.Id,
          id_subprog_with_case,
-         (if IsFun then Funktion else Prozedure),
+         (if IsFun then funktion else prozedure),
          old_id_idx);
       --  NB: now old_id_idx, if different than No_Id, points to the
       --  possible previous declaration of the subprogram with that name.
       Scanner.InSymbol (CD);
       sub_sub_prog_block_data.level                         := current_level + 1;
       sub_sub_prog_block_data.block_id_index                := CD.Id_Count;
-      sub_sub_prog_block_data.entity                        := (if IsFun then Funktion else Prozedure);
+      sub_sub_prog_block_data.entity                        := (if IsFun then funktion else prozedure);
       sub_sub_prog_block_data.is_main                       := False;
       sub_sub_prog_block_data.previous_declaration_id_index := old_id_idx;
       new_id_idx := CD.Id_Count;

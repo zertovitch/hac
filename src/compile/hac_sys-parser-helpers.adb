@@ -465,9 +465,9 @@ package body HAC_Sys.Parser.Helpers is
       --  Scan all Id's on level L:
       loop
         exit when J = No_Id;  --  Beginning of ID table reached.
-        if CD.IdTab (J).entity /= Paquetage_Body then
+        if CD.IdTab (J).entity /= paquetage_body then
           --  ^ A package body is invisible as a declaration.
-          if CD.IdTab (J).entity = Paquetage
+          if CD.IdTab (J).entity = paquetage
             and then Length (Prefix_Id) > 0
             and then Prefix_Id = CD.IdTab (J).name
           then
@@ -535,7 +535,7 @@ package body HAC_Sys.Parser.Helpers is
 
     --  Name aliasing resolution (brought by a use clause
     --  or a simple renames clause):
-    while Alias_Resolution and then CD.IdTab (J).entity = Alias loop
+    while Alias_Resolution and then CD.IdTab (J).entity = alias loop
       J := Integer (CD.IdTab (J).adr_or_sz);  --  E.g. True -> Standard.True
     end loop;
 
@@ -544,7 +544,7 @@ package body HAC_Sys.Parser.Helpers is
     end if;
 
     --  Prefixed package resolution: `Pkg.Item`, `Pkg.Child_1.Item`, ...
-    if using_parsed_Id and then CD.IdTab (J).entity = Paquetage then
+    if using_parsed_Id and then CD.IdTab (J).entity = paquetage then
       Skip_Blanks (CD);
       if CD.CUD.c = '.' then  --  We sneak a look at the next symbol.
         ID_Copy := Id;
@@ -703,7 +703,7 @@ package body HAC_Sys.Parser.Helpers is
       f := f + 1;
       s := s + 1;
     end loop;
-    if CD.IdTab (new_id_idx).entity = Funktion
+    if CD.IdTab (new_id_idx).entity = funktion
       and then CD.IdTab (new_id_idx).xtyp /= CD.IdTab (old_id_idx).xtyp
     then
       Error (CD, err_spec_body_mismatch, "result type is different",

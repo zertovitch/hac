@@ -187,7 +187,7 @@ package body HAC_Sys.Parser.Const_Var is
             r.is_initialized := is_untyped_constant;  --  May be changed later.
             r.is_assigned    := False;
             if is_untyped_constant then
-              r.entity := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
+              r.entity := declared_number_or_enum_item;  --  r was initially a Variable.
               r.xtyp := C.TP;
               case C.TP.TYP is
                 when Floats =>

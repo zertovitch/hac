@@ -151,7 +151,7 @@ package body HAC_Sys.Librarian is
       (CD, upper_name_alfa, Level => 0, Level_0_Filter => False);
     CD.CUD.level_0_def.Include (upper_name_alfa, unit_idx);
     --  Only packages specifications need to have their items made visible.
-    if CD.IdTab (unit_idx).entity = Paquetage then
+    if CD.IdTab (unit_idx).entity = paquetage then
       declare
         pkg_table_entry : Package_Table_Entry
           renames CD.Packages_Table (CD.IdTab (unit_idx).block_or_pkg_ref);

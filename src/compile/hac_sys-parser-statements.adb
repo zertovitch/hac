@@ -29,7 +29,7 @@ package body HAC_Sys.Parser.Statements is
       Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
     end Issue_Type_Mismatch_Error;
   begin
-    pragma Assert (CD.IdTab (Var_Id_Index).entity = Variable);
+    pragma Assert (CD.IdTab (Var_Id_Index).entity = variable);
     X := CD.IdTab (Var_Id_Index).xtyp;
     Emit_2
      (CD,
@@ -376,11 +376,11 @@ package body HAC_Sys.Parser.Statements is
     begin
       InSymbol;
       if CD.Sy = Semicolon then
-        if Block_Data.entity = Funktion then
+        if Block_Data.entity = funktion then
           Error (CD, err_functions_must_return_a_value);
         end if;
       else
-        if Block_Data.entity = Prozedure then
+        if Block_Data.entity = prozedure then
           Error (CD, err_procedures_cannot_return_a_value, severity => major);
         end if;
         --  Calculate return value (destination: X; expression: Y).
@@ -414,7 +414,7 @@ package body HAC_Sys.Parser.Statements is
           Issue_Type_Mismatch_Error;
         end if;
       end if;
-      if Block_Data.entity = Funktion then
+      if Block_Data.entity = funktion then
         Emit_1 (CD, k_Exit_Function, Normal_Procedure_Call);
       elsif Block_Data.is_main then
         Emit (CD, k_Halt_Interpreter);
@@ -484,7 +484,7 @@ package body HAC_Sys.Parser.Statements is
              (name             => CD.Id,
               name_with_case   => CD.Id_with_case,
               link             => previous_last,
-              entity           => Variable,
+              entity           => variable,
               read_only        => True,
               decl_kind        => complete,
               xtyp             => Undefined,  --  Subtype is determined by the range.
@@ -865,7 +865,7 @@ package body HAC_Sys.Parser.Statements is
          Block_Data.level,
          new_ident_for_statement,
          new_ident_for_statement_with_case,
-         Loop_Identifier,
+         loop_identifier,
          dummy_idx);
       if CD.Sy /= Colon then
         Error
@@ -902,25 +902,25 @@ package body HAC_Sys.Parser.Statements is
         Named_Statement;
       else
         case CD.IdTab (I_Statement).entity is
-          when Variable =>
+          when variable =>
             Assignment (CD, FSys_St, Block_Data.level, I_Statement, Check_read_only => True);
-          when Declared_Number_or_Enum_Item =>
+          when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
                    severity => major);
-          when TypeMark =>
+          when typemark =>
             Error (CD, err_illegal_statement_start_symbol, "type name", severity => major);
-          when Funktion | Funktion_Intrinsic =>
+          when funktion | funktion_intrinsic =>
             Error (CD, err_illegal_statement_start_symbol, "function name", severity => major);
           when aTask =>
             Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Entry_Call);
-          when Prozedure =>
+          when prozedure =>
             Subprogram_or_Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Procedure_Call);
-          when Prozedure_Intrinsic =>
+          when prozedure_intrinsic =>
             Standard_Procedures.Standard_Procedure
               (CD, Block_Data.level, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).adr_or_sz));
-          when Loop_Identifier =>
+          when loop_identifier =>
             Error (CD, err_duplicate_loop_identifier, A2S (CD.Id), severity => major);
-          when Paquetage =>
+          when paquetage =>
             Error (CD, err_illegal_statement_start_symbol, "package name", severity => major);
           when others =>
             Error

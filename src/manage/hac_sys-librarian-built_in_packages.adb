@@ -33,7 +33,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
          id_body_index => No_Id,
          spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
-    Enter_Library_Level_Def (CD, name, Paquetage, NOTYP, 0, is_built_in => True);
+    Enter_Library_Level_Def (CD, name, paquetage, NOTYP, 0, is_built_in => True);
     Parser.Packages.Feed_Packages_Table (CD);
     --  Feed library:
     unit.id_index := CD.Id_Count;
@@ -48,15 +48,15 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     use Co_Defs, Defs;
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, "Standard." & Name, TypeMark, T, 1, First, Last, True);
+      Enter_Library_Level_Def (CD, "Standard." & Name, typemark, T, 1, First, Last, True);
     end Enter_Std_Typ;
   begin
-    Enter_Library_Level_Def (CD, "", Variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
+    Enter_Library_Level_Def (CD, "", variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
     Enter_and_Register_Built_In_Package (CD, LD, "Standard");
     --
-    Enter_Library_Level_Def (CD, "Standard.False", Declared_Number_or_Enum_Item, Bools, 0, is_built_in => True);
-    Enter_Library_Level_Def (CD, "Standard.True",  Declared_Number_or_Enum_Item, Bools, 1, is_built_in => True);
+    Enter_Library_Level_Def (CD, "Standard.False", declared_number_or_enum_item, Bools, 0, is_built_in => True);
+    Enter_Library_Level_Def (CD, "Standard.True",  declared_number_or_enum_item, Bools, 1, is_built_in => True);
     --
     Enter_Std_Typ ("Character",      Chars, 0, 255);
     Enter_Std_Typ ("Boolean",        Bools, 0, 1);
@@ -84,7 +84,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     use Co_Defs, Defs, Interfaces;
     procedure Enter_Interfaces_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, "Interfaces." & Name, TypeMark, T, 1, First, Last, True);
+      Enter_Library_Level_Def (CD, "Interfaces." & Name, typemark, T, 1, First, Last, True);
     end Enter_Interfaces_Typ;
   begin
     Enter_and_Register_Built_In_Package (CD, LD, "Interfaces");
@@ -110,12 +110,12 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Compiler.PCode_Emit.Enter_or_find_Float (CD, Value, Float_Index);
       Enter_Library_Level_Def
         (CD, HAT_Name & '.' & Name,
-         Declared_Number_or_Enum_Item, Floats, Float_Index, is_built_in => True);
+         declared_number_or_enum_item, Floats, Float_Index, is_built_in => True);
     end Enter_HAT_Const;
 
     procedure Enter_HAT_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, TypeMark, T, 1, First, Last, True);
+      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, typemark, T, 1, First, Last, True);
     end Enter_HAT_Typ;
 
     procedure Enter_HAT_Funct (Name : String; T : Typen; Code : Defs.SF_Code) is
@@ -123,7 +123,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Enter_Library_Level_Def
         (CD,
          HAT_Name & '.' & Name,
-         Funktion_Intrinsic,
+         funktion_intrinsic,
          T,
          Defs.SF_Code'Pos (Code),
          is_built_in => True);
@@ -134,7 +134,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Enter_Library_Level_Def
         (CD,
          HAT_Name & '.' & Name,
-         Prozedure_Intrinsic,
+         prozedure_intrinsic,
          NOTYP,
          Defs.SP_Code'Pos (Code),
          is_built_in => True);
