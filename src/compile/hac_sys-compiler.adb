@@ -437,12 +437,12 @@ package body HAC_Sys.Compiler is
       Put_Line (map_file, "------------------------");
       New_Line (map_file);
       for Blk of CD.IdTab (CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count) loop
-        if Blk.entity = variable then
+        if Blk.entity in Object_Kind then
           if Blk.xtyp.TYP /= NOTYP then
             Ada.Integer_Text_IO.Put (map_file, Integer (Blk.adr_or_sz), 4);
             Put (map_file, A2S (Blk.name) & "   ");
           end if;
-          if Blk.lev = 1 then
+          if Blk.lev = 1 then  --  TBD: check this, should be 0.
             Put (map_file, " Global(");
           else
             Put (map_file, " Local (");

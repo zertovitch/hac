@@ -182,7 +182,7 @@ package body HAC_Sys.Parser.Const_Var is
           declare
             r : IdTabEntry renames CD.IdTab (T0);
           begin
-            r.read_only      := is_constant;
+            r.entity         := (if is_constant then constant_object else variable_object);
             r.is_referenced  := False;
             r.is_initialized := is_untyped_constant;  --  May be changed later.
             r.is_assigned    := False;

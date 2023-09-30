@@ -57,13 +57,12 @@ package body HAC_Sys.Parser.Calls is
       InSymbol (CD);
       if K = No_Id then
         null;  --  Error already issued due to undefined identifier
-      elsif CD.IdTab (K).entity /= variable then
+      elsif CD.IdTab (K).entity not in Object_Kind then
         Error (CD, err_variable_missing, Name, severity => major);
-      elsif CD.IdTab (K).read_only then
-        Error (
-          CD, err_cannot_modify_constant_or_in_parameter,
-          ": passed to OUT or IN OUT parameter"
-        );
+      elsif CD.IdTab (K).entity = constant_object then
+        Error
+          (CD, err_cannot_modify_constant_or_in_parameter,
+           ": passed to OUT or IN OUT parameter");
       else
         Found := CD.IdTab (K).xtyp;
         Emit_2

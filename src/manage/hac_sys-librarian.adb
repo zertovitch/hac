@@ -91,7 +91,6 @@ package body HAC_Sys.Librarian is
        name_with_case   => Alfa_Ident,
        link             => last,
        entity           => New_Entity,
-       read_only        => True,
        decl_kind        => Co_Defs.complete,
        xtyp             => (TYP            => Base_Type,
                             Ref            => 0,

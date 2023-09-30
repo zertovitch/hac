@@ -149,7 +149,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
           P2Ada_Var_7 : IdTabEntry renames CD.IdTab (H2);
           use Defs;
         begin
-          if P2Ada_Var_7.entity = variable then
+          if P2Ada_Var_7.entity in Object_Kind then
             if Defs.Standard_or_Enum_Typ (P2Ada_Var_7.xtyp.TYP) then
               if P2Ada_Var_7.normal then
                 H3 := H1 + Integer (P2Ada_Var_7.adr_or_sz);

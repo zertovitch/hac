@@ -82,7 +82,6 @@ package body HAC_Sys.Parser.Enter_Def is
        name_with_case   => Id_with_case,
        link             => last_id,
        entity           => K,
-       read_only        => False,
        decl_kind        => complete,
        xtyp             => Undefined,
        block_or_pkg_ref => 0,
@@ -173,7 +172,7 @@ package body HAC_Sys.Parser.Enter_Def is
       dummy_id_idx : Natural;
     begin
       if CD.Sy = IDent then
-        Enter (CD, Level, prefixed, CD.Id, CD.Id_with_case, variable, dummy_id_idx);
+        Enter (CD, Level, prefixed, CD.Id, CD.Id_with_case, variable_object, dummy_id_idx);
         Scanner.InSymbol (CD);
       else
         Error (CD, err_identifier_missing);

@@ -141,12 +141,11 @@ package body HAC_Sys.Parser.Type_Def is
           enum_count := enum_count + 1;
           Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, declared_number_or_enum_item, forward_id_idx);
           declare
-            New_Enum_Item : IdTabEntry renames CD.IdTab (CD.Id_Count);
+            new_enum_item : IdTabEntry renames CD.IdTab (CD.Id_Count);
           begin
-            New_Enum_Item.read_only      := True;
-            New_Enum_Item.xtyp           := xTP;
-            New_Enum_Item.adr_or_sz      := HAC_Integer (enum_count - 1);  --  RM 3.5.1 (7): position begins with 0.
-            New_Enum_Item.is_referenced  := False;
+            new_enum_item.xtyp          := xTP;
+            new_enum_item.adr_or_sz     := HAC_Integer (enum_count - 1);  --  RM 3.5.1 (7): position begins with 0.
+            new_enum_item.is_referenced := False;
           end;
         else
           Error (CD, err_identifier_missing);

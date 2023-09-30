@@ -88,6 +88,7 @@ package body HAC_Sys.Parser is
             Error (CD, err_identifier_missing);
           end if;
           Test (CD, Comma_IDent_RParent_Semicolon, FSys, err_semicolon_missing, stop_on_error => True);
+          --  Update information
           while T0 < CD.Id_Count loop
             T0 := T0 + 1;
             declare
@@ -95,7 +96,7 @@ package body HAC_Sys.Parser is
             begin
               r.xtyp      := xTP;
               r.normal    := ValParam;
-              r.read_only := ValParam;
+              r.entity    := (if param_kind = param_in then constant_object else variable_object);
               r.decl_kind := param_kind;
               r.adr_or_sz := HAC_Integer (block_data.data_allocation_index);
               r.lev       := block_data.level;

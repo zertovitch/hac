@@ -510,7 +510,7 @@ package body HAC_Sys.Parser.Expressions is
                       Ranges.Set_Singleton_Range (X, r.adr_or_sz);
                     end if;
                     --
-                  when variable =>
+                  when Object_Kind =>
                     X := r.xtyp;
                     LC_Mem := CD.LC;
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['

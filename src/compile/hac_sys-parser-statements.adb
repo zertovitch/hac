@@ -29,7 +29,7 @@ package body HAC_Sys.Parser.Statements is
       Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
     end Issue_Type_Mismatch_Error;
   begin
-    pragma Assert (CD.IdTab (Var_Id_Index).entity = variable);
+    pragma Assert (CD.IdTab (Var_Id_Index).entity in Object_Kind);
     X := CD.IdTab (Var_Id_Index).xtyp;
     Emit_2
      (CD,
@@ -55,7 +55,7 @@ package body HAC_Sys.Parser.Statements is
       when others =>
         Error (CD, err_BECOMES_missing);
     end case;
-    if Check_read_only and then CD.IdTab (Var_Id_Index).read_only then
+    if Check_read_only and then CD.IdTab (Var_Id_Index).entity = constant_object then
       Error (CD, err_cannot_modify_constant_or_in_parameter);
     end if;
     Expression (CD, Level, Semicolon_Set, Y);
@@ -484,8 +484,7 @@ package body HAC_Sys.Parser.Statements is
              (name             => CD.Id,
               name_with_case   => CD.Id_with_case,
               link             => previous_last,
-              entity           => variable,
-              read_only        => True,
+              entity           => constant_object,
               decl_kind        => complete,
               xtyp             => Undefined,  --  Subtype is determined by the range.
               block_or_pkg_ref => 0,
@@ -902,7 +901,7 @@ package body HAC_Sys.Parser.Statements is
         Named_Statement;
       else
         case CD.IdTab (I_Statement).entity is
-          when variable =>
+          when Object_Kind =>
             Assignment (CD, FSys_St, Block_Data.level, I_Statement, Check_read_only => True);
           when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",

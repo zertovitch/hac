@@ -51,7 +51,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Enter_Library_Level_Def (CD, "Standard." & Name, type_mark, T, 1, First, Last, True);
     end Enter_Std_Typ;
   begin
-    Enter_Library_Level_Def (CD, "", variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
+    Enter_Library_Level_Def (CD, "", constant_object, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
     Enter_and_Register_Built_In_Package (CD, LD, "Standard");
     --

@@ -121,7 +121,9 @@ package HAC_Sys.Co_Defs is
     (declared_number_or_enum_item,  --  Declared number: untyped constant, like
                                     --  "pi : constant := 3.1415927" (RM 3.3.2)
      --
-     variable,
+     variable_object,  --  RM 3.3.1(5)
+     constant_object,  --  RM 3.3.1(6)
+     --
      type_mark,
      --
      paquetage,
@@ -138,6 +140,8 @@ package HAC_Sys.Co_Defs is
      loop_identifier,
      alias);   --  Short name of another entity ("use" clause).
 
+  subtype Object_Kind is Entity_Kind range variable_object .. constant_object;  --  RM 3.3
+
   type Declaration_Kind is
     (spec_unresolved, spec_resolved, complete,
      param_in, param_in_out, param_out);
@@ -150,12 +154,10 @@ package HAC_Sys.Co_Defs is
   --  Identifier Table Entry  --
   ------------------------------
   type IdTabEntry is record
-    name             : Alfa;                 --  identifier name in ALL CAPS
-    name_with_case   : Alfa;                 --  identifier name with original casing
-    link             : Index;
+    name             : Alfa;                 --  Identifier name in ALL CAPS
+    name_with_case   : Alfa;                 --  Identifier name with original casing
+    link             : Index;                --  Previous declaration (may jump to lower nesting level)
     entity           : Entity_Kind;
-    read_only        : Boolean;              --  If Entity = Variable and read_only = True,
-                                             --    it's a typed constant.
     decl_kind        : Declaration_Kind;     --  Declaration kind: forward or complete.
     --                                             Matters for a type, a constant, a subprogram;
     --                                             Values param_in .. param_out are
@@ -172,18 +174,19 @@ package HAC_Sys.Co_Defs is
 
   --  Entity                        Meaning of Adr_or_Sz
   --  -------------------------------------------------------------------------------
-  --  Declared_Number_or_Enum_Item  Value (number), position (enumerated type)
-  --  Variable                      Relative position in the stack.
-  --  TypeMark                      Size (in PCode stack items) of an object
+  --  declared_number_or_enum_item  Value (number), position (enumerated type)
+  --  variable_object               Relative position in the stack.
+  --  constant_object               Relative position in the stack.
+  --  type_mark                     Size (in PCode stack items) of an object
   --                                    of the declared type.
-  --  Prozedure                     Index into the Object Code table.
-  --  Prozedure_Intrinsic           Standard Procedure code (SP_Code).
-  --  Funktion                      Index into the Object Code table.
-  --  Funktion_Intrinsic            Standard Function code (SF_Code).
-  --  aTask                         ?
-  --  aEntry                        ?
-  --  Label                         ?
-  --  Alias                         Index into the Identifier table of the aliased entity.
+  --  prozedure                     Index into the Object Code table.
+  --  prozedure_intrinsic           Standard Procedure code (SP_Code).
+  --  funktion                      Index into the Object Code table.
+  --  funktion_intrinsic            Standard Function code (SF_Code).
+  --  tache                         ?
+  --  entree                        ?
+  --  loop_identifier               ?
+  --  alias                         Index into the Identifier table of the aliased entity.
 
   type Loop_Info is record
     loop_Id     : Natural;  --  No_Id : no identifier
