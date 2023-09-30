@@ -65,6 +65,7 @@ package body HAC_Sys.Parser.Calls is
            ": passed to OUT or IN OUT parameter");
       else
         Found := CD.IdTab (K).xtyp;
+        CD.IdTab (K).is_read := True;
         Emit_2
           (CD,
            (if CD.IdTab (K).normal then

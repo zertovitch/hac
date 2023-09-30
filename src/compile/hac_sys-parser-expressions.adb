@@ -110,6 +110,7 @@ package body HAC_Sys.Parser.Expressions is
         else
           CD.target.Mark_Reference (Field_Id);
           CD.IdTab (Field_Id).is_referenced := True;
+          CD.IdTab (Field_Id).is_read       := True;
           V := CD.IdTab (Field_Id).xtyp;
           Field_Offset := Integer (CD.IdTab (Field_Id).adr_or_sz);
           if Field_Offset /= 0 then
@@ -513,6 +514,7 @@ package body HAC_Sys.Parser.Expressions is
                     --
                   when Object_Kind =>
                     X := r.xtyp;
+                    r.is_read := True;
                     LC_Mem := CD.LC;
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                       Emit_2

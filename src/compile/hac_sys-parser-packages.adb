@@ -306,7 +306,7 @@ package body HAC_Sys.Parser.Packages is
     pkg_table_index : Positive;
     pkg_level : Nesting_Level;
     --
-    procedure Issue_Duplicate_Use_Warning is
+    procedure Issue_Duplicate_Use_Note is
     begin
       if Pkg_UName = "STANDARD" then
         --  For a unit's body, a "USE Standard" is applied while it
@@ -314,14 +314,14 @@ package body HAC_Sys.Parser.Packages is
         --  We still choose to do the USE because some unit bodies
         --  may not have a spec.
         null;
-      elsif CD.remarks (note_redundant_construct) then
+      else
         Note
           (CD,
            note_redundant_construct,
            """use"" clause already applied, in same declarative part, for" &
            " package """ & A2S (CD.IdTab (Pkg_Idx).name_with_case) & '"');
       end if;
-    end Issue_Duplicate_Use_Warning;
+    end Issue_Duplicate_Use_Note;
   begin
     pragma Assert (Pkg_Idx > No_Id);
     if CD.IdTab (Pkg_Idx).entity /= paquetage then
@@ -395,12 +395,12 @@ package body HAC_Sys.Parser.Packages is
                 --  Here we have an identical alias (same name, and points
                 --  to the same definition).
                 if Level > 0 then
-                  Issue_Duplicate_Use_Warning;
+                  Issue_Duplicate_Use_Note;
                   exit;
                 else
                   --  Level 0 here.
                   if CD.CUD.level_0_def.Contains (Short_Id) then
-                    Issue_Duplicate_Use_Warning;
+                    Issue_Duplicate_Use_Note;
                     exit;
                   else
                     --  Re-activate definition at zero level (context clause).

@@ -71,9 +71,10 @@ begin
       end case;
     when To_Bools =>
       if T_Expr.TYP = Bools then
-        if CD.remarks (note_redundant_construct) then
-          Note (CD, note_redundant_construct, "redundant conversion to type ""Boolean""");
-        end if;
+        Note
+          (CD,
+           note_redundant_construct,
+           "redundant conversion to type ""Boolean""");
       else
         Argument_Type_Not_Supported (CD);
       end if;

@@ -49,6 +49,7 @@ project HAC_Exm is
      "prc.adb",
      "random.adb",
      "record_code_gen.adb",
+     "remarks.adb",
      "series.adb",
      "shell_sort.adb",
      "shell.adb",

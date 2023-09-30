@@ -292,7 +292,7 @@ package body HAC_Sys.Errors is
         return
           "space missing here; " &
           "if an identifier was meant, it cannot start with a number";
-      when note_redundant_construct =>
+      when others =>
         return hint_1;
     end case;
   end Diagnostic_String;
@@ -467,10 +467,13 @@ package body HAC_Sys.Errors is
      hint_1              :        String         := "";
      hint_2              :        String         := "";
      previous_symbol     :        Boolean        := False;
-     shift_one_character :        Boolean        := False) is
+     shift_one_character :        Boolean        := False)
+  is
   begin
-    --  Just call "Error" (severity does nothing for warnings).
-    Error (CD, code, hint_1, hint_2, minor, previous_symbol, shift_one_character);
+    if CD.remarks (code) then  --  Warning is optional
+      --  Just call "Error" (severity does nothing for warnings).
+      Error (CD, code, hint_1, hint_2, minor, previous_symbol, shift_one_character);
+    end if;
   end Warning;
 
   procedure Note
@@ -479,10 +482,14 @@ package body HAC_Sys.Errors is
      hint_1              :        String         := "";
      hint_2              :        String         := "";
      previous_symbol     :        Boolean        := False;
-     shift_one_character :        Boolean        := False) is
+     shift_one_character :        Boolean        := False)
+
+  is
   begin
-    --  Just call "Error" (severity does nothing for warnings).
-    Error (CD, code, hint_1, hint_2, minor, previous_symbol, shift_one_character);
+    if CD.remarks (code) then  --  Note is optional
+      --  Just call "Error" (severity does nothing for notes).
+      Error (CD, code, hint_1, hint_2, minor, previous_symbol, shift_one_character);
+    end if;
   end Note;
 
   ----------------------------------------------------------------------------

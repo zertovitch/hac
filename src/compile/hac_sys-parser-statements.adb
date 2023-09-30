@@ -34,7 +34,6 @@ package body HAC_Sys.Parser.Statements is
   begin
     pragma Assert (var.entity in Object_Kind);
     X := var.xtyp;
-    var.is_assigned := True;
     Emit_2
      (CD,
       (if var.normal then
@@ -495,7 +494,8 @@ package body HAC_Sys.Parser.Statements is
               lev              => Block_Data.level,
               adr_or_sz        => HAC_Integer (Block_Data.data_allocation_index),
               is_referenced    => False,
-              is_initialized   => True,
+              is_read          => False,
+              is_initialized   => explicit,
               is_assigned      => False);
         --
         CD.target.Mark_Declaration (is_built_in => False);
@@ -906,6 +906,7 @@ package body HAC_Sys.Parser.Statements is
         case CD.IdTab (I_Statement).entity is
           when Object_Kind =>
             Assignment (CD, FSys_St, Block_Data.level, I_Statement, check_is_variable => True);
+            CD.IdTab (I_Statement).is_assigned := True;
           when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
                    severity => major);

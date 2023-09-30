@@ -102,7 +102,7 @@ package body HAC_Sys.Parser is
               r.lev       := block_data.level;
               block_data.data_allocation_index := block_data.data_allocation_index + Sz;
               r.is_referenced  := False;
-              r.is_initialized := param_kind /= param_out;
+              r.is_initialized := (if param_kind = param_out then none else implicit);
               r.is_assigned    := False;
             end;
           end loop;  --  while T0 < CD.Id_Count
@@ -301,6 +301,52 @@ package body HAC_Sys.Parser is
     end Process_Spec;
 
     procedure Process_Body is
+      procedure Check_unused_or_uninitialized_items is
+        id_index : Integer := CD.Id_Count;
+      begin
+        --  See table in "hac_work.xls", sheet "Remarks".
+        while id_index /= No_Id loop
+          declare
+            item : IdTabEntry renames CD.IdTab (id_index);
+          begin
+            exit when item.lev < block_data.level;
+            if item.is_read then
+              if item.entity = variable_object and then not item.is_assigned then
+                case item.is_initialized is
+                  when none =>
+                    Warning
+                      (CD,
+                       warn_read_but_not_written,
+                       "variable """ & A2S (item.name_with_case) &
+                       """ is read but never written");
+                  when explicit =>
+                    Note
+                      (CD,
+                       note_constant_variable,
+                       "variable """ & A2S (item.name_with_case) &
+                       """ is not modified, could be declared constant");
+                  when implicit =>
+                    null;
+                end case;
+              end if;
+            elsif item.entity = variable_object and then item.is_assigned then
+              Note
+                (CD,
+                 note_unused_item,
+                 "variable """ & A2S (item.name_with_case) &
+                 """ is never read");
+            elsif item.entity /= alias and then not item.is_referenced then
+              --  Here we can have any explicit declaration
+              --  (object, type, subprogram, ...)
+              Note
+                (CD,
+                 note_unused_item,
+                 '"' & A2S (item.name_with_case) & """ is unused");
+            end if;
+            id_index := item.link;
+          end;
+        end loop;
+      end Check_unused_or_uninitialized_items;
     begin
       CD.IdTab (block_data.block_id_index).decl_kind := complete;
       Check_Subprogram_Spec_Body_Consistency
@@ -340,6 +386,13 @@ package body HAC_Sys.Parser is
         Statements_Part_Setup;
         Statements.Sequence_of_Statements (CD, END_Set, block_data);
         Statements_Part_Closing;
+        --
+        if CD.remarks (note_unused_item)
+          or CD.remarks (note_constant_variable)
+          or CD.remarks (warn_read_but_not_written)
+        then
+          Check_unused_or_uninitialized_items;
+        end if;
         --
         if CD.Sy = END_Symbol then
           InSymbol;

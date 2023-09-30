@@ -150,6 +150,8 @@ package HAC_Sys.Co_Defs is
 
   subtype Parameter_Kind is Declaration_Kind range param_in .. param_out;
 
+  type Initialized_Kind is (none, explicit, implicit);
+
   ------------------------------
   --  Identifier Table Entry  --
   ------------------------------
@@ -168,7 +170,8 @@ package HAC_Sys.Co_Defs is
     lev              : Nesting_Level;
     adr_or_sz        : HAC_Integer;          --  Address, Size; index of aliased entity (USE) !! rather use block_or_pkg_ref ?!
     is_referenced    : Boolean;
-    is_initialized   : Boolean;              --  For variable or constant: is it initialized?
+    is_read          : Boolean;              --  For variable or constant: is it read?
+    is_initialized   : Initialized_Kind;     --  For variable or constant: is it initialized?
     is_assigned      : Boolean;              --  Is a variable assigned in a statement part?
   end record;
 

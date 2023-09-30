@@ -159,7 +159,10 @@ package body HAC_Pkg is
       PLCE ("Option -rx : enable remarks (warnings or notes) of kind x");
       PLCE ("       -rX : disable remarks of kind x");
       PLCE ("             x =");
+      PLCE ("                 k   notes for constant variables");
       PLCE ("                 r   notes for redundant constructs");
+      PLCE ("                 u   notes for unused items");
+      PLCE ("                 v   notes for uninitialized variables");
       NLCE;
       PLCE ("Option -tx : set target machine to x");
       PLCE ("             x =");

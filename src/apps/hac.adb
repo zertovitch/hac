@@ -160,19 +160,22 @@ procedure HAC is
           if opt'Length = 1 then
             Argument_Error ("Missing remark switch");
           else
-            unknown_remark := True;
-            for r in HAC_Sys.Defs.Compile_Remark loop
-              if HAC_Sys.Defs.remark_letter (r) = opt (opt'First + 1) then
-                remarks (r) := True;
-                unknown_remark := False;
-              elsif To_Upper (HAC_Sys.Defs.remark_letter (r)) = opt (opt'First + 1) then
-                remarks (r) := False;
-                unknown_remark := False;
+            for letter in opt'First + 1 .. opt'Last loop
+              unknown_remark := True;
+              for r in HAC_Sys.Defs.Compile_Remark loop
+                if HAC_Sys.Defs.remark_letter (r) = opt (letter) then
+                  remarks (r) := True;
+                  unknown_remark := False;
+                elsif To_Upper (HAC_Sys.Defs.remark_letter (r)) = opt (letter) then
+                  remarks (r) := False;
+                  unknown_remark := False;
+                end if;
+              end loop;
+              if unknown_remark then
+                Argument_Error ("Unknown remark switch '" & opt (letter) & ''');
+                exit;
               end if;
             end loop;
-            if unknown_remark then
-              Argument_Error ("Unknown remark switch '" & opt (opt'First + 1) & ''');
-            end if;
           end if;
         when 'I' =>
           if command_line_source_path /= "" then

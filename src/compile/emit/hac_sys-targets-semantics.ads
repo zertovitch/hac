@@ -86,8 +86,8 @@ package HAC_Sys.Targets.Semantics is
   --  the last identifier) to the root.
 
   package Declaration_Line_Maps is new Ada.Containers.Ordered_Maps
-    (Key_Type        => Positive,     --  Line number
-     Element_Type    => Positive);    --  Index in the Id Table
+    (Key_Type        => Integer,     --  Line number
+     Element_Type    => Natural);    --  Index in the Id Table
 
   type Declaration_Line_Map_Access is access Declaration_Line_Maps.Map;
 

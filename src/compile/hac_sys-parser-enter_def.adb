@@ -89,7 +89,8 @@ package body HAC_Sys.Parser.Enter_Def is
        lev              => Level,
        adr_or_sz        => 0,
        is_referenced    => False,
-       is_initialized   => False,
+       is_read          => False,
+       is_initialized   => none,
        is_assigned      => False);
     --
     CD.target.Mark_Declaration (is_built_in => False);

@@ -102,7 +102,8 @@ package body HAC_Sys.Librarian is
        lev              => 0,
        adr_or_sz        => HAC_Integer (Size),
        is_referenced    => False,
-       is_initialized   => False,
+       is_read          => False,
+       is_initialized   => Co_Defs.none,
        is_assigned      => False);
 
     CD.target.Mark_Declaration (is_built_in);
