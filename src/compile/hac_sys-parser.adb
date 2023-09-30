@@ -100,6 +100,9 @@ package body HAC_Sys.Parser is
               r.adr_or_sz := HAC_Integer (block_data.data_allocation_index);
               r.lev       := block_data.level;
               block_data.data_allocation_index := block_data.data_allocation_index + Sz;
+              r.is_referenced  := False;
+              r.is_initialized := param_kind /= param_out;
+              r.is_assigned    := False;
             end;
           end loop;  --  while T0 < CD.Id_Count
         else

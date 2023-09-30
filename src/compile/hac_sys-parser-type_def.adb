@@ -143,9 +143,10 @@ package body HAC_Sys.Parser.Type_Def is
           declare
             New_Enum_Item : IdTabEntry renames CD.IdTab (CD.Id_Count);
           begin
-            New_Enum_Item.read_only := True;
-            New_Enum_Item.xtyp      := xTP;
-            New_Enum_Item.adr_or_sz := HAC_Integer (enum_count - 1);  --  RM 3.5.1 (7): position begins with 0.
+            New_Enum_Item.read_only      := True;
+            New_Enum_Item.xtyp           := xTP;
+            New_Enum_Item.adr_or_sz      := HAC_Integer (enum_count - 1);  --  RM 3.5.1 (7): position begins with 0.
+            New_Enum_Item.is_referenced  := False;
           end;
         else
           Error (CD, err_identifier_missing);

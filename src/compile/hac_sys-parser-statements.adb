@@ -491,7 +491,10 @@ package body HAC_Sys.Parser.Statements is
               block_or_pkg_ref => 0,
               normal           => True,
               lev              => Block_Data.level,
-              adr_or_sz        => HAC_Integer (Block_Data.data_allocation_index));
+              adr_or_sz        => HAC_Integer (Block_Data.data_allocation_index),
+              is_referenced    => False,
+              is_initialized   => True,
+              is_assigned      => False);
         --
         CD.target.Mark_Declaration (is_built_in => False);
         CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx  := loop_param_id;

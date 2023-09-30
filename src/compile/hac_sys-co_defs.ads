@@ -167,6 +167,9 @@ package HAC_Sys.Co_Defs is
     normal           : Boolean;              --  value param?
     lev              : Nesting_Level;
     adr_or_sz        : HAC_Integer;          --  Address, Size; index of aliased entity (USE) !! rather use block_or_pkg_ref ?!
+    is_referenced    : Boolean;
+    is_initialized   : Boolean;              --  For variable or constant: is it initialized?
+    is_assigned      : Boolean;              --  Is a variable assigned in a statement part?
   end record;
 
   --  Entity                        Meaning of Adr_or_Sz

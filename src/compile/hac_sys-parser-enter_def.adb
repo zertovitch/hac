@@ -88,7 +88,10 @@ package body HAC_Sys.Parser.Enter_Def is
        block_or_pkg_ref => 0,
        normal           => True,
        lev              => Level,
-       adr_or_sz        => 0);
+       adr_or_sz        => 0,
+       is_referenced    => False,
+       is_initialized   => False,
+       is_assigned      => False);
     --
     CD.target.Mark_Declaration (is_built_in => False);
     --  Update start of identifier chain:

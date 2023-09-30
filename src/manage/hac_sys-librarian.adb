@@ -87,23 +87,25 @@ package body HAC_Sys.Librarian is
       last := last - 1;
     end loop;
     CD.IdTab (CD.Id_Count) :=
-     (
-      name             => Alfa_Ident_Upper,
-      name_with_case   => Alfa_Ident,
-      link             => last,
-      entity           => New_Entity,
-      read_only        => True,
-      decl_kind        => Co_Defs.complete,
-      xtyp             => (TYP            => Base_Type,
-                           Ref            => 0,
-                           Is_Range       => False,
-                           Discrete_First => Discrete_First,
-                           Discrete_Last  => Discrete_Last),
-      block_or_pkg_ref => 0,
-      normal           => True,
-      lev              => 0,
-      adr_or_sz        => HAC_Integer (Size)
-    );
+      (name             => Alfa_Ident_Upper,
+       name_with_case   => Alfa_Ident,
+       link             => last,
+       entity           => New_Entity,
+       read_only        => True,
+       decl_kind        => Co_Defs.complete,
+       xtyp             => (TYP            => Base_Type,
+                            Ref            => 0,
+                            Is_Range       => False,
+                            Discrete_First => Discrete_First,
+                            Discrete_Last  => Discrete_Last),
+       block_or_pkg_ref => 0,
+       normal           => True,
+       lev              => 0,
+       adr_or_sz        => HAC_Integer (Size),
+       is_referenced    => False,
+       is_initialized   => False,
+       is_assigned      => False);
+
     CD.target.Mark_Declaration (is_built_in);
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper, CD.Id_Count);

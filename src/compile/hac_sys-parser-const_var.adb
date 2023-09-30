@@ -21,18 +21,17 @@ package body HAC_Sys.Parser.Const_Var is
     procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
 
     --  This procedure processes both Variable and Constant declarations.
-    procedure Initialized_Constant_or_Variable (
-      explicit          : Boolean;
-      id_first, id_last : Integer;
-      var_typ           : Exact_Subtyp
-    )
+    procedure Possibly_Initialized_Constant_or_Variable
+      (explicity         : Boolean;
+       id_first, id_last : Integer;
+       var_typ           : Exact_Subtyp)
     is
       LC0 : Integer :=  CD.LC;
       LC1 : Integer;
     begin
       --  Create constant or variable initialization ObjCode
       --  The new variables Id's are in the range id_first .. id_last.
-      if explicit then
+      if explicity then
         --  We do an assignment to the last one.
         --  Example:
         --     for:            "a, b, c : Real := F (x);"
@@ -41,9 +40,9 @@ package body HAC_Sys.Parser.Const_Var is
         --  Id_Last has been assigned.
         --  Now, we copy the value of id_last to id_first .. id_last - 1.
         --  In the above example:  "a := c"  and  "b := c".
-        for Var of CD.IdTab (id_first .. id_last - 1) loop
+        for var of CD.IdTab (id_first .. id_last - 1) loop
           --  Push destination address:
-          Emit_2 (CD, k_Push_Address, Var.lev, Operand_2_Type (Var.adr_or_sz));
+          Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.adr_or_sz));
           if var_typ.TYP in Composite_Typ then
             --  Push source address:
             Emit_2 (CD, k_Push_Address, CD.IdTab (id_last).lev,
@@ -67,13 +66,15 @@ package body HAC_Sys.Parser.Const_Var is
             );
             Emit_1 (CD, k_Store, Typen'Pos (var_typ.TYP));
           end if;
-        end loop;
+          var.is_initialized := True;
+      end loop;
       else
         --  Implicit initialization (for instance, VString's and File_Type's).
-        for Var of CD.IdTab (id_first .. id_last) loop
-          if Auto_Init_Typ (Var.xtyp.TYP) then
-            Emit_2 (CD, k_Push_Address, Var.lev, Operand_2_Type (Var.adr_or_sz));
-            Emit_1 (CD, k_Variable_Initialization, Typen'Pos (Var.xtyp.TYP));
+        for var of CD.IdTab (id_first .. id_last) loop
+          if Auto_Init_Typ (var.xtyp.TYP) then
+            Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.adr_or_sz));
+            Emit_1 (CD, k_Variable_Initialization, Typen'Pos (var.xtyp.TYP));
+            var.is_initialized := True;
           end if;
           --  !!  TBD: Must handle composite types (arrays or records) containing
           --           initialized types, too... Bug #2
@@ -98,7 +99,7 @@ package body HAC_Sys.Parser.Const_Var is
         CD.CMax              := CD.CMax - 1;
         LC0                  := LC0 + 1;
       end loop;
-    end Initialized_Constant_or_Variable;
+    end Possibly_Initialized_Constant_or_Variable;
     --
     procedure Single_Var_Declaration is
       T0, T1, Sz, T0i                            : Integer;
@@ -170,14 +171,21 @@ package body HAC_Sys.Parser.Const_Var is
       end if;
       --
       T0i := T0;
-      if is_constant or is_typed then  --  All correct cases: untyped variables were caught.
-        --  Update identifier table
+      if is_constant or is_typed then
+        --  This path covers all correct cases, since untyped
+        --  variable errors ("a : := 5;", "a : ;", "a;") were
+        --  caught earlier.
+        --
+        --  Update identifier table for all entered names:
         while T0 < T1 loop
           T0 := T0 + 1;
           declare
             r : IdTabEntry renames CD.IdTab (T0);
           begin
-            r.read_only := is_constant;
+            r.read_only      := is_constant;
+            r.is_referenced  := False;
+            r.is_initialized := is_untyped_constant;  --  May be changed later.
+            r.is_assigned    := False;
             if is_untyped_constant then
               r.entity := Declared_Number_or_Enum_Item;  --  r was initially a Variable.
               r.xtyp := C.TP;
@@ -210,12 +218,11 @@ package body HAC_Sys.Parser.Const_Var is
       end if;
       --
       if not is_untyped_constant then
-        Initialized_Constant_or_Variable (
-          explicit => CD.Sy = Becomes,
-          id_first => T0i + 1,
-          id_last  => T1,
-          var_typ  => xTyp
-        );
+        Possibly_Initialized_Constant_or_Variable
+          (explicity => CD.Sy = Becomes,
+           id_first  => T0i + 1,
+           id_last   => T1,
+           var_typ   => xTyp);
       end if;
       Need_Semicolon_after_Declaration (CD, FSys);
     end Single_Var_Declaration;
