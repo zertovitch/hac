@@ -36,7 +36,7 @@ package body HAC_Sys.Parser.Const_Var is
         --  Example:
         --     for:            "a, b, c : Real := F (x);"
         --     we do first:    "c := F (x)".
-        Statements.Assignment (CD, FSys, Block_Data.level, id_last, Check_read_only => False);
+        Statements.Assignment (CD, FSys, Block_Data.level, id_last, check_is_variable => False);
         --  Id_Last has been assigned.
         --  Now, we copy the value of id_last to id_first .. id_last - 1.
         --  In the above example:  "a := c"  and  "b := c".

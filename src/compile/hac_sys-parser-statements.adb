@@ -15,30 +15,34 @@ package body HAC_Sys.Parser.Statements is
   use type Defs.HAC_Integer;
 
   procedure Assignment
-    (CD              : in out Co_Defs.Compiler_Data;
-     FSys            :        Defs.Symset;
-     Level           :        Defs.Nesting_Level;
-     Var_Id_Index    :        Integer;
-     Check_read_only :        Boolean)
+    (CD                : in out Co_Defs.Compiler_Data;
+     FSys              :        Defs.Symset;
+     Level             :        Defs.Nesting_Level;
+     Var_Id_Index      :        Integer;
+     check_is_variable :        Boolean)
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
+    var : IdTabEntry renames CD.IdTab (Var_Id_Index);
     X, Y  : Exact_Subtyp;
     X_Len : Natural;
+    --
     procedure Issue_Type_Mismatch_Error is
     begin
       Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
     end Issue_Type_Mismatch_Error;
+    --
   begin
-    pragma Assert (CD.IdTab (Var_Id_Index).entity in Object_Kind);
-    X := CD.IdTab (Var_Id_Index).xtyp;
+    pragma Assert (var.entity in Object_Kind);
+    X := var.xtyp;
+    var.is_assigned := True;
     Emit_2
      (CD,
-      (if CD.IdTab (Var_Id_Index).normal then
+      (if var.normal then
          k_Push_Address           --  Normal variable, we push its address
        else
          k_Push_Discrete_Value),  --  The value is a reference, we want that address.
-      Operand_1_Type (CD.IdTab (Var_Id_Index).lev),
-      Operand_2_Type (CD.IdTab (Var_Id_Index).adr_or_sz));
+      Operand_1_Type (var.lev),
+      Operand_2_Type (var.adr_or_sz));
     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
       --  Resolve composite types' selectors (arrays and records).
       Selector (CD, Level, Becomes_EQL + FSys, X);
@@ -55,7 +59,7 @@ package body HAC_Sys.Parser.Statements is
       when others =>
         Error (CD, err_BECOMES_missing);
     end case;
-    if Check_read_only and then CD.IdTab (Var_Id_Index).entity = constant_object then
+    if check_is_variable and then var.entity = constant_object then
       Error (CD, err_cannot_modify_constant_or_in_parameter);
     end if;
     Expression (CD, Level, Semicolon_Set, Y);
@@ -122,8 +126,7 @@ package body HAC_Sys.Parser.Statements is
           Error (CD, err_string_lengths_do_not_match,
             "variable has length" & Integer'Image (X_Len) &
             ", literal has length" & Integer'Image (CD.SLeng),
-            severity => minor
-          );
+            severity => minor);
         end if;
       elsif X.TYP = VStrings
         and then
@@ -902,7 +905,7 @@ package body HAC_Sys.Parser.Statements is
       else
         case CD.IdTab (I_Statement).entity is
           when Object_Kind =>
-            Assignment (CD, FSys_St, Block_Data.level, I_Statement, Check_read_only => True);
+            Assignment (CD, FSys_St, Block_Data.level, I_Statement, check_is_variable => True);
           when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
                    severity => major);

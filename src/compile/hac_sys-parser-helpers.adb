@@ -549,6 +549,7 @@ package body HAC_Sys.Parser.Helpers is
       if CD.CUD.c = '.' then  --  We sneak a look at the next symbol.
         ID_Copy := Id;
         CD.target.Mark_Reference (J);
+        CD.IdTab (J).is_referenced := True;
         --  Here some parsing: entity is a package and there is a dot waiting.
         InSymbol (CD);  --  Consume prefix package identifier.
         Need (CD, Period, err_general_error);  --  Accept "Pkg.", reject "Pkg.."
@@ -570,6 +571,7 @@ package body HAC_Sys.Parser.Helpers is
 
     if J /= No_Id then
       CD.target.Mark_Reference (J);
+      CD.IdTab (J).is_referenced := True;
     end if;
 
     return J;

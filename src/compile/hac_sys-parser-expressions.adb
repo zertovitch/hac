@@ -109,7 +109,8 @@ package body HAC_Sys.Parser.Expressions is
           Error (CD, err_undefined_identifier, A2S (CD.Id_with_case), severity => major);
         else
           CD.target.Mark_Reference (Field_Id);
-          V            := CD.IdTab (Field_Id).xtyp;
+          CD.IdTab (Field_Id).is_referenced := True;
+          V := CD.IdTab (Field_Id).xtyp;
           Field_Offset := Integer (CD.IdTab (Field_Id).adr_or_sz);
           if Field_Offset /= 0 then
             Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
