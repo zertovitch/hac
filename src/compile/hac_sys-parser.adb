@@ -77,7 +77,7 @@ package body HAC_Sys.Parser is
               --  the string length and the index into the string table.
               Error (CD, err_string_not_supported_as_parameter, severity => major);
             elsif X /= No_Id then
-              if CD.IdTab (X).entity = typemark then
+              if CD.IdTab (X).entity = type_mark then
                 xTP := CD.IdTab (X).xtyp;
                 Sz := Integer (if ValParam then CD.IdTab (X).adr_or_sz else 1);
               else
@@ -210,7 +210,7 @@ package body HAC_Sys.Parser is
           I_Res_Type := Locate_CD_Id (CD, block_data.level);
           InSymbol;
           if I_Res_Type /= 0 then
-            if CD.IdTab (I_Res_Type).entity /= typemark then
+            if CD.IdTab (I_Res_Type).entity /= type_mark then
               Error (CD, err_missing_a_type_identifier, severity => major);
             elsif PCode_Atomic_Nonlimited_Typ (CD.IdTab (I_Res_Type).xtyp.TYP) then
               CD.IdTab (block_data.block_id_index).xtyp := CD.IdTab (I_Res_Type).xtyp;
@@ -292,7 +292,7 @@ package body HAC_Sys.Parser is
       if CD.Sy = WITH_Symbol then
         Subprogram_Aspect;
       end if;
-      if block_data.level > 1 and then block_data.entity /= aEntry  then
+      if block_data.level > 1 and then block_data.entity /= entree  then
         InSymbol;  --  Consume ';'
       end if;
       --  End of subprogram specification part (forward declaration).

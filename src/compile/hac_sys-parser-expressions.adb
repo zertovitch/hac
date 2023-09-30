@@ -553,7 +553,7 @@ package body HAC_Sys.Parser.Expressions is
                       Attributes.Object_Attribute (CD, Level, FSys_Prim, X, LC_Mem, X);
                     end if;
                     --
-                  when typemark =>
+                  when type_mark =>
                     X := r.xtyp;
                     Subtype_Prefixed_Expression (CD, Level, FSys_Prim, Ident_Index, X);
                   when prozedure | prozedure_intrinsic =>
@@ -1075,7 +1075,7 @@ package body HAC_Sys.Parser.Expressions is
   is
     Mem_Sy : constant KeyWSymbol := CD.Sy;
   begin
-    pragma Assert (CD.IdTab (Typ_ID_Index).entity = typemark);
+    pragma Assert (CD.IdTab (Typ_ID_Index).entity = type_mark);
     InSymbol (CD);
     case Mem_Sy is
       when LParent    =>  --  S (...)

@@ -33,7 +33,7 @@ package body HAC_Sys.Parser.Type_Def is
   begin
     Scanner.InSymbol (CD);  --  Consume TYPE or SUBTYPE symbol.
     Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
-    Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, typemark, forward_id_idx);
+    Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, type_mark, forward_id_idx);
     T1 := CD.Id_Count;
     Scanner.InSymbol (CD);
     Need (CD, IS_Symbol, err_IS_missing);
@@ -292,7 +292,7 @@ package body HAC_Sys.Parser.Type_Def is
       declare
         Id_T : IdTabEntry renames CD.IdTab (Ident_Index);
       begin
-        if Id_T.entity = typemark then
+        if Id_T.entity = type_mark then
           xTP   := Id_T.xtyp;
           Size  := Integer (Id_T.adr_or_sz);
           if xTP.TYP = NOTYP then

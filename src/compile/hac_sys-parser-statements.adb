@@ -211,7 +211,7 @@ package body HAC_Sys.Parser.Statements is
     begin  --  Accept_Statement
       InSymbol;
       I_Entry := Locate_CD_Id (CD, Block_Data.level);
-      if CD.IdTab (I_Entry).entity /= aEntry then
+      if CD.IdTab (I_Entry).entity /= entree then
         Error (CD, err_general_error, "an entry name is expected here");
       end if;
       InSymbol;
@@ -552,7 +552,7 @@ package body HAC_Sys.Parser.Statements is
         Y                  : Exact_Subtyp;
       begin
         I := Locate_CD_Id (CD, Block_Data.level);
-        if CD.IdTab (I).entity = aTask then
+        if CD.IdTab (I).entity = tache then
           InSymbol;
           Entry_Call (CD, Block_Data.level, FSys_St, I, -1);
           if CD.ObjCode (CD.LC - 2).F = k_Call then  --  Need to patch CallType later
@@ -659,7 +659,7 @@ package body HAC_Sys.Parser.Statements is
         begin         -- Accept_Statment_2
           InSymbol;
           I := Locate_CD_Id (CD, Block_Data.level);
-          if CD.IdTab (I).entity /= aEntry then
+          if CD.IdTab (I).entity /= entree then
             Select_Error (err_general_error);
           end if;
           InSymbol;
@@ -907,11 +907,11 @@ package body HAC_Sys.Parser.Statements is
           when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
                    severity => major);
-          when typemark =>
+          when type_mark =>
             Error (CD, err_illegal_statement_start_symbol, "type name", severity => major);
           when funktion | funktion_intrinsic =>
             Error (CD, err_illegal_statement_start_symbol, "function name", severity => major);
-          when aTask =>
+          when tache =>
             Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Entry_Call);
           when prozedure =>
             Subprogram_or_Entry_Call (CD, Block_Data.level, FSys_St, I_Statement, Normal_Procedure_Call);

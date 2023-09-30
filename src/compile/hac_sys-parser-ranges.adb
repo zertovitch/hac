@@ -30,7 +30,7 @@ package body HAC_Sys.Parser.Ranges is
       declare
         Id_T : IdTabEntry renames CD.IdTab (Idx);
       begin
-        if Id_T.entity = typemark and then Discrete_Typ (Id_T.xtyp.TYP) then
+        if Id_T.entity = type_mark and then Discrete_Typ (Id_T.xtyp.TYP) then
           --  Subtype S, but need to exclude the attribute case: S'First, S'Image, ...
           Skip_Blanks (CD);
           if CD.CUD.c /= ''' then  --  We sneak a look at the next symbol.

@@ -118,27 +118,25 @@ package HAC_Sys.Co_Defs is
   end record;
 
   type Entity_Kind is  --  RM 3.1
-  (
-      --  Declared number: untyped constant, like
-      --  "pi : constant := 3.1415927"; (RM 3.3.2).
-      declared_number_or_enum_item,
-      --
-      variable,
-      typemark,
-      --
-      paquetage,
-      paquetage_body,
-      prozedure,
-      prozedure_intrinsic,
-      funktion,
-      funktion_intrinsic,
-      --
-      aTask,
-      aEntry,
-      --
-      loop_identifier,
-      alias   --  Short name of another entity ("use" clause).
-  );
+    (declared_number_or_enum_item,  --  Declared number: untyped constant, like
+                                    --  "pi : constant := 3.1415927" (RM 3.3.2)
+     --
+     variable,
+     type_mark,
+     --
+     paquetage,
+     paquetage_body,
+     --
+     prozedure,
+     prozedure_intrinsic,
+     funktion,
+     funktion_intrinsic,
+     --
+     tache,
+     entree,
+     --
+     loop_identifier,
+     alias);   --  Short name of another entity ("use" clause).
 
   type Declaration_Kind is
     (spec_unresolved, spec_resolved, complete,

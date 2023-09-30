@@ -389,7 +389,7 @@ package body HAC_Sys.Parser.Attributes is
     end Scalar_Subtype_Attribute;
     --
   begin
-    pragma Assert (Typ_ID.entity = typemark);
+    pragma Assert (Typ_ID.entity = type_mark);
     --
     Which_Attribute (CD, attr);
     if Scalar_Set (S.TYP) then

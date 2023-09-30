@@ -48,7 +48,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     use Co_Defs, Defs;
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, "Standard." & Name, typemark, T, 1, First, Last, True);
+      Enter_Library_Level_Def (CD, "Standard." & Name, type_mark, T, 1, First, Last, True);
     end Enter_Std_Typ;
   begin
     Enter_Library_Level_Def (CD, "", variable, NOTYP, 0);  --  Unreachable Id with invalid Link.
@@ -84,7 +84,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     use Co_Defs, Defs, Interfaces;
     procedure Enter_Interfaces_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, "Interfaces." & Name, typemark, T, 1, First, Last, True);
+      Enter_Library_Level_Def (CD, "Interfaces." & Name, type_mark, T, 1, First, Last, True);
     end Enter_Interfaces_Typ;
   begin
     Enter_and_Register_Built_In_Package (CD, LD, "Interfaces");
@@ -115,7 +115,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
 
     procedure Enter_HAT_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, typemark, T, 1, First, Last, True);
+      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, type_mark, T, 1, First, Last, True);
     end Enter_HAT_Typ;
 
     procedure Enter_HAT_Funct (Name : String; T : Typen; Code : Defs.SF_Code) is
