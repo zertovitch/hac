@@ -32,8 +32,7 @@ package body HAC_Sys.Compiler is
     CUD.c := ' ';
     CUD.CC       := 0;
     CUD.LL       := 0;
-    CUD.sy_start := 1;
-    CUD.sy_end   := 1;
+    CUD.location := (0, 1, 1);
     CUD.level_0_def.Clear;
     CUD.use_hat_stack_top := 0;
     CUD.Use_HAT_Stack (CUD.use_hat_stack_top) := False;
@@ -377,8 +376,8 @@ package body HAC_Sys.Compiler is
       Last_Param_Id_Idx  => 0,
       PSize              => 0,
       VSize              => 0,
-      SrcFrom            => CD.CUD.line_count,
-      SrcTo              => CD.CUD.line_count);
+      SrcFrom            => CD.CUD.location.line,
+      SrcTo              => CD.CUD.location.line);
 
     main_block.level                         := 1;
     main_block.block_id_index                := CD.Id_Count;
@@ -392,7 +391,7 @@ package body HAC_Sys.Compiler is
       CD.Main_Program_ID,
       CD.Main_Program_ID_with_case
     );
-    CD.total_lines := CD.total_lines + CD.CUD.line_count;  --  Add line count of main program.
+    CD.total_lines := CD.total_lines + CD.CUD.location.line;  --  Add line count of main program.
     --  Main procedure is parsed.
     CD.target.Emit_Halt;
     if CD.LC > CD.ObjCode'First
@@ -417,7 +416,7 @@ package body HAC_Sys.Compiler is
     if CD.Blocks_Table (1).VSize > StMax - (STKINCR * CD.Tasks_Definitions_Count) then
       Error (CD, err_stack_size, "");
     end if;
-    CD.Blocks_Table (1).SrcTo := CD.CUD.line_count;
+    CD.Blocks_Table (1).SrcTo := CD.CUD.location.line;
 
     if CD.listing_requested then
       Close (CD.listing);
@@ -679,7 +678,7 @@ package body HAC_Sys.Compiler is
     end if;
     --  Export library-level context, possibly needed later by a body:
     unit_context := CD.CUD.level_0_def;
-    CD.total_lines := CD.total_lines + CD.CUD.line_count;
+    CD.total_lines := CD.total_lines + CD.CUD.location.line;
     --  Forget about the compilation just completed, and go back to the
     --  ongoing compilation that triggered a call to Compile_Unit via a WITH:
     CD.CUD := mem;

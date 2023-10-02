@@ -174,12 +174,10 @@ package body HAC_Sys.Scanner is
       if CD.listing_requested then
         New_Line (CD.listing);
       end if;
-      CD.CUD.line_count := CD.CUD.line_count + 1;
+      CD.CUD.location.line := CD.CUD.location.line + 1;
       if CD.listing_requested then
-        HAC_Sys.Defs.IIO.Put (CD.listing, HAC_Integer (CD.CUD.line_count), 4);
+        HAC_Sys.Defs.IIO.Put (CD.listing, HAC_Integer (CD.CUD.location.line), 4);
         Put (CD.listing, "  ");
-        --  Put (Listing, LC, 5);
-        --  Put (Listing, "  ");
       end if;
       CD.CUD.LL := 0;
       CD.CUD.CC := 0;
@@ -587,8 +585,8 @@ package body HAC_Sys.Scanner is
         ST (CD.Strings_Table_Top + lit_len) := CD.CUD.c;
         if CD.CUD.CC = 1 then
           lit_len := 0;  --  END OF InpLine
-          CD.CUD.sy_start := 1;
-          CD.CUD.sy_end   := 1;
+          CD.CUD.location.column_start := 1;
+          CD.CUD.location.column_stop  := 1;
           Error
             (CD,
              err_general_error,
@@ -620,7 +618,7 @@ package body HAC_Sys.Scanner is
 
   begin  --  InSymbol
     CD.prev_sy     := CD.Sy;
-    CD.prev_sy_loc := (CD.CUD.line_count, CD.CUD.sy_start, CD.CUD.sy_end);
+    CD.prev_sy_loc := CD.CUD.location;
 
     Big_loop :
     loop
@@ -628,7 +626,7 @@ package body HAC_Sys.Scanner is
       loop
         Skip_Blanks (CD);
 
-        CD.CUD.sy_start := CD.CUD.CC - 1;
+        CD.CUD.location.column_start := CD.CUD.CC - 1;
         exit Small_loop when Character_Types (CD.CUD.c) /= Illegal;
         Error (CD, err_scanner_illegal_character);
         if CD.comp_dump_requested then
@@ -803,7 +801,7 @@ package body HAC_Sys.Scanner is
       exit Big_loop when exit_big_loop;
     end loop Big_loop;
 
-    CD.CUD.sy_end := CD.CUD.CC - 1;
+    CD.CUD.location.column_stop := CD.CUD.CC - 1;
 
     if CD.comp_dump_requested then
       Put_Line (CD.comp_dump, CD.CUD.input_line (1 .. CD.CUD.LL));
@@ -813,9 +811,8 @@ package body HAC_Sys.Scanner is
       Put_Line (CD.comp_dump, "^");
       Put
         (CD.comp_dump,
-         '[' & Integer'Image (CD.CUD.line_count) & ':' &
-               Integer'Image (CD.CUD.CC) & ":] " &
-         KeyWSymbol'Image (CD.Sy));
+         '[' & CD.CUD.location.line'Image & ':' & CD.CUD.CC'Image & ":] " &
+         CD.Sy'Image);
       case CD.Sy is
         when IDent =>
           Put (CD.comp_dump, ": " & A2S (CD.Id));

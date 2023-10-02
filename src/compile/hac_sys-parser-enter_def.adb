@@ -10,10 +10,9 @@ package body HAC_Sys.Parser.Enter_Def is
 
   ------------------------------------------------------------------
   ------------------------------------------------------Enter_Block-
-  procedure Enter_Block (
-    CD    : in out Co_Defs.Compiler_Data;
-    Tptr  :        Integer
-  )
+  procedure Enter_Block
+    (CD    : in out Co_Defs.Compiler_Data;
+     Tptr  :        Integer)
   is
   begin
     if CD.Blocks_Count = BMax then
@@ -27,7 +26,7 @@ package body HAC_Sys.Parser.Enter_Def is
       New_B.Last_Id_Idx        := 0;
       New_B.First_Param_Id_Idx := 0;
       New_B.Last_Param_Id_Idx  := 0;
-      New_B.SrcFrom            := CD.CUD.line_count;
+      New_B.SrcFrom            := CD.CUD.location.line;
     end;
   end Enter_Block;
 
@@ -92,7 +91,7 @@ package body HAC_Sys.Parser.Enter_Def is
        is_read          => False,
        is_initialized   => none,
        is_assigned      => False,
-       location         => (CD.CUD.line_count, CD.CUD.sy_start, CD.CUD.sy_end));
+       location         => CD.CUD.location);
     --
     CD.target.Mark_Declaration (is_built_in => False);
     --  Update start of identifier chain:

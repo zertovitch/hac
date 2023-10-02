@@ -449,7 +449,7 @@ package body HAC_Sys.Parser.Statements is
     procedure WHILE_Statement (loop_Id : Natural) is  --  RM 5.5 (8)
       X : Exact_Subtyp;
       LC_Cond_Eval, LC_Cond_Jump : Integer;
-      line_number : constant Natural := CD.CUD.line_count;
+      line_number : constant Natural := CD.CUD.location.line;
     begin
       InSymbol;  --  Consume WHILE symbol.
       LC_Cond_Eval := CD.LC;
@@ -465,7 +465,7 @@ package body HAC_Sys.Parser.Statements is
       LC_FOR_Begin,
       loop_param_id,
       previous_last : Index;
-      line_number : constant Natural := CD.CUD.line_count;
+      line_number : constant Natural := CD.CUD.location.line;
     begin
       --
       --  Pushed on the stack:
@@ -885,7 +885,7 @@ package body HAC_Sys.Parser.Statements is
           FOR_Statement (CD.Id_Count);
           Check_ID_after_END_LOOP;
         when LOOP_Symbol =>
-          LOOP_Statement (k_Jump, CD.LC, (CD.Id_Count, False, CD.CUD.line_count));
+          LOOP_Statement (k_Jump, CD.LC, (CD.Id_Count, False, CD.CUD.location.line));
           Check_ID_after_END_LOOP;
         when WHILE_Symbol =>
           WHILE_Statement (CD.Id_Count);
@@ -972,7 +972,7 @@ package body HAC_Sys.Parser.Statements is
         when IF_Symbol =>
           IF_Statement;
         when LOOP_Symbol =>
-          LOOP_Statement (k_Jump, CD.LC, (No_Id, False, CD.CUD.line_count));
+          LOOP_Statement (k_Jump, CD.LC, (No_Id, False, CD.CUD.location.line));
           Process_Name_for_Unnamed_Loop;
         when NULL_Symbol =>
           InSymbol;  --  Just consume the NULL symbol.

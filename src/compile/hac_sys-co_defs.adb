@@ -52,7 +52,7 @@ package body HAC_Sys.Co_Defs is
   begin
     CUD.compiler_stream  := Source_Stream_Access (s);
     CUD.source_file_name := HAT.To_VString (file_name);
-    CUD.line_count       := start_line;
+    CUD.location.line    := start_line;
   end Set_Source_Stream;
 
   function Get_Source_Name (SD : Current_Unit_Data) return String is

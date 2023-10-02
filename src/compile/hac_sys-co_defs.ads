@@ -234,12 +234,11 @@ package HAC_Sys.Co_Defs is
     compiler_stream   : Source_Stream_Access;
     source_file_name  : HAT.VString;         --  Indicative, for error messages
     --  Parsing
-    line_count        : Natural;             --  Source line counter, used for listing
+    location          : Symbol_Location;
     input_line        : Source_Line_String;
     c                 : Character;           --  Character read from source program
     CC                : Integer;             --  Character counter (=column in current line)
     LL                : Natural;             --  Length of current line
-    sy_start, sy_end  : Integer;             --  Start and end on line for the current symbol
     --  Level 0 definitions visible to currently compiled unit:
     level_0_def       : Id_Maps.Map;
     Use_HAT_Stack     : Use_HAT_Stack_Type;

@@ -388,13 +388,12 @@ package body HAC_Sys.Errors is
     end if;
     case location_method is
       when current_symbol =>
-        to_be_marked.line         := CD.CUD.line_count;
-        to_be_marked.column_start := CD.CUD.sy_start;
-        to_be_marked.column_stop  := CD.CUD.sy_end;
+        to_be_marked := CD.CUD.location;
       when shift_one_character =>
-        to_be_marked.line         := CD.CUD.line_count;
-        to_be_marked.column_start := CD.CUD.sy_start + 1;
-        to_be_marked.column_stop  := CD.CUD.sy_end + 1;
+        to_be_marked :=
+          (CD.CUD.location.line,
+           CD.CUD.location.column_start + 1,
+           CD.CUD.location.column_stop  + 1);
       when previous_symbol =>
         to_be_marked := CD.prev_sy_loc;
       when explicit =>
