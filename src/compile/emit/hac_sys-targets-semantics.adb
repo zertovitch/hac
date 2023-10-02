@@ -43,8 +43,8 @@ package body HAC_Sys.Targets.Semantics is
     --  Feed the declaration array.
     m.decl_array (m.CD.Id_Count) :=
       (file_name   => (if is_built_in then HAT.Null_VString else m.CD.CUD.source_file_name),
-       line        => (if is_built_in then -1               else m.CD.CUD.line_count),
-       column      => (if is_built_in then -1               else m.CD.CUD.sy_start + 1),
+       line        => (if is_built_in then -1               else m.CD.CUD.location.line),
+       column      => (if is_built_in then -1               else m.CD.CUD.location.column_start + 1),
        is_built_in => is_built_in,
        id_index    => m.CD.Id_Count);
     --  Feed the structures for searching declarations.
@@ -59,7 +59,7 @@ package body HAC_Sys.Targets.Semantics is
       end if;
       --  2) Insert the infos for the declaration into the line map,
       --     possibly replacing a value for the same line number.
-      line_map_a.Include (m.CD.CUD.line_count, m.CD.Id_Count);
+      line_map_a.Include (m.CD.CUD.location.line, m.CD.Id_Count);
     end if;
   end Mark_Declaration;
 
@@ -69,8 +69,8 @@ package body HAC_Sys.Targets.Semantics is
     key : constant VString :=
       --  Example: "c:\files\source.adb 130 12"
       m.CD.CUD.source_file_name &
-      m.CD.CUD.line_count'Image &
-      Integer'Image (m.CD.CUD.sy_start + 1);
+      m.CD.CUD.location.line'Image &
+      Integer'Image (m.CD.CUD.location.column_start + 1);
   begin
     if trace then
       HAT.Put_Line
