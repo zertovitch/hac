@@ -158,7 +158,7 @@ is
     if Equal (difference, 0) then
       if WHEN_OTHERS_flag then
         if CD.remarks (note_redundant_construct) then
-          Note
+          Remark
             (CD,
              note_redundant_construct,
              """when others"" is redundant here: all values" &

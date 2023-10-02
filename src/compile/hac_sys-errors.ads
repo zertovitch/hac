@@ -24,30 +24,25 @@ package HAC_Sys.Errors is
               --     infinite loops in the parser. Tricky!
      major);  --  In this case, the best choice is to STOP the compilation immediately.
 
+  type Symbol_Location_Method is
+    (current_symbol, shift_one_character, previous_symbol, explicit);
+
   procedure Error
     (CD                  : in out Co_Defs.Compiler_Data;
      code                :        Defs.Compile_Diagnostic;
-     hint_1              :        String         := "";
-     hint_2              :        String         := "";
-     severity            :        Error_Severity := medium;
-     previous_symbol     :        Boolean        := False;
-     shift_one_character :        Boolean        := False);
+     hint_1              :        String           := "";
+     hint_2              :        String           := "";
+     severity            :        Error_Severity   := medium;
+     location_method     :        Symbol_Location_Method := current_symbol;
+     explicit_location   :        Defs.Symbol_Location  := (0, 0, 0));
 
-  procedure Warning
+  procedure Remark
     (CD                  : in out Co_Defs.Compiler_Data;
-     code                :        Defs.Compile_Warning;
-     hint_1              :        String         := "";
-     hint_2              :        String         := "";
-     previous_symbol     :        Boolean        := False;
-     shift_one_character :        Boolean        := False);
-
-  procedure Note
-    (CD                  : in out Co_Defs.Compiler_Data;
-     code                :        Defs.Compile_Note;
-     hint_1              :        String         := "";
-     hint_2              :        String         := "";
-     previous_symbol     :        Boolean        := False;
-     shift_one_character :        Boolean        := False);
+     code                :        Defs.Compile_Remark;
+     hint_1              :        String                 := "";
+     hint_2              :        String                 := "";
+     location_method     :        Symbol_Location_Method := current_symbol;
+     explicit_location   :        Defs.Symbol_Location        := (0, 0, 0));
 
   procedure Compilation_Diagnostics_Summary (CD : Co_Defs.Compiler_Data);
 

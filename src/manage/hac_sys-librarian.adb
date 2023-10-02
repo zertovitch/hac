@@ -104,7 +104,8 @@ package body HAC_Sys.Librarian is
        is_referenced    => False,
        is_read          => False,
        is_initialized   => Co_Defs.none,
-       is_assigned      => False);
+       is_assigned      => False,
+       location         => (0, 0, 0));
 
     CD.target.Mark_Declaration (is_built_in);
     CD.Blocks_Table (0).Last_Id_Idx := CD.Id_Count;

@@ -173,6 +173,7 @@ package HAC_Sys.Co_Defs is
     is_read          : Boolean;              --  For variable or constant: is it read?
     is_initialized   : Initialized_Kind;     --  For variable or constant: is it initialized?
     is_assigned      : Boolean;              --  Is a variable assigned in a statement part?
+    location         : Symbol_Location;
   end record;
 
   --  Entity                        Meaning of Adr_or_Sz
@@ -289,9 +290,7 @@ package HAC_Sys.Co_Defs is
     CUD : Current_Unit_Data;
     --  Scanning & Parsing
     Sy, prev_sy      : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
-    prev_sy_start,
-    prev_sy_end,
-    prev_sy_line     : Integer;
+    prev_sy_loc      : Symbol_Location;
     Id               : Alfa;               --  Identifier from InSymbol
     Id_with_case     : Alfa;               --  Same as Id, but with casing.
     Id_location      : Integer;            --  Cache for Locate_CD_Id

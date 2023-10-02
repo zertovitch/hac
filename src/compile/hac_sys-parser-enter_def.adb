@@ -91,7 +91,8 @@ package body HAC_Sys.Parser.Enter_Def is
        is_referenced    => False,
        is_read          => False,
        is_initialized   => none,
-       is_assigned      => False);
+       is_assigned      => False,
+       location         => (CD.CUD.line_count, CD.CUD.sy_start, CD.CUD.sy_end));
     --
     CD.target.Mark_Declaration (is_built_in => False);
     --  Update start of identifier chain:

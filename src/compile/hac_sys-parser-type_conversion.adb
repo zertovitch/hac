@@ -71,7 +71,7 @@ begin
       end case;
     when To_Bools =>
       if T_Expr.TYP = Bools then
-        Note
+        Remark
           (CD,
            note_redundant_construct,
            "redundant conversion to type ""Boolean""");

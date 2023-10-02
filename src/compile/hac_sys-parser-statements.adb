@@ -496,7 +496,8 @@ package body HAC_Sys.Parser.Statements is
               is_referenced    => False,
               is_read          => False,
               is_initialized   => explicit,
-              is_assigned      => False);
+              is_assigned      => False,
+              location         => (0, 0, 0));
         --
         CD.target.Mark_Declaration (is_built_in => False);
         CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx  := loop_param_id;

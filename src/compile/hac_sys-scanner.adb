@@ -459,8 +459,8 @@ package body HAC_Sys.Scanner is
         Error
           (CD,
            err_scanner_space_missing_after_number,
-           severity            => minor,  --  scanning & parsing go on unhindered.
-           shift_one_character => True);
+           severity => minor,  --  scanning & parsing go on unhindered.
+           location_method => shift_one_character);
       end if;
     end Scan_Number;
 
@@ -619,10 +619,8 @@ package body HAC_Sys.Scanner is
     exit_big_loop : Boolean;
 
   begin  --  InSymbol
-    CD.prev_sy       := CD.Sy;
-    CD.prev_sy_start := CD.CUD.sy_start;
-    CD.prev_sy_end   := CD.CUD.sy_end;
-    CD.prev_sy_line  := CD.CUD.line_count;
+    CD.prev_sy     := CD.Sy;
+    CD.prev_sy_loc := (CD.CUD.line_count, CD.CUD.sy_start, CD.CUD.sy_end);
 
     Big_loop :
     loop

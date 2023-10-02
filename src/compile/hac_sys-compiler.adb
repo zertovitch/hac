@@ -73,9 +73,7 @@ package body HAC_Sys.Compiler is
     Init (CD.CUD);
     --  Scanner data
     CD.Sy                := Dummy_Symbol;
-    CD.prev_sy_start     := 1;
-    CD.prev_sy_end       := 1;
-    CD.prev_sy_line      := 0;
+    CD.prev_sy_loc       := (0, 1, 1);
     CD.error_count       := 0;
     CD.minor_error_count := 0;
     CD.diags             := no_diagnostic;
@@ -357,7 +355,7 @@ package body HAC_Sys.Compiler is
       Error
         (CD, err_wrong_unit_name,
          main_name_hint, A2S (CD.Main_Program_ID),
-         major, True);
+         major, previous_symbol);
     end if;
     if CD.Sy /= IS_Symbol then
       --  procedure Name IS

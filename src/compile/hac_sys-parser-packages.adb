@@ -315,7 +315,7 @@ package body HAC_Sys.Parser.Packages is
         --  may not have a spec.
         null;
       else
-        Note
+        Remark
           (CD,
            note_redundant_construct,
            """use"" clause already applied, in same declarative part, for" &

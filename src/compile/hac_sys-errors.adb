@@ -338,16 +338,16 @@ package body HAC_Sys.Errors is
   procedure Error
     (CD                  : in out Co_Defs.Compiler_Data;
      code                :        Defs.Compile_Diagnostic;
-     hint_1              :        String         := "";
-     hint_2              :        String         := "";
-     severity            :        Error_Severity := medium;
-     previous_symbol     :        Boolean        := False;
-     shift_one_character :        Boolean        := False)
+     hint_1              :        String                  := "";
+     hint_2              :        String                  := "";
+     severity            :        Error_Severity          := medium;
+     location_method     :        Symbol_Location_Method  := current_symbol;
+     explicit_location   :        Defs.Symbol_Location         := (0, 0, 0))
   is
     use Ada.Strings, Ada.Strings.Fixed, Ada.Text_IO;
-    line, col_start, col_stop : Integer;
+    to_be_marked : Symbol_Location;
     --
-    procedure Show_to_comp_dump (srcNumber, charStart, charEnd, objNumber : Integer) is
+    procedure Show_to_comp_dump (objNumber : Integer) is
     begin
       if CD.comp_dump_requested then
         Put_Line
@@ -357,14 +357,10 @@ package body HAC_Sys.Errors is
           " (" &
           Diagnostic_String (code, hint_1, hint_2) &
           ") " &
-          " srcNumber=" &
-          Integer'Image (srcNumber) &
-          " charStart=" &
-          Integer'Image (charStart) &
-          " charEnd=" &
-          Integer'Image (charEnd) &
-          " objNumber=" &
-          Integer'Image (objNumber));
+          " srcNumber=" & to_be_marked.line'Image &
+          " charStart=" & to_be_marked.column_start'Image &
+          " charEnd="   & to_be_marked.column_stop'Image &
+          " objNumber=" & objNumber'Image);
       end if;
     end Show_to_comp_dump;
     --
@@ -390,20 +386,21 @@ package body HAC_Sys.Errors is
     elsif code in Compile_Note then
       diagnostic.diagnostic_kind := note;
     end if;
-    if previous_symbol then
-      line      := CD.prev_sy_line;
-      col_start := CD.prev_sy_start;
-      col_stop  := CD.prev_sy_end;
-    else
-      line      := CD.CUD.line_count;
-      col_start := CD.CUD.sy_start;
-      col_stop  := CD.CUD.sy_end;
-      if shift_one_character then
-        col_start := col_start + 1;
-        col_stop  := col_stop + 1;
-      end if;
-    end if;
-    Show_to_comp_dump (line, col_start, col_stop, -1);
+    case location_method is
+      when current_symbol =>
+        to_be_marked.line         := CD.CUD.line_count;
+        to_be_marked.column_start := CD.CUD.sy_start;
+        to_be_marked.column_stop  := CD.CUD.sy_end;
+      when shift_one_character =>
+        to_be_marked.line         := CD.CUD.line_count;
+        to_be_marked.column_start := CD.CUD.sy_start + 1;
+        to_be_marked.column_stop  := CD.CUD.sy_end + 1;
+      when previous_symbol =>
+        to_be_marked := CD.prev_sy_loc;
+      when explicit =>
+        to_be_marked := explicit_location;
+    end case;
+    Show_to_comp_dump (-1);
     CD.diags (code) := True;
     if code in Compile_Error then
       if severity = minor then
@@ -416,9 +413,9 @@ package body HAC_Sys.Errors is
       Put_Line
         (Current_Error,
          To_String (CD.CUD.source_file_name) & ": " &
-         Trim (Integer'Image (line),      Left) & ':' &
-         Trim (Integer'Image (col_start), Left) & '-' &
-         Trim (Integer'Image (col_stop),  Left) & ": " &
+         Trim (to_be_marked.line'Image,         Left) & ':' &
+         Trim (to_be_marked.column_start'Image, Left) & '-' &
+         Trim (to_be_marked.column_stop'Image,  Left) & ": " &
          Diagnostic_Prefix &
          Diagnostic_String (code, hint_1, hint_2) &
          Diagnostic_Suffix);
@@ -445,9 +442,7 @@ package body HAC_Sys.Errors is
       Repair_Kit (diagnostic) := updated_repair_kit;
       diagnostic.message   := To_Unbounded_String (Diagnostic_String (code, hint_1, hint_2));
       diagnostic.file_name := To_Unbounded_String (Co_Defs.Get_Source_Name (CD.CUD));
-      diagnostic.line      := line;
-      diagnostic.column_a  := col_start;
-      diagnostic.column_z  := col_stop;
+      diagnostic.location  := to_be_marked;
       --
       CD.trace.pipe (diagnostic);
     end if;
@@ -461,36 +456,21 @@ package body HAC_Sys.Errors is
     end if;
   end Error;
 
-  procedure Warning
+  procedure Remark
     (CD                  : in out Co_Defs.Compiler_Data;
-     code                :        Defs.Compile_Warning;
-     hint_1              :        String         := "";
-     hint_2              :        String         := "";
-     previous_symbol     :        Boolean        := False;
-     shift_one_character :        Boolean        := False)
+     code                :        Defs.Compile_Remark;
+     hint_1              :        String                  := "";
+     hint_2              :        String                  := "";
+     location_method     :        Symbol_Location_Method  := current_symbol;
+     explicit_location   :        Defs.Symbol_Location         := (0, 0, 0))
   is
   begin
-    if CD.remarks (code) then  --  Warning is optional
-      --  Just call "Error" (severity does nothing for warnings).
-      Error (CD, code, hint_1, hint_2, minor, previous_symbol, shift_one_character);
+    if CD.remarks (code) then  --  Remark (Note or Warning) is optional
+      --  If the switch is "on", just call `Error`.
+      --  Severity does nothing for remarks.
+      Error (CD, code, hint_1, hint_2, minor, location_method, explicit_location);
     end if;
-  end Warning;
-
-  procedure Note
-    (CD                  : in out Co_Defs.Compiler_Data;
-     code                :        Defs.Compile_Note;
-     hint_1              :        String         := "";
-     hint_2              :        String         := "";
-     previous_symbol     :        Boolean        := False;
-     shift_one_character :        Boolean        := False)
-
-  is
-  begin
-    if CD.remarks (code) then  --  Note is optional
-      --  Just call "Error" (severity does nothing for notes).
-      Error (CD, code, hint_1, hint_2, minor, previous_symbol, shift_one_character);
-    end if;
-  end Note;
+  end Remark;
 
   ----------------------------------------------------------------------------
 

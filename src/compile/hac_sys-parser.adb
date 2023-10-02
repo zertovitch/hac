@@ -251,7 +251,7 @@ package body HAC_Sys.Parser is
           (CD, err_incorrect_name_after_END,
            hint_1 => A2S (Block_Id_with_case),
            severity => minor,
-           previous_symbol => True);
+           location_method => previous_symbol);
            --  ^ Ideally we would enclose the whole wrong full name (x.y.z),
            --    possibly spanning on several lines.
            --    But the method is correct on a single wrong identifier,
@@ -308,21 +308,28 @@ package body HAC_Sys.Parser is
         while id_index /= No_Id loop
           declare
             item : IdTabEntry renames CD.IdTab (id_index);
+            procedure Remark_for_declared_Item (diag : Compile_Diagnostic; text : String) is
+            begin
+              Remark
+                (CD,
+                 diag,
+                 text,
+                 location_method   => explicit,
+                 explicit_location => item.location);
+            end Remark_for_declared_Item;
           begin
             exit when item.lev < block_data.level;
             if item.is_read then
               if item.entity = variable_object and then not item.is_assigned then
                 case item.is_initialized is
                   when none =>
-                    Warning
-                      (CD,
-                       warn_read_but_not_written,
+                    Remark_for_declared_Item
+                      (warn_read_but_not_written,
                        "variable """ & A2S (item.name_with_case) &
                        """ is read but never written");
                   when explicit =>
-                    Note
-                      (CD,
-                       note_constant_variable,
+                    Remark_for_declared_Item
+                      (note_constant_variable,
                        "variable """ & A2S (item.name_with_case) &
                        """ is not modified, could be declared constant");
                   when implicit =>
@@ -330,17 +337,15 @@ package body HAC_Sys.Parser is
                 end case;
               end if;
             elsif item.entity = variable_object and then item.is_assigned then
-              Note
-                (CD,
-                 note_unused_item,
+              Remark_for_declared_Item
+                (note_unused_item,
                  "variable """ & A2S (item.name_with_case) &
                  """ is never read");
             elsif item.entity /= alias and then not item.is_referenced then
               --  Here we can have any explicit declaration
               --  (object, type, subprogram, ...)
-              Note
-                (CD,
-                 note_unused_item,
+              Remark_for_declared_Item
+                (note_unused_item,
                  '"' & A2S (item.name_with_case) & """ is unused");
             end if;
             id_index := item.link;

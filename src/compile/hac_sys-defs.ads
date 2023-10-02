@@ -483,15 +483,22 @@ package HAC_Sys.Defs is
     alternative : HAT.VString      := HAT.Null_VString;
   end record;
 
+  --  The Symbol_Location record unifies the location of symbols
+  --  within a source stream, basically for errors & warnings.
+
+  type Symbol_Location is record
+    line         : Integer;
+    column_start : Integer;
+    column_stop  : Integer;
+  end record;
+
   type Diagnostic_Kind_Type is (error, warning, note, style);
 
   type Diagnostic_Kit is new Repair_Kit with record
     diagnostic_kind : Diagnostic_Kind_Type := error;
     message         : HAT.VString          := HAT.Null_VString;
     file_name       : HAT.VString          := HAT.Null_VString;
-    line            : Natural              := 0;
-    column_a        : Natural              := 0;  --  Before first selected character. Can be 0.
-    column_z        : Natural              := 0;
+    location        : Symbol_Location      := (0, 0, 0);
   end record;
 
   type Smart_Error_Pipe is access procedure (diagnostic : Diagnostic_Kit);
