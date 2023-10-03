@@ -20,7 +20,8 @@ procedure Sudoku_Sample is
   less_easy,
   hard,
   very_hard,
-  hidden_double_1 : Sudo_Strings;
+  hidden_double_1,
+  hidden_triple_1 : Sudo_Strings;
 
   use HAT;
 
@@ -189,6 +190,17 @@ begin
   hidden_double_1 (8) := +" 6  8 271";
   hidden_double_1 (9) := +"  5 1  94";
   Solve_from_Strings (hidden_double_1, +"Hidden double 1", 1);
+
+  hidden_triple_1 (1) := +"9  7     ";
+  hidden_triple_1 (2) := +"  34   5 ";
+  hidden_triple_1 (3) := +"  7 3 1  ";
+  hidden_triple_1 (4) := +"3    94  ";
+  hidden_triple_1 (5) := +"2  8 6  3";
+  hidden_triple_1 (6) := +"  83    9";
+  hidden_triple_1 (7) := +"  1 8 2  ";
+  hidden_triple_1 (8) := +" 4   36  ";
+  hidden_triple_1 (9) := +"     7  5";
+  Solve_from_Strings (hidden_triple_1, +"Hidden triple 1", 5);
 
   --  https://www.youtube.com/watch?v=T4OdkQMmyu8
   --  Stalls at round 7, equivalent to t = 7:37
