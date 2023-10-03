@@ -25,7 +25,7 @@ package HAC_Sys.Errors is
      major);  --  In this case, the best choice is to STOP the compilation immediately.
 
   type Symbol_Location_Method is
-    (current_symbol, shift_one_character, previous_symbol, explicit);
+    (current_symbol, previous_symbol, explicit);
 
   procedure Error
     (CD                  : in out Co_Defs.Compiler_Data;

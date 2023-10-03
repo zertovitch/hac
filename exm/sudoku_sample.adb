@@ -200,7 +200,7 @@ begin
   hidden_triple_1 (7) := +"  1 8 2  ";
   hidden_triple_1 (8) := +" 4   36  ";
   hidden_triple_1 (9) := +"     7  5";
-  Solve_from_Strings (hidden_triple_1, +"Hidden triple 1", 5);
+  Solve_from_Strings (hidden_triple_1, +"Hidden triple 1", 1);
 
   --  https://www.youtube.com/watch?v=T4OdkQMmyu8
   --  Stalls at round 7, equivalent to t = 7:37

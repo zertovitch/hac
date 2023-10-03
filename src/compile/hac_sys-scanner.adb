@@ -454,11 +454,12 @@ package body HAC_Sys.Scanner is
         end case;
       end if;
       if Character_Types (CD.CUD.c) = Letter then
+        CD.CUD.location.column_start := CD.CUD.CC;
+        CD.CUD.location.column_stop  := CD.CUD.CC;
         Error
           (CD,
            err_scanner_space_missing_after_number,
-           severity => minor,  --  scanning & parsing go on unhindered.
-           location_method => shift_one_character);
+           severity => minor);  --  scanning & parsing go on unhindered.
       end if;
     end Scan_Number;
 
@@ -626,7 +627,7 @@ package body HAC_Sys.Scanner is
       loop
         Skip_Blanks (CD);
 
-        CD.CUD.location.column_start := CD.CUD.CC - 1;
+        CD.CUD.location.column_start := CD.CUD.CC;
         exit Small_loop when Character_Types (CD.CUD.c) /= Illegal;
         Error (CD, err_scanner_illegal_character);
         if CD.comp_dump_requested then

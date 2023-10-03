@@ -389,11 +389,6 @@ package body HAC_Sys.Errors is
     case location_method is
       when current_symbol =>
         to_be_marked := CD.CUD.location;
-      when shift_one_character =>
-        to_be_marked :=
-          (CD.CUD.location.line,
-           CD.CUD.location.column_start + 1,
-           CD.CUD.location.column_stop  + 1);
       when previous_symbol =>
         to_be_marked := CD.prev_sy_loc;
       when explicit =>
@@ -461,7 +456,7 @@ package body HAC_Sys.Errors is
      hint_1              :        String                  := "";
      hint_2              :        String                  := "";
      location_method     :        Symbol_Location_Method  := current_symbol;
-     explicit_location   :        Defs.Symbol_Location         := (0, 0, 0))
+     explicit_location   :        Defs.Symbol_Location    := (0, 0, 0))
   is
   begin
     if CD.remarks (code) then  --  Remark (Note or Warning) is optional
