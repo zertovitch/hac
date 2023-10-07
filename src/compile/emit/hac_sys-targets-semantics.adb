@@ -116,8 +116,13 @@ package body HAC_Sys.Targets.Semantics is
      max_list : Positive;
      max_scan : Positive) return String
   is
+    use Co_Defs, HAT;
     line_map_a : Declaration_Line_Map_Access;
-    last_id_index : Positive;
+    idx, l : Natural;
+    package Declaration_Lists is new Ada.Containers.Ordered_Maps (VString, VString);
+    list : Declaration_Lists.Map;
+    up_prefix : constant VString := To_Upper (+prefix);
+    result : VString;
   begin
     --  1) Find the line map associated to the file name.
     declare
@@ -140,11 +145,46 @@ package body HAC_Sys.Targets.Semantics is
       if curs = No_Element then
         return "";
       else
-        last_id_index := Element (curs);
+        idx := Element (curs);
       end if;
     end;
     --  3) Build an identifier list matching the prefix.
-    return "";  --  !!
+    if trace then
+      Put_Line
+        (+"Find_Possible_Declarations, identifiers matching """ &
+         prefix & """:");
+    end if;
+    for scan in 1 .. max_scan loop
+      exit when idx = No_Id;
+      exit when Integer (list.Length) = max_list;
+      declare
+        item : IdTabEntry renames m.CD.IdTab (idx);
+      begin
+        if Starts_With (item.name, up_prefix) then
+          --  Enter the identifier in a case-insensitive way:
+          list.Include (item.name, item.name_with_case);
+          if trace then
+            Put_Line (+"    " & item.name_with_case);
+          end if;
+        end if;
+        --  Jump to previous identifier index, on same or lower level:
+        idx := item.link;
+      end;
+    end loop;
+    --  Output the list as a single string seperated by spaces:
+    for s of list loop
+      --  Like `result := result & s & ' ';`, possibly more efficient:
+      VStr_Pkg.Append (result, s);
+      VStr_Pkg.Append (result, ' ');
+    end loop;
+    l := Length (result);
+    if l > 0 then
+      Delete (result, l, l);  --  Remove trailing ' '
+    end if;
+    if trace then
+      Put_Line (+"    [" & result & "]");
+    end if;
+    return To_String (result);
   end Find_Possible_Declarations;
 
 end HAC_Sys.Targets.Semantics;
