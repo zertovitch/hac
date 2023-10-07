@@ -40,14 +40,20 @@ package body HAC_Sys.Targets.Semantics is
     curs : Cursor;
     line_map_a : Declaration_Line_Map_Access;
   begin
-    --  Feed the declaration array.
+    --  Feed the declaration array used for getting a declaration's coordinates
+    --  from an index in the identifier table, possibly obtained
+    --  via Find_Referenced_Declaration.
+    --
     m.decl_array (m.CD.Id_Count) :=
       (file_name   => (if is_built_in then HAT.Null_VString else m.CD.CUD.source_file_name),
        line        => (if is_built_in then -1               else m.CD.CUD.location.line),
-       column      => (if is_built_in then -1               else m.CD.CUD.location.column_start + 1),
+       column      => (if is_built_in then -1               else m.CD.CUD.location.column_start),
        is_built_in => is_built_in,
        id_index    => m.CD.Id_Count);
-    --  Feed the structures for searching declarations.
+
+    --  Feed the structures for searching possible declarations
+    --  at any given point of any source file.
+    --
     if not is_built_in then
       --  1) Find or create the line map associated to the file name.
       curs := m.loc_map.Find (m.CD.CUD.source_file_name);
@@ -70,7 +76,7 @@ package body HAC_Sys.Targets.Semantics is
       --  Example: "c:\files\source.adb 130 12"
       m.CD.CUD.source_file_name &
       m.CD.CUD.location.line'Image &
-      Integer'Image (m.CD.CUD.location.column_start + 1);
+      m.CD.CUD.location.column_start'Image;
   begin
     if trace then
       HAT.Put_Line
@@ -85,7 +91,8 @@ package body HAC_Sys.Targets.Semantics is
     end if;
   exception
     when Constraint_Error =>
-      raise Constraint_Error with "Duplicate reference key: " & To_String (key);
+      raise Constraint_Error
+        with "Duplicate reference key: " & To_String (key);
   end Mark_Reference;
 
   procedure Find_Referenced_Declaration
@@ -94,12 +101,11 @@ package body HAC_Sys.Targets.Semantics is
      decl      :    out Declaration_Point'Class;
      was_found :    out Boolean)
   is
-    curs : Reference_Mapping.Cursor;
     use HAT, Reference_Mapping;
+    key  : constant VString :=
+      ref.file_name & ref.line'Image & ref.column'Image;
+    curs : constant Reference_Mapping.Cursor := m.ref_map.Find (key);
   begin
-    curs :=
-      m.ref_map.Find
-        (ref.file_name & ref.line'Image & ref.column'Image);
     if curs = No_Element then
       decl.id_index := -1;
       was_found := False;
@@ -124,12 +130,11 @@ package body HAC_Sys.Targets.Semantics is
     up_prefix : constant VString := To_Upper (+prefix);
     result : VString;
   begin
-    --  1) Find the line map associated to the file name.
+    --  1) Find the line map associated to the given file name.
     declare
       use File_Names_to_Line_Maps_Maps;
-      curs : Cursor;
+      curs : constant Cursor := m.loc_map.Find (point.file_name);
     begin
-      curs := m.loc_map.Find (point.file_name);
       if curs = No_Element then
         return "";
       else
