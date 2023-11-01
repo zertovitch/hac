@@ -201,15 +201,18 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"23", +"3689 965");                       --  Unstable Diffusion
     --
     New_Line (2);
+    New_Line;
     Put_Line ("----> Done.");
+    New_Line;
     if failures = 0 then
-      Put_Line ("All tests passed.");
+      Put_Line ("All tests passed successfully.");
     else
       Put_Line (+"*** There are FAILED tests ***");
     end if;
     Put_Line ("Summary:");
     Put_Line (+"         " & successes & " successes");
-    Put_Line (+"         " & failures & " failures");
+    Put_Line (+"          " & failures & " failures");
+    New_Line;
   end Launch_Tests;
 
 begin

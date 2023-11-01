@@ -33,10 +33,10 @@ package body HAC_Sys.Builder is
       end if;
     end loop;
     --
-    --  The list of pending bodies is established
+    --  Here: the list of pending bodies is now established
     --  for this round. Of course the library may expand
-    --  further due to dependencies, adding pending bodies
-    --  for the next round.
+    --  further due to dependencies, via Register_Unit,
+    --  adding pending bodies for the next round.
     --
     num_pending := 0;
     if BD.CD.error_count > 0 then
@@ -96,11 +96,34 @@ package body HAC_Sys.Builder is
        id_index      => Co_Defs.No_Id,  --  Temporary value.
        id_body_index => Co_Defs.No_Id,  --  Temporary value.
        spec_context  => Co_Defs.Id_Maps.Empty_Map);
+
     procedure Finalize_Target is
     begin
       BD.CD.target.Finalize_Code_Emission
         (BD.CD.Strings_Constants_Table (1 .. BD.CD.Strings_Table_Top));
     end Finalize_Target;
+
+    procedure Complete_Graph_Build is
+    begin
+      if BD.CD.trace.detail_level >= 2 then
+        Compiler.Progress_Message
+          (BD.CD.all,
+           "------  Compilation of possible with'ed unit's bodies  ------");
+      end if;
+      for round in Positive loop
+        Compile_Pending_Bodies_Single_Round (BD, num_pending);
+        --  Now, other bodies may have appeared that have
+        --  not been yet compiled.
+        if num_pending > 0 and then BD.CD.trace.detail_level >= 2 then
+          Compiler.Progress_Message
+            (BD.CD.all,
+             "------  End of Round" & round'Image &
+             ", compiled bodies:" & num_pending'Image & "  ------");
+        end if;
+        exit when num_pending = 0;
+      end loop;
+    end Complete_Graph_Build;
+
   begin
     BD.LD.Library.Clear;
     BD.LD.Map.Clear;
@@ -119,26 +142,13 @@ package body HAC_Sys.Builder is
     main_unit.id_index := BD.CD.Main_Proc_Id_Index;
     Librarian.Change_Unit_Details (BD.LD, main_unit);
     --
-    --  Build of Main unit is finished (with or without minor or medium errors).
+    --  Here: compilation of Main unit is finished (with or without
+    --  minor or medium errors).
     --
-
-    if BD.CD.trace.detail_level >= 2 then
-      Compiler.Progress_Message
-        (BD.CD.all,
-         "------  Compilation of possible with'ed unit's bodies  ------");
-    end if;
-    for round in Positive loop
-      Compile_Pending_Bodies_Single_Round (BD, num_pending);
-      if num_pending > 0 and then BD.CD.trace.detail_level >= 2 then
-        Compiler.Progress_Message
-          (BD.CD.all,
-           "------  End of Round" & round'Image &
-           ", compiled bodies:" & num_pending'Image & "  ------");
-      end if;
-      exit when num_pending = 0;
-    end loop;
+    Complete_Graph_Build;
     --
-    --  Build is finished (with or without minor or medium errors).
+    --  Here: build of the whole unit graph is finished (with or without
+    --  minor or medium errors).
     --
     Finalize_Target;
     --
