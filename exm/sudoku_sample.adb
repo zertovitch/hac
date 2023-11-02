@@ -180,6 +180,23 @@ begin
   hard (9) := +"   2  1  ";
   Solve_from_Strings (hard, +"Hard 3         ", 1);
 
+  --  This one is tricky due to locked cells that
+  --  are well hidden to the human. In that case,
+  --  it is about the digit 4 on last row, that
+  --  can be only within the bottom, center box.
+  --  Then 4 can't be in any cell of that box that
+  --  isn't on the last row.  
+  hard (1) := +"1 76 2   ";
+  hard (2) := +"2 5 3 4  ";
+  hard (3) := +"3    9  2";
+  hard (4) := +"  4 2  5 ";
+  hard (5) := +"87    264";
+  hard (6) := +"52  8 7  ";
+  hard (7) := +"   2    7";
+  hard (8) := +"  2 7 1  ";
+  hard (9) := +"7    8325";
+  Solve_from_Strings (hard, +"Hard 4         ", 1);
+
   hidden_double_1 (1) := +"    6    ";  --  {47} {47}:  hidden double
   hidden_double_1 (2) := +"    42736";  --  in the first two cells
   hidden_double_1 (3) := +"  673  4 ";

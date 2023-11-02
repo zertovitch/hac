@@ -292,11 +292,14 @@ package body Sudokus is
   --------------------
 
   procedure Handle_Locked_Cells_Outside_Boxes
-    (u : in out Grid; found : out Natural)
+    (u       : in out Grid;
+     verbose : in     Boolean;
+     found   :    out Natural)
   is
     procedure Handle_Locked_Cells_Outside_A_Box (i, j : Sudigit) is
       base_i, base_j : Sudigit;
-      ok_row, ok_col : Boolean;
+      ok_row, ok_col, any_cell : Boolean;
+      use HAT;
     begin
       Find_Box_Base (i, j, base_i, base_j);
       for num in Sudigit loop
@@ -314,23 +317,39 @@ package body Sudokus is
           end loop;
           --  We have found that `num` is possible only on a row within the box.
           --  Then, it cannot be on that row outside the box.
+          any_cell := False;
           if ok_row then
             for jj in Sudigit loop
               if jj not in base_j .. base_j + 2 and then u (i, jj).set (num) then
                 found := found + 1;
                 u (i, jj).set (num) := False;
+                any_cell := True;
               end if;
             end loop;
+            if verbose and then any_cell then
+              Put_Line
+                (+"Found locked cells on row " & i &
+                 " *outside* of box with edge " & base_i & ',' & base_j &
+                  "; digit: " & num);
+            end if;
           end if;
           --  We have found that `num` is possible only on a column within the box.
           --  Then, it cannot be on that column outside the box.
+          any_cell := False;
           if ok_col then
             for ii in Sudigit loop
-              if ii not in base_i .. base_i + 2 and then u (ii, j).set (num)  then
+              if ii not in base_i .. base_i + 2 and then u (ii, j).set (num) then
                 found := found + 1;
                 u (ii, j).set (num) := False;
+                any_cell := True;
               end if;
             end loop;
+            if verbose and then any_cell  then
+              Put_Line
+                (+"Found locked cells on column " & j &
+                 " *outside* of box with edge " & base_i & ',' & base_j &
+                  "; digit: " & num);
+            end if;
           end if;
         end if;
       end loop;
@@ -347,11 +366,14 @@ package body Sudokus is
   end Handle_Locked_Cells_Outside_Boxes;
 
   procedure Handle_Locked_Cells_Inside_Boxes
-    (u : in out Grid; found : out Natural)
+    (u       : in out Grid;
+     verbose : in     Boolean;
+     found   :    out Natural)
   is
     procedure Handle_Locked_Cells_Inside_A_Box (i, j : Sudigit) is
       base_i, base_j : Sudigit;
-      ok_row, ok_col : Boolean;
+      ok_row, ok_col, any_cell_row, any_cell_col : Boolean;
+      use HAT;
     begin
       Find_Box_Base (i, j, base_i, base_j);
       for num in Sudigit loop
@@ -367,6 +389,7 @@ package body Sudokus is
               end if;
             end if;
           end loop;
+          --
           ok_col := True;
           for ii in Sudigit loop
             if ii not in base_i .. base_i + 2 then
@@ -377,6 +400,9 @@ package body Sudokus is
               end if;
             end if;
           end loop;
+          --
+          any_cell_row := False;
+          any_cell_col := False;
           for ii in base_i .. base_i + 2 loop
             for jj in base_j .. base_j + 2 loop
               --  We have found that on the whole row, `num` is possible only within the box.
@@ -384,15 +410,32 @@ package body Sudokus is
               if ok_row and then i /= ii and then u (ii, jj).set (num) then
                 found := found + 1;
                 u (ii, jj).set (num) := False;
+                any_cell_row := True;
               end if;
               --  We have found that on the whole column, `num` is possible only within the box.
               --  Then, it cannot be on another column inside the box.
               if ok_col and then j /= jj and then u (ii, jj).set (num) then
                 found := found + 1;
                 u (ii, jj).set (num) := False;
+                any_cell_col := True;
               end if;
             end loop;
           end loop;
+          --
+          if verbose then
+            if any_cell_row then
+              Put_Line
+                (+"Found locked cells on row " & i &
+                 " *inside* of box with edge " & base_i & ',' & base_j &
+                  "; digit: " & num);
+            end if;
+            if any_cell_col then
+              Put_Line
+                (+"Found locked cells on column " & j &
+                 " *inside* of box with edge " & base_i & ',' & base_j &
+                  "; digit: " & num);
+            end if;
+          end if;
         end if;
       end loop;
     end Handle_Locked_Cells_Inside_A_Box;
@@ -803,22 +846,25 @@ package body Sudokus is
     found : Technique_Count;
 
     procedure Handle_Techniques is
+      single_hit_verbosity : constant Boolean := verbosity_level > 4;
     begin
-      Handle_Naked_Singles (pack.u, verbosity_level > 4, found (naked_single));
+      Handle_Naked_Singles (pack.u, single_hit_verbosity, found (naked_single));
       if found (naked_single) > 0 then
         return;
       end if;
       --  We search more complicated possibilities,
       --  only when none for the less complicated was found.
-      Handle_Hidden_Singles (pack.u, verbosity_level > 4, found (hidden_single));
+      Handle_Hidden_Singles (pack.u, single_hit_verbosity, found (hidden_single));
       if found (hidden_single) > 0 then
         return;
       end if;
-      Handle_Locked_Cells_Outside_Boxes (pack.u, found (locked_cell_outside_box));
+      Handle_Locked_Cells_Outside_Boxes
+        (pack.u, single_hit_verbosity, found (locked_cell_outside_box));
       if found (locked_cell_outside_box) > 0 then
         return;
       end if;
-      Handle_Locked_Cells_Inside_Boxes (pack.u, found (locked_cell_inside_box));
+      Handle_Locked_Cells_Inside_Boxes
+        (pack.u, single_hit_verbosity, found (locked_cell_inside_box));
       if found (locked_cell_inside_box) > 0 then
         return;
       end if;
@@ -828,7 +874,7 @@ package body Sudokus is
            2 + Resolution_Technique'Pos (t)
              - Resolution_Technique'Pos (hidden_double),
            help,
-           verbosity_level > 4,
+           single_hit_verbosity,
            found (t));
         if found (t) > 0 then
           return;

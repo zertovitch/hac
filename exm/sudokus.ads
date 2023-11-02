@@ -1,3 +1,7 @@
+--  This package explores ways to solve a Sudoku
+--  in a human-friendly way, that is *without* resorting
+--  to brute force by using recursion.
+
 with HAT;
 
 package Sudokus is
