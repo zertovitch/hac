@@ -195,7 +195,13 @@ package body HAC_Sys.Builder is
         (BD.CD.all, "Compiling main: " & main_file_name);
     end if;
 
-    Compiler.Init_for_new_Build (BD.CD.all);
+    begin
+      Compiler.Init_for_new_Build (BD.CD.all);
+    exception
+      when End_Error =>
+        --  Happens if the text stream is empty.
+        Errors.Error (BD.CD.all, err_unexpected_end_of_text, severity => Errors.major);
+    end;
 
     Compiler.Compile_Main
       (BD.CD.all,
