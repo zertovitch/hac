@@ -42,19 +42,29 @@ package HAC_Sys.Builder is
     asm_dump            : Boolean := False;  --  Assembler output of compiled object code
     cmp_dump_file_name  : HAT.VString;       --  Compiler dump
     listing_file_name   : HAT.VString;       --  Listing of source code with details
-    var_map_file_name   : HAT.VString;       --  Output of variables (map)
+    obj_map_file_name   : HAT.VString;       --  Output of variables (map)
     target              : Targets.Abstract_Machine_Reference := null;  --  Always heap-allocated!
   end record;
 
   overriding procedure Finalize (BD : in out Build_Data);
 
-  --  Build the main procedure.
-  --  The main procedure's source code stream is already
+  type Rounds_Range is range 0 .. 1e9;
+  compile_only : constant Rounds_Range := Rounds_Range'First;
+  full_build   : constant Rounds_Range := Rounds_Range'Last;
+
+  --  Build a main unit (possibly, the main procedure).
+  --  The main unit's source code stream is already
   --  available via Set_Main_Source_Stream.
   --  If the stream stems from a file, the file must be already open and won't be closed.
-  --  Build_Main takes care of all other needed compilations around main as well.
   --
-  procedure Build_Main (BD : in out Build_Data);
+  --  Build_Main takes care of all other needed compilations around main as well,
+  --  depending on the value of body_compilation_rounds_limit.
+  --    body_compilation_rounds_limit = 0 -> compile the given unit only, plus the WITH-ed specs.
+  --    body_compilation_rounds_limit = full_build (default) -> main procedure will be executable.
+  --
+  procedure Build_Main
+    (BD                            : in out Build_Data;
+     body_compilation_rounds_limit :        Rounds_Range := full_build);
 
   procedure Build_Main_from_File (BD : in out Build_Data; File_Name : String);
 
@@ -63,7 +73,7 @@ package HAC_Sys.Builder is
      asm_dump           :        Boolean := False;  --  Assembler output of compiled object code
      cmp_dump_file_name :        String  := "";     --  Compiler dump
      listing_file_name  :        String  := "";     --  Listing of source code with details
-     var_map_file_name  :        String  := "");    --  Output of variables (map)
+     obj_map_file_name  :        String  := "");    --  Output of objects (map)
 
   procedure Set_Remark_Set
     (BD  : in out Build_Data;

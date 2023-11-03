@@ -1,9 +1,11 @@
 with HAC_Sys.Compiler,
      HAC_Sys.Errors,
-     HAC_Sys.Parser.Helpers;
+     HAC_Sys.Parser.Helpers,
+     HAC_Sys.Targets.HAC_Virtual_Machine;
 
 with Ada.Characters.Handling,
      Ada.Exceptions,
+     Ada.Integer_Text_IO,
      Ada.Streams.Stream_IO,
      Ada.Unchecked_Deallocation;
 
@@ -85,7 +87,10 @@ package body HAC_Sys.Builder is
     end loop;
   end Compile_Pending_Bodies_Single_Round;
 
-  procedure Build_Main (BD : in out Build_Data) is
+  procedure Build_Main
+    (BD                            : in out Build_Data;
+     body_compilation_rounds_limit :        Rounds_Range := full_build)
+  is
     use Librarian, HAT.VStr_Pkg, Targets;
     use Ada.Exceptions, Ada.Text_IO;
     num_pending : Natural;
@@ -105,12 +110,14 @@ package body HAC_Sys.Builder is
 
     procedure Complete_Graph_Build is
     begin
-      if BD.CD.trace.detail_level >= 2 then
+      if BD.CD.trace.detail_level >= 2
+        and then body_compilation_rounds_limit > 0
+      then
         Compiler.Progress_Message
           (BD.CD.all,
            "------  Compilation of possible with'ed unit's bodies  ------");
       end if;
-      for round in Positive loop
+      for round in 1 .. body_compilation_rounds_limit loop
         Compile_Pending_Bodies_Single_Round (BD, num_pending);
         --  Now, other bodies may have appeared that have
         --  not been yet compiled.
@@ -124,6 +131,41 @@ package body HAC_Sys.Builder is
       end loop;
     end Complete_Graph_Build;
 
+    procedure Dump_Object_Map (var_map_file_name : String) is
+      map_file : File_Type;
+      use Defs;
+      use type HAC_Integer;
+    begin
+      Create (map_file, Out_File, var_map_file_name);
+      Put_Line (map_file, "  -* Symbol Table *-");
+      New_Line (map_file);
+      Put_Line (map_file, "  LOC  Name       scope");
+      Put_Line (map_file, "------------------------");
+      New_Line (map_file);
+      for Blk of BD.CD.IdTab (BD.CD.Blocks_Table (0).Last_Id_Idx + 1 .. BD.CD.Id_Count) loop
+        if Blk.entity in Co_Defs.Object_Kind then
+          if Blk.xtyp.TYP /= NOTYP then
+            Ada.Integer_Text_IO.Put (map_file, Integer (Blk.adr_or_sz), 4);
+            Put (map_file, A2S (Blk.name) & "   ");
+          end if;
+          if Blk.lev = 1 then  --  TBD: check this, should be 0.
+            Put (map_file, " Global(");
+          else
+            Put (map_file, " Local (");
+          end if;
+          Put (map_file, Blk.lev'Image);
+          Put (map_file, ')');
+          New_Line (map_file);
+        end if;
+      end loop;
+      New_Line (map_file);
+      Close (map_file);
+    end Dump_Object_Map;
+
+    main_file_name : constant String := To_String (BD.CD.CUD.source_file_name);
+
+    use Defs;
+
   begin
     BD.LD.Library.Clear;
     BD.LD.Map.Clear;
@@ -132,13 +174,56 @@ package body HAC_Sys.Builder is
     if BD.target /= null then
       BD.CD.target := BD.target;
     end if;
+
+    BD.CD.listing_requested := BD.listing_file_name /= "";
+    if BD.CD.listing_requested then
+      Create (BD.CD.listing, Name => To_String (BD.listing_file_name));
+      Put_Line (BD.CD.listing, Defs.Header);
+    end if;
+
+    BD.CD.comp_dump_requested := BD.cmp_dump_file_name /= "";
+    if BD.CD.comp_dump_requested then
+      Create (BD.CD.comp_dump, Name => To_String (BD.cmp_dump_file_name));
+      Put_Line (BD.CD.comp_dump,
+        "Compiler: main unit file name is " & main_file_name);
+    end if;
+
+    if BD.CD.trace.detail_level >= 1 then
+      Compiler.Progress_Message
+        (BD.CD.all, "HAC Ada Compiler version " & version & ", " & reference);
+      Compiler.Progress_Message
+        (BD.CD.all, "Compiling main: " & main_file_name);
+    end if;
+
+    Compiler.Init_for_new_Build (BD.CD.all);
+
     Compiler.Compile_Main
       (BD.CD.all,
        BD.LD,
-       To_String (BD.main_name_hint),
-       To_String (BD.cmp_dump_file_name),
-       To_String (BD.listing_file_name),
-       To_String (BD.var_map_file_name));
+       To_String (BD.main_name_hint));
+
+    --  Main unit is compiled.
+    BD.CD.target.Emit_Halt;  --  Relevant only if the main unit is a subprogram.
+
+    --  !!  The following should be performed by Statements_Part_Closing
+    --      in Parser... But it doesn't happen for the main block.
+    BD.CD.Blocks_Table (1).SrcTo := BD.CD.CUD.location.line;
+
+    if BD.CD.LC > BD.CD.ObjCode'First
+      and then BD.CD.target.all not in Targets.HAC_Virtual_Machine.Machine'Class
+    then
+      --  Some machine code was emitted for the HAC VM instead of the alternative target.
+      Errors.Error
+        (BD.CD.all,
+         err_general_error,
+         "Code generation for alternative target (non-HAC-VM) is incomplete");
+    end if;
+
+    if BD.CD.trace.detail_level >= 2 then
+      Compiler.Progress_Message
+        (BD.CD.all, "Compilation of " & main_file_name & " (main) completed");
+    end if;
+
     main_unit.id_index := BD.CD.Main_Proc_Id_Index;
     Librarian.Change_Unit_Details (BD.LD, main_unit);
     --
@@ -155,12 +240,23 @@ package body HAC_Sys.Builder is
     if BD.CD.error_count = 0 then
       Parser.Helpers.Check_Incomplete_Definitions (BD.CD.all, 0);
     end if;
+
+    if BD.CD.diags /= no_diagnostic then
+      Errors.Compilation_Diagnostics_Summary (BD.CD.all);
+    end if;
+
     if BD.CD.comp_dump_requested then
       Compiler.Print_Tables (BD.CD.all);
       Close (BD.CD.comp_dump);
     end if;
     if BD.asm_dump then
       Compiler.Dump_HAC_VM_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
+    end if;
+    if BD.CD.listing_requested then
+      Close (BD.CD.listing);
+    end if;
+    if Length (BD.obj_map_file_name) > 0 then
+      Dump_Object_Map (To_String (BD.obj_map_file_name));
     end if;
   exception
     when Errors.Compilation_abandoned =>
@@ -199,14 +295,14 @@ package body HAC_Sys.Builder is
      asm_dump           :        Boolean := False;  --  Assembler output of compiled object code
      cmp_dump_file_name :        String  := "";     --  Compiler dump
      listing_file_name  :        String  := "";     --  Listing of source code with details
-     var_map_file_name  :        String  := "")     --  Output of variables (map)
+     obj_map_file_name  :        String  := "")     --  Output of objects (map)
   is
     use HAT;
   begin
     BD.asm_dump           := asm_dump;
     BD.cmp_dump_file_name := To_VString (cmp_dump_file_name);
     BD.listing_file_name  := To_VString (listing_file_name);
-    BD.var_map_file_name  := To_VString (var_map_file_name);
+    BD.obj_map_file_name  := To_VString (obj_map_file_name);
   end Set_Diagnostic_Parameters;
 
   procedure Set_Remark_Set

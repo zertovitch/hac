@@ -5,8 +5,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Modularity,
      HAC_Sys.Parser.Packages,
      HAC_Sys.PCode,
-     HAC_Sys.Scanner,
-     HAC_Sys.Targets.HAC_Virtual_Machine;
+     HAC_Sys.Scanner;
 
 with HAT;
 
@@ -39,7 +38,7 @@ package body HAC_Sys.Compiler is
   end Init;
 
   --  Initialize the compiler for an entire build.
-  procedure Init (CD : out Compiler_Data) is
+  procedure Init_for_new_Build (CD : out Compiler_Data) is
   begin
     CD.Arrays_Count          := 0;
     CD.Blocks_Count          := 0;
@@ -83,7 +82,22 @@ package body HAC_Sys.Compiler is
     CD.pkg_prefix := HAT.Null_VString;
     --
     CD.target.Initialize_Code_Emission;
-  end Init;
+    --
+    --  Block Table Entry 0 is not a real block but serves only for
+    --  its index in the identifier table, which lists global,
+    --  level 0 stuff, outside any subprogram including Main.
+    --  This entry is accessed by Locate_Identifier_Internal (implicitly),
+    --  Dump_Object_Map, Enter_Library_Level_Def (explicitly).
+    CD.Blocks_Table (0) :=
+     (Id                 => S2A ("--  Definitions at level 0"),
+      Last_Id_Idx        => 0,  --  Updated by Enter_Library_Level_Def.
+      First_Param_Id_Idx => 1,
+      Last_Param_Id_Idx  => 0,
+      PSize              => 0,
+      VSize              => 0,
+      SrcFrom            => 1,
+      SrcTo              => 1);
+  end Init_for_new_Build;
 
   --  Print_Tables is for debugging purposes.
   --
@@ -295,40 +309,13 @@ package body HAC_Sys.Compiler is
   procedure Compile_Main
     (CD                 : in out Co_Defs.Compiler_Data;
      LD                 : in out Librarian.Library_Data;
-     main_name_hint     :        String;
-     cmp_dump_file_name :        String  := "";   --  Compiler dump
-     listing_file_name  :        String  := "";   --  Listing of source code with details
-     var_map_file_name  :        String  := "")
+     main_name_hint     :        String)
   is
     use Ada.Text_IO, Parser.Helpers, Errors;
-    use type HAC_Integer, Alfa;
-
-    map_file : File_Type;
-
+    use type Alfa;
     full_main_Id : HAT.VString;
     main_block : Parser.Block_Data_Type;
-    main_file_name : constant String := HAT.VStr_Pkg.To_String (CD.CUD.source_file_name);
-
-  begin  --  Compile_Main
-    if CD.trace.detail_level >= 1 then
-      Progress_Message
-        (CD, "HAC Ada Compiler version " & version & ", " & reference);
-      Progress_Message (CD, "Compiling main: " & main_file_name);
-    end if;
-
-    Init (CD);
-
-    CD.listing_requested := listing_file_name /= "";
-    if CD.listing_requested then
-      Create (CD.listing, Name => listing_file_name);
-      Put_Line (CD.listing, Header);
-    end if;
-    CD.comp_dump_requested := cmp_dump_file_name /= "";
-    if CD.comp_dump_requested then
-      Create (CD.comp_dump, Name => cmp_dump_file_name);
-      Put_Line (CD.comp_dump, "Compiler: check for main's context clause");
-    end if;
-
+  begin
     Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
     Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.
 
@@ -345,7 +332,6 @@ package body HAC_Sys.Compiler is
       exit when CD.Sy /= Period;
       --  Here we have a Parent.Child naming.
       Scanner.InSymbol (CD);
-      --  !! TBD: do the implicit "with Parent;" here.
       full_main_Id := full_main_Id & '.';
     end loop;
     CD.Main_Program_ID_with_case := full_main_Id;
@@ -361,23 +347,9 @@ package body HAC_Sys.Compiler is
       Error (CD, err_general_error, "main procedure should be parameterless", severity => major);
     end if;
 
-    if CD.comp_dump_requested then
-      Put_Line (CD.comp_dump, "Compiler: main procedure is " & A2S (CD.Main_Program_ID));
-    end if;
-
     Librarian.Enter_Library_Level_Def (CD, A2S (CD.Main_Program_ID_with_case), prozedure, NOTYP, 0);
     CD.Main_Proc_Id_Index := CD.Id_Count;
     CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  Task Table Entry for main task.
-
-    CD.Blocks_Table (0) :=  --  Block Table Entry for stuff before Main (probably useless)
-     (Id                 => S2A ("--  Definitions before Main"),
-      Last_Id_Idx        => CD.Main_Proc_Id_Index,
-      First_Param_Id_Idx => 1,
-      Last_Param_Id_Idx  => 0,
-      PSize              => 0,
-      VSize              => 0,
-      SrcFrom            => CD.CUD.location.line,
-      SrcTo              => CD.CUD.location.line);
 
     main_block.level                         := 1;
     main_block.block_id_index                := CD.Id_Count;
@@ -392,79 +364,11 @@ package body HAC_Sys.Compiler is
       CD.Main_Program_ID_with_case
     );
     CD.total_lines := CD.total_lines + CD.CUD.location.line;  --  Add line count of main program.
-    --  Main procedure is parsed.
-    CD.target.Emit_Halt;
-    if CD.LC > CD.ObjCode'First
-      and then CD.target.all not in Targets.HAC_Virtual_Machine.Machine'Class
-    then
-      --  Some machine code was emitted for the HAC VM instead of the alternative target.
-      Error
-        (CD,
-         err_general_error,
-         "Code generation for alternative target (non-HAC-VM) is incomplete");
-    end if;
-
-    if CD.Sy /= Semicolon then
-      if CD.comp_dump_requested then
-        Put_Line (CD.comp_dump, "Compile terminated BEFORE FILE END");
-      end if;
-      if CD.listing_requested then
-        Put_Line (CD.listing, "Compile terminated BEFORE FILE END");
-      end if;
-    end if;
-
-    if CD.Blocks_Table (1).VSize > StMax - (STKINCR * CD.Tasks_Definitions_Count) then
-      Error (CD, err_stack_size, "");
-    end if;
-    CD.Blocks_Table (1).SrcTo := CD.CUD.location.line;
-
-    if CD.listing_requested then
-      Close (CD.listing);
-    end if;
-
-    if CD.diags /= no_diagnostic then
-      Compilation_Diagnostics_Summary (CD);
-    end if;
-
-    if var_map_file_name /= "" then
-      Create (map_file, Out_File, var_map_file_name);
-      Put_Line (map_file, "  -* Symbol Table *-");
-      New_Line (map_file);
-      Put_Line (map_file, "  LOC  Name       scope");
-      Put_Line (map_file, "------------------------");
-      New_Line (map_file);
-      for Blk of CD.IdTab (CD.Blocks_Table (0).Last_Id_Idx + 1 .. CD.Id_Count) loop
-        if Blk.entity in Object_Kind then
-          if Blk.xtyp.TYP /= NOTYP then
-            Ada.Integer_Text_IO.Put (map_file, Integer (Blk.adr_or_sz), 4);
-            Put (map_file, A2S (Blk.name) & "   ");
-          end if;
-          if Blk.lev = 1 then  --  TBD: check this, should be 0.
-            Put (map_file, " Global(");
-          else
-            Put (map_file, " Local (");
-          end if;
-          Put (map_file, Nesting_Level'Image (Blk.lev));
-          Put (map_file, ')');
-          New_Line (map_file);
-        end if;
-      end loop;
-      New_Line (map_file);
-      Close (map_file);
-    end if;
-
-    if CD.trace.detail_level >= 2 then
-      Progress_Message (CD, "Compilation of " & main_file_name & " (main) completed");
-    end if;
 
   exception
     when End_Error =>
       Error (CD, err_unexpected_end_of_text);
   end Compile_Main;
-
-  --
-  --  !! Massively "W.I.P." state here !!
-  --
 
   procedure Compile_Unit
     (CD                     : in out Co_Defs.Compiler_Data;
@@ -622,20 +526,19 @@ package body HAC_Sys.Compiler is
         Scanner.InSymbol (CD);
         --
         --  At this point, the current symbol should be: ";", "IS", "(",
-        --  or "RETURN" for a parameterless function.
+        --  or, for a parameterless function, "RETURN".
         --
         unit_block.level                         := 1;
         unit_block.block_id_index                := new_id_index;
         unit_block.entity                        := (if kind = Function_Unit then funktion else prozedure);
         unit_block.is_main                       := False;
         unit_block.previous_declaration_id_index := specification_id_index;
-        Parser.Block (
-          CD, Block_Begin_Symbol + Statement_Begin_Symbol,
-          False,
-          unit_block,
-          CD.IdTab (CD.Id_Count).name,
-          Unit_Id_with_case
-        );
+        Parser.Block
+          (CD, Block_Begin_Symbol + Statement_Begin_Symbol,
+           False,
+           unit_block,
+           CD.IdTab (CD.Id_Count).name,
+           Unit_Id_with_case);
         case Split_Declaration_Kind (CD.IdTab (unit_block.block_id_index).decl_kind) is
           when complete =>
             if as_specification then
@@ -684,6 +587,8 @@ package body HAC_Sys.Compiler is
     CD.CUD := mem;
     CD.recursion := CD.recursion - 1;
   exception
+    when End_Error =>
+      Error (CD, err_unexpected_end_of_text);
     when others =>
       LD.close_source (file_name);
       raise;
