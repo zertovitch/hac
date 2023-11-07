@@ -64,7 +64,7 @@ package body HAC_Sys.Compiler is
     --
     CD.Main_Program_ID           := Empty_Alfa;
     CD.Main_Program_ID_with_case := Empty_Alfa;
-    CD.Main_Proc_Id_Index := 0;
+    CD.Main_Proc_Id_Index        := No_Id;
     --
     --  Current unit data
     --
@@ -306,76 +306,15 @@ package body HAC_Sys.Compiler is
     end if;
   end Dump_HAC_VM_Asm;
 
-  procedure Compile_Main
-    (CD                 : in out Co_Defs.Compiler_Data;
-     LD                 : in out Librarian.Library_Data;
-     main_name_hint     :        String)
-  is
-    use Ada.Text_IO, Parser.Helpers, Errors;
-    use type Alfa;
-    full_main_Id : HAT.VString;
-    main_block : Parser.Block_Data_Type;
-  begin
-    Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
-    Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.
-
-    if CD.Sy /= PROCEDURE_Symbol then
-      Error (CD, err_missing_a_procedure_declaration, " (main)", severity => major);  --  PROCEDURE Name is
-    end if;
-    Scanner.InSymbol (CD);
-    loop
-      if CD.Sy /= IDent then
-        Error (CD, err_identifier_missing, severity => major);
-      end if;
-      full_main_Id := full_main_Id & CD.Id_with_case;
-      Scanner.InSymbol (CD);
-      exit when CD.Sy /= Period;
-      --  Here we have a Parent.Child naming.
-      Scanner.InSymbol (CD);
-      full_main_Id := full_main_Id & '.';
-    end loop;
-    CD.Main_Program_ID_with_case := full_main_Id;
-    CD.Main_Program_ID           := HAT.To_Upper (full_main_Id);
-    if CD.Main_Program_ID /= main_name_hint then
-      Error
-        (CD, err_wrong_unit_name,
-         main_name_hint, A2S (CD.Main_Program_ID),
-         major, previous_symbol);
-    end if;
-    if CD.Sy /= IS_Symbol then
-      --  procedure Name IS
-      Error (CD, err_general_error, "main procedure should be parameterless", severity => major);
-    end if;
-
-    Librarian.Enter_Library_Level_Def (CD, A2S (CD.Main_Program_ID_with_case), prozedure, NOTYP, 0);
-    CD.Main_Proc_Id_Index := CD.Id_Count;
-    CD.Tasks_Definitions_Table (0) := CD.Id_Count;  --  Task Table Entry for main task.
-
-    main_block.level                         := 1;
-    main_block.block_id_index                := CD.Id_Count;
-    main_block.entity                        := prozedure;
-    main_block.is_main                       := True;
-    main_block.previous_declaration_id_index := No_Id;
-    --  Start Compiling of Main
-    Parser.Block (
-      CD, Block_Begin_Symbol + Statement_Begin_Symbol,
-      False, main_block,
-      CD.Main_Program_ID,
-      CD.Main_Program_ID_with_case
-    );
-    CD.total_lines := CD.total_lines + CD.CUD.location.line;  --  Add line count of main program.
-
-  exception
-    when End_Error =>
-      Error (CD, err_unexpected_end_of_text);
-  end Compile_Main;
-
   procedure Compile_Unit
     (CD                     : in out Co_Defs.Compiler_Data;
      LD                     : in out Librarian.Library_Data;
      upper_name             :        String;
      file_name              :        String;
      as_specification       :        Boolean;
+     as_main_unit           :        Boolean;
+     needs_opening_a_stream :        Boolean;
+     first_compilation      :        Boolean;  --  First compilation of whole build
      specification_id_index :        Natural;
      new_id_index           :    out Natural;
      unit_context           : in out Co_Defs.Id_Maps.Map;  --  in : empty for spec, spec's context for body
@@ -383,7 +322,7 @@ package body HAC_Sys.Compiler is
      kind                   :    out Librarian.Unit_Kind;  --  The unit kind is discovered during parsing.
      needs_body             :    out Boolean)
   is
-    use Ada.Strings.Fixed, Ada.Text_IO, Librarian, Errors, Parser.Helpers, PCode;
+    use Ada.Strings.Fixed, Ada.Text_IO, Errors, Librarian, Parser.Helpers, PCode;
     --
     --  Save state of unit currently being parsed (within a WITH clause).
     --  That compilation is frozen until the point where `mem` is copied
@@ -438,33 +377,36 @@ package body HAC_Sys.Compiler is
          Indent_String (True) & "Compiling " &
          file_name & Spec_or_Body);
     end if;
-    begin
-      LD.open_source (file_name, src_stream);
-    exception
-      when Name_Error =>
-        Error
-          (CD, err_library_error,
-           "file " & file_name & Spec_or_Body & " not found", severity => major);
-    end;
-    --  HAT.PUT_LINE("Compiling unit " & upper_name);
-    Set_Source_Stream (CD.CUD, src_stream, file_name, 0);
-    --  Reset scanner data (line counter etc.) and
-    --  library-level visible declarations (processed WITH of caller's compilation)
-    Init (CD.CUD);
-    --  If we are compiling the body of a unit, unit_context already contains, automatically:
-    --    - the WITH and USE context clauses of the spec,
-    --    - the package's declarations, incuding the private part.
-    --  Basically the body is a continuation of the spec, possibly in another file.
-    CD.CUD.level_0_def := unit_context;
-    Reactivate_USE_HAT;
+    if needs_opening_a_stream then
+      begin
+        LD.open_source (file_name, src_stream);
+      exception
+        when Name_Error =>
+          Error
+            (CD, err_library_error,
+             "file " & file_name & Spec_or_Body & " not found", severity => major);
+      end;
+      Set_Source_Stream (CD.CUD, src_stream, file_name, 0);
+    end if;
+    if not first_compilation then
+      --  Reset scanner data (line counter etc.) and
+      --  library-level visible declarations (processed WITH of caller's compilation)
+      Init (CD.CUD);
+      --  If we are compiling the body of a unit, unit_context already contains, automatically:
+      --    - the WITH and USE context clauses of the spec,
+      --    - the package's declarations, incuding the private part.
+      --  Basically the body is a continuation of the spec, possibly in another file.
+      CD.CUD.level_0_def := unit_context;
+      Reactivate_USE_HAT;
+      Scanner.InSymbol (CD);
+    end if;
     --
     --  We define Standard, or activate if this is not the first unit compiled.
     --
     Librarian.Apply_WITH_USE_Standard (CD, LD);  --  The invisible "with Standard; use Standard;"
     --  HAT.PUT_LINE("Unit " & upper_name & " sees and uses Standard");
 
-    Scanner.InSymbol (CD);
-    Parser.Modularity.Context_Clause (CD, LD);   --  Parse the "with"'s and "use"'s, compile units.
+    Parser.Modularity.Context_Clause (CD, LD);  --  Parse the "with"'s and "use"'s, compile units.
     case CD.Sy is
       when PACKAGE_Symbol =>
         Scanner.InSymbol (CD);
@@ -475,6 +417,8 @@ package body HAC_Sys.Compiler is
             Error
               (CD, err_library_error,
                "specification expected in this file; found body", severity => major);
+          elsif first_compilation then
+            raise Compilation_of_package_body_before_spec;
           end if;
         else
           kind := Package_Declaration;
@@ -531,7 +475,7 @@ package body HAC_Sys.Compiler is
         unit_block.level                         := 1;
         unit_block.block_id_index                := new_id_index;
         unit_block.entity                        := (if kind = Function_Unit then funktion else prozedure);
-        unit_block.is_main                       := False;
+        unit_block.is_main                       := as_main_unit;
         unit_block.previous_declaration_id_index := specification_id_index;
         Parser.Block
           (CD, Block_Begin_Symbol + Statement_Begin_Symbol,
@@ -539,6 +483,18 @@ package body HAC_Sys.Compiler is
            unit_block,
            CD.IdTab (CD.Id_Count).name,
            Unit_Id_with_case);
+        if as_main_unit then
+          if kind = Procedure_Unit
+            and then Number_of_Parameters (CD, unit_block.block_id_index) = 0
+          then
+            CD.Main_Program_ID_with_case   := Unit_Id_with_case;
+            CD.Main_Program_ID             := HAT.To_Upper (Unit_Id_with_case);
+            CD.Main_Proc_Id_Index          := unit_block.block_id_index;
+            CD.Tasks_Definitions_Table (0) := unit_block.block_id_index;  --  Task Table Entry for main task.
+          else
+            CD.Main_Proc_Id_Index := No_Id;
+          end if;
+        end if;
         case Split_Declaration_Kind (CD.IdTab (unit_block.block_id_index).decl_kind) is
           when complete =>
             if as_specification then
@@ -547,7 +503,12 @@ package body HAC_Sys.Compiler is
                  "specification expected in this file; found body", severity => major);
             end if;
             if kind = Function_Unit then
+              --  When this part of the machine code is reached, it means
+              --  that the end of a function was reached without
+              --  a "RETURN" statement. This will raise Program_Error.
               PCode_Emit.Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
+            elsif as_main_unit then
+              CD.target.Emit_Halt;
             else
               PCode_Emit.Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
             end if;
@@ -572,7 +533,9 @@ package body HAC_Sys.Compiler is
         Parser.Packages.Package_Body (CD, empty_symset, unit_block);
         needs_body := False;
     end case;
-    LD.close_source (file_name);
+    if needs_opening_a_stream then
+      LD.close_source (file_name);
+    end if;
     if CD.trace.detail_level >= 2 then
       Progress_Message
         (CD,
@@ -590,7 +553,9 @@ package body HAC_Sys.Compiler is
     when End_Error =>
       Error (CD, err_unexpected_end_of_text);
     when others =>
-      LD.close_source (file_name);
+      if needs_opening_a_stream then
+        LD.close_source (file_name);
+      end if;
       raise;
   end Compile_Unit;
 

@@ -315,7 +315,7 @@ package HAC_Sys.Co_Defs is
     Float_Constants_Count   : Natural;
     Id_Count                : Natural;
     loop_nesting_level      : Natural;
-    Main_Proc_Id_Index      : Natural;
+    Main_Proc_Id_Index      : Natural := No_Id;  --  No_Id <=> the main unit is not executable.
     Packages_Count          : Natural;
     String_Id_Index         : Natural;
     Strings_Table_Top       : Natural;
@@ -354,6 +354,7 @@ package HAC_Sys.Co_Defs is
   overriding procedure Initialize (CD : in out Compiler_Data);
   overriding procedure Finalize (CD : in out Compiler_Data);
 
+  function Is_Executable (CD : Compiler_Data) return Boolean;
   function Is_HAC_VM (CD : Compiler_Data) return Boolean;
 
   procedure Set_Target

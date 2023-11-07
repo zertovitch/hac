@@ -1,7 +1,20 @@
 with HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Defs,
+     HAC_Sys.Errors,
      HAC_Sys.PCode;
 
 package body HAC_Sys.Targets.HAC_Virtual_Machine is
+
+  overriding procedure Finalize_Code_Emission
+    (m       : in out Machine;
+     strings :        String)
+  is
+    use Defs;
+  begin
+    if m.CD.Blocks_Table (1).VSize > StMax - (STKINCR * m.CD.Tasks_Definitions_Count) then
+      Errors.Error (m.CD.all, err_stack_size);
+    end if;
+  end Finalize_Code_Emission;
 
   use Compiler.PCode_Emit, PCode;
 

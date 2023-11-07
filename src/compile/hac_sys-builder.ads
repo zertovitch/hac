@@ -38,7 +38,12 @@ package HAC_Sys.Builder is
     LD                  : Librarian.Library_Data;
     global_VM_variables : String_Maps.Map;
     global_remarks      : Defs.Remark_Set := Defs.default_remarks;
-    main_name_hint      : HAT.VString;       --  This is used for circular unit dependency detection
+    --  Main name hint is the upper-case Ada name of the main unit
+    --  as guessed from a file name.
+    --  This is used for circular unit dependency detection.
+    --  The name has to be known before the parsing of main unit's
+    --  context clause, and so, before the parsing of the name itself.
+    main_name_hint      : HAT.VString;
     asm_dump            : Boolean := False;  --  Assembler output of compiled object code
     cmp_dump_file_name  : HAT.VString;       --  Compiler dump
     listing_file_name   : HAT.VString;       --  Listing of source code with details

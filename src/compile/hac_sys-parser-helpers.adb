@@ -746,4 +746,24 @@ package body HAC_Sys.Parser.Helpers is
     end loop;
   end Check_Incomplete_Definitions;
 
+  function Number_of_Parameters
+    (CD         : in out Compiler_Data;
+     id_idx     : in     Natural)
+  return Natural
+  is
+    id_table_entry : IdTabEntry renames CD.IdTab (id_idx);
+    block_idx : constant Integer := id_table_entry.block_or_pkg_ref;
+  begin
+    pragma Assert (id_table_entry.entity in prozedure | funktion);
+    declare
+      block : BTabEntry renames CD.Blocks_Table (block_idx);
+    begin
+      return
+        (if block.First_Param_Id_Idx > block.Last_Param_Id_Idx then
+           0
+         else
+           block.Last_Param_Id_Idx - block.First_Param_Id_Idx + 1);
+    end;
+  end Number_of_Parameters;
+
 end HAC_Sys.Parser.Helpers;

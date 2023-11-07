@@ -1,5 +1,8 @@
 --  Testing library-level packages.
---  We create the packages for Pkg_Demo.
+--  Pkg_Demo_Gen creates the packages for Pkg_Demo.
+--
+--  The command `hac pkg_demo_gen.adb delete` will
+--  delete those packages.
 
 with HAT;
 

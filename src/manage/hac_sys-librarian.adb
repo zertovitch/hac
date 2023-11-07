@@ -168,23 +168,23 @@ package body HAC_Sys.Librarian is
     end if;
   end Activate_Unit;
 
-  procedure Compile_WITHed_Unit (
-    CD         : in out Co_Defs.Compiler_Data;
-    LD         : in out Library_Data;
-    Upper_Name : in     String
-  )
+  procedure Compile_WITHed_Unit
+    (CD         : in out Co_Defs.Compiler_Data;
+     LD         : in out Library_Data;
+     upper_name : in     String)
   is
-    fn : constant String := Find_Unit_File_Name (LD, Upper_Name);
-    use Defs, Errors;
+    fn : constant String := Find_Unit_File_Name (LD, upper_name);
+    --  ^ NB: if there is a spec, priority is with the spec.
+    use Co_Defs, Defs, Errors;
     as_specification, needs_body : Boolean;
     --
     unit : Library_Unit :=
-      (full_name     => HAT.To_VString (Upper_Name),
+      (full_name     => HAT.To_VString (upper_name),
        kind          => Package_Declaration,  --  Temporary value
        status        => In_Progress,          --  Temporary value.
-       id_index      => Co_Defs.No_Id,        --  Temporary value.
-       id_body_index => Co_Defs.No_Id,        --  Temporary value.
-       spec_context  => Co_Defs.Id_Maps.Empty_Map);
+       id_index      => No_Id,                --  Temporary value.
+       id_body_index => No_Id,                --  Temporary value.
+       spec_context  => Id_Maps.Empty_Map);
   begin
     --
     --  Add new unit name to the library catalogue
@@ -196,17 +196,27 @@ package body HAC_Sys.Librarian is
       Error
         (CD,
          err_library_error,
-         "no file found matching the name """ & GNAT_File_Naming (Upper_Name) & ".ad*""",
+         "no file found matching the name """ &
+         GNAT_File_Naming (upper_name) & ".ad*""",
          severity => major);
     else
       as_specification := fn (fn'Last) = 's';
+      --  ".ads" extension ? Then it's a spec.
+      --
       Compiler.Compile_Unit
-        (CD, LD, Upper_Name, fn, as_specification,
-         Co_Defs.No_Id,
-         unit.id_index,
-         unit.spec_context,
-         unit.kind,
-         needs_body);
+        (CD                     => CD,
+         LD                     => LD,
+         upper_name             => upper_name,
+         file_name              => fn,
+         as_specification       => as_specification,
+         as_main_unit           => False,
+         needs_opening_a_stream => True,
+         first_compilation      => False,
+         specification_id_index => Co_Defs.No_Id,
+         new_id_index           => unit.id_index,
+         unit_context           => unit.spec_context,
+         kind                   => unit.kind,
+         needs_body             => needs_body);
       --
       if as_specification then
         case unit.kind is
@@ -225,7 +235,7 @@ package body HAC_Sys.Librarian is
       --  Activate unit library-level declaration for the first time.
       --  It must be visible to the WITH-ing unit.
       --
-      Activate_Unit (CD, Upper_Name);
+      Activate_Unit (CD, upper_name);
     end if;
   end Compile_WITHed_Unit;
 
@@ -239,6 +249,7 @@ package body HAC_Sys.Librarian is
   begin
     if LD.Map.Contains (UVN) then
       if LD.Library.Element (LD.Map.Element (UVN)).status = In_Progress then
+        --  Ouch, we are WITH-ing a unit which is being compiled.
         raise Circular_Unit_Dependency with Upper_Name;
       end if;
       --  Definition is already somewhere in CD (from the compilation
@@ -275,7 +286,10 @@ package body HAC_Sys.Librarian is
         Compile_WITHed_Unit (CD, LD, Upper_Name);
       exception
         when E : Circular_Unit_Dependency =>
-          raise Circular_Unit_Dependency with Upper_Name & " -> " & Exception_Message (E);
+          --  Re-raise the exception but add current unit to the
+          --  dependency chain.
+          raise Circular_Unit_Dependency
+            with Upper_Name & " -> " & Exception_Message (E);
       end;
     end if;
   end Apply_WITH;

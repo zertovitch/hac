@@ -32,6 +32,14 @@ package HAC_Sys.Targets.HAC_Virtual_Machine is
   overriding function OS (m : Machine) return String is ("Any");
   overriding function Null_Terminated_String_Literals (m : Machine) return Boolean is (False);
 
+  -------------------------------------------
+  --  Initialize & Finalize Code Emission  --
+  -------------------------------------------
+
+  overriding procedure Finalize_Code_Emission
+    (m       : in out Machine;
+     strings :        String);
+
   ----------------------------
   --  Machine Instructions  --
   ----------------------------

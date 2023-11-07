@@ -419,7 +419,7 @@ package body HAC_Sys.Parser.Statements is
       if Block_Data.entity = funktion then
         Emit_1 (CD, k_Exit_Function, Normal_Procedure_Call);
       elsif Block_Data.is_main then
-        Emit (CD, k_Halt_Interpreter);
+        CD.target.Emit_Halt;
       else
         Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
       end if;

@@ -65,5 +65,6 @@ package HAC_Sys.Errors is
   Internal_error : exception;
   Failure_1_0 : exception;
   Compilation_abandoned : exception;
+  Compilation_of_package_body_before_spec : exception;
 
 end HAC_Sys.Errors;

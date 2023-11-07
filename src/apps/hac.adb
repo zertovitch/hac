@@ -97,9 +97,12 @@ procedure HAC is
     end if;
     Post_Build (BD);
     if compile_only then
-      return;
+      null;
+    elsif BD.CD.Is_Executable then
+      Run (BD, arg_pos);
+    else
+      PLCE ("Can only execute a parameterless procedure");
     end if;
-    Run (BD, arg_pos);
   exception
     when Name_Error =>
       PLCE

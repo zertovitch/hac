@@ -60,16 +60,19 @@ package body HAC_Sys.Builder is
               BD.CD.target  := BD.target;
             end if;
             Compiler.Compile_Unit
-              (BD.CD.all,
-               BD.LD,
-               upper_name,
-               fn,
-               False,
-               lu.id_index,
-               lu.id_body_index,
-               previous_context,
-               lu.kind,
-               needs_body_dummy);
+              (CD                     => BD.CD.all,
+               LD                     => BD.LD,
+               upper_name             => upper_name,
+               file_name              => fn,
+               as_specification       => False,
+               as_main_unit           => upper_name = Defs.A2S (BD.CD.Id),
+               needs_opening_a_stream => True,
+               first_compilation      => False,
+               specification_id_index => lu.id_index,
+               new_id_index           => lu.id_body_index,
+               unit_context           => previous_context,
+               kind                   => lu.kind,
+               needs_body             => needs_body_dummy);
             exit when BD.CD.error_count > 0;
             num_pending := num_pending + 1;
           when Spec_Only =>
@@ -91,16 +94,17 @@ package body HAC_Sys.Builder is
     (BD                            : in out Build_Data;
      body_compilation_rounds_limit :        Rounds_Range := full_build)
   is
+    use Co_Defs, Defs;
     use Librarian, HAT.VStr_Pkg, Targets;
     use Ada.Exceptions, Ada.Text_IO;
-    num_pending : Natural;
+
     main_unit : Library_Unit :=
       (full_name     => BD.main_name_hint,
        kind          => Procedure_Unit,
-       status        => In_Progress,    --  Temporary value.
-       id_index      => Co_Defs.No_Id,  --  Temporary value.
-       id_body_index => Co_Defs.No_Id,  --  Temporary value.
-       spec_context  => Co_Defs.Id_Maps.Empty_Map);
+       status        => In_Progress,  --  Temporary value.
+       id_index      => No_Id,        --  Temporary value.
+       id_body_index => No_Id,        --  Temporary value.
+       spec_context  => Id_Maps.Empty_Map);
 
     procedure Finalize_Target is
     begin
@@ -109,6 +113,7 @@ package body HAC_Sys.Builder is
     end Finalize_Target;
 
     procedure Complete_Graph_Build is
+      num_pending : Natural;
     begin
       if BD.CD.trace.detail_level >= 2
         and then body_compilation_rounds_limit > 0
@@ -133,7 +138,6 @@ package body HAC_Sys.Builder is
 
     procedure Dump_Object_Map (var_map_file_name : String) is
       map_file : File_Type;
-      use Defs;
       use type HAC_Integer;
     begin
       Create (map_file, Out_File, var_map_file_name);
@@ -143,7 +147,7 @@ package body HAC_Sys.Builder is
       Put_Line (map_file, "------------------------");
       New_Line (map_file);
       for Blk of BD.CD.IdTab (BD.CD.Blocks_Table (0).Last_Id_Idx + 1 .. BD.CD.Id_Count) loop
-        if Blk.entity in Co_Defs.Object_Kind then
+        if Blk.entity in Object_Kind then
           if Blk.xtyp.TYP /= NOTYP then
             Ada.Integer_Text_IO.Put (map_file, Integer (Blk.adr_or_sz), 4);
             Put (map_file, A2S (Blk.name) & "   ");
@@ -164,12 +168,26 @@ package body HAC_Sys.Builder is
 
     main_file_name : constant String := To_String (BD.CD.CUD.source_file_name);
 
-    use Defs;
+    new_id_index : Natural;
+    needs_body : Boolean;
+    as_specification : Boolean;
 
   begin
     BD.LD.Library.Clear;
     BD.LD.Map.Clear;
+
+    --  The main unit is from the beginning registered with the In_Progress
+    --  status, so we can catch a possible circular dependency of the main
+    --  unit on itself - directly or indirectly.
+    --
+    --     Examples:
+    --                   with A; procedure A is begin null; end;
+    --
+    --                   with Y; procedure X is begin null; end;
+    --                   with X; procedure Y is begin null; end;
+    --
     Librarian.Register_Unit (BD.LD, main_unit);
+
     BD.CD.remarks := BD.global_remarks;
     if BD.target /= null then
       BD.CD.target := BD.target;
@@ -203,26 +221,46 @@ package body HAC_Sys.Builder is
         Errors.Error (BD.CD.all, err_unexpected_end_of_text, severity => Errors.major);
     end;
 
-    Compiler.Compile_Main
-      (BD.CD.all,
-       BD.LD,
-       To_String (BD.main_name_hint));
+    as_specification := main_file_name (main_file_name'Last) = 's';
 
-    --  Main unit is compiled.
-    BD.CD.target.Emit_Halt;  --  Relevant only if the main unit is a subprogram.
+    Compiler.Compile_Unit
+      (CD                     => BD.CD.all,
+       LD                     => BD.LD,
+       upper_name             => To_String (BD.main_name_hint),
+       file_name              => main_file_name,
+       as_specification       => as_specification,
+       as_main_unit           => True,
+       needs_opening_a_stream => False,
+       first_compilation      => True,
+       specification_id_index => No_Id,
+       new_id_index           => new_id_index,
+       unit_context           => main_unit.spec_context,
+       kind                   => main_unit.kind,
+       needs_body             => needs_body);
 
-    --  !!  The following should be performed by Statements_Part_Closing
-    --      in Parser... But it doesn't happen for the main block.
-    BD.CD.Blocks_Table (1).SrcTo := BD.CD.CUD.location.line;
-
-    if BD.CD.LC > BD.CD.ObjCode'First
-      and then BD.CD.target.all not in Targets.HAC_Virtual_Machine.Machine'Class
-    then
-      --  Some machine code was emitted for the HAC VM instead of the alternative target.
-      Errors.Error
-        (BD.CD.all,
-         err_general_error,
-         "Code generation for alternative target (non-HAC-VM) is incomplete");
+    if as_specification then
+      case main_unit.kind is
+        when Subprogram_Unit =>
+          main_unit.status := Body_Postponed;
+        when Package_Declaration =>
+          main_unit.status := (if needs_body then Body_Postponed else Spec_Only);
+        when Package_Body =>
+          null;  --  Not relevant (spec.)
+      end case;
+    else
+      case main_unit.kind is
+        when Procedure_Unit =>
+          --  !!  The following should be performed by Statements_Part_Closing
+          --      in Parser... But it doesn't happen for the main block.
+          BD.CD.Blocks_Table (1).SrcTo := BD.CD.CUD.location.line;
+        when Function_Unit =>
+          null;
+        when Package_Body =>
+          null;
+        when Package_Declaration =>
+          null;  --  not relevant
+      end case;
+      main_unit.status := Done;
     end if;
 
     if BD.CD.trace.detail_level >= 2 then
@@ -242,6 +280,16 @@ package body HAC_Sys.Builder is
     --  minor or medium errors).
     --
     Finalize_Target;
+    --
+    if BD.CD.LC > BD.CD.ObjCode'First
+      and then BD.CD.target.all not in Targets.HAC_Virtual_Machine.Machine'Class
+    then
+      --  Some machine code was emitted for the HAC VM instead of the alternative target.
+      Errors.Error
+        (BD.CD.all,
+         err_general_error,
+         "Code generation for alternative target (non-HAC-VM) is incomplete");
+    end if;
     --
     if BD.CD.error_count = 0 then
       Parser.Helpers.Check_Incomplete_Definitions (BD.CD.all, 0);
@@ -265,6 +313,10 @@ package body HAC_Sys.Builder is
       Dump_Object_Map (To_String (BD.obj_map_file_name));
     end if;
   exception
+    when Errors.Compilation_of_package_body_before_spec =>
+      --  !! Temporary solution;
+      --     TBD: try building again, from spec. !!
+      Errors.Error (BD.CD.all, err_library_error, "Cannot start build with package body");
     when Errors.Compilation_abandoned =>
       --  Hit a severe error...
       Finalize_Target;  --  Needed even on incomplete compilation.
@@ -319,12 +371,11 @@ package body HAC_Sys.Builder is
   end Set_Remark_Set;
 
   --  Set current main source stream (file, editor data, zipped file,...)
-  procedure Set_Main_Source_Stream (
-    BD         : in out Build_Data;
-    s          : access Ada.Streams.Root_Stream_Type'Class;
-    file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
-    start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
-  )
+  procedure Set_Main_Source_Stream
+    (BD         : in out Build_Data;
+     s          : access Ada.Streams.Root_Stream_Type'Class;
+     file_name  : in     String;        --  Can be a virtual name (editor title, zip entry)
+     start_line : in     Natural := 0)  --  We could have a shebang or other Ada sources before
   is
     main_name_guess : String := Ada.Characters.Handling.To_Upper (file_name);
     last_slash, last_dot : Natural := 0;
@@ -347,10 +398,9 @@ package body HAC_Sys.Builder is
     BD.main_name_hint := HAT.To_VString (main_name_guess (last_slash + 1 .. last_dot - 1));
   end Set_Main_Source_Stream;
 
-  procedure Set_Message_Feedbacks (
-    BD           : in out Build_Data;
-    trace_params : in     Co_Defs.Compilation_Trace_Parameters
-  )
+  procedure Set_Message_Feedbacks
+    (BD           : in out Build_Data;
+     trace_params : in     Co_Defs.Compilation_Trace_Parameters)
   is
   begin
     Compiler.Set_Message_Feedbacks (BD.CD.all, trace_params);

@@ -64,6 +64,11 @@ package body HAC_Sys.Co_Defs is
     new Ada.Unchecked_Deallocation
       (Targets.Machine'Class, Targets.Abstract_Machine_Reference);
 
+  function Is_Executable (CD : Compiler_Data) return Boolean is
+  begin
+    return CD.Main_Proc_Id_Index /= HAC_Sys.Co_Defs.No_Id;
+  end Is_Executable;
+
   function Is_HAC_VM (CD : Compiler_Data) return Boolean
   is
     use Targets;

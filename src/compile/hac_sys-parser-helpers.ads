@@ -400,4 +400,9 @@ package HAC_Sys.Parser.Helpers is
     (CD    : in out Co_Defs.Compiler_Data;
      Level :        Defs.Nesting_Level);
 
+  function Number_of_Parameters
+    (CD         : in out Compiler_Data;
+     id_idx     : in     Natural)
+  return Natural;
+
 end HAC_Sys.Parser.Helpers;
