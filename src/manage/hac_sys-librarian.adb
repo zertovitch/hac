@@ -113,14 +113,16 @@ package body HAC_Sys.Librarian is
   end Enter_Library_Level_Def;
 
   procedure Set_Source_Access
-    (LD          : in out Library_Data;
-     exists       : Extended_Exists;
-     open_source  : Extended_Open;
-     close_source : Extended_Close) is
+    (LD             : in out Library_Data;
+     exists         : Extended_Exists;
+     open_source    : Extended_Open;
+     is_open_source : Extended_Is_Open;
+     close_source   : Extended_Close) is
   begin
-    LD.exists       := exists;
-    LD.open_source  := open_source;
-    LD.close_source := close_source;
+    LD.exists         := exists;
+    LD.open_source    := open_source;
+    LD.is_open_source := is_open_source;
+    LD.close_source   := close_source;
   end Set_Source_Access;
 
   function Find_Unit_File_Name
@@ -349,6 +351,13 @@ package body HAC_Sys.Librarian is
 
   --  Here we have a global mapping
   --  !! Not task-safe -> wrap into a protected object!
+  --  !! Define a class General_File_Catalogue; the default derived type
+  --     below (Physical_File_Catalogue) would
+  --     contain the `default_file_names` map as defined below.
+  --     The HAC app implementation (inspired from what is in hac_pkg.adb)
+  --     will include a search in a search path.
+  --     An implementation like LEA may prioritize open editors
+  --     over physical files.
   default_file_names : Default_File_Name_Mapping.Map;
 
   procedure default_open_file_proc (Name : String; Stream : out Co_Defs.Source_Stream_Access) is
@@ -359,6 +368,18 @@ package body HAC_Sys.Librarian is
     Open (new_file.all, In_File, Name);
     Stream := Co_Defs.Source_Stream_Access (Text_Streams.Stream (new_file.all));
   end default_open_file_proc;
+
+  function default_is_open_file_func (Name : String) return Boolean is
+    file : Text_File_Access;
+  begin
+    if default_file_names.Contains (Name) then
+      file := default_file_names.Element (Name);
+      if file /= null then
+        return Ada.Text_IO.Is_Open (file.all);
+      end if;
+    end if;
+    return False;
+  end default_is_open_file_func;
 
   procedure default_close_file_proc (Name : String) is
     use Ada.Text_IO;

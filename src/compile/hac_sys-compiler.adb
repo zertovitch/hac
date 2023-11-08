@@ -62,9 +62,9 @@ package body HAC_Sys.Compiler is
     --  Current block name for debugging of HAC programs.
     CD.Full_Block_Id := Universe;
     --
-    CD.Main_Program_ID           := Empty_Alfa;
-    CD.Main_Program_ID_with_case := Empty_Alfa;
-    CD.Main_Proc_Id_Index        := No_Id;
+    CD.main_unit_ident           := Empty_Alfa;
+    CD.main_unit_ident_with_case := Empty_Alfa;
+    CD.main_proc_id_index        := No_Id;
     --
     --  Current unit data
     --
@@ -261,11 +261,11 @@ package body HAC_Sys.Compiler is
     end loop;
     New_Line (CD.comp_dump);
 
-    if CD.Main_Program_ID /= Empty_Alfa then
+    if CD.main_unit_ident /= Empty_Alfa then
       Put_Line (CD.comp_dump, " Information about Main procedure:");
-      Put_Line (CD.comp_dump, "   Name    : " & A2S (CD.Main_Program_ID_with_case));
+      Put_Line (CD.comp_dump, "   Name    : " & A2S (CD.main_unit_ident_with_case));
       Put_Line (CD.comp_dump, "   Block # : " &
-        Defs.Index'Image (CD.IdTab (CD.Main_Proc_Id_Index).block_or_pkg_ref));
+        Defs.Index'Image (CD.IdTab (CD.main_proc_id_index).block_or_pkg_ref));
     end if;
 
     New_Line (CD.comp_dump);
@@ -417,8 +417,6 @@ package body HAC_Sys.Compiler is
             Error
               (CD, err_library_error,
                "specification expected in this file; found body", severity => major);
-          elsif first_compilation then
-            raise Compilation_of_package_body_before_spec;
           end if;
         else
           kind := Package_Declaration;
@@ -444,8 +442,13 @@ package body HAC_Sys.Compiler is
     if CD.Sy /= IDent then
       Error (CD, err_identifier_missing, severity => major);
     end if;
+    CD.main_unit_ident           := CD.Id;
+    CD.main_unit_ident_with_case := CD.Id_with_case;
     if A2S (CD.Id) /= upper_name then
       Error (CD, err_wrong_unit_name, upper_name, A2S (CD.Id), major);
+    end if;
+    if first_compilation and then kind = Package_Body then
+      raise Compilation_of_package_body_before_spec;
     end if;
     --
     --  Enter the identifier:
@@ -487,12 +490,12 @@ package body HAC_Sys.Compiler is
           if kind = Procedure_Unit
             and then Number_of_Parameters (CD, unit_block.block_id_index) = 0
           then
-            CD.Main_Program_ID_with_case   := Unit_Id_with_case;
-            CD.Main_Program_ID             := HAT.To_Upper (Unit_Id_with_case);
-            CD.Main_Proc_Id_Index          := unit_block.block_id_index;
+            CD.main_unit_ident_with_case   := Unit_Id_with_case;  --  !! useless, done above !!
+            CD.main_unit_ident             := HAT.To_Upper (Unit_Id_with_case);
+            CD.main_proc_id_index          := unit_block.block_id_index;
             CD.Tasks_Definitions_Table (0) := unit_block.block_id_index;  --  Task Table Entry for main task.
           else
-            CD.Main_Proc_Id_Index := No_Id;
+            CD.main_proc_id_index := No_Id;
           end if;
         end if;
         case Split_Declaration_Kind (CD.IdTab (unit_block.block_id_index).decl_kind) is
@@ -551,6 +554,7 @@ package body HAC_Sys.Compiler is
     CD.recursion := CD.recursion - 1;
   exception
     when End_Error =>
+      kind := Function_Unit;  --  Fake but valid value.
       Error (CD, err_unexpected_end_of_text);
     when others =>
       if needs_opening_a_stream then

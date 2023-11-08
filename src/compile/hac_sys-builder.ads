@@ -71,7 +71,10 @@ package HAC_Sys.Builder is
     (BD                            : in out Build_Data;
      body_compilation_rounds_limit :        Rounds_Range := full_build);
 
-  procedure Build_Main_from_File (BD : in out Build_Data; File_Name : String);
+  procedure Build_Main_from_File
+    (BD                            : in out Build_Data;
+     file_name                     :        String;
+     body_compilation_rounds_limit :        Rounds_Range := full_build);
 
   procedure Set_Diagnostic_Parameters
     (BD                 : in out Build_Data;

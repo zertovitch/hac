@@ -47,17 +47,21 @@ package body HAC_Pkg is
     return "";
   end Search_File;
 
-  function Search_Source_File (simple_file_name : String) return String is
+  function Search_Source_File (exact_or_simple_file_name : String) return String is
     --  Search order: same as GNAT's,
     --  cf. 4.2.2 Search Paths and the Run-Time Library (RTL).
   begin
+    --  0) The file name as such exists.
+    if HAT.Exists (exact_or_simple_file_name) then
+      return exact_or_simple_file_name;
+    end if;
     --  1) The directory containing the source file of the main unit
     --     being compiled (the file name on the command line).
     declare
       fn : constant String :=
         Ada.Directories.Containing_Directory (HAT.To_String (main_Ada_file_name)) &
         HAT.Directory_Separator &
-        simple_file_name;
+        exact_or_simple_file_name;
     begin
       if HAT.Exists (fn) then
         return fn;
@@ -67,7 +71,7 @@ package body HAC_Pkg is
     --     hac command line, in the order given.
     declare
       fn : constant String :=
-        Search_File (simple_file_name, HAT.To_String (command_line_source_path));
+        Search_File (exact_or_simple_file_name, HAT.To_String (command_line_source_path));
     begin
       if fn /= "" then
         return fn;
@@ -77,7 +81,7 @@ package body HAC_Pkg is
     --  4) Each of the directories listed in the value of the ADA_INCLUDE_PATH environment variable.
     declare
       fn : constant String :=
-        Search_File (simple_file_name, HAT.To_String (HAT.Get_Env ("ADA_INCLUDE_PATH")));
+        Search_File (exact_or_simple_file_name, HAT.To_String (HAT.Get_Env ("ADA_INCLUDE_PATH")));
     begin
       if fn /= "" then
         return fn;
@@ -86,19 +90,25 @@ package body HAC_Pkg is
     return "";
   end Search_Source_File;
 
-  function Exists_Source (simple_file_name : String) return Boolean is
+  function Exists_Source (exact_or_simple_file_name : String) return Boolean is
   begin
-    return Search_Source_File (simple_file_name) /= "";
+    return Search_Source_File (exact_or_simple_file_name) /= "";
   end Exists_Source;
 
-  procedure Open_Source (simple_file_name : String; stream : out HAC_Sys.Co_Defs.Source_Stream_Access) is
-    full_file_name : constant String := Search_Source_File (simple_file_name);
+  procedure Open_Source (exact_or_simple_file_name : String; stream : out HAC_Sys.Co_Defs.Source_Stream_Access) is
+    full_file_name : constant String := Search_Source_File (exact_or_simple_file_name);
   begin
     HAC_Sys.Librarian.default_open_file (full_file_name, stream);
   end Open_Source;
 
-  procedure Close_Source (simple_file_name : String) is
-    full_file_name : constant String := Search_Source_File (simple_file_name);
+  function Is_Open_Source (exact_or_simple_file_name : String) return Boolean is
+    full_file_name : constant String := Search_Source_File (exact_or_simple_file_name);
+  begin
+    return HAC_Sys.Librarian.default_is_open_file (full_file_name);
+  end Is_Open_Source;
+
+  procedure Close_Source (exact_or_simple_file_name : String) is
+    full_file_name : constant String := Search_Source_File (exact_or_simple_file_name);
   begin
     HAC_Sys.Librarian.default_close_file (full_file_name);
   end Close_Source;

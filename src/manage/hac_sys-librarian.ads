@@ -94,6 +94,11 @@ package HAC_Sys.Librarian is
   --  "as is" for the file operations.
   default_open_file : constant Extended_Open;
 
+  type Extended_Is_Open is access
+    function (Simple_Name : String) return Boolean;
+
+  default_is_open_file : constant Extended_Is_Open;
+
   type Extended_Close is access procedure (Simple_Name : String);
 
   default_close_file : constant Extended_Close;
@@ -101,16 +106,19 @@ package HAC_Sys.Librarian is
   type Library_Data is tagged record
     Library      : Library_Unit_Vectors.Vector;  --  The library itself
     Map          : Library_Name_Mapping.Map;     --  Quick access by name to unit number
-    exists       : Extended_Exists := default_exists;
-    open_source  : Extended_Open   := default_open_file;
-    close_source : Extended_Close  := default_close_file;
+    --  !!Replace with access to General_File_Catalogue'Class
+    exists         : Extended_Exists  := default_exists;
+    open_source    : Extended_Open    := default_open_file;
+    is_open_source : Extended_Is_Open := default_is_open_file;
+    close_source   : Extended_Close   := default_close_file;
   end record;
 
   procedure Set_Source_Access
-    (LD          : in out Library_Data;
-     exists       : Extended_Exists;
-     open_source  : Extended_Open;
-     close_source : Extended_Close);
+    (LD             : in out Library_Data;
+     exists         : Extended_Exists;
+     open_source    : Extended_Open;
+     is_open_source : Extended_Is_Open;
+     close_source   : Extended_Close);
 
   --  Search for file (physical or not, depending on the
   --  LD.exists.all function) corresponding to unit name.
@@ -179,6 +187,9 @@ private
 
   procedure default_open_file_proc (Name : String; Stream : out Co_Defs.Source_Stream_Access);
   default_open_file : constant Extended_Open := default_open_file_proc'Access;
+
+  function default_is_open_file_func (Name : String) return Boolean;
+  default_is_open_file : constant Extended_Is_Open := default_is_open_file_func'Access;
 
   procedure default_close_file_proc (Name : String);
   default_close_file : constant Extended_Close := default_close_file_proc'Access;

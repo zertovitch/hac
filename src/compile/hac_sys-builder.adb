@@ -6,7 +6,7 @@ with HAC_Sys.Compiler,
 with Ada.Characters.Handling,
      Ada.Exceptions,
      Ada.Integer_Text_IO,
-     Ada.Streams.Stream_IO,
+     Ada.IO_Exceptions,
      Ada.Unchecked_Deallocation;
 
 package body HAC_Sys.Builder is
@@ -76,7 +76,7 @@ package body HAC_Sys.Builder is
             exit when BD.CD.error_count > 0;
             num_pending := num_pending + 1;
           when Spec_Only =>
-            if Exists (fn) then  --  !! Search in source path
+            if BD.LD.exists (fn) then
               Errors.Error
                 (BD.CD.all,
                  Defs.err_library_error,
@@ -94,8 +94,7 @@ package body HAC_Sys.Builder is
     (BD                            : in out Build_Data;
      body_compilation_rounds_limit :        Rounds_Range := full_build)
   is
-    use Co_Defs, Defs;
-    use Librarian, HAT.VStr_Pkg, Targets;
+    use Co_Defs, Defs, HAT.VStr_Pkg, Librarian, Targets;
     use Ada.Exceptions, Ada.Text_IO;
 
     main_unit : Library_Unit :=
@@ -120,7 +119,7 @@ package body HAC_Sys.Builder is
       then
         Compiler.Progress_Message
           (BD.CD.all,
-           "------  Compilation of possible with'ed unit's bodies  ------");
+           "------  Compilation of possibly uncompiled unit bodies  ------");
       end if;
       for round in 1 .. body_compilation_rounds_limit loop
         Compile_Pending_Bodies_Single_Round (BD, num_pending);
@@ -166,157 +165,197 @@ package body HAC_Sys.Builder is
       Close (map_file);
     end Dump_Object_Map;
 
-    main_file_name : constant String := To_String (BD.CD.CUD.source_file_name);
+    procedure Restart_with_Spec is
+      bfn : HAT.VString := BD.CD.CUD.source_file_name;
+      rounds_restart : Rounds_Range;
+    begin
+      if BD.LD.is_open_source (To_String (bfn)) then
+        BD.LD.close_source (To_String (bfn));
+      end if;
+      if BD.CD.trace.detail_level >= 2 then
+        Compiler.Progress_Message (BD.CD.all, "\---> Cannot start build with a package's body.");
+        Compiler.Progress_Message (BD.CD.all, "      We restart from a possible spec.");
+      end if;
+      if Length (bfn) = 0 then
+        --  The body hasn't a file name (like just typed in an editor bound to HAC).
+        --  Let's try to invent a name for the spec.
+        bfn :=
+          HAT.To_VString
+            (Librarian.GNAT_File_Naming (A2S (BD.CD.main_unit_ident_with_case))) & ".ads";
+      else
+        Replace_Element (bfn, Length (bfn), 's');
+      end if;
+      if body_compilation_rounds_limit = Rounds_Range'Last then
+        rounds_restart := Rounds_Range'Last;
+      else
+        rounds_restart := body_compilation_rounds_limit + 1;
+      end if;
+      BD.Build_Main_from_File (To_String (bfn), rounds_restart);
+    end Restart_with_Spec;
 
-    new_id_index : Natural;
-    needs_body : Boolean;
-    as_specification : Boolean;
+    procedure Build_Main_Inner is
+      main_file_name : constant String := To_String (BD.CD.CUD.source_file_name);
 
-  begin
-    BD.LD.Library.Clear;
-    BD.LD.Map.Clear;
-
-    --  The main unit is from the beginning registered with the In_Progress
-    --  status, so we can catch a possible circular dependency of the main
-    --  unit on itself - directly or indirectly.
-    --
-    --     Examples:
-    --                   with A; procedure A is begin null; end;
-    --
-    --                   with Y; procedure X is begin null; end;
-    --                   with X; procedure Y is begin null; end;
-    --
-    Librarian.Register_Unit (BD.LD, main_unit);
-
-    BD.CD.remarks := BD.global_remarks;
-    if BD.target /= null then
-      BD.CD.target := BD.target;
-    end if;
-
-    BD.CD.listing_requested := BD.listing_file_name /= "";
-    if BD.CD.listing_requested then
-      Create (BD.CD.listing, Name => To_String (BD.listing_file_name));
-      Put_Line (BD.CD.listing, Defs.Header);
-    end if;
-
-    BD.CD.comp_dump_requested := BD.cmp_dump_file_name /= "";
-    if BD.CD.comp_dump_requested then
-      Create (BD.CD.comp_dump, Name => To_String (BD.cmp_dump_file_name));
-      Put_Line (BD.CD.comp_dump,
-        "Compiler: main unit file name is " & main_file_name);
-    end if;
-
-    if BD.CD.trace.detail_level >= 1 then
-      Compiler.Progress_Message
-        (BD.CD.all, "HAC Ada Compiler version " & version & ", " & reference);
-      Compiler.Progress_Message
-        (BD.CD.all, "Compiling main: " & main_file_name);
-    end if;
+      new_id_index : Natural;
+      needs_body : Boolean;
+      as_specification : Boolean;
 
     begin
-      Compiler.Init_for_new_Build (BD.CD.all);
+      BD.LD.Library.Clear;
+      BD.LD.Map.Clear;
+
+      --  The main unit is from the beginning registered with the In_Progress
+      --  status, so we can catch a possible circular dependency of the main
+      --  unit on itself - directly or indirectly.
+      --
+      --     Examples:
+      --                   with A; procedure A is begin null; end;
+      --
+      --                   with Y; procedure X is begin null; end;
+      --                   with X; procedure Y is begin null; end;
+      --
+      Librarian.Register_Unit (BD.LD, main_unit);
+
+      BD.CD.remarks := BD.global_remarks;
+      if BD.target /= null then
+        BD.CD.target := BD.target;
+      end if;
+
+      BD.CD.listing_requested := BD.listing_file_name /= "";
+      if BD.CD.listing_requested then
+        Create (BD.CD.listing, Name => To_String (BD.listing_file_name));
+        Put_Line (BD.CD.listing, Defs.Header);
+      end if;
+
+      BD.CD.comp_dump_requested := BD.cmp_dump_file_name /= "";
+      if BD.CD.comp_dump_requested then
+        Create (BD.CD.comp_dump, Name => To_String (BD.cmp_dump_file_name));
+        Put_Line (BD.CD.comp_dump,
+          "Compiler: main unit file name is " & main_file_name);
+      end if;
+
+      if BD.CD.trace.detail_level >= 1 then
+        Compiler.Progress_Message
+          (BD.CD.all, "HAC Ada Compiler version " & version & ", " & reference);
+        Compiler.Progress_Message
+          (BD.CD.all, "Compiling main: " & main_file_name);
+      end if;
+
+      begin
+        Compiler.Init_for_new_Build (BD.CD.all);
+      exception
+        when End_Error =>
+          --  Happens if the text stream is empty.
+          Errors.Error (BD.CD.all, err_unexpected_end_of_text, severity => Errors.major);
+      end;
+
+      as_specification := main_file_name (main_file_name'Last) = 's';
+
+      Compiler.Compile_Unit
+        (CD                     => BD.CD.all,
+         LD                     => BD.LD,
+         upper_name             => To_String (BD.main_name_hint),
+         file_name              => main_file_name,
+         as_specification       => as_specification,
+         as_main_unit           => True,
+         needs_opening_a_stream => False,
+         first_compilation      => True,
+         specification_id_index => No_Id,
+         new_id_index           => new_id_index,
+         unit_context           => main_unit.spec_context,
+         kind                   => main_unit.kind,
+         needs_body             => needs_body);
+
+      if as_specification then
+        case main_unit.kind is
+          when Subprogram_Unit =>
+            main_unit.status := Body_Postponed;
+          when Package_Declaration =>
+            main_unit.status := (if needs_body then Body_Postponed else Spec_Only);
+          when Package_Body =>
+            null;  --  Not relevant (spec.)
+        end case;
+      else
+        case main_unit.kind is
+          when Procedure_Unit =>
+            --  !!  The following should be performed by Statements_Part_Closing
+            --      in Parser... But it doesn't happen for the main block.
+            BD.CD.Blocks_Table (1).SrcTo := BD.CD.CUD.location.line;
+          when Function_Unit =>
+            null;
+          when Package_Body =>
+            null;
+          when Package_Declaration =>
+            null;  --  not relevant
+        end case;
+        main_unit.status := Done;
+      end if;
+
+      if BD.CD.trace.detail_level >= 2 then
+        Compiler.Progress_Message
+          (BD.CD.all, "Compilation of " & main_file_name & " (main) completed");
+      end if;
+
+      main_unit.id_index := BD.CD.main_proc_id_index;
+      Librarian.Change_Unit_Details (BD.LD, main_unit);
+      --
+      --  Here: compilation of Main unit is finished (with or without
+      --  minor or medium errors).
+      --
+      Complete_Graph_Build;
+      --
+      --  Here: build of the whole unit graph is finished (with or without
+      --  minor or medium errors).
+      --
+      Finalize_Target;
+      --
+      if BD.CD.LC > BD.CD.ObjCode'First
+        and then BD.CD.target.all not in Targets.HAC_Virtual_Machine.Machine'Class
+      then
+        --  Some machine code was emitted for the HAC VM instead of the alternative target.
+        Errors.Error
+          (BD.CD.all,
+           err_general_error,
+           "Code generation for alternative target (non-HAC-VM) is incomplete");
+      end if;
+      --
+      if BD.CD.error_count = 0 then
+        Parser.Helpers.Check_Incomplete_Definitions (BD.CD.all, 0);
+      end if;
+
+      if BD.CD.diags /= no_diagnostic then
+        Errors.Compilation_Diagnostics_Summary (BD.CD.all);
+      end if;
+
+      if BD.CD.comp_dump_requested then
+        Compiler.Print_Tables (BD.CD.all);
+        Close (BD.CD.comp_dump);
+      end if;
+      if BD.asm_dump then
+        Compiler.Dump_HAC_VM_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
+      end if;
+      if BD.CD.listing_requested then
+        Close (BD.CD.listing);
+      end if;
+      if Length (BD.obj_map_file_name) > 0 then
+        Dump_Object_Map (To_String (BD.obj_map_file_name));
+      end if;
     exception
-      when End_Error =>
-        --  Happens if the text stream is empty.
-        Errors.Error (BD.CD.all, err_unexpected_end_of_text, severity => Errors.major);
-    end;
+      when Errors.Compilation_of_package_body_before_spec =>
+        Restart_with_Spec;
+      when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
+        Finalize_Target;  --  Needed even on incomplete compilation.
+        Errors.Error
+          (BD.CD.all,
+           Defs.err_library_error,
+           "circular unit dependency (""->"" means ""depends on""): " &
+           To_String (BD.main_name_hint) & " -> " &
+           Exception_Message (E));
+    end Build_Main_Inner;
 
-    as_specification := main_file_name (main_file_name'Last) = 's';
-
-    Compiler.Compile_Unit
-      (CD                     => BD.CD.all,
-       LD                     => BD.LD,
-       upper_name             => To_String (BD.main_name_hint),
-       file_name              => main_file_name,
-       as_specification       => as_specification,
-       as_main_unit           => True,
-       needs_opening_a_stream => False,
-       first_compilation      => True,
-       specification_id_index => No_Id,
-       new_id_index           => new_id_index,
-       unit_context           => main_unit.spec_context,
-       kind                   => main_unit.kind,
-       needs_body             => needs_body);
-
-    if as_specification then
-      case main_unit.kind is
-        when Subprogram_Unit =>
-          main_unit.status := Body_Postponed;
-        when Package_Declaration =>
-          main_unit.status := (if needs_body then Body_Postponed else Spec_Only);
-        when Package_Body =>
-          null;  --  Not relevant (spec.)
-      end case;
-    else
-      case main_unit.kind is
-        when Procedure_Unit =>
-          --  !!  The following should be performed by Statements_Part_Closing
-          --      in Parser... But it doesn't happen for the main block.
-          BD.CD.Blocks_Table (1).SrcTo := BD.CD.CUD.location.line;
-        when Function_Unit =>
-          null;
-        when Package_Body =>
-          null;
-        when Package_Declaration =>
-          null;  --  not relevant
-      end case;
-      main_unit.status := Done;
-    end if;
-
-    if BD.CD.trace.detail_level >= 2 then
-      Compiler.Progress_Message
-        (BD.CD.all, "Compilation of " & main_file_name & " (main) completed");
-    end if;
-
-    main_unit.id_index := BD.CD.Main_Proc_Id_Index;
-    Librarian.Change_Unit_Details (BD.LD, main_unit);
-    --
-    --  Here: compilation of Main unit is finished (with or without
-    --  minor or medium errors).
-    --
-    Complete_Graph_Build;
-    --
-    --  Here: build of the whole unit graph is finished (with or without
-    --  minor or medium errors).
-    --
-    Finalize_Target;
-    --
-    if BD.CD.LC > BD.CD.ObjCode'First
-      and then BD.CD.target.all not in Targets.HAC_Virtual_Machine.Machine'Class
-    then
-      --  Some machine code was emitted for the HAC VM instead of the alternative target.
-      Errors.Error
-        (BD.CD.all,
-         err_general_error,
-         "Code generation for alternative target (non-HAC-VM) is incomplete");
-    end if;
-    --
-    if BD.CD.error_count = 0 then
-      Parser.Helpers.Check_Incomplete_Definitions (BD.CD.all, 0);
-    end if;
-
-    if BD.CD.diags /= no_diagnostic then
-      Errors.Compilation_Diagnostics_Summary (BD.CD.all);
-    end if;
-
-    if BD.CD.comp_dump_requested then
-      Compiler.Print_Tables (BD.CD.all);
-      Close (BD.CD.comp_dump);
-    end if;
-    if BD.asm_dump then
-      Compiler.Dump_HAC_VM_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
-    end if;
-    if BD.CD.listing_requested then
-      Close (BD.CD.listing);
-    end if;
-    if Length (BD.obj_map_file_name) > 0 then
-      Dump_Object_Map (To_String (BD.obj_map_file_name));
-    end if;
+  begin
+    Build_Main_Inner;
   exception
-    when Errors.Compilation_of_package_body_before_spec =>
-      --  !! Temporary solution;
-      --     TBD: try building again, from spec. !!
-      Errors.Error (BD.CD.all, err_library_error, "Cannot start build with package body");
     when Errors.Compilation_abandoned =>
       --  Hit a severe error...
       Finalize_Target;  --  Needed even on incomplete compilation.
@@ -328,24 +367,24 @@ package body HAC_Sys.Builder is
       if BD.asm_dump then
         Compiler.Dump_HAC_VM_Asm (BD.CD.all, BD.CD.target.Assembler_File_Name);
       end if;
-    when E : HAC_Sys.Librarian.Circular_Unit_Dependency =>
-      Finalize_Target;  --  Needed even on incomplete compilation.
-      Errors.Error
-        (BD.CD.all,
-         Defs.err_library_error,
-         "circular unit dependency (""->"" means ""depends on""): " &
-         To_String (BD.main_name_hint) & " -> " &
-         Exception_Message (E));
   end Build_Main;
 
-  procedure Build_Main_from_File (BD : in out Build_Data; File_Name : String) is
-    f : Ada.Streams.Stream_IO.File_Type;
-    use Ada.Streams.Stream_IO;
+  procedure Build_Main_from_File
+    (BD                            : in out Build_Data;
+     file_name                     :        String;
+     body_compilation_rounds_limit :        Rounds_Range := full_build)
+  is
+    source_stream : Co_Defs.Source_Stream_Access;
   begin
-    Open (f, In_File, File_Name);
-    BD.Set_Main_Source_Stream (Stream (f), File_Name);
-    BD.Build_Main;
-    Close (f);
+    BD.LD.open_source (file_name, source_stream);
+    BD.Set_Main_Source_Stream (source_stream, file_name);
+    BD.Build_Main (body_compilation_rounds_limit);
+    BD.LD.close_source (file_name);
+  exception
+    when Ada.IO_Exceptions.Name_Error =>
+      Errors.Error
+        (BD.CD.all, Defs.err_library_error,
+         "file " & file_name & " not found", severity => Errors.major);
   end Build_Main_from_File;
 
   procedure Set_Diagnostic_Parameters

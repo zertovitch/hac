@@ -14,7 +14,7 @@ with HAT;
 
 with Ada.Calendar,
      Ada.Command_Line,
-     Ada.Text_IO.Text_Streams;
+     Ada.Text_IO;
 
 procedure HAC is
 
@@ -27,10 +27,10 @@ procedure HAC is
   procedure Compile_and_interpret_file (Ada_file_name : String; arg_pos : Positive) is
     use Ada.Calendar, Ada.Text_IO;
 
-    f               : Ada.Text_IO.File_Type;
+    source_stream   : HAC_Sys.Co_Defs.Source_Stream_Access;
     t1, t2          : Ada.Calendar.Time;
     BD              : HAC_Sys.Builder.Build_Data;
-    shebang_offset  : Natural;
+    shebang_offset  : Natural := 0;
 
     trace : constant HAC_Sys.Co_Defs.Compilation_Trace_Parameters :=
       (pipe         => null,
@@ -43,21 +43,22 @@ procedure HAC is
       New_Line;
       Put_Line (HAC_margin_1 & "HAC is free and open-source. Type ""hac"" for license.");
     end if;
-    Open (f, In_File, Ada_file_name);
-    HAC_Sys.Builder.Skip_Shebang (f, shebang_offset);
+    Open_Source (Ada_file_name, source_stream);
+    --  HAC_Sys.Builder.Skip_Shebang (f, shebang_offset); !! TBD restore that as a method of General_File_Catalogue
     BD.Set_Diagnostic_Parameters (asm_dump, HAT.To_String (cmp_dump_file_name));
     BD.Set_Remark_Set (remarks);
-    BD.Set_Main_Source_Stream (Text_Streams.Stream (f), Ada_file_name, shebang_offset);
+    BD.Set_Main_Source_Stream (source_stream, Ada_file_name, shebang_offset);
     BD.Set_Message_Feedbacks (trace);
     BD.Set_Target (target);
     BD.LD.Set_Source_Access
       (Exists_Source'Access,
        Open_Source'Access,
+       Is_Open_Source'Access,
        Close_Source'Access);
     t1 := Clock;
     BD.Build_Main;
     t2 := Clock;
-    Close (f);
+    Close_Source (Ada_file_name);
     if verbosity >= 2 then
       Put_Line (
         HAC_margin_2 & "Build finished in" &

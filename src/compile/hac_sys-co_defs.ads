@@ -315,7 +315,7 @@ package HAC_Sys.Co_Defs is
     Float_Constants_Count   : Natural;
     Id_Count                : Natural;
     loop_nesting_level      : Natural;
-    Main_Proc_Id_Index      : Natural := No_Id;  --  No_Id <=> the main unit is not executable.
+    main_proc_id_index      : Natural := No_Id;  --  No_Id <=> the main unit is not executable.
     Packages_Count          : Natural;
     String_Id_Index         : Natural;
     Strings_Table_Top       : Natural;
@@ -331,8 +331,8 @@ package HAC_Sys.Co_Defs is
     specialized_instructions : Natural;
     --  Information about source code
     Full_Block_Id             : HAT.VString;         --  Full block's Id (P1.P2.F3.P4)
-    Main_Program_ID           : Alfa := Empty_Alfa;  --  Main program name
-    Main_Program_ID_with_case : Alfa := Empty_Alfa;
+    main_unit_ident           : Alfa := Empty_Alfa;
+    main_unit_ident_with_case : Alfa := Empty_Alfa;
     Exported_Procedures       : Exported_Procedure_Mapping.Map;
     --
     listing_requested   : Boolean := False;

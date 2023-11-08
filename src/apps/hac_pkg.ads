@@ -24,9 +24,10 @@ package HAC_Pkg is
 
   procedure Compilation_Feedback (message : String);
 
-  function Exists_Source (simple_file_name : String) return Boolean;
-  procedure Open_Source (simple_file_name : String; stream : out HAC_Sys.Co_Defs.Source_Stream_Access);
-  procedure Close_Source (simple_file_name : String);
+  function Exists_Source (exact_or_simple_file_name : String) return Boolean;
+  procedure Open_Source (exact_or_simple_file_name : String; stream : out HAC_Sys.Co_Defs.Source_Stream_Access);
+  function Is_Open_Source (exact_or_simple_file_name : String) return Boolean;
+  procedure Close_Source (exact_or_simple_file_name : String);
 
   compiler_dump_name    : constant String := "compiler_dump.lst";
 

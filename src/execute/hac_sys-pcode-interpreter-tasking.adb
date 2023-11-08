@@ -357,12 +357,12 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
     ND.S (1).I := 0;
     ND.S (2).I := 0;
     ND.S (3).I := -1;
-    ND.S (4).I := Defs.HAC_Integer (CD.Main_Proc_Id_Index);
+    ND.S (4).I := Defs.HAC_Integer (CD.main_proc_id_index);
     declare
       Main_TCB : Task_Control_Block renames ND.TCB (0);
     begin
-      Main_TCB.PC := Defs.Index (CD.IdTab (CD.Main_Proc_Id_Index).adr_or_sz);  --  first pcode instruction
-      Main_TCB.T := CD.Blocks_Table (CD.IdTab (CD.Main_Proc_Id_Index).block_or_pkg_ref).VSize - 1;
+      Main_TCB.PC := Defs.Index (CD.IdTab (CD.main_proc_id_index).adr_or_sz);  --  first pcode instruction
+      Main_TCB.T := CD.Blocks_Table (CD.IdTab (CD.main_proc_id_index).block_or_pkg_ref).VSize - 1;
       Main_TCB.B := 0;
       Main_TCB.TS := Ready;
       Main_TCB.InRendzv := NilTask;

@@ -66,7 +66,7 @@ package body HAC_Sys.Co_Defs is
 
   function Is_Executable (CD : Compiler_Data) return Boolean is
   begin
-    return CD.Main_Proc_Id_Index /= HAC_Sys.Co_Defs.No_Id;
+    return CD.main_proc_id_index /= HAC_Sys.Co_Defs.No_Id;
   end Is_Executable;
 
   function Is_HAC_VM (CD : Compiler_Data) return Boolean
