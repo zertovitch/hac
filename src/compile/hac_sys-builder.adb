@@ -6,7 +6,6 @@ with HAC_Sys.Compiler,
 with Ada.Characters.Handling,
      Ada.Exceptions,
      Ada.Integer_Text_IO,
-     Ada.IO_Exceptions,
      Ada.Unchecked_Deallocation;
 
 package body HAC_Sys.Builder is
@@ -376,15 +375,16 @@ package body HAC_Sys.Builder is
   is
     source_stream : Co_Defs.Source_Stream_Access;
   begin
-    BD.LD.open_source (file_name, source_stream);
-    BD.Set_Main_Source_Stream (source_stream, file_name);
-    BD.Build_Main (body_compilation_rounds_limit);
-    BD.LD.close_source (file_name);
-  exception
-    when Ada.IO_Exceptions.Name_Error =>
+    if BD.LD.exists (file_name) then
+      BD.LD.open_source (file_name, source_stream);
+    else
       Errors.Error
         (BD.CD.all, Defs.err_library_error,
          "file " & file_name & " not found", severity => Errors.major);
+    end if;
+    BD.Set_Main_Source_Stream (source_stream, file_name);
+    BD.Build_Main (body_compilation_rounds_limit);
+    BD.LD.close_source (file_name);
   end Build_Main_from_File;
 
   procedure Set_Diagnostic_Parameters

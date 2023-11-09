@@ -364,6 +364,9 @@ package body HAC_Sys.Librarian is
     use Ada.Text_IO;
     new_file : constant Text_File_Access := new File_Type;
   begin
+    if default_file_names.Contains (Name) then
+      raise Constraint_Error with "Attempt to re-open file named """ & Name & '"';
+    end if;
     default_file_names.Insert (Name, new_file);
     Open (new_file.all, In_File, Name);
     Stream := Co_Defs.Source_Stream_Access (Text_Streams.Stream (new_file.all));
