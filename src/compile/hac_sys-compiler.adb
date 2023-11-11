@@ -496,8 +496,7 @@ package body HAC_Sys.Compiler is
           if kind = Procedure_Unit
             and then Number_of_Parameters (CD, unit_block.block_id_index) = 0
           then
-            CD.main_unit_ident_with_case   := Unit_Id_with_case;  --  !! useless, done above !!
-            CD.main_unit_ident             := HAT.To_Upper (Unit_Id_with_case);
+            --  This unit can be executed.
             CD.main_proc_id_index          := unit_block.block_id_index;
             CD.Tasks_Definitions_Table (0) := unit_block.block_id_index;  --  Task Table Entry for main task.
           else
