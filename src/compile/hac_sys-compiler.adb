@@ -370,7 +370,7 @@ package body HAC_Sys.Compiler is
 
     full_file_name : constant String :=
       Ada.Directories.Full_Name (file_name);
-      --  !! ^ Replace with General_File_Catalogue's Full_Source_Name method !!
+      --  !! ^ Replace with Abstract_File_Catalogue's Full_Source_Name method !!
 
   begin
     CD.recursion := CD.recursion + 1;

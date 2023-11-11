@@ -350,10 +350,10 @@ package body HAC_Sys.Librarian is
      Equivalent_Keys => "=");
 
   --  Here we have a global mapping
-  --  !! Not task-safe -> wrap into a protected object!
-  --  !! Define a class General_File_Catalogue; the default derived type
-  --     below (Physical_File_Catalogue) would
-  --     contain the `default_file_names` map as defined below.
+  --  !! Not task-safe!
+  --  !! Use instead Abstract_File_Catalogue; the default derived type
+  --     below (Default.File_Catalogue) contains the
+  --    `default_file_names` map as defined below.
   --     The HAC app implementation (inspired from what is in hac_pkg.adb)
   --     will include a search in a search path.
   --     An implementation like LEA may prioritize open editors

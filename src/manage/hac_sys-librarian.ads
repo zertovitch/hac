@@ -106,7 +106,7 @@ package HAC_Sys.Librarian is
   type Library_Data is tagged record
     Library      : Library_Unit_Vectors.Vector;  --  The library itself
     Map          : Library_Name_Mapping.Map;     --  Quick access by name to unit number
-    --  !!Replace with access to General_File_Catalogue'Class
+    --  !!Replace with a Abstract_File_Catalogue_Reference
     exists         : Extended_Exists  := default_exists;
     open_source    : Extended_Open    := default_open_file;
     is_open_source : Extended_Is_Open := default_is_open_file;

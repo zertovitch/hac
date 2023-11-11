@@ -11,6 +11,7 @@
 --  Co_Defs: Compiler Definitions
 
 with HAC_Sys.Defs,
+     HAC_Sys.Files,
      HAC_Sys.PCode,
      HAC_Sys.Targets;
 
@@ -221,7 +222,7 @@ package HAC_Sys.Co_Defs is
   No_Id       : constant :=  0;
   No_Id_Cache : constant := -1;
 
-  type Source_Stream_Access is access all Ada.Streams.Root_Stream_Type'Class;
+  subtype Source_Stream_Access is Files.Root_Stream_Class_Access;
 
   package Id_Maps is new Ada.Containers.Hashed_Maps
     (Key_Type        => Alfa,
