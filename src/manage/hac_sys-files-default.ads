@@ -10,6 +10,8 @@ package HAC_Sys.Files.Default is
 
   overriding function Exists (cat : File_Catalogue; name : String) return Boolean;
 
+  overriding function Full_Source_Name (cat : File_Catalogue; name : String) return String;
+
   overriding function Is_Open (cat : File_Catalogue; name : String) return Boolean;
 
   overriding procedure Source_Open

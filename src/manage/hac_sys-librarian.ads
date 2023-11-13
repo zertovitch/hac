@@ -10,7 +10,8 @@
 --
 
 with HAC_Sys.Co_Defs,
-     HAC_Sys.Defs;
+     HAC_Sys.Defs,
+     HAC_Sys.Files.Default;
 
 with HAT;
 
@@ -67,61 +68,22 @@ package HAC_Sys.Librarian is
      Hash            => Ada.Strings.Unbounded.Hash,
      Equivalent_Keys => Ada.Strings.Unbounded."=");
 
-  --  Does a file name exist?
-  --  The file name can be, for instance:
-  --    - looked for on current directory
-  --    - searched on a set of directories (a search path)
-  --    - a name of a remote file accessed through Internet
-  --    - a name in one or more Zip archives (.har)
-  --    - a name in a set of open editor windows
-  --    - a name in a database
-  --  Of course we can have a combination of the above.
-  --  In the last four examples, it could be that the "physical" file
-  --  cannot be accessed via Ada.*_IO, or doesn't even exists.
-  --
-  type Extended_Exists is access
-    function (Simple_Name : String) return Boolean;
+  default_file_catalogue : aliased Files.Default.File_Catalogue;
+  --  Global object used as a default for library file management.
 
-  --  Default `Extended_Exists` is just looking for a physical
-  --  file in the current directory.
-  default_exists : constant Extended_Exists := HAT.Exists'Access;
-
-  type Extended_Open is access
-    procedure (Simple_Name : String; Stream : out Co_Defs.Source_Stream_Access);
-
-  --  Default `Extended_Open` opens a text file in the current directory.
-  --  In that case the simple file name, e.g. "my_package.ads", is used
-  --  "as is" for the file operations.
-  default_open_file : constant Extended_Open;
-
-  type Extended_Is_Open is access
-    function (Simple_Name : String) return Boolean;
-
-  default_is_open_file : constant Extended_Is_Open;
-
-  type Extended_Close is access procedure (Simple_Name : String);
-
-  default_close_file : constant Extended_Close;
-
-  type Library_Data is tagged record
-    Library      : Library_Unit_Vectors.Vector;  --  The library itself
-    Map          : Library_Name_Mapping.Map;     --  Quick access by name to unit number
-    --  !!Replace with a Abstract_File_Catalogue_Reference
-    exists         : Extended_Exists  := default_exists;
-    open_source    : Extended_Open    := default_open_file;
-    is_open_source : Extended_Is_Open := default_is_open_file;
-    close_source   : Extended_Close   := default_close_file;
+  type Library_Data is tagged record  --  !! details -> private
+    library      : Library_Unit_Vectors.Vector;  --  The library itself (= the "books")
+    map          : Library_Name_Mapping.Map;     --  Quick access by name to unit number
+    cat          : Files.Abstract_File_Catalogue_Reference :=
+                     default_file_catalogue'Access;
   end record;
 
   procedure Set_Source_Access
-    (LD             : in out Library_Data;
-     exists         : Extended_Exists;
-     open_source    : Extended_Open;
-     is_open_source : Extended_Is_Open;
-     close_source   : Extended_Close);
+    (LD  : in out Library_Data;
+     cat : in     Files.Abstract_File_Catalogue_Reference);
 
   --  Search for file (physical or not, depending on the
-  --  LD.exists.all function) corresponding to unit name.
+  --  LD.cat.Exists function) corresponding to unit name.
   --  First a spec, then a body.
   --  If nothing found, return empty string.
   --
@@ -184,14 +146,5 @@ package HAC_Sys.Librarian is
   function Ada_RM_Casing (Identifier : String) return String;
 
 private
-
-  procedure default_open_file_proc (Name : String; Stream : out Co_Defs.Source_Stream_Access);
-  default_open_file : constant Extended_Open := default_open_file_proc'Access;
-
-  function default_is_open_file_func (Name : String) return Boolean;
-  default_is_open_file : constant Extended_Is_Open := default_is_open_file_func'Access;
-
-  procedure default_close_file_proc (Name : String);
-  default_close_file : constant Extended_Close := default_close_file_proc'Access;
 
 end HAC_Sys.Librarian;

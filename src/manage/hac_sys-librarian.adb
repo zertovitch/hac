@@ -16,11 +16,7 @@ with HAC_Sys.Compiler,
      HAC_Sys.Errors;
 
 with Ada.Characters.Handling,
-     Ada.Containers.Indefinite_Hashed_Maps,
-     Ada.Exceptions,
-     Ada.Strings.Hash,
-     Ada.Text_IO.Text_Streams,
-     Ada.Unchecked_Deallocation;
+     Ada.Exceptions;
 
 package body HAC_Sys.Librarian is
 
@@ -36,15 +32,15 @@ package body HAC_Sys.Librarian is
     UVFN : constant HAT.VString := HAT.To_Upper (Descriptor.full_name);
     is_new : Boolean;
   begin
-    is_new := LD.Map.Find (UVFN) = No_Element;
+    is_new := LD.map.Find (UVFN) = No_Element;
     if not is_new then
       raise Program_Error with
         "Duplicate registration for unit " &
         HAT.To_String (Descriptor.full_name) &
         ". This case should be handled by Apply_WITH";
     end if;
-    LD.Library.Append (Descriptor);
-    LD.Map.Insert (UVFN, LD.Library.Last_Index);
+    LD.library.Append (Descriptor);
+    LD.map.Insert (UVFN, LD.library.Last_Index);
     --  HAT.PUT_LINE ("Registering: " & Full_Name);
   end Register_Unit;
 
@@ -57,12 +53,12 @@ package body HAC_Sys.Librarian is
     c : Cursor;
     book_nr : Positive;
   begin
-    c := LD.Map.Find (UVFN);
+    c := LD.map.Find (UVFN);
     if c = No_Element then
       raise Program_Error with "Change_Unit_Status called on non-registered unit";
     end if;
     book_nr := Element (c);
-    LD.Library.Replace_Element (book_nr, Descriptor);
+    LD.library.Replace_Element (book_nr, Descriptor);
   end Change_Unit_Details;
 
   procedure Enter_Library_Level_Def
@@ -113,16 +109,11 @@ package body HAC_Sys.Librarian is
   end Enter_Library_Level_Def;
 
   procedure Set_Source_Access
-    (LD             : in out Library_Data;
-     exists         : Extended_Exists;
-     open_source    : Extended_Open;
-     is_open_source : Extended_Is_Open;
-     close_source   : Extended_Close) is
+    (LD  : in out Library_Data;
+     cat : in     Files.Abstract_File_Catalogue_Reference)
+  is
   begin
-    LD.exists         := exists;
-    LD.open_source    := open_source;
-    LD.is_open_source := is_open_source;
-    LD.close_source   := close_source;
+    LD.cat := cat;
   end Set_Source_Access;
 
   function Find_Unit_File_Name
@@ -134,9 +125,9 @@ package body HAC_Sys.Librarian is
     spec_fn : constant String := GNAT_prefix & ".ads";
     body_fn : constant String := GNAT_prefix & ".adb";
   begin
-    if LD.exists (spec_fn) then
+    if LD.cat.Exists (spec_fn) then
       return spec_fn;
-    elsif LD.exists (body_fn) then
+    elsif LD.cat.Exists (body_fn) then
       return body_fn;
     else
       return "";
@@ -249,8 +240,8 @@ package body HAC_Sys.Librarian is
     use Ada.Exceptions, Defs, HAT, Errors;
     UVN : constant VString := To_VString (Upper_Name);
   begin
-    if LD.Map.Contains (UVN) then
-      if LD.Library.Element (LD.Map.Element (UVN)).status = In_Progress then
+    if LD.map.Contains (UVN) then
+      if LD.library.Element (LD.map.Element (UVN)).status = In_Progress then
         --  Ouch, we are WITH-ing a unit which is being compiled.
         raise Circular_Unit_Dependency with Upper_Name;
       end if;
@@ -333,72 +324,5 @@ package body HAC_Sys.Librarian is
     end loop;
     return copy;
   end Ada_RM_Casing;
-
-  --  Here we have the default behaviour for Library_Data's open source
-  --  and close source routines.
-  --  It can be a template for a customized, more elaborate, abstracted
-  --  file system for getting source (and other) streams.
-  --  The routines can also used as end point of the said abstracted
-  --  file system when "physical" files are involved.
-
-  type Text_File_Access is access Ada.Text_IO.File_Type;
-
-  package Default_File_Name_Mapping is new Ada.Containers.Indefinite_Hashed_Maps
-    (Key_Type        => String,
-     Element_Type    => Text_File_Access,
-     Hash            => Ada.Strings.Hash,
-     Equivalent_Keys => "=");
-
-  --  Here we have a global mapping
-  --  !! Not task-safe!
-  --  !! Use instead Abstract_File_Catalogue; the default derived type
-  --     below (Default.File_Catalogue) contains the
-  --    `default_file_names` map as defined below.
-  --     The HAC app implementation (inspired from what is in hac_pkg.adb)
-  --     will include a search in a search path.
-  --     An implementation like LEA may prioritize open editors
-  --     over physical files.
-  default_file_names : Default_File_Name_Mapping.Map;
-
-  procedure default_open_file_proc (Name : String; Stream : out Co_Defs.Source_Stream_Access) is
-    use Ada.Text_IO;
-    new_file : constant Text_File_Access := new File_Type;
-  begin
-    if default_file_names.Contains (Name) then
-      raise Constraint_Error with "Attempt to re-open file named """ & Name & '"';
-    end if;
-    default_file_names.Insert (Name, new_file);
-    Open (new_file.all, In_File, Name);
-    Stream := Co_Defs.Source_Stream_Access (Text_Streams.Stream (new_file.all));
-  end default_open_file_proc;
-
-  function default_is_open_file_func (Name : String) return Boolean is
-    file : Text_File_Access;
-  begin
-    if default_file_names.Contains (Name) then
-      file := default_file_names.Element (Name);
-      if file /= null then
-        return Ada.Text_IO.Is_Open (file.all);
-      end if;
-    end if;
-    return False;
-  end default_is_open_file_func;
-
-  procedure default_close_file_proc (Name : String) is
-    use Ada.Text_IO;
-    procedure Free is new Ada.Unchecked_Deallocation (File_Type, Text_File_Access);
-    file : Text_File_Access;
-  begin
-    if default_file_names.Contains (Name) then
-      file := default_file_names.Element (Name);
-      if file /= null then
-        if Is_Open (file.all) then
-          Close (file.all);
-        end if;
-        Free (file);
-      end if;
-      default_file_names.Delete (Name);
-    end if;
-  end default_close_file_proc;
 
 end HAC_Sys.Librarian;

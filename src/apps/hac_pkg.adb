@@ -1,5 +1,4 @@
 with HAC_Sys.PCode.Interpreter,
-     HAC_Sys.Librarian,
      HAC_Sys.Targets.AMD64_Windows_Console_FASM;
 
 with Show_MIT_License;
@@ -21,97 +20,102 @@ package body HAC_Pkg is
     end case;
   end Compilation_Feedback;
 
-  function Search_File (simple_file_name, path : String) return String is
-    sep_pos : Natural := path'First - 1;
-    new_sep_pos : Natural;
-  begin
-    for i in path'Range loop
-      new_sep_pos := sep_pos;
-      if path (i) in ',' | ';' then
-        new_sep_pos := i;
-      elsif i = path'Last then
-        new_sep_pos := i + 1;
-      end if;
-      if new_sep_pos > sep_pos then
-        declare
-          full_file_name : constant String :=
-            path (sep_pos + 1 .. new_sep_pos - 1) & HAT.Directory_Separator & simple_file_name;
-        begin
-          if HAT.Exists (full_file_name) then
-            return full_file_name;
-          end if;
-        end;
-      end if;
-      sep_pos := new_sep_pos;
-    end loop;
-    return "";
-  end Search_File;
+  package body Path_Management is
 
-  function Search_Source_File (exact_or_simple_file_name : String) return String is
-    --  Search order: same as GNAT's,
-    --  cf. 4.2.2 Search Paths and the Run-Time Library (RTL).
-  begin
-    --  0) The file name as such exists.
-    if HAT.Exists (exact_or_simple_file_name) then
-      return exact_or_simple_file_name;
-    end if;
-    --  1) The directory containing the source file of the main unit
-    --     being compiled (the file name on the command line).
-    declare
-      fn : constant String :=
-        Ada.Directories.Containing_Directory (HAT.To_String (main_Ada_file_name)) &
-        HAT.Directory_Separator &
-        exact_or_simple_file_name;
+    function Search_File (simple_file_name, path : String) return String is
+      sep_pos : Natural := path'First - 1;
+      new_sep_pos : Natural;
     begin
-      if HAT.Exists (fn) then
-        return fn;
-      end if;
-    end;
-    --  2) Each directory named by an -I switch given on the
-    --     hac command line, in the order given.
-    declare
-      fn : constant String :=
-        Search_File (exact_or_simple_file_name, HAT.To_String (command_line_source_path));
+      for i in path'Range loop
+        new_sep_pos := sep_pos;
+        if path (i) in ',' | ';' then
+          new_sep_pos := i;
+        elsif i = path'Last then
+          new_sep_pos := i + 1;
+        end if;
+        if new_sep_pos > sep_pos then
+          declare
+            full_file_name : constant String :=
+              path (sep_pos + 1 .. new_sep_pos - 1) & HAT.Directory_Separator & simple_file_name;
+          begin
+            if HAT.Exists (full_file_name) then
+              return full_file_name;
+            end if;
+          end;
+        end if;
+        sep_pos := new_sep_pos;
+      end loop;
+      return "";
+    end Search_File;
+
+    overriding function Exists (cat : File_Catalogue; name : String) return Boolean is
     begin
-      if fn /= "" then
-        return fn;
-      end if;
-    end;
-    --  3) Omitted.
-    --  4) Each of the directories listed in the value of the ADA_INCLUDE_PATH environment variable.
-    declare
-      fn : constant String :=
-        Search_File (exact_or_simple_file_name, HAT.To_String (HAT.Get_Env ("ADA_INCLUDE_PATH")));
+      return cat.Full_Source_Name (name) /= "";
+    end Exists;
+
+    overriding function Full_Source_Name (cat : File_Catalogue; name : String) return String is
+      --  Search order: same as GNAT's,
+      --  cf. 4.2.2 Search Paths and the Run-Time Library (RTL).
     begin
-      if fn /= "" then
-        return fn;
+      --  0) The file name as such exists.
+      if HAC_Sys.Files.Default.File_Catalogue (cat).Exists (name) then
+        return name;
       end if;
-    end;
-    return "";
-  end Search_Source_File;
+      --  1) The directory containing the source file of the main unit
+      --     being compiled (the file name on the command line).
+      declare
+        fn : constant String :=
+          Ada.Directories.Containing_Directory (HAT.To_String (main_Ada_file_name)) &
+          HAT.Directory_Separator &
+          name;
+      begin
+        if HAT.Exists (fn) then
+          return fn;
+        end if;
+      end;
+      --  2) Each directory named by an -I switch given on the
+      --     hac command line, in the order given.
+      declare
+        fn : constant String :=
+          Search_File (name, HAT.To_String (command_line_source_path));
+      begin
+        if fn /= "" then
+          return fn;
+        end if;
+      end;
+      --  3) Omitted.
+      --  4) Each of the directories listed in the value of the ADA_INCLUDE_PATH environment variable.
+      declare
+        fn : constant String :=
+          Search_File (name, HAT.To_String (HAT.Get_Env ("ADA_INCLUDE_PATH")));
+      begin
+        if fn /= "" then
+          return fn;
+        end if;
+      end;
+      return "";
+    end Full_Source_Name;
 
-  function Exists_Source (exact_or_simple_file_name : String) return Boolean is
-  begin
-    return Search_Source_File (exact_or_simple_file_name) /= "";
-  end Exists_Source;
+    overriding function Is_Open (cat : File_Catalogue; name : String) return Boolean is
+    begin
+      return HAC_Sys.Files.Default.File_Catalogue (cat).Is_Open (cat.Full_Source_Name (name));
+    end Is_Open;
 
-  procedure Open_Source (exact_or_simple_file_name : String; stream : out HAC_Sys.Co_Defs.Source_Stream_Access) is
-    full_file_name : constant String := Search_Source_File (exact_or_simple_file_name);
-  begin
-    HAC_Sys.Librarian.default_open_file (full_file_name, stream);
-  end Open_Source;
+    overriding procedure Source_Open
+      (cat         : in out File_Catalogue;
+       name        : in     String;
+       stream      :    out HAC_Sys.Files.Root_Stream_Class_Access)
+    is
+    begin
+      HAC_Sys.Files.Default.File_Catalogue (cat).Source_Open (cat.Full_Source_Name (name), stream);
+    end Source_Open;
 
-  function Is_Open_Source (exact_or_simple_file_name : String) return Boolean is
-    full_file_name : constant String := Search_Source_File (exact_or_simple_file_name);
-  begin
-    return HAC_Sys.Librarian.default_is_open_file (full_file_name);
-  end Is_Open_Source;
+    overriding procedure Close (cat : in out File_Catalogue; name : String) is
+    begin
+      HAC_Sys.Files.Default.File_Catalogue (cat).Close (cat.Full_Source_Name (name));
+    end Close;
 
-  procedure Close_Source (exact_or_simple_file_name : String) is
-    full_file_name : constant String := Search_Source_File (exact_or_simple_file_name);
-  begin
-    HAC_Sys.Librarian.default_close_file (full_file_name);
-  end Close_Source;
+  end Path_Management;
 
   procedure PLCE (s : String) is
     use Ada.Text_IO;

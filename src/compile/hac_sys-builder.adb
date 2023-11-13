@@ -28,7 +28,7 @@ package body HAC_Sys.Builder is
     previous_context : Co_Defs.Id_Maps.Map;
     needs_body_dummy : Boolean;
   begin
-    for lu of BD.LD.Library loop
+    for lu of BD.LD.library loop
       if lu.status in Spec_Done then
         pending.Append (lu);
       end if;
@@ -53,7 +53,7 @@ package body HAC_Sys.Builder is
         case Spec_Done (lu.status) is
           when Body_Postponed =>
             previous_context :=
-              BD.LD.Library.Element (BD.LD.Map.Element (upper_vname)).spec_context;
+              BD.LD.library.Element (BD.LD.map.Element (upper_vname)).spec_context;
             BD.CD.remarks := BD.global_remarks;
             if BD.target /= null then
               BD.CD.target  := BD.target;
@@ -75,7 +75,7 @@ package body HAC_Sys.Builder is
             exit when BD.CD.error_count > 0;
             num_pending := num_pending + 1;
           when Spec_Only =>
-            if BD.LD.exists (fn) then
+            if BD.LD.cat.Exists (fn) then
               Errors.Error
                 (BD.CD.all,
                  Defs.err_library_error,
@@ -168,8 +168,8 @@ package body HAC_Sys.Builder is
       bfn : HAT.VString := BD.CD.CUD.source_file_name;
       rounds_restart : Rounds_Range;
     begin
-      if BD.LD.is_open_source (To_String (bfn)) then
-        BD.LD.close_source (To_String (bfn));
+      if BD.LD.cat.Is_Open (To_String (bfn)) then
+        BD.LD.cat.Close (To_String (bfn));
       end if;
       if BD.CD.trace.detail_level >= 2 then
         Compiler.Progress_Message (BD.CD.all, "\---> Cannot start build with a package's body.");
@@ -200,8 +200,8 @@ package body HAC_Sys.Builder is
       as_specification : Boolean;
 
     begin
-      BD.LD.Library.Clear;
-      BD.LD.Map.Clear;
+      BD.LD.library.Clear;
+      BD.LD.map.Clear;
 
       --  The main unit is from the beginning registered with the In_Progress
       --  status, so we can catch a possible circular dependency of the main
@@ -375,8 +375,8 @@ package body HAC_Sys.Builder is
   is
     source_stream : Co_Defs.Source_Stream_Access;
   begin
-    if BD.LD.exists (file_name) then
-      BD.LD.open_source (file_name, source_stream);
+    if BD.LD.cat.Exists (file_name) then
+      BD.LD.cat.Source_Open (file_name, source_stream);
     else
       Errors.Error
         (BD.CD.all, Defs.err_library_error,
@@ -384,7 +384,7 @@ package body HAC_Sys.Builder is
     end if;
     BD.Set_Main_Source_Stream (source_stream, file_name);
     BD.Build_Main (body_compilation_rounds_limit);
-    BD.LD.close_source (file_name);
+    BD.LD.cat.Close (file_name);
   end Build_Main_from_File;
 
   procedure Set_Diagnostic_Parameters

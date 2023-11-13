@@ -2,7 +2,7 @@
 --  HAC command-line application, as well as various helpers.
 
 with HAC_Sys.Builder,
-     HAC_Sys.Co_Defs,
+     HAC_Sys.Files.Default,
      HAC_Sys.Targets;
 
 with HAT;
@@ -24,12 +24,29 @@ package HAC_Pkg is
 
   procedure Compilation_Feedback (message : String);
 
-  function Exists_Source (exact_or_simple_file_name : String) return Boolean;
-  procedure Open_Source (exact_or_simple_file_name : String; stream : out HAC_Sys.Co_Defs.Source_Stream_Access);
-  function Is_Open_Source (exact_or_simple_file_name : String) return Boolean;
-  procedure Close_Source (exact_or_simple_file_name : String);
+  package Path_Management is  --  Specific search path management
 
-  compiler_dump_name    : constant String := "compiler_dump.lst";
+    type File_Catalogue is
+      limited new HAC_Sys.Files.Default.File_Catalogue with null record;
+      --  We enrich the default file system with searching of
+      --  files through pathes.
+
+    overriding function Exists (cat : File_Catalogue; name : String) return Boolean;
+
+    overriding function Full_Source_Name (cat : File_Catalogue; name : String) return String;
+
+    overriding function Is_Open (cat : File_Catalogue; name : String) return Boolean;
+
+    overriding procedure Source_Open
+      (cat         : in out File_Catalogue;
+       name        : in     String;
+       stream      :    out HAC_Sys.Files.Root_Stream_Class_Access);
+
+    overriding procedure Close (cat : in out File_Catalogue; name : String);
+
+  end Path_Management;
+
+  compiler_dump_name : constant String := "compiler_dump.lst";
 
   compile_only : Boolean := False;
 

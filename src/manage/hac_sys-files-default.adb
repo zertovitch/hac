@@ -10,6 +10,12 @@ package body HAC_Sys.Files.Default is
      return Ada.Directories.Exists (name);
   end Exists;
 
+  overriding function Full_Source_Name (cat : File_Catalogue; name : String) return String
+  is
+  begin
+     return Ada.Directories.Full_Name (name);
+  end Full_Source_Name;
+
   overriding function Is_Open (cat : File_Catalogue; name : String) return Boolean
   is
    file : Text_File_Access;

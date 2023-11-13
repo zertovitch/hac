@@ -6,11 +6,11 @@ package HAC_Sys.Files is
   --  A file can be, for instance:
   --    - in the operating system's file system, in current directory
   --    - in one of a set of directories (a search path)
-  --    - a remote file accessed through Internet
+  --    - a remote file accessed through the Internet
   --    - in one or more Zip archives (.har)
   --    - in a database
   --    - in a set of open editor windows, with or without
-  --        a "physical" file
+  --        a "physical" file (see the LEA project as an example).
 
   --  In the last four examples, it could be that the "physical" file
   --  cannot be accessed via Ada.*_IO, or doesn't even exists.
@@ -22,6 +22,9 @@ package HAC_Sys.Files is
   type Abstract_File_Catalogue_Reference is access all Abstract_File_Catalogue'Class;
 
   function Exists (cat : Abstract_File_Catalogue; name : String) return Boolean
+  is abstract;
+
+  function Full_Source_Name (cat : Abstract_File_Catalogue; name : String) return String
   is abstract;
 
   function Is_Open (cat : Abstract_File_Catalogue; name : String) return Boolean

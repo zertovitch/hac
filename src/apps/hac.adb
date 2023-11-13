@@ -37,13 +37,15 @@ procedure HAC is
        progress     => Compilation_Feedback'Access,
        detail_level => verbosity);
 
+    cat : aliased Path_Management.File_Catalogue;
+
   begin
     main_Ada_file_name := HAT.To_VString (Ada_file_name);
     if verbosity > 1 then
       New_Line;
       Put_Line (HAC_margin_1 & "HAC is free and open-source. Type ""hac"" for license.");
     end if;
-    Open_Source (Ada_file_name, source_stream);
+    cat.Source_Open (Ada_file_name, source_stream);
     --  HAC_Sys.Builder.Skip_Shebang (f, shebang_offset);
     --  !! TBD restore that as a method of Abstract_File_Catalogue
     BD.Set_Diagnostic_Parameters (asm_dump, HAT.To_String (cmp_dump_file_name));
@@ -51,15 +53,11 @@ procedure HAC is
     BD.Set_Main_Source_Stream (source_stream, Ada_file_name, shebang_offset);
     BD.Set_Message_Feedbacks (trace);
     BD.Set_Target (target);
-    BD.LD.Set_Source_Access
-      (Exists_Source'Access,
-       Open_Source'Access,
-       Is_Open_Source'Access,
-       Close_Source'Access);
+    BD.LD.Set_Source_Access (cat'Unchecked_Access);
     t1 := Clock;
     BD.Build_Main;
     t2 := Clock;
-    Close_Source (Ada_file_name);
+    cat.Close (Ada_file_name);
     if verbosity >= 2 then
       Put_Line (
         HAC_margin_2 & "Build finished in" &

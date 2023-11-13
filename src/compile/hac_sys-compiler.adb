@@ -9,8 +9,7 @@ with HAC_Sys.Compiler.PCode_Emit,
 
 with HAT;
 
-with Ada.Directories,
-     Ada.Integer_Text_IO,
+with Ada.Integer_Text_IO,
      Ada.Strings.Fixed,
      Ada.Text_IO;
 
@@ -368,9 +367,7 @@ package body HAC_Sys.Compiler is
            (indent - 1) * ' ' &
            (if starting then '\' else '/') & ' ');
 
-    full_file_name : constant String :=
-      Ada.Directories.Full_Name (file_name);
-      --  !! ^ Replace with Abstract_File_Catalogue's Full_Source_Name method !!
+    full_file_name : constant String := LD.cat.Full_Source_Name (file_name);
 
   begin
     CD.recursion := CD.recursion + 1;
@@ -385,7 +382,7 @@ package body HAC_Sys.Compiler is
     end if;
     if needs_opening_a_stream then
       begin
-        LD.open_source (full_file_name, src_stream);
+        LD.cat.Source_Open (full_file_name, src_stream);
         Set_Source_Stream (CD.CUD, src_stream, full_file_name, 0);
       exception
         when Name_Error =>
@@ -542,7 +539,7 @@ package body HAC_Sys.Compiler is
         needs_body := False;
     end case;
     if needs_opening_a_stream then
-      LD.close_source (full_file_name);
+      LD.cat.Close (full_file_name);
     end if;
     if CD.trace.detail_level >= 2 then
       Progress_Message
@@ -563,7 +560,7 @@ package body HAC_Sys.Compiler is
       Error (CD, err_unexpected_end_of_text);
     when others =>
       if needs_opening_a_stream then
-        LD.close_source (full_file_name);
+        LD.cat.Close (full_file_name);
       end if;
       raise;
   end Compile_Unit;
