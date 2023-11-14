@@ -46,8 +46,7 @@ procedure HAC is
       Put_Line (HAC_margin_1 & "HAC is free and open-source. Type ""hac"" for license.");
     end if;
     cat.Source_Open (Ada_file_name, source_stream);
-    --  HAC_Sys.Builder.Skip_Shebang (f, shebang_offset);
-    --  !! TBD restore that as a method of Abstract_File_Catalogue
+    cat.Skip_Shebang (Ada_file_name, shebang_offset);
     BD.Set_Diagnostic_Parameters (asm_dump, HAT.To_String (cmp_dump_file_name));
     BD.Set_Remark_Set (remarks);
     BD.Set_Main_Source_Stream (source_stream, Ada_file_name, shebang_offset);

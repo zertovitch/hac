@@ -45,9 +45,38 @@ package body HAC_Sys.Files.Default is
     stream := Root_Stream_Class_Access (Ada.Text_IO.Text_Streams.Stream (new_file.all));
   end Source_Open;
 
-  -----------
-  -- Close --
-  -----------
+  overriding procedure Skip_Shebang
+    (cat            : in out File_Catalogue;
+     name           : in     String;
+     shebang_offset :    out Natural)
+  is
+    file : Text_File_Access;
+  begin
+    shebang_offset := 0;
+    if cat.read_open_map.Contains (name) then
+      file := cat.read_open_map.Element (name);
+      if file /= null
+        and then Ada.Text_IO.Is_Open (file.all)
+        and then not Ada.Text_IO.End_Of_File (file.all)
+      then
+        declare
+          possible_shebang : constant String := Ada.Text_IO.Get_Line (file.all);
+        begin
+          if possible_shebang'Length >= 2
+            and then
+              possible_shebang
+                (possible_shebang'First .. possible_shebang'First + 1) = "#!"
+          then
+            --  Ignore the first line, but count it.
+            shebang_offset := 1;
+          else
+            --  Uh-oh: not a shebang. Then we need to reset the file.
+            Ada.Text_IO.Reset (file.all);
+          end if;
+        end;
+      end if;
+    end if;
+  end Skip_Shebang;
 
   overriding procedure Close (cat : in out File_Catalogue; name : String) is
     procedure Free is new Ada.Unchecked_Deallocation (Ada.Text_IO.File_Type, Text_File_Access);

@@ -110,6 +110,16 @@ package body HAC_Pkg is
       HAC_Sys.Files.Default.File_Catalogue (cat).Source_Open (cat.Full_Source_Name (name), stream);
     end Source_Open;
 
+    overriding procedure Skip_Shebang
+      (cat            : in out File_Catalogue;
+       name           : in     String;
+       shebang_offset :    out Natural) is
+    begin
+      HAC_Sys.Files.Default.File_Catalogue (cat).Skip_Shebang
+        (cat.Full_Source_Name (name),
+         shebang_offset);
+    end Skip_Shebang;
+
     overriding procedure Close (cat : in out File_Catalogue; name : String) is
     begin
       HAC_Sys.Files.Default.File_Catalogue (cat).Close (cat.Full_Source_Name (name));

@@ -38,9 +38,14 @@ package HAC_Pkg is
     overriding function Is_Open (cat : File_Catalogue; name : String) return Boolean;
 
     overriding procedure Source_Open
-      (cat         : in out File_Catalogue;
-       name        : in     String;
-       stream      :    out HAC_Sys.Files.Root_Stream_Class_Access);
+      (cat    : in out File_Catalogue;
+       name   : in     String;
+       stream :    out HAC_Sys.Files.Root_Stream_Class_Access);
+
+    overriding procedure Skip_Shebang
+      (cat            : in out File_Catalogue;
+       name           : in     String;
+       shebang_offset :    out Natural);
 
     overriding procedure Close (cat : in out File_Catalogue; name : String);
 

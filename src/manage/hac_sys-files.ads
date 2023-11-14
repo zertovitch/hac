@@ -39,6 +39,18 @@ package HAC_Sys.Files is
      stream :    out Root_Stream_Class_Access)
   is abstract;
 
+  --  Skip a possible shebang line (such as "#!/usr/bin/env hac") that may
+  --  exist on top of a main unit source file.
+  --
+  --    shebang_offset = 0 if no shebang was found,
+  --    shebang_offset = 1 if a shebang was found.
+
+  procedure Skip_Shebang
+    (cat            : in out Abstract_File_Catalogue;
+     name           : in     String;
+     shebang_offset :    out Natural)
+  is abstract;
+
   procedure Close (cat : in out Abstract_File_Catalogue; name : String)
   is abstract;
 
