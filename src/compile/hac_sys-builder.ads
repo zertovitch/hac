@@ -21,8 +21,7 @@ with HAT;
 with Ada.Containers.Hashed_Maps,
      Ada.Finalization,
      Ada.Streams,
-     Ada.Strings.Unbounded.Hash,
-     Ada.Text_IO;
+     Ada.Strings.Unbounded.Hash;
 
 package HAC_Sys.Builder is
 
@@ -110,14 +109,5 @@ package HAC_Sys.Builder is
   function Folded_Instructions (BD : Build_Data) return Natural;
   function Specialized_Instructions (BD : Build_Data) return Natural;
   function Maximum_Object_Code_Size return Natural;
-
-  -------------------------
-  --  Various utilities  --
-  -------------------------
-
-  --  Skip an possible "shebang", e.g.: #!/usr/bin/env hac, in a text file.
-  --  The Ada source begins from next line.
-  --
-  procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural);
 
 end HAC_Sys.Builder;

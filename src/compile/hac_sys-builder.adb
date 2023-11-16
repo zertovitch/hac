@@ -6,6 +6,7 @@ with HAC_Sys.Compiler,
 with Ada.Characters.Handling,
      Ada.Exceptions,
      Ada.Integer_Text_IO,
+     Ada.Text_IO,
      Ada.Unchecked_Deallocation;
 
 package body HAC_Sys.Builder is
@@ -487,24 +488,5 @@ package body HAC_Sys.Builder is
   begin
     return Defs.CDMax;
   end Maximum_Object_Code_Size;
-
-  procedure Skip_Shebang (f : in out Ada.Text_IO.File_Type; shebang_offset : out Natural) is
-    use Ada.Text_IO;
-  begin
-    shebang_offset := 0;
-    if not End_Of_File (f) then
-      declare
-        possible_shebang : constant String := Get_Line (f);
-      begin
-        if possible_shebang'Length >= 2
-          and then possible_shebang (possible_shebang'First .. possible_shebang'First + 1) = "#!"
-        then
-          shebang_offset := 1;  --  Ignore the first line, but count it.
-        else
-          Reset (f);
-        end if;
-      end;
-    end if;
-  end Skip_Shebang;
 
 end HAC_Sys.Builder;
