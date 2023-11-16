@@ -40,7 +40,7 @@ package HAC_Sys.Files is
   is abstract;
 
   --  Skip a possible shebang line (such as "#!/usr/bin/env hac") that may
-  --  exist on top of a main unit source file.
+  --  exist as first line of a main unit's source file.
   --
   --    shebang_offset = 0 if no shebang was found,
   --    shebang_offset = 1 if a shebang was found.

@@ -49,7 +49,8 @@ package body HAC_Sys.Targets.Semantics is
        line        => (if is_built_in then -1               else m.CD.CUD.location.line),
        column      => (if is_built_in then -1               else m.CD.CUD.location.column_start),
        is_built_in => is_built_in,
-       id_index    => m.CD.Id_Count);
+       id_index    => m.CD.Id_Count,
+       others      => <>);
 
     --  Feed the structures for searching possible declarations
     --  at any given point of any source file.
@@ -69,14 +70,16 @@ package body HAC_Sys.Targets.Semantics is
     end if;
   end Mark_Declaration;
 
-  overriding procedure Mark_Reference (m : in out Machine; located_id : Natural) is
+  procedure Add_Reference
+    (m          : in out Machine;
+     ref        : in     Reference_Point'Class;
+     located_id : in     Natural)
+  is
     use HAT;
     admit_duplicates : constant Boolean := True;
     key : constant VString :=
-      --  Example: "c:\files\source.adb 130 12"
-      m.CD.CUD.source_file_name &
-      m.CD.CUD.location.line'Image &
-      m.CD.CUD.location.column_start'Image;
+      ref.file_name & ref.line'Image & ref.column'Image;
+      --  ^ Example: "c:\files\source.adb 130 12"
   begin
     if trace then
       HAT.Put_Line
@@ -93,27 +96,71 @@ package body HAC_Sys.Targets.Semantics is
     when Constraint_Error =>
       raise Constraint_Error
         with "Duplicate reference key: " & To_String (key);
+  end Add_Reference;
+
+  overriding procedure Mark_Spec_Body_Cross_References
+    (m                : in out Machine;
+     spec_id, body_id : in     Positive)
+  is
+  begin
+    m.decl_array (spec_id).body_id := body_id;
+    m.decl_array (body_id).spec_id := spec_id;
+    --
+    --  Add references to own declarations so an user can go from spec
+    --  to body, and vice-versa, directly from the declarations.
+    Add_Reference (m, m.decl_array (spec_id), spec_id);
+    Add_Reference (m, m.decl_array (body_id), body_id);
+  end Mark_Spec_Body_Cross_References;
+
+  overriding procedure Mark_Reference (m : in out Machine; located_id : Natural) is
+  begin
+    Add_Reference
+      (m,
+       Reference_Point'
+         (m.CD.CUD.source_file_name,
+          m.CD.CUD.location.line,
+          m.CD.CUD.location.column_start),
+       located_id);
   end Mark_Reference;
 
-  procedure Find_Referenced_Declaration
-    (m         : in     Machine;
-     ref       : in     Reference_Point'Class;
-     decl      :    out Declaration_Point'Class;
-     was_found :    out Boolean)
+  procedure Find_Referenced_Declarations
+    (m              : in     Machine;
+     ref            : in     Reference_Point'Class;
+     decl_1, decl_2 :    out Declaration_Point'Class;
+     found          :    out Natural)
   is
-    use HAT, Reference_Mapping;
+    use Co_Defs, HAT, Reference_Mapping;
     key  : constant VString :=
       ref.file_name & ref.line'Image & ref.column'Image;
     curs : constant Reference_Mapping.Cursor := m.ref_map.Find (key);
+    index_1, index_2 : Positive;
   begin
     if curs = No_Element then
-      decl.id_index := -1;
-      was_found := False;
+      decl_1.id_index := -1;
+      decl_2.id_index := -1;
+      found := 0;
     else
-      decl := Declaration_Point'Class (m.decl_array (Element (curs)));
-      was_found := True;
+      index_1 := Element (curs);
+      decl_1 := Declaration_Point'Class (m.decl_array (index_1));
+      if decl_1.spec_id = No_Id and then decl_1.body_id = No_Id then
+        found := 1;
+      else
+        found := 2;
+        --  There is a cross-reference.
+        --  In any case, decl_1 will be the spec and decl_2 will be the body.
+        if decl_1.spec_id /= No_Id then
+          --  We have a body referencing a spec.
+          index_2 := index_1;
+          index_1 := decl_1.spec_id;
+          decl_1 := Declaration_Point'Class (m.decl_array (index_1));
+        else
+          --  We have a spec referencing a body.
+          index_2 := decl_1.body_id;
+        end if;
+        decl_2 := Declaration_Point'Class (m.decl_array (index_2));
+      end if;
     end if;
-  end Find_Referenced_Declaration;
+  end Find_Referenced_Declarations;
 
   function Find_Possible_Declarations
     (m        : Machine;

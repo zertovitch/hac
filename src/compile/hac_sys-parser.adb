@@ -184,7 +184,10 @@ package body HAC_Sys.Parser is
     begin
       block_data.max_data_allocation_index := block_data.data_allocation_index;
       CD.IdTab (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
-      Link_Forward_Declaration (CD, block_data.previous_declaration_id_index, block_data.block_id_index);
+      if block_data.previous_declaration_id_index > No_Id then
+        Link_Forward_Declaration
+          (CD, block_data.previous_declaration_id_index, block_data.block_id_index);
+      end if;
       --  Copy initialization (elaboration) ObjCode from end of ObjCode table
       for Init_Code_Idx in reverse CD.CMax + 1 .. CD.CMax + block_data.initialization_object_code_size loop
         CD.ObjCode (CD.LC) := CD.ObjCode (Init_Code_Idx);

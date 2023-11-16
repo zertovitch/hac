@@ -715,8 +715,8 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Link_Forward_Declaration
     (CD         : in out Compiler_Data;
-     old_id_idx :        Natural;
-     new_id_idx :        Natural)
+     old_id_idx :        Positive;
+     new_id_idx :        Positive)
   is
   begin
     --  Clone key information at the new id's index (the body)
@@ -727,6 +727,11 @@ package body HAC_Sys.Parser.Helpers is
     --
     CD.IdTab (old_id_idx).adr_or_sz        := CD.IdTab (new_id_idx).adr_or_sz;
     CD.IdTab (old_id_idx).block_or_pkg_ref := CD.IdTab (new_id_idx).block_or_pkg_ref;
+    --
+    --  The linking is done!
+    --
+    CD.target.Mark_Spec_Body_Cross_References
+      (spec_id => old_id_idx, body_id => new_id_idx);
   end Link_Forward_Declaration;
 
   procedure Check_Incomplete_Definitions

@@ -393,8 +393,8 @@ package HAC_Sys.Parser.Helpers is
 
   procedure Link_Forward_Declaration
     (CD         : in out Compiler_Data;
-     old_id_idx :        Natural;
-     new_id_idx :        Natural);
+     old_id_idx :        Positive;
+     new_id_idx :        Positive);
 
   procedure Check_Incomplete_Definitions
     (CD    : in out Co_Defs.Compiler_Data;

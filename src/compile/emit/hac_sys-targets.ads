@@ -48,7 +48,7 @@ package HAC_Sys.Targets is
 
   procedure Finalize_Code_Emission
     (m       : in out Machine;
-     strings :        String) is null;
+     strings : in     String) is null;
 
   ----------------------------
   --  Machine Instructions  --
@@ -56,8 +56,8 @@ package HAC_Sys.Targets is
 
   procedure Emit_Arithmetic_Binary_Instruction
     (m         : in out Machine;
-     operator  :        Defs.Arithmetic_Binary_Operator;
-     base_typ  :        Defs.Numeric_Typ) is abstract;
+     operator  : in     Defs.Arithmetic_Binary_Operator;
+     base_typ  : in     Defs.Numeric_Typ) is abstract;
 
   procedure Emit_Halt (m : in out Machine) is abstract;
 
@@ -73,8 +73,8 @@ package HAC_Sys.Targets is
 
   procedure Emit_HAT_Builtin_Procedure
     (m            : in out Machine;
-     builtin_proc :        Defs.SP_Code;
-     parameter    :        Defs.HAC_Integer) is abstract;
+     builtin_proc : in     Defs.SP_Code;
+     parameter    : in     Defs.HAC_Integer) is abstract;
 
   -------------
   --  Misc.  --
@@ -85,6 +85,10 @@ package HAC_Sys.Targets is
   procedure Mark_Reference (m : in out Machine; located_id : Natural) is null;
 
   procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is null;
+
+  procedure Mark_Spec_Body_Cross_References
+    (m                : in out Machine;
+     spec_id, body_id : in     Positive) is null;
 
   combination_not_supported : exception;
 

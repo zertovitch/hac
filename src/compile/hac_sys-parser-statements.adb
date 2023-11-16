@@ -215,6 +215,8 @@ package body HAC_Sys.Parser.Statements is
       I_Entry := Locate_CD_Id (CD, Block_Data.level);
       if CD.IdTab (I_Entry).entity /= entree then
         Error (CD, err_general_error, "an entry name is expected here");
+      else
+        CD.target.Mark_Reference (I_Entry);
       end if;
       InSymbol;
       Accept_Call;
@@ -231,6 +233,8 @@ package body HAC_Sys.Parser.Statements is
         if CD.Sy = IDent then
           if CD.Id /= CD.IdTab (I_Entry).name then
             Error (CD, err_incorrect_name_after_END);
+          else
+            CD.target.Mark_Reference (I_Entry);
           end if;
           InSymbol;
         end if;
@@ -664,6 +668,8 @@ package body HAC_Sys.Parser.Statements is
           I := Locate_CD_Id (CD, Block_Data.level);
           if CD.IdTab (I).entity /= entree then
             Select_Error (err_general_error);
+          else
+            CD.target.Mark_Reference (I);
           end if;
           InSymbol;
           Accept_Call_2;
@@ -683,6 +689,8 @@ package body HAC_Sys.Parser.Statements is
             if CD.Sy = IDent then
               if CD.Id /= CD.IdTab (I).name then
                 Select_Error (err_incorrect_name_after_END);
+              else
+                CD.target.Mark_Reference (I);
               end if;
             end if;
             Block_Data.level := Block_Data.level - 1;

@@ -30,6 +30,8 @@ package HAC_Sys.Targets.Semantics is
   type Declaration_Point is new Reference_Point with record
     is_built_in : Boolean;
     id_index    : Integer;
+    spec_id     : Natural := Co_Defs.No_Id;  --  For a body item: link to its spec.
+    body_id     : Natural := Co_Defs.No_Id;  --  For a spec item: link to its body.
   end record;
 
   --  Reference map
@@ -166,12 +168,16 @@ package HAC_Sys.Targets.Semantics is
 
   overriding procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean);
 
+  overriding procedure Mark_Spec_Body_Cross_References
+    (m                : in out Machine;
+     spec_id, body_id : in     Positive);
+
   --  From given valid reference point, get the corresponding declaration.
-  procedure Find_Referenced_Declaration
-    (m         : in     Machine;
-     ref       : in     Reference_Point'Class;
-     decl      :    out Declaration_Point'Class;
-     was_found :    out Boolean);
+  procedure Find_Referenced_Declarations
+    (m              : in     Machine;
+     ref            : in     Reference_Point'Class;
+     decl_1, decl_2 :    out Declaration_Point'Class;
+     found          :    out Natural);
 
   --  This is for "auto-complete" purposes.
   --  The list of identifiers is sorted, separated by spaces.
