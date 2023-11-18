@@ -158,13 +158,16 @@ package body HAC_Sys.Targets.Semantics is
           index_2 := decl_1.body_id;
         end if;
         decl_2 := Declaration_Point'Class (m.decl_array (index_2));
-        --  Now, mark cases where ref = decl.
-        if Reference_Point (decl_1) = Reference_Point (ref) then
-          decl_1.self_reference := True;
-        end if;
         if Reference_Point (decl_2) = Reference_Point (ref) then
+          --  Mark cases where ref point = decl. point
           decl_2.self_reference := True;
         end if;
+      end if;
+      if found >= 1
+        and then Reference_Point (decl_1) = Reference_Point (ref)
+      then
+        --  Mark cases where ref point = decl. point
+        decl_1.self_reference := True;
       end if;
     end if;
   end Find_Referenced_Declarations;
