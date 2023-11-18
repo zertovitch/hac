@@ -28,10 +28,11 @@ package HAC_Sys.Targets.Semantics is
   end record;
 
   type Declaration_Point is new Reference_Point with record
-    is_built_in : Boolean;
-    id_index    : Integer;
-    spec_id     : Natural := Co_Defs.No_Id;  --  For a body item: link to its spec.
-    body_id     : Natural := Co_Defs.No_Id;  --  For a spec item: link to its body.
+    is_built_in    : Boolean;
+    id_index       : Integer;
+    spec_id        : Natural := Co_Defs.No_Id;  --  For a body item: link to its spec.
+    body_id        : Natural := Co_Defs.No_Id;  --  For a spec item: link to its body.
+    self_reference : Boolean := False;
   end record;
 
   --  Reference map
