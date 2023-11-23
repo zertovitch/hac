@@ -93,7 +93,7 @@ package body HAC_Sys.Parser.Enter_Def is
        is_assigned      => False,
        location         => CD.CUD.location);
     --
-    CD.target.Mark_Declaration (is_built_in => False);
+    CD.target.Mark_Declaration;
     --  Update start of identifier chain:
     CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx := CD.Id_Count;
     if Level = 0 then

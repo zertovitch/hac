@@ -27,6 +27,12 @@ package HAC_Sys.Files is
   function Full_Source_Name (cat : Abstract_File_Catalogue; name : String) return String
   is abstract;
 
+  function Full_Spec_Source_Name (cat : Abstract_File_Catalogue; name : String) return String
+  is abstract;
+
+  function Full_Body_Source_Name (cat : Abstract_File_Catalogue; name : String) return String
+  is abstract;
+
   function Is_Open (cat : Abstract_File_Catalogue; name : String) return Boolean
   is abstract;
 

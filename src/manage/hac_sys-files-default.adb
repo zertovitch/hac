@@ -16,6 +16,22 @@ package body HAC_Sys.Files.Default is
      return Ada.Directories.Full_Name (name);
   end Full_Source_Name;
 
+  overriding function Full_Spec_Source_Name (cat : File_Catalogue; name : String) return String
+  is
+    other_name : String := name;
+  begin
+    other_name (other_name'Last) := 's';  --  GNAT convention: .ads for spec.
+    return other_name;
+  end Full_Spec_Source_Name;
+
+  overriding function Full_Body_Source_Name (cat : File_Catalogue; name : String) return String
+  is
+    other_name : String := name;
+  begin
+    other_name (other_name'Last) := 'b';  --  GNAT convention: .adb for body.
+    return other_name;
+  end Full_Body_Source_Name;
+
   overriding function Is_Open (cat : File_Catalogue; name : String) return Boolean
   is
    file : Text_File_Access;

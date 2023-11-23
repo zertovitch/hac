@@ -503,7 +503,7 @@ package body HAC_Sys.Parser.Statements is
               is_assigned      => False,
               location         => (0, 0, 0));
         --
-        CD.target.Mark_Declaration (is_built_in => False);
+        CD.target.Mark_Declaration;
         CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx  := loop_param_id;
         Block_Data.data_allocation_index := Block_Data.data_allocation_index + 1;
         Block_Data.max_data_allocation_index :=

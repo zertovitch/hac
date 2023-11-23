@@ -12,6 +12,10 @@ package HAC_Sys.Files.Default is
 
   overriding function Full_Source_Name (cat : File_Catalogue; name : String) return String;
 
+  overriding function Full_Spec_Source_Name (cat : File_Catalogue; name : String) return String;
+
+  overriding function Full_Body_Source_Name (cat : File_Catalogue; name : String) return String;
+
   overriding function Is_Open (cat : File_Catalogue; name : String) return Boolean;
 
   overriding procedure Source_Open

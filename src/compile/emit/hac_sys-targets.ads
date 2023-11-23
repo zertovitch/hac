@@ -82,9 +82,11 @@ package HAC_Sys.Targets is
 
   function Assembler_File_Name (m : Machine) return String is abstract;
 
-  procedure Mark_Reference (m : in out Machine; located_id : Natural) is null;
+  procedure Mark_Reference
+    (m : in out Machine; located_id : Natural) is null;
 
-  procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is null;
+  procedure Mark_Declaration
+    (m : in out Machine; is_built_in : Boolean := False) is null;
 
   procedure Mark_Spec_Body_Cross_References
     (m                : in out Machine;

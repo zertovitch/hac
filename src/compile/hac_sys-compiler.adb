@@ -462,14 +462,20 @@ package body HAC_Sys.Compiler is
         Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), prozedure, NOTYP, 0);
       when Function_Unit =>
         Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), funktion, NOTYP, 0);
-        --  The type of the return value is adjusted by Block.Function_Result_Profile.
+        --  ^ The type of the return value is adjusted by Block.Function_Result_Profile.
       when Package_Declaration =>
         Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), paquetage, NOTYP, 0);
       when Package_Body =>
-        --  Library-level package body doesn't need an entry in the identifier table:
-        null;
+        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), paquetage_body, NOTYP, 0);
+        --  ^ The identifier is used only by the Semantics target.
     end case;
     new_id_index := CD.Id_Count;
+    if specification_id_index /= No_Id then
+      CD.target.Mark_Spec_Body_Cross_References
+        (spec_id => specification_id_index,
+         body_id => new_id_index);
+    end if;
+
     case kind is
       when Subprogram_Unit =>
         --  Absorb the identifier symbol:

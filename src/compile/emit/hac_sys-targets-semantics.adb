@@ -35,7 +35,9 @@ package body HAC_Sys.Targets.Semantics is
 
   trace : constant Boolean := False;
 
-  overriding procedure Mark_Declaration (m : in out Machine; is_built_in : Boolean) is
+  overriding procedure Mark_Declaration
+    (m : in out Machine; is_built_in : Boolean := False)
+  is
     use File_Names_to_Line_Maps_Maps;
     curs : Cursor;
     line_map_a : Declaration_Line_Map_Access;
@@ -106,13 +108,14 @@ package body HAC_Sys.Targets.Semantics is
     m.decl_array (spec_id).body_id := body_id;
     m.decl_array (body_id).spec_id := spec_id;
     --
-    --  Add references to own declarations so an user can go from spec
-    --  to body, and vice-versa, directly from the declarations.
+    --  Add references to own declarations so a user can go from
+    --  spec to body, and vice-versa, directly from the declarations.
     Add_Reference (m, m.decl_array (spec_id), spec_id);
     Add_Reference (m, m.decl_array (body_id), body_id);
   end Mark_Spec_Body_Cross_References;
 
-  overriding procedure Mark_Reference (m : in out Machine; located_id : Natural) is
+  overriding procedure Mark_Reference
+    (m : in out Machine; located_id : Natural) is
   begin
     Add_Reference
       (m,

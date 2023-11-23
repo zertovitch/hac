@@ -48,22 +48,24 @@ package body HAC_Sys.Builder is
       declare
         upper_vname : constant VString := To_Upper (lu.full_name);
         upper_name : constant String := To_String (upper_vname);
-        fn : String := Find_Unit_File_Name (BD.LD, upper_name);
+        fn_spec : constant String := Find_Unit_File_Name (BD.LD, upper_name);
+        fn_body : constant String := BD.LD.cat.Full_Body_Source_Name (fn_spec);
       begin
-        fn (fn'Last) := 'b';  --  Name ending for a unit's body (*.adb).
         case Spec_Done (lu.status) is
           when Body_Postponed =>
+
             previous_context :=
               BD.LD.library.Element (BD.LD.map.Element (upper_vname)).spec_context;
             BD.CD.remarks := BD.global_remarks;
             if BD.target /= null then
               BD.CD.target  := BD.target;
             end if;
+
             Compiler.Compile_Unit
               (CD                     => BD.CD.all,
                LD                     => BD.LD,
                upper_name             => upper_name,
-               file_name              => fn,
+               file_name              => fn_body,
                as_specification       => False,
                as_main_unit           => upper_name = Defs.A2S (BD.CD.Id),
                needs_opening_a_stream => True,
@@ -73,17 +75,23 @@ package body HAC_Sys.Builder is
                unit_context           => previous_context,
                kind                   => lu.kind,
                needs_body             => needs_body_dummy);
+
             exit when BD.CD.error_count > 0;
+
             num_pending := num_pending + 1;
+
           when Spec_Only =>
-            if BD.LD.cat.Exists (fn) then
+
+            if BD.LD.cat.Exists (fn_body) then
               Errors.Error
                 (BD.CD.all,
                  Defs.err_library_error,
                  "library package declaration shall not have a body unless it " &
-                   "requires a body (Ada RM 7.2 (4)); found file: " & fn);
+                   "requires a body (Ada RM 7.2 (4)); found the file: " & fn_body);
             end if;
+
         end case;
+
         lu.status := Done;
         Change_Unit_Details (BD.LD, lu);
       end;
@@ -111,25 +119,28 @@ package body HAC_Sys.Builder is
         (BD.CD.Strings_Constants_Table (1 .. BD.CD.Strings_Table_Top));
     end Finalize_Target;
 
+    procedure Progress (s : String; min_level : Positive) is
+    begin
+      if BD.CD.trace.detail_level >= min_level then
+        Compiler.Progress_Message (BD.CD.all, s);
+      end if;
+    end Progress;
+
     procedure Complete_Graph_Build is
       num_pending : Natural;
     begin
-      if BD.CD.trace.detail_level >= 2
-        and then body_compilation_rounds_limit > 0
-      then
-        Compiler.Progress_Message
-          (BD.CD.all,
-           "------  Compilation of possibly uncompiled unit bodies  ------");
+      if body_compilation_rounds_limit > 0 then
+        Progress
+          ("------  Compilation of possibly uncompiled unit bodies  ------", 2);
       end if;
       for round in 1 .. body_compilation_rounds_limit loop
         Compile_Pending_Bodies_Single_Round (BD, num_pending);
         --  Now, other bodies may have appeared that have
         --  not been yet compiled.
-        if num_pending > 0 and then BD.CD.trace.detail_level >= 2 then
-          Compiler.Progress_Message
-            (BD.CD.all,
-             "------  End of Round" & round'Image &
-             ", compiled bodies:" & num_pending'Image & "  ------");
+        if num_pending > 0 then
+          Progress
+            ("------  End of Round" & round'Image &
+             ", compiled bodies:" & num_pending'Image & "  ------", 2);
         end if;
         exit when num_pending = 0;
       end loop;
@@ -166,31 +177,28 @@ package body HAC_Sys.Builder is
     end Dump_Object_Map;
 
     procedure Restart_with_Spec is
-      bfn : HAT.VString := BD.CD.CUD.source_file_name;
-      rounds_restart : Rounds_Range;
+      fn_body : constant String := HAT.To_String (BD.CD.CUD.source_file_name);
     begin
-      if BD.LD.cat.Is_Open (To_String (bfn)) then
-        BD.LD.cat.Close (To_String (bfn));
+      if BD.LD.cat.Is_Open (fn_body) then
+        BD.LD.cat.Close (fn_body);
       end if;
-      if BD.CD.trace.detail_level >= 2 then
-        Compiler.Progress_Message (BD.CD.all, "\---> Cannot start build with a package's body.");
-        Compiler.Progress_Message (BD.CD.all, "      We restart from a possible spec.");
-      end if;
-      if Length (bfn) = 0 then
-        --  The body hasn't a file name (like just typed in an editor bound to HAC).
-        --  Let's try to invent a name for the spec.
-        bfn :=
-          HAT.To_VString
-            (Librarian.GNAT_File_Naming (A2S (BD.CD.main_unit_ident_with_case))) & ".ads";
-      else
-        Replace_Element (bfn, Length (bfn), 's');
-      end if;
-      if body_compilation_rounds_limit = Rounds_Range'Last then
-        rounds_restart := Rounds_Range'Last;
-      else
-        rounds_restart := body_compilation_rounds_limit + 1;
-      end if;
-      BD.Build_Main_from_File (To_String (bfn), rounds_restart);
+      Progress ("\---> Cannot start build with a package's body.", 1);
+      Progress ("      We restart from a possible spec.", 1);
+
+      BD.Build_Main_from_File
+        (file_name =>
+           (if fn_body'Length = 0 then
+              --  The body hasn't a file name (like just typed in an editor bound to HAC).
+              --  Let's try to invent a name for the spec.
+              Librarian.GNAT_File_Naming (A2S (BD.CD.main_unit_ident_with_case)) & ".ads"
+            else
+              BD.LD.cat.Full_Spec_Source_Name (fn_body)),
+            --
+         body_compilation_rounds_limit =>
+           (if body_compilation_rounds_limit = Rounds_Range'Last then
+              Rounds_Range'Last
+            else
+              body_compilation_rounds_limit + 1));
     end Restart_with_Spec;
 
     procedure Build_Main_Inner is
@@ -234,12 +242,8 @@ package body HAC_Sys.Builder is
           "Compiler: main unit file name is " & main_file_name);
       end if;
 
-      if BD.CD.trace.detail_level >= 1 then
-        Compiler.Progress_Message
-          (BD.CD.all, "HAC Ada Compiler version " & version & ", " & reference);
-        Compiler.Progress_Message
-          (BD.CD.all, "Compiling main: " & main_file_name);
-      end if;
+      Progress ("HAC Ada Compiler version " & version & ", " & reference, 1);
+      Progress ("Compiling main: " & main_file_name, 1);
 
       begin
         Compiler.Init_for_new_Build (BD.CD.all);
@@ -291,12 +295,9 @@ package body HAC_Sys.Builder is
         main_unit.status := Done;
       end if;
 
-      if BD.CD.trace.detail_level >= 2 then
-        Compiler.Progress_Message
-          (BD.CD.all, "Compilation of " & main_file_name & " (main) completed");
-      end if;
+      Progress ("Compilation of " & main_file_name & " (main) completed", 2);
 
-      main_unit.id_index := BD.CD.main_proc_id_index;
+      main_unit.id_index := new_id_index;
       Librarian.Change_Unit_Details (BD.LD, main_unit);
       --
       --  Here: compilation of Main unit is finished (with or without
