@@ -20,7 +20,9 @@ package body HAC_Sys.Files.Default is
   is
     other_name : String := name;
   begin
-    other_name (other_name'Last) := 's';  --  GNAT convention: .ads for spec.
+    if name'Length > 0 then
+      other_name (other_name'Last) := 's';  --  GNAT convention: .ads for spec.
+    end if;
     return other_name;
   end Full_Spec_Source_Name;
 
@@ -28,7 +30,9 @@ package body HAC_Sys.Files.Default is
   is
     other_name : String := name;
   begin
-    other_name (other_name'Last) := 'b';  --  GNAT convention: .adb for body.
+    if name'Length > 0 then
+      other_name (other_name'Last) := 'b';  --  GNAT convention: .adb for body.
+    end if;
     return other_name;
   end Full_Body_Source_Name;
 
