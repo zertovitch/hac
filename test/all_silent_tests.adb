@@ -200,6 +200,8 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"22", +"26558 110400");                   --  Monkey Map
     Launch_AoC (+"2022", +"23", +"3689 965");                       --  Unstable Diffusion
     --
+    Launch_AoC (+"2023", +"01", +"52974 53340");                    --  Trebuchet?!
+    --
     New_Line (2);
     New_Line;
     Put_Line ("----> Done.");
