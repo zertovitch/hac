@@ -201,6 +201,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2022", +"23", +"3689 965");                       --  Unstable Diffusion
     --
     Launch_AoC (+"2023", +"01", +"52974 53340");                    --  Trebuchet?!
+    Launch_AoC (+"2023", +"02", +"2176 63700");                     --  Cube Conundrum
     --
     New_Line (2);
     New_Line;
