@@ -52,7 +52,9 @@ package AoC_Toolbox is
   --  Miscellaneous --
   --------------------
 
-  function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64;
+  function Sgn_64 (iii : Interfaces.Integer_64) return Interfaces.Integer_64;
+
+  --  !! HAC bug: iii visible through USE !!
 
   function Deg_2_Rad (a : HAT.Real) return HAT.Real;
 

@@ -202,6 +202,7 @@ procedure All_Silent_Tests is
     --
     Launch_AoC (+"2023", +"01", +"52974 53340");                    --  Trebuchet?!
     Launch_AoC (+"2023", +"02", +"2176 63700");                     --  Cube Conundrum
+    Launch_AoC (+"2023", +"03", +"539590 80703636");                --  Gear Ratios
     --
     New_Line (2);
     New_Line;
