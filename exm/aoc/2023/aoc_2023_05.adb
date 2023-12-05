@@ -132,13 +132,14 @@ procedure AoC_2023_05 is
     x, y : Integer;
     procedure Touches_a_Map_Range is
       --  Assumption: the optimal path goes through at least one
-      --  range of one map.
-      --  In that case, the optimal path touches the
-      --  left bound of at least one of the concerned ranges including
-      --  the seed range (otherwise we could subtract 1 everywhere
-      --  and get a path to a smaller location number).
-      --  The case with the left bound of the seed range is treated
-      --  in part 1 for seeds with odd positions.
+      --  range of one map. The case where the optimal path goes
+      --  with the number unchanged from seed to location is captured by
+      --  Lowest_Location_Part_1.
+      --
+      --  Under the assumption, we conjecture that the optimal path
+      --  touches the left bound of at least one of the concerned
+      --  ranges including the seed range.
+      --  The case with the seed range is treated by Lowest_Location_Part_1.
     begin
       for r in Relation loop
         for li in 1 .. map (r).top loop
