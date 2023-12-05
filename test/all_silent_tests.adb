@@ -204,6 +204,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2023", +"02", +"2176 63700");                     --  Cube Conundrum
     Launch_AoC (+"2023", +"03", +"539590 80703636");                --  Gear Ratios
     Launch_AoC (+"2023", +"04", +"23750 13261850");                 --  Scratchcards
+    Launch_AoC (+"2023", +"05", +"261668924 24261545");             --  If You Give A Seed A Fertilizer
     --
     New_Line (2);
     New_Line;
