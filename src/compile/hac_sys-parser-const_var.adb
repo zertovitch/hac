@@ -109,6 +109,7 @@ package body HAC_Sys.Parser.Const_Var is
       C                                          : Constant_Rec;
       Dummy_First, Dummy_Last                    : HAC_Integer;
     begin
+      C.TP.TYP := NOTYP;
       T0 := CD.Id_Count;
       Enter_Variables (CD, Block_Data.level, True);
       Need (CD, Colon, err_colon_missing);  --  ':'   in   "x, y : Integer;"
