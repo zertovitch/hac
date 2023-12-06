@@ -17,21 +17,19 @@ with HAT;
 procedure AoC_2023_06 is
   use AoC_Toolbox, HAT;
 
-  function Find_Records (time, distance : Positive) return Natural is
-    rt : constant Real := Real (time);
-    rd : constant Real := Real (distance);
-    sqrt_discriminant : constant Real := Sqrt (rt * rt - 4.0 * rd);
-    rt1 : constant Real := Max (0.0, (rt - sqrt_discriminant) * 0.5);
-    rt2 : constant Real := Min (rt,  (rt + sqrt_discriminant) * 0.5);
+  function Find_Records (total_time, distance : Real) return Natural is
+    --  Solutions of:
+    --
+    --            distance = (total_time - t)  *  t
+    --                       ^-time for running   ^-speed
+    --
+    --  where t is the time of pressing the button
+    --
+    sqrt_discriminant : constant Real := Sqrt (total_time ** 2 - 4.0 * distance);
+    t1 : constant Real := (total_time - sqrt_discriminant) * 0.5;
+    t2 : constant Real := (total_time + sqrt_discriminant) * 0.5;
   begin
-    --  Brute force:
-    --     for t in 0 .. time loop
-    --       if (time-t) * t > distance then
-    --         n := n + 1;
-    --       end if;
-    --     end loop;
-    --     return n;
-    return Natural (rt2 - 0.5) - Natural (rt1 + 0.5) + 1;
+    return Natural (t2 - 0.5) - Natural (t1 + 0.5) + 1;
   end Find_Records;
 
   r : array (Part_Type) of Integer;
@@ -41,15 +39,15 @@ begin
 
   r (part_1) :=
     --  Example:
-    --     Find_Records  (7,   9) *
-    --     Find_Records (15,  40) *
-    --     Find_Records (30, 200);
-    Find_Records (62, 644) *
-    Find_Records (73, 1023) *
-    Find_Records (75, 1240) *
-    Find_Records (65, 1023);
+    --     Find_Records  (7.0,   9.0) *
+    --     Find_Records (15.0,  40.0) *
+    --     Find_Records (30.0, 200.0);
+    Find_Records (62.0,  644.0) *
+    Find_Records (73.0, 1023.0) *
+    Find_Records (75.0, 1240.0) *
+    Find_Records (65.0, 1023.0);
 
-  r (part_2) := Find_Records (62737565, 644102312401023);
+  r (part_2) := Find_Records (62737565.0, 644102312401023.0);
 
   if compiler_test_mode then
     if r (part_1) /= Integer_Value (Argument (1)) or
@@ -61,7 +59,7 @@ begin
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: : " & r (part_1));
     Put_Line (+"Part 2: : " & r (part_2));
-    --  Part 1: validated by AoC: .
-    --  Part 2: validated by AoC: .
+    --  Part 1: validated by AoC: 393120
+    --  Part 2: validated by AoC: 36872656
   end if;
 end AoC_2023_06;

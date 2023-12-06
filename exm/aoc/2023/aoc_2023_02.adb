@@ -20,7 +20,7 @@ procedure AoC_2023_02 is
     input : constant VString := +"aoc_2023_02.txt";
     --
     c, sep : Character;
-    asm : String (1 .. 4);
+    game : String (1 .. 4);  --  The string "Game".
     id, n : Integer;
     f : File_Type;
     s : VString;
@@ -33,7 +33,7 @@ procedure AoC_2023_02 is
       max_r := 0;
       max_g := 0;
       max_b := 0;
-      Get (f, asm);
+      Get (f, game);
       Get (f, id);
       Get (f, sep);
       while not (End_Of_File (f) or else End_Of_Line (f)) loop

@@ -24,7 +24,7 @@ procedure AoC_2023_04 is
     input : constant VString := +"aoc_2023_04.txt"; margin : constant := 10; winners : constant := 10; candidates : constant := 25;
     --
     sep : String (1 .. 3);
-    asm : String (1 .. margin);
+    card_id : String (1 .. margin);  --  A string like "Card 214: "
     winning : array (1 .. winners) of Positive;
     copies : array (0 .. winners) of Positive;
     n, won_1, won_2, cur, next : Natural;
@@ -36,7 +36,7 @@ procedure AoC_2023_04 is
     end loop;
     cur := 0;
     while not End_Of_File (f) loop
-      Get (f, asm);
+      Get (f, card_id);
       for j in 1 .. winners loop
         Get (f, winning (j));
       end loop;

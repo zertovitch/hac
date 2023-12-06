@@ -21,7 +21,7 @@ procedure AoC_2023_05 is
     dest_start, source_start, length : Natural;
   end record;
 
-  max_list : constant := 40;
+  max_list : constant := 50;
 
   type Mapping_List is array (1 .. max_list) of Mapping_Rule;
 
@@ -115,70 +115,98 @@ procedure AoC_2023_05 is
   lowest_1, lowest_2 : Integer := Integer'Last;
 
   procedure Lowest_Location_Part_1 is
-    x : Integer;
+    x_down : Integer;
   begin
     for s in 1 .. top_seed loop
-      x := seed (s);
-      Walk_down_Maps (x, seed_to_soil);
-      lowest_1 := Min (lowest_1, x);
+      x_down := seed (s);
+      Walk_down_Maps (x_down, seed_to_soil);
+      lowest_1 := Min (lowest_1, x_down);
       if s mod 2 = 1 then
-        lowest_2 := Min (lowest_2, x);
+        lowest_2 := Min (lowest_2, x_down);
       end if;
     end loop;
     r (part_1) := lowest_1;
   end Lowest_Location_Part_1;
 
   procedure Lowest_Location_Part_2 is
-    x, y : Integer;
-    procedure Touches_a_Map_Range is
-      --  Assumption: the optimal path goes through at least one
-      --  range of one map. The case where the optimal path goes
-      --  with the number unchanged from seed to location is captured by
-      --  Lowest_Location_Part_1.
-      --
-      --  Under the assumption, we conjecture that the optimal path
-      --  touches the left bound of at least one of the concerned
-      --  ranges including the seed range.
-      --  The case with the seed range is treated by Lowest_Location_Part_1.
+
+    procedure Test (start_point : Natural; r : Relation) is
+
+      --  We use the fact that the optimal path (the path that goes from a
+      --  seed to the minimal location number) touches the left bound of
+      --  at least one range (of those explicitly stated in the Almanac,
+      --  including seed ranges, or of implicit ones: for each transition
+      --  level, between two explicit ranges, or from 0 to the first range,
+      --  or from the last range to the infinity).
+
+      --  Proof (Reductio ad absurdum):
+      --  -----
+      --         Let s -> L(s) the function that associates stem s
+      --         to its location following the Almanac's rules.
+      --         Assume we have sm such as L(sm) is minimal, but the path
+      --         from sm to L(sm) doesn't touch any left bound.
+      --         In that case, sm - 1 is in the same seed range as sm and
+      --         in the same seed-to-soil source range as sm; the soil number
+      --         for (sm - 1) is the same soil-to-fertilizer source range as
+      --         for sm, and so on. The path from (sm - 1) down to the
+      --         location number is the same as the path from sm, but shifted
+      --         by - 1 at each level.
+      --         So, L(sm - 1) = L(sm) - 1.
+      --         Therefore, L(sm) is not the claimed minimum. QED.
+
+      x_up, x_down : Integer := start_point;
     begin
-      for r in Relation loop
-        for li in 1 .. map (r).top loop
-          --  1) We check if the left bound (of rule "li" for category "r")
-          --     in source can stem from any seed range.
-          x := map (r).list (li).source_start;
-          if r > Relation'First then
-            Walk_up_Maps (x, Relation'Pred (r));
+      --  1) We check if x_up in source can stem from any seed range.
+      --     The test assumes injectivity in the whole mapping.
+      --     Otherwise we could have cases where the Walk_up_Maps' result
+      --     is in no seed range but some way down from some seed range
+      --     could still lead to start_point.
+      if r > Relation'First then
+        Walk_up_Maps (x_up, Relation'Pred (r));
+      end if;
+      for s_idx in 1 .. top_seed loop
+        if s_idx mod 2 = 1 then
+          if x_up in seed (s_idx) .. seed (s_idx) + seed (s_idx + 1) - 1 then
+            --  Ok, x_up (now, a seed number) is in the considered seed range.
+            --  2) We follow x_down down to category "location",
+            --     like for part 1.
+            Walk_down_Maps (x_down, r);
+            --  x_down is now a location number.
+            lowest_2 := Min (lowest_2, x_down);
+            exit;
           end if;
-          for s in 1 .. top_seed loop
-            if s mod 2 = 1 then
-              if x in seed (s) .. seed (s) + seed (s + 1) - 1 then
-                --  Ok, x is in that seed range.
-                --  2) We check if left bound in destination go the maps
-                --     down to category "location", like for part 1.
-                y := map (r).list (li).dest_start;
-                if r < Relation'Last then
-                  Walk_down_Maps (y, Relation'Succ (r));
-                end if;
-                lowest_2 := Min (lowest_2, y);
-              end if;
-            end if;
-          end loop;
-        end loop;
+        end if;
       end loop;
-    end Touches_a_Map_Range;
+    end Test;
+
   begin
-    Touches_a_Map_Range;
+    --  The case with the left bound of seed ranges is already
+    --  treated by Lowest_Location_Part_1.
+    for r in Relation loop
+      for li in 1 .. map (r).top loop
+        --  Test left bound of explicit range "li" for category "r":
+        --  Note: this test is sufficient to find the solution
+        --  for data aoc_2023_05.txt, but is certainly due to luck.
+        Test (map (r).list (li).source_start, r);
+        --  Test left bound of the implicit range that is right
+        --  after the explicit one:
+        Test (map (r).list (li).source_start + map (r).list (li).length, r);
+      end loop;
+      --  Test the remaining implicit range, which starts with 0.
+      Test (0, r);
+    end loop;
     r (part_2) := lowest_2;
   end Lowest_Location_Part_2;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   T0 : constant Time := Clock;
+
 begin
-  r (part_1) := 0;
-  r (part_2) := 0;
+
   Read_Data;
   Lowest_Location_Part_1;
   Lowest_Location_Part_2;
+
   if compiler_test_mode then
     if r (part_1) /= Integer_Value (Argument (1)) or
        r (part_2) /= Integer_Value (Argument (2))
@@ -192,4 +220,5 @@ begin
     --  Part 1: validated by AoC: 261668924
     --  Part 2: validated by AoC: 24261545
   end if;
+
 end AoC_2023_05;
