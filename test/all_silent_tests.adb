@@ -206,6 +206,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2023", +"04", +"23750 13261850");                 --  Scratchcards
     Launch_AoC (+"2023", +"05", +"261668924 24261545");             --  If You Give A Seed A Fertilizer
     Launch_AoC (+"2023", +"06", +"393120 36872656");                --  Wait For It
+    Launch_AoC (+"2023", +"07", +"252656917 253499763");            --  Camel Cards
     --
     New_Line (2);
     New_Line;
