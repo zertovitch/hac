@@ -30,6 +30,11 @@ package body AoC_Toolbox is
     return the_gcd;
   end GCD;
 
+  function LCM (a, b : Integer) return Integer is
+  begin
+    return abs (a * b) / GCD (a, b);
+  end LCM;
+
   function Dist_L1 (a, b : Point) return Natural is
   begin
     return

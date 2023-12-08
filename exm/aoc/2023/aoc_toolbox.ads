@@ -16,9 +16,15 @@ package AoC_Toolbox is
   --  Algebra  --
   ---------------
 
+  --  Greatest Common Denominator
+  --
   procedure GCD_and_Bezout (a, b : in Integer; s, t, the_gcd : out Integer);
 
   function GCD (a, b : Integer) return Integer;
+
+  --  Least Common Multiple
+  --
+  function LCM (a, b : Integer) return Integer;
 
   ----------------------
   --  Plane Geometry  --
@@ -54,7 +60,7 @@ package AoC_Toolbox is
 
   function Sgn_64 (iii : Interfaces.Integer_64) return Interfaces.Integer_64;
 
-  --  !! HAC bug: iii visible through USE !!
+  --  !! HAC bug: iii is visible through USE !!
 
   function Deg_2_Rad (a : HAT.Real) return HAT.Real;
 
