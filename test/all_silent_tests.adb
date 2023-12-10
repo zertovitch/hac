@@ -209,6 +209,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2023", +"07", +"252656917 253499763");            --  Camel Cards
     Launch_AoC (+"2023", +"08", +"12737 9064949303801");            --  Haunted Wasteland
     Launch_AoC (+"2023", +"09", +"1884768153 1031");                --  Mirage Maintenance
+    Launch_AoC (+"2023", +"10", +"6897 367");                       --  Pipe Maze
     --
     New_Line (2);
     New_Line;
