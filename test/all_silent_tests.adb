@@ -210,6 +210,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2023", +"08", +"12737 9064949303801");            --  Haunted Wasteland
     Launch_AoC (+"2023", +"09", +"1884768153 1031");                --  Mirage Maintenance
     Launch_AoC (+"2023", +"10", +"6897 367");                       --  Pipe Maze
+    Launch_AoC (+"2023", +"11", +"10173804 634324905172");          --  Cosmic Expansion
     --
     New_Line (2);
     New_Line;
