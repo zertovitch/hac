@@ -44,10 +44,9 @@ procedure AoC_2023_10 is
 
   r : array (Part_Type) of Integer;
 
-  visited : array (1 .. n, 1 .. n) of Boolean;
-
   type State is (clean, path, outside);
 
+  visited    : array (1 .. n,   1 .. n)   of State;
   visited_x3 : array (1 .. nx3, 1 .. nx3) of State;
 
   path_length : Natural := 0;
@@ -61,13 +60,13 @@ procedure AoC_2023_10 is
     begin
       i := iii;
       j := jjj;
-      visited (i, j) := True;
+      visited (i, j) := path;
       path_length := path_length + 1;
     end Go;
   begin
     for i in 1 .. n loop
       for j in 1 .. n loop
-        visited (i, j) := False;
+        visited (i, j) := clean;
       end loop;
     end loop;
     for i in 1 .. nx3 loop
@@ -91,7 +90,7 @@ procedure AoC_2023_10 is
             j3 := 1 + (jjj - 1) * 3;
             if iii in 1 .. n
                and then jjj in 1 .. n
-               and then visited (iii, jjj) = False
+               and then visited (iii, jjj) = clean
             then
               case map (iii, jjj) is
                 when '|' =>
@@ -207,27 +206,46 @@ procedure AoC_2023_10 is
   --
   procedure Dump_PPM is
     d : File_Type;
+    i, j : Integer;
   begin
     Create (d, input_name & ".ppm");
     Put (d, "P6" & Chr (10));
     Put (d, nx3); Put (d, ' ');
     Put (d, nx3); Put (d, Chr (10));
     Put (d, "255" & Chr (10));
-    for i in 1 .. nx3 loop
-      for j in 1 .. nx3 loop
-        case visited_x3 (i, j) is
+    for i3 in 1 .. nx3 loop
+      for j3 in 1 .. nx3 loop
+        i := (i3 - 1) / 3 + 1;
+        j := (j3 - 1) / 3 + 1;
+        case visited_x3 (i3, j3) is
           when clean =>
-            Put (d, Chr (160));
-            Put (d, Chr (240));
-            Put (d, Chr (190));
+            if visited (i, j) = clean then
+              --  "inside" tile
+              Put (d, Chr (230));
+              Put (d, Chr (255));
+              Put (d, Chr (110));
+            else
+              --  partly "inside" tile
+              Put (d, Chr (160));
+              Put (d, Chr (240));
+              Put (d, Chr (190));
+            end if;
           when path =>
             Put (d, Chr (0));
-            Put (d, Chr (16));
-            Put (d, Chr (8));
+            Put (d, Chr (0));
+            Put (d, Chr (0));
           when outside =>
-            Put (d, Chr (255));
-            Put (d, Chr (255));
-            Put (d, Chr (255));
+            if visited (i, j) = outside then
+              --  "outside" tile
+              Put (d, Chr (255));
+              Put (d, Chr (255));
+              Put (d, Chr (255));
+            else
+              --  partly "outside" tile
+              Put (d, Chr (220));
+              Put (d, Chr (220));
+              Put (d, Chr (220));
+            end if;
         end case;
       end loop;
     end loop;
@@ -252,13 +270,15 @@ procedure AoC_2023_10 is
     i3, j3, sq : Natural;
   begin
     --  Flood fill the outside part, starting
-    --  from the (1, 1) point of the detailed map.
+    --  from the (1, 3) point of the detailed map.
     --  The big path never touches the detailed map's border
     --  (otherwise, the path would not be closed).
     --  Consequently, the set outside the path is connected
-    --  and we are fine starting with the (1, 1) point only.
+    --  and we are fine starting with the (1, 3) point only.
+    --  Why not (1, 1)? It is to handle the case where the
+    --  start point (S), drawn as a cross, is in the top left corner.
     --
-    Flood_Fill (1, 1);
+    Flood_Fill (1, 3);
 
     for i in 1 .. n loop
       for j in 1 .. n loop
@@ -270,24 +290,26 @@ procedure AoC_2023_10 is
             if visited_x3 (i3 + ii, j3 + jj) = outside then
               sq := sq + 1;
             end if;
-            if sq = 9 then
-              --  The entire 3x3 square is marked as "outside".
-              --  Then it is neither inside, nor a cell with the big path.
-              --  In the latter case, we have, for instance for a 'L',
-              --  only 8 squares set as visited:
-              --
-              --      OpI
-              --      Opp
-              --      OOO
-              --
-              --  O = outside, set by Flood_Fill
-              --  p = path, set by part 1
-              --  I = inside; not set.
-              --
-              c := c + 1;
-            end if;
           end loop;
         end loop;
+        if sq = 9 then
+          --  The entire 3x3 square is marked as "outside".
+          --  Then it is neither an inside tile, nor a tile with
+          --  the giant loop on it.
+          --  In the latter case, we have, for instance for a 'L',
+          --  only 8 squares set as visited:
+          --
+          --      OpI
+          --      Opp
+          --      OOO
+          --
+          --  O = outside, set by Flood_Fill
+          --  p = path of the giant loop, set by part 1
+          --  I = inside; not set.
+          --
+          c := c + 1;
+          visited (i, j) := outside;  --  This is just for the visualisation
+        end if;
       end loop;
     end loop;
     --  Inside = surface - path's length - outside.
