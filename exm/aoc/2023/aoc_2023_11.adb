@@ -21,25 +21,23 @@ procedure AoC_2023_11 is
   --
   --  input_name : constant VString := +"mini"; n : constant := 10;
   input_name : constant VString := +"aoc_2023_11"; n : constant := 140;
-  
+
   gala_max : constant := 500;
   gala_top : Natural := 0;
-  
+
   pt_compact, pt : array (1 .. gala_max) of Point;
 
-  empty_row, empty_col : array (1..n) of Boolean;
-  
-  new_x, new_y : array (1..n) of integer;
+  empty_row, empty_col : array (1 .. n) of Boolean;
+
+  new_x, new_y : array (1 .. n) of Integer;
 
   procedure Read_Data is
-    c, sep : Character;
-    asm : String (1 .. 3);  
+    c : Character;
     f : File_Type;
-    s : VString;
   begin
     for xy in 1 .. n loop
-      empty_row (xy):= True;
-      empty_col (xy):= True;
+      empty_row (xy) := True;
+      empty_col (xy) := True;
     end loop;
     Open (f, input_name & ".txt");
     for y in 1 .. n loop
@@ -47,10 +45,10 @@ procedure AoC_2023_11 is
         Get (f, c);
         if c = '#' then
           gala_top := gala_top + 1;
-          pt_compact(gala_top).x := x;
-          pt_compact(gala_top).y := y;
-          empty_col(x) := False;
-          empty_row(y) := False;
+          pt_compact (gala_top).x := x;
+          pt_compact (gala_top).y := y;
+          empty_col (x) := False;
+          empty_row (y) := False;
         end if;
       end loop;
     end loop;
@@ -62,16 +60,16 @@ procedure AoC_2023_11 is
   procedure Expand_Universe (new_gap : Positive) is
   begin
     for xy in 1 .. n loop
-      new_x (xy):= xy;
-      new_y (xy):= xy;
+      new_x (xy) := xy;
+      new_y (xy) := xy;
     end loop;
     for xy in reverse 1 .. n loop
-      if empty_col(xy) then
+      if empty_col (xy) then
         for idx in xy .. n loop
           new_x (idx) := new_x (idx) + new_gap - 1;
         end loop;
       end if;
-      if empty_row(xy) then
+      if empty_row (xy) then
         for idx in xy .. n loop
           new_y (idx) := new_y (idx) + new_gap - 1;
         end loop;
@@ -81,7 +79,7 @@ procedure AoC_2023_11 is
       pt (i).x := new_x (pt_compact (i).x);
       pt (i).y := new_y (pt_compact (i).y);
     end loop;
-  end;
+  end Expand_Universe;
 
   procedure Do_Part (p : Part_Type) is
   begin
@@ -90,19 +88,13 @@ procedure AoC_2023_11 is
       when part_2 => Expand_Universe (1_000_000);
     end case;
     for i in 1 .. gala_top - 1 loop
-      for j in i+1 .. gala_top loop
-        r(p):=r(p) + dist_L1 (pt(i), pt(j));
+      for j in i + 1 .. gala_top loop
+        r (p) := r (p) + Dist_L1 (pt (i), pt (j));
       end loop;
     end loop;
-  end;
-
-  procedure Do_Part_2 is
-  begin
-    null;
-  end;
+  end Do_Part;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
-  verbose : constant Boolean := True;
   T0 : constant Time := Clock;
 
 begin

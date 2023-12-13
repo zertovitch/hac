@@ -26,7 +26,7 @@ procedure AoC_2023_07 is
     bid  : Positive;
     rank : Positive;
     kind : Hand_Kind;  --  Caching the result of the Kind function
-                       --  on the hand field.
+    --                     on the hand field.
   end record;
   --
   row : array (1 .. 1000) of Hand_and_Bid_Type;
