@@ -50,7 +50,7 @@ procedure AoC_2023_12 is
   --  result of the problem for the truncated pair is unique,
   --  so we can memoize it.
 
-  max_length : constant := 120;  --  spring conditions
+  max_length : constant := 120;  --  Spring conditions
 
   type Memo_Type is array (1 .. max_length, 1 .. max_sizes) of Integer;
 
@@ -98,13 +98,81 @@ procedure AoC_2023_12 is
 
   procedure Do_Part (p : Part_Type) is
 
+    --  We erode the pair of lists from right to left, so the
+    --  index 1 remains through recursion.
+
     function Count (r : Row; are_remaining_lists_intact : Boolean) return Natural is
-      head, copy : Row;
-      l : Natural;
+      head : Row;
+      --  `head` is a copy of `r` with at least the last item of the spring
+      --         condition list removed.
+      len : Natural;
       c : Integer;
+
+      procedure Expected_Size_One is
+      begin
+        if len = 1 then
+          --  The current code (condition list) is just a lone "#".
+          if r.sizes = 1 then
+            --  ^ A single '#' is expected and has been found.
+            c :=  1;
+          else
+            --  This group is OK, but there are other series of "#"
+            --  expected left to current one -> not a solution!
+            c :=  0;
+          end if;
+        elsif Element (r.code, len - 1) = '#' then
+          c := 0;  --  We have a trailing "##", but size 1 is expected.
+        else
+          head := r;
+          --  We have a possible separator ('?' or '.') left
+          --  to the len-th element.
+          --  Fine, just drop last element of the list.
+          head.sizes := head.sizes - 1;
+          --  Remove the separator and the last '#'.
+          Delete (head.code, len - 1, len);
+          --  We do a recursive call with the knowledge that
+          --  contents of both shortened lists are again intact.
+          c :=  Count (head, True);
+        end if;
+      end Expected_Size_One;
+
+      procedure Expected_Size_Two_or_More is
+      begin
+        if len = 1 then
+          --  The current code (condition list) is just a lone "#",
+          --  but we expect >= 2 of them, only in the current group!
+          --  -> Not a solution!
+          c := 0;
+        else
+          case Element (r.code, len - 1) is
+            when '?' =>
+              head := r;
+              --  Shorten expected string of ###'s by one '#'.
+              head.size (head.sizes) := head.size (head.sizes) - 1;
+              --  Exclude the '?' = '.' case since 2 or more
+              --  '#' are expected in current group. Concretely,
+              --  the trailing "?#" becomes "##".
+              Delete (head.code, len - 1, len);
+              head.code := head.code & '#';
+              c := Count (head, False);
+            when '.' =>
+              --  Element of size >= 2 expected, but size 1 found.
+              c := 0;
+            when '#' =>
+              head := r;
+              Delete (head.code, len, len);
+              --  Shorten expected string of ###'s by one '#'.
+              head.size (head.sizes) := head.size (head.sizes) - 1;
+              c := Count (head, False);
+            when others =>
+              Put ("??? [1]");
+          end case;
+        end if;
+      end Expected_Size_Two_or_More;
+
     begin
-      l := Length (r.code);
-      if l = 0 then
+      len := Length (r.code);
+      if len = 0 then
         if r.sizes = 0 then
           --  List exhausted
           return 1;
@@ -114,71 +182,37 @@ procedure AoC_2023_12 is
       end if;
       --  From here we know that length l is >= 1.
       if are_remaining_lists_intact and then r.sizes > 0 then
-        c := memo (l, r.sizes);
+        c := memo (len, r.sizes);
         if c /= unknown then
           return c;
         end if;
       end if;
-      head := r;
-      Delete (head.code, l, l);
-      case Element (r.code, l) is
+      case Element (r.code, len) is
         when '.' =>
-          c :=  Count (head, are_remaining_lists_intact);  --  Just trim left
+          head := r;
+          Delete (head.code, len, len);
+          --  The last '.' (an operational spring) can be removed
+          --  without changing the result.
+          c := Count (head, are_remaining_lists_intact);
         when '?' =>
-          copy := head;
-          copy.code := copy.code & '#';
-          c :=
-            Count (head, are_remaining_lists_intact)    --  Possibilities if '?' is a '.'
-            +
-            Count (copy, False);  --  Possibilities if '?' is a '#'
+          head := r;
+          Delete (head.code, len, len);
+          --  Cases when '?' is a '.' :
+          c := Count (head, are_remaining_lists_intact);
+          head.code := head.code & '#';
+          --  Cases when '?' is a '#' :
+          c := c + Count (head, False);
         when '#' =>
           if r.sizes = 0 then
-            --  At least one guy, but size list is exhausted.
+            --  We have at least one guy in the condition list,
+            --  but the size list is exhausted -> not a solution.
             c := 0;
           elsif r.size (r.sizes) = 1 then
-            --  Last element on the list has size 1.
-            if l = 1 then
-              --  ^ The code is just "#".
-              if r.sizes = 1 then
-                --  ^ A single '#' is expected and has been found.
-                c :=  1;
-              else
-                c :=  0;
-              end if;
-            elsif Element (r.code, l - 1) = '#' then
-              c := 0;  --  "##", but size 1 expected.
-            else
-              --  We have a possible separator ('?' or '.') left
-              --  to code (l). Fine, just drop last element of the list.
-              head.sizes := head.sizes - 1;
-              --  Remove the separator.
-              Delete (head.code, l - 1, l - 1);
-              --  Recursive call with knowledge that
-              --  both shorten lists are again intact.
-              c :=  Count (head, True);
-            end if;
+            --  Last element on the size list is a size = 1.
+            Expected_Size_One;
           else
-            --  Last element has size > 1.
-            --  Shorten expected string of ###.
-            head.size (head.sizes) := head.size (head.sizes) - 1;
-            if l = 1 then
-              c := Count (head, False);  --  NB: head's code is empty.
-            else
-              case Element (head.code, l - 1) is
-                when '?' =>
-                  --  Exclude non-contiguous remaining '#'s
-                  Delete (head.code, l - 1, l - 1);
-                  head.code := head.code & '#';
-                  c := Count (head, False);
-                when '.' =>
-                  --  Element of size >= 2 expected, but size 1 found.
-                  c := 0;
-                when '#' =>
-                  c := Count (head, False);
-                when others =>
-                  Put ("??? [1]");
-              end case;
-            end if;
+            --  Last element is a size > 1.
+            Expected_Size_Two_or_More;
           end if;
         when others =>
           Put ("??? [2]");
@@ -191,7 +225,7 @@ procedure AoC_2023_12 is
         Put ("   comb:"); Put (c, 0); New_Line;
       end if;
       if are_remaining_lists_intact and then r.sizes > 0 then
-        memo (l, r.sizes) := c;
+        memo (len, r.sizes) := c;
       end if;
       return c;
     end Count;
