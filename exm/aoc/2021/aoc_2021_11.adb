@@ -30,7 +30,7 @@ procedure AoC_2021_11 is
         end loop;
       end loop;
     end if;
-   end Increase;
+  end Increase;
   --
   c : Character;
   step, count : Natural;
@@ -72,7 +72,7 @@ begin
       end loop;
     end loop;
     if step <= 100 then
-       r (1) := r (1) + count;
+      r (1) := r (1) + count;
     end if;
     if count = sx * sy then
       r (2) := step;

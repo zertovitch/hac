@@ -174,28 +174,28 @@ Vertical_Scans :
     To_the_Left :
       for jj in reverse 1 .. j - 1 loop
         score := score + 1;
-        exit when map (i, jj) >= map (i, j);
+        exit To_the_Left when map (i, jj) >= map (i, j);
       end loop To_the_Left;
       scenic (i, j) := scenic (i, j) * score;
       score := 0;
     To_the_Right :
       for jj in j + 1 .. m loop
         score := score + 1;
-        exit when map (i, jj) >= map (i, j);
+        exit To_the_Right when map (i, jj) >= map (i, j);
       end loop To_the_Right;
       scenic (i, j) := scenic (i, j) * score;
       score := 0;
     To_the_Top :
       for ii in reverse 1 .. i - 1 loop
         score := score + 1;
-        exit when map (ii, j) >= map (i, j);
+        exit To_the_Top when map (ii, j) >= map (i, j);
       end loop To_the_Top;
       scenic (i, j) := scenic (i, j) * score;
       score := 0;
     To_the_Bottom :
       for ii in i + 1 .. m loop
         score := score + 1;
-        exit when map (ii, j) >= map (i, j);
+        exit To_the_Bottom when map (ii, j) >= map (i, j);
       end loop To_the_Bottom;
       scenic (i, j) := scenic (i, j) * score;
     end loop;

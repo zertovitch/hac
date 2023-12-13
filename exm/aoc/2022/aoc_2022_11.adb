@@ -72,7 +72,7 @@ procedure AoC_2022_11 is
         mm (last_id).top := mm (last_id).top + 1;
         mm (last_id).s (mm (last_id).top) :=
           Integer_64 (Integer_Value (Slice (s, 1, idx)));
-        exit when idx_comma = 0;
+        exit Parse_Worries when idx_comma = 0;
         Delete (s, 1, idx_comma);
       end loop Parse_Worries;
       Get (f, operation_string);
@@ -102,7 +102,7 @@ procedure AoC_2022_11 is
       Get (f, mm (last_id).if_true);
       Get (f, monkey_false_string);
       Get (f, mm (last_id).if_false);
-      exit when End_Of_File (f);
+      exit Read_Data when End_Of_File (f);
       Skip_Line (f, 2);
     end loop Read_Data;
     Close (f);
@@ -134,7 +134,7 @@ procedure AoC_2022_11 is
             when times =>
               i := i * Integer_64 (mm (m).operand);
               if verbose then
-                 Put (+"  Times " & mm (m).operand);
+                Put (+"  Times " & mm (m).operand);
               end if;
             when square =>
               i := i * i;
@@ -193,7 +193,7 @@ Parts :
   for part in 1 .. 2 loop
     Data_Acquisition;
     r (part) := Simulation (part);
-    exit when compiler_test_mode;  --  Skip part 2.
+    exit Parts when compiler_test_mode;  --  Skip part 2.
   end loop Parts;
 
   if compiler_test_mode then

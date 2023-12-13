@@ -14,11 +14,10 @@
 --  current rule's range. Inspiration:
 --  https://github.com/mytbk/advent_of_code/blob/main/2021/22/advent_22_2.adb
 --
---  HAC 0.098 "nice to have"'s detected in this exercise:
---
---    *    [Solved with HAC v.0.1] package Interfaces with at least
---            Integer_64 for compatibility with GNAT (GNAT's Integer
---            is always 32 bits)
+--  Wish from HAC 0.098 solved in HAC 0.1:
+--    *     package Interfaces with at least
+--            Integer_64 for compatibility with GNAT
+--            (GNAT's Integer is always 32 bits)
 --
 --
 with HAT;
@@ -237,7 +236,7 @@ begin
   Part_1;
   Part_2;
   if compiler_test_mode then
-   if r (1) /= Integer_64'Value (To_String (Argument (1))) or
+    if r (1) /= Integer_64'Value (To_String (Argument (1))) or
       r (2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.

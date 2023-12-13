@@ -47,7 +47,7 @@ procedure AoC_2020_13 is
   --
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   verbose : constant Boolean := False;
- begin
+begin
   Open (f, "aoc_2020_13.txt");
   Get (f, earliest_inp);
   earliest := Integer_64 (earliest_inp);

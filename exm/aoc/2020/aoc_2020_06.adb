@@ -6,8 +6,6 @@
 --
 -------------------------------------------------------------------------
 --
---  HAC 0.084 version.
---
 --  HAC 0.084 "nice to have"'s detected in this exercise:
 --
 --    *     ` clear := (others => False); `

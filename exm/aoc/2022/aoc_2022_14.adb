@@ -176,7 +176,7 @@ Parts :
     if verbose then
       Show (+"Final:");
     end if;
-    exit when compiler_test_mode;  --  Skip part 2.
+    exit Parts when compiler_test_mode;  --  Skip part 2.
   end loop Parts;
 
   if compiler_test_mode then

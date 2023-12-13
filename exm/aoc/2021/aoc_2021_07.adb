@@ -119,9 +119,9 @@ begin
       end if;
     end loop;
     if verbose then
-       Put_Line
-         ("Minimal cost:" & Integer_64'Image (cost_min) &
-          " at x =" & Integer_64'Image (x_cost_min));
+      Put_Line
+        ("Minimal cost:" & Integer_64'Image (cost_min) &
+         " at x =" & Integer_64'Image (x_cost_min));
     end if;
     r (part) := Integer (cost_min);
   end loop;

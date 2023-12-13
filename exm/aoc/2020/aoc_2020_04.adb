@@ -6,13 +6,13 @@
 --
 -------------------------------------------------------------------------
 --
---  HAC 0.084 version.
---
 --  HAC 0.084 "nice to have"'s detected in this exercise:
 --    *   exception handling to catch invalid values
 --    *   Index with From parameter
---    *   "and then", "or else" (solved in HAC 0.098)
 --    *   'Image attribute for enumerated types
+--
+--  Solved in HAC 0.098:
+--    *   "and then", "or else"
 --
 with HAT;  --  For a build with "full Ada": files HAT*.ad* are in ../../../src
 

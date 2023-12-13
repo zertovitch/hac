@@ -160,7 +160,7 @@ begin
       for y in low .. high loop
         Get (f, cc);
         if cc = '#' then
-           map (0)(x, y, 0, 0) := Active;
+          map (0)(x, y, 0, 0) := Active;
         end if;
       end loop;
     end loop;

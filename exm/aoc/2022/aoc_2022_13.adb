@@ -150,7 +150,7 @@ Read_Data :
     if Compare_List (s (1), s (2)) = correct then
       sum_correct_pair_indices := sum_correct_pair_indices + pair_index;
     end if;
-    exit when End_Of_File (f);
+    exit Read_Data when End_Of_File (f);
     Skip_Line (f);
   end loop Read_Data;
   Close (f);

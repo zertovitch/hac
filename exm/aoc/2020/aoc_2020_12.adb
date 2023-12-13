@@ -52,8 +52,8 @@ begin
           when 'L' => a := a + D2R (d);
           when 'R' => a := a - D2R (d);
           when 'F' =>
-             x := x + d * Cos (a);
-             y := y + d * Sin (a);
+            x := x + d * Cos (a);
+            y := y + d * Sin (a);
           when others => null;
         end case;
       else
@@ -66,9 +66,9 @@ begin
           when 'L' => Rotate (wx, wy, +D2R (d));
           when 'R' => Rotate (wx, wy, -D2R (d));
           when 'F' =>
-             --  Move the ship forward to the waypoint.
-             x := x + d * wx;
-             y := y + d * wy;
+            --  Move the ship forward to the waypoint.
+            x := x + d * wx;
+            y := y + d * wy;
           when others => null;
         end case;
       end if;

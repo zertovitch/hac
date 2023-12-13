@@ -59,20 +59,20 @@ begin
          (x = sx or else map (x + 1, y) > map (x, y)) and then
          (y = sy or else map (x, y + 1) > map (x, y))
       then
-         --  We have found a low point - a location (x, y) that is
-         --  lower than any of its adjacent locations.
-         r (1) := r (1) + map (x, y) + 1;
-         size := Visit (x, y);
-         if size > la1 then
-           la3 := la2;
-           la2 := la1;
-           la1 := size;
-         elsif size > la2 then
-           la3 := la2;
-           la2 := size;
-         elsif size > la3 then
-           la3 := size;
-         end if;
+        --  We have found a low point - a location (x, y) that is
+        --  lower than any of its adjacent locations.
+        r (1) := r (1) + map (x, y) + 1;
+        size := Visit (x, y);
+        if size > la1 then
+          la3 := la2;
+          la2 := la1;
+          la1 := size;
+        elsif size > la2 then
+          la3 := la2;
+          la2 := size;
+        elsif size > la3 then
+          la3 := size;
+        end if;
       end if;
     end loop;
   end loop;

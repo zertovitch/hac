@@ -4,12 +4,11 @@
 --
 --  https://adventofcode.com/2020/day/8
 --
---  HAC 0.085 version.
---
 --  HAC 0.085 "nice to have"'s detected in this exercise:
---
---    *     I/O with enums, at least 'Image
 --    *     `  seen := (others => False);  `
+--
+--  Solved in HAC 0.099:
+--    *     I/O with enums, at least 'Image and 'Value.
 --
 with HAT; use HAT;  --  in ../../../src
 
@@ -53,8 +52,10 @@ procedure AoC_2020_08 is
   --
   function Exit_Diagnostic (x : Boolean) return VString is
   begin
-    if x then return +"correct exit!";
-         else return +"infinite loop detected.";
+    if x then
+      return +"correct exit!";
+    else
+      return +"infinite loop detected.";
     end if;
   end Exit_Diagnostic;
   --

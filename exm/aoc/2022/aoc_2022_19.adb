@@ -265,7 +265,7 @@ begin
 Read_Data :
   while not End_Of_File (f) loop
     Skip_till_Space (f, 6);
-    exit when End_Of_File (f);
+    exit Read_Data when End_Of_File (f);
     last := last + 1;
     for robot in Resource_Type loop
       for cost in Resource_Type loop

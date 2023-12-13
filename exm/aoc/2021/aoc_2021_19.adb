@@ -8,12 +8,13 @@
 --  Note: this programs takes very long on HAC!
 --
 --  HAC 0.098 "nice to have"'s detected in this exercise:
---
---    *     Exiting multiple nested loops  [Solved with HAC 0.26]
---    *     `EXIT [Label]`                 [Solved with HAC 0.26]
 --    *     Performance: large "in" parameters passed as reference
 --    *     Comparison (equality operators) "=", "/=" of composite types (arrays and records)
 --    *     Detect an expression as a static (compile-time-known) value
+--
+--  Solved in HAC 0.26:
+--    *     Exiting multiple nested loops
+--    *     `EXIT [Label]`
 --
 with HAT;
 --  For a build with "full Ada": files HAT*.ad* are in ../../../src

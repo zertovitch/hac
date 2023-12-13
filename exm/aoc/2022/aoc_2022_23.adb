@@ -217,7 +217,7 @@ procedure AoC_2022_23 is
                       --  at the same time)...
                     end if;
                   end if;
-                  exit;
+                  exit Look_Directions;
                 end if;
                 elf_look := Next (elf_look);
               end loop Look_Directions;

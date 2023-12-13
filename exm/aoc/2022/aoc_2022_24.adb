@@ -160,7 +160,7 @@ procedure AoC_2022_24 is
             if best (x, y, t mod blizzard_cycle) < inf then
               stats_rejected_revisit := stats_rejected_revisit + 1;
             else
-              put ("Uh (rejected but = inf) ?");
+              Put ("Uh (rejected but = inf) ?");
             end if;
           end if;
           if verbosity_level > 1 then
@@ -236,7 +236,7 @@ begin
   Read_Data :
     while not End_Of_File (f) loop
       Get_Line (f, s);
-      exit when End_Of_File (f);  --  Discard last line
+      exit Read_Data when End_Of_File (f);  --  Discard last line
       highest.y := highest.y + 1;
       for i in 2 .. Length (s) - 1 loop
         case Element (s, i) is

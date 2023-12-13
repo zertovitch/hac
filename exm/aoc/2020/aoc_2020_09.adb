@@ -48,7 +48,7 @@ begin
         --  Find a contiguous set of at least two numbers in the list
         --  which sum to the invalid number from part 1.
         contig_max := n + mem_max;
-        Contig_Scan:
+        Contig_Scan :
         for j in n .. contig_max loop
           for k in j + 1 .. contig_max loop
             t := 0;

@@ -411,7 +411,7 @@ procedure AoC_2022_22 is
       dxr := Real (+d.x);
       dyr := Real (-d.y);
       if verbosity_level > 0 then
-         Put (p.x, 3); Put (","); Put (p.y, 3); New_Line;
+        Put (p.x, 3); Put (","); Put (p.y, 3); New_Line;
       end if;
     end Go;
   begin
@@ -480,7 +480,7 @@ procedure AoC_2022_22 is
   Read_Data :
     while not End_Of_File (f) loop
       Get_Line (f, data_line);
-      exit when data_line = "";
+      exit Read_Data when data_line = "";
       p.y := highest.y + 1;
       for x in 1 .. Length (data_line) loop
         c :=  Element (data_line, x);

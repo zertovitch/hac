@@ -4,12 +4,11 @@
 --
 --  https://adventofcode.com/2020/day/7
 --
---  HAC 0.081 version.
---
 --  HAC 0.081 "nice to have"'s detected in this exercise:
---
---    *     I/O with enums, at least 'Image and 'Value. [Solved with HAC v.0.099]
 --    *     "=" for composite types ( ` rules (ri).contains (cti).col = c  `)
+--
+--  Solved in HAC 0.099:
+--    *     I/O with enums, at least 'Image and 'Value.
 --
 with HAT; use HAT;  --  in ../../../src
 

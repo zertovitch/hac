@@ -93,7 +93,7 @@ begin
       end loop;
       Close (f);
       if verbose then
-         Put ("Bit pos: "); Put (main_pos, 2); Put (+"/" & bits & "; rows: "); Put (rows, 5);
+        Put ("Bit pos: "); Put (main_pos, 2); Put (+"/" & bits & "; rows: "); Put (rows, 5);
       end if;
       if rows = 1 then
         keep := mem_valid;

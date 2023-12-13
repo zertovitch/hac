@@ -5,6 +5,8 @@
 --  https://adventofcode.com/2023/day/12
 --  Copy of questions in: aoc_2023_12_questions.txt
 --
+--  HAC 0.26 "nice to have"'s detected in this exercise:
+--    *     Replace_Element for VString
 
 with AoC_Toolbox;
 
@@ -18,7 +20,7 @@ procedure AoC_2023_12 is
 
   use AoC_Toolbox, HAT;
 
-  --  Each data rwo has two lists:
+  --  Each data row has two lists:
   --    - a list of spring conditions
   --    - a list of sizes of contiguous groups of damaged springs
   --
