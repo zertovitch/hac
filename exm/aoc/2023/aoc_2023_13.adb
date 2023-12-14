@@ -130,7 +130,13 @@ procedure AoC_2023_13 is
       rc := Calc_Ref_Code (0);
       r (part_1) := r (part_1) + rc;
       --
-      --  Note that we could cumulate 1-bit differences
+      --  Part 2: after the correction on the mirror
+      --  there are one *or two* reflection lines!
+      --  So, if we go for correcting the smudge and
+      --  check the new reflection line, we have to be
+      --  sure that we don't report the old line!    
+      --
+      --  Variant: we could cumulate 1-bit differences
       --  in a variant of the function Calc_Ref_Code and
       --  spot *the* new reflection with an aberration of
       --  exactly 1. This would save the double loop below.
