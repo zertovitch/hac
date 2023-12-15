@@ -52,7 +52,9 @@ package AoC_Toolbox is
   --  Text processing  --
   -----------------------
 
-  procedure Skip_till_Space (f : in out HAT.File_Type; times : Positive);
+  procedure Skip_till_Space (fff : in out HAT.File_Type; times : Positive);
+
+  --  !! HAC bug: fff is visible through USE !!
 
   --------------------
   --  Miscellaneous --

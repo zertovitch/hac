@@ -47,16 +47,16 @@ package body AoC_Toolbox is
       HAT.Max (abs (a.x - b.x), abs (a.y - b.y));
   end Dist_Max;
 
-  procedure Skip_till_Space (f : in out HAT.File_Type; times : Positive) is
+  procedure Skip_till_Space (fff : in out HAT.File_Type; times : Positive) is
     c : Character;
     use HAT;
   begin
     for repeat in 1 .. times loop
-      while not End_Of_File (f) loop
-        Get (f, c);
+      while not End_Of_File (fff) loop
+        Get (fff, c);
         exit when c = ' ';
       end loop;
-      exit when End_Of_File (f);
+      exit when End_Of_File (fff);
     end loop;
   end Skip_till_Space;
 
