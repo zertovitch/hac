@@ -26,7 +26,7 @@ procedure AoC_2023_16 is
 
   map : array (1 .. n, 1 .. n) of Character;
 
-  type Direction is (No, Ea, So, We);
+  type Direction is (north, east, south, west);
 
   type Tile_Beam is array (Direction) of Boolean;
 
@@ -70,10 +70,10 @@ procedure AoC_2023_16 is
             for d in Direction loop
               if beam_map (i, j)(d) then
                 case d is
-                  when No => Put ('^');
-                  when Ea => Put ('>');
-                  when So => Put ('v');
-                  when We => Put ('<');
+                  when north => Put ('^');
+                  when east => Put ('>');
+                  when south => Put ('v');
+                  when west => Put ('<');
                 end case;
               end if;
             end loop;
@@ -91,81 +91,90 @@ procedure AoC_2023_16 is
     end loop;
   end Show_Beams;
 
-  procedure Progress is
+  procedure Progress (partial_state_beam_count : out Natural) is
+
     procedure Offspring (i, j : Positive; d : Direction) is
     begin
       case d is
-        when No =>
+        when north =>
           if i > 1 then
             beam_map (i - 1, j)(d) := True;
           end if;
-        when Ea =>
+        when east =>
           if j < n then
             beam_map (i, j + 1)(d) := True;
           end if;
-        when So =>
+        when south =>
           if i < n then
             beam_map (i + 1, j)(d) := True;
           end if;
-        when We =>
+        when west =>
           if j > 1 then
             beam_map (i, j - 1)(d) := True;
           end if;
       end case;
     end Offspring;
+
   begin
+    partial_state_beam_count := 0;
     for i in 1 .. n loop
       for j in 1 .. n loop
         for d in Direction loop
+          --  There can be up to four different
+          --  beams through cell (i, j).
           if beam_map (i, j)(d) then
+            partial_state_beam_count := partial_state_beam_count + 1;
+            --  ^ This count will miss propagation of beams onto cells
+            --    on a row < i or a column < j.
+            --    But on next call to `Progress`, they will be in.
             case d is
-              when No =>
+              when north =>
                 case map (i, j) is
                   when '/' =>
-                    Offspring (i, j, Ea);
+                    Offspring (i, j, east);
                   when '\' =>
-                    Offspring (i, j, We);
+                    Offspring (i, j, west);
                   when '-' =>  --  Flat side of a splitter
-                    Offspring (i, j, Ea);
-                    Offspring (i, j, We);
+                    Offspring (i, j, east);
+                    Offspring (i, j, west);
                   when others =>
-                    Offspring (i, j, No);
+                    Offspring (i, j, north);
                 end case;
-              when Ea =>
+              when east =>
                 case map (i, j) is
                   when '/' =>
-                    Offspring (i, j, No);
+                    Offspring (i, j, north);
                   when '\' =>
-                    Offspring (i, j, So);
+                    Offspring (i, j, south);
                   when '|' =>  --  Flat side of a splitter
-                    Offspring (i, j, No);
-                    Offspring (i, j, So);
+                    Offspring (i, j, north);
+                    Offspring (i, j, south);
                   when others =>
-                    Offspring (i, j, Ea);
+                    Offspring (i, j, east);
                 end case;
-              when So =>
+              when south =>
                 case map (i, j) is
                   when '/' =>
-                    Offspring (i, j, We);
+                    Offspring (i, j, west);
                   when '\' =>
-                    Offspring (i, j, Ea);
+                    Offspring (i, j, east);
                   when '-' =>  --  Flat side of a splitter
-                    Offspring (i, j, Ea);
-                    Offspring (i, j, We);
+                    Offspring (i, j, east);
+                    Offspring (i, j, west);
                   when others =>
-                    Offspring (i, j, So);
+                    Offspring (i, j, south);
                 end case;
-              when We =>
+              when west =>
                 case map (i, j) is
                   when '/' =>
-                    Offspring (i, j, So);
+                    Offspring (i, j, south);
                   when '\' =>
-                    Offspring (i, j, No);
+                    Offspring (i, j, north);
                   when '|' =>  --  Flat side of a splitter
-                    Offspring (i, j, No);
-                    Offspring (i, j, So);
+                    Offspring (i, j, north);
+                    Offspring (i, j, south);
                   when others =>
-                    Offspring (i, j, We);
+                    Offspring (i, j, west);
                 end case;
             end case;
           end if;
@@ -184,6 +193,7 @@ procedure AoC_2023_16 is
         for d in Direction loop
           if beam_map (i, j)(d) then
             ct := 1;
+            exit;
           end if;
         end loop;
         c := c + ct;
@@ -191,21 +201,6 @@ procedure AoC_2023_16 is
     end loop;
     return c;
   end Energized_Count;
-
-  function Beam_Count return Natural is
-    c : Natural := 0;
-  begin
-    for i in 1 .. n loop
-      for j in 1 .. n loop
-        for d in Direction loop
-          if beam_map (i, j)(d) then
-            c := c + 1;
-          end if;
-        end loop;
-      end loop;
-    end loop;
-    return c;
-  end Beam_Count;
 
   r : array (Part_Type) of Integer;
 
@@ -216,8 +211,7 @@ procedure AoC_2023_16 is
   begin
     old_bc := 0;
     loop
-      Progress;
-      bc := Beam_Count;
+      Progress (bc);
       exit when old_bc = bc;
       old_bc := bc;
     end loop;
@@ -229,7 +223,7 @@ procedure AoC_2023_16 is
   procedure Do_Part_1 is
   begin
     beam_map := clean_beam_map;
-    beam_map (1, 1)(Ea) := True;
+    beam_map (1, 1)(east) := True;
     Spread_Beams;
     r (part_1) := Energized_Count;
   end Do_Part_1;
@@ -241,10 +235,10 @@ procedure AoC_2023_16 is
       for d in Direction loop
         beam_map := clean_beam_map;
         case d is
-          when No => beam_map (n, x)(d) := True;
-          when Ea => beam_map (x, 1)(d) := True;
-          when So => beam_map (1, x)(d) := True;
-          when We => beam_map (x, n)(d) := True;
+          when north => beam_map (n, x)(d) := True;
+          when east  => beam_map (x, 1)(d) := True;
+          when south => beam_map (1, x)(d) := True;
+          when west  => beam_map (x, n)(d) := True;
         end case;
         Spread_Beams;
         r (part_2) := Max (r (part_2), Energized_Count);

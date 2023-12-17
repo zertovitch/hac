@@ -76,9 +76,8 @@ project AoC_2023 is
       when "Level_2" => Common_Options := Common_Options & Style_Checks_1 & Style_Checks_2;
    end case;
 
-   Fast_Options := (
-     "-Ofast"
-   );
+   Fast_Options :=
+     ("-Ofast", "-gnatn");
 
    Debug_Options  := (
      --  "-gnateV",  --  Validity check for parameters, GNAT > 4.6, redundant with -gnatVim ?
