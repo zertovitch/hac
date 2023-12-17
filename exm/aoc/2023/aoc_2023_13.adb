@@ -134,7 +134,7 @@ procedure AoC_2023_13 is
       --  there are one *or two* reflection lines!
       --  So, if we go for correcting the smudge and
       --  check the new reflection line, we have to be
-      --  sure that we don't report the old line!    
+      --  sure that we don't report the old line!
       --
       --  Variant: we could cumulate 1-bit differences
       --  in a variant of the function Calc_Ref_Code and
@@ -189,8 +189,8 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: : " & r (part_1));
-    Put_Line (+"Part 2: : " & r (part_2));
+    Put_Line (+"Part 1: " & r (part_1));
+    Put_Line (+"Part 2: " & r (part_2));
     --  Part 1: validated by AoC: 33728
     --  Part 2: validated by AoC: 28235
   end if;

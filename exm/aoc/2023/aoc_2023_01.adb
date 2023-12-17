@@ -118,8 +118,8 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: : " & total (part_1));
-    Put_Line (+"Part 2: : " & total (part_2));
+    Put_Line (+"Part 1: " & total (part_1));
+    Put_Line (+"Part 2: " & total (part_2));
     --  Part 1: validated by AoC: 52974
     --  Part 2: validated by AoC: 53340
   end if;

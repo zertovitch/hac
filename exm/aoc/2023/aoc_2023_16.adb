@@ -262,9 +262,9 @@ begin
     --  HAC is too slow on that one, which is basically 440x Part 1
     --  with different entrance points and directions.
     --
-    --  GNAT (fast mode) takes 7 seconds
+    --  GNAT (fast mode) takes 7 seconds.
     --  HAC (VM) takes an estimated 7920 seconds, or 2.2 hours
-    --  that is, a factor 1131 ! 
+    --  that is, a factor 1131 !
     Do_Part_2;
   end if;
   if compiler_test_mode then
@@ -273,8 +273,8 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: : " & r (part_1));
-    Put_Line (+"Part 2: : " & r (part_2));
+    Put_Line (+"Part 1: " & r (part_1));
+    Put_Line (+"Part 2: " & r (part_2));
     --  Part 1: validated by AoC: 7996
     --  Part 2: validated by AoC: 8239
   end if;

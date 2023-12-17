@@ -77,8 +77,8 @@ begin
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: : " & r (1));
-    Put_Line (+"Part 2: : " & r (2));
+    Put_Line (+"Part 1: " & r (1));
+    Put_Line (+"Part 2: " & r (2));
     --  Part 1: validated by AoC: 2176
     --  Part 2: validated by AoC: 63700
   end if;
