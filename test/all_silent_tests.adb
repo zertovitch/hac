@@ -216,6 +216,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2023", +"14", +"113078 94255");                   --  Parabolic Reflector Dish
     Launch_AoC (+"2023", +"15", +"513172 237806");                  --  Lens Library
     Launch_AoC (+"2023", +"16", +"7996");                           --  The Floor Will Be Lava
+    Launch_AoC (+"2023", +"17", +"102 94");                         --  Clumsy Crucible (example's data)
     --
     New_Line (2);
     New_Line;

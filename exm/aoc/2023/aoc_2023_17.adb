@@ -21,8 +21,13 @@ procedure AoC_2023_17 is
 
   use AoC_Toolbox, HAT;
 
-  --  input_name : constant VString := +"mini"; n : constant := 13;
-  input_name : constant VString := +"aoc_2023_17"; n : constant := 141;
+  input_name : constant VString := +"aoc_2023_17_questions";
+  n : constant := 13; skip_header : constant := 20;
+
+  --  GNAT runs the actual problem in 1.55 seconds, while HAC takes forever.
+  --
+  --  input_name : constant VString := +"aoc_2023_17";
+  --  n : constant := 141; skip_header : constant := 0;
 
   inf : constant Natural := Integer'Last / 4;
 
@@ -33,6 +38,9 @@ procedure AoC_2023_17 is
     f : File_Type;
   begin
     Open (f, input_name & ".txt");
+    if skip_header > 0 then
+      Skip_Line (f, skip_header);
+    end if;
     for y in 1 .. n loop
       for x in 1 .. n loop
         Get (f, c);
@@ -284,7 +292,7 @@ begin
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: " & r (part_1));
     Put_Line (+"Part 2: " & r (part_2));
-    --  Part 1: validated by AoC: 638
-    --  Part 2: validated by AoC: 748
+    --  Part 1: validated by AoC: 638  (example: 102)
+    --  Part 2: validated by AoC: 748  (example: 94)
   end if;
 end AoC_2023_17;

@@ -52,13 +52,13 @@ project AoC_2023 is
          for Object_Dir use "obj_fast";
    end case;
 
-   Common_Options := (
-     "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
-     "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
-     "-gnatwCijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
-     "-gnatf",   --  Full errors. Verbose details, all undefined references
-     "-gnatq",   --  Don't quit, try semantics, even if parse errors
-     "-gnatQ");  --  Don't quit, write ali/tree file even if compile errors
+   Common_Compiler_Options :=
+     ("-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
+      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
+      "-gnatwCijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
+      "-gnatf",   --  Full errors. Verbose details, all undefined references
+      "-gnatq",   --  Don't quit, try semantics, even if parse errors
+      "-gnatQ");  --  Don't quit, write ali/tree file even if compile errors
     
    Style_Checks_1 := 
      ("-gnatyaknpr",   --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
@@ -73,8 +73,8 @@ project AoC_2023 is
 
    case AoC_Styles_Checks is
       when "Level_0" => null;
-      when "Level_1" => Common_Options := Common_Options & Style_Checks_1;
-      when "Level_2" => Common_Options := Common_Options & Style_Checks_1 & Style_Checks_2;
+      when "Level_1" => Common_Compiler_Options := Common_Compiler_Options & Style_Checks_1;
+      when "Level_2" => Common_Compiler_Options := Common_Compiler_Options & Style_Checks_1 & Style_Checks_2;
    end case;
 
    Fast_Options :=
@@ -91,18 +91,21 @@ project AoC_2023 is
    package Compiler is
       case AoC_Build_Mode is
          when "Debug" =>
-            for Default_Switches ("ada") use Common_Options & Debug_Options ;
+            for Default_Switches ("ada") use Common_Compiler_Options & Debug_Options ;
          when "Fast" =>
-            for Default_Switches ("ada") use Common_Options & Fast_Options & ("-gnatpn", "-ffunction-sections");
+            for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options & ("-gnatpn", "-ffunction-sections");
       end case;
    end Compiler;
+
+   Common_Linker_Options :=
+     ("-g", "-Xlinker", "--stack=0x2000000,0x20000");
 
    package Linker is
       case AoC_Build_Mode is
          when "Debug" =>
-            for Default_Switches ("ada") use ("-g");
+            for Default_Switches ("ada") use Common_Linker_Options;
          when "Fast" =>
-            for Default_Switches ("ada") use ("-g", "-s", "-Wl,--gc-sections");
+            for Default_Switches ("ada") use Common_Linker_Options & ("-s", "-Wl,--gc-sections");
       end case;
    end Linker;
 

@@ -26,8 +26,6 @@ procedure AoC_2023_16 is
 
   map : array (1 .. n, 1 .. n) of Character;
 
-  type Direction is (north, east, south, west);
-
   type Tile_Beam is array (Direction) of Boolean;
 
   clean_tile : Tile_Beam;
@@ -253,7 +251,7 @@ begin
   Read_Data;
   Do_Part_1;
   if not compiler_test_mode then
-    --  HAC is too slow on that one, which is basically 440x Part 1
+    --  HAC is too slow on Part 2, which is basically 440x Part 1,
     --  with different entrance points and directions.
     --
     --  GNAT (fast mode) takes 7 seconds.
