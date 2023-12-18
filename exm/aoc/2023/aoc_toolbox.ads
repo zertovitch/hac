@@ -40,6 +40,12 @@ package AoC_Toolbox is
 
   procedure Rotate (x, y : in out HAT.Real; a : HAT.Real);
 
+  type Direction_or_Nil is (nil, north, east, south, west);
+
+  subtype Direction is Direction_or_Nil range north .. west;
+
+  function Opposite (d : Direction) return Direction;
+
   -------------------
   --  3D Geometry  --
   -------------------

@@ -65,24 +65,24 @@ procedure AoC_2023_16 is
         end loop;
         case ct is
           when 0 =>
-            Put ('.');
+            Put ('.');  --  No beam
           when 1 =>
             for d in Direction loop
               if beam_map (i, j)(d) then
                 case d is
                   when north => Put ('^');
-                  when east => Put ('>');
+                  when east  => Put ('>');
                   when south => Put ('v');
-                  when west => Put ('<');
+                  when west  => Put ('<');
                 end case;
               end if;
             end loop;
           when 2 =>
-            Put ('2');
+            Put ('2');  --  Beams in two directions
           when 3 =>
-            Put ('3');
+            Put ('3');  --  Beams in three directions
           when 4 =>
-            Put ('4');
+            Put ('4');  --  Beams in four directions
           when others =>
             null;
         end case;

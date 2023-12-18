@@ -47,6 +47,16 @@ package body AoC_Toolbox is
       HAT.Max (abs (a.x - b.x), abs (a.y - b.y));
   end Dist_Max;
 
+  function Opposite (d : Direction) return Direction is
+  begin
+    case d is
+      when north => return south;
+      when south => return north;
+      when east  => return west;
+      when west  => return east;
+    end case;
+  end Opposite;
+
   procedure Skip_till_Space (fff : in out HAT.File_Type; times : Positive) is
     c : Character;
     use HAT;
