@@ -217,6 +217,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2023", +"15", +"513172 237806");                  --  Lens Library
     Launch_AoC (+"2023", +"16", +"7996");                           --  The Floor Will Be Lava
     Launch_AoC (+"2023", +"17", +"102 94");                         --  Clumsy Crucible (example's data)
+    Launch_AoC (+"2023", +"18", +"53300 64294334780659");           --  Lavaduct Lagoon
     --
     New_Line (2);
     New_Line;
