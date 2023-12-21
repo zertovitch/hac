@@ -86,7 +86,13 @@ procedure All_Silent_Tests is
         Put ("      ");
       end if;
       Put (Day & ' ');
-      Launch_HAC (+"aoc_" & Year & '_' & Day & ".adb ", Solutions, 3);
+      Launch_HAC
+        (+"aoc_" & Year & '_' & Day & ".adb ",
+         Solutions,
+         --  ^ Solutions are validated by https://adventofcode.com/ .
+         --    It's the pair of answers, each appearing after
+         --   "Your puzzle answer was ", separated by a space.
+         3);
     end Launch_AoC;
 
     hac_build_success : Boolean;
@@ -219,6 +225,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2023", +"17", +"102 94");                         --  Clumsy Crucible (example's data)
     Launch_AoC (+"2023", +"18", +"53300 64294334780659");           --  Lavaduct Lagoon
     Launch_AoC (+"2023", +"19", +"19114 167409079868000");          --  Aplenty
+    Launch_AoC (+"2023", +"20", +"806332748 228060006554227");      --  Pulse Propagation
     --
     New_Line (2);
     New_Line;
