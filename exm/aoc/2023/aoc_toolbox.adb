@@ -35,6 +35,41 @@ package body AoC_Toolbox is
     return abs (a * b) / GCD (a, b);
   end LCM;
 
+  procedure GCD_and_Bezout_64 (a, b : in Integer_64; s, t, the_gcd : out Integer_64) is
+    --  Finds the GCD and s, t for the
+    --  ` GCD (a, b) = a * s + b * t ` factorization (Bezout theorem).
+    --  Program 1.8, Introduction to number theory, RBJT Allenby & EJ Redfern
+    ta, tb : array (1 .. 3) of Integer_64;
+    q, r : Integer_64;
+  begin
+    ta (1) := 1;         tb (1) := 0;
+    ta (2) := 0;         tb (2) := 1;
+    ta (3) := a;         tb (3) := b;
+    while tb (3) /= 0 loop
+      q := ta (3) / tb (3);
+      for i in 1 .. 3 loop
+        r := ta (i) - q * tb (i);
+        ta (i) := tb (i);
+        tb (i) := r;
+      end loop;
+    end loop;
+    s :=       ta (1);
+    t :=       ta (2);
+    the_gcd := ta (3);
+  end GCD_and_Bezout_64;
+
+  function GCD_64 (a, b : Integer_64) return Integer_64 is
+    s, t, the_gcd : Integer_64;
+  begin
+    GCD_and_Bezout_64 (a, b, s, t, the_gcd);
+    return the_gcd;
+  end GCD_64;
+
+  function LCM_64 (a, b : Integer_64) return Integer_64 is
+  begin
+    return abs (a * b) / GCD_64 (a, b);
+  end LCM_64;
+
   function Dist_L1 (a, b : Point) return Natural is
   begin
     return
@@ -71,7 +106,6 @@ package body AoC_Toolbox is
   end Skip_till_Space;
 
   function Sgn_64 (iii : Interfaces.Integer_64) return Interfaces.Integer_64 is
-    use Interfaces;
   begin
     if iii > 0 then
       return 1;
@@ -96,5 +130,71 @@ package body AoC_Toolbox is
   begin
     return (Pi / 180.0) * a;
   end Deg_2_Rad;
+
+  package body Hash_Maps is
+
+    --  Hashing taken from AoC_2023_15 :-)
+
+    function HASH (s : HAT.VString) return Natural is
+      h : Natural := 0;
+      use HAT;
+    begin
+      for i in 1 .. Length (s) loop
+        h := ((h + Ord (Element (s, i))) * 17) rem 256;
+      end loop;
+      return h;
+    end HASH;
+
+    procedure Clear (hm : out Hash_Map_Type) is
+    begin
+      for i in hm'Range loop
+        hm (i).slots := 0;
+      end loop;
+    end Clear;
+
+    procedure Insert (hm : in out Hash_Map_Type; key : HAT.VString; value : Integer) is
+      b : constant Natural := HASH (key);
+      found : Boolean;
+      use HAT;
+    begin
+      found := False;
+      for s in 1 .. hm (b).slots loop
+        if hm (b).slot (s).key = key then
+          found := True;
+          HAT.Put ("Duplicate!");
+        end if;
+      end loop;
+      if not found then
+        --  Append new value.
+        hm (b).slots := hm (b).slots + 1;
+        hm (b).slot (hm (b).slots).key   := key;
+        hm (b).slot (hm (b).slots).value := value;
+      end if;
+    end Insert;
+
+    procedure Find
+      (hm              : in out Hash_Map_Type;
+       key             :        HAT.VString;
+       value           :    out Integer;
+       not_found_value :        Integer)
+    is
+      b : constant Natural := HASH (key);
+      found : Boolean;
+      use HAT;
+    begin
+      found := False;
+      for s in 1 .. hm (b).slots loop
+        if hm (b).slot (s).key = key then
+          found := True;
+          value := hm (b).slot (s).value;
+          return;
+        end if;
+      end loop;
+      if not found then
+        value := not_found_value;
+      end if;
+    end Find;
+
+  end Hash_Maps;
 
 end AoC_Toolbox;

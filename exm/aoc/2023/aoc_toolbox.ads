@@ -2,6 +2,8 @@ with HAT, Interfaces;
 
 package AoC_Toolbox is
 
+  use Interfaces;
+
   ----------------
   --  AoC game  --
   ----------------
@@ -25,6 +27,10 @@ package AoC_Toolbox is
   --  Least Common Multiple
   --
   function LCM (a, b : Integer) return Integer;
+
+  procedure GCD_and_Bezout_64 (a, b : in Integer_64; s, t, the_gcd : out Integer_64);
+  function GCD_64 (a, b : Integer_64) return Integer_64;
+  function LCM_64 (a, b : Integer_64) return Integer_64;
 
   ----------------------
   --  Plane Geometry  --
@@ -71,5 +77,37 @@ package AoC_Toolbox is
   --  !! HAC bug: iii is visible through USE !!
 
   function Deg_2_Rad (a : HAT.Real) return HAT.Real;
+
+  -----------------
+  --  Hash maps  --
+  -----------------
+
+  package Hash_Maps is
+
+    type Hash_Slot_Type is record
+      key   : HAT.VString;
+      value : Integer;
+    end record;
+
+    type Hash_Slot_Array_Type is array (1 .. 5) of Hash_Slot_Type;
+
+    type Hash_Box_Type is record
+      slot  : Hash_Slot_Array_Type;
+      slots : Natural;  --  HAC wish: := 0;
+    end record;
+
+    type Hash_Map_Type is array (0 .. 255) of Hash_Box_Type;  --  HAC wish: ideally the only public type...
+
+    procedure Clear (hm : out Hash_Map_Type);
+
+    procedure Insert (hm : in out Hash_Map_Type; key : HAT.VString; value : Integer);
+
+    procedure Find
+      (hm              : in out Hash_Map_Type;
+       key             :        HAT.VString;
+       value           :    out Integer;
+       not_found_value :        Integer);
+
+  end Hash_Maps;
 
 end AoC_Toolbox;

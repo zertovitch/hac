@@ -17,88 +17,13 @@ with AoC_Toolbox;
 --  See also the GNAT project file aoc_2023.gpr .
 with HAT;
 
+with Interfaces;
+
 procedure AoC_2023_20 is
 
-  use AoC_Toolbox, HAT;
+  use AoC_Toolbox, HAT, Interfaces;
 
   subtype Alpha is Character range 'a' .. 'z';
-
-  --  Hashing taken from AoC_2023_15 :-)
-
-  function HASH (s : VString) return Natural is
-    h : Natural := 0;
-  begin
-    for i in 1 .. Length (s) loop
-      h := ((h + Ord (Element (s, i))) * 17) rem 256;
-    end loop;
-    return h;
-  end HASH;
-
-  type Hash_Slot_Type is record
-    key   : VString;
-    value : Integer;
-  end record;
-
-  type Hash_Slot_Array_Type is array (1 .. 5) of Hash_Slot_Type;
-
-  type Hash_Box_Type is record
-    slot  : Hash_Slot_Array_Type;
-    slots : Natural;  --  := 0;
-  end record;
-
-  type Hash_Map_Type is array (0 .. 255) of Hash_Box_Type;
-
-  procedure Clear (hm : out Hash_Map_Type) is
-  begin
-    for i in hm'Range loop
-      hm (i).slots := 0;
-    end loop;
-  end Clear;
-
-  procedure Insert (hm : in out Hash_Map_Type; key : VString; value : Integer) is
-    b : constant Natural := HASH (key);
-    found : Boolean;
-  begin
-    found := False;
-    for s in 1 .. hm (b).slots loop
-      if hm (b).slot (s).key = key then
-        found := True;
-        Put ("Duplicate!");
-      end if;
-    end loop;
-    if not found then
-      --  Append new value.
-      hm (b).slots := hm (b).slots + 1;
-      hm (b).slot (hm (b).slots).key   := key;
-      hm (b).slot (hm (b).slots).value := value;
-    end if;
-  end Insert;
-
-  procedure Find
-    (hm              : in out Hash_Map_Type;
-     key             :        VString;
-     value           :    out Integer;
-     not_found_value :        Integer)
-  is
-    b : constant Natural := HASH (key);
-    found : Boolean;
-  begin
-    found := False;
-    for s in 1 .. hm (b).slots loop
-      if hm (b).slot (s).key = key then
-        found := True;
-        value := hm (b).slot (s).value;
-        return;
-      end if;
-    end loop;
-    if not found then
-      value := not_found_value;
-    end if;
-  end Find;
-
-  --  End of HAC-Hashing -> for AoC toolbox!
-
-  ---
 
   subtype Link_Range is Integer range 1 .. 10;
 
@@ -120,13 +45,13 @@ procedure AoC_2023_20 is
 
   type Module_Type is record
     kind  : Module_Kind;
-    dest  : Destination_Array;  --  0-terminated.
+    dest  : Destination_Array;  --  0-terminated (a bad idea...)
     name  : VString;            --  Only for display.
     state : Flip_Flop_State;    --  Concerns only flip-flop
     input : Input_Array;        --  Concerns only conjunction; 0-terminated.
   end record;
 
-  map : array (1 .. 1000) of Module_Type;
+  map : array (1 .. 60) of Module_Type;
   top : Natural := 0;
 
   function Name (i : Integer) return VString is
@@ -142,7 +67,9 @@ procedure AoC_2023_20 is
 
   procedure Clear_Machine is
   begin
-    for i in 1 .. top loop
+    for i in map'Range loop
+      --  Set the 0-terminators.
+      map (i).dest (1) := 0;
       map (i).input (1).source := 0;
     end loop;
   end Clear_Machine;
@@ -154,8 +81,8 @@ procedure AoC_2023_20 is
       map (src).state := off;
       for d_lnk in Link_Range loop
         dest := map (src).dest (d_lnk);
-        exit when dest <= 0;
-        if map (dest).kind = conjunction then
+        exit when dest = 0;
+        if dest > 0 and then map (dest).kind = conjunction then
           --  For conjunctions, we need to know the pulse state
           --  of each source, because some sources may have not been
           --  yet activated and have an assumed "low" state.
@@ -164,6 +91,8 @@ procedure AoC_2023_20 is
               map (dest).input (s_lnk).source := src;
               map (dest).input (s_lnk).mem    := low;
               map (dest).input (s_lnk).cycle  := 0;  --  Only useful for pre_final.
+              --  0-terminate:
+              map (dest).input (s_lnk + 1).source := 0;
               exit;
             end if;
           end loop;
@@ -179,6 +108,7 @@ procedure AoC_2023_20 is
   input_name : constant VString := +"aoc_2023_20";
   --
   procedure Read_Data is
+    use Hash_Maps;
     hm : Hash_Map_Type;
     prefix, c : Character;
     key : VString;
@@ -242,6 +172,7 @@ procedure AoC_2023_20 is
               exit when End_Of_Line (f);
               Get (f, c);  --  Space after ','
             end loop;
+            --  0-terminate:
             map (row).dest (i + 1) := 0;
         end case;
       end loop;
@@ -258,7 +189,7 @@ procedure AoC_2023_20 is
     from, to : Integer;
   end record;
 
-  buffer : array (0 .. 999) of To_Do_Type;
+  buffer : array (0 .. 49) of To_Do_Type;
 
   read_idx  : Natural;
   write_idx : Natural;
@@ -282,9 +213,10 @@ procedure AoC_2023_20 is
   procedure Put_To_Do (e : in To_Do_Type) is
   begin
     if FIFO_Is_Full then
-      Put_Line ("FIFO is full!");
+      Put_Line (+"FIFO is full! w:" & write_idx & " r:" & read_idx);
+      Skip_Line;
     else
-      if verbosity > 0 then
+      if verbosity >= 2 then
         Put_Line (Name (e.from) & " -" & e.sent'Image & " -> " & Name (e.to));
       end if;
       buffer (write_idx) := e;
@@ -302,7 +234,7 @@ procedure AoC_2023_20 is
     end if;
   end Get_To_Do;
 
-  r : array (Part_Type) of Integer;
+  r : array (Part_Type) of Integer_64;
 
   procedure Simulate is
     e_cur, e : To_Do_Type;
@@ -330,7 +262,7 @@ procedure AoC_2023_20 is
   Button_Presses :
     loop
       button_press_count := button_press_count + 1;
-      if verbosity > 0 then
+      if verbosity >= 2 then
         Put_Line (+"===================  Round number " & button_press_count);
       end if;
       FIFO_Reset;
@@ -366,13 +298,13 @@ procedure AoC_2023_20 is
               end case;
 
             when conjunction =>
-              if verbosity > 1 then
+              if verbosity >= 3 then
                 Put_Line ("  For " & Name (row) & ", checking inputs");
               end if;
               high_pulses_for_all_inputs := True;
               for s_lnk in Link_Range loop
                 exit when map (row).input (s_lnk).source = 0;
-                if verbosity > 1 then
+                if verbosity >= 3 then
                   Put_Line
                     ("    " &
                      Name (map (row).input (s_lnk).source) & ": " &
@@ -395,6 +327,9 @@ procedure AoC_2023_20 is
 
           if not ignore then
             --  Broadcasting
+            if verbosity >= 2 then
+              Put_Line ("  Broadcasting from " & Name (row));
+            end if;
             for id in map (row).dest'Range loop
               dest := map (row).dest (id);
               exit when dest = 0;
@@ -405,20 +340,25 @@ procedure AoC_2023_20 is
               if dest > 0 then
                 case map (dest).kind is
                   when conjunction =>
-                    if verbosity > 1 then
+                    if verbosity >= 2 then
                       Put_Line ("  Destination is a conjunction: " & Name (dest));
                     end if;
                     for s_lnk in Link_Range loop
                       exit when map (dest).input (s_lnk).source = 0;
                       if map (dest).input (s_lnk).source = row then
                         map (dest).input (s_lnk).mem := out_pulse;
-                        if verbosity > 1 then
+                        if verbosity >= 2 then
                           Put_Line ("  Updated pulse from input " & Name (row));
                         end if;
                         if dest = pre_final_idx
                           and then out_pulse = high
                           and then map (dest).input (s_lnk).cycle = 0
                         then
+                          if verbosity >= 1 then
+                            Put_Line
+                              ("New cycle on the " & Name (row) & " -> " & Name (dest) &
+                               " broadcast; button press so far: " & button_press_count);
+                          end if;
                           map (dest).input (s_lnk).cycle := button_press_count;
                         end if;
                         exit;
@@ -453,13 +393,16 @@ procedure AoC_2023_20 is
         end if;
       end loop;
       if button_press_count = 1000 then
-        r (part_1) := counter (low) * counter (high);
+        r (part_1) := Integer_64 (counter (low) * counter (high));
       end if;
     end loop Button_Presses;
     r (part_2) := 1;
     for s_lnk in Link_Range loop
       exit when map (pre_final_idx).input (s_lnk).source = 0;
-      r (part_2) := LCM (r (part_2), map (pre_final_idx).input (s_lnk).cycle);
+      r (part_2) :=
+        LCM_64
+          (r (part_2),
+           Integer_64 (map (pre_final_idx).input (s_lnk).cycle));
     end loop;
   end Simulate;
 
@@ -467,20 +410,20 @@ procedure AoC_2023_20 is
   T0 : constant Time := Clock;
 
 begin
-  
+
   Read_Data;
   Simulate;
-  
+
   if compiler_test_mode then
-    if r (part_1) /= Integer_Value (Argument (1)) or
-       r (part_2) /= Integer_Value (Argument (2))
+    if r (part_1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (part_2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: " & r (part_1));
-    Put_Line (+"Part 2: " & r (part_2));
+    Put_Line (+"Part 1: " & r (part_1)'Image);
+    Put_Line (+"Part 2: " & r (part_2)'Image);
     --  Part 1: validated by AoC: 806332748
     --  Part 2: validated by AoC: 228060006554227
   end if;
