@@ -14,6 +14,11 @@ package AoC_Toolbox is
 
   subtype Digit_Type is Natural range 0 .. 9;
 
+  subtype Alpha is Character range 'a' .. 'z';
+  subtype Upcase_Alpha is Character range 'A' .. 'Z';
+
+  subtype Binary is Natural range 0 .. 1;
+
   ---------------
   --  Algebra  --
   ---------------

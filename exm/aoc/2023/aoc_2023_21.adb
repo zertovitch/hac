@@ -30,7 +30,7 @@ procedure AoC_2023_21 is
 
   type Map_Type is array (1 .. n7, 1 .. n7) of Character;
 
-  map : array (0 .. 1) of Map_Type;
+  map : array (Binary) of Map_Type;
 
   procedure Read_Data is
     c : Character;
@@ -67,12 +67,12 @@ procedure AoC_2023_21 is
   r : array (Part_Type) of Integer_64;
 
   procedure Solve is
-    c : Natural := 0;
+    cur : Binary := 0;  --  Oscillate between two maps (game-of-life-style).
 
     procedure Step_Aside (x, y : Integer) is
     begin
-      if map (1 - c) (x, y) = '.' then
-        map (1 - c) (x, y) := 'O';
+      if map (1 - cur) (x, y) = '.' then
+        map (1 - cur) (x, y) := 'O';
       end if;
     end Step_Aside;
 
@@ -83,7 +83,7 @@ procedure AoC_2023_21 is
     begin
       for y in b_min .. b_max loop
         for x in b_min .. b_max loop
-          if map (c) (x, y) = 'O' then
+          if map (cur) (x, y) = 'O' then
             total := total + 1;
           end if;
         end loop;
@@ -107,23 +107,23 @@ procedure AoC_2023_21 is
           Put_Line ("------------");
           for y in 1 .. n7 loop
             for x in 1 .. n7 loop
-              Put (map (c) (x, y));
+              Put (map (cur) (x, y));
             end loop;
             New_Line;
           end loop;
         end if;
         for y in b_min .. b_max loop
           for x in b_min .. b_max loop
-            if map (c) (x, y) = 'O' then
+            if map (cur) (x, y) = 'O' then
               Step_Aside (x, y - 1);
               Step_Aside (x, y + 1);
               Step_Aside (x + 1, y);
               Step_Aside (x - 1, y);
-              map (1 - c) (x, y) := '.';
+              map (1 - cur) (x, y) := '.';
             end if;
           end loop;
         end loop;
-        c := 1 - c;
+        cur := 1 - cur;
         if macro_step = 0 and then micro_step = steps_part_1 then
           r (part_1) := Integer_64 (Count_Garden_Plots);
           if compiler_test_mode then
@@ -139,15 +139,16 @@ procedure AoC_2023_21 is
     end loop Macro;
     --
     --  Someone somewhere seems to claim that due to favourable
-    --  settings (n being odd, S being at the centre, moves being
-    --  only horizontal or vertical,...), the result is exactly
-    --  predicted by a polynomial of degree 2.
+    --  settings (n being odd, S being at the centre, borders and
+    --  the crosss through S being free, moves being only horizontal
+    --  or vertical,...), the result is exactly predicted by a
+    --  polynomial of degree 2.
     --
     --  We determine p such as:   p (t) = obs (t)  for t = 0, 1, 2
     --
     if verbosity >= 1 then
       for d in 0 .. degree loop
-        Put_Line (+"d = " & d & ", obs " & obs (d)'Image);
+        Put_Line (+"d = " & d & ", observation " & obs (d)'Image);
       end loop;
     end if;
     t := steps_part_2 / n;

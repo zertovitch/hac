@@ -23,8 +23,6 @@ procedure AoC_2023_20 is
 
   use AoC_Toolbox, HAT, Interfaces;
 
-  subtype Alpha is Character range 'a' .. 'z';
-
   subtype Link_Range is Integer range 1 .. 10;
 
   type Destination_Array is array (Link_Range) of Integer;

@@ -18,8 +18,6 @@ procedure AoC_2023_08 is
 
   use AoC_Toolbox, HAT;
 
-  subtype Alpha is Character range 'A' .. 'Z';
-
   subtype Pos_Type is String (1 .. 3);
 
   type Pair is record left, right : Pos_Type; end record;
@@ -30,7 +28,7 @@ procedure AoC_2023_08 is
   starter : Multi_Pos;
   para_top : Natural := 0;
   direction_list : VString;
-  map : array (Alpha, Alpha, Alpha) of Pair;
+  map : array (Upcase_Alpha, Upcase_Alpha, Upcase_Alpha) of Pair;
 
   procedure Read_Data is
   --  input : constant VString := +"mini.txt";
