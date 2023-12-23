@@ -227,6 +227,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2023", +"19", +"19114 167409079868000");          --  Aplenty
     Launch_AoC (+"2023", +"20", +"806332748 228060006554227");      --  Pulse Propagation
     Launch_AoC (+"2023", +"21", +"3677");                           --  Step Counter
+    Launch_AoC (+"2023", +"22", +"5 7");                            --  Sand Slabs (example's data)
     --
     New_Line (2);
     New_Line;

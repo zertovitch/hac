@@ -24,7 +24,8 @@ procedure AoC_2023_17 is
   input_name : constant VString := +"aoc_2023_17_questions";
   n : constant := 13; skip_header : constant := 20;
 
-  --  GNAT runs the actual problem in 1.55 seconds, while HAC takes forever.
+  --  GNAT runs the program on the actual problem data in 1.55 seconds,
+  --  while HAC takes forever.
   --
   --  input_name : constant VString := +"aoc_2023_17";
   --  n : constant := 141; skip_header : constant := 0;

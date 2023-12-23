@@ -133,7 +133,8 @@ package body AoC_Toolbox is
 
   package body Hash_Maps is
 
-    --  Hashing taken from AoC_2023_15 :-)
+    --  Hash map code taken from AoC_2023_15's implementation.
+    --  HASH = Holiday ASCII String Helper :-).
 
     function HASH (s : HAT.VString) return Natural is
       h : Natural := 0;
