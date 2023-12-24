@@ -15,7 +15,8 @@ project AoC_2023 is
 
    type AoC_Build_Mode_Type is
       ("Debug",
-       "Fast");
+       "Fast",
+       "Fast_Unchecked");
 
    AoC_Build_Mode : AoC_Build_Mode_Type := external ("AoC_Build_Mode", "Debug");
 
@@ -27,7 +28,8 @@ project AoC_2023 is
    AoC_Styles_Checks : AoC_Styles_Checks_Type := external ("AoC_Styles_Checks", "Level_1");
 
    for Main use
-     ("aoc_2023_22.adb",
+     ("aoc_2023_23.adb",
+      "aoc_2023_22.adb",
       "aoc_2023_21.adb",
       "aoc_2023_20.adb",
       "aoc_2023_19.adb",
@@ -55,6 +57,8 @@ project AoC_2023 is
          for Object_Dir use "obj_debug";
       when "Fast" =>
          for Object_Dir use "obj_fast";
+      when "Fast_Unchecked" =>
+         for Object_Dir use "obj_fast_unchecked";
    end case;
 
    Common_Compiler_Options :=
@@ -83,7 +87,10 @@ project AoC_2023 is
    end case;
 
    Fast_Options :=
-     ("-Ofast", "-gnatn");
+     ("-Ofast", "-gnatn", "-ffunction-sections");
+     
+   Fast_Unchecked_Options :=
+     ("-Ofast", "-gnatpn", "-ffunction-sections");
 
    Debug_Options  := (
      --  "-gnateV",  --  Validity check for parameters, GNAT > 4.6, redundant with -gnatVim ?
@@ -98,7 +105,9 @@ project AoC_2023 is
          when "Debug" =>
             for Default_Switches ("ada") use Common_Compiler_Options & Debug_Options ;
          when "Fast" =>
-            for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options & ("-gnatpn", "-ffunction-sections");
+            for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options;
+         when "Fast_Unchecked" =>
+            for Default_Switches ("ada") use Common_Compiler_Options & Fast_Unchecked_Options;
       end case;
    end Compiler;
 
@@ -109,7 +118,7 @@ project AoC_2023 is
       case AoC_Build_Mode is
          when "Debug" =>
             for Default_Switches ("ada") use Common_Linker_Options;
-         when "Fast" =>
+         when "Fast" | "Fast_Unchecked" =>
             for Default_Switches ("ada") use Common_Linker_Options & ("-s", "-Wl,--gc-sections");
       end case;
    end Linker;

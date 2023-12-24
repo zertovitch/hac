@@ -210,7 +210,7 @@ procedure AoC_2023_22 is
       while own_z_bottom > 1 loop
         own_z_bottom := own_z_bottom - 1;
         own_z_top    := own_z_top    - 1;
-        --  We let the bottom fall until it hits a top
+        --  We let the bottom fall until it hits the top
         --  of another brick.
         Find (list.z_top, own_z_bottom, idx_ord_other, found);
         if found then
