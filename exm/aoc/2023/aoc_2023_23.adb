@@ -63,7 +63,7 @@ procedure AoC_2023_23 is
 
   procedure Do_Part (part : Part_Type) is
 
-    procedure Walk_from (map : in out Map_Type; sx, sy : Integer; done_so_far : Natural) is
+    procedure Walk_from (map : in out Map_Type; x, y : Integer; done_so_far : Natural) is
 
       more : Natural := 0;
 
@@ -71,19 +71,21 @@ procedure AoC_2023_23 is
 
         procedure Go is
         begin
+          more := more + 1;
           if x = n - 1 and then y = n then
             map (x, y) := 'E';
-            more := more + 1;
             if verbosity >= 1 then
-              Put_Line (+"Yuhu " & (done_so_far + more));
+              Put_Line
+                 (+"Yuhu, found the End! Length from Start to End: " &
+                   (done_so_far + more));
               if verbosity >= 2 then
                 Show (map);
               end if;
             end if;
+            --  The answer is the longest path.
             r (part) := Max (r (part), done_so_far + more);
           else
-            map (x, y) := 'O';
-            more := more + 1;
+            map (x, y) := 'O';  --  Mark this tile as visited.
             Flood_Fill (x - 1, y, '<');
             Flood_Fill (x + 1, y, '>');
             Flood_Fill (x, y - 1, '^');
@@ -91,12 +93,12 @@ procedure AoC_2023_23 is
           end if;
         end Go;
 
-        procedure Copy_and_Go is
+        procedure Copy_Map_and_Go is
           copy : Map_Type := map;
         begin
           copy (x, y) := '.';  --  Open the icy gate...
           Walk_from (copy, x, y, done_so_far + more);
-        end Copy_and_Go;
+        end Copy_Map_and_Go;
 
         c : constant Character := map (x, y);
 
@@ -108,14 +110,14 @@ procedure AoC_2023_23 is
             (part = part_2
              and then (c = '<' or else c = '>' or else c = '^' or else c = 'v'))
         then
-          Copy_and_Go;
+          Copy_Map_and_Go;
           --  Silent alternative: treat this tile as a forest,
           --  continue on the same map and find another path.
         end if;
       end Flood_Fill;
 
     begin
-      Flood_Fill (sx, sy, '$');
+      Flood_Fill (x, y, '$');
     end Walk_from;
 
     map : Map_Type := data;
