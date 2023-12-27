@@ -147,7 +147,12 @@ package body HAC_Sys.PCode.Interpreter is
           when Ints =>
             Defs.IIO.Get (FP.all, ND.S (Out_Param).I);
           when Floats =>
-            Defs.RIO.Get (FP.all, ND.S (Out_Param).R);
+            declare
+              the_value : Defs.HAC_Float;
+            begin
+              Defs.RIO.Get (FP.all, the_value);
+              ND.S (Out_Param) := GR_Real (the_value);
+            end;
           when Chars =>
             Ada.Text_IO.Get (FP.all, CH);
             ND.S (Out_Param).I := Character'Pos (CH);
