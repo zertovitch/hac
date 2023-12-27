@@ -1,9 +1,9 @@
---  Solution to Advent of Code 2023, Day $
-------------------------------------------
---  .
+--  Solution to Advent of Code 2023, Day 24
+-------------------------------------------
+--  Never Tell Me The Odds
 --
---  https://adventofcode.com/2023/day/$
---  Copy of questions in: aoc_2023_$_questions.txt
+--  https://adventofcode.com/2023/day/24
+--  Copy of questions in: aoc_2023_24_questions.txt
 --
 --  Related links:
 --    https://forum.ada-lang.io/
@@ -32,15 +32,16 @@ procedure AoC_2023_24 is
   type Hail_Stone_Array is array (1 .. capacity) of Hail_Stone;
 
   type List_Type is record
-    stone           : Hail_Stone_Array;
-    last            : Natural;
+    stone : Hail_Stone_Array;
+    last  : Natural;
   end record;
 
   --  input_name : VString :=  +"mini_24"; skip_header : Natural := 0;
   --  min_box : Real := 7.0; max_box : Real := 27.0;
   --
   input_name : constant VString :=  +"aoc_2023_24";
-  min_box : constant Real := 200000000000000.0; max_box : constant Real := 400000000000000.0;
+  min_box : constant Real := 200000000000000.0;
+  max_box : constant Real := 400000000000000.0;
 
   procedure Read_Data (list : out List_Type) is
     dummy : Character;
@@ -65,8 +66,6 @@ procedure AoC_2023_24 is
     end loop;
     Close (f);
   end Read_Data;
-
-  r : array (Part_Type) of Integer_64;
 
   data : List_Type;
 
@@ -155,6 +154,8 @@ procedure AoC_2023_24 is
       end if;
     end if;
   end Intersect_Positive_Time;
+
+  r : array (Part_Type) of Integer_64;
 
   procedure Do_Part_1 is
     inter_x, inter_y : Real;
@@ -369,17 +370,17 @@ procedure AoC_2023_24 is
                        - Second.pos.x * Second.vel.y + Second.pos.y * Second.vel.x);
     Matrix (2, 1) := First.pos.z - Second.pos.z;
     Matrix (2, 2) := 0.0;
-    Matrix (2, 3) := Second.pos.x - First.pos.x;
+    Matrix (2, 3) := Matrix (1, 2);
     Matrix (2, 4) := Second.vel.z - First.vel.z;
     Matrix (2, 5) := 0.0;
-    Matrix (2, 6) := First.vel.x - Second.vel.x;
+    Matrix (2, 6) := Matrix (1, 5);
     Matrix (2, 7) := -(First.pos.x * First.vel.z - First.pos.z * First.vel.x
                        - Second.pos.x * Second.vel.z + Second.pos.z * Second.vel.x);
     Matrix (3, 1) := 0.0;
-    Matrix (3, 2) := First.pos.z - Second.pos.z;
+    Matrix (3, 2) := Matrix (2, 1);
     Matrix (3, 3) := Second.pos.y - First.pos.y;
     Matrix (3, 4) := 0.0;
-    Matrix (3, 5) := Second.vel.z - First.vel.z;
+    Matrix (3, 5) := Matrix (2, 4);
     Matrix (3, 6) := First.vel.y - Second.vel.y;
     Matrix (3, 7) := -(First.pos.y * First.vel.z - First.pos.z * First.vel.y
                        - Second.pos.y * Second.vel.z + Second.pos.z * Second.vel.y);
@@ -393,17 +394,17 @@ procedure AoC_2023_24 is
                        - Third.pos.x * Third.vel.y + Third.pos.y * Third.vel.x);
     Matrix (5, 1) := First.pos.z - Third.pos.z;
     Matrix (5, 2) := 0.0;
-    Matrix (5, 3) := Third.pos.x - First.pos.x;
+    Matrix (5, 3) := Matrix (4, 2);
     Matrix (5, 4) := Third.vel.z - First.vel.z;
     Matrix (5, 5) := 0.0;
-    Matrix (5, 6) := First.vel.x - Third.vel.x;
+    Matrix (5, 6) := Matrix (4, 5);
     Matrix (5, 7) := -(First.pos.x * First.vel.z - First.pos.z * First.vel.x
                        - Third.pos.x * Third.vel.z + Third.pos.z * Third.vel.x);
     Matrix (6, 1) := 0.0;
-    Matrix (6, 2) := First.pos.z - Third.pos.z;
+    Matrix (6, 2) := Matrix (5, 1);
     Matrix (6, 3) := Third.pos.y - First.pos.y;
     Matrix (6, 4) := 0.0;
-    Matrix (6, 5) := Third.vel.z - First.vel.z;
+    Matrix (6, 5) := Matrix (5, 4);
     Matrix (6, 6) := First.vel.y - Third.vel.y;
     Matrix (6, 7) := -(First.pos.y * First.vel.z - First.pos.z * First.vel.y
                        - Third.pos.y * Third.vel.z + Third.pos.z * Third.vel.y);
@@ -451,6 +452,10 @@ procedure AoC_2023_24 is
     X := Matrix (4, 7) / Matrix (4, 4);
     Y := Matrix (5, 7) / Matrix (5, 5);
     Z := Matrix (6, 7) / Matrix (6, 6);
+
+    if verbose then
+      Put_Line (+"X = " & X & ", Y = " & Y & " Z = " & Z);
+    end if;
 
     r (part_2) := Integer_64 (X + Y + Z);
 
