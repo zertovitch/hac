@@ -65,6 +65,14 @@ package AoC_Toolbox is
     x, y, z : Integer;
   end record;
 
+  type Point_3D_R is record
+    x, y, z : HAT.Real;
+  end record;
+
+  function Dist_L1_3D (a, b : Point_3D) return Natural;
+  
+  function Dist_L1_3D_R (a, b : Point_3D_R) return HAT.Real;
+
   -----------------------
   --  Text processing  --
   -----------------------

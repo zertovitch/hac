@@ -28,7 +28,8 @@ project AoC_2023 is
    AoC_Styles_Checks : AoC_Styles_Checks_Type := external ("AoC_Styles_Checks", "Level_1");
 
    for Main use
-     ("aoc_2023_23.adb",
+     ("aoc_2023_24.adb",
+      "aoc_2023_23.adb",
       "aoc_2023_22.adb",
       "aoc_2023_21.adb",
       "aoc_2023_20.adb",

@@ -92,6 +92,19 @@ package body AoC_Toolbox is
     end case;
   end Opposite;
 
+  function Dist_L1_3D (a, b : Point_3D) return Natural is
+  begin
+    return
+      abs (a.x - b.x) + abs (a.y - b.y) + abs (a.z - b.z);
+  end Dist_L1_3D;
+
+  function Dist_L1_3D_R (a, b : Point_3D_R) return HAT.Real is
+    use HAT;
+  begin
+    return
+      abs (a.x - b.x) + abs (a.y - b.y) + abs (a.z - b.z);
+  end Dist_L1_3D_R;
+
   procedure Skip_till_Space (fff : in out HAT.File_Type; times : Positive) is
     c : Character;
     use HAT;
