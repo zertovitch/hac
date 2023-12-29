@@ -24,7 +24,7 @@ procedure AoC_2023_17 is
   input_name : constant VString := +"aoc_2023_17_questions";
   n : constant := 13; skip_header : constant := 20;
 
-  --  GNAT runs the program on the actual problem data in 1.55 seconds,
+  --  GNAT runs this program on the actual problem data in 1.55 seconds,
   --  while HAC takes forever.
   --
   --  input_name : constant VString := +"aoc_2023_17";
@@ -89,7 +89,7 @@ procedure AoC_2023_17 is
 
     cur_len : Natural;
     cur_s   : State_Type;
-    s       : State_Type;  --  Test state dervied from current state.
+    s       : State_Type;  --  Test state derived from current state.
 
     procedure Visit (dir : Direction) is
       len_to, ins : Integer;
