@@ -124,6 +124,9 @@ procedure AoC_2023_20 is
       end loop;
     end Get_Key;
 
+    dummy : Integer;
+    ignore : constant := -1;
+
   begin
     Clear_Machine;
     Clear (hm);
@@ -131,7 +134,7 @@ procedure AoC_2023_20 is
     key := +"rx";
     map (top).name := key;
     map (top).kind := final;
-    Insert (hm, key, top);
+    Insert (hm, key, top, dummy);
   Passes :
     for pass in 1 .. 2 loop
       Open (f, input_name & ".txt");
@@ -141,13 +144,14 @@ procedure AoC_2023_20 is
         case pass is
           when 1 =>
             --  In pass #1 we just fill the vector `map` with names
-            --  and feed the hash map.
+            --  and feed the hash map. All but one nodes are listed
+            --  on the lines' headers. 
             top := top + 1;
             map (top).name := key;
-            Insert (hm, key, top);
+            Insert (hm, key, top, dummy);
             Skip_Line (f);
           when 2 =>
-            Find (hm, key, row, 0);
+            Find (hm, key, ignore, row);
             case prefix is
               when 'b' =>
                 map (row).kind := broadcaster;
@@ -164,7 +168,7 @@ procedure AoC_2023_20 is
             i := 0;
             loop
               Get_Key;
-              Find (hm, key, dest, -1);
+              Find (hm, key, ignore, dest);
               i := i + 1;
               map (row).dest (i) := dest;
               exit when End_Of_Line (f);

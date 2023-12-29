@@ -166,7 +166,12 @@ package body AoC_Toolbox is
       end loop;
     end Clear;
 
-    procedure Insert (hm : in out Hash_Map_Type; key : HAT.VString; value : Integer) is
+    procedure Insert
+      (hm        : in out Hash_Map_Type;
+       key       : in     HAT.VString;
+       new_value : in     Integer;
+       value     :    out Integer)
+    is
       b : constant Natural := HASH (key);
       found : Boolean;
       use HAT;
@@ -175,22 +180,24 @@ package body AoC_Toolbox is
       for s in 1 .. hm (b).slots loop
         if hm (b).slot (s).key = key then
           found := True;
-          HAT.Put ("Duplicate!");
+          value := hm (b).slot (s).value;
+          exit;
         end if;
       end loop;
       if not found then
         --  Append new value.
         hm (b).slots := hm (b).slots + 1;
         hm (b).slot (hm (b).slots).key   := key;
-        hm (b).slot (hm (b).slots).value := value;
+        hm (b).slot (hm (b).slots).value := new_value;
+        value := new_value;
       end if;
     end Insert;
 
     procedure Find
       (hm              : in out Hash_Map_Type;
-       key             :        HAT.VString;
-       value           :    out Integer;
-       not_found_value :        Integer)
+       key             : in     HAT.VString;
+       not_found_value : in     Integer;
+       value           :    out Integer)
     is
       b : constant Natural := HASH (key);
       found : Boolean;

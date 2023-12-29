@@ -102,7 +102,7 @@ package AoC_Toolbox is
       value : Integer;
     end record;
 
-    type Hash_Slot_Array_Type is array (1 .. 5) of Hash_Slot_Type;
+    type Hash_Slot_Array_Type is array (1 .. 20) of Hash_Slot_Type;
 
     type Hash_Box_Type is record
       slot  : Hash_Slot_Array_Type;
@@ -113,13 +113,17 @@ package AoC_Toolbox is
 
     procedure Clear (hm : out Hash_Map_Type);
 
-    procedure Insert (hm : in out Hash_Map_Type; key : HAT.VString; value : Integer);
+    procedure Insert
+      (hm        : in out Hash_Map_Type;
+       key       : in     HAT.VString;
+       new_value : in     Integer;
+       value     :    out Integer);
 
     procedure Find
       (hm              : in out Hash_Map_Type;
-       key             :        HAT.VString;
-       value           :    out Integer;
-       not_found_value :        Integer);
+       key             : in     HAT.VString;
+       not_found_value : in     Integer;
+       value           :    out Integer);
 
   end Hash_Maps;
 
