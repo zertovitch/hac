@@ -111,15 +111,25 @@ package body HAC_Sys.Parser.Type_Def is
         Subtype_Indication (CD, Level, FSys_TD, Element_Exact_Subtyp, Element_Size);
       end if;
     end if;
-    new_dim_size := Higher_Bound.I - Lower_Bound.I + 1;
-    if Log (Real (new_dim_size)) + Log (Real (Element_Size)) >= log_max_index then
-      Error
-        (CD,
-         err_illegal_array_bounds,
-         "array is too large (more than" & Defs.Index'Last'Image & " elements)",
-         severity => major);
+    if Element_Size = 0 then
+      --  Happens when the element type is undefined (source is already in error) or
+      --  if the element type is an empty array type.
+      arr_size := 0;
+    else
+      new_dim_size := Higher_Bound.I - Lower_Bound.I + 1;
+      if new_dim_size <= 0 then
+        --  This dimension is empty.
+        arr_size := 0;
+      elsif Log (Real (new_dim_size)) + Log (Real (Element_Size)) < log_max_index then
+        arr_size := Integer (new_dim_size) * Element_Size;
+      else
+        Error
+          (CD,
+           err_illegal_array_bounds,
+           "array is too large (more than" & Defs.Index'Last'Image & " elements)");
+        arr_size := 0;
+      end if;
     end if;
-    arr_size := Integer (new_dim_size) * Element_Size;
     arr_dimensions := 1 + recursive_dimensions;
     declare
       New_A : ATabEntry renames CD.Arrays_Table (arr_tab_ref);

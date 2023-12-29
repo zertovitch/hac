@@ -134,10 +134,9 @@ package body HAC_Sys.Parser.Enter_Def is
   ------------------------------------------------------------------
   -------------------------------------------------------EnterArray-
 
-  procedure Enter_Array (
-    CD        : in out Co_Defs.Compiler_Data;
-    Index_STP :        Co_Defs.Exact_Subtyp
-  )
+  procedure Enter_Array
+    (CD        : in out Co_Defs.Compiler_Data;
+     Index_STP :        Co_Defs.Exact_Subtyp)
   is
   begin
     if Index_STP.Discrete_First > Index_STP.Discrete_Last then
