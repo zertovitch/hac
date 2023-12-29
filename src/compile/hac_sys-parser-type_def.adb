@@ -15,6 +15,8 @@ with HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
 
+with HAT;
+
 with Ada.Characters.Handling;
 
 package body HAC_Sys.Parser.Type_Def is
@@ -58,6 +60,8 @@ package body HAC_Sys.Parser.Type_Def is
     Need_Semicolon_after_Declaration (CD, FSys_NTD);
   end Type_or_Subtype_Declaration;
 
+  log_max_index : constant HAT.Real := HAT.Log (HAT.Real (Index'Last));
+
   --  constrained_array_definition 3.6 (5) : "array (1 .. 2, 3 .. 4) of Integer;"
   --  index_constraint 3.6.1 (2)           : "Matrix (1 .. 2, 3 .. 4);"
   --
@@ -72,7 +76,8 @@ package body HAC_Sys.Parser.Type_Def is
     Element_Size                             : Integer;
     recursive_dimensions                     : Natural := 0;
     Lower_Bound, Higher_Bound                : Constant_Rec;
-    use Ranges;
+    new_dim_size                             : HAC_Integer;
+    use HAT, Ranges;
   begin
     Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
     Index_Exact_Subtyp := Lower_Bound.TP;
@@ -106,7 +111,15 @@ package body HAC_Sys.Parser.Type_Def is
         Subtype_Indication (CD, Level, FSys_TD, Element_Exact_Subtyp, Element_Size);
       end if;
     end if;
-    arr_size := (Integer (Higher_Bound.I) - Integer (Lower_Bound.I) + 1) * Element_Size;
+    new_dim_size := Higher_Bound.I - Lower_Bound.I + 1;
+    if Log (Real (new_dim_size)) + Log (Real (Element_Size)) >= log_max_index then
+      Error
+        (CD,
+         err_illegal_array_bounds,
+         "array is too large (more than" & Defs.Index'Last'Image & " elements)",
+         severity => major);
+    end if;
+    arr_size := Integer (new_dim_size) * Element_Size;
     arr_dimensions := 1 + recursive_dimensions;
     declare
       New_A : ATabEntry renames CD.Arrays_Table (arr_tab_ref);
