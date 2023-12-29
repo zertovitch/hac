@@ -120,7 +120,9 @@ procedure AoC_2023_25 is
   type Node is record
     len   : Natural;
     state : State_Type;
-    pred  : Natural;  --  This is just for displaying the path.
+    pred  : Natural;
+    --  `pred` is for backtracking the shortest path, to
+    --  increment the edges counters.
   end record;
 
   list : array (List_Range) of Node;
@@ -372,8 +374,12 @@ begin
   end if;
 
   for edge_removal_count in 1 .. 3 loop
-    --  Empirical observation: apart from the top edge, the other
-    --  busiest edges are not reliable candidates to be cut.
+    --  Empirical observation: apart from the busiest edge,
+    --  the next top edges in the list of busiest edges are
+    --  not reliable candidates for cutting all three wires
+    --  at the same time.
+    --  Check with `verbosity` >= 1 and by disabling the
+    --  fixed random seed (comment out `Random_Seed (1)`). 
 
     for iter in 1 .. mc_iter loop
       if verbosity >= 2 then
