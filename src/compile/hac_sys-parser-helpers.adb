@@ -392,7 +392,12 @@ package body HAC_Sys.Parser.Helpers is
 
   function Is_Char_Array (CD : Compiler_Data; T : Exact_Subtyp) return Boolean is
   begin
-    return T.TYP = Arrays and then CD.Arrays_Table (T.Ref).Element_xTyp.TYP = Chars;
+    return
+      T.TYP = Arrays
+        and then T.Ref in Arrays_Table_Type'Range
+                 --  ^ Filter out invalid reference due to an error
+                 --    that has occurred previously in the parsing.
+        and then CD.Arrays_Table (T.Ref).Element_xTyp.TYP = Chars;
   end Is_Char_Array;
 
   procedure Check_any_String_and_promote_to_VString
