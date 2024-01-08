@@ -138,6 +138,7 @@ package body HAC_Sys.Librarian is
     use Co_Defs, Defs;
     unit_idx : Natural;
     upper_name_alfa : constant Alfa := S2A (Upper_Name);
+    use type Nesting_Level;
   begin
     --  HAT.PUT_LINE ("WITH: Activating " & Upper_Name);
     --  Activate the unit itself:
@@ -154,8 +155,16 @@ package body HAC_Sys.Librarian is
           pkg_table_entry.first_public_declaration ..
           pkg_table_entry.last_public_declaration
         loop
-          CD.CUD.level_0_def.Include
-            (CD.IdTab (declaration_in_pkg_index).name, declaration_in_pkg_index);
+          if CD.IdTab (declaration_in_pkg_index).lev = 0 then
+            --  We check that the level is 0 because subprogram
+            --  parameters have level 1 and of course we don't
+            --  want *them* to be globally visible. An inclusion
+            --  of parameters would be especially nasty because
+            --  the identifiers don't have any prefix!
+            CD.CUD.level_0_def.Include
+              (CD.IdTab (declaration_in_pkg_index).name,
+               declaration_in_pkg_index);
+          end if;
         end loop;
       end;
     end if;

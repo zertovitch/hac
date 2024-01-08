@@ -452,24 +452,43 @@ package body HAC_Sys.Parser.Helpers is
     dot_pos : Integer;
     l0_def : Id_Maps.Cursor;
     use HAT, Id_Maps;
+    trace_search : constant Boolean := False;
   begin
     L := Level;
-    --  Scan all Id's on level L down to 0:
-    Scan :
+    if trace_search then
+      Put_Line
+        (+"  Start Id search, at level" & L'Image & " for Id = """ & Id & '"');
+    end if;
+
+    --  Scan all Id's from level L down to level 0:
+  Scan :
     loop
+
       if L = 0 and then Level_0_Filter then
         l0_def := CD.CUD.level_0_def.Find (Id);
         if l0_def /= No_Element then
-          --  In this case there is no point
-          --  doing a tedious linear search :-) .
+          --  Global definition found, within a library package, or in the
+          --  WITH context clauses.
+          --  In this case there is no point doing a tedious linear search :-) .
           J := Element (l0_def);
+          if trace_search then
+            Put_Line
+              (+"    Shortcut! Found global (level 0) definition with value # " & J);
+          end if;
           exit Scan;
         end if;
       end if;
       J := CD.Blocks_Table (CD.Display (L)).Last_Id_Idx;
-      --  Scan all Id's on level L:
+      if trace_search then
+        Put_Line
+          (+"    Reset index for level" & L'Image &
+            " with value # " & J);
+      end if;
+
+    Scan_level_L :
       loop
-        exit when J = No_Id;  --  Beginning of ID table reached.
+        exit Scan_level_L when J = No_Id;  --  Beginning of ID table reached.
+
         if CD.IdTab (J).entity /= paquetage_body then
           --  ^ A package body is invisible as a declaration.
           if CD.IdTab (J).entity = paquetage
@@ -511,22 +530,43 @@ package body HAC_Sys.Parser.Helpers is
               end loop;
             end loop;
           end if;
+
+          if trace_search then
+            Put_Line
+              (+"      Id search level" & L'Image &
+               "; candidate # " & J & " named " & CD.IdTab (J).name &
+               "; matched : " & is_name_matched'Image);
+          end if;
+
           if is_name_matched then
             --  Reasons to consider the matched identifier:
             --    * Not library-level: we have a local subprogram
             --        identifier (possibly wrapped in a local package):
-            exit when L > 0;
+            exit Scan_level_L when L > 0;
             --    * Filter for library-level definition is disabled:
-            exit when not Level_0_Filter;
+            exit Scan_level_L when not Level_0_Filter;
             --    * Activated library-level definition:
-            exit when CD.CUD.level_0_def.Contains (CD.IdTab (J).name);
+            exit Scan_level_L when CD.CUD.level_0_def.Contains (CD.IdTab (J).name);
           end if;
         end if;
+
+        if trace_search then
+          Put (+"      Chained list: identifier index goes from J = " & J);
+        end if;
         J := CD.IdTab (J).link;  --  Skip this identifier.
-      end loop;
+        if trace_search then
+          Put_Line (+" to J = " & J);
+        end if;
+
+      end loop Scan_level_L;
+
       L := L - 1;  --  Decrease nesting level.
+      if trace_search then
+        Put_Line (+"    Level decreases to L =" & L'Image);
+      end if;
       exit Scan when L < 0 or J /= No_Id;
     end loop Scan;
+
     if J = No_Id then
       if not Fail_when_No_Id then
         return No_Id;
@@ -579,6 +619,9 @@ package body HAC_Sys.Parser.Helpers is
       CD.IdTab (J).is_referenced := True;
     end if;
 
+    if trace_search then
+      Put_Line (+"  Found identifier # " & J);
+    end if;
     return J;
   end Locate_Identifier_Internal;
 

@@ -105,24 +105,24 @@ package body AoC_Toolbox is
       abs (a.x - b.x) + abs (a.y - b.y) + abs (a.z - b.z);
   end Dist_L1_3D_R;
 
-  procedure Skip_till_Space (fff : in out HAT.File_Type; times : Positive) is
+  procedure Skip_till_Space (f : in out HAT.File_Type; times : Positive) is
     c : Character;
     use HAT;
   begin
     for repeat in 1 .. times loop
-      while not End_Of_File (fff) loop
-        Get (fff, c);
+      while not End_Of_File (f) loop
+        Get (f, c);
         exit when c = ' ';
       end loop;
-      exit when End_Of_File (fff);
+      exit when End_Of_File (f);
     end loop;
   end Skip_till_Space;
 
-  function Sgn_64 (iii : Interfaces.Integer_64) return Interfaces.Integer_64 is
+  function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64 is
   begin
-    if iii > 0 then
+    if i > 0 then
       return 1;
-    elsif iii < 0 then
+    elsif i < 0 then
       return -1;
     else
       return 0;

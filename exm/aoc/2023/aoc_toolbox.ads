@@ -77,17 +77,13 @@ package AoC_Toolbox is
   --  Text processing  --
   -----------------------
 
-  procedure Skip_till_Space (fff : in out HAT.File_Type; times : Positive);
-
-  --  !! HAC bug: fff is visible through USE !!
+  procedure Skip_till_Space (f : in out HAT.File_Type; times : Positive);
 
   --------------------
   --  Miscellaneous --
   --------------------
 
-  function Sgn_64 (iii : Interfaces.Integer_64) return Interfaces.Integer_64;
-
-  --  !! HAC bug: iii is visible through USE !!
+  function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64;
 
   function Deg_2_Rad (a : HAT.Real) return HAT.Real;
 
@@ -109,7 +105,9 @@ package AoC_Toolbox is
       slots : Natural;  --  HAC wish: := 0;
     end record;
 
-    type Hash_Map_Type is array (0 .. 255) of Hash_Box_Type;  --  HAC wish: ideally the only public type...
+    type Hash_Map_Type is array (0 .. 255) of Hash_Box_Type;
+    --  ^  HAC wish: ideally that type would be private and the
+    --     only publicly visible identifier...
 
     procedure Clear (hm : out Hash_Map_Type);
 
