@@ -501,7 +501,7 @@ package HAC_Sys.Defs is
     location        : Symbol_Location      := (0, 0, 0);
   end record;
 
-  type Smart_Error_Pipe is access procedure (diagnostic : Diagnostic_Kit);
+  type Smart_Error_Pipe is access procedure (kit : Diagnostic_Kit);
 
   package IIO is new Ada.Text_IO.Integer_IO (HAC_Integer);
   package RIO is new Ada.Text_IO.Float_IO (HAC_Float);

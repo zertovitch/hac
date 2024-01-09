@@ -338,11 +338,11 @@ package body HAC_Sys.Errors is
   procedure Error
     (CD                  : in out Co_Defs.Compiler_Data;
      code                :        Defs.Compile_Diagnostic;
-     hint_1              :        String                  := "";
-     hint_2              :        String                  := "";
-     severity            :        Error_Severity          := medium;
-     location_method     :        Symbol_Location_Method  := current_symbol;
-     explicit_location   :        Defs.Symbol_Location         := (0, 0, 0))
+     hint_1              :        String                 := "";
+     hint_2              :        String                 := "";
+     severity            :        Error_Severity         := medium;
+     location_method     :        Symbol_Location_Method := current_symbol;
+     explicit_location   :        Defs.Symbol_Location   := (0, 0, 0))
   is
     use Ada.Strings, Ada.Strings.Fixed, Ada.Text_IO;
     to_be_marked : Symbol_Location;
@@ -367,35 +367,36 @@ package body HAC_Sys.Errors is
     updated_repair_kit : Repair_Kit := repair_table (code);
     ub_hint : constant HAT.VString := HAT.To_VString (hint_1);
     use HAT.VStr_Pkg;
-    diagnostic : Diagnostic_Kit;
+    kit : Diagnostic_Kit;
     --
     function Diagnostic_Prefix return String is
-      (case diagnostic.diagnostic_kind is
+      (case kit.diagnostic_kind is
          when error   => "",
          when warning => "warning: ",
          when note    => "note: ",
          when style   => "style: ");
     --
     function Diagnostic_Suffix return String is
-      (case diagnostic.diagnostic_kind is
+      (case kit.diagnostic_kind is
          when warning | note => " [-r" & remark_letter (code) & ']',
          when others         => "");
   begin
-    if code in Compile_Warning then
-      diagnostic.diagnostic_kind := warning;
-    elsif code in Compile_Note then
-      diagnostic.diagnostic_kind := note;
-    end if;
-    case location_method is
-      when current_symbol =>
-        to_be_marked := CD.CUD.location;
-      when previous_symbol =>
-        to_be_marked := CD.prev_sy_loc;
-      when explicit =>
-        to_be_marked := explicit_location;
-    end case;
+
+    kit.diagnostic_kind :=
+      (case code is
+         when Compile_Error   => error,
+         when Compile_Warning => warning,
+         when Compile_Note    => note);
+
+    to_be_marked :=
+      (case location_method is
+         when current_symbol  => CD.CUD.location,
+         when previous_symbol => CD.prev_sy_loc,
+         when explicit        => explicit_location);
+
     Show_to_comp_dump (-1);
     CD.diags (code) := True;
+
     if code in Compile_Error then
       if severity = minor then
         CD.minor_error_count := CD.minor_error_count + 1;
@@ -403,6 +404,7 @@ package body HAC_Sys.Errors is
         CD.error_count := CD.error_count + 1;
       end if;
     end if;
+
     if CD.trace.pipe = null then
       Put_Line
         (Current_Error,
@@ -414,6 +416,7 @@ package body HAC_Sys.Errors is
          Diagnostic_String (code, hint_1, hint_2) &
          Diagnostic_Suffix);
     else
+
       case code is
         when err_incorrect_name_after_END =>
           if hint_1 = "" then
@@ -433,12 +436,13 @@ package body HAC_Sys.Errors is
         when others =>
           null;
       end case;
-      Repair_Kit (diagnostic) := updated_repair_kit;
-      diagnostic.message   := To_Unbounded_String (Diagnostic_String (code, hint_1, hint_2));
-      diagnostic.file_name := To_Unbounded_String (Co_Defs.Get_Source_Name (CD.CUD));
-      diagnostic.location  := to_be_marked;
-      --
-      CD.trace.pipe (diagnostic);
+
+      Repair_Kit (kit) := updated_repair_kit;
+      kit.message   := To_Unbounded_String (Diagnostic_String (code, hint_1, hint_2));
+      kit.file_name := To_Unbounded_String (Co_Defs.Get_Source_Name (CD.CUD));
+      kit.location  := to_be_marked;
+
+      CD.trace.pipe (kit);
     end if;
     --  Uncomment the next line for getting a nice trace-back of 1st error.
     --  raise Constraint_Error;
@@ -453,10 +457,10 @@ package body HAC_Sys.Errors is
   procedure Remark
     (CD                  : in out Co_Defs.Compiler_Data;
      code                :        Defs.Compile_Remark;
-     hint_1              :        String                  := "";
-     hint_2              :        String                  := "";
-     location_method     :        Symbol_Location_Method  := current_symbol;
-     explicit_location   :        Defs.Symbol_Location    := (0, 0, 0))
+     hint_1              :        String                 := "";
+     hint_2              :        String                 := "";
+     location_method     :        Symbol_Location_Method := current_symbol;
+     explicit_location   :        Defs.Symbol_Location   := (0, 0, 0))
   is
   begin
     if CD.remarks (code) then  --  Remark (Note or Warning) is optional

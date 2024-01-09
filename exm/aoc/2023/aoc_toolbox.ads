@@ -115,7 +115,7 @@ package AoC_Toolbox is
       (hm        : in out Hash_Map_Type;
        key       : in     HAT.VString;
        new_value : in     Integer;
-       value     :    out Integer);
+       value     :    out Integer);  --  If key exists, we get existing value.
 
     procedure Find
       (hm              : in out Hash_Map_Type;

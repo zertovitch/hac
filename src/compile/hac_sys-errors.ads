@@ -30,11 +30,11 @@ package HAC_Sys.Errors is
   procedure Error
     (CD                  : in out Co_Defs.Compiler_Data;
      code                :        Defs.Compile_Diagnostic;
-     hint_1              :        String           := "";
-     hint_2              :        String           := "";
-     severity            :        Error_Severity   := medium;
+     hint_1              :        String                 := "";
+     hint_2              :        String                 := "";
+     severity            :        Error_Severity         := medium;
      location_method     :        Symbol_Location_Method := current_symbol;
-     explicit_location   :        Defs.Symbol_Location  := (0, 0, 0));
+     explicit_location   :        Defs.Symbol_Location   := (0, 0, 0));
 
   procedure Remark
     (CD                  : in out Co_Defs.Compiler_Data;
@@ -42,7 +42,7 @@ package HAC_Sys.Errors is
      hint_1              :        String                 := "";
      hint_2              :        String                 := "";
      location_method     :        Symbol_Location_Method := current_symbol;
-     explicit_location   :        Defs.Symbol_Location        := (0, 0, 0));
+     explicit_location   :        Defs.Symbol_Location   := (0, 0, 0));
 
   procedure Compilation_Diagnostics_Summary (CD : Co_Defs.Compiler_Data);
 

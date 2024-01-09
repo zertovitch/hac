@@ -266,7 +266,7 @@ package HAC_Sys.Co_Defs is
 
   default_trace : constant Compilation_Trace_Parameters := (others => <>);
 
-  procedure Silent_Diagnostics (diagnostic : Diagnostic_Kit) is null;
+  procedure Silent_Diagnostics (kit : Diagnostic_Kit) is null;
   procedure Silent_Feedback (message : String) is null;
 
   silent_trace : constant Compilation_Trace_Parameters :=
