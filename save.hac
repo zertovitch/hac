@@ -85,12 +85,10 @@ begin
               root & "/exm/aoc/2021/aoc*.ad* " &
               root & "/exm/aoc/2021/aoc*.txt " &
               root & "/exm/aoc/2021/aoc*.gpr " &
-              root & "/exm/aoc/2021/aoc*.prj " &
               --
               root & "/exm/aoc/2022/aoc*.ad* " &
               root & "/exm/aoc/2022/aoc*.txt " &
               root & "/exm/aoc/2022/aoc*.gpr " &
-              root & "/exm/aoc/2022/aoc*.prj " &
               --
               root & "/exm/aoc/2023/aoc*.ad* " &
               root & "/exm/aoc/2023/aoc*.txt " &

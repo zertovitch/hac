@@ -335,7 +335,7 @@ package body HAC_Sys.Errors is
       others                        => nothing_to_repair
     );
 
-  procedure Error
+  procedure Diagnostic
     (CD                  : in out Co_Defs.Compiler_Data;
      code                :        Defs.Compile_Diagnostic;
      hint_1              :        String                 := "";
@@ -452,6 +452,19 @@ package body HAC_Sys.Errors is
       --  and the compiler close to total confusion!
       raise Compilation_abandoned;
     end if;
+  end Diagnostic;
+
+  procedure Error
+    (CD                  : in out Co_Defs.Compiler_Data;
+     code                :        Defs.Compile_Error;
+     hint_1              :        String                 := "";
+     hint_2              :        String                 := "";
+     severity            :        Error_Severity         := medium;
+     location_method     :        Symbol_Location_Method := current_symbol;
+     explicit_location   :        Defs.Symbol_Location   := (0, 0, 0))
+  is
+  begin
+    Diagnostic (CD, code, hint_1, hint_2, severity, location_method, explicit_location);
   end Error;
 
   procedure Remark
@@ -466,7 +479,7 @@ package body HAC_Sys.Errors is
     if CD.remarks (code) then  --  Remark (Note or Warning) is optional
       --  If the switch is "on", just call `Error`.
       --  Severity does nothing for remarks.
-      Error (CD, code, hint_1, hint_2, minor, location_method, explicit_location);
+      Diagnostic (CD, code, hint_1, hint_2, minor, location_method, explicit_location);
     end if;
   end Remark;
 

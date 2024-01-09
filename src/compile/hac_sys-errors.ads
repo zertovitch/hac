@@ -29,7 +29,7 @@ package HAC_Sys.Errors is
 
   procedure Error
     (CD                  : in out Co_Defs.Compiler_Data;
-     code                :        Defs.Compile_Diagnostic;
+     code                :        Defs.Compile_Error;
      hint_1              :        String                 := "";
      hint_2              :        String                 := "";
      severity            :        Error_Severity         := medium;

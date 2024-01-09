@@ -459,6 +459,16 @@ package HAC_Sys.Defs is
   subtype Compile_Remark is Compile_Diagnostic
     range Compile_Note'First .. Compile_Warning'Last;
 
+  --  Summary of Compile_Diagnostic:
+  --
+  --          +------------------------+
+  --          |      Diagnostic        |
+  --          +---v-----------v--------+
+  --          |       |     Remark     |
+  --          | Error |--v--------v----+
+  --          |       | Note | Warning |
+  --          +-------+------+---------+
+
   type Remark_Set is array (Compile_Remark) of Boolean;
   default_remarks : constant Remark_Set := (others => False);
 
