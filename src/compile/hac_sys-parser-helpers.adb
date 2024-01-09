@@ -706,9 +706,64 @@ package body HAC_Sys.Parser.Helpers is
      id_current :        Alfa)
   is
     sub_sub_last_param_idx, forward_last_param_idx,
-    sub_sub_params, forward_params,
-    f, s : Natural;
+    sub_sub_params, forward_params : Natural;
     use type Alfa;
+
+    procedure Check_Formal_Parameter_List is
+      procedure Check_One_to_One
+        (prefix       : String;
+         is_identical : Boolean;
+         topic        : String)
+      is
+      begin
+        if not is_identical then
+          Error
+            (CD, err_spec_body_mismatch,
+             prefix & " has a different " & topic,
+             severity => major);  --  This raises an exception.
+        end if;
+      end Check_One_to_One;
+
+      procedure Check_Parameter_One_to_One
+        (count        : Positive;
+         is_identical : Boolean;
+         topic        : String)
+      is
+      begin
+        Check_One_to_One
+          ("parameter #" & count'Image, is_identical, topic);
+      end Check_Parameter_One_to_One;
+
+      version_1, version_2 : Natural;
+    begin
+      version_1 := old_id_idx + 1;
+      version_2 := new_id_idx + 1;
+
+      for count in 1 .. sub_sub_params loop
+        Check_Parameter_One_to_One
+          (count,
+           CD.IdTab (version_1).name = CD.IdTab (version_2).name,
+           "name");
+        Check_Parameter_One_to_One
+          (count,
+           CD.IdTab (version_1).xtyp = CD.IdTab (version_2).xtyp,
+           "type");
+        Check_Parameter_One_to_One
+          (count,
+           CD.IdTab (version_1).decl_kind = CD.IdTab (version_2).decl_kind,
+           "mode");
+
+        version_1 := version_1 + 1;
+        version_2 := version_2 + 1;
+      end loop;
+
+      if CD.IdTab (new_id_idx).entity = funktion then
+        Check_One_to_One
+          ("result of function",
+           CD.IdTab (new_id_idx).xtyp = CD.IdTab (old_id_idx).xtyp,
+           "type");
+      end if;
+    end Check_Formal_Parameter_List;
   begin
     if old_id_idx = No_Id then
       return;
@@ -733,31 +788,8 @@ package body HAC_Sys.Parser.Helpers is
       Error (CD, err_number_of_parameters_do_not_match,
              ": specification of " & A2S (id_current) & " has more parameters",
              severity => major);
-    end if;
-    --  Check the formal parameter list:
-    f := old_id_idx + 1;
-    s := new_id_idx + 1;
-    for count in 1 .. sub_sub_params loop
-      if CD.IdTab (s).name /= CD.IdTab (f).name then
-        Error (CD, err_spec_body_mismatch,
-               "parameter #" & Integer'Image (count) & " has a different name",
-               severity => major);
-        exit;
-      end if;
-      if CD.IdTab (s).xtyp /= CD.IdTab (f).xtyp then
-        Error (CD, err_spec_body_mismatch,
-               "parameter #" & Integer'Image (count) & " has a different type",
-               severity => major);
-        exit;
-      end if;
-      f := f + 1;
-      s := s + 1;
-    end loop;
-    if CD.IdTab (new_id_idx).entity = funktion
-      and then CD.IdTab (new_id_idx).xtyp /= CD.IdTab (old_id_idx).xtyp
-    then
-      Error (CD, err_spec_body_mismatch, "result type is different",
-             severity => major);
+    else
+      Check_Formal_Parameter_List;
     end if;
   end Check_Subprogram_Spec_Body_Consistency;
 
