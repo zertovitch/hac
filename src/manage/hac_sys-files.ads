@@ -1,4 +1,4 @@
-with Ada.Streams;
+with Ada.Streams.Stream_IO;
 
 package HAC_Sys.Files is
 
@@ -15,7 +15,7 @@ package HAC_Sys.Files is
   --  In the last four examples, it could be that the "physical" file
   --  cannot be accessed via Ada.*_IO, or doesn't even exists.
 
-  type Root_Stream_Class_Access is access all Ada.Streams.Root_Stream_Type'Class;
+  subtype Root_Stream_Class_Access is Ada.Streams.Stream_IO.Stream_Access;
 
   type Abstract_File_Catalogue is limited interface;
 
