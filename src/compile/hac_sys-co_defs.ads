@@ -20,7 +20,6 @@ with HAT;
 with Ada.Containers.Hashed_Maps,
      Ada.Containers.Indefinite_Hashed_Maps,
      Ada.Finalization,
-     Ada.Streams,
      Ada.Strings.Hash,
      Ada.Strings.Unbounded.Hash,
      Ada.Text_IO;
@@ -247,12 +246,11 @@ package HAC_Sys.Co_Defs is
   end record;
 
   --  Set current source stream (file, editor data, zipped file,...)
-  procedure Set_Source_Stream (
-    CUD        : in out Current_Unit_Data;
-    s          : access Ada.Streams.Root_Stream_Type'Class;
-    file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
-    start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
-  );
+  procedure Set_Source_Stream
+    (CUD        : in out Current_Unit_Data;
+     s          : in     Source_Stream_Access;
+     file_name  : in     String;         --  Can be a virtual name (editor title, zip entry)
+     start_line : in     Natural := 0);  --  We could have a shebang or other Ada sources before
 
   function Get_Source_Name (SD : Current_Unit_Data) return String;
 

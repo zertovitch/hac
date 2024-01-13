@@ -414,9 +414,9 @@ package body HAC_Sys.Builder is
   --  Set current main source stream (file, editor data, zipped file,...)
   procedure Set_Main_Source_Stream
     (BD         : in out Build_Data;
-     s          : access Ada.Streams.Root_Stream_Type'Class;
-     file_name  : in     String;        --  Can be a virtual name (editor title, zip entry)
-     start_line : in     Natural := 0)  --  We could have a shebang or other Ada sources before
+     s          : in     Co_Defs.Source_Stream_Access;
+     file_name  : in     String;         --  Can be a virtual name (editor title, zip entry)
+     start_line : in     Natural := 0)   --  We could have a shebang or other Ada sources before
   is
     main_name_guess : String := Ada.Characters.Handling.To_Upper (file_name);
     last_slash, last_dot : Natural := 0;

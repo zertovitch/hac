@@ -20,7 +20,6 @@ with HAT;
 
 with Ada.Containers.Hashed_Maps,
      Ada.Finalization,
-     Ada.Streams,
      Ada.Strings.Unbounded.Hash;
 
 package HAC_Sys.Builder is
@@ -87,12 +86,11 @@ package HAC_Sys.Builder is
      set : in     Defs.Remark_Set);
 
   --  Set current main source stream (file, editor data, zipped file,...)
-  procedure Set_Main_Source_Stream (
-    BD         : in out Build_Data;
-    s          : access Ada.Streams.Root_Stream_Type'Class;
-    file_name  : in     String;       --  Can be a virtual name (editor title, zip entry)
-    start_line : in     Natural := 0  --  We could have a shebang or other Ada sources before
-  );
+  procedure Set_Main_Source_Stream
+    (BD         : in out Build_Data;
+     s          : in     Co_Defs.Source_Stream_Access;
+     file_name  : in     String;         --  Can be a virtual name (editor title, zip entry)
+     start_line : in     Natural := 0);  --  We could have a shebang or other Ada sources before
 
   procedure Set_Message_Feedbacks (
     BD           : in out Build_Data;

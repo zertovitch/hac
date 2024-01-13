@@ -74,6 +74,7 @@ package body Pkg_1 is
     some_garbage_1 : Integer;
 
     package body Inner_pkg is
+      use HAT;
       body_message : constant VString := +"ho!";
       procedure Ho_ho_ho is
       begin
@@ -104,8 +105,9 @@ package body Pkg_1 is
   package body Sub_Pkg_2 is
 
     procedure Proc_2 (message : VString) is
+      use HAT;  --  !!  Should not be necessary (clause already in spec)
     begin
-      HAT.Put_Line ("Hello from Sub_Pkg_2.Proc_2: " & message);
+      Put_Line ("Hello from Sub_Pkg_2.Proc_2: " & message);
     end Proc_2;
 
   end Sub_Pkg_2;

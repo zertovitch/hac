@@ -42,15 +42,14 @@ package body HAC_Sys.Co_Defs is
     return Construct_Root (NOTYP);
   end Undefined;
 
-  procedure Set_Source_Stream (
-    CUD        : in out Current_Unit_Data;
-    s          : access Ada.Streams.Root_Stream_Type'Class;
-    file_name  : in     String;
-    start_line : in     Natural := 0
-  )
+  procedure Set_Source_Stream
+    (CUD        : in out Current_Unit_Data;
+     s          : in     Source_Stream_Access;
+     file_name  : in     String;         --  Can be a virtual name (editor title, zip entry)
+     start_line : in     Natural := 0)
   is
   begin
-    CUD.compiler_stream  := Source_Stream_Access (s);
+    CUD.compiler_stream  := s;
     CUD.source_file_name := HAT.To_VString (file_name);
     CUD.location.line    := start_line;
   end Set_Source_Stream;
