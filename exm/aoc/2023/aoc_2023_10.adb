@@ -202,7 +202,7 @@ procedure AoC_2023_10 is
 
   verbose : constant Boolean := False;
 
-  --  PPM output adapted from AoC_2022_12.
+  --  PPM picture output, adapted from AoC_2022_12.
   --
   procedure Dump_PPM is
     d : File_Type;

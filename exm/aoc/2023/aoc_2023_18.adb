@@ -17,9 +17,11 @@ with AoC_Toolbox;
 --  See also the GNAT project file aoc_2023.gpr .
 with HAT;
 
+with Interfaces;
+
 procedure AoC_2023_18 is
 
-  use AoC_Toolbox, HAT;
+  use AoC_Toolbox, HAT, Interfaces;
 
   verbose : constant Boolean := False;
 
@@ -203,10 +205,12 @@ procedure AoC_2023_18 is
   end Read_Data_Part_2;
 
   procedure Show is
+    trunc_n : constant Integer := Min (70, n);
   begin
+
     Put_Line ("Map: -------------------");
-    for y in 1 .. n loop
-      for x in 1 .. n loop
+    for y in 1 .. trunc_n loop
+      for x in 1 .. trunc_n loop
         case map (x, y) is
           when clean   => Put ('.');
           when path    => Put ('#');
@@ -218,10 +222,10 @@ procedure AoC_2023_18 is
     end loop;
   end Show;
 
-  r : array (Part_Type) of Integer;
+  r : array (Part_Type) of Integer_64;
 
   procedure Do_Part (p : Part_Type) is
-    c : Natural := 0;
+    c : Integer_64 := 0;
 
     procedure Flood_Fill (x, y : Integer) is  --  Taken from aoc_2023_10.
     begin
@@ -241,6 +245,7 @@ procedure AoC_2023_18 is
     width, height : array (1 .. n) of Positive;
   begin
     if verbose then
+      Put_Line ("Part " & p'Image);
       Show;
     end if;
     Flood_Fill (1, 1);
@@ -249,9 +254,9 @@ procedure AoC_2023_18 is
     end if;
     case p is
       when part_1 =>
-        r (p) := n * n - c;
+        r (p) := Integer_64 (n * n - c);
       when part_2 =>
-        --  We need to compute the "real" surfaces"
+        --  We need to compute the "real" surfaces
         c := 0;
         for ix in 1 .. trx.top loop
           if ix = trx.top then
@@ -272,12 +277,12 @@ procedure AoC_2023_18 is
         for iy in 1 .. try.top loop
           for ix in 1 .. trx.top loop
             if map (ix, iy) = outside then
-              c := c + width (ix) * height (iy);
+              c := c + Integer_64 (width (ix) * height (iy));
             end if;
           end loop;
         end loop;
-        r (p) := (trx.val (trx.top) - trx.val (1) + 1) *
-                 (try.val (try.top) - try.val (1) + 1)
+        r (p) := Integer_64 (trx.val (trx.top) - trx.val (1) + 1) *
+                 Integer_64 (try.val (try.top) - try.val (1) + 1)
                  -
                  c;
     end case;
@@ -285,21 +290,24 @@ procedure AoC_2023_18 is
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   T0 : constant Time := Clock;
+
 begin
   Read_Data_Part_1;
   Do_Part (part_1);
+
   Read_Data_Part_2;
   Do_Part (part_2);
+
   if compiler_test_mode then
-    if r (part_1) /= Integer_Value (Argument (1)) or
-       r (part_2) /= Integer_Value (Argument (2))
+    if r (part_1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (part_2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: " & r (part_1));
-    Put_Line (+"Part 2: " & r (part_2));
+    Put_Line (+"Part 1:" & r (part_1)'Image);
+    Put_Line (+"Part 2:" & r (part_2)'Image);
     --  Part 1: validated by AoC: 53300
     --  Part 2: validated by AoC: 64294334780659
   end if;

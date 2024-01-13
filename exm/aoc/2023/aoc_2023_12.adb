@@ -16,9 +16,11 @@ with AoC_Toolbox;
 --  See also the GNAT project file aoc_2023.gpr .
 with HAT;
 
+with Interfaces;
+
 procedure AoC_2023_12 is
 
-  use AoC_Toolbox, HAT;
+  use AoC_Toolbox, HAT, Interfaces;
 
   --  Each data row has two lists:
   --    - a list of spring conditions
@@ -52,7 +54,7 @@ procedure AoC_2023_12 is
 
   max_length : constant := 120;  --  Spring conditions
 
-  type Memo_Type is array (1 .. max_length, 1 .. max_sizes) of Integer;
+  type Memo_Type is array (1 .. max_length, 1 .. max_sizes) of Integer_64;
 
   memo, zero : Memo_Type;
 
@@ -92,7 +94,7 @@ procedure AoC_2023_12 is
     end loop;
   end Read_Data;
 
-  r : array (Part_Type) of Integer;
+  r : array (Part_Type) of Integer_64;
 
   verbose : constant Boolean := False;
 
@@ -101,12 +103,12 @@ procedure AoC_2023_12 is
     --  We erode the pair of lists from right to left, so the
     --  index 1 remains through recursion.
 
-    function Count (r : Row; are_remaining_lists_intact : Boolean) return Natural is
+    function Count (r : Row; are_remaining_lists_intact : Boolean) return Integer_64 is
       head : Row;
       --  `head` is a copy of `r` with at least the last item of the spring
       --         condition list removed.
       len : Natural;
-      c : Integer;
+      c : Integer_64;
 
       procedure Expected_Size_One is
       begin
@@ -222,7 +224,7 @@ procedure AoC_2023_12 is
         for i in 1 .. r.sizes loop
           Put (r.size (i), 0); Put (',');
         end loop;
-        Put ("   comb:"); Put (c, 0); New_Line;
+        Put_Line ("   comb:" & c'Image);
       end if;
       if are_remaining_lists_intact and then r.sizes > 0 then
         memo (len, r.sizes) := c;
@@ -265,19 +267,21 @@ procedure AoC_2023_12 is
   T0 : constant Time := Clock;
 begin
   Read_Data;
+
   Do_Part (part_1);
   Prepare_Part_2;
   Do_Part (part_2);
+
   if compiler_test_mode then
-    if r (part_1) /= Integer_Value (Argument (1)) or
-       r (part_2) /= Integer_Value (Argument (2))
+    if r (part_1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (part_2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: " & r (part_1));
-    Put_Line (+"Part 2: " & r (part_2));
+    Put_Line (+"Part 1:" & r (part_1)'Image);
+    Put_Line (+"Part 2:" & r (part_2)'Image);
     --  Part 1: validated by AoC: 7007
     --  Part 2: validated by AoC: 3476169006222
   end if;

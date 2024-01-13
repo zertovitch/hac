@@ -14,9 +14,11 @@ with AoC_Toolbox;
 --  See also the GNAT project file aoc_2023.gpr .
 with HAT;
 
+with Interfaces;
+
 procedure AoC_2023_08 is
 
-  use AoC_Toolbox, HAT;
+  use AoC_Toolbox, HAT, Interfaces;
 
   subtype Pos_Type is String (1 .. 3);
 
@@ -60,10 +62,10 @@ procedure AoC_2023_08 is
     Close (f);
   end Read_Data;
 
-  r : array (Part_Type) of Integer;
+  r : array (Part_Type) of Integer_64;
 
   procedure Do_Part_1 is
-    c : Natural := 0;
+    c : Integer_64 := 0;
     i : Positive := 1;
     pos : Pos_Type;
   begin
@@ -84,7 +86,7 @@ procedure AoC_2023_08 is
   end Do_Part_1;
 
   procedure Do_Part_2_Brute_Force is
-    c : Natural := 0;
+    c : Integer_64 := 0;
     i : Positive := 1;
     pos : Multi_Pos := starter;
     goal : Boolean;
@@ -119,8 +121,8 @@ procedure AoC_2023_08 is
   procedure Do_Part_2 is
     i : Positive;
     pos : Pos_Type;
-    cycle : Positive := 1;
-    overall_cycle : Positive := 1;
+    cycle : Integer_64 := 1;
+    overall_cycle : Integer_64 := 1;
   begin
     for p in 1 .. para_top loop
       i := 1;
@@ -136,11 +138,11 @@ procedure AoC_2023_08 is
           i := 1;
         end if;
         if pos (3) = 'Z' then
-          cycle := count;
+          cycle := Integer_64 (count);
           exit;
         end if;
       end loop;
-      overall_cycle := LCM (overall_cycle, cycle);
+      overall_cycle := LCM_64 (overall_cycle, cycle);
     end loop;
     r (part_2) := overall_cycle;
   end Do_Part_2;
@@ -178,27 +180,31 @@ procedure AoC_2023_08 is
 
 begin
   Read_Data;
+
   Do_Part_1;
+
   if verbose then
     for p in 1 .. para_top loop
       Show_Cycle (p);
     end loop;
   end if;
+
   if brute then
     Do_Part_2_Brute_Force;
   else
     Do_Part_2;
   end if;
+
   if compiler_test_mode then
-    if r (part_1) /= Integer_Value (Argument (1)) or
-       r (part_2) /= Integer_Value (Argument (2))
+    if r (part_1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (part_2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: " & r (part_1));
-    Put_Line (+"Part 2: " & r (part_2));
+    Put_Line (+"Part 1:" & r (part_1)'Image);
+    Put_Line (+"Part 2:" & r (part_2)'Image);
     --  Part 1: validated by AoC: 12737
     --  Part 2: validated by AoC: 9064949303801
   end if;

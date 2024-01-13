@@ -14,9 +14,11 @@ with AoC_Toolbox;
 --  See also the GNAT project file aoc_2023.gpr .
 with HAT;
 
+with Interfaces;
+
 procedure AoC_2023_11 is
 
-  use AoC_Toolbox, HAT;
+  use AoC_Toolbox, HAT, Interfaces;
 
   --
   --  input_name : constant VString := +"mini"; n : constant := 10;
@@ -55,7 +57,7 @@ procedure AoC_2023_11 is
     Close (f);
   end Read_Data;
 
-  r : array (Part_Type) of Integer;
+  r : array (Part_Type) of Integer_64;
 
   procedure Expand_Universe (new_gap : Positive) is
   begin
@@ -89,7 +91,7 @@ procedure AoC_2023_11 is
     end case;
     for i in 1 .. gala_top - 1 loop
       for j in i + 1 .. gala_top loop
-        r (p) := r (p) + Dist_L1 (pt (i), pt (j));
+        r (p) := r (p) + Integer_64 (Dist_L1 (pt (i), pt (j)));
       end loop;
     end loop;
   end Do_Part;
@@ -100,20 +102,23 @@ procedure AoC_2023_11 is
 begin
   r (part_1) := 0;
   r (part_2) := 0;
+
   Read_Data;
+
   for p in Part_Type loop
     Do_Part (p);
   end loop;
+
   if compiler_test_mode then
-    if r (part_1) /= Integer_Value (Argument (1)) or
-       r (part_2) /= Integer_Value (Argument (2))
+    if r (part_1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (part_2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: " & r (part_1));
-    Put_Line (+"Part 2: " & r (part_2));
+    Put_Line (+"Part 1:" & r (part_1)'Image);
+    Put_Line (+"Part 2:" & r (part_2)'Image);
     --  Part 1: validated by AoC: 10173804
     --  Part 2: validated by AoC: 634324905172
   end if;

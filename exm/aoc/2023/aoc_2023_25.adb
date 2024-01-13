@@ -379,7 +379,7 @@ begin
     --  not reliable candidates for cutting all three wires
     --  at the same time.
     --  Check with `verbosity` >= 1 and by disabling the
-    --  fixed random seed (comment out `Random_Seed (1)`). 
+    --  fixed random seed (comment out `Random_Seed (1)`).
 
     for iter in 1 .. mc_iter loop
       if verbosity >= 2 then

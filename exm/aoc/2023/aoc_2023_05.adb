@@ -14,11 +14,14 @@ with AoC_Toolbox;
 --  See also the GNAT project file aoc_2023.gpr .
 with HAT;
 
+with Interfaces;
+
 procedure AoC_2023_05 is
-  use AoC_Toolbox, HAT;
+
+  use AoC_Toolbox, HAT, Interfaces;
 
   type Mapping_Rule is record
-    dest_start, source_start, length : Natural;
+    dest_start, source_start, length : Integer_64;
   end record;
 
   max_list : constant := 50;
@@ -41,7 +44,7 @@ procedure AoC_2023_05 is
 
   map : array (Relation) of Map_Type;
 
-  seed : array (1 .. max_list) of Natural;
+  seed : array (1 .. max_list) of Integer_64;
   top_seed : Natural;
 
   procedure Read_Data is
@@ -77,8 +80,8 @@ procedure AoC_2023_05 is
     Close (f);
   end Read_Data;
 
-  procedure Walk_down_Maps (x : in out Integer; start_rule : in Relation) is
-    offset : Integer;
+  procedure Walk_down_Maps (x : in out Integer_64; start_rule : in Relation) is
+    offset : Integer_64;
   begin
     for r in start_rule .. Relation'Last loop
       for li in 1 .. map (r).top loop
@@ -94,8 +97,8 @@ procedure AoC_2023_05 is
     end loop;
   end Walk_down_Maps;
 
-  procedure Walk_up_Maps (x : in out Integer; start_rule : in Relation) is
-    offset : Integer;
+  procedure Walk_up_Maps (x : in out Integer_64; start_rule : in Relation) is
+    offset : Integer_64;
   begin
     for r in reverse Relation'First .. start_rule loop
       for li in 1 .. map (r).top loop
@@ -111,11 +114,11 @@ procedure AoC_2023_05 is
     end loop;
   end Walk_up_Maps;
 
-  r : array (Part_Type) of Integer;
-  lowest_1, lowest_2 : Integer := Integer'Last;
+  r : array (Part_Type) of Integer_64;
+  lowest_1, lowest_2 : Integer_64 := Integer_64'Last;
 
   procedure Lowest_Location_Part_1 is
-    x_down : Integer;
+    x_down : Integer_64;
   begin
     for s in 1 .. top_seed loop
       x_down := seed (s);
@@ -130,7 +133,7 @@ procedure AoC_2023_05 is
 
   procedure Lowest_Location_Part_2 is
 
-    procedure Test (start_point : Natural; r : Relation) is
+    procedure Test (start_point : Integer_64; r : Relation) is
 
       --  We use the fact that the optimal path (the path that goes from a
       --  seed to the minimal location number) touches the left bound of
@@ -154,7 +157,7 @@ procedure AoC_2023_05 is
       --         So, L(sm - 1) = L(sm) - 1.
       --         Therefore, L(sm) is not the claimed minimum. QED.
 
-      x_up, x_down : Integer := start_point;
+      x_up, x_down : Integer_64 := start_point;
     begin
       --  1) We check if x_up in source can stem from any seed range.
       --     The test assumes injectivity in the whole mapping.
@@ -208,15 +211,15 @@ begin
   Lowest_Location_Part_2;
 
   if compiler_test_mode then
-    if r (part_1) /= Integer_Value (Argument (1)) or
-       r (part_2) /= Integer_Value (Argument (2))
+    if r (part_1) /= Integer_64'Value (To_String (Argument (1))) or
+       r (part_2) /= Integer_64'Value (To_String (Argument (2)))
     then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
-    Put_Line (+"Part 1: " & r (part_1));
-    Put_Line (+"Part 2: " & r (part_2));
+    Put_Line (+"Part 1:" & r (part_1)'Image);
+    Put_Line (+"Part 2:" & r (part_2)'Image);
     --  Part 1: validated by AoC: 261668924
     --  Part 2: validated by AoC: 24261545
   end if;

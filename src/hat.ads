@@ -17,7 +17,7 @@
 --
 --  Legal licensing note:
 --
---  Copyright (c) 2020 .. 2022 Gautier de Montmollin
+--  Copyright (c) 2020 .. 2024 Gautier de Montmollin
 --
 --  Permission is hereby granted, free of charge, to any person obtaining a copy
 --  of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,8 @@ with Ada.Calendar,
      Ada.Numerics,
      Ada.Strings.Unbounded,
      Ada.Text_IO;
+
+with Interfaces;
 
 with System;
 
@@ -92,6 +94,10 @@ package HAT is
   --  Min & Max
   function Min (I, J : Integer) return Integer renames Integer'Min;
   function Max (I, J : Integer) return Integer renames Integer'Max;
+  function Min (I, J : Interfaces.Integer_64) return Interfaces.Integer_64
+    renames Interfaces.Integer_64'Min;
+  function Max (I, J : Interfaces.Integer_64) return Interfaces.Integer_64
+    renames Interfaces.Integer_64'Max;
   function Min (F, G : Real)    return Real renames Real'Min;
   function Max (F, G : Real)    return Real renames Real'Max;
 
@@ -127,8 +133,9 @@ package HAT is
 
   --
 
-  package IIO is new Ada.Text_IO.Integer_IO (Integer);
-  package BIO is new Ada.Text_IO.Enumeration_IO (Boolean);
+  package IIO    is new Ada.Text_IO.Integer_IO (Integer);
+  package IIO_64 is new Ada.Text_IO.Integer_IO (Interfaces.Integer_64);
+  package BIO    is new Ada.Text_IO.Enumeration_IO (Boolean);
 
   ------------------------------------------
   --  Variable-size string type: VString  --
@@ -255,6 +262,7 @@ package HAT is
   procedure Get (C : out Character) renames Ada.Text_IO.Get;
   procedure Get (S : out String)    renames Ada.Text_IO.Get;
   procedure Get (I : out Integer);
+  procedure Get (I : out Interfaces.Integer_64);
   procedure Get (F : out Real);
 
   procedure Get_Immediate (C : out Character) renames Ada.Text_IO.Get_Immediate;
@@ -262,6 +270,7 @@ package HAT is
   --  Get and then move file pointer to next line (Skip_Line)
   procedure Get_Line (C : out Character);
   procedure Get_Line (I : out Integer);
+  procedure Get_Line (I : out Interfaces.Integer_64);
   procedure Get_Line (F : out Real);
   procedure Get_Line (V : out VString);  --  Gets the line till its end.
 
@@ -327,11 +336,13 @@ package HAT is
   procedure Get (File : File_Type; C : out Character) renames Ada.Text_IO.Get;
   procedure Get (File : File_Type; S : out String)    renames Ada.Text_IO.Get;
   procedure Get (File : File_Type; I : out Integer);
+  procedure Get (File : File_Type; I : out Interfaces.Integer_64);
   procedure Get (File : File_Type; F : out Real);
 
   --  Get and then move file pointer to next line (Skip_Line)
   procedure Get_Line (File : File_Type; C : out Character);
   procedure Get_Line (File : File_Type; I : out Integer);
+  procedure Get_Line (File : File_Type; I : out Interfaces.Integer_64);
   procedure Get_Line (File : File_Type; F : out Real);
   procedure Get_Line (File : File_Type; V : out VString);     --  Gets the line till its end.
 

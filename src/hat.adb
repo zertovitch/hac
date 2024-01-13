@@ -6,8 +6,6 @@ with Ada.Containers.Hashed_Maps,
      Ada.Strings.Unbounded.Hash,
      Ada.Text_IO.Text_Streams;
 
-with Interfaces;
-
 package body HAT is
 
   package REF is new Ada.Numerics.Generic_Elementary_Functions (Real);
@@ -526,7 +524,10 @@ package body HAT is
    ---------
 
   procedure Get (I : out Integer) is begin IIO.Get (I); end Get;
+  procedure Get (I : out Interfaces.Integer_64) is begin IIO_64.Get (I); end Get;
   procedure Get (File : File_Type; I : out Integer) is begin IIO.Get (File, I); end Get;
+  procedure Get (File : File_Type; I : out Interfaces.Integer_64) is
+  begin IIO_64.Get (File, I); end Get;
 
   procedure Get (F : out Real) is begin RIO.Get (F); end Get;
   procedure Get (File : File_Type; F : out Real) is begin RIO.Get (File, F); end Get;
@@ -540,7 +541,10 @@ package body HAT is
     begin Get (File, C); Skip_Line (File); end Get_Line;
 
   procedure Get_Line (I : out Integer) is begin Get (I); Skip_Line; end Get_Line;
+  procedure Get_Line (I : out Interfaces.Integer_64) is begin Get (I); Skip_Line; end Get_Line;
   procedure Get_Line (File : File_Type; I : out Integer) is
+    begin Get (File, I); Skip_Line (File); end Get_Line;
+  procedure Get_Line (File : File_Type; I : out Interfaces.Integer_64) is
     begin Get (File, I); Skip_Line (File); end Get_Line;
 
   procedure Get_Line (F : out Real) is begin Get (F); Skip_Line; end Get_Line;

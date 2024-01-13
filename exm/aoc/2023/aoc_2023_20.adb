@@ -145,7 +145,7 @@ procedure AoC_2023_20 is
           when 1 =>
             --  In pass #1 we just fill the vector `map` with names
             --  and feed the hash map. All but one nodes are listed
-            --  on the lines' headers. 
+            --  on the lines' headers.
             top := top + 1;
             map (top).name := key;
             Insert (hm, key, top, dummy);
