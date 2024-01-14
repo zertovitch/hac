@@ -1,4 +1,5 @@
-with HAC_Sys.PCode.Interpreter,
+with HAC_Sys.Defs,
+     HAC_Sys.PCode.Interpreter,
      HAC_Sys.Targets.AMD64_Windows_Console_FASM;
 
 with Show_MIT_License;
@@ -140,6 +141,11 @@ package body HAC_Pkg is
   end NLCE;
 
   procedure Help (level : Positive) is
+    use HAC_Sys.Defs;
+    function Show_Level (r : Compile_Remark) return String is
+    begin
+      return " (from level" & Minimum_Level (r)'Image & ')';
+    end Show_Level;
     use Ada.Text_IO;
   begin
     PLCE ("HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
@@ -181,12 +187,23 @@ package body HAC_Pkg is
       PLCE ("         environment variable.");
       NLCE;
       PLCE ("Option -rx : enable remarks (warnings or notes) of kind x");
-      PLCE ("       -rX : disable remarks of kind x");
+      PLCE ("       -rX : disable remarks for letter x");
       PLCE ("             x =");
-      PLCE ("                 k   notes for constant variables");
-      PLCE ("                 r   notes for redundant constructs");
-      PLCE ("                 u   notes for unused items");
-      PLCE ("                 v   notes for uninitialized variables");
+      PLCE
+        ("                 0 .. 3 : enable remarks of level x; default is" &
+         default_remark_level'Image);
+      PLCE
+        ("                 k :  notes for constant variables" &
+         Show_Level (note_constant_variable));
+      PLCE
+        ("                 r :  notes for redundant constructs" &
+         Show_Level (note_redundant_construct));
+      PLCE
+        ("                 u :  notes for unused items" &
+         Show_Level (note_unused_item));
+      PLCE
+        ("                 v :  warnings for uninitialized variables" &
+         Show_Level (warn_read_but_not_written));
       NLCE;
       PLCE ("Option -tx : set target machine to x");
       PLCE ("             x =");

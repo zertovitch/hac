@@ -470,7 +470,34 @@ package HAC_Sys.Defs is
   --          +-------+------+---------+
 
   type Remark_Set is array (Compile_Remark) of Boolean;
-  default_remarks : constant Remark_Set := (others => False);
+
+  type Remark_Level is range 0 .. 3;
+  default_remark_level : constant Remark_Level := 0;
+  --  !!  ^ Change to 1 on due time (warn_read_but_not_written
+  --        seems to give false positives).
+
+  --  Level 0 means: no remarks are issued.
+  --  Level 1 corresponds roughly the GNAT defaults (when you type "gnatmake"
+  --            on a command-line interpreter, it's the warnings marked
+  --            with a '*', plus others that are always enabled.
+  --  Level 2 corresponds roughly the GNAT's "-gnatwa" option, that is
+  --            warnings marked with a '+' in the help.
+  --  Level 3 means: all remarkes are enabled. This level corresponds to
+  --            the "-gnatw.e" switch.
+
+  preset_remarks : constant array (Remark_Level) of Remark_Set :=
+    (0 => (others => False),
+     1 => (warn_read_but_not_written => True, others => False),
+     2 => (note_redundant_construct |
+           note_unused_item |
+           note_constant_variable |
+           warn_read_but_not_written => True),
+     3 => (others => True));
+
+  function Minimum_Level (r : Compile_Remark) return Remark_Level;
+
+  default_remarks : constant Remark_Set :=
+    preset_remarks (default_remark_level);
 
   remark_letter : constant array (Compile_Remark) of Character :=
     (note_redundant_construct => 'r',
