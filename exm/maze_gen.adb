@@ -139,7 +139,7 @@ procedure Maze_Gen is
        (+"Height: " & Height & ", Width: " & Width);
     Put_Line
        (+"Starting generation at " &
-        Maze.Start.Row & ", " & Maze.Start.Col);
+        Maze.Start.Row & ", " & Maze.Start.Col & " (marked with an X)");
     Depth_First_Algorithm (Maze.Grid, Maze.Start);
   end Initialize;
 
@@ -156,19 +156,23 @@ procedure Maze_Gen is
     V_Bar (True)  := '|';
     S_Cell (False) := +"   ";
     S_Cell (True)  := +" X ";
+    --  North border of top row:
     Line := +"+";
     for Col in 1 .. Width loop
       Line := Line & H_Bar (Item.Grid (1, Col).Walls (North));
     end loop;
     Put_Line (Line);
+    --  All rows:
     for Row in 1 .. Height loop
+      --  West border of leftmost column:
       Line := +"" & V_Bar (Item.Grid (Row, 1).Walls (West));
+      --  All columns:
       for Col in 1 .. Width loop
-        Line := Line & S_Cell ((Row = Item.Start.Row) and (Col = Item.Start.Col))
-             --  ! Full Ada: () useless in "() and ()" (HAC has wrong priority)  !!
+        Line := Line & S_Cell (Row = Item.Start.Row and Col = Item.Start.Col)
                      & V_Bar (Item.Grid (Row, Col).Walls (East));
       end loop;
       Put_Line (Line);
+      --  South border of current row:
       Line := +"+";
       for Col in 1 .. Width loop
         Line := Line & H_Bar (Item.Grid (Row, Col).Walls (South));

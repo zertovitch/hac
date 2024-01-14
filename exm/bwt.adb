@@ -30,6 +30,7 @@ procedure BWT is
     for pass in reverse 1 .. 3 loop
       step_size (pass) := 2 * step_size (pass + 1);
     end loop;
+  Passes:
     for pass in 1 .. 4 loop
       step := step_size (pass);
       --  Do a straight insertion sort with 'step' as
@@ -42,7 +43,8 @@ procedure BWT is
         while j > step and not stop loop
           j := j - step;
           if +b (j) > +temp then
-            --  !! HAC: so far we need unary "+" for converting to VString.
+            --  !! HAC: so far we need to add an unary "+" for converting
+            --     to VString and compare the strings.
             --  TBD in HAC: ">" for array-of-discrete comparisons (RM 4.5.2 (26)).
             b (j + step) := b (j);
           else
@@ -55,7 +57,7 @@ procedure BWT is
         end if;
         i := i + step;
       end loop;
-    end loop; -- for pass in 1..npass
+    end loop Passes;
   end Shell_Sort;
 
   procedure Show (m : Table; message : VString; original : Natural) is
