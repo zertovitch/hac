@@ -1,10 +1,12 @@
 --  This is a GNAT, GCC or GNAT Studio project file
---  for the examples of the HAC project ( https://sf.net/projects/hacadacompiler/ ).
+--  for the examples of the HAC project
+--  ( http://hacadacompiler.sf.net/ or https://github.com/zertovitch/hac ).
 --
 --  These examples give (or should give...) the same output on a real
 --  Ada compiler as when compiled and run by HAC.
 --
---  The official regression test for HAC is `all_silent_tests.adb`.
+--  The official regression test for HAC is `all_silent_tests.adb`
+--  and runs most of the tests below.
 --
 --  Build me with "gprbuild -P hac_test", or open me with GNAT Studio.
 --  
@@ -61,7 +63,7 @@ project HAC_Test is
    Common_Compiler_Options := (
      "-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
      "-gnatwcijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
-     "-gnatwCKMUV",                    --  Warnings switches (turn off some irrelevant for the tests)
+     "-gnatwCKMUV",                    --  Warnings switches (turn OFF some that are irrelevant for the tests)
      "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
      "-gnatf",  --  Full errors. Verbose details, all undefined references
      "-gnatq",  --  Don't quit, try semantics, even if parse errors

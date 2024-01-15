@@ -52,6 +52,9 @@ begin
   end loop;
   Assert (sum = -84, +"M'Range (N)");
 
+  --  Calm down the warning [-rv] about a variable read but never written:
+  mmm (10).x := 123.0;
+
   Assert (-2 = mmm (10).y'Last (1),  +"Obj.Last (1)");
   Assert (bb = mmm (15).y'First (2), +"Obj.First (2)");
 
