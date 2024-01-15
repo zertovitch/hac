@@ -445,8 +445,10 @@ package body HAC_Sys.Compiler is
     if CD.Sy /= IDent then
       Error (CD, err_identifier_missing, severity => major);
     end if;
-    CD.main_unit_ident           := CD.Id;
-    CD.main_unit_ident_with_case := CD.Id_with_case;
+    if as_main_unit then
+      CD.main_unit_ident           := CD.Id;
+      CD.main_unit_ident_with_case := CD.Id_with_case;
+    end if;
     if A2S (CD.Id) /= upper_name then
       Error (CD, err_wrong_unit_name, upper_name, A2S (CD.Id), major);
     end if;
