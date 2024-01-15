@@ -9,63 +9,75 @@ package body HAC_Sys.Parser.Calls is
   use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
   use type HAC_Integer;
 
-  procedure Push_and_Check_by_Value_Parameter (
-    CD       : in out Co_Defs.Compiler_Data;
-    Level    :        Defs.Nesting_Level;
-    FSys     :        Defs.Symset;
-    Expected :        Co_Defs.Exact_Subtyp
-  )
+  procedure Push_Parameter_by_Value
+    (CD       : in out Co_Defs.Compiler_Data;
+     level    :        Defs.Nesting_Level;
+     fsys     :        Defs.Symset;
+     expected :        Co_Defs.Exact_Subtyp)
   is
     X : Exact_Subtyp;
   begin
     --  Expression does all the job of parsing and, for
     --  atomic types, emitting the right "push" instructions.
-    Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+    Expression (CD, level, fsys + Colon_Comma_RParent, X);
     --  What is left is:
     --    - checking types
     --    - for composite types, emit an instruction for pushing
     --        the contents on the stack.
-    if X.TYP = Expected.TYP then
-      if X.Ref /= Expected.Ref then
-        Type_Mismatch (CD, err_parameter_types_do_not_match, X, Expected);
+    if X.TYP = expected.TYP then
+      if X.Ref /= expected.Ref then
+        Type_Mismatch (CD, err_parameter_types_do_not_match, X, expected);
       elsif X.TYP = Arrays then
         Emit_1 (CD, k_Load_Block, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
       elsif X.TYP = Records then
         Emit_1 (CD, k_Load_Block, Operand_2_Type (CD.Blocks_Table (X.Ref).VSize));
       end if;
-    elsif X.TYP = Ints and Expected.TYP = Floats then
-      Forbid_Type_Coercion (CD, X, Expected);
+    elsif X.TYP = Ints and expected.TYP = Floats then
+      Forbid_Type_Coercion (CD, X, expected);
       Emit_1 (CD, k_Integer_to_Float, 0);  --  Left as a "souvenir" of SmallAda...
     elsif X.TYP /= NOTYP then
-      Type_Mismatch (CD, err_parameter_types_do_not_match, X, Expected);
+      Type_Mismatch (CD, err_parameter_types_do_not_match, X, expected);
     end if;
-  end Push_and_Check_by_Value_Parameter;
+  end Push_Parameter_by_Value;
 
-  procedure Push_by_Reference_Parameter (
-    CD       : in out Co_Defs.Compiler_Data;
-    Level    :        Defs.Nesting_Level;
-    FSys     :        Defs.Symset;
-    Name     :        String;
-    Found    :    out Co_Defs.Exact_Subtyp  --  Funny note: Found is itself pushed by reference...
-  )
+  procedure Push_Parameter_by_Reference
+    (CD       : in out Co_Defs.Compiler_Data;
+     level    :        Defs.Nesting_Level;
+     fsys     :        Defs.Symset;
+     name     :        String;
+     mode     :        Co_Defs.Parameter_Kind;
+     found    :    out Co_Defs.Exact_Subtyp)
   is
     K : Integer;
   begin
-    Found := Undefined;
+    found := Undefined;
     if CD.Sy = IDent then
-      K := Locate_CD_Id (CD, Level);
+      K := Locate_CD_Id (CD, level);
       InSymbol (CD);
       if K = No_Id then
         null;  --  Error already issued due to undefined identifier
       elsif CD.IdTab (K).entity not in Object_Kind then
-        Error (CD, err_variable_missing, Name, severity => major);
+        Error (CD, err_variable_missing, name, severity => major);
       elsif CD.IdTab (K).entity = constant_object then
         Error
           (CD, err_cannot_modify_constant_or_in_parameter,
            ": passed to OUT or IN OUT parameter");
       else
-        Found := CD.IdTab (K).xtyp;
-        CD.IdTab (K).is_read := True;
+        found := CD.IdTab (K).xtyp;
+        --  Affect the access analysis for the variable.
+        --  This assumes that the subprogram actually does
+        --  read the IN's and write the OUT's.
+        --  But anyway the actual usage of parameters is also
+        --  checked after the subprogram's compilation.
+        case mode is
+          when param_in =>
+            CD.IdTab (K).is_read    := True;
+          when param_in_out =>
+            CD.IdTab (K).is_read    := True;
+            CD.IdTab (K).is_written := True;
+          when param_out =>
+            CD.IdTab (K).is_written := True;
+        end case;
         Emit_2
           (CD,
            (if CD.IdTab (K).normal then
@@ -76,23 +88,22 @@ package body HAC_Sys.Parser.Calls is
            Operand_2_Type (CD.IdTab (K).adr_or_sz));
         --
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-          Selector (CD, Level, FSys + Colon_Comma_RParent, Found);
+          Selector (CD, level, fsys + Colon_Comma_RParent, found);
         end if;
       end if;
     else
-      Error (CD, err_variable_missing, Name, severity => major);
+      Error (CD, err_variable_missing, name, severity => major);
     end if;
-  end Push_by_Reference_Parameter;
+  end Push_Parameter_by_Reference;
 
   ------------------------------------------------------------------
   -----------------------------------------Subprogram_or_Entry_Call-
-  procedure Subprogram_or_Entry_Call (
-    CD          : in out Co_Defs.Compiler_Data;
-    Level       :        Defs.Nesting_Level;
-    FSys        :        Defs.Symset;
-    Ident_Index :        Integer;
-    CallType    :        PCode.Operand_1_Type
-  )
+  procedure Subprogram_or_Entry_Call
+    (CD          : in out Co_Defs.Compiler_Data;
+     level       :        Defs.Nesting_Level;
+     fsys        :        Defs.Symset;
+     ident_index :        Integer;
+     call_type   :        PCode.Operand_1_Type)
   is
     --****************************************************************
     --  Generate ObjCode for subprogram or Task Entry Call
@@ -106,8 +117,8 @@ package body HAC_Sys.Parser.Calls is
     found, expected : Exact_Subtyp;
     block_idx : Index;
   begin
-    Emit_1 (CD, k_Mark_Stack, Operand_2_Type (Ident_Index));
-    block_idx := CD.IdTab (Ident_Index).block_or_pkg_ref;
+    Emit_1 (CD, k_Mark_Stack, Operand_2_Type (ident_index));
+    block_idx := CD.IdTab (ident_index).block_or_pkg_ref;
     current_param := CD.Blocks_Table (block_idx).First_Param_Id_Idx - 1;
     last_param    := CD.Blocks_Table (block_idx).Last_Param_Id_Idx;
     if CD.Sy = LParent then  --  Actual parameter list
@@ -123,24 +134,29 @@ package body HAC_Sys.Parser.Calls is
           current_param := current_param + 1;
           expected := CD.IdTab (current_param).xtyp;
           if CD.IdTab (current_param).normal then
-            --------------------------------------------------
-            --  Value parameter (IN)                        --
-            --  Currently we pass it only by value (copy).  --
-            --------------------------------------------------
-            Push_and_Check_by_Value_Parameter (CD, Level, FSys, expected);
+            ------------------------------------------------------
+            --  Value parameter                                 --
+            --  Only IN mode; value is passed by value (copy).  --
+            ------------------------------------------------------
+            Push_Parameter_by_Value (CD, level, fsys, expected);
           else
-            -----------------------------------------------
-            --  Variable (Name) parameter (IN OUT, OUT)  --
-            --  This is passed by reference              --
-            -----------------------------------------------
-            Push_by_Reference_Parameter
-              (CD, Level, FSys, A2S (CD.IdTab (current_param).name_with_case), found);
+            ------------------------------------
+            --  Variable (Name) parameter     --
+            --  This is passed by reference.  --
+            ------------------------------------
+            Push_Parameter_by_Reference
+              (CD,
+               level,
+               fsys,
+               A2S (CD.IdTab (current_param).name_with_case),
+               CD.IdTab (current_param).decl_kind,
+               found);
             if Exact_Typ (found) /= Exact_Typ (expected) then
               Type_Mismatch (CD, err_parameter_types_do_not_match, found, expected);
             end if;
           end if;
         end if;
-        Test (CD, Comma_RParent, FSys, err_incorrectly_used_symbol);
+        Test (CD, Comma_RParent, fsys, err_incorrectly_used_symbol);
         exit when CD.Sy /= Comma;
       end loop;
       Need (CD, RParent, err_closing_parenthesis_missing);
@@ -153,37 +169,37 @@ package body HAC_Sys.Parser.Calls is
          severity => major);
     end if;
     --
-    Emit_2 (CD, k_Call, CallType, Operand_2_Type (CD.Blocks_Table (CD.IdTab (Ident_Index).block_or_pkg_ref).PSize - 1));
-    if CallType /= Normal_Procedure_Call then  --  Some for of entry call
-      Emit_1 (CD, k_Exit_Call, Operand_2_Type (CallType));  --  Return from Entry Call
+    Emit_2 (CD, k_Call, call_type, Operand_2_Type (CD.Blocks_Table (CD.IdTab (ident_index).block_or_pkg_ref).PSize - 1));
+    if call_type /= Normal_Procedure_Call then  --  Some for of entry call
+      Emit_1 (CD, k_Exit_Call, Operand_2_Type (call_type));  --  Return from Entry Call
     end if;
     --
-    if CD.IdTab (Ident_Index).lev < Level then
+    if CD.IdTab (ident_index).lev < level then
       Emit_2 (CD,
         k_Update_Display_Vector,
-        Operand_1_Type (CD.IdTab (Ident_Index).lev),
-        Operand_2_Type (Level)
+        Operand_1_Type (CD.IdTab (ident_index).lev),
+        Operand_2_Type (level)
       );
     end if;
   end Subprogram_or_Entry_Call;
 
   ------------------------------------------------------------------
   -------------------------------------------------------Entry_Call-
-  procedure Entry_Call (
-    CD          : in out Co_Defs.Compiler_Data;
-    Level       :        Defs.Nesting_Level;
-    FSys        :        Defs.Symset;
-    I           :        Integer;
-    CallType    :        PCode.Operand_1_Type
-  )
-  is -- Hathorn
+  procedure Entry_Call
+    (CD          : in out Co_Defs.Compiler_Data;
+     level       :        Defs.Nesting_Level;
+     fsys        :        Defs.Symset;
+     i           :        Integer;
+     call_type   :        PCode.Operand_1_Type)
+  is
+    --  Hathorn
     Addr, J : Integer;
     use type Alfa;
   begin
     if CD.Sy = Period then
       InSymbol (CD);                  --  Task Entry Selector
       if CD.Sy = IDent then
-        J := CD.Blocks_Table (CD.IdTab (I).block_or_pkg_ref).Last_Id_Idx;
+        J := CD.Blocks_Table (CD.IdTab (i).block_or_pkg_ref).Last_Id_Idx;
         CD.IdTab (0).name := CD.Id;
         while CD.IdTab (J).name /= CD.Id loop
           J := CD.IdTab (J).link;
@@ -195,7 +211,7 @@ package body HAC_Sys.Parser.Calls is
         --
         Addr := J;
         InSymbol (CD);
-        Subprogram_or_Entry_Call (CD, Level, FSys, Addr, CallType);
+        Subprogram_or_Entry_Call (CD, level, fsys, Addr, call_type);
       else
         Error_then_Skip (CD, Semicolon, err_identifier_missing);
       end if;

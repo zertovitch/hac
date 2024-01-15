@@ -472,9 +472,7 @@ package HAC_Sys.Defs is
   type Remark_Set is array (Compile_Remark) of Boolean;
 
   type Remark_Level is range 0 .. 3;
-  default_remark_level : constant Remark_Level := 0;
-  --  !!  ^ Change to 1 on due time (warn_read_but_not_written
-  --        seems to give false positives).
+  default_remark_level : constant Remark_Level := 1;
 
   --  Level 0 means: no remarks are issued.
   --  Level 1 corresponds roughly the GNAT defaults (when you type "gnatmake"
@@ -530,6 +528,8 @@ package HAC_Sys.Defs is
   end record;
 
   type Diagnostic_Kind_Type is (error, warning, note, style);
+
+  subtype Remark_Type is Diagnostic_Kind_Type range warning .. note;
 
   type Diagnostic_Kit is new Repair_Kit with record
     diagnostic_kind : Diagnostic_Kind_Type := error;

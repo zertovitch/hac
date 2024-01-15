@@ -103,7 +103,7 @@ package body HAC_Sys.Parser is
               block_data.data_allocation_index := block_data.data_allocation_index + Sz;
               r.is_referenced  := False;
               r.is_initialized := (if param_kind = param_out then none else implicit);
-              r.is_assigned    := False;
+              r.is_written     := False;
             end;
           end loop;  --  while T0 < CD.Id_Count
         else
@@ -323,7 +323,8 @@ package body HAC_Sys.Parser is
           begin
             exit when item.lev < block_data.level;
             if item.is_read then
-              if item.entity = variable_object and then not item.is_assigned then
+              if item.entity = variable_object and then not item.is_written then
+                --  Read but not written.
                 case item.is_initialized is
                   when none =>
                     Remark_for_declared_Item
@@ -339,7 +340,8 @@ package body HAC_Sys.Parser is
                     null;
                 end case;
               end if;
-            elsif item.entity = variable_object and then item.is_assigned then
+            elsif item.entity = variable_object and then item.is_written then
+              --  Written but not read.
               Remark_for_declared_Item
                 (note_unused_item,
                  "variable """ & A2S (item.name_with_case) &

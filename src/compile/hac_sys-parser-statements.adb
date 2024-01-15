@@ -500,7 +500,7 @@ package body HAC_Sys.Parser.Statements is
               is_referenced    => False,
               is_read          => False,
               is_initialized   => explicit,
-              is_assigned      => False,
+              is_written       => False,
               location         => (0, 0, 0));
         --
         CD.target.Mark_Declaration;
@@ -915,7 +915,7 @@ package body HAC_Sys.Parser.Statements is
         case CD.IdTab (I_Statement).entity is
           when Object_Kind =>
             Assignment (CD, FSys_St, Block_Data.level, I_Statement, check_is_variable => True);
-            CD.IdTab (I_Statement).is_assigned := True;
+            CD.IdTab (I_Statement).is_written := True;
           when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
                    severity => major);

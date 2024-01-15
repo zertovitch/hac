@@ -90,7 +90,7 @@ package body HAC_Sys.Parser.Enter_Def is
        is_referenced    => False,
        is_read          => False,
        is_initialized   => none,
-       is_assigned      => False,
+       is_written       => False,
        location         => CD.CUD.location);
     --
     CD.target.Mark_Declaration;

@@ -172,7 +172,7 @@ package HAC_Sys.Co_Defs is
     is_referenced    : Boolean;
     is_read          : Boolean;              --  For variable or constant: is it read?
     is_initialized   : Initialized_Kind;     --  For variable or constant: is it initialized?
-    is_assigned      : Boolean;              --  Is a variable assigned in a statement part?
+    is_written       : Boolean;              --  Is variable written via ":=" or "out" mode?
     location         : Symbol_Location;
   end record;
 

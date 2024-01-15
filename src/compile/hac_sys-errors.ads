@@ -44,6 +44,13 @@ package HAC_Sys.Errors is
      location_method     :        Symbol_Location_Method := current_symbol;
      explicit_location   :        Defs.Symbol_Location   := (0, 0, 0));
 
+  function Diagnostic_Prefix (kind : Defs.Diagnostic_Kind_Type) return String is
+    (case kind is
+       when Defs.error   => "",
+       when Defs.warning => "warning: ",
+       when Defs.note    => "note: ",
+       when Defs.style   => "style: ");
+
   procedure Compilation_Diagnostics_Summary (CD : Co_Defs.Compiler_Data);
 
   type Table_OverFlow_Error is

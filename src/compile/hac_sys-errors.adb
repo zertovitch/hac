@@ -369,13 +369,6 @@ package body HAC_Sys.Errors is
     use HAT.VStr_Pkg;
     kit : Diagnostic_Kit;
     --
-    function Diagnostic_Prefix return String is
-      (case kit.diagnostic_kind is
-         when error   => "",
-         when warning => "warning: ",
-         when note    => "note: ",
-         when style   => "style: ");
-    --
     function Diagnostic_Suffix return String is
       (case kit.diagnostic_kind is
          when warning | note => " [-r" & remark_letter (code) & ']',
@@ -412,7 +405,7 @@ package body HAC_Sys.Errors is
          Trim (to_be_marked.line'Image,         Left) & ':' &
          Trim (to_be_marked.column_start'Image, Left) & '-' &
          Trim (to_be_marked.column_stop'Image,  Left) & ": " &
-         Diagnostic_Prefix &
+         Diagnostic_Prefix (kit.diagnostic_kind) &
          Diagnostic_String (code, hint_1, hint_2) &
          Diagnostic_Suffix);
     else

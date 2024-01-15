@@ -188,7 +188,7 @@ package body HAC_Sys.Parser.Const_Var is
             r.is_referenced  := False;
             r.is_initialized := (if is_untyped_constant then explicit else none);
                                 --  ^ This value may be changed below.
-            r.is_assigned    := False;
+            r.is_written     := False;
             if is_untyped_constant then
               r.entity := declared_number_or_enum_item;  --  r was initially a Variable.
               r.xtyp := C.TP;
