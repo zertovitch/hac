@@ -141,12 +141,9 @@ package body HAC_Pkg is
   end NLCE;
 
   procedure Help (level : Positive) is
-    use HAC_Sys.Defs;
+    use HAC_Sys.Defs, Ada.Text_IO;
     function Show_Level (r : Compile_Remark) return String is
-    begin
-      return " (from level" & Minimum_Level (r)'Image & ')';
-    end Show_Level;
-    use Ada.Text_IO;
+      (" (from level" & Minimum_Level (r)'Image & ')');
   begin
     PLCE ("HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
     PLCE (version_info);

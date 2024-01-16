@@ -816,20 +816,104 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Check_Incomplete_Definitions
     (CD    : in out Co_Defs.Compiler_Data;
-     Level :        Defs.Nesting_Level)
+     level :        Defs.Nesting_Level)
   is
-    i : Integer := CD.Blocks_Table (CD.Display (Level)).Last_Id_Idx;
+    id_index : Integer := CD.Blocks_Table (CD.Display (level)).Last_Id_Idx;
   begin
     --  Follow the chain of identifiers for given Level:
-    while i /= Co_Defs.No_Id loop
-      if CD.IdTab (i).decl_kind = spec_unresolved
-         and then CD.IdTab (i).entity /= entree
+    while id_index /= No_Id loop
+      if CD.IdTab (id_index).decl_kind = spec_unresolved
+         and then CD.IdTab (id_index).entity /= entree
       then
-        Error (CD, err_incomplete_declaration, A2S (CD.IdTab (i).name_with_case));
+        Error (CD, err_incomplete_declaration, A2S (CD.IdTab (id_index).name_with_case));
       end if;
-      i := CD.IdTab (i).link;
+      id_index := CD.IdTab (id_index).link;
     end loop;
   end Check_Incomplete_Definitions;
+
+  procedure Check_Unused_or_Uninitialized_Items
+    (CD    : in out Compiler_Data;
+     level : in     Defs.Nesting_Level)
+  is
+    procedure Check_Item (item : IdTabEntry) is
+
+      already_insulted : Boolean := False;
+
+      procedure Remark_for_Declared_Item (diag : Compile_Diagnostic; text : String) is
+      begin
+        if not already_insulted then
+          Remark
+            (CD,
+             diag,
+             text,
+             location_method   => explicit,
+             explicit_location => item.location);
+          already_insulted := True;
+        end if;
+      end Remark_for_Declared_Item;
+
+      function Var_or_Param return String is
+      (if item.decl_kind in Parameter_Kind then "parameter " else "variable ");
+
+    begin
+      --  See table in "hac_work.xls", sheet "Remarks".
+      if item.is_read >= maybe then
+        if item.entity = variable_object and then item.is_written = no then
+          --  Read but not written.
+          case item.is_initialized is
+            when none =>
+              Remark_for_Declared_Item
+                (warn_read_but_not_written,
+                 Var_or_Param & '"' & A2S (item.name_with_case) &
+                 """ is " &
+                 (if item.is_read = maybe then
+                  "possibly " else "") &
+                 "read but never written");
+            when explicit =>
+              Remark_for_Declared_Item
+                (note_constant_variable,
+                 Var_or_Param & '"' & A2S (item.name_with_case) &
+                 """ is not modified, could be declared constant");
+            when implicit =>
+              null;
+          end case;
+        end if;
+      elsif item.entity = variable_object and then item.is_written >= maybe then
+        --  Written but not read.
+        Remark_for_Declared_Item
+          (note_unused_item,
+           Var_or_Param & '"' & A2S (item.name_with_case) &
+           """ is never read");
+      end if;
+      if item.entity /= alias and then not item.is_referenced then
+        --  Here we can have any explicit declaration
+        --  (object, type, subprogram, ...)
+        Remark_for_Declared_Item
+          (note_unused_item,
+           (if item.decl_kind in Parameter_Kind then
+              "parameter "
+            else
+              (case item.entity is
+                when variable_object => "variable ",
+                when constant_object => "constant ",
+                when type_mark       => "type ",
+                when prozedure       => "procedure ",
+                when funktion        => "function ",
+                when paquetage       => "package ",
+                when tache           => "task ",
+                when others          => "")) &
+            '"' & A2S (item.name_with_case) & """ is unused");
+      end if;
+    end Check_Item;
+
+    id_index : Integer := CD.Blocks_Table (CD.Display (level)).Last_Id_Idx;
+  begin
+    --  Follow the chain of identifiers for given Level:
+    while id_index /= No_Id loop
+      Check_Item (CD.IdTab (id_index));
+      id_index := CD.IdTab (id_index).link;
+    end loop;
+  end Check_Unused_or_Uninitialized_Items;
 
   function Number_of_Parameters
     (CD         : in out Compiler_Data;

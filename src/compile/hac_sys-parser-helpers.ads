@@ -398,7 +398,11 @@ package HAC_Sys.Parser.Helpers is
 
   procedure Check_Incomplete_Definitions
     (CD    : in out Co_Defs.Compiler_Data;
-     Level :        Defs.Nesting_Level);
+     level :        Defs.Nesting_Level);
+
+  procedure Check_Unused_or_Uninitialized_Items
+    (CD    : in out Compiler_Data;
+     level : in     Defs.Nesting_Level);
 
   function Number_of_Parameters
     (CD         : in out Compiler_Data;

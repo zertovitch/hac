@@ -64,20 +64,24 @@ package body HAC_Sys.Parser.Calls is
            ": passed to OUT or IN OUT parameter");
       else
         found := CD.IdTab (K).xtyp;
-        --  Affect the access analysis for the variable.
-        --  This assumes that the subprogram actually does
-        --  read the IN's and write the OUT's.
-        --  But anyway the actual usage of parameters is also
-        --  checked after the subprogram's compilation.
+
+        --  Update the reference analysis for the variable.
+        --  The concerned flags (.is_read, .is_written) are
+        --  raised from `no` to `maybe`.
+        --  The usage of the subprogram's parameters is
+        --  checked at the end of the subprogram's compilation
+        --  (see Formal_Parameter_List for startup values).
+        --
         case mode is
           when param_in =>
-            CD.IdTab (K).is_read    := True;
+            Raise_to_Maybe (CD.IdTab (K).is_read);
           when param_in_out =>
-            CD.IdTab (K).is_read    := True;
-            CD.IdTab (K).is_written := True;
+            Raise_to_Maybe (CD.IdTab (K).is_read);
+            Raise_to_Maybe (CD.IdTab (K).is_written);
           when param_out =>
-            CD.IdTab (K).is_written := True;
+            Raise_to_Maybe (CD.IdTab (K).is_written);
         end case;
+
         Emit_2
           (CD,
            (if CD.IdTab (K).normal then
@@ -86,7 +90,7 @@ package body HAC_Sys.Parser.Calls is
               k_Push_Discrete_Value),  --  Push "(a.all)'Access", that is, a (a is an access type).
            Operand_1_Type (CD.IdTab (K).lev),
            Operand_2_Type (CD.IdTab (K).adr_or_sz));
-        --
+
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
           Selector (CD, level, fsys + Colon_Comma_RParent, found);
         end if;

@@ -152,6 +152,10 @@ package HAC_Sys.Co_Defs is
 
   type Initialized_Kind is (none, explicit, implicit);
 
+  type No_Maybe_Yes is (no, maybe, yes);
+
+  procedure Raise_to_Maybe (item : in out No_Maybe_Yes);
+
   ------------------------------
   --  Identifier Table Entry  --
   ------------------------------
@@ -169,10 +173,10 @@ package HAC_Sys.Co_Defs is
     normal           : Boolean;              --  value param?
     lev              : Nesting_Level;
     adr_or_sz        : HAC_Integer;          --  Address, Size; index of aliased entity (USE) !! rather use block_or_pkg_ref ?!
-    is_referenced    : Boolean;
-    is_read          : Boolean;              --  For variable or constant: is it read?
+    is_referenced    : Boolean;              --  For any item: is it referenced at all?
+    is_read          : No_Maybe_Yes;         --  For variable or constant: is it read?
+    is_written       : No_Maybe_Yes;         --  Is variable written via ":=" or "out" mode?
     is_initialized   : Initialized_Kind;     --  For variable or constant: is it initialized?
-    is_written       : Boolean;              --  Is variable written via ":=" or "out" mode?
     location         : Symbol_Location;
   end record;
 

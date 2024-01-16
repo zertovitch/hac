@@ -94,17 +94,26 @@ package body HAC_Sys.Parser is
             declare
               r : IdTabEntry renames CD.IdTab (T0);
             begin
-              r.xtyp      := xTP;
-              r.normal    := ValParam;
-              r.entity    := (if param_kind = param_in then constant_object else variable_object);
-              r.decl_kind := param_kind;
-              r.adr_or_sz := HAC_Integer (block_data.data_allocation_index);
-              r.lev       := block_data.level;
-              block_data.data_allocation_index := block_data.data_allocation_index + Sz;
+              --  The initial values for .is_read and .is_written assume
+              --  that the caller has written the IN OUT passed variables
+              --  (or a valid expression is passed for IN), and will read
+              --  the OUT variables after the call.
+              --  See also Push_Parameter_by_Reference.
+              --
+              r.xtyp           := xTP;
+              r.normal         := ValParam;
+              r.entity         := (if param_kind = param_in then constant_object else variable_object);
+              r.decl_kind      := param_kind;
+              r.adr_or_sz      := HAC_Integer (block_data.data_allocation_index);
+              r.lev            := block_data.level;
               r.is_referenced  := False;
+              r.is_read        := (if param_kind = param_in then no else maybe);
+                                  --  ^ passed variable is maybe read after call.
+              r.is_written     := (if param_kind = param_out then no else maybe);
+                                  --  ^ passed variable is maybe written before call.
               r.is_initialized := (if param_kind = param_out then none else implicit);
-              r.is_written     := False;
             end;
+            block_data.data_allocation_index := block_data.data_allocation_index + Sz;
           end loop;  --  while T0 < CD.Id_Count
         else
           Error (CD, err_colon_missing, severity => major);
@@ -304,59 +313,6 @@ package body HAC_Sys.Parser is
     end Process_Spec;
 
     procedure Process_Body is
-      procedure Check_unused_or_uninitialized_items is
-        id_index : Integer := CD.Id_Count;
-      begin
-        --  See table in "hac_work.xls", sheet "Remarks".
-        while id_index /= No_Id loop
-          declare
-            item : IdTabEntry renames CD.IdTab (id_index);
-            procedure Remark_for_declared_Item (diag : Compile_Diagnostic; text : String) is
-            begin
-              Remark
-                (CD,
-                 diag,
-                 text,
-                 location_method   => explicit,
-                 explicit_location => item.location);
-            end Remark_for_declared_Item;
-          begin
-            exit when item.lev < block_data.level;
-            if item.is_read then
-              if item.entity = variable_object and then not item.is_written then
-                --  Read but not written.
-                case item.is_initialized is
-                  when none =>
-                    Remark_for_declared_Item
-                      (warn_read_but_not_written,
-                       "variable """ & A2S (item.name_with_case) &
-                       """ is read but never written");
-                  when explicit =>
-                    Remark_for_declared_Item
-                      (note_constant_variable,
-                       "variable """ & A2S (item.name_with_case) &
-                       """ is not modified, could be declared constant");
-                  when implicit =>
-                    null;
-                end case;
-              end if;
-            elsif item.entity = variable_object and then item.is_written then
-              --  Written but not read.
-              Remark_for_declared_Item
-                (note_unused_item,
-                 "variable """ & A2S (item.name_with_case) &
-                 """ is never read");
-            elsif item.entity /= alias and then not item.is_referenced then
-              --  Here we can have any explicit declaration
-              --  (object, type, subprogram, ...)
-              Remark_for_declared_Item
-                (note_unused_item,
-                 '"' & A2S (item.name_with_case) & """ is unused");
-            end if;
-            id_index := item.link;
-          end;
-        end loop;
-      end Check_unused_or_uninitialized_items;
     begin
       CD.IdTab (block_data.block_id_index).decl_kind := complete;
       Check_Subprogram_Spec_Body_Consistency
@@ -401,7 +357,7 @@ package body HAC_Sys.Parser is
           or CD.remarks (note_constant_variable)
           or CD.remarks (warn_read_but_not_written)
         then
-          Check_unused_or_uninitialized_items;
+          Check_Unused_or_Uninitialized_Items (CD, block_data.level);
         end if;
         --
         if CD.Sy = END_Symbol then

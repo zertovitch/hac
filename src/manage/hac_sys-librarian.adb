@@ -71,7 +71,7 @@ package body HAC_Sys.Librarian is
      Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last;
      is_built_in    : in     Boolean := False)
   is
-    use Ada.Characters.Handling, Defs;
+    use Ada.Characters.Handling, Co_Defs, Defs;
     use type Nesting_Level;
     Alfa_Ident       : constant Alfa := S2A (Full_Ident);
     Alfa_Ident_Upper : constant Alfa := S2A (To_Upper (Full_Ident));
@@ -87,7 +87,7 @@ package body HAC_Sys.Librarian is
        name_with_case   => Alfa_Ident,
        link             => last,
        entity           => New_Entity,
-       decl_kind        => Co_Defs.complete,
+       decl_kind        => complete,
        xtyp             => (TYP            => Base_Type,
                             Ref            => 0,
                             Is_Range       => False,
@@ -98,9 +98,9 @@ package body HAC_Sys.Librarian is
        lev              => 0,
        adr_or_sz        => HAC_Integer (Size),
        is_referenced    => False,
-       is_read          => False,
-       is_initialized   => Co_Defs.none,
-       is_written       => False,
+       is_read          => no,
+       is_written       => no,
+       is_initialized   => none,
        location         => (0, 0, 0));
 
     CD.target.Mark_Declaration (is_built_in);
