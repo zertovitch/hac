@@ -2,8 +2,8 @@
 --
 --  Command sample:
 --
---      hac        -rkruv remarks.adb
---      gcc -c -gnatwkruv remarks.adb
+--  for HAC:         hac -c     -rkruv remarks.adb
+--  for GNAT:        gcc -c -gnatwkruv remarks.adb
 
 with Interfaces;
 
@@ -24,7 +24,7 @@ procedure Remarks is
   procedure Missing_Read_Writes  --  Note: procedure "Missing_Read_Writes" is unused [-ru]
     (a : in     Integer;         --  Note: parameter "a" is unused [-ru]
      b : in out Integer;         --  Note: parameter "b" is unused [-ru]
-     c :    out Integer;         --  Warning: parameter "c" is possibly read but never written [-rv]
+     c :    out Integer;         --  Warning: parameter "c" is never written [-rv]
      d :    out Integer)         --  Warning: parameter "d" is read but never written [-rv]
   is
   begin

@@ -866,9 +866,8 @@ package body HAC_Sys.Parser.Helpers is
                 (warn_read_but_not_written,
                  Var_or_Param & '"' & A2S (item.name_with_case) &
                  """ is " &
-                 (if item.is_read = maybe then
-                  "possibly " else "") &
-                 "read but never written");
+                 (if item.is_read > maybe then "read but " else "") &
+                 "never written");
             when explicit =>
               Remark_for_Declared_Item
                 (note_constant_variable,
@@ -902,7 +901,7 @@ package body HAC_Sys.Parser.Helpers is
                 when paquetage       => "package ",
                 when tache           => "task ",
                 when others          => "")) &
-            '"' & A2S (item.name_with_case) & """ is unused");
+            '"' & A2S (item.name_with_case) & """ is not referenced");
       end if;
     end Check_Item;
 

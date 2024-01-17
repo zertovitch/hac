@@ -199,7 +199,7 @@ package body HAC_Pkg is
         ("                 u :  notes for unused items" &
          Show_Level (note_unused_item));
       PLCE
-        ("                 v :  warnings for uninitialized variables" &
+        ("                 v :  warnings for uninitialized variables or parameters" &
          Show_Level (warn_read_but_not_written));
       NLCE;
       PLCE ("Option -tx : set target machine to x");
