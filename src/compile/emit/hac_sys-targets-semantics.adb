@@ -189,6 +189,10 @@ package body HAC_Sys.Targets.Semantics is
     list : Declaration_Lists.Map;
     up_prefix : constant VString := To_Upper (+prefix);
     result : VString;
+    procedure Include_Special (word : String) is
+    begin
+      list.Include (To_Upper (+word), +word);
+    end Include_Special;
   begin
     --  1) Find the line map associated to the given file name.
     declare
@@ -232,11 +236,29 @@ package body HAC_Sys.Targets.Semantics is
             Put_Line (+"    " & item.name_with_case);
           end if;
         end if;
-        --  Jump to previous identifier index, on same or lower level:
+        --  Jump to previous identifier index,
+        --  on same or lower level:
         idx := item.link;
+        --  !!  Wrong assumption here: only the current level is
+        --      scanned. See Locate_Identifier_Internal.
       end;
     end loop;
-    --  Output the list as a single string seperated by spaces:
+    --  4) Add some keywords
+    Include_Special ("record");
+    Include_Special ("begin");
+    Include_Special ("end");
+    Include_Special ("case");
+    Include_Special ("when");
+    Include_Special ("others");
+    Include_Special ("loop");
+    Include_Special ("while");
+    Include_Special ("exit");
+    Include_Special ("return");
+    Include_Special ("procedure");
+    Include_Special ("function");
+    Include_Special ("package");
+    Include_Special ("body");
+    --  5) Output the list as a single string seperated by spaces:
     for s of list loop
       --  Like `result := result & s & ' ';`, possibly more efficient:
       VStr_Pkg.Append (result, s);
