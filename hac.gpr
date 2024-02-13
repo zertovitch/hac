@@ -1,9 +1,10 @@
 --  This is a GNAT, GCC or GNAT Studio project file
 --  for the HAC project:
 --
---      home page:     http://hacadacompiler.sf.net/
---      project page:  http://sf.net/projects/hacadacompiler/
---      mirror:        https://github.com/zertovitch/hac
+--      Home page:     http://hacadacompiler.sf.net/
+--      Project page:  http://sf.net/projects/hacadacompiler/
+--      Mirror:        https://github.com/zertovitch/hac
+--      Alire crate:   https://alire.ada.dev/crates/hac
 --
 --  Build me with "gprbuild -P hac", or "gnatmake -P hac",
 --  or open me with GNAT Studio.
@@ -49,7 +50,7 @@ project HAC is
 
    HAC_Styles_Checks : HAC_Styles_Checks_Type := external ("HAC_Styles_Checks", "On");
 
-   Common_Compiler_Options :=
+   Compiler_Common_Options :=
      ("-gnatwa",                        --  Warnings switches (a:turn on all info/warnings marked with +)
       "-gnatwh",                        --  Warnings switches (h:turn on warnings for hiding declarations)
       "-gnatwcijkmopruvz.c.p.t.w.x",    --  Warnings switches (run "gnatmake" for full list)
@@ -67,17 +68,18 @@ project HAC is
 
    case HAC_Styles_Checks is
       when "Off" => null;
-      when "On"  => Common_Compiler_Options := Common_Compiler_Options & Style_Checks;
+      when "On"  => Compiler_Common_Options := Compiler_Common_Options & Style_Checks;
    end case;
 
-   Debug_Options :=
+   Compiler_Debug_Options :=
      ("-gnata",         --  Assertions enabled
       "-gnato",         --  Enable overflow checking in STRICT mode
       "-gnatVa",        --  Enable all validity checking options
       "-fstack-check",
-      "-fno-inline");
+      "-fno-inline") &
+     Compiler_Common_Options;
 
-   Fast_Options :=
+   Compiler_Fast_Options :=
      ("-O2",
       "-gnatpn", 
       "-fipa-cp-clone",
@@ -88,53 +90,64 @@ project HAC is
       "-ftracer", "-fweb",
       "-ftree-vectorize",
       "-frename-registers",
-      "-ffunction-sections");
+      "-ffunction-sections") &
+     Compiler_Common_Options;
       
-   Profiling_Options :=
+   Compiler_Profiling_Options :=
      ("-O2",
       "-gnatp",
       "-fno-inline",
-      "-pg");
+      "-pg") &
+     Compiler_Common_Options;
    
    package Compiler is
       case HAC_Build_Mode is
-         when "Fast"            => for Default_Switches ("ada") use Common_Compiler_Options & Fast_Options;
-         when "Small"           => for Default_Switches ("ada") use Common_Compiler_Options & ("-Os");
-         when "Small_Unchecked" => for Default_Switches ("ada") use Common_Compiler_Options & ("-Os", "-gnatp");
-         when "Profiling"       => for Default_Switches ("ada") use Common_Compiler_Options & Profiling_Options;
+         when "Fast"            =>
+           for Default_Switches ("ada") use Compiler_Fast_Options;
+         when "Small"           =>
+           for Default_Switches ("ada") use ("-Os")           & Compiler_Common_Options;
+         when "Small_Unchecked" =>
+           for Default_Switches ("ada") use ("-Os", "-gnatp") & Compiler_Common_Options;
+         when "Profiling"       =>
+           for Default_Switches ("ada") use Compiler_Profiling_Options;
          when "Debug"           =>
-           for Default_Switches ("ada") use Common_Compiler_Options & Debug_Options;
+           for Default_Switches ("ada") use Compiler_Debug_Options;
            for Local_Configuration_Pragmas use project'Project_Dir & "debug.pra";
       end case;
    end Compiler;
 
-   Common_Binder_Options := ();
+   Binder_Common_Options := ();
 
    case HAC_OS is
       when "Linux" =>
-         Common_Binder_Options := Common_Binder_Options & "-static";  --  Ensures a consistent run-time library
+         Binder_Common_Options := Binder_Common_Options & "-static";  --  Ensures a consistent run-time library
       when others  =>
    end case;
 
    package Binder is
       --  -Es: Store tracebacks in exception occurrences, and enable symbolic tracebacks
-      for Default_Switches ("ada") use Common_Binder_Options & ("-Es");
+      for Default_Switches ("ada") use Binder_Common_Options & ("-Es");
    end Binder;
 
-   Common_Linker_Options := ("-g");
+   Linker_Common_Options := ("-g");
 
    case HAC_OS is
       when "Linux" =>
-         Common_Linker_Options := Common_Linker_Options & "-static";  --  Ensures a consistent run-time library
+         Linker_Common_Options := Linker_Common_Options & "-static";  --  Ensures a consistent run-time library
       when others  =>
    end case;
 
+   Linker_Small_Options :=
+     Linker_Common_Options & ("-Wl,--gc-sections");
+
    package Linker is
       case HAC_Build_Mode is
-         when "Debug"                     => for Default_Switches ("ada") use Common_Linker_Options;
-         when "Profiling"                 => for Default_Switches ("ada") use Common_Linker_Options & ("-Wl,--gc-sections", "-pg");
-         when "Fast"                      => for Default_Switches ("ada") use Common_Linker_Options & ("-Wl,--gc-sections");
-         when "Small" | "Small_Unchecked" => for Default_Switches ("ada") use Common_Linker_Options & ("-Wl,--gc-sections");
+         when "Debug" =>
+           for Default_Switches ("ada") use Linker_Common_Options;
+         when "Profiling" =>
+           for Default_Switches ("ada") use Linker_Small_Options & ("-pg");
+         when "Fast" | "Small" | "Small_Unchecked" =>
+           for Default_Switches ("ada") use Linker_Small_Options;
       end case;
    end Linker;
 

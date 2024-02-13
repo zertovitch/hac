@@ -185,7 +185,15 @@ Thanks
         ( https://github.com/TNO/Renaissance-Ada )
         on HAC's sources.
   - AdaCore for providing their excellent Ada compiler for free:
-        https://www.adacore.com/community .
+        https://www.adacore.com/community (via the Alire crate system)
+        https://www.adacore.com/download (versions till 2021, standalone)
+
+HAC on the Web
+==============
+  Home page:     http://hacadacompiler.sf.net/
+  Project page:  http://sf.net/projects/hacadacompiler/
+  Mirror:        https://github.com/zertovitch/hac
+  Alire crate:   https://alire.ada.dev/crates/hac
 
 History of HAC
 ==============
