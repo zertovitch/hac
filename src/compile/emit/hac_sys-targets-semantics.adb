@@ -228,6 +228,7 @@ package body HAC_Sys.Targets.Semantics is
       exit when Integer (list.Length) = max_list;
       declare
         item : IdTabEntry renames m.CD.IdTab (idx);
+        use type Defs.Nesting_Level;
       begin
         if Starts_With (item.name, up_prefix) then
           --  Enter the identifier in a case-insensitive way:
@@ -236,11 +237,20 @@ package body HAC_Sys.Targets.Semantics is
             Put_Line (+"    " & item.name_with_case);
           end if;
         end if;
-        --  Jump to previous identifier index,
-        --  on same or lower level:
-        idx := item.link;
-        --  !!  Wrong assumption here: only the current level is
-        --      scanned. See Locate_Identifier_Internal.
+        if item.link = No_Id
+          and then idx - 1 > No_Id
+          and then m.CD.IdTab (idx - 1).entity in prozedure | funktion
+          and then item.lev > 0
+          and then m.CD.IdTab (idx - 1).lev = item.lev - 1
+        then
+          --  Jump to last declaration of level - 1, that
+          --  is the subprogram declaration (if any) preceding
+          --  the exhausted local identifier list.
+          idx := idx - 1;
+        else
+          --  Jump to previous identifier index, or to No_Id.
+          idx := item.link;
+        end if;
       end;
     end loop;
     --  4) Add some keywords
