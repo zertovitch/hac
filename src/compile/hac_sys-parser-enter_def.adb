@@ -54,7 +54,9 @@ package body HAC_Sys.Parser.Enter_Def is
       J := CD.IdTab (J).link;
     end loop;
     if J = No_Id then
-      null;  --  All good: the identifier is new at this nesting level.
+      --  All good: the identifier is new at this nesting level,
+      --  and we don't care about lower levels: name hiding is allowed.
+      null;
     elsif
        ((K = prozedure or K = funktion)
         and then K = CD.IdTab (J).entity
@@ -62,8 +64,8 @@ package body HAC_Sys.Parser.Enter_Def is
       or else
        (K = paquetage_body and then CD.IdTab (J).entity = paquetage)
     then
-      --  No duplicate in those cases: J is a spec., new declaration
-      --  is the corresponding body.
+      --  No duplicate name in those cases: J is a specification,
+      --  new declaration is the corresponding body.
       Forward_Decl_Id := J;
     else
       Error

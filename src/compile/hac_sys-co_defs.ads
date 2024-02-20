@@ -162,7 +162,7 @@ package HAC_Sys.Co_Defs is
   type IdTabEntry is record
     name             : Alfa;                 --  Identifier name in ALL CAPS
     name_with_case   : Alfa;                 --  Identifier name with original casing
-    link             : Index;                --  Previous declaration (may jump to lower nesting level)
+    link             : Index;                --  Previous declaration on same nesting level, or No_Id
     entity           : Entity_Kind;
     decl_kind        : Declaration_Kind;     --  Declaration kind: forward or complete.
     --                                             Matters for a type, a constant, a subprogram;
