@@ -571,7 +571,17 @@ package body HAC_Sys.Parser.Helpers is
       if not Fail_when_No_Id then
         return No_Id;
       end if;
-      Error (CD, err_undefined_identifier, A2S (Id), severity => major);  --  Exception is raised here.
+      --  Issue an error, severity: major (an exception is raised).
+      InSymbol (CD);
+      if CD.Sy = Finger then
+        Error
+          (CD,
+           err_not_yet_implemented,
+           "positional association",
+           severity => major);
+      else
+        Error (CD, err_undefined_identifier, A2S (Id), severity => major);
+      end if;
     end if;
     --
     --  From this point, the identifier ID is matched with
