@@ -159,6 +159,13 @@ package body HAC_Sys.Parser.Calls is
               Type_Mismatch (CD, err_parameter_types_do_not_match, found, expected);
             end if;
           end if;
+          if CD.Sy = Finger then
+            Error
+              (CD,
+               err_not_yet_implemented,
+               "positional association",
+               severity => major);
+          end if;
         end if;
         Test (CD, Comma_RParent, fsys, err_incorrectly_used_symbol);
         exit when CD.Sy /= Comma;
