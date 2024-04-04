@@ -1,6 +1,7 @@
-with HAT; use HAT;
+with HAT;
 
 procedure Timing is
+  use HAT;
 
   procedure Simple is
     T1 : constant Time := Clock;

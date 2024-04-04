@@ -1,9 +1,10 @@
 --  This demo reads a text file (itself) and displays
 --  its contents on the console.
 
-with HAT; use HAT;
+with HAT;
 
 procedure File_Read is
+  use HAT;
   s : VString;
   f : File_Type;
 begin

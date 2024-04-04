@@ -1,8 +1,9 @@
 --  This demo creates a file in multiple steps, via the Append procedure.
 
-with HAT; use HAT;
+with HAT;
 
 procedure File_Append is
+  use HAT;
   f : File_Type;
   n : constant VString := To_VString ("file_append.txt");
 begin

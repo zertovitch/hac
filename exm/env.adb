@@ -1,8 +1,9 @@
 --  System's Environment Variables: Set & Get.
 
-with HAT; use HAT;
+with HAT;
 
 procedure Env is
+  use HAT;
   path, path_v : VString;
 begin
   path   := Get_Env ("PATH");   --  String argument
