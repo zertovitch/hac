@@ -34,9 +34,11 @@
 --    - no flights: L_{W,I}, L_{W,C}, ... = 0
 --    - zoonotic force = 0.
 
-with HAT; use HAT;
+with HAT;
 
 procedure COVID_19_S is
+
+  use HAT;
 
   type Status is (Susceptible, Exposed, Infectious, Recovered);
 

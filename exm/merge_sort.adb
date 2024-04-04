@@ -1,19 +1,21 @@
-with HAT; use HAT;
+with HAT;
 
 procedure Merge_Sort is
 
   procedure Merge is
 
-   subtype Vector is String (1 .. 26);
-   v                : Vector;
-   temp_array       : Vector;
-   max              : Integer;
-   cur_length       : Integer;
-   m                : Integer;
-   left, top_left   : Integer;
-   right, top_right : Integer;
+    subtype Vector is String (1 .. 26);
+    v                : Vector;
+    temp_array       : Vector;
+    max              : Integer;
+    cur_length       : Integer;
+    m                : Integer;
+    left, top_left   : Integer;
+    right, top_right : Integer;
 
-   c2 : String (1 .. 3);
+    c2 : String (1 .. 3);
+
+    use HAT;
 
   begin
     v := "ZYXWVUTSRQPONMLKJIHGFEDCBA";

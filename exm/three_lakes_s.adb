@@ -26,7 +26,7 @@
 --    https://gautiersblog.blogspot.com/2020/05/the-three-lakes-problem.html
 --
 
-with HAT; use HAT;
+with HAT;
 --  ! with Ada.Text_IO,
 --  !      Ada.Integer_Text_IO,
 --  !      Ada.Numerics.Generic_Elementary_Functions;
@@ -37,6 +37,8 @@ procedure Three_Lakes_S is
 
   --  ! package PFIO is new Ada.Text_IO.Float_IO (Real);
   --  ! package PFEF is new Ada.Numerics.Generic_Elementary_functions (Real);
+
+  use HAT;
 
   type Lake is (Morat, Neuchatel, Bienne);
 

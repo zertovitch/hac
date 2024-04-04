@@ -8,9 +8,10 @@
 --
 --  See "!!" for improvements to be done in HAC.
 --
-with HAT; use HAT;
+with HAT;
 
 procedure BWT is
+  use HAT;
 
   n : constant := 9;
 
@@ -30,7 +31,7 @@ procedure BWT is
     for pass in reverse 1 .. 3 loop
       step_size (pass) := 2 * step_size (pass + 1);
     end loop;
-  Passes:
+  Passes :
     for pass in 1 .. 4 loop
       step := step_size (pass);
       --  Do a straight insertion sort with 'step' as

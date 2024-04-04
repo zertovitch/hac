@@ -1,8 +1,8 @@
-with HAT; use HAT;  -- CS159-10 - FAll/1990 - ARthur Vargas Lopes
+with HAT;  --  SmallAda: CS159-10 - FAll/1990 - Arthur Vargas Lopes
 
 procedure Shell_Sort is
 
-  --  ch : character;
+  use HAT;
 
   procedure Shell is
     b : String (1 .. 26);

@@ -1,8 +1,10 @@
 --  Pseudo-Random Generation: Rand (discrete) and Rnd (continuous)
 
-with HAT; use HAT;
+with HAT;
 
 procedure Random is
+
+  use HAT;
 
   procedure Discrete (iterations : Integer) is
     faces : constant := 6;

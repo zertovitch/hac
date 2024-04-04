@@ -1,6 +1,8 @@
-with HAT; use HAT;
+with HAT;
 
 procedure Mandelbrot is
+
+  use HAT;
 
   --  NB: there is a complete Complex package in the Ada library:
   --  Ada.Numerics.Generic_Complex_Types.

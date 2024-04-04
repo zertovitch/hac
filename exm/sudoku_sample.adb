@@ -185,7 +185,7 @@ begin
   --  it is about the digit 4 on last row, that
   --  can be only within the bottom, center box.
   --  Then 4 can't be in any cell of that box that
-  --  isn't on the last row.  
+  --  isn't on the last row.
   hard (1) := +"1 76 2   ";
   hard (2) := +"2 5 3 4  ";
   hard (3) := +"3    9  2";

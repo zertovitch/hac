@@ -250,7 +250,7 @@ package body Sudokus is
           if not ok then
             --  Check box:
             ok := True;
-            Box_Row:
+            Box_Row :
             for ii in base_i .. base_i + 2 loop
               for jj in base_j .. base_j + 2 loop
                 if ii /= i or else j /= jj then
