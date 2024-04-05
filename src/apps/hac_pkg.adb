@@ -57,6 +57,7 @@ package body HAC_Pkg is
     overriding function Full_Source_Name (cat : File_Catalogue; name : String) return String is
       --  Search order: same as GNAT's,
       --  cf. 4.2.2 Search Paths and the Run-Time Library (RTL).
+      use Ada.Directories;
     begin
       --  0) The file name as such exists.
       if HAC_Sys.Files.Default.File_Catalogue (cat).Exists (name) then
@@ -70,9 +71,11 @@ package body HAC_Pkg is
           HAT.Directory_Separator &
           name;
       begin
-        if HAT.Exists (fn) then
+        if Exists (fn) and then Kind (fn) = Ordinary_File then
           return fn;
         end if;
+      exception
+        when others => null;  --  Continue searching elsewhere.
       end;
       --  2) Each directory named by an -I switch given on the
       --     hac command line, in the order given.
@@ -107,8 +110,13 @@ package body HAC_Pkg is
        name        : in     String;
        stream      :    out HAC_Sys.Files.Root_Stream_Class_Access)
     is
+      ffn : constant String := cat.Full_Source_Name (name);
     begin
-      HAC_Sys.Files.Default.File_Catalogue (cat).Source_Open (cat.Full_Source_Name (name), stream);
+      if ffn = "" then
+        raise Ada.Directories.Name_Error;
+      else
+        HAC_Sys.Files.Default.File_Catalogue (cat).Source_Open (ffn, stream);
+      end if;
     end Source_Open;
 
     overriding procedure Skip_Shebang

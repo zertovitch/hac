@@ -7,13 +7,15 @@ package body HAC_Sys.Files.Default is
   overriding function Exists (cat : File_Catalogue; name : String) return Boolean
   is
   begin
-     return Ada.Directories.Exists (name);
+    return Ada.Directories.Exists (name);
+  exception
+    when others => return False;
   end Exists;
 
   overriding function Full_Source_Name (cat : File_Catalogue; name : String) return String
   is
   begin
-     return Ada.Directories.Full_Name (name);
+    return Ada.Directories.Full_Name (name);
   end Full_Source_Name;
 
   overriding function Full_Spec_Source_Name (cat : File_Catalogue; name : String) return String

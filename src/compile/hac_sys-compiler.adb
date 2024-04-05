@@ -388,7 +388,7 @@ package body HAC_Sys.Compiler is
         when Name_Error =>
           Error
             (CD, err_library_error,
-             "file " & full_file_name & Spec_or_Body & " not found", severity => major);
+             "file " & file_name & Spec_or_Body & " not found", severity => major);
       end;
     end if;
     if not first_compilation then
