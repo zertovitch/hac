@@ -81,7 +81,7 @@ procedure BWT is
 
   s, t, u : Row;
   m : Table;
-  index : Positive;
+  row_index : Positive;
   line : VString;
 
 begin
@@ -107,16 +107,16 @@ begin
     t (i) := m (i)(n);
     if +m (i) = +s then
       --  !! HAC : without VString (remove the "+"): why does the "=" comparison find incompatible types?
-      index := i;  --  Found row with the message with 0 rotation.
+      row_index := i;  --  Found row with the message with 0 rotation.
     end if;
   end loop;
-  Show (m, +"sorted", index);
+  Show (m, +"sorted", row_index);
   --
   Put_Line ("BWT output with transform:");
   Put_Line (n * '-');
   Put_Line (t);
   Put_Line (n * '-');
-  Put_Line (+"Index of row containing the original message is: " & index);
+  Put_Line (+"Index of row containing the original message is: " & row_index);
   --  De-transform
   for i in 1 .. n loop
     for j in 1 .. n loop
@@ -148,12 +148,12 @@ begin
   --  After iteration n we have a sorted list of all rotated
   --  versions of the original string. The table is identical
   --  to the table after encoding.
-  --  The original string is at row 'index'.
-  u := m (index);
+  --  The original string is at row 'row_index'.
+  u := m (row_index);
   --
   --  Output of table.
   --
-  Show (m, +"reconstructed", index);
+  Show (m, +"reconstructed", row_index);
   --
   Put_Line ("BWT output de-transformed.");
   --
