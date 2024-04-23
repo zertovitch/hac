@@ -84,7 +84,7 @@ package body HAC_Sys.Parser.Statements is
               else
                 "range: " &
                 Discrete_Range_Image (CD, Y.Discrete_First, Y.Discrete_Last, X.TYP, X.Ref)) &
-             ") is out the destination's range, " &
+             ") is out of destination's range, " &
              Discrete_Range_Image (CD, X.Discrete_First, X.Discrete_Last, X.TYP, X.Ref),
              severity => minor);
         end if;
