@@ -9,7 +9,7 @@
 -------------------------------------------------------------------------------------
 --
 --  This package defines the interfacing mechanism between HAC and a "full Ada" app.
---  Demo in: src/apps/exchange_native_side.adb
+--  Demo in: demo/data_exchange/exchange_native_side.adb
 
 with HAC_Sys.Builder,
      HAC_Sys.PCode.Interpreter.In_Defs;
@@ -93,7 +93,7 @@ package HAC_Sys.Interfacing is
   --  a program through the HAC VM interpreter, between that program and the
   --  program that runs HAC. The strings are as persistent as an object
   --  of type Builder.Build_Data is.
-  --  See src/apps/exchange_native_side_pkg.adb for an example.
+  --  See demo/data_exchange/exchange_native_side_pkg.adb for an example.
 
   function Get_VM_Variable (BD : Builder.Build_Data; Name : String) return String;
   procedure Set_VM_Variable (BD : in out Builder.Build_Data; Name : String; Value : String);
