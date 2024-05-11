@@ -121,7 +121,7 @@ package HAC_Sys.Parser.Helpers is
 
   --  Singletons:
 
-  function Singleton (s : KeyWSymbol) return Symset with Inline;
+  function Singleton (s : KeyWSymbol) return Symset;
 
   --  Specific singletons:
 

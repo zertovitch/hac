@@ -446,7 +446,7 @@ package body HAC_Sys.Parser.Helpers is
   return Natural
   is
     L : Defs.Nesting_Level'Base;
-    J : Integer;
+    J : Integer := No_Id;
     ID_Copy : Alfa;
     is_name_matched : Boolean;
     dot_pos : Integer;

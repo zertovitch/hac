@@ -194,7 +194,8 @@ package body HAC_Sys.PCode.Interpreter is
       item_typ : constant Typen := Typen'Val (ND.IR.Y);
       --  Parameters used: see default_extra_put_param in HAC.Parser.Standard_Procedures.
       all_params : Positive;
-      pos, len : Natural;
+      pos : Positive := 1;
+      len : Natural  := 0;
       use Ada.Text_IO;
     begin
       case item_typ is
