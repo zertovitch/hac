@@ -451,12 +451,19 @@ package HAT is
   procedure Set_Directory (Directory : String) renames Ada.Directories.Set_Directory;
   procedure Set_Directory (Directory : VString);
 
-  procedure Create_Directory (Directory : VString);
-
   procedure Copy_File (Source_Name : String;  Target_Name : String);
   procedure Copy_File (Source_Name : VString; Target_Name : String);
   procedure Copy_File (Source_Name : String;  Target_Name : VString);
   procedure Copy_File (Source_Name : VString; Target_Name : VString);
+
+  procedure Create_Directory (New_Directory : String);
+  procedure Create_Directory (New_Directory : VString);
+
+  procedure Create_Path (New_Path : String);
+  procedure Create_Path (New_Path : VString);
+
+  procedure Delete_Directory (Directory : String) renames Ada.Directories.Delete_Directory;
+  procedure Delete_Directory (Directory : VString);
 
   procedure Delete_File (Name : String) renames Ada.Directories.Delete_File;
   procedure Delete_File (Name : VString);

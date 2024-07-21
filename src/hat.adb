@@ -308,7 +308,7 @@ package body HAT is
     --  Arguments   : String to scan and Search pattern
     --  Return      : A substring from the character after the first Pattern
     --                found backward to the String's end
-    --  Author      : St�phane Rivi�re, 2021
+    --  Author      : Stephane Riviere, 2021
     --
     --  Examples :
     --
@@ -780,11 +780,6 @@ package body HAT is
     Set_Directory (VStr_Pkg.To_String (Directory));
   end Set_Directory;
 
-  procedure Create_Directory (Directory : VString) is
-  begin
-    Ada.Directories.Create_Directory (VStr_Pkg.To_String (Directory));
-  end Create_Directory;
-
   procedure Copy_File (Source_Name : String; Target_Name : String) is
   begin
     Ada.Directories.Copy_File (Source_Name, Target_Name);  --  Form: default value "".
@@ -804,6 +799,31 @@ package body HAT is
   begin
     Copy_File (VStr_Pkg.To_String (Source_Name), VStr_Pkg.To_String (Target_Name));
   end Copy_File;
+
+  procedure Create_Directory (New_Directory : String) is
+  begin
+    Ada.Directories.Create_Directory (New_Directory);  --  Form is left as default.
+  end Create_Directory;
+
+  procedure Create_Directory (New_Directory : VString) is
+  begin
+    Create_Directory (VStr_Pkg.To_String (New_Directory));
+  end Create_Directory;
+
+  procedure Create_Path (New_Path : String) is
+  begin
+    Ada.Directories.Create_Path (New_Path);  --  Form is left as default.
+  end Create_Path;
+
+  procedure Create_Path (New_Path : VString) is
+  begin
+    Create_Path (VStr_Pkg.To_String (New_Path));
+  end Create_Path;
+
+  procedure Delete_Directory (Directory : VString) is
+  begin
+    Delete_Directory (VStr_Pkg.To_String (Directory));
+  end Delete_Directory;
 
   procedure Delete_File (Name : VString) is
   begin

@@ -255,10 +255,13 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     --  Ada.Directories-like procedures
     --
-    Enter_HAT_Proc ("Copy_File",      SP_Copy_File);
-    Enter_HAT_Proc ("Delete_File",    SP_Delete_File);
-    Enter_HAT_Proc ("Rename",         SP_Rename);
-    Enter_HAT_Proc ("Set_Directory",  SP_Set_Directory);
+    Enter_HAT_Proc ("Copy_File",        SP_Copy_File);
+    Enter_HAT_Proc ("Create_Directory", SP_Create_Directory);
+    Enter_HAT_Proc ("Create_Path",      SP_Create_Path);
+    Enter_HAT_Proc ("Delete_Directory", SP_Delete_Directory);
+    Enter_HAT_Proc ("Delete_File",      SP_Delete_File);
+    Enter_HAT_Proc ("Rename",           SP_Rename);
+    Enter_HAT_Proc ("Set_Directory",    SP_Set_Directory);
     --
     Enter_HAT_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
     Enter_HAT_Proc ("Set_Exit_Status", SP_Set_Exit_Status);

@@ -293,7 +293,9 @@ package body HAC_Sys.Parser.Standard_Procedures is
         HAT_Procedure_Call (Code);
         Need (CD, RParent, err_closing_parenthesis_missing);
 
-      when SP_Delete_File | SP_Set_Directory =>
+      when SP_Create_Directory | SP_Create_Path | SP_Delete_Directory |
+           SP_Delete_File | SP_Set_Directory
+           =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Expression (CD, Level, RParent_Set, X);  --  We push the argument in the stack.
         Check_any_String_and_promote_to_VString (CD, X, False);

@@ -734,6 +734,9 @@ package HAC_Sys.Defs is
     --  Ada.Directories-like procedures
     --
     SP_Copy_File,
+    SP_Create_Directory,
+    SP_Create_Path,
+    SP_Delete_Directory,
     SP_Delete_File,
     SP_Rename,
     SP_Set_Directory,
