@@ -308,7 +308,7 @@ package body HAT is
     --  Arguments   : String to scan and Search pattern
     --  Return      : A substring from the character after the first Pattern
     --                found backward to the String's end
-    --  Author      : Stéphane Rivière, 2021
+    --  Author      : Stï¿½phane Riviï¿½re, 2021
     --
     --  Examples :
     --
@@ -779,6 +779,11 @@ package body HAT is
   begin
     Set_Directory (VStr_Pkg.To_String (Directory));
   end Set_Directory;
+
+  procedure Create_Directory (Directory : VString) is
+  begin
+    Ada.Directories.Create_Directory (VStr_Pkg.To_String (Directory));
+  end Create_Directory;
 
   procedure Copy_File (Source_Name : String; Target_Name : String) is
   begin
