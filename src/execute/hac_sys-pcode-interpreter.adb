@@ -334,18 +334,19 @@ package body HAC_Sys.PCode.Interpreter is
 
     begin
       case Code is
-        when SP_Set_Env          => HAT.Set_Env   (Below_Top_Item.V, Top_Item.V);
-        when SP_Set_VM_Variable  =>
-          Interfacing.Set_VM_Variable
-            (BD, To_String (Below_Top_Item.V), To_String (Top_Item.V));
         when SP_Copy_File        => HAT.Copy_File (Below_Top_Item.V, Top_Item.V);
         when SP_Create_Directory => HAT.Create_Directory (Top_Item.V);
         when SP_Create_Path      => HAT.Create_Path (Top_Item.V);
         when SP_Delete_Directory => HAT.Delete_Directory (Top_Item.V);
         when SP_Delete_File      => HAT.Delete_File (Top_Item.V);
-        when SP_Rename           => HAT.Rename    (Below_Top_Item.V, Top_Item.V);
+        when SP_Rename           => HAT.Rename (Below_Top_Item.V, Top_Item.V);
         when SP_Set_Directory    => HAT.Set_Directory (Top_Item.V);
+        when SP_Set_Env          => HAT.Set_Env (Below_Top_Item.V, Top_Item.V);
         when SP_Set_Exit_Status  => HAT.Set_Exit_Status (Integer (Top_Item.I));
+        --
+        when SP_Set_VM_Variable  =>
+          Interfacing.Set_VM_Variable
+            (BD, To_String (Below_Top_Item.V), To_String (Top_Item.V));
         when SP_Delete =>
           through := Integer (Top_Item.I);
           if through > HAT.Length (ND.S (Defs.Index (ND.S (Curr_TCB.T - 2).I)).V) then

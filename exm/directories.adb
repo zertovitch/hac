@@ -1,4 +1,4 @@
---  This demo creates a few directories and deletes on of them.
+--  This demo creates a few directories and deletes one of them.
 
 with HAT;
 
