@@ -189,10 +189,15 @@ package body HAC_Sys.Targets.Semantics is
     list : Declaration_Lists.Map;
     up_prefix : constant VString := To_Upper (+prefix);
     result : VString;
+    --
     procedure Include_Special (word : String) is
+      up_word : constant VString := To_Upper (+word);
     begin
-      list.Include (To_Upper (+word), +word);
+      if Starts_With (up_word, up_prefix) then
+        list.Include (up_word, +word);
+      end if;
     end Include_Special;
+    --
   begin
     --  1) Find the line map associated to the given file name.
     declare
