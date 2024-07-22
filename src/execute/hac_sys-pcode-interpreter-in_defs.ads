@@ -159,7 +159,7 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     Gen                       : Ada.Numerics.Float_Random.Generator;
     Scheduler                 : Scheduler_Type := Single_Task;
     Single_Task_Delay_Pending : Boolean        := False;
-    Instr_Tick                : Tick_Type;
+    feedback_tick             : Tick_Type;
   end record;
 
   procedure Allocate_Text_File (

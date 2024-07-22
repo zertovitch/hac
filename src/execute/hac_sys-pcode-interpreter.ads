@@ -131,11 +131,10 @@ package HAC_Sys.PCode.Interpreter is
   end System_Calls_Traits;
 
   generic
-    with procedure Feedback (
-      Stack_Current, Stack_Total : in     Natural;
-      Wall_Clock                 : in     Ada.Calendar.Time;
-      User_Abort                 :    out Boolean
-    );
+    with procedure Feedback
+      (Stack_Current, Stack_Total : in     Natural;
+       Wall_Clock                 : in     Ada.Calendar.Time;
+       User_Abort                 :    out Boolean);
     with package Console is new Console_Traits (<>);
     with package System_Calls is new System_Calls_Traits (<>);
     --

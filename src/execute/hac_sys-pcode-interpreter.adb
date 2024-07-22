@@ -32,14 +32,14 @@ package body HAC_Sys.PCode.Interpreter is
 
     procedure Start_Interpreter is
     begin
-      ND.S          := new Stack_Type;
-      ND.PS         := Running;
-      ND.Start_Time := Ada.Calendar.Clock;
-      ND.Snap       := False;
-      ND.SWITCH     := False;           --  invoke scheduler on next cycle flag
-      ND.SYSCLOCK   := ND.Start_Time;
-      ND.TIMER      := ND.SYSCLOCK;     --  set to end of current task's time slice
-      ND.Instr_Tick := 0;
+      ND.S             := new Stack_Type;
+      ND.PS            := Running;
+      ND.Start_Time    := Ada.Calendar.Clock;
+      ND.Snap          := False;
+      ND.SWITCH        := False;           --  invoke scheduler on next cycle flag
+      ND.SYSCLOCK      := ND.Start_Time;
+      ND.TIMER         := ND.SYSCLOCK;     --  set to end of current task's time slice
+      ND.feedback_tick := 1;
       Tasking.Init_main_task (BD.CD.all, ND);
       Tasking.Init_other_tasks (BD.CD.all, ND);
       Post_Mortem.Max_Stack_Usage := 0;
@@ -396,6 +396,7 @@ package body HAC_Sys.PCode.Interpreter is
           else
             HAT.Skip_Line (Below_Top_Item.Txt.all, Lines);
           end if;
+          ND.feedback_tick := 0;  --  Force feedback before next instruction.
         when SP_Shell_Execute_without_Result =>
           declare
             Command : constant String := To_String (Top_Item.V);
@@ -737,12 +738,12 @@ package body HAC_Sys.PCode.Interpreter is
       ND.SYSCLOCK := Clock;
       if wake > ND.SYSCLOCK then
         while wake - ND.SYSCLOCK > TSlice loop
-          Feedback (
-            Stack_Current => ND.TCB (ND.CurTask).T,
-            Stack_Total   => ND.S'Last,
-            Wall_Clock    => ND.SYSCLOCK,
-            User_Abort    => User_Aborted
-          );
+          Feedback
+            (Stack_Current => ND.TCB (ND.CurTask).T,
+             Stack_Total   => ND.S'Last,
+             Wall_Clock    => ND.SYSCLOCK,
+             User_Abort    => User_Aborted);
+          --
           if User_Aborted then
             Raise_Standard (ND, VME_User_Abort, "");
           end if;
@@ -769,19 +770,19 @@ package body HAC_Sys.PCode.Interpreter is
       else
         Tasking.Manage_Scheduling (CD, ND);
       end if;
-      ND.Instr_Tick := ND.Instr_Tick + 1;
-      if ND.Instr_Tick = 0 then
+      if ND.feedback_tick = 0 then
         ND.SYSCLOCK := Ada.Calendar.Clock;
-        Feedback (
-          Stack_Current => ND.TCB (ND.CurTask).T,
-          Stack_Total   => ND.S'Last,
-          Wall_Clock    => ND.SYSCLOCK,
-          User_Abort    => User_Aborted
-        );
+        Feedback
+          (Stack_Current => ND.TCB (ND.CurTask).T,
+           Stack_Total   => ND.S'Last,
+           Wall_Clock    => ND.SYSCLOCK,
+           User_Abort    => User_Aborted);
+        --
         if User_Aborted then
           Raise_Standard (ND, VME_User_Abort, "");
         end if;
       end if;
+      ND.feedback_tick := ND.feedback_tick + 1;
       exit Running_State when ND.PS = DEADLOCK or ND.PS = FIN;  --  SmallAda inter.pas line 490
       --
       Fetch_Instruction;
