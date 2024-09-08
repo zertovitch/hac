@@ -490,10 +490,14 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Add_Stack_Trace_Line (Offset : Natural) is
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       D : Debug_Info renames CD.ObjCode (Curr_TCB.PC - Offset).D;
-      use HAT.VStr_Pkg;
+      use HAT.VStr_Pkg, Ada.Containers;
+      --  Limit huge trace-backs (likely, recursive calls):
+      max_trace_back_length : constant := 500;
     begin
-      if D.Full_Block_Id /= Universe then
-        ND.TCB (ND.CurTask).Exception_Info.ST_Message.Append (D);
+      if D.Full_Block_Id /= Universe
+        and then Curr_TCB.Exception_Info.ST_Message.Length < max_trace_back_length
+      then
+        Curr_TCB.Exception_Info.ST_Message.Append (D);
       end if;
     end Add_Stack_Trace_Line;
 
