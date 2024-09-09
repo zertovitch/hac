@@ -42,7 +42,7 @@ package body HAC_Sys.Parser.Tasking is
       task_block.is_main                       := False;
       task_block.previous_declaration_id_index := No_Id;
       Block (CD, FSys, False, task_block, TaskID, TaskID_with_case);
-      Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+      Emit_1 (CD, k_Return_Call, Normal_Procedure_Call);
     else                         --  Task Specification
       if CD.Sy = IDent then
         TaskID           := CD.Id;

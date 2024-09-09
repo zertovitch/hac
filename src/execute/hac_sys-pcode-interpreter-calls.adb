@@ -219,8 +219,8 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       end case;
     end Do_Call;
 
-    procedure Do_Exit_Call is
-    --  EXIT entry call or procedure call  --  Cramer
+    procedure Do_Return_Call is
+    --  RETURN entry call or procedure call  --  Cramer
     begin
       --  Set back stack top as before call:
       Curr_TCB.T := Curr_TCB.B - 1;
@@ -245,9 +245,9 @@ package body HAC_Sys.PCode.Interpreter.Calls is
           ND.S (Curr_TCB.T).I := Curr_TCB.R1.I;    --  success indicator for JMPC.
         end if;
       end if;
-    end Do_Exit_Call;
+    end Do_Return_Call;
 
-    procedure Do_Exit_Function is
+    procedure Do_Return_Function is
     begin
       --  Set back stack top as before call, plus 1 item (the return value):
       Curr_TCB.T  := Curr_TCB.B;
@@ -259,7 +259,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       if IR.Y = Defs.End_Function_without_Return and then ND.PS /= Exception_Raised then
         raise Exceptions.VM_Function_End_without_Return;
       end if;
-    end Do_Exit_Function;
+    end Do_Return_Function;
 
     procedure Do_Update_Display_Vector is
       --  Emitted at the end of Subprogram_or_Entry_Call, when the
@@ -272,7 +272,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       High_Level : constant Nesting_Level := Nesting_Level (ND.IR.Y);  --  Caller.
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
       New_Base : Defs.Index := Curr_TCB.B;
-      --  ^ initial value: stack base of caller (dynamic link) after call exit.
+      --  ^ initial value: stack base of caller (dynamic link) after return from call.
       Address_Base_Lower_Level : Defs.Index;
       New_Base_Value : HAC_Integer;
       L : Nesting_Level := High_Level;
@@ -308,8 +308,8 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       when k_Mark_Stack             => Do_Mark_Stack;
       when k_Call                   => Do_Call;
       when k_Exchange_with_External => Do_Exchange_with_External;
-      when k_Exit_Call              => Do_Exit_Call;
-      when k_Exit_Function          => Do_Exit_Function;
+      when k_Return_Call              => Do_Return_Call;
+      when k_Return_Function          => Do_Return_Function;
       when k_Update_Display_Vector  => Do_Update_Display_Vector;
     end case;
   end Do_Calling_Operation;

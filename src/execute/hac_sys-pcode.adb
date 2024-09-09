@@ -291,7 +291,7 @@ package body HAC_Sys.PCode is
       Code_Pos_IO.Put (Text, i);
       Put (Text, ": " & Padded_Opcode (OC (i).F));
       case OC (i).F is  --  Omit showing X for some 1-operand instructions
-        when k_Exit_Call | k_Exit_Function |
+        when k_Return_Call | k_Return_Function |
           k_Mark_Stack | k_Push_Discrete_Literal |
           k_Push_Float_Literal .. k_Push_Float_Last |
           k_Store |

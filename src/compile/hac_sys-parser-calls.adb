@@ -182,7 +182,7 @@ package body HAC_Sys.Parser.Calls is
     --
     Emit_2 (CD, k_Call, call_type, Operand_2_Type (CD.Blocks_Table (CD.IdTab (ident_index).block_or_pkg_ref).PSize - 1));
     if call_type /= Normal_Procedure_Call then  --  Some for of entry call
-      Emit_1 (CD, k_Exit_Call, Operand_2_Type (call_type));  --  Return from Entry Call
+      Emit_1 (CD, k_Return_Call, Operand_2_Type (call_type));  --  Return from Entry Call
     end if;
     --
     if CD.IdTab (ident_index).lev < level then

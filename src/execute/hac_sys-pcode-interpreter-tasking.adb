@@ -480,7 +480,7 @@ package body HAC_Sys.PCode.Interpreter.Tasking is
             end if;
           end if;
           Dispose (p);
-          p := null; --  to exit loop
+          p := null;  --  to exit loop
         else
           --  try next entry in list
           q := p;

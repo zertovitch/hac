@@ -519,11 +519,11 @@ package body HAC_Sys.Compiler is
               --  When this part of the machine code is reached, it means
               --  that the end of a function was reached without
               --  a "RETURN" statement. This will raise Program_Error.
-              PCode_Emit.Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
+              PCode_Emit.Emit_1 (CD, k_Return_Function, End_Function_without_Return);
             elsif as_main_unit then
               CD.target.Emit_Halt;
             else
-              PCode_Emit.Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+              PCode_Emit.Emit_1 (CD, k_Return_Call, Normal_Procedure_Call);
             end if;
           when spec_unresolved =>
             if not as_specification then

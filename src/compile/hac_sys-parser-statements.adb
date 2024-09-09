@@ -421,11 +421,11 @@ package body HAC_Sys.Parser.Statements is
         end if;
       end if;
       if Block_Data.entity = funktion then
-        Emit_1 (CD, k_Exit_Function, Normal_Procedure_Call);
+        Emit_1 (CD, k_Return_Function, Normal_Procedure_Call);
       elsif Block_Data.is_main then
         CD.target.Emit_Halt;
       else
-        Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+        Emit_1 (CD, k_Return_Call, Normal_Procedure_Call);
       end if;
     end RETURN_Statement;
 
@@ -586,19 +586,19 @@ package body HAC_Sys.Parser.Statements is
               InSymbol;
               if CD.Sy = Semicolon then
                 Select_Error (err_missing_expression_for_delay);
-              else          -- calculate delay value
+              else          --  Calculate delay value
                 patch (2) := CD.LC;
                 Expression (CD, Block_Data.level, Semicolon_Set, Y);
                 patch (3) := CD.LC - 1;
                 if Y.TYP /= Floats then
                   Select_Error (err_wrong_type_in_DELAY);
-                else        --  end of timed Entry select ObjCode, do patching
+                else        --  End of timed Entry select ObjCode, do patching
                   CD.ObjCode (patch (1)).Y := Operand_2_Type (CD.LC);  --  if Entry not made, skip rest
                   J                      := patch (3) - patch (2) + 1;
                   IStart                 := patch (0);
                   IEnd                   := CD.LC - 1;
-                  while J > 0 loop           --  move delay time ObjCode To before
-                    O := CD.ObjCode (IEnd);  --  opcodes kCall, k_Exit_Call
+                  while J > 0 loop           --  Move delay time ObjCode To before
+                    O := CD.ObjCode (IEnd);  --  opcodes k_Call, k_Return_Call.
                     for I in reverse IEnd - 1 .. IStart loop
                       CD.ObjCode (I + 1) := CD.ObjCode (I);
                     end loop;

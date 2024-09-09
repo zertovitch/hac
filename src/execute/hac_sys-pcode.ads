@@ -80,8 +80,8 @@ package HAC_Sys.PCode is
     k_Mark_Stack,                       --  First instruction for a Call
     k_Call,                             --  Procedure and task entry Call
     k_Exchange_with_External,
-    k_Exit_Call,
-    k_Exit_Function,
+    k_Return_Call,
+    k_Return_Function,
     k_Update_Display_Vector,
     --
     --  Unary operators
@@ -212,7 +212,7 @@ package HAC_Sys.PCode is
 
   type Opcode_Set is array (Opcode) of Boolean;
   OK_for_Exception : constant Opcode_Set :=
-    (k_Exit_Call .. k_Exit_Function | k_Halt_Interpreter => True, others => False);
+    (k_Return_Call .. k_Return_Function | k_Halt_Interpreter => True, others => False);
 
   --  Type for operand 2 (Y) is large enough for containing
   --  addresses, plus signed integer values *in* HAC programs.

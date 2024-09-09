@@ -284,7 +284,7 @@ package body HAC_Sys.Parser is
             CD.IdTab (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
             CD.IdTab (block_data.block_id_index).decl_kind := spec_resolved;
             Emit_1 (CD, k_Exchange_with_External, Operand_2_Type (block_data.block_id_index));
-            Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+            Emit_1 (CD, k_Return_Call, Normal_Procedure_Call);
           else
             Error (CD, err_general_error, "value True expected here");
           end if;
@@ -517,9 +517,9 @@ package body HAC_Sys.Parser is
       kind := CD.IdTab (new_id_idx).decl_kind;
       if kind = complete then
         if IsFun then
-          Emit_1 (CD, k_Exit_Function, End_Function_without_Return);
+          Emit_1 (CD, k_Return_Function, End_Function_without_Return);
         else
-          Emit_1 (CD, k_Exit_Call, Normal_Procedure_Call);
+          Emit_1 (CD, k_Return_Call, Normal_Procedure_Call);
         end if;
       end if;
     end;

@@ -703,8 +703,8 @@ package body HAC_Sys.PCode.Interpreter is
     begin
       Execute_Current_Instruction;
       if ND.PS = Exception_Raised then
-        --  We have just executed an Exit, so the last instruction (with
-        --  the program counter back to the caller side), was a Call.
+        --  We have just executed a Return, so the last instruction
+        --  (with the program counter back to the caller side), was a Call.
         Add_Stack_Trace_Line (Offset => 1);
       end if;
     exception
