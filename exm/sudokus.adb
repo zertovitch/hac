@@ -987,7 +987,7 @@ package body Sudokus is
       end loop;
       --  For bits_1 = 3 (say), we have found a new
       --  combination with 3 digits which correspond to
-      --  then position of the bit in the binary
+      --  the position of the bit in the binary
       --  representation of i.
       help.max_combi (bits_1) := help.max_combi (bits_1) + 1;
       i_shifted := i;
