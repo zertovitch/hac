@@ -110,6 +110,7 @@ package body HAC_Sys.Scanner is
         (+"OUT",          OUT_Symbol),
         (+"OVERRIDING",   OVERRIDING_Symbol),   -- Ada 2005
         (+"PACKAGE",      PACKAGE_Symbol),
+        (+"PARALLEL",     PARALLEL_Symbol),     -- Ada 2022
         (+"PRAGMA",       PRAGMA_Symbol),
         (+"PRIVATE",      PRIVATE_Symbol),
         (+"PROCEDURE",    PROCEDURE_Symbol),

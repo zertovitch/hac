@@ -186,6 +186,7 @@ package HAC_Sys.Defs is
     OUT_Symbol,
     OVERRIDING_Symbol,
     PACKAGE_Symbol,
+    PARALLEL_Symbol,
     PRAGMA_Symbol,
     PRIVATE_Symbol,
     PROCEDURE_Symbol,
