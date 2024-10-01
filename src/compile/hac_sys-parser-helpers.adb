@@ -841,6 +841,25 @@ package body HAC_Sys.Parser.Helpers is
     end loop;
   end Check_Incomplete_Definitions;
 
+  function Var_or_Param (kind : Declaration_Kind) return String is
+    (if kind in Parameter_Kind then "parameter " else "variable ");
+
+  procedure Mark_Read_and_Check_Read_before_Written
+    (CD  : in out Compiler_Data;
+     item : in out IdTabEntry)
+  is
+  begin
+    Raise_to_Maybe (item.is_read);
+    if item.is_written = no then
+      Remark
+        (CD,
+         warn_read_but_not_written,
+         Var_or_Param (item.decl_kind) & '"' &
+         A2S (item.name_with_case) &
+         """ is read but not written at this point");
+    end if;
+  end Mark_Read_and_Check_Read_before_Written;
+
   procedure Check_Unused_or_Uninitialized_Items
     (CD    : in out Compiler_Data;
      level : in     Defs.Nesting_Level)
@@ -862,9 +881,6 @@ package body HAC_Sys.Parser.Helpers is
         end if;
       end Remark_for_Declared_Item;
 
-      function Var_or_Param return String is
-      (if item.decl_kind in Parameter_Kind then "parameter " else "variable ");
-
     begin
       --  See table in "hac_work.xls", sheet "Remarks".
       if item.is_read >= maybe then
@@ -874,14 +890,14 @@ package body HAC_Sys.Parser.Helpers is
             when none =>
               Remark_for_Declared_Item
                 (warn_read_but_not_written,
-                 Var_or_Param & '"' & A2S (item.name_with_case) &
+                 Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
                  """ is " &
                  (if item.is_read > maybe then "read but " else "") &
                  "never written");
             when explicit =>
               Remark_for_Declared_Item
                 (note_constant_variable,
-                 Var_or_Param & '"' & A2S (item.name_with_case) &
+                 Var_or_Param (item.decl_kind)  & '"' & A2S (item.name_with_case) &
                  """ is not modified, could be declared constant");
             when implicit =>
               null;
@@ -891,7 +907,7 @@ package body HAC_Sys.Parser.Helpers is
         --  Written but not read.
         Remark_for_Declared_Item
           (note_unused_item,
-           Var_or_Param & '"' & A2S (item.name_with_case) &
+           Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
            """ is never read");
       end if;
       if item.entity /= alias and then not item.is_referenced then

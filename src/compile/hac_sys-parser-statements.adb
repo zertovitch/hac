@@ -499,7 +499,7 @@ package body HAC_Sys.Parser.Statements is
               adr_or_sz        => HAC_Integer (Block_Data.data_allocation_index),
               is_referenced    => False,
               is_read          => no,
-              is_written       => no,
+              is_written       => yes,
               is_initialized   => explicit,
               location         => (0, 0, 0));
         --
@@ -915,7 +915,7 @@ package body HAC_Sys.Parser.Statements is
         case CD.IdTab (I_Statement).entity is
           when Object_Kind =>
             Assignment (CD, FSys_St, Block_Data.level, I_Statement, check_is_variable => True);
-            CD.IdTab (I_Statement).is_written := yes;
+            Raise_to_Maybe (CD.IdTab (I_Statement).is_written);
           when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
                    severity => major);

@@ -154,6 +154,9 @@ package HAC_Sys.Co_Defs is
 
   type No_Maybe_Yes is (no, maybe, yes);
 
+  --  Unless we are in the main execution path (no "if", "loop", etc.)
+  --  we can only note that a variable or field is possibly read or written.
+  --
   procedure Raise_to_Maybe (item : in out No_Maybe_Yes);
 
   ------------------------------

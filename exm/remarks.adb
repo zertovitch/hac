@@ -28,7 +28,7 @@ procedure Remarks is
      d :    out Integer)         --  Warning: parameter "d" is read but never written [-rv]
   is
   begin
-    if d = 5 then null; end if;
+    if d = 5 then null; end if;  --  Warning: parameter "d" is read but not written at this point [-rv]
   end;
 
   procedure OK_Read_Writes  --  Note: procedure "OK_Read_Writes" is unused [-ru]
@@ -45,7 +45,22 @@ procedure Remarks is
     return 5;
   end;
 
+  --  Example appeared on Stack Overflow.
+
+  type Array_Of_Naturals is array (1 .. 5) of Natural;
+
+  function Max_Array (A : Array_Of_Naturals) return Natural is
+     Max : Natural;
+  begin
+     for I in A'Range loop
+        if A (I) > Max then  --  Warning: variable "Max" is read but not written at this point [-rv]
+           Max := A (I);
+        end if;
+     end loop;
+     return Max;
+  end Max_Array;
+
 begin
   e := 0;
-  f := g + h;
+  f := g + h;  --  Warning: variable "h" is read but not written at this point [-rv]
 end Remarks;

@@ -38,8 +38,10 @@ package body HAC_Sys.Parser.Const_Var is
         --     we do first:    "c := F (x)".
         Statements.Assignment (CD, FSys, Block_Data.level, id_last, check_is_variable => False);
         CD.IdTab (id_last).is_initialized := explicit;
+        CD.IdTab (id_last).is_written := yes;
         --  Id_Last has been assigned.
-        --  Now, we copy the value of id_last to id_first .. id_last - 1.
+        --  Now, we emit the code for copying the value
+        --  of id_last to id_first .. id_last - 1.
         --  In the above example:  "a := c"  and  "b := c".
         for var of CD.IdTab (id_first .. id_last - 1) loop
           --  Push destination address:
@@ -68,6 +70,7 @@ package body HAC_Sys.Parser.Const_Var is
             Emit_1 (CD, k_Store, Typen'Pos (var_typ.TYP));
           end if;
           var.is_initialized := explicit;
+          var.is_written := yes;
         end loop;
       else
         --  Implicit initialization (for instance, VString's and File_Type's).
@@ -76,6 +79,7 @@ package body HAC_Sys.Parser.Const_Var is
             Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.adr_or_sz));
             Emit_1 (CD, k_Variable_Initialization, Typen'Pos (var.xtyp.TYP));
             var.is_initialized := implicit;
+            var.is_written := yes;
           end if;
           --  !!  TBD: Must handle composite types (arrays or records) containing
           --           initialized types, too... Bug #2

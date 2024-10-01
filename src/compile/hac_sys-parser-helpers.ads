@@ -400,6 +400,16 @@ package HAC_Sys.Parser.Helpers is
     (CD    : in out Co_Defs.Compiler_Data;
      level :        Defs.Nesting_Level);
 
+  --  Check initialization of a variable or parameter
+  --  when read in an expression.
+  --
+  procedure Mark_Read_and_Check_Read_before_Written
+    (CD  : in out Compiler_Data;
+     item : in out IdTabEntry);
+
+  --  Check usage of variables and parameters
+  --  after the last statement.
+  --
   procedure Check_Unused_or_Uninitialized_Items
     (CD    : in out Compiler_Data;
      level : in     Defs.Nesting_Level);
