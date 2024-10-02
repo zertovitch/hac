@@ -110,7 +110,7 @@ package body HAC_Sys.Parser.Expressions is
         else
           CD.target.Mark_Reference (Field_Id);
           CD.IdTab (Field_Id).is_referenced := True;
-          Raise_to_Maybe (CD.IdTab (Field_Id).is_read);
+          Elevate_to_Maybe (CD.IdTab (Field_Id).is_read);
           V := CD.IdTab (Field_Id).xtyp;
           Field_Offset := Integer (CD.IdTab (Field_Id).adr_or_sz);
           if Field_Offset /= 0 then
@@ -469,13 +469,12 @@ package body HAC_Sys.Parser.Expressions is
     end if;
   end Expression;
 
-  procedure Simple_Expression (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_Level;
-    FSys  :        Defs.Symset;
-    X     :    out Co_Defs.Exact_Subtyp
-  )
-  is  --  RM 4.4 (4)
+  procedure Simple_Expression                                            --  RM 4.4 (4)
+    (CD    : in out Co_Defs.Compiler_Data;
+     Level :        Defs.Nesting_Level;
+     FSys  :        Defs.Symset;
+     X     :    out Co_Defs.Exact_Subtyp)
+  is
 
     procedure Term (FSys_Term : Symset; X : out Exact_Subtyp) is         --  RM 4.4 (5)
 
@@ -514,7 +513,6 @@ package body HAC_Sys.Parser.Expressions is
                     --
                   when Object_Kind =>
                     X := r.xtyp;
-                    Mark_Read_and_Check_Read_before_Written (CD, r);
                     LC_Mem := CD.LC;
                     if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
                       Emit_2
@@ -554,6 +552,10 @@ package body HAC_Sys.Parser.Expressions is
                     if CD.Sy = Apostrophe then
                       InSymbol (CD);
                       Attributes.Object_Attribute (CD, Level, FSys_Prim, X, LC_Mem, X);
+                    else
+                      --  The variable or parameter itself, not an attribute on it, has been read.
+                      --  We check that it has been even written on the way to this expression.
+                      Mark_Read_and_Check_Read_before_Written (CD, Level, r);
                     end if;
                     --
                   when type_mark =>

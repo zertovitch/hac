@@ -17,18 +17,21 @@ procedure Remarks is
   e : Integer;          --  Note:     variable "e" is never read [-ru]
   f : Integer := 123;   --  Note:     variable "f" is never read [-ru]
   g : Integer := 123;   --  Note:     variable "g" is not modified, could be declared constant [-rk]
-  h : Integer;          --  Warning:  variable "h" is read but never written [-rv]
+  h : Integer;          --  Warning:  parameter "h" is never written, but possibly read
   type A0 is (x0, y0);  --  Note:     "y0" is unused [-ru]
   b0 : A0 := x0;        --  Note:     variable "b0" is unused [-ru]
 
   procedure Missing_Read_Writes  --  Note: procedure "Missing_Read_Writes" is unused [-ru]
     (a : in     Integer;         --  Note: parameter "a" is unused [-ru]
      b : in out Integer;         --  Note: parameter "b" is unused [-ru]
-     c :    out Integer;         --  Warning: parameter "c" is never written [-rv]
-     d :    out Integer)         --  Warning: parameter "d" is read but never written [-rv]
+     c :    out Integer;         --  Warning: parameter "c" is never written
+     d :    out Integer;         --  Warning: parameter "d" is never written, but possibly read
+     e :    out Integer)         --  `e` is written -> compiler is happy.
   is
   begin
     if d = 5 then null; end if;  --  Warning: parameter "d" is read but not written at this point [-rv]
+    if e = 5 then null; end if;  --  Warning: parameter "e" is read but not written at this point [-rv]
+    e := 2;
   end;
 
   procedure OK_Read_Writes  --  Note: procedure "OK_Read_Writes" is unused [-ru]
@@ -45,7 +48,8 @@ procedure Remarks is
     return 5;
   end;
 
-  --  Example appeared on Stack Overflow.
+  --  Example appeared @
+  --     https://www.reddit.com/r/ada/comments/1ezm9d6/the_variable_may_not_be_initialized/
 
   type Array_Of_Naturals is array (1 .. 5) of Natural;
 
@@ -60,6 +64,14 @@ procedure Remarks is
      return Max;
   end Max_Array;
 
+  procedure Tom (Condition : Boolean; J : out Integer) is
+     I : Integer;
+  begin
+     if Condition then
+        J := I;
+     end if;
+  end Tom;
+  
 begin
   e := 0;
   f := g + h;  --  Warning: variable "h" is read but not written at this point [-rv]

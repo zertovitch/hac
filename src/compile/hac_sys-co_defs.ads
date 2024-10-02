@@ -154,33 +154,33 @@ package HAC_Sys.Co_Defs is
 
   type No_Maybe_Yes is (no, maybe, yes);
 
-  --  Unless we are in the main execution path (no "if", "loop", etc.)
-  --  we can only note that a variable or field is possibly read or written.
+  --  Unless we are in the main execution path (not within "if", "loop", etc.)
+  --  we can only note that a variable or field is *maybe* read or written.
   --
-  procedure Raise_to_Maybe (item : in out No_Maybe_Yes);
+  procedure Elevate_to_Maybe (item : in out No_Maybe_Yes);
 
   ------------------------------
   --  Identifier Table Entry  --
   ------------------------------
   type IdTabEntry is record
-    name             : Alfa;                 --  Identifier name in ALL CAPS
-    name_with_case   : Alfa;                 --  Identifier name with original casing
-    link             : Index;                --  Previous declaration on same nesting level, or No_Id
+    name             : Alfa;                   --  Identifier name in ALL CAPS
+    name_with_case   : Alfa;                   --  Identifier name with original casing
+    link             : Index;                  --  Previous declaration on same nesting level, or No_Id
     entity           : Entity_Kind;
-    decl_kind        : Declaration_Kind;     --  Declaration kind: forward or complete.
+    decl_kind        : Declaration_Kind;       --  Declaration kind: forward or complete.
     --                                             Matters for a type, a constant, a subprogram;
     --                                             Values param_in .. param_out are
     --                                             for subprogram parameters.
-    xtyp             : Exact_Subtyp;         --  Subtype identification
-    block_or_pkg_ref : Index;                --  Reference in the block or package tables.
-    normal           : Boolean;              --  value param?
-    lev              : Nesting_Level;
-    adr_or_sz        : HAC_Integer;          --  Address, Size; index of aliased entity (USE) !! rather use block_or_pkg_ref ?!
-    is_referenced    : Boolean;              --  For any item: is it referenced at all?
-    is_read          : No_Maybe_Yes;         --  For variable or constant: is it read?
-    is_written       : No_Maybe_Yes;         --  Is variable written via ":=" or "out" mode?
-    is_initialized   : Initialized_Kind;     --  For variable or constant: is it initialized?
-    location         : Symbol_Location;
+    xtyp                  : Exact_Subtyp;      --  Subtype identification
+    block_or_pkg_ref      : Index;             --  Reference in the block or package tables.
+    normal                : Boolean;           --  value param?
+    lev                   : Nesting_Level;
+    adr_or_sz             : HAC_Integer;       --  Address, Size; index of aliased entity (USE) !! rather use block_or_pkg_ref ?!
+    is_referenced         : Boolean;           --  For any item: is it referenced at all?
+    is_read               : No_Maybe_Yes;      --  For variable or constant: is it read?
+    is_written_after_init : No_Maybe_Yes;      --  Is variable written via ":=" or "out" mode?
+    is_initialized        : Initialized_Kind;  --  For variable or constant: is it initialized?
+    location              : Symbol_Location;
   end record;
 
   --  Entity                        Meaning of Adr_or_Sz

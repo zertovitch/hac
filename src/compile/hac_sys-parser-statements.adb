@@ -487,21 +487,21 @@ package body HAC_Sys.Parser.Statements is
         CD.Id_Count := CD.Id_Count + 1;
         loop_param_id := CD.Id_Count;
         CD.IdTab (loop_param_id) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
-             (name             => CD.Id,
-              name_with_case   => CD.Id_with_case,
-              link             => previous_last,
-              entity           => constant_object,
-              decl_kind        => complete,
-              xtyp             => Undefined,  --  Subtype is determined by the range.
-              block_or_pkg_ref => 0,
-              normal           => True,
-              lev              => Block_Data.level,
-              adr_or_sz        => HAC_Integer (Block_Data.data_allocation_index),
-              is_referenced    => False,
-              is_read          => no,
-              is_written       => yes,
-              is_initialized   => explicit,
-              location         => (0, 0, 0));
+          (name                  => CD.Id,
+           name_with_case        => CD.Id_with_case,
+           link                  => previous_last,
+           entity                => constant_object,
+           decl_kind             => complete,
+           xtyp                  => Undefined,  --  Subtype is determined by the range.
+           block_or_pkg_ref      => 0,
+           normal                => True,
+           lev                   => Block_Data.level,
+           adr_or_sz             => HAC_Integer (Block_Data.data_allocation_index),
+           is_referenced         => False,
+           is_read               => no,
+           is_written_after_init => yes,
+           is_initialized        => explicit,
+           location              => (0, 0, 0));
         --
         CD.target.Mark_Declaration;
         CD.Blocks_Table (CD.Display (Block_Data.level)).Last_Id_Idx  := loop_param_id;
@@ -915,7 +915,7 @@ package body HAC_Sys.Parser.Statements is
         case CD.IdTab (I_Statement).entity is
           when Object_Kind =>
             Assignment (CD, FSys_St, Block_Data.level, I_Statement, check_is_variable => True);
-            Raise_to_Maybe (CD.IdTab (I_Statement).is_written);
+            Elevate_to_Maybe (CD.IdTab (I_Statement).is_written_after_init);
           when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
                    severity => major);

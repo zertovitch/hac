@@ -404,8 +404,9 @@ package HAC_Sys.Parser.Helpers is
   --  when read in an expression.
   --
   procedure Mark_Read_and_Check_Read_before_Written
-    (CD  : in out Compiler_Data;
-     item : in out IdTabEntry);
+    (CD    : in out Compiler_Data;
+     level : in     Nesting_Level;
+     item  : in out IdTabEntry);
 
   --  Check usage of variables and parameters
   --  after the last statement.

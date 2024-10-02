@@ -38,7 +38,6 @@ package body HAC_Sys.Parser.Const_Var is
         --     we do first:    "c := F (x)".
         Statements.Assignment (CD, FSys, Block_Data.level, id_last, check_is_variable => False);
         CD.IdTab (id_last).is_initialized := explicit;
-        CD.IdTab (id_last).is_written := yes;
         --  Id_Last has been assigned.
         --  Now, we emit the code for copying the value
         --  of id_last to id_first .. id_last - 1.
@@ -70,7 +69,6 @@ package body HAC_Sys.Parser.Const_Var is
             Emit_1 (CD, k_Store, Typen'Pos (var_typ.TYP));
           end if;
           var.is_initialized := explicit;
-          var.is_written := yes;
         end loop;
       else
         --  Implicit initialization (for instance, VString's and File_Type's).
@@ -79,7 +77,6 @@ package body HAC_Sys.Parser.Const_Var is
             Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.adr_or_sz));
             Emit_1 (CD, k_Variable_Initialization, Typen'Pos (var.xtyp.TYP));
             var.is_initialized := implicit;
-            var.is_written := yes;
           end if;
           --  !!  TBD: Must handle composite types (arrays or records) containing
           --           initialized types, too... Bug #2
@@ -188,12 +185,12 @@ package body HAC_Sys.Parser.Const_Var is
           declare
             r : IdTabEntry renames CD.IdTab (T0);
           begin
-            r.entity         := (if is_constant then constant_object else variable_object);
-            r.is_referenced  := False;
-            r.is_read        := no;
-            r.is_written     := no;
-            r.is_initialized := (if is_untyped_constant then explicit else none);
-                                --  ^ This value may be changed below.
+            r.entity                := (if is_constant then constant_object else variable_object);
+            r.is_referenced         := False;
+            r.is_read               := no;
+            r.is_written_after_init := no;
+            r.is_initialized        := (if is_untyped_constant then explicit else none);
+                                       --  ^ This value may be changed below.
             if is_untyped_constant then
               r.entity := declared_number_or_enum_item;  --  r was initially a Variable.
               r.xtyp := C.TP;

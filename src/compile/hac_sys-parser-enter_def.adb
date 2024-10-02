@@ -79,21 +79,21 @@ package body HAC_Sys.Parser.Enter_Def is
     --  Enter identifier in table IdTab
     CD.Id_Count            := CD.Id_Count + 1;
     CD.IdTab (CD.Id_Count) :=
-      (name             => Id,
-       name_with_case   => Id_with_case,
-       link             => last_id,
-       entity           => K,
-       decl_kind        => complete,
-       xtyp             => Undefined,
-       block_or_pkg_ref => 0,
-       normal           => True,
-       lev              => Level,
-       adr_or_sz        => 0,
-       is_referenced    => False,
-       is_read          => no,
-       is_written       => no,
-       is_initialized   => none,
-       location         => CD.CUD.location);
+      (name                  => Id,
+       name_with_case        => Id_with_case,
+       link                  => last_id,
+       entity                => K,
+       decl_kind             => complete,
+       xtyp                  => Undefined,
+       block_or_pkg_ref      => 0,
+       normal                => True,
+       lev                   => Level,
+       adr_or_sz             => 0,
+       is_referenced         => False,
+       is_read               => no,
+       is_written_after_init => no,
+       is_initialized        => none,
+       location              => CD.CUD.location);
     --
     CD.target.Mark_Declaration;
     --  Update start of identifier chain:

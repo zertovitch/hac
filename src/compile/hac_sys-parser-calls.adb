@@ -74,12 +74,12 @@ package body HAC_Sys.Parser.Calls is
         --
         case mode is
           when param_in =>
-            Raise_to_Maybe (CD.IdTab (K).is_read);
+            Elevate_to_Maybe (CD.IdTab (K).is_read);
           when param_in_out =>
-            Raise_to_Maybe (CD.IdTab (K).is_read);
-            Raise_to_Maybe (CD.IdTab (K).is_written);
+            Elevate_to_Maybe (CD.IdTab (K).is_read);
+            Elevate_to_Maybe (CD.IdTab (K).is_written_after_init);
           when param_out =>
-            Raise_to_Maybe (CD.IdTab (K).is_written);
+            Elevate_to_Maybe (CD.IdTab (K).is_written_after_init);
         end case;
 
         Emit_2

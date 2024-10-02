@@ -42,13 +42,13 @@ package body HAC_Sys.Co_Defs is
     return Construct_Root (NOTYP);
   end Undefined;
 
-  procedure Raise_to_Maybe (item : in out No_Maybe_Yes) is
+  procedure Elevate_to_Maybe (item : in out No_Maybe_Yes) is
   begin
     --  no    -> maybe
     --  maybe -> maybe
     --  yes   -> yes
     item := No_Maybe_Yes'Max (item, maybe);
-  end Raise_to_Maybe;
+  end Elevate_to_Maybe;
 
   procedure Set_Source_Stream
     (CUD        : in out Current_Unit_Data;

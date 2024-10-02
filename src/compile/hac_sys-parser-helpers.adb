@@ -845,12 +845,16 @@ package body HAC_Sys.Parser.Helpers is
     (if kind in Parameter_Kind then "parameter " else "variable ");
 
   procedure Mark_Read_and_Check_Read_before_Written
-    (CD  : in out Compiler_Data;
-     item : in out IdTabEntry)
+    (CD    : in out Compiler_Data;
+     level : in     Nesting_Level;
+     item  : in out IdTabEntry)
   is
   begin
-    Raise_to_Maybe (item.is_read);
-    if item.is_written = no then
+    Elevate_to_Maybe (item.is_read);
+    if item.is_written_after_init = no      --  Not written in a subprogram, nor in the above statements.
+       and then item.is_initialized = none  --  Not initialized, even implicitly
+       and then level = item.lev            --  Not a in subprogram (uncertain since call sequence is unknown).
+    then
       Remark
         (CD,
          warn_read_but_not_written,
@@ -883,33 +887,49 @@ package body HAC_Sys.Parser.Helpers is
 
     begin
       --  See table in "hac_work.xls", sheet "Remarks".
-      if item.is_read >= maybe then
-        if item.entity = variable_object and then item.is_written = no then
-          --  Read but not written.
-          case item.is_initialized is
-            when none =>
-              Remark_for_Declared_Item
-                (warn_read_but_not_written,
-                 Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
-                 """ is " &
-                 (if item.is_read > maybe then "read but " else "") &
-                 "never written");
-            when explicit =>
-              Remark_for_Declared_Item
-                (note_constant_variable,
-                 Var_or_Param (item.decl_kind)  & '"' & A2S (item.name_with_case) &
-                 """ is not modified, could be declared constant");
-            when implicit =>
-              null;
-          end case;
-        end if;
-      elsif item.entity = variable_object and then item.is_written >= maybe then
-        --  Written but not read.
-        Remark_for_Declared_Item
-          (note_unused_item,
-           Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
-           """ is never read");
+      if item.entity = variable_object then
+        case item.is_written_after_init is
+
+          when no =>
+
+            --  Not written.
+            case item.is_initialized is
+              when none =>
+                if item.is_read = no then
+                  null;
+                  --  Do nothing: neither read, not written, nor initialized.
+                  --  Note "-ru" will catch it as unused.
+                else
+                  Remark_for_Declared_Item
+                    (warn_read_but_not_written,
+                     Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
+                     """ is never written" &
+                     (case item.is_read is
+                        when no    => "",  --  Case not reached.
+                        when maybe => ", but possibly read",
+                        when yes   => ", but read") &
+                     "");
+                end if;
+              when explicit =>
+                Remark_for_Declared_Item
+                  (note_constant_variable,
+                   Var_or_Param (item.decl_kind)  & '"' & A2S (item.name_with_case) &
+                   """ is not modified, could be declared constant");
+              when implicit =>
+                null;  --  Implicitly initialized -> we don't care.
+            end case;
+
+          when maybe .. yes =>
+
+            --  Maybe written, but not read.
+            Remark_for_Declared_Item
+              (note_unused_item,
+               Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
+               """ is never read");
+
+        end case;
       end if;
+
       if item.entity /= alias and then not item.is_referenced then
         --  Here we can have any explicit declaration
         --  (object, type, subprogram, ...)

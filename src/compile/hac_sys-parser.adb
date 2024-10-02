@@ -100,18 +100,16 @@ package body HAC_Sys.Parser is
               --  the OUT variables after the call.
               --  See also Push_Parameter_by_Reference.
               --
-              r.xtyp           := xTP;
-              r.normal         := ValParam;
-              r.entity         := (if param_kind = param_in then constant_object else variable_object);
-              r.decl_kind      := param_kind;
-              r.adr_or_sz      := HAC_Integer (block_data.data_allocation_index);
-              r.lev            := block_data.level;
-              r.is_referenced  := False;
-              r.is_read        := (if param_kind = param_in then no else maybe);
-                                  --  ^ passed variable is maybe read after call.
-              r.is_written     := (if param_kind = param_out then no else maybe);
-                                  --  ^ passed variable is maybe written before call.
-              r.is_initialized := (if param_kind = param_out then none else implicit);
+              r.xtyp                  := xTP;
+              r.normal                := ValParam;
+              r.entity                := (if param_kind = param_in then constant_object else variable_object);
+              r.decl_kind             := param_kind;
+              r.adr_or_sz             := HAC_Integer (block_data.data_allocation_index);
+              r.lev                   := block_data.level;
+              r.is_referenced         := False;
+              r.is_read               := no;
+              r.is_written_after_init := no;
+              r.is_initialized        := (if param_kind = param_out then none else implicit);
             end;
             block_data.data_allocation_index := block_data.data_allocation_index + Sz;
           end loop;  --  while T0 < CD.Id_Count
