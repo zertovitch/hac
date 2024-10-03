@@ -94,12 +94,6 @@ package body HAC_Sys.Parser is
             declare
               r : IdTabEntry renames CD.IdTab (T0);
             begin
-              --  The initial values for .is_read and .is_written assume
-              --  that the caller has written the IN OUT passed variables
-              --  (or a valid expression is passed for IN), and will read
-              --  the OUT variables after the call.
-              --  See also Push_Parameter_by_Reference.
-              --
               r.xtyp                  := xTP;
               r.normal                := ValParam;
               r.entity                := (if param_kind = param_in then constant_object else variable_object);

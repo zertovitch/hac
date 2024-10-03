@@ -466,14 +466,30 @@ package body HAC_Sys.Errors is
      hint_1              :        String                 := "";
      hint_2              :        String                 := "";
      location_method     :        Symbol_Location_Method := current_symbol;
-     explicit_location   :        Defs.Symbol_Location   := (0, 0, 0))
+     explicit_location   :        Defs.Symbol_Location   := (0, 0, 0);
+     remark_made         :    out Boolean)
   is
   begin
-    if CD.remarks (code) then  --  Remark (Note or Warning) is optional
-      --  If the switch is "on", just call `Error`.
-      --  Severity does nothing for remarks.
+    remark_made := False;
+    if CD.remarks (code) then
+      --  Remark (Note or Warning) is optional.
+      --  Severity (minor passed here) does nothing for remarks.
       Diagnostic (CD, code, hint_1, hint_2, minor, location_method, explicit_location);
+      remark_made := True;
     end if;
+  end Remark;
+
+  procedure Remark
+    (CD                  : in out Co_Defs.Compiler_Data;
+     code                :        Defs.Compile_Remark;
+     hint_1              :        String                 := "";
+     hint_2              :        String                 := "";
+     location_method     :        Symbol_Location_Method := current_symbol;
+     explicit_location   :        Defs.Symbol_Location   := (0, 0, 0))
+  is
+    dummy : Boolean;
+  begin
+    Remark (CD, code, hint_1, hint_2, location_method, explicit_location, dummy);
   end Remark;
 
   ----------------------------------------------------------------------------

@@ -14,12 +14,14 @@ procedure Remarks is
   type B is (x, y);     --  Note:     type "B" is unused [-ru]
   procedure C is null;  --  Note:     procedure "C" is unused [-ru]
   d : Integer := 123;   --  Note:     variable "d" is unused [-ru]
+                        --  Note:     variable "d" is not modified, could be declared constant [-rk]
   e : Integer;          --  Note:     variable "e" is never read [-ru]
   f : Integer := 123;   --  Note:     variable "f" is never read [-ru]
   g : Integer := 123;   --  Note:     variable "g" is not modified, could be declared constant [-rk]
   h : Integer;          --  Warning:  parameter "h" is never written, but possibly read
   type A0 is (x0, y0);  --  Note:     "y0" is unused [-ru]
   b0 : A0 := x0;        --  Note:     variable "b0" is unused [-ru]
+                        --  Note:     variable "b0" is not modified, could be declared constant [-rk]
 
   procedure Missing_Read_Writes  --  Note: procedure "Missing_Read_Writes" is unused [-ru]
     (a : in     Integer;         --  Note: parameter "a" is unused [-ru]

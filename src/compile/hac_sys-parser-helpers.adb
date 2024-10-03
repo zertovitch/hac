@@ -870,18 +870,23 @@ package body HAC_Sys.Parser.Helpers is
   is
     procedure Check_Item (item : IdTabEntry) is
 
-      already_insulted : Boolean := False;
+      already_insulted : Natural := 0;
 
       procedure Remark_for_Declared_Item (diag : Compile_Diagnostic; text : String) is
+        remark_made : Boolean;
       begin
-        if not already_insulted then
+        if already_insulted < 2 then
           Remark
             (CD,
              diag,
              text,
              location_method   => explicit,
-             explicit_location => item.location);
-          already_insulted := True;
+             explicit_location => item.location,
+             remark_made       => remark_made);
+          --
+          if remark_made then
+            already_insulted := already_insulted + 1;
+          end if;
         end if;
       end Remark_for_Declared_Item;
 

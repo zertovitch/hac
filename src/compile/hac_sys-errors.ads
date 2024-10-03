@@ -42,6 +42,15 @@ package HAC_Sys.Errors is
      hint_1              :        String                 := "";
      hint_2              :        String                 := "";
      location_method     :        Symbol_Location_Method := current_symbol;
+     explicit_location   :        Defs.Symbol_Location   := (0, 0, 0);
+     remark_made         :    out Boolean);
+
+  procedure Remark
+    (CD                  : in out Co_Defs.Compiler_Data;
+     code                :        Defs.Compile_Remark;
+     hint_1              :        String                 := "";
+     hint_2              :        String                 := "";
+     location_method     :        Symbol_Location_Method := current_symbol;
      explicit_location   :        Defs.Symbol_Location   := (0, 0, 0));
 
   function Diagnostic_Prefix (kind : Defs.Diagnostic_Kind_Type) return String is
