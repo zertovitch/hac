@@ -860,7 +860,7 @@ package body HAC_Sys.Parser.Helpers is
          warn_read_but_not_written,
          Var_or_Param (item.decl_kind) & '"' &
          A2S (item.name_with_case) &
-         """ is read but not written at this point");
+         """ is read but not written at this point (when in a loop: first iteration)");
     end if;
   end Mark_Read_and_Check_Read_before_Written;
 
@@ -890,73 +890,95 @@ package body HAC_Sys.Parser.Helpers is
         end if;
       end Remark_for_Declared_Item;
 
-    begin
-      --  See table in "hac_work.xls", sheet "Remarks".
-      if item.entity = variable_object then
+      procedure Handle_Variables_and_Parameters is
+      begin
         case item.is_written_after_init is
 
           when no =>
-
             --  Not written.
+
             case item.is_initialized is
+
               when none =>
-                if item.is_read = no then
+                if item.is_read = no
+                  and then item.decl_kind /= param_out
+                then
+                  --  Neither read, not written, nor initialized.
+                  --  Issue no warning. The note "-ru" will catch it as unused.
+                  --  Special case: for an "out" parameter, we want a warning!
                   null;
-                  --  Do nothing: neither read, not written, nor initialized.
-                  --  Note "-ru" will catch it as unused.
                 else
                   Remark_for_Declared_Item
                     (warn_read_but_not_written,
                      Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
                      """ is never written" &
                      (case item.is_read is
-                        when no    => "",  --  Case not reached.
+                        when no    => "",  --  Case reached for an "out" parameter.
                         when maybe => ", but possibly read",
                         when yes   => ", but read") &
                      "");
                 end if;
+
               when explicit =>
                 Remark_for_Declared_Item
                   (note_constant_variable,
                    Var_or_Param (item.decl_kind)  & '"' & A2S (item.name_with_case) &
                    """ is not modified, could be declared constant");
+
               when implicit =>
-                null;  --  Implicitly initialized -> we don't care.
+                --  Implicitly initialized -> we don't care.
+                null;
             end case;
 
           when maybe .. yes =>
 
-            --  Maybe written, but not read.
-            Remark_for_Declared_Item
-              (note_unused_item,
-               Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
-               """ is never read");
+            if item.is_read = no                    --  Maybe written after init., but not read.
+              and then item.decl_kind /= param_out  --  Don't care about "out" param no being read.
+            then
+              Remark_for_Declared_Item
+                (note_unused_item,
+                 Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
+                 """ is never read");
+            end if;
 
         end case;
-      end if;
+      end Handle_Variables_and_Parameters;
 
-      if item.entity /= alias and then not item.is_referenced then
+      procedure Handle_Unused is
+      begin
         --  Here we can have any explicit declaration
         --  (object, type, subprogram, ...)
         Remark_for_Declared_Item
           (note_unused_item,
            (if item.decl_kind in Parameter_Kind then
-              "parameter "
+              "parameter"
             else
               (case item.entity is
-                when variable_object => "variable ",
-                when constant_object => "constant ",
-                when type_mark       => "type ",
-                when prozedure       => "procedure ",
-                when funktion        => "function ",
-                when paquetage       => "package ",
-                when tache           => "task ",
-                when others          => "")) &
-            '"' & A2S (item.name_with_case) & """ is not referenced");
+                when variable_object => "variable",
+                when constant_object => "constant",
+                when type_mark       => "type",
+                when prozedure       => "procedure",
+                when funktion        => "function",
+                when paquetage       => "package",
+                when tache           => "task",
+                when others          => "item")) &
+            " """ & A2S (item.name_with_case) & """ is not referenced");
+      end Handle_Unused;
+
+    begin
+      --  See table in "hac_work.xls", sheet "Remarks".
+
+      if item.entity = variable_object then
+        Handle_Variables_and_Parameters;
+      end if;
+
+      if item.entity /= alias and then not item.is_referenced then
+        Handle_Unused;
       end if;
     end Check_Item;
 
     id_index : Integer := CD.Blocks_Table (CD.Display (level)).Last_Id_Idx;
+
   begin
     --  Follow the chain of identifiers for given Level:
     while id_index /= No_Id loop

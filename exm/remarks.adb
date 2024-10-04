@@ -9,43 +9,44 @@ with Interfaces;
 
 procedure Remarks is
   use Interfaces;
-  use Interfaces;       --  Note:     "use" clause already applied (...) [-rr]
-  a  : Integer;         --  Note:     variable "a" is unused [-ru]
-  type B is (x, y);     --  Note:     type "B" is unused [-ru]
-  procedure C is null;  --  Note:     procedure "C" is unused [-ru]
-  d : Integer := 123;   --  Note:     variable "d" is unused [-ru]
-                        --  Note:     variable "d" is not modified, could be declared constant [-rk]
-  e : Integer;          --  Note:     variable "e" is never read [-ru]
-  f : Integer := 123;   --  Note:     variable "f" is never read [-ru]
-  g : Integer := 123;   --  Note:     variable "g" is not modified, could be declared constant [-rk]
-  h : Integer;          --  Warning:  parameter "h" is never written, but possibly read
-  type A0 is (x0, y0);  --  Note:     "y0" is unused [-ru]
-  b0 : A0 := x0;        --  Note:     variable "b0" is unused [-ru]
-                        --  Note:     variable "b0" is not modified, could be declared constant [-rk]
+  use Interfaces;       --  Note:    "use" clause already applied (...) [-rr]
+  a  : Integer;         --  Note:    variable "a" is not referenced [-ru]
+  type B is (x, y);     --  Note:    type "B" is not referenced [-ru]
+  procedure C is null;  --  Note:    procedure "C" is not referenced [-ru]
+  d : Integer := 123;   --  Note:    variable "d" is not referenced [-ru]
+                        --  Note:    variable "d" is not modified, could be declared constant [-rk]
+  e : Integer;          --  Note:    variable "e" is never read [-ru]
+  f : Integer := 123;   --  Note:    variable "f" is never read [-ru]
+  g : Integer := 123;   --  Note:    variable "g" is not modified, could be declared constant [-rk]
+  h : Integer;          --  Warning: parameter "h" is never written, but possibly read
+  type A0 is (x0, y0);  --  Note:    "y0" is not referenced [-ru]
+  b0 : A0 := x0;        --  Note:    variable "b0" is not referenced [-ru]
+                        --  Note:    variable "b0" is not modified, could be declared constant [-rk]
 
-  procedure Missing_Read_Writes  --  Note: procedure "Missing_Read_Writes" is unused [-ru]
-    (a : in     Integer;         --  Note: parameter "a" is unused [-ru]
-     b : in out Integer;         --  Note: parameter "b" is unused [-ru]
-     c :    out Integer;         --  Warning: parameter "c" is never written
-     d :    out Integer;         --  Warning: parameter "d" is never written, but possibly read
-     e :    out Integer)         --  `e` is written -> compiler is happy.
+  procedure Missing_Read_Writes   --  Note:    procedure "Missing_Read_Writes" is not referenced [-ru]
+    (a1 : in     Integer;         --  Note:    parameter "a1" is not referenced [-ru]
+     b1 : in out Integer;         --  Note:    parameter "b1" is not referenced [-ru]
+     c1 :    out Integer;         --  Warning: parameter "c1" is never written [-rv]
+                                  --  Note:    parameter "c1" is not referenced [-ru]
+     d1 :    out Integer;         --  Warning: parameter "d1" is never written, but possibly read
+     e1 :    out Integer)         --  `e1` is written -> compiler is happy.
   is
   begin
-    if d = 5 then null; end if;  --  Warning: parameter "d" is read but not written at this point [-rv]
-    if e = 5 then null; end if;  --  Warning: parameter "e" is read but not written at this point [-rv]
-    e := 2;
+    if d1 = 5 then null; end if;  --  Warning: parameter "d1" is read but not written at this point [-rv]
+    if e1 = 5 then null; end if;  --  Warning: parameter "e1" is read but not written at this point [-rv]
+    e1 := 2;
   end;
 
-  procedure OK_Read_Writes  --  Note: procedure "OK_Read_Writes" is unused [-ru]
-    (a : in     Integer;
-     b : in out Integer;    --  Note: parameter "b" is unused [-ru]
-     c :    out Integer)
+  procedure OK_Read_Writes   --  Note: procedure "OK_Read_Writes" is not referenced [-ru]
+    (a2 : in     Integer;
+     b2 : in out Integer;    --  Note: parameter "b2" is not referenced [-ru]
+     c2 :    out Integer)
   is
   begin
-    c := a;  --  `c` is written, `a` is read, so the compiler is happy about `a` and `c`.
+    c2 := a2;  --  `c2` is written, `a2` is read, so the compiler is happy about `a2` and `c2`.
   end;
 
-  function Useless return Integer is  --  Note: function "Useless" is unused [-ru]
+  function Useless return Integer is  --  Note: function "Useless" is not referenced [-ru]
   begin
     return 5;
   end;
@@ -70,7 +71,7 @@ procedure Remarks is
      I : Integer;
   begin
      if Condition then
-        J := I;
+        J := I;  --  Warning: variable "I" is read but not written at this point [-rv]
      end if;
   end Tom;
   
