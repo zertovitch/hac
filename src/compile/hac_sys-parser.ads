@@ -15,8 +15,8 @@ with HAC_Sys.Co_Defs,
 package HAC_Sys.Parser is
 
   type Block_Data_Type is record
-    level                           : Defs.Nesting_Level;   --  When level = 0, the rest of
-                                                            --    this record is garbage.
+    context                         : Defs.Flow_Context;    --  When context.level = 0, the rest
+                                                            --    of this record is garbage.
     entity                          : Co_Defs.Entity_Kind;  --  Procedure, function or entry.
     is_main                         : Boolean;
     block_id_index                  : Natural;

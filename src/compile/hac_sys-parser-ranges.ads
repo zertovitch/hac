@@ -82,13 +82,12 @@ private package HAC_Sys.Parser.Ranges is
   --      --  FOR statement (RM 5.5 (4)).
   --      for I in J .. N loop
 
-  procedure Dynamic_Range (
-    CD                 : in out Co_Defs.Compiler_Data;
-    Level              : in     Defs.Nesting_Level;
-    FSys               : in     Defs.Symset;
-    Non_Discrete_Error : in     Defs.Compile_Diagnostic;
-    Range_Typ          :    out Co_Defs.Exact_Subtyp
-  );
+  procedure Dynamic_Range
+    (CD                 : in out Co_Defs.Compiler_Data;
+     context            : in     Defs.Flow_Context;
+     FSys               : in     Defs.Symset;
+     Non_Discrete_Error : in     Defs.Compile_Diagnostic;
+     Range_Typ          :    out Co_Defs.Exact_Subtyp);
 
   procedure Set_Singleton_Range (X : in out Co_Defs.Exact_Subtyp; Value : Defs.HAC_Integer);
 

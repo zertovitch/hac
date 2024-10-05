@@ -1,0 +1,3 @@
+../exm/remarks.adb: 24:3-4: note: variable "b0" is not modified, could be declared constant [-rk]
+../exm/remarks.adb: 21:3-3: note: variable "g" is not modified, could be declared constant [-rk]
+../exm/remarks.adb: 17:3-3: note: variable "d" is not modified, could be declared constant [-rk]

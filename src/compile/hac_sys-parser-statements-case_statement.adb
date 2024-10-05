@@ -11,8 +11,8 @@ with HAC_Sys.Co_Defs,
 
 procedure HAC_Sys.Parser.Statements.CASE_Statement  --  Ada RM 5.4
   (CD         : in out Co_Defs.Compiler_Data;
-   FSys_St    :        Defs.Symset;
-   Block_Data : in out Block_Data_Type)
+   fsys       : in     Defs.Symset;
+   block_data : in out Block_Data_Type)
 is
   use Defs, Co_Defs, Compiler.PCode_Emit, Errors, Expressions, Helpers, PCode;
   use type HAC_Integer;
@@ -49,14 +49,14 @@ is
   procedure Discrete_Choice is  --  Ada RM 3.8.1 (5)
     label_1, label_2 : Constant_Rec;
     K : Integer;
-    choice_symbol_set : constant Symset := FSys_St + Alt_Finger_THEN + Range_Double_Dot_Symbol;
+    choice_symbol_set : constant Symset := fsys + Alt_Finger_THEN + Range_Double_Dot_Symbol;
   begin
-    Static_Scalar_Expression (CD, Block_Data.level, choice_symbol_set, label_1);
+    Static_Scalar_Expression (CD, block_data.context.level, choice_symbol_set, label_1);
     if CD.Sy = Range_Double_Dot_Symbol then
       --  !!  To do: non-explicit ranges, like a subtype name, a 'Range, ... .
       --      Ranges.Static_Range.
       InSymbol;
-      Static_Scalar_Expression (CD, Block_Data.level, choice_symbol_set, label_2);
+      Static_Scalar_Expression (CD, block_data.context.level, choice_symbol_set, label_2);
       if label_2.TP /= label_1.TP then
         Type_Mismatch (
           CD, err_case_label_not_same_type_as_case_clause,
@@ -143,7 +143,7 @@ is
     else
       Need (CD, Finger, err_FINGER_missing);
     end if;
-    Sequence_of_Statements (CD, END_WHEN, Block_Data);
+    Sequence_of_Statements_in_a_Conditional_Statement (CD, END_WHEN, block_data);
     exit_counter := exit_counter + 1;
     ExitTab (exit_counter) := CD.LC;
     Emit (CD, k_Jump);
@@ -185,9 +185,11 @@ is
 
 begin  --  CASE_Statement
   pragma Assert (CD.Sy = CASE_Symbol);
+  block_data.context.is_within_condition := True;
+  block_data.context.is_in_cond_within_loop := block_data.context.is_within_loop;
   Fill (parsed_choices, 0);
   InSymbol;
-  Expression (CD, Block_Data.level, FSys_St + Colon_Comma_IS_OF, X);
+  Expression (CD, block_data.context, fsys + Colon_Comma_IS_OF, X);
   if not Discrete_Typ (X.TYP) then
     Error (CD, err_bad_type_for_a_case_statement);
   end if;

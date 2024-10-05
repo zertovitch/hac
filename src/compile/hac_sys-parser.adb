@@ -49,7 +49,7 @@ package body HAC_Sys.Parser is
       --
       while CD.Sy = IDent loop
         T0 := CD.Id_Count;
-        Enter_Variables (CD, block_data.level, False);
+        Enter_Variables (CD, block_data.context.level, False);
         --
         if CD.Sy = Colon then  --  The ':'  in  "function F (x, y : in Real) return Real;"
           InSymbol;
@@ -69,7 +69,7 @@ package body HAC_Sys.Parser is
             ValParam := True;
           end if;
           if CD.Sy = IDent then
-            X := Locate_CD_Id (CD, block_data.level);
+            X := Locate_CD_Id (CD, block_data.context.level);
             InSymbol;
             if X = CD.String_Id_Index then
               --  We could pass string literals as "in" parameter
@@ -99,7 +99,7 @@ package body HAC_Sys.Parser is
               r.entity                := (if param_kind = param_in then constant_object else variable_object);
               r.decl_kind             := param_kind;
               r.adr_or_sz             := HAC_Integer (block_data.data_allocation_index);
-              r.lev                   := block_data.level;
+              r.lev                   := block_data.context.level;
               r.is_referenced         := False;
               r.is_read               := no;
               r.is_written_after_init := no;
@@ -140,11 +140,22 @@ package body HAC_Sys.Parser is
         case CD.Sy is
           when IDent              => Const_Var.Var_Declaration (CD, FSys, block_data);
           when TYPE_Symbol |
-               SUBTYPE_Symbol     => Type_Def.Type_or_Subtype_Declaration (CD, block_data.level, FSys);
-          when TASK_Symbol        => Tasking.Task_Declaration (CD, FSys, block_data.level);
-          when USE_Symbol         => Packages.Use_Clause (CD, block_data.level, False);
+               SUBTYPE_Symbol
+            =>
+            Type_Def.Type_or_Subtype_Declaration (CD, block_data.context.level, FSys);
+
+          when TASK_Symbol
+            =>
+            Tasking.Task_Declaration (CD, FSys, block_data.context.level);
+          when USE_Symbol
+            =>
+            Packages.Use_Clause (CD, block_data.context.level, False);
+
           when PROCEDURE_Symbol |
-               FUNCTION_Symbol    => Subprogram_Declaration_or_Body (CD, FSys, block_data.level, ignored_kind);
+               FUNCTION_Symbol
+            =>
+            Subprogram_Declaration_or_Body (CD, FSys, block_data.context.level, ignored_kind);
+
           when PACKAGE_Symbol =>
             --  Local package (local to a block or subprogram).
             InSymbol;
@@ -157,7 +168,7 @@ package body HAC_Sys.Parser is
             if CD.Sy /= IDent then
               Error (CD, err_identifier_missing, severity => major);
             end if;
-            Enter_Prefixed (CD, block_data.level, CD.Id, CD.Id_with_case, pkg_kind, pkg_spec_index);
+            Enter_Prefixed (CD, block_data.context.level, CD.Id, CD.Id_with_case, pkg_kind, pkg_spec_index);
             if is_body then
               if pkg_spec_index = No_Id then
                 Error
@@ -178,7 +189,7 @@ package body HAC_Sys.Parser is
         CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
         exit when CD.Sy = BEGIN_Symbol;
       end loop;
-      Check_Incomplete_Definitions (CD, block_data.level);
+      Check_Incomplete_Definitions (CD, block_data.context.level);
     end Declarative_Part;
 
     procedure Statements_Part_Setup is
@@ -212,7 +223,7 @@ package body HAC_Sys.Parser is
       if CD.Sy = RETURN_Symbol then
         InSymbol;  --  FUNCTION TYPE
         if CD.Sy = IDent then
-          I_Res_Type := Locate_CD_Id (CD, block_data.level);
+          I_Res_Type := Locate_CD_Id (CD, block_data.context.level);
           InSymbol;
           if I_Res_Type /= 0 then
             if CD.IdTab (I_Res_Type).entity /= type_mark then
@@ -297,7 +308,7 @@ package body HAC_Sys.Parser is
       if CD.Sy = WITH_Symbol then
         Subprogram_Aspect;
       end if;
-      if block_data.level > 1 and then block_data.entity /= entree  then
+      if block_data.context.level > 1 and then block_data.entity /= entree  then
         InSymbol;  --  Consume ';'
       end if;
       --  End of subprogram specification part (forward declaration).
@@ -349,7 +360,7 @@ package body HAC_Sys.Parser is
           or CD.remarks (note_constant_variable)
           or CD.remarks (warn_read_but_not_written)
         then
-          Check_Unused_or_Uninitialized_Items (CD, block_data.level);
+          Check_Unused_or_Uninitialized_Items (CD, block_data.context.level);
         end if;
         --
         if CD.Sy = END_Symbol then
@@ -389,7 +400,7 @@ package body HAC_Sys.Parser is
         return;
       end if;
       --
-      if block_data.level <= 1 or Is_a_block_statement then
+      if block_data.context.level <= 1 or Is_a_block_statement then
         --  Time to count the minor errors as errors.
         CD.error_count := CD.error_count + CD.minor_error_count;
         CD.minor_error_count := 0;
@@ -431,7 +442,7 @@ package body HAC_Sys.Parser is
       subprogram_block_index := CD.Blocks_Count;
       CD.IdTab (block_data.block_id_index).block_or_pkg_ref := subprogram_block_index;
     end if;
-    CD.Display (block_data.level) := subprogram_block_index;
+    CD.Display (block_data.context.level) := subprogram_block_index;
     CD.IdTab (block_data.block_id_index).xtyp := Undefined;
     CD.Blocks_Table (subprogram_block_index).First_Param_Id_Idx := CD.Id_Count + 1;
     if CD.Sy = LParent then
@@ -458,7 +469,7 @@ package body HAC_Sys.Parser is
     CD.Full_Block_Id := Restore_Block_ID;
     Decrement_Nesting_or_Descending_Level (CD);
     if CD.error_count = 0 then
-      pragma Assert (block_data.level = Initial_Block_Data.level);
+      pragma Assert (block_data.context.level = Initial_Block_Data.context.level);
     end if;
   end Block;
 
@@ -495,7 +506,7 @@ package body HAC_Sys.Parser is
       --  NB: now old_id_idx, if different than No_Id, points to the
       --  possible previous declaration of the subprogram with that name.
       Scanner.InSymbol (CD);
-      sub_sub_prog_block_data.level                         := current_level + 1;
+      sub_sub_prog_block_data.context.level                 := current_level + 1;
       sub_sub_prog_block_data.block_id_index                := CD.Id_Count;
       sub_sub_prog_block_data.entity                        := (if IsFun then funktion else prozedure);
       sub_sub_prog_block_data.is_main                       := False;

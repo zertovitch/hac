@@ -486,7 +486,7 @@ package body HAC_Sys.Compiler is
         --  At this point, the current symbol should be: ";", "IS", "(",
         --  or, for a parameterless function, "RETURN".
         --
-        unit_block.level                         := 1;
+        unit_block.context.level                 := 1;
         unit_block.block_id_index                := new_id_index;
         unit_block.entity                        := (if kind = Function_Unit then funktion else prozedure);
         unit_block.is_main                       := as_main_unit;
@@ -535,17 +535,20 @@ package body HAC_Sys.Compiler is
             raise Program_Error with "Unexpected case: spec_resolved";
         end case;
         needs_body := as_specification;
+
       when Package_Declaration =>
-        unit_block.level := 0;  --  Actually, not a block.
+        unit_block.context.level := 0;  --  Actually, not a block.
         CD.IdTab (new_id_index).decl_kind := spec_resolved;
         --  Why spec_resolved ? missing bodies for possible suprograms
         --  in that package are checked anyway.
         Parser.Packages.Package_Declaration (CD, empty_symset, unit_block, needs_body);
+
       when Package_Body =>
-        unit_block.level := 0;  --  Actually, not a block.
+        unit_block.context.level := 0;  --  Actually, not a block.
         Parser.Packages.Package_Body (CD, empty_symset, unit_block);
         needs_body := False;
     end case;
+
     if needs_opening_a_stream then
       LD.cat.Close (full_file_name);
     end if;

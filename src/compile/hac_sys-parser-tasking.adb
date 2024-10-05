@@ -36,7 +36,7 @@ package body HAC_Sys.Parser.Tasking is
       TaskID_with_case := CD.IdTab (I).name_with_case;
       CD.Blocks_Table (CD.IdTab (I).block_or_pkg_ref).SrcFrom := saveLineCount;  --  (* Manuel *)
       InSymbol;
-      task_block.level                         := Level + 1;
+      task_block.context.level                 := Level + 1;
       task_block.block_id_index                := I;
       task_block.entity                        := entree;
       task_block.is_main                       := False;
@@ -85,7 +85,7 @@ package body HAC_Sys.Parser.Tasking is
           CD.Entries_Table (CD.Entries_Count) := CD.Id_Count;  --  point to identifier table location
           T0                                  := CD.Id_Count;  --  of TaskID
           InSymbol;
-          task_block.level                         := Level + 1;
+          task_block.context.level                 := Level + 1;
           task_block.block_id_index                := CD.Id_Count;
           task_block.entity                        := entree;
           task_block.is_main                       := False;

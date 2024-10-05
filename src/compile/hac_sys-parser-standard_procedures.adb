@@ -21,12 +21,11 @@ package body HAC_Sys.Parser.Standard_Procedures is
      others  =>  (others => invalid));
   --  NB: for String_Literals on the target HAC VM, two values are pushed on the stack.
 
-  procedure Standard_Procedure (
-    CD      : in out Co_Defs.Compiler_Data;
-    Level   :        Defs.Nesting_Level;
-    FSys    :        Defs.Symset;
-    Code    :        Defs.SP_Code
-  )
+  procedure Standard_Procedure
+    (CD      : in out Co_Defs.Compiler_Data;
+     context : in     Defs.Flow_Context;
+     FSys    : in     Defs.Symset;
+     Code    : in     Defs.SP_Code)
   is
 
     procedure HAT_Procedure_Call (FIO_Code : SP_Code; Param : Operand_2_Type := 0) is
@@ -47,14 +46,14 @@ package body HAC_Sys.Parser.Standard_Procedures is
       use type Operand_2_Type;
     begin
       Need (CD, LParent, err_missing_an_opening_parenthesis);
-      Push_Parameter_by_Reference (CD, Level, FSys, "File", param_in_out, Found);
+      Push_Parameter_by_Reference (CD, context, FSys, "File", param_in_out, Found);
       with_file := Found.TYP = Text_Files;
       if with_file then
         --  We place the file handle's value on the stack:
         Emit (CD, k_Dereference);
         Need (CD, Comma, err_COMMA_missing);
         --  Now the variable for "Get (file, variable);":
-        Push_Parameter_by_Reference (CD, Level, FSys, "", param_out, Found);
+        Push_Parameter_by_Reference (CD, context, FSys, "", param_out, Found);
       end if;
       --  The "out" variable for Get, Get_Immediate, Get_Line
       --  has been pushed by reference now.
@@ -88,11 +87,11 @@ package body HAC_Sys.Parser.Standard_Procedures is
       with_file : Boolean;
     begin
       Need (CD, LParent, err_missing_an_opening_parenthesis);
-      Expression (CD, Level, FSys + Colon_Comma_RParent, Item_Typ);
+      Expression (CD, context, FSys + Colon_Comma_RParent, Item_Typ);
       with_file := Item_Typ.TYP = Text_Files;
       if with_file then
         Need (CD, Comma, err_COMMA_missing);
-        Expression (CD, Level, FSys + Colon_Comma_RParent, Item_Typ);
+        Expression (CD, context, FSys + Colon_Comma_RParent, Item_Typ);
       end if;
       --
       --  Here we have tha actual thing to "Put": a character, (v)string, a number.
@@ -113,7 +112,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         --    Width, Base    for Put ([F,] I [, Width [, Base]]);
         --    Fore, Aft, Exp for Put ([F,] R [, Fore[, Aft[, Exp]]]);
         --    Width          for Put ([F,] B [, Width]);
-        Expression (CD, Level, FSys + Colon_Comma_RParent, Format_Param_Typ);
+        Expression (CD, context, FSys + Colon_Comma_RParent, Format_Param_Typ);
         Check_Integer (CD, Format_Param_Typ.TYP);
       end loop;
       --  Check given / default parameters (nice short common solution, isn't it ?)
@@ -168,9 +167,9 @@ package body HAC_Sys.Parser.Standard_Procedures is
           --  that will have in fine an address or a value pushed on the stack.
           case pl (i).mode is
             when by_reference =>
-              Push_Parameter_by_Reference (CD, Level, FSys, "", param_in_out, X);
+              Push_Parameter_by_Reference (CD, context, FSys, "", param_in_out, X);
             when by_value =>
-              Expression (CD, Level, Comma_RParent, X);
+              Expression (CD, context, Comma_RParent, X);
           end case;
           --  Check the base type.
           if X.TYP /= pl (i).typ then
@@ -206,13 +205,13 @@ package body HAC_Sys.Parser.Standard_Procedures is
       when SP_New_Line | SP_Skip_Line =>
         if CD.Sy = LParent then
           InSymbol (CD);
-          Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+          Expression (CD, context, FSys + Colon_Comma_RParent, X);
           case X.TYP is
             when Text_Files =>
               if CD.Sy = Comma then
                 --  "New_Line (File, Spacing);"
                 InSymbol (CD);
-                Expression (CD, Level, FSys + RParent, Y);
+                Expression (CD, context, FSys + RParent, Y);
                 Check_Integer (CD, Y.TYP);
               else
                 --  "New_Line (File);"
@@ -249,14 +248,14 @@ package body HAC_Sys.Parser.Standard_Procedures is
       when SP_Open | SP_Create | SP_Append | SP_Close =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         Push_Parameter_by_Reference
-          (CD, Level, FSys + Colon_Comma_RParent, "File", param_in_out, X);
+          (CD, context, FSys + Colon_Comma_RParent, "File", param_in_out, X);
         if X.TYP /= Text_Files then
           Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files_Set);
         end if;
         if Code in SP_Open | SP_Create | SP_Append then
           --  Parse file name.
           Need (CD, Comma, err_COMMA_missing);
-          Expression (CD, Level, FSys + Colon_Comma_RParent, X);
+          Expression (CD, context, FSys + Colon_Comma_RParent, X);
           Check_any_String_and_promote_to_VString (CD, X, False);
         end if;
         HAT_Procedure_Call (Code);
@@ -280,7 +279,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       when SP_Set_Env | SP_Set_VM_Variable | SP_Copy_File | SP_Rename =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
         for arg in 1 .. 2 loop
-          Expression (CD, Level, Colon_Comma_RParent, X);  --  We push the arguments in the stack.
+          Expression (CD, context, Colon_Comma_RParent, X);  --  We push the arguments in the stack.
           --  Set_Env ( "HAC_Var",  "Hello");     <-  2 String's
           --  Set_Env (+"HAC_Var", +"Hello");     <-  2 VString's
           --  Set_Env (+"HAC_Var",  "Hello");
@@ -297,20 +296,20 @@ package body HAC_Sys.Parser.Standard_Procedures is
            SP_Delete_File | SP_Set_Directory
            =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expression (CD, Level, RParent_Set, X);  --  We push the argument in the stack.
+        Expression (CD, context, RParent_Set, X);  --  We push the argument in the stack.
         Check_any_String_and_promote_to_VString (CD, X, False);
         HAT_Procedure_Call (Code);
         Need (CD, RParent, err_closing_parenthesis_missing);
 
       when SP_Shell_Execute =>
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expression (CD, Level, Comma_RParent, X);  --  We push the argument in the stack.
+        Expression (CD, context, Comma_RParent, X);  --  We push the argument in the stack.
         Check_any_String_and_promote_to_VString (CD, X, False);
         --  ` Shell_Execute (cmd `  has been parsed at this point.
         if CD.Sy = Comma then
           InSymbol (CD);
           Push_Parameter_by_Reference
-            (CD, Level, RParent_Set, "Command", param_in_out, Y);
+            (CD, context, RParent_Set, "Command", param_in_out, Y);
           case Y.TYP is
             when VStrings =>
               --  Shell_Execute (cmd, output);
@@ -319,7 +318,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
               if CD.Sy = Comma then
                 InSymbol (CD);
                 Push_Parameter_by_Reference
-                  (CD, Level, RParent_Set, "Result", param_out, Z);
+                  (CD, context, RParent_Set, "Result", param_out, Z);
                 --  Shell_Execute (cmd, result, output);
                 HAT_Procedure_Call (SP_Shell_Execute_Result_Output);
                 if Z.TYP /= VStrings then
@@ -352,12 +351,14 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
       when SP_Push_Abstract_Console =>
         null;  --  Internal: used by Get, Put, etc. without file parameter.
+
       when SP_Get_File | SP_Get_Line_File |
            SP_Put_File | SP_Put_Line_File =>
         --  Theses cases are "fronted" by SP_Get, SP_Get_Line,...
         --  They are used by the VM.
         null;
     end case;
+
   end Standard_Procedure;
 
 end HAC_Sys.Parser.Standard_Procedures;

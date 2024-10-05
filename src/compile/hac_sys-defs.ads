@@ -306,6 +306,15 @@ package HAC_Sys.Defs is
 
   subtype Nesting_Level is HAC_Integer range 0 .. nesting_level_max;
 
+  type Flow_Context is record
+    level                  : Nesting_Level;
+    --  This is for rudimentary flow analysis
+    --  and the issuance of clever warnings and notes.
+    is_within_loop         : Boolean := False;  --  Reversed on leaving top loop
+    is_within_condition    : Boolean := False;  --  Reversed on leaving top condition
+    is_in_cond_within_loop : Boolean := False;  --  Reversed on leaving this case
+  end record;
+
   ------------------------------
   --  Compilation error type  --
   ------------------------------

@@ -117,13 +117,12 @@ package body HAC_Sys.Parser.Ranges is
   -- Dynamic_Range --
   -------------------
 
-  procedure Dynamic_Range (
-    CD                 : in out Co_Defs.Compiler_Data;
-    Level              : in     Defs.Nesting_Level;
-    FSys               : in     Defs.Symset;
-    Non_Discrete_Error : in     Defs.Compile_Diagnostic;
-    Range_Typ          :    out Co_Defs.Exact_Subtyp
-  )
+  procedure Dynamic_Range
+    (CD                 : in out Co_Defs.Compiler_Data;
+     context            : in     Defs.Flow_Context;
+     FSys               : in     Defs.Symset;
+     Non_Discrete_Error : in     Defs.Compile_Diagnostic;
+     Range_Typ          :    out Co_Defs.Exact_Subtyp)
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
     --  The variant "Low_Expr .. High_Expr" was initially
@@ -132,7 +131,7 @@ package body HAC_Sys.Parser.Ranges is
     Lower_Bound_Static, Higher_Bound_Static : Constant_Rec;
     Is_SI_Found                             : Boolean;
   begin
-    Static_Subtype_Indication (CD, Level, Lower_Bound_Static, Higher_Bound_Static, Is_SI_Found);
+    Static_Subtype_Indication (CD, context.level, Lower_Bound_Static, Higher_Bound_Static, Is_SI_Found);
     --
     if Is_SI_Found then
       --  All right, we have parsed a subtype indication, e.g., "Boolean".
@@ -147,7 +146,7 @@ package body HAC_Sys.Parser.Ranges is
     --  We try an explicit dynamic range, like: "f (z) + j .. n * 2"  or  "1 .. 6".
     --  See RM 3.5 (3).
     --
-    Simple_Expression (CD, Level, END_LOOP_RANGE_Double_Dot + FSys, Lower_Bound_Typ);
+    Simple_Expression (CD, context, END_LOOP_RANGE_Double_Dot + FSys, Lower_Bound_Typ);
     --  You may ask: why did the Ada standard authors take Simple_Expression
     --  instead of Expression for the range bounds ?
     --  It's for stopping the parsing on relational and logical operators.
@@ -174,14 +173,13 @@ package body HAC_Sys.Parser.Ranges is
     elsif CD.Sy = Range_Double_Dot_Symbol then  --  ".."
       InSymbol (CD);
       --
-      Simple_Expression (CD, Level, FSys + LOOP_Symbol, Upper_Bound_Typ);
+      Simple_Expression (CD, context, FSys + LOOP_Symbol, Upper_Bound_Typ);
       --
       if Exact_Typ (Upper_Bound_Typ) /= Exact_Typ (Lower_Bound_Typ) then
-        Type_Mismatch (
-          CD, err_bounds_type_mismatch,
-          Found    => Upper_Bound_Typ,
-          Expected => Lower_Bound_Typ
-        );
+        Type_Mismatch
+          (CD, err_bounds_type_mismatch,
+           Found    => Upper_Bound_Typ,
+           Expected => Lower_Bound_Typ);
       end if;
       Range_Typ.Discrete_Last := Upper_Bound_Typ.Discrete_Last;
     else

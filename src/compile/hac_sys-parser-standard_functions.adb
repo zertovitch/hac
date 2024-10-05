@@ -25,14 +25,13 @@ package body HAC_Sys.Parser.Standard_Functions is
       others                => 1
      );
 
-  procedure Standard_Function (
-    CD          : in out Co_Defs.Compiler_Data;
-    Level       :        Defs.Nesting_Level;
-    FSys        :        Defs.Symset;
-    Ident_Index :        Integer;
-    Code        :        Defs.SF_Code;
-    Return_Typ  :    out Co_Defs.Exact_Subtyp
-  )
+  procedure Standard_Function
+    (CD          : in out Co_Defs.Compiler_Data;
+     context     : in     Defs.Flow_Context;
+     FSys        :        Defs.Symset;
+     Ident_Index :        Integer;
+     Code        :        Defs.SF_Code;
+     Return_Typ  :    out Co_Defs.Exact_Subtyp)
   is
     use Co_Defs;
     Max_Args : constant := 3;
@@ -116,7 +115,7 @@ package body HAC_Sys.Parser.Standard_Functions is
       TYP_of_arg : Typen;
     begin
       for a in 1 .. Args loop
-        Expression (CD, Level, FSys + RParent + Comma, Actual (a));
+        Expression (CD, context, FSys + RParent + Comma, Actual (a));
         TYP_of_arg := Actual (a).TYP;
         if Expected (a) (TYP_of_arg) then
           null;  --  All right so far: argument type is in the admitted set of types.
@@ -145,7 +144,7 @@ package body HAC_Sys.Parser.Standard_Functions is
       if CD.Sy = LParent then
         --  End_Of_File (...), End_Of_Line (...).
         InSymbol (CD);
-        Expression (CD, Level, FSys + RParent + Comma, X);
+        Expression (CD, context, FSys + RParent + Comma, X);
         if X.TYP /= Text_Files then
           Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files_Set);
         end if;

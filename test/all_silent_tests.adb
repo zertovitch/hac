@@ -1,4 +1,4 @@
---  This program runs a series of more than 70 regression tests to check
+--  This program runs a series of more than 96 regression tests to check
 --  the correct operation of the HAC compiler.
 --  The failures and success are accounted and the sums are shown at the end.
 --
@@ -106,10 +106,10 @@ procedure All_Silent_Tests is
        "hac " & examples_dir & "pkg_demo_gen.adb";
 
   begin
-    Put_Line ("    ___________      _____________________________________________");
-    Put_Line ("   / *  HAC  * \    /  ""Silent tests"": when the failure count     \");
-    Put_Line ("   |  Testing  |    |  is zero, then the test suite is all fine.  |");
-    Put_Line ("   \___________/    \_____________________________________________/");
+    Put_Line ("    ______________________      _____________________________________________");
+    Put_Line ("   / *       H A C      * \    /  ""Silent tests"": when the failure count     \");
+    Put_Line ("   |  Regression Testing  |    |  is zero, then the test suite is all fine.  |");
+    Put_Line ("   \______________________/    \_____________________________________________/");
     New_Line;
     Build_HAC (hac_build_success);  --  Redundant if this program is itself run through HAC.
     if not hac_build_success then
@@ -138,6 +138,7 @@ procedure All_Silent_Tests is
     Shell_Execute (generate & " delete");
     --
     Normal_Test (+"recursion.adb");
+    Normal_Test (+"remarks_check.adb");
     Normal_Test (+"sorting_tests.adb");
     Normal_Test (+"strings.adb");
     Normal_Test (examples_dir & "tasking" & Directory_Separator & "tasks_02.adb x");

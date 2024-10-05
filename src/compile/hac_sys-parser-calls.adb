@@ -11,7 +11,7 @@ package body HAC_Sys.Parser.Calls is
 
   procedure Push_Parameter_by_Value
     (CD       : in out Co_Defs.Compiler_Data;
-     level    :        Defs.Nesting_Level;
+     context  :        Defs.Flow_Context;
      fsys     :        Defs.Symset;
      expected :        Co_Defs.Exact_Subtyp)
   is
@@ -19,7 +19,7 @@ package body HAC_Sys.Parser.Calls is
   begin
     --  Expression does all the job of parsing and, for
     --  atomic types, emitting the right "push" instructions.
-    Expression (CD, level, fsys + Colon_Comma_RParent, X);
+    Expression (CD, context, fsys + Colon_Comma_RParent, X);
     --  What is left is:
     --    - checking types
     --    - for composite types, emit an instruction for pushing
@@ -42,7 +42,7 @@ package body HAC_Sys.Parser.Calls is
 
   procedure Push_Parameter_by_Reference
     (CD       : in out Co_Defs.Compiler_Data;
-     level    :        Defs.Nesting_Level;
+     context  :        Defs.Flow_Context;
      fsys     :        Defs.Symset;
      name     :        String;
      mode     :        Co_Defs.Parameter_Kind;
@@ -52,7 +52,7 @@ package body HAC_Sys.Parser.Calls is
   begin
     found := Undefined;
     if CD.Sy = IDent then
-      K := Locate_CD_Id (CD, level);
+      K := Locate_CD_Id (CD, context.level);
       InSymbol (CD);
       if K = No_Id then
         null;  --  Error already issued due to undefined identifier
@@ -92,7 +92,7 @@ package body HAC_Sys.Parser.Calls is
            Operand_2_Type (CD.IdTab (K).adr_or_sz));
 
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-          Selector (CD, level, fsys + Colon_Comma_RParent, found);
+          Selector (CD, context, fsys + Colon_Comma_RParent, found);
         end if;
       end if;
     else
@@ -104,7 +104,7 @@ package body HAC_Sys.Parser.Calls is
   -----------------------------------------Subprogram_or_Entry_Call-
   procedure Subprogram_or_Entry_Call
     (CD          : in out Co_Defs.Compiler_Data;
-     level       :        Defs.Nesting_Level;
+     context     :        Defs.Flow_Context;
      fsys        :        Defs.Symset;
      ident_index :        Integer;
      call_type   :        PCode.Operand_1_Type)
@@ -142,7 +142,7 @@ package body HAC_Sys.Parser.Calls is
             --  Value parameter                                 --
             --  Only IN mode; value is passed by value (copy).  --
             ------------------------------------------------------
-            Push_Parameter_by_Value (CD, level, fsys, expected);
+            Push_Parameter_by_Value (CD, context, fsys, expected);
           else
             ------------------------------------
             --  Variable (Name) parameter     --
@@ -150,11 +150,12 @@ package body HAC_Sys.Parser.Calls is
             ------------------------------------
             Push_Parameter_by_Reference
               (CD,
-               level,
+               context,
                fsys,
                A2S (CD.IdTab (current_param).name_with_case),
                CD.IdTab (current_param).decl_kind,
                found);
+
             if Exact_Typ (found) /= Exact_Typ (expected) then
               Type_Mismatch (CD, err_parameter_types_do_not_match, found, expected);
             end if;
@@ -185,12 +186,12 @@ package body HAC_Sys.Parser.Calls is
       Emit_1 (CD, k_Return_Call, Operand_2_Type (call_type));  --  Return from Entry Call
     end if;
     --
-    if CD.IdTab (ident_index).lev < level then
-      Emit_2 (CD,
-        k_Update_Display_Vector,
-        Operand_1_Type (CD.IdTab (ident_index).lev),
-        Operand_2_Type (level)
-      );
+    if CD.IdTab (ident_index).lev < context.level then
+      Emit_2
+        (CD,
+         k_Update_Display_Vector,
+         Operand_1_Type (CD.IdTab (ident_index).lev),
+         Operand_2_Type (context.level));
     end if;
   end Subprogram_or_Entry_Call;
 
@@ -198,7 +199,7 @@ package body HAC_Sys.Parser.Calls is
   -------------------------------------------------------Entry_Call-
   procedure Entry_Call
     (CD          : in out Co_Defs.Compiler_Data;
-     level       :        Defs.Nesting_Level;
+     context     :        Defs.Flow_Context;
      fsys        :        Defs.Symset;
      i           :        Integer;
      call_type   :        PCode.Operand_1_Type)
@@ -222,7 +223,7 @@ package body HAC_Sys.Parser.Calls is
         --
         Addr := J;
         InSymbol (CD);
-        Subprogram_or_Entry_Call (CD, level, fsys, Addr, call_type);
+        Subprogram_or_Entry_Call (CD, context, fsys, Addr, call_type);
       else
         Error_then_Skip (CD, Semicolon, err_identifier_missing);
       end if;

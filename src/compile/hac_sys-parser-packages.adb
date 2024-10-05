@@ -64,8 +64,9 @@ package body HAC_Sys.Parser.Packages is
         stop_on_error => True  --  Exception is raised there if there is an error.
       );
       case CD.Sy is
+
         when IDent =>
-          if block_data.level = 0 then
+          if block_data.context.level = 0 then
             Error
               (CD,
                err_not_yet_implemented,
@@ -74,24 +75,27 @@ package body HAC_Sys.Parser.Packages is
           end if;
           Const_Var.Var_Declaration (CD, FSys, block_data);
           Mark_Last_Declaration;
-        when TYPE_Symbol |
-             SUBTYPE_Symbol =>
-          Type_Def.Type_or_Subtype_Declaration (CD, block_data.level, FSys + END_Symbol);
+
+        when TYPE_Symbol | SUBTYPE_Symbol =>
+          Type_Def.Type_or_Subtype_Declaration (CD, block_data.context.level, FSys + END_Symbol);
           Mark_Last_Declaration;
+
         when TASK_Symbol =>
-          Tasking.Task_Declaration (CD, FSys, block_data.level);
+          Tasking.Task_Declaration (CD, FSys, block_data.context.level);
           Mark_Last_Declaration;
+
         when USE_Symbol =>
-          Use_Clause (CD, block_data.level, True);
+          Use_Clause (CD, block_data.context.level, True);
+
         when PROCEDURE_Symbol | FUNCTION_Symbol =>
-          Subprogram_Declaration_or_Body (CD, FSys, block_data.level, subprogram_kind);
+          Subprogram_Declaration_or_Body (CD, FSys, block_data.context.level, subprogram_kind);
           if subprogram_kind = complete then
             Error
               (CD, err_general_error,
                "subprogram body not allowed in package specification",
                severity => major);
           end if;
-          if block_data.level = 0 then
+          if block_data.context.level = 0 then
             Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
           end if;
           needs_body := True;
@@ -110,7 +114,7 @@ package body HAC_Sys.Parser.Packages is
             when others =>
               Error (CD, err_identifier_missing, severity => major);
           end case;
-          Enter_Def.Enter_Prefixed (CD, block_data.level, CD.Id, CD.Id_with_case, paquetage, dummy_forward);
+          Enter_Def.Enter_Prefixed (CD, block_data.context.level, CD.Id, CD.Id_with_case, paquetage, dummy_forward);
           CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
           --  Why spec_resolved ? missing bodies for possible suprograms
           --  in that package are checked anyway.
@@ -166,7 +170,7 @@ package body HAC_Sys.Parser.Packages is
     package_name_with_case : constant Alfa    := CD.Id_with_case;
     previous_pkg_prefix    : constant VString := CD.pkg_prefix;
     --
-    last_id : constant Defs.Index := CD.Blocks_Table (CD.Display (block_data.level)).Last_Id_Idx;
+    last_id : constant Defs.Index := CD.Blocks_Table (CD.Display (block_data.context.level)).Last_Id_Idx;
     --
     subprogram_kind                    : Declaration_Kind;
     pkg_spec_index                     : Natural;
@@ -186,7 +190,7 @@ package body HAC_Sys.Parser.Packages is
       );
       case CD.Sy is
         when IDent =>
-          if block_data.level = 0 then
+          if block_data.context.level = 0 then
             Error
               (CD,
                err_not_yet_implemented,
@@ -194,18 +198,23 @@ package body HAC_Sys.Parser.Packages is
                severity => major);
           end if;
           Const_Var.Var_Declaration (CD, FSys, block_data);
+
         when TYPE_Symbol |
              SUBTYPE_Symbol =>
-          Type_Def.Type_or_Subtype_Declaration (CD, block_data.level, FSys + END_Symbol);
+          Type_Def.Type_or_Subtype_Declaration (CD, block_data.context.level, FSys + END_Symbol);
+
         when TASK_Symbol =>
-          Tasking.Task_Declaration (CD, FSys, block_data.level);
+          Tasking.Task_Declaration (CD, FSys, block_data.context.level);
+
         when USE_Symbol =>
-          Use_Clause (CD, block_data.level, False);
+          Use_Clause (CD, block_data.context.level, False);
+
         when PROCEDURE_Symbol | FUNCTION_Symbol =>
-          Subprogram_Declaration_or_Body (CD, FSys, block_data.level, subprogram_kind);
-          if block_data.level = 0 then
+          Subprogram_Declaration_or_Body (CD, FSys, block_data.context.level, subprogram_kind);
+          if block_data.context.level = 0 then
             Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
           end if;
+
         when PACKAGE_Symbol =>
           --  Subpackage inside a package body.
           --  Subpackage can be spec & body, or just a spec, or the body of
@@ -221,7 +230,7 @@ package body HAC_Sys.Parser.Packages is
           if CD.Sy /= IDent then
             Error (CD, err_identifier_missing, severity => major);
           end if;
-          Enter_Def.Enter_Prefixed (CD, block_data.level, CD.Id, CD.Id_with_case, subpkg_kind, pkg_spec_index);
+          Enter_Def.Enter_Prefixed (CD, block_data.context.level, CD.Id, CD.Id_with_case, subpkg_kind, pkg_spec_index);
           if subpackage_body then
             if pkg_spec_index = No_Id then
               Error
@@ -269,7 +278,7 @@ package body HAC_Sys.Parser.Packages is
 
     CD.pkg_prefix := previous_pkg_prefix;
     --  Make body's declarations unreachable in identifier chain.
-    CD.Blocks_Table (CD.Display (block_data.level)).Last_Id_Idx := last_id;
+    CD.Blocks_Table (CD.Display (block_data.context.level)).Last_Id_Idx := last_id;
     Decrement_Nesting_or_Descending_Level (CD);
   end Package_Body;
 

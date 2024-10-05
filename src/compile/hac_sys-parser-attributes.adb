@@ -8,18 +8,17 @@ with HAC_Sys.Compiler.PCode_Emit,
 
 package body HAC_Sys.Parser.Attributes is
 
-  type Attribute is (
-    First,
-    Image,
-    Last,
-    Length,
-    Pos,
-    Pred,
-    Range_Attr,
-    Succ,
-    Val,
-    Value
-  );
+  type Attribute is
+    (First,
+     Image,
+     Last,
+     Length,
+     Pos,
+     Pred,
+     Range_Attr,
+     Succ,
+     Val,
+     Value);
 
   procedure Which_Attribute (CD : in out Co_Defs.Compiler_Data; attr : out Attribute) is
     use Co_Defs, Defs, Errors;
@@ -150,13 +149,12 @@ package body HAC_Sys.Parser.Attributes is
     end case;
   end Object_Attribute;
 
-  procedure Subtype_Attribute (
-    CD                : in out Co_Defs.Compiler_Data;
-    Level             : in     Defs.Nesting_Level;
-    FSys              : in     Defs.Symset;
-    Typ_ID_Index      : in     Natural;
-    xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
-  )
+  procedure Subtype_Attribute
+    (CD                : in out Co_Defs.Compiler_Data;
+     context           : in     Defs.Flow_Context;
+     FSys              : in     Defs.Symset;
+     Typ_ID_Index      : in     Natural;
+     xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp)
   is
     use Co_Defs, Defs, Helpers, Errors;
     Typ_ID : IdTabEntry renames CD.IdTab (Typ_ID_Index);
@@ -236,7 +234,7 @@ package body HAC_Sys.Parser.Attributes is
         type_of_argument : Exact_Subtyp;
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
+        Expressions.Expression (CD, context, FSys + RParent, type_of_argument);
         --  Argument is of the base type (S'Base).
         s_base := Exact_Typ (S);
         if s_base = Exact_Typ (type_of_argument) then
@@ -267,7 +265,7 @@ package body HAC_Sys.Parser.Attributes is
       begin
         if Discrete_Typ (S.TYP) then
           Need (CD, LParent, err_missing_an_opening_parenthesis);
-          Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
+          Expressions.Expression (CD, context, FSys + RParent, type_of_argument);
           --  Argument is of the base type (S'Base).
           s_base := Exact_Typ (S);
           if s_base = Exact_Typ (type_of_argument) then
@@ -287,7 +285,7 @@ package body HAC_Sys.Parser.Attributes is
       begin
         if Discrete_Typ (S.TYP) then
           Helpers.Need (CD, LParent, err_missing_an_opening_parenthesis);
-          Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
+          Expressions.Expression (CD, context, FSys + RParent, type_of_argument);
           if type_of_argument.TYP = Ints then
             --  Just set the desired subtype, and that's it - no VM instruction for
             --  the conversion itself!
@@ -312,7 +310,7 @@ package body HAC_Sys.Parser.Attributes is
         s_base : constant Exact_Typ := Exact_Typ (S);
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
+        Expressions.Expression (CD, context, FSys + RParent, type_of_argument);
         if s_base = Exact_Typ (type_of_argument) then
           Image_Attribute (CD, S, xSubtyp_of_Result);
         else
@@ -325,7 +323,7 @@ package body HAC_Sys.Parser.Attributes is
         type_of_argument : Exact_Subtyp;
       begin
         Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Expressions.Expression (CD, Level, FSys + RParent, type_of_argument);
+        Expressions.Expression (CD, context, FSys + RParent, type_of_argument);
         --  Argument is of the base type (S'Base).
         if type_of_argument.TYP = String_Literals then
           Emit_Std_Funct (CD, SF_Literal_to_VString);
@@ -337,12 +335,11 @@ package body HAC_Sys.Parser.Attributes is
             Operand_1_Type (CD.Arrays_Table (type_of_argument.Ref).Array_Size)
           );
         else
-        Type_Mismatch (
-          CD,
-          err_parameter_types_do_not_match,
-          Found    => type_of_argument,
-          Expected => Str_Lit_Set or Str_as_VStr_Set or Arrays_Set
-        );
+        Type_Mismatch
+          (CD,
+           err_parameter_types_do_not_match,
+           Found    => type_of_argument,
+           Expected => Str_Lit_Set or Str_as_VStr_Set or Arrays_Set);
         end if;
         case S.TYP is
           when NOTYP     => null;  --  Already in error
@@ -395,7 +392,7 @@ package body HAC_Sys.Parser.Attributes is
     if Scalar_Set (S.TYP) then
       Scalar_Subtype_Attribute;
     elsif Arrays_Set (S.TYP) then
-      Array_Subtype_Attribute (CD, Level, FSys + RParent, S.Ref, attr, xSubtyp_of_Result);
+      Array_Subtype_Attribute (CD, context.level, FSys + RParent, S.Ref, attr, xSubtyp_of_Result);
     else
       Error
         (CD, err_general_error,

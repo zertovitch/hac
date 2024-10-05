@@ -8,6 +8,7 @@
 with Interfaces;
 
 procedure Remarks is
+
   use Interfaces;
   use Interfaces;       --  Note:    "use" clause already applied (...) [-rr]
   a  : Integer;         --  Note:    variable "a" is not referenced [-ru]
@@ -35,7 +36,7 @@ procedure Remarks is
     if d1 = 5 then null; end if;  --  Warning: parameter "d1" is read but not written at this point [-rv]
     if e1 = 5 then null; end if;  --  Warning: parameter "e1" is read but not written at this point [-rv]
     e1 := 2;
-  end;
+  end Missing_Read_Writes;
 
   procedure OK_Read_Writes   --  Note: procedure "OK_Read_Writes" is not referenced [-ru]
     (a2 : in     Integer;
@@ -44,12 +45,12 @@ procedure Remarks is
   is
   begin
     c2 := a2;  --  `c2` is written, `a2` is read, so the compiler is happy about `a2` and `c2`.
-  end;
+  end OK_Read_Writes;
 
   function Useless return Integer is  --  Note: function "Useless" is not referenced [-ru]
   begin
     return 5;
-  end;
+  end Useless;
 
   --  Example appeared @
   --     https://www.reddit.com/r/ada/comments/1ezm9d6/the_variable_may_not_be_initialized/
@@ -57,15 +58,37 @@ procedure Remarks is
   type Array_Of_Naturals is array (1 .. 5) of Natural;
 
   function Max_Array (A : Array_Of_Naturals) return Natural is
-     Max : Natural;
+    Max : Natural;
   begin
-     for I in A'Range loop
-        if A (I) > Max then  --  Warning: variable "Max" is read but not written at this point [-rv]
-           Max := A (I);
-        end if;
-     end loop;
-     return Max;
+    for I in A'Range loop
+      if A (I) > Max then  --  Warning: variable "Max" is read but not written at this point [-rv]
+        Max := A (I);
+      end if;
+    end loop;
+    return Max;
   end Max_Array;
+
+  function Max_Array_2 (A : Array_Of_Naturals) return Natural is
+    Max_2 : Natural;
+    Further_Iteration : Boolean := False;
+  begin
+    for I in A'Range loop
+      if Further_Iteration then
+        if A (I) > Max_2 then  --  Warning: variable "Max_2" may be read before it is written [-rv]
+          --
+          --  ^ The warning is softer than for Max: when there is a condition
+          --    within the loop, we are not sure this is the first iteration.
+          --    Then, we cannot be sure that Max_2 is not initialized.
+          --    In this example, Max_2 is actually initialized on the first iteration.
+          Max_2 := A (I);
+        end if;
+      else
+        Max_2 := 0;
+        Further_Iteration := True;
+      end if;
+    end loop;
+    return Max_2;
+  end Max_Array_2;
 
   procedure Tom (Condition : Boolean; J : out Integer) is
      I : Integer;
@@ -74,7 +97,7 @@ procedure Remarks is
         J := I;  --  Warning: variable "I" is read but not written at this point [-rv]
      end if;
   end Tom;
-  
+
 begin
   e := 0;
   f := g + h;  --  Warning: variable "h" is read but not written at this point [-rv]

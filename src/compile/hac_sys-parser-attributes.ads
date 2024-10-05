@@ -20,12 +20,11 @@ private package HAC_Sys.Parser.Attributes is
   --    parameter ` (Flag) `, if any.
   --    The return type is X = (Strings_as_VStrings, 0), an internal type in this case.
 
-  procedure Subtype_Attribute (
-    CD                : in out Co_Defs.Compiler_Data;
-    Level             : in     Defs.Nesting_Level;
-    FSys              : in     Defs.Symset;
-    Typ_ID_Index      : in     Natural;
-    xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
-  );
+  procedure Subtype_Attribute
+    (CD                : in out Co_Defs.Compiler_Data;
+     context           : in     Defs.Flow_Context;
+     FSys              : in     Defs.Symset;
+     Typ_ID_Index      : in     Natural;
+     xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp);
 
 end HAC_Sys.Parser.Attributes;

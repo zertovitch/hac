@@ -6,8 +6,8 @@ with HAC_Sys.Compiler.PCode_Emit,
 
 procedure HAC_Sys.Parser.Type_Conversion  --  Ada RM 4.6
   (CD      : in out Co_Defs.Compiler_Data;
-   Level   :        Defs.Nesting_Level;
-   FSys    :        Defs.Symset;
+   context : in     Defs.Flow_Context;
+   FSys    : in     Defs.Symset;
    Typ_ID  : in     Co_Defs.IdTabEntry;
    X       : in     Co_Defs.Exact_Subtyp)
 is
@@ -27,7 +27,7 @@ begin
     when others    => kind := Unknown;
   end case;
   --
-  Expressions.Expression (CD, Level, FSys + RParent, T_Expr);
+  Expressions.Expression (CD, context, FSys + RParent, T_Expr);
   --  T_Expr is the type of the expression between the parentheses.
   --  E.g.:  "Natural (12.34)"  ->  X.TYP is Floats because of 12.34.
   --

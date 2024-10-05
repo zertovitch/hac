@@ -13,12 +13,11 @@ package body HAC_Sys.Parser.Expressions is
 
   use Compiler.PCode_Emit, Co_Defs, Defs, Helpers, PCode, Scanner, Errors;
 
-  procedure Static_Scalar_Expression (
-    CD      : in out Co_Defs.Compiler_Data;
-    Level   : in     Defs.Nesting_Level;
-    FSys_ND : in     Defs.Symset;
-    C       :    out Co_Defs.Constant_Rec
-  )
+  procedure Static_Scalar_Expression
+    (CD      : in out Co_Defs.Compiler_Data;
+     Level   : in     Defs.Nesting_Level;
+     FSys_ND : in     Defs.Symset;
+     C       :    out Co_Defs.Constant_Rec)
   is
     --  This covers number declarations (RM 3.3.2) and enumeration items (RM 3.5.1).
     --  Additionally this compiler does on-the-fly declarations for static values:
@@ -87,12 +86,11 @@ package body HAC_Sys.Parser.Expressions is
 
   ------------------------------------------------------------------
   ---------------------------------------------------------Selector-
-  procedure Selector (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_Level;
-    FSys  :        Defs.Symset;
-    V     : in out Co_Defs.Exact_Subtyp
-  )
+  procedure Selector
+    (CD      : in out Co_Defs.Compiler_Data;
+     context : in     Defs.Flow_Context;
+     FSys    : in     Defs.Symset;
+     V       : in out Co_Defs.Exact_Subtyp)
   is
     --
     procedure Record_Field_Selector is
@@ -194,7 +192,7 @@ package body HAC_Sys.Parser.Expressions is
       Array_Indices :
       loop
         InSymbol (CD);  --  Consume '(' or ',' symbol.
-        Expression (CD, Level, FSys + Comma_RParent + RBrack, Array_Index_Typ);
+        Expression (CD, context, FSys + Comma_RParent + RBrack, Array_Index_Typ);
         indices := indices + 1;
         if V.TYP = Arrays then
           declare
@@ -280,12 +278,11 @@ package body HAC_Sys.Parser.Expressions is
 
   ------------------------------------------------------------------
   -------------------------------------------------------Expression-
-  procedure Expression (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_Level;
-    FSys  :        Defs.Symset;
-    X     :    out Co_Defs.Exact_Subtyp
-  )
+  procedure Expression
+    (CD      : in out Co_Defs.Compiler_Data;
+     context : in     Defs.Flow_Context;
+     FSys    : in     Defs.Symset;
+     X       :    out Co_Defs.Exact_Subtyp)
   is
     procedure Relation (FSys_Rel : Symset; X : out Exact_Subtyp) is  --  RM 4.4 (3)
       Y : Exact_Subtyp;
@@ -302,7 +299,7 @@ package body HAC_Sys.Parser.Expressions is
       --
       --  Single  simple_expression,  or:  simple_expression OPERATOR simple_expression
       --
-      Simple_Expression (CD, Level, FSys_Rel + relational_operator + IN_Symbol + NOT_Symbol, X);
+      Simple_Expression (CD, context, FSys_Rel + relational_operator + IN_Symbol + NOT_Symbol, X);
       --
       case CD.Sy is
         when Comparison_Operator =>
@@ -311,7 +308,7 @@ package body HAC_Sys.Parser.Expressions is
           --
           Rel_OP := CD.Sy;
           InSymbol (CD);
-          Simple_Expression (CD, Level, FSys_Rel, Y);
+          Simple_Expression (CD, context, FSys_Rel, Y);
           if Internally_VString_Set (X.TYP) and then Internally_VString_Set (Y.TYP) then
             --  The internal type is actually a VString on both sides.
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
@@ -363,7 +360,7 @@ package body HAC_Sys.Parser.Expressions is
             Need (CD, IN_Symbol, err_IN_missing);
           end if;
           if CD.error_count = 0 then
-            Ranges.Dynamic_Range (CD, Level, FSys_Rel, err_discrete_type_expected, Y);
+            Ranges.Dynamic_Range (CD, context, FSys_Rel, err_discrete_type_expected, Y);
             if Exact_Typ (X) /= Exact_Typ (Y) then
               Type_Mismatch (CD, err_membership_test_type_mismatch, Found => Y, Expected => X);
               --  The RM 4.5.2 (2) seems to accept any types for X and Y. The test would be False
@@ -470,10 +467,10 @@ package body HAC_Sys.Parser.Expressions is
   end Expression;
 
   procedure Simple_Expression                                            --  RM 4.4 (4)
-    (CD    : in out Co_Defs.Compiler_Data;
-     Level :        Defs.Nesting_Level;
-     FSys  :        Defs.Symset;
-     X     :    out Co_Defs.Exact_Subtyp)
+    (CD      : in out Co_Defs.Compiler_Data;
+     context : in     Defs.Flow_Context;
+     FSys    : in     Defs.Symset;
+     X       :    out Co_Defs.Exact_Subtyp)
   is
 
     procedure Term (FSys_Term : Symset; X : out Exact_Subtyp) is         --  RM 4.4 (5)
@@ -485,16 +482,19 @@ package body HAC_Sys.Parser.Expressions is
         begin
           X := Undefined;
           Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_primary_unexpected_symbol);
+
           case CD.Sy is
+
             when StrCon =>
               Construct_Root (X, String_Literals);
               CD.target.Emit_Push_Discrete_Literals
                 (Operand_1_Type (CD.SLeng),  --  String Literal Length
                  Operand_2_Type (CD.INum));  --  Index To String IdTab
               InSymbol (CD);
+
             when IDent =>
               declare
-                Ident_Index : constant Integer := Locate_CD_Id (CD, Level);
+                Ident_Index : constant Integer := Locate_CD_Id (CD, context.level);
                 r : IdTabEntry renames CD.IdTab (Ident_Index);
               begin
                 InSymbol (CD);
@@ -523,7 +523,7 @@ package body HAC_Sys.Parser.Expressions is
                             k_Push_Discrete_Value),  --  Composite: push "(a.all)'Access", that is, a.
                          Operand_1_Type (r.lev),
                          Operand_2_Type (r.adr_or_sz));
-                      Selector (CD, Level, FSys_Prim + Apostrophe, X);
+                      Selector (CD, context, FSys_Prim + Apostrophe, X);
                       if Standard_or_Enum_Typ (X.TYP) then
                         --  We are at a leaf point of composite type selection,
                         --  so the stack top is expected to contain a value, not
@@ -551,25 +551,29 @@ package body HAC_Sys.Parser.Expressions is
                     end if;
                     if CD.Sy = Apostrophe then
                       InSymbol (CD);
-                      Attributes.Object_Attribute (CD, Level, FSys_Prim, X, LC_Mem, X);
+                      Attributes.Object_Attribute (CD, context.level, FSys_Prim, X, LC_Mem, X);
                     else
                       --  The variable or parameter itself, not an attribute on it, has been read.
                       --  We check that it has been even written on the way to this expression.
-                      Mark_Read_and_Check_Read_before_Written (CD, Level, r);
+                      Mark_Read_and_Check_Read_before_Written (CD, context, r);
                     end if;
-                    --
+
                   when type_mark =>
                     X := r.xtyp;
-                    Subtype_Prefixed_Expression (CD, Level, FSys_Prim, Ident_Index, X);
+                    Subtype_Prefixed_Expression (CD, context, FSys_Prim, Ident_Index, X);
+
                   when prozedure | prozedure_intrinsic =>
                     Error (CD, err_expected_constant_function_variable_or_subtype);
+
                   when funktion =>
                     X := r.xtyp;
                     Calls.Subprogram_or_Entry_Call
-                      (CD, Level, FSys_Prim, Ident_Index, Normal_Procedure_Call);
+                      (CD, context, FSys_Prim, Ident_Index, Normal_Procedure_Call);
+
                   when funktion_intrinsic =>
                     Standard_Functions.Standard_Function
-                      (CD, Level, FSys_Prim, Ident_Index, SF_Code'Val (r.adr_or_sz), X);
+                      (CD, context, FSys_Prim, Ident_Index, SF_Code'Val (r.adr_or_sz), X);
+
                   when others =>
                     null;
                 end case;
@@ -597,7 +601,7 @@ package body HAC_Sys.Parser.Expressions is
               --  '(' : what is inside the parentheses is an
               --        expression of the lowest level.
               InSymbol (CD);
-              Expression (CD, Level, FSys_Prim + RParent, X);
+              Expression (CD, context, FSys_Prim + RParent, X);
               if CD.Sy = Comma then
                 Error (CD, err_not_yet_implemented, "aggregates (RM 4.3)", severity => major);
               end if;
@@ -1058,25 +1062,23 @@ package body HAC_Sys.Parser.Expressions is
     end loop;
   end Simple_Expression;
 
-  procedure Boolean_Expression (
-    CD    : in out Co_Defs.Compiler_Data;
-    Level :        Defs.Nesting_Level;
-    FSys  :        Defs.Symset;
-    X     :    out Co_Defs.Exact_Subtyp
-  )
+  procedure Boolean_Expression
+    (CD      : in out Co_Defs.Compiler_Data;
+     context : in     Defs.Flow_Context;
+     FSys    : in     Defs.Symset;
+     X       :    out Co_Defs.Exact_Subtyp)
   is
   begin
-    Expression (CD, Level, FSys, X);
+    Expression (CD, context, FSys, X);
     Check_Boolean (CD, X.TYP);
   end Boolean_Expression;
 
-  procedure Subtype_Prefixed_Expression (
-    CD           : in out Co_Defs.Compiler_Data;
-    Level        : in     Defs.Nesting_Level;
-    FSys         : in     Defs.Symset;
-    Typ_ID_Index : in     Natural;
-    X            : in out Co_Defs.Exact_Subtyp
-  )
+  procedure Subtype_Prefixed_Expression
+    (CD           : in out Co_Defs.Compiler_Data;
+     context      : in     Defs.Flow_Context;
+     FSys         : in     Defs.Symset;
+     Typ_ID_Index : in     Natural;
+     X            : in out Co_Defs.Exact_Subtyp)
   is
     Mem_Sy : constant KeyWSymbol := CD.Sy;
   begin
@@ -1084,9 +1086,9 @@ package body HAC_Sys.Parser.Expressions is
     InSymbol (CD);
     case Mem_Sy is
       when LParent    =>  --  S (...)
-        Type_Conversion (CD, Level, FSys, CD.IdTab (Typ_ID_Index), X);
+        Type_Conversion (CD, context, FSys, CD.IdTab (Typ_ID_Index), X);
       when Apostrophe =>  --  S'First, S'Image, ...
-        Attributes.Subtype_Attribute (CD, Level, FSys, Typ_ID_Index, X);
+        Attributes.Subtype_Attribute (CD, context, FSys, Typ_ID_Index, X);
       when others =>
         Error (CD, err_general_error, "expected ""'"" or ""("" here", severity => major);
     end case;

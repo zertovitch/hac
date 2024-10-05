@@ -36,7 +36,7 @@ package body HAC_Sys.Parser.Const_Var is
         --  Example:
         --     for:            "a, b, c : Real := F (x);"
         --     we do first:    "c := F (x)".
-        Statements.Assignment (CD, FSys, Block_Data.level, id_last, check_is_variable => False);
+        Statements.Assignment (CD, FSys, Block_Data.context, id_last, check_is_variable => False);
         CD.IdTab (id_last).is_initialized := explicit;
         --  Id_Last has been assigned.
         --  Now, we emit the code for copying the value
@@ -112,7 +112,7 @@ package body HAC_Sys.Parser.Const_Var is
     begin
       C.TP.TYP := NOTYP;
       T0 := CD.Id_Count;
-      Enter_Variables (CD, Block_Data.level, True);
+      Enter_Variables (CD, Block_Data.context.level, True);
       Need (CD, Colon, err_colon_missing);  --  ':'   in   "x, y : Integer;"
       T1 := CD.Id_Count;
       --
@@ -136,11 +136,11 @@ package body HAC_Sys.Parser.Const_Var is
         case CD.Sy is
           when IDent =>
             Type_Def.Subtype_Indication
-              (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
+              (CD, Block_Data.context.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
           when ARRAY_Symbol =>
             --  Anonymous array type in "v : array (1 .. 5) of Integer;"
             Type_Def.Type_Definition
-              (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
+              (CD, Block_Data.context.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
           when ACCESS_Symbol =>
             Error (CD, err_not_yet_implemented, "access types", severity => major);
           when others =>
@@ -150,7 +150,7 @@ package body HAC_Sys.Parser.Const_Var is
                "this kind of anonymous type definition is not allowed here");
             --  Recovery:
             Type_Def.Type_Definition
-              (CD, Block_Data.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
+              (CD, Block_Data.context.level, Becomes_Comma_IDent_Semicolon + FSys, xTyp, Sz);
         end case;
       end if;
       Test (CD, Becomes_EQL_Semicolon, empty_symset, err_incorrectly_used_symbol);
@@ -167,7 +167,7 @@ package body HAC_Sys.Parser.Const_Var is
         --  Numeric constant: we parse the number here ("k : constant := 123.0").
         if CD.Sy = Becomes then
           InSymbol;
-          Expressions.Static_Scalar_Expression (CD, Block_Data.level, Comma_IDent_Semicolon + FSys, C);
+          Expressions.Static_Scalar_Expression (CD, Block_Data.context.level, Comma_IDent_Semicolon + FSys, C);
         else
           Error (CD, err_BECOMES_missing);
         end if;
