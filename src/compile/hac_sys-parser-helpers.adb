@@ -859,15 +859,16 @@ package body HAC_Sys.Parser.Helpers is
         (CD,
          warn_read_but_not_written,
          Var_or_Param (item.decl_kind) & '"' &
-         A2S (item.name_with_case) &
+         A2S (item.name_with_case) & '"' &
          (if context.is_in_cond_within_loop then
             --  We are not sure that the expression is
             --  evaluated in the first iteration of any loop.
-            """ may be read before it is written"
+            " may be"
           else
             --  We are sure that the expression is evaluated
-            --  at the first iteration of all loops.
-            """ is read but not written at this point"));
+            --  at the first iteration of all loops (if any).
+            " is") &
+         " read before it is written");
     end if;
   end Mark_Read_and_Check_Read_before_Written;
 
