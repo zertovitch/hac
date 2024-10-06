@@ -850,7 +850,7 @@ package body HAC_Sys.Parser.Helpers is
      item    : in out IdTabEntry)
   is
   begin
-    Elevate_to_Maybe (item.is_read);
+    Elevate_to_Maybe_or_Yes (item.is_read, context);
     if item.is_written_after_init = no      --  Not overwritten in a subprogram, nor in the above statements.
        and then item.is_initialized = none  --  Not initialized, even implicitly.
        and then context.level = item.lev    --  Not a within subprogram (uncertainty since call sequence is unknown).
@@ -868,7 +868,7 @@ package body HAC_Sys.Parser.Helpers is
             --  We are sure that the expression is evaluated
             --  at the first iteration of all loops (if any).
             " is") &
-         " read before it is written");
+         " read before it is ever written");
     end if;
   end Mark_Read_and_Check_Read_before_Written;
 
@@ -922,8 +922,8 @@ package body HAC_Sys.Parser.Helpers is
                      """ is never written" &
                      (case item.is_read is
                         when no    => "",  --  Case reached for an "out" parameter.
-                        when maybe => ", but possibly read",
-                        when yes   => ", but read") &
+                        when maybe => ", but is possibly read",
+                        when yes   => ", but is read") &
                      "");
                 end if;
 

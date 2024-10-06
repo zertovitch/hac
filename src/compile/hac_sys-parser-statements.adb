@@ -939,7 +939,8 @@ package body HAC_Sys.Parser.Statements is
         case CD.IdTab (I_Statement).entity is
           when Object_Kind =>
             Assignment (CD, FSys_St, block_data.context, I_Statement, check_is_variable => True);
-            Elevate_to_Maybe (CD.IdTab (I_Statement).is_written_after_init);
+            Elevate_to_Maybe_or_Yes
+              (CD.IdTab (I_Statement).is_written_after_init, block_data.context);
 
           when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
@@ -955,7 +956,8 @@ package body HAC_Sys.Parser.Statements is
             Entry_Call (CD, block_data.context, FSys_St, I_Statement, Normal_Entry_Call);
 
           when prozedure =>
-            Subprogram_or_Entry_Call (CD, block_data.context, FSys_St, I_Statement, Normal_Procedure_Call);
+            Subprogram_or_Entry_Call
+              (CD, block_data.context, FSys_St, I_Statement, Normal_Procedure_Call);
 
           when prozedure_intrinsic =>
             Standard_Procedures.Standard_Procedure

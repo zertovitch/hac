@@ -19,8 +19,8 @@ procedure Remarks is
   e : Integer;          --  Note:    variable "e" is never read [-ru]
   f : Integer := 123;   --  Note:    variable "f" is never read [-ru]
   g : Integer := 123;   --  Note:    variable "g" is not modified, could be declared constant [-rk]
-  h : Integer;          --  Warning: parameter "h" is never written, but possibly read
-  type A0 is (x0, y0);  --  Note:    "y0" is not referenced [-ru]
+  h : Integer;          --  Warning: parameter "h" is never written, but is read [-rv]
+  type A0 is (x0, y0);  --  Note:    item "y0" is not referenced [-ru]
   b0 : A0 := x0;        --  Note:    variable "b0" is not referenced [-ru]
                         --  Note:    variable "b0" is not modified, could be declared constant [-rk]
 
@@ -29,7 +29,7 @@ procedure Remarks is
      b1 : in out Integer;         --  Note:    parameter "b1" is not referenced [-ru]
      c1 :    out Integer;         --  Warning: parameter "c1" is never written [-rv]
                                   --  Note:    parameter "c1" is not referenced [-ru]
-     d1 :    out Integer;         --  Warning: parameter "d1" is never written, but possibly read
+     d1 :    out Integer;         --  Warning: parameter "d1" is never written, but is read [-rv]
      e1 :    out Integer)         --  `e1` is written -> compiler is happy.
   is
   begin
@@ -61,7 +61,7 @@ procedure Remarks is
     Max : Natural;
   begin
     for I in A'Range loop
-      if A (I) > Max then  --  Warning: variable "Max" is read but not written at this point [-rv]
+      if A (I) > Max then  --  Warning: variable "Max" is read before it is ever written [-rv]
         Max := A (I);
       end if;
     end loop;
@@ -74,10 +74,10 @@ procedure Remarks is
   begin
     for I in A'Range loop
       if Further_Iteration then
-        if A (I) > Max_2 then  --  Warning: variable "Max_2" may be read before it is written [-rv]
+        if A (I) > Max_2 then  --  Warning: variable "Max_2" may be read before it is ever written [-rv]
           --
           --  ^ The warning is softer than for Max: when there is a condition
-          --    within the loop, we are not sure this is the first iteration.
+          --    within a loop, we are not sure this is the first iteration.
           --    Then, we cannot be sure that Max_2 is not initialized.
           --    In this example, Max_2 is actually initialized on the first iteration.
           Max_2 := A (I);

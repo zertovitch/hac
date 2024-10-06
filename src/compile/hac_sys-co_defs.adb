@@ -50,6 +50,16 @@ package body HAC_Sys.Co_Defs is
     item := No_Maybe_Yes'Max (item, maybe);
   end Elevate_to_Maybe;
 
+  procedure Elevate_to_Maybe_or_Yes (item : in out No_Maybe_Yes; context : Flow_Context) is
+  begin
+    if context.is_within_condition or context.is_within_loop then
+      --  The condition might not be fullfilled, the loop might be skipped.
+      Elevate_to_Maybe (item);
+    else
+      item := yes;
+    end if;
+  end Elevate_to_Maybe_or_Yes;
+
   procedure Set_Source_Stream
     (CUD        : in out Current_Unit_Data;
      s          : in     Source_Stream_Access;

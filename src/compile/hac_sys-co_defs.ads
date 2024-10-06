@@ -27,7 +27,7 @@ with Ada.Containers.Hashed_Maps,
 package HAC_Sys.Co_Defs is
   --  NB: cannot be a child package of Compiler because of Parser, Scanner, ...
 
-  use HAC_Sys.Defs;
+  use Defs;
 
   type Exact_Typ is tagged record  --  NB: was called "Item" in SmallAda.
     TYP  : Typen;
@@ -157,7 +157,11 @@ package HAC_Sys.Co_Defs is
   --  Unless we are in the main execution path (not within "if", "loop", etc.)
   --  we can only note that a variable or field is *maybe* read or written.
   --
-  procedure Elevate_to_Maybe (item : in out No_Maybe_Yes);
+  procedure Elevate_to_Maybe (item : in out No_Maybe_Yes)
+  with Inline;
+
+  procedure Elevate_to_Maybe_or_Yes (item : in out No_Maybe_Yes; context : Flow_Context)
+  with Inline;
 
   ------------------------------
   --  Identifier Table Entry  --
