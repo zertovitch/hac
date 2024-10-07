@@ -1,16 +1,17 @@
-with HAC_Sys.Defs, HAC_Sys.Errors;
+with HAC_Sys.Defs,
+     HAC_Sys.Errors;
 
 with HAT;
 
-with Ada.Text_IO;
+with Ada.IO_Exceptions;
 
 package body HAC_Sys.Scanner is
 
   use Co_Defs, Defs, Errors, HAT;
 
-  type SSTBzz is array (Character'(' ') .. ']') of KeyWSymbol;
+  type Special_Symbol_Mapping is array (Character'(' ') .. ']') of KeyWSymbol;
 
-  Special_Symbols : constant SSTBzz :=
+  Special_Symbols : constant Special_Symbol_Mapping :=
    ('+'    => Plus,
     '-'    => Minus,
     '*'    => Times,
@@ -24,17 +25,17 @@ package body HAC_Sys.Scanner is
     '&'    => Ampersand_Symbol,
     others => NULL_Symbol);
 
-  type CHTP is (Letter, Number, Special, Illegal);
+  type Character_Category is (Letter, Number, Special, Illegal);
 
-  type Set_of_CHTP is array (CHTP) of Boolean;
+  type Set_of_Character_Category is array (Character_Category) of Boolean;
 
-  special_or_illegal : constant Set_of_CHTP :=
+  special_or_illegal : constant Set_of_Character_Category :=
    (Letter  |  Number  => False,
     Special | Illegal  => True);
 
   c128 : constant Character := Character'Val (128);
 
-  Character_Types : constant array (Character) of CHTP :=
+  Character_Types : constant array (Character) of Character_Category :=
        ('A' .. 'Z' | 'a' .. 'z' => Letter,
         '0' .. '9' => Number,
         '#' |
@@ -57,14 +58,15 @@ package body HAC_Sys.Scanner is
         c128 => Special,
         others => Illegal);
 
-  type AdaKeyW_Pair is record
+  type Ada_Keyword_Mapping_Pair is record
     st : VString;
     sy : KeyWSymbol;
   end record;
 
-  type AdaKeyW_List is array (Positive range <>) of AdaKeyW_Pair;
+  type Ada_Keyword_Mapping_List is
+    array (Positive range <>) of Ada_Keyword_Mapping_Pair;
 
-  AdaKeyW : constant AdaKeyW_List :=
+  ada_keyword : constant Ada_Keyword_Mapping_List :=
        ((+"ABORT",        ABORT_Symbol),
         (+"ABS",          ABS_Symbol),
         (+"ABSTRACT",     ABSTRACT_Symbol),     -- [added in] Ada 95
@@ -142,8 +144,9 @@ package body HAC_Sys.Scanner is
        );
 
   procedure NextCh (CD : in out Compiler_Data) is  --  Read Next Char; process line end
-    procedure c_Get_Next_Line (InpLine : out String; Last : out Natural) is
-      idx : Integer := InpLine'First - 1;
+
+    procedure Get_Next_Line is
+      idx : Integer := CD.CUD.input_line'First - 1;
       c   : Character;
     begin
       loop
@@ -153,23 +156,19 @@ package body HAC_Sys.Scanner is
         --         a performance bottleneck.  --> buffered input (cf Zip-Ada)
         exit when c = ASCII.LF;
         if c /= ASCII.CR then
-          idx           := idx + 1;
-          InpLine (idx) := c;
+          idx := idx + 1;
+          CD.CUD.input_line (idx) := c;
         end if;
       end loop;
-      Last := idx;
-      --  if qDebug then
-      --    Put_Line("[::]" & InpLine(InpLine'First..Last));
-      --  end if;
+      CD.CUD.LL := idx;
     exception
-      when Ada.Text_IO.End_Error =>
-        if idx < InpLine'First then
+      when Ada.IO_Exceptions.End_Error =>
+        if idx < CD.CUD.input_line'First then
           raise;
         end if;
-        Last := idx;  --  Avoid trashing a non-empty line ending the stream.
-    end c_Get_Next_Line;
+        CD.CUD.LL := idx;  --  Avoid trashing a non-empty line ending the stream.
+    end Get_Next_Line;
 
-    theLine : Source_Line_String;
   begin
     if CD.CUD.CC = CD.CUD.LL then
       if CD.listing_requested then
@@ -182,9 +181,10 @@ package body HAC_Sys.Scanner is
       end if;
       CD.CUD.LL := 0;
       CD.CUD.CC := 0;
-      c_Get_Next_Line (theLine, CD.CUD.LL);
-      CD.CUD.input_line (1 .. CD.CUD.LL + 1) := theLine (1 .. CD.CUD.LL) & ' ';
+      Get_Next_Line;
+      --  Append a space:
       CD.CUD.LL := CD.CUD.LL + 1;
+      CD.CUD.input_line (CD.CUD.LL) := ' ';
 
       if CD.listing_requested then
         New_Line (CD.listing);
@@ -192,13 +192,14 @@ package body HAC_Sys.Scanner is
       end if;
     end if;
 
-    CD.CUD.CC := CD.CUD.CC + 1;
-    CD.CUD.c := CD.CUD.input_line (CD.CUD.CC);
-    --  Manuel : Change tabs for spaces
+    CD.CUD.CC     := CD.CUD.CC + 1;
+    CD.CUD.prev_c := CD.CUD.c;
+    CD.CUD.c      := CD.CUD.input_line (CD.CUD.CC);
+    --  Change tabs for spaces:
     if Character'Pos (CD.CUD.c) = 9 then
-      CD.CUD.c := ' ';  --  IdTab for space
+      CD.CUD.c := ' ';
     end if;
-    if Character'Pos (CD.CUD.c) < Character'Pos (' ') then
+    if CD.CUD.c < ' ' then
       Error (CD, err_scanner_control_character);
     end if;
   end NextCh;
@@ -654,7 +655,7 @@ package body HAC_Sys.Scanner is
             if K < identifier_length_max then
               K := K + 1;
               HAT.VStr_Pkg.Append (CD.Id_with_case, CD.CUD.c);
-              if K > 1 and then HAT.VStr_Pkg.Slice (CD.Id_with_case, K - 1, K) = "__" then
+              if K > 1 and then (CD.CUD.c = '_' and CD.CUD.prev_c = '_') then
                 Error
                   (CD,
                    err_scanner_double_underline_not_permitted,
@@ -667,7 +668,7 @@ package body HAC_Sys.Scanner is
             exit when CD.CUD.c /= '_'
                      and then special_or_illegal (Character_Types (CD.CUD.c));
           end loop;
-          if K > 0 and then Element (CD.Id_with_case, K) = '_' then
+          if K > 0 and then CD.CUD.prev_c = '_' then
             Error
               (CD,
                err_scanner_identifier_cannot_end_with_underline,
@@ -678,20 +679,22 @@ package body HAC_Sys.Scanner is
             (CD.Id, HAT.ACH.To_Upper (To_String (CD.Id_with_case)));
           CD.Id_location := No_Id_Cache;
           --
+          --  Binary Search
+          --
           I := 1;
-          J := AdaKeyW'Last;  --  Binary Search
+          J := ada_keyword'Last;
           loop
             K := (I + J) / 2;
-            if CD.Id <= AdaKeyW (K).st then
+            if CD.Id <= ada_keyword (K).st then
               J := K - 1;
             end if;
-            if CD.Id >= AdaKeyW (K).st then
+            if CD.Id >= ada_keyword (K).st then
               I := K + 1;
             end if;
             exit when I > J;
           end loop;
           --
-          CD.Sy := (if I - 1 > J then AdaKeyW (K).sy else IDent);
+          CD.Sy := (if I - 1 > J then ada_keyword (K).sy else IDent);
 
         when '0' .. '9' => Scan_Number (skip_leading_integer => False);
         when '"'        => Scan_String_Literal;

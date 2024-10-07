@@ -247,7 +247,7 @@ package HAC_Sys.Co_Defs is
     --  Parsing
     location          : Symbol_Location;
     input_line        : Source_Line_String;
-    c                 : Character;           --  Character read from source program
+    c, prev_c         : Character;           --  Character read from source program
     CC                : Integer;             --  Character counter (=column in current line)
     LL                : Natural;             --  Length of current line
     --  Level 0 definitions visible to currently compiled unit:
