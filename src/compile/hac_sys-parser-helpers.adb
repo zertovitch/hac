@@ -572,6 +572,7 @@ package body HAC_Sys.Parser.Helpers is
         return No_Id;
       end if;
       --  Issue an error, severity: major (an exception is raised).
+      ID_Copy := CD.Id_with_case;
       InSymbol (CD);
       if CD.Sy = Finger then
         Error
@@ -580,7 +581,7 @@ package body HAC_Sys.Parser.Helpers is
            "positional association",
            severity => major);
       else
-        Error (CD, err_undefined_identifier, A2S (Id), severity => major);
+        Error (CD, err_undefined_identifier, A2S (ID_Copy), severity => major);
       end if;
     end if;
     --
@@ -841,8 +842,20 @@ package body HAC_Sys.Parser.Helpers is
     end loop;
   end Check_Incomplete_Definitions;
 
-  function Var_or_Param (kind : Declaration_Kind) return String is
-    (if kind in Parameter_Kind then "parameter " else "variable ");
+  function Nice_Image (item : IdTabEntry) return String is
+  ((if item.decl_kind in Parameter_Kind then
+      "parameter"
+    else
+      (case item.entity is
+         when variable_object => "variable",
+         when constant_object => "constant",
+         when type_mark       => "type",
+         when prozedure       => "procedure",
+         when funktion        => "function",
+         when paquetage       => "package",
+         when tache           => "task",
+         when others          => "item")) &
+   " """ & A2S (item.name_with_case) & '"');
 
   procedure Mark_Read_and_Check_Read_before_Written
     (CD      : in out Compiler_Data;
@@ -858,8 +871,7 @@ package body HAC_Sys.Parser.Helpers is
       Remark
         (CD,
          warn_read_but_not_written,
-         Var_or_Param (item.decl_kind) & '"' &
-         A2S (item.name_with_case) & '"' &
+         Nice_Image (item) &
          (if context.is_in_cond_within_loop then
             --  We are not sure that the expression is
             --  evaluated in the first iteration of any loop.
@@ -918,20 +930,17 @@ package body HAC_Sys.Parser.Helpers is
                 else
                   Remark_for_Declared_Item
                     (warn_read_but_not_written,
-                     Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
-                     """ is never written" &
+                     Nice_Image (item) &
                      (case item.is_read is
-                        when no    => "",  --  Case reached for an "out" parameter.
-                        when maybe => ", but is possibly read",
-                        when yes   => ", but is read") &
+                        when no    => " is never written",  --  Case reached for an "out" parameter.
+                        when maybe => " is never written, but is possibly read",
+                        when yes   => " is read but never written") &
                      "");
                 end if;
 
               when explicit =>
                 Remark_for_Declared_Item
-                  (note_constant_variable,
-                   Var_or_Param (item.decl_kind)  & '"' & A2S (item.name_with_case) &
-                   """ is not modified, could be declared constant");
+                  (note_constant_variable, Nice_Image (item) & " is not modified, could be declared constant");
 
               when implicit =>
                 --  Implicitly initialized -> we don't care.
@@ -943,10 +952,7 @@ package body HAC_Sys.Parser.Helpers is
             if item.is_read = no                    --  Maybe written after init., but not read.
               and then item.decl_kind /= param_out  --  Don't care about "out" param no being read.
             then
-              Remark_for_Declared_Item
-                (note_unused_item,
-                 Var_or_Param (item.decl_kind) & '"' & A2S (item.name_with_case) &
-                 """ is never read");
+              Remark_for_Declared_Item (note_unused_item, Nice_Image (item) & " is never read");
             end if;
 
         end case;
@@ -956,21 +962,7 @@ package body HAC_Sys.Parser.Helpers is
       begin
         --  Here we can have any explicit declaration
         --  (object, type, subprogram, ...)
-        Remark_for_Declared_Item
-          (note_unused_item,
-           (if item.decl_kind in Parameter_Kind then
-              "parameter"
-            else
-              (case item.entity is
-                when variable_object => "variable",
-                when constant_object => "constant",
-                when type_mark       => "type",
-                when prozedure       => "procedure",
-                when funktion        => "function",
-                when paquetage       => "package",
-                when tache           => "task",
-                when others          => "item")) &
-            " """ & A2S (item.name_with_case) & """ is not referenced");
+        Remark_for_Declared_Item (note_unused_item, Nice_Image (item) & " is not referenced");
       end Handle_Unused;
 
     begin

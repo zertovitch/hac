@@ -19,7 +19,7 @@ procedure Remarks is
   e : Integer;          --  Note:    variable "e" is never read [-ru]
   f : Integer := 123;   --  Note:    variable "f" is never read [-ru]
   g : Integer := 123;   --  Note:    variable "g" is not modified, could be declared constant [-rk]
-  h : Integer;          --  Warning: parameter "h" is never written, but is read [-rv]
+  h : Integer;          --  Warning: variable "h" is read but never written [-rv]
   type A0 is (x0, y0);  --  Note:    item "y0" is not referenced [-ru]
   b0 : A0 := x0;        --  Note:    variable "b0" is not referenced [-ru]
                         --  Note:    variable "b0" is not modified, could be declared constant [-rk]
@@ -29,7 +29,7 @@ procedure Remarks is
      b1 : in out Integer;         --  Note:    parameter "b1" is not referenced [-ru]
      c1 :    out Integer;         --  Warning: parameter "c1" is never written [-rv]
                                   --  Note:    parameter "c1" is not referenced [-ru]
-     d1 :    out Integer;         --  Warning: parameter "d1" is never written, but is read [-rv]
+     d1 :    out Integer;         --  Warning: parameter "d1" is read but never written [-rv]
      e1 :    out Integer)         --  `e1` is written -> compiler is happy.
   is
   begin
