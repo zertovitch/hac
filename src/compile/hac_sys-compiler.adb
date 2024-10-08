@@ -78,7 +78,7 @@ package body HAC_Sys.Compiler is
     CD.minor_error_count := 0;
     CD.diags             := no_diagnostic;
     CD.total_lines       := 0;
-    Scanner.InSymbol (CD);
+    Scanner.In_Symbol (CD);
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009
     CD.pkg_prefix := HAT.Null_VString;
@@ -403,7 +403,7 @@ package body HAC_Sys.Compiler is
       --  Basically the body is a continuation of the spec, possibly in another file.
       CD.CUD.level_0_def := unit_context;
       Reactivate_USE_HAT;
-      Scanner.InSymbol (CD);
+      Scanner.In_Symbol (CD);
     end if;
     --
     --  We define Standard, or activate if this is not the first unit compiled.
@@ -414,9 +414,9 @@ package body HAC_Sys.Compiler is
     Parser.Modularity.Context_Clause (CD, LD);  --  Parse the "with"'s and "use"'s, compile units.
     case CD.Sy is
       when PACKAGE_Symbol =>
-        Scanner.InSymbol (CD);
+        Scanner.In_Symbol (CD);
         if CD.Sy = BODY_Symbol then
-          Scanner.InSymbol (CD);  --  Absorb the BODY symbol.
+          Scanner.In_Symbol (CD);  --  Absorb the BODY symbol.
           kind := Package_Body;
           if as_specification then
             Error
@@ -433,10 +433,10 @@ package body HAC_Sys.Compiler is
         end if;
       when FUNCTION_Symbol =>
         kind := Function_Unit;
-        Scanner.InSymbol (CD);
+        Scanner.In_Symbol (CD);
       when PROCEDURE_Symbol =>
         kind := Procedure_Unit;
-        Scanner.InSymbol (CD);
+        Scanner.In_Symbol (CD);
       when others =>
         kind := Package_Declaration;  --  Useless, but this removes an ObjectAda warning.
         Error
@@ -483,7 +483,7 @@ package body HAC_Sys.Compiler is
     case kind is
       when Subprogram_Unit =>
         --  Absorb the identifier symbol:
-        Scanner.InSymbol (CD);
+        Scanner.In_Symbol (CD);
         --
         --  At this point, the current symbol should be: ";", "IS", "(",
         --  or, for a parameterless function, "RETURN".

@@ -17,14 +17,13 @@ package body HAC_Sys.Parser is
   ------------------------------------------------------------------
   ------------------------------------------------------------Block-
 
-  procedure Block (
-    CD                   : in out Co_Defs.Compiler_Data;
-    FSys                 :        Defs.Symset;
-    Is_a_block_statement :        Boolean;        --  5.6 Block Statements
-    Initial_Block_Data   :        Block_Data_Type;
-    Block_Id             :        Defs.Alfa;      --  Name of this block (if any)
-    Block_Id_with_case   :        Defs.Alfa
-  )
+  procedure Block
+    (CD                   : in out Co_Defs.Compiler_Data;
+     FSys                 :        Defs.Symset;
+     Is_a_block_statement :        Boolean;        --  5.6 Block Statements
+     Initial_Block_Data   :        Block_Data_Type;
+     Block_Id             :        Defs.Alfa;      --  Name of this block (if any)
+     Block_Id_with_case   :        Defs.Alfa)
   is
     use Co_Defs, Defs, Enter_Def, Errors, Helpers;
     use type HAC_Integer;
@@ -32,7 +31,7 @@ package body HAC_Sys.Parser is
     block_data : Block_Data_Type := Initial_Block_Data;
     subprogram_block_index : Integer;  --  Was: PRB
 
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+    procedure In_Symbol is begin Scanner.In_Symbol (CD); end In_Symbol;
 
     ------------------------------------------------------------------
     --------------------------------------------Formal_Parameter_List-
@@ -43,7 +42,7 @@ package body HAC_Sys.Parser is
       param_kind : Parameter_Kind;
       in_keyword : Boolean;
     begin
-      InSymbol;  --  Consume '(' symbol.
+      In_Symbol;  --  Consume '(' symbol.
       Sz := 0;
       Test (CD, IDent_Set, FSys + RParent, err_identifier_missing, stop_on_error => True);
       --
@@ -52,17 +51,17 @@ package body HAC_Sys.Parser is
         Enter_Variables (CD, block_data.context.level, False);
         --
         if CD.Sy = Colon then  --  The ':'  in  "function F (x, y : in Real) return Real;"
-          InSymbol;
+          In_Symbol;
           param_kind := param_in;
           in_keyword := False;
           if CD.Sy = IN_Symbol then
-            InSymbol;
+            In_Symbol;
             in_keyword := True;
           end if;
           if block_data.entity = funktion then  --  If I am a function, no In Out params allowed
             ValParam := True;
           elsif CD.Sy = OUT_Symbol then
-            InSymbol;
+            In_Symbol;
             ValParam := False;
             param_kind := (if in_keyword then param_in_out else param_out);
           else
@@ -70,7 +69,7 @@ package body HAC_Sys.Parser is
           end if;
           if CD.Sy = IDent then
             X := Locate_CD_Id (CD, block_data.context.level);
-            InSymbol;
+            In_Symbol;
             if X = CD.String_Id_Index then
               --  We could pass string literals as "in" parameter
               --  if we replaced String_Literals by a record wrapping
@@ -117,7 +116,7 @@ package body HAC_Sys.Parser is
       end loop;  --  while Sy = IDent
       --
       if CD.Sy = RParent then
-        InSymbol;
+        In_Symbol;
         Test (CD, After_Subprogram_Parameters, FSys, err_incorrectly_used_symbol);
       else
         Error (CD, err_closing_parenthesis_missing);
@@ -158,11 +157,11 @@ package body HAC_Sys.Parser is
 
           when PACKAGE_Symbol =>
             --  Local package (local to a block or subprogram).
-            InSymbol;
+            In_Symbol;
             is_body := CD.Sy = BODY_Symbol;
             pkg_kind := paquetage;
             if is_body then
-              InSymbol;
+              In_Symbol;
               pkg_kind := paquetage_body;
             end if;
             if CD.Sy /= IDent then
@@ -183,7 +182,7 @@ package body HAC_Sys.Parser is
               --  in that package are checked anyway.
               Parser.Packages.Package_Declaration (CD, empty_symset, block_data, ignored_needs_body);
             end if;
-            InSymbol;  --  Absorb ';'
+            In_Symbol;  --  Absorb ';'
           when others => null;
         end case;
         CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
@@ -221,10 +220,10 @@ package body HAC_Sys.Parser is
       I_Res_Type : Integer;
     begin
       if CD.Sy = RETURN_Symbol then
-        InSymbol;  --  FUNCTION TYPE
+        In_Symbol;  --  FUNCTION TYPE
         if CD.Sy = IDent then
           I_Res_Type := Locate_CD_Id (CD, block_data.context.level);
-          InSymbol;
+          In_Symbol;
           if I_Res_Type /= 0 then
             if CD.IdTab (I_Res_Type).entity /= type_mark then
               Error (CD, err_missing_a_type_identifier, severity => major);
@@ -253,10 +252,10 @@ package body HAC_Sys.Parser is
       CD.target.Mark_Reference (Initial_Block_Data.block_id_index);
       loop
         full_name := full_name & CD.Id;
-        InSymbol;
+        In_Symbol;
         exit when CD.Sy /= Period;
         full_name := full_name & '.';
-        InSymbol;
+        In_Symbol;
         if CD.Sy /= IDent then
           Error (CD, err_identifier_missing);
         end if;
@@ -277,13 +276,13 @@ package body HAC_Sys.Parser is
     procedure Subprogram_Aspect is
       use Compiler.PCode_Emit, PCode;
     begin
-      InSymbol;        --  Consume WITH
+      In_Symbol;        --  Consume WITH
       if CD.Sy = IDent then
         if CD.Id = "IMPORT" then
-          InSymbol;    --  Consume Import
+          In_Symbol;    --  Consume Import
           Need (CD, Finger, err_general_error);
           if CD.Id = "TRUE" then
-            InSymbol;  --  Consume True
+            In_Symbol;  --  Consume True
             CD.IdTab (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
             CD.IdTab (block_data.block_id_index).decl_kind := spec_resolved;
             Emit_1 (CD, k_Exchange_with_External, Operand_2_Type (block_data.block_id_index));
@@ -309,7 +308,7 @@ package body HAC_Sys.Parser is
         Subprogram_Aspect;
       end if;
       if block_data.context.level > 1 and then block_data.entity /= entree  then
-        InSymbol;  --  Consume ';'
+        In_Symbol;  --  Consume ';'
       end if;
       --  End of subprogram specification part (forward declaration).
       --  Body is declared later in the containing block or elsewhere in the library.
@@ -326,12 +325,12 @@ package body HAC_Sys.Parser is
       --
       if Is_a_block_statement then
         case CD.Sy is
-          when DECLARE_Symbol => InSymbol;
+          when DECLARE_Symbol => In_Symbol;
           when BEGIN_Symbol   => null;
           when others         => raise Internal_error with "Unexpected " & Symbol'Image (CD.Sy);
         end case;
       elsif CD.Sy = IS_Symbol then  --  The "IS" in "procedure ABC (param : T_Type) IS"
-        InSymbol;
+        In_Symbol;
       else
         Error (CD, err_IS_missing);
         return;
@@ -340,7 +339,7 @@ package body HAC_Sys.Parser is
       if CD.Sy = NULL_Symbol and not Is_a_block_statement then
         --  RM 6.7 Null Procedures (Ada 2005)
         --  E.g.: "procedure Not_Yet_Done (a : Integer) is null;"
-        InSymbol;  --  Consume NULL symbol.
+        In_Symbol;  --  Consume NULL symbol.
         Statements_Part_Setup;
         if block_data.entity = funktion then
           --  There are no null functions: what would be the result?
@@ -351,7 +350,7 @@ package body HAC_Sys.Parser is
         Statements_Part_Closing;
       else
         Declarative_Part;
-        InSymbol;  --  Consume BEGIN symbol.
+        In_Symbol;  --  Consume BEGIN symbol.
         Statements_Part_Setup;
         Statements.Sequence_of_Statements (CD, END_Set, block_data);
         Statements_Part_Closing;
@@ -364,7 +363,7 @@ package body HAC_Sys.Parser is
         end if;
         --
         if CD.Sy = END_Symbol then
-          InSymbol;
+          In_Symbol;
         elsif CD.error_count > 0 then
           return;  --  At this point the program is already FUBAR.
         else
@@ -405,7 +404,7 @@ package body HAC_Sys.Parser is
         CD.error_count := CD.error_count + CD.minor_error_count;
         CD.minor_error_count := 0;
       else
-        InSymbol;  --  Consume ';' symbol after END [Subprogram_Id].
+        In_Symbol;  --  Consume ';' symbol after END [Subprogram_Id].
         Ignore_Extra_Semicolons (CD);
         --
         --  Now we have either another declaration,
@@ -473,12 +472,11 @@ package body HAC_Sys.Parser is
     end if;
   end Block;
 
-  procedure Subprogram_Declaration_or_Body (
-    CD            : in out Co_Defs.Compiler_Data;
-    FSys          : in     Defs.Symset;
-    current_level : in     Defs.Nesting_Level;
-    kind          :    out Co_Defs.Declaration_Kind
-  )
+  procedure Subprogram_Declaration_or_Body
+    (CD            : in out Co_Defs.Compiler_Data;
+     FSys          : in     Defs.Symset;
+     current_level : in     Defs.Nesting_Level;
+     kind          :    out Co_Defs.Declaration_Kind)
   is
     use Co_Defs, Compiler.PCode_Emit, Defs, Enter_Def, Errors, PCode;
     use type HAC_Integer;
@@ -487,7 +485,7 @@ package body HAC_Sys.Parser is
     IsFun : constant Boolean := CD.Sy = FUNCTION_Symbol;
     sub_sub_prog_block_data : Block_Data_Type;
   begin
-    Scanner.InSymbol (CD);
+    Scanner.In_Symbol (CD);
     if CD.Sy /= IDent then
       Error (CD, err_identifier_missing);
       CD.Id := Empty_Alfa;
@@ -505,7 +503,7 @@ package body HAC_Sys.Parser is
          old_id_idx);
       --  NB: now old_id_idx, if different than No_Id, points to the
       --  possible previous declaration of the subprogram with that name.
-      Scanner.InSymbol (CD);
+      Scanner.In_Symbol (CD);
       sub_sub_prog_block_data.context.level                 := current_level + 1;
       sub_sub_prog_block_data.block_id_index                := CD.Id_Count;
       sub_sub_prog_block_data.entity                        := (if IsFun then funktion else prozedure);

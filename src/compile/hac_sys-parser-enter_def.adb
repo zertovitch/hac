@@ -177,7 +177,7 @@ package body HAC_Sys.Parser.Enter_Def is
     begin
       if CD.Sy = IDent then
         Enter (CD, Level, prefixed, CD.Id, CD.Id_with_case, variable_object, dummy_id_idx);
-        Scanner.InSymbol (CD);
+        Scanner.In_Symbol (CD);
       else
         Error (CD, err_identifier_missing);
       end if;
@@ -186,7 +186,7 @@ package body HAC_Sys.Parser.Enter_Def is
   begin
     Enter_Variable;
     while CD.Sy = Comma loop  --  ','  in  "a, b, c : Integer;"
-      Scanner.InSymbol (CD);
+      Scanner.In_Symbol (CD);
       Enter_Variable;
     end loop;
   end Enter_Variables;

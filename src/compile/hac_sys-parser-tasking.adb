@@ -21,21 +21,21 @@ package body HAC_Sys.Parser.Tasking is
   is
     Level : Nesting_Level := Initial_Level;
     saveLineCount : constant Integer := CD.CUD.location.line;  --  Source line where Task appeared
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+    procedure In_Symbol is begin Scanner.In_Symbol (CD); end In_Symbol;
     I, T0  : Integer;
     TaskID, TaskID_with_case : Alfa;
     task_block : Block_Data_Type;
     forward_id_idx : Natural;
     use type Alfa;
   begin
-    InSymbol;
+    In_Symbol;
     if CD.Sy = BODY_Symbol then  --  Task Body
-      InSymbol;
+      In_Symbol;
       I                := Locate_CD_Id (CD, Level);
       TaskID           := CD.IdTab (I).name;
       TaskID_with_case := CD.IdTab (I).name_with_case;
       CD.Blocks_Table (CD.IdTab (I).block_or_pkg_ref).SrcFrom := saveLineCount;  --  (* Manuel *)
-      InSymbol;
+      In_Symbol;
       task_block.context.level                 := Level + 1;
       task_block.block_id_index                := I;
       task_block.entity                        := entree;
@@ -61,9 +61,9 @@ package body HAC_Sys.Parser.Tasking is
       CD.Tasks_Definitions_Table (CD.Tasks_Definitions_Count) := CD.Id_Count;
       Enter_Block (CD, CD.Id_Count);
       CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.Blocks_Count;
-      InSymbol;
+      In_Symbol;
       if CD.Sy = Semicolon then
-        InSymbol;  --  Task with no entries
+        In_Symbol;  --  Task with no entries
       else  --  Parsing the Entry specs
         Need (CD, IS_Symbol, err_IS_missing);
         if Level = nesting_level_max then
@@ -72,7 +72,7 @@ package body HAC_Sys.Parser.Tasking is
         Level              := Level + 1;
         CD.Display (Level) := CD.Blocks_Count;
         while CD.Sy = ENTRY_Symbol loop
-          InSymbol;
+          In_Symbol;
           if CD.Sy /= IDent then
             Error (CD, err_identifier_missing);
             CD.Id := Empty_Alfa;
@@ -84,7 +84,7 @@ package body HAC_Sys.Parser.Tasking is
           Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, entree, forward_id_idx);
           CD.Entries_Table (CD.Entries_Count) := CD.Id_Count;  --  point to identifier table location
           T0                                  := CD.Id_Count;  --  of TaskID
-          InSymbol;
+          In_Symbol;
           task_block.context.level                 := Level + 1;
           task_block.block_id_index                := CD.Id_Count;
           task_block.entity                        := entree;
@@ -94,7 +94,7 @@ package body HAC_Sys.Parser.Tasking is
                  CD.IdTab (CD.Id_Count).name, CD.IdTab (CD.Id_Count).name_with_case);
           CD.IdTab (T0).adr_or_sz := HAC_Integer (CD.Tasks_Definitions_Count);
           if CD.Sy = Semicolon then
-            InSymbol;
+            In_Symbol;
           else
             Error (CD, err_semicolon_missing);
           end if;
@@ -103,7 +103,7 @@ package body HAC_Sys.Parser.Tasking is
         Level := Level - 1;
         Need_END_Symbol (CD);
         if CD.Sy = IDent and then CD.Id = TaskID then
-          InSymbol;
+          In_Symbol;
         else
           Error_then_Skip (CD, Semicolon, err_incorrect_name_after_END);
         end if;

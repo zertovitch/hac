@@ -263,7 +263,7 @@ package body HAC_Sys.Scanner is
     end loop;
   end Skip_Blanks;
 
-  procedure InSymbol (CD : in out Compiler_Data) is
+  procedure In_Symbol (CD : in out Compiler_Data) is
     I, J, K, e : Integer;
 
     procedure Read_Scale (allow_minus : Boolean) is
@@ -671,7 +671,7 @@ package body HAC_Sys.Scanner is
 
     exit_big_loop : Boolean;
 
-  begin  --  InSymbol
+  begin  --  In_Symbol
     CD.prev_sy     := CD.Sy;
     CD.prev_sy_loc := CD.CUD.location;
 
@@ -891,6 +891,6 @@ package body HAC_Sys.Scanner is
       end case;
       New_Line (CD.comp_dump, 2);
     end if;
-  end InSymbol;
+  end In_Symbol;
 
 end HAC_Sys.Scanner;

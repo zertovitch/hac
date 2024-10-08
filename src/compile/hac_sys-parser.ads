@@ -32,14 +32,13 @@ package HAC_Sys.Parser is
   --  Block: subprogram or block statement  --
   --------------------------------------------
 
-  procedure Block (
-    CD                   : in out Co_Defs.Compiler_Data;
-    FSys                 :        Defs.Symset;
-    Is_a_block_statement :        Boolean;        --  RM: 5.6 Block Statements
-    Initial_Block_Data   :        Block_Data_Type;
-    Block_Id             :        Defs.Alfa;      --  Name of this block (if any)
-    Block_Id_with_case   :        Defs.Alfa
-  );
+  procedure Block
+    (CD                   : in out Co_Defs.Compiler_Data;
+     FSys                 :        Defs.Symset;
+     Is_a_block_statement :        Boolean;        --  RM: 5.6 Block Statements
+     Initial_Block_Data   :        Block_Data_Type;
+     Block_Id             :        Defs.Alfa;      --  Name of this block (if any)
+     Block_Id_with_case   :        Defs.Alfa);
 
   --  E.g. : in the case of a block statement within a function, the value
   --  True will be passed for both Is_a_function and Is_a_block_statement.
@@ -50,11 +49,10 @@ package HAC_Sys.Parser is
   --  Subprogram declaration or body (Ada RM 6.1, 6.3)  --
   --------------------------------------------------------
 
-  procedure Subprogram_Declaration_or_Body (
-    CD            : in out Co_Defs.Compiler_Data;
-    FSys          : in     Defs.Symset;
-    current_level : in     Defs.Nesting_Level;
-    kind          :    out Co_Defs.Declaration_Kind
-  );
+  procedure Subprogram_Declaration_or_Body
+    (CD            : in out Co_Defs.Compiler_Data;
+     FSys          : in     Defs.Symset;
+     current_level : in     Defs.Nesting_Level;
+     kind          :    out Co_Defs.Declaration_Kind);
 
 end HAC_Sys.Parser;

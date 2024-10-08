@@ -27,7 +27,7 @@ package body HAC_Sys.Parser.Expressions is
     Sign : HAC_Integer;
     use type HAC_Float, HAC_Integer;
     signed : Boolean := False;
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+    procedure In_Symbol is begin Scanner.In_Symbol (CD); end In_Symbol;
   begin
     C.TP := Undefined;
     C.I  := 0;
@@ -38,7 +38,7 @@ package body HAC_Sys.Parser.Expressions is
     if CD.Sy = CharCon then  --  Untyped character constant, occurs only in ranges.
       Construct_Root (C.TP, Chars);
       C.I  := CD.INum;
-      InSymbol;
+      In_Symbol;
     else
       Sign := 1;
       if CD.Sy in Plus_Minus then
@@ -46,7 +46,7 @@ package body HAC_Sys.Parser.Expressions is
         if CD.Sy = Minus then
           Sign := -1;
         end if;
-        InSymbol;
+        In_Symbol;
       end if;
       case CD.Sy is
         when IDent =>
@@ -68,15 +68,15 @@ package body HAC_Sys.Parser.Expressions is
               Error (CD, err_illegal_constant_or_constant_identifier, severity => major);
             end if;
           end if;  --  X /= 0
-          InSymbol;
+          In_Symbol;
         when IntCon =>
           C.TP.Construct_Root (Ints);
           C.I  := Sign * CD.INum;
-          InSymbol;
+          In_Symbol;
         when FloatCon =>
           C.TP.Construct_Root (Floats);
           C.R  := HAC_Float (Sign) * CD.RNum;
-          InSymbol;
+          In_Symbol;
         when others =>
           Error_then_Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
       end case;
@@ -118,7 +118,7 @@ package body HAC_Sys.Parser.Expressions is
       else
         Error (CD, err_var_with_field_selector_must_be_record);
       end if;
-      InSymbol (CD);
+      In_Symbol (CD);
     end Record_Field_Selector;
     --
     procedure Array_Coordinates_Selector is
@@ -191,7 +191,7 @@ package body HAC_Sys.Parser.Expressions is
     begin
       Array_Indices :
       loop
-        InSymbol (CD);  --  Consume '(' or ',' symbol.
+        In_Symbol (CD);  --  Consume '(' or ',' symbol.
         Expression (CD, context, FSys + Comma_RParent + RBrack, Array_Index_Typ);
         indices := indices + 1;
         if V.TYP = Arrays then
@@ -229,7 +229,7 @@ package body HAC_Sys.Parser.Expressions is
     loop
       if CD.Sy = Period then
         --  Record field selector.
-        InSymbol (CD);  --  Consume '.' symbol.
+        In_Symbol (CD);  --  Consume '.' symbol.
         if CD.Sy = IDent then
           Record_Field_Selector;
         else
@@ -244,7 +244,7 @@ package body HAC_Sys.Parser.Expressions is
         Array_Coordinates_Selector;
         if CD.Sy = RBrack then  --  ']' : same kind of mistake as for '[' ...
           Error (CD, err_right_bracket_instead_of_parenthesis);
-          InSymbol (CD);
+          In_Symbol (CD);
         else
           Need (CD, RParent, err_closing_parenthesis_missing);
         end if;
@@ -307,7 +307,7 @@ package body HAC_Sys.Parser.Expressions is
           --  We collect here a comparison (relational) operator, e.g.: x < y
           --
           Rel_OP := CD.Sy;
-          InSymbol (CD);
+          In_Symbol (CD);
           Simple_Expression (CD, context, FSys_Rel, Y);
           if Internally_VString_Set (X.TYP) and then Internally_VString_Set (Y.TYP) then
             --  The internal type is actually a VString on both sides.
@@ -355,7 +355,7 @@ package body HAC_Sys.Parser.Expressions is
           --  We collect here a membership test, e.g.: x [not] in a .. b
           --
           Not_In := CD.Sy = NOT_Symbol;
-          InSymbol (CD);
+          In_Symbol (CD);
           if Not_In then
             Need (CD, IN_Symbol, err_IN_missing);
           end if;
@@ -388,7 +388,7 @@ package body HAC_Sys.Parser.Expressions is
 
     procedure Process_Short_Circuit (Cond_Jump : Opcode) is
     begin
-      InSymbol (CD);
+      In_Symbol (CD);
       short_circuit := True;
       LC_Cond_Jump := CD.LC;
       Emit (CD, Cond_Jump);
@@ -404,7 +404,7 @@ package body HAC_Sys.Parser.Expressions is
     previous_operator := Dummy_Symbol;
     while is_logical_operator (CD.Sy) loop
       logical_operator := CD.Sy;
-      InSymbol (CD);
+      In_Symbol (CD);
       --
       --  Short-circuit forms of AND, OR.
       --
@@ -490,14 +490,14 @@ package body HAC_Sys.Parser.Expressions is
               CD.target.Emit_Push_Discrete_Literals
                 (Operand_1_Type (CD.SLeng),  --  String Literal Length
                  Operand_2_Type (CD.INum));  --  Index To String IdTab
-              InSymbol (CD);
+              In_Symbol (CD);
 
             when IDent =>
               declare
                 Ident_Index : constant Integer := Locate_CD_Id (CD, context.level);
                 r : IdTabEntry renames CD.IdTab (Ident_Index);
               begin
-                InSymbol (CD);
+                In_Symbol (CD);
                 case r.entity is
                   when declared_number_or_enum_item =>
                     X := r.xtyp;
@@ -550,7 +550,7 @@ package body HAC_Sys.Parser.Expressions is
                          Operand_2_Type (r.adr_or_sz));
                     end if;
                     if CD.Sy = Apostrophe then
-                      InSymbol (CD);
+                      In_Symbol (CD);
                       Attributes.Object_Attribute (CD, context.level, FSys_Prim, X, LC_Mem, X);
                     else
                       --  The variable or parameter itself, not an attribute on it, has been read.
@@ -595,12 +595,12 @@ package body HAC_Sys.Parser.Expressions is
                 --  The local subtype for the value V is the range V .. V.
                 Ranges.Set_Singleton_Range (X, CD.INum);
               end if;
-              InSymbol (CD);
+              In_Symbol (CD);
               --
             when LParent =>
               --  '(' : what is inside the parentheses is an
               --        expression of the lowest level.
-              InSymbol (CD);
+              In_Symbol (CD);
               Expression (CD, context, FSys_Prim + RParent, X);
               if CD.Sy = Comma then
                 Error (CD, err_not_yet_implemented, "aggregates (RM 4.3)", severity => major);
@@ -620,7 +620,7 @@ package body HAC_Sys.Parser.Expressions is
       begin  --  Factor
         case CD.Sy is
           when ABS_Symbol =>
-            InSymbol (CD);
+            In_Symbol (CD);
             Primary (FSys_Fact, X);
             case X.TYP is
               when Ints   => Emit_Std_Funct (CD, SF_Abs_Int);
@@ -630,7 +630,7 @@ package body HAC_Sys.Parser.Expressions is
             end case;
             X.Construct_Root (X.TYP);  --  Forget subtype bounds
           when NOT_Symbol =>
-            InSymbol (CD);
+            In_Symbol (CD);
             Primary (FSys_Fact, X);
             case X.TYP is
               when Bools => Emit (CD, k_NOT_Boolean);
@@ -640,7 +640,7 @@ package body HAC_Sys.Parser.Expressions is
           when others =>
             Primary (FSys_Fact + highest_precedence_operator, X);
             if CD.Sy = Power then
-              InSymbol (CD);
+              In_Symbol (CD);
               Primary (FSys_Fact, Y);
               if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
                 CD.target.Emit_Arithmetic_Binary_Instruction (Power, X.TYP);
@@ -664,7 +664,7 @@ package body HAC_Sys.Parser.Expressions is
       --
       while multiplying_operator (CD.Sy) loop
         Mult_OP := CD.Sy;
-        InSymbol (CD);
+        In_Symbol (CD);
         Factor (FSys_Term + multiplying_operator, Y);
         if X.TYP = NOTYP or Y.TYP = NOTYP then
           null;  --  Something is already wrong at this point; nothing to check or emit.
@@ -939,7 +939,7 @@ package body HAC_Sys.Parser.Expressions is
       --  Unary + , -      RM 4.5 (5), 4.4 (4)
       --
       additive_operator := CD.Sy;
-      InSymbol (CD);
+      In_Symbol (CD);
       Term (FSys + Plus_Minus_Set, X);
       --  At this point we have consumed "+X" or "-X".
       if X.TYP in String_Literals | Strings_as_VStrings | Chars | VStrings
@@ -993,7 +993,7 @@ package body HAC_Sys.Parser.Expressions is
     --
     while binary_adding_operator (CD.Sy) loop
       additive_operator := CD.Sy;
-      InSymbol (CD);
+      In_Symbol (CD);
       Term (FSys + binary_adding_operator, y);
       if X.TYP = NOTYP or y.TYP = NOTYP then
         null;  --  Something is already wrong at this point; nothing to check or emit.
@@ -1083,7 +1083,7 @@ package body HAC_Sys.Parser.Expressions is
     Mem_Sy : constant Symbol := CD.Sy;
   begin
     pragma Assert (CD.IdTab (Typ_ID_Index).entity = type_mark);
-    InSymbol (CD);
+    In_Symbol (CD);
     case Mem_Sy is
       when LParent    =>  --  S (...)
         Type_Conversion (CD, context, FSys, CD.IdTab (Typ_ID_Index), X);

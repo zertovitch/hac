@@ -25,7 +25,7 @@ package body HAC_Sys.Parser.Attributes is
     attr_ID : constant String := A2S (CD.Id);
   begin
     attr := (if attr_ID = "RANGE" then Range_Attr else Attribute'Value (attr_ID));
-    Scanner.InSymbol (CD);  --  Consume the attribute name (First, Last, ...)
+    Scanner.In_Symbol (CD);  --  Consume the attribute name (First, Last, ...)
   exception
     when Constraint_Error =>
       Error (CD, err_general_error, "unknown attribute: " & attr_ID, severity => major);
@@ -49,7 +49,7 @@ package body HAC_Sys.Parser.Attributes is
   begin
     N.I := 1;
     if CD.Sy = LParent then
-      InSymbol (CD);
+      In_Symbol (CD);
       Static_Scalar_Expression (CD, Level, FSys + RParent, N);
       if N.TP.TYP /= Ints then
         Error (CD, err_parameter_must_be_Integer, severity => major);

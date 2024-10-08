@@ -15,7 +15,7 @@ package HAC_Sys.Scanner is
 
   --  Source code scanning for the compiler
 
-  procedure InSymbol (CD : in out Co_Defs.Compiler_Data);
+  procedure In_Symbol (CD : in out Co_Defs.Compiler_Data);
 
   procedure Skip_Blanks (CD : in out Co_Defs.Compiler_Data);
 

@@ -33,11 +33,11 @@ package body HAC_Sys.Parser.Type_Def is
     forward_id_idx : Natural;
     is_subtype : constant Boolean := CD.Sy = SUBTYPE_Symbol;
   begin
-    Scanner.InSymbol (CD);  --  Consume TYPE or SUBTYPE symbol.
+    Scanner.In_Symbol (CD);  --  Consume TYPE or SUBTYPE symbol.
     Test (CD, IDent_Set, Semicolon_Set, err_identifier_missing);
     Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, type_mark, forward_id_idx);
     T1 := CD.Id_Count;
-    Scanner.InSymbol (CD);
+    Scanner.In_Symbol (CD);
     Need (CD, IS_Symbol, err_IS_missing);
     declare
       New_T : IdTabEntry renames CD.IdTab (T1);
@@ -94,7 +94,7 @@ package body HAC_Sys.Parser.Type_Def is
       Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
     elsif CD.Sy = Comma then
       --  Multidimensional array is equivalant to:  array (range_1) of array (range_2,...).
-      Scanner.InSymbol (CD);  --  Consume ',' symbol.
+      Scanner.In_Symbol (CD);  --  Consume ',' symbol.
       Construct_Root (Element_Exact_Subtyp, Arrays);  --  Recursion for next array dimension.
       Array_Typ (CD, Level, FSys_TD, Element_Exact_Subtyp.Ref, Element_Size, recursive_dimensions, False);
     else
@@ -150,7 +150,7 @@ package body HAC_Sys.Parser.Type_Def is
      Size          :    out Integer)
   is
     Level : Nesting_Level := Initial_Level;
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+    procedure In_Symbol is begin Scanner.In_Symbol (CD); end In_Symbol;
 
     procedure Enumeration_Typ is  --  RM 3.5.1 Enumeration Types
       enum_count : Natural := 0;
@@ -159,7 +159,7 @@ package body HAC_Sys.Parser.Type_Def is
       xTP.Construct_Root (Enums);
       xTP.Ref := CD.Id_Count;
       loop
-        InSymbol;  --  Consume '(' symbol.
+        In_Symbol;  --  Consume '(' symbol.
         if CD.Sy = IDent then
           enum_count := enum_count + 1;
           Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, declared_number_or_enum_item, forward_id_idx);
@@ -173,7 +173,7 @@ package body HAC_Sys.Parser.Type_Def is
         else
           Error (CD, err_identifier_missing);
         end if;
-        InSymbol;
+        In_Symbol;
         exit when CD.Sy /= Comma;
       end loop;
       Size  := 1;
@@ -186,7 +186,7 @@ package body HAC_Sys.Parser.Type_Def is
       Field_Exact_Subtyp : Exact_Subtyp;
       Field_Size, Offset, T0, T1 : Integer;
     begin
-      InSymbol;  --  Consume RECORD symbol.
+      In_Symbol;  --  Consume RECORD symbol.
       Enter_Block (CD, CD.Id_Count);
       Construct_Root (xTP, Records);
       xTP.Ref := CD.Blocks_Count;
@@ -234,7 +234,7 @@ package body HAC_Sys.Parser.Type_Def is
       CD.Blocks_Table (xTP.Ref).VSize := Offset;
       Size                            := Offset;
       CD.Blocks_Table (xTP.Ref).PSize := 0;
-      InSymbol;
+      In_Symbol;
       Need (CD, RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
       Level := Level - 1;
     end Record_Typ;
@@ -262,7 +262,7 @@ package body HAC_Sys.Parser.Type_Def is
     if Type_Begin_Symbol (CD.Sy) then
       case CD.Sy is
         when ARRAY_Symbol =>
-          InSymbol;
+          In_Symbol;
           Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
           Construct_Root (xTP, Arrays);
           Array_Typ (CD, Level, FSys_TD, xTP.Ref, Size, dummy_dims, string_constrained_subtype => False);
@@ -287,7 +287,7 @@ package body HAC_Sys.Parser.Type_Def is
      xTP     :    out Co_Defs.Exact_Subtyp;
      Size    :    out Integer)
   is
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+    procedure In_Symbol is begin Scanner.In_Symbol (CD); end In_Symbol;
 
     dummy_dims : Natural;
 
@@ -295,7 +295,7 @@ package body HAC_Sys.Parser.Type_Def is
       --  Prototype of constraining an array type: String -> String (1 .. 26)
       --  We need to implement general constraints one day...
     begin
-      InSymbol;
+      In_Symbol;
       Need (CD, LParent, err_missing_an_opening_parenthesis, Forgive => LBrack);
       Construct_Root (xTP, Arrays);
       Array_Typ (CD, Level, FSys_TD, xTP.Ref, Size, dummy_dims, string_constrained_subtype => True);
@@ -324,10 +324,10 @@ package body HAC_Sys.Parser.Type_Def is
           Error (CD, err_missing_a_type_identifier);
         end if;
       end;
-      InSymbol;
+      In_Symbol;
       if CD.Sy = RANGE_Keyword_Symbol then
         --  Here comes the optional `  range 'a' .. 'z'  ` constraint.
-        InSymbol;
+        In_Symbol;
         Ranges.Explicit_Static_Range (CD, Level, FSys_TD, err_range_constraint_error, Low, High);
         if Exact_Typ (Low.TP) /= Exact_Typ (xTP) then
           Error

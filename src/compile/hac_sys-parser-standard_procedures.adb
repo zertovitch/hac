@@ -106,7 +106,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       end if;
       for Param in 1 .. 3 loop
         exit when CD.Sy /= Comma;
-        InSymbol (CD);
+        In_Symbol (CD);
         Format_Params := Format_Params + 1;
         --  Here we parse:
         --    Width, Base    for Put ([F,] I [, Width [, Base]]);
@@ -204,13 +204,13 @@ package body HAC_Sys.Parser.Standard_Procedures is
 
       when SP_New_Line | SP_Skip_Line =>
         if CD.Sy = LParent then
-          InSymbol (CD);
+          In_Symbol (CD);
           Expression (CD, context, FSys + Colon_Comma_RParent, X);
           case X.TYP is
             when Text_Files =>
               if CD.Sy = Comma then
                 --  "New_Line (File, Spacing);"
-                InSymbol (CD);
+                In_Symbol (CD);
                 Expression (CD, context, FSys + RParent, Y);
                 Check_Integer (CD, Y.TYP);
               else
@@ -307,7 +307,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
         Check_any_String_and_promote_to_VString (CD, X, False);
         --  ` Shell_Execute (cmd `  has been parsed at this point.
         if CD.Sy = Comma then
-          InSymbol (CD);
+          In_Symbol (CD);
           Push_Parameter_by_Reference
             (CD, context, RParent_Set, "Command", param_in_out, Y);
           case Y.TYP is
@@ -316,7 +316,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
               HAT_Procedure_Call (SP_Shell_Execute_Output);
             when Ints =>
               if CD.Sy = Comma then
-                InSymbol (CD);
+                In_Symbol (CD);
                 Push_Parameter_by_Reference
                   (CD, context, RParent_Set, "Result", param_out, Z);
                 --  Shell_Execute (cmd, result, output);

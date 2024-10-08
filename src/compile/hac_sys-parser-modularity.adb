@@ -11,7 +11,7 @@ package body HAC_Sys.Parser.Modularity is
   is
     use Defs, Scanner, Errors;
   begin
-    InSymbol (CD);  --  Consume "with".
+    In_Symbol (CD);  --  Consume "with".
     loop
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, severity => major);
@@ -21,11 +21,11 @@ package body HAC_Sys.Parser.Modularity is
       --  with `using_parsed_Id` = True
       --
       Librarian.Apply_WITH (CD, LD, A2S (CD.Id));
-      InSymbol (CD);  --  Consume the identifier.
+      In_Symbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
       Helpers.Need (CD, Comma, err_general_error);
     end loop;
-    InSymbol (CD);  --  Consume the ';'.
+    In_Symbol (CD);  --  Consume the ';'.
   end With_Clause;
 
   procedure Context_Clause

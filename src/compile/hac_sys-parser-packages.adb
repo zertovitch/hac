@@ -50,7 +50,7 @@ package body HAC_Sys.Parser.Packages is
     --  this procedure due to subpackages, so we need to memorize it.
     current_pkg_table_index := CD.Packages_Count;
     --
-    Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
+    Scanner.In_Symbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);
     --  Set new prefix, support also possible subpackages:
     CD.pkg_prefix := CD.pkg_prefix & A2S (package_name) & '.';
@@ -96,13 +96,13 @@ package body HAC_Sys.Parser.Packages is
                severity => major);
           end if;
           if block_data.context.level = 0 then
-            Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
+            Scanner.In_Symbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
           end if;
           needs_body := True;
           Mark_Last_Declaration;
         when PACKAGE_Symbol =>
           --  Subpackage:
-          Scanner.InSymbol (CD);
+          Scanner.In_Symbol (CD);
           case CD.Sy is
             when BODY_Symbol =>
               Error
@@ -123,7 +123,7 @@ package body HAC_Sys.Parser.Packages is
           needs_body := needs_body or subpkg_needs_body;
           Mark_Last_Declaration;
         when PRIVATE_Symbol =>
-          Scanner.InSymbol (CD);
+          Scanner.In_Symbol (CD);
           if in_private then
             Error (CD, err_general_error, "only one private part allowed per package");
           end if;
@@ -132,7 +132,7 @@ package body HAC_Sys.Parser.Packages is
       end case;
       exit when CD.Sy = END_Symbol;
     end loop;
-    Scanner.InSymbol (CD);  --  Absorb END symbol
+    Scanner.In_Symbol (CD);  --  Absorb END symbol
     if CD.Sy = IDent then
       --  !! For supporting child package names ("x.y.z"), reuse/share Check_ident_after_END
       if CD.Id /= package_name then
@@ -142,7 +142,7 @@ package body HAC_Sys.Parser.Packages is
            severity => minor
           );
       end if;
-      Scanner.InSymbol (CD);  --  Absorb identifier symbol
+      Scanner.In_Symbol (CD);  --  Absorb identifier symbol
     end if;
     --  Test semicolon but don't absorb it (we might be at the end of the stream).
     Test
@@ -177,7 +177,7 @@ package body HAC_Sys.Parser.Packages is
     subpkg_needs_body, subpackage_body : Boolean;
     subpkg_kind                        : Entity_Kind;
   begin
-    Scanner.InSymbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
+    Scanner.In_Symbol (CD);  --  Absorb the identifier symbol. !! We need more for child packages.
     Need (CD, IS_Symbol, err_IS_missing);
     CD.pkg_prefix := CD.pkg_prefix & A2S (package_name) & '.';
     Increment_Nesting_or_Descending_Level (CD);
@@ -212,18 +212,18 @@ package body HAC_Sys.Parser.Packages is
         when PROCEDURE_Symbol | FUNCTION_Symbol =>
           Subprogram_Declaration_or_Body (CD, FSys, block_data.context.level, subprogram_kind);
           if block_data.context.level = 0 then
-            Scanner.InSymbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
+            Scanner.In_Symbol (CD);  --  Consume ';' symbol after END [Subprogram_Id].
           end if;
 
         when PACKAGE_Symbol =>
           --  Subpackage inside a package body.
           --  Subpackage can be spec & body, or just a spec, or the body of
           --  a spec defined in the parent package...
-          Scanner.InSymbol (CD);
+          Scanner.In_Symbol (CD);
           subpackage_body := False;
           subpkg_kind := paquetage;
           if CD.Sy = BODY_Symbol then
-            Scanner.InSymbol (CD);
+            Scanner.In_Symbol (CD);
             subpackage_body := True;
             subpkg_kind := paquetage_body;
           end if;
@@ -249,7 +249,7 @@ package body HAC_Sys.Parser.Packages is
           Need_Semicolon_after_Declaration (CD, FSys);
         when PRIVATE_Symbol =>
           Error (CD, err_general_error, """private"" belongs to specification");
-          Scanner.InSymbol (CD);
+          Scanner.In_Symbol (CD);
         when others => null;
       end case;
       exit when CD.Sy = BEGIN_Symbol or CD.Sy = END_Symbol;
@@ -257,7 +257,7 @@ package body HAC_Sys.Parser.Packages is
     if CD.Sy = BEGIN_Symbol then
       Error (CD, err_not_yet_implemented, "initialisation part in packages", severity => major);
     end if;
-    Scanner.InSymbol (CD);  --  Absorb END symbol
+    Scanner.In_Symbol (CD);  --  Absorb END symbol
     if CD.Sy = IDent then
       --  !! For supporting child package names ("x.y.z"), reuse/share Check_ident_after_END
       if CD.Id /= package_name then
@@ -267,7 +267,7 @@ package body HAC_Sys.Parser.Packages is
            severity => minor
           );
       end if;
-      Scanner.InSymbol (CD);  --  Absorb identifier symbol
+      Scanner.In_Symbol (CD);  --  Absorb identifier symbol
     end if;
     --  Test semicolon but don't absorb it (we might be at the end of the stream).
     Test
@@ -289,17 +289,17 @@ package body HAC_Sys.Parser.Packages is
   is  --  8.4 (2)
     use Defs, Scanner, Errors;
   begin
-    InSymbol (CD);  --  Consume "use".
+    In_Symbol (CD);  --  Consume "use".
     loop
       if CD.Sy /= IDent then
         Error (CD, err_identifier_missing, severity => major);
       end if;
       Apply_USE_Clause (CD, Level, prefixed, Helpers.Locate_CD_Id (CD, Level));
-      InSymbol (CD);  --  Consume the identifier.
+      In_Symbol (CD);  --  Consume the identifier.
       exit when CD.Sy = Semicolon;
       Helpers.Need (CD, Comma, err_general_error);
     end loop;
-    InSymbol (CD);  --  Consume the ';'.
+    In_Symbol (CD);  --  Consume the ';'.
   end Use_Clause;
 
   procedure Apply_USE_Clause

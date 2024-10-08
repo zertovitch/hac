@@ -18,7 +18,7 @@ package body HAC_Sys.Parser.Const_Var is
      Block_Data : in out Block_Data_Type)
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Enter_Def, Helpers, PCode, Errors;
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+    procedure In_Symbol is begin Scanner.In_Symbol (CD); end In_Symbol;
 
     --  This procedure processes both Variable and Constant declarations.
     procedure Possibly_Initialized_Constant_or_Variable
@@ -125,7 +125,7 @@ package body HAC_Sys.Parser.Const_Var is
       is_constant := False;
       if CD.Sy = CONSTANT_Symbol then  --  Consume "constant" in "x : constant ...;"
         is_constant := True;
-        InSymbol;
+        In_Symbol;
       end if;
       --
       is_typed := False;
@@ -166,7 +166,7 @@ package body HAC_Sys.Parser.Const_Var is
       if is_untyped_constant then
         --  Numeric constant: we parse the number here ("k : constant := 123.0").
         if CD.Sy = Becomes then
-          InSymbol;
+          In_Symbol;
           Expressions.Static_Scalar_Expression (CD, Block_Data.context.level, Comma_IDent_Semicolon + FSys, C);
         else
           Error (CD, err_BECOMES_missing);

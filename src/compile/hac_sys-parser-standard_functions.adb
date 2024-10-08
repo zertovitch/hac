@@ -143,7 +143,7 @@ package body HAC_Sys.Parser.Standard_Functions is
     begin
       if CD.Sy = LParent then
         --  End_Of_File (...), End_Of_Line (...).
-        InSymbol (CD);
+        In_Symbol (CD);
         Expression (CD, context, FSys + RParent + Comma, X);
         if X.TYP /= Text_Files then
           Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files_Set);

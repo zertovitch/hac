@@ -30,14 +30,14 @@ package body HAC_Sys.Parser.Helpers is
     severity : Error_Severity := medium;
   begin
     if CD.Sy = S then
-      InSymbol (CD);
+      In_Symbol (CD);
     else
       if Forgive = Dummy_Symbol then
         severity := major;
       end if;
       Error (CD, E, ": " & Symbol'Image (S) & " expected", severity => severity);
       if CD.Sy = Forgive then
-        InSymbol (CD);
+        In_Symbol (CD);
       end if;
     end if;
   end Need;
@@ -58,13 +58,14 @@ package body HAC_Sys.Parser.Helpers is
     Error (CD, N, hint);
     --
     while not FSys (CD.Sy) loop
-      InSymbol (CD);
+      In_Symbol (CD);
       if StopMe then
         raise Failure_1_0;
       end if;
     end loop;
 
-    InSymbol (CD);    -- Manuel:  If this InSymbol call is
+    In_Symbol (CD);
+    --  Manuel:  If this In_Symbol call is
     --  omitted, the system will get in an
     --  infinite loop on the statement:
     --  put_lin("Typo is on purpose");
@@ -127,12 +128,12 @@ package body HAC_Sys.Parser.Helpers is
   procedure Need_Semicolon_after_Declaration (CD : in out Compiler_Data; FSys : Symset) is
   begin
     if CD.Sy = Semicolon then
-      InSymbol (CD);
+      In_Symbol (CD);
       Ignore_Extra_Semicolons (CD);
     else
       Error (CD, err_semicolon_missing);
       if Comma_or_colon (CD.Sy) then
-        InSymbol (CD);
+        In_Symbol (CD);
       end if;
     end if;
     Test (CD, After_Semicolon_after_Declaration, FSys, err_incorrectly_used_symbol);
@@ -141,7 +142,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Need_END_Symbol (CD : in out Compiler_Data) is
   begin
     if CD.Sy = END_Symbol then
-      InSymbol (CD);
+      In_Symbol (CD);
     else
       Error_then_Skip (CD, Semicolon, err_END_missing);
     end if;
@@ -166,7 +167,7 @@ package body HAC_Sys.Parser.Helpers is
     if CD.Sy = Semicolon then
       Error (CD, err_duplicate_semicolon, severity => minor);
       while CD.Sy = Semicolon loop
-        InSymbol (CD);
+        In_Symbol (CD);
       end loop;
     end if;
   end Ignore_Extra_Semicolons;
@@ -176,7 +177,7 @@ package body HAC_Sys.Parser.Helpers is
     if CD.Sy = RParent and then CD.prev_sy = RParent then
       Error (CD, err_extra_right_parenthesis, severity => minor);
       while CD.Sy = RParent loop
-        InSymbol (CD);
+        In_Symbol (CD);
       end loop;
     end if;
     Need (CD, Semicolon, err_semicolon_missing, Forgive => Comma);
@@ -573,7 +574,7 @@ package body HAC_Sys.Parser.Helpers is
       end if;
       --  Issue an error, severity: major (an exception is raised).
       ID_Copy := CD.Id_with_case;
-      InSymbol (CD);
+      In_Symbol (CD);
       if CD.Sy = Finger then
         Error
           (CD,
@@ -607,7 +608,7 @@ package body HAC_Sys.Parser.Helpers is
         CD.target.Mark_Reference (J);
         CD.IdTab (J).is_referenced := True;
         --  Here some parsing: entity is a package and there is a dot waiting.
-        InSymbol (CD);  --  Consume prefix package identifier.
+        In_Symbol (CD);  --  Consume prefix package identifier.
         Need (CD, Period, err_general_error);  --  Accept "Pkg.", reject "Pkg.."
         if CD.Sy = IDent then
           return Locate_Identifier_Internal

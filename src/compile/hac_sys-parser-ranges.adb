@@ -43,7 +43,7 @@ package body HAC_Sys.Parser.Ranges is
             High.I  := Id_T.xtyp.Discrete_Last;
             --
             Found   := True;
-            InSymbol (CD);  --  Consume the identifier.
+            In_Symbol (CD);  --  Consume the identifier.
           end if;
         end if;
       end;
@@ -171,7 +171,7 @@ package body HAC_Sys.Parser.Ranges is
       --  The ` .. X'Last ` part has been implicitly parsed with ` X'Range ` .
       null;
     elsif CD.Sy = Range_Double_Dot_Symbol then  --  ".."
-      InSymbol (CD);
+      In_Symbol (CD);
       --
       Simple_Expression (CD, context, FSys + LOOP_Symbol, Upper_Bound_Typ);
       --

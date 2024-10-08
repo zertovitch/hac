@@ -36,7 +36,7 @@ is
   subtype Choice_Count_Type is Multi_Int (4);
   parsed_choices : Choice_Count_Type;
 
-  procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+  procedure In_Symbol is begin Scanner.In_Symbol (CD); end In_Symbol;
 
   function Count_Choice_Values (Low, High : HAC_Integer) return Choice_Count_Type is
     result : Choice_Count_Type;
@@ -55,7 +55,7 @@ is
     if CD.Sy = Range_Double_Dot_Symbol then
       --  !!  To do: non-explicit ranges, like a subtype name, a 'Range, ... .
       --      Ranges.Static_Range.
-      InSymbol;
+      In_Symbol;
       Static_Scalar_Expression (CD, block_data.context.level, choice_symbol_set, label_2);
       if label_2.TP /= label_1.TP then
         Type_Mismatch (
@@ -107,7 +107,7 @@ is
   procedure WHEN_Discrete_Choice_List is
   begin
     pragma Assert (CD.Sy = WHEN_Symbol);  --  This subprogram is called only on WHEN_Symbol.
-    InSymbol;  --  Consume `WHEN`
+    In_Symbol;  --  Consume `WHEN`
     --  Here, a discrete_choice_list (Ada RM 3.8.1 (4)) following WHEN.
     if Constant_Definition_Begin_Symbol (CD.Sy) then
       if WHEN_OTHERS_flag then  --  Normal choice list *atfer* the "others" choice.
@@ -115,7 +115,7 @@ is
       end if;
       Discrete_Choice;
       while CD.Sy = Alt loop
-        InSymbol;  --  Consume '|' symbol.
+        In_Symbol;  --  Consume '|' symbol.
         if CD.Sy = OTHERS_Symbol then  --  "others" mixed with normal choices.
           Error (CD, err_case_others_alone_last);
         else
@@ -135,11 +135,11 @@ is
         (value_1 | value_2 => 0,
          LC                => CD.LC,
          Is_others         => True);
-      InSymbol;
+      In_Symbol;
     end if;
     if CD.Sy = THEN_Symbol then  --  Mistake happens when converting IF statements to CASE.
       Error (CD, err_THEN_instead_of_Arrow, severity => major);
-      InSymbol;
+      In_Symbol;
     else
       Need (CD, Finger, err_FINGER_missing);
     end if;
@@ -188,7 +188,7 @@ begin  --  CASE_Statement
   block_data.context.is_within_condition := True;
   block_data.context.is_in_cond_within_loop := block_data.context.is_within_loop;
   Fill (parsed_choices, 0);
-  InSymbol;
+  In_Symbol;
   Expression (CD, block_data.context, fsys + Colon_Comma_IS_OF, X);
   if not Discrete_Typ (X.TYP) then
     Error (CD, err_bad_type_for_a_case_statement);
@@ -197,13 +197,13 @@ begin  --  CASE_Statement
   Emit (CD, k_CASE_Switch);
   case CD.Sy is
     when IS_Symbol =>
-      InSymbol;
+      In_Symbol;
     when OF_Symbol =>
       Error (CD, err_OF_instead_of_IS);
       --  ^ Common mistake by Pascal programmers.
       --  Historical note: "OF" and not "IS" was expected by SmallAda!
       --  For instance, "case x OF  when 1 => ..."
-      InSymbol;
+      In_Symbol;
     when others =>
       Error (CD, err_IS_missing);
   end case;

@@ -53,7 +53,7 @@ package body HAC_Sys.Parser.Calls is
     found := Undefined;
     if CD.Sy = IDent then
       K := Locate_CD_Id (CD, context.level);
-      InSymbol (CD);
+      In_Symbol (CD);
       if K = No_Id then
         null;  --  Error already issued due to undefined identifier
       elsif CD.IdTab (K).entity not in Object_Kind then
@@ -127,7 +127,7 @@ package body HAC_Sys.Parser.Calls is
     last_param    := CD.Blocks_Table (block_idx).Last_Param_Id_Idx;
     if CD.Sy = LParent then  --  Actual parameter list
       loop
-        InSymbol (CD);
+        In_Symbol (CD);
         if current_param >= last_param then
           Error
             (CD,
@@ -209,7 +209,7 @@ package body HAC_Sys.Parser.Calls is
     use type Alfa;
   begin
     if CD.Sy = Period then
-      InSymbol (CD);                  --  Task Entry Selector
+      In_Symbol (CD);                  --  Task Entry Selector
       if CD.Sy = IDent then
         J := CD.Blocks_Table (CD.IdTab (i).block_or_pkg_ref).Last_Id_Idx;
         CD.IdTab (0).name := CD.Id;
@@ -222,7 +222,7 @@ package body HAC_Sys.Parser.Calls is
         end if;
         --
         Addr := J;
-        InSymbol (CD);
+        In_Symbol (CD);
         Subprogram_or_Entry_Call (CD, context, fsys, Addr, call_type);
       else
         Error_then_Skip (CD, Semicolon, err_identifier_missing);

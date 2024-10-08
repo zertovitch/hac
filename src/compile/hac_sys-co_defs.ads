@@ -303,13 +303,13 @@ package HAC_Sys.Co_Defs is
   type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
     CUD : Current_Unit_Data;
     --  Scanning & Parsing
-    Sy, prev_sy      : Symbol;         --  sy: last Symbol read by InSymbol
+    Sy, prev_sy      : Symbol;         --  sy: last Symbol read by In_Symbol
     prev_sy_loc      : Symbol_Location;
-    Id               : Alfa;               --  Identifier from InSymbol
+    Id               : Alfa;               --  Identifier from In_Symbol
     Id_with_case     : Alfa;               --  Same as Id, but with casing.
     Id_location      : Integer;            --  Cache for Locate_CD_Id
-    INum             : HAC_Integer;        --  Integer from InSymbol
-    RNum             : HAC_Float;          --  FLOAT Number from InSymbol
+    INum             : HAC_Integer;        --  Integer from In_Symbol
+    RNum             : HAC_Float;          --  Float number from In_Symbol
     SLeng            : Integer;            --  String Length
     pkg_prefix       : HAT.VString;        --  Prefix of package being currently parsed.
     --  Compiler tables. Floats and Strings are used by interpreter at run-time.

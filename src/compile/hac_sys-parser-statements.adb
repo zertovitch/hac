@@ -50,11 +50,11 @@ package body HAC_Sys.Parser.Statements is
     --  Parse the  ":="  of  "X := Y;"
     case CD.Sy is
       when Becomes =>
-        InSymbol (CD);
+        In_Symbol (CD);
       when EQL =>
         --  Common mistake by BASIC or C programmers.
         Error (CD, err_EQUALS_instead_of_BECOMES);
-        InSymbol (CD);
+        In_Symbol (CD);
       when others =>
         Error (CD, err_BECOMES_missing);
     end case;
@@ -208,7 +208,7 @@ package body HAC_Sys.Parser.Statements is
         Helpers, PCode, Errors;
     use type Alfa;
 
-    procedure InSymbol is begin Scanner.InSymbol (CD); end InSymbol;
+    procedure In_Symbol is begin Scanner.In_Symbol (CD); end In_Symbol;
 
     procedure Accept_Statement is            -- Hathorn
 
@@ -219,24 +219,24 @@ package body HAC_Sys.Parser.Statements is
         end if;
         if CD.Sy = LParent then          -- <--- temporary
           while not (CD.Sy = DO_Symbol or CD.Sy = RParent) loop
-            InSymbol;
+            In_Symbol;
           end loop; -- !! should check no. and
         end if;    -- Types of parms.
         if CD.Sy = RParent then
-          InSymbol;
+          In_Symbol;
         end if;
       end Accept_Call;
 
       I_Entry : Integer;
     begin  --  Accept_Statement
-      InSymbol;
+      In_Symbol;
       I_Entry := Locate_CD_Id (CD, block_data.context.level);
       if CD.IdTab (I_Entry).entity /= entree then
         Error (CD, err_general_error, "an entry name is expected here");
       else
         CD.target.Mark_Reference (I_Entry);
       end if;
-      InSymbol;
+      In_Symbol;
       Accept_Call;
       Emit_1 (CD, k_Accept_Rendezvous, Operand_2_Type (I_Entry));
       if CD.Sy = DO_Symbol then
@@ -245,7 +245,7 @@ package body HAC_Sys.Parser.Statements is
         end if;
         block_data.context.level := block_data.context.level + 1;
         CD.Display (block_data.context.level) := CD.IdTab (I_Entry).block_or_pkg_ref;
-        InSymbol;
+        In_Symbol;
         Sequence_of_Statements (CD, END_Set, block_data);
         Need_END_Symbol (CD);
         if CD.Sy = IDent then
@@ -254,7 +254,7 @@ package body HAC_Sys.Parser.Statements is
           else
             CD.target.Mark_Reference (I_Entry);
           end if;
-          InSymbol;
+          In_Symbol;
         end if;
         block_data.context.level := block_data.context.level - 1;
       end if;
@@ -271,7 +271,7 @@ package body HAC_Sys.Parser.Statements is
       conditional : Boolean := False;
     begin
       pragma Assert (CD.Sy = EXIT_Symbol);
-      InSymbol;  --  Consume EXIT symbol.
+      In_Symbol;  --  Consume EXIT symbol.
       if CD.loop_nesting_level = 0 then
         Error
           (CD,
@@ -298,7 +298,7 @@ package body HAC_Sys.Parser.Statements is
         if not id_found then
           Error (CD, err_general_error, "loop name not matched: " & A2S (CD.Id_with_case));
         end if;
-        InSymbol;  --  Consume the identifier.
+        In_Symbol;  --  Consume the identifier.
       else
         --  EXIT without a name.
         if CD.Nested_Loop_Table (CD.loop_nesting_level).is_FOR_loop then
@@ -306,7 +306,7 @@ package body HAC_Sys.Parser.Statements is
         end if;
       end if;
       if CD.Sy = WHEN_Symbol then  --  Conditional Exit
-        InSymbol;  --  Consume WHEN symbol.
+        In_Symbol;  --  Consume WHEN symbol.
         Boolean_Expression (CD, block_data.context, Semicolon_Set, X);
         --  On False, conditional jump around Exit:
         if count_FOR_loops = 0 then
@@ -330,7 +330,7 @@ package body HAC_Sys.Parser.Statements is
       X        : Exact_Subtyp;
       LC0, LC1 : Integer;
     begin
-      InSymbol;
+      In_Symbol;
       Boolean_Expression (CD, block_data.context, FSys_St + DO_THEN, X);
       LC1 := CD.LC;
       Emit (CD, k_Jump_If_Zero_With_Pop);
@@ -340,7 +340,7 @@ package body HAC_Sys.Parser.Statements is
       LC0 := CD.LC;
       --
       while CD.Sy = ELSIF_Symbol loop
-        InSymbol;
+        In_Symbol;
         Emit_1 (CD, k_Jump, dummy_address_if);  --  Unconditional jump with dummy address to be patched
         CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);       --  Patch the previous conditional jump
         Boolean_Expression (CD, block_data.context, FSys_St + DO_THEN, X);
@@ -352,7 +352,7 @@ package body HAC_Sys.Parser.Statements is
       end loop;
       --
       if CD.Sy = ELSE_Symbol then
-        InSymbol;
+        In_Symbol;
         Emit_1 (CD, k_Jump, dummy_address_if);  --  Jump to "END IF" - dummy address to be patched.
         CD.ObjCode (LC1).Y := Operand_2_Type (CD.LC);
         --  Statements after "ELSE":
@@ -380,7 +380,7 @@ package body HAC_Sys.Parser.Statements is
       end if;
       CD.Nested_Loop_Table (CD.loop_nesting_level) := info;
       if CD.Sy = LOOP_Symbol then
-        InSymbol;
+        In_Symbol;
       else
         Error_then_Skip (CD, Statement_Begin_Symbol, err_missing_closing_IF);
       end if;
@@ -404,7 +404,7 @@ package body HAC_Sys.Parser.Statements is
         Type_Mismatch (CD, err_type_of_return_statement_doesnt_match, Found => Y, Expected => X);
       end Issue_Type_Mismatch_Error;
     begin
-      InSymbol;
+      In_Symbol;
       if CD.Sy = Semicolon then
         if block_data.entity = funktion then
           Error (CD, err_functions_must_return_a_value);
@@ -456,7 +456,7 @@ package body HAC_Sys.Parser.Statements is
     procedure Delay_Statement is            -- Cramer. Generate a Task delay.
       Y : Exact_Subtyp;
     begin
-      InSymbol;
+      In_Symbol;
       if CD.Sy = Semicolon then
         Error_then_Skip (CD, Semicolon, err_missing_expression_for_delay);
       else
@@ -479,7 +479,7 @@ package body HAC_Sys.Parser.Statements is
       LC_Cond_Eval, LC_Cond_Jump : Integer;
       line_number : constant Natural := CD.CUD.location.line;
     begin
-      InSymbol;  --  Consume WHILE symbol.
+      In_Symbol;  --  Consume WHILE symbol.
       LC_Cond_Eval := CD.LC;
       Boolean_Expression (CD, block_data.context, FSys_St + DO_LOOP, X);
       LC_Cond_Jump := CD.LC;
@@ -501,7 +501,7 @@ package body HAC_Sys.Parser.Statements is
       --     - lower bound value
       --     - upper bound value
       --
-      InSymbol;  --  Consume FOR symbol.
+      In_Symbol;  --  Consume FOR symbol.
       if CD.Sy = IDent then
         if CD.Id_Count = Id_Table_Max then
           Fatal (IDENTIFIERS);  --  Exception is raised there.
@@ -541,12 +541,12 @@ package body HAC_Sys.Parser.Statements is
         Operand_1_Type (CD.IdTab (loop_param_id).lev),
         Operand_2_Type (CD.IdTab (loop_param_id).adr_or_sz)
       );
-      InSymbol;
+      In_Symbol;
       FOR_Begin_Instruction := k_FOR_Forward_Begin;
       Need (CD, IN_Symbol, err_IN_missing);  --       "IN"  in  "for i in reverse 1 .. 10 loop"
       if CD.Sy = REVERSE_Symbol then         --  "REVERSE"  in  "for i in reverse 1 .. 10 loop"
         FOR_Begin_Instruction := k_FOR_Reverse_Begin;
-        InSymbol;
+        In_Symbol;
       end if;
       Ranges.Dynamic_Range (CD, block_data.context, FSys_St,
         err_control_variable_of_the_wrong_type,
@@ -584,7 +584,7 @@ package body HAC_Sys.Parser.Statements is
       begin
         I := Locate_CD_Id (CD, block_data.context.level);
         if CD.IdTab (I).entity = tache then
-          InSymbol;
+          In_Symbol;
           Entry_Call (CD, block_data.context, FSys_St, I, -1);
           if CD.ObjCode (CD.LC - 2).F = k_Call then  --  Need to patch CallType later
             patch (0) := CD.LC - 2;
@@ -595,7 +595,7 @@ package body HAC_Sys.Parser.Statements is
           Emit_1 (CD, k_Jump_If_Zero_With_Pop, dummy_address_if);  --  JMPC, address patched in after ELSE
                                     --  or OR
           if CD.Sy = Semicolon then
-            InSymbol;
+            In_Symbol;
           else
             Error_then_Skip (CD, Semicolon, err_semicolon_missing);
           end if;
@@ -605,9 +605,9 @@ package body HAC_Sys.Parser.Statements is
           if CD.Sy = OR_Symbol then  --  =====================> Timed Entry Call
             CD.ObjCode (patch (0)).X     := Timed_Entry_Call;
             CD.ObjCode (patch (0) + 1).Y := Timed_Entry_Call;  --  Exit type matches Entry type
-            InSymbol;
+            In_Symbol;
             if CD.Sy = DELAY_Symbol then
-              InSymbol;
+              In_Symbol;
               if CD.Sy = Semicolon then
                 Select_Error (err_missing_expression_for_delay);
               else          --  Calculate delay value
@@ -629,7 +629,7 @@ package body HAC_Sys.Parser.Statements is
                     CD.ObjCode (IStart) := O;
                     J                   := J - 1;
                   end loop;
-                  InSymbol;
+                  In_Symbol;
                 end if;
               end if;
             else
@@ -642,7 +642,7 @@ package body HAC_Sys.Parser.Statements is
             patch (2)                    := CD.LC;
             Emit_1 (CD, k_Jump, dummy_address_if);  -- JMP, address patched in after END SELECT
             patch (3) := CD.LC;
-            InSymbol;
+            In_Symbol;
             Sequence_of_Statements (CD, END_Set, block_data);
             CD.ObjCode (patch (1)).Y  := Operand_2_Type (patch (3));
             CD.ObjCode (patch (2)).Y  := Operand_2_Type (CD.LC);
@@ -650,7 +650,7 @@ package body HAC_Sys.Parser.Statements is
           if CD.Sy /= END_Symbol then
             Select_Error (err_END_missing);
           end if;
-          InSymbol;
+          In_Symbol;
           if CD.Sy /= SELECT_Symbol then
             Select_Error (err_SELECT_missing);
           end if;
@@ -678,24 +678,24 @@ package body HAC_Sys.Parser.Statements is
             if CD.Sy = LParent then      -- should be modified
               --  To check no. and
               while not (CD.Sy = DO_Symbol or CD.Sy = RParent) loop
-                InSymbol;
+                In_Symbol;
               end loop;
             end if;        -- of parameters.
             if CD.Sy = RParent then
-              InSymbol;
+              In_Symbol;
             end if;
           end Accept_Call_2;
 
           I : Integer;
         begin         -- Accept_Statment_2
-          InSymbol;
+          In_Symbol;
           I := Locate_CD_Id (CD, block_data.context.level);
           if CD.IdTab (I).entity /= entree then
             Select_Error (err_general_error);
           else
             CD.target.Mark_Reference (I);
           end if;
-          InSymbol;
+          In_Symbol;
           Accept_Call_2;
           Emit_2 (CD, k_Selective_Wait, 2, Operand_2_Type (I));      --  Retain Entry Index
           Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
@@ -707,7 +707,7 @@ package body HAC_Sys.Parser.Statements is
             end if;
             block_data.context.level := block_data.context.level + 1;
             CD.Display (block_data.context.level) := CD.IdTab (I).block_or_pkg_ref;
-            InSymbol;
+            In_Symbol;
             Sequence_of_Statements (CD, END_Set, block_data);
             Need_END_Symbol (CD);
             if CD.Sy = IDent then
@@ -718,7 +718,7 @@ package body HAC_Sys.Parser.Statements is
               end if;
             end if;
             block_data.context.level := block_data.context.level - 1;
-            InSymbol;
+            In_Symbol;
           end if;
           Emit_1 (CD, k_End_Rendezvous, Operand_2_Type (I));
         end Accept_Statement_2;
@@ -734,9 +734,9 @@ package body HAC_Sys.Parser.Statements is
           case CD.Sy is
             when WHEN_Symbol =>
               Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
-              InSymbol;  --  Consume WHEN symbol.
+              In_Symbol;  --  Consume WHEN symbol.
               Boolean_Expression (CD, block_data.context, FSys_St + Finger, X);
-              InSymbol;
+              In_Symbol;
               case CD.Sy is
                 when ACCEPT_Symbol =>
                   Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
@@ -745,7 +745,7 @@ package body HAC_Sys.Parser.Statements is
                 when DELAY_Symbol =>
                   Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
                   Emit (CD, k_Jump_If_Zero_With_Pop);
-                  InSymbol;
+                  In_Symbol;
                   Expression (CD, block_data.context, FSys_St + Semicolon, Y);
                   Emit_2 (CD, k_Selective_Wait, 4, Operand_2_Type (CD.LC + 2));  --  Update delay time
                   if Y.TYP /= Floats then
@@ -756,7 +756,7 @@ package body HAC_Sys.Parser.Statements is
                 when others =>
                   Select_Error (err_missing_a_procedure_declaration);  --  ??
               end case;
-              InSymbol;
+              In_Symbol;
               Sequence_of_Statements (CD, ELSE_END_OR, block_data, True);
               Feed_Patch_Table (JSD, ISD, CD.LC);
               Emit (CD, k_Jump);          --  patch JMP ADDRESS AT EndSy
@@ -765,17 +765,17 @@ package body HAC_Sys.Parser.Statements is
             when ACCEPT_Symbol =>
               Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
               Accept_Statement_2;
-              InSymbol;
+              In_Symbol;
               Sequence_of_Statements (CD, ELSE_END_OR, block_data, True);
               Feed_Patch_Table (JSD, ISD, CD.LC);
               Emit (CD, k_Jump);
 
             when OR_Symbol =>
-              InSymbol;  --  Consume OR symbol.
+              In_Symbol;  --  Consume OR symbol.
 
             when ELSE_Symbol =>
               Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
-              InSymbol;
+              In_Symbol;
               Sequence_of_Statements (CD, END_Set, block_data);
               Feed_Patch_Table (JSD, ISD, CD.LC);
               Emit (CD, k_Jump);
@@ -783,7 +783,7 @@ package body HAC_Sys.Parser.Statements is
             when DELAY_Symbol =>
               Patch_Addresses (CD.ObjCode (CD.ObjCode'First .. CD.LC), Alt_Patch, IAlt);
               --  Generate a Task delay, calculate return value if req'D
-              InSymbol;
+              In_Symbol;
               if CD.Sy = Semicolon then
                 Error_then_Skip (CD, Semicolon, err_missing_expression_for_delay);
               else          -- calculate return value
@@ -795,21 +795,21 @@ package body HAC_Sys.Parser.Statements is
                 Feed_Patch_Table (Alt_Patch, IAlt, CD.LC);
                 Emit (CD, k_Jump);
               end if;
-              InSymbol;
+              In_Symbol;
               Sequence_of_Statements (CD, ELSE_END_OR, block_data, True);
               Feed_Patch_Table (JSD, ISD, CD.LC);
               Emit (CD, k_Jump);
 
             when TERMINATE_Symbol =>
-              InSymbol;
+              In_Symbol;
               if CD.Sy /= Semicolon then
                 Select_Error (err_semicolon_missing);
               end if;
               do_terminate := True;        -- Oguz
-              InSymbol;
+              In_Symbol;
 
             when END_Symbol =>
-              InSymbol;
+              In_Symbol;
               if CD.Sy /= SELECT_Symbol then
                 Select_Error (err_END_missing);
               end if;
@@ -830,14 +830,14 @@ package body HAC_Sys.Parser.Statements is
       end Selective_Wait;
 
     begin
-      InSymbol;  --  Consume SELECT symbol.
+      In_Symbol;  --  Consume SELECT symbol.
       case CD.Sy is
         when ACCEPT_Symbol | WHEN_Symbol =>
           Selective_Wait;
-          InSymbol;
+          In_Symbol;
         when IDent =>  --  Task Entry objectName.
           Qualified_Entry_Call;
-          InSymbol;
+          In_Symbol;
           --  Timed or Conditional Entry Call (?)
         when others =>
           Select_Error (err_expecting_accept_when_or_entry_id);
@@ -887,7 +887,7 @@ package body HAC_Sys.Parser.Statements is
           if CD.Id /= new_ident_for_statement then
             Boom (err_END_LOOP_ident_wrong);
           end if;
-          InSymbol;  --  Consume identifier.
+          In_Symbol;  --  Consume identifier.
         else
           Boom (err_END_LOOP_ident_missing);
         end if;
@@ -909,7 +909,7 @@ package body HAC_Sys.Parser.Statements is
            A2S (new_ident_for_statement_with_case),
            severity => major);
       end if;
-      InSymbol;  --  Consume ':' symbol.
+      In_Symbol;  --  Consume ':' symbol.
       case CD.Sy is
         when BEGIN_Symbol | DECLARE_Symbol => -- Named Block_Statement
           Block_Statement (new_ident_for_statement);
@@ -931,7 +931,7 @@ package body HAC_Sys.Parser.Statements is
       I_Statement : constant Integer :=
         Locate_CD_Id (CD, block_data.context.level, Fail_when_No_Id => False);
     begin
-      InSymbol;
+      In_Symbol;
       if I_Statement = No_Id then
         --  Unknown identifier: must be an identifier for a named Block_Statement or loop.
         Named_Statement;
@@ -986,7 +986,7 @@ package body HAC_Sys.Parser.Statements is
            "loop starting at line" &
            CD.Nested_Loop_Table (CD.loop_nesting_level + 1).start_line'Image &
            " has no name");
-        InSymbol;  --  Recovery.
+        In_Symbol;  --  Recovery.
       end if;
     end Process_Name_for_Unnamed_Loop;
 
@@ -1018,7 +1018,7 @@ package body HAC_Sys.Parser.Statements is
           LOOP_Statement (k_Jump, CD.LC, (No_Id, False, CD.CUD.location.line));
           Process_Name_for_Unnamed_Loop;
         when NULL_Symbol =>
-          InSymbol;  --  Just consume the NULL symbol.
+          In_Symbol;  --  Just consume the NULL symbol.
         when RETURN_Symbol =>
           RETURN_Statement;
         when SELECT_Symbol =>
