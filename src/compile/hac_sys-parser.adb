@@ -328,7 +328,7 @@ package body HAC_Sys.Parser is
         case CD.Sy is
           when DECLARE_Symbol => InSymbol;
           when BEGIN_Symbol   => null;
-          when others         => raise Internal_error with "Unexpected " & KeyWSymbol'Image (CD.Sy);
+          when others         => raise Internal_error with "Unexpected " & Symbol'Image (CD.Sy);
         end case;
       elsif CD.Sy = IS_Symbol then  --  The "IS" in "procedure ABC (param : T_Type) IS"
         InSymbol;

@@ -209,6 +209,8 @@ package HAC_Sys.Co_Defs is
     start_line  : Natural;
   end record;
 
+  subtype Source_Buffer_String is String (1 .. 65_536);
+
   subtype Source_Line_String is String (1 .. 1000);  --  Must be at least 200 (RM 2.2 (15))
 
   -----------------------
@@ -244,6 +246,9 @@ package HAC_Sys.Co_Defs is
     --  Current source code information and scanner data
     compiler_stream   : Source_Stream_Access;
     source_file_name  : HAT.VString;         --  Indicative, for error messages
+    buffer            : Source_Buffer_String;
+    buffer_length     : Natural;
+    buffer_position   : Positive;
     --  Parsing
     location          : Symbol_Location;
     input_line        : Source_Line_String;
@@ -298,7 +303,7 @@ package HAC_Sys.Co_Defs is
   type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
     CUD : Current_Unit_Data;
     --  Scanning & Parsing
-    Sy, prev_sy      : KeyWSymbol;         --  Last KeyWSymbol read by InSymbol
+    Sy, prev_sy      : Symbol;         --  sy: last Symbol read by InSymbol
     prev_sy_loc      : Symbol_Location;
     Id               : Alfa;               --  Identifier from InSymbol
     Id_with_case     : Alfa;               --  Same as Id, but with casing.

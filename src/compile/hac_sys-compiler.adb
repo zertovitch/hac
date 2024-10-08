@@ -26,8 +26,10 @@ package body HAC_Sys.Compiler is
   end Set_Message_Feedbacks;
 
   --  Initialize the compiler for a new unit.
-  procedure Init (CUD : out Current_Unit_Data) is
+  procedure Init (CUD : in out Current_Unit_Data) is
   begin
+    CUD.buffer_length   := 0;
+    CUD.buffer_position := 1;
     CUD.c := ' ';
     CUD.CC       := 0;
     CUD.LL       := 0;

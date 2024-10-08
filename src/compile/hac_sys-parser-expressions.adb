@@ -292,7 +292,7 @@ package body HAC_Sys.Parser.Expressions is
         Type_Mismatch (CD, err_incompatible_types_for_comparison, Found => Y, Expected => X);
       end Issue_Comparison_Type_Mismatch_Error;
 
-      Rel_OP : KeyWSymbol;
+      Rel_OP : Symbol;
       Not_In : Boolean;
 
     begin  --  Relation
@@ -380,8 +380,8 @@ package body HAC_Sys.Parser.Expressions is
       end case;
     end Relation;
 
-    logical_operator  : KeyWSymbol;
-    previous_operator : KeyWSymbol;
+    logical_operator  : Symbol;
+    previous_operator : Symbol;
     Y                 : Exact_Subtyp;
     short_circuit     : Boolean;
     LC_Cond_Jump      : Integer;
@@ -655,7 +655,7 @@ package body HAC_Sys.Parser.Expressions is
       end Factor;
 
       use type HAC_Integer;
-      Mult_OP : KeyWSymbol;
+      Mult_OP : Symbol;
       Y       : Exact_Subtyp;
     begin  --  Term
       Factor (FSys_Term + multiplying_operator, X);
@@ -755,7 +755,7 @@ package body HAC_Sys.Parser.Expressions is
       end loop;
     end Term;
 
-    procedure Check_HAT_Operator_Visibility (op : KeyWSymbol) is
+    procedure Check_HAT_Operator_Visibility (op : Symbol) is
     begin
       if not CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) then
         --  HAT is not USE-visible
@@ -768,7 +768,7 @@ package body HAC_Sys.Parser.Expressions is
       end if;
     end Check_HAT_Operator_Visibility;
 
-    additive_operator : KeyWSymbol;
+    additive_operator : Symbol;
     y                 : Exact_Subtyp;
 
     function VString_Concatenation return Boolean is
@@ -1080,7 +1080,7 @@ package body HAC_Sys.Parser.Expressions is
      Typ_ID_Index : in     Natural;
      X            : in out Co_Defs.Exact_Subtyp)
   is
-    Mem_Sy : constant KeyWSymbol := CD.Sy;
+    Mem_Sy : constant Symbol := CD.Sy;
   begin
     pragma Assert (CD.IdTab (Typ_ID_Index).entity = type_mark);
     InSymbol (CD);

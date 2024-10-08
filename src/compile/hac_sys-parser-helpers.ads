@@ -26,9 +26,9 @@ package HAC_Sys.Parser.Helpers is
   --
   procedure Need
     (CD      : in out Compiler_Data;
-     S       :        KeyWSymbol;
+     S       :        Symbol;
      E       :        Compile_Diagnostic;
-     Forgive :        KeyWSymbol := Dummy_Symbol);
+     Forgive :        Symbol := Dummy_Symbol);
 
   --  Issue error N, then skip all subsequent symbols
   --  that are not in the FSys set.
@@ -44,7 +44,7 @@ package HAC_Sys.Parser.Helpers is
   --
   procedure Error_then_Skip
     (CD   : in out Compiler_Data;
-     S    :        KeyWSymbol;
+     S    :        Symbol;
      N    :        Compile_Diagnostic;
      hint :        String := "");
 
@@ -89,16 +89,16 @@ package HAC_Sys.Parser.Helpers is
      Found    :        Exact_Subtyp;
      Expected :        Typ_Set);
 
-  function Op_Hint (OP : KeyWSymbol) return String;
+  function Op_Hint (OP : Symbol) return String;
 
   procedure Issue_Undefined_Operator_Error  --  Unary
     (CD       : in out Compiler_Data;
-     Operator :        KeyWSymbol;
+     Operator :        Symbol;
      Right    :        Exact_Subtyp);
 
   procedure Issue_Undefined_Operator_Error  --  Binary
     (CD          : in out Compiler_Data;
-     Operator    :        KeyWSymbol;
+     Operator    :        Symbol;
      Left, Right :        Exact_Subtyp);
 
   --  https://en.wikipedia.org/wiki/Type_conversion#Implicit_type_conversion
@@ -108,7 +108,7 @@ package HAC_Sys.Parser.Helpers is
   --
   procedure Forbid_Type_Coercion
     (CD          : in out Compiler_Data;
-     Operator    :        KeyWSymbol;
+     Operator    :        Symbol;
      Left, Right :        Exact_Subtyp);
 
   procedure Forbid_Type_Coercion
@@ -121,7 +121,7 @@ package HAC_Sys.Parser.Helpers is
 
   --  Singletons:
 
-  function Singleton (s : KeyWSymbol) return Symset;
+  function Singleton (s : Symbol) return Symset;
 
   --  Specific singletons:
 

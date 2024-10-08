@@ -3,13 +3,14 @@ with HAC_Sys.Defs,
 
 with HAT;
 
-with Ada.IO_Exceptions;
+with Ada.IO_Exceptions,
+     Ada.Streams;
 
 package body HAC_Sys.Scanner is
 
   use Co_Defs, Defs, Errors, HAT;
 
-  type Special_Symbol_Mapping is array (Character'(' ') .. ']') of KeyWSymbol;
+  type Special_Symbol_Mapping is array (Character'(' ') .. ']') of Symbol;
 
   Special_Symbols : constant Special_Symbol_Mapping :=
    ('+'    => Plus,
@@ -60,7 +61,7 @@ package body HAC_Sys.Scanner is
 
   type Ada_Keyword_Mapping_Pair is record
     st : VString;
-    sy : KeyWSymbol;
+    sy : Symbol;
   end record;
 
   type Ada_Keyword_Mapping_List is
@@ -143,17 +144,67 @@ package body HAC_Sys.Scanner is
         (+"XOR",          XOR_Symbol)
        );
 
+  subtype Size_test_a is String (1 .. 19);
+  subtype Size_test_b is Ada.Streams.Stream_Element_Array (1 .. 19);
+  se_equivalent_to_character : constant Boolean :=
+    Size_test_a'Size = Size_test_b'Size and
+    Size_test_a'Alignment = Size_test_b'Alignment;
+
   procedure NextCh (CD : in out Compiler_Data) is  --  Read Next Char; process line end
 
     procedure Get_Next_Line is
       idx : Integer := CD.CUD.input_line'First - 1;
       c   : Character;
+
+      procedure Get_Character_from_Buffer with Inline is
+
+        actually_read : Natural;
+
+        procedure Refill_Buffer is
+          use Ada.Streams;
+          se_buffer : Stream_Element_Array (1 .. Source_Buffer_String'Length);
+          for se_buffer'Address use CD.CUD.buffer'Address;
+          pragma Import (Ada, se_buffer);
+          last_read : Stream_Element_Offset;
+        begin
+          if se_equivalent_to_character then
+            --  Fast method:
+            CD.CUD.compiler_stream.Read (se_buffer, last_read);
+            actually_read := Natural (last_read);
+          else
+            --  Slow method:
+            actually_read := 0;
+            for cb of CD.CUD.buffer loop
+              Character'Read (CD.CUD.compiler_stream, cb);
+              actually_read := actually_read + 1;
+            end loop;
+          end if;
+        exception
+          when Ada.IO_Exceptions.End_Error =>
+            --  Happens with the slow method.
+            --  `actually_read` has been incremented correctly.
+            null;
+        end Refill_Buffer;
+
+      begin
+        if CD.CUD.buffer_position > CD.CUD.buffer_length then
+          Refill_Buffer;
+          if actually_read = 0 then
+            --  Refill failed, even a partial one -> the
+            --  stream is exhausted.
+            raise Ada.IO_Exceptions.End_Error;
+          end if;
+          CD.CUD.buffer_length := actually_read;
+          CD.CUD.buffer_position := 1;
+        end if;
+        c := CD.CUD.buffer (CD.CUD.buffer_position);
+        CD.CUD.buffer_position := CD.CUD.buffer_position + 1;
+      end Get_Character_from_Buffer;
+
     begin
       loop
-        Character'Read (CD.CUD.compiler_stream, c);
-        --  !! NB: if HAC ever happens to consume large input files,
-        --         the one-character-at-a-time stream input could become
-        --         a performance bottleneck.  --> buffered input (cf Zip-Ada)
+        Get_Character_from_Buffer;
+        --  Fast version of: Character'Read (CD.CUD.compiler_stream, c);
         exit when c = ASCII.LF;
         if c /= ASCII.CR then
           idx := idx + 1;
@@ -164,6 +215,7 @@ package body HAC_Sys.Scanner is
     exception
       when Ada.IO_Exceptions.End_Error =>
         if idx < CD.CUD.input_line'First then
+          --  `idx` was not changed after its initialization.
           raise;
         end if;
         CD.CUD.LL := idx;  --  Avoid trashing a non-empty line ending the stream.
@@ -810,10 +862,7 @@ package body HAC_Sys.Scanner is
 
     if CD.comp_dump_requested then
       Put_Line (CD.comp_dump, CD.CUD.input_line (1 .. CD.CUD.LL));
-      for i in 1 .. CD.CUD.CC - 2 loop
-        Put (CD.comp_dump, '.');
-      end loop;
-      Put_Line (CD.comp_dump, "^");
+      Put_Line (CD.comp_dump, (CD.CUD.CC - 2) * '.' & '^');  --  Draw: ".......^"
       Put
         (CD.comp_dump,
          '[' & CD.CUD.location.line'Image & ':' & CD.CUD.CC'Image & ":] " &

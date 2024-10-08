@@ -5,7 +5,7 @@ package body HAC_Sys.Defs is
     return a or b;
   end "+";
 
-  function "+" (a : Symset; b : KeyWSymbol) return Symset is
+  function "+" (a : Symset; b : Symbol) return Symset is
     c : Symset := a;
   begin
     c (b) := True;
@@ -17,7 +17,7 @@ package body HAC_Sys.Defs is
     return a and not b;
   end "-";
 
-  function "-" (a : Symset; b : KeyWSymbol) return Symset is
+  function "-" (a : Symset; b : Symbol) return Symset is
     c : Symset := a;
   begin
     c (b) := False;

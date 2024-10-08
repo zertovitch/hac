@@ -151,7 +151,7 @@ package body HAC_Sys.Builder is
       use type HAC_Integer;
     begin
       Create (map_file, Out_File, var_map_file_name);
-      Put_Line (map_file, "  -* Symbol Table *-");
+      Put_Line (map_file, "  -* Object Table *-");
       New_Line (map_file);
       Put_Line (map_file, "  LOC  Name       scope");
       Put_Line (map_file, "------------------------");
@@ -162,14 +162,13 @@ package body HAC_Sys.Builder is
             Ada.Integer_Text_IO.Put (map_file, Integer (Blk.adr_or_sz), 4);
             Put (map_file, A2S (Blk.name) & "   ");
           end if;
-          if Blk.lev = 1 then  --  TBD: check this, should be 0.
-            Put (map_file, " Global(");
-          else
-            Put (map_file, " Local (");
-          end if;
-          Put (map_file, Blk.lev'Image);
-          Put (map_file, ')');
-          New_Line (map_file);
+          Put_Line
+            (map_file,
+             (if Blk.lev = 1 then  --  TBD: check this, should be 0.
+                " Global ("
+              else
+                " Local  (") &
+             Blk.lev'Image & ')');
         end if;
       end loop;
       New_Line (map_file);

@@ -101,136 +101,139 @@ package HAC_Sys.Defs is
   --------------------
 
   -----------------------------------------------------------------------
-  ---------------------------------------------------------KeyWSymbol----
+  -------------------------------------------------------------Symbol----
   -----------------------------------------------------------------------
-  type KeyWSymbol is (   --  All keywords or symbols used by the compiler
-    IntCon,
-    FloatCon,
-    CharCon,
-    StrCon,
-    --
-    Plus,     --  +
-    Minus,    --  -
-    Times,    --  *
-    Divide,   --  /
-    Power,    --  **
-    --
-    EQL,      --  =
-    NEQ,      --  /=
-    GTR,      --  >
-    GEQ,      --  >=
-    LSS,      --  <
-    LEQ,      --  <=
-    --
-    LParent,
-    RParent,
-    LBrack,
-    RBrack,
-    Apostrophe,
-    Comma,
-    Semicolon,
-    Period,
-    Range_Double_Dot_Symbol,  --  ".." compound delimiter (RM 2.2)
-    Colon,
-    Alt,
-    Finger,
-    Becomes,
-    IDent,
-    Dummy_Symbol,       --  Symbol that is never scanned.
-    Ampersand_Symbol,
-    --                  Ada keywords
-    ABORT_Symbol,
-    ABS_Symbol,
-    ABSTRACT_Symbol,
-    ACCEPT_Symbol,
-    ACCESS_Symbol,
-    ALIASED_Symbol,
-    ALL_Symbol,
-    AND_Symbol,
-    AND_THEN_Symbol,  --  This symbol is never scanned as such.
-    ARRAY_Symbol,
-    AT_Symbol,
-    BEGIN_Symbol,
-    BODY_Symbol,
-    CASE_Symbol,
-    CONSTANT_Symbol,
-    DECLARE_Symbol,
-    DELAY_Symbol,
-    DELTA_Symbol,
-    DIGITS_Symbol,
-    DO_Symbol,
-    ELSE_Symbol,
-    ELSIF_Symbol,
-    END_Symbol,
-    ENTRY_Symbol,
-    EXCEPTION_Symbol,
-    EXIT_Symbol,
-    FOR_Symbol,
-    FUNCTION_Symbol,
-    GENERIC_Symbol,
-    GOTO_Symbol,
-    IF_Symbol,
-    IN_Symbol,
-    INTERFACE_Symbol,
-    IS_Symbol,
-    LIMITED_Symbol,
-    LOOP_Symbol,
-    MOD_Symbol,
-    NEW_Symbol,
-    NOT_Symbol,
-    NULL_Symbol,
-    OF_Symbol,
-    OR_Symbol,
-    OR_ELSE_Symbol,  --  This symbol is never scanned as such.
-    OTHERS_Symbol,
-    OUT_Symbol,
-    OVERRIDING_Symbol,
-    PACKAGE_Symbol,
-    PARALLEL_Symbol,
-    PRAGMA_Symbol,
-    PRIVATE_Symbol,
-    PROCEDURE_Symbol,
-    PROTECTED_Symbol,
-    RAISE_Symbol,
-    RANGE_Keyword_Symbol,  --  "range" reserved word (RM 2.9)
-    RECORD_Symbol,
-    REM_Symbol,
-    RENAMES_Symbol,
-    REQUEUE_Symbol,
-    RETURN_Symbol,
-    REVERSE_Symbol,
-    SELECT_Symbol,
-    SEPARATE_Symbol,
-    SOME_Symbol,
-    SUBTYPE_Symbol,
-    SYNCHRONIZED_Symbol,
-    TAGGED_Symbol,
-    TASK_Symbol,
-    TERMINATE_Symbol,
-    THEN_Symbol,
-    TYPE_Symbol,
-    UNTIL_Symbol,
-    USE_Symbol,
-    WHEN_Symbol,
-    WHILE_Symbol,
-    WITH_Symbol,
-    XOR_Symbol
-  );
+  type Symbol is  --  All symbols used by the compiler
+    (IntCon,
+     FloatCon,
+     CharCon,
+     StrCon,
+     --
+     Plus,     --  +
+     Minus,    --  -
+     Times,    --  *
+     Divide,   --  /
+     Power,    --  **
+     --
+     EQL,      --  =
+     NEQ,      --  /=
+     GTR,      --  >
+     GEQ,      --  >=
+     LSS,      --  <
+     LEQ,      --  <=
+     --
+     LParent,
+     RParent,
+     LBrack,
+     RBrack,
+     Apostrophe,
+     Comma,
+     Semicolon,
+     Period,
+     Range_Double_Dot_Symbol,  --  ".." compound delimiter (RM 2.2)
+     Colon,
+     Alt,
+     Finger,
+     Becomes,
+     IDent,
+     Dummy_Symbol,       --  Symbol that is never scanned.
+     Ampersand_Symbol,
+     --------------------
+     --                --
+     --  Ada keywords  --
+     --                --
+     --------------------
+     ABORT_Symbol,
+     ABS_Symbol,
+     ABSTRACT_Symbol,
+     ACCEPT_Symbol,
+     ACCESS_Symbol,
+     ALIASED_Symbol,
+     ALL_Symbol,
+     AND_Symbol,
+     AND_THEN_Symbol,  --  This symbol is never scanned as such.
+     ARRAY_Symbol,
+     AT_Symbol,
+     BEGIN_Symbol,
+     BODY_Symbol,
+     CASE_Symbol,
+     CONSTANT_Symbol,
+     DECLARE_Symbol,
+     DELAY_Symbol,
+     DELTA_Symbol,
+     DIGITS_Symbol,
+     DO_Symbol,
+     ELSE_Symbol,
+     ELSIF_Symbol,
+     END_Symbol,
+     ENTRY_Symbol,
+     EXCEPTION_Symbol,
+     EXIT_Symbol,
+     FOR_Symbol,
+     FUNCTION_Symbol,
+     GENERIC_Symbol,
+     GOTO_Symbol,
+     IF_Symbol,
+     IN_Symbol,
+     INTERFACE_Symbol,
+     IS_Symbol,
+     LIMITED_Symbol,
+     LOOP_Symbol,
+     MOD_Symbol,
+     NEW_Symbol,
+     NOT_Symbol,
+     NULL_Symbol,
+     OF_Symbol,
+     OR_Symbol,
+     OR_ELSE_Symbol,  --  This symbol is never scanned as such.
+     OTHERS_Symbol,
+     OUT_Symbol,
+     OVERRIDING_Symbol,
+     PACKAGE_Symbol,
+     PARALLEL_Symbol,
+     PRAGMA_Symbol,
+     PRIVATE_Symbol,
+     PROCEDURE_Symbol,
+     PROTECTED_Symbol,
+     RAISE_Symbol,
+     RANGE_Keyword_Symbol,  --  "range" reserved word (RM 2.9)
+     RECORD_Symbol,
+     REM_Symbol,
+     RENAMES_Symbol,
+     REQUEUE_Symbol,
+     RETURN_Symbol,
+     REVERSE_Symbol,
+     SELECT_Symbol,
+     SEPARATE_Symbol,
+     SOME_Symbol,
+     SUBTYPE_Symbol,
+     SYNCHRONIZED_Symbol,
+     TAGGED_Symbol,
+     TASK_Symbol,
+     TERMINATE_Symbol,
+     THEN_Symbol,
+     TYPE_Symbol,
+     UNTIL_Symbol,
+     USE_Symbol,
+     WHEN_Symbol,
+     WHILE_Symbol,
+     WITH_Symbol,
+     XOR_Symbol);
 
-  subtype Plus_Minus is KeyWSymbol range Plus .. Minus;
-  subtype Comparison_Operator is KeyWSymbol range EQL .. LEQ;
-  subtype Arithmetic_Binary_Operator is KeyWSymbol range Plus .. Power;
+  subtype Plus_Minus is Symbol range Plus .. Minus;
+  subtype Comparison_Operator is Symbol range EQL .. LEQ;
+  subtype Arithmetic_Binary_Operator is Symbol range Plus .. Power;
 
   ---------------------
   -- Sets of symbols --
   ---------------------
 
-  type Symset is array (KeyWSymbol) of Boolean;
+  type Symset is array (Symbol) of Boolean;
   --  The "+" and "-" reproduce the Pascal set operators.
   function "+" (a, b : Symset) return Symset;
-  function "+" (a : Symset; b : KeyWSymbol) return Symset;
+  function "+" (a : Symset; b : Symbol) return Symset;
   function "-" (a, b : Symset) return Symset;
-  function "-" (a : Symset; b : KeyWSymbol) return Symset;
+  function "-" (a : Symset; b : Symbol) return Symset;
   empty_symset : constant Symset := (others => False);
 
   -----------------

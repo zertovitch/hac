@@ -23,9 +23,9 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Need
     (CD      : in out Compiler_Data;
-     S       :        KeyWSymbol;
+     S       :        Symbol;
      E       :        Compile_Diagnostic;
-     Forgive :        KeyWSymbol := Dummy_Symbol)
+     Forgive :        Symbol := Dummy_Symbol)
   is
     severity : Error_Severity := medium;
   begin
@@ -35,7 +35,7 @@ package body HAC_Sys.Parser.Helpers is
       if Forgive = Dummy_Symbol then
         severity := major;
       end if;
-      Error (CD, E, ": " & KeyWSymbol'Image (S) & " expected", severity => severity);
+      Error (CD, E, ": " & Symbol'Image (S) & " expected", severity => severity);
       if CD.Sy = Forgive then
         InSymbol (CD);
       end if;
@@ -76,7 +76,7 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Error_then_Skip
     (CD   : in out Compiler_Data;
-     S    :        KeyWSymbol;
+     S    :        Symbol;
      N    :        Compile_Diagnostic;
      hint :        String := "")
   is
@@ -103,10 +103,10 @@ package body HAC_Sys.Parser.Helpers is
               hint := hint & ", ";
             end if;
             first := False;
-            hint := hint & KeyWSymbol'Image (s);
+            hint := hint & Symbol'Image (s);
           end if;
         end loop;
-        hint := "Found: " & KeyWSymbol'Image (CD.Sy) & "; expected: " & hint;
+        hint := "Found: " & Symbol'Image (CD.Sy) & "; expected: " & hint;
         if stop_on_error then
           Error (CD, N, HAT.VStr_Pkg.To_String (hint), severity => major);
         end if;
@@ -274,7 +274,7 @@ package body HAC_Sys.Parser.Helpers is
        severity => major);
   end Type_Mismatch;
 
-  function Op_Hint (OP : KeyWSymbol) return String is
+  function Op_Hint (OP : Symbol) return String is
   --  Displayed as "operator (+) is not defined..."
   begin
     case OP is
@@ -296,7 +296,7 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Issue_Undefined_Operator_Error
     (CD       : in out Compiler_Data;
-     Operator :        KeyWSymbol;
+     Operator :        Symbol;
      Right    :        Exact_Subtyp)
   is
   begin
@@ -315,7 +315,7 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Issue_Undefined_Operator_Error
     (CD          : in out Compiler_Data;
-     Operator    :        KeyWSymbol;
+     Operator    :        Symbol;
      Left, Right :        Exact_Subtyp)
   is
   begin
@@ -351,7 +351,7 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Forbid_Type_Coercion
     (CD          : in out Compiler_Data;
-     Operator    :        KeyWSymbol;
+     Operator    :        Symbol;
      Left, Right :        Exact_Subtyp)
   is
   begin
@@ -376,7 +376,7 @@ package body HAC_Sys.Parser.Helpers is
        severity => major);
   end Forbid_Type_Coercion;
 
-  function Singleton (s : KeyWSymbol) return Symset is
+  function Singleton (s : Symbol) return Symset is
     res : Symset := empty_symset;
   begin
     res (s) := True;
