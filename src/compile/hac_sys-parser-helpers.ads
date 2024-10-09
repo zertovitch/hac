@@ -214,46 +214,47 @@ package HAC_Sys.Parser.Helpers is
     ENTRY_Symbol     |
     BEGIN_Symbol     |
     DECLARE_Symbol   => True,
-    others => False);
+    others           => False);
 
   Constant_Definition_Begin_Symbol : constant Symset :=
-   (Plus      |
-    Minus     |
-    IntCon    |
-    FloatCon  |
-    CharCon   |
-    IDent     => True,
-    others => False);
+   (Plus              |
+    Minus             |
+    integer_literal   |
+    real_literal      |
+    character_literal |
+    IDent             => True,
+    others            => False);
 
   Declaration_X_Subprogram_Symbol : constant Symset :=
-    (IDent            |
-     PACKAGE_Symbol   |
-     SUBTYPE_Symbol   |
-     TYPE_Symbol      |
-     TASK_Symbol      |
-     USE_Symbol       => True,
-     others => False);
+    (IDent          |
+     PACKAGE_Symbol |
+     SUBTYPE_Symbol |
+     TYPE_Symbol    |
+     TASK_Symbol    |
+     USE_Symbol     => True,
+     others         => False);
 
   Declaration_Symbol : constant Symset :=
     Declaration_X_Subprogram_Symbol +
     (PROCEDURE_Symbol |
      FUNCTION_Symbol  => True,
-     others => False);
+     others           => False);
 
   Primary_Begin_Symbol : constant Symset :=
-   (IntCon     |
-    FloatCon   |
-    CharCon    |
-    IDent      |
-    LParent    => True,
-    others => False);
+   (integer_literal   |
+    real_literal      |
+    character_literal |
+    string_literal    |
+    IDent             |
+    LParent           => True,
+    others            => False);
 
   Fail_after_FOR : constant Symset :=
     (IN_Symbol               |
      Range_Double_Dot_Symbol |
      LOOP_Symbol             |
      END_Symbol              => True,
-     others => False);
+     others                  => False);
 
   Plus_Minus_Set : constant Symset :=
     (Plus_Minus => True, others => False);
@@ -279,7 +280,7 @@ package HAC_Sys.Parser.Helpers is
     SELECT_Symbol  |
     ACCEPT_Symbol  |
     DELAY_Symbol   => True,
-    others => False);
+    others         => False);
 
   Symbols_after_Subprogram_Identifier : constant Symset :=
     (LParent | RETURN_Symbol | IS_Symbol | Semicolon |

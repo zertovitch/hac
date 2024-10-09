@@ -101,13 +101,14 @@ package HAC_Sys.Defs is
   --------------------
 
   -----------------------------------------------------------------------
-  -------------------------------------------------------------Symbol----
+  ------------------------ Symbol - All symbols used by the compiler ----
   -----------------------------------------------------------------------
-  type Symbol is  --  All symbols used by the compiler
-    (IntCon,
-     FloatCon,
-     CharCon,
-     StrCon,
+
+  type Symbol is
+    (integer_literal,
+     real_literal,
+     character_literal,
+     string_literal,
      --
      Plus,     --  +
      Minus,    --  -

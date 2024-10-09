@@ -382,10 +382,10 @@ package body HAC_Sys.Scanner is
           HAC_Integer'Image (CD.INum) & '#' & s (s'First .. l);
       begin
         if has_point then
-          CD.Sy   := FloatCon;
+          CD.Sy   := real_literal;
           CD.RNum := HAC_Float'Value (complete_string);
         else
-          CD.Sy   := IntCon;
+          CD.Sy   := integer_literal;
           CD.INum := HAC_Integer'Value (complete_string);
         end if;
       exception
@@ -420,7 +420,7 @@ package body HAC_Sys.Scanner is
         return;
       end if;
       --  Read decimal part.
-      CD.Sy := FloatCon;
+      CD.Sy := real_literal;
       CD.RNum := HAC_Float (CD.INum);
       e := 0;
       while Character_Types (CD.CUD.c) = Number loop
@@ -450,7 +450,7 @@ package body HAC_Sys.Scanner is
     begin
       K       := 0;
       CD.INum := 0;
-      CD.Sy   := IntCon;
+      CD.Sy   := integer_literal;
       if skip_leading_integer then
         --  Example: a naughty person has put ".123" in his/her code.
         --  An error is already emmitted at this point but we continue
@@ -556,7 +556,7 @@ package body HAC_Sys.Scanner is
       end if;
       --  Until now, case (5) to (9) are treated.
       if C2 = ''' then  --  Cases (1), (2)
-        CD.Sy := CharCon;
+        CD.Sy := character_literal;
         CD.INum := Character'Pos (C1);
         NextCh (CD);
         NextCh (CD);
@@ -651,7 +651,7 @@ package body HAC_Sys.Scanner is
           null;  --  Continue
         end if;
       end loop;
-      CD.Sy    := StrCon;
+      CD.Sy    := string_literal;
       CD.SLeng := lit_len;
       CD.INum  := HAC_Integer (CD.Strings_Table_Top + 1);
       --
@@ -870,11 +870,11 @@ package body HAC_Sys.Scanner is
       case CD.Sy is
         when IDent =>
           Put (CD.comp_dump, ": " & A2S (CD.Id));
-        when IntCon =>
+        when integer_literal =>
           Put (CD.comp_dump, ": " & HAC_Integer'Image (CD.INum));
-        when FloatCon =>
+        when real_literal =>
           Put (CD.comp_dump, ": " & HAC_Float'Image (CD.RNum));
-        when StrCon =>
+        when string_literal =>
           Put (CD.comp_dump, ": """);
           for i in Integer (CD.INum) .. Integer (CD.INum) + CD.SLeng - 1 loop
             Put (CD.comp_dump, CD.Strings_Constants_Table (i));

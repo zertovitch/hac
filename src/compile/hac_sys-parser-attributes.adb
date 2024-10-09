@@ -31,14 +31,13 @@ package body HAC_Sys.Parser.Attributes is
       Error (CD, err_general_error, "unknown attribute: " & attr_ID, severity => major);
   end Which_Attribute;
 
-  procedure Array_Subtype_Attribute (
-    CD                : in out Co_Defs.Compiler_Data;
-    Level             : in     Defs.Nesting_Level;
-    FSys              : in     Defs.Symset;
-    Array_Index       : in     Natural;
-    attr              : in     Attribute;
-    xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp
-  )
+  procedure Array_Subtype_Attribute
+    (CD                : in out Co_Defs.Compiler_Data;
+     Level             : in     Defs.Nesting_Level;
+     FSys              : in     Defs.Symset;
+     Array_Index       : in     Natural;
+     attr              : in     Attribute;
+     xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp)
   is
     use Co_Defs, Defs, Helpers, Errors;
     A : ATabEntry := CD.Arrays_Table (Array_Index);

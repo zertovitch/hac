@@ -35,7 +35,7 @@ package body HAC_Sys.Parser.Expressions is
     if not Constant_Definition_Begin_Symbol (CD.Sy) then
       return;
     end if;
-    if CD.Sy = CharCon then  --  Untyped character constant, occurs only in ranges.
+    if CD.Sy = character_literal then  --  Untyped character constant, occurs only in ranges.
       Construct_Root (C.TP, Chars);
       C.I  := CD.INum;
       In_Symbol;
@@ -69,14 +69,17 @@ package body HAC_Sys.Parser.Expressions is
             end if;
           end if;  --  X /= 0
           In_Symbol;
-        when IntCon =>
+
+        when integer_literal =>
           C.TP.Construct_Root (Ints);
-          C.I  := Sign * CD.INum;
+          C.I := Sign * CD.INum;
           In_Symbol;
-        when FloatCon =>
+
+        when real_literal =>
           C.TP.Construct_Root (Floats);
-          C.R  := HAC_Float (Sign) * CD.RNum;
+          C.R := HAC_Float (Sign) * CD.RNum;
           In_Symbol;
+
         when others =>
           Error_then_Skip (CD, FSys_ND, err_illegal_symbol_for_a_number_declaration);
       end case;
@@ -92,7 +95,7 @@ package body HAC_Sys.Parser.Expressions is
      FSys    : in     Defs.Symset;
      V       : in out Co_Defs.Exact_Subtyp)
   is
-    --
+
     procedure Record_Field_Selector is
       Field_Offset, Field_Id : Integer;
       use type Alfa;
@@ -120,7 +123,7 @@ package body HAC_Sys.Parser.Expressions is
       end if;
       In_Symbol (CD);
     end Record_Field_Selector;
-    --
+
     procedure Array_Coordinates_Selector is
       Array_Index_Typ : Exact_Subtyp;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
       use type HAC_Integer;
@@ -191,7 +194,7 @@ package body HAC_Sys.Parser.Expressions is
     begin
       Array_Indices :
       loop
-        In_Symbol (CD);  --  Consume '(' or ',' symbol.
+        In_Symbol (CD);  --  Consume '(', (wrongly) '[', or ',' symbol.
         Expression (CD, context, FSys + Comma_RParent + RBrack, Array_Index_Typ);
         indices := indices + 1;
         if V.TYP = Arrays then
@@ -223,7 +226,7 @@ package body HAC_Sys.Parser.Expressions is
         Error (CD, err_too_many_array_indices, indices'Image, dims'Image);
       end if;
     end Array_Coordinates_Selector;
-    --
+
   begin
     pragma Assert (Selector_Symbol_Loose (CD.Sy));  --  '.' or '(' or (wrongly) '['
     loop
@@ -478,125 +481,136 @@ package body HAC_Sys.Parser.Expressions is
       procedure Factor (FSys_Fact : Symset; X : out Exact_Subtyp) is     --  RM 4.4 (6)
 
         procedure Primary (FSys_Prim : Symset; X : out Exact_Subtyp) is  --  RM 4.4 (7)
-          LC_Mem : Integer;
+
+          procedure Process_Identifier is
+            ident_index : constant Integer := Locate_CD_Id (CD, context.level);
+            r : IdTabEntry renames CD.IdTab (ident_index);
+
+            procedure Process_Object_Identifier is
+              LC_Mem : constant Integer := CD.LC;
+            begin
+              if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
+                Emit_2
+                  (CD,
+                   (if r.normal then
+                      k_Push_Address           --  Composite: push "v'Access".
+                    else
+                      k_Push_Discrete_Value),  --  Composite: push "(a.all)'Access", that is, a.
+                   Operand_1_Type (r.lev),
+                   Operand_2_Type (r.adr_or_sz));
+
+                Selector (CD, context, FSys_Prim + Apostrophe, X);
+
+                if Standard_or_Enum_Typ (X.TYP) then
+                  --  We are at a leaf point of composite type selection,
+                  --  so the stack top is expected to contain a value, not
+                  --  an address (for an expression).
+                  Emit (CD, k_Dereference);
+                end if;
+              else
+                --  No selector.
+                Emit_2
+                  (CD,
+                   (if Standard_or_Enum_Typ (X.TYP) then
+                     (if r.normal then
+                       (if Discrete_Typ (r.xtyp.TYP) then
+                          k_Push_Discrete_Value   --  Push variable v's discrete value.
+                        else
+                          k_Push_Value)           --  Push variable v's value.
+                      else
+                        k_Push_Indirect_Value)    --  Push "a.all" (a is an access).
+                    elsif r.normal then
+                      k_Push_Address              --  Composite: push "v'Access".
+                    else
+                      k_Push_Discrete_Value),     --  Composite: push "(a.all)'Access, that is, a.
+                   Operand_1_Type (r.lev),
+                   Operand_2_Type (r.adr_or_sz));
+              end if;
+
+              if CD.Sy = Apostrophe then  --  Attribute on an object.
+                In_Symbol (CD);
+                Attributes.Object_Attribute (CD, context.level, FSys_Prim, X, LC_Mem, X);
+              else
+                --  The variable or parameter itself, not an attribute on it, has been read.
+                --  We check that it has been even written on the way to this expression.
+                Mark_Read_and_Check_Read_before_Written (CD, context, r);
+              end if;
+            end Process_Object_Identifier;
+
+          begin
+            In_Symbol (CD);
+            X := r.xtyp;
+
+            case r.entity is
+
+              when Object_Kind =>
+                Process_Object_Identifier;
+
+              when declared_number_or_enum_item =>
+                if X.TYP = Floats then
+                  --  Address is an index in the float constants table.
+                  Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.adr_or_sz));
+                else
+                  --  Here the address is actually the immediate (discrete) value.
+                  Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.adr_or_sz));
+                  --  The local subtype for the value V is the range V .. V.
+                  Ranges.Set_Singleton_Range (X, r.adr_or_sz);
+                end if;
+
+              when prozedure | prozedure_intrinsic =>
+                Error (CD, err_expected_constant_function_variable_or_subtype);
+
+              when funktion =>
+                Calls.Subprogram_or_Entry_Call
+                  (CD, context, FSys_Prim, ident_index, Normal_Procedure_Call);
+
+              when funktion_intrinsic =>
+                Standard_Functions.Standard_Function
+                  (CD, context, FSys_Prim, ident_index, SF_Code'Val (r.adr_or_sz), X);
+
+              when type_mark =>
+                Subtype_Prefixed_Expression (CD, context, FSys_Prim, ident_index, X);
+
+              when others =>
+                null;
+            end case;
+
+            if X.TYP = NOTYP and then CD.error_count = 0 then
+              Error
+                (CD, err_object_used_before_end_own_declaration,
+                 '"' & A2S (r.name_with_case) & """ ", severity => major);
+            end if;
+          end Process_Identifier;
+
         begin
           X := Undefined;
-          Test (CD, Primary_Begin_Symbol + StrCon, FSys_Prim, err_primary_unexpected_symbol);
+          Test (CD, Primary_Begin_Symbol, FSys_Prim, err_primary_unexpected_symbol);
 
           case CD.Sy is
 
-            when StrCon =>
+            when IDent =>
+              Process_Identifier;
+
+            when character_literal | integer_literal =>
+              --  Here we have a discrete literal.
+              X.Construct_Root (if CD.Sy = character_literal then Chars else Ints);
+              CD.target.Emit_Push_Discrete_Literal (CD.INum);
+              --  The local subtype for the value V is the range V .. V.
+              Ranges.Set_Singleton_Range (X, CD.INum);
+              In_Symbol (CD);
+
+            when real_literal =>
+              X.Construct_Root (Floats);
+              Emit_Push_Float_Literal (CD, CD.RNum);
+              In_Symbol (CD);
+
+            when string_literal =>
               Construct_Root (X, String_Literals);
               CD.target.Emit_Push_Discrete_Literals
                 (Operand_1_Type (CD.SLeng),  --  String Literal Length
                  Operand_2_Type (CD.INum));  --  Index To String IdTab
               In_Symbol (CD);
 
-            when IDent =>
-              declare
-                Ident_Index : constant Integer := Locate_CD_Id (CD, context.level);
-                r : IdTabEntry renames CD.IdTab (Ident_Index);
-              begin
-                In_Symbol (CD);
-                case r.entity is
-                  when declared_number_or_enum_item =>
-                    X := r.xtyp;
-                    if X.TYP = Floats then
-                      --  Address is an index in the float constants table.
-                      Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.adr_or_sz));
-                    else
-                      --  Here the address is actually the immediate (discrete) value.
-                      Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.adr_or_sz));
-                      --  The local subtype for the value V is the range V .. V.
-                      Ranges.Set_Singleton_Range (X, r.adr_or_sz);
-                    end if;
-                    --
-                  when Object_Kind =>
-                    X := r.xtyp;
-                    LC_Mem := CD.LC;
-                    if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
-                      Emit_2
-                        (CD,
-                         (if r.normal then
-                            k_Push_Address           --  Composite: push "v'Access".
-                          else
-                            k_Push_Discrete_Value),  --  Composite: push "(a.all)'Access", that is, a.
-                         Operand_1_Type (r.lev),
-                         Operand_2_Type (r.adr_or_sz));
-                      Selector (CD, context, FSys_Prim + Apostrophe, X);
-                      if Standard_or_Enum_Typ (X.TYP) then
-                        --  We are at a leaf point of composite type selection,
-                        --  so the stack top is expected to contain a value, not
-                        --  an address (for an expression).
-                        Emit (CD, k_Dereference);
-                      end if;
-                    else
-                      --  No selector.
-                      Emit_2
-                        (CD,
-                         (if Standard_or_Enum_Typ (X.TYP) then
-                           (if r.normal then
-                             (if Discrete_Typ (r.xtyp.TYP) then
-                                k_Push_Discrete_Value   --  Push variable v's discrete value.
-                              else
-                                k_Push_Value)           --  Push variable v's value.
-                            else
-                              k_Push_Indirect_Value)    --  Push "a.all" (a is an access).
-                          elsif r.normal then
-                            k_Push_Address              --  Composite: push "v'Access".
-                          else
-                            k_Push_Discrete_Value),     --  Composite: push "(a.all)'Access, that is, a.
-                         Operand_1_Type (r.lev),
-                         Operand_2_Type (r.adr_or_sz));
-                    end if;
-                    if CD.Sy = Apostrophe then
-                      In_Symbol (CD);
-                      Attributes.Object_Attribute (CD, context.level, FSys_Prim, X, LC_Mem, X);
-                    else
-                      --  The variable or parameter itself, not an attribute on it, has been read.
-                      --  We check that it has been even written on the way to this expression.
-                      Mark_Read_and_Check_Read_before_Written (CD, context, r);
-                    end if;
-
-                  when type_mark =>
-                    X := r.xtyp;
-                    Subtype_Prefixed_Expression (CD, context, FSys_Prim, Ident_Index, X);
-
-                  when prozedure | prozedure_intrinsic =>
-                    Error (CD, err_expected_constant_function_variable_or_subtype);
-
-                  when funktion =>
-                    X := r.xtyp;
-                    Calls.Subprogram_or_Entry_Call
-                      (CD, context, FSys_Prim, Ident_Index, Normal_Procedure_Call);
-
-                  when funktion_intrinsic =>
-                    Standard_Functions.Standard_Function
-                      (CD, context, FSys_Prim, Ident_Index, SF_Code'Val (r.adr_or_sz), X);
-
-                  when others =>
-                    null;
-                end case;
-                if X.TYP = NOTYP and then CD.error_count = 0 then
-                  Error
-                    (CD, err_object_used_before_end_own_declaration,
-                     '"' & A2S (r.name_with_case) & """ ", severity => major);
-                end if;
-              end;
-              --
-            when CharCon | IntCon | FloatCon =>  --  Literal character, integer or float.
-              if CD.Sy = FloatCon then
-                X.Construct_Root (Floats);
-                Emit_Push_Float_Literal (CD, CD.RNum);
-              else
-                --  Here we have a discrete literal: character or integer.
-                X.Construct_Root (if CD.Sy = CharCon then Chars else Ints);
-                CD.target.Emit_Push_Discrete_Literal (CD.INum);
-                --  The local subtype for the value V is the range V .. V.
-                Ranges.Set_Singleton_Range (X, CD.INum);
-              end if;
-              In_Symbol (CD);
-              --
             when LParent =>
               --  '(' : what is inside the parentheses is an
               --        expression of the lowest level.
@@ -606,10 +620,12 @@ package body HAC_Sys.Parser.Expressions is
                 Error (CD, err_not_yet_implemented, "aggregates (RM 4.3)", severity => major);
               end if;
               Need (CD, RParent, err_closing_parenthesis_missing);
-              --
+
             when others =>
               null;
+
           end case;
+
           if X.TYP = NOTYP and then CD.error_count = 0 then
             Error (CD, err_object_used_before_end_own_declaration, severity => major);
           end if;
@@ -619,6 +635,7 @@ package body HAC_Sys.Parser.Expressions is
 
       begin  --  Factor
         case CD.Sy is
+
           when ABS_Symbol =>
             In_Symbol (CD);
             Primary (FSys_Fact, X);
@@ -629,6 +646,7 @@ package body HAC_Sys.Parser.Expressions is
               when others => Error (CD, err_argument_to_std_function_of_wrong_type);
             end case;
             X.Construct_Root (X.TYP);  --  Forget subtype bounds
+
           when NOT_Symbol =>
             In_Symbol (CD);
             Primary (FSys_Fact, X);
@@ -637,6 +655,7 @@ package body HAC_Sys.Parser.Expressions is
               when NOTYP  => null;  --  Another error before.
               when others => Error (CD, err_resulting_type_should_be_Boolean);
             end case;
+
           when others =>
             Primary (FSys_Fact + highest_precedence_operator, X);
             if CD.Sy = Power then
@@ -670,6 +689,7 @@ package body HAC_Sys.Parser.Expressions is
           null;  --  Something is already wrong at this point; nothing to check or emit.
         else
           case Mult_OP is
+
             when Times =>     --  *
               if X.TYP in Numeric_Typ and then Y.TYP in Numeric_Typ then
                 if X.TYP = Y.TYP then
@@ -719,6 +739,7 @@ package body HAC_Sys.Parser.Expressions is
               else
                 Issue_Undefined_Operator_Error (CD, Mult_OP, X, Y);
               end if;
+
             when Divide =>    --  /
               if X.TYP in Numeric_Typ and then X.TYP = Y.TYP then
                 CD.target.Emit_Arithmetic_Binary_Instruction (Divide, X.TYP);
@@ -737,6 +758,7 @@ package body HAC_Sys.Parser.Expressions is
                 Error (CD, err_illegal_type_for_arithmetic_expression);
                 X.TYP := NOTYP;
               end if;
+
             when MOD_Symbol | REM_Symbol =>
               if X.TYP = Ints and Y.TYP = Ints then
                 if Mult_OP = MOD_Symbol then
@@ -748,6 +770,7 @@ package body HAC_Sys.Parser.Expressions is
                 Error (CD, err_mod_requires_integer_arguments);
                 X.TYP := NOTYP;
               end if;
+
             when others =>
               raise Internal_error with "Unknown operator in Term";
           end case;
@@ -771,7 +794,7 @@ package body HAC_Sys.Parser.Expressions is
     additive_operator : Symbol;
     y                 : Exact_Subtyp;
 
-    function VString_Concatenation return Boolean is
+    function Do_VString_Concatenation return Boolean is
     begin
       Check_HAT_Operator_Visibility (Ampersand_Symbol);
       --
@@ -828,9 +851,9 @@ package body HAC_Sys.Parser.Expressions is
       end if;
       Construct_Root (X, VStrings);
       return True;
-    end VString_Concatenation;
+    end Do_VString_Concatenation;
 
-    function String_Concatenation return Boolean is
+    function Do_String_Concatenation return Boolean is
       --  Arguments can be one of the three internal representations of String:
       --      1)  sv  : VString (the parser sees the TYP Strings_as_VStrings)
       --      2)  sc  : constrained array of character
@@ -931,7 +954,7 @@ package body HAC_Sys.Parser.Expressions is
       end if;
       Construct_Root (X, Strings_as_VStrings);
       return True;
-    end String_Concatenation;
+    end Do_String_Concatenation;
 
   begin  --  Simple_Expression
     if CD.Sy in Plus_Minus then
@@ -947,6 +970,7 @@ package body HAC_Sys.Parser.Expressions is
       then
         Check_HAT_Operator_Visibility (additive_operator);
         case Plus_Minus (additive_operator) is
+
           when Plus =>
             case X.TYP is
               when String_Literals =>                              --  +"Hello"
@@ -970,6 +994,7 @@ package body HAC_Sys.Parser.Expressions is
                 Issue_Undefined_Operator_Error (CD, additive_operator, X);
             end case;
             Construct_Root (X, VStrings);
+
           when Minus =>
             if X.TYP = VStrings then                               --  -v
               Construct_Root (X, Strings_as_VStrings);
@@ -989,7 +1014,7 @@ package body HAC_Sys.Parser.Expressions is
       Term (FSys + binary_adding_operator, X);
     end if;
     --
-    --  We collect here possible terms: a {+ b}      RM 4.4 (4)
+    --  Binary operators: we collect here possible terms: a {+ b}      RM 4.4 (4)
     --
     while binary_adding_operator (CD.Sy) loop
       additive_operator := CD.Sy;
@@ -999,6 +1024,7 @@ package body HAC_Sys.Parser.Expressions is
         null;  --  Something is already wrong at this point; nothing to check or emit.
       else
         case additive_operator is
+
           when OR_Symbol =>
             if X.TYP = Bools and y.TYP = Bools then
               Emit (CD, k_OR_Boolean);
@@ -1006,6 +1032,7 @@ package body HAC_Sys.Parser.Expressions is
               Error (CD, err_resulting_type_should_be_Boolean);
               X.TYP := NOTYP;
             end if;
+
           when XOR_Symbol =>
             if X.TYP = Bools and y.TYP = Bools then
               Emit (CD, k_XOR_Boolean);
@@ -1013,6 +1040,7 @@ package body HAC_Sys.Parser.Expressions is
               Error (CD, err_resulting_type_should_be_Boolean);
               X.TYP := NOTYP;
             end if;
+
           when Plus | Minus =>
             if X.TYP in Numeric_Typ and then y.TYP in Numeric_Typ then
               if X.TYP = y.TYP then
@@ -1050,10 +1078,12 @@ package body HAC_Sys.Parser.Expressions is
             else
               Issue_Undefined_Operator_Error (CD, additive_operator, X, y);
             end if;
+
           when Ampersand_Symbol =>
-            if not (VString_Concatenation or else String_Concatenation) then
+            if not (Do_VString_Concatenation or else Do_String_Concatenation) then
               Issue_Undefined_Operator_Error (CD, additive_operator, X, y);
             end if;
+
           when others =>
             --  Doesn't happen: Binary_Adding_Operators(OP) is True.
             null;
