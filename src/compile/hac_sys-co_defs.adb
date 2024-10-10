@@ -11,18 +11,6 @@ package body HAC_Sys.Co_Defs is
     Root.Is_Range := False;
   end Construct_Root;
 
-  function Construct_Root (Typ : Typen) return Exact_Typ is
-    result : Exact_Typ;
-  begin
-    Construct_Root (result, Typ);
-    return result;
-  end Construct_Root;
-
-  function Construct_Undefined return Exact_Typ is
-  begin
-    return Construct_Root (NOTYP);
-  end Construct_Undefined;
-
   overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen) is
   begin
     Construct_Root (Exact_Typ (Root), Typ);  --  Call parent method.
@@ -30,17 +18,12 @@ package body HAC_Sys.Co_Defs is
     Root.Discrete_Last  := HAC_Integer'Last;
   end Construct_Root;
 
-  overriding function Construct_Root (Typ : Typen) return Exact_Subtyp is
+  function Construct_Root (Typ : Typen) return Exact_Subtyp is
     result : Exact_Subtyp;
   begin
     Construct_Root (result, Typ);
     return result;
   end Construct_Root;
-
-  overriding function Construct_Undefined return Exact_Subtyp is
-  begin
-    return Construct_Root (NOTYP);
-  end Construct_Undefined;
 
   procedure Elevate_to_Maybe (item : in out No_Maybe_Yes) is
   begin
@@ -180,5 +163,5 @@ package body HAC_Sys.Co_Defs is
   end Decrement_Nesting_or_Descending_Level;
 
 begin
-  undefined_subtyp := Construct_Undefined;
+  undefined_subtyp.Construct_Root (NOTYP);
 end HAC_Sys.Co_Defs;

@@ -232,7 +232,7 @@ package body HAC_Sys.Targets.Semantics is
       exit when idx = No_Id;
       exit when Integer (list.Length) = max_list;
       declare
-        item : IdTabEntry renames m.CD.IdTab (idx);
+        item : Identifier_Table_Entry renames m.CD.IdTab (idx);
         use type Defs.Nesting_Level;
       begin
         if Starts_With (item.name, up_prefix) then

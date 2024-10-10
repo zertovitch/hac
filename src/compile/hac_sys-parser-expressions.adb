@@ -128,7 +128,7 @@ package body HAC_Sys.Parser.Expressions is
       Array_Index_Typ : Exact_Subtyp;  --  Evaluation of "i", "j+7", "k*2" in "a (i, j+7, k*2)".
       use type HAC_Integer;
 
-      procedure Emit_Index_Instructions (ATI : Integer; ATE : ATabEntry) is
+      procedure Emit_Index_Instructions (ATI : Integer; ATE : Array_Table_Entry) is
         range_check_needed : constant Boolean :=
           Array_Index_Typ.Discrete_First < ATE.Index_xTyp.Discrete_First or else
           Array_Index_Typ.Discrete_Last  > ATE.Index_xTyp.Discrete_Last;
@@ -148,7 +148,7 @@ package body HAC_Sys.Parser.Expressions is
         end if;
       end Emit_Index_Instructions;
 
-      procedure Show_Range_Error (ATE : ATabEntry) is
+      procedure Show_Range_Error (ATE : Array_Table_Entry) is
       begin
         Error
           (CD, err_range_constraint_error,
@@ -178,7 +178,7 @@ package body HAC_Sys.Parser.Expressions is
               severity => minor);
       end Show_Range_Error;
 
-      procedure Show_Type_Mismatch_Error (ATE : ATabEntry) is
+      procedure Show_Type_Mismatch_Error (ATE : Array_Table_Entry) is
       begin
         Type_Mismatch
           (CD,
@@ -200,7 +200,7 @@ package body HAC_Sys.Parser.Expressions is
         if V.TYP = Arrays then
           declare
             ATI : constant Integer := V.Ref;
-            ATE : ATabEntry renames CD.Arrays_Table (ATI);
+            ATE : Array_Table_Entry renames CD.Arrays_Table (ATI);
           begin
             if first_dimension then
               dims := ATE.dimensions;
@@ -484,7 +484,7 @@ package body HAC_Sys.Parser.Expressions is
 
           procedure Process_Identifier is
             ident_index : constant Integer := Locate_CD_Id (CD, context.level);
-            r : IdTabEntry renames CD.IdTab (ident_index);
+            r : Identifier_Table_Entry renames CD.IdTab (ident_index);
 
             procedure Process_Object_Identifier is
               LC_Mem : constant Integer := CD.LC;

@@ -140,7 +140,7 @@ package body HAC_Sys.Compiler is
     --
     for I in 1 .. CD.Id_Count loop
       declare
-        r : IdTabEntry renames CD.IdTab (I);
+        r : Identifier_Table_Entry renames CD.IdTab (I);
       begin
         Put (CD.comp_dump, I, 4);
         Show_Padded (A2S (r.name_with_case), Alng);
@@ -192,7 +192,7 @@ package body HAC_Sys.Compiler is
     Put_Line (CD.comp_dump, " Blocks" & Alng * ' ' & "  Last_ID FPar LPar PSze Vsze");
     for I in 1 .. CD.Blocks_Count loop
       declare
-        r : BTabEntry renames CD.Blocks_Table (I);
+        r : Block_Table_Entry renames CD.Blocks_Table (I);
       begin
         Put (CD.comp_dump, I, 4);
         Show_Padded (A2S (r.Id), Alng);
@@ -217,7 +217,7 @@ package body HAC_Sys.Compiler is
       --
       for i in 1 .. CD.Arrays_Count loop
         declare
-          r : ATabEntry renames CD.Arrays_Table (i);
+          r : Array_Table_Entry renames CD.Arrays_Table (i);
           package TIO is new Enumeration_IO (Typen);
           use TIO;
           typ_img : String (1 .. Typen'Width);

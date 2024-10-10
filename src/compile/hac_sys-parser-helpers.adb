@@ -843,7 +843,7 @@ package body HAC_Sys.Parser.Helpers is
     end loop;
   end Check_Incomplete_Definitions;
 
-  function Nice_Image (item : IdTabEntry) return String is
+  function Nice_Image (item : Identifier_Table_Entry) return String is
   ((if item.decl_kind in Parameter_Kind then
       "parameter"
     else
@@ -861,7 +861,7 @@ package body HAC_Sys.Parser.Helpers is
   procedure Mark_Read_and_Check_Read_before_Written
     (CD      : in out Compiler_Data;
      context : in     Flow_Context;
-     item    : in out IdTabEntry)
+     item    : in out Identifier_Table_Entry)
   is
   begin
     Elevate_to_Maybe_or_Yes (item.is_read, context);
@@ -889,7 +889,7 @@ package body HAC_Sys.Parser.Helpers is
     (CD    : in out Compiler_Data;
      level : in     Defs.Nesting_Level)
   is
-    procedure Check_Item (item : IdTabEntry) is
+    procedure Check_Item (item : Identifier_Table_Entry) is
 
       already_insulted : Natural := 0;
 
@@ -993,12 +993,12 @@ package body HAC_Sys.Parser.Helpers is
      id_idx     : in     Natural)
   return Natural
   is
-    id_table_entry : IdTabEntry renames CD.IdTab (id_idx);
+    id_table_entry : Identifier_Table_Entry renames CD.IdTab (id_idx);
     block_idx : constant Integer := id_table_entry.block_or_pkg_ref;
   begin
     pragma Assert (id_table_entry.entity in prozedure | funktion);
     declare
-      block : BTabEntry renames CD.Blocks_Table (block_idx);
+      block : Block_Table_Entry renames CD.Blocks_Table (block_idx);
     begin
       return
         (if block.First_Param_Id_Idx > block.Last_Param_Id_Idx then

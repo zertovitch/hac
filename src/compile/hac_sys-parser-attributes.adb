@@ -40,7 +40,7 @@ package body HAC_Sys.Parser.Attributes is
      xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp)
   is
     use Co_Defs, Defs, Helpers, Errors;
-    A : ATabEntry := CD.Arrays_Table (Array_Index);
+    A : Array_Table_Entry := CD.Arrays_Table (Array_Index);
     Low, High : Index;
     N : Constant_Rec;
     use Compiler.PCode_Emit, Expressions, PCode, Scanner;
@@ -156,7 +156,7 @@ package body HAC_Sys.Parser.Attributes is
      xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp)
   is
     use Co_Defs, Defs, Helpers, Errors;
-    Typ_ID : IdTabEntry renames CD.IdTab (Typ_ID_Index);
+    Typ_ID : Identifier_Table_Entry renames CD.IdTab (Typ_ID_Index);
     S : Exact_Subtyp renames Typ_ID.xtyp;
     attr_ID : constant String := A2S (CD.Id);
     attr : Attribute;

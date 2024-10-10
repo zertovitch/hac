@@ -40,7 +40,7 @@ package body HAC_Sys.Parser.Type_Def is
     Scanner.In_Symbol (CD);
     Need (CD, IS_Symbol, err_IS_missing);
     declare
-      New_T : IdTabEntry renames CD.IdTab (T1);
+      New_T : Identifier_Table_Entry renames CD.IdTab (T1);
     begin
       if is_subtype then
         Subtype_Indication
@@ -132,7 +132,7 @@ package body HAC_Sys.Parser.Type_Def is
     end if;
     arr_dimensions := 1 + recursive_dimensions;
     declare
-      New_A : ATabEntry renames CD.Arrays_Table (arr_tab_ref);
+      New_A : Array_Table_Entry renames CD.Arrays_Table (arr_tab_ref);
     begin
       --  New_A.Index_xTyp already set by Enter_Array.
       New_A.Array_Size   := arr_size;
@@ -164,7 +164,7 @@ package body HAC_Sys.Parser.Type_Def is
           enum_count := enum_count + 1;
           Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, declared_number_or_enum_item, forward_id_idx);
           declare
-            new_enum_item : IdTabEntry renames CD.IdTab (CD.Id_Count);
+            new_enum_item : Identifier_Table_Entry renames CD.IdTab (CD.Id_Count);
           begin
             new_enum_item.xtyp          := xTP;
             new_enum_item.adr_or_sz     := HAC_Integer (enum_count - 1);  --  RM 3.5.1 (7): position begins with 0.
@@ -312,7 +312,7 @@ package body HAC_Sys.Parser.Type_Def is
         return;  --  Error already issued due to undefined identifier
       end if;
       declare
-        Id_T : IdTabEntry renames CD.IdTab (Ident_Index);
+        Id_T : Identifier_Table_Entry renames CD.IdTab (Ident_Index);
       begin
         if Id_T.entity = type_mark then
           xTP   := Id_T.xtyp;

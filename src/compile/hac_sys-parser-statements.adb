@@ -22,7 +22,7 @@ package body HAC_Sys.Parser.Statements is
      check_is_variable :        Boolean)
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
-    var : IdTabEntry renames CD.IdTab (var_id_index);
+    var : Identifier_Table_Entry renames CD.IdTab (var_id_index);
     X, Y  : Exact_Subtyp;
     X_Len : Natural;
     --

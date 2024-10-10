@@ -91,7 +91,7 @@ package body HAC_Sys.Parser is
           while T0 < CD.Id_Count loop
             T0 := T0 + 1;
             declare
-              r : IdTabEntry renames CD.IdTab (T0);
+              r : Identifier_Table_Entry renames CD.IdTab (T0);
             begin
               r.xtyp                  := xTP;
               r.normal                := ValParam;

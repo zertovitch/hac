@@ -407,7 +407,7 @@ package HAC_Sys.Parser.Helpers is
   procedure Mark_Read_and_Check_Read_before_Written
     (CD      : in out Compiler_Data;
      context : in     Flow_Context;
-     item    : in out IdTabEntry);
+     item    : in out Identifier_Table_Entry);
 
   --  Check usage of variables and parameters
   --  after the last statement.

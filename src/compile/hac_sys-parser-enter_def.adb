@@ -20,7 +20,7 @@ package body HAC_Sys.Parser.Enter_Def is
     end if;
     CD.Blocks_Count := CD.Blocks_Count + 1;
     declare
-      New_B : BTabEntry renames CD.Blocks_Table (CD.Blocks_Count);
+      New_B : Block_Table_Entry renames CD.Blocks_Table (CD.Blocks_Count);
     begin
       New_B.Id                 := CD.IdTab (Tptr).name;
       New_B.Last_Id_Idx        := 0;

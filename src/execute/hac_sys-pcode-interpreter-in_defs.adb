@@ -146,7 +146,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
       while H2 /= 0 loop
         --  [P2Ada]: WITH instruction
         declare
-          P2Ada_Var_7 : IdTabEntry renames CD.IdTab (H2);
+          P2Ada_Var_7 : Identifier_Table_Entry renames CD.IdTab (H2);
           use Defs;
         begin
           if P2Ada_Var_7.entity in Object_Kind then

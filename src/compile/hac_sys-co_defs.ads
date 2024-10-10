@@ -51,11 +51,6 @@ package HAC_Sys.Co_Defs is
   procedure Construct_Root (Root : out Exact_Typ; Typ : Typen)
   with Inline;
 
-  function Construct_Root (Typ : Typen) return Exact_Typ
-  with Inline;
-
-  function Construct_Undefined return Exact_Typ;
-
   ---------------------
   --  Exact subtype  --
   ---------------------
@@ -68,22 +63,20 @@ package HAC_Sys.Co_Defs is
   overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen)
   with Inline;
 
-  overriding function Construct_Root (Typ : Typen) return Exact_Subtyp
+  function Construct_Root (Typ : Typen) return Exact_Subtyp
   with Inline;
-
-  overriding function Construct_Undefined return Exact_Subtyp;
 
   undefined_subtyp : Exact_Subtyp;  --  This global variable is initialized.
 
   -------------------------------------------------------------------------
   ------------------------------------------------------------ATabEntry----
   -------------------------------------------------------------------------
-  --  Array-Table Entry : Array table entry represents an array.  Each entry
-  --  contains the following fields (fields marked with a C are used only by
+  --  An Array Table Entry represents an array.  Each entry contains
+  --  the following fields (fields marked with a C are used only by
   --  the compiler and ignored by the interpreter):
   --
-  type ATabEntry is record
-    Index_xTyp   : Exact_Subtyp;  --  C  Type of the index.
+  type Array_Table_Entry is record
+    Index_xTyp   : Exact_Subtyp;  --  C  Subtype of the index (with bounds).
     Element_Size : Index;         --     Size of an element.
     Element_xTyp : Exact_Subtyp;  --  C  Subtype of the elements of the array.
                                   --     If the elements of the array are themselves
@@ -96,7 +89,7 @@ package HAC_Sys.Co_Defs is
   -------------------------------------------------------------------------
   ------------------------------------------------------------BTabEntry----
   -------------------------------------------------------------------------
-  --  Block-table Entry : Each entry represents a subprogram or a record type.
+  --  Block Table Entry : Each entry represents a subprogram or a record type.
   --
   --  A subprogram activation record consists of:
   --
@@ -107,7 +100,7 @@ package HAC_Sys.Co_Defs is
   --
   --  Once again, fields marked with C are used only by the compiler
   --
-  type BTabEntry is record
+  type Block_Table_Entry is record
     Id                 : Alfa;         --   Name of the block
     Last_Id_Idx        : Index;        -- C index of the last identifier in this block
     First_Param_Id_Idx : Index;        -- C index of the first parameter in this block
@@ -178,7 +171,7 @@ package HAC_Sys.Co_Defs is
   ------------------------------
   --  Identifier Table Entry  --
   ------------------------------
-  type IdTabEntry is record
+  type Identifier_Table_Entry is record
     name             : Alfa;                   --  Identifier name in ALL CAPS
     name_with_case   : Alfa;                   --  Identifier name with original casing
     link             : Index;                  --  Previous declaration on same nesting level, or No_Id
@@ -229,11 +222,11 @@ package HAC_Sys.Co_Defs is
   --  Compiler tables  --
   -----------------------
 
-  type    Arrays_Table_Type            is array (1 .. AMax)             of ATabEntry;
-  type    Blocks_Table_Type            is array (0 .. BMax)             of BTabEntry;
+  type    Arrays_Table_Type            is array (1 .. AMax)             of Array_Table_Entry;
+  type    Blocks_Table_Type            is array (0 .. BMax)             of Block_Table_Entry;
   type    Display_Type                 is array (Nesting_Level)         of Integer;
   type    Entries_Table_Type           is array (0 .. entry_table_max)  of Index;
-  type    Identifier_Table_Type        is array (0 .. Id_Table_Max)     of IdTabEntry;
+  type    Identifier_Table_Type        is array (0 .. Id_Table_Max)     of Identifier_Table_Entry;
   type    Nested_Loop_Table_Type       is array (1 .. loop_nesting_max) of Loop_Info;
   type    Packages_Table_Type          is array (0 .. package_table_max)             of Package_Table_Entry;
   type    Tasks_Definitions_Table_Type is array (0 .. TaskMax)          of Index;

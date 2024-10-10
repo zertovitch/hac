@@ -50,10 +50,10 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     procedure Do_Exchange_with_External is
       use Co_Defs;
       use Co_Defs.Exported_Procedure_Mapping;
-      proc_entry : IdTabEntry renames CD.IdTab (Integer (IR.Y));
+      proc_entry : Identifier_Table_Entry renames CD.IdTab (Integer (IR.Y));
       proc_name  : constant String := A2S (proc_entry.name);
       block_idx  : constant Index  := proc_entry.block_or_pkg_ref;
-      block      : BTabEntry renames CD.Blocks_Table (block_idx);
+      block      : Block_Table_Entry renames CD.Blocks_Table (block_idx);
       base       : constant Positive := Curr_TCB.T - block.PSize + 1;
       --
       --  The size of parameters' data can be larger that the size

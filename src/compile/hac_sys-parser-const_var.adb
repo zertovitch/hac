@@ -183,7 +183,7 @@ package body HAC_Sys.Parser.Const_Var is
         while T0 < T1 loop
           T0 := T0 + 1;
           declare
-            r : IdTabEntry renames CD.IdTab (T0);
+            r : Identifier_Table_Entry renames CD.IdTab (T0);
           begin
             r.entity                := (if is_constant then constant_object else variable_object);
             r.is_referenced         := False;
