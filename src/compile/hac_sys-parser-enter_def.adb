@@ -84,7 +84,7 @@ package body HAC_Sys.Parser.Enter_Def is
        link                  => last_id,
        entity                => K,
        decl_kind             => complete,
-       xtyp                  => Undefined,
+       xtyp                  => undefined_subtyp,
        block_or_pkg_ref      => 0,
        normal                => True,
        lev                   => Level,

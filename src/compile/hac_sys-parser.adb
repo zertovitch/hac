@@ -38,7 +38,7 @@ package body HAC_Sys.Parser is
     procedure Formal_Parameter_List is
       Sz, X, T0  : Integer;
       ValParam   : Boolean;
-      xTP        : Exact_Subtyp := Undefined;
+      xTP        : Exact_Subtyp := undefined_subtyp;
       param_kind : Parameter_Kind;
       in_keyword : Boolean;
     begin
@@ -442,7 +442,7 @@ package body HAC_Sys.Parser is
       CD.IdTab (block_data.block_id_index).block_or_pkg_ref := subprogram_block_index;
     end if;
     CD.Display (block_data.context.level) := subprogram_block_index;
-    CD.IdTab (block_data.block_id_index).xtyp := Undefined;
+    CD.IdTab (block_data.block_id_index).xtyp := undefined_subtyp;
     CD.Blocks_Table (subprogram_block_index).First_Param_Id_Idx := CD.Id_Count + 1;
     if CD.Sy = LParent then
       Formal_Parameter_List;

@@ -50,7 +50,7 @@ package body HAC_Sys.Parser.Calls is
   is
     K : Integer;
   begin
-    found := Undefined;
+    found := undefined_subtyp;
     if CD.Sy = IDent then
       K := Locate_CD_Id (CD, context.level);
       In_Symbol (CD);

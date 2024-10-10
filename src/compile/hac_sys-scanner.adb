@@ -150,7 +150,7 @@ package body HAC_Sys.Scanner is
     Size_test_a'Size = Size_test_b'Size and
     Size_test_a'Alignment = Size_test_b'Alignment;
 
-  procedure NextCh (CD : in out Compiler_Data) is  --  Read Next Char; process line end
+  procedure Next_Character (CD : in out Compiler_Data) is
 
     procedure Get_Next_Line is
       idx : Integer := CD.CUD.input_line'First - 1;
@@ -254,12 +254,12 @@ package body HAC_Sys.Scanner is
     if CD.CUD.c < ' ' then
       Error (CD, err_scanner_control_character);
     end if;
-  end NextCh;
+  end Next_Character;
 
   procedure Skip_Blanks (CD : in out Compiler_Data) is
   begin
     while CD.CUD.c = ' ' loop
-      NextCh (CD);
+      Next_Character (CD);
     end loop;
   end Skip_Blanks;
 
@@ -270,14 +270,14 @@ package body HAC_Sys.Scanner is
       S, Sign : Integer;
       digit_count : Natural := 0;
     begin
-      NextCh (CD);
+      Next_Character (CD);
       Sign := 1;
       S    := 0;
       case CD.CUD.c is
         when '+' =>
-          NextCh (CD);
+          Next_Character (CD);
         when '-' =>
-          NextCh (CD);
+          Next_Character (CD);
           if allow_minus then
             Sign := -1;
           else
@@ -307,7 +307,7 @@ package body HAC_Sys.Scanner is
             S := S * 10 + Character'Pos (CD.CUD.c) - Character'Pos ('0');
           end if;
           digit_count := digit_count + 1;
-          NextCh (CD);
+          Next_Character (CD);
           exit when CD.CUD.c not in '0' .. '9';
         end loop;
       end if;
@@ -321,10 +321,8 @@ package body HAC_Sys.Scanner is
       if K + e > EMax then
         Error
           (CD, err_scanner_exponent_too_large,
-           Integer'Image (K) & " +" &
-           Integer'Image (e) & " =" &
-           Integer'Image (K + e) & " > Max =" &
-           Integer'Image (EMax),
+           K'Image & " +" & e'Image & " =" & Integer'Image (K + e) &
+           " > Max =" & EMax'Image,
            severity => minor);  --  minor -> scanning & parsing go on unhindered.
       elsif K + e < EMin then
         CD.RNum := 0.0;
@@ -355,13 +353,13 @@ package body HAC_Sys.Scanner is
     begin
       --  Number has been read until the first '#'.
       loop
-        NextCh (CD);
+        Next_Character (CD);
         l := l + 1;
         s (l) := CD.CUD.c;
         exit when CD.CUD.c = '#';  --  Second '#'.
         has_point := has_point or CD.CUD.c = '.';
       end loop;
-      NextCh (CD);
+      Next_Character (CD);
       if CD.CUD.c in 'E' | 'e' then
         --  Exponent. Special case because of possible '+' or '-' which
         --  are not operators (e.g. 8#123#e+5 vs. 8#123#+5, = 8#123# + 5)...
@@ -369,12 +367,12 @@ package body HAC_Sys.Scanner is
         for c in 1 .. 2 loop
           l := l + 1;
           s (l) := CD.CUD.c;  --  We concatenate "e+", "e-", "e5".
-          NextCh (CD);
+          Next_Character (CD);
         end loop;
         while CD.CUD.c in '0' .. '9' loop
           l := l + 1;
           s (l) := CD.CUD.c;  --  We concatenate the rest of the exponent.
-          NextCh (CD);
+          Next_Character (CD);
         end loop;
       end if;
       declare
@@ -394,10 +392,10 @@ package body HAC_Sys.Scanner is
       end;
     end Read_with_Sharp;
 
-    procedure Skip_possible_underscore is
+    procedure Skip_Possible_Underscore_in_Number is
     begin
       if CD.CUD.c = '_' then
-        NextCh (CD);
+        Next_Character (CD);
         if CD.CUD.c = '_' then
           Error
             (CD,
@@ -407,7 +405,7 @@ package body HAC_Sys.Scanner is
           Error (CD, err_scanner_digit_expected, severity => major);
         end if;
       end if;
-    end Skip_possible_underscore;
+    end Skip_Possible_Underscore_in_Number;
 
     procedure Read_Decimal_Float is
     begin
@@ -428,8 +426,8 @@ package body HAC_Sys.Scanner is
         CD.RNum :=
           10.0 * CD.RNum +
             HAC_Float (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
-        NextCh (CD);
-        Skip_possible_underscore;
+        Next_Character (CD);
+        Skip_Possible_Underscore_in_Number;
       end loop;
       if e = 0 then
         Error
@@ -474,14 +472,14 @@ package body HAC_Sys.Scanner is
             CD.INum := CD.INum * 10 + (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
           end if;
           K := K + 1;
-          NextCh (CD);
-          Skip_possible_underscore;
+          Next_Character (CD);
+          Skip_Possible_Underscore_in_Number;
           exit when Character_Types (CD.CUD.c) /= Number;
         end loop;
         --  Integer part is read (CD.INum).
         case CD.CUD.c is
           when '.' =>
-            NextCh (CD);
+            Next_Character (CD);
             Read_Decimal_Float;
           when 'E' | 'e' =>
             --  Integer with exponent: 123e4.
@@ -537,7 +535,7 @@ package body HAC_Sys.Scanner is
       if CD.CUD.CC = CD.CUD.LL then  --  Case (9) above
         Error (CD, err_scanner_character_zero_chars, severity => major);
       end if;
-      NextCh (CD);
+      Next_Character (CD);
       C1 := CD.CUD.c;
       if CD.CUD.CC = CD.CUD.LL then  --  Cases (5), (7), (8)
         if C1 = '(' then
@@ -558,8 +556,8 @@ package body HAC_Sys.Scanner is
       if C2 = ''' then  --  Cases (1), (2)
         CD.Sy := character_literal;
         CD.INum := Character'Pos (C1);
-        NextCh (CD);
-        NextCh (CD);
+        Next_Character (CD);
+        Next_Character (CD);
       else  --  Cases (3), (4)
         CD.Sy := Apostrophe;
       end if;
@@ -623,12 +621,13 @@ package body HAC_Sys.Scanner is
           end if;
         end loop;
       end Try_String_Folding;
+
     begin
       lit_len := 0;
       loop
-        NextCh (CD);
+        Next_Character (CD);
         if CD.CUD.c = '"' then
-          NextCh (CD);
+          Next_Character (CD);
           if CD.CUD.c /= '"' then  --  The ""x case
             exit;
           end if;
@@ -694,7 +693,7 @@ package body HAC_Sys.Scanner is
            (CD.listing,
             " Char is => " & Integer'Image (Character'Pos (CD.CUD.c)));
         end if;
-        NextCh (CD);
+        Next_Character (CD);
       end loop Small_loop;
 
       exit_big_loop := True;
@@ -716,7 +715,7 @@ package body HAC_Sys.Scanner is
             else
               Error (CD, err_scanner_identifier_too_long);
             end if;
-            NextCh (CD);
+            Next_Character (CD);
             exit when CD.CUD.c /= '_'
                      and then special_or_illegal (Character_Types (CD.CUD.c));
           end loop;
@@ -753,47 +752,47 @@ package body HAC_Sys.Scanner is
         when '''        => Scan_Apostrophe_or_Character;
 
         when ':' =>
-          NextCh (CD);
+          Next_Character (CD);
           if CD.CUD.c = '=' then
             CD.Sy := Becomes;
-            NextCh (CD);
+            Next_Character (CD);
           else
             CD.Sy := Colon;
           end if;
 
         when '<' =>
-          NextCh (CD);
+          Next_Character (CD);
           if CD.CUD.c = '=' then
             CD.Sy := LEQ;
-            NextCh (CD);
+            Next_Character (CD);
           else
             CD.Sy := LSS;
           end if;
 
         when '>' =>
-          NextCh (CD);
+          Next_Character (CD);
           if CD.CUD.c = '=' then
             CD.Sy := GEQ;
-            NextCh (CD);
+            Next_Character (CD);
           else
             CD.Sy := GTR;
           end if;
 
         when '/' =>
-          NextCh (CD);
+          Next_Character (CD);
           if CD.CUD.c = '=' then
             CD.Sy := NEQ;
-            NextCh (CD);
+            Next_Character (CD);
           else
             CD.Sy := Divide;
           end if;
 
         when '.' =>
-          NextCh (CD);
+          Next_Character (CD);
           case CD.CUD.c is
             when '.' =>
               CD.Sy := Range_Double_Dot_Symbol;
-              NextCh (CD);
+              Next_Character (CD);
             when '0' .. '9' =>
               Error
                 (CD, err_general_error,
@@ -805,37 +804,37 @@ package body HAC_Sys.Scanner is
 
         when c128 =>  --  Hathorn
           CD.Sy := Range_Double_Dot_Symbol;
-          NextCh (CD);
+          Next_Character (CD);
 
         when '-' =>
-          NextCh (CD);
+          Next_Character (CD);
           if CD.CUD.c = '-' then     --  Comment
             CD.CUD.CC := CD.CUD.LL;  --  Ignore rest of input line
-            NextCh (CD);
+            Next_Character (CD);
             exit_big_loop := False;
           else
             CD.Sy := Minus;
           end if;
 
         when '=' =>
-          NextCh (CD);
+          Next_Character (CD);
           if CD.CUD.c = '>' then
             CD.Sy := Finger;
-            NextCh (CD);
+            Next_Character (CD);
           else
             CD.Sy := EQL;
           end if;
 
         when '|' =>
           CD.Sy := Alt;
-          NextCh (CD);
+          Next_Character (CD);
 
         when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
           CD.Sy := Special_Symbols (CD.CUD.c);
-          NextCh (CD);
+          Next_Character (CD);
           if CD.Sy = Times and then CD.CUD.c = '*' then  --  Get the "**" operator symbol
             CD.Sy := Power;
-            NextCh (CD);
+            Next_Character (CD);
           end if;
 
         when '$' | '!' | '@' | '\' | '^' | '_' | '?' | '%' | '#' =>
@@ -846,7 +845,7 @@ package body HAC_Sys.Scanner is
           if CD.listing_requested then
             Put_Line (CD.listing,   " [ $!@\^_?%# ]");
           end if;
-          NextCh (CD);
+          Next_Character (CD);
           exit_big_loop := False;
 
         when Character'Val (0) .. ' ' =>

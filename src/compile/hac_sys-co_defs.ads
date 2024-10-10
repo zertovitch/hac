@@ -29,6 +29,10 @@ package HAC_Sys.Co_Defs is
 
   use Defs;
 
+  ------------------
+  --  Exact type  --
+  ------------------
+
   type Exact_Typ is tagged record  --  NB: was called "Item" in SmallAda.
     TYP  : Typen;
     Ref  : Index;
@@ -44,24 +48,32 @@ package HAC_Sys.Co_Defs is
     --  ^ For X'Range expressions, indicates a pair of values waiting on the stack.
   end record;
 
-  procedure Construct_Root (Root : out Exact_Typ; Typ : Typen);
-  pragma Inline (Construct_Root);
+  procedure Construct_Root (Root : out Exact_Typ; Typ : Typen)
+  with Inline;
 
-  function Construct_Root (Typ : Typen) return Exact_Typ;
+  function Construct_Root (Typ : Typen) return Exact_Typ
+  with Inline;
 
-  function Undefined return Exact_Typ;
+  function Construct_Undefined return Exact_Typ;
+
+  ---------------------
+  --  Exact subtype  --
+  ---------------------
 
   type Exact_Subtyp is new Exact_Typ with record
     Discrete_First : HAC_Integer;   --  If subtype S is discrete, S'First
     Discrete_Last  : HAC_Integer;   --  If subtype S is discrete, S'Last
   end record;
 
-  overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen);
-  pragma Inline (Construct_Root);
+  overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen)
+  with Inline;
 
-  overriding function Construct_Root (Typ : Typen) return Exact_Subtyp;
+  overriding function Construct_Root (Typ : Typen) return Exact_Subtyp
+  with Inline;
 
-  overriding function Undefined return Exact_Subtyp;
+  overriding function Construct_Undefined return Exact_Subtyp;
+
+  undefined_subtyp : Exact_Subtyp;  --  This global variable is initialized.
 
   -------------------------------------------------------------------------
   ------------------------------------------------------------ATabEntry----

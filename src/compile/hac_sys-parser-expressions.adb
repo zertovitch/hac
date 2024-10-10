@@ -29,7 +29,7 @@ package body HAC_Sys.Parser.Expressions is
     signed : Boolean := False;
     procedure In_Symbol is begin Scanner.In_Symbol (CD); end In_Symbol;
   begin
-    C.TP := Undefined;
+    C.TP := undefined_subtyp;
     C.I  := 0;
     Test (CD, Constant_Definition_Begin_Symbol, FSys_ND, err_illegal_symbol_for_a_number_declaration);
     if not Constant_Definition_Begin_Symbol (CD.Sy) then
@@ -583,7 +583,7 @@ package body HAC_Sys.Parser.Expressions is
           end Process_Identifier;
 
         begin
-          X := Undefined;
+          X := undefined_subtyp;
           Test (CD, Primary_Begin_Symbol, FSys_Prim, err_primary_unexpected_symbol);
 
           case CD.Sy is

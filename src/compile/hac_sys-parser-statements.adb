@@ -516,7 +516,7 @@ package body HAC_Sys.Parser.Statements is
            link                  => previous_last,
            entity                => constant_object,
            decl_kind             => complete,
-           xtyp                  => Undefined,  --  Subtype is determined by the range.
+           xtyp                  => undefined_subtyp,  --  Subtype is determined by the range.
            block_or_pkg_ref      => 0,
            normal                => True,
            lev                   => block_data.context.level,

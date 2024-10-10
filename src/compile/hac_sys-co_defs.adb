@@ -18,10 +18,10 @@ package body HAC_Sys.Co_Defs is
     return result;
   end Construct_Root;
 
-  function Undefined return Exact_Typ is
+  function Construct_Undefined return Exact_Typ is
   begin
     return Construct_Root (NOTYP);
-  end Undefined;
+  end Construct_Undefined;
 
   overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen) is
   begin
@@ -37,10 +37,10 @@ package body HAC_Sys.Co_Defs is
     return result;
   end Construct_Root;
 
-  overriding function Undefined return Exact_Subtyp is
+  overriding function Construct_Undefined return Exact_Subtyp is
   begin
     return Construct_Root (NOTYP);
-  end Undefined;
+  end Construct_Undefined;
 
   procedure Elevate_to_Maybe (item : in out No_Maybe_Yes) is
   begin
@@ -179,4 +179,6 @@ package body HAC_Sys.Co_Defs is
     CD.CUD.use_hat_stack_top := CD.CUD.use_hat_stack_top - 1;
   end Decrement_Nesting_or_Descending_Level;
 
+begin
+  undefined_subtyp := Construct_Undefined;
 end HAC_Sys.Co_Defs;

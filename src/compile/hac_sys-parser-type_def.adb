@@ -241,7 +241,7 @@ package body HAC_Sys.Parser.Type_Def is
 
     dummy_dims : Natural;
   begin
-    xTP  := Undefined;
+    xTP  := undefined_subtyp;
     Size := 0;
     if CD.Sy in
       ABSTRACT_Symbol | ACCESS_Symbol |
@@ -357,7 +357,7 @@ package body HAC_Sys.Parser.Type_Def is
     end Sub_Typ;
 
   begin
-    xTP  := Undefined;
+    xTP  := undefined_subtyp;
     Size := 0;
     if CD.Sy = NOT_Symbol then
       Error
