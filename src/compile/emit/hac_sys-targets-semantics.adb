@@ -87,7 +87,7 @@ package body HAC_Sys.Targets.Semantics is
       HAT.Put_Line
         ("Mark_Reference, key = [" & key &
          "] for Id" & located_id'Image & ", " &
-         Defs.A2S (m.CD.IdTab (located_id).name_with_case));
+         Defs.A2S (m.CD.id_table (located_id).name_with_case));
     end if;
     if admit_duplicates then
       m.ref_map.Include (key, located_id);
@@ -232,7 +232,7 @@ package body HAC_Sys.Targets.Semantics is
       exit when idx = No_Id;
       exit when Integer (list.Length) = max_list;
       declare
-        item : Identifier_Table_Entry renames m.CD.IdTab (idx);
+        item : Identifier_Table_Entry renames m.CD.id_table (idx);
         use type Defs.Nesting_Level;
       begin
         if Starts_With (item.name, up_prefix) then
@@ -244,9 +244,9 @@ package body HAC_Sys.Targets.Semantics is
         end if;
         if item.link = No_Id
           and then idx - 1 > No_Id
-          and then m.CD.IdTab (idx - 1).entity in prozedure | funktion
+          and then m.CD.id_table (idx - 1).entity in prozedure | funktion
           and then item.lev > 0
-          and then m.CD.IdTab (idx - 1).lev = item.lev - 1
+          and then m.CD.id_table (idx - 1).lev = item.lev - 1
         then
           --  Jump to last declaration of level - 1, that
           --  is the subprogram declaration (if any) preceding

@@ -22,7 +22,7 @@ package body HAC_Sys.Parser.Enter_Def is
     declare
       New_B : Block_Table_Entry renames CD.Blocks_Table (CD.Blocks_Count);
     begin
-      New_B.Id                 := CD.IdTab (Tptr).name;
+      New_B.Id                 := CD.id_table (Tptr).name;
       New_B.Last_Id_Idx        := 0;
       New_B.First_Param_Id_Idx := 0;
       New_B.Last_Param_Id_Idx  := 0;
@@ -48,10 +48,10 @@ package body HAC_Sys.Parser.Enter_Def is
     if CD.Id_Count = Id_Table_Max then
       Fatal (IDENTIFIERS);  --  Exception is raised there.
     end if;
-    CD.IdTab (No_Id).name := Id;  --  Sentinel
+    CD.id_table (No_Id).name := Id;  --  Sentinel
     --  Follow the chain of identifiers for current Level:
-    while CD.IdTab (J).name /= Id loop
-      J := CD.IdTab (J).link;
+    while CD.id_table (J).name /= Id loop
+      J := CD.id_table (J).link;
     end loop;
     if J = No_Id then
       --  All good: the identifier is new at this nesting level,
@@ -59,10 +59,10 @@ package body HAC_Sys.Parser.Enter_Def is
       null;
     elsif
        ((K = prozedure or K = funktion)
-        and then K = CD.IdTab (J).entity
-        and then CD.IdTab (J).decl_kind = spec_unresolved)
+        and then K = CD.id_table (J).entity
+        and then CD.id_table (J).decl_kind = spec_unresolved)
       or else
-       (K = paquetage_body and then CD.IdTab (J).entity = paquetage)
+       (K = paquetage_body and then CD.id_table (J).entity = paquetage)
     then
       --  No duplicate name in those cases: J is a specification,
       --  new declaration is the corresponding body.
@@ -78,7 +78,7 @@ package body HAC_Sys.Parser.Enter_Def is
     end if;
     --  Enter identifier in table IdTab
     CD.Id_Count            := CD.Id_Count + 1;
-    CD.IdTab (CD.Id_Count) :=
+    CD.id_table (CD.Id_Count) :=
       (name                  => Id,
        name_with_case        => Id_with_case,
        link                  => last_id,

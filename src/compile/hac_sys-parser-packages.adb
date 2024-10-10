@@ -115,7 +115,7 @@ package body HAC_Sys.Parser.Packages is
               Error (CD, err_identifier_missing, severity => major);
           end case;
           Enter_Def.Enter_Prefixed (CD, block_data.context.level, CD.Id, CD.Id_with_case, paquetage, dummy_forward);
-          CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
+          CD.id_table (CD.Id_Count).decl_kind := spec_resolved;
           --  Why spec_resolved ? missing bodies for possible suprograms
           --  in that package are checked anyway.
           Package_Declaration (CD, FSys, block_data, subpkg_needs_body);
@@ -237,10 +237,10 @@ package body HAC_Sys.Parser.Packages is
                 (CD, err_general_error,
                  "missing specification for package body", severity => major);
             end if;
-            CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.IdTab (pkg_spec_index).block_or_pkg_ref;
+            CD.id_table (CD.Id_Count).block_or_pkg_ref := CD.id_table (pkg_spec_index).block_or_pkg_ref;
             Package_Body (CD, FSys, block_data);
           else
-            CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
+            CD.id_table (CD.Id_Count).decl_kind := spec_resolved;
             --  Why spec_resolved ? missing bodies for possible suprograms
             --  in that package are checked anyway.
             Package_Declaration (CD, FSys, block_data, subpkg_needs_body);
@@ -310,7 +310,7 @@ package body HAC_Sys.Parser.Packages is
   is
     use Co_Defs, Defs, Parser.Enter_Def, Errors;
     use type Nesting_Level;
-    Pkg_UName : constant String := A2S (CD.IdTab (Pkg_Idx).name);
+    Pkg_UName : constant String := A2S (CD.id_table (Pkg_Idx).name);
     Id_Alias, dummy_id_idx : Natural;
     pkg_table_index : Positive;
     pkg_level : Nesting_Level;
@@ -328,33 +328,33 @@ package body HAC_Sys.Parser.Packages is
           (CD,
            note_redundant_construct,
            """use"" clause already applied, in same declarative part, for" &
-           " package """ & A2S (CD.IdTab (Pkg_Idx).name_with_case) & '"');
+           " package """ & A2S (CD.id_table (Pkg_Idx).name_with_case) & '"');
       end if;
     end Issue_Duplicate_Use_Note;
   begin
     pragma Assert (Pkg_Idx > No_Id);
-    if CD.IdTab (Pkg_Idx).entity /= paquetage then
+    if CD.id_table (Pkg_Idx).entity /= paquetage then
       Error (CD, err_general_error, "package name expected", severity => major);
     end if;
-    if CD.IdTab (Pkg_Idx).lev = 0 and then Pkg_UName = HAT_Name then
+    if CD.id_table (Pkg_Idx).lev = 0 and then Pkg_UName = HAT_Name then
       --  We are USE-ing the HAT package, thus opening the visibility of operators.
       CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) := True;
     end if;
-    pkg_level := CD.IdTab (Pkg_Idx).lev;
+    pkg_level := CD.id_table (Pkg_Idx).lev;
     --  The package specification's definitions begins immediately after the
     --  package's identifier.
     --  E.g. HAT: PAQUETAGE; HAT.File_Type: TYPEMARK; ...
     --
-    pkg_table_index := CD.IdTab (Pkg_Idx).block_or_pkg_ref;
+    pkg_table_index := CD.id_table (Pkg_Idx).block_or_pkg_ref;
     --
     for i in CD.Packages_Table (pkg_table_index).first_public_declaration ..
              CD.Packages_Table (pkg_table_index).last_public_declaration
     loop
-      if CD.IdTab (i).lev = pkg_level then
+      if CD.id_table (i).lev = pkg_level then
         --  Subprogram parameters are not declarations of
         --  the package and have a higher nesting level.
         declare
-          Full_UName : constant String := A2S (CD.IdTab (i).name);
+          Full_UName : constant String := A2S (CD.id_table (i).name);
           Full_Name  : String (Full_UName'Range);
           Start : Positive;
         begin
@@ -363,7 +363,7 @@ package body HAC_Sys.Parser.Packages is
           --  or we have the item "ADA.STRINGS.FIXED.INDEX" and
           --  the prefix "ADA.STRINGS.FIXED.".
           Start := Full_UName'First + Pkg_UName'Length + 1;
-          Full_Name := A2S (CD.IdTab (i).name_with_case);
+          Full_Name := A2S (CD.id_table (i).name_with_case);
           declare
             Short_Id_str : constant String := Full_UName (Start .. Full_UName'Last);
             Short_Id     : constant Alfa := S2A (Short_Id_str);  --  Id as visible after USE.
@@ -382,7 +382,7 @@ package body HAC_Sys.Parser.Packages is
               --  ^ We search any matching name, including an inactive
               --    name at library level.
 
-            if Id_Alias = No_Id or else CD.IdTab (Id_Alias).lev < Level then
+            if Id_Alias = No_Id or else CD.id_table (Id_Alias).lev < Level then
               --  Name was not found, or was defined at a lower nesting level.
               --  We enter, e.g. the "FALSE", "False" pair.
               Enter
@@ -393,13 +393,13 @@ package body HAC_Sys.Parser.Packages is
                  S2A (Full_Name (Start .. Full_Name'Last)),
                  alias,
                  dummy_id_idx);
-              CD.IdTab (CD.Id_Count).adr_or_sz := HAC_Integer (i);
+              CD.id_table (CD.Id_Count).adr_or_sz := HAC_Integer (i);
               --  ^ i = Aliased entity's index.
             else
               --  Here we have found an identical and
               --  visible short identifier at the same level.
-              if CD.IdTab (Id_Alias).entity = alias
-                and then CD.IdTab (Id_Alias).adr_or_sz = HAC_Integer (i)
+              if CD.id_table (Id_Alias).entity = alias
+                and then CD.id_table (Id_Alias).adr_or_sz = HAC_Integer (i)
               then
                 --  Here we have an identical alias (same name, and points
                 --  to the same definition).
@@ -428,7 +428,7 @@ package body HAC_Sys.Parser.Packages is
   procedure Feed_Packages_Table (CD : in out Co_Defs.Compiler_Data) is
   begin
     CD.Packages_Count := CD.Packages_Count + 1;
-    CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.Packages_Count;
+    CD.id_table (CD.Id_Count).block_or_pkg_ref := CD.Packages_Count;
     declare
       p : Co_Defs.Package_Table_Entry renames CD.Packages_Table (CD.Packages_Count);
     begin

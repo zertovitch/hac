@@ -32,9 +32,9 @@ package body HAC_Sys.Parser.Tasking is
     if CD.Sy = BODY_Symbol then  --  Task Body
       In_Symbol;
       I                := Locate_CD_Id (CD, Level);
-      TaskID           := CD.IdTab (I).name;
-      TaskID_with_case := CD.IdTab (I).name_with_case;
-      CD.Blocks_Table (CD.IdTab (I).block_or_pkg_ref).SrcFrom := saveLineCount;  --  (* Manuel *)
+      TaskID           := CD.id_table (I).name;
+      TaskID_with_case := CD.id_table (I).name_with_case;
+      CD.Blocks_Table (CD.id_table (I).block_or_pkg_ref).SrcFrom := saveLineCount;  --  (* Manuel *)
       In_Symbol;
       task_block.context.level                 := Level + 1;
       task_block.block_id_index                := I;
@@ -60,7 +60,7 @@ package body HAC_Sys.Parser.Tasking is
       Enter_Prefixed (CD, Level, TaskID, TaskID_with_case, tache, forward_id_idx);
       CD.Tasks_Definitions_Table (CD.Tasks_Definitions_Count) := CD.Id_Count;
       Enter_Block (CD, CD.Id_Count);
-      CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.Blocks_Count;
+      CD.id_table (CD.Id_Count).block_or_pkg_ref := CD.Blocks_Count;
       In_Symbol;
       if CD.Sy = Semicolon then
         In_Symbol;  --  Task with no entries
@@ -91,8 +91,8 @@ package body HAC_Sys.Parser.Tasking is
           task_block.is_main                       := False;
           task_block.previous_declaration_id_index := No_Id;
           Block (CD, FSys, False, task_block,
-                 CD.IdTab (CD.Id_Count).name, CD.IdTab (CD.Id_Count).name_with_case);
-          CD.IdTab (T0).adr_or_sz := HAC_Integer (CD.Tasks_Definitions_Count);
+                 CD.id_table (CD.Id_Count).name, CD.id_table (CD.Id_Count).name_with_case);
+          CD.id_table (T0).adr_or_sz := HAC_Integer (CD.Tasks_Definitions_Count);
           if CD.Sy = Semicolon then
             In_Symbol;
           else

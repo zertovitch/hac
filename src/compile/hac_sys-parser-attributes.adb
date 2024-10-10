@@ -156,7 +156,7 @@ package body HAC_Sys.Parser.Attributes is
      xSubtyp_of_Result :    out Co_Defs.Exact_Subtyp)
   is
     use Co_Defs, Defs, Helpers, Errors;
-    Typ_ID : Identifier_Table_Entry renames CD.IdTab (Typ_ID_Index);
+    Typ_ID : Identifier_Table_Entry renames CD.id_table (Typ_ID_Index);
     S : Exact_Subtyp renames Typ_ID.xtyp;
     attr_ID : constant String := A2S (CD.Id);
     attr : Attribute;

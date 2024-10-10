@@ -237,7 +237,7 @@ package body HAC_Sys.Parser.Standard_Functions is
     end Adjustments_to_Parameter_Types;
     --
   begin
-    Return_Typ := CD.IdTab (Ident_Index).xtyp;
+    Return_Typ := CD.id_table (Ident_Index).xtyp;
     --
     Prepare_Accepted_Parameter_Types;
     --

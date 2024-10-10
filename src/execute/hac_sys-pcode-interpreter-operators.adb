@@ -530,7 +530,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_Image_Attribute_Enums  =>
         --  .Name contains the upper case representation as required by RM 3.5 (32).
         declare
-          full_name : constant String := A2S (CD.IdTab (Natural (ND.IR.X) + Natural (Top_Item.I)).name);
+          full_name : constant String := A2S (CD.id_table (Natural (ND.IR.X) + Natural (Top_Item.I)).name);
           dot : constant Natural := Ada.Strings.Fixed.Index (full_name, ".", Going => Backward);
         begin
           Top_Item :=
@@ -569,8 +569,8 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           to_match : constant String := HAT.ACH.To_Upper (to_match_any_case);
           j : HAC_Integer := -1;
         begin
-          for i in 0 .. CD.IdTab (Natural (ND.IR.X)).xtyp.Discrete_Last loop
-            if CD.IdTab (Natural (ND.IR.X) + Natural (i + 1)).name = to_match then
+          for i in 0 .. CD.id_table (Natural (ND.IR.X)).xtyp.Discrete_Last loop
+            if CD.id_table (Natural (ND.IR.X) + Natural (i + 1)).name = to_match then
               j := i;
               exit;
             end if;
@@ -581,7 +581,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
             Raise_Standard (ND, VME_Constraint_Error,
               '"' & to_match_any_case &
               """ is not a literal of enumeration type """ &
-              A2S (CD.IdTab (Natural (ND.IR.X)).name_with_case) & '"',
+              A2S (CD.id_table (Natural (ND.IR.X)).name_with_case) & '"',
               True);
           end if;
         end;

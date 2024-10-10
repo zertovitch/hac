@@ -76,9 +76,9 @@ package body HAC_Sys.Parser is
               --  the string length and the index into the string table.
               Error (CD, err_string_not_supported_as_parameter, severity => major);
             elsif X /= No_Id then
-              if CD.IdTab (X).entity = type_mark then
-                xTP := CD.IdTab (X).xtyp;
-                Sz := Integer (if ValParam then CD.IdTab (X).adr_or_sz else 1);
+              if CD.id_table (X).entity = type_mark then
+                xTP := CD.id_table (X).xtyp;
+                Sz := Integer (if ValParam then CD.id_table (X).adr_or_sz else 1);
               else
                 Error (CD, err_missing_a_type_identifier, severity => major);
               end if;
@@ -91,7 +91,7 @@ package body HAC_Sys.Parser is
           while T0 < CD.Id_Count loop
             T0 := T0 + 1;
             declare
-              r : Identifier_Table_Entry renames CD.IdTab (T0);
+              r : Identifier_Table_Entry renames CD.id_table (T0);
             begin
               r.xtyp                  := xTP;
               r.normal                := ValParam;
@@ -174,10 +174,10 @@ package body HAC_Sys.Parser is
                   (CD, err_general_error,
                    "missing specification for package body", severity => major);
               end if;
-              CD.IdTab (CD.Id_Count).block_or_pkg_ref := CD.IdTab (pkg_spec_index).block_or_pkg_ref;
+              CD.id_table (CD.Id_Count).block_or_pkg_ref := CD.id_table (pkg_spec_index).block_or_pkg_ref;
               Parser.Packages.Package_Body (CD, empty_symset, block_data);
             else
-              CD.IdTab (CD.Id_Count).decl_kind := spec_resolved;
+              CD.id_table (CD.Id_Count).decl_kind := spec_resolved;
               --  Why spec_resolved ? missing bodies for possible suprograms
               --  in that package are checked anyway.
               Parser.Packages.Package_Declaration (CD, empty_symset, block_data, ignored_needs_body);
@@ -194,7 +194,7 @@ package body HAC_Sys.Parser is
     procedure Statements_Part_Setup is
     begin
       block_data.max_data_allocation_index := block_data.data_allocation_index;
-      CD.IdTab (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
+      CD.id_table (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
       if block_data.previous_declaration_id_index > No_Id then
         Link_Forward_Declaration
           (CD, block_data.previous_declaration_id_index, block_data.block_id_index);
@@ -225,10 +225,10 @@ package body HAC_Sys.Parser is
           I_Res_Type := Locate_CD_Id (CD, block_data.context.level);
           In_Symbol;
           if I_Res_Type /= 0 then
-            if CD.IdTab (I_Res_Type).entity /= type_mark then
+            if CD.id_table (I_Res_Type).entity /= type_mark then
               Error (CD, err_missing_a_type_identifier, severity => major);
-            elsif PCode_Atomic_Nonlimited_Typ (CD.IdTab (I_Res_Type).xtyp.TYP) then
-              CD.IdTab (block_data.block_id_index).xtyp := CD.IdTab (I_Res_Type).xtyp;
+            elsif PCode_Atomic_Nonlimited_Typ (CD.id_table (I_Res_Type).xtyp.TYP) then
+              CD.id_table (block_data.block_id_index).xtyp := CD.id_table (I_Res_Type).xtyp;
             else
               Error (CD, err_bad_result_type_for_a_function, severity => major);
             end if;
@@ -283,8 +283,8 @@ package body HAC_Sys.Parser is
           Need (CD, Finger, err_general_error);
           if CD.Id = "TRUE" then
             In_Symbol;  --  Consume True
-            CD.IdTab (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
-            CD.IdTab (block_data.block_id_index).decl_kind := spec_resolved;
+            CD.id_table (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
+            CD.id_table (block_data.block_id_index).decl_kind := spec_resolved;
             Emit_1 (CD, k_Exchange_with_External, Operand_2_Type (block_data.block_id_index));
             Emit_1 (CD, k_Return_Call, Normal_Procedure_Call);
           else
@@ -298,8 +298,8 @@ package body HAC_Sys.Parser is
 
     procedure Process_Spec is
     begin
-      CD.IdTab (block_data.block_id_index).decl_kind := spec_unresolved;
-      CD.IdTab (block_data.block_id_index).adr_or_sz := -1;
+      CD.id_table (block_data.block_id_index).decl_kind := spec_unresolved;
+      CD.id_table (block_data.block_id_index).adr_or_sz := -1;
       --  ^ This invalid address will raise VM_Subprogram_Spec.
       Check_Duplicate_Specification (CD, block_data.previous_declaration_id_index, Block_Id_with_case);
       CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;
@@ -316,7 +316,7 @@ package body HAC_Sys.Parser is
 
     procedure Process_Body is
     begin
-      CD.IdTab (block_data.block_id_index).decl_kind := complete;
+      CD.id_table (block_data.block_id_index).decl_kind := complete;
       Check_Subprogram_Spec_Body_Consistency
         (CD,
          block_data.previous_declaration_id_index,
@@ -434,15 +434,15 @@ package body HAC_Sys.Parser is
     else
       Test (CD, Symbols_after_Subprogram_Identifier, FSys, err_incorrectly_used_symbol);
     end if;
-    if CD.IdTab (block_data.block_id_index).block_or_pkg_ref > 0 then
-      subprogram_block_index := CD.IdTab (block_data.block_id_index).block_or_pkg_ref;
+    if CD.id_table (block_data.block_id_index).block_or_pkg_ref > 0 then
+      subprogram_block_index := CD.id_table (block_data.block_id_index).block_or_pkg_ref;
     else
       Enter_Block (CD, block_data.block_id_index);
       subprogram_block_index := CD.Blocks_Count;
-      CD.IdTab (block_data.block_id_index).block_or_pkg_ref := subprogram_block_index;
+      CD.id_table (block_data.block_id_index).block_or_pkg_ref := subprogram_block_index;
     end if;
     CD.Display (block_data.context.level) := subprogram_block_index;
-    CD.IdTab (block_data.block_id_index).xtyp := undefined_subtyp;
+    CD.id_table (block_data.block_id_index).xtyp := undefined_subtyp;
     CD.Blocks_Table (subprogram_block_index).First_Param_Id_Idx := CD.Id_Count + 1;
     if CD.Sy = LParent then
       Formal_Parameter_List;
@@ -515,7 +515,7 @@ package body HAC_Sys.Parser is
          sub_sub_prog_block_data,
          id_subprog,
          id_subprog_with_case);
-      kind := CD.IdTab (new_id_idx).decl_kind;
+      kind := CD.id_table (new_id_idx).decl_kind;
       if kind = complete then
         if IsFun then
           Emit_1 (CD, k_Return_Function, End_Function_without_Return);

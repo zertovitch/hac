@@ -156,7 +156,7 @@ package body HAC_Sys.Builder is
       Put_Line (map_file, "  LOC  Name       scope");
       Put_Line (map_file, "------------------------");
       New_Line (map_file);
-      for Blk of BD.CD.IdTab (BD.CD.Blocks_Table (0).Last_Id_Idx + 1 .. BD.CD.Id_Count) loop
+      for Blk of BD.CD.id_table (BD.CD.Blocks_Table (0).Last_Id_Idx + 1 .. BD.CD.Id_Count) loop
         if Blk.entity in Object_Kind then
           if Blk.xtyp.TYP /= NOTYP then
             Ada.Integer_Text_IO.Put (map_file, Integer (Blk.adr_or_sz), 4);

@@ -21,7 +21,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     procedure Do_Mark_Stack is
       --  VSize is the maximum stack room needed by the subprogram to be called.
       VSize : constant Integer :=
-        Integer (CD.Blocks_Table (CD.IdTab (Integer (IR.Y)).block_or_pkg_ref).VSize);
+        Integer (CD.Blocks_Table (CD.id_table (Integer (IR.Y)).block_or_pkg_ref).VSize);
     begin
       if Curr_TCB.T + VSize > Curr_TCB.STACKSIZE then
         raise Exceptions.VM_Stack_Overflow;
@@ -50,7 +50,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
     procedure Do_Exchange_with_External is
       use Co_Defs;
       use Co_Defs.Exported_Procedure_Mapping;
-      proc_entry : Identifier_Table_Entry renames CD.IdTab (Integer (IR.Y));
+      proc_entry : Identifier_Table_Entry renames CD.id_table (Integer (IR.Y));
       proc_name  : constant String := A2S (proc_entry.name);
       block_idx  : constant Index  := proc_entry.block_or_pkg_ref;
       block      : Block_Table_Entry renames CD.Blocks_Table (block_idx);
@@ -78,18 +78,18 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         stack_idx : Positive;
       begin
         for p in block.First_Param_Id_Idx .. block.Last_Param_Id_Idx loop
-          stack_idx := base + Integer (CD.IdTab (p).adr_or_sz);
-          if not CD.IdTab (p).normal then
+          stack_idx := base + Integer (CD.id_table (p).adr_or_sz);
+          if not CD.id_table (p).normal then
             --  Dereference.
             stack_idx := Index (ND.S (stack_idx).I);
           end if;
           for count in 1 .. Size_of (CD, p) loop
             if before_call then
-              if CD.IdTab (p).decl_kind /= param_out then
+              if CD.id_table (p).decl_kind /= param_out then
                 data (data_idx) := Convert (ND.S (stack_idx));
               end if;
             else
-              if CD.IdTab (p).decl_kind /= param_in then
+              if CD.id_table (p).decl_kind /= param_in then
                 ND.S (stack_idx) := Convert (data (data_idx));
               end if;
             end if;
@@ -143,7 +143,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       end if;
       Activation_Record_Base := Curr_TCB.T - Integer (IR.Y);
       Ident_Index_of_Called := Index (ND.S (Activation_Record_Base + 4).I);
-      Called_Level := CD.IdTab (Ident_Index_of_Called).lev;
+      Called_Level := CD.id_table (Ident_Index_of_Called).lev;
       Show_Display (Curr_TCB.DISPLAY, Called_Level, "before call");
       Curr_TCB.DISPLAY (Called_Level + 1) := Activation_Record_Base;
       Show_Display (Curr_TCB.DISPLAY, Called_Level + 1, "on call");
@@ -157,7 +157,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       Curr_TCB.T := New_Stack_Top;
       case IR.X is  --  Call type
         when Defs.Normal_Procedure_Call =>
-          new_address := Index (CD.IdTab (Ident_Index_of_Called).adr_or_sz);
+          new_address := Index (CD.id_table (Ident_Index_of_Called).adr_or_sz);
           if new_address < 0 then
             raise Exceptions.VM_Subprogram_Spec;
           end if;
@@ -165,7 +165,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         when Defs.Normal_Entry_Call =>
           Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
           Curr_TCB.TS  := WaitRendzv;
-          Task_Entered := Integer (CD.IdTab (Ident_Index_of_Called).adr_or_sz);  --  Task being entered
+          Task_Entered := Integer (CD.id_table (Ident_Index_of_Called).adr_or_sz);  --  Task being entered
           if ((ND.TCB (Task_Entered).TS = WaitRendzv) and then
               (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called))
              or else
@@ -179,7 +179,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
 
         when Defs.Timed_Entry_Call =>
           Tasking.Queue (CD, ND, Ident_Index_of_Called, ND.CurTask);  --  put self on entry queue
-          Task_Entered := Integer (CD.IdTab (Ident_Index_of_Called).adr_or_sz);  --  Task being entered
+          Task_Entered := Integer (CD.id_table (Ident_Index_of_Called).adr_or_sz);  --  Task being entered
           --
           if ((ND.TCB (Task_Entered).TS = WaitRendzv) and (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or
              (ND.TCB (Task_Entered).TS = TimedWait)
@@ -198,7 +198,7 @@ package body HAC_Sys.PCode.Interpreter.Calls is
           ND.SWITCH := True;       --  give up control
 
         when Defs.Conditional_Entry_Call =>
-          Task_Entered := Integer (CD.IdTab (Ident_Index_of_Called).adr_or_sz);              --  Task being entered
+          Task_Entered := Integer (CD.id_table (Ident_Index_of_Called).adr_or_sz);              --  Task being entered
           if ((ND.TCB (Task_Entered).TS = WaitRendzv) and then
               (ND.TCB (Task_Entered).SUSPEND = Ident_Index_of_Called)) or else
              ND.TCB (Task_Entered).TS = TimedWait

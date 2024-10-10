@@ -79,10 +79,10 @@ package body HAC_Sys.Librarian is
   begin
     CD.Id_Count := CD.Id_Count + 1;
     --  Find the last library-level definition:
-    while last > 0 and then CD.IdTab (last).lev > 0 loop
+    while last > 0 and then CD.id_table (last).lev > 0 loop
       last := last - 1;
     end loop;
-    CD.IdTab (CD.Id_Count) :=
+    CD.id_table (CD.Id_Count) :=
       (name                  => Alfa_Ident_Upper,
        name_with_case        => Alfa_Ident,
        link                  => last,
@@ -146,23 +146,23 @@ package body HAC_Sys.Librarian is
       (CD, upper_name_alfa, Level => 0, Level_0_Filter => False);
     CD.CUD.level_0_def.Include (upper_name_alfa, unit_idx);
     --  Only packages specifications need to have their items made visible.
-    if CD.IdTab (unit_idx).entity = paquetage then
+    if CD.id_table (unit_idx).entity = paquetage then
       declare
         pkg_table_entry : Package_Table_Entry
-          renames CD.Packages_Table (CD.IdTab (unit_idx).block_or_pkg_ref);
+          renames CD.Packages_Table (CD.id_table (unit_idx).block_or_pkg_ref);
       begin
         for declaration_in_pkg_index in
           pkg_table_entry.first_public_declaration ..
           pkg_table_entry.last_public_declaration
         loop
-          if CD.IdTab (declaration_in_pkg_index).lev = 0 then
+          if CD.id_table (declaration_in_pkg_index).lev = 0 then
             --  We check that the level is 0 because subprogram
             --  parameters have level 1 and of course we don't
             --  want *them* to be globally visible. An inclusion
             --  of parameters would be especially nasty because
             --  the identifiers don't have any prefix!
             CD.CUD.level_0_def.Include
-              (CD.IdTab (declaration_in_pkg_index).name,
+              (CD.id_table (declaration_in_pkg_index).name,
                declaration_in_pkg_index);
           end if;
         end loop;

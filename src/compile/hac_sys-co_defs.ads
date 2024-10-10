@@ -323,7 +323,7 @@ package HAC_Sys.Co_Defs is
     Display                 : Display_Type;
     Entries_Table           : Entries_Table_Type;
     Float_Constants_Table   : Float_Constants_Table_Type;
-    IdTab                   : Identifier_Table_Type;
+    id_table                : Identifier_Table_Type;
     Nested_Loop_Table       : Nested_Loop_Table_Type;
     Packages_Table          : Packages_Table_Type;
     Strings_Constants_Table : Strings_Constants_Table_Type;

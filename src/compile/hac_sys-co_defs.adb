@@ -113,8 +113,8 @@ package body HAC_Sys.Co_Defs is
       when Bools => return Boolean'Image (Boolean'Val (value));
       when Chars => return Character'Image (Character'Val (value));
       when Enums =>
-        if value in 0 .. CD.IdTab (Ref).xtyp.Discrete_Last then
-          return A2S (CD.IdTab (Ref + 1 + Integer (value)).name_with_case);
+        if value in 0 .. CD.id_table (Ref).xtyp.Discrete_Last then
+          return A2S (CD.id_table (Ref + 1 + Integer (value)).name_with_case);
         else
           return "[invalid position: " &  HAC_Image (value) & ']';
         end if;
@@ -135,7 +135,7 @@ package body HAC_Sys.Co_Defs is
   end Discrete_Range_Image;
 
   function Size_of (CD : Compiler_Data; Id_Index : Natural) return Positive is
-    X : constant Exact_Subtyp := CD.IdTab (Id_Index).xtyp;
+    X : constant Exact_Subtyp := CD.id_table (Id_Index).xtyp;
   begin
     case X.TYP is
       when Arrays =>

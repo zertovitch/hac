@@ -37,18 +37,18 @@ package body HAC_Sys.Parser.Const_Var is
         --     for:            "a, b, c : Real := F (x);"
         --     we do first:    "c := F (x)".
         Statements.Assignment (CD, FSys, Block_Data.context, id_last, check_is_variable => False);
-        CD.IdTab (id_last).is_initialized := explicit;
+        CD.id_table (id_last).is_initialized := explicit;
         --  Id_Last has been assigned.
         --  Now, we emit the code for copying the value
         --  of id_last to id_first .. id_last - 1.
         --  In the above example:  "a := c"  and  "b := c".
-        for var of CD.IdTab (id_first .. id_last - 1) loop
+        for var of CD.id_table (id_first .. id_last - 1) loop
           --  Push destination address:
           Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.adr_or_sz));
           if var_typ.TYP in Composite_Typ then
             --  Push source address:
-            Emit_2 (CD, k_Push_Address, CD.IdTab (id_last).lev,
-              Operand_2_Type (CD.IdTab (id_last).adr_or_sz)
+            Emit_2 (CD, k_Push_Address, CD.id_table (id_last).lev,
+              Operand_2_Type (CD.id_table (id_last).adr_or_sz)
             );
             case Composite_Typ (var_typ.TYP) is
               when Arrays =>
@@ -63,8 +63,8 @@ package body HAC_Sys.Parser.Const_Var is
           else
             --  Non-composite type. We copy the value.
             Emit_2 (CD, k_Push_Value,
-              CD.IdTab (id_last).lev,
-              Operand_2_Type (CD.IdTab (id_last).adr_or_sz)
+              CD.id_table (id_last).lev,
+              Operand_2_Type (CD.id_table (id_last).adr_or_sz)
             );
             Emit_1 (CD, k_Store, Typen'Pos (var_typ.TYP));
           end if;
@@ -72,7 +72,7 @@ package body HAC_Sys.Parser.Const_Var is
         end loop;
       else
         --  Implicit initialization (for instance, VString's and File_Type's).
-        for var of CD.IdTab (id_first .. id_last) loop
+        for var of CD.id_table (id_first .. id_last) loop
           if Auto_Init_Typ (var.xtyp.TYP) then
             Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.adr_or_sz));
             Emit_1 (CD, k_Variable_Initialization, Typen'Pos (var.xtyp.TYP));
@@ -183,7 +183,7 @@ package body HAC_Sys.Parser.Const_Var is
         while T0 < T1 loop
           T0 := T0 + 1;
           declare
-            r : Identifier_Table_Entry renames CD.IdTab (T0);
+            r : Identifier_Table_Entry renames CD.id_table (T0);
           begin
             r.entity                := (if is_constant then constant_object else variable_object);
             r.is_referenced         := False;

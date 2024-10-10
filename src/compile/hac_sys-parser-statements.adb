@@ -22,7 +22,7 @@ package body HAC_Sys.Parser.Statements is
      check_is_variable :        Boolean)
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
-    var : Identifier_Table_Entry renames CD.IdTab (var_id_index);
+    var : Identifier_Table_Entry renames CD.id_table (var_id_index);
     X, Y  : Exact_Subtyp;
     X_Len : Natural;
     --
@@ -231,7 +231,7 @@ package body HAC_Sys.Parser.Statements is
     begin  --  Accept_Statement
       In_Symbol;
       I_Entry := Locate_CD_Id (CD, block_data.context.level);
-      if CD.IdTab (I_Entry).entity /= entree then
+      if CD.id_table (I_Entry).entity /= entree then
         Error (CD, err_general_error, "an entry name is expected here");
       else
         CD.target.Mark_Reference (I_Entry);
@@ -244,12 +244,12 @@ package body HAC_Sys.Parser.Statements is
           Fatal (LEVELS);  --  Exception is raised there.
         end if;
         block_data.context.level := block_data.context.level + 1;
-        CD.Display (block_data.context.level) := CD.IdTab (I_Entry).block_or_pkg_ref;
+        CD.Display (block_data.context.level) := CD.id_table (I_Entry).block_or_pkg_ref;
         In_Symbol;
         Sequence_of_Statements (CD, END_Set, block_data);
         Need_END_Symbol (CD);
         if CD.Sy = IDent then
-          if CD.Id /= CD.IdTab (I_Entry).name then
+          if CD.Id /= CD.id_table (I_Entry).name then
             Error (CD, err_incorrect_name_after_END);
           else
             CD.target.Mark_Reference (I_Entry);
@@ -288,7 +288,7 @@ package body HAC_Sys.Parser.Statements is
             count_FOR_loops := count_FOR_loops + 1;
           end if;
           if CD.Nested_Loop_Table (level).loop_Id /= No_Id
-            and then CD.Id = CD.IdTab (CD.Nested_Loop_Table (level).loop_Id).name
+            and then CD.Id = CD.id_table (CD.Nested_Loop_Table (level).loop_Id).name
           then
             id_found := True;
             exit_level := level;
@@ -414,19 +414,19 @@ package body HAC_Sys.Parser.Statements is
           Error (CD, err_procedures_cannot_return_a_value, severity => major);
         end if;
         --  Calculate return value (destination: X; expression: Y).
-        if CD.IdTab (block_data.block_id_index).block_or_pkg_ref /= CD.Display (block_data.context.level) then
+        if CD.id_table (block_data.block_id_index).block_or_pkg_ref /= CD.Display (block_data.context.level) then
           raise Program_Error with
             "Is it `return x` from main? Issue should have been caught earlier: " &
             "err_procedures_cannot_return_a_value.";
         end if;
-        X := CD.IdTab (block_data.block_id_index).xtyp;
+        X := CD.id_table (block_data.block_id_index).xtyp;
         Emit_2
           (CD,
-           (if CD.IdTab (block_data.block_id_index).normal then
+           (if CD.id_table (block_data.block_id_index).normal then
               k_Push_Address
             else
               k_Push_Value),
-          Operand_1_Type (CD.IdTab (block_data.block_id_index).lev + 1),
+          Operand_1_Type (CD.id_table (block_data.block_id_index).lev + 1),
           0);
         --
         Expression (CD, block_data.context, Semicolon_Set, Y);
@@ -510,7 +510,7 @@ package body HAC_Sys.Parser.Statements is
         previous_last := CD.Blocks_Table (CD.Display (block_data.context.level)).Last_Id_Idx;
         CD.Id_Count := CD.Id_Count + 1;
         loop_param_id := CD.Id_Count;
-        CD.IdTab (loop_param_id) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
+        CD.id_table (loop_param_id) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
           (name                  => CD.Id,
            name_with_case        => CD.Id_with_case,
            link                  => previous_last,
@@ -538,8 +538,8 @@ package body HAC_Sys.Parser.Statements is
       end if;
       --
       Emit_2 (CD, k_Push_Address,
-        Operand_1_Type (CD.IdTab (loop_param_id).lev),
-        Operand_2_Type (CD.IdTab (loop_param_id).adr_or_sz)
+        Operand_1_Type (CD.id_table (loop_param_id).lev),
+        Operand_2_Type (CD.id_table (loop_param_id).adr_or_sz)
       );
       In_Symbol;
       FOR_Begin_Instruction := k_FOR_Forward_Begin;
@@ -550,7 +550,7 @@ package body HAC_Sys.Parser.Statements is
       end if;
       Ranges.Dynamic_Range (CD, block_data.context, FSys_St,
         err_control_variable_of_the_wrong_type,
-        CD.IdTab (loop_param_id).xtyp  --  Set the subtype of "C" in "for C in Red .. Blue loop"
+        CD.id_table (loop_param_id).xtyp  --  Set the subtype of "C" in "for C in Red .. Blue loop"
       );
       LC_FOR_Begin := CD.LC;
       Emit (CD, FOR_Begin_Instruction);
@@ -565,7 +565,7 @@ package body HAC_Sys.Parser.Statements is
       --  visible for the compiler dump. Previously, the identifier counter
       --  was decreased, but that method conflicted with the necessity of
       --  keeping all loop names within a block.
-      CD.IdTab (loop_param_id).name := Empty_Alfa;
+      CD.id_table (loop_param_id).name := Empty_Alfa;
     end FOR_Statement;
 
     procedure Select_Statement is
@@ -583,7 +583,7 @@ package body HAC_Sys.Parser.Statements is
         Y                  : Exact_Subtyp;
       begin
         I := Locate_CD_Id (CD, block_data.context.level);
-        if CD.IdTab (I).entity = tache then
+        if CD.id_table (I).entity = tache then
           In_Symbol;
           Entry_Call (CD, block_data.context, FSys_St, I, -1);
           if CD.ObjCode (CD.LC - 2).F = k_Call then  --  Need to patch CallType later
@@ -690,7 +690,7 @@ package body HAC_Sys.Parser.Statements is
         begin         -- Accept_Statment_2
           In_Symbol;
           I := Locate_CD_Id (CD, block_data.context.level);
-          if CD.IdTab (I).entity /= entree then
+          if CD.id_table (I).entity /= entree then
             Select_Error (err_general_error);
           else
             CD.target.Mark_Reference (I);
@@ -706,12 +706,12 @@ package body HAC_Sys.Parser.Statements is
               Fatal (LEVELS);  --  Exception is raised there.
             end if;
             block_data.context.level := block_data.context.level + 1;
-            CD.Display (block_data.context.level) := CD.IdTab (I).block_or_pkg_ref;
+            CD.Display (block_data.context.level) := CD.id_table (I).block_or_pkg_ref;
             In_Symbol;
             Sequence_of_Statements (CD, END_Set, block_data);
             Need_END_Symbol (CD);
             if CD.Sy = IDent then
-              if CD.Id /= CD.IdTab (I).name then
+              if CD.Id /= CD.id_table (I).name then
                 Select_Error (err_incorrect_name_after_END);
               else
                 CD.target.Mark_Reference (I);
@@ -936,11 +936,11 @@ package body HAC_Sys.Parser.Statements is
         --  Unknown identifier: must be an identifier for a named Block_Statement or loop.
         Named_Statement;
       else
-        case CD.IdTab (I_Statement).entity is
+        case CD.id_table (I_Statement).entity is
           when Object_Kind =>
             Assignment (CD, FSys_St, block_data.context, I_Statement, check_is_variable => True);
             Elevate_to_Maybe_or_Yes
-              (CD.IdTab (I_Statement).is_written_after_init, block_data.context);
+              (CD.id_table (I_Statement).is_written_after_init, block_data.context);
 
           when declared_number_or_enum_item =>
             Error (CD, err_illegal_statement_start_symbol, "constant or an enumeration item",
@@ -961,7 +961,7 @@ package body HAC_Sys.Parser.Statements is
 
           when prozedure_intrinsic =>
             Standard_Procedures.Standard_Procedure
-              (CD, block_data.context, FSys_St, SP_Code'Val (CD.IdTab (I_Statement).adr_or_sz));
+              (CD, block_data.context, FSys_St, SP_Code'Val (CD.id_table (I_Statement).adr_or_sz));
 
           when loop_identifier =>
             Error (CD, err_duplicate_loop_identifier, A2S (CD.Id), severity => major);
@@ -973,7 +973,7 @@ package body HAC_Sys.Parser.Statements is
             Error
               (CD, err_illegal_statement_start_symbol,
                ". Entity found: " &
-               Entity_Kind'Image (CD.IdTab (I_Statement).entity), severity => major);
+               Entity_Kind'Image (CD.id_table (I_Statement).entity), severity => major);
         end case;
       end if;
     end Statement_starting_with_an_Identifier;

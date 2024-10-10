@@ -210,7 +210,7 @@ package body HAC_Sys.Parser.Helpers is
   end Nice_Image;
 
   function Enum_Name (CD : Compiler_Data; E_Ref : Index) return String is
-    (A2S (CD.IdTab (E_Ref).name_with_case));
+    (A2S (CD.id_table (E_Ref).name_with_case));
 
   function Nice_Exact_Image (CD : Compiler_Data; xT : Exact_Typ'Class) return String is
     (Nice_Image (xT.TYP) &
@@ -490,11 +490,11 @@ package body HAC_Sys.Parser.Helpers is
       loop
         exit Scan_level_L when J = No_Id;  --  Beginning of ID table reached.
 
-        if CD.IdTab (J).entity /= paquetage_body then
+        if CD.id_table (J).entity /= paquetage_body then
           --  ^ A package body is invisible as a declaration.
-          if CD.IdTab (J).entity = paquetage
+          if CD.id_table (J).entity = paquetage
             and then Length (Prefix_Id) > 0
-            and then Prefix_Id = CD.IdTab (J).name
+            and then Prefix_Id = CD.id_table (J).name
           then
             --  We have reached the defining package.
             --  Example: we are looking for HAT.PUT, but we just hit a
@@ -507,7 +507,7 @@ package body HAC_Sys.Parser.Helpers is
           end if;
           dot_pos := Length (CD.pkg_prefix);
           if dot_pos = 0 then
-            is_name_matched := CD.IdTab (J).name = Id;
+            is_name_matched := CD.id_table (J).name = Id;
           else
             --  We are within a package declaration.
             --  Things are a bit more complicated: the package's items
@@ -520,7 +520,7 @@ package body HAC_Sys.Parser.Helpers is
             --  NB : the stuff with [] is resolved at the end of Locate_Identifier_Internal.
             loop
               is_name_matched :=
-                CD.IdTab (J).name =
+                CD.id_table (J).name =
                   Slice (CD.pkg_prefix, 1, dot_pos) & Id;
               exit when is_name_matched;
               exit when dot_pos = 0;
@@ -535,7 +535,7 @@ package body HAC_Sys.Parser.Helpers is
           if trace_search then
             Put_Line
               (+"      Id search level" & L'Image &
-               "; candidate # " & J & " named " & CD.IdTab (J).name &
+               "; candidate # " & J & " named " & CD.id_table (J).name &
                "; matched : " & is_name_matched'Image);
           end if;
 
@@ -547,14 +547,14 @@ package body HAC_Sys.Parser.Helpers is
             --    * Filter for library-level definition is disabled:
             exit Scan_level_L when not Level_0_Filter;
             --    * Activated library-level definition:
-            exit Scan_level_L when CD.CUD.level_0_def.Contains (CD.IdTab (J).name);
+            exit Scan_level_L when CD.CUD.level_0_def.Contains (CD.id_table (J).name);
           end if;
         end if;
 
         if trace_search then
           Put (+"      Chained list: identifier index goes from J = " & J);
         end if;
-        J := CD.IdTab (J).link;  --  Skip this identifier.
+        J := CD.id_table (J).link;  --  Skip this identifier.
         if trace_search then
           Put_Line (+" to J = " & J);
         end if;
@@ -592,8 +592,8 @@ package body HAC_Sys.Parser.Helpers is
 
     --  Name aliasing resolution (brought by a use clause
     --  or a simple renames clause):
-    while Alias_Resolution and then CD.IdTab (J).entity = alias loop
-      J := Integer (CD.IdTab (J).adr_or_sz);  --  E.g. True -> Standard.True
+    while Alias_Resolution and then CD.id_table (J).entity = alias loop
+      J := Integer (CD.id_table (J).adr_or_sz);  --  E.g. True -> Standard.True
     end loop;
 
     if J > Public_Filter then
@@ -601,12 +601,12 @@ package body HAC_Sys.Parser.Helpers is
     end if;
 
     --  Prefixed package resolution: `Pkg.Item`, `Pkg.Child_1.Item`, ...
-    if using_parsed_Id and then CD.IdTab (J).entity = paquetage then
+    if using_parsed_Id and then CD.id_table (J).entity = paquetage then
       Skip_Blanks (CD);
       if CD.CUD.c = '.' then  --  We sneak a look at the next symbol.
         ID_Copy := Id;
         CD.target.Mark_Reference (J);
-        CD.IdTab (J).is_referenced := True;
+        CD.id_table (J).is_referenced := True;
         --  Here some parsing: entity is a package and there is a dot waiting.
         In_Symbol (CD);  --  Consume prefix package identifier.
         Need (CD, Period, err_general_error);  --  Accept "Pkg.", reject "Pkg.."
@@ -620,7 +620,7 @@ package body HAC_Sys.Parser.Helpers is
              Fail_when_No_Id,
              Alias_Resolution,
              Level_0_Filter,
-             CD.Packages_Table (CD.IdTab (J).block_or_pkg_ref).last_public_declaration);
+             CD.Packages_Table (CD.id_table (J).block_or_pkg_ref).last_public_declaration);
         end if;
         Error (CD, err_identifier_missing, severity => major);
       end if;
@@ -628,7 +628,7 @@ package body HAC_Sys.Parser.Helpers is
 
     if J /= No_Id then
       CD.target.Mark_Reference (J);
-      CD.IdTab (J).is_referenced := True;
+      CD.id_table (J).is_referenced := True;
     end if;
 
     if trace_search then
@@ -754,25 +754,25 @@ package body HAC_Sys.Parser.Helpers is
       for count in 1 .. sub_sub_params loop
         Check_Parameter_One_to_One
           (count,
-           CD.IdTab (version_1).name = CD.IdTab (version_2).name,
+           CD.id_table (version_1).name = CD.id_table (version_2).name,
            "name");
         Check_Parameter_One_to_One
           (count,
-           CD.IdTab (version_1).xtyp = CD.IdTab (version_2).xtyp,
+           CD.id_table (version_1).xtyp = CD.id_table (version_2).xtyp,
            "type");
         Check_Parameter_One_to_One
           (count,
-           CD.IdTab (version_1).decl_kind = CD.IdTab (version_2).decl_kind,
+           CD.id_table (version_1).decl_kind = CD.id_table (version_2).decl_kind,
            "mode");
 
         version_1 := version_1 + 1;
         version_2 := version_2 + 1;
       end loop;
 
-      if CD.IdTab (new_id_idx).entity = funktion then
+      if CD.id_table (new_id_idx).entity = funktion then
         Check_One_to_One
           ("result of function",
-           CD.IdTab (new_id_idx).xtyp = CD.IdTab (old_id_idx).xtyp,
+           CD.id_table (new_id_idx).xtyp = CD.id_table (old_id_idx).xtyp,
            "type");
       end if;
     end Check_Formal_Parameter_List;
@@ -780,16 +780,16 @@ package body HAC_Sys.Parser.Helpers is
     if old_id_idx = No_Id then
       return;
     end if;
-    CD.IdTab (old_id_idx).decl_kind := spec_resolved;
+    CD.id_table (old_id_idx).decl_kind := spec_resolved;
     --  The following is only for making the compiler dump
     --  easier to understand:
-    CD.Blocks_Table (CD.IdTab (old_id_idx).block_or_pkg_ref).Id :=
+    CD.Blocks_Table (CD.id_table (old_id_idx).block_or_pkg_ref).Id :=
       S2A ("Unused (was from a subprogram spec)");
     --  Check that the formal parameter list is identical:
     sub_sub_last_param_idx :=
-      CD.Blocks_Table (CD.IdTab (new_id_idx).block_or_pkg_ref).Last_Param_Id_Idx;
+      CD.Blocks_Table (CD.id_table (new_id_idx).block_or_pkg_ref).Last_Param_Id_Idx;
     forward_last_param_idx :=
-      CD.Blocks_Table (CD.IdTab (old_id_idx).block_or_pkg_ref).Last_Param_Id_Idx;
+      CD.Blocks_Table (CD.id_table (old_id_idx).block_or_pkg_ref).Last_Param_Id_Idx;
     sub_sub_params := sub_sub_last_param_idx - new_id_idx;
     forward_params := forward_last_param_idx - old_id_idx;
     if sub_sub_params > forward_params then
@@ -817,8 +817,8 @@ package body HAC_Sys.Parser.Helpers is
     --    * The block_ref (hence, the correct VSize
     --        is used for reserving the stack)
     --
-    CD.IdTab (old_id_idx).adr_or_sz        := CD.IdTab (new_id_idx).adr_or_sz;
-    CD.IdTab (old_id_idx).block_or_pkg_ref := CD.IdTab (new_id_idx).block_or_pkg_ref;
+    CD.id_table (old_id_idx).adr_or_sz        := CD.id_table (new_id_idx).adr_or_sz;
+    CD.id_table (old_id_idx).block_or_pkg_ref := CD.id_table (new_id_idx).block_or_pkg_ref;
     --
     --  The linking is done!
     --
@@ -834,12 +834,12 @@ package body HAC_Sys.Parser.Helpers is
   begin
     --  Follow the chain of identifiers for given Level:
     while id_index /= No_Id loop
-      if CD.IdTab (id_index).decl_kind = spec_unresolved
-         and then CD.IdTab (id_index).entity /= entree
+      if CD.id_table (id_index).decl_kind = spec_unresolved
+         and then CD.id_table (id_index).entity /= entree
       then
-        Error (CD, err_incomplete_declaration, A2S (CD.IdTab (id_index).name_with_case));
+        Error (CD, err_incomplete_declaration, A2S (CD.id_table (id_index).name_with_case));
       end if;
-      id_index := CD.IdTab (id_index).link;
+      id_index := CD.id_table (id_index).link;
     end loop;
   end Check_Incomplete_Definitions;
 
@@ -983,8 +983,8 @@ package body HAC_Sys.Parser.Helpers is
   begin
     --  Follow the chain of identifiers for given Level:
     while id_index /= No_Id loop
-      Check_Item (CD.IdTab (id_index));
-      id_index := CD.IdTab (id_index).link;
+      Check_Item (CD.id_table (id_index));
+      id_index := CD.id_table (id_index).link;
     end loop;
   end Check_Unused_or_Uninitialized_Items;
 
@@ -993,7 +993,7 @@ package body HAC_Sys.Parser.Helpers is
      id_idx     : in     Natural)
   return Natural
   is
-    id_table_entry : Identifier_Table_Entry renames CD.IdTab (id_idx);
+    id_table_entry : Identifier_Table_Entry renames CD.id_table (id_idx);
     block_idx : constant Integer := id_table_entry.block_or_pkg_ref;
   begin
     pragma Assert (id_table_entry.entity in prozedure | funktion);

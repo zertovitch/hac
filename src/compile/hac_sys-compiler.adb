@@ -49,7 +49,7 @@ package body HAC_Sys.Compiler is
     CD.Packages_Count        := 0;
     --  Identifiers
     CD.Id_Count := 0;
-    CD.IdTab (CD.Id_Count).name := Empty_Alfa;
+    CD.id_table (CD.Id_Count).name := Empty_Alfa;
     --  Strings literals
     CD.Strings_Table_Top := Strings_Constants_Table_Type'First - 1;
     --  Tasks, Entries
@@ -140,7 +140,7 @@ package body HAC_Sys.Compiler is
     --
     for I in 1 .. CD.Id_Count loop
       declare
-        r : Identifier_Table_Entry renames CD.IdTab (I);
+        r : Identifier_Table_Entry renames CD.id_table (I);
       begin
         Put (CD.comp_dump, I, 4);
         Show_Padded (A2S (r.name_with_case), Alng);
@@ -166,8 +166,8 @@ package body HAC_Sys.Compiler is
     for I in 1 .. CD.Tasks_Definitions_Count loop
       Put (CD.comp_dump, I, 4);
       Put (CD.comp_dump, ' ');
-      Put (CD.comp_dump, A2S (CD.IdTab (CD.Tasks_Definitions_Table (I)).name) & "  ");
-      Put (CD.comp_dump, CD.IdTab (CD.Tasks_Definitions_Table (I)).block_or_pkg_ref);
+      Put (CD.comp_dump, A2S (CD.id_table (CD.Tasks_Definitions_Table (I)).name) & "  ");
+      Put (CD.comp_dump, CD.id_table (CD.Tasks_Definitions_Table (I)).block_or_pkg_ref);
       New_Line (CD.comp_dump);
     end loop;
 
@@ -179,9 +179,9 @@ package body HAC_Sys.Compiler is
       for I in 1 .. CD.Entries_Count loop
         Put (CD.comp_dump, I, 4);
         Put (CD.comp_dump,
-             ' ' & A2S (CD.IdTab (CD.Entries_Table (I)).name) & " in Task " &
-             A2S (CD.IdTab (
-               CD.Tasks_Definitions_Table (Integer (CD.IdTab (CD.Entries_Table (I)).adr_or_sz))
+             ' ' & A2S (CD.id_table (CD.Entries_Table (I)).name) & " in Task " &
+             A2S (CD.id_table (
+               CD.Tasks_Definitions_Table (Integer (CD.id_table (CD.Entries_Table (I)).adr_or_sz))
              ).name)
         );
         New_Line (CD.comp_dump);
@@ -259,7 +259,7 @@ package body HAC_Sys.Compiler is
     New_Line (CD.comp_dump);
     Put_Line (CD.comp_dump, " Library Level visible identifiers (unordered list):");
     for l0 of CD.CUD.level_0_def loop
-      Put_Line (CD.comp_dump, "    " & A2S (CD.IdTab (l0).name));
+      Put_Line (CD.comp_dump, "    " & A2S (CD.id_table (l0).name));
     end loop;
     New_Line (CD.comp_dump);
 
@@ -267,7 +267,7 @@ package body HAC_Sys.Compiler is
       Put_Line (CD.comp_dump, " Information about Main procedure:");
       Put_Line (CD.comp_dump, "   Name    : " & A2S (CD.main_unit_ident_with_case));
       Put_Line (CD.comp_dump, "   Block # : " &
-        Defs.Index'Image (CD.IdTab (CD.main_proc_id_index).block_or_pkg_ref));
+        Defs.Index'Image (CD.id_table (CD.main_proc_id_index).block_or_pkg_ref));
     end if;
 
     New_Line (CD.comp_dump);
@@ -348,11 +348,11 @@ package body HAC_Sys.Compiler is
     begin
       if unit_context.Contains (some_stuff_in_HAT) then
         stuff_index := unit_context (some_stuff_in_HAT);
-        if CD.IdTab (stuff_index).entity = alias then
+        if CD.id_table (stuff_index).entity = alias then
           --  Item named VSTRING from a USE clause was detected.
           --  Get the real item behind the alias (VSTRING -> ?.VSTRING):
-          stuff_index := Integer (CD.IdTab (stuff_index).adr_or_sz);
-          if A2S (CD.IdTab (stuff_index).name) = HAT_Name & '.' & some_stuff_in_HAT_str then
+          stuff_index := Integer (CD.id_table (stuff_index).adr_or_sz);
+          if A2S (CD.id_table (stuff_index).name) = HAT_Name & '.' & some_stuff_in_HAT_str then
             --  Now we are sure the item stems from the HAT package.
             --  Normally, the full name is "HAT.VSTRING", unless HAT_Name has been customized.
             CD.CUD.Use_HAT_Stack (CD.CUD.use_hat_stack_top) := True;
@@ -497,7 +497,7 @@ package body HAC_Sys.Compiler is
           (CD, Block_Begin_Symbol + Statement_Begin_Symbol,
            False,
            unit_block,
-           CD.IdTab (CD.Id_Count).name,
+           CD.id_table (CD.Id_Count).name,
            Unit_Id_with_case);
         if as_main_unit then
           if kind = Procedure_Unit
@@ -510,7 +510,7 @@ package body HAC_Sys.Compiler is
             CD.main_proc_id_index := No_Id;
           end if;
         end if;
-        case Split_Declaration_Kind (CD.IdTab (unit_block.block_id_index).decl_kind) is
+        case Split_Declaration_Kind (CD.id_table (unit_block.block_id_index).decl_kind) is
           when complete =>
             if as_specification then
               Error
@@ -540,7 +540,7 @@ package body HAC_Sys.Compiler is
 
       when Package_Declaration =>
         unit_block.context.level := 0;  --  Actually, not a block.
-        CD.IdTab (new_id_index).decl_kind := spec_resolved;
+        CD.id_table (new_id_index).decl_kind := spec_resolved;
         --  Why spec_resolved ? missing bodies for possible suprograms
         --  in that package are checked anyway.
         Parser.Packages.Package_Declaration (CD, empty_symset, unit_block, needs_body);

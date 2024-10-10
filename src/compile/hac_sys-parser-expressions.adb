@@ -54,12 +54,12 @@ package body HAC_Sys.Parser.Expressions is
           --  ... or, we have an enumeration item.
           X := Locate_CD_Id (CD, Level);
           if X /= 0 then
-            if CD.IdTab (X).entity = declared_number_or_enum_item then
-              C.TP := CD.IdTab (X).xtyp;
+            if CD.id_table (X).entity = declared_number_or_enum_item then
+              C.TP := CD.id_table (X).xtyp;
               if C.TP.TYP = Floats then
-                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (Integer (CD.IdTab (X).adr_or_sz));
+                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (Integer (CD.id_table (X).adr_or_sz));
               else
-                C.I := Sign * CD.IdTab (X).adr_or_sz;
+                C.I := Sign * CD.id_table (X).adr_or_sz;
                 if signed and then C.TP.TYP not in Numeric_Typ then
                   Error (CD, err_numeric_constant_expected);
                 end if;
@@ -102,18 +102,18 @@ package body HAC_Sys.Parser.Expressions is
     begin
       if V.TYP = Records then
         Field_Id := CD.Blocks_Table (V.Ref).Last_Id_Idx;
-        CD.IdTab (0).name := CD.Id;
-        while CD.IdTab (Field_Id).name /= CD.Id loop  --  Search field identifier
-          Field_Id := CD.IdTab (Field_Id).link;
+        CD.id_table (0).name := CD.Id;
+        while CD.id_table (Field_Id).name /= CD.Id loop  --  Search field identifier
+          Field_Id := CD.id_table (Field_Id).link;
         end loop;
         if Field_Id = No_Id then
           Error (CD, err_undefined_identifier, A2S (CD.Id_with_case), severity => major);
         else
           CD.target.Mark_Reference (Field_Id);
-          CD.IdTab (Field_Id).is_referenced := True;
-          Elevate_to_Maybe (CD.IdTab (Field_Id).is_read);
-          V := CD.IdTab (Field_Id).xtyp;
-          Field_Offset := Integer (CD.IdTab (Field_Id).adr_or_sz);
+          CD.id_table (Field_Id).is_referenced := True;
+          Elevate_to_Maybe (CD.id_table (Field_Id).is_read);
+          V := CD.id_table (Field_Id).xtyp;
+          Field_Offset := Integer (CD.id_table (Field_Id).adr_or_sz);
           if Field_Offset /= 0 then
             Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
           end if;
@@ -484,7 +484,7 @@ package body HAC_Sys.Parser.Expressions is
 
           procedure Process_Identifier is
             ident_index : constant Integer := Locate_CD_Id (CD, context.level);
-            r : Identifier_Table_Entry renames CD.IdTab (ident_index);
+            r : Identifier_Table_Entry renames CD.id_table (ident_index);
 
             procedure Process_Object_Identifier is
               LC_Mem : constant Integer := CD.LC;
@@ -1112,11 +1112,11 @@ package body HAC_Sys.Parser.Expressions is
   is
     Mem_Sy : constant Symbol := CD.Sy;
   begin
-    pragma Assert (CD.IdTab (Typ_ID_Index).entity = type_mark);
+    pragma Assert (CD.id_table (Typ_ID_Index).entity = type_mark);
     In_Symbol (CD);
     case Mem_Sy is
       when LParent    =>  --  S (...)
-        Type_Conversion (CD, context, FSys, CD.IdTab (Typ_ID_Index), X);
+        Type_Conversion (CD, context, FSys, CD.id_table (Typ_ID_Index), X);
       when Apostrophe =>  --  S'First, S'Image, ...
         Attributes.Subtype_Attribute (CD, context, FSys, Typ_ID_Index, X);
       when others =>

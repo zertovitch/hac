@@ -123,7 +123,7 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     New_Line;
     Put_Line (
       "Stack Variables of Task " &
-      Defs.A2S (CD.IdTab (CD.Tasks_Definitions_Table (ND.CurTask)).name)
+      Defs.A2S (CD.id_table (CD.Tasks_Definitions_Table (ND.CurTask)).name)
     );
     H1 := ND.TCB (ND.CurTask).B;   --  current bottom of stack
     BLKCNT := 10;
@@ -137,16 +137,16 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
       if H1 = 0 then
         Put_Line ("Task Variables");
       else
-        Put (Defs.A2S (CD.IdTab (H2).name));
+        Put (Defs.A2S (CD.id_table (H2).name));
         Put (" CALLED AT");
         Put (ND.S (H1 + 1).I, 5);
         New_Line;
       end if;
-      H2 := CD.Blocks_Table (CD.IdTab (H2).block_or_pkg_ref).Last_Id_Idx;
+      H2 := CD.Blocks_Table (CD.id_table (H2).block_or_pkg_ref).Last_Id_Idx;
       while H2 /= 0 loop
         --  [P2Ada]: WITH instruction
         declare
-          P2Ada_Var_7 : Identifier_Table_Entry renames CD.IdTab (H2);
+          P2Ada_Var_7 : Identifier_Table_Entry renames CD.id_table (H2);
           use Defs;
         begin
           if P2Ada_Var_7.entity in Object_Kind then

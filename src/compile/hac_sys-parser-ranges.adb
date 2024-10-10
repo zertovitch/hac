@@ -28,7 +28,7 @@ package body HAC_Sys.Parser.Ranges is
     Idx := Locate_CD_Id (CD, Level);
     if Idx /= No_Id then
       declare
-        Id_T : Identifier_Table_Entry renames CD.IdTab (Idx);
+        Id_T : Identifier_Table_Entry renames CD.id_table (Idx);
       begin
         if Id_T.entity = type_mark and then Discrete_Typ (Id_T.xtyp.TYP) then
           --  Subtype S, but need to exclude the attribute case: S'First, S'Image, ...

@@ -56,14 +56,14 @@ package body HAC_Sys.Parser.Calls is
       In_Symbol (CD);
       if K = No_Id then
         null;  --  Error already issued due to undefined identifier
-      elsif CD.IdTab (K).entity not in Object_Kind then
+      elsif CD.id_table (K).entity not in Object_Kind then
         Error (CD, err_variable_missing, name, severity => major);
-      elsif CD.IdTab (K).entity = constant_object then
+      elsif CD.id_table (K).entity = constant_object then
         Error
           (CD, err_cannot_modify_constant_or_in_parameter,
            ": passed to OUT or IN OUT parameter");
       else
-        found := CD.IdTab (K).xtyp;
+        found := CD.id_table (K).xtyp;
 
         --  Update the reference analysis for the variable.
         --  The concerned flags (.is_read, .is_written) are
@@ -74,22 +74,22 @@ package body HAC_Sys.Parser.Calls is
         --
         case mode is
           when param_in =>
-            Elevate_to_Maybe (CD.IdTab (K).is_read);
+            Elevate_to_Maybe (CD.id_table (K).is_read);
           when param_in_out =>
-            Elevate_to_Maybe (CD.IdTab (K).is_read);
-            Elevate_to_Maybe (CD.IdTab (K).is_written_after_init);
+            Elevate_to_Maybe (CD.id_table (K).is_read);
+            Elevate_to_Maybe (CD.id_table (K).is_written_after_init);
           when param_out =>
-            Elevate_to_Maybe (CD.IdTab (K).is_written_after_init);
+            Elevate_to_Maybe (CD.id_table (K).is_written_after_init);
         end case;
 
         Emit_2
           (CD,
-           (if CD.IdTab (K).normal then
+           (if CD.id_table (K).normal then
               k_Push_Address           --  Push "v'Access".
             else
               k_Push_Discrete_Value),  --  Push "(a.all)'Access", that is, a (a is an access type).
-           Operand_1_Type (CD.IdTab (K).lev),
-           Operand_2_Type (CD.IdTab (K).adr_or_sz));
+           Operand_1_Type (CD.id_table (K).lev),
+           Operand_2_Type (CD.id_table (K).adr_or_sz));
 
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
           Selector (CD, context, fsys + Colon_Comma_RParent, found);
@@ -122,7 +122,7 @@ package body HAC_Sys.Parser.Calls is
     block_idx : Index;
   begin
     Emit_1 (CD, k_Mark_Stack, Operand_2_Type (ident_index));
-    block_idx := CD.IdTab (ident_index).block_or_pkg_ref;
+    block_idx := CD.id_table (ident_index).block_or_pkg_ref;
     current_param := CD.Blocks_Table (block_idx).First_Param_Id_Idx - 1;
     last_param    := CD.Blocks_Table (block_idx).Last_Param_Id_Idx;
     if CD.Sy = LParent then  --  Actual parameter list
@@ -136,8 +136,8 @@ package body HAC_Sys.Parser.Calls is
              severity => major);
         else
           current_param := current_param + 1;
-          expected := CD.IdTab (current_param).xtyp;
-          if CD.IdTab (current_param).normal then
+          expected := CD.id_table (current_param).xtyp;
+          if CD.id_table (current_param).normal then
             ------------------------------------------------------
             --  Value parameter                                 --
             --  Only IN mode; value is passed by value (copy).  --
@@ -152,8 +152,8 @@ package body HAC_Sys.Parser.Calls is
               (CD,
                context,
                fsys,
-               A2S (CD.IdTab (current_param).name_with_case),
-               CD.IdTab (current_param).decl_kind,
+               A2S (CD.id_table (current_param).name_with_case),
+               CD.id_table (current_param).decl_kind,
                found);
 
             if Exact_Typ (found) /= Exact_Typ (expected) then
@@ -181,16 +181,16 @@ package body HAC_Sys.Parser.Calls is
          severity => major);
     end if;
     --
-    Emit_2 (CD, k_Call, call_type, Operand_2_Type (CD.Blocks_Table (CD.IdTab (ident_index).block_or_pkg_ref).PSize - 1));
+    Emit_2 (CD, k_Call, call_type, Operand_2_Type (CD.Blocks_Table (CD.id_table (ident_index).block_or_pkg_ref).PSize - 1));
     if call_type /= Normal_Procedure_Call then  --  Some for of entry call
       Emit_1 (CD, k_Return_Call, Operand_2_Type (call_type));  --  Return from Entry Call
     end if;
     --
-    if CD.IdTab (ident_index).lev < context.level then
+    if CD.id_table (ident_index).lev < context.level then
       Emit_2
         (CD,
          k_Update_Display_Vector,
-         Operand_1_Type (CD.IdTab (ident_index).lev),
+         Operand_1_Type (CD.id_table (ident_index).lev),
          Operand_2_Type (context.level));
     end if;
   end Subprogram_or_Entry_Call;
@@ -211,10 +211,10 @@ package body HAC_Sys.Parser.Calls is
     if CD.Sy = Period then
       In_Symbol (CD);                  --  Task Entry Selector
       if CD.Sy = IDent then
-        J := CD.Blocks_Table (CD.IdTab (i).block_or_pkg_ref).Last_Id_Idx;
-        CD.IdTab (0).name := CD.Id;
-        while CD.IdTab (J).name /= CD.Id loop
-          J := CD.IdTab (J).link;
+        J := CD.Blocks_Table (CD.id_table (i).block_or_pkg_ref).Last_Id_Idx;
+        CD.id_table (0).name := CD.Id;
+        while CD.id_table (J).name /= CD.Id loop
+          J := CD.id_table (J).link;
         end loop;
         --
         if J = 0 then
