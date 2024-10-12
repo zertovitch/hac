@@ -250,10 +250,10 @@ package HAC_Sys.Co_Defs is
   type Current_Unit_Data is record
     --  Current source code information and scanner data
     compiler_stream   : Source_Stream_Access;
-    source_file_name  : HAT.VString;         --  Indicative, for error messages
+    source_file_name  : HAT.VString;           --  Indicative, for error messages
     buffer            : Source_Buffer_String;
-    buffer_length     : Natural;
-    buffer_position   : Positive;
+    buffer_length     : Natural;               --  = 0 only on init or when exhausted.
+    buffer_position   : Positive;              --  Points to the next character to be read.
     --  Parsing
     location          : Symbol_Location;
     input_line        : Source_Line_String;
@@ -273,7 +273,9 @@ package HAC_Sys.Co_Defs is
      file_name  : in     String;         --  Can be a virtual name (editor title, zip entry)
      start_line : in     Natural := 0);  --  We could have a shebang or other Ada sources before
 
-  function Get_Source_Name (SD : Current_Unit_Data) return String;
+  function Get_Source_Name (CUD : Current_Unit_Data) return String;
+
+  function Source_Buffer_has_Data (CUD : Current_Unit_Data) return Boolean;
 
   type Compilation_Feedback is access procedure (message : String);
 

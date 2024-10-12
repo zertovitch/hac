@@ -55,10 +55,13 @@ package body HAC_Sys.Co_Defs is
     CUD.location.line    := start_line;
   end Set_Source_Stream;
 
-  function Get_Source_Name (SD : Current_Unit_Data) return String is
+  function Get_Source_Name (CUD : Current_Unit_Data) return String is
   begin
-    return HAT.VStr_Pkg.To_String (SD.source_file_name);
+    return HAT.VStr_Pkg.To_String (CUD.source_file_name);
   end Get_Source_Name;
+
+  function Source_Buffer_has_Data (CUD : Current_Unit_Data) return Boolean is
+  (CUD.buffer_length > 0);
 
   procedure Unchecked_Free is
     new Ada.Unchecked_Deallocation
