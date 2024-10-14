@@ -90,7 +90,14 @@ project HAC is
       "-ftracer", "-fweb",
       "-ftree-vectorize",
       "-frename-registers",
-      "-ffunction-sections") &
+      "-ffunction-sections",
+      "-fdata-sections") &
+     Compiler_Common_Options;
+      
+   Compiler_Small_Options :=
+     ("-Os",
+      "-ffunction-sections",
+      "-fdata-sections") &
      Compiler_Common_Options;
       
    Compiler_Profiling_Options :=
@@ -105,9 +112,9 @@ project HAC is
          when "Fast"            =>
            for Default_Switches ("ada") use Compiler_Fast_Options;
          when "Small"           =>
-           for Default_Switches ("ada") use ("-Os")           & Compiler_Common_Options;
+           for Default_Switches ("ada") use Compiler_Small_Options;
          when "Small_Unchecked" =>
-           for Default_Switches ("ada") use ("-Os", "-gnatp") & Compiler_Common_Options;
+           for Default_Switches ("ada") use Compiler_Small_Options & ("-gnatp");
          when "Profiling"       =>
            for Default_Switches ("ada") use Compiler_Profiling_Options;
          when "Debug"           =>
