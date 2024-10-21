@@ -796,13 +796,13 @@ package body HAC_Sys.Parser.Expressions is
 
     function Do_VString_Concatenation return Boolean is
     begin
-      Check_HAT_Operator_Visibility (Ampersand_Symbol);
-      --
-      --  RM References are about Unbounded_String (A.4.5).
       if X.TYP /= VStrings and y.TYP /= VStrings then
         return False;
-        --  Below this line, at least X or Y is a VString.
-      elsif Internally_VString_Set (X.TYP) and then Internally_VString_Set (y.TYP) then
+      end if;
+      --  Below this line, at least X or Y is a VString, defined in the HAT package.
+      Check_HAT_Operator_Visibility (Ampersand_Symbol);
+      --  RM References are about Unbounded_String (A.4.5).
+      if Internally_VString_Set (X.TYP) and then Internally_VString_Set (y.TYP) then
         --  v1 & v2              A.4.5 (15)
         --  v & Enum'Image (x)   A.4.5 (16),
         --  Enum'Image (x) & v   A.4.5 (17)
