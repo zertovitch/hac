@@ -26,7 +26,8 @@ project HAC_Exm is
       "console_io.adb",
       "covid_19_s.adb",
       "days_1901.adb",
-      "doors.adb",
+      "doors.adb",                  --  Rosetta Code
+      "draw_sphere.adb",            --  Rosetta Code
       "echo.adb",
       "einmaleins.adb",
       "env.adb",
@@ -38,13 +39,15 @@ project HAC_Exm is
       "hello.adb",
       "hello_big.adb",
       "gallery.adb",
+      "hilbert_curve.adb",          --  PDF demo, Rosetta Code
       "hofstadter.adb",
-      "koch_curve.adb",             --  PDF demo
+      "koch_curve.adb",             --  PDF demo, Rosetta Code
       "mandelbrot.adb",
-      "maze_gen.adb",
+      "maze_gen.adb",               --  Rosetta Code
       "merge_sort.adb",
       "names_in_boxes.adb",
       "native.adb",                 --  Example that works also for native targets.
+      "peano_curve.adb",            --  PDF demo, Rosetta Code
       "pdf_hello.adb",              --  PDF demo
       "prc.adb",
       "random.adb",
@@ -59,6 +62,7 @@ project HAC_Exm is
       "tasks_02.adb",
       "three_lakes_s.adb",
       "timing.adb",
+      "triangles_overlap.adb",      --  Rosetta Code
       "unit_a.adb");
 
       --

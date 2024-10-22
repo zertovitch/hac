@@ -70,7 +70,6 @@
 --------------------------------------------------------------------------
 
 with HAT;
-with Interfaces;
 
 package HAC_PDF_Out is
 
@@ -339,7 +338,8 @@ package HAC_PDF_Out is
   procedure Set_Margins (pdf : out PDF_Out_File; new_margins : Margins_Type);
   procedure Get_Margins (pdf : PDF_Out_File; result : out Margins_Type);
 
-  procedure Set_A4_portrait (r : out Rectangle);
+  procedure Set_A4_Portrait (r : out Rectangle);
+  procedure Set_A4_Landscape (r : out Rectangle);
 
   procedure Page_Setup (pdf : in out PDF_Out_File; layout : Rectangle);
 

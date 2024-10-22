@@ -1,20 +1,28 @@
 package body HAC_PDF_Out is
 
-  use HAT, Interfaces;
+  use HAT;
 
-  procedure Set_A4_portrait (r : out Rectangle) is
+  procedure Set_A4_Portrait (r : out Rectangle) is
   begin
     r.x_min  := 0.0;
     r.y_min  := 0.0;
     r.width  := 21.0 * one_cm;
     r.height := 29.7 * one_cm;
-  end Set_A4_portrait;
+  end Set_A4_Portrait;
+
+  procedure Set_A4_Landscape (r : out Rectangle) is
+  begin
+    r.x_min  := 0.0;
+    r.y_min  := 0.0;
+    r.width  := 29.7 * one_cm;
+    r.height := 21.0 * one_cm;
+  end Set_A4_Landscape;
 
   procedure Init (pdf : in out PDF_Out_File) is
     A4_portrait : Rectangle;
     cm_2_5_margins : Margins_Type;
   begin
-    Set_A4_portrait (A4_portrait);
+    Set_A4_Portrait (A4_portrait);
     --
     cm_2_5_margins.left   := cm_2_5;
     cm_2_5_margins.right  := cm_2_5;
@@ -261,7 +269,7 @@ package body HAC_PDF_Out is
     --
     procedure Font_Dictionary (pdf : in out PDF_Out_File);
 
-    function Current_Font_Name (pdf : PDF_Out_File) return VString;
+    --  function Current_Font_Name (pdf : PDF_Out_File) return VString;
 
     function Current_Font_Dictionary_Name (pdf : PDF_Out_File) return VString;
 
@@ -371,7 +379,7 @@ package body HAC_PDF_Out is
 
   procedure Finish_Page (pdf : in out PDF_Out_File) is
 
-    appended_object_idx : PDF_Index_Type;
+    --  appended_object_idx : PDF_Index_Type;
 
   begin
     if pdf.zone = nowhere then
@@ -393,7 +401,7 @@ package body HAC_PDF_Out is
     WL (pdf, +"<<");
     --  Font resources:
     Fonts.Font_Dictionary (pdf);
-    appended_object_idx := pdf.objects + 1;  --  Images contents to be appended after this object
+    --  appended_object_idx := pdf.objects + 1;  --  Images contents to be appended after this object
     --  Image resources:
     WL (pdf, +"  /XObject <<");
     --  Image_List (pdf);
@@ -740,9 +748,9 @@ package body HAC_PDF_Out is
   begin
     Init (pdf);
     --  Check if we are trying to re-use a half-finished object (ouch!):
-    if pdf.is_created and not pdf.is_closed then
-      null;  --  !!  raise PDF_stream_not_closed;
-    end if;
+    --  if pdf.is_created and not pdf.is_closed then
+    --    null;  --  !!  raise PDF_stream_not_closed;
+    --  end if;
     pdf.format := PDF_format;
     --  Set a default title (replaced when procedure Title is called).
     --  In Adobe Reader, this content can be copied to the clipboard.
@@ -939,15 +947,6 @@ package body HAC_PDF_Out is
       end loop;
       WL (pdf, +"    >>");
     end Font_Dictionary;
-
-    function Current_Font_Name (pdf : PDF_Out_File) return VString is
-    begin
-      if pdf.current_font in Standard_Font_Type then
-        return Standard_Font_Name (pdf.current_font);
-      else
-        return pdf.ext_font_name;
-      end if;
-    end Current_Font_Name;
 
     function Current_Font_Dictionary_Name (pdf : PDF_Out_File) return VString is
     begin
