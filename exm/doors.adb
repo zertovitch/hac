@@ -1,4 +1,4 @@
---  https://rosettacode.org/wiki/100_doors#Ada
+--  Special version (for HAC) of https://rosettacode.org/wiki/100_doors#Ada
 
 --        "There are 100 doors in a row that are all initially closed.
 --         You make 100 passes by the doors.
