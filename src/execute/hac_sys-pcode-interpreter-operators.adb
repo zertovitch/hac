@@ -6,6 +6,7 @@ with HAT;
 
 with Ada.Calendar,
      Ada.Exceptions,
+     Ada.Numerics,
      Ada.Strings.Fixed;
 
 package body HAC_Sys.PCode.Interpreter.Operators is
@@ -109,7 +110,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
     end case;
     Pop (ND);
   exception
-    when E : Constraint_Error =>
+    when E : Constraint_Error | Ada.Numerics.Argument_Error =>
       Exceptions.Raise_VM_Exception_from_Constraint_Error
         (Ada.Exceptions.Exception_Message (E));
   end Do_Binary_Operator;
@@ -618,6 +619,10 @@ package body HAC_Sys.PCode.Interpreter.Operators is
       when SF_Is_Open =>
         ND.S (Curr_TCB.T).I := Boolean'Pos (HAT.Is_Open (ND.S (Curr_TCB.T).Txt.all));
     end case;
+  exception
+    when E : Ada.Numerics.Argument_Error =>
+      Exceptions.Raise_VM_Exception_from_Constraint_Error
+        (Ada.Exceptions.Exception_Message (E));
   end Do_SF_Operator;
 
 end HAC_Sys.PCode.Interpreter.Operators;
