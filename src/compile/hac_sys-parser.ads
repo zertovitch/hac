@@ -18,6 +18,7 @@ package HAC_Sys.Parser is
     context                         : Defs.Flow_Context;    --  When context.level = 0, the rest
                                                             --    of this record is garbage.
     entity                          : Co_Defs.Entity_Kind;  --  Procedure, function or entry.
+    return_statement_seen           : Boolean;
     is_main                         : Boolean;
     block_id_index                  : Natural;
     previous_declaration_id_index   : Natural;              --  Subprogram "forward" declaration

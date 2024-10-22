@@ -236,6 +236,7 @@ package body HAC_Sys.Parser is
         else
           Error (CD, err_identifier_missing, severity => major);
         end if;
+        block_data.return_statement_seen := False;
       else
         Error (CD, err_RETURN_missing, severity => major);
       end if;
@@ -370,10 +371,19 @@ package body HAC_Sys.Parser is
           Error (CD, err_END_missing);
           return;
         end if;
+        if block_data.entity = funktion and not Is_a_block_statement then
+          if not block_data.return_statement_seen then
+            Error
+              (CD,
+               err_general_error,
+               "missing ""return"" statement in function body",
+               severity => major);
+          end if;
+        end if;
         --
         case CD.Sy is
           when IDent =>
-            --  Verify that the name after "end" matches the unit name.
+            --  Found an identifier after "END". Verify that the name matches the unit name.
             Check_ident_after_END;
           when CASE_Symbol | IF_Symbol | LOOP_Symbol =>
             --  An extra END CASE, END IF, or END LOOP was found.

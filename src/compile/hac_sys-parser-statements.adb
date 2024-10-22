@@ -406,13 +406,16 @@ package body HAC_Sys.Parser.Statements is
     begin
       In_Symbol;
       if CD.Sy = Semicolon then
+        --  RETURN;
         if block_data.entity = funktion then
           Error (CD, err_functions_must_return_a_value);
         end if;
       else
+        --  RETURN x;
         if block_data.entity = prozedure then
           Error (CD, err_procedures_cannot_return_a_value, severity => major);
         end if;
+        block_data.return_statement_seen := True;
         --  Calculate return value (destination: X; expression: Y).
         if CD.id_table (block_data.block_id_index).block_or_pkg_ref /= CD.Display (block_data.context.level) then
           raise Program_Error with
