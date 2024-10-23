@@ -1,4 +1,5 @@
 --  https://rosettacode.org/wiki/Determine_if_two_triangles_overlap
+--  This version is adapted to HAC's Ada subset.
 
 with HAT;
 
@@ -12,12 +13,18 @@ procedure Triangles_Overlap is
   type Triangle is array (Vertex) of Point;
 
   function Same_Side (A, B, M, N : Point) return Boolean is
-    function Aff (U : Point) return Real is
+  
+    function Z_of_Cross_Product_AB_AU (U : Point) return Real is
     begin
-      return (B (2) - A (2)) * (U (1) - A (1)) + (A (1) - B (1)) * (U (2) - A (2));
-    end Aff;
+      return
+        (B (2) - A (2)) * (U (1) - A (1)) -
+        (B (1) - A (1)) * (U (2) - A (2));
+    end Z_of_Cross_Product_AB_AU;
+    
   begin
-     return Aff (M) * Aff (N) >= 0.0;
+    --  If the Z-value of AB^AM and AB^AN have the same sign, or one or both is 0,
+    --  then the segment MN doesn't intersect the line containing segment AB.
+    return Z_of_Cross_Product_AB_AU (M) * Z_of_Cross_Product_AB_AU (N) >= 0.0;
   end Same_Side;
 
   function In_Side (t1, t2 : Triangle) return Boolean is

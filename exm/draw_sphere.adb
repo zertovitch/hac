@@ -1,4 +1,5 @@
 --  https://rosettacode.org/wiki/https://rosettacode.org/wiki/Draw_a_sphere
+--  This version is adapted to HAC's Ada subset.
 
 with HAT;
 
@@ -10,7 +11,7 @@ procedure Draw_Sphere is
     x, y, z : Real;
   end record;
 
-  shades : constant String (1 .. 10) := "@%#&eo*!:.";
+  shades : constant String (1 .. 14) := "@%&$#XMIeo!*:.";
 
   procedure Normalize (x, y, z : Real; pt : out Point) is
     len : constant Real := Sqrt (x * x + y * y + z * z);
@@ -54,8 +55,8 @@ procedure Draw_Sphere is
   end Draw_Sphere;
 
 begin
-  Draw_Sphere (20, 4, 0.1);
-  Draw_Sphere (10, 2, 0.4);
-  Draw_Sphere  (8, 2, 0.1);
-  Draw_Sphere  (8, 1, 0.4);
+  Draw_Sphere (25, 4, 0.02);
+  Draw_Sphere (16, 2, 0.02);
+  Draw_Sphere  (9, 2, 0.05);
+  Draw_Sphere  (4, 3, 0.10);
 end Draw_Sphere;
