@@ -61,7 +61,7 @@ procedure AoC_2023_15 is
     r (part_1) := r (part_1) + HASH (s);
   end Do_Part_1;
 
-  verbose : constant Boolean := False;
+  verbosity : constant Natural := 0;  --  0, 1, 2
 
   procedure Do_Part_2 is
     --  On our data, there are 4000 rules, 530 distinct labels and
@@ -80,11 +80,14 @@ procedure AoC_2023_15 is
     type Box_Type is record
       slot  : Slot_Array_Type;
       slots : Natural;
+      used  : Boolean;  --  For statistics in verbose mode: has had slots > 0 at least once.
     end record;
 
     box : array (0 .. 255) of Box_Type;
-    rules      : Natural := 0;  --  Just for statistics
-    used_boxes : Natural;       --  Just for statistics
+    --  Just for statistics in verbose mode:
+    rules      : Natural := 0;
+    used_boxes : Natural;
+    used_slots : Natural;
 
     rule : VString;
 
@@ -105,8 +108,10 @@ procedure AoC_2023_15 is
       end loop;
       b := HASH (lens.label);
       if c = '-' then
+        found := False;
         for s in 1 .. box (b).slots loop
           if box (b).slot (s).label = lens.label then
+            found := True;
             for t in s .. box (b).slots - 1 loop
               box (b).slot (t) := box (b).slot (t + 1);
             end loop;
@@ -115,7 +120,15 @@ procedure AoC_2023_15 is
             exit;
           end if;
         end loop;
+        if verbosity > 1 then
+          if found then
+            Put_Line ("Removed");
+          else
+            Put_Line ("Nothing to remove");
+          end if;
+        end if;
       else
+        --  "=n" case.
         lens.focal_length := Integer_Value (Slice (rule, i + 1, Length (rule)));
         found := False;
         for s in 1 .. box (b).slots loop
@@ -124,10 +137,18 @@ procedure AoC_2023_15 is
             box (b).slot (s).focal_length := lens.focal_length;
           end if;
         end loop;
-        if not found then
+        if found then
+          if verbosity > 1 then
+            Put_Line ("Replaced");
+          end if;
+        else
+          if verbosity > 1 then
+            Put_Line ("Added");
+          end if;
           --  Append new lens.
           box (b).slots := box (b).slots + 1;
           box (b).slot (box (b).slots) := lens;
+          box (b).used := True;
         end if;
       end if;
     end Process;
@@ -137,6 +158,7 @@ procedure AoC_2023_15 is
   begin
     for b in box'Range loop
       box (b).slots := 0;
+      box (b).used  := False;
     end loop;
     for i in 1 .. Length (data) loop
       c := Element (data, i);
@@ -149,15 +171,18 @@ procedure AoC_2023_15 is
     end loop;
     Process;
 
-    if verbose then
+    if verbosity > 0 then
       used_boxes := 0;
+      used_slots := 0;
       for b in box'Range loop
-        if box (b).slots > 0 then
+        if box (b).used then
           used_boxes := used_boxes + 1;
+          used_slots := used_slots + box (b).slots;
         end if;
       end loop;
       Put_Line (+"Rules: " & rules);
       Put_Line (+"Boxes used: " & used_boxes);
+      Put_Line (+"Slots used (distinct keys) on final state: " & used_slots);
     end if;
 
     r (part_2) := 0;

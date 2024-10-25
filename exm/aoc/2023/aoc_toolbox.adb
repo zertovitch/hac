@@ -173,24 +173,21 @@ package body AoC_Toolbox is
        value     :    out Integer)
     is
       b : constant Natural := HASH (key);
-      found : Boolean;
+      new_slots_total : Natural;
       use HAT;
     begin
-      found := False;
       for s in 1 .. hm (b).slots loop
         if hm (b).slot (s).key = key then
-          found := True;
           value := hm (b).slot (s).value;
-          exit;
+          return;
         end if;
       end loop;
-      if not found then
-        --  Append new value.
-        hm (b).slots := hm (b).slots + 1;
-        hm (b).slot (hm (b).slots).key   := key;
-        hm (b).slot (hm (b).slots).value := new_value;
-        value := new_value;
-      end if;
+      --  Append new value.
+      new_slots_total := hm (b).slots + 1;
+      hm (b).slot (new_slots_total).key   := key;
+      hm (b).slot (new_slots_total).value := new_value;
+      hm (b).slots := new_slots_total;
+      value := new_value;
     end Insert;
 
     procedure Find
@@ -200,20 +197,15 @@ package body AoC_Toolbox is
        value           :    out Integer)
     is
       b : constant Natural := HASH (key);
-      found : Boolean;
       use HAT;
     begin
-      found := False;
       for s in 1 .. hm (b).slots loop
         if hm (b).slot (s).key = key then
-          found := True;
           value := hm (b).slot (s).value;
           return;
         end if;
       end loop;
-      if not found then
-        value := not_found_value;
-      end if;
+      value := not_found_value;
     end Find;
 
   end Hash_Maps;

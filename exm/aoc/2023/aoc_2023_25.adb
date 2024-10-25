@@ -202,18 +202,21 @@ procedure AoC_2023_25 is
 
   busiest : Positive := 1;
 
+  --  We walk from each vertex to another, randomly chosen, vertex.
+  --  On the way, we increment the visited vertices' counts by 1.
+  --
   procedure Walk_Through_Randomly is
 
-    procedure Mark_Edge (edge_1, edge_2 : Positive) is
+    procedure Mark_Edge (vertex_1, vertex_2 : Positive) is
       busy : Natural;
     begin
       if verbosity >= 3 then
         Put_Line
-          (+"  edge " & Label (edge_1) & " to " & Label (edge_2));
+          (+"  edge " & Label (vertex_1) & " to " & Label (vertex_2));
       end if;
-      busy := link (edge_1, edge_2) + 1;
-      link (edge_1, edge_2) := busy;
-      link (edge_2, edge_1) := busy;
+      busy := link (vertex_1, vertex_2) + 1;
+      link (vertex_1, vertex_2) := busy;
+      link (vertex_2, vertex_1) := busy;
       busiest := Max (busiest, busy);
     end Mark_Edge;
 

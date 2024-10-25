@@ -106,10 +106,10 @@ procedure All_Silent_Tests is
        "hac " & examples_dir & "pkg_demo_gen.adb";
 
   begin
-    Put_Line ("    _______________________      _____________________________________________");
-    Put_Line ("   / *       H A C       * \    /  ""Silent tests"": when the failure count     \");
-    Put_Line ("   |   Regression Testing  |    |  is zero, then the test suite is all fine.  |");
-    Put_Line ("   \_______________________/    \_____________________________________________/");
+    Put_Line ("    ______________________      _____________________________________________");
+    Put_Line ("   /    *   H A C   *     \    /  ""Silent tests"": when the failure count     \");
+    Put_Line ("   |  Regression Testing  |    |  is zero, then the test suite is all fine.  |");
+    Put_Line ("   \______________________/    \_____________________________________________/");
     New_Line;
     Build_HAC (hac_build_success);  --  Redundant if this program is itself run through HAC.
     if not hac_build_success then
