@@ -93,7 +93,6 @@ procedure AoC_2023_17 is
 
     procedure Visit (dir : Direction) is
       len_to, ins : Integer;
-      ok_step : Boolean;
       new_node : Node;
       vec : Point;
       --  Jump over x, y positions that represent invalid states:
@@ -118,6 +117,13 @@ procedure AoC_2023_17 is
             jump := 4;
         end case;
       end if;
+      --  The number of steps in a single direction is limited:
+      case part is
+        when part_1 =>
+          if s.steps > 3 then return; end if;
+        when part_2 =>
+          if s.steps > 10 then return; end if;
+      end case;
       s.dir := dir;
       case dir is
         when north => vec.x :=  0; vec.y := -1;
@@ -126,16 +132,9 @@ procedure AoC_2023_17 is
         when west  => vec.x := -1; vec.y :=  0;
       end case;
       s.pt.x := cur_s.pt.x + jump * vec.x;
-      s.pt.y := cur_s.pt.y + jump * vec.y;
-      if s.pt.x in 1 .. n and then s.pt.y in 1 .. n then
-        --  The number of steps in a single direction is limited:
-        case part is
-          when part_1 =>
-            ok_step := s.steps <= 3;
-          when part_2 =>
-            ok_step := s.steps <= 10;
-        end case;
-        if ok_step then
+      if s.pt.x in 1 .. n then
+        s.pt.y := cur_s.pt.y + jump * vec.y;
+        if s.pt.y in 1 .. n then
           len_to := cur_len;
           for count in 1 .. jump loop
             len_to := len_to + map (cur_s.pt.x + count * vec.x, cur_s.pt.y + count * vec.y);
