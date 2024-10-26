@@ -99,21 +99,14 @@ procedure AoC_2023_17 is
       --  Jump over x, y positions that represent invalid states:
       jump : Positive;
     begin
-      case dir is
-        when north => vec.x :=  0; vec.y := -1;
-        when east  => vec.x := +1; vec.y :=  0;
-        when south => vec.x :=  0; vec.y := +1;
-        when west  => vec.x := -1; vec.y :=  0;
-      end case;
-      s := cur_s;
-      s.dir := dir;
-      if dir = cur_s.dir then
-        s.steps := cur_s.steps + 1;
-        jump := 1;
-      elsif cur_s.dir /= nil and then s.dir = Opposite (cur_s.dir) then
+      if cur_s.dir /= nil and then dir = Opposite (cur_s.dir) then
         --  Avoid gaming the rules by going back and forth (U-turns).
         --  Turns must be 90 degrees.
         return;
+      elsif dir = cur_s.dir then
+        --  Same direction
+        s.steps := cur_s.steps + 1;
+        jump := 1;
       else
         --  New direction: turn.
         case part is
@@ -125,8 +118,15 @@ procedure AoC_2023_17 is
             jump := 4;
         end case;
       end if;
-      s.pt.x := s.pt.x + jump * vec.x;
-      s.pt.y := s.pt.y + jump * vec.y;
+      s.dir := dir;
+      case dir is
+        when north => vec.x :=  0; vec.y := -1;
+        when east  => vec.x := +1; vec.y :=  0;
+        when south => vec.x :=  0; vec.y := +1;
+        when west  => vec.x := -1; vec.y :=  0;
+      end case;
+      s.pt.x := cur_s.pt.x + jump * vec.x;
+      s.pt.y := cur_s.pt.y + jump * vec.y;
       if s.pt.x in 1 .. n and then s.pt.y in 1 .. n then
         --  The number of steps in a single direction is limited:
         case part is
@@ -140,9 +140,9 @@ procedure AoC_2023_17 is
           for count in 1 .. jump loop
             len_to := len_to + map (cur_s.pt.x + count * vec.x, cur_s.pt.y + count * vec.y);
           end loop;
-          if len_to < best (s.pt.x, s.pt.y, s.dir, s.steps) then
-            --  Found a bette path to target state s.
-            best (s.pt.x, s.pt.y, s.dir, s.steps) := len_to;
+          if len_to < best (s.pt.x, s.pt.y, dir, s.steps) then
+            --  Found a better path to target state s.
+            best (s.pt.x, s.pt.y, dir, s.steps) := len_to;
             --
             --  Insert in a sorted way.
             --
@@ -191,10 +191,9 @@ procedure AoC_2023_17 is
     cur_len     := 0;
 
     loop
-      Visit (west);
-      Visit (east);
-      Visit (north);
-      Visit (south);
+      for d in Direction loop
+        Visit (d);
+      end loop;
       --
       --  Switch to the next best explored point.
       --
