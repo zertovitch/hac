@@ -110,8 +110,12 @@ procedure AoC_2023_17 is
       if dir = cur_s.dir then
         s.steps := cur_s.steps + 1;
         jump := 1;
+      elsif cur_s.dir /= nil and then s.dir = Opposite (cur_s.dir) then
+        --  Avoid gaming the rules by going back and forth (U-turns).
+        --  Turns must be 90 degrees.
+        return;
       else
-        --  Turn.
+        --  New direction: turn.
         case part is
           when part_1 =>
             s.steps := 1;
@@ -131,11 +135,6 @@ procedure AoC_2023_17 is
           when part_2 =>
             ok_step := s.steps <= 10;
         end case;
-        ok_step :=
-          ok_step and then
-            --  Avoid gaming the rules by going back and forth (U-turns).
-            --  Turns must be 90 degrees.
-            (cur_s.dir = nil or else s.dir /= Opposite (cur_s.dir));
         if ok_step then
           len_to := cur_len;
           for count in 1 .. jump loop
