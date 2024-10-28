@@ -165,6 +165,8 @@ package HAC_Sys.Co_Defs is
   procedure Elevate_to_Maybe (item : in out No_Maybe_Yes)
   with Inline;
 
+  --  Elevate certainty level to "maybe" or "yes", depending on the context.
+  --
   procedure Elevate_to_Maybe_or_Yes (item : in out No_Maybe_Yes; context : Flow_Context)
   with Inline;
 

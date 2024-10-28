@@ -864,18 +864,25 @@ package body HAC_Sys.Parser.Helpers is
      item    : in out Identifier_Table_Entry)
   is
   begin
+    --  This is for the variable's overall lifetime analysis:
+    --
     Elevate_to_Maybe_or_Yes (item.is_read, context);
+
     if item.is_written_after_init = no      --  Not overwritten in a subprogram, nor in the above statements.
        and then item.is_initialized = none  --  Not initialized, even implicitly.
        and then context.level = item.lev    --  Not a within subprogram (uncertainty since call sequence is unknown).
     then
+      --  By following the top-down flow, we notice that the variable or parameter
+      --  was never written until this point, including in any nested subprogram.
+      --
       Remark
         (CD,
          warn_read_but_not_written,
          Nice_Image (item) &
          (if context.is_in_cond_within_loop then
-            --  We are not sure that the expression is
-            --  evaluated in the first iteration of any loop.
+            --  We are within a condition, itself within a loop.
+            --  Then, we cannot be not sure that the expression is
+            --  evaluated in the first iteration of all loops.
             " may be"
           else
             --  We are sure that the expression is evaluated
