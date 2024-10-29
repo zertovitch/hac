@@ -299,7 +299,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         --  [T] := Max ([T], [T+1]) :
         ND.S (Curr_TCB.T).R := HAC_Float'Max (ND.S (Curr_TCB.T).R, ND.S (Curr_TCB.T + 1).R);
       when SF_String_to_VString =>   --  Unary "+", equivalent to the call To_VString (S)
-        idx := Integer (ND.S (Curr_TCB.T).I);      --  Index in the stack
+        idx := Integer (ND.S (Curr_TCB.T).I);      --  Index in the stack (the string's address)
         len := Integer (ND.IR.X);                  --  Length of string
         ND.S (Curr_TCB.T) := GR_VString (Get_String_from_Stack (ND, idx, len));
       when SF_Literal_to_VString =>  --  Unary "+", equivalent to the call To_VString ("abc")

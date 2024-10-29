@@ -315,6 +315,19 @@ package body HAC_Sys.Parser.Expressions is
           if Internally_VString_Set (X.TYP) and then Internally_VString_Set (Y.TYP) then
             --  The internal type is actually a VString on both sides.
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
+          elsif Is_Char_Array (CD, X) and Is_Char_Array (CD, Y) then
+            --  String object comparison, e.g. sx = sy
+            Emit (CD, k_Swap);
+            Emit_Std_Funct
+              (CD,
+               SF_String_to_VString,
+               Operand_1_Type (CD.Arrays_Table (X.Ref).Array_Size));
+            Emit (CD, k_Swap);
+            Emit_Std_Funct
+              (CD,
+               SF_String_to_VString,
+               Operand_1_Type (CD.Arrays_Table (Y.Ref).Array_Size));
+            Emit_Comparison_Instruction (CD, Rel_OP, VStrings);
           elsif X.TYP = Y.TYP then
             if X.TYP = Enums and then X.Ref /= Y.Ref then
               Issue_Comparison_Type_Mismatch_Error;
@@ -324,6 +337,7 @@ package body HAC_Sys.Parser.Expressions is
               Issue_Undefined_Operator_Error (CD, Rel_OP, X, Y);
             end if;
           elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
+            --  s = "abc"
             --  We needs convert the literal before anything else,
             --  since it takes two elements on the stack.
             Emit_Std_Funct (CD, SF_Literal_to_VString);

@@ -1,12 +1,10 @@
---  Burrows-Wheeler transform: block-sorting
+--  Burrows-Wheeler Transform: block-sorting
 --  preprocessing for improving data compression.
 --  This technique is used in the BZip2 format.
 --
 --  https://en.wikipedia.org/wiki/Burrows%E2%80%93Wheeler_transform
 --
 --  HAC example derived from extras/bwt* files in Zip-Ada project.
---
---  See "!!" for improvements to be done in HAC.
 --
 with HAT;
 
@@ -43,10 +41,7 @@ procedure BWT is
         stop := False;
         while j > step and not stop loop
           j := j - step;
-          if +b (j) > +temp then
-            --  !! HAC: so far we need to add an unary "+" for converting
-            --     to VString and compare the strings.
-            --  TBD in HAC: ">" for array-of-discrete comparisons (RM 4.5.2 (26)).
+          if b (j) > temp then
             b (j + step) := b (j);
           else
             b (j + step) := temp;
@@ -88,7 +83,7 @@ begin
   --  Put_Line (+"Enter " & n & " characters (until and including '*' position");
   --  Put_Line ((n - 1) * '.' & '*');
   --  Get_Line (line);
-  line := +"Barbapapa";
+  line := +"barbapapa";
   --
   for i in 1 .. n loop
     s (i) := Element (line, i);
@@ -101,23 +96,27 @@ begin
     end loop;
   end loop;
   --
-  Show (m, +"unsorted (rotations)", 1);
+  Show (m, +"unsorted ( (i-1) rotations for row i )", 1);
+  -----------------
+  --  Transform  --
+  -----------------
   Shell_Sort (m);
   for i in 1 .. n loop
     t (i) := m (i)(n);
-    if +m (i) = +s then
-      --  !! HAC : without VString (remove the "+"): why does the "=" comparison find incompatible types?
+    if m (i) = s then
       row_index := i;  --  Found row with the message with 0 rotation.
     end if;
   end loop;
   Show (m, +"sorted", row_index);
   --
-  Put_Line ("BWT output with transform:");
+  Put_Line ("BWT output (last column of matrix):");
   Put_Line (n * '-');
-  Put_Line (t);
+  Put_Line ("t = " & t);
   Put_Line (n * '-');
   Put_Line (+"Index of row containing the original message is: " & row_index);
-  --  De-transform
+  --------------------
+  --  De-transform  --
+  --------------------
   for i in 1 .. n loop
     for j in 1 .. n loop
       m (i)(j) := ' ';
@@ -134,7 +133,9 @@ begin
     --  Insert transformed string t as first column (again and again).
     --
     --  The miracle: after iteration #1, t(i) is the correct predecessor
-    --  of the character on sorted row i. This gives the full list of pairs.
+    --  of the character on sorted partial row i (1 character).
+    --  This gives the full list of pairs.
+    --
     --  After 2nd sorting (end of iteration #2), t(i) is also the correct
     --  predecessor each sorted pair.
     --  We have then the list of all triplets. And so on.
@@ -144,6 +145,7 @@ begin
     end loop;
     Show (m, +"insert #" & iter, 0);
     Shell_Sort (m);
+    Show (m, +"sort #" & iter, 0);
   end loop Shift_Insert_Sort;
   --  After iteration n we have a sorted list of all rotated
   --  versions of the original string. The table is identical
