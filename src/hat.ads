@@ -177,13 +177,13 @@ package HAT is
   function Starts_With (Item : VString; Pattern : VString) return Boolean;
   function Tail (Source : VString; Count : Natural) return VString;
 
-  --  Head_Before_Match returns the head of Source preceding first occurence of Pattern.
+  --  Head_Before_Match returns the head of Source preceding first occurrence of Pattern.
   --  The result is empty if Pattern is not found.
   function Head_Before_Match (Source : VString; Pattern : Character) return VString;
   function Head_Before_Match (Source : VString; Pattern : String) return VString;
   function Head_Before_Match (Source : VString; Pattern : VString) return VString;
 
-  --  Tail_After_Match returns the tail of Source following last occurence of Pattern.
+  --  Tail_After_Match returns the tail of Source following last occurrence of Pattern.
   --  The result is empty if Pattern is not found.
   function Tail_After_Match (Source : VString; Pattern : Character) return VString;
   function Tail_After_Match (Source : VString; Pattern : String) return VString;
