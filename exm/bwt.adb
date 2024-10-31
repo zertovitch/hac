@@ -11,7 +11,8 @@ with HAT;
 procedure BWT is
   use HAT;
 
-  n : constant := 9;
+  n : constant := 52;
+  default : constant VString := +"Mary had a little lamb, its fleece was white as snow";
 
   subtype Row is String (1 .. n);
 
@@ -83,7 +84,7 @@ begin
   --  Put_Line (+"Enter " & n & " characters (until and including '*' position");
   --  Put_Line ((n - 1) * '.' & '*');
   --  Get_Line (line);
-  line := +"barbapapa";
+  line := default;
   --
   for i in 1 .. n loop
     s (i) := Element (line, i);
