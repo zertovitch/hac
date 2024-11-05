@@ -1,4 +1,4 @@
---  https://rosettacode.org/wiki/https://rosettacode.org/wiki/Draw_a_sphere
+--  https://rosettacode.org/wiki/Draw_a_sphere
 --  This version is inspired from the ASCII Art C program with
 --  some improvements and explanations.
 
