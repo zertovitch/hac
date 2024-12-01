@@ -233,6 +233,8 @@ procedure All_Silent_Tests is
     --  Launch_AoC (+"2023", +"24", +"24192 664822352550558");      --  Never Tell Me The Odds (depends on floating-point accuracy of HAT.Real)
     Launch_AoC (+"2023", +"25", +"54");                             --  Snowverload (example's data)
     --
+    Launch_AoC (+"2024", +"01", +"2086478 24941624");               --  Historian Hysteria (sorting)
+    --
     New_Line (2);
     New_Line;
     Put_Line ("----> Done.");
