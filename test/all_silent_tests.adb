@@ -235,6 +235,7 @@ procedure All_Silent_Tests is
     --
     Launch_AoC (+"2024", +"01", +"2086478 24941624");               --  Historian Hysteria (sorting)
     Launch_AoC (+"2024", +"02", +"332 398");                        --  Red-Nosed Reports
+    Launch_AoC (+"2024", +"03", +"173529487 99532691");             --  Mull It Over
     --
     New_Line (2);
     New_Line;

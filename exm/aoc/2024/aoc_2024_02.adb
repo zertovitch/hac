@@ -102,6 +102,6 @@ begin
     Put_Line (+"Part 1: " & r (part_1));
     Put_Line (+"Part 2: " & r (part_2));
     --  Part 1: validated by AoC: 332
-    --  Part 2: validated by AoC: .
+    --  Part 2: validated by AoC: 398
   end if;
 end AoC_2024_02;
