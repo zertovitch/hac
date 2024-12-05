@@ -237,6 +237,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"02", +"332 398");                        --  Red-Nosed Reports
     Launch_AoC (+"2024", +"03", +"173529487 99532691");             --  Mull It Over
     Launch_AoC (+"2024", +"04", +"2483 1925");                      --  Ceres Search
+    Launch_AoC (+"2024", +"05", +"5166");                           --  Print Queue
     --
     New_Line (2);
     New_Line;
@@ -248,7 +249,7 @@ procedure All_Silent_Tests is
       Put_Line (+"*** There are FAILED tests ***");
     end if;
     Put_Line ("Summary:");
-    Put_Line (+"         " & successes & " successes");
+    Put_Line (+"        " & successes & " successes");
     Put_Line (+"          " & failures & " failures");
     New_Line;
   end Launch_Tests;

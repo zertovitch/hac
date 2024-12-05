@@ -48,8 +48,8 @@ project AoC_2024 is
      -- "aoc_2024_08.adb",
      -- "aoc_2024_07.adb",
      -- "aoc_2024_06.adb",
-     -- "aoc_2024_05.adb",
-     ("aoc_2024_04.adb",
+     ("aoc_2024_05.adb",
+      "aoc_2024_04.adb",
       "aoc_2024_03.adb",
       "aoc_2024_02.adb",
       "aoc_2024_01.adb");
