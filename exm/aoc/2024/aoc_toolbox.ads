@@ -57,6 +57,8 @@ package AoC_Toolbox is
 
   function Opposite (d : Direction) return Direction;
 
+  function Turn_Right (d : Direction) return Direction;
+
   -------------------
   --  3D Geometry  --
   -------------------

@@ -92,6 +92,16 @@ package body AoC_Toolbox is
     end case;
   end Opposite;
 
+  function Turn_Right (d : Direction) return Direction is
+  begin
+    case d is
+      when north => return east;
+      when south => return west;
+      when east  => return south;
+      when west  => return north;
+    end case;
+  end Turn_Right;
+
   function Dist_L1_3D (a, b : Point_3D) return Natural is
   begin
     return
