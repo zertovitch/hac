@@ -389,7 +389,7 @@ package body HAC_Pkg is
   begin
     if verbosity >= 2 then
       if BD.CD.Is_HAC_VM then
-        Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
+        Put_Line (HAC_margin_2 & "Starting VM interpreter...");
       else
         Put_Line (HAC_margin_2 & "Running native (if target = native)");
       end if;

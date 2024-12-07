@@ -93,7 +93,7 @@ procedure AoC_2024_05 is
         elsif correct and then part = part_2 then
           r (part_2) := r (part_2) + update ((lu + 1) / 2);
         end if;
-        lu := 0;
+        lu := 0;  --  Clear data (update).
       else
         Get (f, sep);
       end if;

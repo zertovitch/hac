@@ -82,6 +82,15 @@ package body AoC_Toolbox is
       HAT.Max (abs (a.x - b.x), abs (a.y - b.y));
   end Dist_Max;
 
+  procedure Rotate (x, y : in out HAT.Real; a : HAT.Real) is
+    use HAT;
+    nx : Real;
+  begin
+    nx := Cos (a) * x - Sin (a) * y;
+    y  := Sin (a) * x + Cos (a) * y;
+    x  := nx;
+  end Rotate;
+
   function Opposite (d : Direction) return Direction is
   begin
     case d is
@@ -139,14 +148,18 @@ package body AoC_Toolbox is
     end if;
   end Sgn_64;
 
-  procedure Rotate (x, y : in out HAT.Real; a : HAT.Real) is
+  function Image (i : Interfaces.Integer_64) return HAT.VString is
     use HAT;
-    nx : Real;
+    res : VString := +i'Image;
   begin
-    nx := Cos (a) * x - Sin (a) * y;
-    y  := Sin (a) * x + Cos (a) * y;
-    x  := nx;
-  end Rotate;
+    if i < 0 then
+      return res;
+    else
+      --  Remove the leading ' '.
+      Delete (res, 1, 1);
+      return res;
+    end if;
+  end Image;
 
   function Deg_2_Rad (a : HAT.Real) return HAT.Real is
     use HAT;

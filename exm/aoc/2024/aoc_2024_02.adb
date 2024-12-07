@@ -77,9 +77,9 @@ procedure AoC_2024_02 is
             r (part_2) := r (part_2) + 1;
           end if;
         end if;
-
-        last := 0;
+        last := 0;  --  Clear data (report).
       end if;
+      
     end loop;
     Close (f);
   end Read_Data;

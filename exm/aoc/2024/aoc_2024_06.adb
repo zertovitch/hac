@@ -122,7 +122,7 @@ procedure AoC_2024_06 is
 
     for obs_x in 1 .. n loop
       for obs_y in 1 .. n loop
-        if map (obs_x, obs_y) /= '#' then
+        if map (obs_x, obs_y) = '.' then
           --  Free cell: set obstacle here.
 
           for yy in 1 .. n loop
@@ -177,7 +177,7 @@ begin
   if not compiler_test_mode then
     Do_Part_2;
   end if;
-  
+
   if compiler_test_mode then
     if r (part_1) /= Integer_Value (Argument (1)) then
       Set_Exit_Status (1);  --  Compiler test failed.

@@ -87,6 +87,8 @@ package AoC_Toolbox is
 
   function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64;
 
+  function Image (i : Interfaces.Integer_64) return HAT.VString;
+
   function Deg_2_Rad (a : HAT.Real) return HAT.Real;
 
   -----------------
