@@ -240,6 +240,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"05", +"5166");                           --  Print Queue
     Launch_AoC (+"2024", +"06", +"5461");                           --  Guard Gallivant (part 2 takes 4 minutes on HAC!)
     Launch_AoC (+"2024", +"07", +"850435817339");                   --  Bridge Repair (part 2 takes 3 minutes on HAC!)
+    Launch_AoC (+"2024", +"08", +"409 1308");                       --  Resonant Collinearity
     --
     New_Line (2);
     New_Line;
