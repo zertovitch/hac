@@ -244,6 +244,11 @@ begin  --  CASE_Statement
     --  Patch k_Jump addresses to the instruction coming after "END CASE;" :
     CD.ObjCode (ExitTab (K)).Y := Operand_2_Type (CD.LC);
   end loop;
-  Need (CD, END_Symbol,  err_END_missing);           --  END (CASE)
-  Need (CD, CASE_Symbol, err_missing_closing_CASE);  --  (END) CASE
+  Need (CD, END_Symbol,  err_END_missing);             --  END (case)
+  if CD.Sy in LOOP_Symbol | IF_Symbol | IDent then
+    Error (CD, err_missing_closing_CASE_2, severity => minor);
+    In_Symbol;
+  else
+    Need (CD, CASE_Symbol, err_missing_closing_CASE);  --  (end) CASE
+  end if;
 end HAC_Sys.Parser.Statements.CASE_Statement;

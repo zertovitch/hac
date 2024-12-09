@@ -147,7 +147,7 @@ package body HAC_Sys.Errors is
         return "missing ""then""";
       when err_IN_missing  =>
         return "missing ""in""";
-      when err_closing_LOOP_missing =>
+      when err_missing_closing_LOOP | err_missing_closing_LOOP_2 =>
         return "missing closing ""loop""";
       when err_BEGIN_missing =>
         return "missing ""begin""";
@@ -161,13 +161,13 @@ package body HAC_Sys.Errors is
         return "control character present in source ";
       when err_RECORD_missing =>
         return "missing ""record""";
-      when err_missing_closing_IF =>
+      when err_missing_closing_IF | err_missing_closing_IF_2 =>
         return "missing closing ""if""";
       when err_WHEN_missing =>
         return "missing ""when"" (must have at least one alternative)";
       when err_FINGER_missing =>
         return "missing the finger ""=>""";
-      when err_missing_closing_CASE =>
+      when err_missing_closing_CASE | err_missing_closing_CASE_2 =>
         return "missing closing ""case""";
       when err_functions_must_return_a_value =>
         return "functions must return a value";
@@ -316,9 +316,12 @@ package body HAC_Sys.Errors is
       err_OF_instead_of_IS                   => (replace_token, +"is"),
       err_THEN_instead_of_Arrow              => (replace_token, +"=>"),
       err_FINGER_missing                     => (insert,        +" => "),
-      err_closing_LOOP_missing               => (insert,        +" loop"),
+      err_missing_closing_LOOP               => (insert,        +" loop"),
+      err_missing_closing_LOOP_2             => (replace_token, +"loop"),
       err_missing_closing_CASE               => (insert,        +" case"),
+      err_missing_closing_CASE_2             => (replace_token, +"case"),
       err_missing_closing_IF                 => (insert,        +" if"),
+      err_missing_closing_IF_2               => (replace_token, +"if"),
       err_RECORD_missing                     => (insert,        +" record"),
       err_closing_parenthesis_missing        => (insert,        +")"),
       err_END_LOOP_ident_missing             => (insert,        +"[ something... ]"),
