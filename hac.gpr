@@ -141,6 +141,9 @@ project HAC is
    case HAC_OS is
       when "Linux" =>
          Linker_Common_Options := Linker_Common_Options & "-static";  --  Ensures a consistent run-time library
+      when "Win64" =>
+         Linker_Common_Options :=
+            Linker_Common_Options & ("obj/hac_icon.rbj");
       when others  =>
    end case;
 

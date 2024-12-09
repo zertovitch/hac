@@ -1,1 +1,1 @@
-gprbuild %1 -P hac -XHAC_Build_Mode=Fast -largs obj/hac_icon.rbj
+gprbuild %1 -P hac -XHAC_Build_Mode=Fast -XHAC_OS=Win64

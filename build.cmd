@@ -1,7 +1,7 @@
 @echo off
 
-gprbuild %1 -P hac           -largs obj/hac_icon.rbj
-gprbuild %1 -P demo/hac_demo -largs obj/hac_icon.rbj
+gprbuild %1 -P hac           -XHAC_OS=Win64
+gprbuild %1 -P demo/hac_demo -XHAC_OS=Win64
 
 if %errorlevel% == 9009 goto error
 

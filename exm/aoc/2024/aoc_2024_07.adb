@@ -140,7 +140,7 @@ begin
   r (part_2) := 0;
   Read_Data;
   if compiler_test_mode then
-    if r (part_1) /= Integer_64'Value (-Argument (1)) then
+    if r (part_1) /= Integer_64'Value (To_String (Argument (1))) then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
