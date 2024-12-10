@@ -242,6 +242,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"07", +"850435817339");                   --  Bridge Repair (part 2 takes 3 minutes on HAC!)
     Launch_AoC (+"2024", +"08", +"409 1308");                       --  Resonant Collinearity
     Launch_AoC (+"2024", +"09", +"6340197768906");                  --  Disk Fragmenter (part 2 takes 34 seconds on HAC!)
+    Launch_AoC (+"2024", +"10", +"737 1619");                       --  Hoof It
     --
     New_Line (2);
     New_Line;
