@@ -85,28 +85,28 @@ package AoC_Toolbox is
   --  Miscellaneous --
   --------------------
 
-  function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64;
+  function Sgn_64 (i : Integer_64) return Integer_64;
 
-  function Image (i : Interfaces.Integer_64) return HAT.VString;
+  function Image (i : Integer_64) return HAT.VString;
 
   function Deg_2_Rad (a : HAT.Real) return HAT.Real;
 
-  -----------------
-  --  Hash maps  --
-  -----------------
+  ---------------------------------------------
+  --  Hash maps (extended from AoC_2023_15)  --
+  ---------------------------------------------
 
   package Hash_Maps is
 
     type Hash_Slot_Type is record
       key   : HAT.VString;
-      value : Integer;
+      value : Integer_64;
     end record;
 
-    type Hash_Slot_Array_Type is array (1 .. 20) of Hash_Slot_Type;
+    type Hash_Slot_Array_Type is array (1 .. 25) of Hash_Slot_Type;
 
     type Hash_Box_Type is record
       slot  : Hash_Slot_Array_Type;
-      slots : Natural;  --  HAC wish: := 0;
+      slots : Natural;  --  HAC wish: initialized value := 0;
     end record;
 
     type Hash_Map_Type is array (0 .. 255) of Hash_Box_Type;
@@ -118,14 +118,15 @@ package AoC_Toolbox is
     procedure Insert
       (hm        : in out Hash_Map_Type;
        key       : in     HAT.VString;
-       new_value : in     Integer;
-       value     :    out Integer);  --  If key exists, we get existing value.
+       new_value : in     Integer_64;
+       replace   : in     Boolean;      --  Replace existing value ?
+       value     :    out Integer_64);  --  If key exists, we get previous value.
 
     procedure Find
       (hm              : in out Hash_Map_Type;
        key             : in     HAT.VString;
-       not_found_value : in     Integer;
-       value           :    out Integer);
+       not_found_value : in     Integer_64;
+       value           :    out Integer_64);
 
   end Hash_Maps;
 

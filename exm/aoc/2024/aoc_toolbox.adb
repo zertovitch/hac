@@ -137,7 +137,7 @@ package body AoC_Toolbox is
     end loop;
   end Skip_till_Space;
 
-  function Sgn_64 (i : Interfaces.Integer_64) return Interfaces.Integer_64 is
+  function Sgn_64 (i : Integer_64) return Integer_64 is
   begin
     if i > 0 then
       return 1;
@@ -148,7 +148,7 @@ package body AoC_Toolbox is
     end if;
   end Sgn_64;
 
-  function Image (i : Interfaces.Integer_64) return HAT.VString is
+  function Image (i : Integer_64) return HAT.VString is
     use HAT;
     res : VString := +i'Image;
   begin
@@ -169,7 +169,7 @@ package body AoC_Toolbox is
 
   package body Hash_Maps is
 
-    --  Hash map code taken from AoC_2023_15's implementation.
+    --  Hash map code extended from AoC_2023_15's implementation.
     --  HASH = Holiday ASCII String Helper :-).
 
     function HASH (s : HAT.VString) return Natural is
@@ -192,8 +192,9 @@ package body AoC_Toolbox is
     procedure Insert
       (hm        : in out Hash_Map_Type;
        key       : in     HAT.VString;
-       new_value : in     Integer;
-       value     :    out Integer)
+       new_value : in     Integer_64;
+       replace   : in     Boolean;      --  Replace existing value ?
+       value     :    out Integer_64)   --  If key exists, we get previous value.
     is
       b : constant Natural := HASH (key);
       new_slots_total : Natural;
@@ -202,6 +203,9 @@ package body AoC_Toolbox is
       for s in 1 .. hm (b).slots loop
         if hm (b).slot (s).key = key then
           value := hm (b).slot (s).value;
+          if replace then
+            hm (b).slot (s).value := new_value;
+          end if;
           return;
         end if;
       end loop;
@@ -216,8 +220,8 @@ package body AoC_Toolbox is
     procedure Find
       (hm              : in out Hash_Map_Type;
        key             : in     HAT.VString;
-       not_found_value : in     Integer;
-       value           :    out Integer)
+       not_found_value : in     Integer_64;
+       value           :    out Integer_64)
     is
       b : constant Natural := HASH (key);
       use HAT;
