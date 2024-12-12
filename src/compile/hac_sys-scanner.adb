@@ -3,8 +3,10 @@ with HAC_Sys.Defs,
 
 with HAT;
 
-with Ada.IO_Exceptions,
-     Ada.Streams;
+with Ada.Directories,
+     Ada.IO_Exceptions,
+     Ada.Streams,
+     Ada.Strings.Fixed;
 
 package body HAC_Sys.Scanner is
 
@@ -668,6 +670,38 @@ package body HAC_Sys.Scanner is
       end if;
     end Scan_String_Literal;
 
+    procedure Process_Special_Comment (annotation : String) is  --  Process "--!"
+
+      cmd_add_to_path : constant String := "hac_add_to_path ";
+
+      procedure Add_to_Path (rel_or_abs_dir : String) is
+        use Ada.Directories;
+        cur_dir : constant String := Current_Directory;
+        src_dir : constant String := Containing_Directory (To_String (CD.CUD.source_file_name));
+      begin
+        --  Go to the specified directory, which is absolute or relative
+        --  to the source file's directory
+        --
+        --  Put_Line ("Ah ha! [" & rel_or_abs_dir & ']');
+        Ada.Directories.Set_Directory (src_dir);
+        --  Put_Line ("src_dir [" & src_dir & ']');
+        Ada.Directories.Set_Directory (rel_or_abs_dir);
+        --  Put_Line ("abs_dir [" & Ada.Directories.Current_Directory & ']');
+        CD.cat.Add_to_Source_Path (Ada.Directories.Current_Directory);
+
+        --  Restore current directory:
+        Ada.Directories.Set_Directory (cur_dir);
+      end Add_to_Path;
+
+    begin
+      if Ada.Strings.Fixed.Index (annotation, cmd_add_to_path) > 0 then
+        Add_to_Path
+          (Ada.Strings.Fixed.Trim
+            (annotation (annotation'First + cmd_add_to_path'Length .. annotation'Last),
+             Ada.Strings.Both));
+      end if;
+    end Process_Special_Comment;
+
     exit_big_loop : Boolean;
 
   begin  --  In_Symbol
@@ -809,6 +843,13 @@ package body HAC_Sys.Scanner is
         when '-' =>
           Next_Character (CD);
           if CD.CUD.c = '-' then     --  Comment
+
+            if CD.CUD.CC < CD.CUD.LL
+              and then CD.CUD.input_line (CD.CUD.CC + 1) = '!'
+            then
+              Process_Special_Comment (CD.CUD.input_line (CD.CUD.CC + 2 .. CD.CUD.LL));
+            end if;
+
             CD.CUD.CC := CD.CUD.LL;  --  Ignore rest of input line
             Next_Character (CD);
             exit_big_loop := False;

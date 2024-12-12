@@ -52,7 +52,7 @@ procedure HAC is
     BD.Set_Main_Source_Stream (source_stream, Ada_file_name, shebang_offset);
     BD.Set_Message_Feedbacks (trace);
     BD.Set_Target (target);
-    BD.LD.Set_Source_Access (cat'Unchecked_Access);
+    BD.Set_File_Catalogue (cat'Unchecked_Access);
     t1 := Clock;
     BD.Build_Main;
     t2 := Clock;

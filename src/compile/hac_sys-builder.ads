@@ -13,6 +13,7 @@
 
 with HAC_Sys.Co_Defs,
      HAC_Sys.Defs,
+     HAC_Sys.Files,
      HAC_Sys.Librarian,
      HAC_Sys.Targets;
 
@@ -91,6 +92,10 @@ package HAC_Sys.Builder is
      s          : in     Co_Defs.Source_Stream_Access;
      file_name  : in     String;         --  Can be a virtual name (editor title, zip entry)
      start_line : in     Natural := 0);  --  We could have a shebang or other Ada sources before
+
+  procedure Set_File_Catalogue
+    (BD  : in out Build_Data;
+     cat : in     Files.Abstract_File_Catalogue_Reference);
 
   procedure Set_Message_Feedbacks (
     BD           : in out Build_Data;

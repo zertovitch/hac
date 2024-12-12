@@ -438,6 +438,15 @@ package body HAC_Sys.Builder is
     BD.main_name_hint := HAT.To_VString (main_name_guess (last_slash + 1 .. last_dot - 1));
   end Set_Main_Source_Stream;
 
+  procedure Set_File_Catalogue
+    (BD  : in out Build_Data;
+     cat : in     Files.Abstract_File_Catalogue_Reference)
+  is
+  begin
+    BD.CD.Set_File_Catalogue (cat);
+    BD.LD.Set_File_Catalogue (cat);
+  end Set_File_Catalogue;
+
   procedure Set_Message_Feedbacks
     (BD           : in out Build_Data;
      trace_params : in     Co_Defs.Compilation_Trace_Parameters)

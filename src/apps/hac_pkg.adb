@@ -23,32 +23,6 @@ package body HAC_Pkg is
 
   package body Path_Management is
 
-    function Search_File (simple_file_name, path : String) return String is
-      sep_pos : Natural := path'First - 1;
-      new_sep_pos : Natural;
-    begin
-      for i in path'Range loop
-        new_sep_pos := sep_pos;
-        if path (i) in ',' | ';' then
-          new_sep_pos := i;
-        elsif i = path'Last then
-          new_sep_pos := i + 1;
-        end if;
-        if new_sep_pos > sep_pos then
-          declare
-            full_file_name : constant String :=
-              path (sep_pos + 1 .. new_sep_pos - 1) & HAT.Directory_Separator & simple_file_name;
-          begin
-            if HAT.Exists (full_file_name) then
-              return full_file_name;
-            end if;
-          end;
-        end if;
-        sep_pos := new_sep_pos;
-      end loop;
-      return "";
-    end Search_File;
-
     overriding function Exists (cat : File_Catalogue; name : String) return Boolean is
     begin
       return cat.Full_Source_Name (name) /= "";
@@ -81,22 +55,34 @@ package body HAC_Pkg is
       --     hac command line, in the order given.
       declare
         fn : constant String :=
-          Search_File (name, HAT.To_String (command_line_source_path));
+          HAT.Search_File (name, HAT.To_String (command_line_source_path));
       begin
         if fn /= "" then
           return fn;
         end if;
       end;
-      --  3) Omitted.
+      --  3) Omitted (directories listed in the text file whose name is given by ADA_PRJ_INCLUDE_FILE).
       --  4) Each of the directories listed in the value of the ADA_INCLUDE_PATH environment variable.
       declare
         fn : constant String :=
-          Search_File (name, HAT.To_String (HAT.Get_Env ("ADA_INCLUDE_PATH")));
+          HAT.Search_File (name, HAT.To_String (HAT.Get_Env ("ADA_INCLUDE_PATH")));
       begin
         if fn /= "" then
           return fn;
         end if;
       end;
+      --  5) Omitted (content of the ada_source_path file).
+
+      --  Now, extra search capabilities specific to HAC:
+      declare
+        fn : constant String :=
+          HAT.Search_File (name, HAT.To_String (cat.extra_path));
+      begin
+        if fn /= "" then
+          return fn;
+        end if;
+      end;
+
       return "";
     end Full_Source_Name;
 
@@ -133,6 +119,12 @@ package body HAC_Pkg is
     begin
       HAC_Sys.Files.Default.File_Catalogue (cat).Close (cat.Full_Source_Name (name));
     end Close;
+
+    overriding procedure Add_to_Source_Path (cat : in out File_Catalogue; new_dir : String) is
+      use HAT;
+    begin
+      cat.extra_path := cat.extra_path & ';' & new_dir;
+    end Add_to_Source_Path;
 
   end Path_Management;
 
@@ -389,7 +381,7 @@ package body HAC_Pkg is
   begin
     if verbosity >= 2 then
       if BD.CD.Is_HAC_VM then
-        Put_Line (HAC_margin_2 & "Starting VM interpreter...");
+        Put_Line (HAC_margin_2 & "Starting p-code VM interpreter...");
       else
         Put_Line (HAC_margin_2 & "Running native (if target = native)");
       end if;

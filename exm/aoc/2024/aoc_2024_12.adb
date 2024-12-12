@@ -28,7 +28,7 @@ procedure AoC_2024_12 is
   --  input_name : constant VString := +"mini3"; n : constant := 10;
   input_name : constant VString := +"aoc_2024_12"; n : constant := 140;
 
-  map    : array (1 .. n, 1 .. n) of Character;
+  map : array (1 .. n, 1 .. n) of Character;
 
   type Seen_Type is array (1 .. n, 1 .. n) of Boolean;
   seen_clear : Seen_Type;  --  Substitute for (others => (others => False))
@@ -75,7 +75,7 @@ procedure AoC_2024_12 is
       --  Developped from aoc_2023_18.
       begin
         if x in 1 .. n and then y in 1 .. n and then map (x, y) = plant then
-          --  We are still inside the garden plot.
+          --  We are still inside the region.
           if not seen (x, y) then
             seen (x, y) := True;
             area := area + 1;
@@ -86,7 +86,7 @@ procedure AoC_2024_12 is
           end if;
         else
           --  We have crossed a border: either the map's limits, or to
-          --  a plot for another plant type.
+          --  a region for another plant type.
           fence := fence + 1;
           if part = part_2 then
             border (orig_x, orig_y)(dir) := True;

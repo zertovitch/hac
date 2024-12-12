@@ -11,7 +11,7 @@
 --  Co_Defs: Compiler Definitions
 
 with HAC_Sys.Defs,
-     HAC_Sys.Files,
+     HAC_Sys.Files.Default,
      HAC_Sys.PCode,
      HAC_Sys.Targets;
 
@@ -305,6 +305,9 @@ package HAC_Sys.Co_Defs is
      Hash            => Ada.Strings.Hash,
      Equivalent_Keys => "=");
 
+  --  Global object used as a default for library file management:
+  default_file_catalogue : aliased Files.Default.File_Catalogue;
+
   ---------------------
   --  Compiler_Data  --
   ---------------------
@@ -368,6 +371,8 @@ package HAC_Sys.Co_Defs is
     remarks      : Remark_Set := default_remarks;
     diags        : Diagnostic_Set;
     total_lines  : Natural;
+    cat          : Files.Abstract_File_Catalogue_Reference :=
+                     default_file_catalogue'Access;
     trace        : Compilation_Trace_Parameters;
     --  On `WITH X`, we start the recursive compilation of X,
     --  if X is not yet compiled or built-in. We monitor the
@@ -383,6 +388,13 @@ package HAC_Sys.Co_Defs is
 
   procedure Set_Target
     (CD : in out Compiler_Data; new_target : Targets.Abstract_Machine_Reference);
+
+  --  Method used internally by HAC.
+  --  Prefer using Build_Data's Set_File_Catalogue method.
+  --
+  procedure Set_File_Catalogue
+    (CD  : in out Compiler_Data;
+     cat : in     Files.Abstract_File_Catalogue_Reference);
 
   type Compiler_Data_Access is access all Co_Defs.Compiler_Data;
 

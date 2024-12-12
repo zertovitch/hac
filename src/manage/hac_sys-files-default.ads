@@ -30,6 +30,9 @@ package HAC_Sys.Files.Default is
 
   overriding procedure Close (cat : in out File_Catalogue; name : String);
 
+  overriding procedure Add_to_Source_Path (cat : in out File_Catalogue; new_dir : String)
+  is null;  --  No search path by default.
+
 private
 
   type Text_File_Access is access Ada.Text_IO.File_Type;

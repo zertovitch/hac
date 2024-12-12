@@ -97,6 +97,14 @@ package body HAC_Sys.Co_Defs is
     end if;
   end Set_Target;
 
+  procedure Set_File_Catalogue
+    (CD  : in out Compiler_Data;
+     cat : in     Files.Abstract_File_Catalogue_Reference)
+  is
+  begin
+    CD.cat := cat;
+  end Set_File_Catalogue;
+
   overriding procedure Initialize (CD : in out Compiler_Data) is
   begin
     --  Ensure the CD has a valid target from the beginning:

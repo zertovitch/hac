@@ -27,9 +27,13 @@ package HAC_Pkg is
   package Path_Management is  --  Specific search path management
 
     type File_Catalogue is
-      limited new HAC_Sys.Files.Default.File_Catalogue with null record;
-      --  We enrich the default file system with searching of
-      --  files through pathes.
+      limited new HAC_Sys.Files.Default.File_Catalogue with
+    record
+      extra_path : HAT.VString;
+    end record;
+
+    --  We enrich the default file system with searching of
+    --  files through pathes.
 
     overriding function Exists (cat : File_Catalogue; name : String) return Boolean;
 
@@ -48,6 +52,8 @@ package HAC_Pkg is
        shebang_offset :    out Natural);
 
     overriding procedure Close (cat : in out File_Catalogue; name : String);
+
+    overriding procedure Add_to_Source_Path (cat : in out File_Catalogue; new_dir : String);
 
   end Path_Management;
 

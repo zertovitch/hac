@@ -68,8 +68,8 @@ package HAC_Sys.Librarian is
      Hash            => Ada.Strings.Unbounded.Hash,
      Equivalent_Keys => Ada.Strings.Unbounded."=");
 
+  --  Global object used as a default for library file management:
   default_file_catalogue : aliased Files.Default.File_Catalogue;
-  --  Global object used as a default for library file management.
 
   type Library_Data is tagged record  --  !! details -> private
     library      : Library_Unit_Vectors.Vector;  --  The library itself (= the "books")
@@ -78,7 +78,10 @@ package HAC_Sys.Librarian is
                      default_file_catalogue'Access;
   end record;
 
-  procedure Set_Source_Access
+  --  Method used internally by HAC.
+  --  Prefer using Build_Data's Set_File_Catalogue method.
+  --
+  procedure Set_File_Catalogue
     (LD  : in out Library_Data;
      cat : in     Files.Abstract_File_Catalogue_Reference);
 

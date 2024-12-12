@@ -108,13 +108,13 @@ package body HAC_Sys.Librarian is
     CD.CUD.level_0_def.Include (Alfa_Ident_Upper, CD.Id_Count);
   end Enter_Library_Level_Def;
 
-  procedure Set_Source_Access
+  procedure Set_File_Catalogue
     (LD  : in out Library_Data;
      cat : in     Files.Abstract_File_Catalogue_Reference)
   is
   begin
     LD.cat := cat;
-  end Set_Source_Access;
+  end Set_File_Catalogue;
 
   function Find_Unit_File_Name
     (LD        : Library_Data;

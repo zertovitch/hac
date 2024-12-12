@@ -1055,6 +1055,32 @@ package body HAT is
     return Non_Standard.Directory_Separator;
   end Directory_Separator;
 
+  function Search_File (simple_file_name, path : String) return String is
+    sep_pos : Natural := path'First - 1;
+    new_sep_pos : Natural;
+  begin
+    for i in path'Range loop
+      new_sep_pos := sep_pos;
+      if path (i) in ',' | ';' then
+        new_sep_pos := i;
+      elsif i = path'Last then
+        new_sep_pos := i + 1;
+      end if;
+      if new_sep_pos > sep_pos then
+        declare
+          full_file_name : constant String :=
+            path (sep_pos + 1 .. new_sep_pos - 1) & HAT.Directory_Separator & simple_file_name;
+        begin
+          if HAT.Exists (full_file_name) then
+            return full_file_name;
+          end if;
+        end;
+      end if;
+      sep_pos := new_sep_pos;
+    end loop;
+    return "";
+  end Search_File;
+
 begin
   pragma Assert
     (Real'Digits >= Interfaces.IEEE_Float_64'Digits,

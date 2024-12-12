@@ -508,11 +508,12 @@ package HAT is
   ---------------------------------
   --  End of compatibility part  --
   ---------------------------------
+  --
   --  The following part is formally public, but can only be directly
   --  used by the HAC system itself (HAC_Sys) or other "full Ada"
   --  programs using HAT (HAC programs cannot, so far, return String's
   --  or use generics).
-  --  Those "private" items avoid code duplication or incompatibilities
+  --  Some of those "private" items avoid code duplication or incompatibilities
   --  between HAT (as compatibility package) and the HAC run-time system
   --  itself.
 
@@ -523,6 +524,8 @@ package HAT is
   function HAC_Image (F : Real) return String;
 
   function HAC_Image (T : Ada.Calendar.Time) return String;
+
+  function Search_File (simple_file_name, path : String) return String;
 
 private
 

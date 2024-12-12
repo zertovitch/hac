@@ -3,6 +3,7 @@ with Ada.Streams.Stream_IO;
 package HAC_Sys.Files is
 
   --  This package deals with files in a broad sense.
+  --
   --  A file can be, for instance:
   --    - in the operating system's file system, in current directory
   --    - in one of a set of directories (a search path)
@@ -11,7 +12,7 @@ package HAC_Sys.Files is
   --    - in a database
   --    - in a set of open editor windows, with or without
   --        a "physical" file (see the LEA project as an example).
-
+  --
   --  In the last four examples, it could be that the "physical" file
   --  cannot be accessed via Ada.*_IO, or doesn't even exists.
 
@@ -38,7 +39,7 @@ package HAC_Sys.Files is
 
   --  A source file is a text and its search path
   --  may be specific to source files.
-
+  --
   procedure Source_Open
     (cat    : in out Abstract_File_Catalogue;
      name   : in     String;
@@ -50,7 +51,7 @@ package HAC_Sys.Files is
   --
   --    shebang_offset = 0 if no shebang was found,
   --    shebang_offset = 1 if a shebang was found.
-
+  --
   procedure Skip_Shebang
     (cat            : in out Abstract_File_Catalogue;
      name           : in     String;
@@ -58,6 +59,14 @@ package HAC_Sys.Files is
   is abstract;
 
   procedure Close (cat : in out Abstract_File_Catalogue; name : String)
+  is abstract;
+
+  --  Inform the File Catalogue that it may have to search a supplemental
+  --  directory.
+  --  It happens for instance on the "--!hac_add_to_path <dir>" special comment
+  --  within a HAC program.
+  --
+  procedure Add_to_Source_Path (cat : in out Abstract_File_Catalogue; new_dir : String)
   is abstract;
 
 end HAC_Sys.Files;
