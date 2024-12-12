@@ -244,6 +244,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"09", +"6340197768906");                  --  Disk Fragmenter (part 2 takes 34 seconds on HAC!)
     Launch_AoC (+"2024", +"10", +"737 1619");                       --  Hoof It
     Launch_AoC (+"2024", +"11", +"198089 236302670835517");         --  Plutonian Pebbles
+    Launch_AoC (+"2024", +"12", +"1319878 784982");                 --  Garden Groups
     --
     New_Line (2);
     New_Line;

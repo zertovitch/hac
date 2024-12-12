@@ -79,7 +79,7 @@ procedure AoC_2024_02 is
         end if;
         last := 0;  --  Clear data (report).
       end if;
-      
+
     end loop;
     Close (f);
   end Read_Data;

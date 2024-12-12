@@ -27,7 +27,7 @@ procedure AoC_2024_11 is
 
   use Hash_Maps;
 
-  h : Hash_Map_Type;
+  h : Hash_Map_Type;  --  Hash table with stone counts.
 
   d : constant Data_Type := input;
 
@@ -38,11 +38,12 @@ procedure AoC_2024_11 is
       dummy : Integer_64;
     begin
       Insert (h, Image (i), 1, True, dummy);
-    end;
+    end Set;
   begin
     Clear (h);
-    --  "0 1 10 99 999"
-    --  "3028 78 973951 5146801 5 0 23533 857"
+    --  First example: "0 1 10 99 999"
+    --  Second example: "125 17"
+    --  Input: "3028 78 973951 5146801 5 0 23533 857"
     case d is
       when mini =>
         Set (125);
@@ -57,7 +58,7 @@ procedure AoC_2024_11 is
         Set (23533);
         Set (857);
     end case;
-  end;
+  end Set_Data;
 
   r : array (Part_Type) of Integer_64;
 
@@ -79,10 +80,10 @@ procedure AoC_2024_11 is
       end loop;
       New_Line;
       Put_Line (+"Stones: " & total'Image);
-  end;
+  end Show;
 
   procedure Do_Part (part : Part_Type; rounds : Integer) is
-    h2 : Hash_Map_Type;
+    h2 : Hash_Map_Type;  --  Hash table with stone counts, after transformation.
 
     procedure Apply_Rules (s : in out Hash_Slot_Type) is
       l : Integer;
@@ -107,7 +108,7 @@ procedure AoC_2024_11 is
         if verbosity_level > 1 then
           Put_Line (+"  To " & to & " stones: " & old'Image & " -> " & Integer_64'Image (old + s.value) & dummy'Image);
         end if;
-      end;
+      end Transform;
 
     begin
       if s.value > 0 then
@@ -128,7 +129,7 @@ procedure AoC_2024_11 is
           Transform (s.key, s1, True);
         end if;
       end if;
-    end;
+    end Apply_Rules;
 
   begin
     if verbosity_level > 0 then
@@ -138,6 +139,8 @@ procedure AoC_2024_11 is
     h2 := h;
 
     for iter in 1 .. rounds loop
+      --  Traverse the hash table for applying the rules to
+      --  all stones:
       for i in h'Range loop
         for j in 1 .. h (i).slots loop
           Apply_Rules (h (i).slot (j));
@@ -149,6 +152,7 @@ procedure AoC_2024_11 is
       end if;
     end loop;
 
+    --  Traverse the hash table for counting the stones:
     for i in h'Range loop
       for j in 1 .. h (i).slots loop
         r (part) := r (part) + h (i).slot (j).value;
@@ -179,4 +183,4 @@ begin
     --  Part 1: validated by AoC: 198089
     --  Part 2: validated by AoC: 236302670835517
   end if;
-end;
+end AoC_2024_11;
