@@ -9,6 +9,8 @@
 --    https://forum.ada-lang.io/
 --    https://www.reddit.com/r/adventofcode/
 
+--!hac_add_to_path ..
+--
 with AoC_Toolbox;
 
 --  For building this program with a "full Ada" compiler,
