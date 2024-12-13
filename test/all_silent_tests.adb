@@ -245,6 +245,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"10", +"737 1619");                       --  Hoof It
     Launch_AoC (+"2024", +"11", +"198089 236302670835517");         --  Plutonian Pebbles
     Launch_AoC (+"2024", +"12", +"1319878 784982");                 --  Garden Groups
+    Launch_AoC (+"2024", +"13", +"36954 79352015273424");           --  Claw Contraption
     --
     New_Line (2);
     New_Line;
