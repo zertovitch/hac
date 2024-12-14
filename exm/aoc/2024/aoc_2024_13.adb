@@ -31,7 +31,7 @@ procedure AoC_2024_13 is
   --  The wording is misleading (on purpose of course!),
   --  with portions such as "...the cheapest way to win the prize..."
   --  or "...the minimum tokens you would have to spend..."
-  --  Actually there at most *one* solution in the real plane (\IR^2),
+  --  Actually there is at most *one* solution in the real plane (\IR^2),
   --  thus also at most one solution in the square lattice (\ZZ^2).
   --  So, if there is a solution, we already have the lowest cost.
   --
