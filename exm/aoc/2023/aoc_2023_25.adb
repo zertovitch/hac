@@ -9,6 +9,9 @@
 --    https://forum.ada-lang.io/
 --    https://www.reddit.com/r/adventofcode/
 
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
+--
 with AoC_Toolbox;
 
 --  For building this program with a "full Ada" compiler,
@@ -17,9 +20,11 @@ with AoC_Toolbox;
 --  See also the GNAT project file aoc_2023.gpr .
 with HAT;
 
+with Interfaces;
+
 procedure AoC_2023_25 is
 
-  use AoC_Toolbox, HAT;
+  use AoC_Toolbox, HAT, Interfaces;
 
   capacity : constant := 1570;
 
@@ -49,7 +54,7 @@ procedure AoC_2023_25 is
     hm : Hash_Map_Type;
     c : Character;
     key : VString;
-    src, dst : Integer;
+    src, dst : Integer_64;
 
     f : File_Type;
 
@@ -77,27 +82,27 @@ procedure AoC_2023_25 is
     end loop;
     while not End_Of_File (f) loop
       Get_Key;
-      Insert (hm, key, last + 1, src);
-      if src > last then  --  We found a new name
-        last := src;
+      Insert (hm, key, Integer_64 (last + 1), False, src);
+      if Integer (src) > last then  --  We found a new name
+        last := Integer (src);
         name (last) := key;
       end if;
       if verbosity >= 2 then
-        Put (Label (src) & ": ");
+        Put (Label (Integer (src)) & ": ");
       end if;
       Get (f, c);
       loop
         Get_Key;
-        Insert (hm, key, last + 1, dst);
-        if dst > last then  --  We found a new name
-          last := dst;
+        Insert (hm, key, Integer_64 (last + 1), False, dst);
+        if Integer (dst) > last then  --  We found a new name
+          last := Integer (dst);
           name (last) := key;
         end if;
         if verbosity >= 2 then
-          Put (Label (dst) & ' ');
+          Put (Label (Integer (dst)) & ' ');
         end if;
-        link (src, dst) := 1;
-        link (dst, src) := 1;
+        link (Integer (src), Integer (dst)) := 1;
+        link (Integer (dst), Integer (src)) := 1;
         exit when End_Of_Line (f);
       end loop;
       if verbosity >= 2 then

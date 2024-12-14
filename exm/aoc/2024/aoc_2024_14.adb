@@ -113,10 +113,10 @@ procedure AoC_2024_14 is
   end Do_Part_1;
 
   --  The threshold is determined heuristically.
-  --  A "normal" (randomized) setup has around 125 robots
-  --  in each quadrant (safety factor 125**4 = 244,140,625).
+  --  A perfectly uniform setup has 125 robots in
+  --  each quadrant (safety factor 125**4 = 244,140,625).
   --  If all robots are in a single quadrant, the factor is 0.
-  --  If 497 robots are in a quadrant and the other quadrant
+  --  If 497 robots are in a quadrant and the other quadrants
   --  contain a robot each, the factor is 497.
   --
   procedure Do_Part_2 is
@@ -136,8 +136,6 @@ procedure AoC_2024_14 is
   T0 : constant Time := Clock;
 
 begin
-  r (part_1) := 0;
-  r (part_2) := 0;
   Read_Data;
   Do_Part_1;
   if not compiler_test_mode then

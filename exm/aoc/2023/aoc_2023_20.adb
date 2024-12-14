@@ -9,6 +9,9 @@
 --    https://forum.ada-lang.io/
 --    https://www.reddit.com/r/adventofcode/
 
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
+--
 with AoC_Toolbox;
 
 --  For building this program with a "full Ada" compiler,
@@ -124,7 +127,7 @@ procedure AoC_2023_20 is
       end loop;
     end Get_Key;
 
-    dummy : Integer;
+    dummy, i64 : Integer_64;
     ignore : constant := -1;
 
   begin
@@ -134,7 +137,7 @@ procedure AoC_2023_20 is
     key := +"rx";
     map (top).name := key;
     map (top).kind := final;
-    Insert (hm, key, top, dummy);
+    Insert (hm, key, Integer_64 (top), False, dummy);
   Passes :
     for pass in 1 .. 2 loop
       Open (f, input_name & ".txt");
@@ -148,10 +151,11 @@ procedure AoC_2023_20 is
             --  on the lines' headers.
             top := top + 1;
             map (top).name := key;
-            Insert (hm, key, top, dummy);
+            Insert (hm, key, Integer_64 (top), False, dummy);
             Skip_Line (f);
           when 2 =>
-            Find (hm, key, ignore, row);
+            Find (hm, key, ignore, i64);
+            row := Integer (i64);
             case prefix is
               when 'b' =>
                 map (row).kind := broadcaster;
@@ -168,7 +172,8 @@ procedure AoC_2023_20 is
             i := 0;
             loop
               Get_Key;
-              Find (hm, key, ignore, dest);
+              Find (hm, key, ignore, i64);
+              dest := Integer (i64);
               i := i + 1;
               map (row).dest (i) := dest;
               exit when End_Of_Line (f);

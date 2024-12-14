@@ -6,6 +6,9 @@
 --  Copy of questions in: aoc_2023_06_questions.txt
 --
 
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
+--
 with AoC_Toolbox;
 
 --  For building this program with a "full Ada" compiler,

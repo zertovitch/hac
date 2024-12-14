@@ -9,6 +9,9 @@
 --    https://forum.ada-lang.io/
 --    https://www.reddit.com/r/adventofcode/
 
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
+--
 with AoC_Toolbox;
 
 --  For building this program with a "full Ada" compiler,
@@ -73,16 +76,16 @@ procedure AoC_2023_23 is
         begin
           more := more + 1;
           if x = n - 1 and then y = n then
-            map (x, y) := 'E';
             if verbosity >= 1 then
               Put_Line
                  (+"Yuhu, found the End! Length from Start to End: " &
                    (done_so_far + more));
               if verbosity >= 2 then
+                map (x, y) := 'E';
                 Show (map);
               end if;
             end if;
-            --  The answer is the longest path.
+            --  The answer of the puzzle is the longest path.
             r (part) := Max (r (part), done_so_far + more);
           else
             map (x, y) := 'O';  --  Mark this tile as visited.
@@ -112,7 +115,7 @@ procedure AoC_2023_23 is
         then
           Copy_Map_and_Go;
           --  Silent alternative: treat this tile as a forest,
-          --  continue on the same map and find another path.
+          --  continue on the same map and perhaps find another path.
         end if;
       end Flood_Fill;
 

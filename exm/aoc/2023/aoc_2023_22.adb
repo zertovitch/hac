@@ -9,6 +9,9 @@
 --    https://forum.ada-lang.io/
 --    https://www.reddit.com/r/adventofcode/
 
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
+--
 with AoC_Toolbox;
 
 --  For building this program with a "full Ada" compiler,
