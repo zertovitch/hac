@@ -5,6 +5,9 @@
 --  https://adventofcode.com/2022/day/21
 --  Copy of questions in: aoc_2022_21_questions.txt
 
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
+--
 with AoC_2022_21_Pkg;
 with AoC_Toolbox;
 

@@ -8,6 +8,9 @@
 --  Note: this solution takes an insane amount of time with HAC.
 --  Fortunately, you can compile it with GNAT and
 --  the total run-time is there 1.17 seconds on an i7 machine.
+
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
 --
 with AoC_Toolbox;
 

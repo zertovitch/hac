@@ -6,10 +6,11 @@
 --  
 project AoC_2023 is
 
-   for Source_Dirs use (
-     ".",
-     "../../../src"   --  GNAT's access to the HAT package.
-   );
+   for Source_Dirs use
+     (".",
+      "..",              --  For the AoC_Toolbox package
+      "../../../src");   --  GNAT's access to the HAT package.
+
    for Exec_Dir use ".";
    for Create_Missing_Dirs use "True";
 

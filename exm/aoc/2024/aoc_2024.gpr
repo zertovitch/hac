@@ -8,7 +8,7 @@ project AoC_2024 is
 
    for Source_Dirs use
      (".",
-      "..",
+      "..",              --  For the AoC_Toolbox package
       "../../../src");   --  GNAT's access to the explicit version of the HAT package.
       
    for Exec_Dir use ".";

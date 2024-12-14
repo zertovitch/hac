@@ -8,6 +8,9 @@
 --  Runs in 0.12 second with GNAT.
 --  Runs in 134 seconds with HAC.
 
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
+--
 with AoC_Toolbox;
 
 --  For building this program with "full Ada",

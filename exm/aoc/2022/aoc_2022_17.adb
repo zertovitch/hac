@@ -7,6 +7,9 @@
 --  https://adventofcode.com/2022/day/17
 --  Copy of questions in: aoc_2022_17_questions.txt
 
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
+--
 with AoC_Toolbox;
 
 --  For building this program with "full Ada",

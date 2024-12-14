@@ -5,6 +5,9 @@
 --  https://adventofcode.com/2022/day/23
 --  Copy of questions in: aoc_2022_23_questions.txt
 
+--  The files aoc_toolbox.ad* are located in the upper directory (..)
+--!hac_add_to_path ..
+--
 with AoC_Toolbox;
 
 --  For building this program with "full Ada",
@@ -99,17 +102,6 @@ procedure AoC_2022_23 is
       (elf_high.x - elf_low.x + 1) - elves;
   end Count_Empty_Ground;
 
-  type Direction is (N, S, W, E);
-
-  function Next (d : Direction) return Direction is
-  begin
-    if d = Direction'Last then
-      return Direction'First;
-    else
-      return Direction'Succ (d);
-    end if;
-  end Next;
-
   type Direction_Set is array (Direction) of Boolean;
 
   procedure Show is
@@ -130,6 +122,16 @@ procedure AoC_2022_23 is
   start : Direction;
   any_move : Boolean;
 
+  function Next (d : Direction) return Direction is
+  begin
+    case d is
+      when north => return south;
+      when south => return west;
+      when west  => return east;
+      when east  => return north;
+    end case;
+  end Next;
+
   procedure Do_Round (verbosity_enabled : Boolean) is
 
     procedure Do_Half_Round (half : Positive) is
@@ -145,37 +147,37 @@ procedure AoC_2022_23 is
           if Is_Elf (map (x, y)) then
             is_possible := all_possible;
             if Is_Elf (map (x - 1, y + 1)) then
-              is_possible (N) := False;
-              is_possible (W) := False;
+              is_possible (north) := False;
+              is_possible (west)  := False;
             end if;
             if Is_Elf (map (x + 1, y + 1)) then
-              is_possible (N) := False;
-              is_possible (E) := False;
+              is_possible (north) := False;
+              is_possible (east)  := False;
             end if;
             if Is_Elf (map (x - 1, y - 1)) then
-              is_possible (S) := False;
-              is_possible (W) := False;
+              is_possible (south) := False;
+              is_possible (west)  := False;
             end if;
             if Is_Elf (map (x + 1, y - 1)) then
-              is_possible (S) := False;
-              is_possible (E) := False;
+              is_possible (south) := False;
+              is_possible (east)  := False;
             end if;
             if Is_Elf (map (x, y + 1)) then
-              is_possible (N) := False;
+              is_possible (north) := False;
             end if;
             if Is_Elf (map (x, y - 1)) then
-              is_possible (S) := False;
+              is_possible (south) := False;
             end if;
             if Is_Elf (map (x - 1, y)) then
-              is_possible (W) := False;
+              is_possible (west) := False;
             end if;
             if Is_Elf (map (x + 1, y)) then
-              is_possible (E) := False;
+              is_possible (east) := False;
             end if;
-            if is_possible (N)
-              and then is_possible (S)
-              and then is_possible (W)
-              and then is_possible (E)
+            if is_possible (north)
+              and then is_possible (south)
+              and then is_possible (west)
+              and then is_possible (east)
             then
               --  This Elf has enough room around him,
               --  thus no incentive to move.
@@ -187,10 +189,10 @@ procedure AoC_2022_23 is
                 if is_possible (elf_look) then
                   --  Mark the destination cell.
                   case elf_look is
-                    when N => dest.x := x; dest.y := y + 1;
-                    when S => dest.x := x; dest.y := y - 1;
-                    when W => dest.x := x - 1; dest.y := y;
-                    when E => dest.x := x + 1; dest.y := y;
+                    when north => dest.x := x; dest.y := y + 1;
+                    when south => dest.x := x; dest.y := y - 1;
+                    when west  => dest.x := x - 1; dest.y := y;
+                    when east  => dest.x := x + 1; dest.y := y;
                   end case;
                   Extend_Boundaries (dest);
                   if half = 1 then
@@ -261,7 +263,7 @@ procedure AoC_2022_23 is
     Open (f, "aoc_2022_23.txt");
     p.y := 0;
     elves := 0;
-    start := N;
+    start := north;
   Read_Data :
     while not End_Of_File (f) loop
       Get_Line (f, s);
