@@ -86,13 +86,9 @@ procedure AoC_2024_14 is
     end loop;
   end Evolve;
 
-  procedure Do_Part_1 is
-    ro : Robot_Array := r0;
+  function Safety_Factor (ro : in Robot_Array) return Natural is
     q1, q2, q3, q4 : Natural := 0;
   begin
-    for t in 1 .. 100 loop
-      Evolve (ro);
-    end loop;
     for i in 1 .. nr loop
       if    ro (i).p.x in 0 .. nx / 2 - 1 and then ro (i).p.y in 0 .. ny / 2 - 1 then
         q1 := q1 + 1;
@@ -104,59 +100,35 @@ procedure AoC_2024_14 is
         q4 := q4 + 1;
       end if;
     end loop;
-    r (part_1) := q1 * q2 * q3 * q4;
+    return q1 * q2 * q3 * q4;
+  end Safety_Factor;
+
+  procedure Do_Part_1 is
+    ro : Robot_Array := r0;
+  begin
+    for t in 1 .. 100 loop
+      Evolve (ro);
+    end loop;
+    r (part_1) := Safety_Factor (ro);
   end Do_Part_1;
 
+  --  The threshold is determined heuristically.
+  --  A "normal" (randomized) setup has around 125 robots
+  --  in each quadrant (safety factor 125**4 = 244,140,625).
+  --  If all robots are in a single quadrant, the factor is 0.
+  --  If 497 robots are in a quadrant and the other quadrant
+  --  contain a robot each, the factor is 497.
+  --
   procedure Do_Part_2 is
     ro : Robot_Array := r0;
-    interesting_x, interesting_y : Boolean;
-    tx  : constant := 30;
-    ty  : constant := 32;
-    type Stat_X is array (0 .. nx) of Natural;  --  Hack for HAC: actually: nx - 1
-    sx, sx_clear : Stat_X;  --  Hack for HAC: sx_clear is a substitute for (others => 0)
-    type Stat_Y is array (0 .. ny) of Natural;  --  Hack for HAC: actually: ny - 1
-    sy, sy_clear : Stat_Y;  --  Hack for HAC: sy_clear is a substitute for (others => 0)
-    p : Point;
   begin
-    for i in Stat_X'Range loop
-      sx_clear (i) := 0;
-    end loop;
-    for i in Stat_Y'Range loop
-      sy_clear (i) := 0;
-    end loop;
-    for count in 1 .. nx * ny + 1 loop
-
+    for t in 1 .. nx * ny + 1 loop
       Evolve (ro);
-
-      interesting_x := False;
-      interesting_y := False;
-
-      sx := sx_clear;
-      sy := sy_clear;
-
-      for i in 1 .. nr loop
-        p := ro (i).p;
-        sx (p.x) := sx (p.x) + 1;
-        sy (p.y) := sy (p.y) + 1;
-      end loop;
-
-      for i in Stat_X'Range loop
-        if sx (i) > tx then
-          interesting_x := True;
-        end if;
-      end loop;
-
-      for i in Stat_Y'Range loop
-        if sy (i) > ty then
-          interesting_y := True;
-        end if;
-      end loop;
-
-      if interesting_x and interesting_y then
-        r (part_2) := count;
+      if Safety_Factor (ro) < 40_000_000 then
+        r (part_2) := t;
         Show (ro);
+        exit;
       end if;
-
     end loop;
   end Do_Part_2;
 
