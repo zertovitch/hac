@@ -98,14 +98,14 @@ procedure AoC_2024_13 is
     end if;
 
     return a * 3 + b;
-    
+
   end Cost;
 
   r : array (Part_Type) of I64;
 
   procedure Read_Data_and_Solve is
-    butx : String (1 .. 12) := "Button A: X+";
-    buty : String (1 .. 4)  := ", Y+";
+    butax, butbx : String (1 .. 12) := "Button A: X+";
+    butay, butby : String (1 .. 4)  := ", Y+";
     prix : String (1 .. 9)  := "Prize: X=";
     priy : String (1 .. 4)  := ", Y=";
     ax, ay, bx, by, px, py : Integer;
@@ -115,12 +115,12 @@ procedure AoC_2024_13 is
     Open (f, "aoc_2024_13.txt");
 
     while not End_Of_File (f) loop
-      Get (f, butx);  Get (f, ax);
-      Get (f, buty);  Get (f, ay);
-      Get (f, butx);  Get (f, bx);
-      Get (f, buty);  Get (f, by);
-      Get (f, prix);  Get (f, px);
-      Get (f, priy);  Get (f, py);
+      Get (f, butax);  Get (f, ax);
+      Get (f, butay);  Get (f, ay);
+      Get (f, butbx);  Get (f, bx);
+      Get (f, butby);  Get (f, by);
+      Get (f, prix);   Get (f, px);
+      Get (f, priy);   Get (f, py);
 
       r (part_1) :=
         r (part_1) +
