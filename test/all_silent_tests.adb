@@ -247,6 +247,8 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"12", +"1319878 784982");                 --  Garden Groups
     Launch_AoC (+"2024", +"13", +"36954 79352015273424");           --  Claw Contraption
     Launch_AoC (+"2024", +"14", +"226236192");                      --  Restroom Redoubt (part 2 is visual)
+    Launch_AoC (+"2024", +"15", +"1515788 1516544");                --  Warehouse Woes
+    Launch_AoC (+"2024", +"16", +"74392");                          --  Reindeer Maze (part 2 takes long even on GNAT)
     --
     New_Line (2);
     New_Line;
