@@ -504,8 +504,9 @@ package body HAC_Sys.Parser.Statements is
     procedure FOR_Statement (label_Id : Natural) is  --  RM 5.5 (9)
       FOR_Begin_Instruction : Opcode;  --  Forward  or  Reverse
       LC_FOR_Begin,
-      loop_param_id,
+      loop_param_id_index,
       previous_last : Index;
+      loop_param_id, loop_param_id_with_case : Alfa;
       line_number : constant Natural := CD.CUD.location.line;
     begin
       --
@@ -516,16 +517,22 @@ package body HAC_Sys.Parser.Statements is
       --
       In_Symbol;  --  Consume FOR symbol.
       if CD.Sy = IDent then
+
         if CD.Id_Count = Id_Table_Max then
           Fatal (IDENTIFIERS);  --  Exception is raised there.
         end if;
+
         --  Declare local loop control Variable  --  added Hathorn
         previous_last := CD.Blocks_Table (CD.Display (block_data.context.level)).Last_Id_Idx;
         CD.Id_Count := CD.Id_Count + 1;
-        loop_param_id := CD.Id_Count;
-        CD.id_table (loop_param_id) :=        --  Loop parameter: the "i" in  "for i in 1..10 loop"
-          (name                  => CD.Id,
-           name_with_case        => CD.Id_with_case,
+
+        loop_param_id_index     := CD.Id_Count;
+        loop_param_id           := CD.Id;
+        loop_param_id_with_case := CD.Id_with_case;
+
+        CD.id_table (loop_param_id_index) :=  --  Loop parameter: the "i" in  "for i in 1..10 loop"
+          (name                  => Empty_Alfa,  --  Hide name because of "for i in 1 .. i loop"
+           name_with_case        => Empty_Alfa,
            link                  => previous_last,
            entity                => constant_object,
            decl_kind             => complete,
@@ -539,9 +546,9 @@ package body HAC_Sys.Parser.Statements is
            is_written_after_init => yes,
            is_initialized        => explicit,
            location              => (0, 0, 0));
-        --
+
         CD.target.Mark_Declaration;
-        CD.Blocks_Table (CD.Display (block_data.context.level)).Last_Id_Idx  := loop_param_id;
+        CD.Blocks_Table (CD.Display (block_data.context.level)).Last_Id_Idx  := loop_param_id_index;
         block_data.data_allocation_index := block_data.data_allocation_index + 1;
         block_data.max_data_allocation_index :=
           Integer'Max (block_data.max_data_allocation_index, block_data.data_allocation_index);
@@ -549,11 +556,11 @@ package body HAC_Sys.Parser.Statements is
       else
         Error (CD, err_identifier_missing, severity => major);
       end if;
-      --
-      Emit_2 (CD, k_Push_Address,
-        Operand_1_Type (CD.id_table (loop_param_id).lev),
-        Operand_2_Type (CD.id_table (loop_param_id).adr_or_sz)
-      );
+
+      Emit_2
+        (CD, k_Push_Address,
+         Operand_1_Type (CD.id_table (loop_param_id_index).lev),
+         Operand_2_Type (CD.id_table (loop_param_id_index).adr_or_sz));
       In_Symbol;
       FOR_Begin_Instruction := k_FOR_Forward_Begin;
       Need (CD, IN_Symbol, err_IN_missing);  --       "IN"  in  "for i in reverse 1 .. 10 loop"
@@ -561,14 +568,19 @@ package body HAC_Sys.Parser.Statements is
         FOR_Begin_Instruction := k_FOR_Reverse_Begin;
         In_Symbol;
       end if;
-      Ranges.Dynamic_Range (CD, block_data.context, FSys_St,
-        err_control_variable_of_the_wrong_type,
-        CD.id_table (loop_param_id).xtyp  --  Set the subtype of "C" in "for C in Red .. Blue loop"
-      );
+      Ranges.Dynamic_Range
+        (CD, block_data.context, FSys_St,
+         err_control_variable_of_the_wrong_type,
+         CD.id_table (loop_param_id_index).xtyp);
+         --  ^ Last parameter: set the subtype of "c" in "for c in Red .. Blue loop"
       LC_FOR_Begin := CD.LC;
       Emit (CD, FOR_Begin_Instruction);
+      CD.id_table (loop_param_id_index).name           := loop_param_id;            --  Unhide name
+      CD.id_table (loop_param_id_index).name_with_case := loop_param_id_with_case;  --  Unhide name
+
       LOOP_Statement
         (For_END_Instruction (FOR_Begin_Instruction), CD.LC, (label_Id, True, line_number));
+
       --  Patch the loop control exit address; points to the code
       --  just after the loop's end:
       CD.ObjCode (LC_FOR_Begin).Y := Operand_2_Type (CD.LC);
@@ -578,7 +590,7 @@ package body HAC_Sys.Parser.Statements is
       --  visible for the compiler dump. Previously, the identifier counter
       --  was decreased, but that method conflicted with the necessity of
       --  keeping all loop names within a block.
-      CD.id_table (loop_param_id).name := Empty_Alfa;
+      CD.id_table (loop_param_id_index).name := Empty_Alfa;
     end FOR_Statement;
 
     procedure Select_Statement is
