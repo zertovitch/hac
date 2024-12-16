@@ -76,19 +76,6 @@ procedure AoC_2024_15 is
     Close (f);
   end Read_Data;
 
-  function Count return Natural is
-    c : Natural := 0;
-  begin
-    for y in 1 .. n loop
-      for x in 1 .. n loop
-        if map (x, y) = 'O' then
-          c := c + 1;
-        end if;
-      end loop;
-    end loop;
-    return c;
-  end Count;
-
   procedure Show_Map is
   begin
     for y in reverse 1 .. n loop
@@ -101,7 +88,6 @@ procedure AoC_2024_15 is
       end loop;
       New_Line;
     end loop;
-    Put ("Boxes: " & Integer'Image (Count));
     New_Line;
   end Show_Map;
 
@@ -115,11 +101,13 @@ procedure AoC_2024_15 is
       case move (m) is
         when north =>
           case map (p.x, p.y + 1) is
-            when '.' => p.y := p.y + 1;
+            when '.' =>
+              p.y := p.y + 1;
             when 'O' =>
               for y in p.y + 2 .. n loop
                 exit when map (p.x, y) = '#';
                 if map (p.x, y) = '.' then
+                  --  Push boxes North:
                   for my in reverse p.y + 2 .. y loop
                     map (p.x, my) := map (p.x, my - 1);
                   end loop;
@@ -133,11 +121,13 @@ procedure AoC_2024_15 is
 
         when south =>
           case map (p.x, p.y - 1) is
-            when '.' => p.y := p.y - 1;
+            when '.' =>
+              p.y := p.y - 1;
             when 'O' =>
               for y in reverse 1 .. p.y - 2 loop
                 exit when map (p.x, y) = '#';
                 if map (p.x, y) = '.' then
+                  --  Push boxes South:
                   for my in y .. p.y - 2 loop
                     map (p.x, my) := map (p.x, my + 1);
                   end loop;
@@ -151,11 +141,13 @@ procedure AoC_2024_15 is
 
         when east =>
           case map (p.x + 1, p.y) is
-            when '.' => p.x := p.x + 1;
+            when '.' =>
+              p.x := p.x + 1;
             when 'O' =>
               for x in p.x + 2 .. n loop
                 exit when map (x, p.y) = '#';
                 if map (x, p.y) = '.' then
+                  --  Push boxes East:
                   for mx in reverse p.x + 2 .. x loop
                     map (mx, p.y) := map (mx - 1, p.y);
                   end loop;
@@ -169,11 +161,13 @@ procedure AoC_2024_15 is
 
         when west =>
           case map (p.x - 1, p.y) is
-            when '.' => p.x := p.x - 1;
+            when '.' =>
+              p.x := p.x - 1;
             when 'O' =>
               for x in reverse 1 .. p.x - 2 loop
                 exit when map (x, p.y) = '#';
                 if map (x, p.y) = '.' then
+                  --  Push boxes West:
                   for mx in x .. p.x - 2 loop
                     map (mx, p.y) := map (mx + 1, p.y);
                   end loop;
@@ -213,7 +207,6 @@ procedure AoC_2024_15 is
       end loop;
       New_Line;
     end loop;
-    --  Put ("Boxes: " & Integer'Image (Count_X));
     New_Line;
   end Show_Map_X;
 
@@ -287,9 +280,12 @@ procedure AoC_2024_15 is
             p.y := p.y - 1;
           end if;
 
+        --  On East-West it is just like Part 1
+
         when east =>
           case mapx (p.x + 1, p.y) is
-            when '.' => p.x := p.x + 1;
+            when '.' =>
+              p.x := p.x + 1;
             when '[' =>
               for x in p.x + 2 .. nx loop
                 exit when mapx (x, p.y) = '#';
@@ -307,7 +303,8 @@ procedure AoC_2024_15 is
 
         when west =>
           case mapx (p.x - 1, p.y) is
-            when '.' => p.x := p.x - 1;
+            when '.' =>
+              p.x := p.x - 1;
             when ']' =>
               for x in reverse 1 .. p.x - 2 loop
                 exit when mapx (x, p.y) = '#';
@@ -340,11 +337,6 @@ procedure AoC_2024_15 is
 
   end Do_Part_2;
 
-  procedure Do_Part (part : Part_Type) is
-  begin
-    null;  --  r (part) := r (part) + 1;
-  end Do_Part;
-
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
   T0 : constant Time := Clock;
 
@@ -354,8 +346,7 @@ begin
   Read_Data;
   Do_Part_1;
   Do_Part_2;
-  Do_Part (part_1);
-  Do_Part (part_2);
+
   if compiler_test_mode then
     if r (part_1) /= Integer_Value (Argument (1)) or
        r (part_2) /= Integer_Value (Argument (2))
