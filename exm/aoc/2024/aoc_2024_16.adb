@@ -69,14 +69,14 @@ procedure AoC_2024_16 is
   subtype List_Range is Integer range 1 .. list_length_max;
 
   type State_Type is record
-    pt    : Point;
-    dir   : Direction;
+    pt  : Point;
+    dir : Direction;
   end record;
 
   type Node is record
     len   : Natural;
     state : State_Type;
-    pred  : Natural;  --  This is just for displaying the path.
+    pred  : Natural;  --  This is for backtracking the path.
   end record;
 
   list : array (List_Range) of Node;
@@ -85,9 +85,7 @@ procedure AoC_2024_16 is
   best : array (1 .. n, 1 .. n, Direction) of Natural;
   inf : constant Natural := Integer'Last / 4;
 
-  function Dijkstra_Algorithm (start, finish : Point) return Natural
-  is
-
+  function Dijkstra_Algorithm (start, finish : Point) return Natural is
     cur_len : Natural;
     cur_s   : State_Type;
     s       : State_Type;  --  Test state derived from current state.
@@ -97,14 +95,13 @@ procedure AoC_2024_16 is
       vec : Point;
       new_node : Node;
     begin
-      if cur_s.dir /= nil and then dir = Opposite (cur_s.dir) then
+      if dir = Opposite (cur_s.dir) then
         --  Turns must be 90 degrees.
         return;
       end if;
-      s.dir := dir;
       vec.x := 0;
       vec.y := 0;
-      --  Move:
+      --  Move (otherwise, turn without moving):
       if cur_s.dir = dir then
         case dir is
           when north => vec.y := +1;
@@ -122,14 +119,12 @@ procedure AoC_2024_16 is
           end if;
           len_to := cur_len;
           if cur_s.dir /= dir then
-            --  Turn
-            len_to := len_to + 1000;
+            len_to := len_to + 1000;  --  Cost for a turn.
           else
-            --  Move
-            len_to := len_to + 1;
+            len_to := len_to + 1;     --  Cost for a move.
           end if;
           if len_to < best (s.pt.x, s.pt.y, dir) then
-            --  put_line (+"* " & s.pt.x & ' ' & s.pt.y);
+            s.dir := dir;
             --  Found a better path to target state s.
             best (s.pt.x, s.pt.y, dir) := len_to;
             --
@@ -169,9 +164,9 @@ procedure AoC_2024_16 is
       end loop;
     end loop;
 
-    cur_s.pt    := start;
-    cur_s.dir   := east;
-    cur_len     := 0;
+    cur_s.pt  := start;
+    cur_s.dir := east;
+    cur_len   := 0;
 
     loop
       for d in Direction loop
@@ -216,17 +211,22 @@ procedure AoC_2024_16 is
 
   verbose : constant Boolean := False;
 
+  --  For part 2 you have to find all optimal paths.
+  --  The method below is certainly far from being the most efficient
+  --  but at least maybe you will understand it ;-) ...
+  --
   procedure Do_Part_2 is
     opt : constant Integer := r (part_1);
-
     seat : array (1 .. n, 1 .. n) of Boolean;
 
-    procedure Search_Alternatives (level : Natural) is
+    procedure Search_Alternatives is
       path : array (1 .. 20_000) of Point;
       last : Natural := 0;
       block : Point;
 
       procedure Record_Path is
+        --  We record the optimal path found by latest
+        --  run of Dijkstra's algorithm.
         i : Integer := current;
       begin
         last := 0;
@@ -248,17 +248,13 @@ procedure AoC_2024_16 is
       Record_Path;
       for i in 2 .. last - 1 loop
         block := path (i);
-        --  Put a road block on the way:
+        --  Put a road block on the optimal way, step #i, and see what happens.
         map (block.x, block.y) := 'B';
         if Dijkstra_Algorithm (s, e) = opt then
-          --  Put (block.x, 3);
-          --  Put (block.y, 4);
-          --  Put_Line (level, 3);
-          --  Show_Map; Skip_Line;
-          Search_Alternatives (level + 1);
+          --  There is another optimal path despite the road block.
+          Search_Alternatives;
         else
-          --  The road block worsens the optimal path.
-          --  Remove it:
+          --  The road block worsens the optimal path. Remove it.
           map (block.x, block.y) := '.';
         end if;
       end loop;
@@ -272,7 +268,7 @@ procedure AoC_2024_16 is
       end loop;
     end loop;
 
-    Search_Alternatives (0);
+    Search_Alternatives;
 
     r (part_2) := 0;
     for x in 1 .. n loop

@@ -91,6 +91,9 @@ package AoC_Toolbox is
 
   function Deg_2_Rad (a : HAT.Real) return HAT.Real;
 
+  --  Simulate XOR for HAC which hasn't modular types...
+  function Sim_XOR (a, b : Integer_64) return Integer_64;
+
   ---------------------------------------------
   --  Hash maps (extended from AoC_2023_15)  --
   ---------------------------------------------
