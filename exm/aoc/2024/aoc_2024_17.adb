@@ -1,6 +1,6 @@
 --  Solution to Advent of Code 2024, Day 17
 -------------------------------------------
---  .
+--  Chronospatial Computer
 --
 --  https://adventofcode.com/2024/day/17
 --  Copy of questions in: aoc_2024_17_questions.txt
@@ -104,11 +104,11 @@ procedure AoC_2024_17 is
     code.last := -1;
     loop
       B := A mod 8;
-      B := Sim_XOR (B, 1);
+      B := Sim_XOR (B, 1);  --  "Full Ada" has `xor` of course.
       C := A / 2 ** Natural (B);
-      B := Sim_XOR (B, 4);
+      B := Sim_XOR (B, 4);  --  "Full Ada" has `xor` of course.
       A := A / 8;
-      B := Sim_XOR (B, C);
+      B := Sim_XOR (B, C);  --  "Full Ada" has `xor` of course.
       code.last := code.last + 1;
       code.oct (code.last) := Word (B mod 8);
       exit when A = 0;
