@@ -249,8 +249,9 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"14", +"226236192");                      --  Restroom Redoubt (part 2 is visual)
     Launch_AoC (+"2024", +"15", +"1515788 1516544");                --  Warehouse Woes
     Launch_AoC (+"2024", +"16", +"74392");                          --  Reindeer Maze (part 2 takes long even on GNAT)
-    Launch_AoC (+"2024", +"17", +"4635635210");                     --  Chronospatial Computer
+    Launch_AoC (+"2024", +"17", +"4635635210");                     --  Chronospatial Computer (example's data)
     Launch_AoC (+"2024", +"18", +"298 52,32");                      --  RAM Run
+    Launch_AoC (+"2024", +"19", +"260 639963796864990");            --  Linen Layout
     --
     New_Line (2);
     New_Line;

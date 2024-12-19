@@ -32,7 +32,7 @@ procedure AoC_2024_18 is
   map, map_clear : Map_Type;  --  map_clear : emulate Full Ada's `(others => others => '.'))`
 
   --  Dijkstra shortest path algorithm.
-  --  Code adapted from AoC_2024_16.
+  --  Code simplified from AoC_2024_16.
   --
   --  The following definitions belong to the Dijkstra algorithm, but
   --  we keep them less local because of the path tracking.
@@ -57,56 +57,48 @@ procedure AoC_2024_18 is
   best, best_clear : Score_Type;
   inf : constant Natural := Integer'Last / 4;
 
-  function Dijkstra_Algorithm (start, finish : Point) return Natural is
+  start, finish : Point;
+
+  function Dijkstra_Algorithm return Natural is
     cur_len : Natural;
     cur_s   : State_Type;
     s       : State_Type;  --  Test state derived from current state.
 
     procedure Visit (dir : Direction) is
       len_to, ins : Integer;
-      vec : Point;
       new_node : Node;
     begin
-      vec.x := 0;
-      vec.y := 0;
       case dir is
-        when north => vec.y := -1;
-        when east  => vec.x := +1;
-        when south => vec.y := +1;
-        when west  => vec.x := -1;
+        when north => s.pt.x := cur_s.pt.x;     s.pt.y := cur_s.pt.y - 1;
+        when east  => s.pt.x := cur_s.pt.x + 1; s.pt.y := cur_s.pt.y;
+        when south => s.pt.x := cur_s.pt.x;     s.pt.y := cur_s.pt.y + 1;
+        when west  => s.pt.x := cur_s.pt.x - 1; s.pt.y := cur_s.pt.y;
       end case;
-      s.pt.x := cur_s.pt.x + vec.x;
-      if s.pt.x in 0 .. n then
-        s.pt.y := cur_s.pt.y + vec.y;
-        if s.pt.y in 0 .. n then
-          if map (s.pt.x, s.pt.y) /= '.' then
-            return;
-          end if;
-          len_to := cur_len + 1;  --  Cost for a move.
-          if len_to < best (s.pt.x, s.pt.y) then
-            --  Found a better path to target state s.
-            best (s.pt.x, s.pt.y) := len_to;
-            --
-            --  Insert in a sorted way.
-            --
-            ins := explored + 1;
-            for i in current + 1 .. explored loop
-              if len_to < list (i).len then
-                ins := i;  --  Insert here.
-                --  Optional: remove another node
-                --  with the same state and a larger length.
-                exit;
-              end if;
-            end loop;
-            for i in reverse ins .. explored loop
-              list (i + 1) := list (i);
-            end loop;
-            new_node.len   := len_to;
-            new_node.state := s;
-            new_node.pred  := current;
-            list (ins) := new_node;
-            explored := explored + 1;
-          end if;
+      if s.pt.x in 0 .. n and then s.pt.y in 0 .. n and then map (s.pt.x, s.pt.y) = '.' then
+        len_to := cur_len + 1;  --  Cost for a move.
+        if len_to < best (s.pt.x, s.pt.y) then
+          --  Found a better path to target state s.
+          best (s.pt.x, s.pt.y) := len_to;
+          --
+          --  Insert in a sorted way.
+          --
+          ins := explored + 1;
+          for i in current + 1 .. explored loop
+            if len_to < list (i).len then
+              ins := i;  --  Insert here.
+              --  Optional: remove another node
+              --  with the same state and a larger length.
+              exit;
+            end if;
+          end loop;
+          for i in reverse ins .. explored loop
+            list (i + 1) := list (i);
+          end loop;
+          new_node.len   := len_to;
+          new_node.state := s;
+          new_node.pred  := current;
+          list (ins) := new_node;
+          explored := explored + 1;
         end if;
       end if;
     end Visit;
@@ -157,6 +149,11 @@ procedure AoC_2024_18 is
     end loop;
     Close (f);
 
+    start.x := 0;
+    start.y := 0;
+    finish.x := n;
+    finish.y := n;
+
     for y in 0 .. n loop
       for x in 0 .. n loop
         map_clear (x, y) := '.';
@@ -166,37 +163,29 @@ procedure AoC_2024_18 is
 
   end Read_Data;
 
-  procedure Do_Part_1 is
-    s, e : Point;
+  procedure Byte_Fall (to : Natural) is
   begin
     map := map_clear;
-    for step in 1 .. stop loop
+    for step in 1 .. to loop
       map (block (step).x, block (step).y) := '#';
     end loop;
-    s.x := 0;
-    s.y := 0;
-    e.x := n;
-    e.y := n;
-    r (part_1) := +"" & Dijkstra_Algorithm (s, e);
+  end Byte_Fall;
+
+  procedure Do_Part_1 is
+  begin
+    Byte_Fall (stop);
+    r (part_1) := +"" & Dijkstra_Algorithm;
   end Do_Part_1;
 
   procedure Do_Part_2 is
-    s, e : Point;
     a, b, mid  : Integer;
   begin
     a := stop;
     b := last_block;
     loop
       mid := (a + b) / 2;
-      map := map_clear;
-      for i in 1 .. mid loop
-        map (block (i).x, block (i).y) := '#';
-      end loop;
-      s.x := 0;
-      s.y := 0;
-      e.x := n;
-      e.y := n;
-      if Dijkstra_Algorithm (s, e) = inf then
+      Byte_Fall (mid);
+      if Dijkstra_Algorithm = inf then
         b := mid;
       else
         a := mid;
