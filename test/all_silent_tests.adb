@@ -1,5 +1,6 @@
---  This program runs a series of more than 96 regression tests to check
+--  This program runs a series of more than 115 regression tests to check
 --  the correct operation of the HAC compiler.
+--
 --  The failures and success are accounted and the sums are shown at the end.
 --
 --  NB: the individual tests, or this program itself, can actually be used
@@ -252,6 +253,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"17", +"4635635210");                     --  Chronospatial Computer (example's data)
     Launch_AoC (+"2024", +"18", +"298 52,32");                      --  RAM Run
     Launch_AoC (+"2024", +"19", +"260 639963796864990");            --  Linen Layout
+    Launch_AoC (+"2024", +"20", +"44 285");                         --  Race Condition
     --
     New_Line (2);
     New_Line;
