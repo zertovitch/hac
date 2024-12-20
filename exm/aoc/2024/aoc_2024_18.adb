@@ -47,7 +47,6 @@ procedure AoC_2024_18 is
   type Node is record
     len   : Natural;
     state : State_Type;
-    pred  : Natural;  --  This is for backtracking the path.
   end record;
 
   list : array (List_Range) of Node;
@@ -96,7 +95,6 @@ procedure AoC_2024_18 is
           end loop;
           new_node.len   := len_to;
           new_node.state := s;
-          new_node.pred  := current;
           list (ins) := new_node;
           explored := explored + 1;
         end if;
