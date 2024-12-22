@@ -254,6 +254,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"18", +"298 52,32");                      --  RAM Run
     Launch_AoC (+"2024", +"19", +"260 639963796864990");            --  Linen Layout
     Launch_AoC (+"2024", +"20", +"44 285");                         --  Race Condition
+    Launch_AoC (+"2024", +"22", +"37990510 23");                    --  Monkey Market (example's data)
     --
     New_Line (2);
     New_Line;

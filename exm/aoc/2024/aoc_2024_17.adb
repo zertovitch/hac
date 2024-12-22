@@ -5,6 +5,10 @@
 --  https://adventofcode.com/2024/day/17
 --  Copy of questions in: aoc_2024_17_questions.txt
 --
+--  HAC 0.40 "nice-to-have"'s detected in this exercise:
+--
+--    *     Modular types (esp. Unsigned_X and bitwise operators)
+--
 --  Related links:
 --    https://forum.ada-lang.io/
 --    https://www.reddit.com/r/adventofcode/
@@ -29,8 +33,8 @@ procedure AoC_2024_17 is
 
   use AoC_Toolbox, HAT, Interfaces;
 
-  subtype UInt is Integer_64;             --  "Full Ada": type UInt is mod 2 ** 64;
-  subtype Word is Integer range 0 .. 7;   --  "Full Ada": type Word is mod 2 ** 3;
+  subtype UInt is Integer_64;             --  Hack for HAC. "Full Ada": type UInt is mod 2 ** 64;
+  subtype Word is Integer range 0 .. 7;   --  Hack for HAC. "Full Ada": type Word is mod 2 ** 3;
 
   r : array (Part_Type) of VString;
 
