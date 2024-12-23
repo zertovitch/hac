@@ -234,27 +234,28 @@ procedure All_Silent_Tests is
     --  Launch_AoC (+"2023", +"24", +"24192 664822352550558");      --  Never Tell Me The Odds (depends on floating-point accuracy of HAT.Real)
     Launch_AoC (+"2023", +"25", +"54");                             --  Snowverload (example's data)
     --
-    Launch_AoC (+"2024", +"01", +"2086478 24941624");               --  Historian Hysteria (sorting)
-    Launch_AoC (+"2024", +"02", +"332 398");                        --  Red-Nosed Reports
-    Launch_AoC (+"2024", +"03", +"173529487 99532691");             --  Mull It Over
-    Launch_AoC (+"2024", +"04", +"2483 1925");                      --  Ceres Search
-    Launch_AoC (+"2024", +"05", +"5166");                           --  Print Queue
-    Launch_AoC (+"2024", +"06", +"5461");                           --  Guard Gallivant (part 2 takes 4 minutes on HAC!)
-    Launch_AoC (+"2024", +"07", +"850435817339");                   --  Bridge Repair (part 2 takes 3 minutes on HAC!)
-    Launch_AoC (+"2024", +"08", +"409 1308");                       --  Resonant Collinearity
-    Launch_AoC (+"2024", +"09", +"6340197768906");                  --  Disk Fragmenter (part 2 takes 34 seconds on HAC!)
-    Launch_AoC (+"2024", +"10", +"737 1619");                       --  Hoof It
-    Launch_AoC (+"2024", +"11", +"198089 236302670835517");         --  Plutonian Pebbles
-    Launch_AoC (+"2024", +"12", +"1319878 784982");                 --  Garden Groups
-    Launch_AoC (+"2024", +"13", +"36954 79352015273424");           --  Claw Contraption
-    Launch_AoC (+"2024", +"14", +"226236192");                      --  Restroom Redoubt (part 2 is visual)
-    Launch_AoC (+"2024", +"15", +"1515788 1516544");                --  Warehouse Woes
-    Launch_AoC (+"2024", +"16", +"74392");                          --  Reindeer Maze (part 2 takes long even on GNAT)
-    Launch_AoC (+"2024", +"17", +"4635635210");                     --  Chronospatial Computer (example's data)
-    Launch_AoC (+"2024", +"18", +"298 52,32");                      --  RAM Run
-    Launch_AoC (+"2024", +"19", +"260 639963796864990");            --  Linen Layout
-    Launch_AoC (+"2024", +"20", +"44 285");                         --  Race Condition
-    Launch_AoC (+"2024", +"22", +"37990510 23");                    --  Monkey Market (example's data)
+    Launch_AoC (+"2024", +"01", +"2086478 24941624");                             --  Historian Hysteria (sorting)
+    Launch_AoC (+"2024", +"02", +"332 398");                                      --  Red-Nosed Reports
+    Launch_AoC (+"2024", +"03", +"173529487 99532691");                           --  Mull It Over
+    Launch_AoC (+"2024", +"04", +"2483 1925");                                    --  Ceres Search
+    Launch_AoC (+"2024", +"05", +"5166");                                         --  Print Queue
+    Launch_AoC (+"2024", +"06", +"5461");                                         --  Guard Gallivant (part 2 takes 4 minutes on HAC!)
+    Launch_AoC (+"2024", +"07", +"850435817339");                                 --  Bridge Repair (part 2 takes 3 minutes on HAC!)
+    Launch_AoC (+"2024", +"08", +"409 1308");                                     --  Resonant Collinearity
+    Launch_AoC (+"2024", +"09", +"6340197768906");                                --  Disk Fragmenter (part 2 takes 34 seconds on HAC!)
+    Launch_AoC (+"2024", +"10", +"737 1619");                                     --  Hoof It
+    Launch_AoC (+"2024", +"11", +"198089 236302670835517");                       --  Plutonian Pebbles
+    Launch_AoC (+"2024", +"12", +"1319878 784982");                               --  Garden Groups
+    Launch_AoC (+"2024", +"13", +"36954 79352015273424");                         --  Claw Contraption
+    Launch_AoC (+"2024", +"14", +"226236192");                                    --  Restroom Redoubt (part 2 is visual)
+    Launch_AoC (+"2024", +"15", +"1515788 1516544");                              --  Warehouse Woes
+    Launch_AoC (+"2024", +"16", +"74392");                                        --  Reindeer Maze (part 2 takes long even on GNAT)
+    Launch_AoC (+"2024", +"17", +"4635635210");                                   --  Chronospatial Computer (example's data)
+    Launch_AoC (+"2024", +"18", +"298 52,32");                                    --  RAM Run
+    Launch_AoC (+"2024", +"19", +"260 639963796864990");                          --  Linen Layout
+    Launch_AoC (+"2024", +"20", +"44 285");                                       --  Race Condition
+    Launch_AoC (+"2024", +"22", +"37990510 23");                                  --  Monkey Market (example's data)
+    Launch_AoC (+"2024", +"23", +"1227 cl,df,ft,ir,iy,ny,qp,rb,sh,sl,sw,wm,wy");  --  LAN Party
     --
     New_Line (2);
     New_Line;

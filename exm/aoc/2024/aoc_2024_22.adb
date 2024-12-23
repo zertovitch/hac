@@ -30,7 +30,7 @@ procedure AoC_2024_22 is
 
   use AoC_Toolbox, HAT, Interfaces;
 
-  input_name : constant VString := +"mini";
+  input_name : constant VString := +"aoc_2024_22_mini";
   --  input_name : constant VString := +"aoc_2024_22";
 
   r : array (Part_Type) of VString;

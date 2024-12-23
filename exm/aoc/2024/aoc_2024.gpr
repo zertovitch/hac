@@ -31,8 +31,8 @@ project AoC_2024 is
    for Main use
      --("aoc_2024_25.adb",
      -- "aoc_2024_24.adb",
-     -- "aoc_2024_23.adb",
-     ("aoc_2024_22_full_ada.adb",
+     ("aoc_2024_23.adb",
+      "aoc_2024_22_full_ada.adb",
       "aoc_2024_22.adb",
       "aoc_2024_21.adb",
       "aoc_2024_20.adb",
