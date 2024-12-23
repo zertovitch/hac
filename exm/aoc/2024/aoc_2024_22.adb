@@ -74,10 +74,10 @@ procedure AoC_2024_22 is
       d2 := d1;
       d1 := d0;
       d0 := x10 - x10_old;
-      if count > 4 then
-        if first_price (d3, d2, d1, d0) = unseen then
-          first_price (d3, d2, d1, d0) := x10;
-        end if;
+      if count > 4 and then first_price (d3, d2, d1, d0) = unseen then
+        --  First occurrence of the price difference sequence d3, d2, d1, d0.
+        --  We record the price for that sequence.
+        first_price (d3, d2, d1, d0) := x10;
       end if;
     end loop;
     total := total + x;

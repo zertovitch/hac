@@ -121,7 +121,6 @@ procedure AoC_2024_23 is
   end Do_Part_1;
 
   --  Sorting copy-pasted-adapted from the BWT example.
-  --  !! TBD: put it in AoC Toolbox.
 
   type Table is array (Id_Range) of Computer_Name;
 
@@ -165,26 +164,27 @@ procedure AoC_2024_23 is
   end Shell_Sort;
 
   procedure Do_Part_2 is
-    elem_group : array (Id_Range) of Natural;
-    group_size, group_last, best, name_count : Natural;
+    elem_set : array (Id_Range) of Natural;
+    set_size, set_last, best, name_count : Natural;
     valid : Boolean;
     t : Table;
+    type Pass_Type is (find_largest_set_size, pick_largest_set);
   begin
     best := 0;
 
     Passes :
-    for pass in 1 .. 2 loop
+    for pass in Pass_Type loop
       Main_Vertex_Loop :
       for i in 1 .. last loop
         if verbosity_level > 1 then
           Put (+"From " & name_of (i) & ": ");
         end if;
-        group_last := 1;
-        elem_group (group_last) := i;
+        set_last := 1;
+        elem_set (set_last) := i;
         for j in 1 .. last loop
           if connected (i, j) then
-            group_last := group_last + 1;
-            elem_group (group_last) := j;
+            set_last := set_last + 1;
+            elem_set (set_last) := j;
             if verbosity_level > 1 then
               Put (name_of (j) & ' ');
             end if;
@@ -193,60 +193,70 @@ procedure AoC_2024_23 is
         if verbosity_level > 1 then
           New_Line;
         end if;
-        --  Now we have a group of all computers connected to i.
-        group_size := group_last;
+
+        --  Now we have *the* set of all computers connected to i.
+
         --  Check mutual connections:
-        for elem_i in 1 .. group_last loop
+        set_size := set_last;
+        for elem_i in 1 .. set_last loop
           valid := True;
-          for elem_j in elem_i + 1 .. group_last loop
-            valid := valid and then connected (elem_group (elem_i), elem_group (elem_j));
+          for elem_j in elem_i + 1 .. set_last loop
+            valid := valid and then connected (elem_set (elem_i), elem_set (elem_j));
             if not valid then
               if verbosity_level > 1 then
                 Put_Line
-                  (+"  Eliminated: " & name_of (elem_group (elem_i)) &
-                   " not connected to " & name_of (elem_group (elem_j)));
+                  (+"  Eliminated: " & name_of (elem_set (elem_i)) &
+                    " not connected to " & name_of (elem_set (elem_j)));
               end if;
               exit;
             end if;
           end loop;
           if not valid then
-            group_size := group_size - 1;
-            elem_group (elem_i) := 0;
+            set_size := set_size - 1;
+            elem_set (elem_i) := 0;
           end if;
         end loop;
 
+        --  Now we have *a* set of computers connected to i, where computers
+        --  are directly connected to each others.
+        --  Note that vertex i can belong to multiple such sets.
+
         if verbosity_level > 0 then
-          Put (+"Group size: " & group_size & ": ");
-          for elem_i in 1 .. group_last loop
-            if elem_group (elem_i) > 0 then
-              Put (name_of (elem_group (elem_i)) & ' ');
+          Put (+"Set size: " & set_size & ": ");
+          for elem_i in 1 .. set_last loop
+            if elem_set (elem_i) > 0 then
+              Put (name_of (elem_set (elem_i)) & ' ');
             end if;
           end loop;
           New_Line;
         end if;
 
-        if pass = 1 then
-          best := Max (best, group_size);
-        else
-          if group_size = best then
-            name_count := 0;
-            for elem_i in 1 .. group_last loop
-              if elem_group (elem_i) > 0 then
-                name_count := name_count + 1;
-                t (name_count) := name_of (elem_group (elem_i));
-              end if;
-            end loop;
-            Shell_Sort  (t, name_count);
-            r (part_2) := +"";
-            for i in 1 .. name_count loop
-              r (part_2) := r (part_2) & t (i);
-              if i < name_count then
-                r (part_2) := r (part_2) & ',';
-              end if;
-            end loop;
-            exit Main_Vertex_Loop;
-          end if;
-        end if;
+        case pass is
+
+          when find_largest_set_size =>
+            best := Max (best, set_size);
+
+          when pick_largest_set =>
+            if set_size = best then
+              name_count := 0;
+              for elem_i in 1 .. set_last loop
+                if elem_set (elem_i) > 0 then
+                  name_count := name_count + 1;
+                  t (name_count) := name_of (elem_set (elem_i));
+                end if;
+              end loop;
+              Shell_Sort  (t, name_count);
+              r (part_2) := +"";
+              for i in 1 .. name_count loop
+                r (part_2) := r (part_2) & t (i);
+                if i < name_count then
+                  r (part_2) := r (part_2) & ',';
+                end if;
+              end loop;
+              exit Main_Vertex_Loop;
+            end if;
+
+        end case;
       end loop Main_Vertex_Loop;
     end loop Passes;
   end Do_Part_2;
