@@ -257,6 +257,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"22", +"37990510 23");                                  --  Monkey Market (example's data)
     Launch_AoC (+"2024", +"23", +"1227 cl,df,ft,ir,iy,ny,qp,rb,sh,sl,sw,wm,wy");  --  LAN Party
     Launch_AoC (+"2024", +"24", +"57270694330992");                               --  Crossed Wires
+    Launch_AoC (+"2024", +"25", +"3395");                                         --  Code Chronicle
     --
     New_Line (2);
     New_Line;
