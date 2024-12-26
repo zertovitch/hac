@@ -35,23 +35,21 @@ procedure AoC_2024_22_Full_Ada is
 
   subtype Diff_Range is Integer range -9 .. +9;
 
-  unseen : constant := -1;
+  type Price_for_Diffs is array (Diff_Range, Diff_Range, Diff_Range, Diff_Range) of Integer;
 
-  first_price        : array (Diff_Range, Diff_Range, Diff_Range, Diff_Range) of Integer;
-  total_first_price  : array (Diff_Range, Diff_Range, Diff_Range, Diff_Range) of Natural;
+  total_first_price : Price_for_Diffs := (others => (others => (others => (others => 0))));
 
-  procedure Generate_2000 (initial_seed : U64) is
-    x : U64 := initial_seed;
+  procedure Generate_2000 (seed : U64) is
+    x : U64 := seed;
     x10, x10_old, d0, d1, d2, d3 : Integer := 0;
+    unseen : constant := -1;
+    first_price : Price_for_Diffs := (others => (others => (others => (others => unseen))));
   begin
-    for price of first_price loop
-      price := unseen;
-    end loop;
 
     for count in 1 .. 2000 loop
-      x := "XOR" (x, x * 64)   mod 16777216;
-      x := "XOR" (x, x / 32)   mod 16777216;
-      x := "XOR" (x, x * 2048) mod 16777216;
+      x := (x xor (x * 64))   mod 16777216;
+      x := (x xor (x / 32))   mod 16777216;
+      x := (x xor (x * 2048)) mod 16777216;
 
       x10_old := x10;
       x10 := Integer (x mod 10);
@@ -66,6 +64,7 @@ procedure AoC_2024_22_Full_Ada is
         first_price (d3, d2, d1, d0) := x10;
       end if;
     end loop;
+
     total := total + x;
 
     for a in Diff_Range loop
@@ -80,14 +79,13 @@ procedure AoC_2024_22_Full_Ada is
         end loop;
       end loop;
     end loop;
+
   end Generate_2000;
 
   procedure Read_Data is
     i : Integer;
     f : File_Type;
   begin
-    total_first_price := (others => (others => (others => (others => 0))));
-
     Open (f, input_name & ".txt");
     while not End_Of_File (f) loop
       Get (f, i);
@@ -104,7 +102,7 @@ procedure AoC_2024_22_Full_Ada is
   procedure Do_Part_2 is
     max_price : Integer := 0;
   begin
-    --  "Full Ada 2012+" does it in a single loop (for ... of).
+    --  Traverse the 4-dimensional array total_first_price:
     for total_price of total_first_price loop
       max_price := Integer'Max (max_price, total_price);
     end loop;

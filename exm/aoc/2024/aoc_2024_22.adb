@@ -41,16 +41,17 @@ procedure AoC_2024_22 is
 
   subtype Diff_Range is Integer range -9 .. +9;
 
-  unseen : constant := -1;
+  type Price_for_Diffs is array (Diff_Range, Diff_Range, Diff_Range, Diff_Range) of Integer;
 
-  first_price        : array (Diff_Range, Diff_Range, Diff_Range, Diff_Range) of Integer;
-  total_first_price  : array (Diff_Range, Diff_Range, Diff_Range, Diff_Range) of Natural;
+  total_first_price : Price_for_Diffs;
 
   procedure Generate_2000 (initial_seed : U64) is
     x : U64 := initial_seed;
     x10, x10_old, d0, d1, d2, d3 : Integer := 0;
+    unseen : constant := -1;
+    first_price : Price_for_Diffs;
   begin
-    --  "Full Ada" does it in a single instruction.
+    --  "Full Ada" does it in a single expression (see AoC_2024_22_Full_Ada).
     for a in Diff_Range loop
       for b in Diff_Range loop
         for c in Diff_Range loop
@@ -128,7 +129,7 @@ procedure AoC_2024_22 is
     max_price : Integer := 0;
     p : Integer;
   begin
-    --  "Full Ada 2012+" does it in a single loop (for ... of).
+    --  "Full Ada 2012+" does the following in a single loop (for ... of).
     for a in Diff_Range loop
       for b in Diff_Range loop
         for c in Diff_Range loop

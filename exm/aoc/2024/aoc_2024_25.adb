@@ -41,23 +41,23 @@ procedure AoC_2024_25 is
 
   procedure Read_Data is
     subtype Pattern is String (Pin_Range);
-    asm : Pattern;
+    pat : Pattern;
     f : File_Type;
   begin
     Open (f, input_name & ".txt");
-    Get (f, asm);
+    Get (f, pat);
     while not End_Of_File (f) loop
-      exit when asm = "STOP.";
-      if asm = "#####" then
+      exit when pat = "STOP.";
+      if pat = "#####" then
         --  Lock
         last_lock := last_lock + 1;
         for i in 0 .. 6 loop
           for j in Pin_Range loop
-            if asm (j) = '#' then
+            if pat (j) = '#' then
               lock (last_lock)(j) := i;
             end if;
           end loop;
-          Get (f, asm);
+          Get (f, pat);
         end loop;
         if verbose then
           Put ("Lock ");
@@ -74,11 +74,11 @@ procedure AoC_2024_25 is
         end loop;
         for i in 0 .. 6 loop
           for j in Pin_Range loop
-            if asm (j) = '#' and then key (last_key)(j) = 0 then
+            if pat (j) = '#' and then key (last_key)(j) = 0 then
               key (last_key)(j) := 6 - i;
             end if;
           end loop;
-          Get (f, asm);
+          Get (f, pat);
         end loop;
         if verbose then
           Put ("Key ");
