@@ -45,8 +45,8 @@ procedure AoC_2024_22 is
 
   total_first_price : Price_for_Diffs;
 
-  procedure Generate_2000 (initial_seed : U64) is
-    x : U64 := initial_seed;
+  procedure Generate_2000 (seed : U64) is
+    x : U64 := seed;
     x10, x10_old, d0, d1, d2, d3 : Integer := 0;
     unseen : constant := -1;
     first_price : Price_for_Diffs;

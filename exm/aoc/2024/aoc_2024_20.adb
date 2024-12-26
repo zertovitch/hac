@@ -347,14 +347,21 @@ procedure AoC_2024_20 is
               if n.x in map'Range (1) and then n.y in map'Range (2)
                 and then Dist_L1 (n, c) <= max_cheats
                 and then distance (c.x, c.y) > distance (n.x, n.y)
-                --  implied pathable; walls are = inf
+                --  Implied pathable; walls are = inf
               then
                 key :=
                   Image (c.x) & "," & Image (c.y) & "x" &
                   Image (n.x) & "," & Image (n.y);
 
+                --  Simulate all walls being removed horizontally from (say) c to (n.x, c.y),
+                --  then vertically from (n.x, c.y) to n, or even on the whole rectangle with
+                --  points c and n as opposite corners. The exact path doesn't matter: all
+                --  lengths are the same (L1 / Manhattan distance) since there is no obstacle!
+
+                --  Compute the gain obtained by having the "cheat" path:
+
                 value :=
-                  Integer_64 (distance (c.x, c.y) - distance (n.x, n.y) - Dist_L1 (n, c));
+                  Integer_64 ((distance (c.x, c.y) - distance (n.x, n.y)) - Dist_L1 (n, c));
 
                 Hash_Maps.Insert (cheats, key, value, True, value);
               end if;
@@ -438,7 +445,7 @@ begin
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: " & r (part_1));
     Put_Line (+"Part 2: " & r (part_2));
-    --  Part 1: validated by AoC: 1360    (mini: 44 with threshold 1)
+    --  Part 1: validated by AoC: 1360    (mini: 44  with threshold 1)
     --  Part 2: validated by AoC: 1005476 (mini: 285 with threshold 50)
   end if;
 end AoC_2024_20;
