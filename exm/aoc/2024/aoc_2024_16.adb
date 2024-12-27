@@ -114,15 +114,17 @@ procedure AoC_2024_16 is
       if s.pt.x in 1 .. n then
         s.pt.y := cur_s.pt.y + vec.y;
         if s.pt.y in 1 .. n then
+
           if map (s.pt.x, s.pt.y) /= '.' then
             return;
           end if;
-          len_to := cur_len;
-          if cur_s.dir /= dir then
-            len_to := len_to + 1000;  --  Cost for a turn.
+
+          if cur_s.dir = dir then
+            len_to := cur_len + 1;     --  Cost for a move.
           else
-            len_to := len_to + 1;     --  Cost for a move.
+            len_to := cur_len + 1000;  --  Cost for a turn.
           end if;
+
           if len_to < best (s.pt.x, s.pt.y, dir) then
             s.dir := dir;
             --  Found a better path to target state s.
@@ -224,7 +226,7 @@ procedure AoC_2024_16 is
       last : Natural := 0;
       block : Point;
 
-      procedure Record_Path is
+      procedure Record_Optimal_Path is
         --  We record the optimal path found by latest
         --  run of Dijkstra's algorithm.
         i : Integer := current;
@@ -238,25 +240,33 @@ procedure AoC_2024_16 is
           then
             last := last + 1;
             path (last) := list (i).state.pt;
+            --  Mark the seats:
             seat (path (last).x, path (last).y) := True;
           end if;
           i := list (i).pred;
         end loop;
-      end Record_Path;
+      end Record_Optimal_Path;
+
+      alternative_found : Boolean;
 
     begin
-      Record_Path;
-      for i in 2 .. last - 1 loop
-        block := path (i);
-        --  Put a road block on the optimal way, step #i, and see what happens.
-        map (block.x, block.y) := 'B';
-        if Dijkstra_Algorithm (s, e) = opt then
-          --  There is another optimal path despite the road block.
-          Search_Alternatives;
-        else
-          --  The road block worsens the optimal path. Remove it.
-          map (block.x, block.y) := '.';
-        end if;
+      loop
+        Record_Optimal_Path;
+        alternative_found := False;
+        for i in 2 .. last - 1 loop
+          block := path (i);
+          --  Put a road block on the optimal way, step #i, and see what happens.
+          map (block.x, block.y) := 'B';
+          if Dijkstra_Algorithm (s, e) = opt then
+            --  There is another optimal path despite the road block.
+            alternative_found := True;
+            exit;
+          else
+            --  The road block worsens the optimal path. Remove it.
+            map (block.x, block.y) := '.';
+          end if;
+        end loop;
+        exit when not alternative_found;
       end loop;
     end Search_Alternatives;
 
