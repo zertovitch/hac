@@ -70,8 +70,8 @@ procedure AoC_2023_22 is
 
   procedure Find
     (v     : in out Ordered_Map;
-             -- ^ "out" is not needed, we just force
-             --   a by-reference parameter passing on HAC.
+             --  ^ "out" is not needed, we just force
+             --    a by-reference parameter passing on HAC.
      key   : in     Integer;
      index :    out Integer;
      found :    out Boolean)

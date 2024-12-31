@@ -33,8 +33,9 @@ procedure AoC_2024_21 is
   --
   --  Differences from J.C.M.'s implementation:
   --     - Breadth First Search (BFS) algo for getting paths in keypads is
-  --         replaced by a systematic search, "Manhattan-style" (there is no obstacle).
-  --     - memoization (cache) is done via an array instead of a hash map.
+  --         replaced by a systematic search, "Manhattan-style" (there is
+  --         no obstacle except one gap).
+  --     - Memoization (cache-ing) is done via an array instead of a hash map.
 
   ----------------
   --  Commands  --
@@ -141,6 +142,10 @@ procedure AoC_2024_21 is
 
   cache, cache_clear : Cache_Type;
 
+  verbose : constant Boolean := False;
+
+  inf : constant Integer_64 := Integer_64'Last;  --  Approximation of infinity.
+
   function Lower_Commands
     (from, to, gap : Point;
      robot_count   : Integer;
@@ -180,7 +185,7 @@ procedure AoC_2024_21 is
         return cached_val;
       end if;
 
-      min := Integer_64'Last;
+      min := inf;
 
       dx := Sgn (to.x - from.x);
       dy := Sgn (to.y - from.y);
@@ -246,6 +251,12 @@ procedure AoC_2024_21 is
             Single_Press (c_press);
             --  Take the minimum length of all lowered command sequences.
             if sum < min then
+              if verbose and then min < inf then
+                Put_Line
+                  (+"Depth: " & depth &
+                   ", from " & from.x & "," & from.y & " to " & to.x & "," & to.y &
+                   ": better length, from" & min'Image & " to" & sum'Image);
+              end if;
               min := sum;
             end if;
           end if;

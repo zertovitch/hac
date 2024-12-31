@@ -108,8 +108,8 @@ procedure AoC_2023_18 is
 
   procedure Find
     (v     : in out Ordered_Vector;
-             -- ^ "out" is not needed, we just force
-             --   a by-reference parameter passing on HAC.
+             --  ^ "out" is not needed, we just force
+             --    a by-reference parameter passing on HAC.
      value :        Integer;
      index :    out Positive)
   is

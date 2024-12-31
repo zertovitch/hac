@@ -280,6 +280,9 @@ procedure AoC_2024_20 is
 
   end Do_Part_1_Explicit_Cheat_Point;
 
+  --  The following is adapted from the very smart solution @
+  --  https://github.com/jcmoyer/puzzles/blob/master/AdventOfCode2024/src/day20.adb
+  --
   function Do_as_JC_Moyer (max_cheats : Positive; threshold : Natural) return VString is
     distance : Score_Type;
 
@@ -337,9 +340,9 @@ procedure AoC_2024_20 is
 
     for x in map'Range (1) loop
       for y in map'Range (2) loop
-        for dx in -max_cheats .. +max_cheats loop
-          for dy in -max_cheats .. +max_cheats loop
-            if distance (x, y) < inf then
+        if distance (x, y) < inf then
+          for dx in -max_cheats .. +max_cheats loop
+            for dy in -max_cheats .. +max_cheats loop
               c.x := x;
               c.y := y;
               n.x := c.x + dx;
@@ -349,10 +352,6 @@ procedure AoC_2024_20 is
                 and then distance (c.x, c.y) > distance (n.x, n.y)
                 --  Implied pathable; walls are = inf
               then
-                key :=
-                  Image (c.x) & "," & Image (c.y) & "x" &
-                  Image (n.x) & "," & Image (n.y);
-
                 --  Simulate all walls being removed horizontally from (say) c to (n.x, c.y),
                 --  then vertically from (n.x, c.y) to n, or even on the whole rectangle with
                 --  points c and n as opposite corners. The exact path doesn't matter: all
@@ -363,11 +362,17 @@ procedure AoC_2024_20 is
                 value :=
                   Integer_64 ((distance (c.x, c.y) - distance (n.x, n.y)) - Dist_L1 (n, c));
 
-                Hash_Maps.Insert (cheats, key, value, True, value);
+                if compute_stats or else value >= Integer_64 (threshold) then
+                  key :=
+                    Image (c.x) & "," & Image (c.y) & "x" &
+                    Image (n.x) & "," & Image (n.y);
+
+                  Hash_Maps.Insert (cheats, key, value, True, value);
+                end if;
               end if;
-            end if;
+            end loop;
           end loop;
-        end loop;
+        end if;
       end loop;
     end loop;
 
@@ -431,8 +436,6 @@ begin
       r (part_1) := Do_Part_1_Explicit_Cheat_Point;
       r (part_2) := +"";
     when m2 =>
-      --  Adapted from the very smart solution @
-      --  https://github.com/jcmoyer/puzzles/blob/master/AdventOfCode2024/src/day20.adb
       r (part_1) := Do_as_JC_Moyer (2,  threshold_part_1);
       r (part_2) := Do_as_JC_Moyer (20, threshold_part_2);
   end case;

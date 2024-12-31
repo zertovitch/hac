@@ -211,6 +211,55 @@ procedure AoC_2024_16 is
     New_Line;
   end Show_Map;
 
+  seat : array (1 .. n, 1 .. n) of Integer;
+
+  --  PPM picture output, adapted from AoC_2023_10.
+  --
+  procedure Dump_PPM is
+    d : File_Type;
+    f : constant := 50;
+    c : Integer;
+  begin
+    Create (d, input_name & ".ppm");
+    Put (d, "P6" & Chr (10));
+    Put (d, n); Put (d, ' ');
+    Put (d, n); Put (d, Chr (10));
+    Put (d, "255" & Chr (10));
+    for y in reverse 1 .. n loop
+      for x in 1 .. n loop
+        if x = s.x and then y = s.y then
+          --  Start.
+          Put (d, Chr (255));
+          Put (d, Chr (100));
+          Put (d, Chr (100));
+        elsif x = e.x and then y = e.y then
+          --  End.
+          Put (d, Chr (100));
+          Put (d, Chr (255));
+          Put (d, Chr (100));
+        elsif seat (x, y) >= 0 then
+          --  One of the optimal paths.
+          --  We try to given distinctive colours...
+          c := f * seat (x, y);
+          Put (d, Chr (255 - c));
+          Put (d, Chr (255 - c / 2));
+          Put (d, Chr (c / 2));
+        elsif map (x, y) = '.' then
+          --  Path, not optimal.
+          Put (d, Chr (44));
+          Put (d, Chr (44));
+          Put (d, Chr (44));
+        else
+          --  Wall.
+          Put (d, Chr (1));
+          Put (d, Chr (1));
+          Put (d, Chr (1));
+        end if;
+      end loop;
+    end loop;
+    Close (d);
+  end Dump_PPM;
+
   verbose : constant Boolean := False;
 
   --  For part 2 you have to find all optimal paths.
@@ -219,7 +268,7 @@ procedure AoC_2024_16 is
   --
   procedure Do_Part_2 is
     opt : constant Integer := r (part_1);
-    seat : array (1 .. n, 1 .. n) of Boolean;
+    blocks_added : Natural := 0;
 
     procedure Search_Alternatives is
       path : array (1 .. 20_000) of Point;
@@ -241,7 +290,7 @@ procedure AoC_2024_16 is
             last := last + 1;
             path (last) := list (i).state.pt;
             --  Mark the seats:
-            seat (path (last).x, path (last).y) := True;
+            seat (path (last).x, path (last).y) := blocks_added;
           end if;
           i := list (i).pred;
         end loop;
@@ -260,6 +309,7 @@ procedure AoC_2024_16 is
           if Dijkstra_Algorithm (s, e) = opt then
             --  There is another optimal path despite the road block.
             alternative_found := True;
+            blocks_added := blocks_added + 1;
             exit;
           else
             --  The road block worsens the optimal path. Remove it.
@@ -274,7 +324,7 @@ procedure AoC_2024_16 is
 
     for x in 1 .. n loop
       for y in 1 .. n loop
-        seat (x, y) := False;
+        seat (x, y) := -1;
       end loop;
     end loop;
 
@@ -283,7 +333,7 @@ procedure AoC_2024_16 is
     r (part_2) := 0;
     for x in 1 .. n loop
       for y in 1 .. n loop
-        if seat (x, y) then
+        if seat (x, y) >= 0 then
           r (part_2) := r (part_2) + 1;
         end if;
       end loop;
@@ -291,6 +341,8 @@ procedure AoC_2024_16 is
 
     if verbose then
       Show_Map;
+      Dump_PPM;
+      Put_Line (+"Total road blocks added: " & blocks_added);
     end if;
 
   end Do_Part_2;

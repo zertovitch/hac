@@ -21,9 +21,9 @@ with HAT;
 procedure AoC_2021_20 is
   use HAT;
 
-  iter_max : constant :=   50;
-  margin   : constant :=  101;  --  "full Ada": iter_max * 2 + 1
-  map_min  : constant := -101;  --  "full Ada": -margin
+  iter_max   : constant :=   50;
+  --  margin : constant :=  101;  --  "full Ada": iter_max * 2 + 1
+  map_min    : constant := -101;  --  "full Ada": -margin
 
   --  input : constant VString := +"mini.txt"; data_max : constant :=  4;
   input : constant VString := +"aoc_2021_20.txt"; data_max : constant :=  99;

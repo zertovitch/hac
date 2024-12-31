@@ -223,9 +223,9 @@ procedure AoC_2021_22 is
       end if;
     end Scan;
     --
-    bogus_vertex_1, bogus_vertex_2 : Point;
+    dummy_vertex_1, dummy_vertex_2 : Point;
   begin
-    Scan (bogus_vertex_1, bogus_vertex_2, 1);
+    Scan (dummy_vertex_1, dummy_vertex_2, 1);
     r (2) := count;
   end Part_2;
 
