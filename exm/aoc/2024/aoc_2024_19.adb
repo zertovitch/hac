@@ -75,10 +75,8 @@ procedure AoC_2024_19 is
     memo : Memo_Type;
 
     function Count_Options (design : VString; first, length_design : Positive) return Integer_64 is
-      length_towel, last : Natural;
-      match : Boolean;
+      last : Natural;
       options : Integer_64;
-
     begin
 
       if memo (first) >= 0 then
@@ -88,18 +86,13 @@ procedure AoC_2024_19 is
       --  Number is unknown -> we have to compute it...
 
       options := 0;
-
       for i in 1 .. nt loop
-        length_towel := Length (towel (i));
-        last := first + length_towel - 1;
-        if last <= length_design then
-          match := Slice (design, first, last) = towel (i);
-          if match then
-            if last = length_design then
-              options := options + 1;
-            else
-              options := options + Count_Options (design, last + 1, length_design);
-            end if;
+        last := first + Length (towel (i)) - 1;
+        if last <= length_design and then Slice (design, first, last) = towel (i) then  --  Match
+          if last = length_design then
+            options := options + 1;
+          else
+            options := options + Count_Options (design, last + 1, length_design);
           end if;
         end if;
       end loop;
@@ -136,10 +129,8 @@ procedure AoC_2024_19 is
 
     function Count_Options (design : VString; first, length_design : Positive) return Integer_64 is
       length_towel, last : Natural;
-      match : Boolean;
       options : Integer_64;
       c : Character;
-
     begin
 
       if memo (first) >= 0 then
@@ -154,14 +145,11 @@ procedure AoC_2024_19 is
       for i in 1 .. towels_with_initial (c) loop
         length_towel := Length (towel_after_initial (c, i)) + 1;
         last := first + length_towel - 1;
-        if last <= length_design then
-          match := Slice (design, first + 1, last) = towel_after_initial (c, i);
-          if match then
-            if last = length_design then
-              options := options + 1;
-            else
-              options := options + Count_Options (design, last + 1, length_design);
-            end if;
+        if last <= length_design and then Slice (design, first + 1, last) = towel_after_initial (c, i) then  --  Match
+          if last = length_design then
+            options := options + 1;
+          else
+            options := options + Count_Options (design, last + 1, length_design);
           end if;
         end if;
       end loop;
@@ -209,9 +197,7 @@ procedure AoC_2024_19 is
 
     function Count_Options (design : VString) return Integer_64 is
       length_design, length_towel : Natural;
-      match : Boolean;
       options : Integer_64;
-
     begin
 
       Find (memo, design, unknown, options);
@@ -226,14 +212,11 @@ procedure AoC_2024_19 is
 
       for i in 1 .. nt loop
         length_towel := Length (towel (i));
-        if length_towel <= length_design then
-          match := Slice (design, 1, length_towel) = towel (i);
-          if match then
-            if length_towel = length_design then
-              options := options + 1;
-            else
-              options := options + Count_Options (Slice (design, length_towel + 1, length_design));
-            end if;
+        if length_towel <= length_design and then Slice (design, 1, length_towel) = towel (i) then  --  Match
+          if length_towel = length_design then
+            options := options + 1;
+          else
+            options := options + Count_Options (Slice (design, length_towel + 1, length_design));
           end if;
         end if;
       end loop;
@@ -272,20 +255,20 @@ begin
   case choice is
     when m1 =>
       --  Simple method with memoization (used for sending the answer to AoC).
-      --  Time HAC: 17.7 seconds; time GNAT (mode: Fast_Unchecked): 0.85 seconds.
+      --  Time HAC: 13.4 seconds; time GNAT (mode: Fast_Unchecked): 0.84 seconds.
       Solve_Method_Memoization_by_Index;
 
     when m2 =>
       --  Method with memoization and bucket triage by the towel's initial.
-      --  Time HAC:  4.2 seconds; time GNAT (mode: Fast_Unchecked): 0.17 seconds.
+      --  Time HAC:  3.8 seconds; time GNAT (mode: Fast_Unchecked): 0.17 seconds.
       Solve_Method_Triage_by_Initial;
 
     when m3 =>
       --  Method with memoization and hashing of the design string (idea: J.C. Moyer,
       --  https://github.com/jcmoyer/puzzles/blob/master/AdventOfCode2024/src/day19.adb).
       --  Adapted to our HAC-compatible Hash Maps (slower).
-      --  Time HAC: 16.9 seconds; time GNAT (mode: Fast_Unchecked): 0.89 seconds.
-      --  J.C. Moyer's code, Release mode: 0.09 seconds.
+      --  Time HAC: 14.5 seconds; time GNAT (mode: Fast_Unchecked): 0.89 seconds.
+      --  J.C. Moyer's code, GNAT & Release mode: 0.09 seconds.
       Solve_Method_Full_Hashing;
 
   end case;

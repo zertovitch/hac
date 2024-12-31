@@ -872,7 +872,6 @@ procedure AoC_2024_24 is
   end Do_Part_2;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
-  --  verbose : constant Boolean := True;
   T0 : constant Time := Clock;
 
 begin

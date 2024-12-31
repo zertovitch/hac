@@ -254,6 +254,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"18", +"298 52,32");                                    --  RAM Run
     Launch_AoC (+"2024", +"19", +"260 639963796864990");                          --  Linen Layout
     Launch_AoC (+"2024", +"20", +"44 285");                                       --  Race Condition
+    Launch_AoC (+"2024", +"21", +"222670 271397390297138");                       --  Keypad Conundrum
     Launch_AoC (+"2024", +"22", +"37990510 23");                                  --  Monkey Market (example's data)
     Launch_AoC (+"2024", +"23", +"1227 cl,df,ft,ir,iy,ny,qp,rb,sh,sl,sw,wm,wy");  --  LAN Party
     Launch_AoC (+"2024", +"24", +"57270694330992");                               --  Crossed Wires
