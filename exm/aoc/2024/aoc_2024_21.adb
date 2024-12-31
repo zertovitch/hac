@@ -123,19 +123,20 @@ procedure AoC_2024_21 is
     end case;
   end Position_Dir;
 
-  subtype Max_Pad_Range is Integer range 1 .. 4;
+  subtype Pad_Range_X     is Integer range 1 .. 3;
+  subtype Max_Pad_Range_Y is Integer range 1 .. 4;
 
   gap_numpad, gap_dirpad : Point;
 
-  max_robot_level : constant := 27;
+  max_robot_level : constant := 25;
 
   type Cache_Type is
     array
-      (Max_Pad_Range,           --  Memoization of from.x
-       Max_Pad_Range,           --  Memoization of from.y
-       Max_Pad_Range,           --  Memoization of to.x
-       Max_Pad_Range,           --  Memoization of to.y
-       0 .. max_robot_level)    --  Memoization of recursion depth
+      (Pad_Range_X,           --  Memoization by location from.x
+       Max_Pad_Range_Y,       --  Memoization by location from.y
+       Pad_Range_X,           --  Memoization by location to.x
+       Max_Pad_Range_Y,       --  Memoization by location to.y
+       0 .. max_robot_level)  --  Memoization by recursion depth
     of Integer_64;
 
   cache, cache_clear : Cache_Type;
@@ -165,42 +166,43 @@ procedure AoC_2024_21 is
     valid : Boolean;
     cur_pos : Point;
     min : Integer_64;
-    dx, dy, lx, ly, l, n, hor : Integer;
+    dx, dy, len_x, len_y, length, n, horizontal_steps : Integer;
 
-    cached_val : constant Integer_64 := cache (from.x, from.y, to.x, to.y, depth);
+    cached_val : Integer_64;
 
   begin
-    if cached_val >= 0 then
-      return cached_val;
-    end if;
-
     if depth = robot_count then
-      --  Direct command
-      min := 1;
+      --  Direct command.
+      return 1;
     else
+      cached_val := cache (from.x, from.y, to.x, to.y, depth);
+      if cached_val >= 0 then
+        return cached_val;
+      end if;
+
       min := Integer_64'Last;
 
       dx := Sgn (to.x - from.x);
       dy := Sgn (to.y - from.y);
-      lx := abs (to.x - from.x);
-      ly := abs (to.y - from.y);
-      l := lx + ly;
+      len_x := abs (to.x - from.x);
+      len_y := abs (to.y - from.y);
+      length := len_x + len_y;
 
       All_Paths :
-      for comb in 0 .. 2 ** l - 1 loop
+      for comb in 0 .. 2 ** length - 1 loop
         n := comb;
-        hor := 0;
-        for count in 1 .. l loop
+        horizontal_steps := 0;
+        for count in 1 .. length loop
           if n mod 2 = 1 then
             --  Binary representation of `comb` has 1's for
             --  horizontal moves and 0's for vertical moves.
-            hor := hor + 1;
+            horizontal_steps := horizontal_steps + 1;
           end if;
           n := n / 2;
         end loop;
-        if hor = lx then
-          --  Code `comb` represents the correct number of horizontal moves,
-          --  then the number of vertical moves is also correct.
+        if horizontal_steps = len_x then
+          --  The numer of 1's in the code `comb` matches the number of
+          --  horizontal moves. Then the number of vertical moves is also correct.
           sum  := 0;
           dpad_key := dp_A;
           n := comb;
@@ -208,9 +210,10 @@ procedure AoC_2024_21 is
           valid := True;
 
           Path :
-          for count in 1 .. l loop
+          for count in 1 .. length loop
+
             if n mod 2 = 1 then
-              --  Horizontal move
+              --  Horizontal move.
               if dx = 1 then
                 cmd := c_east;
               else
@@ -218,7 +221,7 @@ procedure AoC_2024_21 is
               end if;
               cur_pos.x := cur_pos.x + dx;
             else
-              --  Vertical move
+              --  Vertical move.
               if dy = 1 then
                 cmd := c_south;
               else
@@ -227,19 +230,21 @@ procedure AoC_2024_21 is
               cur_pos.y := cur_pos.y + dy;
             end if;
 
+            --  "If a robot arm is ever aimed at a gap where no button is
+            --   present on the keypad, even for an instant, the robot will
+            --   panic unrecoverably. So, don't do that."
+            --
             valid := Dist_L1 (cur_pos, gap) > 0;
-            --  ^ "If a robot arm is ever aimed at a gap where no button is
-            --     present on the keypad, even for an instant, the robot will
-            --     panic unrecoverably. So, don't do that."
 
             exit Path when not valid;
             Single_Press (cmd);
             n := n / 2;
           end loop Path;
+
           if valid then
-            --  Press "Press"!
+            --  Do "Press"!
             Single_Press (c_press);
-            --  Take the minimum length of all lowered command sequences
+            --  Take the minimum length of all lowered command sequences.
             if sum < min then
               min := sum;
             end if;
@@ -296,7 +301,7 @@ procedure AoC_2024_21 is
   begin
     case part is
       when part_1 => robots := 3;
-      when part_2 => robots := 26;
+      when part_2 => robots := max_robot_level + 1;
     end case;
 
     case data is
