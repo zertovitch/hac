@@ -120,7 +120,8 @@ procedure AoC_2024_23 is
     r (part_1) := +"" & count_with_historian;
   end Do_Part_1;
 
-  --  Sorting copy-pasted-adapted from the BWT example.
+  --  Sorting is copy-pasted-adapted from the BWT example for HAC.
+  --  Note the Ada standard has a generic sorting in its library.
 
   type Table is array (Id_Range) of Computer_Name;
 
@@ -179,8 +180,12 @@ procedure AoC_2024_23 is
         if verbosity_level > 1 then
           Put (+"From " & name_of (i) & ": ");
         end if;
+
+        --  Create a group around computer i:
         set_last := 1;
         elem_set (set_last) := i;
+
+        --  We gather all computers connected to i:
         for j in 1 .. last loop
           if connected (i, j) then
             set_last := set_last + 1;
@@ -196,8 +201,9 @@ procedure AoC_2024_23 is
 
         --  Now we have *the* set of all computers connected to i.
 
-        --  Check mutual connections:
+        --  Check mutual connections in the set:
         set_size := set_last;
+        Check_Connections :
         for elem_i in 1 .. set_last loop
           valid := True;
           for elem_j in elem_i + 1 .. set_last loop
@@ -213,9 +219,9 @@ procedure AoC_2024_23 is
           end loop;
           if not valid then
             set_size := set_size - 1;
-            elem_set (elem_i) := 0;
+            elem_set (elem_i) := 0;  --  Cancel the element (no packing)
           end if;
-        end loop;
+        end loop Check_Connections;
 
         --  Now we have *a* set of computers connected to i, where computers
         --  are directly connected to each others.
@@ -237,7 +243,9 @@ procedure AoC_2024_23 is
             best := Max (best, set_size);
 
           when pick_largest_set =>
+
             if set_size = best then
+              --  We found a set with the maximum size (hope this is the expected one!):
               name_count := 0;
               for elem_i in 1 .. set_last loop
                 if elem_set (elem_i) > 0 then
@@ -259,6 +267,7 @@ procedure AoC_2024_23 is
         end case;
       end loop Main_Vertex_Loop;
     end loop Passes;
+
   end Do_Part_2;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
