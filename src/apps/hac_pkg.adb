@@ -134,6 +134,13 @@ package body HAC_Pkg is
     Put_Line (Current_Error, s);
   end PLCE;
 
+  procedure Option_Head (s : String) is
+  begin
+    NLCE;
+    PLCE ("______");
+    PLCE ("Option " & s);
+  end Option_Head;
+
   procedure NLCE is
     use Ada.Text_IO;
   begin
@@ -154,14 +161,15 @@ package body HAC_Pkg is
     NLCE;
     PLCE ("Usage: hac [options] main.adb [command-line parameters for main]");
     NLCE;
-    PLCE ("Options: -a     : assembler output");
+    PLCE ("Options: -h, h1 : this help");
+    PLCE ("         -h2    : show more help & details about options");
+    NLCE;
+    PLCE ("         -a     : assembler output");
     PLCE ("         -c     : compile only");
     PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
-    PLCE ("         -h, h1 : this help");
-    PLCE ("         -h2    : show more help about options");
-    PLCE ("         -I     : specify source files search path (hac -h2 for details)");
-    PLCE ("         -rx    : enable / disable remarks (hac -h2 for details)");
-    PLCE ("         -tx    : target machine (default: HAC VM; hac -h2 for details)");
+    PLCE ("         -I     : specify source files search path");
+    PLCE ("         -rx    : enable / disable remarks");
+    PLCE ("         -tx    : target machine (default: HAC VM)");
     PLCE ("         -v, v1 : verbose");
     PLCE ("         -v2    : very verbose");
     NLCE;
@@ -169,10 +177,11 @@ package body HAC_Pkg is
     PLCE ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
     Show_MIT_License (Current_Error, "hac_sys.ads");
     if level > 1 then
-      PLCE ("Extended help for HAC (command: hac -h2)");
-      PLCE ("----------------------------------------");
       NLCE;
-      PLCE ("Option -I : specify source files search path");
+      PLCE ("/------------------------------------------\");
+      PLCE ("| Extended help for HAC (command: hac -h2) |");
+      PLCE ("\------------------------------------------/");
+      Option_Head ("-I : specify source files search path");
       NLCE;
       PLCE ("  The search path is a list of directories separated by commas (,) or semicolons (;).");
       PLCE ("  HAC searches Ada source files in the following order:");
@@ -182,8 +191,7 @@ package body HAC_Pkg is
       PLCE ("         hac command line, in the order given.");
       PLCE ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
       PLCE ("         environment variable.");
-      NLCE;
-      PLCE ("Option -rx : enable remarks (warnings or notes) of kind x");
+      Option_Head ("-rx : enable remarks (warnings or notes) of kind x");
       PLCE ("       -rX : disable remarks for letter x");
       PLCE ("             x =");
       PLCE
@@ -201,8 +209,7 @@ package body HAC_Pkg is
       PLCE
         ("                 v :  warnings for uninitialized variables or parameters" &
          Show_Level (warn_read_but_not_written));
-      NLCE;
-      PLCE ("Option -tx : set target machine to x");
+      Option_Head ("-tx : set target machine to x");
       PLCE ("             x =");
       PLCE ("                 amd64_windows_console_fasm");
       NLCE;
