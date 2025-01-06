@@ -16,9 +16,13 @@ begin
   if Argument_Count = 0 then
     Put_Line (Current_Error, "Usage: hac_mini main.adb");
   else
+
     BD.Build_Main_from_File (Argument (1));
+
     if BD.Build_Successful then
+
       Interpret_on_Current_IO (BD, 1, "", post_mortem);
+
       if Is_Exception_Raised (post_mortem.Unhandled) then
         Put_Line (Current_Error, "HAC VM: raised " & Image (post_mortem.Unhandled));
         Put_Line (Current_Error, Message (post_mortem.Unhandled));
