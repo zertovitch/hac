@@ -61,6 +61,9 @@ procedure AoC_2024_09 is
     for i in 1 .. Length (s) loop
       b := Character'Pos (Element (s, i)) - Character'Pos ('0');
       if is_file then
+
+        --  File block:
+
         file_id := file_id + 1;
         --  Files are always of length > 0
         last_file := last_file + 1;
@@ -72,16 +75,19 @@ procedure AoC_2024_09 is
           d (l) := file_id;
         end loop;
       else
+
+        --  Free block:
+
         if b > 0 then
           last_free := last_free + 1;
           free_list (last_free).id  := 0;  --  Don't care
           free_list (last_free).pos := l + 1;
           free_list (last_free).len := b;
+          for j in 1 .. b loop
+            l := l + 1;
+            d (l) := free;
+          end loop;
         end if;
-        for j in 1 .. b loop
-          l := l + 1;
-          d (l) := free;
-        end loop;
       end if;
       is_file := not is_file;
     end loop;
@@ -92,7 +98,8 @@ procedure AoC_2024_09 is
     dc : Disk := d;
     lc : Integer := l;
   begin
-    --  Move blocks to compact the disk:
+    --  Move individual blocks from the right to the left,
+    --  for compacting the disk (and fragment it by the way):
     k := 0;
     while k < lc loop
       if dc (k) = free then
@@ -100,7 +107,7 @@ procedure AoC_2024_09 is
           lc := lc - 1;
         end loop;
         exit when k >= lc;
-        --  dc(lc) is a file block to be moved.
+        --  dc (lc) is a file block to be moved.
         dc (k) := dc (lc);
         lc := lc - 1;
       end if;
@@ -117,7 +124,7 @@ procedure AoC_2024_09 is
     dc : Disk := d;
     from, to : Integer;
   begin
-    --  Move blocks to compact the disk:
+    --  Move contiguous blocks to compact the disk:
     for i in reverse 1 .. last_file loop
       for j in 1 .. last_free loop
         exit when free_list (j).pos > file_list (i).pos;

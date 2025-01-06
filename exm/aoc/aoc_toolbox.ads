@@ -105,7 +105,7 @@ package AoC_Toolbox is
       value : Integer_64;
     end record;
 
-    type Hash_Slot_Array_Type is array (1 .. 10_000) of Hash_Slot_Type;
+    type Hash_Slot_Array_Type is array (1 .. 2_000) of Hash_Slot_Type;
 
     type Hash_Box_Type is record
       slot  : Hash_Slot_Array_Type;
