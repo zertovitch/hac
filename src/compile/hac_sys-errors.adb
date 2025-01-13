@@ -404,10 +404,14 @@ package body HAC_Sys.Errors is
     if CD.trace.pipe = null then
       Put_Line
         (Current_Error,
-         To_String (CD.CUD.source_file_name) & ": " &
-         Trim (to_be_marked.line'Image,         Left) & ':' &
-         Trim (to_be_marked.column_start'Image, Left) & '-' &
-         Trim (to_be_marked.column_stop'Image,  Left) & ": " &
+         (if CD.CUD.source_file_name = "" then
+            ""
+          else
+            To_String (CD.CUD.source_file_name) & ": " &
+            Trim (to_be_marked.line'Image,         Left) & ':' &
+            Trim (to_be_marked.column_start'Image, Left) & '-' &
+            Trim (to_be_marked.column_stop'Image,  Left) & ": ")
+         &
          Diagnostic_Prefix (kit.diagnostic_kind) &
          Diagnostic_String (code, hint_1, hint_2) &
          Diagnostic_Suffix);

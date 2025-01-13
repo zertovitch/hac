@@ -376,16 +376,20 @@ package body HAC_Sys.Builder is
   is
     source_stream : Co_Defs.Source_Stream_Access;
   begin
+    BD.CD.error_count := 0;
     if BD.LD.cat.Exists (file_name) then
       BD.LD.cat.Source_Open (file_name, source_stream);
     else
+      BD.CD.CUD.location := (0, 1, 1);
       Errors.Error
         (BD.CD.all, Defs.err_library_error,
-         "file " & file_name & " not found", severity => Errors.major);
+         "file " & file_name & " not found", severity => Errors.medium);
     end if;
-    BD.Set_Main_Source_Stream (source_stream, file_name);
-    BD.Build_Main (body_compilation_rounds_limit);
-    BD.LD.cat.Close (file_name);
+    if BD.CD.error_count = 0 then
+      BD.Set_Main_Source_Stream (source_stream, file_name);
+      BD.Build_Main (body_compilation_rounds_limit);
+      BD.LD.cat.Close (file_name);
+    end if;
   end Build_Main_from_File;
 
   procedure Set_Diagnostic_Parameters
