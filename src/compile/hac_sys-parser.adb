@@ -418,12 +418,11 @@ package body HAC_Sys.Parser is
         Ignore_Extra_Semicolons (CD);
         --
         --  Now we have either another declaration,
-        --  or BEGIN or, if it's a package, END  .
-        Test (
-          CD, FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
-          empty_symset,
-          err_incorrectly_used_symbol
-        );
+        --  or BEGIN or, if it's a package body, the END symbol.
+        Test
+          (CD, FSys + Declaration_Symbol + BEGIN_Symbol + END_Symbol,
+           empty_symset,
+           err_incorrectly_used_symbol);
       end if;
     end Process_Body;
 

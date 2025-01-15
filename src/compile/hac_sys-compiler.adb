@@ -493,23 +493,36 @@ package body HAC_Sys.Compiler is
         unit_block.entity                        := (if kind = Function_Unit then funktion else prozedure);
         unit_block.is_main                       := as_main_unit;
         unit_block.previous_declaration_id_index := specification_id_index;
+
         Parser.Block
           (CD, Block_Begin_Symbol + Statement_Begin_Symbol,
            False,
            unit_block,
            CD.id_table (CD.Id_Count).name,
            Unit_Id_with_case);
+
         if as_main_unit then
+
           if kind = Procedure_Unit
             and then Number_of_Parameters (CD, unit_block.block_id_index) = 0
           then
-            --  This unit can be executed.
+            --  This main unit can be executed.
             CD.main_proc_id_index          := unit_block.block_id_index;
             CD.Tasks_Definitions_Table (0) := unit_block.block_id_index;  --  Task Table Entry for main task.
           else
             CD.main_proc_id_index := No_Id;
           end if;
+
+          begin
+            Scanner.In_Symbol (CD);
+            Error (CD, err_general_error, "end of file expected");
+          exception
+            when End_Error =>
+              null;  --  It's the expected case.
+          end;
+
         end if;
+
         case Split_Declaration_Kind (CD.id_table (unit_block.block_id_index).decl_kind) is
           when complete =>
             if as_specification then
@@ -554,6 +567,7 @@ package body HAC_Sys.Compiler is
     if needs_opening_a_stream then
       LD.cat.Close (full_file_name);
     end if;
+
     if CD.trace.detail_level >= 2 then
       Progress_Message
         (CD,
