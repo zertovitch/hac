@@ -11,9 +11,9 @@ project HAC_Demo is
    HAC_Build_Mode : HAC_Build_Mode_Type := external ("HAC_Build_Mode", "Debug");
 
    for Main use 
-     ("exchange_native_side.adb",          --  Data exchange demo between HAC and "full Ada" - "full Ada" (native) side
-      "exchange_native_side_simple.adb");  --  Data exchange demo between HAC and "full Ada" - "full Ada" (native) side, simple version
-
+     ("exchange_native_side_simple.adb",  --  Data exchange demo between HAC and "full Ada" - "full Ada" (native) side, simple version
+      "exchange_native_side.adb");        --  Data exchange demo between HAC and "full Ada" - "full Ada" (native) side
+      
    case HAC_Build_Mode is
       when "Debug" => for Object_Dir use "../obj/debug";
       when "Fast"  => for Object_Dir use "../obj/fast";

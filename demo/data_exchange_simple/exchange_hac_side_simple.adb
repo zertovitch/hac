@@ -19,20 +19,10 @@ procedure Exchange_HAC_Side_Simple is
 
 begin
 
-  --
-  --  Communication by VM variables (primitive).
-  --
-
-  HAT.Put_Line
-    ("   HAC: VM Variable = [" &
-     Get_VM_Variable ("Demo_Variable") & ']');
-  Set_VM_Variable ("Demo_Variable", "String from HAC");
-
-  --
-  --  Communication by callbacks (typed).
-  --
+  HAT.Put_Line ("   [HAC]: before callback, variable i has value:" & i'Image);
 
   In_Out_Callback (i);
-  HAT.Put_Line ("   HAC: after callback, variable i has value:" & i'Image);
+
+  HAT.Put_Line ("   [HAC]: after callback, variable i has value:" & i'Image);
 
 end Exchange_HAC_Side_Simple;
