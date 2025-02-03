@@ -15,14 +15,14 @@ procedure Exchange_HAC_Side_Simple is
 
   procedure In_Out_Callback (i : in out Integer) with Import => True;
 
-  i : Integer := 1234;
+  x : Integer := 1234;
 
 begin
 
-  HAT.Put_Line ("   [HAC]: before callback, variable i has value:" & i'Image);
+  HAT.Put_Line ("   [HAC]: before callback, variable x has value:" & x'Image);
 
-  In_Out_Callback (i);
+  In_Out_Callback (x);
 
-  HAT.Put_Line ("   [HAC]: after callback, variable i has value:" & i'Image);
+  HAT.Put_Line ("   [HAC]: after callback, variable x has value:" & x'Image);
 
 end Exchange_HAC_Side_Simple;
