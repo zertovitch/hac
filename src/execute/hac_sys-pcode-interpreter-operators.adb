@@ -302,7 +302,7 @@ package body HAC_Sys.PCode.Interpreter.Operators is
         idx := Integer (ND.S (Curr_TCB.T).I);      --  Index in the stack (the string's address)
         len := Integer (ND.IR.X);                  --  Length of string
         ND.S (Curr_TCB.T) := GR_VString (Get_String_from_Stack (ND, idx, len));
-      when SF_Literal_to_VString =>  --  Unary "+", equivalent to the call To_VString ("abc")
+      when SF_String_Literal_to_VString =>  --  Unary "+", equivalent to the call To_VString ("abc")
         Pop (ND);
         len := Integer (ND.S (Curr_TCB.T).I);      --  Length of string
         idx := Integer (ND.S (Curr_TCB.T + 1).I);  --  Index to string table

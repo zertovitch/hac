@@ -7,7 +7,7 @@
 --
 --  HAC 0.40 "nice-to-have"'s detected in this exercise:
 --
---    *     pass string literals directly!
+--    *     pass string literals directly! - Solved in HAC 0.41
 --
 --  Related links:
 --    https://forum.ada-lang.io/
@@ -308,7 +308,6 @@ procedure AoC_2024_21 is
       score := score + Do_Code (d, robots);
     end Cumulate_Complexity;
 
-    d : Digicode;
   begin
     case part is
       when part_1 => robots := 3;
@@ -317,19 +316,18 @@ procedure AoC_2024_21 is
 
     case data is
       when mini =>
-        --  HAC 0.40 nice-to-have: pass string literals directly!
-        d := "029A"; Cumulate_Complexity (d);
-        d := "980A"; Cumulate_Complexity (d);
-        d := "179A"; Cumulate_Complexity (d);
-        d := "456A"; Cumulate_Complexity (d);
-        d := "379A"; Cumulate_Complexity (d);
+        Cumulate_Complexity ("029A");
+        Cumulate_Complexity ("980A");
+        Cumulate_Complexity ("179A");
+        Cumulate_Complexity ("456A");
+        Cumulate_Complexity ("379A");
 
       when input =>
-        d := "965A"; Cumulate_Complexity (d);
-        d := "143A"; Cumulate_Complexity (d);
-        d := "528A"; Cumulate_Complexity (d);
-        d := "670A"; Cumulate_Complexity (d);
-        d := "973A"; Cumulate_Complexity (d);
+        Cumulate_Complexity ("965A");
+        Cumulate_Complexity ("143A");
+        Cumulate_Complexity ("528A");
+        Cumulate_Complexity ("670A");
+        Cumulate_Complexity ("973A");
     end case;
 
     r (part) := +"" & Trim_Left (+score'Image);

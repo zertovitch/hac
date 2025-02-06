@@ -67,6 +67,23 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       end loop;
     end Do_Load_Block;
 
+    procedure Do_Load_String_Literal is
+      idx, len, new_top : Index;
+    begin
+      idx := Index (ND.S (Curr_TCB.T).I);      --  Index to string table
+      len := Index (ND.S (Curr_TCB.T - 1).I);  --  Length of string
+      Pop (ND, 2);
+      new_top := len + Curr_TCB.T;    --  Stack top after pushing block
+      if new_top > Curr_TCB.STACKSIZE then
+        raise Exceptions.VM_Stack_Overflow;
+      end if;
+      while Curr_TCB.T < new_top loop
+        Curr_TCB.T := Curr_TCB.T + 1;
+        ND.S (Curr_TCB.T).I := Character'Pos (CD.Strings_Constants_Table (idx));
+        idx := idx + 1;
+      end loop;
+    end Do_Load_String_Literal;
+
     procedure Do_Copy_Block is
       --  [T-1].all (0 .. IR.Y - 1) := [T].all (0 .. IR.Y - 1)
       Dst_Addr, Src_Addr, Last : Index;
@@ -110,6 +127,7 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
       when k_Array_Index_No_Check                => Do_Array_Index_Any_Size_No_Check;
       when k_Record_Field_Offset                 => ND.S (Curr_TCB.T).I := ND.S (Curr_TCB.T).I + IR.Y;
       when k_Load_Block                          => Do_Load_Block;
+      when k_Load_String_Literal                 => Do_Load_String_Literal;
       when k_Copy_Block                          => Do_Copy_Block;
       when k_String_Literal_Assignment           => Do_String_Literal_Assignment;
     end case;

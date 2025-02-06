@@ -411,7 +411,7 @@ package body HAC_Sys.Parser.Helpers is
       expected_set := expected_set or Chars_Set;
     end if;
     if X.TYP = String_Literals then
-      Emit_Std_Funct (CD, SF_Literal_to_VString);
+      Emit_Std_Funct (CD, SF_String_Literal_to_VString);
     elsif Is_Char_Array (CD, X) then
       Emit_Std_Funct (CD,
         SF_String_to_VString,

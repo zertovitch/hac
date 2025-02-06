@@ -604,14 +604,14 @@ package HAC_Sys.Defs is
     --
     --  VString functions (Ada.Strings.Unbounded-like)
     --
-    SF_String_to_VString,        --  +s        (s is a fixed-size string)
-    SF_Literal_to_VString,       --  +"Hello"
-    SF_VString_to_String,        --  -v
-    SF_Char_to_VString,          --  +'x'
-    SF_Two_VStrings_Concat,      --  v1 & v2
-    SF_VString_Char_Concat,      --  v & 'x'
-    SF_Char_VString_Concat,      --  'x' & v
-    SF_LStr_VString_Concat,      --  "Hello " & v
+    SF_String_to_VString,          --  +s        (s is a fixed-size string)
+    SF_String_Literal_to_VString,  --  +"Hello"
+    SF_VString_to_String,          --  -v
+    SF_Char_to_VString,            --  +'x'
+    SF_Two_VStrings_Concat,        --  v1 & v2
+    SF_VString_Char_Concat,        --  v & 'x'
+    SF_Char_VString_Concat,        --  'x' & v
+    SF_LStr_VString_Concat,        --  "Hello " & v
     --
     SF_VString_Int_Concat,       --  v & 123
     SF_Int_VString_Concat,       --  123 & v

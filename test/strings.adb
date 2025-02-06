@@ -14,7 +14,16 @@ procedure Strings is
 
   type Enum is (U, V, W);
 
+  subtype Str_6 is String (1 .. 6);
+
+  procedure Test_String_Literal_Param (s : Str_6; i : Integer) is
+  begin
+    Assert (s = "world!", +"Literal string passed as value is incorrect");
+    Assert (i = 1234,     +"Stack corruption following literal string passed as value");
+  end Test_String_Literal_Param;
+
 begin
+  Test_String_Literal_Param ("world!", 1200 + 34);
   s4 := To_VString ("abc") & 'd' & "ef";
   if s4 /= +"abcdef" then
     Failure (+"Comparing VString to VString, or converting Literal String to VString");

@@ -16,11 +16,12 @@ package body HAC_Sys.Parser.Calls is
      expected :        Co_Defs.Exact_Subtyp)
   is
     X : Exact_Subtyp;
+    expected_array_len : Natural;
   begin
     --  Expression does all the job of parsing and, for
-    --  atomic types, emitting the right "push" instructions.
+    --  atomic types, emitting the correct "push" instructions.
     Expression (CD, context, fsys + Colon_Comma_RParent, X);
-    --  What is left is:
+    --  What is remaining is:
     --    - checking types
     --    - for composite types, emit an instruction for pushing
     --        the contents on the stack.
@@ -35,18 +36,29 @@ package body HAC_Sys.Parser.Calls is
     elsif X.TYP = Ints and expected.TYP = Floats then
       Forbid_Type_Coercion (CD, X, expected);
       Emit_1 (CD, k_Integer_to_Float, 0);  --  Left as a "souvenir" of SmallAda...
+    elsif X.TYP = String_Literals and then Is_Char_Array (CD, expected) then
+      expected_array_len := CD.Arrays_Table (expected.Ref).Array_Size;
+      if expected_array_len = CD.SLeng then
+        Emit_1 (CD, k_Load_String_Literal, Operand_2_Type (expected_array_len));
+      else
+        Error
+          (CD, err_string_lengths_do_not_match,
+           "subprogram parameter has length" & expected_array_len'Image &
+           ", literal has length" & CD.SLeng'Image,
+           severity => minor);
+      end if;
     elsif X.TYP /= NOTYP then
       Type_Mismatch (CD, err_parameter_types_do_not_match, X, expected);
     end if;
   end Push_Parameter_by_Value;
 
   procedure Push_Parameter_by_Reference
-    (CD       : in out Co_Defs.Compiler_Data;
-     context  :        Defs.Flow_Context;
-     fsys     :        Defs.Symset;
-     name     :        String;
-     mode     :        Co_Defs.Parameter_Kind;
-     found    :    out Co_Defs.Exact_Subtyp)
+    (CD      : in out Co_Defs.Compiler_Data;
+     context :        Defs.Flow_Context;
+     fsys    :        Defs.Symset;
+     name    :        String;
+     mode    :        Co_Defs.Parameter_Kind;
+     found   :    out Co_Defs.Exact_Subtyp)
   is
     K : Integer;
   begin
@@ -198,11 +210,11 @@ package body HAC_Sys.Parser.Calls is
   ------------------------------------------------------------------
   -------------------------------------------------------Entry_Call-
   procedure Entry_Call
-    (CD          : in out Co_Defs.Compiler_Data;
-     context     :        Defs.Flow_Context;
-     fsys        :        Defs.Symset;
-     i           :        Integer;
-     call_type   :        PCode.Operand_1_Type)
+    (CD        : in out Co_Defs.Compiler_Data;
+     context   :        Defs.Flow_Context;
+     fsys      :        Defs.Symset;
+     i         :        Integer;
+     call_type :        PCode.Operand_1_Type)
   is
     --  Hathorn
     Addr, J : Integer;

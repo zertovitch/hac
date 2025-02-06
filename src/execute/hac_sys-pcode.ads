@@ -73,7 +73,8 @@ package HAC_Sys.PCode is
     k_Array_Index_No_Check,
     --
     k_Record_Field_Offset,
-    k_Load_Block,
+    k_Load_Block,                       --  Push a composite type's data on the stack.
+    k_Load_String_Literal,              --  Push a string literal's contents on the stack.
     k_Copy_Block,
     k_String_Literal_Assignment,
     --

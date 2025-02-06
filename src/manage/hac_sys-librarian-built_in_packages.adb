@@ -185,7 +185,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAT_Funct ("Slice",               VStrings,            SF_Slice);
     Enter_HAT_Funct ("To_Lower",            Chars,               SF_To_Lower_Char);
     Enter_HAT_Funct ("To_Upper",            Chars,               SF_To_Upper_Char);
-    Enter_HAT_Funct ("To_VString",          VStrings,            SF_Literal_to_VString);
+    Enter_HAT_Funct ("To_VString",          VStrings,            SF_String_Literal_to_VString);
     Enter_HAT_Funct ("To_String",           Strings_as_VStrings, SF_VString_to_String);
     --
     Enter_HAT_Funct ("Trim_Left",           VStrings, SF_Trim_Left);

@@ -82,7 +82,7 @@ package body HAC_Sys.Parser.Standard_Functions is
           Expected (1 .. 3) := (VStrings_Set, Ints_Set, Ints_Set);
         when SF_To_Lower_Char | SF_To_Upper_Char =>
           Expected (1) := VString_or_Chars_Set;
-        when SF_Literal_to_VString =>
+        when SF_String_Literal_to_VString =>
           Expected (1) := Chars_or_Strings_Set;
         when SF_VString_to_String =>
           Expected (1) := VStrings_Set;
@@ -224,7 +224,7 @@ package body HAC_Sys.Parser.Standard_Functions is
              SF_Get_Env | SF_Get_VM_Variable =>
           --  Get_Env ("PATH")  becomes  Get_Env (+"PATH")
           Check_any_String_and_promote_to_VString (CD, Actual (1), False);
-        when SF_Literal_to_VString =>
+        when SF_String_Literal_to_VString =>
           --  Explicit call to the `To_VString` function, identical to the unary "+".
           --  See Simple_Expression in Parser.Expressions
           Check_any_String_and_promote_to_VString (CD, Actual (1), True);

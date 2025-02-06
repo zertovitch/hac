@@ -340,7 +340,7 @@ package body HAC_Sys.Parser.Expressions is
             --  s = "abc"
             --  We needs convert the literal before anything else,
             --  since it takes two elements on the stack.
-            Emit_Std_Funct (CD, SF_Literal_to_VString);
+            Emit_Std_Funct (CD, SF_String_Literal_to_VString);
             Emit (CD, k_Swap);
             Emit_Std_Funct
               (CD,
@@ -353,7 +353,7 @@ package body HAC_Sys.Parser.Expressions is
             --  Y is on top of the stack, we turn it into a VString.
             --  If this becomes a perfomance issue we could consider
             --  a new Standard Function (SF_Code) for (VStr op Lit_Str).
-            Emit_Std_Funct (CD, SF_Literal_to_VString);            --  Now we have X < +"World".
+            Emit_Std_Funct (CD, SF_String_Literal_to_VString);     --  Now we have X < +"World".
             Emit_Comparison_Instruction (CD, Rel_OP, VStrings);    --  Emit "<" (X, +Y).
           elsif X.TYP = Ints and Y.TYP = Floats then
             Forbid_Type_Coercion (CD, Rel_OP, X, Y);
@@ -741,7 +741,7 @@ package body HAC_Sys.Parser.Expressions is
                     Construct_Root (X, VStrings);
                   when String_Literals =>
                     --  Y is on top of the stack, we turn it into a VString.
-                    Emit_Std_Funct (CD, SF_Literal_to_VString);
+                    Emit_Std_Funct (CD, SF_String_Literal_to_VString);
                     Emit_Std_Funct (CD, SF_Int_Times_VStr);  --  N * Some_String_Literal
                     Construct_Root (X, VStrings);
                   when VStrings | Strings_as_VStrings =>
@@ -825,7 +825,7 @@ package body HAC_Sys.Parser.Expressions is
         --  Y is on top of the stack, we turn it into a VString.
         --  If this becomes a perfomance issue we could consider
         --  adding a Standard Function (SF_Code) for (VStr op Lit_Str).
-        Emit_Std_Funct (CD, SF_Literal_to_VString);
+        Emit_Std_Funct (CD, SF_String_Literal_to_VString);
         --  Now we concatenate both VStrings.
         Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
       elsif X.TYP = String_Literals then                          --  "x" & v  A.4.5 (17)
@@ -910,7 +910,7 @@ package body HAC_Sys.Parser.Expressions is
           --  Back to case [11]:
           Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
         elsif y.TYP = String_Literals then      --  [13] sv1 & "xy"
-          Emit_Std_Funct (CD, SF_Literal_to_VString);
+          Emit_Std_Funct (CD, SF_String_Literal_to_VString);
           --  Back to case [11]:
           Emit_Std_Funct (CD, SF_Two_VStrings_Concat);
         elsif y.TYP = Chars then                --  [14] sv1 & 'x'
@@ -925,7 +925,7 @@ package body HAC_Sys.Parser.Expressions is
           Emit_sc2_to_sv2;
           Emit_sc1_amp_sv2;
         elsif y.TYP = String_Literals then      --  [23] sc1 & "xy"
-          Emit_Std_Funct (CD, SF_Literal_to_VString);
+          Emit_Std_Funct (CD, SF_String_Literal_to_VString);
           Emit_sc1_amp_sv2;
         elsif y.TYP = Chars then                --  [24] sc1 & 'x'
           Emit_Std_Funct (CD, SF_Char_to_VString);
@@ -940,7 +940,7 @@ package body HAC_Sys.Parser.Expressions is
           Emit_sc2_to_sv2;
           Emit_Std_Funct (CD, SF_LStr_VString_Concat);
         elsif y.TYP = String_Literals then      --  [33] "ab" & "cd"
-          Emit_Std_Funct (CD, SF_Literal_to_VString);
+          Emit_Std_Funct (CD, SF_String_Literal_to_VString);
           Emit_Std_Funct (CD, SF_LStr_VString_Concat);
         elsif y.TYP = Chars then                --  [34] "ab" & 'c'
           Emit_Std_Funct (CD, SF_Char_to_VString);
@@ -955,7 +955,7 @@ package body HAC_Sys.Parser.Expressions is
           Emit_sc2_to_sv2;
           Emit_Std_Funct (CD, SF_Char_VString_Concat);
         elsif y.TYP = String_Literals then      --  [43] 'a' & "bc"
-          Emit_Std_Funct (CD, SF_Literal_to_VString);
+          Emit_Std_Funct (CD, SF_String_Literal_to_VString);
           Emit_Std_Funct (CD, SF_Char_VString_Concat);
         elsif y.TYP = Chars then                --  [34] 'a' & 'b'
           Emit_Std_Funct (CD, SF_Char_to_VString);
@@ -988,7 +988,7 @@ package body HAC_Sys.Parser.Expressions is
           when Plus =>
             case X.TYP is
               when String_Literals =>                              --  +"Hello"
-                Emit_Std_Funct (CD, SF_Literal_to_VString);
+                Emit_Std_Funct (CD, SF_String_Literal_to_VString);
               when Strings_as_VStrings =>                          --  +Enum'Image (x)
                 --  Nothing to do, except setting X's
                 --  subtype as an "official" VString.

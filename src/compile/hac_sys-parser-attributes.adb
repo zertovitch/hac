@@ -325,7 +325,7 @@ package body HAC_Sys.Parser.Attributes is
         Expressions.Expression (CD, context, FSys + RParent, type_of_argument);
         --  Argument is of the base type (S'Base).
         if type_of_argument.TYP = String_Literals then
-          Emit_Std_Funct (CD, SF_Literal_to_VString);
+          Emit_Std_Funct (CD, SF_String_Literal_to_VString);
         elsif type_of_argument.TYP = Strings_as_VStrings then
           null;
         elsif Is_Char_Array (CD, type_of_argument) then

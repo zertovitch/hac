@@ -20,19 +20,19 @@ private package HAC_Sys.Parser.Calls is
      expected :        Co_Defs.Exact_Subtyp);
 
   procedure Push_Parameter_by_Reference
-    (CD       : in out Co_Defs.Compiler_Data;
-     context  :        Defs.Flow_Context;
-     fsys     :        Defs.Symset;
-     name     :        String;
-     mode     :        Co_Defs.Parameter_Kind;
-     found    :    out Co_Defs.Exact_Subtyp);
+    (CD      : in out Co_Defs.Compiler_Data;
+     context :        Defs.Flow_Context;
+     fsys    :        Defs.Symset;
+     name    :        String;
+     mode    :        Co_Defs.Parameter_Kind;
+     found   :    out Co_Defs.Exact_Subtyp);
 
   procedure Entry_Call
-    (CD          : in out Co_Defs.Compiler_Data;
-     context     :        Defs.Flow_Context;
-     fsys        :        Defs.Symset;
-     i           :        Integer;
-     call_type   :        PCode.Operand_1_Type);
+    (CD        : in out Co_Defs.Compiler_Data;
+     context   :        Defs.Flow_Context;
+     fsys      :        Defs.Symset;
+     i         :        Integer;
+     call_type :        PCode.Operand_1_Type);
 
   procedure Subprogram_or_Entry_Call
     (CD          : in out Co_Defs.Compiler_Data;
