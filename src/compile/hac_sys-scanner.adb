@@ -630,9 +630,11 @@ package body HAC_Sys.Scanner is
         Next_Character (CD);
         if CD.CUD.c = '"' then
           Next_Character (CD);
-          if CD.CUD.c /= '"' then  --  The ""x case
+          if CD.CUD.c /= '"' then
+            --  ["x] case: we have reached the end of the string.
             exit;
           end if;
+          --  [""] case: doubled double-quote which means a single one.
         end if;
         lit_len := lit_len + 1;
         if CD.Strings_Table_Top + lit_len = SMax then
@@ -658,6 +660,7 @@ package body HAC_Sys.Scanner is
       --
       if lit_len > 0 then
         if CD.target.Null_Terminated_String_Literals then
+          --  Add a Character'Val (0) to the stored string.
           lit_len := lit_len + 1;
           if CD.Strings_Table_Top + lit_len = SMax then
             Fatal (STRING_CONSTANTS);
