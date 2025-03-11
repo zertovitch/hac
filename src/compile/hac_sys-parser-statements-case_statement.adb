@@ -23,8 +23,8 @@ is
     Is_others        : Boolean;
   end record;
 
-  CaseTab : array (1 .. Cases_Max) of CASE_Label_Value;
-  ExitTab : array (1 .. Cases_Max) of Integer;
+  case_table : array (1 .. Cases_Max) of CASE_Label_Value;
+  exit_table : array (1 .. Cases_Max) of Integer;
 
   X : Exact_Subtyp;
   choice_counter : Integer := 0;  --  This counts the various choices separated by '|'.
@@ -82,7 +82,7 @@ is
         Error (CD, err_choice_out_of_range, severity => minor);
       end if;
       choice_counter := choice_counter + 1;
-      CaseTab (choice_counter) :=
+      case_table (choice_counter) :=
         (value_1   => label_1.I,
          value_2   => label_2.I,
          LC        => CD.LC,
@@ -92,10 +92,10 @@ is
         K := K + 1;
         --  Detect any range overlap:
         exit when
-          Ranges.Do_Ranges_Overlap (label_1.I, label_2.I, CaseTab (K).value_1, CaseTab (K).value_2);
+          Ranges.Do_Ranges_Overlap (label_1.I, label_2.I, case_table (K).value_1, case_table (K).value_2);
       end loop;
       if K < choice_counter then
-        Error (CD, err_duplicate_case_choice_value);
+        Error (CD, err_duplicate_case_choice_value, severity => major);
       end if;
       --  Since single choices or ranges do not overlap,
       --  we can simply add the number of covered values in order to check
@@ -131,7 +131,7 @@ is
         Fatal (Case_Labels);  --  Exception is raised there.
       end if;
       choice_counter := choice_counter + 1;
-      CaseTab (choice_counter) :=
+      case_table (choice_counter) :=
         (value_1 | value_2 => 0,
          LC                => CD.LC,
          Is_others         => True);
@@ -145,7 +145,7 @@ is
     end if;
     Sequence_of_Statements_in_a_Conditional_Statement (CD, END_WHEN, block_data);
     exit_counter := exit_counter + 1;
-    ExitTab (exit_counter) := CD.LC;
+    exit_table (exit_counter) := CD.LC;
     Emit (CD, k_Jump);
   end WHEN_Discrete_Choice_List;
 
@@ -226,14 +226,14 @@ begin  --  CASE_Statement
   --  Output the case table as (CASE_Any_Choice, k_CASE_Match_Jump)
   --  instruction pairs:
   for K in 1 .. choice_counter loop
-    if CaseTab (K).Is_others then
+    if case_table (K).Is_others then
       Emit (CD, k_CASE_Choice_Others);
-    elsif CaseTab (K).value_1 = CaseTab (K).value_2 then
-      Emit_1 (CD, k_CASE_Choice_Value, CaseTab (K).value_1);
+    elsif case_table (K).value_1 = case_table (K).value_2 then
+      Emit_1 (CD, k_CASE_Choice_Value, case_table (K).value_1);
     else
-      Emit_2 (CD, k_CASE_Choice_Range, CaseTab (K).value_1, CaseTab (K).value_2);
+      Emit_2 (CD, k_CASE_Choice_Range, case_table (K).value_1, case_table (K).value_2);
     end if;
-    Emit_1 (CD, k_CASE_Match_Jump, Operand_2_Type (CaseTab (K).LC));
+    Emit_1 (CD, k_CASE_Match_Jump, Operand_2_Type (case_table (K).LC));
   end loop;
   --  The following is for having the interpreter exiting the k_CASE_Choice_Data loop.
   --  Note: the k_CASE_No_Choice_Found allowed to check a missing "when others"
@@ -242,7 +242,7 @@ begin  --  CASE_Statement
   --
   for K in 1 .. exit_counter loop
     --  Patch k_Jump addresses to the instruction coming after "END CASE;" :
-    CD.ObjCode (ExitTab (K)).Y := Operand_2_Type (CD.LC);
+    CD.ObjCode (exit_table (K)).Y := Operand_2_Type (CD.LC);
   end loop;
   Need (CD, END_Symbol,  err_END_missing);             --  END (case)
   if CD.Sy in LOOP_Symbol | IF_Symbol | IDent then

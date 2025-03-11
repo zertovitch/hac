@@ -492,12 +492,12 @@ package HAC_Sys.Defs is
   default_remark_level : constant Remark_Level := 1;
 
   --  Level 0 means: no remarks are issued.
-  --  Level 1 corresponds roughly the GNAT defaults (when you type "gnatmake"
+  --  Level 1 corresponds roughly to the GNAT defaults (when you type "gnatmake"
   --            on a command-line interpreter, it's the warnings marked
   --            with a '*', plus others that are always enabled.
-  --  Level 2 corresponds roughly the GNAT's "-gnatwa" option, that is
+  --  Level 2 corresponds roughly to the GNAT's "-gnatwa" option, that is,
   --            warnings marked with a '+' in the help.
-  --  Level 3 means: all remarkes are enabled. This level corresponds to
+  --  Level 3 means: all remarkes are enabled. This level corresponds roughly to
   --            the "-gnatw.e" switch.
 
   preset_remarks : constant array (Remark_Level) of Remark_Set :=
