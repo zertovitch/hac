@@ -98,7 +98,20 @@ procedure Remarks is
      end if;
   end Tom;
 
+  procedure Cases is
+    type ABC is (a, b, c);
+    x : constant ABC := a;
+  begin
+    case x is
+      when a => null;
+      when b => null;
+      when c => null;
+      when others => null;  --  Note: "when others" is redundant here: all values are already explicitly covered [-rr]
+    end case;
+  end;
+
 begin
   e := 0;
   f := g + h;  --  Warning: variable "h" is read but not written at this point [-rv]
+  Cases;
 end Remarks;

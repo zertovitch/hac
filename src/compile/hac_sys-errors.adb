@@ -134,7 +134,7 @@ package body HAC_Sys.Errors is
       when err_case_label_not_same_type_as_case_clause =>
         return "case label not of same type as case clause: " & hint_1;
       when err_duplicate_case_choice_value =>
-        return "duplicate choice value in ""case"" instruction";
+        return "duplicate choice value in ""case"" statement";
       when err_argument_to_std_function_of_wrong_type =>
         return "wrong type of argument to operator or standard function: " & hint_1;
       when err_stack_size =>

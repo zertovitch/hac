@@ -20,22 +20,20 @@ procedure Remarks_Check is
       Get_Line (f2, l2);
       if l1 /= l2 then
         Put_Line ("*** Difference found:");
-        New_Line;
         Put_Line (name_1 & ':');
-        Put_Line (l1);
-        New_Line;
+        Put_Line ("    " & l1);
         Put_Line (name_2 & ':');
-        Put_Line (l2);
+        Put_Line ("    " & l2);
         ok := False;
         exit;
       end if;
     end loop;
     if ok then
       if not End_Of_File (f1) then
-        Put_Line (name_1 & " is longer");
+        Put_Line ("*** Difference found: " & name_1 & " is longer.");
         ok := False;
       elsif not End_Of_File (f2) then
-        Put_Line (name_2 & " is longer");
+        Put_Line ("*** Difference found: " & name_2 & " is longer.");
         ok := False;
       end if;
     end if;

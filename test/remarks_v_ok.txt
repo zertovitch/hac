@@ -6,5 +6,5 @@
 ../exm/remarks.adb: 77:26-29: warning: variable "Max_2" may be read before it is ever written [-rv]
 ../exm/remarks.adb: 97:15-15: warning: variable "I" is read before it is ever written [-rv]
 ../exm/remarks.adb: 94:6-6: warning: variable "I" is never written, but is possibly read [-rv]
-../exm/remarks.adb: 103:13-13: warning: variable "h" is read before it is ever written [-rv]
+../exm/remarks.adb: 115:13-13: warning: variable "h" is read before it is ever written [-rv]
 ../exm/remarks.adb: 22:3-3: warning: variable "h" is read but never written [-rv]

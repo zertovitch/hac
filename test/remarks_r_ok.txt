@@ -1,1 +1,2 @@
 ../exm/remarks.adb: 13:7-16: note: "use" clause already applied, in same declarative part, for package "Interfaces" [-rr]
+../exm/remarks.adb: 110:5-7: note: "when others" is redundant here: all values are already explicitly covered [-rr]
