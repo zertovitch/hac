@@ -30,6 +30,7 @@ project HAC_Exm is
       "draw_sphere.adb",            --  Rosetta Code
       "echo.adb",
       "einmaleins.adb",
+      "embed_text.adb",
       "env.adb",
       "existence.adb",
       "file_append.adb",
