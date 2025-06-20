@@ -1,4 +1,4 @@
---  This demo reads a text file and writes
+--  This tool reads a text file and writes
 --  an Ada package with its contents.
 --
 --  https://www.reddit.com/r/ada/comments/1l3i9wl/embedding_a_text_file_in_an_ada_exe/
@@ -15,8 +15,10 @@ procedure Embed_Text is
   output : Output_Mode := hac;
 begin
   if Argument_Count < 2 then
-    Put_Line ("Usage: hac embed_text.adb text_file ada_package_name [-h] [-f]");
-    Put_Line ("   or:     embed_text     text_file ada_package_name [-h] [-f]");
+    Put_Line ("Embed_Text reads a text file and writes an Ada package with its contents.");
+    Put_Line ("Usage - ");
+    Put_Line ("from HAC:              hac embed_text.adb TEXT_FILE Ada_Package_Name [-h] [-f]");
+    Put_Line ("built as executable:       embed_text     TEXT_FILE Ada_Package_Name [-h] [-f]");
     New_Line;
     Put_Line ("Produces: ada_package_name.ads, ada_package_name.adb, demo_ada_package_name.adb");
     New_Line;
