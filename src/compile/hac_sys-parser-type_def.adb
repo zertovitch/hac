@@ -38,6 +38,13 @@ package body HAC_Sys.Parser.Type_Def is
     Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, type_mark, forward_id_idx);
     T1 := CD.Id_Count;
     Scanner.In_Symbol (CD);
+    if CD.Sy = LParent then
+      Error
+        (CD,
+         err_not_yet_implemented,
+         "discriminants (type parameters), Ada RM 3.7",
+         severity => major);
+    end if;
     Need (CD, IS_Symbol, err_IS_missing);
     declare
       New_T : Identifier_Table_Entry renames CD.id_table (T1);
