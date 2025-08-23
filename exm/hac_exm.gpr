@@ -44,7 +44,8 @@ project HAC_Exm is
       "hofstadter.adb",
       "koch_curve.adb",             --  PDF demo, Rosetta Code
       "mandelbrot.adb",
-      "maze_gen.adb",               --  Rosetta Code
+      "maze_gen.adb",               --  Maze generator from Rosetta Code
+      "md2html.adb",                --  Markdown to HTML converter
       "merge_sort.adb",
       "names_in_boxes.adb",
       "native.adb",                 --  Example that works also for native targets.
