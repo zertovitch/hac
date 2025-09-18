@@ -113,7 +113,11 @@ package body HAC_Sys.Parser.Const_Var is
       C.TP.TYP := NOTYP;
       T0 := CD.Id_Count;
       Enter_Variables (CD, Block_Data.context.level, True);
-      Need (CD, Colon, err_colon_missing);  --  ':'   in   "x, y : Integer;"
+      if CD.Sy = Becomes then
+        Error (CD, err_assignment_not_allowed_declarative, severity => major);
+      else
+        Need (CD, Colon, err_colon_missing);  --  ':'   in   "x, y : Integer;"
+      end if;
       T1 := CD.Id_Count;
       --
       Test

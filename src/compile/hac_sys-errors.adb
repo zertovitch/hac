@@ -292,6 +292,9 @@ package body HAC_Sys.Errors is
         return
           "space missing here; " &
           "if an identifier was meant, it cannot start with a number";
+      when err_assignment_not_allowed_declarative =>
+        return
+          "assignment (variable := ...) not allowed in declarative part";
       when others =>
         return hint_1;
     end case;

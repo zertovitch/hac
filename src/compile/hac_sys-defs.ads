@@ -458,6 +458,7 @@ package HAC_Sys.Defs is
      err_library_error,
      err_wrong_unit_name,
      err_obsolete_hat_name,
+     err_assignment_not_allowed_declarative,
      --
      note_redundant_construct,
      note_unused_item,
