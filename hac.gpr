@@ -8,7 +8,7 @@
 --
 --  Build me with "gprbuild -P hac", or "gnatmake -P hac",
 --  or open me with GNAT Studio.
---  
+--
 project HAC is
 
    type HAC_Build_Mode_Type is
@@ -59,7 +59,7 @@ project HAC is
       "-gnatQ",   --  Don't quit, write ali/tree file even if compile errors
       "-g");      --  Generate debugging information
 
-   Style_Checks := 
+   Style_Checks :=
      ("-gnatyaknpr",  --  Style: check all casings: a:attribute, k:keywords, n:package Standard identifiers, p:pragma, r:identifier references
       "-gnatybfhiu",  --  Style: check b:no blanks at end of lines, f:no ff/vtabs, h: no htabs, i:if-then layout, u:no unnecessary blank lines
       "-gnatyx",      --  Style: check x:no extra parens
@@ -81,32 +81,32 @@ project HAC is
 
    Compiler_Fast_Options :=
      ("-O2",
-      "-gnatpn", 
+      "-gnatpn",
       "-fipa-cp-clone",
-      "-fgcse-after-reload", 
+      "-fgcse-after-reload",
       "-funroll-loops",
-      "-fpeel-loops", 
-      "-funswitch-loops", 
+      "-fpeel-loops",
+      "-funswitch-loops",
       "-ftracer", "-fweb",
       "-ftree-vectorize",
       "-frename-registers",
       "-ffunction-sections",
       "-fdata-sections") &
      Compiler_Common_Options;
-      
+
    Compiler_Small_Options :=
      ("-Os",
       "-ffunction-sections",
       "-fdata-sections") &
      Compiler_Common_Options;
-      
+
    Compiler_Profiling_Options :=
      ("-O2",
       "-gnatp",
       "-fno-inline",
       "-pg") &
      Compiler_Common_Options;
-   
+
    package Compiler is
       case HAC_Build_Mode is
          when "Fast"            =>
@@ -144,6 +144,10 @@ project HAC is
       when "Win64" =>
          Linker_Common_Options :=
             Linker_Common_Options & ("obj/hac_icon.rbj");
+      when "MacOSX" =>
+         Linker_Common_Options :=
+            Linker_Common_Options & ("-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib");
+            --  To overcome "ld: library not found for -lSystem"
       when others  =>
    end case;
 
