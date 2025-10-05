@@ -1,10 +1,33 @@
 --  #!/usr/bin/env hac
-
+--
+--  Local backup Ada shell script for a version-controlled repository.
+--
 --  This HAC script detects changes between two commits and
 --  saves the repository's modified files into a Zip-ball.
 --
 --  Version Control Systems supported:
 --  git, hg (mercurial), svn (subversion)
+--
+--  This is a HAC script *and* an Ada program.
+--  How to run it is your choice.
+--
+--  Usage with the HAC command-line tool :
+--
+--    hac save_modif.hac
+--
+--  The HAC (HAC Ada Compiler) command-line tool can be found @
+--    https://hacadacompiler.sourceforge.io/ ,
+--    https://github.com/zertovitch/hac
+--
+--  This program works both with HAC (command: hac save.hac)
+--  and a full Ada compiler like GNAT, and that on different
+--  Operating Systems: Linux and Windows at least.
+--
+--  The extension for the main procedure is a free choice.
+--  We choose ".hac" so we can associate the ".hac" files by
+--  default with hac.exe on Windows, for Explorer *and* command-line!
+--    Explorer: double-click / hit Return on "save_modif.hac".
+--    Cmd / PowerShell: type "save_modif.hac" and hit Return.
 
 with HAT;
 
