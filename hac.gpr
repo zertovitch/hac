@@ -95,9 +95,11 @@ project HAC is
      Compiler_Common_Options;
 
    Compiler_Small_Options :=
-     ("-Os",
-      "-ffunction-sections",
-      "-fdata-sections") &
+     ("-Os"
+      --  Commented out: see remark in Check_No_Extra_Symbol.
+      --  "-ffunction-sections"
+      --  "-fdata-sections"
+      ) &
      Compiler_Common_Options;
 
    Compiler_Profiling_Options :=

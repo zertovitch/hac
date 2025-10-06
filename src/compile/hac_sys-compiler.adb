@@ -335,9 +335,10 @@ package body HAC_Sys.Compiler is
     unit_block : Parser.Block_Data_Type;
     indent : Natural := 0;
     src_stream : Co_Defs.Source_Stream_Access;
+
     function Spec_or_Body return String is
       (" (" & (if as_specification then "specification)" else "body)"));
-    --
+
     procedure Reactivate_USE_HAT is
       --  Detect a directly visible item of the HAT package.
       --  It that case, it proves that a "USE HAT" was in the context
@@ -360,7 +361,7 @@ package body HAC_Sys.Compiler is
         end if;
       end if;
     end Reactivate_USE_HAT;
-    --
+
     function Indent_String (starting : Boolean) return String is
       (case indent is
          when 0 => "",
@@ -370,6 +371,17 @@ package body HAC_Sys.Compiler is
            (if starting then '\' else '/') & ' ');
 
     full_file_name : constant String := LD.cat.Full_Source_Name (file_name);
+
+    procedure Check_No_Extra_Symbol is
+    begin
+      Scanner.In_Symbol (CD);
+      Error (CD, err_general_error, "end of file is expected here, found extra symbol");
+    exception
+      --  Compiler bug: when compiled with -Os -ffunction-sections -fdata-sections,
+      --  GNAT 21 and 23 (possibly more versions) ignore this handler!
+      when End_Error =>
+        null;  --  It's the expected case.
+    end Check_No_Extra_Symbol;
 
   begin
     CD.recursion := CD.recursion + 1;
@@ -513,13 +525,7 @@ package body HAC_Sys.Compiler is
             CD.main_proc_id_index := No_Id;
           end if;
 
-          begin
-            Scanner.In_Symbol (CD);
-            Error (CD, err_general_error, "end of file expected");
-          exception
-            when End_Error =>
-              null;  --  It's the expected case.
-          end;
+          Check_No_Extra_Symbol;
 
         end if;
 
