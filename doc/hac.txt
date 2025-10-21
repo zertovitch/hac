@@ -91,24 +91,42 @@ Documentation
 Some design points
 ==================
 
+  - HAC is a single-pass, recursive-descent Ada compiler which, in its
+      simplest form, emits machine code on the fly. It means that there
+      are no advanced optimizations available, such as common subexpression
+      elimination, that are provided by compilers like GNAT; but, the
+      compilation is very fast, which is very pleasant for some usages
+      like prototyping and programming-for-fun.
+
+  - Current targets are:
+      - p-code (a virtual machine specially adapted for HAC)
+      - "Semantics", a pseudo-target that is used for smart editors
+          (for example, LEA).
+      - AMD x64/Windows (currently, only an embryo that can do
+          "Hello World" only)
+
   - HAC reads Ada sources from any stream. In addition to files, it is able
       to read from a Zip archive (plan is to have sets with many sources
       like libraries in Zip files, for instance), from an internet stream,
       from an editor buffer (see the LEA project), from a source stored in
       memory, etc.
+
   - HAC Ada source file naming follows the GNAT convention: "parent-child.ads"
       for specification and "parent-child.adb" for body. An exception for
       HAC is the main program, where the extension can be anything. We
       recommend using ".hac" for programs that are meant to be principally
       executed through HAC. That way you can associate the ".hac" extension
-      with the "hac[.exe]" excecutable on your operating system or your
+      with the "hac[.exe]" executable on your operating system or your
       file explorer.
+
   - One goal is to complement or challenge GNAT, for instance in terms of
       compilation speed, or object code compactness, or useability on
       certain targets or for certain purposes (like scripting jobs).
+
   - HAC could theoretically be also used for tuning run-time performance;
-      this would require compiling on other targets than p-code, that is,
-      real machine code for various platforms.
+      this would require a completion of the code emission for other targets
+      than p-code (HAC's virtual machine), including, perhaps, an intermediary
+      target that builds a syntax tree.
 
 To-do list
 ==========
