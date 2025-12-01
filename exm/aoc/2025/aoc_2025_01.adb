@@ -9,11 +9,6 @@
 --    https://forum.ada-lang.io/
 --    https://www.reddit.com/r/adventofcode/
 
---  The files aoc_toolbox.ad* are located in the upper directory: ..
---!hac_add_to_path ..
---
-with AoC_Toolbox;
-
 --  For building this program with a "full Ada" compiler,
 --  such as GNAT, you need the explicit version of the HAT package.
 --  The files hat*.ad* are located in ../../../src
@@ -22,7 +17,7 @@ with HAT;
 
 procedure AoC_2025_01 is
 
-  use AoC_Toolbox, HAT;
+  use HAT;
 
   input_name : constant VString := +"aoc_2025_01";
 
@@ -32,6 +27,8 @@ procedure AoC_2025_01 is
   end record;
 
   instr : array (1 .. 5000) of Rotation_Instruction;
+
+  type Part_Type is (part_1, part_2_dumb, part_2_smart);
 
   r : array (Part_Type) of VString;
 
@@ -67,14 +64,13 @@ procedure AoC_2025_01 is
     r (part_1) := +"" & pwd;
   end Do_Part_1;
 
-  procedure Do_Part_2 is
+  procedure Do_Part_2_Dumb is
     dial : Integer := 50;
     pwd  : Natural := 0;
   begin
     for i in 1 .. n loop
       --  Straightforward but unefficient method.
-      --  However, who cares?
-      --  Both part 1 & 2 complete in 0.7 second with HAC...
+      --  This part completes in 0.47 second (29x slower) with HAC on some powerful machine.
       for j in 1 .. instr (i).amount loop
         if instr (i).l_r = 'L' then
           dial := dial - 1;
@@ -87,8 +83,57 @@ procedure AoC_2025_01 is
         end if;
       end loop;
     end loop;
-    r (part_2) := +"" & pwd;
-  end Do_Part_2;
+    r (part_2_dumb) := +"" & pwd;
+  end Do_Part_2_Dumb;
+
+  procedure Do_Part_2_Smart is
+    dial : Integer := 50;
+    new_dial, a, b, delta_pwd : Integer;
+    pwd  : Natural := 0;
+  begin
+    for i in 1 .. n loop
+      --  This part completes in 0.016 second (29x faster) with HAC on some powerful machine.
+      delta_pwd := 0;
+      if instr (i).l_r = 'L' then
+        --  new_dial <- a <- b <- dial
+        --  a, b are multiples of 100.
+        new_dial := dial - instr (i).amount;
+        b := (dial / 100) * 100;
+        if dial > b and then b >= new_dial then
+          delta_pwd := delta_pwd + 1;
+        end if;
+        if new_dial rem 100 = 0 then
+          a := new_dial;
+        elsif new_dial < 0 then
+          a := (new_dial / 100) * 100;
+        else
+          a := ((new_dial + 100) / 100) * 100;
+        end if;
+        if b > a then
+          delta_pwd := delta_pwd + (b - a) / 100;
+        end if;
+      else
+        --  dial -> a -> b -> new_dial
+        --  a, b are multiples of 100.
+        new_dial := dial + instr (i).amount;
+        if dial rem 100 = 0 then
+          a := dial;
+        else
+          a := ((dial + 100) / 100) * 100;
+          if a <= new_dial then
+            delta_pwd := delta_pwd + 1;
+          end if;
+        end if;
+        b := (new_dial / 100) * 100;
+        if b > a then
+          delta_pwd := delta_pwd + (b - a) / 100;
+        end if;
+      end if;
+      dial := new_dial rem 100;
+      pwd := pwd + delta_pwd;
+    end loop;
+    r (part_2_smart) := +"" & pwd;
+  end Do_Part_2_Smart;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
   T0 : constant Time := Clock;
@@ -96,15 +141,17 @@ procedure AoC_2025_01 is
 begin
   Read_Data;
   Do_Part_1;
-  Do_Part_2;
+  Do_Part_2_Dumb;
+  Do_Part_2_Smart;
   if compiler_test_mode then
-    if r (part_1) /= Argument (1) or r (part_2) /= Argument (2) then
+    if r (part_1) /= Argument (1) or r (part_2_dumb) /= Argument (2) or r (part_2_smart) /= Argument (2) then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: " & r (part_1));
-    Put_Line (+"Part 2: " & r (part_2));
+    Put_Line (+"Part 2 (dumb algo):  " & r (part_2_dumb));
+    Put_Line (+"Part 2 (smart algo): " & r (part_2_smart));
     --  Part 1: validated by AoC: 989.
     --  Part 2: validated by AoC: 5941.
   end if;
