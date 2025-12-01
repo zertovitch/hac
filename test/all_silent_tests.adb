@@ -260,6 +260,8 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2024", +"24", +"57270694330992");                               --  Crossed Wires
     Launch_AoC (+"2024", +"25", +"3395");                                         --  Code Chronicle
     --
+    Launch_AoC (+"2025", +"01", +"989 5941");   --  Secret Entrance
+    --
     New_Line (2);
     New_Line;
     Put_Line ("----> Done.");
