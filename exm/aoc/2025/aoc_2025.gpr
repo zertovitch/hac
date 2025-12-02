@@ -29,7 +29,8 @@ project AoC_2025 is
    AoC_Styles_Checks : AoC_Styles_Checks_Type := external ("AoC_Styles_Checks", "Level_1");
 
    for Main use
-     ("aoc_2025_01.adb");
+     ("aoc_2025_01.adb",
+      "aoc_2025_02.adb");
    
    case AoC_Build_Mode is
       when "Debug" =>
