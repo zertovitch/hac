@@ -931,11 +931,12 @@ package body HAC_Sys.Parser.Helpers is
                 if item.is_read = no
                   and then item.decl_kind /= param_out
                 then
-                  --  Neither read, not written, nor initialized.
-                  --  Issue no warning. The note "-ru" will catch it as unused.
-                  --  Special case: for an "out" parameter, we want a warning!
+                  --  Neither read, not written, nor initialized, and not an "out" parameter.
+                  --  Issue no warning. The note "-ru" will catch the item as unused.
                   null;
                 else
+                  --  Neither written, nor initialized, but is maybe or surely read,
+                  --  or is an "out" parameter.
                   Remark_for_Declared_Item
                     (warn_read_but_not_written,
                      Nice_Image (item) &
@@ -973,7 +974,14 @@ package body HAC_Sys.Parser.Helpers is
         Remark_for_Declared_Item (note_unused_item, Nice_Image (item) & " is not referenced");
       end Handle_Unused;
 
+      use type Alfa;
+
     begin
+      if item.name = Empty_Alfa then
+        --  Zombie item, for instance a loop parameter.
+        return;
+      end if;
+
       --  See table in "hac_work.xls", sheet "Remarks".
 
       if item.entity = variable_object then
