@@ -26,8 +26,7 @@ procedure AoC_2025_02 is
 
   use AoC_Toolbox, HAT, Interfaces;
 
-  input_name : constant VString := +"aoc_2025_02_mini";
-  --  input_name : constant VString := +"aoc_2025_02";
+  input_name : VString := +"aoc_2025_02";
 
   first, last : array (1 .. 100) of Integer_64;
   n : Natural := 0;
@@ -51,51 +50,56 @@ procedure AoC_2025_02 is
   end Read_Data;
 
   procedure Do_Part (part : Part_Type) is
-    inv : Integer_64 := 0;
+    invalid : Integer_64 := 0;
 
     procedure Check (x : Integer_64) is
-      s : constant VString := Image (x);
-      pattern : VString;
-      t : VString;
-      stop : Integer;
+      original : constant VString := Image (x);
+      pattern, constructed : VString;
+      total_len, total_len_new : Natural;
     begin
-      for len in 1 .. 1 + Length (s) / 2 loop
-        pattern := Slice (s, 1, len);
-        t := +"";
-        case part is
-          when part_1 => stop := 2;
-          when part_2 => stop := 1 + Length (s) / len;
-        end case;
-        for rep in 1 .. stop loop
-          t := t & pattern;
-          if rep >= 2 and then Length (t) = Length (s) and then t = s then
-              inv := inv + x;
-              return;
-            end if;
-          end loop;
-        end loop;
+      for len in 1 .. 1 + Length (original) / 2 loop
+        pattern := Slice (original, 1, len);
+        constructed := pattern;
+        total_len := len;
+        Repeats :
+        loop
+          total_len_new := total_len + len;
+          exit Repeats when total_len_new > Length (original);
+          constructed := constructed & pattern;
+          total_len := total_len_new;
+          if constructed = original then
+            invalid := invalid + x;
+            return;
+          end if;
+          exit Repeats when part = part_1;
+        end loop Repeats;
+      end loop;
     end Check;
+
   begin
     for i in 1 .. n loop
       for id in first (i) .. last (i) loop
         Check (id);
       end loop;
     end loop;
-    r (part) := Image (inv);
+    r (part) := Image (invalid);
   end Do_Part;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
   T0 : constant Time := Clock;
 
 begin
+  if compiler_test_mode then
+    input_name := +"aoc_2025_02_mini";
+  end if;
   Read_Data;
   Do_Part (part_1);
+  Do_Part (part_2);
   if compiler_test_mode then
-    if r (part_1) /= Argument (1) then
+    if r (part_1) /= Argument (1) or r (part_2) /= Argument (2) then
       Set_Exit_Status (1);  --  Compiler test failed.
     end if;
   else
-    Do_Part (part_2);
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: " & r (part_1));
     Put_Line (+"Part 2: " & r (part_2));
