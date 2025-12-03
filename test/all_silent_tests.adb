@@ -262,6 +262,7 @@ procedure All_Silent_Tests is
     --
     Launch_AoC (+"2025", +"01", +"989 5941");               --  Secret Entrance
     Launch_AoC (+"2025", +"02", +"1227775554 4174379265");  --  Gift Shop
+    Launch_AoC (+"2025", +"03", +"17613 175304218462560");  --  Lobby
     --
     New_Line (2);
     New_Line;
