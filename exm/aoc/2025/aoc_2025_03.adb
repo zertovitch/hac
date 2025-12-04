@@ -29,82 +29,52 @@ procedure AoC_2025_03 is
 
   r : array (Part_Type) of VString;
 
-  subtype Jolt_Digit is Character range '1' .. '9';
-
-  procedure Do_Part_1 is
+  procedure Do_Part (part : Part_Type) is
     bank : String (1 .. n);
     f : File_Type;
-    max2, jolts, total : Natural;
+    jolts, total, max_n, pos, d, digits_amount : Natural;
   begin
     total := 0;
     Open (f, input_name & ".txt");
+    
+    case part is
+      when part_1 => digits_amount := 2;
+      when part_2 => digits_amount := 12;
+    end case;
+    
     while not End_Of_File (f) loop
       Get (f, bank);
-
-      Search :
-      for i in reverse Jolt_Digit loop
-        for j in 1 .. n - 1 loop
-          if bank (j) = i then
-            max2 := 0;
-            for k in j + 1 .. n loop
-              max2 := Max (max2, Ord (bank (k)) - Ord ('0'));
-            end loop;
-            jolts := (Ord (i) - Ord ('0')) * 10 + max2;
-            exit Search;
+      pos := 1;
+      jolts := 0;
+      
+      for rest in reverse 1 .. digits_amount loop
+        max_n := 0;
+        for k in pos .. n - rest + 1 loop
+          --  We always need the highest possible n-th digit.
+          --  And, the first occurrence of it is always the best: you have
+          --  more choice for the next digit.
+          d := Ord (bank (k)) - Ord ('0');
+          if d > max_n then
+            max_n := d;
+            pos := k + 1;
           end if;
         end loop;
-      end loop Search;
+        jolts := jolts * 10 + max_n;
+      end loop;
 
       total := total + jolts;
     end loop;
-    r (part_1) := +"" & total;
+    
+    r (part) := +"" & total;
     Close (f);
-  end Do_Part_1;
-
-  procedure Do_Part_2 is
-    bank : String (1 .. n);
-    f : File_Type;
-    jolts, total, max_n, pos, d : Natural;
-  begin
-    total := 0;
-    Open (f, input_name & ".txt");
-    while not End_Of_File (f) loop
-      Get (f, bank);
-
-      Search :
-      for i in reverse Jolt_Digit loop
-        for j in 1 .. n - 11 loop
-          if bank (j) = i then
-            jolts := (Ord (i) - Ord ('0'));
-            pos := j + 1;
-            for rest in reverse 1 .. 11 loop
-              max_n := 0;
-              for k in pos .. n - rest + 1 loop
-                d := Ord (bank (k)) - Ord ('0');
-                if d > max_n then
-                  max_n := d;
-                  pos := k + 1;
-                end if;
-              end loop;
-              jolts := jolts * 10 + max_n;
-            end loop;
-            exit Search;
-          end if;
-        end loop;
-      end loop Search;
-
-      total := total + jolts;
-    end loop;
-    r (part_2) := +"" & total;
-    Close (f);
-  end Do_Part_2;
+  end Do_Part;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
   T0 : constant Time := Clock;
 
 begin
-  Do_Part_1;
-  Do_Part_2;
+  Do_Part (part_1);
+  Do_Part (part_2);
   if compiler_test_mode then
     if r (part_1) /= Argument (1) or r (part_2) /= Argument (2) then
       Set_Exit_Status (1);  --  Compiler test failed.

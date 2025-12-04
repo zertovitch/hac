@@ -132,7 +132,7 @@ begin
     Put_Line (+"Done in: " & (Clock - T0) & " seconds");
     Put_Line (+"Part 1: " & r (part_1));
     Put_Line (+"Part 2: " & r (part_2));
-    --  Part 1: validated by AoC: .
-    --  Part 2: validated by AoC: .
+    --  Part 1: validated by AoC: 1320.
+    --  Part 2: validated by AoC: 8354.
   end if;
 end AoC_2025_04;
