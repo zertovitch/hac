@@ -988,7 +988,11 @@ package body HAC_Sys.Parser.Helpers is
         Handle_Variables_and_Parameters;
       end if;
 
-      if item.entity /= alias and then not item.is_referenced then
+      if item.is_referenced or else item.entity in loop_identifier | alias then
+        --  Item is used somewhere, or is a loop identifier or an alias.
+        --  In this case, don't make a note for it.
+        null;
+      else
         Handle_Unused;
       end if;
     end Check_Item;
