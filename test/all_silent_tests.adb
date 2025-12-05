@@ -264,6 +264,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2025", +"02", +"1227775554 4174379265");  --  Gift Shop
     Launch_AoC (+"2025", +"03", +"17613 175304218462560");  --  Lobby
     Launch_AoC (+"2025", +"04", +"1320 8354");              --  Printing Department
+    Launch_AoC (+"2025", +"05", +"798 366181852921027");    --  Cafeteria 
     --
     New_Line (2);
     New_Line;
