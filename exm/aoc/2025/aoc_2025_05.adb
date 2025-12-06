@@ -106,8 +106,6 @@ procedure AoC_2025_05 is
   T0 : constant Time := Clock;
 
 begin
-  r (part_1) := +"";
-  r (part_2) := +"";
   Read_Data;
   Do_Part_1;
   Do_Part_2;
