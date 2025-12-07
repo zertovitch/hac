@@ -60,11 +60,10 @@ procedure AoC_2025_05 is
     r (part_1) := +"" & count;
   end Do_Part_1;
 
-  enabled : array (1 .. ranges) of Boolean;
-
   procedure Do_Part_2 is
-    modified : Boolean;
     count : Natural := 0;
+    modified : Boolean;
+    enabled : array (1 .. ranges) of Boolean;
   begin
     for i in 1 .. ranges loop
       enabled (i) := True;
