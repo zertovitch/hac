@@ -1,6 +1,6 @@
 --  Solution to Advent of Code 2025, Day 8
 ------------------------------------------
---  .
+--  Playground.
 --
 --  https://adventofcode.com/2025/day/8
 --  Copy of questions in: aoc_2025_08_questions.txt
@@ -30,7 +30,6 @@ procedure AoC_2025_08 is
   rounds : Positive;
   input_name : VString;
 
-  --  r : array (Part_Type) of Integer;
   r : array (Part_Type) of VString;
 
   subtype max_range is Integer range 1 .. 1000;

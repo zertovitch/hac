@@ -36,7 +36,7 @@ procedure AoC_2024_05 is
   r : array (Part_Type) of Integer;
 
   procedure Read_Data (part : Part_Type) is
-    sep : Character;
+    dummy_separator : Character;
     f : File_Type;
     update : array (1 .. 100) of Natural;
     lu : Natural;
@@ -49,7 +49,7 @@ procedure AoC_2024_05 is
     while not End_Of_File (f) loop
       last := last + 1;
       Get (f, rule (last).a);
-      Get (f, sep);
+      Get (f, dummy_separator);
       Get (f, rule (last).b);
       if End_Of_Line (f) then
         Skip_Line (f);
@@ -97,7 +97,7 @@ procedure AoC_2024_05 is
         end if;
         lu := 0;  --  Clear data (update).
       else
-        Get (f, sep);
+        Get (f, dummy_separator);
       end if;
     end loop;
 

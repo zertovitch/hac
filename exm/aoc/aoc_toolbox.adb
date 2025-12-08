@@ -24,9 +24,9 @@ package body AoC_Toolbox is
   end GCD_and_Bezout;
 
   function GCD (a, b : Integer) return Integer is
-    s, t, the_gcd : Integer;
+    dummy_s, dummy_t, the_gcd : Integer;
   begin
-    GCD_and_Bezout (a, b, s, t, the_gcd);
+    GCD_and_Bezout (a, b, dummy_s, dummy_t, the_gcd);
     return the_gcd;
   end GCD;
 
@@ -59,9 +59,9 @@ package body AoC_Toolbox is
   end GCD_and_Bezout_64;
 
   function GCD_64 (a, b : Integer_64) return Integer_64 is
-    s, t, the_gcd : Integer_64;
+    dummy_s, dummy_t, the_gcd : Integer_64;
   begin
-    GCD_and_Bezout_64 (a, b, s, t, the_gcd);
+    GCD_and_Bezout_64 (a, b, dummy_s, dummy_t, the_gcd);
     return the_gcd;
   end GCD_64;
 

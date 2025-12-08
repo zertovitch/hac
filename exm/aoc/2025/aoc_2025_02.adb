@@ -34,17 +34,17 @@ procedure AoC_2025_02 is
   r : array (Part_Type) of VString;
 
   procedure Read_Data is
-    sep : Character;
+    dummy_separator : Character;
     f : File_Type;
   begin
     Open (f, input_name & ".txt");
     while not End_Of_File (f) loop
       n := n + 1;
       Get (f, first (n));
-      Get (f, sep);
+      Get (f, dummy_separator);
       Get (f, last (n));
       exit when End_Of_File (f);
-      Get (f, sep);
+      Get (f, dummy_separator);
     end loop;
     Close (f);
   end Read_Data;

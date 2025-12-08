@@ -106,7 +106,7 @@ procedure AoC_2024_07 is
       return False;
     end Check_2;
 
-    sep : Character;
+    dummy_separator : Character;
     f : File_Type;
 
   begin
@@ -114,7 +114,7 @@ procedure AoC_2024_07 is
     while not End_Of_File (f) loop
       if last = 0 then
         Get (f, left);
-        Get (f, sep);
+        Get (f, dummy_separator);
         len_left := Length (Image (left));
       end if;
       last := last + 1;

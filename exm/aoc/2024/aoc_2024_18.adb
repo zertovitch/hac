@@ -134,7 +134,7 @@ procedure AoC_2024_18 is
   r : array (Part_Type) of VString;
 
   procedure Read_Data is
-    sep : Character;
+    dummy_separator : Character;
     f : File_Type;
   begin
 
@@ -142,7 +142,7 @@ procedure AoC_2024_18 is
     while not End_Of_File (f) loop
       last_block := last_block + 1;
       Get (f, block (last_block).x);
-      Get (f, sep);
+      Get (f, dummy_separator);
       Get (f, block (last_block).y);
     end loop;
     Close (f);

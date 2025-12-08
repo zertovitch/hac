@@ -33,7 +33,6 @@ procedure AoC_2025_04 is
 
   initial : Map_Type;
 
-  --  r : array (Part_Type) of Integer;
   r : array (Part_Type) of VString;
 
   procedure Read_Data is

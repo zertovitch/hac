@@ -44,7 +44,7 @@ procedure AoC_2024_23 is
 
   procedure Read_Data is
     use Hash_Maps;
-    sep : Character;
+    dummy_separator : Character;
     name : Computer_Name;
     f : File_Type;
     last_64, v1, v2 : Integer_64;
@@ -80,7 +80,7 @@ procedure AoC_2024_23 is
     while not End_Of_File (f) loop
       Get (f, name);
       Register (v1);
-      Get (f, sep);
+      Get (f, dummy_separator);
       Get (f, name);
       Register (v2);
       connected (Id_Range (v1), Id_Range (v2)) := True;

@@ -33,7 +33,6 @@ procedure AoC_2025_06 is
   pos_op : array (1 .. n) of Positive;
   dig_it : array (1 .. m, 1 .. l) of Character;
 
-  --  r : array (Part_Type) of Integer;
   r : array (Part_Type) of VString;
 
   procedure Read_Data is
