@@ -1,9 +1,9 @@
---  Solution to Advent of Code 2025, Day $
--------------------------------------------
---  .
+--  Solution to Advent of Code 2025, Day 3
+------------------------------------------
+--  Lobby
 --
---  https://adventofcode.com/2025/day/$
---  Copy of questions in: aoc_2025_$$_questions.txt
+--  https://adventofcode.com/2025/day/3
+--  Copy of questions in: aoc_2025_03_questions.txt
 --
 --  Related links:
 --    https://forum.ada-lang.io/
@@ -36,17 +36,17 @@ procedure AoC_2025_03 is
   begin
     total := 0;
     Open (f, input_name & ".txt");
-    
+
     case part is
       when part_1 => digits_amount := 2;
       when part_2 => digits_amount := 12;
     end case;
-    
+
     while not End_Of_File (f) loop
       Get (f, bank);
       pos := 1;
       jolts := 0;
-      
+
       for rest in reverse 1 .. digits_amount loop
         max_n := 0;
         for k in pos .. n - rest + 1 loop
@@ -64,7 +64,7 @@ procedure AoC_2025_03 is
 
       total := total + jolts;
     end loop;
-    
+
     r (part) := +"" & total;
     Close (f);
   end Do_Part;

@@ -1,6 +1,6 @@
 --  Solution to Advent of Code 2025, Day 2
 ------------------------------------------
---  .
+--  Gift Shop
 --
 --  https://adventofcode.com/2025/day/2
 --  Copy of questions in: aoc_2025_02_questions.txt
