@@ -892,6 +892,12 @@ package body HAC_Sys.Parser.Helpers is
     end if;
   end Mark_Read_and_Check_Read_before_Written;
 
+  function Has_Dummy_Name (name : Alfa) return Boolean is
+  (HAT.Starts_With (name, "DUMMY") or else
+   HAT.Starts_With (name, "UNUSED") or else
+   HAT.Starts_With (name, "JUNK") or else
+   HAT.Starts_With (name, "IGNORE"));
+
   procedure Check_Unused_or_Uninitialized_Items
     (CD    : in out Compiler_Data;
      level : in     Defs.Nesting_Level)
@@ -960,6 +966,7 @@ package body HAC_Sys.Parser.Helpers is
 
             if item.is_read = no                    --  Maybe written after init., but not read.
               and then item.decl_kind /= param_out  --  Don't care about "out" param no being read.
+              and then not Has_Dummy_Name (item.name)
             then
               Remark_for_Declared_Item (note_unused_item, Nice_Image (item) & " is never read");
             end if;
