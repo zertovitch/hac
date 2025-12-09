@@ -268,6 +268,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2025", +"06", +"4449991244405 9348430857627");  --  Trash Compactor
     Launch_AoC (+"2025", +"07", +"1562 24292631346665");          --  Laboratories
     Launch_AoC (+"2025", +"08", +"40 25272");                     --  Playground (example's data)
+    Launch_AoC (+"2025", +"09", +"4749838800 1624057680");        --  Movie Theater
     --
     New_Line (2);
     New_Line;
