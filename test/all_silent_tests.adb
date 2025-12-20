@@ -269,6 +269,7 @@ procedure All_Silent_Tests is
     Launch_AoC (+"2025", +"07", +"1562 24292631346665");          --  Laboratories
     Launch_AoC (+"2025", +"08", +"40 25272");                     --  Playground (example's data)
     Launch_AoC (+"2025", +"09", +"4749838800 1624057680");        --  Movie Theater
+    Launch_AoC (+"2025", +"10", +"7");                            --  Factory
     --
     New_Line (2);
     New_Line;

@@ -167,6 +167,29 @@ package body AoC_Toolbox is
     return (Pi / 180.0) * a;
   end Deg_2_Rad;
 
+  function Sim_AND (a, b : Integer_64) return Integer_64 is
+    x : Integer_64 := a;
+    y : Integer_64 := b;
+    res : Integer_64 := 0;
+    m : Integer_64 := 1;
+    x1, y1 : Integer_64;
+  begin
+    if a < 0 or else b < 0 then
+      HAT.Put ("XOR on negative values!");
+    end if;
+    while x > 0 or else y > 0 loop
+      x1 := x mod 2;
+      y1 := y mod 2;
+      if x1 = 1 and y1 = 1 then
+        res := res + m;
+      end if;
+      x := x / 2;
+      y := y / 2;
+      m := m * 2;
+    end loop;
+    return res;
+  end Sim_AND;
+
   function Sim_XOR (a, b : Integer_64) return Integer_64 is
     x : Integer_64 := a;
     y : Integer_64 := b;
