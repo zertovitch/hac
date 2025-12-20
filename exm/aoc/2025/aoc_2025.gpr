@@ -29,7 +29,8 @@ project AoC_2025 is
    AoC_Styles_Checks : AoC_Styles_Checks_Type := external ("AoC_Styles_Checks", "Level_1");
 
    for Main use
-     ("aoc_2025_10.adb",
+     ("aoc_2025_11.adb",
+      "aoc_2025_10.adb",
       "aoc_2025_09.adb",
       "aoc_2025_08.adb",
       "aoc_2025_07.adb",
