@@ -33,17 +33,28 @@ package body HAC_Sys.Parser.Ranges is
         if Id_T.entity = type_mark and then Discrete_Typ (Id_T.xtyp.TYP) then
           --  Subtype S, but need to exclude the attribute case: S'First, S'Image, ...
           Skip_Blanks (CD);
-          if CD.CUD.c /= ''' then  --  We sneak a look at the next symbol.
+          --  We sneak a look at the next symbol:
+          if CD.CUD.c /= ''' then
             --  Not a S'... attribute here.
-            --  We can use the subtype identifier as a range.
-            Low.TP  := Id_T.xtyp;
-            Low.I   := Id_T.xtyp.Discrete_First;
-            --
-            High.TP := Id_T.xtyp;
-            High.I  := Id_T.xtyp.Discrete_Last;
+            In_Symbol (CD);  --  Consume the identifier.
+            --  Do we have a subtype of a subtype?
+            if CD.Sy = RANGE_Keyword_Symbol then
+              --  Here comes the optional `  range 'a' .. 'z'  ` constraint.
+              --  !! See HAC_Sys.Parser.Type_Def for a (too) similar situation...
+              In_Symbol (CD);
+              Ranges.Explicit_Static_Range (CD, Level, empty_symset + LOOP_Symbol, err_range_constraint_error, Low, High);
+              --  !! HERE: Check the constraint: commonalise the code in HAC_Sys.Parser.Type_Def
+              --
+            else
+              --  We can use the subtype identifier as a range.
+              Low.TP  := Id_T.xtyp;
+              Low.I   := Id_T.xtyp.Discrete_First;
+              --
+              High.TP := Id_T.xtyp;
+              High.I  := Id_T.xtyp.Discrete_Last;
+            end if;
             --
             Found   := True;
-            In_Symbol (CD);  --  Consume the identifier.
           end if;
         end if;
       end;
