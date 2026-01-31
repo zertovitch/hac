@@ -336,30 +336,7 @@ package body HAC_Sys.Parser.Type_Def is
         --  Here comes the optional `  range 'a' .. 'z'  ` constraint.
         In_Symbol;
         Ranges.Explicit_Static_Range (CD, Level, FSys_TD, err_range_constraint_error, Low, High);
-        if Exact_Typ (Low.TP) /= Exact_Typ (xTP) then
-          Error
-            (CD, err_range_constraint_error,
-             "type of bounds don't match with the parent type", severity => major);
-        elsif Low.I not in xTP.Discrete_First .. xTP.Discrete_Last then
-          Error
-            (CD,
-             err_range_constraint_error,
-             "lower bound, " & Discrete_Image (CD, Low.I, xTP.TYP, xTP.Ref) &
-             ", is out of parent type's range, " &
-             Discrete_Range_Image (CD, xTP.Discrete_First, xTP.Discrete_Last, xTP.TYP, xTP.Ref),
-             severity => major);
-        elsif High.I not in xTP.Discrete_First .. xTP.Discrete_Last then
-          Error
-            (CD,
-             err_range_constraint_error,
-             "higher bound, " & Discrete_Image (CD, High.I, xTP.TYP, xTP.Ref) &
-             ", is out of parent type's range, " &
-             Discrete_Range_Image (CD, xTP.Discrete_First, xTP.Discrete_Last, xTP.TYP, xTP.Ref),
-             severity => major);
-        else
-          xTP.Discrete_First := Low.I;
-          xTP.Discrete_Last  := High.I;
-        end if;
+        Ranges.Check_Explicit_Static_Range_Against_Parent_Type (CD, Low, High, xTP, True);
       end if;
     end Sub_Typ;
 

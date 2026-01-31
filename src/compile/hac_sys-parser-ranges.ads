@@ -48,14 +48,23 @@ private package HAC_Sys.Parser.Ranges is
   --
   --  `1 .. 3`
   --
-  procedure Explicit_Static_Range (
-    CD             : in out Co_Defs.Compiler_Data;
-    Level          : in     Defs.Nesting_Level;
-    FSys           : in     Defs.Symset;
-    Specific_Error : in     Defs.Compile_Diagnostic;
-    Lower_Bound    :    out Co_Defs.Constant_Rec;
-    Higher_Bound   :    out Co_Defs.Constant_Rec
-  );
+  procedure Explicit_Static_Range
+    (CD             : in out Co_Defs.Compiler_Data;
+     Level          : in     Defs.Nesting_Level;
+     FSys           : in     Defs.Symset;
+     Specific_Error : in     Defs.Compile_Diagnostic;
+     Lower_Bound    :    out Co_Defs.Constant_Rec;
+     Higher_Bound   :    out Co_Defs.Constant_Rec);
+
+  -------------------------------------------------------
+  --  Check_Explicit_Static_Range_Against_Parent_Type  --
+  -------------------------------------------------------
+
+  procedure Check_Explicit_Static_Range_Against_Parent_Type
+    (CD                : in out Co_Defs.Compiler_Data;
+     low, high         : in     Co_Defs.Constant_Rec;
+     parent            : in out Co_Defs.Exact_Subtyp;
+     narrow_the_parent : in     Boolean);
 
   ------------------
   -- Static_Range --
@@ -63,14 +72,13 @@ private package HAC_Sys.Parser.Ranges is
   --
   --  So far: either `1 .. 3` (that is, Explicit_Static_Range) or `Character`.
   --
-  procedure Static_Range (
-    CD             : in out Co_Defs.Compiler_Data;
-    Level          : in     Defs.Nesting_Level;
-    FSys           : in     Defs.Symset;
-    Specific_Error : in     Defs.Compile_Diagnostic;
-    Lower_Bound    :    out Co_Defs.Constant_Rec;
-    Higher_Bound   :    out Co_Defs.Constant_Rec
-  );
+  procedure Static_Range
+    (CD             : in out Co_Defs.Compiler_Data;
+     Level          : in     Defs.Nesting_Level;
+     FSys           : in     Defs.Symset;
+     Specific_Error : in     Defs.Compile_Diagnostic;
+     Lower_Bound    :    out Co_Defs.Constant_Rec;
+     Higher_Bound   :    out Co_Defs.Constant_Rec);
 
   -------------------
   -- Dynamic_Range --
@@ -81,7 +89,7 @@ private package HAC_Sys.Parser.Ranges is
   --    Example:
   --      --  FOR statement (RM 5.5 (4)).
   --      for I in J .. N loop
-
+  --
   procedure Dynamic_Range
     (CD                 : in out Co_Defs.Compiler_Data;
      context            : in     Defs.Flow_Context;

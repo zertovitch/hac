@@ -11,12 +11,11 @@ package body HAC_Sys.Parser.Ranges is
   --  like "Color" in "Color [range red .. blue]" ?
   --  In that case, we return the range red .. blue.
   --
-  procedure Static_Subtype_Indication (  --  RM 3.2.2
-    CD        : in out Co_Defs.Compiler_Data;
-    Level     : in     Defs.Nesting_Level;
-    Low, High :    out Co_Defs.Constant_Rec;
-    Found     :    out Boolean
-  )
+  procedure Static_Subtype_Indication  --  RM 3.2.2
+    (CD        : in out Co_Defs.Compiler_Data;
+     Level     : in     Defs.Nesting_Level;
+     Low, High :    out Co_Defs.Constant_Rec;
+     Found     :    out Boolean)
   is
     Idx : Integer;
     use Co_Defs, Defs, Helpers, Scanner;
@@ -40,11 +39,9 @@ package body HAC_Sys.Parser.Ranges is
             --  Do we have a subtype of a subtype?
             if CD.Sy = RANGE_Keyword_Symbol then
               --  Here comes the optional `  range 'a' .. 'z'  ` constraint.
-              --  !! See HAC_Sys.Parser.Type_Def for a (too) similar situation...
               In_Symbol (CD);
-              Ranges.Explicit_Static_Range (CD, Level, empty_symset + LOOP_Symbol, err_range_constraint_error, Low, High);
-              --  !! HERE: Check the constraint: commonalise the code in HAC_Sys.Parser.Type_Def
-              --
+              Explicit_Static_Range (CD, Level, empty_symset + LOOP_Symbol, err_range_constraint_error, Low, High);
+              Check_Explicit_Static_Range_Against_Parent_Type (CD, Low, High, Id_T.xtyp, False);
             else
               --  We can use the subtype identifier as a range.
               Low.TP  := Id_T.xtyp;
@@ -61,18 +58,57 @@ package body HAC_Sys.Parser.Ranges is
     end if;
   end Static_Subtype_Indication;
 
+  -------------------------------------------------------
+  --  Check_Explicit_Static_Range_Against_Parent_Type  --
+  -------------------------------------------------------
+
+  procedure Check_Explicit_Static_Range_Against_Parent_Type
+    (CD                : in out Co_Defs.Compiler_Data;
+     low, high         : in     Co_Defs.Constant_Rec;
+     parent            : in out Co_Defs.Exact_Subtyp;
+     narrow_the_parent : in     Boolean)
+  is
+    use Co_Defs, Defs, Errors;
+  begin
+    if high.TP /= low.TP then
+      Error (CD, err_bounds_type_mismatch, "types in range bounds do not match", severity => major);
+    elsif Exact_Typ (low.TP) /= Exact_Typ (parent) then
+      Error
+        (CD, err_bounds_type_mismatch,
+         "type of bounds don't match with the parent type", severity => major);
+    elsif low.I not in parent.Discrete_First .. parent.Discrete_Last then
+      Error
+        (CD,
+         err_range_constraint_error,
+         "lower bound, " & Discrete_Image (CD, low.I, parent.TYP, parent.Ref) &
+         ", is out of parent type's range, " &
+         Discrete_Range_Image (CD, parent.Discrete_First, parent.Discrete_Last, parent.TYP, parent.Ref),
+         severity => major);
+    elsif high.I not in parent.Discrete_First .. parent.Discrete_Last then
+      Error
+        (CD,
+         err_range_constraint_error,
+         "higher bound, " & Discrete_Image (CD, high.I, parent.TYP, parent.Ref) &
+         ", is out of parent type's range, " &
+         Discrete_Range_Image (CD, parent.Discrete_First, parent.Discrete_Last, parent.TYP, parent.Ref),
+         severity => major);
+    elsif narrow_the_parent then
+      parent.Discrete_First := low.I;
+      parent.Discrete_Last  := high.I;
+    end if;
+  end Check_Explicit_Static_Range_Against_Parent_Type;
+
   ---------------------------
   -- Explicit_Static_Range --
   ---------------------------
 
-  procedure Explicit_Static_Range (
-    CD             : in out Co_Defs.Compiler_Data;
-    Level          : in     Defs.Nesting_Level;
-    FSys           : in     Defs.Symset;
-    Specific_Error : in     Defs.Compile_Diagnostic;
-    Lower_Bound    :    out Co_Defs.Constant_Rec;
-    Higher_Bound   :    out Co_Defs.Constant_Rec
-  )
+  procedure Explicit_Static_Range
+    (CD             : in out Co_Defs.Compiler_Data;
+     Level          : in     Defs.Nesting_Level;
+     FSys           : in     Defs.Symset;
+     Specific_Error : in     Defs.Compile_Diagnostic;
+     Lower_Bound    :    out Co_Defs.Constant_Rec;
+     Higher_Bound   :    out Co_Defs.Constant_Rec)
   is
     use Co_Defs, Defs, Expressions, Helpers, Errors;
   begin
@@ -98,14 +134,13 @@ package body HAC_Sys.Parser.Ranges is
   -- Static_Range --
   ------------------
 
-  procedure Static_Range (
-    CD             : in out Co_Defs.Compiler_Data;
-    Level          : in     Defs.Nesting_Level;
-    FSys           : in     Defs.Symset;
-    Specific_Error : in     Defs.Compile_Diagnostic;
-    Lower_Bound    :    out Co_Defs.Constant_Rec;
-    Higher_Bound   :    out Co_Defs.Constant_Rec
-  )
+  procedure Static_Range
+    (CD             : in out Co_Defs.Compiler_Data;
+     Level          : in     Defs.Nesting_Level;
+     FSys           : in     Defs.Symset;
+     Specific_Error : in     Defs.Compile_Diagnostic;
+     Lower_Bound    :    out Co_Defs.Constant_Rec;
+     Higher_Bound   :    out Co_Defs.Constant_Rec)
   is
     --  The variant "Low .. High" was initially
     --  in HAC.Parser <= 0.07 for array bounds.
@@ -136,12 +171,15 @@ package body HAC_Sys.Parser.Ranges is
      Range_Typ          :    out Co_Defs.Exact_Subtyp)
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
-    --  The variant "Low_Expr .. High_Expr" was initially
-    --  in HAC.Parser <= 0.07 for FOR statements.
+    --  The explicit range "Low_Expr .. High_Expr" was initially
+    --  the only possibility in HAC.Parser version<= 0.07 for FOR statements.
     Lower_Bound_Typ, Upper_Bound_Typ        : Exact_Subtyp;
     Lower_Bound_Static, Higher_Bound_Static : Constant_Rec;
     Is_SI_Found                             : Boolean;
   begin
+    --
+    --  !!  To do: replace by a dynamic subtype indication parser.
+    --
     Static_Subtype_Indication (CD, context.level, Lower_Bound_Static, Higher_Bound_Static, Is_SI_Found);
     --
     if Is_SI_Found then
