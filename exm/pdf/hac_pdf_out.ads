@@ -266,7 +266,7 @@ package HAC_PDF_Out is
   procedure Move    (pdf : in out PDF_Out_File; to : Point);
   procedure Line_To (pdf : in out PDF_Out_File; to : Point);
   procedure Cubic_Bezier (pdf : in out PDF_Out_File; control_1, control_2 : Point; to : Point);
-  --  All lines and curves and the eventual filling inside the path
+  --  All lines and curves and the possible filling inside the path
   --  will be drawn when path is completed, with Finish_Path:
 
   procedure Finish_Path (

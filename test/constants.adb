@@ -1,6 +1,6 @@
 --  Output must be empty if the compiler is correct.
 --  The order of the declarations is a bit random, it is on purpose.
---  Especially we want to detect eventual memory corruption (buggy compilers).
+--  Especially, we want to detect possible memory corruption (buggy compilers).
 
 with HAT;
 with Testing_Utilities;
