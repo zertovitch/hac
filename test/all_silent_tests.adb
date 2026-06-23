@@ -278,8 +278,10 @@ procedure All_Silent_Tests is
     New_Line;
     if failures = 0 then
       Put_Line ("All tests passed successfully.");
+      Set_Exit_Status (0);
     else
       Put_Line (+"*** There are FAILED tests ***");
+      Set_Exit_Status (1);
     end if;
     Put_Line ("Summary:");
     Put_Line (+"        " & successes & " successes");
