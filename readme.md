@@ -29,8 +29,9 @@ Or, if you don't want to touch the command-line at all for playing
 with HAC, you can download and use LEA (http://l-e-a.sf.net/).
 
 ### Examples
-You'll find hundreds of examples in the `exm` directory and
-its subdirectories.
+You'll find **hundreds** of HAC examples in the `exm` directory and
+its subdirectories. This includes six years of Advent of Code solutions.
+Many of the examples are also used in the regression test suite (130+ tests).
 
 Here is the famous Hello World! File `hello.adb`:
 
