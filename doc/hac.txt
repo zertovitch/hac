@@ -151,7 +151,7 @@ Language subset
   later Ada versions: 95, 2005, 2012 and 2022.
   Since each Ada version is compatible with previous ones,
   one can say simply that HAC is a subset of Ada 2022.
-  
+
     - Recursion and nested subprograms are supported.
     - You can define your own data types: enumerations, records, arrays
         (and every combination of records and arrays).
@@ -193,7 +193,7 @@ Thanks
 ======
 
   - The authors of SmallAda (list below) for making their work open-source.
-  - Stéphane Rivière, for extensive testing, contributions, suggestions,
+  - StÃ©phane RiviÃ¨re, for extensive testing, contributions, suggestions,
         remarks, feedbacks and the User Manual.
   - J-P. Rosen for the free AdaControl tool
         ( https://www.adalog.fr/en/adacontrol.html ,
