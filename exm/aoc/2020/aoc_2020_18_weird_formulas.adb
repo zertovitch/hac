@@ -772,7 +772,7 @@ package body AoC_2020_18_Weird_Formulas is
     procedure left_replaces_f is
     begin
       aux := f.left;
-      f.left := null; --  empˆeche destruction
+      f.left := null; --  empÃªche destruction
       Deep_delete (f);
       f := aux;
     end left_replaces_f;
@@ -780,7 +780,7 @@ package body AoC_2020_18_Weird_Formulas is
     procedure right_replaces_f is
     begin
       aux := f.right;
-      f.right := null; --  empˆeche destruction
+      f.right := null; --  empÃªche destruction
       Deep_delete (f);
       f := aux;
     end right_replaces_f;
