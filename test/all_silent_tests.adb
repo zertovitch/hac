@@ -22,6 +22,24 @@ procedure All_Silent_Tests is
 
   procedure Launch_Tests is
 
+    --  The HAC command-line tool to invoke for each test.  By default we use
+    --  the relative path to the locally built `hac` binary (one or more ".."
+    --  steps up, depending on the current directory).  If the `hac_command`
+    --  environment variable is set (for instance "node /path/hac_cli.js" to
+    --  drive the wasm build), we use that instead, so no binary swapping is
+    --  needed.  Same mechanism as the `hacbuild` variable below.
+
+    hac_cmd : constant VString := Get_Env ("hac_command");
+
+    function HAC_Command (ups : Positive) return VString is
+    begin
+      if hac_cmd = "" then
+        return ups * (+".." & Directory_Separator) & "hac";
+      else
+        return hac_cmd;
+      end if;
+    end HAC_Command;
+
     procedure Shell (command : VString; echo : Boolean; success : out Boolean) is
       r : Integer;
     begin
@@ -37,7 +55,9 @@ procedure All_Silent_Tests is
 
     procedure Build_HAC (success : out Boolean) is
     begin
-      if Get_Env ("hacbuild") = "done" then
+      if hac_cmd /= "" or else Get_Env ("hacbuild") = "done" then
+        --  A custom HAC command was supplied (or a build was already done),
+        --  so there is nothing to (re-)build locally.
         success := True;
         return;
       end if;
@@ -51,7 +71,7 @@ procedure All_Silent_Tests is
       success : Boolean;
     begin
       Shell (
-        ups * (+".." & Directory_Separator) & "hac " & Ada_file_name & ' ' & args,
+        HAC_Command (ups) & ' ' & Ada_file_name & ' ' & args,
         False,
         success
       );
@@ -103,8 +123,7 @@ procedure All_Silent_Tests is
        "exm" & Directory_Separator;
 
     generate : constant VString :=
-      +".." & Directory_Separator &
-       "hac " & examples_dir & "pkg_demo_gen.adb";
+      HAC_Command (1) & ' ' & examples_dir & "pkg_demo_gen.adb";
 
   begin
     Put_Line ("    ______________________      _____________________________________________");

@@ -7,6 +7,23 @@ procedure Remarks_Check is
 
   use HAT;
 
+  --  The `hac` command used for the sub-compilations below.  By default it is
+  --  the locally built `hac`, one ".." up from test/.  If the `hac_command`
+  --  environment variable is set (for instance "node /path/hac_cli.js" to drive
+  --  the wasm build), we use that instead, so the sub-compilations run through
+  --  the same HAC as the rest of the suite.  Same mechanism as the orchestrator
+  --  (all_silent_tests).
+  hac_cmd : constant VString := Get_Env ("hac_command");
+
+  function HAC_Command return VString is
+  begin
+    if hac_cmd = "" then
+      return +".." & Directory_Separator & "hac";
+    else
+      return hac_cmd;
+    end if;
+  end HAC_Command;
+
   --  Primitive file comparison for text files that should be identical.
   procedure File_Comp (name_1, name_2 : VString; ok : out Boolean) is 
     f1, f2 : File_Type;
@@ -49,7 +66,7 @@ procedure Remarks_Check is
   begin
     --  -r0 disables all remarks
     Shell_Execute
-      (+".." & Directory_Separator & "hac -c -r0 -r" & letter & " ../exm/remarks.adb 2>" & name_new);
+      (HAC_Command & " -c -r0 -r" & letter & " ../exm/remarks.adb 2>" & name_new);
     File_Comp (name_ok, name_new, ok);
     if not ok then
       Testing_Utilities.Failure
