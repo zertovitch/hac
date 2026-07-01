@@ -207,10 +207,19 @@ procedure HAC is
   use Ada.Command_Line;
 
 begin
+  if Argument_Count = 1 and then Argument (1) = "--version" then
+    Print_Version;
+    return;
+  elsif Argument_Count = 1 and then Argument (1) = "--help" then
+    Print_Help;
+    return;
+  end if;
+
   for i in 1 .. Argument_Count loop
     Process_Argument (Argument (i), i);
     exit when quit;
   end loop;
+
   if not hac_ing then
     Help (help_level);
     if verbosity > 1 then

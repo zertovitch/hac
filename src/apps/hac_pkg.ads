@@ -64,7 +64,10 @@ package HAC_Pkg is
   procedure PLCE (s : String);  --  Put_Line on Current Error
   procedure NLCE;               --  New_Line on Current Error
 
-  procedure Help (level : Positive);
+  procedure Print_Help;
+  procedure Print_Version;
+
+  procedure Help (level : Positive; to_current_error : Boolean := True);
 
   procedure Set_Target (name : String);
 

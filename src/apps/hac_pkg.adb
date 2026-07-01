@@ -134,11 +134,18 @@ package body HAC_Pkg is
     Put_Line (Current_Error, s);
   end PLCE;
 
-  procedure Option_Head (s : String) is
+  procedure Option_Head (s : String; to_current_error : Boolean) is
+    use Ada.Text_IO;
   begin
-    NLCE;
-    PLCE ("______");
-    PLCE ("Option " & s);
+    if to_current_error then
+      NLCE;
+      PLCE ("______");
+      PLCE ("Option " & s);
+    else
+      New_Line;
+      Put_Line ("______");
+      Put_Line ("Option " & s);
+    end if;
   end Option_Head;
 
   procedure NLCE is
@@ -147,75 +154,117 @@ package body HAC_Pkg is
     New_Line (Current_Error);
   end NLCE;
 
-  procedure Help (level : Positive) is
+  procedure Print_Help is
+  begin
+    Help (level => 2, to_current_error => False);
+  end Print_Help;
+
+  procedure Print_Version is
+    use Ada.Text_IO;
+  begin
+    Put_Line ("hac " & HAC_Sys.version);
+  end Print_Version;
+
+  procedure Help (level : Positive; to_current_error : Boolean := True) is
     use HAC_Sys.Defs, Ada.Text_IO;
+
     function Show_Level (r : Compile_Remark) return String is
       (" (from level" & Minimum_Level (r)'Image & ')');
+
+    procedure PL (item : String) is
+    begin
+       if to_current_error then
+         PLCE (item);
+       else
+         Ada.Text_IO.Put_Line (item);
+       end if;
+    end PL;
+
+    procedure NL is
+    begin
+       if to_current_error then
+         NLCE;
+       else
+         Ada.Text_IO.New_Line;
+       end if;
+    end NL;
+
   begin
-    PLCE ("HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
-    PLCE (version_info);
-    PLCE ("Main URL: "           & HAC_Sys.web);
-    PLCE ("  Sources, site #1: " & HAC_Sys.web2);
-    PLCE ("  Sources, site #2: " & HAC_Sys.web3);
-    PLCE ("  Alire Crate: "      & HAC_Sys.web4);
-    NLCE;
-    PLCE ("Usage: hac [options] main.adb [command-line parameters for main]");
-    NLCE;
-    PLCE ("Options: -h, h1 : this help");
-    PLCE ("         -h2    : show more help & details about options");
-    NLCE;
-    PLCE ("         -a     : assembler output");
-    PLCE ("         -c     : compile only");
-    PLCE ("         -d     : dump compiler information in " & compiler_dump_name);
-    PLCE ("         -I     : specify source files search path");
-    PLCE ("         -rx    : enable / disable remarks");
-    PLCE ("         -tx    : target machine (default: HAC VM)");
-    PLCE ("         -v, v1 : verbose");
-    PLCE ("         -v2    : very verbose");
-    NLCE;
-    PLCE ("Note: HAC (this command-line tool) accepts source files with shebang's,");
-    PLCE ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
-    Show_MIT_License (Current_Error, "hac_sys.ads");
+    PL ("HAC: command-line build and execution tool for HAC (HAC Ada Compiler)");
+    PL (version_info);
+    PL ("Main URL: "           & HAC_Sys.web);
+    PL ("  Sources, site #1: " & HAC_Sys.web2);
+    PL ("  Sources, site #2: " & HAC_Sys.web3);
+    PL ("  Alire Crate: "      & HAC_Sys.web4);
+    NL;
+    PL ("Usage: hac [--help|--version]");
+    PL ("       hac [options] main.adb [command-line parameters for main]");
+    NL;
+    PL ("Options: -h, h1      : this help");
+    PL ("         -h2, --help : show more help & details about options");
+    NL;
+    PL ("         -a          : assembler output");
+    PL ("         -c          : compile only");
+    PL ("         -d          : dump compiler information in " & compiler_dump_name);
+    PL ("         -I          : specify source files search path");
+    PL ("         -rx         : enable / disable remarks");
+    PL ("         -tx         : target machine (default: HAC VM)");
+    PL ("         -v, v1      : verbose");
+    PL ("         -v2         : very verbose");
+    PL ("         --version   : hac version");
+    NL;
+    PL ("Note: HAC (this command-line tool) accepts source files with shebang's,");
+    PL ("      for instance:   #!/usr/bin/env hac     or     #!/usr/bin/hac");
+
+    if to_current_error then
+      Show_MIT_License (Current_Error, "hac_sys.ads");
+    else
+      Show_MIT_License (Current_Output, "hac_sys.ads");
+    end if;
+
     if level > 1 then
-      NLCE;
-      PLCE ("/------------------------------------------\");
-      PLCE ("| Extended help for HAC (command: hac -h2) |");
-      PLCE ("\------------------------------------------/");
-      Option_Head ("-I : specify source files search path");
-      NLCE;
-      PLCE ("  The search path is a list of directories separated by commas (,) or semicolons (;).");
-      PLCE ("  HAC searches Ada source files in the following order:");
-      PLCE ("    1) The directory containing the source file of the main unit");
-      PLCE ("         being compiled (the file name on the command line).");
-      PLCE ("    2) Each directory named by an -I switch given on the");
-      PLCE ("         hac command line, in the order given.");
-      PLCE ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
-      PLCE ("         environment variable.");
-      Option_Head ("-rx : enable remarks (warnings or notes) of kind x");
-      PLCE ("       -rX : disable remarks for letter x");
-      PLCE ("             x =");
-      PLCE
+      NL;
+      PL ("/------------------------------------------\");
+      PL ("| Extended help for HAC (command: hac -h2) |");
+      PL ("\------------------------------------------/");
+      Option_Head ("-I : specify source files search path", to_current_error);
+      NL;
+      PL ("  The search path is a list of directories separated by commas (,) or semicolons (;).");
+      PL ("  HAC searches Ada source files in the following order:");
+      PL ("    1) The directory containing the source file of the main unit");
+      PL ("         being compiled (the file name on the command line).");
+      PL ("    2) Each directory named by an -I switch given on the");
+      PL ("         hac command line, in the order given.");
+      PL ("    3) Each of the directories listed in the value of the ADA_INCLUDE_PATH");
+      PL ("         environment variable.");
+      Option_Head ("-rx : enable remarks (warnings or notes) of kind x", to_current_error);
+      PL ("       -rX : disable remarks for letter x");
+      PL ("             x =");
+      PL
         ("                 0 .. 3 : enable remarks of level x; default is" &
          default_remark_level'Image);
-      PLCE
+      PL
         ("                 k :  notes for constant variables" &
          Show_Level (note_constant_variable));
-      PLCE
+      PL
         ("                 r :  notes for redundant constructs" &
          Show_Level (note_redundant_construct));
-      PLCE
+      PL
         ("                 u :  notes for unused items" &
          Show_Level (note_unused_item));
-      PLCE
+      PL
         ("                 v :  warnings for uninitialized variables or parameters" &
          Show_Level (warn_read_but_not_written));
-      Option_Head ("-tx : set target machine to x");
-      PLCE ("             x =");
-      PLCE ("                 amd64_windows_console_fasm");
-      NLCE;
+      Option_Head ("-tx : set target machine to x", to_current_error);
+      PL ("             x =");
+      PL ("                 amd64_windows_console_fasm");
+      NL;
     end if;
-    Ada.Text_IO.Put ("Press Return");
-    Ada.Text_IO.Skip_Line;
+
+    if to_current_error then
+      Ada.Text_IO.Put ("Press Return");
+      Ada.Text_IO.Skip_Line;
+    end if;
   end Help;
 
   type Target_List is
