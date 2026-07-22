@@ -10,6 +10,7 @@
 --
 
 with HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Parser.Ranges,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,
      HAC_Sys.Errors;
@@ -1033,5 +1034,133 @@ package body HAC_Sys.Parser.Helpers is
            block.Last_Param_Id_Idx - block.First_Param_Id_Idx + 1);
     end;
   end Number_of_Parameters;
+
+  function Locate_Record_Field
+    (CD         : in out Compiler_Data;
+     Record_Ref : in     Index;
+     Field_Name : in     Alfa)
+  return Integer
+  is
+    --  Local view of Compiler_Data's identifier table so this function can
+    --  spell it "Id_Table" (GNAT's identifier-reference style check
+    --  requires every reference to match its own declaration's casing --
+    --  this is a fresh, locally declared name, free to have its own).
+    Id_Table : Identifier_Table_Type renames CD.id_table;
+    Field_Id : Integer := CD.Blocks_Table (Record_Ref).Last_Id_Idx;
+    use type Alfa;
+  begin
+    while Field_Id /= No_Id and then Id_Table (Field_Id).name /= Field_Name loop
+      Field_Id := Id_Table (Field_Id).link;
+    end loop;
+    return Field_Id;
+  end Locate_Record_Field;
+
+  procedure Emit_Type_Checked_Store_or_Copy
+    (CD           : in out Compiler_Data;
+     Expected_Typ : in     Exact_Subtyp;
+     Found_Typ    : in     Exact_Subtyp)
+  is
+    use Compiler.PCode_Emit, PCode;
+    Array_Length : Natural;
+    procedure Issue_Type_Mismatch_Error is
+    begin
+      Type_Mismatch
+        (CD, err_types_of_assignment_must_match, Found => Found_Typ, Expected => Expected_Typ);
+    end Issue_Type_Mismatch_Error;
+  begin
+    if Expected_Typ.TYP = Found_Typ.TYP and Expected_Typ.TYP /= NOTYP then
+      if Discrete_Typ (Expected_Typ.TYP) then
+        if Ranges.Do_Ranges_Overlap (Expected_Typ, Found_Typ) then
+          if Expected_Typ.Discrete_First > Found_Typ.Discrete_First then
+            Compiler.PCode_Emit.Emit_3
+              (CD, k_Check_Lower_Bound, Expected_Typ.Discrete_First,
+               Typen'Pos (Expected_Typ.TYP), Operand_3_Type (Expected_Typ.Ref));
+          end if;
+          if Expected_Typ.Discrete_Last < Found_Typ.Discrete_Last then
+            Compiler.PCode_Emit.Emit_3
+              (CD, k_Check_Upper_Bound, Expected_Typ.Discrete_Last,
+               Typen'Pos (Expected_Typ.TYP), Operand_3_Type (Expected_Typ.Ref));
+          end if;
+        else
+          Error
+            (CD, err_range_constraint_error,
+             "value of expression (" &
+             (if Ranges.Is_Singleton_Range (Found_Typ) then
+                --  More understandable message part for a single value
+                Discrete_Image (CD, Found_Typ.Discrete_First, Expected_Typ.TYP, Expected_Typ.Ref)
+              else
+                "range: " &
+                Discrete_Range_Image
+                  (CD, Found_Typ.Discrete_First, Found_Typ.Discrete_Last,
+                   Expected_Typ.TYP, Expected_Typ.Ref)) &
+             ") is out of destination's range, " &
+             Discrete_Range_Image
+               (CD, Expected_Typ.Discrete_First, Expected_Typ.Discrete_Last,
+                Expected_Typ.TYP, Expected_Typ.Ref),
+             severity => minor);
+        end if;
+      end if;
+      if Expected_Typ.TYP in Standard_Typ then
+        Emit_1 (CD, k_Store, Typen'Pos (Expected_Typ.TYP));
+      elsif Expected_Typ.Ref /= Found_Typ.Ref then
+        Issue_Type_Mismatch_Error;  --  E.g. different arrays, enums, ...
+      else
+        case Expected_Typ.TYP is
+          when Arrays =>
+            Emit_1 (CD, k_Copy_Block, Operand_2_Type (CD.Arrays_Table (Expected_Typ.Ref).Array_Size));
+          when Records =>
+            Emit_1 (CD, k_Copy_Block, Operand_2_Type (CD.Blocks_Table (Expected_Typ.Ref).VSize));
+          when Enums =>
+            --  Behaves like a "Standard_Typ".
+            --  We have checked that Expected_Typ.Ref = Found_Typ.Ref (same actual type).
+            Emit_1 (CD, k_Store, Typen'Pos (Expected_Typ.TYP));
+          when others =>
+            raise Internal_error with "Emit_Type_Checked_Store_or_Copy: unsupported Typ ?";
+        end case;
+      end if;
+    else
+      --
+      --  Here, Expected_Typ.TYP and Found_Typ.TYP are different.
+      --
+      if Expected_Typ.TYP = Floats and Found_Typ.TYP = Ints then
+        Forbid_Type_Coercion (CD, Found => Found_Typ, Expected => Expected_Typ);
+      elsif Expected_Typ.TYP = Durations and Found_Typ.TYP = Floats then
+        --  Duration hack (see Delay_Statement for full explanation).
+        Emit_Std_Funct (CD, SF_Float_to_Duration);
+        Emit_1 (CD, k_Store, Typen'Pos (Expected_Typ.TYP));
+      elsif Is_Char_Array (CD, Expected_Typ) and Found_Typ.TYP = String_Literals then
+        Array_Length := CD.Arrays_Table (Expected_Typ.Ref).Array_Size;
+        if Array_Length = CD.SLeng then
+          Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (Array_Length));
+        else
+          Error (CD, err_string_lengths_do_not_match,
+            "variable has length" & Integer'Image (Array_Length) &
+            ", literal has length" & Integer'Image (CD.SLeng),
+            severity => minor);
+        end if;
+      elsif Expected_Typ.TYP = VStrings
+        and then
+          (Found_Typ.TYP in String_Literals | Strings_as_VStrings
+           or else Is_Char_Array (CD, Found_Typ))
+      then
+        Error (CD, err_string_to_vstring_assignment);
+      elsif Expected_Typ.TYP = NOTYP then
+        if CD.error_count = 0 then
+          raise Internal_error with
+            "Emit_Type_Checked_Store_or_Copy: assigned variable (Expected_Typ) is typeless";
+        end if;
+        --  All right, there were already enough compilation error messages...
+      elsif Found_Typ.TYP = NOTYP then
+        if CD.error_count = 0 then
+          raise Internal_error with
+            "Emit_Type_Checked_Store_or_Copy: assigned value (Found_Typ) is typeless";
+        end if;
+        --  All right, there were already enough compilation error messages...
+      else
+        Issue_Type_Mismatch_Error;
+        --  NB: We are in the Expected_Typ.TYP /= Found_Typ.TYP case.
+      end if;
+    end if;
+  end Emit_Type_Checked_Store_or_Copy;
 
 end HAC_Sys.Parser.Helpers;

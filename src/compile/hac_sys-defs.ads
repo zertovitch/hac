@@ -454,6 +454,14 @@ package HAC_Sys.Defs is
      err_non_public_entity,                       --  2022-04-02
      err_choices_not_covered,
      err_choice_out_of_range,
+     err_aggregate_field_covered_twice,            --  2026-07-01
+     err_aggregate_index_covered_twice,            --  2026-07-01
+     err_aggregate_field_not_covered,              --  2026-07-01
+     err_aggregate_index_not_covered,              --  2026-07-01
+     err_aggregate_others_not_last,                --  2026-07-01
+     err_aggregate_positional_after_named,         --  2026-07-01
+     err_aggregate_others_field_types_differ,      --  2026-07-02
+     err_default_value_must_be_static,             --  2026-07-07
      err_mixed_logical_operators,
      err_library_error,
      err_wrong_unit_name,

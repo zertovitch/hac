@@ -97,27 +97,25 @@ package body HAC_Sys.Parser.Expressions is
   is
 
     procedure Record_Field_Selector is
-      Field_Offset, Field_Id : Integer;
-      use type Alfa;
+      Field_Offset : Integer;
     begin
       if V.TYP = Records then
-        Field_Id := CD.Blocks_Table (V.Ref).Last_Id_Idx;
-        CD.id_table (0).name := CD.Id;
-        while CD.id_table (Field_Id).name /= CD.Id loop  --  Search field identifier
-          Field_Id := CD.id_table (Field_Id).link;
-        end loop;
-        if Field_Id = No_Id then
-          Error (CD, err_undefined_identifier, A2S (CD.Id_with_case), severity => major);
-        else
-          CD.target.Mark_Reference (Field_Id);
-          CD.id_table (Field_Id).is_referenced := True;
-          Elevate_to_Maybe (CD.id_table (Field_Id).is_read);
-          V := CD.id_table (Field_Id).xtyp;
-          Field_Offset := Integer (CD.id_table (Field_Id).adr_or_sz);
-          if Field_Offset /= 0 then
-            Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
+        declare
+          Field_Id : constant Integer := Locate_Record_Field (CD, V.Ref, CD.Id);
+        begin
+          if Field_Id = No_Id then
+            Error (CD, err_undefined_identifier, A2S (CD.Id_with_case), severity => major);
+          else
+            CD.target.Mark_Reference (Field_Id);
+            CD.id_table (Field_Id).is_referenced := True;
+            Elevate_to_Maybe (CD.id_table (Field_Id).is_read);
+            V := CD.id_table (Field_Id).xtyp;
+            Field_Offset := Integer (CD.id_table (Field_Id).adr_or_sz);
+            if Field_Offset /= 0 then
+              Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
+            end if;
           end if;
-        end if;
+        end;
       else
         Error (CD, err_var_with_field_selector_must_be_record);
       end if;

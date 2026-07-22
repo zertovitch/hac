@@ -1,6 +1,7 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Co_Defs,
      HAC_Sys.Defs,
+     HAC_Sys.Parser.Defaults,
      HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
@@ -36,7 +37,7 @@ package body HAC_Sys.Parser.Const_Var is
         --  Example:
         --     for:            "a, b, c : Real := F (x);"
         --     we do first:    "c := F (x)".
-        Statements.Assignment (CD, FSys, Block_Data.context, id_last, check_is_variable => False);
+        Statements.Assignment (CD, FSys, Block_Data, id_last, check_is_variable => False);
         CD.id_table (id_last).is_initialized := explicit;
         --  Id_Last has been assigned.
         --  Now, we emit the code for copying the value
@@ -71,15 +72,27 @@ package body HAC_Sys.Parser.Const_Var is
           var.is_initialized := explicit;
         end loop;
       else
-        --  Implicit initialization (for instance, VString's and File_Type's).
+        --  Implicit initialization (for instance, VString's and File_Type's,
+        --  or a record/array type carrying (possibly deeply nested, RM
+        --  3.3.1) component defaults, RM 3.7/3.8 -- see
+        --  HAC_Sys.Parser.Defaults).
         for var of CD.id_table (id_first .. id_last) loop
           if Auto_Init_Typ (var.xtyp.TYP) then
             Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.adr_or_sz));
             Emit_1 (CD, k_Variable_Initialization, Typen'Pos (var.xtyp.TYP));
             var.is_initialized := implicit;
+          elsif var.xtyp.TYP in Composite_Typ then
+            declare
+              Var_Default : constant Default_Value_Access := Defaults.Inherited_Default (CD, var.xtyp);
+            begin
+              if Var_Default /= null then
+                Defaults.Emit_Default_Value (CD, var.lev, var.adr_or_sz, Var_Default);
+                var.is_initialized := implicit;
+              end if;
+            end;
           end if;
-          --  !!  TBD: Must handle composite types (arrays or records) containing
-          --           initialized types, too... Bug #2
+          --  !!  TBD: Must handle composite types (arrays) containing
+          --           initialized types (VString/Text_File), too... Bug #2
         end loop;
       end if;
       --

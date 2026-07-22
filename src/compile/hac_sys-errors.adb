@@ -284,7 +284,29 @@ package body HAC_Sys.Errors is
         return "all case values shall be covered, either explicitly " &
                "or by ""others"" (RM 5.4 (6))" & hint_1;
       when err_choice_out_of_range =>
-        return "choice(s) out of range of case expression";
+        return "choice(s) out of range" &
+               (if hint_1 = "" then " of case expression" else ": " & hint_1);
+      when err_aggregate_field_covered_twice =>
+        return "aggregate: field """ & hint_1 & """ is covered more than once";
+      when err_aggregate_index_covered_twice =>
+        return "aggregate: index" & hint_1 & " is covered more than once";
+      when err_aggregate_field_not_covered =>
+        return "aggregate: field """ & hint_1 & """ is not covered";
+      when err_aggregate_index_not_covered =>
+        return "aggregate: all index values shall be covered, either explicitly " &
+               "or by ""others"" (RM 4.3.3)" & hint_1;
+      when err_aggregate_others_not_last =>
+        return "aggregate: ""others"" choice must be the last one";
+      when err_aggregate_positional_after_named =>
+        return "aggregate: a positional association cannot follow a named " &
+               "association (RM 4.3 (4)/(5))";
+      when err_aggregate_others_field_types_differ =>
+        return "aggregate: ""others"" applies to record fields that do not " &
+               "all have the same type";
+      when err_default_value_must_be_static =>
+        return "a record component's default value (RM 3.7 / 3.8) must be " &
+               "a static expression, or an aggregate built from static " &
+               "values" & (if hint_1 = "" then "" else ": " & hint_1);
       when err_mixed_logical_operators =>
         return "mixed logical operators in expression (RM 4.4 (2)) - " &
                "clarify by using parentheses";
