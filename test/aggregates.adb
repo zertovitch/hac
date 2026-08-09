@@ -316,6 +316,92 @@ procedure Aggregates is
     Assert (dst (1) = 5 and dst (2) = 6, +"Compiler bug [Plain_Parenthesized_Still_Works]");
   end Plain_Parenthesized_Still_Works;
 
+  procedure Mixed_With_Composite_Variables is
+
+    type Rec_1 is record
+      a : Integer;
+      b : Real;
+      c : Boolean;
+    end record;
+
+    var : Rec_1;
+
+    type Arr_1 is array (1 .. 3, 1 .. 5) of Rec_1;
+
+    a1_a, a1_b, a1_c : Arr_1;
+
+    use_var : Boolean := True;
+
+    procedure Check (a1 : Arr_1) is
+    begin
+      use_var := True;
+      for x in Arr_1'Range (1) loop
+        for y in Arr_1'Range (2) loop
+          if use_var then
+            Assert
+              (a1 (x, y).a = 1 and a1 (x, y).b = 2.0 and a1 (x, y).c = True,
+               +"Compiler bug [Mixed_With_Composite_Variables, part with block copy]");
+          else
+            Assert
+              (a1 (x, y).a = x * y + 4 and a1 (x, y).b = 7.0 and a1 (x, y).c = False,
+               +"Compiler bug [Mixed_With_Composite_Variables, part with expressions]");
+          end if;
+          use_var := not use_var;
+        end loop;
+      end loop;
+    end Check;
+
+    procedure Fill_By_Ref (a1 : out Arr_1) is
+      local : Integer := 123456;
+    begin
+      a1 :=
+        (1 => (var,             (6, 7.0, False),  var,             (8, 7.0, False),  var),
+         2 => ((6, 7.0, False), var,             (10, 7.0, False), var,              (14, 7.0, False)),
+         3 => (var,             (10, 7.0, False), var,             (16, 7.0, False), var));
+
+      --  For by-reference variables, the aggregates parser
+      --  generates VM code using a temp variable.
+      --  We check its proper allocation on the stack (in principle,
+      --  it is an identical mechanism to the parameter for a FOR loop).
+
+      Assert
+        (local = 123456,
+         +"Compiler bug [Mixed_With_Composite_Variables.Fill_By_Ref, stack corruption]");
+    end Fill_By_Ref;
+
+  begin
+    var := (1, 2.0, True);
+
+    use_var := True;
+    for x in Arr_1'Range (1) loop
+      for y in Arr_1'Range (2) loop
+        if use_var then
+          a1_a (x, y) := var;
+        else
+          a1_a (x, y) := (2 * 2 + x * y, 2.0 + 5.0, False);
+          --  Compilation fails with "x * y + 2 * 2", possibly because x being a candidate
+          --  for a variable of type Rec_1.
+        end if;
+        use_var := not use_var;
+      end loop;
+    end loop;
+
+    Check (a1_a);
+
+    --  This time we fill an identical variable, but as whole aggregate.
+
+    a1_b :=
+      (1 => (var,             (6, 7.0, False),  var,             (8, 7.0, False),  var),
+       2 => ((6, 7.0, False), var,             (10, 7.0, False), var,              (14, 7.0, False)),
+       3 => (var,             (10, 7.0, False), var,             (16, 7.0, False), var));
+
+    Check (a1_b);
+
+    Fill_By_Ref (a1_c);
+    Check (a1_c);
+
+  end Mixed_With_Composite_Variables;
+
 begin
   Positional_Array;
   Named_Array_With_Others;
@@ -333,6 +419,7 @@ begin
   Others_Evaluated_Once_Per_Position;
   Others_With_Mixed_Nested_Fields;
   Plain_Parenthesized_Still_Works;
+  Mixed_With_Composite_Variables;
   --
   --  Intentionally-invalid forms (left as comments per project convention,
   --  see test/exception_01.adb, test/optim.adb):
