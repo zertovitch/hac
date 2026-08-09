@@ -141,6 +141,7 @@ procedure All_Silent_Tests is
     Put_Line ("  One instance of HAC is called each time, with compilation and execution...");
     New_Line;
     Put_Line (+"    Normal tests in " & Current_Directory & ':');
+    Normal_Test (+"aggregates.adb");
     Normal_Test (+"attributes_test.adb");
     Normal_Test (examples_dir & "barnes.adb 3816547290");
     Normal_Test (+"case_statement.adb");
@@ -157,6 +158,7 @@ procedure All_Silent_Tests is
     Normal_Test (+"-I. .." & Directory_Separator & "exm" & Directory_Separator & "pkg_demo.adb test_mode");
     Shell_Execute (generate & " delete");
     --
+    Normal_Test (+"record_defaults.adb");
     Normal_Test (+"recursion.adb");
     Normal_Test (+"remarks_check.adb");
     Normal_Test (+"sorting_tests.adb");

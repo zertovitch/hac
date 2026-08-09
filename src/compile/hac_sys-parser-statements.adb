@@ -1,4 +1,5 @@
 with HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Parser.Aggregates,
      HAC_Sys.Parser.Calls,
      HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Expressions,
@@ -17,23 +18,17 @@ package body HAC_Sys.Parser.Statements is
   procedure Assignment
     (CD                : in out Co_Defs.Compiler_Data;
      FSys              :        Defs.Symset;
-     context           :        Defs.Flow_Context;
+     Block_Data        : in out Block_Data_Type;
      var_id_index      :        Integer;
      check_is_variable :        Boolean)
   is
     use Compiler.PCode_Emit, Co_Defs, Defs, Expressions, Helpers, PCode, Scanner, Errors;
     var : Identifier_Table_Entry renames CD.id_table (var_id_index);
-    X, Y  : Exact_Subtyp;
-    X_Len : Natural;
-    --
-    procedure Issue_Type_Mismatch_Error is
-    begin
-      Type_Mismatch (CD, err_types_of_assignment_must_match, Found => Y, Expected => X);
-    end Issue_Type_Mismatch_Error;
-    --
+    Expected_Typ, Found_Typ : Exact_Subtyp;
+    Has_Selector : Boolean;
   begin
     pragma Assert (var.entity in Object_Kind);
-    X := var.xtyp;
+    Expected_Typ := var.xtyp;
     Emit_2
      (CD,
       (if var.normal then
@@ -42,10 +37,11 @@ package body HAC_Sys.Parser.Statements is
          k_Push_Discrete_Value),  --  The value is a reference, we want that address.
       Operand_1_Type (var.lev),
       Operand_2_Type (var.adr_or_sz));
-    if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
+    Has_Selector := Selector_Symbol_Loose (CD.Sy);  --  '.' or '(' or (wrongly) '['
+    if Has_Selector then
       --  Resolve composite types' selectors (arrays and records).
-      Selector (CD, context, Becomes_EQL + FSys, X);
-      --  Now, X denotes the leaf type (which can be composite as well).
+      Selector (CD, Block_Data.context, Becomes_EQL + FSys, Expected_Typ);
+      --  Now, Expected_Typ denotes the leaf type (which can be composite as well).
     end if;
     --  Parse the  ":="  of  "X := Y;"
     case CD.Sy is
@@ -63,92 +59,59 @@ package body HAC_Sys.Parser.Statements is
       Error (CD, err_cannot_modify_constant_or_in_parameter);
     end if;
 
-    Expression (CD, context, Semicolon_Set, Y);
-    --
-    if X.TYP = Y.TYP and X.TYP /= NOTYP then
-      if Discrete_Typ (X.TYP) then
-        if Ranges.Do_Ranges_Overlap (X, Y) then
-          if X.Discrete_First > Y.Discrete_First then
-            Compiler.PCode_Emit.Emit_3
-              (CD, k_Check_Lower_Bound, X.Discrete_First, Typen'Pos (X.TYP), Operand_3_Type (X.Ref));
-          end if;
-          if X.Discrete_Last < Y.Discrete_Last then
-            Compiler.PCode_Emit.Emit_3
-              (CD, k_Check_Upper_Bound, X.Discrete_Last, Typen'Pos (X.TYP), Operand_3_Type (X.Ref));
-          end if;
-        else
-          Error
-            (CD, err_range_constraint_error,
-             "value of expression (" &
-             (if Ranges.Is_Singleton_Range (Y) then
-                --  More understandable message part for a single value
-                Discrete_Image (CD, Y.Discrete_First, X.TYP, X.Ref)
-              else
-                "range: " &
-                Discrete_Range_Image (CD, Y.Discrete_First, Y.Discrete_Last, X.TYP, X.Ref)) &
-             ") is out of destination's range, " &
-             Discrete_Range_Image (CD, X.Discrete_First, X.Discrete_Last, X.TYP, X.Ref),
-             severity => minor);
-        end if;
-      end if;
-      if X.TYP in Standard_Typ then
-        Emit_1 (CD, k_Store, Typen'Pos (X.TYP));
-      elsif X.Ref /= Y.Ref then
-        Issue_Type_Mismatch_Error;  --  E.g. different arrays, enums, ...
+    if Expected_Typ.TYP in Composite_Typ and then CD.Sy = LParent then
+      --  Aggregate RHS: "X := (...);" or "X.Field := (...);" or "X (i) := (...);".
+      if Has_Selector or else not var.normal then
+        --  The destination's address is already on the stack, pushed above
+        --  (and, if there is a selector chain, further adjusted by Selector)
+        --  -- leave it there. This covers two cases where Aggregates cannot
+        --  simply compute "var.lev / var.adr_or_sz + compile-time offset"
+        --  directly: a selector chain that may involve a runtime-computed
+        --  offset (e.g. a dynamic array index), and a by-reference variable
+        --  (an "out"/"in out" composite parameter, whose adr_or_sz holds a
+        --  pointer that must be read at run time via k_Push_Discrete_Value,
+        --  not treated as a compile-time base address). In both cases,
+        --  materialize the aggregate into a fresh compiler-generated
+        --  temporary of the same composite type (this does not disturb the
+        --  stack: each component's codegen is stack-neutral), then push the
+        --  temp's address as the source and copy it as a whole onto the
+        --  real (possibly dynamic or by-reference) destination.
+        declare
+          Temp_Size : constant Integer :=
+            (case Composite_Typ (Expected_Typ.TYP) is
+               when Arrays  => CD.Arrays_Table (Expected_Typ.Ref).Array_Size,
+               when Records => CD.Blocks_Table (Expected_Typ.Ref).VSize);
+          Temp_Level : constant Nesting_Level := Block_Data.context.level;
+          Temp_Base  : constant HAC_Integer   := HAC_Integer (Block_Data.data_allocation_index);
+        begin
+          Block_Data.data_allocation_index := Block_Data.data_allocation_index + Temp_Size;
+          Block_Data.max_data_allocation_index :=
+            Integer'Max (Block_Data.max_data_allocation_index, Block_Data.data_allocation_index);
+          CD.Blocks_Table (CD.Display (Block_Data.context.level)).VSize :=
+            Block_Data.max_data_allocation_index;
+          Aggregates.Parse_Aggregate (CD, Block_Data, FSys, Expected_Typ, Temp_Level, Temp_Base);
+          --  Do *not* decrement Block_Data.data_allocation_index back down:
+          --  HAC_Sys.Parser.Block's Declarative_Part re-derives each block's
+          --  VSize from data_allocation_index (not the high-water mark
+          --  max_data_allocation_index) after every declaration, so
+          --  releasing the temp here would let that later reset silently
+          --  shrink VSize back below what the temp needs, leaving its
+          --  memory outside the block's reserved stack region. Leaving the
+          --  slot permanently reserved for the rest of the block costs a
+          --  few extra words of stack, not a correctness problem.
+          Emit_2 (CD, k_Push_Address, Operand_1_Type (Temp_Level), Operand_2_Type (Temp_Base));
+          Emit_1 (CD, k_Copy_Block, Operand_2_Type (Temp_Size));
+        end;
       else
-        case X.TYP is
-          when Arrays =>
-            Emit_1 (CD, k_Copy_Block, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
-          when Records =>
-            Emit_1 (CD, k_Copy_Block, Operand_2_Type (CD.Blocks_Table (X.Ref).VSize));
-          when Enums =>
-            --  Behaves like a "Standard_Typ".
-            --  We have checked that X.Ref = Y.Ref (same actual type).
-            Emit_1 (CD, k_Store, Typen'Pos (X.TYP));
-          when others =>
-            raise Internal_error with "Assignment: X := Y on unsupported Typ ?";
-        end case;
+        --  Bare destination: var.lev / var.adr_or_sz are compile-time
+        --  constants. Discard the now-unused single address pushed above;
+        --  Aggregates emits its own per-component addresses directly.
+        Emit (CD, k_Pop);
+        Aggregates.Parse_Aggregate (CD, Block_Data, FSys, Expected_Typ, var.lev, var.adr_or_sz);
       end if;
     else
-      --
-      --  Here, X.TYP and Y.TYP are different.
-      --
-      if X.TYP = Floats and Y.TYP = Ints then
-        Forbid_Type_Coercion (CD, Found => Y, Expected => X);
-      elsif X.TYP = Durations and Y.TYP = Floats then
-        --  Duration hack (see Delay_Statement for full explanation).
-        Emit_Std_Funct (CD, SF_Float_to_Duration);
-        Emit_1 (CD, k_Store, Typen'Pos (X.TYP));
-      elsif Is_Char_Array (CD, X) and Y.TYP = String_Literals then
-        X_Len := CD.Arrays_Table (X.Ref).Array_Size;
-        if X_Len = CD.SLeng then
-          Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (X_Len));
-        else
-          Error (CD, err_string_lengths_do_not_match,
-            "variable has length" & Integer'Image (X_Len) &
-            ", literal has length" & Integer'Image (CD.SLeng),
-            severity => minor);
-        end if;
-      elsif X.TYP = VStrings
-        and then
-          (Y.TYP in String_Literals | Strings_as_VStrings
-           or else Is_Char_Array (CD, Y))
-      then
-        Error (CD, err_string_to_vstring_assignment);
-      elsif X.TYP = NOTYP then
-        if CD.error_count = 0 then
-          raise Internal_error with "Assignment: assigned variable (X) is typeless";
-        end if;
-        --  All right, there were already enough compilation error messages...
-      elsif Y.TYP = NOTYP then
-        if CD.error_count = 0 then
-          raise Internal_error with "Assignment: assigned value (Y) is typeless";
-        end if;
-        --  All right, there were already enough compilation error messages...
-      else
-        Issue_Type_Mismatch_Error;
-        --  NB: We are in the X.TYP /= Y.TYP case.
-      end if;
+      Expression (CD, Block_Data.context, Semicolon_Set, Found_Typ);
+      Emit_Type_Checked_Store_or_Copy (CD, Expected_Typ, Found_Typ);
     end if;
   end Assignment;
 
@@ -963,7 +926,7 @@ package body HAC_Sys.Parser.Statements is
       else
         case CD.id_table (I_Statement).entity is
           when Object_Kind =>
-            Assignment (CD, FSys_St, block_data.context, I_Statement, check_is_variable => True);
+            Assignment (CD, FSys_St, block_data, I_Statement, check_is_variable => True);
             Elevate_to_Maybe_or_Yes
               (CD.id_table (I_Statement).is_written_after_init, block_data.context);
 

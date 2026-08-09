@@ -421,4 +421,28 @@ package HAC_Sys.Parser.Helpers is
      id_idx     : in     Natural)
   return Natural;
 
+  --  Search a record type's own field list (scoped to that record's block,
+  --  not the general identifier scope) for a field named Field_Name.
+  --  Returns the field's id_table index, or No_Id if there is no such field.
+  --
+  function Locate_Record_Field
+    (CD         : in out Compiler_Data;
+     Record_Ref : in     Index;
+     Field_Name : in     Alfa)
+  return Integer;
+
+  --  Given a destination's expected type and the type of a value already
+  --  produced on the stack (Found_Typ, from an Expression or from
+  --  Aggregates), do the full assignment-compatibility check (range checks,
+  --  type coercion rules, string/VString special cases) and emit either
+  --  k_Store (scalar/enum) or k_Copy_Block (composite). This is exactly the
+  --  tail of plain assignment (Statements.Assignment), factored out here so
+  --  that Aggregates can reuse it, without creating a circular dependency
+  --  between Statements and Aggregates.
+  --
+  procedure Emit_Type_Checked_Store_or_Copy
+    (CD           : in out Compiler_Data;
+     Expected_Typ : in     Exact_Subtyp;
+     Found_Typ    : in     Exact_Subtyp);
+
 end HAC_Sys.Parser.Helpers;

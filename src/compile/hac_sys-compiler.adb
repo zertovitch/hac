@@ -98,7 +98,8 @@ package body HAC_Sys.Compiler is
       PSize              => 0,
       VSize              => 0,
       SrcFrom            => 1,
-      SrcTo              => 1);
+      SrcTo              => 1,
+      Default            => null);
   end Init_for_new_Build;
 
   --  Print_Tables is for debugging purposes.

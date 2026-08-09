@@ -19,6 +19,7 @@ with HAT;
 
 with Ada.Containers.Hashed_Maps,
      Ada.Containers.Indefinite_Hashed_Maps,
+     Ada.Containers.Vectors,
      Ada.Finalization,
      Ada.Strings.Hash,
      Ada.Strings.Unbounded.Hash,
@@ -87,6 +88,43 @@ package HAC_Sys.Co_Defs is
   end record;
 
   -------------------------------------------------------------------------
+  ---------------------------------------------------------Default_Value----
+  -------------------------------------------------------------------------
+  --  Represents a record type's compile-time-known "whole default" (RM
+  --  3.7/3.8 default_expression, restricted to static values -- see
+  --  HAC_Sys.Parser.Defaults): a Scalar_Default is one component's literal
+  --  value; a Composite_Default is a list of (Offset, Value) pairs for a
+  --  record- or array-typed component, recursively. Offset is always
+  --  relative to this node's own immediate parent (or, for the top-level
+  --  node stored on a Block_Table_Entry, relative to the record's own
+  --  base). A Default_Value tree, once built when its record type is fully
+  --  declared, is only ever read afterwards (never mutated), so the same
+  --  Default_Value_Access can safely be shared (not cloned) by every field
+  --  or array position that inherits it.
+  --
+  type Default_Value_Kind is (Scalar_Default, Composite_Default);
+  type Default_Value;
+  type Default_Value_Access is access Default_Value;
+
+  type Default_Component is record
+    Offset : HAC_Integer;
+    Value  : Default_Value_Access;
+  end record;
+
+  package Default_Component_Vectors is new Ada.Containers.Vectors (Positive, Default_Component);
+
+  type Default_Value (Kind : Default_Value_Kind := Scalar_Default) is record
+    case Kind is
+      when Scalar_Default =>
+        Scalar_Typ : Exact_Subtyp;
+        Scalar_Int : HAC_Integer;  --  Includes Character and enumeration types.
+        Scalar_R   : HAC_Float;
+      when Composite_Default =>
+        Components : Default_Component_Vectors.Vector;
+    end case;
+  end record;
+
+  -------------------------------------------------------------------------
   ------------------------------------------------------------BTabEntry----
   -------------------------------------------------------------------------
   --  Block Table Entry : Each entry represents a subprogram or a record type.
@@ -112,6 +150,13 @@ package HAC_Sys.Co_Defs is
                                        --    this block if it is a subprogram)
     SrcFrom            : Positive;     --   Source code line count.  Source starts here
     SrcTo              : Positive;     --   and goes until here    (* Manuel *)
+    Default            : Default_Value_Access := null;
+                                       --   C For a record type only: this type's whole
+                                       --   compile-time default (RM 3.7/3.8), merging
+                                       --   explicit field defaults with inherited ones
+                                       --   from nested record/array-of-record fields.
+                                       --   Null if the type has no defaults at all
+                                       --   (the common case).
   end record;
 
   fixed_area_size : constant := 5;  --  Size of area (1) described above.

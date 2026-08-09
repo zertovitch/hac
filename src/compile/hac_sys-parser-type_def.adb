@@ -9,7 +9,8 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Parser.Enter_Def,
+with HAC_Sys.Parser.Defaults,
+     HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Ranges,
      HAC_Sys.Scanner,
@@ -191,7 +192,8 @@ package body HAC_Sys.Parser.Type_Def is
 
     procedure Record_Typ is  --  RM 3.8
       Field_Exact_Subtyp : Exact_Subtyp;
-      Field_Size, Offset, T0, T1 : Integer;
+      Field_Size, Offset, T0, T1, Group_First : Integer;
+      Local_Defaults : Default_Component_Vectors.Vector;
     begin
       In_Symbol;  --  Consume RECORD symbol.
       Enter_Block (CD, CD.Id_Count);
@@ -211,18 +213,22 @@ package body HAC_Sys.Parser.Type_Def is
           Enter_Variables (CD, Level, False);
           Need (CD, Colon, err_colon_missing);  --  ':'  in  "a, b, c : Integer;"
           T1 := CD.Id_Count;
+          Group_First := T0;
           if Type_Begin_Symbol (CD.Sy) then
             Error (CD, err_general_error, "anonymous definition not permitted here");
             --  Recovery:
             Type_Definition
-              (CD, Level, FSys_TD + Comma_END_IDent_Semicolon,
+              (CD, Level, FSys_TD + Comma_END_IDent_Semicolon + Becomes_Set,
                Field_Exact_Subtyp, Field_Size);
           else
             --  RM 3.6 (2)
             --  Here is a component_definition, which is a
-            --  subtype indication (possibly aliased).
+            --  subtype indication (possibly aliased). Becomes_Set is
+            --  included in the follow set so that an optional RM 3.7/3.8
+            --  default_expression ("... := Value") is accepted here rather
+            --  than rejected as an unexpected symbol -- see below.
             Subtype_Indication
-              (CD, Level, FSys_TD + Comma_END_IDent_Semicolon,
+              (CD, Level, FSys_TD + Comma_END_IDent_Semicolon + Becomes_Set,
                Field_Exact_Subtyp, Field_Size);
           end if;
           while T0 < T1 loop
@@ -231,6 +237,27 @@ package body HAC_Sys.Parser.Type_Def is
             CD.id_table (T0).adr_or_sz := HAC_Integer (Offset);
             Offset                  := Offset + Field_Size;
           end loop;
+          --  RM 3.7 / 3.8: an optional default_expression (restricted to
+          --  static values -- see HAC_Sys.Parser.Defaults), or, absent
+          --  that, whatever default this field's own type already carries
+          --  (record-in-record or array-of-record/array nesting).
+          declare
+            Field_Default : Default_Value_Access;
+          begin
+            if CD.Sy = Becomes then
+              Scanner.In_Symbol (CD);  --  Consume ':='.
+              Field_Default :=
+                Defaults.Parse_Static_Default_Value
+                  (CD, Level, FSys_TD + Comma_END_IDent_Semicolon, Field_Exact_Subtyp);
+            else
+              Field_Default := Defaults.Inherited_Default (CD, Field_Exact_Subtyp);
+            end if;
+            if Field_Default /= null then
+              for Name_Idx in Group_First + 1 .. T1 loop
+                Local_Defaults.Append ((CD.id_table (Name_Idx).adr_or_sz, Field_Default));
+              end loop;
+            end if;
+          end;
         else
           Error (CD, err_identifier_missing, severity => major);
         end if;
@@ -241,6 +268,9 @@ package body HAC_Sys.Parser.Type_Def is
       CD.Blocks_Table (xTP.Ref).VSize := Offset;
       Size                            := Offset;
       CD.Blocks_Table (xTP.Ref).PSize := 0;
+      CD.Blocks_Table (xTP.Ref).Default :=
+        (if Local_Defaults.Is_Empty then null
+         else new Default_Value'(Composite_Default, Local_Defaults));
       In_Symbol;
       Need (CD, RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
       Level := Level - 1;

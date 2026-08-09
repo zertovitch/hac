@@ -21,6 +21,7 @@ project HAC_Test is
      "all_silent_tests.adb",
      "silent_tests_single_build.adb",
      --
+     "aggregates.adb",
      "attributes_test.adb",
      "case_statement.adb",
      "constants.adb",
@@ -37,6 +38,7 @@ project HAC_Test is
      "integers.adb",
      "loops.adb",
      "object_init.adb",
+     "record_defaults.adb",
      "recursion.adb",
      "sorting_tests.adb",
      "strings.adb",

@@ -14,7 +14,7 @@ private package HAC_Sys.Parser.Statements is
   procedure Assignment
     (CD                : in out Co_Defs.Compiler_Data;
      FSys              :        Defs.Symset;
-     context           :        Defs.Flow_Context;
+     Block_Data        : in out Block_Data_Type;
      var_id_index      :        Integer;
      check_is_variable :        Boolean);
 
