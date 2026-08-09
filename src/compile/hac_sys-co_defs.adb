@@ -1,6 +1,8 @@
 with HAC_Sys.Targets.HAC_Virtual_Machine;
 
+with Ada.Containers.Hashed_Sets;
 with Ada.Unchecked_Deallocation;
+with System.Storage_Elements;
 
 package body HAC_Sys.Co_Defs is
 
@@ -112,7 +114,52 @@ package body HAC_Sys.Co_Defs is
   end Initialize;
 
   overriding procedure Finalize (CD : in out Compiler_Data) is
+
+    --  Function to hash the access type using its storage address.
+    --  [ Courtesy of Gemini AI! ]
+    --
+    function Hash_An_Access (Item : Default_Value_Access) return Ada.Containers.Hash_Type is
+      --  Convert the access type to System.Address
+      Addr : constant System.Address := Item.all'Address;
+      begin
+        return Ada.Containers.Hash_Type'Mod (System.Storage_Elements.To_Integer (Addr));
+      end Hash_An_Access;
+
+    package Inherited_Default_Access_Sets is new Ada.Containers.Hashed_Sets
+      (Element_Type        => Default_Value_Access,
+       Hash                => Hash_An_Access,
+       Equivalent_Elements => "=");
+
+    inherited_default_set : Inherited_Default_Access_Sets.Set;
+
+    procedure Free_Record_Defaults (d : in out Default_Value_Access) is
+
+      procedure Unchecked_Free is
+        new Ada.Unchecked_Deallocation (Default_Value, Default_Value_Access);
+
+    begin
+      if inherited_default_set.Contains (d) then
+        null;
+        --  Do nothing, d is inherited and has been already deallocated!
+      elsif d /= null then
+        if d.Kind = Composite_Default then
+          inherited_default_set.Include (d);
+          for component of d.Components loop
+            Free_Record_Defaults (component.Value);
+          end loop;
+        end if;
+        Unchecked_Free (d);
+      end if;
+    exception
+      when Constraint_Error =>
+        null;
+        --  Do nothing, d has been already deallocated and the Ada run-time detected it!
+    end Free_Record_Defaults;
+
   begin
+    for b in 1 .. CD.Blocks_Count loop
+      Free_Record_Defaults (CD.Blocks_Table (b).Default);
+    end loop;
     Unchecked_Free (CD.target);
   end Finalize;
 
