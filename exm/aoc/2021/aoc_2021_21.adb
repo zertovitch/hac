@@ -4,11 +4,7 @@
 --
 --  https://adventofcode.com/2021/day/21
 --  Copy of questions in: aoc_2021_21_questions.txt
---
---  HAC 0.098 "nice to have"'s detected in this exercise:
---
---    *     aggregates, like ` hits := (others => (others => 0)); `
---
+
 with HAT;
 --  For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2021.gpr .
@@ -33,10 +29,11 @@ procedure AoC_2021_21 is
     space, rolls : Natural;
     win_score : constant := 1000;
   begin
-    score (0) := 0;
-    score (1) := 0;
-    start (0) := start_player_1 - 1;  -- Start position, 0-based
-    start (1) := start_player_2 - 1;  -- Start position, 0-based
+    score := (0, 0);
+
+    --  Start position, 0-based:
+    start := (start_player_1 - 1, start_player_2 - 1);
+
     for round in 1 .. win_score loop  --  Worst case for any player: +1 point on each round.
       for playing in Player_Range loop
         space := 1 + (start (playing) + 9 * round ** 2 + (9 * playing - 3) * round) mod cells;
@@ -50,22 +47,9 @@ procedure AoC_2021_21 is
     end loop;
   end Play_Part_1;
 
-  subtype Dirac_Dice_Range is Integer range 3 .. 9;
-
   --  Number of combinations of 3 dice rolls for each outcome.
-  dice_counts : array (Dirac_Dice_Range) of Positive;
-  --  "full Ada": ` dice_counts ... := (1,3,6,7,6,3,1) `
-
-  procedure Init_Dirac is
-  begin
-    dice_counts (3) := 1;  --  One combination: 1,1,1
-    dice_counts (4) := 3;  --  3 combinations: 1,1,2, 1,2,1, 2,1,1
-    dice_counts (5) := 6;
-    dice_counts (6) := 7;
-    dice_counts (7) := 6;
-    dice_counts (8) := 3;
-    dice_counts (9) := 1;
-  end Init_Dirac;
+  subtype Dirac_Dice_Range is Integer range 3 .. 9;
+  dice_counts : constant array (Dirac_Dice_Range) of Positive := (1, 3, 6, 7, 6, 3, 1);
 
   --  Universes wins counts for player 1 and 2.
   type Univs_Pair is array (1 .. 2) of Integer_64;
@@ -81,11 +65,10 @@ procedure AoC_2021_21 is
     --  We simulate player A (1 or 2) rolling the dice then
     --  winning, or giving the hand to player B (2 or 1).
     --
-    procedure Winning_Universes (
-      score_A, score_B : in  Natural;
-      pos_A,   pos_B   : in  Cell_Range;
-      univs            : out Univs_Pair
-    )
+    procedure Winning_Universes
+      (score_A, score_B : in  Natural;
+       pos_A,   pos_B   : in  Cell_Range;
+       univs            : out Univs_Pair)
     is
       new_pos_A   : Cell_Range;
       new_score_A : Natural;
@@ -95,8 +78,8 @@ procedure AoC_2021_21 is
         univs := cache (score_A, score_B, pos_A, pos_B);
         return;
       end if;
-      univs (1) := 0;
-      univs (2) := 0;
+      univs := (0, 0);
+
       --  Player A rolls the Dirac dices 3 times.
       --  We go through the possible outcomes, after the 3 draws:
       --  the parallel universes become only different
@@ -149,7 +132,6 @@ procedure AoC_2021_21 is
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   T0 : constant Time := Clock;
 begin
-  Init_Dirac;
   Play_Part_1 (7, 1);
   Play_Part_2 (7, 1);
   if compiler_test_mode then

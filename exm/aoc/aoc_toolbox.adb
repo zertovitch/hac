@@ -7,9 +7,8 @@ package body AoC_Toolbox is
     ta, tb : array (1 .. 3) of Integer;
     q, r : Integer;
   begin
-    ta (1) := 1;         tb (1) := 0;
-    ta (2) := 0;         tb (2) := 1;
-    ta (3) := a;         tb (3) := b;
+    ta := (1, 0, a);
+    tb := (0, 1, b);
     while tb (3) /= 0 loop
       q := ta (3) / tb (3);
       for i in 1 .. 3 loop
@@ -42,9 +41,8 @@ package body AoC_Toolbox is
     ta, tb : array (1 .. 3) of Integer_64;
     q, r : Integer_64;
   begin
-    ta (1) := 1;         tb (1) := 0;
-    ta (2) := 0;         tb (2) := 1;
-    ta (3) := a;         tb (3) := b;
+    ta := (1, 0, a);
+    tb := (0, 1, b);
     while tb (3) /= 0 loop
       q := ta (3) / tb (3);
       for i in 1 .. 3 loop

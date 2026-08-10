@@ -153,41 +153,19 @@ procedure AoC_2020_23 is
     return res;
   end Play;
 
-  exm, inp : Cup_Array;
+  example : constant Cup_Array := (3, 8, 9, 1, 2, 5, 4, 6, 7);
+  input   : constant Cup_Array := (5, 2, 3, 7, 6, 4, 8, 1, 9);
+
   res : Integer_64;
 
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
 
 begin
-  --  example 389125467
-  --  input   523764819
-  --
-  --  With full Ada we can write  ` exm := (3,8,9,1,2,5,4,6,7); `
-  --
-  exm (1) := 3;
-  exm (2) := 8;
-  exm (3) := 9;
-  exm (4) := 1;
-  exm (5) := 2;
-  exm (6) := 5;
-  exm (7) := 4;
-  exm (8) := 6;
-  exm (9) := 7;
-  --
-  inp (1) := 5;
-  inp (2) := 2;
-  inp (3) := 3;
-  inp (4) := 7;
-  inp (5) := 6;
-  inp (6) := 4;
-  inp (7) := 8;
-  inp (8) := 1;
-  inp (9) := 9;
-  --
+
   for part in 1 .. 2 loop
     if compiler_test_mode then
-      if Play (exm, part) /= Integer_64'Value (To_String (Argument (1))) or
-         Play (inp, part) /= Integer_64'Value (To_String (Argument (2)))
+      if Play (example, part) /= Integer_64'Value (To_String (Argument (1))) or
+         Play (input, part)   /= Integer_64'Value (To_String (Argument (2)))
       then
         Set_Exit_Status (1);  --  Compiler test failed.
       end if;
@@ -201,13 +179,13 @@ begin
         Put_Line ("two cups that will end up immediately clockwise of cup 1");
       end if;
       Put ("  From example : ");
-      res := Play (exm, part);
+      res := Play (example, part);
       if res > 0 then Put (Integer_64'Image (res)); end if;
       New_Line;
       --  Example, part 1: from AoC site:    67384529
       --  Example, part 2: from AoC site:    149245887792 = 934001 * 159792
       Put ("  From input   : ");
-      res := Play (inp, part);
+      res := Play (input, part);
       if res > 0 then Put (Integer_64'Image (res)); end if;
       New_Line;
       --  Input, part 1: validated by AoC: 49576328

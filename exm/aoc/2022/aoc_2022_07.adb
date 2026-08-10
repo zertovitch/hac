@@ -115,8 +115,7 @@ Read_Data :
     end if;
   end loop;
 
-  r (1) := size_cumul_small_dirs;
-  r (2) := cat (i_min).size;
+  r := (size_cumul_small_dirs, cat (i_min).size);
 
   if Argument_Count >= 2 then
     --  Compiler test mode.

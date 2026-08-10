@@ -10,10 +10,6 @@
 --  Run-time with GNAT, AoC_Build_Mode = "Fast":
 --    *  0.009 seconds for a i5-9400 @ 2.9 GHz
 --
---  HAC 0.084 "nice to have"'s detected in this exercise:
---
---    *     ` cc_match := (others => (others => True)); `
---
 with HAT;
 --  ^ For a build with "full Ada": files HAT*.ad* are in ../../../src
 --  See also the GNAT project file aoc_2020.gpr .
@@ -39,8 +35,8 @@ procedure AoC_2020_16 is
   --
   or_str : String (1 .. 4);  --  " or ";
   ok, possible_row, single_match_only : Boolean;
-  cc_match : array (Column_Range, Criteria_Range) of Boolean;
-  unlinked : array (Column_Range) of Boolean;
+  cc_match : array (Column_Range, Criteria_Range) of Boolean := (others => (others => True));
+  unlinked : array (Column_Range) of Boolean := (others => True);
   cc, matching : Integer;
   err : Natural := 0;
   prod : Integer_64;
@@ -82,14 +78,9 @@ begin
     end if;
   end loop;
   Skip_Line (f, 3);
+
   if verbose > 0 then New_Line; end if;
-  --
-  for col in Column_Range loop
-    unlinked (col) := True;
-    for crit in Criteria_Range loop
-      cc_match (col, crit) := True;
-    end loop;
-  end loop;
+
   --
   --  Read the nearby tickets.
   --

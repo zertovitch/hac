@@ -10,8 +10,8 @@ procedure Maze_Gen is
   type Cell_Walls is array (Direction) of Boolean;
 
   type Cells is record
-    Walls   : Cell_Walls;
-    Visited : Boolean;
+    Walls   : Cell_Walls := (others => True);
+    Visited : Boolean    := False;
   end record;
 
   Height : constant := 15;
@@ -80,12 +80,9 @@ procedure Maze_Gen is
     Next_P          : Point;
     Next_D          : Direction;
     Valid_Direction : Boolean;
-    Checked_Wall    : array (Direction) of Boolean;
+    Checked_Wall    : array (Direction) of Boolean := (others => False);
     All_Checked     : Boolean;
   begin
-    for D in Direction loop  --  ! Full Ada ":= (others => False)"
-      Checked_Wall (D) := False;
-    end loop;
     --  Mark as visited:
     Maze (P.Row, P.Col).Visited := True;
     loop
@@ -119,19 +116,8 @@ procedure Maze_Gen is
   end Depth_First_Algorithm;
 
   procedure Initialize (Maze : in out Maze_Type) is
-    All_Walls : Cell_Walls;
     use HAT;
   begin
-    for D in Direction loop
-      All_Walls (D) := True;
-    end loop;
-    --  ! Full Ada: initialized record.
-    for i in 1 .. Height loop
-      for j in 1 .. Width loop
-        Maze.Grid (i, j).Walls := All_Walls;
-        Maze.Grid (i, j).Visited := False;
-      end loop;
-    end loop;
     --  Choose starting cell
     Maze.Start.Row := Rand (1_000_000) mod Height + 1;
     Maze.Start.Col := Rand (1_000_000) mod Width + 1;

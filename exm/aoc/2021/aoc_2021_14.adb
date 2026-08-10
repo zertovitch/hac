@@ -33,7 +33,7 @@ procedure AoC_2021_14 is
   --
   initial_polymer : VString;
   type Pair_Population is array (Rule_Range) of Integer_64;
-  zero : Pair_Population;
+  zero : constant Pair_Population := (others => 0);
   gen_pop : array (1 .. 2) of Pair_Population;
   --
   procedure Read_Data is
@@ -41,6 +41,8 @@ procedure AoC_2021_14 is
     f : File_Type;
     input : constant VString := +"aoc_2021_14.txt";
   begin
+
+    --  Read data:
     Open (f, input);
     Get_Line (f, initial_polymer);  --  Original sequence
     Skip_Line (f);
@@ -52,10 +54,8 @@ procedure AoC_2021_14 is
       Get (f, rule (rules).to);
     end loop;
     Close (f);
-    --  Initial population as pairs
-    for i in Rule_Range loop
-      zero (i) := 0;
-    end loop;
+
+    --  Initial population as pairs:
     gen_pop (1) := zero;
     for i in 1 .. rules loop
       for j in 1 .. Length (initial_polymer) - 1 loop
@@ -71,10 +71,8 @@ procedure AoC_2021_14 is
   begin
     --  Prepare shortcuts pair -> new pairs.
     for i in 1 .. rules loop
-      child_1 (1) := rule (i).from (1);
-      child_1 (2) := rule (i).to;
-      child_2 (1) := rule (i).to;
-      child_2 (2) := rule (i).from (2);
+      child_1 := (rule (i).from (1), rule (i).to);
+      child_2 := (rule (i).to,       rule (i).from (2));
       for j in 1 .. rules loop
         if +rule (j).from = +child_1 then
           rule (i).child_1 := j;
@@ -85,9 +83,9 @@ procedure AoC_2021_14 is
       end loop;
     end loop;
   end Prepare_Computation;
-  --
+
   gen : Positive := 1;
-  --
+
   procedure Evolve is
     parents : Integer_64;
     new_gen : constant Positive := 3 - gen;
@@ -115,15 +113,12 @@ procedure AoC_2021_14 is
   res : Integer_64;
   --
   procedure Atom_Counts is
-    stat : array (Alpha) of Integer_64;
+    stat : array (Alpha) of Integer_64 := (others => 0);
     total : Integer_64 := 0;
     aa : Alpha;
     stat_most_common_element  : Integer_64 := Integer_64'First;  --  "- infinity"
     stat_least_common_element : Integer_64 := Integer_64'Last;   --  "+ infinity"
   begin
-    for a in Alpha loop
-      stat (a) := 0;
-    end loop;
     for r in 1 .. rules loop
       aa := rule (r).from (1);
       stat (aa) := stat (aa) + gen_pop (gen)(r);

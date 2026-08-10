@@ -4,30 +4,25 @@
 --
 --  https://adventofcode.com/2020/day/8
 --
---  HAC 0.085 "nice to have"'s detected in this exercise:
---    *     `  seen := (others => False);  `
+--  Solved in HAC 0.45:  `  seen := (others => False);  `
+--  Solved in HAC 0.099: I/O with enums, at least 'Image and 'Value.
 --
---  Solved in HAC 0.099:
---    *     I/O with enums, at least 'Image and 'Value.
---
-with HAT; use HAT;  --  in ../../../src
+with HAT;  --  in ../../../src
 
 procedure AoC_2020_08 is
+
   subtype Machine_Code_Range is Positive range 1 .. 1000;
   type Instr is (acc, jmp, nop);
   code : array (Machine_Code_Range) of Instr;
   oper : array (Machine_Code_Range) of Integer;
   last : Natural := 0;
-  --
+  use HAT;
+
   procedure Run (result : out Integer; ok : out Boolean) is
-    seen : array (Machine_Code_Range) of Boolean;
+    seen : array (Machine_Code_Range) of Boolean := (others => False);
     a : Integer := 0;
     c : Integer := 1;
   begin
-    --
-    for x in 1 .. last loop
-      seen (x) := False;
-    end loop;
     while c <= last loop
       seen (c) := True;
       case code (c) is

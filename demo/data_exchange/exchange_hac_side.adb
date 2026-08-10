@@ -69,26 +69,29 @@ procedure Exchange_HAC_Side is
     m, n, o : Matrix;
     s : Some_Record;
   begin
-    --  HAC 0.2: no aggregates, we have to write the matrix' contents cell by cell.
-    m (1, 1) := 1.1;
-    m (1, 2) := 1.2;
-    m (2, 1) := 1.3;
-    m (2, 2) := 1.4;
-    n (1, 1) := -2.1;
-    n (1, 2) :=  2.2;
-    n (2, 1) := -2.3;
-    n (2, 2) :=  2.4;
-    s.i := 13;
-    s.v := +"I'm a HAC record field";
-    s.e := Exchange_Common.bat;
+
+    m :=
+      ((1.1, 1.2),
+       (1.3, 1.4));
+
+    n :=
+      ((-2.1, 2.2),
+       (-2.3, 2.4));
+
+    s := (i => 13, v => +"I'm a HAC record field", e => Exchange_Common.bat);
+
     Put_Line (+"   HAC: integer before call: [" & s.i & ']');
     Put_Line (+"        message before call: [" & s.v & ']');
     Put_Line (+"           enum before call: [" & s.e'Image & ']');
+
     Composite_Callback (m, n, s, o);
+
     Put_Line (+"   HAC: integer after call: [" & s.i & ']');
     Put_Line (+"        message after call: [" & s.v & ']');
     Put_Line (+"           enum after call: [" & s.e'Image & ']');
+
     Put_Line (+"        matrix product:");
+
     for i in o'Range (1) loop
       Put ("          ");
       for j in o'Range (2) loop

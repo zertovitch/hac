@@ -14,7 +14,7 @@ with HAT;
 procedure AoC_2023_02 is
   use HAT;
 
-  r : array (1 .. 2) of Integer;
+  r : array (1 .. 2) of Integer := (0, 0);
 
   procedure Read_Data is
     input : constant VString := +"aoc_2023_02.txt";
@@ -63,11 +63,11 @@ procedure AoC_2023_02 is
     end loop;
     Close (f);
   end Read_Data;
+
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
   T0 : constant Time := Clock;
+
 begin
-  r (1) := 0;
-  r (2) := 0;
   Read_Data;
   if compiler_test_mode then
     if r (1) /= Integer_Value (Argument (1)) or

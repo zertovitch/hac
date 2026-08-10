@@ -355,9 +355,9 @@ procedure Aggregates is
       local : Integer := 123456;
     begin
       a1 :=
-        (1 => (var,             (6, 7.0, False),  var,             (8, 7.0, False),  var),
-         2 => ((6, 7.0, False), var,             (10, 7.0, False), var,              (14, 7.0, False)),
-         3 => (var,             (10, 7.0, False), var,             (16, 7.0, False), var));
+        (1 => (var,             (6, 1.1 + 5.9, False),  var,              (8, 7.0, False),     var),
+         2 => ((6, 7.0, False), var,                    (10, 7.0, False), var,                 (14, 7.0, False)),
+         3 => (var,             (10, 7.0, False),       var,              (4 * 4, 7.0, False), var));
 
       --  For by-reference variables, the aggregates parser
       --  generates VM code using a temp variable.
@@ -391,9 +391,9 @@ procedure Aggregates is
     --  This time we fill an identical variable, but as whole aggregate.
 
     a1_b :=
-      (1 => (var,             (6, 7.0, False),  var,             (8, 7.0, False),  var),
-       2 => ((6, 7.0, False), var,             (10, 7.0, False), var,              (14, 7.0, False)),
-       3 => (var,             (10, 7.0, False), var,             (16, 7.0, False), var));
+      (1 => (var,             (6, 1.1 + 5.9, False),  var,              (8, 7.0, False),     var),
+       2 => ((6, 7.0, False), var,                    (10, 7.0, False), var,                 (14, 7.0, False)),
+       3 => (var,             (10, 7.0, False),       var,              (4 * 4, 7.0, False), var));
 
     Check (a1_b);
 

@@ -18,7 +18,7 @@ procedure AoC_2021_06 is
   type Lanternfish_Population is array (Timer_Range) of Integer_64;
   pop_init, pop : Lanternfish_Population;
   pop_0 : Integer_64;
-  days : array (1 .. 2) of Positive;
+  days : constant array (1 .. 2) of Positive := (80, 256);
   --
   input : constant VString := +"aoc_2021_06.txt";
   sep : Character;
@@ -38,9 +38,7 @@ begin
     Get (f, sep);
   end loop;
   Close (f);
-  --
-  days (1) := 80;
-  days (2) := 256;
+
   for part in 1 .. 2 loop
     pop := pop_init;
     for d in 1 .. days (part) loop

@@ -46,8 +46,8 @@ Read_Data :
   Add_To_Top_3;
   Close (f);
 
-  r (1) := max_1;
-  r (2) := max_1 + max_2 + max_3;
+  r := (max_1, max_1 + max_2 + max_3);
+
   if Argument_Count >= 2 then
     --  Compiler test mode.
     if r (1) /= Integer'Value (To_String (Argument (1))) or

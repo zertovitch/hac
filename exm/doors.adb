@@ -26,13 +26,9 @@ procedure Doors is
   subtype Door_Range is Integer range 1 .. last_door;
 
   type Door_List is array (Door_Range) of Door_State;
-  the_doors : Door_List;  --  := (others => Closed);
+  the_doors : Door_List := (others => Closed);
 
 begin
-  for i in Door_Range loop
-    the_doors (i) := Closed;
-  end loop;
-
   for i in Door_Range loop
     for j in Door_Range loop
       if j mod i = 0 then

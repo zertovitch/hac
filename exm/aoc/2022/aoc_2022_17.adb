@@ -251,11 +251,9 @@ procedure AoC_2022_17 is
   f : File_Type;
 
   T0 : constant Time := Clock;
-  r : array (1 .. 2) of Integer_64;
+  r : array (1 .. 2) of Integer_64 := (0, 0);
 
 begin
-  r (1) := 0;
-  r (2) := 0;
   Open (f, "aoc_2022_17.txt");
   Get_Line (f, pattern);
   --  pattern := + pattern_mini;

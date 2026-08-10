@@ -41,11 +41,9 @@ procedure AoC_2021_10 is
   f : File_Type;
   c : Character;
   points : Integer_64;
-  r : array (1 .. 2) of Integer_64;
+  r : array (1 .. 2) of Integer_64 := (0, 0);
   compiler_test_mode : constant Boolean := Argument_Count >= 2;
 begin
-  r (1) := 0;
-  r (2) := 0;
   scores (1) := 1;  --  Just for calming down a GNAT warning.
   Open (f, input);
   while not End_Of_File (f) loop

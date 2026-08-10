@@ -55,8 +55,9 @@ begin
       end loop;
     end loop;
   end loop;
-  r (1) := ymm;
-  r (2) := hits;
+
+  r := (ymm, hits);
+
   if compiler_test_mode then
     if r (1) /= Integer_Value (Argument (1)) or
        r (2) /= Integer_Value (Argument (2))

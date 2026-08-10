@@ -108,7 +108,7 @@ procedure AoC_2022_11 is
     Close (f);
   end Data_Acquisition;
 
-  rounds : array (1 .. 2) of Positive;
+  rounds : constant array (1 .. 2) of Positive := (20, 10_000);
 
   function Simulation (part : Positive) return Integer_64 is
     i : Integer_64;
@@ -187,8 +187,7 @@ procedure AoC_2022_11 is
   r : array (1 .. 2) of Integer_64;
 
 begin
-  rounds (1) := 20;
-  rounds (2) := 10_000;
+
 Parts :
   for part in 1 .. 2 loop
     Data_Acquisition;
