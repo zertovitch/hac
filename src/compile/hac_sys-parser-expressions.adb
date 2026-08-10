@@ -629,7 +629,7 @@ package body HAC_Sys.Parser.Expressions is
               In_Symbol (CD);
               Expression (CD, context, FSys_Prim + RParent, X);
               if CD.Sy = Comma then
-                Error (CD, err_not_yet_implemented, "aggregates (RM 4.3)", severity => major);
+                Error (CD, err_not_yet_implemented, "aggregates (RM 4.3) in general expressions", severity => major);
               end if;
               Need (CD, RParent, err_closing_parenthesis_missing);
 

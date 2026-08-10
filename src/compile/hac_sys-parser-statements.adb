@@ -26,41 +26,9 @@ package body HAC_Sys.Parser.Statements is
     var : Identifier_Table_Entry renames CD.id_table (var_id_index);
     Expected_Typ, Found_Typ : Exact_Subtyp;
     Has_Selector : Boolean;
-  begin
-    pragma Assert (var.entity in Object_Kind);
-    Expected_Typ := var.xtyp;
-    Emit_2
-     (CD,
-      (if var.normal then
-         k_Push_Address           --  Normal variable, we push its address
-       else
-         k_Push_Discrete_Value),  --  The value is a reference, we want that address.
-      Operand_1_Type (var.lev),
-      Operand_2_Type (var.adr_or_sz));
-    Has_Selector := Selector_Symbol_Loose (CD.Sy);  --  '.' or '(' or (wrongly) '['
-    if Has_Selector then
-      --  Resolve composite types' selectors (arrays and records).
-      Selector (CD, Block_Data.context, Becomes_EQL + FSys, Expected_Typ);
-      --  Now, Expected_Typ denotes the leaf type (which can be composite as well).
-    end if;
-    --  Parse the  ":="  of  "X := Y;"
-    case CD.Sy is
-      when Becomes =>
-        In_Symbol (CD);
-      when EQL =>
-        --  Common mistake by BASIC or C programmers.
-        Error (CD, err_EQUALS_instead_of_BECOMES);
-        In_Symbol (CD);
-      when others =>
-        Error (CD, err_BECOMES_missing);
-    end case;
 
-    if check_is_variable and then var.entity = constant_object then
-      Error (CD, err_cannot_modify_constant_or_in_parameter);
-    end if;
-
-    if Expected_Typ.TYP in Composite_Typ and then CD.Sy = LParent then
-      --  Aggregate RHS: "X := (...);" or "X.Field := (...);" or "X (i) := (...);".
+    procedure Assign_Aggregate is
+    begin
       if Has_Selector or else not var.normal then
         --  The destination's address is already on the stack, pushed above
         --  (and, if there is a selector chain, further adjusted by Selector)
@@ -109,6 +77,44 @@ package body HAC_Sys.Parser.Statements is
         Emit (CD, k_Pop);
         Aggregates.Parse_Aggregate (CD, Block_Data, FSys, Expected_Typ, var.lev, var.adr_or_sz);
       end if;
+    end Assign_Aggregate;
+
+  begin
+    pragma Assert (var.entity in Object_Kind);
+    Expected_Typ := var.xtyp;
+    Emit_2
+     (CD,
+      (if var.normal then
+         k_Push_Address           --  Normal variable, we push its address
+       else
+         k_Push_Discrete_Value),  --  The value is a reference, we want that address.
+      Operand_1_Type (var.lev),
+      Operand_2_Type (var.adr_or_sz));
+    Has_Selector := Selector_Symbol_Loose (CD.Sy);  --  '.' or '(' or (wrongly) '['
+    if Has_Selector then
+      --  Resolve composite types' selectors (arrays and records).
+      Selector (CD, Block_Data.context, Becomes_EQL + FSys, Expected_Typ);
+      --  Now, Expected_Typ denotes the leaf type (which can be composite as well).
+    end if;
+    --  Parse the  ":="  of  "X := Y;"
+    case CD.Sy is
+      when Becomes =>
+        In_Symbol (CD);
+      when EQL =>
+        --  Common mistake by BASIC or C programmers.
+        Error (CD, err_EQUALS_instead_of_BECOMES);
+        In_Symbol (CD);
+      when others =>
+        Error (CD, err_BECOMES_missing);
+    end case;
+
+    if check_is_variable and then var.entity = constant_object then
+      Error (CD, err_cannot_modify_constant_or_in_parameter);
+    end if;
+
+    if Expected_Typ.TYP in Composite_Typ and then CD.Sy = LParent then
+      --  Aggregate RHS: "X := (...);" or "X.Field := (...);" or "X (i) := (...);".
+      Assign_Aggregate;
     else
       Expression (CD, Block_Data.context, Semicolon_Set, Found_Typ);
       Emit_Type_Checked_Store_or_Copy (CD, Expected_Typ, Found_Typ);
