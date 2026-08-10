@@ -58,6 +58,8 @@ Getting started
   https://www.adacore.com/community or from other sites providing GCC
   (the GNU Compiler Collection) with Ada support.
   Check http://www.getadanow.com/ for instance.
+  Also note that HAC is available as a "crate" in the public Alire catalogue:
+  https://alire.ada.dev/crates/hac
 
 Directories
 ===========
