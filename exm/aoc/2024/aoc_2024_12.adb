@@ -5,6 +5,11 @@
 --  https://adventofcode.com/2024/day/12
 --  Copy of questions in: aoc_2024_12_questions.txt
 --
+--  HAC 0.45 "nice to have"'s detected in this exercise:
+--
+--    *     HAC should generate loops for large aggregates with `others`:
+--            ` x := (others => (others => 0)); `
+
 --  Related links:
 --    https://forum.ada-lang.io/
 --    https://www.reddit.com/r/adventofcode/
@@ -31,13 +36,13 @@ procedure AoC_2024_12 is
   map : array (1 .. n, 1 .. n) of Character;
 
   type Seen_Type is array (1 .. n, 1 .. n) of Boolean;
-  seen_clear : Seen_Type;  --  Substitute for (others => (others => False))
+  seen_clear : Seen_Type;
 
   --  Borders of each cell (think of spreadsheet cells' styles):
   --
   type Cell_Border is array (Direction) of Boolean;
   type Border_Type is array (1 .. n, 1 .. n) of Cell_Border;
-  border_clear : Border_Type;  --  Substitute for (others => (others => (others => False)))
+  border_clear : Border_Type;
 
   r : array (Part_Type) of Integer;
 

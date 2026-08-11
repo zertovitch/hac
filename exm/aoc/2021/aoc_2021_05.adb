@@ -5,9 +5,10 @@
 --  https://adventofcode.com/2021/day/5
 --  Copy of questions in: aoc_2021_05_questions.txt
 --
---  HAC 0.098 "nice to have"'s detected in this exercise:
+--  HAC 0.45 "nice to have"'s detected in this exercise:
 --
---    *     ` hits := (others => (others => 0)); `
+--    *     HAC should generate loops for large aggregates with `others`:
+--            ` hits := (others => (others => 0)); `
 --
 with HAT;
 --  For a build with "full Ada": files HAT*.ad* are in ../../../src

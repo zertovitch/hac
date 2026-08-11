@@ -8,13 +8,12 @@
 --
 --  HAC 0.084 "nice to have"'s detected in this exercise:
 --
---    *     ` clear := (others => False); `
 --    *     ` rg := rg and r ` for arrays of Boolean (i.e., sets)
 --    *     ` aaa : constant Character := 'a';`
 --                       HAC should detect an expression as a
 --                       static (compile-time-known) value
 --
-with HAT; use HAT;  --  in ../../../src
+with HAT;  --  in ../../../src
 
 procedure AoC_2020_06 is
   total : Integer;
@@ -22,7 +21,7 @@ procedure AoC_2020_06 is
   subtype Answer_Range is Character range 'a' .. 'z';
   type Yes_Answer is array (Answer_Range) of Boolean;
   r, rg : Yes_Answer;
-  --
+
   procedure Collect_Group_Total is
     g : Natural := 0;
   begin
@@ -30,7 +29,9 @@ procedure AoC_2020_06 is
     total := total + g;
     new_group := True;
   end Collect_Group_Total;
-  --
+
+  use HAT;
+
   f : File_Type;
   s : VString;
   test_mode : constant Boolean := Argument_Count >= 2;

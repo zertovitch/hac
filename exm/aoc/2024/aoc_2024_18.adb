@@ -29,7 +29,7 @@ procedure AoC_2024_18 is
 
   type Map_Type is array (0 .. n, 0 .. n) of Character;
 
-  map, map_clear : Map_Type;  --  map_clear : emulate Full Ada's `(others => others => '.'))`
+  map : Map_Type;
 
   --  Dijkstra shortest path algorithm.
   --  Code simplified from AoC_2024_16.
@@ -53,7 +53,7 @@ procedure AoC_2024_18 is
   current, explored : Natural;  --  0 <= current <= explored
 
   type Score_Type is array (0 .. n, 0 .. n) of Natural;
-  best, best_clear : Score_Type;
+  best : Score_Type;
   inf : constant Natural := Integer'Last / 4;
 
   start, finish : Point;
@@ -104,7 +104,7 @@ procedure AoC_2024_18 is
   begin
     current  := 0;
     explored := 0;
-    best     := best_clear;
+    best     := (others => (others => inf));
 
     cur_s.pt := start;
     cur_len  := 0;
@@ -152,18 +152,11 @@ procedure AoC_2024_18 is
     finish.x := n;
     finish.y := n;
 
-    for y in 0 .. n loop
-      for x in 0 .. n loop
-        map_clear (x, y) := '.';
-        best_clear (x, y) := inf;
-      end loop;
-    end loop;
-
   end Read_Data;
 
   procedure Byte_Fall (to : Natural) is
   begin
-    map := map_clear;
+    map := (others => (others => '.'));  --  Clear the map.
     for step in 1 .. to loop
       map (block (step).x, block (step).y) := '#';
     end loop;

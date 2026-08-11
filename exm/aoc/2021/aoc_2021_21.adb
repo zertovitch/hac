@@ -94,13 +94,13 @@ procedure AoC_2021_21 is
           univs (1) := univs (1) + Integer_64 (dice_counts (dirac_dice_3));
         else
           --  Player A doesn't win, so it's player B's turn to play.
-          Winning_Universes (
-            score_B,
-            new_score_A,
-            pos_B,
-            new_pos_A,
-            other_play  --  = (#universes where B wins, #universes where A wins)
-          );
+          Winning_Universes
+            (score_B,
+             new_score_A,
+             pos_B,
+             new_pos_A,
+             other_play);  --  = (#universes where B wins, #universes where A wins)
+
           univs (1) := univs (1) + Integer_64 (dice_counts (dirac_dice_3)) * other_play (2);
           univs (2) := univs (2) + Integer_64 (dice_counts (dirac_dice_3)) * other_play (1);
         end if;
@@ -108,10 +108,10 @@ procedure AoC_2021_21 is
       --
       cache (score_A, score_B, pos_A, pos_B) := univs;
     end Winning_Universes;
+    
     res : Univs_Pair;
+    
   begin
-    --  "full Ada": the following could be done in `cache` declaration
-    --  with a (others => (others => (others => (others => not_seen))))
     for s1 in Score_Range loop
       for s2 in Score_Range loop
         for c1 in Cell_Range loop

@@ -16,11 +16,12 @@
 --          we expect a big slowdown with this problem (many nested loops):
 --    *  (too many) seconds, on a i5-9400 @ 2.9 GHz
 --
---  HAC 0.084 "nice to have"'s detected in this exercise:
+--  HAC 0.45 "nice to have"'s detected in this exercise:
 --
---    *     ` map (0) := (others => (others =>  (others => (others => False)); `
+--    *     HAC should generate loops for
+--            ` map (0) :=  (others => (others =>  (others => (others => Inactive)))); `
 --
-with HAT; use HAT;  --  For a build with "full Ada": files HAT*.ad* are in ../../../src
+with HAT;  --  For a build with "full Ada": files HAT*.ad* are in ../../../src
 
 procedure AoC_2020_17 is
   --
@@ -122,6 +123,7 @@ procedure AoC_2020_17 is
   map : array (0 .. 1) of Map_Type;
   c : Natural := 0;
   cc : Character;
+  use HAT;
   f : File_Type;
   size : Integer;
   cycles : constant := 6;
