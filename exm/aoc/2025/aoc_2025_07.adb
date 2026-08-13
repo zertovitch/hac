@@ -70,7 +70,8 @@ procedure AoC_2025_07 is
   end Do_Part_1;
 
   procedure Do_Part_2 is
-    beam : array (1 .. m, 1 .. n) of Natural;
+    beam : array (1 .. m, 1 .. n) of Natural;  
+    --  HAC 0.45: `:= (others => (others => 0));` creates too many instructions (issue #7).
     total : Integer := 0;
   begin
     for i in 1 .. m loop
