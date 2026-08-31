@@ -204,6 +204,10 @@ Thanks
   - Pierre van de Laar for running his Renaissance-Ada tool
         ( https://github.com/TNO/Renaissance-Ada )
         on HAC's sources.
+  - Weston Pan, for the contribution of the following major features:
+         - aggregates
+         - record default values
+        (with the impressive help of Claude AI)
   - AdaCore for providing their excellent Ada compiler for free:
         https://www.adacore.com/community (via the Alire crate system)
         https://www.adacore.com/download (versions till 2021, standalone)

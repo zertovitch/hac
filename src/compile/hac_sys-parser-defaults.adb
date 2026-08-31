@@ -21,6 +21,17 @@ package body HAC_Sys.Parser.Defaults is
   use Compiler.PCode_Emit, Co_Defs, Defs, Helpers, PCode, Errors;
   use type Defs.HAC_Integer;
 
+  function New_Default_Value
+    (CD            : in out Co_Defs.Compiler_Data;
+     Initial_Value : in     Co_Defs.Default_Value)
+    return Co_Defs.Default_Value_Access
+  is
+    New_Alloc : constant Default_Value_Access := new Default_Value'(Initial_Value);
+  begin
+    CD.Default_Value_Allocated.Append (New_Alloc);
+    return New_Alloc;
+  end New_Default_Value;
+
   function Parse_Static_Default_Value
     (CD       : in out Co_Defs.Compiler_Data;
      Level    :        Defs.Nesting_Level;
@@ -47,18 +58,19 @@ package body HAC_Sys.Parser.Defaults is
         or else Id_Table (Identifier_Id).entity /= declared_number_or_enum_item
       then
         Error (CD, err_default_value_must_be_static, A2S (Name), severity => major);
-        return new Default_Value'
-          (Scalar_Default, undefined_subtyp, 0, 0.0);
+        return New_Default_Value
+          (CD, (Scalar_Default, undefined_subtyp, 0, 0.0));
       end if;
       declare
         Entry_Ref : Identifier_Table_Entry renames Id_Table (Identifier_Id);
       begin
-        return new Default_Value'
-          (Scalar_Default, Entry_Ref.xtyp,
-           (if Entry_Ref.xtyp.TYP = Floats then 0 else Entry_Ref.adr_or_sz),
-           (if Entry_Ref.xtyp.TYP = Floats
-            then CD.Float_Constants_Table (Integer (Entry_Ref.adr_or_sz))
-            else 0.0));
+        return New_Default_Value
+          (CD,
+            (Scalar_Default, Entry_Ref.xtyp,
+             (if Entry_Ref.xtyp.TYP = Floats then 0 else Entry_Ref.adr_or_sz),
+             (if Entry_Ref.xtyp.TYP = Floats
+              then CD.Float_Constants_Table (Integer (Entry_Ref.adr_or_sz))
+              else 0.0)));
       end;
     end Resolve_Static_Direct_Name;
 
@@ -140,7 +152,7 @@ package body HAC_Sys.Parser.Defaults is
         Scalar_Typ : Exact_Subtyp;
       begin
         Scalar_Typ.Construct_Root (if Literal_Symbol = character_literal then Chars else Ints);
-        return new Default_Value'(Scalar_Default, Scalar_Typ, Literal_Int, 0.0);
+        return New_Default_Value (CD, (Scalar_Default, Scalar_Typ, Literal_Int, 0.0));
       end Literal_Value;
 
       Next_Index : HAC_Integer := Lower_Bound;
@@ -192,7 +204,7 @@ package body HAC_Sys.Parser.Defaults is
           exit;
         end if;
       end loop;
-      return new Default_Value'(Composite_Default, Components);
+      return New_Default_Value (CD, (Composite_Default, Components));
     end Parse_Array_Default;
 
     ------------------------------------------------------------------
@@ -358,7 +370,7 @@ package body HAC_Sys.Parser.Defaults is
                A2S (Id_Table (Fields (Position)).name_with_case), severity => minor);
           end if;
         end loop;
-        return new Default_Value'(Composite_Default, Components);
+        return New_Default_Value (CD, (Composite_Default, Components));
       end;
     end Parse_Record_Default;
 
@@ -445,7 +457,7 @@ package body HAC_Sys.Parser.Defaults is
               Components.Append
                 (((Array_Index - Lower_Bound) * Element_Size, Element_Default));
             end loop;
-            return new Default_Value'(Composite_Default, Components);
+            return New_Default_Value (CD, (Composite_Default, Components));
           end;
         end;
       when others =>

@@ -27,6 +27,13 @@
 
 private package HAC_Sys.Parser.Defaults is
 
+  --  Allocator, to be used instead of "new Default_Value'(Initial_Value)"
+  --
+  function New_Default_Value
+    (CD            : in out Co_Defs.Compiler_Data;
+     Initial_Value : in     Co_Defs.Default_Value)
+  return Co_Defs.Default_Value_Access;
+
   --  Parses one field's default value. Precondition: ":=" already
   --  consumed; CD.Sy is positioned at the start of the value. Consumes
   --  through the end of the value (a static scalar expression, or a

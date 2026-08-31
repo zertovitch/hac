@@ -270,7 +270,7 @@ package body HAC_Sys.Parser.Type_Def is
       CD.Blocks_Table (xTP.Ref).PSize := 0;
       CD.Blocks_Table (xTP.Ref).Default :=
         (if Local_Defaults.Is_Empty then null
-         else new Default_Value'(Composite_Default, Local_Defaults));
+         else Defaults.New_Default_Value (CD, (Composite_Default, Local_Defaults)));
       In_Symbol;
       Need (CD, RECORD_Symbol, err_RECORD_missing);  --  (END) RECORD
       Level := Level - 1;

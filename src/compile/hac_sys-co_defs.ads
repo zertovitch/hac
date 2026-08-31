@@ -353,6 +353,8 @@ package HAC_Sys.Co_Defs is
   --  Global object used as a default for library file management:
   default_file_catalogue : aliased Files.Default.File_Catalogue;
 
+  package Default_Value_Vectors is new Ada.Containers.Vectors (Positive, Default_Value_Access);
+
   ---------------------
   --  Compiler_Data  --
   ---------------------
@@ -380,6 +382,7 @@ package HAC_Sys.Co_Defs is
     Packages_Table          : Packages_Table_Type;
     Strings_Constants_Table : Strings_Constants_Table_Type;
     Tasks_Definitions_Table : Tasks_Definitions_Table_Type;
+    Default_Value_Allocated : Default_Value_Vectors.Vector;
     --  Indices to compiler tables
     Arrays_Count            : Natural;
     Blocks_Count            : Natural;
