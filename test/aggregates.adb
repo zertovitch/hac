@@ -16,10 +16,10 @@ procedure Aggregates is
 
   procedure Named_Array_With_Others is
     type Arr is array (1 .. 5) of Integer;
-    a : Arr := (1 => 10, 3 => 30, others => 0);
+    a : Arr := (1 => 10, 3 => 30, others => 6789);  --  So, cells 2, 4, 5 are = 6789
   begin
     Assert
-      (a (1) = 10 and a (2) = 0 and a (3) = 30 and a (4) = 0 and a (5) = 0,
+      (a (1) = 10 and a (2) = 6789 and a (3) = 30 and a (4) = 6789 and a (5) = 6789,
        +"Compiler bug [Named_Array_With_Others]");
   end Named_Array_With_Others;
 
@@ -86,13 +86,15 @@ procedure Aggregates is
       A, B, C : Integer;
     end record;
 
-    Arr_Positional : constant Arr := (X, Double (X), Y);
-    Arr_Named      : constant Arr := (1 => X, 2 => Double (X), 3 => Y);
-    Rec_Named      : constant Rec := (A => X, B => Double (X), C => Y);
-    Rec_Pos_First_Var  : constant Rec := (X, 2, 3);
-    Rec_Pos_First_Func : constant Rec := (Double (X), 2, 3);
-    Rec_Pos_Later_Var  : constant Rec := (1, X, 3);
-    Rec_Pos_Later_Func : constant Rec := (1, Double (X), 3);
+    Arr_Positional             : constant Arr := (X, Double (X), Y);
+    Arr_Named                  : constant Arr := (1 => X, 2 => Double (X), 3 => Y);
+    Arr_Named_Nontrivial_Order : constant Arr := (3 => Y, 2 => Double (X), 1 => X);
+    Rec_Named                  : constant Rec := (A => X, B => Double (X), C => Y);
+    Rec_Named_Nontrivial_Order : constant Rec := (C => Y, B => Double (X), A => X);
+    Rec_Pos_First_Var          : constant Rec := (X, 2, 3);
+    Rec_Pos_First_Func         : constant Rec := (Double (X), 2, 3);
+    Rec_Pos_Later_Var          : constant Rec := (1, X, 3);
+    Rec_Pos_Later_Func         : constant Rec := (1, Double (X), 3);
   begin
     Assert
       (Arr_Positional (1) = 5 and Arr_Positional (2) = 10 and Arr_Positional (3) = 10,
@@ -101,8 +103,14 @@ procedure Aggregates is
       (Arr_Named (1) = 5 and Arr_Named (2) = 10 and Arr_Named (3) = 10,
        +"Compiler bug [Variable_And_Function_Values/Arr_Named]");
     Assert
+      (Arr_Named_Nontrivial_Order (1) = 5 and Arr_Named_Nontrivial_Order (2) = 10 and Arr_Named_Nontrivial_Order (3) = 10,
+       +"Compiler bug [Variable_And_Function_Values/Arr_Named_Nontrivial_Order]");
+    Assert
       (Rec_Named.A = 5 and Rec_Named.B = 10 and Rec_Named.C = 10,
        +"Compiler bug [Variable_And_Function_Values/Rec_Named]");
+    Assert
+      (Rec_Named_Nontrivial_Order.A = 5 and Rec_Named_Nontrivial_Order.B = 10 and Rec_Named_Nontrivial_Order.C = 10,
+       +"Compiler bug [Variable_And_Function_Values/Rec_Named_Nontrivial_Order]");
     Assert
       (Rec_Pos_First_Var.A = 5 and Rec_Pos_First_Var.B = 2 and Rec_Pos_First_Var.C = 3,
        +"Compiler bug [Variable_And_Function_Values/Rec_Pos_First_Var]");
