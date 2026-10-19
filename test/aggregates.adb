@@ -18,10 +18,9 @@ procedure Aggregates is
     type Arr is array (1 .. 5) of Integer;
     a : Arr := (1 => 10, 3 => 30, others => 0);
   begin
-    Assert (
-      a (1) = 10 and a (2) = 0 and a (3) = 30 and a (4) = 0 and a (5) = 0,
-      +"Compiler bug [Named_Array_With_Others]"
-    );
+    Assert
+      (a (1) = 10 and a (2) = 0 and a (3) = 30 and a (4) = 0 and a (5) = 0,
+       +"Compiler bug [Named_Array_With_Others]");
   end Named_Array_With_Others;
 
   procedure Multidimensional_Array_With_Others is
@@ -34,18 +33,16 @@ procedure Aggregates is
     All_Others  : Vector_2 := (others => (others => 2));
     Row_1_Then_Others : Vector_2 := (1 => (9, 9), others => (others => 0));
   begin
-    Assert (
-      All_Others (1, 1) = 2 and All_Others (1, 2) = 2 and
-      All_Others (2, 1) = 2 and All_Others (2, 2) = 2 and
-      All_Others (3, 1) = 2 and All_Others (3, 2) = 2,
-      +"Compiler bug [Multidimensional_Array_With_Others/All_Others]"
-    );
-    Assert (
-      Row_1_Then_Others (1, 1) = 9 and Row_1_Then_Others (1, 2) = 9 and
-      Row_1_Then_Others (2, 1) = 0 and Row_1_Then_Others (2, 2) = 0 and
-      Row_1_Then_Others (3, 1) = 0 and Row_1_Then_Others (3, 2) = 0,
-      +"Compiler bug [Multidimensional_Array_With_Others/Row_1_Then_Others]"
-    );
+    Assert
+      (All_Others (1, 1) = 2 and All_Others (1, 2) = 2 and
+       All_Others (2, 1) = 2 and All_Others (2, 2) = 2 and
+       All_Others (3, 1) = 2 and All_Others (3, 2) = 2,
+       +"Compiler bug [Multidimensional_Array_With_Others/All_Others]");
+    Assert
+      (Row_1_Then_Others (1, 1) = 9 and Row_1_Then_Others (1, 2) = 9 and
+       Row_1_Then_Others (2, 1) = 0 and Row_1_Then_Others (2, 2) = 0 and
+       Row_1_Then_Others (3, 1) = 0 and Row_1_Then_Others (3, 2) = 0,
+       +"Compiler bug [Multidimensional_Array_With_Others/Row_1_Then_Others]");
   end Multidimensional_Array_With_Others;
 
   procedure Positional_Record is
@@ -97,34 +94,27 @@ procedure Aggregates is
     Rec_Pos_Later_Var  : constant Rec := (1, X, 3);
     Rec_Pos_Later_Func : constant Rec := (1, Double (X), 3);
   begin
-    Assert (
-      Arr_Positional (1) = 5 and Arr_Positional (2) = 10 and Arr_Positional (3) = 10,
-      +"Compiler bug [Variable_And_Function_Values/Arr_Positional]"
-    );
-    Assert (
-      Arr_Named (1) = 5 and Arr_Named (2) = 10 and Arr_Named (3) = 10,
-      +"Compiler bug [Variable_And_Function_Values/Arr_Named]"
-    );
-    Assert (
-      Rec_Named.A = 5 and Rec_Named.B = 10 and Rec_Named.C = 10,
-      +"Compiler bug [Variable_And_Function_Values/Rec_Named]"
-    );
-    Assert (
-      Rec_Pos_First_Var.A = 5 and Rec_Pos_First_Var.B = 2 and Rec_Pos_First_Var.C = 3,
-      +"Compiler bug [Variable_And_Function_Values/Rec_Pos_First_Var]"
-    );
-    Assert (
-      Rec_Pos_First_Func.A = 10 and Rec_Pos_First_Func.B = 2 and Rec_Pos_First_Func.C = 3,
-      +"Compiler bug [Variable_And_Function_Values/Rec_Pos_First_Func]"
-    );
-    Assert (
-      Rec_Pos_Later_Var.A = 1 and Rec_Pos_Later_Var.B = 5 and Rec_Pos_Later_Var.C = 3,
-      +"Compiler bug [Variable_And_Function_Values/Rec_Pos_Later_Var]"
-    );
-    Assert (
-      Rec_Pos_Later_Func.A = 1 and Rec_Pos_Later_Func.B = 10 and Rec_Pos_Later_Func.C = 3,
-      +"Compiler bug [Variable_And_Function_Values/Rec_Pos_Later_Func]"
-    );
+    Assert
+      (Arr_Positional (1) = 5 and Arr_Positional (2) = 10 and Arr_Positional (3) = 10,
+       +"Compiler bug [Variable_And_Function_Values/Arr_Positional]");
+    Assert
+      (Arr_Named (1) = 5 and Arr_Named (2) = 10 and Arr_Named (3) = 10,
+       +"Compiler bug [Variable_And_Function_Values/Arr_Named]");
+    Assert
+      (Rec_Named.A = 5 and Rec_Named.B = 10 and Rec_Named.C = 10,
+       +"Compiler bug [Variable_And_Function_Values/Rec_Named]");
+    Assert
+      (Rec_Pos_First_Var.A = 5 and Rec_Pos_First_Var.B = 2 and Rec_Pos_First_Var.C = 3,
+       +"Compiler bug [Variable_And_Function_Values/Rec_Pos_First_Var]");
+    Assert
+      (Rec_Pos_First_Func.A = 10 and Rec_Pos_First_Func.B = 2 and Rec_Pos_First_Func.C = 3,
+       +"Compiler bug [Variable_And_Function_Values/Rec_Pos_First_Func]");
+    Assert
+      (Rec_Pos_Later_Var.A = 1 and Rec_Pos_Later_Var.B = 5 and Rec_Pos_Later_Var.C = 3,
+       +"Compiler bug [Variable_And_Function_Values/Rec_Pos_Later_Var]");
+    Assert
+      (Rec_Pos_Later_Func.A = 1 and Rec_Pos_Later_Func.B = 10 and Rec_Pos_Later_Func.C = 3,
+       +"Compiler bug [Variable_And_Function_Values/Rec_Pos_Later_Func]");
   end Variable_And_Function_Values;
 
   procedure Nested_Array_of_Arrays is
@@ -132,10 +122,9 @@ procedure Aggregates is
     type Outer is array (1 .. 2) of Inner;
     a : Outer := ((1, 2), (3, 4));
   begin
-    Assert (
-      a (1) (1) = 1 and a (1) (2) = 2 and a (2) (1) = 3 and a (2) (2) = 4,
-      +"Compiler bug [Nested_Array_of_Arrays]"
-    );
+    Assert
+      (a (1) (1) = 1 and a (1) (2) = 2 and a (2) (1) = 3 and a (2) (2) = 4,
+       +"Compiler bug [Nested_Array_of_Arrays]");
   end Nested_Array_of_Arrays;
 
   procedure Record_with_Array_Field is
@@ -146,10 +135,9 @@ procedure Aggregates is
     end record;
     x : Rec := (tag => 1, vals => (10, 20));
   begin
-    Assert (
-      x.tag = 1 and x.vals (1) = 10 and x.vals (2) = 20,
-      +"Compiler bug [Record_with_Array_Field]"
-    );
+    Assert
+      (x.tag = 1 and x.vals (1) = 10 and x.vals (2) = 20,
+       +"Compiler bug [Record_with_Array_Field]");
   end Record_with_Array_Field;
 
   procedure Assignment_Form is
@@ -196,10 +184,9 @@ procedure Aggregates is
   begin
     Make (a);
     Reset (r);
-    Assert (
-      a (1) = 1 and a (2) = 2 and a (3) = 3 and r.f1 = 10 and r.f2 = 20,
-      +"Compiler bug [By_Reference_Parameter_Destination]"
-    );
+    Assert
+      (a (1) = 1 and a (2) = 2 and a (3) = 3 and r.f1 = 10 and r.f2 = 20,
+       +"Compiler bug [By_Reference_Parameter_Destination]");
   end By_Reference_Parameter_Destination;
 
   procedure Positional_Then_Others is
@@ -208,10 +195,9 @@ procedure Aggregates is
     type Arr is array (1 .. 5) of Integer;
     a : Arr := (1, 2, others => 0);
   begin
-    Assert (
-      a (1) = 1 and a (2) = 2 and a (3) = 0 and a (4) = 0 and a (5) = 0,
-      +"Compiler bug [Positional_Then_Others]"
-    );
+    Assert
+      (a (1) = 1 and a (2) = 2 and a (3) = 0 and a (4) = 0 and a (5) = 0,
+       +"Compiler bug [Positional_Then_Others]");
   end Positional_Then_Others;
 
   procedure Record_Others is
@@ -234,29 +220,24 @@ procedure Aggregates is
     Named_Reordered : Box := (Lower => (others => 7), Upper => (8, 9));
   begin
     Assert (Sole.X = 42 and Sole.Y = 42, +"Compiler bug [Record_Others/Sole]");
-    Assert (
-      Mixed.Upper.X = 1 and Mixed.Upper.Y = 2 and Mixed.Lower.X = 3 and Mixed.Lower.Y = 4,
-      +"Compiler bug [Record_Others/Mixed]"
-    );
-    Assert (
-      All_Same.Upper.X = 4 and All_Same.Upper.Y = 5 and
-      All_Same.Lower.X = 4 and All_Same.Lower.Y = 5,
-      +"Compiler bug [Record_Others/All_Same]"
-    );
-    Assert (
-      Doubly.Upper.X = 0 and Doubly.Upper.Y = 0 and Doubly.Lower.X = 0 and Doubly.Lower.Y = 0,
-      +"Compiler bug [Record_Others/Doubly]"
-    );
-    Assert (
-      Positional_With_Inner_Others.Upper.X = 1 and Positional_With_Inner_Others.Upper.Y = 2 and
-      Positional_With_Inner_Others.Lower.X = 4 and Positional_With_Inner_Others.Lower.Y = 4,
-      +"Compiler bug [Record_Others/Positional_With_Inner_Others]"
-    );
-    Assert (
-      Named_Reordered.Upper.X = 8 and Named_Reordered.Upper.Y = 9 and
-      Named_Reordered.Lower.X = 7 and Named_Reordered.Lower.Y = 7,
-      +"Compiler bug [Record_Others/Named_Reordered]"
-    );
+    Assert
+      (Mixed.Upper.X = 1 and Mixed.Upper.Y = 2 and Mixed.Lower.X = 3 and Mixed.Lower.Y = 4,
+       +"Compiler bug [Record_Others/Mixed]");
+    Assert
+      (All_Same.Upper.X = 4 and All_Same.Upper.Y = 5 and
+       All_Same.Lower.X = 4 and All_Same.Lower.Y = 5,
+       +"Compiler bug [Record_Others/All_Same]");
+    Assert
+      (Doubly.Upper.X = 0 and Doubly.Upper.Y = 0 and Doubly.Lower.X = 0 and Doubly.Lower.Y = 0,
+       +"Compiler bug [Record_Others/Doubly]");
+    Assert
+      (Positional_With_Inner_Others.Upper.X = 1 and Positional_With_Inner_Others.Upper.Y = 2 and
+       Positional_With_Inner_Others.Lower.X = 4 and Positional_With_Inner_Others.Lower.Y = 4,
+       +"Compiler bug [Record_Others/Positional_With_Inner_Others]");
+    Assert
+      (Named_Reordered.Upper.X = 8 and Named_Reordered.Upper.Y = 9 and
+       Named_Reordered.Lower.X = 7 and Named_Reordered.Lower.Y = 7,
+       +"Compiler bug [Record_Others/Named_Reordered]");
   end Record_Others;
 
   procedure Others_Evaluated_Once_Per_Position is
@@ -300,10 +281,9 @@ procedure Aggregates is
     end Next;
     PA : Pair_Array := (others => (A => 1, B => Next));
   begin
-    Assert (
-      PA (1).A = 1 and PA (1).B = 101 and PA (2).A = 1 and PA (2).B = 102,
-      +"Compiler bug [Others_With_Mixed_Nested_Fields]"
-    );
+    Assert
+      (PA (1).A = 1 and PA (1).B = 101 and PA (2).A = 1 and PA (2).B = 102,
+       +"Compiler bug [Others_With_Mixed_Nested_Fields]");
   end Others_With_Mixed_Nested_Fields;
 
   procedure Plain_Parenthesized_Still_Works is
