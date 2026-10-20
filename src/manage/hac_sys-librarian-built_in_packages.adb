@@ -18,11 +18,10 @@ with Interfaces;
 
 package body HAC_Sys.Librarian.Built_In_Packages is
 
-  procedure Enter_and_Register_Built_In_Package (
-    CD   : in out Co_Defs.Compiler_Data;
-    LD   : in out Library_Data;
-    name : in     String
-  )
+  procedure Enter_and_Register_Built_In_Package
+    (CD   : in out Co_Defs.Compiler_Data;
+     LD   : in out Library_Data;
+     name : in     String)
   is
     use Co_Defs, Defs;
     unit : Library_Unit :=
@@ -40,10 +39,9 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Register_Unit (LD, unit);
   end Enter_and_Register_Built_In_Package;
 
-  procedure Define_and_Register_Standard (
-    CD : in out Co_Defs.Compiler_Data;
-    LD : in out Library_Data
-  )
+  procedure Define_and_Register_Standard
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Library_Data)
   is
     use Co_Defs, Defs;
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
@@ -76,10 +74,9 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     CD.Packages_Table (CD.Packages_Count).last_public_declaration := CD.Id_Count;
   end Define_and_Register_Standard;
 
-  procedure Define_and_Register_Interfaces (
-    CD : in out Co_Defs.Compiler_Data;
-    LD : in out Library_Data
-  )
+  procedure Define_and_Register_Interfaces
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Library_Data)
   is
     use Co_Defs, Defs, Interfaces;
     procedure Enter_Interfaces_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
@@ -97,10 +94,9 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     CD.Packages_Table (CD.Packages_Count).last_public_declaration := CD.Id_Count;
   end Define_and_Register_Interfaces;
 
-  procedure Define_and_Register_HAT (
-    CD : in out Co_Defs.Compiler_Data;
-    LD : in out Library_Data
-  )
+  procedure Define_and_Register_HAT
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Library_Data)
   is
     use Co_Defs, Defs;
 
@@ -143,13 +139,16 @@ package body HAC_Sys.Librarian.Built_In_Packages is
   begin
     Enter_and_Register_Built_In_Package (CD, LD, HAT_Name);
     --
-    Enter_HAT_Typ ("File_Type",    Text_Files, 0, 0);  --  2020.05.17
-    Enter_HAT_Typ (HAC_Float_Name, Floats, 0, 0);      --  Moved from Std 2021.12.26
-    Enter_HAT_Typ ("Semaphore",    Ints, 0, 0);
-    Enter_HAT_Typ ("Time",         Times, 0, 0);
-    Enter_HAT_Typ ("VString",      VStrings, 0, 0);    --  2020.05.02
+    Enter_HAT_Typ ("File_Type",            Text_Files, 0, 0);             --  2020.05.17
+    Enter_HAT_Typ (HAC_Float_Name,         Floats, 0, 0);                 --  Moved from Std 2021.12.26
+    Enter_HAT_Typ ("Semaphore",            Ints, 0, 0);
+    Enter_HAT_Typ ("Time",                 Times, 0, 0);
+    Enter_HAT_Typ ("VString",              VStrings, 0, 0);               --  2020.05.02
+    Enter_HAT_Typ ("File_Type",            Text_Files, 0, 0);             --  2020.05.17
+    Enter_HAT_Typ ("Directory_Entry_Type", Directory_Entry_Types, 0, 0);  --  2026.10.20
+    Enter_HAT_Typ ("Search_Type",          Search_Types, 0, 0);           --  2026.10.20
     --
-    --  Standard functions
+    --  "Standard" functions
     --
     Enter_HAT_Funct ("Chr",                 Chars,  SF_T_Val);    --  S'Val : RM 3.5.5 (5)
     Enter_HAT_Funct ("Ord",                 Ints,   SF_T_Pos);    --  S'Pos : RM 3.5.5 (2)

@@ -19,27 +19,24 @@ private package HAC_Sys.Librarian.Built_In_Packages is
   --  Enter "manually" the Standard package  --
   ---------------------------------------------
 
-  procedure Define_and_Register_Standard (
-    CD : in out Co_Defs.Compiler_Data;
-    LD : in out Library_Data
-  );
+  procedure Define_and_Register_Standard
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Library_Data);
 
   -----------------------------------------------
   --  Enter "manually" the Interfaces package  --
   -----------------------------------------------
 
-  procedure Define_and_Register_Interfaces (
-    CD : in out Co_Defs.Compiler_Data;
-    LD : in out Library_Data
-  );
+  procedure Define_and_Register_Interfaces
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Library_Data);
 
   ----------------------------------------
   --  Enter "manually" the HAT package  --
   ----------------------------------------
 
-  procedure Define_and_Register_HAT (
-    CD : in out Co_Defs.Compiler_Data;
-    LD : in out Library_Data
-  );
+  procedure Define_and_Register_HAT
+    (CD : in out Co_Defs.Compiler_Data;
+     LD : in out Library_Data);
 
 end HAC_Sys.Librarian.Built_In_Packages;

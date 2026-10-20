@@ -193,20 +193,22 @@ package body HAC_Sys.Parser.Helpers is
   function Nice_Image (T : Typen) return String is
   begin
     case T is
-      when NOTYP               => return "(undefined type)";
-      when Ints                => return "an integer type";
-      when Chars               => return "Character";        -- "the" Character type
-      when Bools               => return "Boolean";          -- "the" Boolean type
-      when Floats              => return "a floating-point type";
-      when Arrays              => return "an array type";
-      when Records             => return "a record type";
-      when Enums               => return "an enumeration type";
-      when String_Literals     => return "String [literal]";
-      when Strings_as_VStrings => return "String [pseudo-unconstrained]";
-      when VStrings            => return "VString";
-      when Times               => return "Time";             --  "the" Time type
-      when Durations           => return "Duration";         --  "the" Duration type
-      when Text_Files          => return "File_Type";
+      when NOTYP                 => return "(undefined type)";
+      when Ints                  => return "an integer type";
+      when Chars                 => return "Character";             -- "the" Character type
+      when Bools                 => return "Boolean";               -- "the" Boolean type
+      when Floats                => return "a floating-point type";
+      when Arrays                => return "an array type";
+      when Records               => return "a record type";
+      when Enums                 => return "an enumeration type";
+      when String_Literals       => return "String [literal]";
+      when Strings_as_VStrings   => return "String [pseudo-unconstrained]";
+      when VStrings              => return "VString";
+      when Times                 => return "Time";                  --  "the" Time type
+      when Durations             => return "Duration";              --  "the" Duration type
+      when Text_Files            => return "File_Type";             --  Ada.Text_IO.File_Type.
+      when Directory_Entry_Types => return "Directory_Entry_Type";  --  Ada.Directories.Directory_Entry_Type.
+      when Search_Types          => return "Search_Type";           --  Ada.Directories.Search_Type.
     end case;
   end Nice_Image;
 

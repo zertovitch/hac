@@ -251,33 +251,37 @@ package HAC_Sys.Defs is
   --
   --  The order of these is significant.
   --
-  type Typen is (
-    ----------------------
-    --  Built-in types  --
-    ----------------------
-    NOTYP,  --  Appears when the parsing of an expression fails at some point.
-    Ints,
-    Floats,
-    Bools,
-    Chars,
-    VStrings,
-    Times,
-    Durations,
-    --
-    Text_Files,  --  This one is limited (like Ada's File_Type).
-    ------------------------------------
-    --  Types defined by programmers  --
-    ------------------------------------
-    Arrays,
-    Records,
-    Enums,
-    -------------------------------------------------------
-    --  Special types appearing only during the parsing  --
-    --  and unavailable to the programmer.               --
-    -------------------------------------------------------
-    String_Literals,     --  Strings in the "abcd" form. Takes 2 items on the stack.
-    Strings_as_VStrings  --  VString value, but semantically a String. E.g. returned by S'Image
-  );
+  type Typen is
+     ----------------------
+     --  Built-in types  --
+     ----------------------
+    (NOTYP,  --  Appears when the parsing of an expression fails at some point.
+     Ints,
+     Floats,
+     Bools,
+     Chars,
+     VStrings,
+     Times,
+     Durations,
+     --------------------------------------
+     --  Built-in limited private types  --
+     --------------------------------------
+     Text_Files,             --  matches Ada.Text_IO.File_Type.
+     Directory_Entry_Types,  --  matches Ada.Directories.Directory_Entry_Type.
+     Search_Types,           --  matches Ada.Directories.Search_Type.
+     ------------------------------------
+     --  Types defined by programmers  --
+     ------------------------------------
+     Arrays,
+     Records,
+     Enums,
+     -------------------------------------------------------
+     --  Special types appearing only during the parsing  --
+     --  and unavailable to the programmer.               --
+     -------------------------------------------------------
+     String_Literals,       --  Strings in the "abcd" form. Takes 2 items on the stack.
+     Strings_as_VStrings);  --  VString value, but semantically a String. E.g. returned by S'Image
+
   for Typen'Size use 8;
 
   type Typ_Set is array (Typen) of Boolean;
