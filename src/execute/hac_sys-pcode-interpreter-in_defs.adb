@@ -2,10 +2,9 @@ with HAC_Sys.PCode.Interpreter.Exceptions;
 
 package body HAC_Sys.PCode.Interpreter.In_Defs is
 
-  procedure Allocate_Text_File (
-    ND : in out Interpreter_Data;
-    R  : in out General_Register
-  )
+  procedure Allocate_Text_File
+    (ND : in out Interpreter_Data;
+     R  : in out General_Register)
   is
     use Defs;
   begin
@@ -18,23 +17,27 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
       --    a file at the same VM address.
     then
       R.Txt := new Ada.Text_IO.File_Type;
-      ND.Files.Append (R.Txt);
+      ND.files.Append (R.Txt);
     end if;
   end Allocate_Text_File;
 
-  procedure Free_Allocated_Contents (
-    ND         : in out Interpreter_Data;
-    Open_Files :    out Open_Files_Vectors.Vector
-  )
+  procedure Free_Allocated_Contents
+    (ND                   : in out Interpreter_Data;
+     files_that_were_open :    out Open_Files_Vectors.Vector)
   is
     procedure Free is new Ada.Unchecked_Deallocation (Ada.Text_IO.File_Type, File_Ptr);
+    procedure Free is new Ada.Unchecked_Deallocation (Ada.Directories.Directory_Entry_Type, Dir_Entry_Ptr);
+    procedure Free is new Ada.Unchecked_Deallocation (Ada.Directories.Search_Type, Search_Ptr);
     procedure Free is new Ada.Unchecked_Deallocation (Stack_Type, Stack_Type_Access);
     open_file : Open_File_Data;
     use Ada.Text_IO;
   begin
-    for F of ND.Files loop
-      if F /= null then
-        if Is_Open (F.all) then
+    -------------
+    --  Files  --
+    -------------
+    for f of ND.files loop
+      if f /= null then
+        if Is_Open (f.all) then
           --  We close, for the distracted programmer,
           --  all files that are still open.
           --  In that respect, we do more than required by the RM (A.7(6)):
@@ -42,14 +45,28 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
           --      after the completion of the main program and all the library
           --      tasks (in particular, if corresponding files have
           --      not been closed)."
-          open_file.Name := HAT.To_VString (Name (F.all));
-          open_file.Mode := Mode (F.all);
-          Open_Files.Append (open_file);
-          Ada.Text_IO.Close (F.all);
+          open_file.Name := HAT.To_VString (Name (f.all));
+          open_file.Mode := Mode (f.all);
+          files_that_were_open.Append (open_file);
+          Ada.Text_IO.Close (f.all);
         end if;
-        Free (F);
+        Free (f);
       end if;
     end loop;
+
+    -----------------------------
+    --  Ada.Directories stuff  --
+    -----------------------------
+    for d of ND.dir_entries loop
+      Free (d);
+    end loop;
+    for s of ND.searches loop
+      Free (s);
+    end loop;
+
+    ----------------------
+    --  Free the stack  --
+    ----------------------
     Free (ND.S);
   end Free_Allocated_Contents;
 

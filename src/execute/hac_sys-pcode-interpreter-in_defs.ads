@@ -14,6 +14,7 @@ with HAC_Sys.Co_Defs, HAC_Sys.Defs;
 
 with Ada.Calendar,
      Ada.Containers.Vectors,
+     Ada.Directories,
      Ada.Numerics.Float_Random,
      Ada.Unchecked_Deallocation;
 
@@ -58,16 +59,21 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
 
   Abstract_Console : constant File_Ptr := null;
 
+  type Dir_Entry_Ptr is access Ada.Directories.Directory_Entry_Type;
+  type Search_Ptr    is access Ada.Directories.Search_Type;
+
   type General_Register (Special : Defs.Typen := Defs.NOTYP) is record
     --  I is used for most uses: indices in the stack, Integers, Bools, Chars and Enums.
     I : Defs.HAC_Integer;
     case Special is  --  This part is variant to save place.
-      when Defs.Floats     => R   : Defs.HAC_Float;
-      when Defs.VStrings   => V   : HAT.VString;
-      when Defs.Times      => Tim : Ada.Calendar.Time;
-      when Defs.Durations  => Dur : Duration;
-      when Defs.Text_Files => Txt : File_Ptr := Abstract_Console;
-      when others          => null;
+      when Defs.Floats                => R         : Defs.HAC_Float;
+      when Defs.VStrings              => V         : HAT.VString;
+      when Defs.Times                 => Tim       : Ada.Calendar.Time;
+      when Defs.Durations             => Dur       : Duration;
+      when Defs.Text_Files            => Txt       : File_Ptr := Abstract_Console;
+      when Defs.Directory_Entry_Types => dir_entry : Dir_Entry_Ptr := null;
+      when Defs.Search_Types          => search    : Search_Ptr := null;
+      when others                     => null;
     end case;
   end record;
 
@@ -126,7 +132,9 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
 
   type Entry_Queue is array (1 .. Defs.entry_table_max) of EHeader;
 
-  package File_Vectors is new Ada.Containers.Vectors (Positive, File_Ptr);
+  package File_Vectors      is new Ada.Containers.Vectors (Positive, File_Ptr);
+  package Dir_Entry_Vectors is new Ada.Containers.Vectors (Positive, Dir_Entry_Ptr);
+  package Search_Vectors    is new Ada.Containers.Vectors (Positive, Search_Ptr);
 
   type Task_Control_Blocks is array (TRange) of Task_Control_Block;
 
@@ -146,7 +154,6 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     IR                        : Order;                       --  Instruction register
     CurTask                   : Integer;                     --  Index of currently executing task
     TCB                       : Task_Control_Blocks;
-    Files                     : File_Vectors.Vector;
     Snap                      : Boolean;            --  Snapshot flag to display scheduler status
     Nb_Callers                : Integer;            --  AVL  TERMINATE
     Nb_Complete               : Integer;            --  AVL  TERMINATE
@@ -160,17 +167,18 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     Scheduler                 : Scheduler_Type := Single_Task;
     Single_Task_Delay_Pending : Boolean        := False;
     feedback_tick             : Tick_Type;
+    files                     : File_Vectors.Vector;
+    dir_entries               : Dir_Entry_Vectors.Vector;
+    searches                  : Search_Vectors.Vector;
   end record;
 
-  procedure Allocate_Text_File (
-    ND : in out Interpreter_Data;
-    R  : in out General_Register
-  );
+  procedure Allocate_Text_File
+    (ND : in out Interpreter_Data;
+     R  : in out General_Register);
 
-  procedure Free_Allocated_Contents (
-    ND         : in out Interpreter_Data;
-    Open_Files :    out Open_Files_Vectors.Vector
-  );
+  procedure Free_Allocated_Contents
+    (ND                   : in out Interpreter_Data;
+     files_that_were_open :    out Open_Files_Vectors.Vector);  --  For post-mortem reporting.
 
   --  We have an "array of Character" (cf Is_Char_Array) on the stack
   function Get_String_from_Stack (ND : Interpreter_Data; Idx, Size : Integer) return String;
