@@ -8,7 +8,8 @@ with Exchange_Common;
 
 with HAC_Sys.Interfacing;
 
-with Ada.Numerics.Long_Real_Arrays,
+with Ada.Numerics.Long_Elementary_Functions,
+     Ada.Numerics.Long_Real_Arrays,
      Ada.Text_IO;
 
 package body Exchange_Native_Side_Pkg is
@@ -127,6 +128,24 @@ package body Exchange_Native_Side_Pkg is
     Put_Line ("      Native: Enum = " & Exchange_Common.Animal'Image (e));
   end Composite_Callback;
 
+  procedure Double_Callback (Data : in out HAC_Element_Array) is
+  begin
+    Put_Line ("      Native: Double_Callback is speaking!");
+    Data (Data'Last) := To_HAC (2 * To_Native (Data (1)));
+  end Double_Callback;
+
+  procedure Root_Callback (Data : in out HAC_Element_Array) is
+  begin
+    Put_Line ("      Native: Root_Callback is speaking!");
+    Data (Data'Last) := To_HAC (Ada.Numerics.Long_Elementary_Functions.Sqrt (To_Native (Data (1))));
+  end Root_Callback;
+
+  procedure Answer_Callback (Data : in out HAC_Element_Array) is
+  begin
+    Put_Line ("      Native: Answer_Callback is speaking!");
+    Data (Data'Last) := To_HAC ("I'm a native function answering a HAC call!");
+  end Answer_Callback;
+
   procedure Register_All_Callbacks (BD : HAC_Sys.Builder.Build_Data) is
   begin
     Register (BD, Parameterless_Callback'Access, "Parameterless_Callback");
@@ -137,6 +156,9 @@ package body Exchange_Native_Side_Pkg is
     Register (BD, Ints_Callback_in_out'Access,   "Ints_Callback_in_out");
     Register (BD, Floats_Callback_in_out'Access, "Floats_Callback_in_out");
     Register (BD, Composite_Callback'Access,     "Composite_Callback");
+    Register (BD, Double_Callback'Access,       "Double_Callback");
+    Register (BD, Root_Callback'Access,         "Root_Callback");
+    Register (BD, Answer_Callback'Access,       "Answer_Callback");
   end Register_All_Callbacks;
 
   procedure Set_Global_VM_Variable (BD : in out HAC_Sys.Builder.Build_Data) is

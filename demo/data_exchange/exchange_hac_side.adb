@@ -57,6 +57,22 @@ procedure Exchange_HAC_Side is
     New_Line;
   end Demo_Data_Bidirectional;
 
+  procedure Demo_Native_Function is
+    function Double_Callback (i : in Integer) return Integer with Import => True;
+    function Root_Callback (f : in Real) return Real with Import => True;
+    function Answer_Callback return VString with Import => True;
+  begin
+    Put_Line ("   HAC: I call native functions from expressions.");
+    Put_Line (+"   HAC: Double_Callback (21) = [" & Double_Callback (21) & ']');
+    Put_Line
+      (+"   HAC: composed calls: Double_Callback (Double_Callback (11)) = [" &
+       Double_Callback (Double_Callback (11)) &
+       ']');
+    Put_Line (+"   HAC: Root_Callback (2.0) = [" & Root_Callback (2.0) & ']');
+    Put_Line ("   HAC: a native message: [" & Answer_Callback & ']');
+    New_Line;
+  end Demo_Native_Function;
+
   procedure Demo_Composite is
     type Matrix is array (1 .. 2, 1 .. 2) of HAT.Real;
     type Some_Record is record
@@ -107,6 +123,7 @@ begin
   Demo_Parameterless;
   Demo_Data_to_Native;
   Demo_Data_Bidirectional;
+  Demo_Native_Function;
   Demo_Composite;
   --
   Set_VM_Variable ("Demo_Variable", Get_VM_Variable ("Demo_Variable") & "HAC... ");

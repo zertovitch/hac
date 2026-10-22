@@ -69,7 +69,18 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         return total;
       end param_data_size;
       --
-      data : Interfacing.HAC_Element_Array (1 .. param_data_size);
+      is_function : constant Boolean := IR.X = 1;
+      --  ^ The compiler sets operand X to 1 when the imported
+      --    subprogram is a function, i.e. a call-back returning
+      --    a value, placed after the parameters' data.
+      --
+      result_size : constant Natural :=
+        (if is_function then Size_of (CD, Integer (IR.Y)) else 0);
+      --  ^ Number of data items for the function result.
+      --    Currently 1, since the HAC functions' result types
+      --    are atomic types, occupying one item.
+      --
+      data : Interfacing.HAC_Element_Array (1 .. param_data_size + result_size);
       --
       procedure Data_Exchange (before_call : Boolean) is
         function Convert is new Ada.Unchecked_Conversion (Interfacing.HAC_Element, Data_Type);
@@ -99,6 +110,20 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         end loop;
       end Data_Exchange;
       --
+      procedure Store_Function_Result is
+        function Convert is
+          new Ada.Unchecked_Conversion (Interfacing.HAC_Element, Data_Type);
+        result_slot : constant Index :=
+          Curr_TCB.DISPLAY (proc_entry.lev + 1);
+        --  ^ The result slot of the called function, at offset 0 of
+        --    its activation record - the same place where a
+        --    "return <expression>" statement stores its value.
+      begin
+        for k in 1 .. result_size loop
+          ND.S (result_slot + k - 1) := Convert (data (param_data_size + k));
+        end loop;
+      end Store_Function_Result;
+      --
       function Convert is
         new Ada.Unchecked_Conversion
           (Co_Defs.Dummy_Procedure_Access, Interfacing.Exported_Procedure);
@@ -125,6 +150,11 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       end if;
       --  Data exchange after call (in out, out)
       Data_Exchange (before_call => False);
+      --  Store the value returned by the call-back, if any,
+      --  into the called function's result slot.
+      if is_function then
+        Store_Function_Result;
+      end if;
     end Do_Exchange_with_External;
 
     procedure Do_Call is
