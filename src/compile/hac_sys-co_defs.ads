@@ -25,6 +25,8 @@ with Ada.Containers.Hashed_Maps,
      Ada.Strings.Unbounded.Hash,
      Ada.Text_IO;
 
+with System;
+
 package HAC_Sys.Co_Defs is
   --  NB: cannot be a child package of Compiler because of Parser, Scanner, ...
 
@@ -341,12 +343,23 @@ package HAC_Sys.Co_Defs is
     (Silent_Diagnostics'Access, Silent_Feedback'Access, 0);
 
   type Dummy_Procedure_Access is access procedure;
+  --  ^ The actual call-back types are
+  --    HAC_Sys.Interfacing.Exported_Procedure and
+  --    HAC_Sys.Interfacing.Exported_Procedure_With_Context, but we
+  --    end up in a circular unit dependency mess.
+
+  type External_Call_Entry is record
+    proc               : Dummy_Procedure_Access := null;
+    --  ^ Call-back without context, when non-null.
+    proc_with_context  : Dummy_Procedure_Access := null;
+    --  ^ Call-back with context, when non-null.
+    context            : System.Address := System.Null_Address;
+    --  ^ Context passed to proc_with_context at call time.
+  end record;
 
   package Exported_Procedure_Mapping is new Ada.Containers.Indefinite_Hashed_Maps
     (Key_Type        => String,
-     Element_Type    => Dummy_Procedure_Access,
-                        --  Actually: HAC_Sys.Interfacing.Exported_Procedure, but we
-                        --  end up in a circular unit dependency mess.
+     Element_Type    => External_Call_Entry,
      Hash            => Ada.Strings.Hash,
      Equivalent_Keys => "=");
 

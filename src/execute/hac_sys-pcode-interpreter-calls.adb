@@ -124,9 +124,13 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         end loop;
       end Store_Function_Result;
       --
-      function Convert is
+      function Convert_to_Procedure is
         new Ada.Unchecked_Conversion
           (Co_Defs.Dummy_Procedure_Access, Interfacing.Exported_Procedure);
+      function Convert_to_Procedure_with_Context is
+        new Ada.Unchecked_Conversion
+          (Co_Defs.Dummy_Procedure_Access,
+           Interfacing.Exported_Procedure_With_Context);
       cur : constant Cursor := CD.Exported_Procedures.Find (proc_name);
     begin
       --  Data exchange before call (in, in out)
@@ -137,8 +141,21 @@ package body HAC_Sys.PCode.Interpreter.Calls is
           (ND, VME_Program_Error,
            "Import name """ & proc_name & """ not found. Was it registered ?");
       else
+        declare
+          external : constant External_Call_Entry := Element (cur);
         begin
-          Convert (Element (cur)) (data);  --  Call to external procedure
+          if external.proc /= null then
+            Convert_to_Procedure (external.proc) (data);  --  Call to external procedure
+          elsif external.proc_with_context /= null then
+            --  Call to external procedure with a context:
+            Convert_to_Procedure_with_Context (external.proc_with_context)
+              (data, external.context);
+          else
+            Exceptions.Raise_Standard
+              (ND,
+               VME_Program_Error,
+               "Call-back """ & proc_name & """ is null");
+          end if;
         exception
           when E : others =>
             Exceptions.Raise_Standard

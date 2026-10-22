@@ -146,7 +146,34 @@ package body Exchange_Native_Side_Pkg is
     Data (Data'Last) := To_HAC ("I'm a native function answering a HAC call!");
   end Answer_Callback;
 
-  procedure Register_All_Callbacks (BD : HAC_Sys.Builder.Build_Data) is
+  function New_Session return Session_Access is
+  begin
+    return new Session_Counter;
+  end New_Session;
+
+  function Count (S : Session_Counter) return Integer is
+  begin
+    return S.count;
+  end Count;
+
+  procedure Next_Count_Callback
+    (Data : in out HAC_Element_Array;
+     Ctx  : in out Session_Counter)
+  is
+  begin
+    Put_Line ("      Native: Next_Count is speaking, and mutates only its own session.");
+    Ctx.count := Ctx.count + 1;
+    Data (1) := To_HAC (Ctx.count);
+  end Next_Count_Callback;
+
+  package Session_CB is new HAC_Sys.Interfacing.Contextual_Call_Back
+    (Context   => Session_Counter,
+     Call_Back => Next_Count_Callback);
+
+  procedure Register_All_Callbacks
+    (BD      : HAC_Sys.Builder.Build_Data;
+     Session : Session_Access)
+  is
   begin
     Register (BD, Parameterless_Callback'Access, "Parameterless_Callback");
     Register (BD, Hello_Callback'Access,         "Hello_Callback");
@@ -159,6 +186,8 @@ package body Exchange_Native_Side_Pkg is
     Register (BD, Double_Callback'Access,       "Double_Callback");
     Register (BD, Root_Callback'Access,         "Root_Callback");
     Register (BD, Answer_Callback'Access,       "Answer_Callback");
+    Session_CB.Register
+      (BD, "Next_Count", Session_CB.Context_Access (Session));
   end Register_All_Callbacks;
 
   procedure Set_Global_VM_Variable (BD : in out HAC_Sys.Builder.Build_Data) is
