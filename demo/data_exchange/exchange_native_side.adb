@@ -21,6 +21,8 @@ procedure Exchange_Native_Side is
   use HAC_Sys.PCode.Interpreter;
 
   BD : HAC_Sys.Builder.Build_Data;
+  S : constant Exchange_Native_Side_Pkg.Session_Access :=
+         Exchange_Native_Side_Pkg.New_Session;
 
   procedure Build is
     hac_program_name : constant String := "exchange_hac_side.adb";
@@ -29,6 +31,31 @@ procedure Exchange_Native_Side is
     New_Line;
     BD.Build_Main_from_File (hac_program_name);
   end Build;
+
+  --  Same native call-back, two independent interpreter
+  --  sessions, without any global variable on the native side.
+  procedure Run_Two_Sessions_Demo is
+    BD_1, BD_2 : HAC_Sys.Builder.Build_Data;
+    S_1 : constant Exchange_Native_Side_Pkg.Session_Access :=
+            Exchange_Native_Side_Pkg.New_Session;
+    S_2 : constant Exchange_Native_Side_Pkg.Session_Access :=
+            Exchange_Native_Side_Pkg.New_Session;
+    post_mortem : Post_Mortem_Data;
+  begin
+    Put_Line ("Native: running the same HAC program on two sessions:");
+    Exchange_Native_Side_Pkg.Register_All_Callbacks (BD_1, S_1);
+    Exchange_Native_Side_Pkg.Register_All_Callbacks (BD_2, S_2);
+    BD_1.Build_Main_from_File ("exchange_hac_side.adb");
+    BD_2.Build_Main_from_File ("exchange_hac_side.adb");
+    Interpret_on_Current_IO (BD_1, 1, "", post_mortem);
+    Interpret_on_Current_IO (BD_2, 1, "", post_mortem);
+    Put_Line
+      ("Native: after both runs, session 1 count:" &
+       Integer'Image (Exchange_Native_Side_Pkg.Count (S_1.all)) &
+       "; session 2 count:" &
+       Integer'Image (Exchange_Native_Side_Pkg.Count (S_2.all)));
+    New_Line;
+  end Run_Two_Sessions_Demo;
 
   procedure Run is
     post_mortem : Post_Mortem_Data;
@@ -43,7 +70,7 @@ procedure Exchange_Native_Side is
 begin
   Put_Line ("Exchange_Native_Side is started.");
   New_Line;
-  Exchange_Native_Side_Pkg.Register_All_Callbacks (BD);
+  Exchange_Native_Side_Pkg.Register_All_Callbacks (BD, S);
   Exchange_Native_Side_Pkg.Set_Global_VM_Variable (BD);
   Ada.Directories.Set_Directory ("data_exchange");
   Build;
@@ -57,4 +84,5 @@ begin
       New_Line;
     end loop;
   end if;
+  Run_Two_Sessions_Demo;
 end Exchange_Native_Side;
