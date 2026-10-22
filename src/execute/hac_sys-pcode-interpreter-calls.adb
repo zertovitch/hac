@@ -115,6 +115,14 @@ package body HAC_Sys.PCode.Interpreter.Calls is
         begin
           Convert (Element (cur)) (data);  --  Call to external procedure
         exception
+          when E : Interfacing.Script_Call_Failure =>
+            --  Controlled failure requested by the call-back
+            --  through Interfacing.Abort_Execution: the message
+            --  is passed verbatim to the post-mortem data.
+            Exceptions.Raise_Standard
+              (ND,
+               VME_Program_Error,
+               Ada.Exceptions.Exception_Message (E));
           when E : others =>
             Exceptions.Raise_Standard
               (ND,

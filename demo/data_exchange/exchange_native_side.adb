@@ -30,6 +30,31 @@ procedure Exchange_Native_Side is
     BD.Build_Main_from_File (hac_program_name);
   end Build;
 
+  --  A native call-back stops the HAC program on a
+  --  controlled failure, with the host's message:
+  procedure Run_Failure_Demo is
+    BD_F : HAC_Sys.Builder.Build_Data;
+    post_mortem : Post_Mortem_Data;
+  begin
+    Put_Line ("Native: running a HAC program stopped by a native failure:");
+    Exchange_Native_Side_Pkg.Register_Failing_Callback (BD_F);
+    BD_F.Build_Main_from_File ("exchange_hac_side_failure.adb");
+    if BD_F.Build_Successful then
+      Interpret_on_Current_IO (BD_F, 1, "", post_mortem);
+      if Is_Exception_Raised (post_mortem.Unhandled) then
+      Put_Line
+        ("Native: the HAC program was stopped: " & Image (post_mortem.Unhandled));
+      Put_Line
+        ("Native: message: " & Message (post_mortem.Unhandled));
+      else
+        Put_Line ("Native: unexpected: the HAC program completed.");
+      end if;
+    else
+      Put_Line ("Native: the HAC program could not be built.");
+    end if;
+    New_Line;
+  end Run_Failure_Demo;
+
   procedure Run is
     post_mortem : Post_Mortem_Data;
   begin
@@ -57,4 +82,5 @@ begin
       New_Line;
     end loop;
   end if;
+  Run_Failure_Demo;
 end Exchange_Native_Side;
