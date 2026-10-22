@@ -471,6 +471,8 @@ package HAC_Sys.Defs is
      err_wrong_unit_name,
      err_obsolete_hat_name,
      err_assignment_not_allowed_declarative,
+     err_parameter_name_not_next_in_order,         --  2026-10-22
+     err_positional_after_named_association,       --  2026-10-22
      --
      note_redundant_construct,
      note_unused_item,

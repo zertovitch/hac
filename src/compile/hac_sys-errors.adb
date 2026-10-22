@@ -300,6 +300,14 @@ package body HAC_Sys.Errors is
       when err_aggregate_positional_after_named =>
         return "aggregate: a positional association cannot follow a named " &
                "association (RM 4.3 (4)/(5))";
+      when err_parameter_name_not_next_in_order =>
+        return "the parameter name """ & hint_1 &
+               """ is unknown here, or does not follow, in order, " &
+               "the previous association; HAC processes named associations " &
+               "in the formal parameters' declaration order";
+      when err_positional_after_named_association =>
+        return "a positional association cannot follow a named " &
+               "association (RM 6.4 (5))";
       when err_aggregate_others_field_types_differ =>
         return "aggregate: ""others"" applies to record fields that do not " &
                "all have the same type";

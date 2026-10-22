@@ -1,5 +1,4 @@
-with HAC_Sys.Defs,
-     HAC_Sys.Errors;
+with HAC_Sys.Errors;
 
 with HAT;
 
@@ -935,5 +934,57 @@ package body HAC_Sys.Scanner is
       New_Line (CD.comp_dump, 2);
     end if;
   end In_Symbol;
+
+  procedure Save_Scanner_State
+    (CD    :        Co_Defs.Compiler_Data;
+     State :    out Scanner_State)
+  is
+  begin
+    State.buffer          := CD.CUD.buffer;
+    State.buffer_length   := CD.CUD.buffer_length;
+    State.buffer_position := CD.CUD.buffer_position;
+    State.input_line      := CD.CUD.input_line;
+    State.c               := CD.CUD.c;
+    State.prev_c          := CD.CUD.prev_c;
+    State.CC              := CD.CUD.CC;
+    State.LL              := CD.CUD.LL;
+    State.location        := CD.CUD.location;
+    --
+    State.Sy              := CD.Sy;
+    State.prev_sy         := CD.prev_sy;
+    State.prev_sy_loc     := CD.prev_sy_loc;
+    State.Id              := CD.Id;
+    State.Id_with_case    := CD.Id_with_case;
+    State.Id_location     := CD.Id_location;
+    State.INum            := CD.INum;
+    State.RNum            := CD.RNum;
+    State.SLeng           := CD.SLeng;
+  end Save_Scanner_State;
+
+  procedure Restore_Scanner_State
+    (CD    : in out Co_Defs.Compiler_Data;
+     State : in     Scanner_State)
+  is
+  begin
+    CD.CUD.buffer          := State.buffer;
+    CD.CUD.buffer_length   := State.buffer_length;
+    CD.CUD.buffer_position := State.buffer_position;
+    CD.CUD.input_line      := State.input_line;
+    CD.CUD.c               := State.c;
+    CD.CUD.prev_c          := State.prev_c;
+    CD.CUD.CC              := State.CC;
+    CD.CUD.LL              := State.LL;
+    CD.CUD.location        := State.location;
+    --
+    CD.Sy              := State.Sy;
+    CD.prev_sy         := State.prev_sy;
+    CD.prev_sy_loc     := State.prev_sy_loc;
+    CD.Id              := State.Id;
+    CD.Id_with_case    := State.Id_with_case;
+    CD.Id_location     := State.Id_location;
+    CD.INum            := State.INum;
+    CD.RNum            := State.RNum;
+    CD.SLeng           := State.SLeng;
+  end Restore_Scanner_State;
 
 end HAC_Sys.Scanner;
