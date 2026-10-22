@@ -114,6 +114,11 @@ package body HAC_Sys.Interfacing is
     end if;
   end Register;
 
+  procedure Abort_Execution (Message : String) is
+  begin
+    raise Script_Call_Failure with Message;
+  end Abort_Execution;
+
   procedure Deregister (BD : Builder.Build_Data; Name : String)
   is
     use Ada.Characters.Handling;
