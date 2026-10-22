@@ -57,6 +57,16 @@ procedure Exchange_HAC_Side is
     New_Line;
   end Demo_Data_Bidirectional;
 
+  procedure Demo_Named_Association is
+    procedure Ints_Callback (i, j, k : in Integer) with Import => True;
+  begin
+    Put_Line ("   HAC: I call a native call-back with named associations.");
+    Ints_Callback (i => 123, j => 456, k => 789);
+    Put_Line ("   HAC: same, mixed: positional, then named:");
+    Ints_Callback (123, j => 456, k => 789);
+    New_Line;
+  end Demo_Named_Association;
+
   procedure Demo_Composite is
     type Matrix is array (1 .. 2, 1 .. 2) of HAT.Real;
     type Some_Record is record
@@ -107,6 +117,7 @@ begin
   Demo_Parameterless;
   Demo_Data_to_Native;
   Demo_Data_Bidirectional;
+  Demo_Named_Association;
   Demo_Composite;
   --
   Set_VM_Variable ("Demo_Variable", Get_VM_Variable ("Demo_Variable") & "HAC... ");
