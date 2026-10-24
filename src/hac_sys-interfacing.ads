@@ -68,6 +68,24 @@ package HAC_Sys.Interfacing is
 
   type Exported_Procedure is access procedure (Data : in out HAC_Element_Array);
 
+  --  The imported subprogram on the HAC side can be a procedure
+  --  or a function, declared with the "with Import => True" aspect.
+  --  For an imported *function*, the Data array received by the
+  --  call-back contains, after the items of the (possibly empty)
+  --  parameter list, the item(s) of the returned value, which the
+  --  call-back must fill, using the To_HAC functions.
+  --  Example: this HAC-side function:
+  --
+  --    function Double (i : Integer) return Integer with Import => True;
+  --
+  --  is matched by a call-back doing, on the native side:
+  --
+  --    Data (Data'Last) := To_HAC (2 * To_Native (Data (1)));
+  --
+  --  The result type on the HAC side is subject to the same
+  --  restriction as for any HAC function: an atomic type
+  --  (scalar, enumeration or VString).
+
   --  Registration. You can register call-backs any time: before compilation,
   --  after compilation, or even during HAC's run-time if you can control,
   --  from the Native program, when a call-back is called. For instance,
