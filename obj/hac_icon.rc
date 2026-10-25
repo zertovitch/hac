@@ -1,0 +1,5 @@
+//  Cosmetic Windows stuff only. You can ignore this file.
+//  This is just for giving the executables a nice icon.
+#include <windows.h>
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+AAA_Main_Icon ICON "hac_icon.ico"
