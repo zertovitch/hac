@@ -110,9 +110,75 @@ package body HAC_Sys.Interfacing is
     use Ada.Characters.Handling;
   begin
     if Callback /= null then
-      BD.CD.Exported_Procedures.Include (To_Upper (Name), Convert (Callback));
+      BD.CD.Exported_Procedures.Include
+        (To_Upper (Name),
+         (proc => Convert (Callback), others => <>));
     end if;
   end Register;
+
+  procedure Register
+    (BD       : Builder.Build_Data;
+     Callback : Exported_Procedure_With_Context;
+     Name     : String;
+     Context  : System.Address)
+  is
+    function Convert is
+      new Ada.Unchecked_Conversion
+        (Exported_Procedure_With_Context, Co_Defs.Dummy_Procedure_Access);
+    use Ada.Characters.Handling;
+  begin
+    if Callback /= null then
+      BD.CD.Exported_Procedures.Include
+        (To_Upper (Name),
+         (proc_with_context => Convert (Callback),
+          context            => Context,
+          others             => <>));
+    end if;
+  end Register;
+
+  package body Contextual_Call_Back is
+
+    --  Local access type: taking 'Access of Thunk, in this generic
+    --  body, towards a type declared outside the generic unit is
+    --  illegal (RM 3.10.2(32)). We use this type and convert to
+    --  Exported_Procedure_With_Context afterwards.
+    type Thunk_Access is access procedure
+      (Data    : in out HAC_Element_Array;
+       Context :        System.Address);
+
+    procedure Thunk
+      (Data            : in out HAC_Element_Array;
+       Context_Address :        System.Address)
+    is
+      function Convert is
+        new Ada.Unchecked_Conversion (System.Address, Context_Access);
+      Ctx : constant Context_Access := Convert (Context_Address);
+    begin
+      Call_Back (Data, Ctx.all);
+    end Thunk;
+
+    procedure Register
+      (BD      : in     Builder.Build_Data;
+       Name    : in     String;
+       Context : in     Context_Access)
+    is
+      function Convert is
+        new Ada.Unchecked_Conversion
+          (Thunk_Access, Exported_Procedure_With_Context);
+      --  ^ Unchecked conversion: we cannot prove statically, in this
+      --    generic body, that the instance is at library level - which
+      --    is a documented requirement of Contextual_Call_Back.
+    begin
+      if Context /= null then
+        Register
+          (BD       => BD,
+           Callback => Convert (Thunk'Access),
+           Name     => Name,
+           Context  => Context.all'Address);
+      end if;
+    end Register;
+
+  end Contextual_Call_Back;
 
   procedure Deregister (BD : Builder.Build_Data; Name : String)
   is
