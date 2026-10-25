@@ -285,9 +285,21 @@ package body HAC_Sys.Parser is
           if CD.Id = "TRUE" then
             In_Symbol;  --  Consume True
             CD.id_table (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
+            --  ^ The "body" of an imported subprogram is a two-instruction
+            --    stub of p-code, emitted at this address.
             CD.id_table (block_data.block_id_index).decl_kind := spec_resolved;
-            Emit_1 (CD, k_Exchange_with_External, Operand_2_Type (block_data.block_id_index));
-            Emit_1 (CD, k_Return_Call, Normal_Procedure_Call);
+            if block_data.entity = funktion then
+              --  Imported function: the call-back returns a value.
+              --  Operand X = 1 tells the interpreter to move the value
+              --  returned by the call-back into the function result slot.
+              Emit_2
+                (CD, k_Exchange_with_External, 1,
+                 Operand_2_Type (block_data.block_id_index));
+              Emit_1 (CD, k_Return_Function, Normal_Procedure_Call);
+            else
+              Emit_1 (CD, k_Exchange_with_External, Operand_2_Type (block_data.block_id_index));
+              Emit_1 (CD, k_Return_Call, Normal_Procedure_Call);
+            end if;
           else
             Error (CD, err_general_error, "value True expected here");
           end if;
