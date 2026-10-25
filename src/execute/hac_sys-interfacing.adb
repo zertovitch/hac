@@ -116,6 +116,11 @@ package body HAC_Sys.Interfacing is
     end if;
   end Register;
 
+  procedure Abort_Execution (Message : String) is
+  begin
+    raise Script_Call_Failure with Message;
+  end Abort_Execution;
+
   procedure Register
     (BD       : Builder.Build_Data;
      Callback : Exported_Procedure_With_Context;

@@ -128,6 +128,22 @@ package body Exchange_Native_Side_Pkg is
     Put_Line ("      Native: Enum = " & Exchange_Common.Animal'Image (e));
   end Composite_Callback;
 
+  procedure Failing_Callback (Data : in out HAC_Element_Array) is
+    i : constant Integer := To_Native (Data (1));
+  begin
+    if i < 0 then
+      Abort_Execution
+        ("the native operation refuses the input:" & Integer'Image (i));
+    end if;
+    Put_Line
+      ("      Native: Failing_Callback got" & Integer'Image (i) & " and is happy.");
+  end Failing_Callback;
+
+  procedure Register_Failing_Callback (BD : HAC_Sys.Builder.Build_Data) is
+  begin
+    Register (BD, Failing_Callback'Access, "Failing_Callback");
+  end Register_Failing_Callback;
+
   procedure Double_Callback (Data : in out HAC_Element_Array) is
   begin
     Put_Line ("      Native: Double_Callback is speaking!");

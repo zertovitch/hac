@@ -8,6 +8,10 @@ with HAC_Sys.Builder;
 
 package Exchange_Native_Side_Pkg is
 
+  --  Registration of the call-back used by
+  --  exchange_hac_side_failure.adb (see Run_Failure_Demo):
+  procedure Register_Failing_Callback (BD : HAC_Sys.Builder.Build_Data);
+
   --  A "session" for the contextual call-backs: the same
   --  Next_Count_Callback can be registered with different
   --  sessions, and mutates each one separately.

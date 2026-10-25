@@ -97,6 +97,20 @@ package HAC_Sys.Interfacing is
   --    For a more type-safe context than System.Address, see the
   --    Contextual_Call_Back generic below.
 
+  --  Controlled failure of the HAC program, from a call-back.
+  --
+  Script_Call_Failure : exception;
+
+  procedure Abort_Execution (Message : String);
+  --  To be called from a call-back, when the host application
+  --  fails and wants the HAC program to stop immediately.
+  --  Raises Script_Call_Failure, which is caught by the HAC
+  --  interpreter: the HAC program is stopped with the given
+  --  message, which appears verbatim in the Post_Mortem_Data
+  --  (unhandled exception + message), with the usual traceback.
+  --  Any other exception raised by a call-back stops the HAC
+  --  program too, but with a generic message.
+
   --  Registration. You can register call-backs any time: before compilation,
   --  after compilation, or even during HAC's run-time if you can control,
   --  from the Native program, when a call-back is called. For instance,
