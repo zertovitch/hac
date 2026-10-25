@@ -57,6 +57,16 @@ procedure Exchange_HAC_Side is
     New_Line;
   end Demo_Data_Bidirectional;
 
+  procedure Demo_Named_Association is
+    procedure Ints_Callback (i, j, k : in Integer) with Import => True;
+  begin
+    Put_Line ("   HAC: I call a native call-back with named associations.");
+    Ints_Callback (i => 123, j => 456, k => 789);
+    Put_Line ("   HAC: same, mixed: positional, then named:");
+    Ints_Callback (123, j => 456, k => 789);
+    New_Line;
+  end Demo_Named_Association;
+
   procedure Demo_Native_Function is
     function Double_Callback (i : in Integer) return Integer with Import => True;
     function Root_Callback (f : in Real) return Real with Import => True;
@@ -135,6 +145,7 @@ begin
   Demo_Parameterless;
   Demo_Data_to_Native;
   Demo_Data_Bidirectional;
+  Demo_Named_Association;
   Demo_Native_Function;
   Demo_Session_Context;
   Demo_Composite;

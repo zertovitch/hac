@@ -152,6 +152,7 @@ procedure All_Silent_Tests is
     Normal_Test (+"forward.adb");
     Normal_Test (+"integers.adb");
     Normal_Test (+"loops.adb");
+    Normal_Test (+"named_associations.adb");
     Normal_Test (+"object_init.adb");
     --  Create the X_* packages, run pkg_demo and finally delete the X_* packages .
     Shell_Execute (generate);

@@ -132,6 +132,41 @@ package body HAC_Sys.Parser.Calls is
     last_param, current_param : Index;
     found, expected : Exact_Subtyp;
     block_idx : Index;
+    named_seen : Boolean := False;
+    --  ^ True as soon as a named association ("Formal => Actual")
+    --    appeared in the actual parameter list. RM 6.4 (5):
+    --    positional associations can appear only before the named ones.
+
+    procedure Push_Actual (formal : Index) is
+      --  Parse and process one actual parameter,
+      --  for the formal parameter of index `formal`.
+    begin
+      expected := CD.id_table (formal).xtyp;
+      if CD.id_table (formal).normal then
+        ------------------------------------------------------
+        --  Value parameter                                 --
+        --  Only IN mode; value is passed by value (copy).  --
+        ------------------------------------------------------
+        Push_Parameter_by_Value (CD, context, fsys, expected);
+      else
+        ------------------------------------
+        --  Variable (Name) parameter     --
+        --  This is passed by reference.  --
+        ------------------------------------
+        Push_Parameter_by_Reference
+          (CD,
+           context,
+           fsys,
+           A2S (CD.id_table (formal).name_with_case),
+           CD.id_table (formal).decl_kind,
+           found);
+
+        if Exact_Typ (found) /= Exact_Typ (expected) then
+          Type_Mismatch (CD, err_parameter_types_do_not_match, found, expected);
+        end if;
+      end if;
+    end Push_Actual;
+
   begin
     Emit_1 (CD, k_Mark_Stack, Operand_2_Type (ident_index));
     block_idx := CD.id_table (ident_index).block_or_pkg_ref;
@@ -147,37 +182,52 @@ package body HAC_Sys.Parser.Calls is
              ": too many actual parameters",
              severity => major);
         else
-          current_param := current_param + 1;
-          expected := CD.id_table (current_param).xtyp;
-          if CD.id_table (current_param).normal then
-            ------------------------------------------------------
-            --  Value parameter                                 --
-            --  Only IN mode; value is passed by value (copy).  --
-            ------------------------------------------------------
-            Push_Parameter_by_Value (CD, context, fsys, expected);
+          if CD.Sy = IDent then
+            --  Possibly a named association: "Formal_Name => actual".
+            --  Since a '=>' cannot occur otherwise within an actual
+            --  parameter, we peek one symbol to find out.
+            declare
+              use type Alfa;
+              name        : constant Alfa := CD.Id;
+              next_formal : constant Index := current_param + 1;
+              saved       : Scanner_State;
+            begin
+              Save_Scanner_State (CD, saved);
+              In_Symbol (CD);
+              if CD.Sy = Finger then
+                --  Named association confirmed.
+                In_Symbol (CD);  --  Consume '=>'
+                if CD.id_table (next_formal).name /= name then
+                  --  Either an unknown name, or an association
+                  --  out of the formal parameters' order: HAC
+                  --  processes the actuals in the formals' order,
+                  --  like the one-pass compiler it is.
+                  Error
+                    (CD,
+                     err_parameter_name_not_next_in_order,
+                     A2S (name),
+                     severity => major);
+                end if;
+                named_seen := True;
+                current_param := next_formal;
+                Push_Actual (current_param);
+              else
+                --  Not a named association: replay the identifier,
+                --  which is the start of a positional actual.
+                Restore_Scanner_State (CD, saved);
+                if named_seen then
+                  Error (CD, err_positional_after_named_association, severity => major);
+                end if;
+                current_param := next_formal;
+                Push_Actual (current_param);
+              end if;
+            end;
           else
-            ------------------------------------
-            --  Variable (Name) parameter     --
-            --  This is passed by reference.  --
-            ------------------------------------
-            Push_Parameter_by_Reference
-              (CD,
-               context,
-               fsys,
-               A2S (CD.id_table (current_param).name_with_case),
-               CD.id_table (current_param).decl_kind,
-               found);
-
-            if Exact_Typ (found) /= Exact_Typ (expected) then
-              Type_Mismatch (CD, err_parameter_types_do_not_match, found, expected);
+            if named_seen then
+              Error (CD, err_positional_after_named_association, severity => major);
             end if;
-          end if;
-          if CD.Sy = Finger then
-            Error
-              (CD,
-               err_not_yet_implemented,
-               "positional association",
-               severity => major);
+            current_param := current_param + 1;
+            Push_Actual (current_param);
           end if;
         end if;
         Test (CD, Comma_RParent, fsys, err_incorrectly_used_symbol);

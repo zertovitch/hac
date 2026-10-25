@@ -109,6 +109,14 @@ package body HAC_Sys.Co_Defs is
   begin
     --  Ensure the CD has a valid target from the beginning:
     CD.Set_Target (new Targets.HAC_Virtual_Machine.Machine);
+    --  Initialize the fields written only when a literal of the
+    --  corresponding kind is scanned; otherwise they would hold
+    --  invalid data, notably when copied by a scanner state save
+    --  (Scanner.Save_Scanner_State) before the first such literal:
+    CD.INum := 0;
+    CD.RNum := 0.0;
+    CD.SLeng := 0;
+    CD.Id_location := 0;
   end Initialize;
 
   overriding procedure Finalize (CD : in out Compiler_Data) is
