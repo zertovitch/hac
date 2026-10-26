@@ -177,9 +177,9 @@ Language subset
     - Named parameter associations (RM 6.4), like in
         Draw_Vector (Origin => P, Value => D, Color => Blue);
         are supported in subprogram calls, including calls to
-        imported (native) subprograms. Since HAC is a one-pass
-        compiler, the named actual parameters must appear in the
-        formal parameters' declaration order.
+        imported (native) subprograms. A current limitation relative
+        to the Ada standard is that the named actual parameters must
+        appear in the formal parameters' declaration order.
     - Programmable modularity (packages or subprograms that you
         can "with") is implemented.
         See exm/unit_a.adb for an example with subprograms as modules.

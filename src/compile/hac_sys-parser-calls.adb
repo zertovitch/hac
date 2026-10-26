@@ -200,8 +200,8 @@ package body HAC_Sys.Parser.Calls is
                 if CD.id_table (next_formal).name /= name then
                   --  Either an unknown name, or an association
                   --  out of the formal parameters' order: HAC
-                  --  processes the actuals in the formals' order,
-                  --  like the one-pass compiler it is.
+                  --  is not yet able to push the actuals on the stack
+                  --  in an order different than the formals' order.
                   Error
                     (CD,
                      err_parameter_name_not_next_in_order,
