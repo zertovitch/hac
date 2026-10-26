@@ -81,10 +81,12 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       --    are atomic types, occupying one item.
       --
       data : Interfacing.HAC_Element_Array (1 .. param_data_size + result_size);
-      --
+
+      --  Conversions functions; both types are actually the same: HAC_Sys.PCode.Interpreter.In_Defs.Data_Type.
+      function Convert is new Ada.Unchecked_Conversion (Interfacing.HAC_Element, Data_Type);
+      function Convert is new Ada.Unchecked_Conversion (Data_Type, Interfacing.HAC_Element);
+
       procedure Data_Exchange (before_call : Boolean) is
-        function Convert is new Ada.Unchecked_Conversion (Interfacing.HAC_Element, Data_Type);
-        function Convert is new Ada.Unchecked_Conversion (Data_Type, Interfacing.HAC_Element);
         data_idx  : Positive := 1;
         stack_idx : Positive;
       begin
@@ -111,8 +113,6 @@ package body HAC_Sys.PCode.Interpreter.Calls is
       end Data_Exchange;
       --
       procedure Store_Function_Result is
-        function Convert is
-          new Ada.Unchecked_Conversion (Interfacing.HAC_Element, Data_Type);
         result_slot : constant Index :=
           Curr_TCB.DISPLAY (proc_entry.lev + 1);
         --  ^ The result slot of the called function, at offset 0 of
