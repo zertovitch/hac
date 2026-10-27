@@ -38,13 +38,13 @@ package body HAC_Sys.Parser.Calls is
       Emit_1 (CD, k_Integer_to_Float, 0);  --  Left as a "souvenir" of SmallAda...
     elsif X.TYP = String_Literals and then Is_Char_Array (CD, expected) then
       expected_array_len := CD.Arrays_Table (expected.Ref).Array_Size;
-      if expected_array_len = CD.string_length then
+      if expected_array_len = CD.CUD.scan.string_length then
         Emit_1 (CD, k_Load_String_Literal, Operand_2_Type (expected_array_len));
       else
         Error
           (CD, err_string_lengths_do_not_match,
            "subprogram parameter has length" & expected_array_len'Image &
-           ", literal has length" & CD.string_length'Image,
+           ", literal has length" & CD.CUD.scan.string_length'Image,
            severity => minor);
       end if;
     elsif X.TYP /= NOTYP then

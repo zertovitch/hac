@@ -72,12 +72,12 @@ package body HAC_Sys.Compiler is
     --
     Init (CD.CUD);
     --  Scanner data
-    CD.Sy                := Dummy_Symbol;
-    CD.prev_sy_loc       := (0, 1, 1);
-    CD.error_count       := 0;
-    CD.minor_error_count := 0;
-    CD.diags             := no_diagnostic;
-    CD.total_lines       := 0;
+    CD.Sy                   := Dummy_Symbol;
+    CD.CUD.scan.prev_sy_loc := (0, 1, 1);
+    CD.error_count          := 0;
+    CD.minor_error_count    := 0;
+    CD.diags                := no_diagnostic;
+    CD.total_lines          := 0;
     Scanner.In_Symbol (CD);
     --
     CD.Display (0) := 0;  --  Added 7-Dec-2009

@@ -37,7 +37,7 @@ package body HAC_Sys.Parser.Expressions is
     end if;
     if CD.Sy = character_literal then  --  Untyped character constant, occurs only in ranges.
       Construct_Root (C.TP, Chars);
-      C.I  := CD.integer_number;
+      C.I  := CD.CUD.scan.integer_number;
       In_Symbol;
     else
       Sign := 1;
@@ -72,12 +72,12 @@ package body HAC_Sys.Parser.Expressions is
 
         when integer_literal =>
           C.TP.Construct_Root (Ints);
-          C.I := Sign * CD.integer_number;
+          C.I := Sign * CD.CUD.scan.integer_number;
           In_Symbol;
 
         when real_literal =>
           C.TP.Construct_Root (Floats);
-          C.R := HAC_Float (Sign) * CD.real_number;
+          C.R := HAC_Float (Sign) * CD.CUD.scan.real_number;
           In_Symbol;
 
         when others =>
@@ -606,21 +606,21 @@ package body HAC_Sys.Parser.Expressions is
             when character_literal | integer_literal =>
               --  Here we have a discrete literal.
               X.Construct_Root (if CD.Sy = character_literal then Chars else Ints);
-              CD.target.Emit_Push_Discrete_Literal (CD.integer_number);
+              CD.target.Emit_Push_Discrete_Literal (CD.CUD.scan.integer_number);
               --  The local subtype for the value V is the range V .. V.
-              Ranges.Set_Singleton_Range (X, CD.integer_number);
+              Ranges.Set_Singleton_Range (X, CD.CUD.scan.integer_number);
               In_Symbol (CD);
 
             when real_literal =>
               X.Construct_Root (Floats);
-              Emit_Push_Float_Literal (CD, CD.real_number);
+              Emit_Push_Float_Literal (CD, CD.CUD.scan.real_number);
               In_Symbol (CD);
 
             when string_literal =>
               Construct_Root (X, String_Literals);
               CD.target.Emit_Push_Discrete_Literals
-                (Operand_1_Type (CD.string_length),  --  String Literal Length
-                 Operand_2_Type (CD.integer_number));  --  Index To String IdTab
+                (Operand_1_Type (CD.CUD.scan.string_length),  --  String Literal Length
+                 Operand_2_Type (CD.CUD.scan.integer_number));  --  Index To String IdTab
               In_Symbol (CD);
 
             when LParent =>

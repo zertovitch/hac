@@ -175,7 +175,7 @@ package body HAC_Sys.Parser.Helpers is
 
   procedure Need_Semicolon (CD : in out Compiler_Data) is
   begin
-    if CD.Sy = RParent and then CD.prev_sy = RParent then
+    if CD.Sy = RParent and then CD.CUD.scan.prev_sy = RParent then
       Error (CD, err_extra_right_parenthesis, severity => minor);
       while CD.Sy = RParent loop
         In_Symbol (CD);
@@ -1132,12 +1132,12 @@ package body HAC_Sys.Parser.Helpers is
         Emit_1 (CD, k_Store, Typen'Pos (Expected_Typ.TYP));
       elsif Is_Char_Array (CD, Expected_Typ) and Found_Typ.TYP = String_Literals then
         Array_Length := CD.Arrays_Table (Expected_Typ.Ref).Array_Size;
-        if Array_Length = CD.string_length then
+        if Array_Length = CD.CUD.scan.string_length then
           Emit_1 (CD, k_String_Literal_Assignment, Operand_2_Type (Array_Length));
         else
           Error (CD, err_string_lengths_do_not_match,
             "variable has length" & Integer'Image (Array_Length) &
-            ", literal has length" & Integer'Image (CD.string_length),
+            ", literal has length" & Integer'Image (CD.CUD.scan.string_length),
             severity => minor);
         end if;
       elsif Expected_Typ.TYP = VStrings

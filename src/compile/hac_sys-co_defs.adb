@@ -113,9 +113,9 @@ package body HAC_Sys.Co_Defs is
     --  corresponding kind is scanned; otherwise they would hold
     --  invalid data, notably when copied by a scanner state save
     --  (Scanner.Save_Scanner_State) before the first such literal:
-    CD.integer_number := 0;
-    CD.real_number := 0.0;
-    CD.string_length := 0;
+    CD.CUD.scan.integer_number := 0;
+    CD.CUD.scan.real_number    := 0.0;
+    CD.CUD.scan.string_length  := 0;
     CD.Id_location := 0;
   end Initialize;
 

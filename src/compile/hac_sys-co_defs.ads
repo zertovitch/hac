@@ -308,14 +308,21 @@ package HAC_Sys.Co_Defs is
   --    (e.g. "=>" on named associations). See Save_Scanner_State and Restore_Scanner_State.
 
   type Current_Unit_Scan_Data is record
-    buffer            : Source_Buffer_String;
-    buffer_length     : Natural;               --  = 0 only on init or when exhausted.
-    buffer_position   : Positive;              --  Points to the next character to be read.
-    input_line        : Source_Line_String;
-    c, prev_c         : Character;           --  Character read from source program
-    CC                : Integer;             --  Character counter (=column in current line)
-    LL                : Natural;             --  Length of current line
-    location          : Symbol_Location;
+    buffer          : Source_Buffer_String;
+    buffer_length   : Natural;             --  = 0 only on init or when exhausted.
+    buffer_position : Positive;            --  Points to the next character to be read.
+    input_line      : Source_Line_String;
+    c, prev_c       : Character;           --  Character read from source program
+    CC              : Integer;             --  Character counter (=column in current line)
+    LL              : Natural;             --  Length of current line
+    location        : Symbol_Location;
+    --  Literals:
+    integer_number  : HAC_Integer;
+    real_number     : HAC_Float;
+    string_length   : Integer;
+    --  Misc.
+    prev_sy         : Symbol;
+    prev_sy_loc     : Symbol_Location;
   end record;
 
   type Current_Unit_Data is record
@@ -388,15 +395,16 @@ package HAC_Sys.Co_Defs is
 
   type Compiler_Data is new Ada.Finalization.Limited_Controlled with record
     CUD : Current_Unit_Data;
-    --  Scanning & Parsing
-    Sy, prev_sy      : Symbol;         --  sy: last Symbol read by In_Symbol
-    prev_sy_loc      : Symbol_Location;
-    Id               : Alfa;               --  Identifier from In_Symbol
-    Id_with_case     : Alfa;               --  Same as Id, but with casing.
-    Id_location      : Integer;            --  Cache for Locate_CD_Id
-    integer_number   : HAC_Integer;        --  Integer from In_Symbol
-    real_number      : HAC_Float;          --  Float number from In_Symbol
-    string_length    : Integer;
+    --
+    --  Scanning items. They could be, and belong to, .CUD.scan (type Current_Unit_Scan_Data),
+    --  but they are so frequently used that we keep them here to keep full names short.
+    --
+    Sy           : Symbol;         --  sy: last Symbol read by In_Symbol
+    Id           : Alfa;               --  Identifier from In_Symbol
+    Id_with_case : Alfa;               --  Same as Id, but with casing.
+    Id_location  : Integer;            --  Cache for Locate_CD_Id
+    --  Parsing items.
+    --
     pkg_prefix       : HAT.VString;        --  Prefix of package being currently parsed.
     --  Compiler tables. Floats and Strings are used by interpreter at run-time.
     Arrays_Table            : Arrays_Table_Type;  --  NB: only static-sized arrays so far.

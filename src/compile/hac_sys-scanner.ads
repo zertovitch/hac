@@ -45,14 +45,9 @@ private
     cu_scan         : Co_Defs.Current_Unit_Scan_Data;
     --  Symbol-level state, as written by In_Symbol:
     Sy              : Defs.Symbol;
-    prev_sy         : Defs.Symbol;
-    prev_sy_loc     : Defs.Symbol_Location;
     Id              : Defs.Alfa;
     Id_with_case    : Defs.Alfa;
     Id_location     : Integer;
-    INum            : Defs.HAC_Integer;
-    RNum            : Defs.HAC_Float;
-    SLeng           : Integer;
   end record;
 
 end HAC_Sys.Scanner;
