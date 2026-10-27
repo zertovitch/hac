@@ -419,7 +419,7 @@ package body HAC_Sys.Errors is
 
     to_be_marked :=
       (case location_method is
-         when current_symbol  => CD.CUD.location,
+         when current_symbol  => CD.CUD.scan.location,
          when previous_symbol => CD.prev_sy_loc,
          when explicit        => explicit_location);
 

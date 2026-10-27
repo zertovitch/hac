@@ -154,7 +154,7 @@ package body HAC_Sys.Scanner is
   procedure Next_Character (CD : in out Compiler_Data) is
 
     procedure Get_Next_Line is
-      idx : Integer := CD.CUD.input_line'First - 1;
+      idx : Integer := CD.CUD.scan.input_line'First - 1;
       c   : Character;
 
       procedure Get_Character_from_Buffer with Inline is
@@ -164,7 +164,7 @@ package body HAC_Sys.Scanner is
         procedure Refill_Buffer is
           use Ada.Streams;
           se_buffer : Stream_Element_Array (1 .. Source_Buffer_String'Length);
-          for se_buffer'Address use CD.CUD.buffer'Address;
+          for se_buffer'Address use CD.CUD.scan.buffer'Address;
           pragma Import (Ada, se_buffer);
           last_read : Stream_Element_Offset;
         begin
@@ -175,7 +175,7 @@ package body HAC_Sys.Scanner is
           else
             --  Slow method:
             actually_read := 0;
-            for cb of CD.CUD.buffer loop
+            for cb of CD.CUD.scan.buffer loop
               Character'Read (CD.CUD.compiler_stream, cb);
               actually_read := actually_read + 1;
             end loop;
@@ -188,18 +188,18 @@ package body HAC_Sys.Scanner is
         end Refill_Buffer;
 
       begin
-        if CD.CUD.buffer_position > CD.CUD.buffer_length then
+        if CD.CUD.scan.buffer_position > CD.CUD.scan.buffer_length then
           Refill_Buffer;
           if actually_read = 0 then
             --  Refill failed, even a partial one -> the
             --  stream is exhausted.
             raise Ada.IO_Exceptions.End_Error;
           end if;
-          CD.CUD.buffer_length := actually_read;
-          CD.CUD.buffer_position := 1;
+          CD.CUD.scan.buffer_length := actually_read;
+          CD.CUD.scan.buffer_position := 1;
         end if;
-        c := CD.CUD.buffer (CD.CUD.buffer_position);
-        CD.CUD.buffer_position := CD.CUD.buffer_position + 1;
+        c := CD.CUD.scan.buffer (CD.CUD.scan.buffer_position);
+        CD.CUD.scan.buffer_position := CD.CUD.scan.buffer_position + 1;
       end Get_Character_from_Buffer;
 
     begin
@@ -209,57 +209,57 @@ package body HAC_Sys.Scanner is
         exit when c = ASCII.LF;
         if c /= ASCII.CR then
           idx := idx + 1;
-          CD.CUD.input_line (idx) := c;
+          CD.CUD.scan.input_line (idx) := c;
         end if;
       end loop;
-      CD.CUD.LL := idx;
+      CD.CUD.scan.LL := idx;
     exception
       when Ada.IO_Exceptions.End_Error =>
-        if idx < CD.CUD.input_line'First then
+        if idx < CD.CUD.scan.input_line'First then
           --  `idx` was not changed after its initialization.
           raise;
         end if;
-        CD.CUD.LL := idx;  --  Avoid trashing a non-empty line ending the stream.
+        CD.CUD.scan.LL := idx;  --  Avoid trashing a non-empty line ending the stream.
     end Get_Next_Line;
 
   begin
-    if CD.CUD.CC = CD.CUD.LL then
+    if CD.CUD.scan.CC = CD.CUD.scan.LL then
       if CD.listing_requested then
         New_Line (CD.listing);
       end if;
-      CD.CUD.location.line := CD.CUD.location.line + 1;
+      CD.CUD.scan.location.line := CD.CUD.scan.location.line + 1;
       if CD.listing_requested then
-        HAC_Sys.Defs.IIO.Put (CD.listing, HAC_Integer (CD.CUD.location.line), 4);
+        HAC_Sys.Defs.IIO.Put (CD.listing, HAC_Integer (CD.CUD.scan.location.line), 4);
         Put (CD.listing, "  ");
       end if;
-      CD.CUD.LL := 0;
-      CD.CUD.CC := 0;
+      CD.CUD.scan.LL := 0;
+      CD.CUD.scan.CC := 0;
       Get_Next_Line;
       --  Append a space:
-      CD.CUD.LL := CD.CUD.LL + 1;
-      CD.CUD.input_line (CD.CUD.LL) := ' ';
+      CD.CUD.scan.LL := CD.CUD.scan.LL + 1;
+      CD.CUD.scan.input_line (CD.CUD.scan.LL) := ' ';
 
       if CD.listing_requested then
         New_Line (CD.listing);
-        Put_Line (CD.listing, CD.CUD.input_line);
+        Put_Line (CD.listing, CD.CUD.scan.input_line);
       end if;
     end if;
 
-    CD.CUD.CC     := CD.CUD.CC + 1;
-    CD.CUD.prev_c := CD.CUD.c;
-    CD.CUD.c      := CD.CUD.input_line (CD.CUD.CC);
+    CD.CUD.scan.CC     := CD.CUD.scan.CC + 1;
+    CD.CUD.scan.prev_c := CD.CUD.scan.c;
+    CD.CUD.scan.c      := CD.CUD.scan.input_line (CD.CUD.scan.CC);
     --  Change tabs for spaces:
-    if Character'Pos (CD.CUD.c) = 9 then
-      CD.CUD.c := ' ';
+    if Character'Pos (CD.CUD.scan.c) = 9 then
+      CD.CUD.scan.c := ' ';
     end if;
-    if CD.CUD.c < ' ' then
+    if CD.CUD.scan.c < ' ' then
       Error (CD, err_scanner_control_character);
     end if;
   end Next_Character;
 
   procedure Skip_Blanks (CD : in out Compiler_Data) is
   begin
-    while CD.CUD.c = ' ' loop
+    while CD.CUD.scan.c = ' ' loop
       Next_Character (CD);
     end loop;
   end Skip_Blanks;
@@ -274,7 +274,7 @@ package body HAC_Sys.Scanner is
       Next_Character (CD);
       Sign := 1;
       S    := 0;
-      case CD.CUD.c is
+      case CD.CUD.scan.c is
         when '+' =>
           Next_Character (CD);
         when '-' =>
@@ -290,7 +290,7 @@ package body HAC_Sys.Scanner is
         when others =>
           null;
       end case;
-      if CD.CUD.c not in '0' .. '9' then
+      if CD.CUD.scan.c not in '0' .. '9' then
         Error
           (CD,
            err_scanner_illegal_character_in_number,
@@ -305,11 +305,11 @@ package body HAC_Sys.Scanner is
           elsif digit_count > integer_digits_max then
             null;  --  The insult was already issued on digit_count = integer_digits_max...
           else
-            S := S * 10 + Character'Pos (CD.CUD.c) - Character'Pos ('0');
+            S := S * 10 + Character'Pos (CD.CUD.scan.c) - Character'Pos ('0');
           end if;
           digit_count := digit_count + 1;
           Next_Character (CD);
-          exit when CD.CUD.c not in '0' .. '9';
+          exit when CD.CUD.scan.c not in '0' .. '9';
         end loop;
       end if;
       e := S * Sign + e;
@@ -356,23 +356,23 @@ package body HAC_Sys.Scanner is
       loop
         Next_Character (CD);
         l := l + 1;
-        s (l) := CD.CUD.c;
-        exit when CD.CUD.c = '#';  --  Second '#'.
-        has_point := has_point or CD.CUD.c = '.';
+        s (l) := CD.CUD.scan.c;
+        exit when CD.CUD.scan.c = '#';  --  Second '#'.
+        has_point := has_point or CD.CUD.scan.c = '.';
       end loop;
       Next_Character (CD);
-      if CD.CUD.c in 'E' | 'e' then
+      if CD.CUD.scan.c in 'E' | 'e' then
         --  Exponent. Special case because of possible '+' or '-' which
         --  are not operators (e.g. 8#123#e+5 vs. 8#123#+5, = 8#123# + 5)...
         --  Otherwise we could have done it all in the previous loop.
         for c in 1 .. 2 loop
           l := l + 1;
-          s (l) := CD.CUD.c;  --  We concatenate "e+", "e-", "e5".
+          s (l) := CD.CUD.scan.c;  --  We concatenate "e+", "e-", "e5".
           Next_Character (CD);
         end loop;
-        while CD.CUD.c in '0' .. '9' loop
+        while CD.CUD.scan.c in '0' .. '9' loop
           l := l + 1;
-          s (l) := CD.CUD.c;  --  We concatenate the rest of the exponent.
+          s (l) := CD.CUD.scan.c;  --  We concatenate the rest of the exponent.
           Next_Character (CD);
         end loop;
       end if;
@@ -395,14 +395,14 @@ package body HAC_Sys.Scanner is
 
     procedure Skip_Possible_Underscore_in_Number is
     begin
-      if CD.CUD.c = '_' then
+      if CD.CUD.scan.c = '_' then
         Next_Character (CD);
-        if CD.CUD.c = '_' then
+        if CD.CUD.scan.c = '_' then
           Error
             (CD,
              err_scanner_double_underline_not_permitted,
              severity => major);
-        elsif Character_Types (CD.CUD.c) /= Number then
+        elsif Character_Types (CD.CUD.scan.c) /= Number then
           Error (CD, err_scanner_digit_expected, severity => major);
         end if;
       end if;
@@ -412,21 +412,21 @@ package body HAC_Sys.Scanner is
     begin
       --  Floating-point number 123.456
       --  Cursor is here -----------^
-      if CD.CUD.c = '.' then
+      if CD.CUD.scan.c = '.' then
         --  After all, this is not a number with a decimal point,
         --  but a double dot, like 123..456.
-        CD.CUD.c := c128;
+        CD.CUD.scan.c := c128;
         return;
       end if;
       --  Read decimal part.
       CD.Sy := real_literal;
       CD.RNum := HAC_Float (CD.INum);
       e := 0;
-      while Character_Types (CD.CUD.c) = Number loop
+      while Character_Types (CD.CUD.scan.c) = Number loop
         e := e - 1;
         CD.RNum :=
           10.0 * CD.RNum +
-            HAC_Float (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
+            HAC_Float (Character'Pos (CD.CUD.scan.c) - Character'Pos ('0'));
         Next_Character (CD);
         Skip_Possible_Underscore_in_Number;
       end loop;
@@ -436,7 +436,7 @@ package body HAC_Sys.Scanner is
            err_scanner_illegal_character_in_number,
            "; expected digit after '.'");
       end if;
-      if CD.CUD.c in 'E' | 'e' then
+      if CD.CUD.scan.c in 'E' | 'e' then
         Read_Scale (allow_minus => True);
       end if;
       if e /= 0 then
@@ -470,15 +470,15 @@ package body HAC_Sys.Scanner is
           elsif K > integer_digits_max then
             null;  --  The insult was already issued on K = integer_digits_max...
           else
-            CD.INum := CD.INum * 10 + (Character'Pos (CD.CUD.c) - Character'Pos ('0'));
+            CD.INum := CD.INum * 10 + (Character'Pos (CD.CUD.scan.c) - Character'Pos ('0'));
           end if;
           K := K + 1;
           Next_Character (CD);
           Skip_Possible_Underscore_in_Number;
-          exit when Character_Types (CD.CUD.c) /= Number;
+          exit when Character_Types (CD.CUD.scan.c) /= Number;
         end loop;
         --  Integer part is read (CD.INum).
-        case CD.CUD.c is
+        case CD.CUD.scan.c is
           when '.' =>
             Next_Character (CD);
             Read_Decimal_Float;
@@ -506,9 +506,9 @@ package body HAC_Sys.Scanner is
             null;  --  Number was an integer in base 10.
         end case;
       end if;
-      if Character_Types (CD.CUD.c) = Letter then
-        CD.CUD.location.column_start := CD.CUD.CC;
-        CD.CUD.location.column_stop  := CD.CUD.CC;
+      if Character_Types (CD.CUD.scan.c) = Letter then
+        CD.CUD.scan.location.column_start := CD.CUD.scan.CC;
+        CD.CUD.scan.location.column_stop  := CD.CUD.scan.CC;
         Error
           (CD,
            err_scanner_space_missing_after_number,
@@ -533,12 +533,12 @@ package body HAC_Sys.Scanner is
       --      *  8 'c       (end of a line after last non-blank)  c being neither '' nor (
       --      *  9 '        (end of a line after last non-blank)
       --
-      if CD.CUD.CC = CD.CUD.LL then  --  Case (9) above
+      if CD.CUD.scan.CC = CD.CUD.scan.LL then  --  Case (9) above
         Error (CD, err_scanner_character_zero_chars, severity => major);
       end if;
       Next_Character (CD);
-      C1 := CD.CUD.c;
-      if CD.CUD.CC = CD.CUD.LL then  --  Cases (5), (7), (8)
+      C1 := CD.CUD.scan.c;
+      if CD.CUD.scan.CC = CD.CUD.scan.LL then  --  Cases (5), (7), (8)
         if C1 = '(' then
           --  Case (5)
           CD.Sy := Apostrophe;
@@ -549,7 +549,7 @@ package body HAC_Sys.Scanner is
       end if;
       --  We peek the next character without moving.
       --  Possible since CD.CC < CD.LL .
-      C2 := CD.CUD.input_line (CD.CUD.CC + 1);
+      C2 := CD.CUD.scan.input_line (CD.CUD.scan.CC + 1);
       if C1 = ''' and C2 /= ''' then  --  Case (6)
         Error (CD, err_scanner_character_zero_chars, severity => major);
       end if;
@@ -627,9 +627,9 @@ package body HAC_Sys.Scanner is
       lit_len := 0;
       loop
         Next_Character (CD);
-        if CD.CUD.c = '"' then
+        if CD.CUD.scan.c = '"' then
           Next_Character (CD);
-          if CD.CUD.c /= '"' then
+          if CD.CUD.scan.c /= '"' then
             --  ["x] case: we have reached the end of the string.
             exit;
           end if;
@@ -639,11 +639,11 @@ package body HAC_Sys.Scanner is
         if CD.Strings_Table_Top + lit_len = SMax then
           Fatal (STRING_CONSTANTS);
         end if;
-        ST (CD.Strings_Table_Top + lit_len) := CD.CUD.c;
-        if CD.CUD.CC = 1 then
+        ST (CD.Strings_Table_Top + lit_len) := CD.CUD.scan.c;
+        if CD.CUD.scan.CC = 1 then
           lit_len := 0;  --  END OF InpLine
-          CD.CUD.location.column_start := 1;
-          CD.CUD.location.column_stop  := 1;
+          CD.CUD.scan.location.column_start := 1;
+          CD.CUD.scan.location.column_stop  := 1;
           Error
             (CD,
              err_general_error,
@@ -708,7 +708,7 @@ package body HAC_Sys.Scanner is
 
   begin  --  In_Symbol
     CD.prev_sy     := CD.Sy;
-    CD.prev_sy_loc := CD.CUD.location;
+    CD.prev_sy_loc := CD.CUD.scan.location;
 
     Big_loop :
     loop
@@ -716,24 +716,24 @@ package body HAC_Sys.Scanner is
       loop
         Skip_Blanks (CD);
 
-        CD.CUD.location.column_start := CD.CUD.CC;
-        exit Small_loop when Character_Types (CD.CUD.c) /= Illegal;
+        CD.CUD.scan.location.column_start := CD.CUD.scan.CC;
+        exit Small_loop when Character_Types (CD.CUD.scan.c) /= Illegal;
         Error (CD, err_scanner_illegal_character);
         if CD.comp_dump_requested then
           Put_Line
            (CD.comp_dump,
-            " Char is => " & Integer'Image (Character'Pos (CD.CUD.c)));
+            " Char is => " & Integer'Image (Character'Pos (CD.CUD.scan.c)));
         end if;
         if CD.listing_requested then
           Put_Line
            (CD.listing,
-            " Char is => " & Integer'Image (Character'Pos (CD.CUD.c)));
+            " Char is => " & Integer'Image (Character'Pos (CD.CUD.scan.c)));
         end if;
         Next_Character (CD);
       end loop Small_loop;
 
       exit_big_loop := True;
-      case CD.CUD.c is
+      case CD.CUD.scan.c is
         when 'A' .. 'Z' |   --  Identifier or keyword
              'a' .. 'z' =>
           K := 0;
@@ -741,8 +741,8 @@ package body HAC_Sys.Scanner is
           loop
             if K < identifier_length_max then
               K := K + 1;
-              HAT.VStr_Pkg.Append (CD.Id_with_case, CD.CUD.c);
-              if K > 1 and then (CD.CUD.c = '_' and CD.CUD.prev_c = '_') then
+              HAT.VStr_Pkg.Append (CD.Id_with_case, CD.CUD.scan.c);
+              if K > 1 and then (CD.CUD.scan.c = '_' and CD.CUD.scan.prev_c = '_') then
                 Error
                   (CD,
                    err_scanner_double_underline_not_permitted,
@@ -752,10 +752,10 @@ package body HAC_Sys.Scanner is
               Error (CD, err_scanner_identifier_too_long);
             end if;
             Next_Character (CD);
-            exit when CD.CUD.c /= '_'
-                     and then special_or_illegal (Character_Types (CD.CUD.c));
+            exit when CD.CUD.scan.c /= '_'
+                     and then special_or_illegal (Character_Types (CD.CUD.scan.c));
           end loop;
-          if K > 0 and then CD.CUD.prev_c = '_' then
+          if K > 0 and then CD.CUD.scan.prev_c = '_' then
             Error
               (CD,
                err_scanner_identifier_cannot_end_with_underline,
@@ -789,7 +789,7 @@ package body HAC_Sys.Scanner is
 
         when ':' =>
           Next_Character (CD);
-          if CD.CUD.c = '=' then
+          if CD.CUD.scan.c = '=' then
             CD.Sy := Becomes;
             Next_Character (CD);
           else
@@ -798,7 +798,7 @@ package body HAC_Sys.Scanner is
 
         when '<' =>
           Next_Character (CD);
-          if CD.CUD.c = '=' then
+          if CD.CUD.scan.c = '=' then
             CD.Sy := LEQ;
             Next_Character (CD);
           else
@@ -807,7 +807,7 @@ package body HAC_Sys.Scanner is
 
         when '>' =>
           Next_Character (CD);
-          if CD.CUD.c = '=' then
+          if CD.CUD.scan.c = '=' then
             CD.Sy := GEQ;
             Next_Character (CD);
           else
@@ -816,7 +816,7 @@ package body HAC_Sys.Scanner is
 
         when '/' =>
           Next_Character (CD);
-          if CD.CUD.c = '=' then
+          if CD.CUD.scan.c = '=' then
             CD.Sy := NEQ;
             Next_Character (CD);
           else
@@ -825,7 +825,7 @@ package body HAC_Sys.Scanner is
 
         when '.' =>
           Next_Character (CD);
-          case CD.CUD.c is
+          case CD.CUD.scan.c is
             when '.' =>
               CD.Sy := Range_Double_Dot_Symbol;
               Next_Character (CD);
@@ -844,15 +844,15 @@ package body HAC_Sys.Scanner is
 
         when '-' =>
           Next_Character (CD);
-          if CD.CUD.c = '-' then     --  Comment
+          if CD.CUD.scan.c = '-' then     --  Comment
 
-            if CD.CUD.CC < CD.CUD.LL
-              and then CD.CUD.input_line (CD.CUD.CC + 1) = '!'
+            if CD.CUD.scan.CC < CD.CUD.scan.LL
+              and then CD.CUD.scan.input_line (CD.CUD.scan.CC + 1) = '!'
             then
-              Process_Special_Comment (CD.CUD.input_line (CD.CUD.CC + 2 .. CD.CUD.LL));
+              Process_Special_Comment (CD.CUD.scan.input_line (CD.CUD.scan.CC + 2 .. CD.CUD.scan.LL));
             end if;
 
-            CD.CUD.CC := CD.CUD.LL;  --  Ignore rest of input line
+            CD.CUD.scan.CC := CD.CUD.scan.LL;  --  Ignore rest of input line
             Next_Character (CD);
             exit_big_loop := False;
           else
@@ -861,7 +861,7 @@ package body HAC_Sys.Scanner is
 
         when '=' =>
           Next_Character (CD);
-          if CD.CUD.c = '>' then
+          if CD.CUD.scan.c = '>' then
             CD.Sy := Finger;
             Next_Character (CD);
           else
@@ -873,9 +873,9 @@ package body HAC_Sys.Scanner is
           Next_Character (CD);
 
         when '+' | '*' | '(' | ')' | ',' | '[' | ']' | ';' | '&' =>
-          CD.Sy := Special_Symbols (CD.CUD.c);
+          CD.Sy := Special_Symbols (CD.CUD.scan.c);
           Next_Character (CD);
-          if CD.Sy = Times and then CD.CUD.c = '*' then  --  Get the "**" operator symbol
+          if CD.Sy = Times and then CD.CUD.scan.c = '*' then  --  Get the "**" operator symbol
             CD.Sy := Power;
             Next_Character (CD);
           end if;
@@ -900,14 +900,14 @@ package body HAC_Sys.Scanner is
       exit Big_loop when exit_big_loop;
     end loop Big_loop;
 
-    CD.CUD.location.column_stop := CD.CUD.CC - 1;
+    CD.CUD.scan.location.column_stop := CD.CUD.scan.CC - 1;
 
     if CD.comp_dump_requested then
-      Put_Line (CD.comp_dump, CD.CUD.input_line (1 .. CD.CUD.LL));
-      Put_Line (CD.comp_dump, (CD.CUD.CC - 2) * '.' & '^');  --  Draw: ".......^"
+      Put_Line (CD.comp_dump, CD.CUD.scan.input_line (1 .. CD.CUD.scan.LL));
+      Put_Line (CD.comp_dump, (CD.CUD.scan.CC - 2) * '.' & '^');  --  Draw: ".......^"
       Put
         (CD.comp_dump,
-         '[' & CD.CUD.location.line'Image & ':' & CD.CUD.CC'Image & ":] " &
+         '[' & CD.CUD.scan.location.line'Image & ':' & CD.CUD.scan.CC'Image & ":] " &
          CD.Sy'Image);
       case CD.Sy is
         when IDent =>
@@ -940,15 +940,7 @@ package body HAC_Sys.Scanner is
      State :    out Scanner_State)
   is
   begin
-    State.buffer          := CD.CUD.buffer;
-    State.buffer_length   := CD.CUD.buffer_length;
-    State.buffer_position := CD.CUD.buffer_position;
-    State.input_line      := CD.CUD.input_line;
-    State.c               := CD.CUD.c;
-    State.prev_c          := CD.CUD.prev_c;
-    State.CC              := CD.CUD.CC;
-    State.LL              := CD.CUD.LL;
-    State.location        := CD.CUD.location;
+    State.cu_scan         := CD.CUD.scan;
     --
     State.Sy              := CD.Sy;
     State.prev_sy         := CD.prev_sy;
@@ -966,15 +958,7 @@ package body HAC_Sys.Scanner is
      State : in     Scanner_State)
   is
   begin
-    CD.CUD.buffer          := State.buffer;
-    CD.CUD.buffer_length   := State.buffer_length;
-    CD.CUD.buffer_position := State.buffer_position;
-    CD.CUD.input_line      := State.input_line;
-    CD.CUD.c               := State.c;
-    CD.CUD.prev_c          := State.prev_c;
-    CD.CUD.CC              := State.CC;
-    CD.CUD.LL              := State.LL;
-    CD.CUD.location        := State.location;
+    CD.CUD.scan        := State.cu_scan;
     --
     CD.Sy              := State.Sy;
     CD.prev_sy         := State.prev_sy;

@@ -606,7 +606,7 @@ package body HAC_Sys.Parser.Helpers is
     --  Prefixed package resolution: `Pkg.Item`, `Pkg.Child_1.Item`, ...
     if using_parsed_Id and then CD.id_table (J).entity = paquetage then
       Skip_Blanks (CD);
-      if CD.CUD.c = '.' then  --  We sneak a look at the next symbol.
+      if CD.CUD.scan.c = '.' then  --  We sneak a look at the next symbol.
         ID_Copy := Id;
         CD.target.Mark_Reference (J);
         CD.id_table (J).is_referenced := True;

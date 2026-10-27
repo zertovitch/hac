@@ -213,7 +213,7 @@ package body HAC_Sys.Parser is
 
     procedure Statements_Part_Closing is
     begin
-      CD.Blocks_Table (subprogram_block_index).SrcTo := CD.CUD.location.line;
+      CD.Blocks_Table (subprogram_block_index).SrcTo := CD.CUD.scan.location.line;
     end Statements_Part_Closing;
 
     procedure Function_Result_Profile is

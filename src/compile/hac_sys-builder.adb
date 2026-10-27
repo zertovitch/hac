@@ -283,7 +283,7 @@ package body HAC_Sys.Builder is
           when Procedure_Unit =>
             --  !!  The following should be performed by Statements_Part_Closing
             --      in Parser... But it doesn't happen for the main block.
-            BD.CD.Blocks_Table (1).SrcTo := BD.CD.CUD.location.line;
+            BD.CD.Blocks_Table (1).SrcTo := BD.CD.CUD.scan.location.line;
           when Function_Unit =>
             null;
           when Package_Body =>
@@ -380,7 +380,7 @@ package body HAC_Sys.Builder is
     if BD.LD.cat.Exists (file_name) then
       BD.LD.cat.Source_Open (file_name, source_stream);
     else
-      BD.CD.CUD.location := (0, 1, 1);
+      BD.CD.CUD.scan.location := (0, 1, 1);
       Errors.Error
         (BD.CD.all, Defs.err_library_error,
          "file " & file_name & " not found", severity => Errors.medium);

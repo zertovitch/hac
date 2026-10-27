@@ -296,19 +296,33 @@ package HAC_Sys.Co_Defs is
      Hash            => Ada.Strings.Unbounded.Hash,
      Equivalent_Keys => HAT."=");
 
-  type Current_Unit_Data is record
-    --  Current source code information and scanner data
-    compiler_stream   : Source_Stream_Access;
-    source_file_name  : HAT.VString;           --  Indicative, for error messages
+  --  Current_Unit_Data, Current_Unit_Scan_Data (part of the former) wrap parsing & scanning
+  --  data related to current unit.
+  --
+  --  * Current_Unit_Data is stored and switched on a WITH context clause for parsing the
+  --    WITH-ed unit - NB: that unit may well contain itself WITH clauses in its turn,
+  --    so the whole process is recursive! After parsing the WITH-ed unit, the
+  --    stored Current_Unit_Data is restored and the initial parsing continues.
+  --
+  --  * Current_Unit_Scan_Data alone is also stacked for peeking the next symbol
+  --    (e.g. "=>" on named associations). See Save_Scanner_State and Restore_Scanner_State.
+
+  type Current_Unit_Scan_Data is record
     buffer            : Source_Buffer_String;
     buffer_length     : Natural;               --  = 0 only on init or when exhausted.
     buffer_position   : Positive;              --  Points to the next character to be read.
-    --  Parsing
-    location          : Symbol_Location;
     input_line        : Source_Line_String;
     c, prev_c         : Character;           --  Character read from source program
     CC                : Integer;             --  Character counter (=column in current line)
     LL                : Natural;             --  Length of current line
+    location          : Symbol_Location;
+  end record;
+
+  type Current_Unit_Data is record
+    --  Current source code information and scanner data
+    compiler_stream   : Source_Stream_Access;
+    source_file_name  : HAT.VString;           --  Indicative, for error messages
+    scan              : Current_Unit_Scan_Data;
     --  Level 0 definitions visible to currently compiled unit:
     level_0_def       : Id_Maps.Map;
     Use_HAT_Stack     : Use_HAT_Stack_Type;

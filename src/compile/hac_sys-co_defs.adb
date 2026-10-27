@@ -50,9 +50,9 @@ package body HAC_Sys.Co_Defs is
      start_line : in     Natural := 0)
   is
   begin
-    CUD.compiler_stream  := s;
-    CUD.source_file_name := HAT.To_VString (file_name);
-    CUD.location.line    := start_line;
+    CUD.compiler_stream    := s;
+    CUD.source_file_name   := HAT.To_VString (file_name);
+    CUD.scan.location.line := start_line;
   end Set_Source_Stream;
 
   function Get_Source_Name (CUD : Current_Unit_Data) return String is
@@ -61,7 +61,7 @@ package body HAC_Sys.Co_Defs is
   end Get_Source_Name;
 
   function Source_Buffer_has_Data (CUD : Current_Unit_Data) return Boolean is
-  (CUD.buffer_length > 0);
+  (CUD.scan.buffer_length > 0);
 
   procedure Unchecked_Free is
     new Ada.Unchecked_Deallocation

@@ -42,14 +42,7 @@ private
 
   type Scanner_State is record
     --  Scanner part of Current_Unit_Data:
-    buffer          : Co_Defs.Source_Buffer_String;
-    buffer_length   : Natural;
-    buffer_position : Positive;
-    input_line      : Co_Defs.Source_Line_String;
-    c, prev_c       : Character;
-    CC              : Integer;
-    LL              : Natural;
-    location        : Defs.Symbol_Location;
+    cu_scan         : Co_Defs.Current_Unit_Scan_Data;
     --  Symbol-level state, as written by In_Symbol:
     Sy              : Defs.Symbol;
     prev_sy         : Defs.Symbol;

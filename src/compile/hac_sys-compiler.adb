@@ -28,12 +28,12 @@ package body HAC_Sys.Compiler is
   --  Initialize the compiler for a new unit.
   procedure Init (CUD : in out Current_Unit_Data) is
   begin
-    CUD.buffer_length   := 0;
-    CUD.buffer_position := 1;
-    CUD.c := ' ';
-    CUD.CC       := 0;
-    CUD.LL       := 0;
-    CUD.location := (0, 1, 1);
+    CUD.scan.buffer_length   := 0;
+    CUD.scan.buffer_position := 1;
+    CUD.scan.c               := ' ';
+    CUD.scan.CC              := 0;
+    CUD.scan.LL              := 0;
+    CUD.scan.location        := (0, 1, 1);
     CUD.level_0_def.Clear;
     CUD.use_hat_stack_top := 0;
     CUD.Use_HAT_Stack (CUD.use_hat_stack_top) := False;
@@ -583,7 +583,7 @@ package body HAC_Sys.Compiler is
     end if;
     --  Export library-level context, possibly needed later by a body:
     unit_context := CD.CUD.level_0_def;
-    CD.total_lines := CD.total_lines + CD.CUD.location.line;
+    CD.total_lines := CD.total_lines + CD.CUD.scan.location.line;
     --  Forget about the compilation just completed, and go back to the
     --  ongoing compilation that triggered a call to Compile_Unit via a WITH:
     CD.CUD := mem;

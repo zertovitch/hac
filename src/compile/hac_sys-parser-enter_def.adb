@@ -26,7 +26,7 @@ package body HAC_Sys.Parser.Enter_Def is
       New_B.Last_Id_Idx        := 0;
       New_B.First_Param_Id_Idx := 0;
       New_B.Last_Param_Id_Idx  := 0;
-      New_B.SrcFrom            := CD.CUD.location.line;
+      New_B.SrcFrom            := CD.CUD.scan.location.line;
     end;
   end Enter_Block;
 
@@ -93,7 +93,7 @@ package body HAC_Sys.Parser.Enter_Def is
        is_read               => no,
        is_written_after_init => no,
        is_initialized        => none,
-       location              => CD.CUD.location);
+       location              => CD.CUD.scan.location);
     --
     CD.target.Mark_Declaration;
     --  Update start of identifier chain:

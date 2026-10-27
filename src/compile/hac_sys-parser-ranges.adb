@@ -33,7 +33,7 @@ package body HAC_Sys.Parser.Ranges is
           --  Subtype S, but need to exclude the attribute case: S'First, S'Image, ...
           Skip_Blanks (CD);
           --  We sneak a look at the next symbol:
-          if CD.CUD.c /= ''' then
+          if CD.CUD.scan.c /= ''' then
             --  Not a S'... attribute here.
             In_Symbol (CD);  --  Consume the identifier.
             --  Do we have a subtype of a subtype?
