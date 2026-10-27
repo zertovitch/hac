@@ -175,7 +175,7 @@ package body HAC_Sys.Parser.Defaults is
         elsif CD.Sy in integer_literal | character_literal then
           declare
             Peek_Symbol : constant Symbol     := CD.Sy;
-            Peek_Value  : constant HAC_Integer := CD.INum;
+            Peek_Value  : constant HAC_Integer := CD.integer_number;
           begin
             In_Symbol;
             if CD.Sy = Finger then

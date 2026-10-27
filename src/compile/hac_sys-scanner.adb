@@ -284,7 +284,7 @@ package body HAC_Sys.Scanner is
           else
             Error
               (CD, err_scanner_negative_exponent_for_integer_literal,
-               CD.INum'Image & ".0e- ...",
+               CD.integer_number'Image & ".0e- ...",
                severity => minor);  --  minor -> scanning & parsing go on unhindered.
           end if;
         when others =>
@@ -326,7 +326,7 @@ package body HAC_Sys.Scanner is
            " > Max =" & EMax'Image,
            severity => minor);  --  minor -> scanning & parsing go on unhindered.
       elsif K + e < EMin then
-        CD.RNum := 0.0;
+        CD.real_number := 0.0;
       else
         S := abs e;
         T := 1.0;
@@ -340,7 +340,7 @@ package body HAC_Sys.Scanner is
           T := D * T;
           exit when S = 0;
         end loop;
-        CD.RNum := (if e >= 0 then CD.RNum * T else CD.RNum / T);
+        CD.real_number := (if e >= 0 then CD.real_number * T else CD.real_number / T);
       end if;
     end Adjust_Scale;
 
@@ -378,14 +378,14 @@ package body HAC_Sys.Scanner is
       end if;
       declare
         complete_string : constant String :=
-          HAC_Integer'Image (CD.INum) & '#' & s (s'First .. l);
+          HAC_Integer'Image (CD.integer_number) & '#' & s (s'First .. l);
       begin
         if has_point then
           CD.Sy   := real_literal;
-          CD.RNum := HAC_Float'Value (complete_string);
+          CD.real_number := HAC_Float'Value (complete_string);
         else
           CD.Sy   := integer_literal;
-          CD.INum := HAC_Integer'Value (complete_string);
+          CD.integer_number := HAC_Integer'Value (complete_string);
         end if;
       exception
         when others =>
@@ -420,12 +420,12 @@ package body HAC_Sys.Scanner is
       end if;
       --  Read decimal part.
       CD.Sy := real_literal;
-      CD.RNum := HAC_Float (CD.INum);
+      CD.real_number := HAC_Float (CD.integer_number);
       e := 0;
       while Character_Types (CD.CUD.scan.c) = Number loop
         e := e - 1;
-        CD.RNum :=
-          10.0 * CD.RNum +
+        CD.real_number :=
+          10.0 * CD.real_number +
             HAC_Float (Character'Pos (CD.CUD.scan.c) - Character'Pos ('0'));
         Next_Character (CD);
         Skip_Possible_Underscore_in_Number;
@@ -448,7 +448,7 @@ package body HAC_Sys.Scanner is
       use type HAC_Integer;
     begin
       K       := 0;
-      CD.INum := 0;
+      CD.integer_number := 0;
       CD.Sy   := integer_literal;
       if skip_leading_integer then
         --  Example: a naughty person has put ".123" in his/her code.
@@ -470,7 +470,7 @@ package body HAC_Sys.Scanner is
           elsif K > integer_digits_max then
             null;  --  The insult was already issued on K = integer_digits_max...
           else
-            CD.INum := CD.INum * 10 + (Character'Pos (CD.CUD.scan.c) - Character'Pos ('0'));
+            CD.integer_number := CD.integer_number * 10 + (Character'Pos (CD.CUD.scan.c) - Character'Pos ('0'));
           end if;
           K := K + 1;
           Next_Character (CD);
@@ -497,7 +497,7 @@ package body HAC_Sys.Scanner is
                    integer_digits_max'Image,
                    severity => minor);  --  minor -> scanning & parsing go on unhindered.
               else
-                CD.INum := CD.INum * 10 ** e;
+                CD.integer_number := CD.integer_number * 10 ** e;
               end if;
             end if;
           when '#' =>
@@ -556,7 +556,7 @@ package body HAC_Sys.Scanner is
       --  Until now, case (5) to (9) are treated.
       if C2 = ''' then  --  Cases (1), (2)
         CD.Sy := character_literal;
-        CD.INum := Character'Pos (C1);
+        CD.integer_number := Character'Pos (C1);
         Next_Character (CD);
         Next_Character (CD);
       else  --  Cases (3), (4)
@@ -592,7 +592,7 @@ package body HAC_Sys.Scanner is
               ST (past_start .. past_start + len - 1) =
               ST (CD.Strings_Table_Top + 1 .. CD.Strings_Table_Top + len)
           then
-            CD.INum  := HAC_Integer (past_start);
+            CD.integer_number  := HAC_Integer (past_start);
             if trace_folding then
               Put ("Matched... [" & ST (past_start .. past_start + len - 1) & "] ");
               if len = lit_len then
@@ -654,8 +654,8 @@ package body HAC_Sys.Scanner is
         end if;
       end loop;
       CD.Sy    := string_literal;
-      CD.SLeng := lit_len;
-      CD.INum  := HAC_Integer (CD.Strings_Table_Top + 1);
+      CD.string_length := lit_len;
+      CD.integer_number  := HAC_Integer (CD.Strings_Table_Top + 1);
       --
       if lit_len > 0 then
         if CD.target.Null_Terminated_String_Literals then
@@ -913,12 +913,12 @@ package body HAC_Sys.Scanner is
         when IDent =>
           Put (CD.comp_dump, ": " & A2S (CD.Id));
         when integer_literal =>
-          Put (CD.comp_dump, ": " & HAC_Integer'Image (CD.INum));
+          Put (CD.comp_dump, ": " & HAC_Integer'Image (CD.integer_number));
         when real_literal =>
-          Put (CD.comp_dump, ": " & HAC_Float'Image (CD.RNum));
+          Put (CD.comp_dump, ": " & HAC_Float'Image (CD.real_number));
         when string_literal =>
           Put (CD.comp_dump, ": """);
-          for i in Integer (CD.INum) .. Integer (CD.INum) + CD.SLeng - 1 loop
+          for i in Integer (CD.integer_number) .. Integer (CD.integer_number) + CD.string_length - 1 loop
             Put (CD.comp_dump, CD.Strings_Constants_Table (i));
           end loop;
           Put (CD.comp_dump, '"');
@@ -948,9 +948,9 @@ package body HAC_Sys.Scanner is
     State.Id              := CD.Id;
     State.Id_with_case    := CD.Id_with_case;
     State.Id_location     := CD.Id_location;
-    State.INum            := CD.INum;
-    State.RNum            := CD.RNum;
-    State.SLeng           := CD.SLeng;
+    State.INum            := CD.integer_number;
+    State.RNum            := CD.real_number;
+    State.SLeng           := CD.string_length;
   end Save_Scanner_State;
 
   procedure Restore_Scanner_State
@@ -966,9 +966,9 @@ package body HAC_Sys.Scanner is
     CD.Id              := State.Id;
     CD.Id_with_case    := State.Id_with_case;
     CD.Id_location     := State.Id_location;
-    CD.INum            := State.INum;
-    CD.RNum            := State.RNum;
-    CD.SLeng           := State.SLeng;
+    CD.integer_number            := State.INum;
+    CD.real_number            := State.RNum;
+    CD.string_length           := State.SLeng;
   end Restore_Scanner_State;
 
 end HAC_Sys.Scanner;

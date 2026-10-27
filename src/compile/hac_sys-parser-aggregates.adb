@@ -407,7 +407,7 @@ package body HAC_Sys.Parser.Aggregates is
             --  positional associations (RM 4.3 (4)/(5))?
             declare
               Peek_Symbol : constant Symbol     := CD.Sy;
-              Peek_Value  : constant HAC_Integer := CD.INum;
+              Peek_Value  : constant HAC_Integer := CD.integer_number;
             begin
               In_Symbol;
               if CD.Sy = Finger then
@@ -439,7 +439,7 @@ package body HAC_Sys.Parser.Aggregates is
       elsif CD.Sy in integer_literal | character_literal then
         declare
           Choice_Symbol : constant Symbol     := CD.Sy;
-          Choice_Value  : constant HAC_Integer := CD.INum;
+          Choice_Value  : constant HAC_Integer := CD.integer_number;
         begin
           In_Symbol;  --  Peek past the literal.
           if CD.Sy = Finger then
@@ -454,7 +454,7 @@ package body HAC_Sys.Parser.Aggregates is
                 exit;
               elsif CD.Sy in integer_literal | character_literal then
                 declare
-                  Next_Choice_Value : constant HAC_Integer := CD.INum;
+                  Next_Choice_Value : constant HAC_Integer := CD.integer_number;
                 begin
                   In_Symbol;
                   Need (CD, Finger, err_FINGER_missing);

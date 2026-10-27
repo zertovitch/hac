@@ -394,9 +394,9 @@ package HAC_Sys.Co_Defs is
     Id               : Alfa;               --  Identifier from In_Symbol
     Id_with_case     : Alfa;               --  Same as Id, but with casing.
     Id_location      : Integer;            --  Cache for Locate_CD_Id
-    INum             : HAC_Integer;        --  Integer from In_Symbol
-    RNum             : HAC_Float;          --  Float number from In_Symbol
-    SLeng            : Integer;            --  String Length
+    integer_number   : HAC_Integer;        --  Integer from In_Symbol
+    real_number      : HAC_Float;          --  Float number from In_Symbol
+    string_length    : Integer;
     pkg_prefix       : HAT.VString;        --  Prefix of package being currently parsed.
     --  Compiler tables. Floats and Strings are used by interpreter at run-time.
     Arrays_Table            : Arrays_Table_Type;  --  NB: only static-sized arrays so far.
