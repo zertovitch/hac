@@ -48,8 +48,8 @@ package body HAC_Sys.Targets.Semantics is
     --
     m.decl_array (m.CD.Id_Count) :=
       (file_name   => (if is_built_in then HAT.Null_VString else m.CD.CUD.source_file_name),
-       line        => (if is_built_in then -1               else m.CD.CUD.location.line),
-       column      => (if is_built_in then -1               else m.CD.CUD.location.column_start),
+       line        => (if is_built_in then -1               else m.CD.CUD.scan.location.line),
+       column      => (if is_built_in then -1               else m.CD.CUD.scan.location.column_start),
        is_built_in => is_built_in,
        id_index    => m.CD.Id_Count,
        others      => <>);
@@ -68,7 +68,7 @@ package body HAC_Sys.Targets.Semantics is
       end if;
       --  2) Insert the infos for the declaration into the line map,
       --     possibly replacing a value for the same line number.
-      line_map_a.Include (m.CD.CUD.location.line, m.CD.Id_Count);
+      line_map_a.Include (m.CD.CUD.scan.location.line, m.CD.Id_Count);
     end if;
   end Mark_Declaration;
 
@@ -121,8 +121,8 @@ package body HAC_Sys.Targets.Semantics is
       (m,
        Reference_Point'
          (m.CD.CUD.source_file_name,
-          m.CD.CUD.location.line,
-          m.CD.CUD.location.column_start),
+          m.CD.CUD.scan.location.line,
+          m.CD.CUD.scan.location.column_start),
        located_id);
   end Mark_Reference;
 
