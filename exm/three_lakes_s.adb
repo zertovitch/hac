@@ -78,12 +78,13 @@ procedure Three_Lakes_S is
     end if;
   end Sign;
 
-  --  ! ivs: constant Lake_Vector:=
-  --  !    (Morat     => 1.0 / 2.2820e7,
-  --  !     Neuchatel => 1.0 / 2.1581e8,
-  --  !     Bienne    => 1.0 / 4.0870e7);
+  --  ivs: constant Lake_Vector:=
+  --     (Morat     => 1.0 / 2.2820e7,
+  --      Neuchatel => 1.0 / 2.1581e8,
+  --      Bienne    => 1.0 / 4.0870e7);
   --
-  --  ! Full Ada: aggregates
+  --  !! Fix the Aggregates feature, HAC borks on first item ("Morat") with a type mismatch error.
+  --     Bug/Issue #5 in hac_work.xls
 
   ivs : Lake_Vector;
 
@@ -178,6 +179,9 @@ procedure Three_Lakes_S is
 
     --  ! x := (Morat => 428.2, Neuchatel => 429.0, Bienne => 429.4);  --  Lake levels at time t = 0.
     --  ! q_e := (Morat => 40.0, Neuchatel => 70.0, Bienne => 100.0);  --  Inflows (could be dynamic).
+    --  Supported but still doesn't work, issues a type mismatch error.
+    --  Bug/Issue #5 in hac_work.xls
+
     x (Morat)     := 428.2;
     x (Neuchatel) := 429.0;
     x (Bienne)    := 429.4;
