@@ -63,18 +63,18 @@ package body HAC_Sys.Librarian is
 
   procedure Enter_Library_Level_Def
     (CD             : in out Co_Defs.Compiler_Data;
-     Full_Ident     : in     String;  --  "Main", "Standard.False", ...
-     New_Entity     : in     Co_Defs.Entity_Kind;
-     Base_Type      : in     Defs.Typen;
-     Size           : in     Integer;
-     Discrete_First : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
-     Discrete_Last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last;
+     full_ident     : in     String;  --  "Main", "Standard.False", ...
+     new_entity     : in     Co_Defs.Entity_Kind;
+     base_type      : in     Defs.Typen;
+     size           : in     Integer;
+     discrete_first : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
+     discrete_last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last;
      is_built_in    : in     Boolean := False)
   is
     use Ada.Characters.Handling, Co_Defs, Defs;
     use type Nesting_Level;
-    Alfa_Ident       : constant Alfa := S2A (Full_Ident);
-    Alfa_Ident_Upper : constant Alfa := S2A (To_Upper (Full_Ident));
+    Alfa_Ident       : constant Alfa := S2A (full_ident);
+    Alfa_Ident_Upper : constant Alfa := S2A (To_Upper (full_ident));
     last : Index := CD.Id_Count;
   begin
     CD.Id_Count := CD.Id_Count + 1;
@@ -86,17 +86,17 @@ package body HAC_Sys.Librarian is
       (name                  => Alfa_Ident_Upper,
        name_with_case        => Alfa_Ident,
        link                  => last,
-       entity                => New_Entity,
+       entity                => new_entity,
        decl_kind             => complete,
-       xtyp                  => (TYP            => Base_Type,
+       xtyp                  => (TYP            => base_type,
                                  Ref            => 0,
                                  Is_Range       => False,
-                                 Discrete_First => Discrete_First,
-                                 Discrete_Last  => Discrete_Last),
+                                 Discrete_First => discrete_first,
+                                 Discrete_Last  => discrete_last),
        block_or_pkg_ref      => 0,
        normal                => True,
        lev                   => 0,
-       adr_or_sz             => HAC_Integer (Size),
+       adr_or_sz             => HAC_Integer (size),
        is_referenced         => False,
        is_read               => no,
        is_written_after_init => no,

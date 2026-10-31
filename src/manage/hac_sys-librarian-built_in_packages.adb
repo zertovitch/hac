@@ -39,15 +39,37 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Register_Unit (LD, unit);
   end Enter_and_Register_Built_In_Package;
 
+  procedure Enter_Built_In_Type
+    (CD             : in out Co_Defs.Compiler_Data;
+     full_ident     : in     String;  --  "Main", "Standard.False", ...
+     base_type      : in     Defs.Typen;
+     size           : in     Integer;
+     discrete_first : in     Defs.HAC_Integer;
+     discrete_last  : in     Defs.HAC_Integer)
+  is
+  begin
+    Enter_Library_Level_Def
+      (CD             => CD,
+       full_ident     => full_ident,
+       new_entity     => Co_Defs.type_mark,
+       base_type      => base_type,
+       size           => size,
+       discrete_first => discrete_first,
+       discrete_last  => discrete_last,
+       is_built_in    => True);
+  end Enter_Built_In_Type;
+
   procedure Define_and_Register_Standard
     (CD : in out Co_Defs.Compiler_Data;
      LD : in out Library_Data)
   is
     use Co_Defs, Defs;
+
     procedure Enter_Std_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, "Standard." & Name, type_mark, T, 1, First, Last, True);
+      Enter_Built_In_Type (CD, "Standard." & Name, T, 1, First, Last);
     end Enter_Std_Typ;
+
   begin
     Enter_Library_Level_Def (CD, "", constant_object, NOTYP, 0);  --  Unreachable Id with invalid Link.
     --
@@ -78,11 +100,13 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     (CD : in out Co_Defs.Compiler_Data;
      LD : in out Library_Data)
   is
-    use Co_Defs, Defs, Interfaces;
+    use Defs, Interfaces;
+
     procedure Enter_Interfaces_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, "Interfaces." & Name, type_mark, T, 1, First, Last, True);
+      Enter_Built_In_Type (CD, "Interfaces." & Name, T, 1, First, Last);
     end Enter_Interfaces_Typ;
+
   begin
     Enter_and_Register_Built_In_Package (CD, LD, "Interfaces");
     --
@@ -111,7 +135,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
 
     procedure Enter_HAT_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
     begin
-      Enter_Library_Level_Def (CD, HAT_Name & '.' & Name, type_mark, T, 1, First, Last, True);
+      Enter_Built_In_Type (CD, HAT_Name & '.' & Name, T, 1, First, Last);
     end Enter_HAT_Typ;
 
     procedure Enter_HAT_Funct (Name : String; T : Typen; Code : Defs.SF_Code) is
@@ -145,6 +169,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAT_Typ ("Time",                 Times, 0, 0);
     Enter_HAT_Typ ("VString",              VStrings, 0, 0);               --  2020.05.02
     Enter_HAT_Typ ("File_Type",            Text_Files, 0, 0);             --  2020.05.17
+    --  Ada.Directories stuff:
     Enter_HAT_Typ ("Directory_Entry_Type", Directory_Entry_Types, 0, 0);  --  2026.10.20
     Enter_HAT_Typ ("Search_Type",          Search_Types, 0, 0);           --  2026.10.20
     --
