@@ -446,6 +446,10 @@ package HAT is
   procedure Set_VM_Variable (Name : String;  Value : VString);
   procedure Set_VM_Variable (Name : VString; Value : VString);
 
+  ----------------------------------
+  --  Ada.Directories-like stuff  --
+  ----------------------------------
+
   function Current_Directory return VString;
 
   procedure Set_Directory (Directory : String) renames Ada.Directories.Set_Directory;
@@ -479,6 +483,9 @@ package HAT is
   procedure Rename (Old_Name : VString; New_Name : String);
   procedure Rename (Old_Name : String;  New_Name : VString);
   procedure Rename (Old_Name : VString; New_Name : VString);
+
+  type Search_Type          is new Ada.Directories.Search_Type;
+  type Directory_Entry_Type is new Ada.Directories.Directory_Entry_Type;
 
   ---------------------
   --  Shell_Execute  --

@@ -27,6 +27,7 @@ project HAC_Test is
      "constants.adb",
      "declarations.adb",
      "digitz.adb",
+     "directory_iterators.adb",
      "enumerations.adb",
      "exception_01.adb",
      "exception_02.adb",
