@@ -484,8 +484,24 @@ package HAT is
   procedure Rename (Old_Name : String;  New_Name : VString);
   procedure Rename (Old_Name : VString; New_Name : VString);
 
-  type Search_Type          is new Ada.Directories.Search_Type;
-  type Directory_Entry_Type is new Ada.Directories.Directory_Entry_Type;
+  subtype Search_Type          is Ada.Directories.Search_Type;
+  subtype File_Kind            is Ada.Directories.File_Kind;
+  subtype Filter_Type          is Ada.Directories.Filter_Type;
+  subtype Directory_Entry_Type is Ada.Directories.Directory_Entry_Type;
+
+  procedure Start_Search (Search    : in out Search_Type;
+                          Directory : in String;
+                          Pattern   : in String;
+                          Filter    : in Filter_Type := (others => True))
+  renames Ada.Directories.Start_Search;
+
+  procedure End_Search (Search : in out Search_Type) renames Ada.Directories.End_Search;
+
+  function More_Entries (Search : in Search_Type) return Boolean renames Ada.Directories.More_Entries;
+
+  procedure Get_Next_Entry (Search          : in out Search_Type;
+                            Directory_Entry :    out Directory_Entry_Type)
+  renames Ada.Directories.Get_Next_Entry;
 
   ---------------------
   --  Shell_Execute  --
