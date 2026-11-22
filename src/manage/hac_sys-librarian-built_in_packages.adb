@@ -61,10 +61,43 @@ package body HAC_Sys.Librarian.Built_In_Packages is
 
   procedure Enter_Built_In_Enumeration_Type
     (CD             : in out Co_Defs.Compiler_Data;
-     full_ident     : in     String)
+     full_ident     : in     String;
+     enum_items     : in     Defs.Alfa_Array)
   is
+    enum_count : Natural := 0;
+    use Co_Defs, Defs;
+    use type HAC_Integer;
   begin
-    null;  --  !! Clone and adapt Enumeration_Typ from HAC_Sys.Parser.Type_Def...
+    Enter_Built_In_Type
+      (CD             => CD,
+       full_ident     => full_ident,
+       base_type      => Enums,
+       size           => 1,
+       discrete_first => 0,
+       discrete_last  => enum_items'Length - 1);
+    declare
+      xTP : Co_Defs.Exact_Subtyp renames CD.id_table (CD.Id_Count).xtyp;
+    begin
+      xTP.Ref := CD.Id_Count;
+      for item of enum_items loop
+        enum_count := enum_count + 1;
+        Enter_Library_Level_Def
+          (CD             => CD,
+           full_ident     => A2S (item),
+           new_entity     => declared_number_or_enum_item,
+           base_type      => xTP.TYP,
+           size           => enum_count - 1,  --  RM 3.5.1 (7): position begins with 0.
+           discrete_first => HAC_Integer (enum_count - 1),  --  Likely unused...
+           discrete_last  => HAC_Integer (enum_count - 1),  --  Likely unused...
+           is_built_in    => True);
+        declare
+          new_enum_item : Identifier_Table_Entry renames CD.id_table (CD.Id_Count);
+        begin
+          new_enum_item.xtyp          := xTP;
+          new_enum_item.is_referenced := False;
+        end;
+      end loop;
+    end;
   end Enter_Built_In_Enumeration_Type;
 
   procedure Define_and_Register_Standard
@@ -179,7 +212,13 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     Enter_HAT_Typ ("File_Type",            Text_Files, 0, 0);             --  2020.05.17
     --  Ada.Directories stuff:
     Enter_HAT_Typ ("Directory_Entry_Type", Directory_Entry_Types, 0, 0);  --  2026.10.20
-    Enter_HAT_Typ ("Search_Type",          Search_Types, 0, 0);           --  2026.10.20
+    Enter_HAT_Typ ("Search_Type", Search_Types, 0, 0);                    --  2026.10.20
+    Enter_Built_In_Enumeration_Type                                       --  2026.11.22
+      (CD,
+       HAT_Name & ".File_Kind",
+       (S2A (HAT_Name & ".Directory"),
+        S2A (HAT_Name & ".Ordinary_File"),
+        S2A (HAT_Name & ".Special_File")));
     --
     --  "Standard" functions
     --

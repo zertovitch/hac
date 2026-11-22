@@ -245,6 +245,7 @@ package HAC_Sys.Defs is
   Empty_Alfa : Alfa renames HAT.Null_VString;
   function A2S (a : Alfa) return String renames HAT.To_String;
   function S2A (s : String) return Alfa renames HAT.To_VString;
+  type Alfa_Array is array (Positive range <>) of Alfa;
 
   --  Data types in HAC. We call them "Typ" (with an Akzent ;-) ) to avoid
   --  confusion with the types of the HAC code itself.

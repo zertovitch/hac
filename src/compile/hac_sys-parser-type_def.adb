@@ -162,7 +162,7 @@ package body HAC_Sys.Parser.Type_Def is
 
     procedure Enumeration_Typ is  --  RM 3.5.1 Enumeration Types
       enum_count : Natural := 0;
-      forward_id_idx : Natural;
+      dummy_forward_id_idx : Natural;
     begin
       xTP.Construct_Root (Enums);
       xTP.Ref := CD.Id_Count;
@@ -170,7 +170,7 @@ package body HAC_Sys.Parser.Type_Def is
         In_Symbol;  --  Consume '(' or ',' symbol.
         if CD.Sy = IDent then
           enum_count := enum_count + 1;
-          Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, declared_number_or_enum_item, forward_id_idx);
+          Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, declared_number_or_enum_item, dummy_forward_id_idx);
           declare
             new_enum_item : Identifier_Table_Entry renames CD.id_table (CD.Id_Count);
           begin
