@@ -179,6 +179,19 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Enter_Built_In_Type (CD, HAT_Name & '.' & Name, T, 1, First, Last);
     end Enter_HAT_Typ;
 
+    procedure Enter_HAT_Enumeration_Type (name : in String; enum_items : Defs.Alfa_Array) is
+      hat_enum_items : Defs.Alfa_Array (enum_items'Range);
+      use type Defs.Alfa;
+    begin
+      for i in enum_items'Range loop
+        hat_enum_items (i) := S2A (HAT_Name & '.') & enum_items (i);
+      end loop;
+      Enter_Built_In_Enumeration_Type
+        (CD,
+         HAT_Name & '.' & name,
+         hat_enum_items);
+    end Enter_HAT_Enumeration_Type;
+
     procedure Enter_HAT_Funct (Name : String; T : Typen; Code : Defs.SF_Code) is
     begin
       Enter_Library_Level_Def
@@ -213,12 +226,11 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --  Ada.Directories stuff:
     Enter_HAT_Typ ("Directory_Entry_Type", Directory_Entry_Types, 0, 0);  --  2026.10.20
     Enter_HAT_Typ ("Search_Type", Search_Types, 0, 0);                    --  2026.10.20
-    Enter_Built_In_Enumeration_Type                                       --  2026.11.22
-      (CD,
-       HAT_Name & ".File_Kind",
-       (S2A (HAT_Name & ".Directory"),
-        S2A (HAT_Name & ".Ordinary_File"),
-        S2A (HAT_Name & ".Special_File")));
+    Enter_HAT_Enumeration_Type                                       --  2026.11.22
+      ("File_Kind",
+       (S2A ("Directory"),
+        S2A ("Ordinary_File"),
+        S2A ("Special_File")));
     --
     --  "Standard" functions
     --
