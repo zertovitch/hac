@@ -82,7 +82,7 @@ package body HAC_Sys.Parser.Attributes is
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High));
         xSubtyp_of_Result := A.Index_xTyp;
-        xSubtyp_of_Result.Is_Range := True;
+        xSubtyp_of_Result.is_range_attribute := True;
       when Length =>      --  RM 3.6.2 (9, 10)
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (High - Low + 1));
         Construct_Root (xSubtyp_of_Result, Ints);
@@ -209,8 +209,8 @@ package body HAC_Sys.Parser.Attributes is
               Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
             end if;
         end case;
-        xSubtyp_of_Result          := S;
-        xSubtyp_of_Result.Is_Range := True;
+        xSubtyp_of_Result                    := S;
+        xSubtyp_of_Result.is_range_attribute := True;
       end Range_Attribute;
       --
       procedure Pred_Succ_Discrete is

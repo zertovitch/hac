@@ -6,9 +6,9 @@ package body HAC_Sys.Co_Defs is
 
   procedure Construct_Root (Root : out Exact_Typ; Typ : Typen) is
   begin
-    Root.TYP      := Typ;
-    Root.Ref      := 0;
-    Root.Is_Range := False;
+    Root.TYP                := Typ;
+    Root.Ref                := 0;
+    Root.is_range_attribute := False;
   end Construct_Root;
 
   overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen) is

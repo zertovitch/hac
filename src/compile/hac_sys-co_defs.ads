@@ -47,7 +47,7 @@ package HAC_Sys.Co_Defs is
     --    if TYP = Arrays,       Arrays_Table;
     --    if TYP = Enums,        Idtab (the enumeration type's declaration).
     --
-    Is_Range : Boolean;
+    is_range_attribute : Boolean;
     --  ^ For X'Range expressions, indicates a pair of values waiting on the stack.
   end record;
 

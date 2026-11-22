@@ -167,7 +167,7 @@ package body HAC_Sys.Parser.Type_Def is
       xTP.Construct_Root (Enums);
       xTP.Ref := CD.Id_Count;
       loop
-        In_Symbol;  --  Consume '(' symbol.
+        In_Symbol;  --  Consume '(' or ',' symbol.
         if CD.Sy = IDent then
           enum_count := enum_count + 1;
           Enter_Prefixed (CD, Level, CD.Id, CD.Id_with_case, declared_number_or_enum_item, forward_id_idx);

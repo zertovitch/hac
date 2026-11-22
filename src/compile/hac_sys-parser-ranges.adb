@@ -208,14 +208,14 @@ package body HAC_Sys.Parser.Ranges is
     --
     --      if xx in 1 .. sx and then yy in 1 .. sy and then map (xx, yy) <= 9 then
     --
-    Range_Typ          := Lower_Bound_Typ;
-    Range_Typ.Is_Range := False;
+    Range_Typ                    := Lower_Bound_Typ;
+    Range_Typ.is_range_attribute := False;
     --
     if not Discrete_Typ (Range_Typ.TYP) then
       Error (CD, Non_Discrete_Error, Nice_Exact_Image (CD, Range_Typ));
     end if;
     --
-    if Lower_Bound_Typ.Is_Range then
+    if Lower_Bound_Typ.is_range_attribute then
       --  We got a ` X'Range ` expression which is a shortcut for ` X'First .. X'Last `.
       --  The ` .. X'Last ` part has been implicitly parsed with ` X'Range ` .
       null;

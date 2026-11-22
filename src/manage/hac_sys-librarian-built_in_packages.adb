@@ -59,6 +59,14 @@ package body HAC_Sys.Librarian.Built_In_Packages is
        is_built_in    => True);
   end Enter_Built_In_Type;
 
+  procedure Enter_Built_In_Enumeration_Type
+    (CD             : in out Co_Defs.Compiler_Data;
+     full_ident     : in     String)
+  is
+  begin
+    null;  --  !! Clone and adapt Enumeration_Typ from HAC_Sys.Parser.Type_Def...
+  end Enter_Built_In_Enumeration_Type;
+
   procedure Define_and_Register_Standard
     (CD : in out Co_Defs.Compiler_Data;
      LD : in out Library_Data)
