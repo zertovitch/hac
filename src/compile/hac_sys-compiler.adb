@@ -212,9 +212,9 @@ package body HAC_Sys.Compiler is
     else
       Put_Line
         (CD.comp_dump,
-         " Array   | Index: typ_________ " &
-         " Element: typ_______ref   " &
-         " Low___High   El. Size Ar. Size Dims");
+         " Array   | Index: typ___________ref " &
+         " Element: typ_________ref   " &
+         " Low___High | Elem. Size | Arr. Size | Dims");
       --
       for i in 1 .. CD.Arrays_Count loop
         declare
@@ -226,14 +226,15 @@ package body HAC_Sys.Compiler is
           Put (CD.comp_dump, i, 7);
           Put (typ_img, r.Index_xTyp.TYP);    --  Padded
           Put (CD.comp_dump, "  | " & typ_img);
+          Put (CD.comp_dump, r.Index_xTyp.Ref, 3);
           Put (typ_img, r.Element_xTyp.TYP);  --  Padded
           Put (CD.comp_dump, "  " & typ_img);
           Put (CD.comp_dump, r.Element_xTyp.Ref, 3);
           Put (CD.comp_dump, r.Index_xTyp.Discrete_First, 7);
           Put (CD.comp_dump, r.Index_xTyp.Discrete_Last,  7);
-          Put (CD.comp_dump, r.Element_Size, 11);
-          Put (CD.comp_dump, r.Array_Size,    9);
-          Put (CD.comp_dump, r.dimensions,    5);
+          Put (CD.comp_dump, r.Element_Size, 13);
+          Put (CD.comp_dump, r.Array_Size,   12);
+          Put (CD.comp_dump, r.dimensions,    7);
         end;
         New_Line (CD.comp_dump);
       end loop;

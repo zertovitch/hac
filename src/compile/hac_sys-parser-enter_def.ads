@@ -42,7 +42,7 @@ package HAC_Sys.Parser.Enter_Def is
 
   procedure Enter_Array
     (CD        : in out Co_Defs.Compiler_Data;
-     Index_STP :        Co_Defs.Exact_Subtyp);
+     Index_STP : in     Co_Defs.Exact_Subtyp);
 
   procedure Enter_Variables
     (CD       : in out Co_Defs.Compiler_Data;

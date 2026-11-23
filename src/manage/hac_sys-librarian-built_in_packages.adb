@@ -11,6 +11,7 @@
 
 with HAC_Sys.Defs,
      HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Packages;
 
 with HAT;
@@ -64,6 +65,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
      full_ident     : in     String;
      enum_items     : in     Defs.Alfa_Array)
   is
+    --  Adapted from HAC_Sys.Parser.Type_Def
     enum_count : Natural := 0;
     use Co_Defs, Defs;
     use type HAC_Integer;
@@ -100,6 +102,52 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     end;
   end Enter_Built_In_Enumeration_Type;
 
+  --  One-dimensional built-in array.
+  procedure Enter_Built_In_Array_Type
+    (CD                    : in out Co_Defs.Compiler_Data;
+     full_ident            : in     String;
+     index_exact_subtyp    : in     Co_Defs.Exact_Subtyp;
+     element_exact_subtyp  : in     Co_Defs.Exact_Subtyp;
+     element_size          : in     Integer)
+  is
+    --  Adapted from HAC_Sys.Parser.Type_Def
+    new_dim_size          : Defs.HAC_Integer;
+    arr_tab_ref, arr_size : Integer;
+    use type Defs.HAC_Integer;
+  begin
+    Enter_Built_In_Type
+      (CD             => CD,
+       full_ident     => full_ident,
+       base_type      => Defs.Arrays,
+       size           => 1,  --  Adapted later.
+       discrete_first => 0,
+       discrete_last  => 0);
+
+    declare
+      array_id_entry : Co_Defs.Identifier_Table_Entry renames CD.id_table (CD.Id_Count);
+    begin
+      Parser.Enter_Def.Enter_Array (CD, index_exact_subtyp);
+      arr_tab_ref := CD.Arrays_Count;
+      new_dim_size := index_exact_subtyp.Discrete_Last - index_exact_subtyp.Discrete_First + 1;
+      arr_size := Integer (Defs.HAC_Integer'Max (0, new_dim_size)) * element_size;
+
+      declare
+        new_a : Co_Defs.Array_Table_Entry renames CD.Arrays_Table (arr_tab_ref);
+      begin
+        --  new_a.Index_xTyp already set by Enter_Array.
+        new_a.Array_Size   := arr_size;
+        new_a.Element_xTyp := element_exact_subtyp;
+        new_a.Element_Size := element_size;
+        new_a.dimensions   := 1;
+      end;
+
+      array_id_entry.xtyp.Ref  := arr_tab_ref;
+      array_id_entry.adr_or_sz := Defs.HAC_Integer (arr_size);
+    end;
+  end Enter_Built_In_Array_Type;
+
+  std_bool_index : Integer;
+
   procedure Define_and_Register_Standard
     (CD : in out Co_Defs.Compiler_Data;
      LD : in out Library_Data)
@@ -121,6 +169,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     Enter_Std_Typ ("Character",      Chars, 0, 255);
     Enter_Std_Typ ("Boolean",        Bools, 0, 1);
+    std_bool_index := CD.Id_Count;
     Enter_Std_Typ (HAC_Integer_Name, Ints, HAC_Integer'First, HAC_Integer'Last);
     --
     --  The "String" type identifier is treated separately in the Type_Definition parser
@@ -158,6 +207,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     CD.Packages_Table (CD.Packages_Count).last_public_declaration := CD.Id_Count;
   end Define_and_Register_Interfaces;
+
+  hat_file_kind_index : Integer;
 
   procedure Define_and_Register_HAT
     (CD : in out Co_Defs.Compiler_Data;
@@ -226,11 +277,22 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --  Ada.Directories stuff:
     Enter_HAT_Typ ("Directory_Entry_Type", Directory_Entry_Types, 0, 0);  --  2026.10.20
     Enter_HAT_Typ ("Search_Type", Search_Types, 0, 0);                    --  2026.10.20
-    Enter_HAT_Enumeration_Type                                       --  2026.11.22
+
+    Enter_HAT_Enumeration_Type  --  2026.11.22
       ("File_Kind",
        (S2A ("Directory"),
         S2A ("Ordinary_File"),
         S2A ("Special_File")));
+    hat_file_kind_index :=  CD.Id_Count;
+
+    --  Create: "type Filter_Type is array (HAT.File_Kind) of Boolean;" 2026.11.23
+    Enter_Built_In_Array_Type
+      (CD                   => CD,
+       full_ident           => "HAT.Filter_Type",
+       index_exact_subtyp   => CD.id_table (hat_file_kind_index).xtyp,
+       element_exact_subtyp => CD.id_table (std_bool_index).xtyp,
+       element_size         => 1);
+
     --
     --  "Standard" functions
     --

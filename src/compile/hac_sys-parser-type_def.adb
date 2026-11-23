@@ -74,11 +74,11 @@ package body HAC_Sys.Parser.Type_Def is
   --  index_constraint 3.6.1 (2)           : "Matrix (1 .. 2, 3 .. 4);"
   --
   procedure Array_Typ
-    (CD            : in out Co_Defs.Compiler_Data;
-     Level : in     Defs.Nesting_Level;
-     FSys_TD       : in     Defs.Symset;
-     arr_tab_ref, arr_size, arr_dimensions : out Integer;
-     string_constrained_subtype            :     Boolean)
+    (CD                                    : in out Co_Defs.Compiler_Data;
+     Level                                 : in     Defs.Nesting_Level;
+     FSys_TD                               : in     Defs.Symset;
+     arr_tab_ref, arr_size, arr_dimensions :    out Integer;
+     string_constrained_subtype            : in     Boolean)
   is
     Element_Exact_Subtyp, Index_Exact_Subtyp : Exact_Subtyp;
     Element_Size                             : Integer;
@@ -101,13 +101,15 @@ package body HAC_Sys.Parser.Type_Def is
       Element_Size := 1;
       Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
     elsif CD.Sy = Comma then
-      --  Multidimensional array is equivalant to:  array (range_1) of array (range_2,...).
+      --  Multidimensional array is equivalent to:  array (range_1) of array (range_2,...).
       Scanner.In_Symbol (CD);  --  Consume ',' symbol.
       Construct_Root (Element_Exact_Subtyp, Arrays);  --  Recursion for next array dimension.
       Array_Typ (CD, Level, FSys_TD, Element_Exact_Subtyp.Ref, Element_Size, recursive_dimensions, False);
     else
+      --  ')'  in  "array (...)":
       Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
-      Need (CD, OF_Symbol, err_missing_OF);         --  "of"  in  "array (...) of Some_Type"
+      --  "of"  in  "array (...) of Some_Type":
+      Need (CD, OF_Symbol, err_missing_OF);
       if Type_Begin_Symbol (CD.Sy) then
         Error (CD, err_general_error, "anonymous definition not permitted here");
         --  Recovery:
