@@ -1,15 +1,15 @@
 with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Co_Defs,
      HAC_Sys.Defs,
+     HAC_Sys.Enter_Def,
+     HAC_Sys.Errors,
      HAC_Sys.Parser.Defaults,
-     HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Statements,
      HAC_Sys.Parser.Type_Def,
      HAC_Sys.PCode,
-     HAC_Sys.Scanner,
-     HAC_Sys.Errors;
+     HAC_Sys.Scanner;
 
 package body HAC_Sys.Parser.Const_Var is
 

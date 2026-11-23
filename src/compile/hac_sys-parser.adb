@@ -1,5 +1,6 @@
 with HAC_Sys.Compiler.PCode_Emit,
-     HAC_Sys.Parser.Enter_Def,
+     HAC_Sys.Enter_Def,
+     HAC_Sys.Errors,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Packages,
      HAC_Sys.Parser.Statements,
@@ -7,8 +8,7 @@ with HAC_Sys.Compiler.PCode_Emit,
      HAC_Sys.Parser.Const_Var,
      HAC_Sys.Parser.Type_Def,
      HAC_Sys.PCode,
-     HAC_Sys.Scanner,
-     HAC_Sys.Errors;
+     HAC_Sys.Scanner;
 
 with HAT;
 

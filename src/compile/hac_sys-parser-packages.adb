@@ -1,6 +1,6 @@
-with HAC_Sys.Errors,
+with HAC_Sys.Enter_Def,
+     HAC_Sys.Errors,
      HAC_Sys.Parser.Const_Var,
-     HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Tasking,
      HAC_Sys.Parser.Type_Def,
@@ -308,7 +308,7 @@ package body HAC_Sys.Parser.Packages is
      prefixed :        Boolean;
      Pkg_Idx  : in     Natural)  --  Index in the identifier table for USEd package.
   is
-    use Co_Defs, Defs, Parser.Enter_Def, Errors;
+    use Co_Defs, Defs, Enter_Def, Errors;
     use type Nesting_Level;
     Pkg_UName : constant String := A2S (CD.id_table (Pkg_Idx).name);
     Id_Alias, dummy_id_idx : Natural;

@@ -1,5 +1,5 @@
 with HAC_Sys.Compiler.PCode_Emit,
-     HAC_Sys.Parser.Enter_Def,
+     HAC_Sys.Enter_Def,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.PCode,
      HAC_Sys.Scanner,

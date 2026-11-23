@@ -11,7 +11,7 @@
 
 with HAC_Sys.Defs,
      HAC_Sys.Compiler.PCode_Emit,
-     HAC_Sys.Parser.Enter_Def,
+     HAC_Sys.Enter_Def,
      HAC_Sys.Parser.Packages;
 
 with HAT;
@@ -126,7 +126,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     declare
       array_id_entry : Co_Defs.Identifier_Table_Entry renames CD.id_table (CD.Id_Count);
     begin
-      Parser.Enter_Def.Enter_Array (CD, index_exact_subtyp);
+      Enter_Def.Enter_Array (CD, index_exact_subtyp);
       arr_tab_ref := CD.Arrays_Count;
       new_dim_size := index_exact_subtyp.Discrete_Last - index_exact_subtyp.Discrete_First + 1;
       arr_size := Integer (Defs.HAC_Integer'Max (0, new_dim_size)) * element_size;

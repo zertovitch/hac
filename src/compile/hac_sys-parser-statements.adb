@@ -1,15 +1,15 @@
 with HAC_Sys.Compiler.PCode_Emit,
+     HAC_Sys.Enter_Def,
+     HAC_Sys.Errors,
      HAC_Sys.Parser.Aggregates,
      HAC_Sys.Parser.Calls,
-     HAC_Sys.Parser.Enter_Def,
      HAC_Sys.Parser.Expressions,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Ranges,
-     HAC_Sys.PCode,
      HAC_Sys.Parser.Standard_Procedures,
      HAC_Sys.Parser.Statements.CASE_Statement,
-     HAC_Sys.Scanner,
-     HAC_Sys.Errors;
+     HAC_Sys.PCode,
+     HAC_Sys.Scanner;
 
 package body HAC_Sys.Parser.Statements is
 

@@ -3,7 +3,7 @@ with HAC_Sys.Scanner,
 
 with HAT;
 
-package body HAC_Sys.Parser.Enter_Def is
+package body HAC_Sys.Enter_Def is
 
   use Co_Defs, Defs, Errors;
   use type HAC_Integer;
@@ -191,4 +191,4 @@ package body HAC_Sys.Parser.Enter_Def is
     end loop;
   end Enter_Variables;
 
-end HAC_Sys.Parser.Enter_Def;
+end HAC_Sys.Enter_Def;

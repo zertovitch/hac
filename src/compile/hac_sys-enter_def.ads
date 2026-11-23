@@ -11,7 +11,10 @@
 --  Package around entering definitions, from the parser or "by hand",
 --  for built-in packages.
 
-package HAC_Sys.Parser.Enter_Def is
+with HAC_Sys.Co_Defs,
+     HAC_Sys.Defs;
+
+package HAC_Sys.Enter_Def is
 
   procedure Enter_Block
     (CD    : in out Co_Defs.Compiler_Data;
@@ -50,4 +53,4 @@ package HAC_Sys.Parser.Enter_Def is
      prefixed :        Boolean);
      --  For instance, fields in a record must be non-prefixed.
 
-end HAC_Sys.Parser.Enter_Def;
+end HAC_Sys.Enter_Def;

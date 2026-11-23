@@ -9,12 +9,12 @@
 -------------------------------------------------------------------------------------
 --
 
-with HAC_Sys.Parser.Defaults,
-     HAC_Sys.Parser.Enter_Def,
+with HAC_Sys.Enter_Def,
+     HAC_Sys.Errors,
+     HAC_Sys.Parser.Defaults,
      HAC_Sys.Parser.Helpers,
      HAC_Sys.Parser.Ranges,
-     HAC_Sys.Scanner,
-     HAC_Sys.Errors;
+     HAC_Sys.Scanner;
 
 with HAT;
 
