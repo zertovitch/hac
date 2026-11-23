@@ -486,6 +486,9 @@ package HAT is
 
   subtype Search_Type          is Ada.Directories.Search_Type;
   subtype File_Kind            is Ada.Directories.File_Kind;
+  Directory     : constant File_Kind := Ada.Directories.Directory;
+  Ordinary_File : constant File_Kind := Ada.Directories.Ordinary_File;
+  Special_File  : constant File_Kind := Ada.Directories.Special_File;
   subtype Filter_Type          is Ada.Directories.Filter_Type;
   subtype Directory_Entry_Type is Ada.Directories.Directory_Entry_Type;
 

@@ -390,6 +390,21 @@ procedure Aggregates is
 
   end Mixed_With_Composite_Variables;
 
+  procedure Built_In_Arrays is
+    filter, copy : Filter_Type;
+    --  := (Directory => True, Ordinary_File => False, Special_File => False);  --  !! Fix Aggregates semantics
+  begin
+    filter (Directory)     := True;
+    filter (Ordinary_File) := True;
+    filter (Special_File)  := False;
+    copy := filter;
+    Assert     (copy (Directory),     +"Compiler bug [Built_In_Arrays A]");
+    Assert     (copy (Ordinary_File), +"Compiler bug [Built_In_Arrays B]");
+    Assert (not copy (Special_File),  +"Compiler bug [Built_In_Arrays C]");
+    copy (Ordinary_File) := not copy (Ordinary_File);
+    Assert (not copy (Ordinary_File), +"Compiler bug [Built_In_Arrays D]");
+  end Built_In_Arrays;
+
 begin
   Positional_Array;
   Named_Array_With_Others;
@@ -408,6 +423,7 @@ begin
   Others_With_Mixed_Nested_Fields;
   Plain_Parenthesized_Still_Works;
   Mixed_With_Composite_Variables;
+  Built_In_Arrays;
   --
   --  Intentionally-invalid forms (left as comments per project convention,
   --  see test/exception_01.adb, test/optim.adb):

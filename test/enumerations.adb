@@ -54,6 +54,8 @@ procedure Enumerations is
   subtype Insect is Animal range ant .. ant;
   subtype Mammal is Animal range bat .. dog;
 
+  kind : HAT.File_Kind;
+
 begin
   v.x1 := a;
   v.x2 := c;
@@ -88,4 +90,10 @@ begin
   --
   Test_CASE;
   --
+  kind := HAT.Directory;
+  Assert (kind'Image = "DIRECTORY",     +"Compiler bug [Built-in Enumerations, A]");
+  Assert (HAT.File_Kind'Pos (kind) = 0, +"Compiler bug [Built-in Enumerations, B]");
+  kind := HAT.Special_File;
+  Assert (kind'Image = "SPECIAL_FILE",  +"Compiler bug [Built-in Enumerations, C]");
+  Assert (HAT.File_Kind'Pos (kind) = 2, +"Compiler bug [Built-in Enumerations, D]");
 end Enumerations;
