@@ -98,6 +98,12 @@ package body HAC_Sys.Parser.Standard_Functions is
              SF_Get_Env  | SF_Get_VM_Variable =>
           --  Get_Env (+"PATH")  _or_  Get_Env ("PATH")
           Expected (1) := Any_String_Set;
+        when SF_More_Entries =>
+          Expected (1) := (Search_Types => True, others => False);
+        when SF_Simple_Name_Dir_Entry | SF_Full_Name_Dir_Entry |
+             SF_Kind_Dir_Entry | SF_Size_Dir_Entry
+          =>
+          Expected (1) := (Directory_Entry_Types => True, others => False);
         when SF_Niladic =>
           null;  --  Zero argument -> no argument type to check.
         when SF_File_or_Console_Information =>
@@ -146,7 +152,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         In_Symbol (CD);
         Expression (CD, context, FSys + RParent + Comma, X);
         if X.TYP /= Text_Files then
-          Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files_Set);
+          Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files);
         end if;
         file_parameter := True;
         Need (CD, RParent, err_closing_parenthesis_missing);

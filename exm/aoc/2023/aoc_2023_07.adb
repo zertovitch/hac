@@ -53,7 +53,7 @@ procedure AoC_2023_07 is
   label : constant String (1 .. 13) := "AKQJT98765432";
   joker : constant := 4;  --  Just the position of 'J'.
 
-  function Kind (h : Hand_Type; p : Part_Type) return Hand_Kind is
+  function Row_Kind (h : Hand_Type; p : Part_Type) return Hand_Kind is
     count : array (1 .. 13) of Natural;
     sorts, count_max : Natural := 0;
   begin
@@ -84,7 +84,7 @@ procedure AoC_2023_07 is
       when 2      => if sorts = 3 then return pair_2; else return pair_1; end if;
       when others => return high;
     end case;
-  end Kind;
+  end Row_Kind;
 
   --  Card labels for tie break of part 2, where the index' value matters.
   label_part_2 : constant String (1 .. 13) := "AKQT98765432J";
@@ -131,7 +131,7 @@ procedure AoC_2023_07 is
     t : Natural := 0;
   begin
     for i in 1 .. top loop
-      row (i).kind := Kind (row (i).hand, p);
+      row (i).kind := Row_Kind (row (i).hand, p);
       row (i).rank := 1;
       for j in 1 .. i - 1 loop
         --  Compare to previous hands:

@@ -289,7 +289,7 @@ package HAC_Sys.Defs is
 
   empty_typ_set : constant Typ_Set := (others => False);
 
-  subtype Standard_Typ is Typen range NOTYP .. Text_Files;
+  subtype Standard_Typ is Typen range NOTYP .. Search_Types;
 
   subtype Special_Strings is Typen range String_Literals .. Strings_as_VStrings;
 
@@ -699,6 +699,11 @@ package HAC_Sys.Defs is
     SF_Directory_Exists,
     SF_Exists,
     SF_File_Exists,
+    SF_More_Entries,
+    SF_Simple_Name_Dir_Entry,  --  possibly overloaded
+    SF_Full_Name_Dir_Entry,    --  possibly overloaded
+    SF_Kind_Dir_Entry,         --  possibly overloaded
+    SF_Size_Dir_Entry,         --  possibly overloaded
     --  Ada.Environment_Variables-like
     SF_Get_Env,
     SF_Get_VM_Variable,
@@ -773,6 +778,10 @@ package HAC_Sys.Defs is
     SP_Delete_File,
     SP_Rename,
     SP_Set_Directory,
+    SP_Start_Search,
+    SP_End_Search,
+    SP_Get_Next_Entry,
+    --
     SP_Set_Exit_Status,
     --
     --  VString procedures (Ada.Strings.Unbounded-like)

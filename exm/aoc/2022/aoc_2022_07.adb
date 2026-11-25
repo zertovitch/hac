@@ -25,7 +25,7 @@ procedure AoC_2022_07 is
 
   current, up, last, i_min : Cat_Entry_Range := root;
 
-  size, new_disk_size,
+  file_size, new_disk_size,
   size_cumul_small_dirs, best_new_size : Natural := 0;
 
   f : File_Type;
@@ -72,13 +72,13 @@ Read_Data :
         end case;
 
       when '0' .. '9' =>
-        size := Integer_Value (Slice (s, 1, Index (s, ' ') - 1));
+        file_size := Integer_Value (Slice (s, 1, Index (s, ' ') - 1));
         if verbose then
-          Put_Line (+"  File size : " & size);
+          Put_Line (+"  File size : " & file_size);
         end if;
         up := current;
         loop
-          cat (up).size := cat (up).size + size;
+          cat (up).size := cat (up).size + file_size;
           if verbose then
             Put_Line
               (+"    New total size for " &

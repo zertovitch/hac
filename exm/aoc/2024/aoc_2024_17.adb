@@ -193,12 +193,12 @@ procedure AoC_2024_17 is
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
   T0 : constant Time := Clock;
 
-  kind : constant Data_Type := mini;
+  data_kind : constant Data_Type := mini;
 
   prog_s : VString;
 
 begin
-  case kind is
+  case data_kind is
 
     when mini =>
       --  Register A: 729

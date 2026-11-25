@@ -176,6 +176,14 @@ package HAC_Sys.PCode.Interpreter.In_Defs is
     (ND : in out Interpreter_Data;
      R  : in out General_Register);
 
+  procedure Allocate_Search_Type
+    (ND : in out Interpreter_Data;
+     R  : in out General_Register);
+
+  procedure Allocate_Directory_Entry_Type
+    (ND : in out Interpreter_Data;
+     R  : in out General_Register);
+
   procedure Free_Allocated_Contents
     (ND                   : in out Interpreter_Data;
      files_that_were_open :    out Open_Files_Vectors.Vector);  --  For post-mortem reporting.

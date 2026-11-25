@@ -282,6 +282,9 @@ package HAT is
   procedure Put (I     : Integer;
                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
                  Base  : Ada.Text_IO.Number_Base := IIO.Default_Base) renames IIO.Put;
+  procedure Put (I     : Interfaces.Integer_64;
+                 Width : Ada.Text_IO.Field       := IIO_64.Default_Width;
+                 Base  : Ada.Text_IO.Number_Base := IIO_64.Default_Base) renames IIO_64.Put;
   procedure Put (F     : Real;
                  Fore  : Integer := RIO.Default_Fore;
                  Aft   : Integer := RIO.Default_Aft;
@@ -355,6 +358,10 @@ package HAT is
                  I     : Integer;
                  Width : Ada.Text_IO.Field       := IIO.Default_Width;
                  Base  : Ada.Text_IO.Number_Base := IIO.Default_Base) renames IIO.Put;
+  procedure Put (File  : File_Type;
+                 I     : Interfaces.Integer_64;
+                 Width : Ada.Text_IO.Field       := IIO_64.Default_Width;
+                 Base  : Ada.Text_IO.Number_Base := IIO_64.Default_Base) renames IIO_64.Put;
   procedure Put (File  : File_Type;
                  F     : Real;
                  Fore  : Integer := RIO.Default_Fore;
@@ -495,8 +502,23 @@ package HAT is
   procedure Start_Search (Search    : in out Search_Type;
                           Directory : in String;
                           Pattern   : in String;
-                          Filter    : in Filter_Type := (others => True))
+                          Filter    : in Filter_Type)  --  NB: without default value
   renames Ada.Directories.Start_Search;
+
+  procedure Start_Search (Search    : in out Search_Type;
+                          Directory : in VString;
+                          Pattern   : in String;
+                          Filter    : in Filter_Type);
+
+  procedure Start_Search (Search    : in out Search_Type;
+                          Directory : in String;
+                          Pattern   : in VString;
+                          Filter    : in Filter_Type);
+
+  procedure Start_Search (Search    : in out Search_Type;
+                          Directory : in VString;
+                          Pattern   : in VString;
+                          Filter    : in Filter_Type);
 
   procedure End_Search (Search : in out Search_Type) renames Ada.Directories.End_Search;
 
@@ -505,6 +527,11 @@ package HAT is
   procedure Get_Next_Entry (Search          : in out Search_Type;
                             Directory_Entry :    out Directory_Entry_Type)
   renames Ada.Directories.Get_Next_Entry;
+
+  function Simple_Name (Directory_Entry : Directory_Entry_Type) return VString;
+  function Full_Name (Directory_Entry : Directory_Entry_Type) return VString;
+  function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind renames Ada.Directories.Kind;
+  function Size (Directory_Entry : Directory_Entry_Type) return Interfaces.Integer_64;
 
   ---------------------
   --  Shell_Execute  --

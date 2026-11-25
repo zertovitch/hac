@@ -21,6 +21,30 @@ package body HAC_Sys.PCode.Interpreter.In_Defs is
     end if;
   end Allocate_Text_File;
 
+  procedure Allocate_Search_Type
+    (ND : in out Interpreter_Data;
+     R  : in out General_Register)
+  is
+  begin
+    R :=
+      (Special => Defs.Search_Types,
+       I       => 0,
+       search  => new Ada.Directories.Search_Type);
+    ND.searches.Append (R.search);
+  end Allocate_Search_Type;
+
+  procedure Allocate_Directory_Entry_Type
+    (ND : in out Interpreter_Data;
+     R  : in out General_Register)
+  is
+  begin
+    R :=
+      (Special   => Defs.Directory_Entry_Types,
+       I         => 0,
+       dir_entry => new Ada.Directories.Directory_Entry_Type);
+    ND.dir_entries.Append (R.dir_entry);
+  end Allocate_Directory_Entry_Type;
+
   procedure Free_Allocated_Contents
     (ND                   : in out Interpreter_Data;
      files_that_were_open :    out Open_Files_Vectors.Vector)

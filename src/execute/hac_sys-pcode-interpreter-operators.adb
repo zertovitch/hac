@@ -587,10 +587,16 @@ package body HAC_Sys.PCode.Interpreter.Operators is
           end if;
         end;
       --
-      when SF_Exists           => Top_Item.I := Boolean'Pos (HAT.Exists (Top_Item.V));
-      when SF_Directory_Exists => Top_Item.I := Boolean'Pos (HAT.Directory_Exists (Top_Item.V));
-      when SF_File_Exists      => Top_Item.I := Boolean'Pos (HAT.File_Exists (Top_Item.V));
-      when SF_Get_Env          => Top_Item.V := HAT.Get_Env (Top_Item.V);
+      when SF_Exists                => Top_Item.I := Boolean'Pos (HAT.Exists (Top_Item.V));
+      when SF_Directory_Exists      => Top_Item.I := Boolean'Pos (HAT.Directory_Exists (Top_Item.V));
+      when SF_File_Exists           => Top_Item.I := Boolean'Pos (HAT.File_Exists (Top_Item.V));
+      when SF_More_Entries          => Top_Item.I := Boolean'Pos (HAT.More_Entries (Top_Item.search.all));
+      when SF_Simple_Name_Dir_Entry => Top_Item := GR_VString (HAT.Simple_Name (Top_Item.dir_entry.all));
+      when SF_Full_Name_Dir_Entry   => Top_Item := GR_VString (HAT.Full_Name (Top_Item.dir_entry.all));
+      when SF_Kind_Dir_Entry        => Top_Item.I := HAT.File_Kind'Pos (HAT.Kind (Top_Item.dir_entry.all));
+      when SF_Size_Dir_Entry        => Top_Item.I := HAC_Integer (HAT.Size (Top_Item.dir_entry.all));
+      when SF_Get_Env               => Top_Item   := GR_VString (HAT.Get_Env (Top_Item.V));
+
       when SF_Get_VM_Variable  =>
         HAT.VStr_Pkg.Set_Unbounded_String
           (Top_Item.V, Interfacing.Get_VM_Variable (BD, HAT.To_String (Top_Item.V)));

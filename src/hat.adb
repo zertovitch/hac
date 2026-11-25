@@ -770,10 +770,7 @@ package body HAT is
     global_VM_variables.Include (Name, Value);
   end Set_VM_Variable;
 
-  function Current_Directory return VString is
-  begin
-    return +Ada.Directories.Current_Directory;
-  end Current_Directory;
+  function Current_Directory return VString is (+Ada.Directories.Current_Directory);
 
   procedure Set_Directory (Directory : VString) is
   begin
@@ -871,6 +868,42 @@ package body HAT is
   begin
     Rename (VStr_Pkg.To_String (Old_Name), VStr_Pkg.To_String (New_Name));
   end Rename;
+
+  procedure Start_Search (Search    : in out Search_Type;
+                          Directory : in VString;
+                          Pattern   : in String;
+                          Filter    : in Filter_Type)
+  is
+  begin
+    Start_Search (Search, VStr_Pkg.To_String (Directory), Pattern, Filter);
+  end Start_Search;
+
+  procedure Start_Search (Search    : in out Search_Type;
+                          Directory : in String;
+                          Pattern   : in VString;
+                          Filter    : in Filter_Type)
+  is
+  begin
+    Start_Search (Search, Directory, VStr_Pkg.To_String (Pattern), Filter);
+  end Start_Search;
+
+  procedure Start_Search (Search    : in out Search_Type;
+                          Directory : in VString;
+                          Pattern   : in VString;
+                          Filter    : in Filter_Type)
+  is
+  begin
+    Start_Search (Search, VStr_Pkg.To_String (Directory), VStr_Pkg.To_String (Pattern), Filter);
+  end Start_Search;
+
+  function Simple_Name (Directory_Entry : Directory_Entry_Type) return VString is
+  (+Ada.Directories.Simple_Name (Directory_Entry));
+
+  function Full_Name (Directory_Entry : Directory_Entry_Type) return VString is
+  (+Ada.Directories.Full_Name (Directory_Entry));
+
+  function Size (Directory_Entry : Directory_Entry_Type) return Interfaces.Integer_64 is
+  (Interfaces.Integer_64 (Ada.Directories.Size (Directory_Entry)));
 
   function HAC_Generic_Image (I : Abstract_Integer) return String is
     Im : constant String := Abstract_Integer'Image (I);

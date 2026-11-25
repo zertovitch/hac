@@ -87,6 +87,12 @@ package HAC_Sys.Parser.Helpers is
     (CD       : in out Compiler_Data;
      Err      :        Compile_Diagnostic;
      Found    :        Exact_Subtyp;
+     Expected :        Typen);
+
+  procedure Type_Mismatch
+    (CD       : in out Compiler_Data;
+     Err      :        Compile_Diagnostic;
+     Found    :        Exact_Subtyp;
      Expected :        Typ_Set);
 
   function Op_Hint (OP : Symbol) return String;

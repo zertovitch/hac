@@ -12,6 +12,7 @@ with HAT;
 
 with Ada.Characters.Handling,
      Ada.Command_Line,
+     Ada.Directories,
      Ada.Exceptions,
      Ada.IO_Exceptions;
 
@@ -308,8 +309,12 @@ package body HAC_Sys.PCode.Interpreter is
     procedure Do_HAT_Procedure is
       Code : constant SP_Code := SP_Code'Val (ND.IR.X);
       Curr_TCB : Task_Control_Block renames ND.TCB (ND.CurTask);
-      Top_Item       : General_Register renames ND.S (Curr_TCB.T);
-      Below_Top_Item : General_Register renames ND.S (Curr_TCB.T - 1);
+      Top_Item      : General_Register renames ND.S (Curr_TCB.T);
+      Top_M_1_Item : General_Register renames ND.S (Curr_TCB.T - 1);
+      Top_M_2_Item : General_Register renames ND.S (Curr_TCB.T - 2);
+      Top_M_3_Item : General_Register renames ND.S (Curr_TCB.T - 3);
+      Top_M_4_Item : General_Register renames ND.S (Curr_TCB.T - 4);
+      Top_M_5_Item : General_Register renames ND.S (Curr_TCB.T - 5);
       use HAT.VStr_Pkg;
       use type Defs.HAC_Integer;
       Lines : Ada.Text_IO.Positive_Count;
@@ -330,48 +335,88 @@ package body HAC_Sys.PCode.Interpreter is
         end if;
       end Switch_to_Text_Files;
 
+      procedure Switch_to_Directory_Searches (M : in out General_Register) is
+      begin
+        if M.Special /= Defs.Search_Types then
+          Allocate_Search_Type (ND, M);
+        end if;
+      end Switch_to_Directory_Searches;
+
+      procedure Switch_to_Directory_Entries (M : in out General_Register) is
+      begin
+        if M.Special /= Defs.Directory_Entry_Types then
+          Allocate_Directory_Entry_Type (ND, M);
+        end if;
+      end Switch_to_Directory_Entries;
+
       through : Integer;
 
     begin
+
       case Code is
-        when SP_Copy_File        => HAT.Copy_File (Below_Top_Item.V, Top_Item.V);
+        when SP_Copy_File        => HAT.Copy_File (Top_M_1_Item.V, Top_Item.V);
         when SP_Create_Directory => HAT.Create_Directory (Top_Item.V);
         when SP_Create_Path      => HAT.Create_Path (Top_Item.V);
         when SP_Delete_Directory => HAT.Delete_Directory (Top_Item.V);
         when SP_Delete_File      => HAT.Delete_File (Top_Item.V);
-        when SP_Rename           => HAT.Rename (Below_Top_Item.V, Top_Item.V);
+        when SP_Rename           => HAT.Rename (Top_M_1_Item.V, Top_Item.V);
         when SP_Set_Directory    => HAT.Set_Directory (Top_Item.V);
-        when SP_Set_Env          => HAT.Set_Env (Below_Top_Item.V, Top_Item.V);
+        when SP_Set_Env          => HAT.Set_Env (Top_M_1_Item.V, Top_Item.V);
         when SP_Set_Exit_Status  => HAT.Set_Exit_Status (Integer (Top_Item.I));
-        --
+
+        when SP_Start_Search =>
+          Switch_to_Directory_Searches (ND.S (Defs.Index (Top_M_5_Item.I)));
+          HAT.Start_Search
+             (Search    => ND.S (Defs.Index (Top_M_5_Item.I)).search.all,
+              Directory => Top_M_4_Item.V,
+              Pattern   => Top_M_3_Item.V,
+              Filter    =>
+                (Ada.Directories.Directory     => Top_M_2_Item.I /= 0,
+                 Ada.Directories.Ordinary_File => Top_M_1_Item.I /= 0,
+                 Ada.Directories.Special_File  => Top_Item.I /= 0));
+
+        when SP_End_Search   =>
+          Check_Discriminant_Type (ND.S (Defs.Index (Top_Item.I)), Defs.Search_Types);
+          HAT.End_Search (ND.S (Defs.Index (Top_Item.I)).search.all);
+
+        when SP_Get_Next_Entry  =>
+          Check_Discriminant_Type (ND.S (Defs.Index (Top_M_1_Item.I)), Defs.Search_Types);
+          Switch_to_Directory_Entries (ND.S (Defs.Index (Top_Item.I)));
+          HAT.Get_Next_Entry
+            (ND.S (Defs.Index (Top_M_1_Item.I)).search.all,
+             ND.S (Defs.Index (Top_Item.I)).dir_entry.all);
+
         when SP_Set_VM_Variable  =>
           Interfacing.Set_VM_Variable
-            (BD, To_String (Below_Top_Item.V), To_String (Top_Item.V));
+            (BD, To_String (Top_M_1_Item.V), To_String (Top_Item.V));
+
         when SP_Delete =>
           through := Integer (Top_Item.I);
-          if through > HAT.Length (ND.S (Defs.Index (ND.S (Curr_TCB.T - 2).I)).V) then
+          if through > HAT.Length (ND.S (Defs.Index (Top_M_2_Item.I)).V) then
             Raise_Standard
               (ND, VME_Index_Error,
                "Delete: Through, " & through'Image &
                ", is larger than Length (Source)", True);
           end if;
           HAT.Delete
-            (Source  => ND.S (Defs.Index (ND.S (Curr_TCB.T - 2).I)).V,
-             From    => Integer (Below_Top_Item.I),
+            (Source  => ND.S (Defs.Index (Top_M_2_Item.I)).V,
+             From    => Integer (Top_M_1_Item.I),
              Through => through);
         --
         when SP_Create =>
-          Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
-          HAT.Create (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+          Switch_to_Text_Files (ND.S (Defs.Index (Top_M_1_Item.I)));
+          HAT.Create (ND.S (Defs.Index (Top_M_1_Item.I)).Txt.all, Top_Item.V);
         when SP_Open =>
-          Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
-          HAT.Open (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+          Switch_to_Text_Files (ND.S (Defs.Index (Top_M_1_Item.I)));
+          HAT.Open (ND.S (Defs.Index (Top_M_1_Item.I)).Txt.all, Top_Item.V);
         when SP_Append =>
-          Switch_to_Text_Files (ND.S (Defs.Index (Below_Top_Item.I)));
-          HAT.Append (ND.S (Defs.Index (Below_Top_Item.I)).Txt.all, Top_Item.V);
+          Switch_to_Text_Files (ND.S (Defs.Index (Top_M_1_Item.I)));
+          HAT.Append (ND.S (Defs.Index (Top_M_1_Item.I)).Txt.all, Top_Item.V);
+
         when SP_Close =>
           Check_Discriminant_Type (ND.S (Defs.Index (Top_Item.I)), Defs.Text_Files);
           HAT.Close (ND.S (Defs.Index (Top_Item.I)).Txt.all);
+
         when SP_Push_Abstract_Console =>
           Push;
           ND.S (Curr_TCB.T) := GR_Abstract_Console;
@@ -381,20 +426,20 @@ package body HAC_Sys.PCode.Interpreter is
           Do_Write_Formatted (Code);
         when SP_New_Line =>
           Lines := Ada.Text_IO.Positive_Count (Top_Item.I);
-          if Below_Top_Item.Txt = Abstract_Console then
+          if Top_M_1_Item.Txt = Abstract_Console then
             Console.New_Line (Lines);
           else
-            HAT.New_Line (Below_Top_Item.Txt.all, Lines);
+            HAT.New_Line (Top_M_1_Item.Txt.all, Lines);
           end if;
         when SP_Skip_Line =>
           Lines := Ada.Text_IO.Positive_Count (Top_Item.I);
-          if Below_Top_Item.Txt = Abstract_Console then
+          if Top_M_1_Item.Txt = Abstract_Console then
             --  The End_Of_File_Console check is skipped here (disturbs GNAT's run-time).
             Console.Skip_Line (Lines);
-          elsif HAT.End_Of_File (Below_Top_Item.Txt.all) then
+          elsif HAT.End_Of_File (Top_M_1_Item.Txt.all) then
             raise VM_End_Error;
           else
-            HAT.Skip_Line (Below_Top_Item.Txt.all, Lines);
+            HAT.Skip_Line (Top_M_1_Item.Txt.all, Lines);
           end if;
           ND.feedback_tick := 0;  --  Force feedback before next instruction.
         when SP_Shell_Execute_without_Result =>
@@ -405,7 +450,7 @@ package body HAC_Sys.PCode.Interpreter is
           end;
         when SP_Shell_Execute_with_Result =>
           declare
-            Command        : constant String     := To_String (Below_Top_Item.V);
+            Command        : constant String     := To_String (Top_M_1_Item.V);
             Result_Address : constant Defs.Index := Defs.Index (Top_Item.I);
           begin
             System_Calls.Shell_Execute (Command, Shell_Exec_Result);
@@ -413,7 +458,7 @@ package body HAC_Sys.PCode.Interpreter is
           end;
         when SP_Shell_Execute_Output =>
           declare
-            Command           : constant String     := To_String (Below_Top_Item.V);
+            Command           : constant String     := To_String (Top_M_1_Item.V);
             Output_Address    : constant Defs.Index := Defs.Index (Top_Item.I);
             Shell_Exec_Output : HAT.VString;
           begin
@@ -422,8 +467,8 @@ package body HAC_Sys.PCode.Interpreter is
           end;
         when SP_Shell_Execute_Result_Output =>
           declare
-            Command           : constant String     := To_String (ND.S (Curr_TCB.T - 2).V);
-            Result_Address    : constant Defs.Index := Defs.Index (Below_Top_Item.I);
+            Command           : constant String     := To_String (Top_M_2_Item.V);
+            Result_Address    : constant Defs.Index := Defs.Index (Top_M_1_Item.I);
             Output_Address    : constant Defs.Index := Defs.Index (Top_Item.I);
             Shell_Exec_Output : HAT.VString;
           begin
@@ -438,22 +483,39 @@ package body HAC_Sys.PCode.Interpreter is
         when SP_Wait | SP_Signal | SP_Priority | SP_InheritP | SP_Quantum =>
           null;
       end case;
-      --  Release the stack:
+
+      --  Release the stack after the job:
       case Code is
-        when SP_Close | SP_Delete_File | SP_Set_Directory | SP_Set_Exit_Status |
+        when SP_Push_Abstract_Console |
+             SP_Get | SP_Get_File | SP_Get_Immediate | SP_Get_Line | SP_Get_Line_File |
+             SP_Put | SP_Put_File | SP_Put_Line | SP_Put_Line_File |
+             SP_Randomize |
+             SP_Wait | SP_InheritP | SP_Signal | SP_Quantum | SP_Priority
+        =>
+          null;  --  Nothing to pop, or already popped.
+
+        when SP_Close | SP_Delete_File | SP_Set_Directory | SP_End_Search |
+             SP_Create_Directory | SP_Delete_Directory | SP_Create_Path |
+             SP_Set_Exit_Status |
              SP_Shell_Execute_without_Result |
              SP_Random_Seed
         =>
           Pop;
+
         when SP_Open | SP_Append | SP_Create | SP_Set_Env | SP_Copy_File |
-             SP_Rename | SP_New_Line | SP_Skip_Line |
-             SP_Shell_Execute_with_Result | SP_Shell_Execute_Output
+             SP_Rename | SP_Get_Next_Entry |
+             SP_New_Line | SP_Skip_Line |
+             SP_Shell_Execute_with_Result | SP_Shell_Execute_Output |
+             SP_Set_VM_Variable
         =>
           Pop (2);
+
         when SP_Shell_Execute_Result_Output | SP_Delete =>
           Pop (3);
-        when others =>
-          null;
+
+        when SP_Start_Search =>
+          Pop (6);
+
       end case;
       ND.SWITCH := True;  --  give up control when doing I/O
     exception

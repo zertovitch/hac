@@ -252,8 +252,25 @@ package body HAC_Sys.Parser.Helpers is
     (CD       : in out Compiler_Data;
      Err      :        Compile_Diagnostic;
      Found    :        Exact_Subtyp;
+     Expected :        Typen)
+  is
+    set : Typ_Set := empty_typ_set;
+  begin
+    set (Expected) := True;
+    Type_Mismatch
+      (CD       => CD,
+       Err      => Err,
+       Found    => Found,
+       Expected => set);
+  end Type_Mismatch;
+
+  procedure Type_Mismatch
+    (CD       : in out Compiler_Data;
+     Err      :        Compile_Diagnostic;
+     Found    :        Exact_Subtyp;
      Expected :        Typ_Set)
   is
+
     function Types_List (TS : Typ_Set) return String is
       use HAT;
       hint  : VString;
@@ -270,6 +287,7 @@ package body HAC_Sys.Parser.Helpers is
       end loop;
       return HAT.VStr_Pkg.To_String (hint);
     end Types_List;
+
   begin
     Error
       (CD, Err,

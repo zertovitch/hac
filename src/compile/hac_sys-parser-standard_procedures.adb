@@ -32,12 +32,27 @@ package body HAC_Sys.Parser.Standard_Procedures is
     begin
       CD.target.Emit_HAT_Builtin_Procedure (FIO_Code, Param);
     end HAT_Procedure_Call;
-    --
+
     procedure Set_Abstract_Console is
     begin
       HAT_Procedure_Call (SP_Push_Abstract_Console);
     end Set_Abstract_Console;
-    --
+
+    procedure Need_Left_Parenthesis is
+    begin
+      Need (CD, LParent, err_missing_an_opening_parenthesis);
+    end Need_Left_Parenthesis;
+
+    procedure Need_Comma is
+    begin
+      Need (CD, Comma, err_COMMA_missing);
+    end Need_Comma;
+
+    procedure Need_Right_Parenthesis is
+    begin
+      Need (CD, RParent, err_closing_parenthesis_missing);
+    end Need_Right_Parenthesis;
+
     procedure Parse_Gets (Code : SP_Code) is
       --  Parse Get & Co including an possible File parameter
       Found : Exact_Subtyp;
@@ -45,13 +60,13 @@ package body HAC_Sys.Parser.Standard_Procedures is
       String_Length_Encoding : Operand_2_Type := 0;
       use type Operand_2_Type;
     begin
-      Need (CD, LParent, err_missing_an_opening_parenthesis);
+      Need_Left_Parenthesis;
       Push_Parameter_by_Reference (CD, context, FSys, "File", param_in_out, Found);
       with_file := Found.TYP = Text_Files;
       if with_file then
         --  We place the file handle's value on the stack:
         Emit (CD, k_Dereference);
-        Need (CD, Comma, err_COMMA_missing);
+        Need_Comma;
         --  Now the variable for "Get (file, variable);":
         Push_Parameter_by_Reference (CD, context, FSys, "", param_out, Found);
       end if;
@@ -77,7 +92,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       else
         Error (CD, err_illegal_parameters_to_Get);
       end if;
-      Need (CD, RParent, err_closing_parenthesis_missing);
+      Need_Right_Parenthesis;
     end Parse_Gets;
     --
     procedure Parse_Puts (Code : SP_Code) is
@@ -86,11 +101,11 @@ package body HAC_Sys.Parser.Standard_Procedures is
       Format_Params : Natural := 0;
       with_file : Boolean;
     begin
-      Need (CD, LParent, err_missing_an_opening_parenthesis);
+      Need_Left_Parenthesis;
       Expression (CD, context, FSys + Colon_Comma_RParent, Item_Typ);
       with_file := Item_Typ.TYP = Text_Files;
       if with_file then
-        Need (CD, Comma, err_COMMA_missing);
+        Need_Comma;
         Expression (CD, context, FSys + Colon_Comma_RParent, Item_Typ);
       end if;
       --
@@ -141,13 +156,14 @@ package body HAC_Sys.Parser.Standard_Procedures is
            (if Code = SP_Put_Line then SP_Put_Line_File else SP_Put_File)
          else Code),
         Typen'Pos (Item_Typ.TYP));
-      Need (CD, RParent, err_closing_parenthesis_missing);
+      Need_Right_Parenthesis;
     end Parse_Puts;
 
     type Param_Passing_Mode is (by_value, by_reference);
 
     type Param is record
       mode : Param_Passing_Mode;
+      kind : Parameter_Kind;
       typ  : Typen;
     end record;
 
@@ -160,7 +176,7 @@ package body HAC_Sys.Parser.Standard_Procedures is
       if pl'Length = 0 then
         return;  --  No parameter
       else
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Need_Left_Parenthesis;
         for i in pl'Range loop
           --  Parse the passed parameter's variable (when by reference)
           --  or expression (when by value) and emit corresponding VM code
@@ -179,10 +195,10 @@ package body HAC_Sys.Parser.Standard_Procedures is
           end if;
           --  Parse the comma separating current parameter from next one.
           if i < pl'Last then
-            Need (CD, Comma, err_COMMA_missing);
+            Need_Comma;
           end if;
         end loop;
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Need_Right_Parenthesis;
       end if;
     end Parse_Call_to_Single_Profile_Procedure;
 
@@ -191,6 +207,20 @@ package body HAC_Sys.Parser.Standard_Procedures is
       Parse_Call_to_Single_Profile_Procedure (pl);
       HAT_Procedure_Call (Code);
     end Parse_Call_to_Single_Profile_HAT_Procedure;
+
+    procedure Push_Parameter_by_Reference_and_Check
+      (name     : String;
+       mode     : Co_Defs.Parameter_Kind;
+       expected : Typen)
+     is
+       found : Co_Defs.Exact_Subtyp;
+     begin
+        Push_Parameter_by_Reference
+          (CD, context, FSys + Colon_Comma_RParent, name, mode, found);
+        if found.TYP /= expected then
+          Type_Mismatch (CD, err_parameter_types_do_not_match, Found => found, Expected => expected);
+        end if;
+     end Push_Parameter_by_Reference_and_Check;
 
     X, Y, Z : Exact_Subtyp;
 
@@ -222,9 +252,9 @@ package body HAC_Sys.Parser.Standard_Procedures is
               Set_Abstract_Console;
               Emit (CD, k_Swap);  --  File (the console) has to be before Spacing on the stack.
             when others =>
-              Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files_Set or Ints_Set);
+              Type_Mismatch (CD, err_parameter_types_do_not_match, Found => X, Expected => Text_Files_Set or Ints_Set);
           end case;
-          Need (CD, RParent, err_closing_parenthesis_missing);
+          Need_Right_Parenthesis;
         else  --  "New_Line;"
           Set_Abstract_Console;
           Emit_1 (CD, k_Push_Discrete_Literal, 1);  --  Push default value, Spacing := 1
@@ -235,10 +265,10 @@ package body HAC_Sys.Parser.Standard_Procedures is
         HAT_Procedure_Call (Code);
 
       when SP_Random_Seed =>
-        Parse_Call_to_Single_Profile_HAT_Procedure ((1 => (by_value, Ints)));
+        Parse_Call_to_Single_Profile_HAT_Procedure ((1 => (by_value, param_in, Ints)));
 
       when SP_Wait | SP_Signal =>
-        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, Ints)));
+        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, param_in, Ints)));
         if Code = SP_Wait then
           Emit (CD, k_Wait_Semaphore);
         else
@@ -246,38 +276,34 @@ package body HAC_Sys.Parser.Standard_Procedures is
         end if;
 
       when SP_Open | SP_Create | SP_Append | SP_Close =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
-        Push_Parameter_by_Reference
-          (CD, context, FSys + Colon_Comma_RParent, "File", param_in_out, X);
-        if X.TYP /= Text_Files then
-          Type_Mismatch (CD, err_general_error, Found => X, Expected => Text_Files_Set);
-        end if;
+        Need_Left_Parenthesis;
+        Push_Parameter_by_Reference_and_Check ("File", param_in_out, Text_Files);
         if Code in SP_Open | SP_Create | SP_Append then
           --  Parse file name.
-          Need (CD, Comma, err_COMMA_missing);
+          Need_Comma;
           Expression (CD, context, FSys + Colon_Comma_RParent, X);
           Check_any_String_and_promote_to_VString (CD, X, False);
         end if;
         HAT_Procedure_Call (Code);
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Need_Right_Parenthesis;
 
       when SP_Quantum =>
         --  Cramer
-        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, Floats)));
+        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, param_in, Floats)));
         Emit (CD, k_Set_Quantum_Task);
 
       when SP_Priority =>
         --  Cramer
-        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, Ints)));
+        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, param_in, Ints)));
         Emit (CD, k_Set_Task_Priority);
 
       when SP_InheritP =>
         --  Cramer
-        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, Bools)));
+        Parse_Call_to_Single_Profile_Procedure ((1 => (by_value, param_in, Bools)));
         Emit (CD, k_Set_Task_Priority_Inheritance);
         --
       when SP_Set_Env | SP_Set_VM_Variable | SP_Copy_File | SP_Rename =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Need_Left_Parenthesis;
         for arg in 1 .. 2 loop
           Expression (CD, context, Colon_Comma_RParent, X);  --  We push the arguments in the stack.
           --  Set_Env ( "HAC_Var",  "Hello");     <-  2 String's
@@ -286,23 +312,55 @@ package body HAC_Sys.Parser.Standard_Procedures is
           --  Set_Env ( "HAC_Var", +"Hello");
           Check_any_String_and_promote_to_VString (CD, X, False);
           if arg < 2 then
-            Need (CD, Comma, err_COMMA_missing);
+            Need_Comma;
           end if;
         end loop;
         HAT_Procedure_Call (Code);
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Need_Right_Parenthesis;
 
       when SP_Create_Directory | SP_Create_Path | SP_Delete_Directory |
            SP_Delete_File | SP_Set_Directory
            =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Need_Left_Parenthesis;
         Expression (CD, context, RParent_Set, X);  --  We push the argument in the stack.
         Check_any_String_and_promote_to_VString (CD, X, False);
         HAT_Procedure_Call (Code);
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Need_Right_Parenthesis;
+
+      when SP_Start_Search =>
+        Need_Left_Parenthesis;
+        Push_Parameter_by_Reference_and_Check ("Search", param_in_out,  Search_Types);
+        Need_Comma;
+        --  Directory, Pattern:
+        for arg in 1 .. 2 loop
+          Expression (CD, context, Colon_Comma_RParent, X);
+          Check_any_String_and_promote_to_VString (CD, X, False);
+          Need_Comma;
+        end loop;
+        Expression (CD, context, Colon_Comma_RParent, X);
+        Emit_1 (CD, k_Load_Block, Operand_2_Type (CD.Arrays_Table (X.Ref).Array_Size));
+        --  Filter:
+        if X.TYP /= Arrays or else X.Ref /= CD.id_table (CD.built_in.hat_filter_type_index).xtyp.Ref then
+          --  Must be the array definition of HAT.Filter_Type, not even an identical type.
+          Type_Mismatch
+            (CD,
+             err_parameter_types_do_not_match,
+             Found => X,
+             Expected => CD.id_table (CD.built_in.hat_filter_type_index).xtyp);
+        end if;
+        HAT_Procedure_Call (Code);
+        Need_Right_Parenthesis;
+
+      when SP_End_Search =>
+        Parse_Call_to_Single_Profile_HAT_Procedure ((1 => (by_reference, param_in_out, Search_Types)));
+
+      when SP_Get_Next_Entry =>
+        Parse_Call_to_Single_Profile_HAT_Procedure
+          (((by_reference, param_in_out, Search_Types),
+            (by_reference, param_out,    Directory_Entry_Types)));
 
       when SP_Shell_Execute =>
-        Need (CD, LParent, err_missing_an_opening_parenthesis);
+        Need_Left_Parenthesis;
         Expression (CD, context, Comma_RParent, X);  --  We push the argument in the stack.
         Check_any_String_and_promote_to_VString (CD, X, False);
         --  ` Shell_Execute (cmd `  has been parsed at this point.
@@ -337,17 +395,17 @@ package body HAC_Sys.Parser.Standard_Procedures is
           --  Shell_Execute (cmd);
           HAT_Procedure_Call (SP_Shell_Execute_without_Result);
         end if;
-        Need (CD, RParent, err_closing_parenthesis_missing);
+        Need_Right_Parenthesis;
 
       when SP_Set_Exit_Status =>
         Parse_Call_to_Single_Profile_HAT_Procedure
-          ((1 => (by_value, Ints)));  --  Exit code
+          ((1 => (by_value, param_in, Ints)));  --  Exit code
 
       when SP_Delete =>
         Parse_Call_to_Single_Profile_HAT_Procedure
-          (((by_reference, VStrings),  --  Source
-            (by_value,     Ints),      --  From
-            (by_value,     Ints)));    --  Through
+          (((by_reference, param_in_out, VStrings),  --  Source
+            (by_value,     param_in,     Ints),      --  From
+            (by_value,     param_in,     Ints)));    --  Through
 
       when SP_Push_Abstract_Console =>
         null;  --  Internal: used by Get, Put, etc. without file parameter.

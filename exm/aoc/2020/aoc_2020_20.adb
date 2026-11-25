@@ -14,12 +14,12 @@ with Interfaces;  --  Needed for GNAT (Integer_64).
 
 procedure AoC_2020_20 is
   use HAT, Interfaces;
-  size : constant := 144;
+  map_size : constant := 144;
   name : constant VString := +"aoc_2020_20.txt";
 
   type Side is (up, down, swup, swdown, left, right, swleft, swright);
 
-  subtype Tile_Range is Positive range 1 .. size;
+  subtype Tile_Range is Positive range 1 .. map_size;
   label : array (Tile_Range) of Natural;
   side_code : array (Side, Tile_Range) of Natural;
 

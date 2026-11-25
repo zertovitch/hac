@@ -23,7 +23,7 @@ procedure AoC_2021_09 is
   r : array (1 .. 2) of Integer;
   map : array (1 .. sx, 1 .. sy) of Natural;
   seen : array (1 .. sx, 1 .. sy) of Boolean;
-  size, la1, la2, la3 : Natural := 0;
+  basin_size, la1, la2, la3 : Natural := 0;
   --
   --  `Visit` returns the size of the basin around point (x, y).
   --  Side effect: it writes in `seen`.
@@ -62,16 +62,16 @@ begin
         --  We have found a low point - a location (x, y) that is
         --  lower than any of its adjacent locations.
         r (1) := r (1) + map (x, y) + 1;
-        size := Visit (x, y);
-        if size > la1 then
+        basin_size := Visit (x, y);
+        if basin_size > la1 then
           la3 := la2;
           la2 := la1;
-          la1 := size;
-        elsif size > la2 then
+          la1 := basin_size;
+        elsif basin_size > la2 then
           la3 := la2;
-          la2 := size;
-        elsif size > la3 then
-          la3 := size;
+          la2 := basin_size;
+        elsif basin_size > la3 then
+          la3 := basin_size;
         end if;
       end if;
     end loop;

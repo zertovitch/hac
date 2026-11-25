@@ -389,6 +389,12 @@ package HAC_Sys.Co_Defs is
 
   package Default_Value_Vectors is new Ada.Containers.Vectors (Positive, Default_Value_Access);
 
+  type Built_In_Items is record
+    std_bool_index        : Integer;
+    hat_file_kind_index   : Integer;
+    hat_filter_type_index : Integer;
+  end record;
+
   ---------------------
   --  Compiler_Data  --
   ---------------------
@@ -418,6 +424,7 @@ package HAC_Sys.Co_Defs is
     Strings_Constants_Table : Strings_Constants_Table_Type;
     Tasks_Definitions_Table : Tasks_Definitions_Table_Type;
     Default_Value_Allocated : Default_Value_Vectors.Vector;
+    built_in                : Built_In_Items;
     --  Indices to compiler tables
     Arrays_Count            : Natural;
     Blocks_Count            : Natural;

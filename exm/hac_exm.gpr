@@ -26,6 +26,7 @@ project HAC_Exm is
       "console_io.adb",
       "covid_19_s.adb",
       "days_1901.adb",
+      "dir.adb",
       "doors.adb",                  --  Rosetta Code
       "draw_sphere.adb",            --  Rosetta Code
       "echo.adb",

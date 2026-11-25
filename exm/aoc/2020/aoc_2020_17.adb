@@ -125,7 +125,7 @@ procedure AoC_2020_17 is
   cc : Character;
   use HAT;
   f : File_Type;
-  size : Integer;
+  map_size : Integer;
   cycles : constant := 6;
   low, high : Integer;
   compiler_test_mode : constant Boolean := Argument_Count >= 1;
@@ -151,9 +151,9 @@ begin
     end loop;
     --
     Open (f, "aoc_2020_17.txt");
-    size := 8;
-    low := -size / 2;
-    high := low + size - 1;
+    map_size := 8;
+    low := -map_size / 2;
+    high := low + map_size - 1;
     if low - cycles < min or high + cycles > max then
       Put_Line ("Test (hyper)space is too small");
       return;
