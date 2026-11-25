@@ -64,7 +64,7 @@ package body HAC_Sys.Targets.AMD64_Windows_Console_FASM is
             printable := False;
           end if;
           Separate_with_Comma;
-          Put (m.asm_file, Character'Pos (strings (i)), 0);
+          Put (m.asm_file, Integer'(Character'Pos (strings (i))), 0);
         end if;
       end loop;
       if printable then
