@@ -101,7 +101,7 @@ package body HAC_Sys.Parser.Calls is
             else
               k_Push_Discrete_Value),  --  Push "(a.all)'Access", that is, a (a is an access type).
            Operand_1_Type (CD.id_table (K).lev),
-           Operand_2_Type (CD.id_table (K).adr_or_sz));
+           Operand_2_Type (CD.id_table (K).addr_size_or_val));
 
         if Selector_Symbol_Loose (CD.Sy) then  --  '.' or '(' or (wrongly) '['
           Selector (CD, context, fsys + Colon_Comma_RParent, found);

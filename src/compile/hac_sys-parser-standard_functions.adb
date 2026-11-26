@@ -22,8 +22,7 @@ package body HAC_Sys.Parser.Standard_Functions is
       SF_Index |
       SF_Index_Backward |
       SF_Slice              => 3,
-      others                => 1
-     );
+      others                => 1);
 
   procedure Standard_Function
     (CD          : in out Co_Defs.Compiler_Data;
@@ -101,7 +100,7 @@ package body HAC_Sys.Parser.Standard_Functions is
         when SF_More_Entries =>
           Expected (1) := (Search_Types => True, others => False);
         when SF_Simple_Name_Dir_Entry | SF_Full_Name_Dir_Entry |
-             SF_Kind_Dir_Entry | SF_Size_Dir_Entry
+             SF_Kind_Dir_Entry | SF_Size_Dir_Entry | SF_Modification_Time_Dir_Entry
           =>
           Expected (1) := (Directory_Entry_Types => True, others => False);
         when SF_Niladic =>
@@ -126,11 +125,10 @@ package body HAC_Sys.Parser.Standard_Functions is
         if Expected (a) (TYP_of_arg) then
           null;  --  All right so far: argument type is in the admitted set of types.
         elsif Actual (a).TYP /= NOTYP then
-          Type_Mismatch (
-            CD, err_argument_to_std_function_of_wrong_type,
-            Found    => Actual (a),
-            Expected => Expected (a)
-          );
+          Type_Mismatch
+            (CD, err_argument_to_std_function_of_wrong_type,
+             Found    => Actual (a),
+             Expected => Expected (a));
         end if;
         if (Code = SF_Index or Code = SF_Index_Backward)
            and then a = 2

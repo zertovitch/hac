@@ -75,7 +75,7 @@ package body HAC_Sys.Parser.Statements is
         --  constants. Discard the now-unused single address pushed above;
         --  Aggregates emits its own per-component addresses directly.
         Emit (CD, k_Pop);
-        Aggregates.Parse_Aggregate (CD, Block_Data, FSys, Expected_Typ, var.lev, var.adr_or_sz);
+        Aggregates.Parse_Aggregate (CD, Block_Data, FSys, Expected_Typ, var.lev, var.addr_size_or_val);
       end if;
     end Assign_Aggregate;
 
@@ -89,7 +89,7 @@ package body HAC_Sys.Parser.Statements is
        else
          k_Push_Discrete_Value),  --  The value is a reference, we want that address.
       Operand_1_Type (var.lev),
-      Operand_2_Type (var.adr_or_sz));
+      Operand_2_Type (var.addr_size_or_val));
     Has_Selector := Selector_Symbol_Loose (CD.Sy);  --  '.' or '(' or (wrongly) '['
     if Has_Selector then
       --  Resolve composite types' selectors (arrays and records).
@@ -509,7 +509,7 @@ package body HAC_Sys.Parser.Statements is
            block_or_pkg_ref      => 0,
            normal                => True,
            lev                   => block_data.context.level,
-           adr_or_sz             => HAC_Integer (block_data.data_allocation_index),
+           addr_size_or_val      => HAC_Integer (block_data.data_allocation_index),
            is_referenced         => False,
            is_read               => no,
            is_written_after_init => yes,
@@ -529,7 +529,7 @@ package body HAC_Sys.Parser.Statements is
       Emit_2
         (CD, k_Push_Address,
          Operand_1_Type (CD.id_table (loop_param_id_index).lev),
-         Operand_2_Type (CD.id_table (loop_param_id_index).adr_or_sz));
+         Operand_2_Type (CD.id_table (loop_param_id_index).addr_size_or_val));
       In_Symbol;
       FOR_Begin_Instruction := k_FOR_Forward_Begin;
       Need (CD, IN_Symbol, err_IN_missing);  --       "IN"  in  "for i in reverse 1 .. 10 loop"
@@ -955,7 +955,7 @@ package body HAC_Sys.Parser.Statements is
 
           when prozedure_intrinsic =>
             Standard_Procedures.Standard_Procedure
-              (CD, block_data.context, FSys_St, SP_Code'Val (CD.id_table (I_Statement).adr_or_sz));
+              (CD, block_data.context, FSys_St, SP_Code'Val (CD.id_table (I_Statement).addr_size_or_val));
 
           when loop_identifier =>
             Error (CD, err_duplicate_loop_identifier, A2S (CD.Id), severity => major);

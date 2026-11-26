@@ -159,7 +159,7 @@ package body HAC_Sys.Builder is
       for Blk of BD.CD.id_table (BD.CD.Blocks_Table (0).Last_Id_Idx + 1 .. BD.CD.Id_Count) loop
         if Blk.entity in Object_Kind then
           if Blk.xtyp.TYP /= NOTYP then
-            Ada.Integer_Text_IO.Put (map_file, Integer (Blk.adr_or_sz), 4);
+            Ada.Integer_Text_IO.Put (map_file, Integer (Blk.addr_size_or_val), 4);
             Put (map_file, A2S (Blk.name) & "   ");
           end if;
           Put_Line

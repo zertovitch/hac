@@ -151,7 +151,7 @@ package body HAC_Sys.Compiler is
         Put (CD.comp_dump, r.xtyp.Ref, 5);
         Show_Padded (Boolean'Image (r.normal), Boolean'Width);
         Put (CD.comp_dump, Integer (r.lev), 3);
-        Put (CD.comp_dump, r.adr_or_sz, 5);
+        Put (CD.comp_dump, r.addr_size_or_val, 5);
         if r.block_or_pkg_ref > 0 then
           Put (CD.comp_dump, r.block_or_pkg_ref, 5);
         else
@@ -182,7 +182,7 @@ package body HAC_Sys.Compiler is
         Put (CD.comp_dump,
              ' ' & A2S (CD.id_table (CD.Entries_Table (I)).name) & " in Task " &
              A2S (CD.id_table (
-               CD.Tasks_Definitions_Table (Integer (CD.id_table (CD.Entries_Table (I)).adr_or_sz))
+               CD.Tasks_Definitions_Table (Integer (CD.id_table (CD.Entries_Table (I)).addr_size_or_val))
              ).name)
         );
         New_Line (CD.comp_dump);
@@ -230,8 +230,8 @@ package body HAC_Sys.Compiler is
           Put (typ_img, r.Element_xTyp.TYP);  --  Padded
           Put (CD.comp_dump, "  " & typ_img);
           Put (CD.comp_dump, r.Element_xTyp.Ref, 3);
-          Put (CD.comp_dump, r.Index_xTyp.Discrete_First, 7);
-          Put (CD.comp_dump, r.Index_xTyp.Discrete_Last,  7);
+          Put (CD.comp_dump, r.Index_xTyp.discrete_first, 7);
+          Put (CD.comp_dump, r.Index_xTyp.discrete_last,  7);
           Put (CD.comp_dump, r.Element_Size, 13);
           Put (CD.comp_dump, r.Array_Size,   12);
           Put (CD.comp_dump, r.dimensions,    7);
@@ -354,7 +354,7 @@ package body HAC_Sys.Compiler is
         if CD.id_table (stuff_index).entity = alias then
           --  Item named VSTRING from a USE clause was detected.
           --  Get the real item behind the alias (VSTRING -> ?.VSTRING):
-          stuff_index := Integer (CD.id_table (stuff_index).adr_or_sz);
+          stuff_index := Integer (CD.id_table (stuff_index).addr_size_or_val);
           if A2S (CD.id_table (stuff_index).name) = HAT_Name & '.' & some_stuff_in_HAT_str then
             --  Now we are sure the item stems from the HAT package.
             --  Normally, the full name is "HAT.VSTRING", unless HAT_Name has been customized.
@@ -471,22 +471,24 @@ package body HAC_Sys.Compiler is
     if first_compilation and then kind = Package_Body then
       raise Compilation_of_package_body_before_spec;
     end if;
+
     --
     --  Enter the identifier:
     --
     Unit_Id_with_case := CD.Id_with_case;
-    case kind is
-      when Procedure_Unit =>
-        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), prozedure, NOTYP, 0);
-      when Function_Unit =>
-        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), funktion, NOTYP, 0);
-        --  ^ The type of the return value is adjusted by Block.Function_Result_Profile.
-      when Package_Declaration =>
-        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), paquetage, NOTYP, 0);
-      when Package_Body =>
-        Librarian.Enter_Library_Level_Def (CD, A2S (Unit_Id_with_case), paquetage_body, NOTYP, 0);
-        --  ^ The identifier is used only by the Semantics target.
-    end case;
+
+    Librarian.Enter_Library_Level_Def
+      (CD         => CD,
+       full_ident => A2S (Unit_Id_with_case),
+       new_entity =>
+         (case kind is
+            when Procedure_Unit      => prozedure,
+            when Function_Unit       => funktion,
+                 --  ^ The type of the return value is adjusted by Block.Function_Result_Profile.
+            when Package_Declaration => paquetage,
+            when Package_Body        => paquetage_body));
+                 --  ^ The identifier is used only by the Semantics target.
+
     new_id_index := CD.Id_Count;
     if specification_id_index /= No_Id then
       CD.target.Mark_Spec_Body_Cross_References

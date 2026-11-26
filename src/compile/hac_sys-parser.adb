@@ -78,7 +78,7 @@ package body HAC_Sys.Parser is
             elsif X /= No_Id then
               if CD.id_table (X).entity = type_mark then
                 xTP := CD.id_table (X).xtyp;
-                Sz := Integer (if ValParam then CD.id_table (X).adr_or_sz else 1);
+                Sz := Integer (if ValParam then CD.id_table (X).addr_size_or_val else 1);
               else
                 Error (CD, err_missing_a_type_identifier, severity => major);
               end if;
@@ -97,7 +97,7 @@ package body HAC_Sys.Parser is
               r.normal                := ValParam;
               r.entity                := (if param_kind = param_in then constant_object else variable_object);
               r.decl_kind             := param_kind;
-              r.adr_or_sz             := HAC_Integer (block_data.data_allocation_index);
+              r.addr_size_or_val      := HAC_Integer (block_data.data_allocation_index);
               r.lev                   := block_data.context.level;
               r.is_referenced         := False;
               r.is_read               := no;
@@ -194,7 +194,7 @@ package body HAC_Sys.Parser is
     procedure Statements_Part_Setup is
     begin
       block_data.max_data_allocation_index := block_data.data_allocation_index;
-      CD.id_table (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
+      CD.id_table (block_data.block_id_index).addr_size_or_val := HAC_Integer (CD.LC);
       if block_data.previous_declaration_id_index > No_Id then
         Link_Forward_Declaration
           (CD, block_data.previous_declaration_id_index, block_data.block_id_index);
@@ -284,7 +284,7 @@ package body HAC_Sys.Parser is
           Need (CD, Finger, err_general_error);
           if CD.Id = "TRUE" then
             In_Symbol;  --  Consume True
-            CD.id_table (block_data.block_id_index).adr_or_sz := HAC_Integer (CD.LC);
+            CD.id_table (block_data.block_id_index).addr_size_or_val := HAC_Integer (CD.LC);
             --  ^ The "body" of an imported subprogram is a two-instruction
             --    stub of p-code, emitted at this address.
             CD.id_table (block_data.block_id_index).decl_kind := spec_resolved;
@@ -311,8 +311,8 @@ package body HAC_Sys.Parser is
 
     procedure Process_Spec is
     begin
-      CD.id_table (block_data.block_id_index).decl_kind := spec_unresolved;
-      CD.id_table (block_data.block_id_index).adr_or_sz := -1;
+      CD.id_table (block_data.block_id_index).decl_kind        := spec_unresolved;
+      CD.id_table (block_data.block_id_index).addr_size_or_val := -1;
       --  ^ This invalid address will raise VM_Subprogram_Spec.
       Check_Duplicate_Specification (CD, block_data.previous_declaration_id_index, Block_Id_with_case);
       CD.Blocks_Table (subprogram_block_index).VSize := block_data.data_allocation_index;

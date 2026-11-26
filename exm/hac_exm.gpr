@@ -64,6 +64,7 @@ project HAC_Exm is
       "tasks_01.adb",
       "tasks_02.adb",
       "three_lakes_s.adb",
+      "tree.adb",
       "timing.adb",
       "triangles_overlap.adb",      --  Rosetta Code
       "unit_a.adb");

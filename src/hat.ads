@@ -532,6 +532,8 @@ package HAT is
   function Full_Name (Directory_Entry : Directory_Entry_Type) return VString;
   function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind renames Ada.Directories.Kind;
   function Size (Directory_Entry : Directory_Entry_Type) return Interfaces.Integer_64;
+  function Modification_Time (Directory_Entry : Directory_Entry_Type) return Ada.Calendar.Time
+    renames Ada.Directories.Modification_Time;
 
   ---------------------
   --  Shell_Execute  --

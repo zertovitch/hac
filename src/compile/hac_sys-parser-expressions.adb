@@ -57,9 +57,9 @@ package body HAC_Sys.Parser.Expressions is
             if CD.id_table (X).entity = declared_number_or_enum_item then
               C.TP := CD.id_table (X).xtyp;
               if C.TP.TYP = Floats then
-                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (Integer (CD.id_table (X).adr_or_sz));
+                C.R := HAC_Float (Sign) * CD.Float_Constants_Table (Integer (CD.id_table (X).addr_size_or_val));
               else
-                C.I := Sign * CD.id_table (X).adr_or_sz;
+                C.I := Sign * CD.id_table (X).addr_size_or_val;
                 if signed and then C.TP.TYP not in Numeric_Typ then
                   Error (CD, err_numeric_constant_expected);
                 end if;
@@ -110,7 +110,7 @@ package body HAC_Sys.Parser.Expressions is
             CD.id_table (Field_Id).is_referenced := True;
             Elevate_to_Maybe (CD.id_table (Field_Id).is_read);
             V := CD.id_table (Field_Id).xtyp;
-            Field_Offset := Integer (CD.id_table (Field_Id).adr_or_sz);
+            Field_Offset := Integer (CD.id_table (Field_Id).addr_size_or_val);
             if Field_Offset /= 0 then
               Emit_1 (CD, k_Record_Field_Offset, Operand_2_Type (Field_Offset));
             end if;
@@ -128,8 +128,8 @@ package body HAC_Sys.Parser.Expressions is
 
       procedure Emit_Index_Instructions (ATI : Integer; ATE : Array_Table_Entry) is
         range_check_needed : constant Boolean :=
-          Array_Index_Typ.Discrete_First < ATE.Index_xTyp.Discrete_First or else
-          Array_Index_Typ.Discrete_Last  > ATE.Index_xTyp.Discrete_Last;
+          Array_Index_Typ.discrete_first < ATE.Index_xTyp.discrete_first or else
+          Array_Index_Typ.discrete_last  > ATE.Index_xTyp.discrete_last;
       begin
         if ATE.Element_Size = 1 then
           if range_check_needed then
@@ -155,22 +155,22 @@ package body HAC_Sys.Parser.Expressions is
               --  More understandable message part for a single value
               Discrete_Image
                (CD,
-                Array_Index_Typ.Discrete_First,
+                Array_Index_Typ.discrete_first,
                 ATE.Index_xTyp.TYP,
                 ATE.Index_xTyp.Ref)
             else
               "range: " &
               Discrete_Range_Image
                 (CD,
-                 Array_Index_Typ.Discrete_First,
-                 Array_Index_Typ.Discrete_Last,
+                 Array_Index_Typ.discrete_first,
+                 Array_Index_Typ.discrete_last,
                  ATE.Index_xTyp.TYP,
                  ATE.Index_xTyp.Ref)) &
               ") is out of the array's range, " &
               Discrete_Range_Image
                 (CD,
-                 ATE.Index_xTyp.Discrete_First,
-                 ATE.Index_xTyp.Discrete_Last,
+                 ATE.Index_xTyp.discrete_first,
+                 ATE.Index_xTyp.discrete_last,
                  ATE.Index_xTyp.TYP,
                  ATE.Index_xTyp.Ref),
               severity => minor);
@@ -509,7 +509,7 @@ package body HAC_Sys.Parser.Expressions is
                     else
                       k_Push_Discrete_Value),  --  Composite: push "(a.all)'Access", that is, a.
                    Operand_1_Type (r.lev),
-                   Operand_2_Type (r.adr_or_sz));
+                   Operand_2_Type (r.addr_size_or_val));
 
                 Selector (CD, context, FSys_Prim + Apostrophe, X);
 
@@ -536,7 +536,7 @@ package body HAC_Sys.Parser.Expressions is
                     else
                       k_Push_Discrete_Value),     --  Composite: push "(a.all)'Access, that is, a.
                    Operand_1_Type (r.lev),
-                   Operand_2_Type (r.adr_or_sz));
+                   Operand_2_Type (r.addr_size_or_val));
               end if;
 
               if CD.Sy = Apostrophe then  --  Attribute on an object.
@@ -561,12 +561,12 @@ package body HAC_Sys.Parser.Expressions is
               when declared_number_or_enum_item =>
                 if X.TYP = Floats then
                   --  Address is an index in the float constants table.
-                  Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.adr_or_sz));
+                  Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (r.addr_size_or_val));
                 else
                   --  Here the address is actually the immediate (discrete) value.
-                  Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.adr_or_sz));
+                  Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (r.addr_size_or_val));
                   --  The local subtype for the value V is the range V .. V.
-                  Ranges.Set_Singleton_Range (X, r.adr_or_sz);
+                  Ranges.Set_Singleton_Range (X, r.addr_size_or_val);
                 end if;
 
               when prozedure | prozedure_intrinsic =>
@@ -578,7 +578,7 @@ package body HAC_Sys.Parser.Expressions is
 
               when funktion_intrinsic =>
                 Standard_Functions.Standard_Function
-                  (CD, context, FSys_Prim, ident_index, SF_Code'Val (r.adr_or_sz), X);
+                  (CD, context, FSys_Prim, ident_index, SF_Code'Val (r.addr_size_or_val), X);
 
               when type_mark =>
                 Subtype_Prefixed_Expression (CD, context, FSys_Prim, ident_index, X);
@@ -722,8 +722,8 @@ package body HAC_Sys.Parser.Expressions is
                     Ranges.Set_Singleton_Range (X, 0);
                   elsif Ranges.Is_Singleton_Range (X, 1) then
                     --  1 * Y = Y.
-                    X.Discrete_First := Y.Discrete_First;
-                    X.Discrete_Last  := Y.Discrete_Last;
+                    X.discrete_first := Y.discrete_first;
+                    X.discrete_last  := Y.discrete_last;
                   elsif Ranges.Is_Singleton_Range (Y, 1) then
                     --  X * 1 = X.
                     null;  --  Keep X's range.

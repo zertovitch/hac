@@ -263,8 +263,8 @@ package body HAC_Sys.Parser.Aggregates is
     ------------------------------------------------------------------
     procedure Parse_Array_Aggregate is
       Array_Entry  : Array_Table_Entry renames CD.Arrays_Table (Expected.Ref);
-      Lower_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.Discrete_First;
-      Upper_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.Discrete_Last;
+      Lower_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.discrete_first;
+      Upper_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.discrete_last;
       Element_Typ  : constant Exact_Subtyp := Array_Entry.Element_xTyp;
       Element_Size : constant HAC_Integer := HAC_Integer (Array_Entry.Element_Size);
 
@@ -558,7 +558,7 @@ package body HAC_Sys.Parser.Aggregates is
         procedure Emit_Field (Position : Positive; Capture_Template : access Fill_Template_List := null) is
         begin
           Emit_Component
-            (Id_Table (Fields (Position)).xtyp, Id_Table (Fields (Position)).adr_or_sz, Capture_Template);
+            (Id_Table (Fields (Position)).xtyp, Id_Table (Fields (Position)).addr_size_or_val, Capture_Template);
         end Emit_Field;
 
         --  Resolves an already-consumed identifier (so Locate_CD_Id's
@@ -599,14 +599,14 @@ package body HAC_Sys.Parser.Aggregates is
                        else k_Push_Indirect_Value)
                     elsif Identifier_Entry.normal then k_Push_Address
                     else k_Push_Discrete_Value),
-                   Operand_1_Type (Identifier_Entry.lev), Operand_2_Type (Identifier_Entry.adr_or_sz));
+                   Operand_1_Type (Identifier_Entry.lev), Operand_2_Type (Identifier_Entry.addr_size_or_val));
                 Mark_Read_and_Check_Read_before_Written (CD, Block_Data.context, Identifier_Entry);
               when declared_number_or_enum_item =>
                 if Found_Typ.TYP = Floats then
-                  Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (Identifier_Entry.adr_or_sz));
+                  Emit_1 (CD, k_Push_Float_Literal, Operand_2_Type (Identifier_Entry.addr_size_or_val));
                 else
-                  Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Identifier_Entry.adr_or_sz));
-                  Ranges.Set_Singleton_Range (Found_Typ, Identifier_Entry.adr_or_sz);
+                  Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Identifier_Entry.addr_size_or_val));
+                  Ranges.Set_Singleton_Range (Found_Typ, Identifier_Entry.addr_size_or_val);
                 end if;
               when funktion =>
                 Calls.Subprogram_or_Entry_Call
@@ -614,7 +614,7 @@ package body HAC_Sys.Parser.Aggregates is
               when funktion_intrinsic =>
                 Standard_Functions.Standard_Function
                   (CD, Block_Data.context, Component_Follow_Symbols, Identifier_Id,
-                   SF_Code'Val (Identifier_Entry.adr_or_sz), Found_Typ);
+                   SF_Code'Val (Identifier_Entry.addr_size_or_val), Found_Typ);
               when others =>
                 Error
                   (CD, err_not_yet_implemented,
@@ -694,8 +694,8 @@ package body HAC_Sys.Parser.Aggregates is
                       Cloned : constant Fill_Template_Access :=
                         Clone_With_Offset_Delta
                           (Captured,
-                           Id_Table (Fields (Position)).adr_or_sz -
-                             Id_Table (Fields (First_Remaining)).adr_or_sz);
+                           Id_Table (Fields (Position)).addr_size_or_val -
+                             Id_Table (Fields (First_Remaining)).addr_size_or_val);
                     begin
                       Replay_Fill_Template_Node (Cloned, Dest_Level, Dest_Base);
                       Effective_Template.Append (Cloned);
@@ -748,7 +748,7 @@ package body HAC_Sys.Parser.Aggregates is
                 --  enumeration literal such as True/False, or a function
                 --  call).
                 declare
-                  Offset     : constant HAC_Integer := Id_Table (Fields (Position)).adr_or_sz;
+                  Offset     : constant HAC_Integer := Id_Table (Fields (Position)).addr_size_or_val;
                   Code_First : Integer;
                 begin
                   Emit_2 (CD, k_Push_Address, Operand_1_Type (Dest_Level), Operand_2_Type (Dest_Base + Offset));

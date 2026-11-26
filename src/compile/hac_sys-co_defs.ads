@@ -59,8 +59,8 @@ package HAC_Sys.Co_Defs is
   ---------------------
 
   type Exact_Subtyp is new Exact_Typ with record
-    Discrete_First : HAC_Integer;   --  If subtype S is discrete, S'First
-    Discrete_Last  : HAC_Integer;   --  If subtype S is discrete, S'Last
+    discrete_first : HAC_Integer;   --  If subtype S is discrete, S'First
+    discrete_last  : HAC_Integer;   --  If subtype S is discrete, S'Last
   end record;
 
   overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen)
@@ -233,7 +233,7 @@ package HAC_Sys.Co_Defs is
     block_or_pkg_ref      : Index;             --  Reference in the block or package tables.
     normal                : Boolean;           --  value param?
     lev                   : Nesting_Level;
-    adr_or_sz             : HAC_Integer;       --  Address, Size; index of aliased entity (USE) !! rather use block_or_pkg_ref ?!
+    addr_size_or_val      : HAC_Integer;       --  Address, size, value of Enum Item, or index of aliased entity (USE)
     is_referenced         : Boolean;           --  For any item: is it referenced at all?
     is_read               : No_Maybe_Yes;      --  For variable or constant: is it read?
     is_written_after_init : No_Maybe_Yes;      --  Is variable written via ":=" or "out" mode?

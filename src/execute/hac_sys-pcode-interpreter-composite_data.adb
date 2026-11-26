@@ -16,8 +16,8 @@ package body HAC_Sys.PCode.Interpreter.Composite_Data is
     procedure Do_Array_Index is
       ATI  : constant Integer := Integer (IR.Y);
       ATE  : Array_Table_Entry renames CD.Arrays_Table (ATI);
-      Low  : constant Index := Index (ATE.Index_xTyp.Discrete_First);
-      High : constant Index := Index (ATE.Index_xTyp.Discrete_Last);
+      Low  : constant Index := Index (ATE.Index_xTyp.discrete_first);
+      High : constant Index := Index (ATE.Index_xTyp.discrete_last);
       Idx  : constant Index := Index (ND.S (Curr_TCB.T).I);
       --
       function Out_Message (bound : Defs.Index; excerpt : String) return String is

@@ -118,14 +118,15 @@ package HAC_Sys.Librarian is
   ----------------------------------------------------------------------
 
   procedure Enter_Library_Level_Def
-    (CD             : in out Co_Defs.Compiler_Data;
-     full_ident     : in     String;  --  "Main", "Standard.False", ...
-     new_entity     : in     Co_Defs.Entity_Kind;
-     base_type      : in     Defs.Typen;
-     size           : in     Integer;
-     discrete_first : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
-     discrete_last  : in     Defs.HAC_Integer := Defs.HAC_Integer'Last;
-     is_built_in    : in     Boolean := False);
+    (CD               : in out Co_Defs.Compiler_Data;
+     full_ident       : in     String;  --  "Main", "Standard.False", ...
+     new_entity       : in     Co_Defs.Entity_Kind;
+     base_type        : in     Defs.Typen       := Defs.NOTYP;
+     type_ref         : in     Defs.Index       := 0;  --  E.g. used to know which Enum
+     addr_size_or_val : in     Integer          := 0;
+     discrete_first   : in     Defs.HAC_Integer := Defs.HAC_Integer'First;
+     discrete_last    : in     Defs.HAC_Integer := Defs.HAC_Integer'Last;
+     is_built_in      : in     Boolean          := False);
 
   Circular_Unit_Dependency : exception;
 

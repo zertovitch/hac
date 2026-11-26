@@ -92,7 +92,7 @@ package body HAC_Sys.Parser.Tasking is
           task_block.previous_declaration_id_index := No_Id;
           Block (CD, FSys, False, task_block,
                  CD.id_table (CD.Id_Count).name, CD.id_table (CD.Id_Count).name_with_case);
-          CD.id_table (T0).adr_or_sz := HAC_Integer (CD.Tasks_Definitions_Count);
+          CD.id_table (T0).addr_size_or_val := HAC_Integer (CD.Tasks_Definitions_Count);
           if CD.Sy = Semicolon then
             In_Symbol;
           else

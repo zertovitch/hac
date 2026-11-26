@@ -704,6 +704,7 @@ package HAC_Sys.Defs is
     SF_Full_Name_Dir_Entry,    --  possibly overloaded
     SF_Kind_Dir_Entry,         --  possibly overloaded
     SF_Size_Dir_Entry,         --  possibly overloaded
+    SF_Modification_Time_Dir_Entry,      --  possibly overloaded
     --  Ada.Environment_Variables-like
     SF_Get_Env,
     SF_Get_VM_Variable,

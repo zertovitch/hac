@@ -88,7 +88,7 @@ package body HAC_Sys.Enter_Def is
        block_or_pkg_ref      => 0,
        normal                => True,
        lev                   => Level,
-       adr_or_sz             => 0,
+       addr_size_or_val      => 0,
        is_referenced         => False,
        is_read               => no,
        is_written_after_init => no,
@@ -141,15 +141,15 @@ package body HAC_Sys.Enter_Def is
      Index_STP : in     Co_Defs.Exact_Subtyp)
   is
   begin
-    if Index_STP.Discrete_First > Index_STP.Discrete_Last then
+    if Index_STP.discrete_first > Index_STP.discrete_last then
       Error
         (CD,
          err_illegal_array_bounds,
          "Low > High. NB: legal in Ada (empty array)", -- !!
          severity => major);
     end if;
-    if Index_STP.Discrete_First < -HAC_Integer (XMax) or else
-       Index_STP.Discrete_Last  >  HAC_Integer (XMax)
+    if Index_STP.discrete_first < -HAC_Integer (XMax) or else
+       Index_STP.discrete_last  >  HAC_Integer (XMax)
     then
       Error
         (CD,

@@ -14,8 +14,8 @@ package body HAC_Sys.Co_Defs is
   overriding procedure Construct_Root (Root : out Exact_Subtyp; Typ : Typen) is
   begin
     Construct_Root (Exact_Typ (Root), Typ);  --  Call parent method.
-    Root.Discrete_First := HAC_Integer'First;
-    Root.Discrete_Last  := HAC_Integer'Last;
+    Root.discrete_first := HAC_Integer'First;
+    Root.discrete_last  := HAC_Integer'Last;
   end Construct_Root;
 
   function Construct_Root (Typ : Typen) return Exact_Subtyp is
@@ -137,7 +137,7 @@ package body HAC_Sys.Co_Defs is
       when Bools => return Boolean'Image (Boolean'Val (value));
       when Chars => return Character'Image (Character'Val (value));
       when Enums =>
-        if value in 0 .. CD.id_table (Ref).xtyp.Discrete_Last then
+        if value in 0 .. CD.id_table (Ref).xtyp.discrete_last then
           return A2S (CD.id_table (Ref + 1 + Integer (value)).name_with_case);
         else
           return "[invalid position: " &  HAC_Image (value) & ']';

@@ -76,8 +76,8 @@ is
     elsif choice_counter = Cases_Max then
       Fatal (Case_Labels);  --  Exception is raised there.
     else
-      if        (label_1.I not in X.Discrete_First .. X.Discrete_Last)
-        or else (label_2.I not in X.Discrete_First .. X.Discrete_Last)
+      if        (label_1.I not in X.discrete_first .. X.discrete_last)
+        or else (label_2.I not in X.discrete_first .. X.discrete_last)
       then
         Error (CD, err_choice_out_of_range, severity => minor);
       end if;
@@ -153,7 +153,7 @@ is
     expected_choices, difference : Choice_Count_Type;
   begin
     pragma Assert (Choice_Count_Type'Size >= HAC_Integer'Size);
-    Fill (expected_choices, Count_Choice_Values (X.Discrete_First, X.Discrete_Last));
+    Fill (expected_choices, Count_Choice_Values (X.discrete_first, X.discrete_last));
     Fill (difference, expected_choices - parsed_choices);
     if Equal (difference, 0) then
       if WHEN_OTHERS_flag then

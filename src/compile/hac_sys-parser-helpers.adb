@@ -614,7 +614,7 @@ package body HAC_Sys.Parser.Helpers is
     --  Name aliasing resolution (brought by a use clause
     --  or a simple renames clause):
     while Alias_Resolution and then CD.id_table (J).entity = alias loop
-      J := Integer (CD.id_table (J).adr_or_sz);  --  E.g. True -> Standard.True
+      J := Integer (CD.id_table (J).addr_size_or_val);  --  E.g. True -> Standard.True
     end loop;
 
     if J > Public_Filter then
@@ -838,7 +838,7 @@ package body HAC_Sys.Parser.Helpers is
     --    * The block_ref (hence, the correct VSize
     --        is used for reserving the stack)
     --
-    CD.id_table (old_id_idx).adr_or_sz        := CD.id_table (new_id_idx).adr_or_sz;
+    CD.id_table (old_id_idx).addr_size_or_val := CD.id_table (new_id_idx).addr_size_or_val;
     CD.id_table (old_id_idx).block_or_pkg_ref := CD.id_table (new_id_idx).block_or_pkg_ref;
     --
     --  The linking is done!
@@ -1091,14 +1091,14 @@ package body HAC_Sys.Parser.Helpers is
     if Expected_Typ.TYP = Found_Typ.TYP and Expected_Typ.TYP /= NOTYP then
       if Discrete_Typ (Expected_Typ.TYP) then
         if Ranges.Do_Ranges_Overlap (Expected_Typ, Found_Typ) then
-          if Expected_Typ.Discrete_First > Found_Typ.Discrete_First then
+          if Expected_Typ.discrete_first > Found_Typ.discrete_first then
             Compiler.PCode_Emit.Emit_3
-              (CD, k_Check_Lower_Bound, Expected_Typ.Discrete_First,
+              (CD, k_Check_Lower_Bound, Expected_Typ.discrete_first,
                Typen'Pos (Expected_Typ.TYP), Operand_3_Type (Expected_Typ.Ref));
           end if;
-          if Expected_Typ.Discrete_Last < Found_Typ.Discrete_Last then
+          if Expected_Typ.discrete_last < Found_Typ.discrete_last then
             Compiler.PCode_Emit.Emit_3
-              (CD, k_Check_Upper_Bound, Expected_Typ.Discrete_Last,
+              (CD, k_Check_Upper_Bound, Expected_Typ.discrete_last,
                Typen'Pos (Expected_Typ.TYP), Operand_3_Type (Expected_Typ.Ref));
           end if;
         else
@@ -1107,15 +1107,15 @@ package body HAC_Sys.Parser.Helpers is
              "value of expression (" &
              (if Ranges.Is_Singleton_Range (Found_Typ) then
                 --  More understandable message part for a single value
-                Discrete_Image (CD, Found_Typ.Discrete_First, Expected_Typ.TYP, Expected_Typ.Ref)
+                Discrete_Image (CD, Found_Typ.discrete_first, Expected_Typ.TYP, Expected_Typ.Ref)
               else
                 "range: " &
                 Discrete_Range_Image
-                  (CD, Found_Typ.Discrete_First, Found_Typ.Discrete_Last,
+                  (CD, Found_Typ.discrete_first, Found_Typ.discrete_last,
                    Expected_Typ.TYP, Expected_Typ.Ref)) &
              ") is out of destination's range, " &
              Discrete_Range_Image
-               (CD, Expected_Typ.Discrete_First, Expected_Typ.Discrete_Last,
+               (CD, Expected_Typ.discrete_first, Expected_Typ.discrete_last,
                 Expected_Typ.TYP, Expected_Typ.Ref),
              severity => minor);
         end if;

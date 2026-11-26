@@ -45,11 +45,11 @@ package body HAC_Sys.Parser.Const_Var is
         --  In the above example:  "a := c"  and  "b := c".
         for var of CD.id_table (id_first .. id_last - 1) loop
           --  Push destination address:
-          Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.adr_or_sz));
+          Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.addr_size_or_val));
           if var_typ.TYP in Composite_Typ then
             --  Push source address:
             Emit_2 (CD, k_Push_Address, CD.id_table (id_last).lev,
-              Operand_2_Type (CD.id_table (id_last).adr_or_sz)
+              Operand_2_Type (CD.id_table (id_last).addr_size_or_val)
             );
             case Composite_Typ (var_typ.TYP) is
               when Arrays =>
@@ -65,7 +65,7 @@ package body HAC_Sys.Parser.Const_Var is
             --  Non-composite type. We copy the value.
             Emit_2 (CD, k_Push_Value,
               CD.id_table (id_last).lev,
-              Operand_2_Type (CD.id_table (id_last).adr_or_sz)
+              Operand_2_Type (CD.id_table (id_last).addr_size_or_val)
             );
             Emit_1 (CD, k_Store, Typen'Pos (var_typ.TYP));
           end if;
@@ -78,7 +78,7 @@ package body HAC_Sys.Parser.Const_Var is
         --  HAC_Sys.Parser.Defaults).
         for var of CD.id_table (id_first .. id_last) loop
           if Auto_Init_Typ (var.xtyp.TYP) then
-            Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.adr_or_sz));
+            Emit_2 (CD, k_Push_Address, var.lev, Operand_2_Type (var.addr_size_or_val));
             Emit_1 (CD, k_Variable_Initialization, Typen'Pos (var.xtyp.TYP));
             var.is_initialized := implicit;
           elsif var.xtyp.TYP in Composite_Typ then
@@ -86,7 +86,7 @@ package body HAC_Sys.Parser.Const_Var is
               Var_Default : constant Default_Value_Access := Defaults.Inherited_Default (CD, var.xtyp);
             begin
               if Var_Default /= null then
-                Defaults.Emit_Default_Value (CD, var.lev, var.adr_or_sz, Var_Default);
+                Defaults.Emit_Default_Value (CD, var.lev, var.addr_size_or_val, Var_Default);
                 var.is_initialized := implicit;
               end if;
             end;
@@ -213,17 +213,17 @@ package body HAC_Sys.Parser.Const_Var is
               r.xtyp := C.TP;
               case C.TP.TYP is
                 when Floats =>
-                  Enter_or_find_Float (CD, C.R, Integer (r.adr_or_sz));
+                  Enter_or_find_Float (CD, C.R, Integer (r.addr_size_or_val));
                 when Ints =>
-                  r.adr_or_sz := C.I;
+                  r.addr_size_or_val := C.I;
                 when others =>
                   Error (CD, err_numeric_constant_expected);
                   --  "boo : constant := True;" or "x: constant := 'a';" are wrong in Ada.
-                  r.adr_or_sz := C.I;
+                  r.addr_size_or_val := C.I;
               end case;
             else  --  A variable or a typed constant
-              r.xtyp      := xTyp;
-              r.adr_or_sz := HAC_Integer (Block_Data.data_allocation_index);
+              r.xtyp := xTyp;
+              r.addr_size_or_val := HAC_Integer (Block_Data.data_allocation_index);
               Block_Data.data_allocation_index := Block_Data.data_allocation_index + Sz;
             end if;
           end;

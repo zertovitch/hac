@@ -69,8 +69,8 @@ package body HAC_Sys.Parser.Attributes is
       end if;
     end loop Jump_to_next_Dimension;
     --
-    Low  := Index (A.Index_xTyp.Discrete_First);
-    High := Index (A.Index_xTyp.Discrete_Last);
+    Low  := Index (A.Index_xTyp.discrete_first);
+    High := Index (A.Index_xTyp.discrete_last);
     case attr is
       when First =>       --  RM 3.6.2 (3, 4)
         Emit_1 (CD, k_Push_Discrete_Literal, Operand_2_Type (Low));
@@ -179,7 +179,7 @@ package body HAC_Sys.Parser.Attributes is
           when others =>
             if Discrete_Typ (S.TYP) then
               Emit_1 (CD, k_Push_Discrete_Literal,
-                (if attr = First then S.Discrete_First else S.Discrete_Last)
+                (if attr = First then S.discrete_first else S.discrete_last)
               );
             else
               Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
@@ -188,7 +188,7 @@ package body HAC_Sys.Parser.Attributes is
         xSubtyp_of_Result := S;
         if Discrete_Typ (S.TYP) then
           Ranges.Set_Singleton_Range
-            (xSubtyp_of_Result, (if attr = First then S.Discrete_First else S.Discrete_Last));
+            (xSubtyp_of_Result, (if attr = First then S.discrete_first else S.discrete_last));
         end if;
       end First_Last;
       --
@@ -203,8 +203,8 @@ package body HAC_Sys.Parser.Attributes is
             Emit_Push_Float_Literal (CD, HAC_Float'Last);
           when others =>
             if Discrete_Typ (S.TYP) then
-              Emit_1 (CD, k_Push_Discrete_Literal, S.Discrete_First);
-              Emit_1 (CD, k_Push_Discrete_Literal, S.Discrete_Last);
+              Emit_1 (CD, k_Push_Discrete_Literal, S.discrete_first);
+              Emit_1 (CD, k_Push_Discrete_Literal, S.discrete_last);
             else
               Error (CD, err_attribute_prefix_invalid, attr_ID, severity => major);
             end if;

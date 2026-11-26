@@ -45,10 +45,10 @@ package body HAC_Sys.Parser.Ranges is
             else
               --  We can use the subtype identifier as a range.
               Low.TP  := Id_T.xtyp;
-              Low.I   := Id_T.xtyp.Discrete_First;
+              Low.I   := Id_T.xtyp.discrete_first;
               --
               High.TP := Id_T.xtyp;
-              High.I  := Id_T.xtyp.Discrete_Last;
+              High.I  := Id_T.xtyp.discrete_last;
             end if;
             --
             Found   := True;
@@ -76,25 +76,25 @@ package body HAC_Sys.Parser.Ranges is
       Error
         (CD, err_bounds_type_mismatch,
          "type of bounds don't match with the parent type", severity => major);
-    elsif low.I not in parent.Discrete_First .. parent.Discrete_Last then
+    elsif low.I not in parent.discrete_first .. parent.discrete_last then
       Error
         (CD,
          err_range_constraint_error,
          "lower bound, " & Discrete_Image (CD, low.I, parent.TYP, parent.Ref) &
          ", is out of parent type's range, " &
-         Discrete_Range_Image (CD, parent.Discrete_First, parent.Discrete_Last, parent.TYP, parent.Ref),
+         Discrete_Range_Image (CD, parent.discrete_first, parent.discrete_last, parent.TYP, parent.Ref),
          severity => major);
-    elsif high.I not in parent.Discrete_First .. parent.Discrete_Last then
+    elsif high.I not in parent.discrete_first .. parent.discrete_last then
       Error
         (CD,
          err_range_constraint_error,
          "higher bound, " & Discrete_Image (CD, high.I, parent.TYP, parent.Ref) &
          ", is out of parent type's range, " &
-         Discrete_Range_Image (CD, parent.Discrete_First, parent.Discrete_Last, parent.TYP, parent.Ref),
+         Discrete_Range_Image (CD, parent.discrete_first, parent.discrete_last, parent.TYP, parent.Ref),
          severity => major);
     elsif narrow_the_parent then
-      parent.Discrete_First := low.I;
-      parent.Discrete_Last  := high.I;
+      parent.discrete_first := low.I;
+      parent.discrete_last  := high.I;
     end if;
   end Check_Explicit_Static_Range_Against_Parent_Type;
 
@@ -230,7 +230,7 @@ package body HAC_Sys.Parser.Ranges is
            Found    => Upper_Bound_Typ,
            Expected => Lower_Bound_Typ);
       end if;
-      Range_Typ.Discrete_Last := Upper_Bound_Typ.Discrete_Last;
+      Range_Typ.discrete_last := Upper_Bound_Typ.discrete_last;
     else
       Error_then_Skip (CD, END_LOOP_Semicolon + FSys, err_expecting_double_dot);
     end if;
@@ -238,20 +238,20 @@ package body HAC_Sys.Parser.Ranges is
 
   procedure Set_Singleton_Range (X : in out Co_Defs.Exact_Subtyp; Value : Defs.HAC_Integer) is
   begin
-    X.Discrete_First := Value;
-    X.Discrete_Last  := Value;
+    X.discrete_first := Value;
+    X.discrete_last  := Value;
   end Set_Singleton_Range;
 
   function Is_Singleton_Range (X : Co_Defs.Exact_Subtyp) return Boolean is
     use type Defs.HAC_Integer;
   begin
-    return X.Discrete_First = X.Discrete_Last;
+    return X.discrete_first = X.discrete_last;
   end Is_Singleton_Range;
 
   function Is_Singleton_Range (X : Co_Defs.Exact_Subtyp; Value : Defs.HAC_Integer) return Boolean is
     use type Defs.HAC_Integer;
   begin
-    return Is_Singleton_Range (X) and then X.Discrete_First = Value;
+    return Is_Singleton_Range (X) and then X.discrete_first = Value;
   end Is_Singleton_Range;
 
   procedure Negate_Range
@@ -263,17 +263,17 @@ package body HAC_Sys.Parser.Ranges is
     temp : HAC_Integer;
   begin
     pragma Assert (X.TYP = Ints);
-    if X.Discrete_Last = HAC_Integer'First then
+    if X.discrete_last = HAC_Integer'First then
       --  *Upper* bound is -2**(bits-1) -> overflow guaranteed on negating.
       Errors.Error (CD, err_range_constraint_error, ": overflow on applying ""-""");
     end if;
-    temp := X.Discrete_Last;
-    if X.Discrete_First = HAC_Integer'First then  --  Compile-time overflow if we negate that!
-      X.Discrete_Last := HAC_Integer'Last;  -- one off
+    temp := X.discrete_last;
+    if X.discrete_first = HAC_Integer'First then  --  Compile-time overflow if we negate that!
+      X.discrete_last := HAC_Integer'Last;  -- one off
     else
-      X.Discrete_Last := -X.Discrete_First;
+      X.discrete_last := -X.discrete_first;
     end if;
-    X.Discrete_First := -temp;
+    X.discrete_first := -temp;
   end Negate_Range;
 
   function Do_Ranges_Overlap (X_min, X_max, Y_min, Y_max : Defs.HAC_Integer) return Boolean is
@@ -293,8 +293,8 @@ package body HAC_Sys.Parser.Ranges is
   function Do_Ranges_Overlap (X, Y : Co_Defs.Exact_Subtyp) return Boolean is
   begin
     return Do_Ranges_Overlap
-             (X.Discrete_First, X.Discrete_Last,
-              Y.Discrete_First, Y.Discrete_Last);
+             (X.discrete_first, X.discrete_last,
+              Y.discrete_first, Y.discrete_last);
   end Do_Ranges_Overlap;
 
 end HAC_Sys.Parser.Ranges;

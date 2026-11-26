@@ -24,7 +24,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
      LD   : in out Library_Data;
      name : in     String)
   is
-    use Co_Defs, Defs;
+    use Co_Defs;
+
     unit : Library_Unit :=
         (full_name     => HAT.To_VString (name),
          kind          => Package_Declaration,
@@ -33,8 +34,14 @@ package body HAC_Sys.Librarian.Built_In_Packages is
          id_body_index => No_Id,
          spec_context  => Co_Defs.Id_Maps.Empty_Map);
   begin
-    Enter_Library_Level_Def (CD, name, paquetage, NOTYP, 0, is_built_in => True);
+    Enter_Library_Level_Def
+      (CD          => CD,
+       full_ident  => name,
+       new_entity  => paquetage,
+       is_built_in => True);
+
     Parser.Packages.Feed_Packages_Table (CD);
+
     --  Feed library:
     unit.id_index := CD.Id_Count;
     Register_Unit (LD, unit);
@@ -50,20 +57,21 @@ package body HAC_Sys.Librarian.Built_In_Packages is
   is
   begin
     Enter_Library_Level_Def
-      (CD             => CD,
-       full_ident     => full_ident,
-       new_entity     => Co_Defs.type_mark,
-       base_type      => base_type,
-       size           => size,
-       discrete_first => discrete_first,
-       discrete_last  => discrete_last,
-       is_built_in    => True);
+      (CD               => CD,
+       full_ident       => full_ident,
+       new_entity       => Co_Defs.type_mark,
+       base_type        => base_type,
+       addr_size_or_val => size,
+       discrete_first   => discrete_first,
+       discrete_last    => discrete_last,
+       is_built_in      => True);
   end Enter_Built_In_Type;
 
   procedure Enter_Built_In_Enumeration_Type
     (CD             : in out Co_Defs.Compiler_Data;
      full_ident     : in     String;
-     enum_items     : in     Defs.Alfa_Array)
+     enum_items     : in     Defs.Alfa_Array;
+     type_ref       :    out Defs.Index)
   is
     --  Adapted from HAC_Sys.Parser.Type_Def
     enum_count : Natural := 0;
@@ -80,18 +88,19 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     declare
       xTP : Co_Defs.Exact_Subtyp renames CD.id_table (CD.Id_Count).xtyp;
     begin
-      xTP.Ref := CD.Id_Count;
+      type_ref := CD.Id_Count;
+      xTP.Ref := type_ref;
       for item of enum_items loop
         enum_count := enum_count + 1;
         Enter_Library_Level_Def
-          (CD             => CD,
-           full_ident     => A2S (item),
-           new_entity     => declared_number_or_enum_item,
-           base_type      => xTP.TYP,
-           size           => enum_count - 1,  --  RM 3.5.1 (7): position begins with 0.
-           discrete_first => HAC_Integer (enum_count - 1),  --  Likely unused...
-           discrete_last  => HAC_Integer (enum_count - 1),  --  Likely unused...
-           is_built_in    => True);
+          (CD               => CD,
+           full_ident       => A2S (item),
+           new_entity       => declared_number_or_enum_item,
+           base_type        => xTP.TYP,
+           addr_size_or_val => enum_count - 1,  --  RM 3.5.1 (7): position begins with 0.
+           discrete_first   => HAC_Integer (enum_count - 1),  --  Likely unused...
+           discrete_last    => HAC_Integer (enum_count - 1),  --  Likely unused...
+           is_built_in      => True);
         declare
           new_enum_item : Identifier_Table_Entry renames CD.id_table (CD.Id_Count);
         begin
@@ -128,7 +137,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     begin
       Enter_Def.Enter_Array (CD, index_exact_subtyp);
       arr_tab_ref := CD.Arrays_Count;
-      new_dim_size := index_exact_subtyp.Discrete_Last - index_exact_subtyp.Discrete_First + 1;
+      new_dim_size := index_exact_subtyp.discrete_last - index_exact_subtyp.discrete_first + 1;
       arr_size := Integer (Defs.HAC_Integer'Max (0, new_dim_size)) * element_size;
 
       declare
@@ -141,8 +150,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
         new_a.dimensions   := 1;
       end;
 
-      array_id_entry.xtyp.Ref  := arr_tab_ref;
-      array_id_entry.adr_or_sz := Defs.HAC_Integer (arr_size);
+      array_id_entry.xtyp.Ref         := arr_tab_ref;
+      array_id_entry.addr_size_or_val := Defs.HAC_Integer (arr_size);
     end;
   end Enter_Built_In_Array_Type;
 
@@ -158,12 +167,27 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     end Enter_Std_Typ;
 
   begin
-    Enter_Library_Level_Def (CD, "", constant_object, NOTYP, 0);  --  Unreachable Id with invalid Link.
+    Enter_Library_Level_Def
+      (CD         => CD,
+       full_ident => "",  --  Unreachable Id with invalid Link.
+       new_entity => constant_object);
     --
     Enter_and_Register_Built_In_Package (CD, LD, "Standard");
     --
-    Enter_Library_Level_Def (CD, "Standard.False", declared_number_or_enum_item, Bools, 0, is_built_in => True);
-    Enter_Library_Level_Def (CD, "Standard.True",  declared_number_or_enum_item, Bools, 1, is_built_in => True);
+    Enter_Library_Level_Def
+      (CD               => CD,
+       full_ident       => "Standard.False",
+       new_entity       => declared_number_or_enum_item,
+       base_type        => Bools,
+       addr_size_or_val => 0,
+       is_built_in      => True);
+    Enter_Library_Level_Def
+      (CD               => CD,
+       full_ident       => "Standard.True",
+       new_entity       => declared_number_or_enum_item,
+       base_type        => Bools,
+       addr_size_or_val => 1,
+       is_built_in      => True);
     --
     Enter_Std_Typ ("Character",      Chars, 0, 255);
     Enter_Std_Typ ("Boolean",        Bools, 0, 1);
@@ -212,13 +236,17 @@ package body HAC_Sys.Librarian.Built_In_Packages is
   is
     use Co_Defs, Defs;
 
-    procedure Enter_HAT_Const (Name : String; Value : HAC_Float) is
+    procedure Enter_HAT_Const (name : String; value : HAC_Float) is
       Float_Index : Integer;
     begin
-      Compiler.PCode_Emit.Enter_or_find_Float (CD, Value, Float_Index);
+      Compiler.PCode_Emit.Enter_or_find_Float (CD, value, Float_Index);
       Enter_Library_Level_Def
-        (CD, HAT_Name & '.' & Name,
-         declared_number_or_enum_item, Floats, Float_Index, is_built_in => True);
+        (CD               => CD,
+         full_ident       => name,
+         new_entity       => declared_number_or_enum_item,
+         base_type        => Floats,
+         addr_size_or_val => Float_Index,
+         is_built_in      => True);
     end Enter_HAT_Const;
 
     procedure Enter_HAT_Typ (Name : String; T : Typen; First, Last : HAC_Integer) is
@@ -226,7 +254,11 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Enter_Built_In_Type (CD, HAT_Name & '.' & Name, T, 1, First, Last);
     end Enter_HAT_Typ;
 
-    procedure Enter_HAT_Enumeration_Type (name : in String; enum_items : Defs.Alfa_Array) is
+    procedure Enter_HAT_Enumeration_Type
+      (name       : in     String;
+       enum_items : in     Defs.Alfa_Array;
+       type_ref   :    out Defs.Index)
+    is
       hat_enum_items : Defs.Alfa_Array (enum_items'Range);
       use type Defs.Alfa;
     begin
@@ -236,29 +268,39 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       Enter_Built_In_Enumeration_Type
         (CD,
          HAT_Name & '.' & name,
-         hat_enum_items);
+         hat_enum_items,
+         type_ref);
     end Enter_HAT_Enumeration_Type;
 
-    procedure Enter_HAT_Func (Name : String; T : Typen; Code : Defs.SF_Code) is
+    procedure Enter_HAT_Func
+      (name           : String;
+       t              : Typen;
+       code           : Defs.SF_Code;
+       type_ref       : Defs.Index := 0;
+       discrete_first : Defs.HAC_Integer := Defs.HAC_Integer'First;
+       discrete_last  : Defs.HAC_Integer := Defs.HAC_Integer'Last)
+    is
     begin
       Enter_Library_Level_Def
-        (CD,
-         HAT_Name & '.' & Name,
-         funktion_intrinsic,
-         T,
-         Defs.SF_Code'Pos (Code),
-         is_built_in => True);
+        (CD               => CD,
+         full_ident       => HAT_Name & '.' & name,
+         new_entity       => funktion_intrinsic,
+         base_type        => t,
+         type_ref         => type_ref,
+         addr_size_or_val => Defs.SF_Code'Pos (code),
+         discrete_first   => discrete_first,
+         discrete_last    => discrete_last,
+         is_built_in      => True);
     end Enter_HAT_Func;
 
     procedure Enter_HAT_Proc (Name : String; Code : Defs.SP_Code) is
     begin
       Enter_Library_Level_Def
-        (CD,
-         HAT_Name & '.' & Name,
-         prozedure_intrinsic,
-         NOTYP,
-         Defs.SP_Code'Pos (Code),
-         is_built_in => True);
+        (CD               => CD,
+         full_ident       => HAT_Name & '.' & Name,
+         new_entity       => prozedure_intrinsic,
+         addr_size_or_val => Defs.SP_Code'Pos (Code),
+         is_built_in      => True);
     end Enter_HAT_Proc;
 
   begin
@@ -279,8 +321,8 @@ package body HAC_Sys.Librarian.Built_In_Packages is
       ("File_Kind",
        (S2A ("Directory"),
         S2A ("Ordinary_File"),
-        S2A ("Special_File")));
-    CD.built_in.hat_file_kind_index :=  CD.Id_Count;
+        S2A ("Special_File")),
+        CD.built_in.hat_file_kind_index);
 
     --  Create: "type Filter_Type is array (HAT.File_Kind) of Boolean;" 2026.11.23
     Enter_Built_In_Array_Type
@@ -289,6 +331,7 @@ package body HAC_Sys.Librarian.Built_In_Packages is
        index_exact_subtyp   => CD.id_table (CD.built_in.hat_file_kind_index).xtyp,
        element_exact_subtyp => CD.id_table (CD.built_in.std_bool_index).xtyp,
        element_size         => 1);
+
     CD.built_in.hat_filter_type_index := CD.Id_Count;
 
     --
@@ -398,21 +441,28 @@ package body HAC_Sys.Librarian.Built_In_Packages is
     --
     --  Ada.Directories-like subprograms
     --
-    Enter_HAT_Proc ("Copy_File",        SP_Copy_File);
-    Enter_HAT_Proc ("Create_Directory", SP_Create_Directory);
-    Enter_HAT_Proc ("Create_Path",      SP_Create_Path);
-    Enter_HAT_Proc ("Delete_Directory", SP_Delete_Directory);
-    Enter_HAT_Proc ("Delete_File",      SP_Delete_File);
-    Enter_HAT_Proc ("Rename",           SP_Rename);
-    Enter_HAT_Proc ("Set_Directory",    SP_Set_Directory);
-    Enter_HAT_Proc ("Start_Search",     SP_Start_Search);
-    Enter_HAT_Proc ("End_Search",       SP_End_Search);
-    Enter_HAT_Func ("More_Entries",     Bools, SF_More_Entries);
-    Enter_HAT_Proc ("Get_Next_Entry",   SP_Get_Next_Entry);
-    Enter_HAT_Func ("Simple_Name",      VStrings, SF_Simple_Name_Dir_Entry);
-    Enter_HAT_Func ("Full_Name",        VStrings, SF_Full_Name_Dir_Entry);
-    Enter_HAT_Func ("Kind",             Enums, SF_Full_Name_Dir_Entry);  --  !! specific enum !!
-    Enter_HAT_Func ("Size",             Ints,  SF_Size_Dir_Entry);  --  Integer_64 in hat.ads
+    Enter_HAT_Proc ("Copy_File",         SP_Copy_File);
+    Enter_HAT_Proc ("Create_Directory",  SP_Create_Directory);
+    Enter_HAT_Proc ("Create_Path",       SP_Create_Path);
+    Enter_HAT_Proc ("Delete_Directory",  SP_Delete_Directory);
+    Enter_HAT_Proc ("Delete_File",       SP_Delete_File);
+    Enter_HAT_Proc ("Rename",            SP_Rename);
+    Enter_HAT_Proc ("Set_Directory",     SP_Set_Directory);
+    Enter_HAT_Proc ("Start_Search",      SP_Start_Search);
+    Enter_HAT_Proc ("End_Search",        SP_End_Search);
+    Enter_HAT_Func ("More_Entries",      Bools, SF_More_Entries);
+    Enter_HAT_Proc ("Get_Next_Entry",    SP_Get_Next_Entry);
+    Enter_HAT_Func ("Simple_Name",       VStrings, SF_Simple_Name_Dir_Entry);
+    Enter_HAT_Func ("Full_Name",         VStrings, SF_Full_Name_Dir_Entry);
+    Enter_HAT_Func ("Size",              Ints, SF_Size_Dir_Entry);  --  Integer_64 in hat.ads
+    Enter_HAT_Func ("Modification_Time", Times, SF_Modification_Time_Dir_Entry);
+    Enter_HAT_Func
+      ("Kind",
+       Enums,
+       SF_Kind_Dir_Entry,
+       CD.built_in.hat_file_kind_index,
+       CD.id_table (CD.built_in.hat_file_kind_index).xtyp.discrete_first,
+       CD.id_table (CD.built_in.hat_file_kind_index).xtyp.discrete_last);
 
     Enter_HAT_Proc ("Shell_Execute",   SP_Shell_Execute_with_Result);
     Enter_HAT_Proc ("Set_Exit_Status", SP_Set_Exit_Status);

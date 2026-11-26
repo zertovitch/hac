@@ -67,9 +67,9 @@ package body HAC_Sys.Parser.Defaults is
         return New_Default_Value
           (CD,
             (Scalar_Default, Entry_Ref.xtyp,
-             (if Entry_Ref.xtyp.TYP = Floats then 0 else Entry_Ref.adr_or_sz),
+             (if Entry_Ref.xtyp.TYP = Floats then 0 else Entry_Ref.addr_size_or_val),
              (if Entry_Ref.xtyp.TYP = Floats
-              then CD.Float_Constants_Table (Integer (Entry_Ref.adr_or_sz))
+              then CD.Float_Constants_Table (Integer (Entry_Ref.addr_size_or_val))
               else 0.0)));
       end;
     end Resolve_Static_Direct_Name;
@@ -102,8 +102,8 @@ package body HAC_Sys.Parser.Defaults is
     ------------------------------------------------------------------
     function Parse_Array_Default (Array_Expected : Exact_Subtyp) return Default_Value_Access is
       Array_Entry  : Array_Table_Entry renames CD.Arrays_Table (Array_Expected.Ref);
-      Lower_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.Discrete_First;
-      Upper_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.Discrete_Last;
+      Lower_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.discrete_first;
+      Upper_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.discrete_last;
       Element_Typ  : constant Exact_Subtyp := Array_Entry.Element_xTyp;
       Element_Size : constant HAC_Integer := HAC_Integer (Array_Entry.Element_Size);
 
@@ -312,7 +312,7 @@ package body HAC_Sys.Parser.Defaults is
                 begin
                   for Position in Covered'Range loop
                     if not Covered (Position) then
-                      Components.Append ((Id_Table (Fields (Position)).adr_or_sz, Fill));
+                      Components.Append ((Id_Table (Fields (Position)).addr_size_or_val, Fill));
                       Covered (Position) := True;
                     end if;
                   end loop;
@@ -345,7 +345,7 @@ package body HAC_Sys.Parser.Defaults is
               In_Symbol;  --  Consume '=>'.
               Mark_Covered (Position_Of (Field_Id));
               Components.Append
-                ((Id_Table (Field_Id).adr_or_sz,
+                ((Id_Table (Field_Id).addr_size_or_val,
                   Parse_One_Value (Id_Table (Field_Id).xtyp)));
               Next_Position := Position_Of (Field_Id) + 1;
             end;
@@ -355,7 +355,7 @@ package body HAC_Sys.Parser.Defaults is
               exit;
             end if;
             Components.Append
-              ((Id_Table (Fields (Next_Position)).adr_or_sz,
+              ((Id_Table (Fields (Next_Position)).addr_size_or_val,
                 Parse_One_Value (Id_Table (Fields (Next_Position)).xtyp)));
             Mark_Covered (Next_Position);
             Next_Position := Next_Position + 1;
@@ -448,8 +448,8 @@ package body HAC_Sys.Parser.Defaults is
             return null;
           end if;
           declare
-            Lower_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.Discrete_First;
-            Upper_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.Discrete_Last;
+            Lower_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.discrete_first;
+            Upper_Bound  : constant HAC_Integer := Array_Entry.Index_xTyp.discrete_last;
             Element_Size : constant HAC_Integer := HAC_Integer (Array_Entry.Element_Size);
             Components   : Default_Component_Vectors.Vector;
           begin

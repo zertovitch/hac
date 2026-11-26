@@ -52,16 +52,18 @@ package body HAC_Sys.Parser.Type_Def is
     begin
       if is_subtype then
         Subtype_Indication
-          (CD, Level,
+          (CD,
+           Level,
            FSys_TD => Comma_IDent_Semicolon + FSys_NTD,
            xTP     => New_T.xtyp,
-           Size    => Integer (New_T.adr_or_sz));
+           Size    => Integer (New_T.addr_size_or_val));
       else
         Type_Definition
-          (CD, Level,
+          (CD,
+           Level,
            FSys_TD => Comma_IDent_Semicolon + FSys_NTD,
            xTP     => New_T.xtyp,
-           Size    => Integer (New_T.adr_or_sz));
+           Size    => Integer (New_T.addr_size_or_val));
       end if;
     end;
     --
@@ -89,15 +91,15 @@ package body HAC_Sys.Parser.Type_Def is
   begin
     Static_Range (CD, Level, FSys_TD, err_illegal_array_bounds, Lower_Bound, Higher_Bound);
     Index_Exact_Subtyp := Lower_Bound.TP;
-    Index_Exact_Subtyp.Discrete_First := Lower_Bound.I;
-    Index_Exact_Subtyp.Discrete_Last  := Higher_Bound.I;
+    Index_Exact_Subtyp.discrete_first := Lower_Bound.I;
+    Index_Exact_Subtyp.discrete_last  := Higher_Bound.I;
     Enter_Array (CD, Index_Exact_Subtyp);
     arr_tab_ref := CD.Arrays_Count;
     if string_constrained_subtype then
       --  We define String (L .. H) exactly as an "array (L .. H) of Character".
       Construct_Root (Element_Exact_Subtyp, Chars);
-      Element_Exact_Subtyp.Discrete_First := 0;
-      Element_Exact_Subtyp.Discrete_Last  := 255;
+      Element_Exact_Subtyp.discrete_first := 0;
+      Element_Exact_Subtyp.discrete_last  := 255;
       Element_Size := 1;
       Need (CD, RParent, err_closing_parenthesis_missing, Forgive => RBrack);
     elsif CD.Sy = Comma then
@@ -176,9 +178,9 @@ package body HAC_Sys.Parser.Type_Def is
           declare
             new_enum_item : Identifier_Table_Entry renames CD.id_table (CD.Id_Count);
           begin
-            new_enum_item.xtyp          := xTP;
-            new_enum_item.adr_or_sz     := HAC_Integer (enum_count - 1);  --  RM 3.5.1 (7): position begins with 0.
-            new_enum_item.is_referenced := False;
+            new_enum_item.xtyp             := xTP;
+            new_enum_item.addr_size_or_val := HAC_Integer (enum_count - 1);  --  RM 3.5.1 (7): position begins with 0.
+            new_enum_item.is_referenced    := False;
           end;
         else
           Error (CD, err_identifier_missing);
@@ -187,8 +189,8 @@ package body HAC_Sys.Parser.Type_Def is
         exit when CD.Sy /= Comma;
       end loop;
       Size  := 1;
-      xTP.Discrete_First := 0;
-      xTP.Discrete_Last  := HAC_Integer (enum_count - 1);
+      xTP.discrete_first := 0;
+      xTP.discrete_last  := HAC_Integer (enum_count - 1);
       Need (CD, RParent, err_closing_parenthesis_missing);
     end Enumeration_Typ;
 
@@ -234,10 +236,10 @@ package body HAC_Sys.Parser.Type_Def is
                Field_Exact_Subtyp, Field_Size);
           end if;
           while T0 < T1 loop
-            T0                      := T0 + 1;
-            CD.id_table (T0).xtyp      := Field_Exact_Subtyp;
-            CD.id_table (T0).adr_or_sz := HAC_Integer (Offset);
-            Offset                  := Offset + Field_Size;
+            T0 := T0 + 1;
+            CD.id_table (T0).xtyp := Field_Exact_Subtyp;
+            CD.id_table (T0).addr_size_or_val := HAC_Integer (Offset);
+            Offset := Offset + Field_Size;
           end loop;
           --  RM 3.7 / 3.8: an optional default_expression (restricted to
           --  static values -- see HAC_Sys.Parser.Defaults), or, absent
@@ -256,7 +258,7 @@ package body HAC_Sys.Parser.Type_Def is
             end if;
             if Field_Default /= null then
               for Name_Idx in Group_First + 1 .. T1 loop
-                Local_Defaults.Append ((CD.id_table (Name_Idx).adr_or_sz, Field_Default));
+                Local_Defaults.Append ((CD.id_table (Name_Idx).addr_size_or_val, Field_Default));
               end loop;
             end if;
           end;
@@ -355,7 +357,7 @@ package body HAC_Sys.Parser.Type_Def is
       begin
         if Id_T.entity = type_mark then
           xTP   := Id_T.xtyp;
-          Size  := Integer (Id_T.adr_or_sz);
+          Size  := Integer (Id_T.addr_size_or_val);
           if xTP.TYP = NOTYP then
             Error (CD, err_undefined_type);
           end if;
